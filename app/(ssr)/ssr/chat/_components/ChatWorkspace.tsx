@@ -17,15 +17,17 @@ import dynamic from 'next/dynamic';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectUser } from '@/lib/redux/slices/userSlice';
 import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
-import { MessageCircle, Share2, List, Layers } from 'lucide-react';
-import PageHeader from '@/app/(ssr)/_components/PageHeader';
+import { MessageCircle, List, Layers } from 'lucide-react';
 
 // Chat infrastructure
-import { ChatProvider, useChatContext } from '@/features/public-chat/context/ChatContext';
+import { useChatContext } from '@/features/public-chat/context/ChatContext';
 import type { AgentConfig, ChatMessage } from '@/features/public-chat/context/ChatContext';
 import { useAgentChat } from '@/features/public-chat/hooks/useAgentChat';
 import { useChatPersistence } from '@/features/public-chat/hooks/useChatPersistence';
 import { resolveAgentFromId, DEFAULT_AGENT_CONFIG } from '@/features/public-chat/utils/agent-resolver';
+
+// Header controls — rich header with sidebar toggle, agent picker, etc.
+import ChatHeaderControls from './ChatHeaderControls';
 
 // Eager imports — always rendered in conversation mode
 import { ChatInputWithControls } from '@/features/public-chat/components/ChatInputWithControls';
@@ -351,8 +353,14 @@ function ChatWorkspaceInner() {
         updateMessage(messageId, { content: newContent });
     }, [updateMessage]);
 
-    const openAgentPicker = useCallback(() => {
-        // No-op — agent selection via sidebar chips + action buttons
+    const handleHeaderAgentSelect = useCallback((agent: AgentConfig) => {
+        handleAgentSelect(agent as typeof DEFAULT_AGENTS[0]);
+    }, [handleAgentSelect]);
+
+    const handleNewChat = useCallback(() => {
+        const url = '/ssr/chat';
+        window.history.pushState(null, '', url);
+        window.dispatchEvent(new PopStateEvent('popstate'));
     }, []);
 
     // ========================================================================
@@ -368,23 +376,7 @@ function ChatWorkspaceInner() {
         ? state.messages[0].content.slice(0, 40) + (state.messages[0].content.length > 40 ? '…' : '')
         : (state.currentAgent?.name || 'Chat');
 
-    const headerContent = (
-        <div className="flex items-center gap-2">
-            <span className="shell-glass flex items-center gap-1.5 h-[1.875rem] px-3 rounded-full text-[0.6875rem] font-medium text-(--shell-nav-text-hover) max-w-[240px] truncate">
-                <MessageCircle className="w-3 h-3 shrink-0 text-(--shell-nav-icon)" />
-                <span className="truncate">{headerLabel}</span>
-            </span>
-            {isAuthenticated && state.dbConversationId && (
-                <button
-                    onClick={() => setIsShareOpen(true)}
-                    className="shell-glass shell-tactile flex items-center justify-center w-[1.875rem] h-[1.875rem] rounded-full text-(--shell-nav-icon) hover:text-(--shell-nav-text-hover) cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5"
-                    title="Share conversation"
-                >
-                    <Share2 />
-                </button>
-            )}
-        </div>
-    );
+    const agentName = state.currentAgent?.name || 'Chat';
 
     // ========================================================================
     // LOADING STATE
@@ -393,7 +385,17 @@ function ChatWorkspaceInner() {
     if (isLoadingConversation) {
         return (
             <>
-                <PageHeader>{headerContent}</PageHeader>
+                <ChatHeaderControls
+                    agentName={agentName}
+                    headerLabel={headerLabel}
+                    isConversation={!isWelcomeScreen}
+                    isAuthenticated={isAuthenticated}
+                    dbConversationId={state.dbConversationId}
+                    selectedAgent={state.currentAgent}
+                    onAgentSelect={handleHeaderAgentSelect}
+                    onNewChat={handleNewChat}
+                    onShare={() => setIsShareOpen(true)}
+                />
                 <div className="h-full flex flex-col items-center justify-center">
                     <MessageCircle className="h-8 w-8 text-primary animate-pulse mb-3" />
                     <p className="text-sm text-muted-foreground">Loading conversation...</p>
@@ -427,7 +429,17 @@ function ChatWorkspaceInner() {
         if (useGuidedVars && hasVariables) {
             return (
                 <>
-                <PageHeader>{headerContent}</PageHeader>
+                <ChatHeaderControls
+                    agentName={agentName}
+                    headerLabel={headerLabel}
+                    isConversation={!isWelcomeScreen}
+                    isAuthenticated={isAuthenticated}
+                    dbConversationId={state.dbConversationId}
+                    selectedAgent={state.currentAgent}
+                    onAgentSelect={handleHeaderAgentSelect}
+                    onNewChat={handleNewChat}
+                    onShare={() => setIsShareOpen(true)}
+                />
                 <div className="h-full flex flex-col">
                     <div className="flex-1 min-h-0 overflow-y-auto">
                         <div className="flex flex-col items-center justify-end min-h-full px-3 md:px-8 pb-4">
@@ -465,7 +477,7 @@ function ChatWorkspaceInner() {
                                     disabled={isExecuting}
                                     placeholder="Additional instructions (optional)…"
                                     conversationId={conversationId}
-                                    onOpenAgentPicker={openAgentPicker}
+
                                     hasVariables={hasVariables}
                                     selectedAgent={state.currentAgent}
                                     textInputRef={textInputRef}
@@ -496,7 +508,17 @@ function ChatWorkspaceInner() {
         // Classic mode (or no variables): centered layout
         return (
             <>
-            <PageHeader>{headerContent}</PageHeader>
+            <ChatHeaderControls
+                    agentName={agentName}
+                    headerLabel={headerLabel}
+                    isConversation={!isWelcomeScreen}
+                    isAuthenticated={isAuthenticated}
+                    dbConversationId={state.dbConversationId}
+                    selectedAgent={state.currentAgent}
+                    onAgentSelect={handleHeaderAgentSelect}
+                    onNewChat={handleNewChat}
+                    onShare={() => setIsShareOpen(true)}
+                />
             <div className="h-full flex flex-col">
                 <div className="flex-1 min-h-0 overflow-y-auto">
                     <div className={`min-h-full flex flex-col items-center px-3 md:px-8 ${varCount > 2 ? 'justify-start pt-8 md:pt-16 md:justify-center' : 'justify-center'}`}>
@@ -537,7 +559,7 @@ function ChatWorkspaceInner() {
                                     disabled={isExecuting}
                                     placeholder={hasVariables ? 'Additional instructions (optional)…' : 'What do you want to know?'}
                                     conversationId={conversationId}
-                                    onOpenAgentPicker={openAgentPicker}
+
                                     hasVariables={hasVariables}
                                     selectedAgent={state.currentAgent}
                                     textInputRef={textInputRef}
@@ -585,7 +607,17 @@ function ChatWorkspaceInner() {
 
     return (
         <>
-        <PageHeader>{headerContent}</PageHeader>
+        <ChatHeaderControls
+                    agentName={agentName}
+                    headerLabel={headerLabel}
+                    isConversation={!isWelcomeScreen}
+                    isAuthenticated={isAuthenticated}
+                    dbConversationId={state.dbConversationId}
+                    selectedAgent={state.currentAgent}
+                    onAgentSelect={handleHeaderAgentSelect}
+                    onNewChat={handleNewChat}
+                    onShare={() => setIsShareOpen(true)}
+                />
         <div className="h-full flex flex-col">
             {/* Share Modal — lazy-loaded, only rendered on click */}
             {isShareOpen && shareConversationId && (
@@ -655,7 +687,6 @@ function ChatWorkspaceInner() {
                             onSubmit={handleSubmit}
                             disabled={isExecuting}
                             conversationId={conversationId}
-                            onOpenAgentPicker={openAgentPicker}
                             hasVariables={hasVariables}
                             selectedAgent={state.currentAgent}
                             textInputRef={textInputRef}
@@ -674,9 +705,5 @@ function ChatWorkspaceInner() {
 // ============================================================================
 
 export default function ChatWorkspace() {
-    return (
-        <ChatProvider>
-            <ChatWorkspaceInner />
-        </ChatProvider>
-    );
+    return <ChatWorkspaceInner />;
 }
