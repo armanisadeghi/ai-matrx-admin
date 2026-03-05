@@ -84,10 +84,12 @@ export function ChatSidebar({
     // Shared sidebar content rendered inside both mobile and desktop panels
     const sidebarContent = (
         <div className="h-full flex flex-col">
-            {/* Section 0: Agent Header — opens unified picker */}
+            {/* Section 0: Top controls — collapse, new chat, agent picker */}
             <SidebarAgentHeader
                 selectedAgent={selectedAgent}
                 onAgentSelect={onOpenAgentPicker ? () => onOpenAgentPicker() : onAgentSelect}
+                onCollapse={closeSidebar}
+                onNewChat={handleNewChat}
             />
 
             {/* Section 1: Actions — fixed at top */}

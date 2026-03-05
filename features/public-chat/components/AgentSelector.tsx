@@ -207,9 +207,21 @@ export function AgentSelector({ agents, selectedAgent, onSelect, disabled }: Age
 // RESPONSE MODE BUTTONS (matches authenticated chat style)
 // ============================================================================
 
-interface ResponseModeButtonsProps {
-    disabled?: boolean;
-}
+/**
+ * Maps each response mode to a system agent ID.
+ * Modes with an agentId will switch the active agent when clicked.
+ * Modes without an agentId will console.log (placeholder for future functionality).
+ */
+export const RESPONSE_MODE_AGENT_MAP: Record<string, string | null> = {
+    text:       'ce7c5e71-cbdc-4ed1-8dd9-a7eac930b6b8',
+    images:     'ce7c5e71-cbdc-4ed1-8dd9-a7eac930b6b8',
+    videos:     '7def859b-6bdc-4867-9471-4b2de7a7e2f7',
+    research:   '7a90bace-1c2b-4d40-829d-b6d875573324',
+    brainstorm: '01120af5-5511-4fe7-a4f2-586db6f05a4e',
+    data:       null,
+    recipe:     null,
+    code:       null,
+};
 
 const RESPONSE_MODES = [
     { id: 'text', label: 'Text', icon: <MessageCircle size={18} /> },
@@ -222,8 +234,24 @@ const RESPONSE_MODES = [
     { id: 'code', label: 'Code', icon: <Code size={18} /> },
 ] as const;
 
-export function ResponseModeButtons({ disabled }: ResponseModeButtonsProps) {
+interface ResponseModeButtonsProps {
+    disabled?: boolean;
+    onModeSelect?: (modeId: string, agentId: string | null) => void;
+}
+
+export function ResponseModeButtons({ disabled, onModeSelect }: ResponseModeButtonsProps) {
     const [activeMode, setActiveMode] = useState<string>('text');
+
+    const handleSelect = (modeId: string) => {
+        if (disabled) return;
+        setActiveMode(modeId);
+        const agentId = RESPONSE_MODE_AGENT_MAP[modeId];
+        if (agentId) {
+            onModeSelect?.(modeId, agentId);
+        } else {
+            console.log(`[ResponseMode] "${modeId}" selected — no agent mapped yet`);
+        }
+    };
 
     return (
         <div className="flex flex-wrap justify-center gap-1">
@@ -232,7 +260,7 @@ export function ResponseModeButtons({ disabled }: ResponseModeButtonsProps) {
                 return (
                     <button
                         key={mode.id}
-                        onClick={() => !disabled && setActiveMode(mode.id)}
+                        onClick={() => handleSelect(mode.id)}
                         disabled={disabled}
                         className={`py-1 px-2 rounded-full flex items-center border transition-colors ${
                             isActive

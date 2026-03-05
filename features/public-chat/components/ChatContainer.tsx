@@ -177,6 +177,12 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         });
     };
 
+    // Response mode selection — switches agent based on mode→agent mapping
+    const handleModeSelect = (_modeId: string, agentId: string | null) => {
+        if (!agentId) return;
+        onAgentChange({ promptId: agentId, name: '' });
+    };
+
     const handleVariableChange = (name: string, value: string) => {
         setVariableValues((prev) => ({ ...prev, [name]: value }));
     };
@@ -312,7 +318,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                 />
                             </div>
                             <div className="flex items-center justify-between mt-3 pb-2">
-                                <ResponseModeButtons disabled={isExecuting} />
+                                <ResponseModeButtons disabled={isExecuting} onModeSelect={handleModeSelect} />
                                 <button
                                     type="button"
                                     onClick={() => router.replace(toggleUrl)}
@@ -386,7 +392,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                             </div>
 
                             <div className="flex items-center justify-between mt-3 md:mt-6 pb-4">
-                                <ResponseModeButtons disabled={isExecuting} />
+                                <ResponseModeButtons disabled={isExecuting} onModeSelect={handleModeSelect} />
                                 {hasVariables && (
                                     <button
                                         type="button"
