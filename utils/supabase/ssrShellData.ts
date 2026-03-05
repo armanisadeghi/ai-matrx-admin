@@ -31,6 +31,19 @@ export async function getSSRShellData(
     .single() as { data: SSRShellData | null; error: unknown };
 
   if (error) {
+    const errObj = error as { message?: string; code?: string };
+    // Detect missing RPC (not yet deployed) — return safe defaults instead of crashing
+    if (errObj.code === 'PGRST202' || errObj.message?.includes('could not find')) {
+      console.warn('[SSR Shell] get_ssr_shell_data RPC not found — run migrations/get_ssr_shell_data_rpc.sql. Returning defaults.');
+      return {
+        is_admin: false,
+        preferences_exists: false,
+        preferences: null,
+        ai_models: [],
+        context_menu: [],
+        sms_unread_total: 0,
+      };
+    }
     console.error('[SSR Shell] Failed to fetch shell data:', error);
     throw new Error('Failed to fetch SSR shell data');
   }

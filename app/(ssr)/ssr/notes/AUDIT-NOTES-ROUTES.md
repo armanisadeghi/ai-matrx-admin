@@ -89,7 +89,7 @@
 | Fix | Description |
 |-----|-------------|
 | **Z-index stacking** | Added `z-index: 0` to `.notes-root` so content renders BEHIND shell header (z-40) and dock (z-40). Share dialog and mobile bottom sheet portaled to `document.body` to escape the stacking context. |
-| **AI Actions debugging** | Added console.log statements throughout NoteAiMenu.tsx data flow: Redux cache check, Supabase fallback, buildCategoryHierarchy results, render state. Open DevTools console and click "AI Actions" in context menu to see diagnostics. |
+| **AI Actions debugging** | Underlying tables (`shortcut_categories`, `prompt_shortcuts`, `prompt_builtins`) are confirmed working in other parts of the system. Possible issues: (1) `context_menu_unified_view` or `get_ssr_shell_data` RPC may not be deployed yet — migration SQL added at `migrations/create_context_menu_unified_view.sql`; (2) `enabled_contexts` filtering with `"note-editor"` may filter out all items; (3) Redux hydration timing. NoteAiMenu now shows a clear error state when the view query fails. `ssrShellData.ts` gracefully handles missing RPC. Console.log diagnostics throughout data pipeline — check browser DevTools when clicking AI Actions. |
 | **Context menu folder submenu** | Replaced flat folder list (unusable with 15+ folders) with collapsible "Move to folder ›" second tier in both NotesWorkspace and SidebarClient context menus. |
 | **Tab bar folder selector** | Added folder icon button in active tab's action bar (next to Save/Copy/Share/Delete). Click to open dropdown for quick folder change. |
 | **Mobile folder drawer** | Mobile bottom sheet now shows folder as clickable row with chevron. Tap to enter folder selection mode with back button navigation. |
