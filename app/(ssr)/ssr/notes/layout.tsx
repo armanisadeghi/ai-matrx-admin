@@ -2,6 +2,7 @@
 // Synchronous layout — no auth, no DB, no async work.
 // SidebarClient and NotesWorkspace fetch their own data after mount via Supabase client.
 
+import "./notes.css";
 import SidebarClient from "./_components/SidebarClient";
 import NotesWorkspace from "./_components/NotesWorkspace";
 

@@ -1088,3 +1088,48 @@
    --------------------------------------------------------------------------- */
 
 /* shell-mobile-menu-label / shell-hamburger replaced by IconButton + HamburgerIsland */
+
+/* ---------------------------------------------------------------------------
+   18. Scrollbar Utilities — site-wide, used across all SSR routes
+   --------------------------------------------------------------------------- */
+
+/* Ultra-thin auto-hiding scrollbar (transparent until hover) */
+.scrollbar-thin-auto {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.scrollbar-thin-auto:hover {
+  scrollbar-color: hsl(var(--muted-foreground) / 0.15) transparent;
+}
+.scrollbar-thin-auto::-webkit-scrollbar { width: 3px; }
+.scrollbar-thin-auto::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin-auto::-webkit-scrollbar-thumb { background: transparent; border-radius: 2px; }
+.scrollbar-thin-auto:hover::-webkit-scrollbar-thumb { background: hsl(var(--muted-foreground) / 0.15); }
+.scrollbar-thin-auto::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.3); }
+
+/* Thin always-visible scrollbar (for sidebar lists) */
+.scrollbar-thin-visible {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border) / 0.3) transparent;
+}
+.scrollbar-thin-visible::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin-visible::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin-visible::-webkit-scrollbar-thumb { background: hsl(var(--border) / 0.3); border-radius: 4px; }
+.scrollbar-thin-visible::-webkit-scrollbar-thumb:hover { background: hsl(var(--border) / 0.5); }
+
+/* Thin scrollbar, hidden until container hover (for message areas) */
+.scrollbar-thin-hover {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.scrollbar-thin-hover:hover {
+  scrollbar-color: hsl(var(--border) / 0.3) transparent;
+}
+.scrollbar-thin-hover::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin-hover::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin-hover::-webkit-scrollbar-thumb { background: transparent; border-radius: 4px; }
+.scrollbar-thin-hover:hover::-webkit-scrollbar-thumb { background: hsl(var(--border) / 0.3); }
+.scrollbar-thin-hover::-webkit-scrollbar-thumb:hover { background: hsl(var(--border) / 0.5); }
+
+/* Hide horizontal scrollbar */
+.scrollbar-h-none::-webkit-scrollbar { height: 0; }
