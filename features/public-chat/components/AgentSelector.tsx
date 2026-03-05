@@ -218,7 +218,7 @@ export const RESPONSE_MODE_AGENT_MAP: Record<string, string | null> = {
     videos:     '7def859b-6bdc-4867-9471-4b2de7a7e2f7',
     research:   '7a90bace-1c2b-4d40-829d-b6d875573324',
     brainstorm: '01120af5-5511-4fe7-a4f2-586db6f05a4e',
-    data:       null,
+    data:       'f76a6b8f-b720-4730-87de-606e0bfa0e0c', // TEST: wired to Deep Research agent to verify routing
     recipe:     null,
     code:       null,
 };
