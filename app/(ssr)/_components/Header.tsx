@@ -4,23 +4,14 @@
 // User data is read from Redux inside UserMenuIsland — no props needed here.
 
 import UserMenuIsland from "./UserMenuIsland";
+import HamburgerIsland from "./HamburgerIsland";
 
 export default function Header() {
   return (
     <header className="shell-header">
       {/* Left — Mobile hamburger trigger (hidden on desktop via CSS) */}
       <div className="shell-mobile-trigger">
-        <label
-          htmlFor="shell-mobile-menu"
-          className="shell-mobile-menu-label"
-          aria-label="Open navigation menu"
-        >
-          <div className="shell-hamburger shell-glass shell-tactile">
-            <span className="shell-hamburger-line" />
-            <span className="shell-hamburger-line" />
-            <span className="shell-hamburger-line" />
-          </div>
-        </label>
+        <HamburgerIsland />
       </div>
 
       {/* Center — Dynamic injection zone for route-specific content */}

@@ -134,7 +134,7 @@ export default function FeedbackDialog({ onClose }: FeedbackDialogProps) {
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
 
       {/* Dialog */}
-      <div className="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden bg-[var(--shell-glass-bg)] backdrop-blur-[24px] saturate-[1.5] border border-[var(--shell-glass-border)]">
+      <div className="shell-glass relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--shell-glass-border)]">
           <h3 className="text-sm font-semibold text-foreground">

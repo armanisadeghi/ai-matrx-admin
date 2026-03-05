@@ -31,7 +31,7 @@ export default function QuickActions() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 px-4 sm:px-6">
       {actions.map((action) => (
-        <a key={action.href} href={action.href} className="shell-quick-card shell-glass shell-tactile-subtle">
+        <a key={action.href} href={action.href} className="shell-quick-card shell-glass-card shell-tactile-subtle">
           <div className={`shell-quick-card-icon ${action.color}`}>
             <ShellIcon name={action.iconName} size={20} strokeWidth={1.75} />
           </div>

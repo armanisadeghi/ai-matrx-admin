@@ -55,7 +55,7 @@ export default function NoteOptionsSheet({
         className="fixed inset-0 z-100"
         onClick={() => { onClose(); setFolderMode(false); }}
       />
-      <div className="fixed inset-x-3 z-110 rounded-2xl p-2 bg-(--shell-glass-bg) backdrop-blur-[20px] saturate-[1.5] border border-(--shell-glass-border) shadow-2xl bottom-[calc(var(--shell-dock-h)+var(--shell-dock-bottom)+env(safe-area-inset-bottom,0px)+0.5rem)]">
+      <div className="shell-glass fixed inset-x-3 z-110 rounded-2xl p-2 bottom-[calc(var(--shell-dock-h)+var(--shell-dock-bottom)+env(safe-area-inset-bottom,0px)+0.5rem)]">
         {folderMode ? (
           <>
             <div className="flex items-center gap-2.5 px-3 py-2 text-[0.8125rem] text-foreground">

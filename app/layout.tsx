@@ -38,10 +38,8 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             <body
                 className={cn(
                     "min-h-dvh bg-textured font-sans antialiased",
-                    // Add data attributes to prevent autofill on body level
                     "data-form-type-none data-autofill-off"
                 )}
-                // Additional attributes to prevent autofill
                 data-lpignore="true"
                 data-form-type="other"
             >
@@ -53,6 +51,11 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                     </PostHogProvider>
                 </Suspense>
                 <SpeedInsights />
+                {/* Glass portal layer — lives outside all content stacking contexts.
+                    NO position, NO z-index, NO transform, NO overflow, NO filter here — ever.
+                    Children (dock, panels) are position:fixed themselves.
+                    A stacking context on this wrapper would block their backdrop-filter in Chromium. */}
+                <div id="glass-layer" />
             </body>
         </html>
     );

@@ -8,8 +8,8 @@
 import { useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { Plus } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
+import IconButton from "@/app/(ssr)/_components/IconButton";
 
 export default function NewNoteButton() {
   const searchParams = useSearchParams();
@@ -59,18 +59,12 @@ export default function NewNoteButton() {
   }, [searchParams, creating]);
 
   return (
-    <button
-      className={cn(
-        "flex items-center justify-center w-[1.875rem] h-[1.875rem] rounded-full shell-glass shell-tactile text-muted-foreground cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5",
-        "hover:text-foreground",
-        creating && "opacity-50 pointer-events-none",
-      )}
+    <IconButton
+      icon={<Plus strokeWidth={1.75} />}
       onClick={createNote}
+      label="Create new note"
       disabled={creating}
-      title="New Note"
-      aria-label="Create new note"
-    >
-      <Plus />
-    </button>
+      className={creating ? "opacity-50 pointer-events-none" : undefined}
+    />
   );
 }

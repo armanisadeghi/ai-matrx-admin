@@ -62,7 +62,7 @@ export default function UserMenuPanel({ user, isAdmin, onClose }: UserMenuPanelP
 
   if (!user) {
     return (
-      <div className="absolute right-0 top-full mt-1.5 w-52 p-1.5 rounded-xl shadow-lg z-50 bg-[var(--shell-glass-bg)] backdrop-blur-[20px] saturate-[1.5] border border-[var(--shell-glass-border)]">
+      <div className="shell-glass absolute right-0 top-full mt-1.5 w-52 p-1.5 rounded-xl z-50 shadow-2xl">
         <Link href="/login" className={itemClass} onClick={onClose}>
           <LogOut /> Sign In
         </Link>
@@ -72,8 +72,8 @@ export default function UserMenuPanel({ user, isAdmin, onClose }: UserMenuPanelP
 
   return (
     <div className={cn(
-      "absolute right-0 top-full mt-1.5 w-60 p-1.5 rounded-xl shadow-2xl z-50",
-      "bg-[var(--shell-glass-bg)] backdrop-blur-[20px] saturate-[1.5] border border-[var(--shell-glass-border)]",
+      "shell-glass",
+      "absolute right-0 top-full mt-1.5 w-60 p-1.5 rounded-xl z-50 shadow-2xl",
       "max-lg:fixed max-lg:inset-x-3 max-lg:top-auto max-lg:right-3 max-lg:w-auto",
       "max-lg:bottom-[calc(var(--shell-dock-h)+var(--shell-dock-bottom)+env(safe-area-inset-bottom,0px)+0.5rem)]",
       "max-lg:rounded-2xl max-lg:p-2",

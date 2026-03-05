@@ -16,33 +16,7 @@
    1. Glass Button — Atomic tap-target unit
    --------------------------------------------------------------------------- */
 
-/* Outer: transparent 44×44 tap target */
-.hdr-glass-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;   /* 44px */
-  height: 2.75rem;  /* 44px */
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
-}
-
-/* Inner: visible glass pill */
-.hdr-glass-btn-inner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.875rem;  /* 30px */
-  height: 1.875rem; /* 30px */
-  border-radius: 9999px;
-  color: var(--shell-nav-icon-hover);
-  flex-shrink: 0;
-}
+/* hdr-glass-btn / hdr-glass-btn-inner replaced by IconButton — see shell.css .icon-btn */
 
 /* ---------------------------------------------------------------------------
    2. Shared Variant Layouts
@@ -134,6 +108,7 @@
   font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: -0.01em;
+  /* Glass applied via .shell-glass class on the element in the component */
 }
 
 .hdr-structured-dropdown-icon {
@@ -454,6 +429,7 @@
   flex-direction: column;
   animation: hdr-dropdown-in var(--shell-duration-fast) var(--shell-ease-spring);
   box-shadow: var(--shell-glass-shadow-lg);
+  /* Glass applied via .shell-glass class on the element in the component */
 }
 
 .hdr-dropdown-center {
@@ -562,7 +538,7 @@
   background: var(--shell-overlay-bg);
 }
 
-/* Sheet panel */
+/* Sheet panel — glass applied entirely via .shell-glass-sheet in shell.css */
 .hdr-sheet-panel {
   position: relative;
   width: 100%;
@@ -572,11 +548,8 @@
   border-radius: 1.25rem 1.25rem 0 0;
   padding: 0.5rem 0.75rem;
   padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
-  /* Glass applied via .shell-glass-sheet utility from shell.css */
-  background: var(--shell-sheet-bg);
-  backdrop-filter: blur(var(--shell-sheet-blur)) saturate(1.5);
-  -webkit-backdrop-filter: blur(var(--shell-sheet-blur)) saturate(1.5);
-  border-top: 1px solid var(--shell-sheet-border);
+  border: none;
+  border-top: var(--shell-glass-border-width) solid var(--shell-glass-border);
   animation: hdr-sheet-slide-up var(--shell-duration-slow) var(--shell-ease-spring);
 }
 

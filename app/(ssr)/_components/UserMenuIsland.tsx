@@ -11,7 +11,6 @@ import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser, selectIsAdmin } from "@/lib/redux/slices/userSlice";
-
 const UserMenuPanel = dynamic(() => import("./UserMenuPanel"), {
   ssr: false,
   loading: () => null,
@@ -120,7 +119,6 @@ export default function UserMenuIsland() {
       </button>
       </div>
 
-      {/* Dropdown panel — lazy loaded */}
       {open && (
         <UserMenuPanel
           user={user}

@@ -70,9 +70,12 @@ function DevPerfOverlayInner() {
     useEffect(() => {
         const hydrationStart = performance.now();
 
-        requestIdleCallback(() => {
-            setHydrationMs(performance.now() - hydrationStart);
-        });
+        const cb = () => setHydrationMs(performance.now() - hydrationStart);
+        if (typeof requestIdleCallback !== "undefined") {
+            requestIdleCallback(cb);
+        } else {
+            setTimeout(cb, 0);
+        }
 
         const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
         if (navEntry) setNavEntries([navEntry]);

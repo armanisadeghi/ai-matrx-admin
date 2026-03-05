@@ -8,6 +8,7 @@ import ThemeScript from "./_components/ThemeScript";
 import SSRShellProviders from "./_components/SSRShellProviders";
 import DeferredShellData from "./_components/DeferredShellData";
 import DevPerfOverlayIsland from "./_components/DevPerfOverlayIsland";
+import GlassPortal from "./_components/GlassPortal";
 
 export const metadata = {
   title: "AI Matrx",
@@ -39,9 +40,15 @@ export default async function SSRLayout({ children }: { children: React.ReactNod
             {children}
           </main>
 
-          <MobileDock />
           <MobileSideSheet pathname={pathname} isAdmin={false} />
         </div>
+
+        {/* Glass chrome — portaled into #glass-layer (direct child of body)
+            to guarantee backdrop-filter works in Chromium regardless of
+            content stacking contexts created by shell-root/shell-main */}
+        <GlassPortal>
+          <MobileDock />
+        </GlassPortal>
 
         <DevPerfOverlayIsland />
       </SSRShellProviders>

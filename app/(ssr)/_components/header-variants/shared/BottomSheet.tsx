@@ -63,7 +63,7 @@ export default function BottomSheet({ open, onClose, actions, title }: BottomShe
       {/* Sheet panel — stop propagation so tapping inside doesn't close */}
       <div
         ref={sheetRef}
-        className="hdr-sheet-panel shell-glass-sheet"
+        className="hdr-sheet-panel shell-glass"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

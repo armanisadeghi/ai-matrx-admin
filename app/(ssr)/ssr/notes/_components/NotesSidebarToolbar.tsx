@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import IconButton from "@/app/(ssr)/_components/IconButton";
 
 type SortField = "updated_at" | "label" | "created_at";
 
@@ -111,9 +112,7 @@ export default function NotesSidebarToolbar({
     <div className="notes-toolbar" role="toolbar" aria-label="Notes toolbar">
 
       {/* ── LEFT: New note ────────────────────────────────────────────────── */}
-      <div className="notes-toolbar-tap">
-        {newNoteSlot}
-      </div>
+      {newNoteSlot}
 
       {/* ── CENTER: Controls or ">>" overflow ────────────────────────────── */}
       <div className="notes-toolbar-center">
@@ -123,15 +122,12 @@ export default function NotesSidebarToolbar({
           ref={overflowRef}
           className={cn("notes-toolbar-overflow-wrap", searchOpen && "notes-toolbar-overflow-wrap--visible")}
         >
-          <div className="notes-toolbar-tap notes-toolbar-overflow-trigger">
-            <button
-              className="notes-toolbar-btn shell-glass shell-tactile"
+          <div className="notes-toolbar-overflow-trigger">
+            <IconButton
+              icon={<ChevronsRight strokeWidth={1.75} />}
               onClick={() => setOverflowOpen((v) => !v)}
-              aria-label="More options"
-              title="Sort & display options"
-            >
-              <ChevronsRight />
-            </button>
+              label="More options"
+            />
           </div>
 
           {/* Dropdown panel */}
@@ -175,36 +171,23 @@ export default function NotesSidebarToolbar({
 
         {/* Inline buttons — shown when search is closed */}
         <div className={cn("notes-toolbar-inline-controls", searchOpen && "notes-toolbar-inline-controls--hidden")}>
-          <div className="notes-toolbar-tap">
-            <button
-              className={cn("notes-toolbar-btn shell-glass shell-tactile", sortActive && "notes-toolbar-btn--active")}
-              onClick={onCycleSortField}
-              aria-label={`Sort by: ${sortLabel}`}
-              title={`Sort by: ${sortLabel}`}
-            >
-              <ArrowUpDown />
-            </button>
-          </div>
-          <div className="notes-toolbar-tap">
-            <button
-              className={cn("notes-toolbar-btn shell-glass shell-tactile", orderActive && "notes-toolbar-btn--active")}
-              onClick={onToggleSortOrder}
-              aria-label={sortOrder === "desc" ? "Oldest first" : "Newest first"}
-              title={sortOrder === "desc" ? "Oldest first" : "Newest first"}
-            >
-              {sortOrder === "desc" ? <ChevronDown /> : <ChevronUp />}
-            </button>
-          </div>
-          <div className="notes-toolbar-tap">
-            <button
-              className="notes-toolbar-btn shell-glass shell-tactile"
-              onClick={onToggleAll}
-              aria-label={allExpanded ? "Collapse all folders" : "Expand all folders"}
-              title={allExpanded ? "Collapse all folders" : "Expand all folders"}
-            >
-              {allExpanded ? <ChevronsDownUp /> : <ChevronsUpDown />}
-            </button>
-          </div>
+          <IconButton
+            icon={<ArrowUpDown strokeWidth={1.75} />}
+            onClick={onCycleSortField}
+            label={`Sort by: ${sortLabel}`}
+            active={sortActive}
+          />
+          <IconButton
+            icon={sortOrder === "desc" ? <ChevronDown strokeWidth={1.75} /> : <ChevronUp strokeWidth={1.75} />}
+            onClick={onToggleSortOrder}
+            label={sortOrder === "desc" ? "Oldest first" : "Newest first"}
+            active={orderActive}
+          />
+          <IconButton
+            icon={allExpanded ? <ChevronsDownUp strokeWidth={1.75} /> : <ChevronsUpDown strokeWidth={1.75} />}
+            onClick={onToggleAll}
+            label={allExpanded ? "Collapse all folders" : "Expand all folders"}
+          />
         </div>
       </div>
 

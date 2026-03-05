@@ -23,7 +23,7 @@ export default function WelcomeCard({ user }: WelcomeCardProps) {
   const greeting = getGreeting();
 
   return (
-    <div className="shell-glass px-4 sm:px-6 py-4 mx-4 sm:mx-6 rounded-2xl flex items-center gap-4">
+    <div className="shell-glass-card px-4 sm:px-6 py-4 mx-4 sm:mx-6 rounded-2xl flex items-center gap-4">
       <div
         className="flex items-center justify-center w-12 h-12 rounded-full flex-shrink-0"
         style={{ background: "var(--shell-glass-bg-hover)" }}

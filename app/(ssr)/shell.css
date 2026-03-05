@@ -36,12 +36,15 @@
 
 :root {
   /* Node glass — for individual interactive elements (header items, dock, auth) */
-  --shell-glass-bg: rgba(255, 255, 255, 0.45);
-  --shell-glass-bg-hover: rgba(255, 255, 255, 0.6);
-  --shell-glass-bg-active: rgba(255, 255, 255, 0.7);
-  --shell-glass-border: rgba(255, 255, 255, 0.5);
-  --shell-glass-blur: 20px;
-  --shell-glass-saturate: 1.5;
+  --shell-glass-bg: rgba(210, 225, 255, 0.14);
+  --shell-glass-bg-hover: rgba(210, 225, 255, 0.22);
+  --shell-glass-bg-active: rgba(210, 225, 255, 0.32);
+  --shell-glass-border: rgba(180, 205, 255, 0.40);
+  --shell-glass-border-width: 2.5px;
+  --shell-glass-card-bg: rgba(220, 230, 255, 0.18);
+  --shell-glass-blur: 16px;
+  --shell-glass-saturate: 1.6;
+  --shell-glass-filter-saturate: 1.5;
   --shell-glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
   --shell-glass-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
 
@@ -51,17 +54,8 @@
   --shell-sidebar-border: transparent;
   --shell-sidebar-border-expanded: rgba(255, 255, 255, 0.2);
 
-  /* Dock glass */
-  --shell-dock-bg: rgba(255, 255, 255, 0.55);
-  --shell-dock-border: rgba(255, 255, 255, 0.45);
-  --shell-dock-blur: 20px;
-  --shell-dock-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
-
-  /* Side sheet overlay */
+  /* Side sheet overlay backdrop */
   --shell-overlay-bg: rgba(0, 0, 0, 0.2);
-  --shell-sheet-bg: rgba(255, 255, 255, 0.75);
-  --shell-sheet-border: rgba(255, 255, 255, 0.5);
-  --shell-sheet-blur: 24px;
 
   /* Active route pill — the singular exception to glass-only backgrounds */
   --shell-pill-bg: rgba(59, 130, 246, 0.12);
@@ -69,10 +63,10 @@
   --shell-pill-text: rgb(37, 99, 235);
 
   /* Nav item colors */
-  --shell-nav-text: rgba(0, 0, 0, 0.6);
-  --shell-nav-text-hover: rgba(0, 0, 0, 0.85);
-  --shell-nav-icon: rgba(0, 0, 0, 0.5);
-  --shell-nav-icon-hover: rgba(0, 0, 0, 0.75);
+  --shell-nav-text: rgba(0, 0, 0, 0.82);
+  --shell-nav-text-hover: rgba(0, 0, 0, 1);
+  --shell-nav-icon: rgba(0, 0, 0, 0.68);
+  --shell-nav-icon-hover: rgba(0, 0, 0, 0.9);
 
   /* Auth island */
   --shell-auth-text: rgba(0, 0, 0, 0.7);
@@ -83,10 +77,11 @@
    --------------------------------------------------------------------------- */
 
 .dark {
-  --shell-glass-bg: rgba(255, 255, 255, 0.06);
-  --shell-glass-bg-hover: rgba(255, 255, 255, 0.1);
-  --shell-glass-bg-active: rgba(255, 255, 255, 0.14);
-  --shell-glass-border: rgba(255, 255, 255, 0.08);
+  --shell-glass-bg: rgba(180, 200, 255, 0.05);
+  --shell-glass-bg-hover: rgba(180, 200, 255, 0.09);
+  --shell-glass-bg-active: rgba(180, 200, 255, 0.13);
+  --shell-glass-border: rgba(255, 255, 255, 0.07);
+  --shell-glass-card-bg: rgba(255, 255, 255, 0.06);
   --shell-glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
   --shell-glass-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.12);
 
@@ -95,13 +90,7 @@
   --shell-sidebar-border: transparent;
   --shell-sidebar-border-expanded: rgba(255, 255, 255, 0.06);
 
-  --shell-dock-bg: rgba(24, 24, 27, 0.65);
-  --shell-dock-border: rgba(255, 255, 255, 0.08);
-  --shell-dock-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.15);
-
   --shell-overlay-bg: rgba(0, 0, 0, 0.5);
-  --shell-sheet-bg: rgba(24, 24, 27, 0.85);
-  --shell-sheet-border: rgba(255, 255, 255, 0.06);
 
   --shell-pill-bg: rgba(59, 130, 246, 0.18);
   --shell-pill-border: rgba(59, 130, 246, 0.3);
@@ -150,41 +139,117 @@
 }
 
 /* ---------------------------------------------------------------------------
-   5. Glass Utility Classes
+   4b. Glass Layer — Portal container for all glass chrome
    --------------------------------------------------------------------------- */
 
-/* Glass node — for individual interactive elements */
-.shell-glass {
+/* Restore pointer events for all direct glass children in the portal layer */
+#glass-layer > * {
+  pointer-events: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   5. Glass Utility Classes — Single source of truth
+   
+   ONE core backdrop-filter definition. Every glass surface uses this.
+   Variations (dock, sheet) only override what genuinely differs (shadow, border-side).
+   --------------------------------------------------------------------------- */
+
+/* ── IconButton — 3-layer reusable icon button used everywhere ──────────────
+   Outer  (.icon-btn)        44×44 transparent tap target — no bg, no border
+   Middle (.icon-btn-glass)  30×30 glass pill — backdrop-filter clipped here
+   Inner  (.icon-btn-icon)   icon — sized and colored via CSS vars
+   ----------------------------------------------------------------------- */
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;   /* 44px tap target */
+  height: 2.75rem;
+  min-width: 2.75rem;
+  flex-shrink: 0;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.icon-btn-glass {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.875rem;  /* 30px visible pill */
+  height: 1.875rem;
+  min-width: 1.875rem;
+  max-width: 1.875rem;
+  border-radius: 9999px;
+  overflow: hidden;    /* clips backdrop-filter to pill boundary */
+  flex-shrink: 0;
+  /* glass applied via .shell-glass in markup */
+}
+
+.icon-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;      /* 16px icon */
+  height: 1rem;
+  flex-shrink: 0;
+  pointer-events: none;
+  color: var(--shell-nav-icon-hover);
+}
+
+.icon-btn-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Active state */
+.icon-btn-glass.active,
+.icon-btn-glass[data-active="true"] {
+  background: var(--shell-glass-bg-active) !important;
+}
+
+/* ── Core glass — the single definition everything else inherits ── */
+.shell-glass,
+.shell-glass-dock,
+.shell-glass-sheet {
   background: var(--shell-glass-bg);
-  backdrop-filter: blur(var(--shell-glass-blur)) saturate(var(--shell-glass-saturate));
-  -webkit-backdrop-filter: blur(var(--shell-glass-blur)) saturate(var(--shell-glass-saturate));
-  border: 1px solid var(--shell-glass-border);
+  backdrop-filter: blur(5px) saturate(1.8) brightness(1.1);
+  border: var(--shell-glass-border-width) solid var(--shell-glass-border);
   box-shadow: var(--shell-glass-shadow);
 }
 
-.shell-glass:hover {
+/* ── Content glass — for in-page elements (cards, welcome, etc.)
+   NO backdrop-filter — avoids creating stacking contexts that break
+   shell chrome (dock, panel) backdrop-filter in Chromium. ── */
+.shell-glass-card {
+  background: var(--shell-glass-card-bg);
+  border: var(--shell-glass-border-width) solid var(--shell-glass-border);
+  box-shadow: var(--shell-glass-shadow);
+}
+
+.shell-glass:hover,
+.shell-glass-dock:hover {
   background: var(--shell-glass-bg-hover);
 }
 
-.shell-glass:active {
+.shell-glass:active,
+.shell-glass-dock:active {
   background: var(--shell-glass-bg-active);
 }
 
-/* Glass dock — bottom floating dock */
+/* Dock — only differs in shadow */
 .shell-glass-dock {
-  background: var(--shell-dock-bg);
-  backdrop-filter: blur(var(--shell-dock-blur)) saturate(1.6);
-  -webkit-backdrop-filter: blur(var(--shell-dock-blur)) saturate(1.6);
-  border: 1px solid var(--shell-dock-border);
-  box-shadow: var(--shell-dock-shadow);
+  box-shadow: var(--shell-glass-shadow-lg);
 }
 
-/* Glass side sheet */
+/* Sheet — only differs in border direction (left edge only, not all sides) */
 .shell-glass-sheet {
-  background: var(--shell-sheet-bg);
-  backdrop-filter: blur(var(--shell-sheet-blur)) saturate(1.5);
-  -webkit-backdrop-filter: blur(var(--shell-sheet-blur)) saturate(1.5);
-  border-right: 1px solid var(--shell-sheet-border);
+  border: none;
+  border-right: var(--shell-glass-border-width) solid var(--shell-glass-border);
 }
 
 /* Active route pill */
@@ -212,7 +277,7 @@
   transition:
     transform var(--shell-duration-fast) var(--shell-ease-spring),
     background var(--shell-duration-fast) var(--shell-ease-smooth);
-  will-change: transform;
+  /* will-change: transform removed — creates compositing layer that breaks backdrop-filter in Chromium */
 }
 
 .shell-tactile:hover {
@@ -245,7 +310,7 @@
 .shell-root {
   position: fixed;
   inset: 0;
-  overflow: hidden;
+  overflow: clip; /* 'clip' doesn't create a stacking context like 'hidden' does — backdrop-filter works through it in Chromium */
   display: grid;
   /* Default: collapsed sidebar on desktop */
   grid-template-columns: var(--shell-sidebar-w) 1fr;
@@ -295,8 +360,7 @@
 .shell-root:has(#shell-sidebar-toggle:checked) .shell-sidebar {
   width: var(--shell-sidebar-w-expanded);
   background: var(--shell-sidebar-bg-expanded);
-  backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4) !important;
   border-right-color: var(--shell-sidebar-border-expanded);
 }
 
@@ -466,7 +530,6 @@
   transform: translateY(-50%);
   background: var(--shell-glass-bg-active);
   backdrop-filter: blur(12px) saturate(1.4);
-  -webkit-backdrop-filter: blur(12px) saturate(1.4);
   border: 1px solid var(--shell-glass-border);
   border-radius: 0.375rem;
   padding: 0.25rem 0.625rem;
@@ -1024,48 +1087,4 @@
    17. Hamburger Icon — CSS-only animated
    --------------------------------------------------------------------------- */
 
-.shell-mobile-menu-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* 44px transparent tap target */
-  width: 2.75rem;
-  height: 2.75rem;
-  cursor: pointer;
-}
-
-.shell-hamburger {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  /* Visible glass pill — same size as shell-auth-island */
-  width: 1.875rem;
-  height: 1.875rem;
-  border-radius: 9999px;
-  gap: 4px;
-  cursor: pointer;
-}
-
-.shell-hamburger-line {
-  width: 1.125rem;
-  height: 1.5px;
-  background: var(--shell-nav-icon-hover);
-  border-radius: 1px;
-  transition:
-    transform var(--shell-duration-normal) var(--shell-ease-spring),
-    opacity var(--shell-duration-fast) var(--shell-ease-smooth);
-  transform-origin: center;
-}
-
-.shell-root:has(#shell-mobile-menu:checked) .shell-hamburger-line:nth-child(1) {
-  transform: translateY(5.5px) rotate(45deg);
-}
-
-.shell-root:has(#shell-mobile-menu:checked) .shell-hamburger-line:nth-child(2) {
-  opacity: 0;
-}
-
-.shell-root:has(#shell-mobile-menu:checked) .shell-hamburger-line:nth-child(3) {
-  transform: translateY(-5.5px) rotate(-45deg);
-}
+/* shell-mobile-menu-label / shell-hamburger replaced by IconButton + HamburgerIsland */
