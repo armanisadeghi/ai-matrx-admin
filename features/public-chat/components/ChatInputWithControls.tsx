@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useRef, useEffect, forwardRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect, forwardRef, lazy, Suspense } from 'react';
 import {
     ArrowUp,
     Loader2,
@@ -27,6 +27,8 @@ import { PublicResourcePickerMenu } from './resource-picker/PublicResourcePicker
 
 import type { PublicResource, PublicResourceType } from '../types/content';
 import type { AgentConfig } from '../context/ChatContext';
+
+const PdfOptimizePrompt = lazy(() => import('./PdfOptimizePrompt'));
 
 // ============================================================================
 // TEXT INPUT COMPONENT
@@ -385,6 +387,7 @@ export function ChatInputWithControls({
     const [content, setContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [resources, setResources] = useState<PublicResource[]>([]);
+    const [oversizedPdf, setOversizedPdf] = useState<File | null>(null);
     const internalTextInputRef = useRef<HTMLTextAreaElement>(null);
     const textInputRef = externalTextInputRef || internalTextInputRef;
 
@@ -421,12 +424,15 @@ export function ChatInputWithControls({
         };
     }, []);
 
-    // Handle pasted images
+    // Handle pasted/uploaded files
     const handlePasteImage = useCallback(async (file: File) => {
+        setOversizedPdf(null);
         const result = await uploadFile(file);
         if (result) {
             const resource = uploadResultToResource(result);
             setResources(prev => [...prev, resource]);
+        } else if (file.type === 'application/pdf' && file.size > 10 * 1024 * 1024) {
+            setOversizedPdf(file);
         }
     }, [uploadFile, uploadResultToResource]);
 
@@ -506,6 +512,18 @@ export function ChatInputWithControls({
                 {uploadError && (
                     <div className="px-4 py-2 text-sm text-red-500">
                         {uploadError}
+                        {oversizedPdf && (
+                            <Suspense fallback={<Loader2 className="h-4 w-4 animate-spin mt-1" />}>
+                                <PdfOptimizePrompt
+                                    file={oversizedPdf}
+                                    onOptimized={(optimizedFile) => {
+                                        setOversizedPdf(null);
+                                        handlePasteImage(optimizedFile);
+                                    }}
+                                    onDismiss={() => setOversizedPdf(null)}
+                                />
+                            </Suspense>
+                        )}
                     </div>
                 )}
 
