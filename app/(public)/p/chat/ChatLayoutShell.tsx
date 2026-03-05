@@ -238,14 +238,7 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
                 onSelect={handleAgentChange}
             />
 
-            <div className="h-full w-full relative">
-                <ChatMobileHeader
-                    onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
-                    onNewChat={handleNewChat}
-                    selectedAgent={selectedAgent}
-                    onOpenAgentPicker={openAgentPicker}
-                    isSidebarOpen={isSidebarOpen}
-                />
+            <div className="h-full w-full relative flex">
                 <ChatSidebar
                     activeRequestId={activeConversationId}
                     onSelectChat={handleSelectChat}
@@ -256,7 +249,14 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
                     isOpen={isSidebarOpen}
                     onOpenChange={setIsSidebarOpen}
                 />
-                <div className="h-full">
+                <div className="h-full flex-1 min-w-0 relative">
+                    <ChatMobileHeader
+                        onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
+                        onNewChat={handleNewChat}
+                        selectedAgent={selectedAgent}
+                        onOpenAgentPicker={openAgentPicker}
+                        isSidebarOpen={isSidebarOpen}
+                    />
                     {children}
                 </div>
             </div>

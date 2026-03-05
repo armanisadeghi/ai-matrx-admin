@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { ChevronDown, Bot, Sparkles, Search, BookOpen, Code, Image, MessageCircle, Newspaper, Lightbulb } from 'lucide-react';
+import { ChevronDown, Bot, Search, BookOpen, Code, Image, MessageCircle, Newspaper, Lightbulb, Video, BarChart, ChefHat } from 'lucide-react';
 import type { AgentConfig } from '../context/ChatContext';
 
 // ============================================================================
@@ -187,14 +187,6 @@ export function AgentSelector({ agents, selectedAgent, onSelect, disabled }: Age
                                                 {agent.description}
                                             </div>
                                         )}
-                                        {agent.variableDefaults && agent.variableDefaults.length > 0 && (
-                                            <div className="flex items-center gap-1 mt-1.5">
-                                                <Sparkles size={12} className="text-amber-500" />
-                                                <span className="text-xs text-amber-600 dark:text-amber-400">
-                                                    {agent.variableDefaults.length} variable{agent.variableDefaults.length > 1 ? 's' : ''}
-                                                </span>
-                                            </div>
-                                        )}
                                     </div>
                                     {selected.id === agent.id && (
                                         <div className="flex-shrink-0">
@@ -212,40 +204,49 @@ export function AgentSelector({ agents, selectedAgent, onSelect, disabled }: Age
 }
 
 // ============================================================================
-// AGENT ACTION BUTTONS (Alternative UI)
+// RESPONSE MODE BUTTONS (matches authenticated chat style)
 // ============================================================================
 
-interface AgentActionButtonsProps {
-    agents: AgentOption[];
-    selectedAgent: AgentOption | null;
-    onSelect: (agent: AgentOption) => void;
+interface ResponseModeButtonsProps {
     disabled?: boolean;
 }
 
-export function AgentActionButtons({ agents, selectedAgent, onSelect, disabled }: AgentActionButtonsProps) {
-    const displayAgents = agents.length > 0 ? agents : DEFAULT_AGENTS;
-    const selected = selectedAgent || displayAgents[0];
+const RESPONSE_MODES = [
+    { id: 'text', label: 'Text', icon: <MessageCircle size={18} /> },
+    { id: 'images', label: 'Images', icon: <Image size={18} /> },
+    { id: 'videos', label: 'Videos', icon: <Video size={18} /> },
+    { id: 'research', label: 'Research', icon: <Search size={18} /> },
+    { id: 'brainstorm', label: 'Brainstorm', icon: <Lightbulb size={18} /> },
+    { id: 'data', label: 'Data', icon: <BarChart size={18} /> },
+    { id: 'recipe', label: 'Recipe', icon: <ChefHat size={18} /> },
+    { id: 'code', label: 'Code', icon: <Code size={18} /> },
+] as const;
+
+export function ResponseModeButtons({ disabled }: ResponseModeButtonsProps) {
+    const [activeMode, setActiveMode] = useState<string>('text');
 
     return (
-        <div className="flex flex-wrap gap-1.5 md:gap-2">
-            {displayAgents.map((agent) => (
-                <button
-                    key={agent.id}
-                    onClick={() => !disabled && onSelect(agent)}
-                    disabled={disabled}
-                    title={agent.name}
-                    className={`flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-4 md:py-2 rounded-xl border transition-all ${
-                        selected.id === agent.id
-                            ? 'bg-blue-500 border-blue-500 text-white shadow-lg shadow-blue-500/20'
-                            : 'bg-card border-border text-foreground/80 hover:bg-accent'
-                    } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                >
-                    <span className={selected.id === agent.id ? 'text-white' : 'text-muted-foreground dark:text-gray-400'}>
-                        {agent.icon || <Bot size={16} />}
-                    </span>
-                    <span className="text-sm font-medium hidden md:inline">{agent.name}</span>
-                </button>
-            ))}
+        <div className="flex flex-wrap justify-center gap-1">
+            {RESPONSE_MODES.map((mode) => {
+                const isActive = activeMode === mode.id;
+                return (
+                    <button
+                        key={mode.id}
+                        onClick={() => !disabled && setActiveMode(mode.id)}
+                        disabled={disabled}
+                        className={`py-1 px-2 rounded-full flex items-center border transition-colors ${
+                            isActive
+                                ? 'bg-zinc-300 dark:bg-zinc-600 text-gray-800 dark:text-gray-200 border-zinc-300 dark:border-zinc-700'
+                                : 'text-gray-800 dark:text-gray-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 border-zinc-300 dark:border-zinc-700'
+                        } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                        <span className={isActive ? 'text-yellow-500' : ''}>
+                            {mode.icon}
+                        </span>
+                        <span className="text-xs ml-1 pr-1">{mode.label}</span>
+                    </button>
+                );
+            })}
         </div>
     );
 }

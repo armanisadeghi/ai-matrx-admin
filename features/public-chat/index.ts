@@ -37,7 +37,7 @@ export { ChatContainer } from './components/ChatContainer';
 export { ChatInputWithControls } from './components/ChatInputWithControls';
 export { MessageList } from './components/MessageDisplay';
 export { PublicVariableInputs } from './components/PublicVariableInputs';
-export { AgentSelector, AgentActionButtons, DEFAULT_AGENTS } from './components/AgentSelector';
+export { AgentSelector, ResponseModeButtons, DEFAULT_AGENTS } from './components/AgentSelector';
 
 // Resource Picker Components
 export { 

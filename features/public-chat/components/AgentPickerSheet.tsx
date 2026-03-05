@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Search, X, Check, Sparkles, Bot, Loader2 } from 'lucide-react';
+import { Search, X, Check, Bot, Loader2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAgentsContext } from '../context/AgentsContext';
 import { DEFAULT_AGENTS } from './AgentSelector';
@@ -45,13 +45,11 @@ function AgentItem({
     icon?: React.ReactNode;
     compact?: boolean;
 }) {
-    const varCount = agent.variableDefaults?.length || 0;
-
     return (
         <button
             onClick={onSelect}
             className={`w-full flex items-center gap-3 text-left transition-colors rounded-xl ${
-                compact ? 'px-3 py-2.5' : 'px-4 py-3.5'
+                compact ? 'px-3 py-2' : 'px-4 py-3'
             } ${
                 isSelected
                     ? 'bg-primary/10 dark:bg-primary/15'
@@ -59,10 +57,10 @@ function AgentItem({
             }`}
         >
             <div className={`flex-shrink-0 flex items-center justify-center rounded-lg bg-muted ${
-                compact ? 'w-8 h-8' : 'w-10 h-10'
+                compact ? 'w-7 h-7' : 'w-9 h-9'
             }`}>
-                <span className="text-muted-foreground [&_svg]:h-[18px] [&_svg]:w-[18px]">
-                    {icon || <Bot className="h-[18px] w-[18px]" />}
+                <span className="text-muted-foreground [&_svg]:h-4 [&_svg]:w-4">
+                    {icon || <Bot className="h-4 w-4" />}
                 </span>
             </div>
             <div className="flex-1 min-w-0">
@@ -74,18 +72,10 @@ function AgentItem({
                         {agent.description}
                     </div>
                 )}
-                {varCount > 0 && (
-                    <div className="flex items-center gap-1 mt-1">
-                        <Sparkles className="h-3 w-3 text-amber-500" />
-                        <span className="text-xs text-amber-600 dark:text-amber-400">
-                            {varCount} variable{varCount > 1 ? 's' : ''}
-                        </span>
-                    </div>
-                )}
             </div>
             {isSelected && (
                 <div className="flex-shrink-0">
-                    <Check className="h-5 w-5 text-primary" />
+                    <Check className="h-4 w-4 text-primary" />
                 </div>
             )}
         </button>
@@ -310,10 +300,10 @@ function DesktopAgentPicker({ open, onOpenChange, selectedAgent, onSelect }: Age
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="max-w-md p-0 gap-0 overflow-hidden">
+            <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
                 {/* Header with search */}
-                <div className="p-4 pb-3 border-b border-border">
-                    <DialogTitle className="text-base font-semibold mb-3">
+                <div className="px-4 pt-4 pb-3 border-b border-border">
+                    <DialogTitle className="text-sm font-semibold mb-2.5">
                         Choose an Agent
                     </DialogTitle>
                     <div className="relative">
@@ -329,8 +319,8 @@ function DesktopAgentPicker({ open, onOpenChange, selectedAgent, onSelect }: Age
                     </div>
                 </div>
 
-                {/* Scrollable list */}
-                <div className="overflow-y-auto max-h-[400px]">
+                {/* Scrollable list — taller to show more agents */}
+                <div className="overflow-y-auto max-h-[60vh]">
                     <AgentListContent
                         selectedAgent={selectedAgent}
                         onSelect={handleSelect}

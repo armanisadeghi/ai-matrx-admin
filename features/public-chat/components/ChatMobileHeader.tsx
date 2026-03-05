@@ -73,36 +73,39 @@ export function ChatMobileHeader({
 
     return (
         <header className="absolute top-0 left-0 right-0 z-50 flex items-center h-10 px-1.5 pointer-events-none">
-            {/* Left group: sidebar, new chat, agent selector */}
-            {/* Hides when sidebar is open to avoid overlapping sidebar content */}
-            <div className={`flex items-center gap-0.5 min-w-0 flex-1 pointer-events-auto transition-opacity duration-200 ${
-                isSidebarOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'
-            }`}>
+            {/* Left group: sidebar toggle always visible, rest hides when sidebar open on mobile */}
+            <div className="flex items-center gap-0.5 min-w-0 flex-1 pointer-events-auto">
+                {/* Sidebar toggle — always visible */}
                 <button
                     onClick={onToggleSidebar}
-                    className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors flex-shrink-0"
-                    title="Open sidebar"
+                    className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors flex-shrink-0 z-50"
+                    title={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
                 >
                     <PanelLeft className="h-[18px] w-[18px]" />
                 </button>
-                <button
-                    onClick={onNewChat}
-                    className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors flex-shrink-0"
-                    title="New chat"
-                >
-                    <SquarePen className="h-[18px] w-[18px]" />
-                </button>
-                {/* Agent name — opens unified picker */}
-                <button
-                    onClick={onOpenAgentPicker}
-                    className="flex items-center gap-1 min-w-0 px-1.5 py-1 rounded-md hover:bg-accent/50 transition-colors"
-                    title={`Switch agent: ${agentName}`}
-                >
-                    <span className="text-xs font-medium text-foreground truncate max-w-[200px]">
-                        {agentName}
-                    </span>
-                    <ChevronDown className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                </button>
+                {/* New chat + agent selector — hide on mobile when sidebar is open */}
+                <div className={`flex items-center gap-0.5 min-w-0 transition-opacity duration-200 ${
+                    isSidebarOpen ? 'md:opacity-100 opacity-0 pointer-events-none md:pointer-events-auto' : 'opacity-100'
+                }`}>
+                    <button
+                        onClick={onNewChat}
+                        className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors flex-shrink-0"
+                        title="New chat"
+                    >
+                        <SquarePen className="h-[18px] w-[18px]" />
+                    </button>
+                    {/* Agent name — opens unified picker */}
+                    <button
+                        onClick={onOpenAgentPicker}
+                        className="flex items-center gap-1 min-w-0 px-1.5 py-1 rounded-md hover:bg-accent/50 transition-colors"
+                        title={`Switch agent: ${agentName}`}
+                    >
+                        <span className="text-xs font-medium text-foreground truncate max-w-[200px]">
+                            {agentName}
+                        </span>
+                        <ChevronDown className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                    </button>
+                </div>
             </div>
 
             {/* Right group: admin, feedback, discover, hamburger menu, logo */}

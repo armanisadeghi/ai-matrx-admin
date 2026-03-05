@@ -30,7 +30,7 @@ import { resolveAgentFromId, DEFAULT_AGENT_CONFIG } from '@/features/public-chat
 // Eager imports — always rendered in conversation mode
 import { ChatInputWithControls } from '@/features/public-chat/components/ChatInputWithControls';
 import { MessageList } from '@/features/public-chat/components/MessageDisplay';
-import { AgentActionButtons, DEFAULT_AGENTS } from '@/features/public-chat/components/AgentSelector';
+import { ResponseModeButtons, DEFAULT_AGENTS } from '@/features/public-chat/components/AgentSelector';
 
 // Lazy imports — conditionally rendered, not needed on first paint
 const ShareModal = dynamic(() => import('@/features/sharing').then(m => ({ default: m.ShareModal })), { ssr: false });
@@ -463,12 +463,7 @@ function ChatWorkspaceInner() {
                                 />
                             </div>
                             <div className="flex items-center justify-between mt-3 pb-2">
-                                <AgentActionButtons
-                                    agents={DEFAULT_AGENTS}
-                                    selectedAgent={currentAgentOption}
-                                    onSelect={handleAgentSelect}
-                                    disabled={isExecuting}
-                                />
+                                <ResponseModeButtons disabled={isExecuting} />
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -540,12 +535,7 @@ function ChatWorkspaceInner() {
                             </div>
 
                             <div className="flex items-center justify-between mt-3 md:mt-6 pb-4">
-                                <AgentActionButtons
-                                    agents={DEFAULT_AGENTS}
-                                    selectedAgent={currentAgentOption}
-                                    onSelect={handleAgentSelect}
-                                    disabled={isExecuting}
-                                />
+                                <ResponseModeButtons disabled={isExecuting} />
                                 {hasVariables && (
                                     <button
                                         type="button"

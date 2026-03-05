@@ -13,7 +13,7 @@ import { ChatInputWithControls } from './ChatInputWithControls';
 import { MessageList } from './MessageDisplay';
 import { PublicVariableInputs } from './PublicVariableInputs';
 import { GuidedVariableInputs } from './GuidedVariableInputs';
-import { AgentActionButtons, DEFAULT_AGENTS } from './AgentSelector';
+import { ResponseModeButtons, DEFAULT_AGENTS } from './AgentSelector';
 import type { StreamEvent } from '@/types/python-generated/stream-events';
 import { formatText } from '@/utils/text/text-case-converter';
 import type { PublicResource } from '../types/content';
@@ -228,7 +228,6 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         updateMessage(messageId, { content: newContent });
     };
 
-    const currentAgentOption = DEFAULT_AGENTS.find((a) => a.promptId === state.currentAgent?.promptId) || DEFAULT_AGENTS[0];
     const hasVariables = activeVariables.length > 0;
     const isWelcomeScreen = messages.length === 0 && !isLoadingConversation;
 
@@ -313,12 +312,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                 />
                             </div>
                             <div className="flex items-center justify-between mt-3 pb-2">
-                                <AgentActionButtons
-                                    agents={DEFAULT_AGENTS}
-                                    selectedAgent={currentAgentOption}
-                                    onSelect={handleAgentSelect}
-                                    disabled={isExecuting}
-                                />
+                                <ResponseModeButtons disabled={isExecuting} />
                                 <button
                                     type="button"
                                     onClick={() => router.replace(toggleUrl)}
@@ -392,12 +386,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                             </div>
 
                             <div className="flex items-center justify-between mt-3 md:mt-6 pb-4">
-                                <AgentActionButtons
-                                    agents={DEFAULT_AGENTS}
-                                    selectedAgent={currentAgentOption}
-                                    onSelect={handleAgentSelect}
-                                    disabled={isExecuting}
-                                />
+                                <ResponseModeButtons disabled={isExecuting} />
                                 {hasVariables && (
                                     <button
                                         type="button"
