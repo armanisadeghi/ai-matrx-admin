@@ -469,7 +469,7 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
 
       {/* ── VSCode-style Tree ──────────────────────────────────────────── */}
       <div
-        className="flex-1 overflow-y-auto notes-scrollable"
+        className="flex-1 overflow-y-auto scrollbar-thin-auto"
         onClick={contextMenu ? closeContextMenu : undefined}
       >
         {orderedFolders.map((folder) => {
@@ -562,7 +562,7 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
       </div>
 
       {/* ── Mobile folder filter pills ─── visible only on mobile ─────── */}
-      <div className="flex items-center gap-1.5 px-2 py-1 overflow-x-auto notes-scrollable lg:hidden shrink-0">
+      <div className="flex items-center gap-1.5 px-2 py-1 overflow-x-auto scrollbar-thin-auto lg:hidden shrink-0 notes-mobile-folder-pills">
         <button
           className={cn(
             "text-[0.625rem] px-2.5 py-0.5 rounded-full whitespace-nowrap transition-colors cursor-pointer shrink-0",

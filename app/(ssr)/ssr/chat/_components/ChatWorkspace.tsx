@@ -595,7 +595,7 @@ function ChatWorkspaceInner() {
             <div className="flex-1 min-h-0 relative">
                 <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-background/60 to-transparent z-10 pointer-events-none" />
 
-                <div className="h-full overflow-y-auto chat-messages-scroll">
+                <div className="h-full overflow-y-auto scrollbar-thin-hover">
                     <div className="w-full max-w-[800px] mx-auto px-3 pt-12 pb-2 md:px-3 md:pt-12 md:pb-4 relative">
                         <MessageList
                             messages={messages}

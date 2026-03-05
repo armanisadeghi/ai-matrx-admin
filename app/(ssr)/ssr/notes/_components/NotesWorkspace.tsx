@@ -1235,7 +1235,7 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
           {/* ── Editor Content ─────────────────────────────────────── */}
           {editorMode === "plain" && (
             <textarea
-              className="notes-editor-textarea notes-scrollable flex-1 min-h-0 w-full py-2 px-5 text-sm leading-[1.7] font-[inherit] text-foreground bg-transparent border-none outline-none resize-none overflow-y-auto placeholder:text-muted-foreground"
+              className="notes-editor-textarea scrollbar-thin-auto flex-1 min-h-0 w-full py-2 px-5 text-sm leading-[1.7] font-[inherit] text-foreground bg-transparent border-none outline-none resize-none overflow-y-auto placeholder:text-muted-foreground"
               value={activeContent}
               onChange={handleContentChange}
               onSelect={(e) => {
@@ -1248,7 +1248,7 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
           )}
 
           {editorMode === "preview" && (
-            <div className="notes-preview-wrapper notes-scrollable flex-1 min-h-0 overflow-y-auto py-2 px-5">
+            <div className="notes-preview-wrapper scrollbar-thin-auto flex-1 min-h-0 overflow-y-auto py-2 px-5">
               {activeContent ? (
                 <MarkdownStream content={activeContent} type="text" role="assistant" hideCopyButton />
               ) : (
@@ -1260,7 +1260,7 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
           {editorMode === "split" && (
             <div className="notes-editor-split">
               <textarea
-                className="notes-scrollable w-full py-2 px-5 text-sm leading-[1.7] font-[inherit] text-foreground bg-transparent border-none outline-none resize-none overflow-y-auto min-w-0 placeholder:text-muted-foreground"
+                className="scrollbar-thin-auto w-full py-2 px-5 text-sm leading-[1.7] font-[inherit] text-foreground bg-transparent border-none outline-none resize-none overflow-y-auto min-w-0 placeholder:text-muted-foreground"
                 value={activeContent}
                 onChange={handleContentChange}
                 onSelect={(e) => {
@@ -1271,7 +1271,7 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
                 aria-label="Note content"
               />
               <div className="notes-split-divider w-px bg-border" />
-              <div className="notes-split-preview notes-scrollable overflow-y-auto py-2 px-5 min-w-0">
+              <div className="notes-split-preview scrollbar-thin-auto overflow-y-auto py-2 px-5 min-w-0">
                 {activeContent ? (
                   <MarkdownStream content={activeContent} type="text" role="assistant" hideCopyButton />
                 ) : (
@@ -1327,7 +1327,7 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
             <span className="text-border">|</span>
 
             {/* Tags — renders badges immediately, add input hydrates on interaction */}
-            <div className="flex items-center gap-1 flex-1 overflow-x-auto notes-scrollable min-w-0">
+            <div className="flex items-center gap-1 flex-1 overflow-x-auto scrollbar-thin-auto min-w-0">
               {activeCached.data.tags.map((tag) => (
                 <span
                   key={tag}
@@ -1380,9 +1380,9 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
               className={cn(
                 "w-1.5 h-1.5 rounded-full",
                 saveState === "saved" && "bg-green-500",
-                saveState === "saving" && "bg-yellow-500 notes-status-pulse",
+                saveState === "saving" && "bg-yellow-500 ssr-status-pulse",
                 saveState === "dirty" && "bg-amber-500",
-                saveState === "conflict" && "bg-red-500 notes-conflict-pulse",
+                saveState === "conflict" && "bg-red-500 ssr-conflict-pulse",
               )}
             />
             <span>{statusLabel}</span>
@@ -1405,7 +1405,7 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
             {[40, 80, 65, 90, 50, 75].map((w, i) => (
               <div
                 key={i}
-                className="notes-skeleton-line h-3.5 rounded bg-muted"
+                className="animate-ssr-shimmer-opacity h-3.5 rounded bg-muted"
                 style={{ width: `${w}%` }}
               />
             ))}
