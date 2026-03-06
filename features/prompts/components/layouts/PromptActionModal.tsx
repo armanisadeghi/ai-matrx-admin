@@ -109,7 +109,7 @@ export function PromptActionModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-2rem)] my-2 overflow-y-auto bg-gradient-to-br from-card to-muted border-border">
+            <DialogContent className="sm:max-w-md max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-2rem)] my-2 overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="text-xl sm:text-2xl font-bold text-center text-foreground">
                         {promptName || "Untitled Prompt"}

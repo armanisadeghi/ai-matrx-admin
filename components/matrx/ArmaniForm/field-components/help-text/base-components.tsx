@@ -1,3 +1,4 @@
+import './HelpPanel.css';
 import React, {useEffect, useState, useRef} from 'react';
 import ReactDOM from 'react-dom';
 import {HelpCircle, ChevronDown, ChevronUp, ArrowUpDown, Grip} from 'lucide-react';

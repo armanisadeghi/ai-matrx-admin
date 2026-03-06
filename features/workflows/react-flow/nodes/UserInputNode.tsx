@@ -1,5 +1,6 @@
 "use client";
 
+import "./UserInputNode.css";
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useTheme } from "@/styles/themes/ThemeProvider";

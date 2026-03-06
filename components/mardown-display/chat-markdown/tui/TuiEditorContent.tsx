@@ -8,6 +8,7 @@ import EditorLoading from "../../text-block/editorLoading";
 // Import the Toast UI Editor CSS
 import "@toast-ui/editor/dist/toastui-editor.css";
 import "@toast-ui/editor/dist/theme/toastui-editor-dark.css";
+import "./TuiEditorContent.css";
 
 const TuiEditor = dynamic(() => import("@toast-ui/react-editor").then((mod) => mod.Editor), {
     ssr: false,

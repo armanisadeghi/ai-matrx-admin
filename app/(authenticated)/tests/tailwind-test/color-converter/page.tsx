@@ -12,7 +12,7 @@ import TailwindColors from './components/TailwindColors';
 import { getColorInfo } from '@/utils/color-utils/color-change-util';
 
 const DEFAULT_COLOR = '#3d87cc';
-const DEFAULT_BACKGROUND = 'bg-texture-light dark:bg-texture-dark';
+const DEFAULT_BACKGROUND = 'bg-background';
 const DEFAULT_TEXT = 'text-foreground';
 
 export default function ColorUtilityPage() {

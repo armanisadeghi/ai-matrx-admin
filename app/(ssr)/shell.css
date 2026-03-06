@@ -35,7 +35,6 @@
    --------------------------------------------------------------------------- */
 
 :root {
-  /* Node glass — for individual interactive elements (header items, dock, auth) */
   --shell-glass-bg: rgba(210, 225, 255, 0.14);
   --shell-glass-bg-hover: rgba(210, 225, 255, 0.22);
   --shell-glass-bg-active: rgba(210, 225, 255, 0.32);
@@ -43,32 +42,25 @@
   --shell-glass-border-width: 2.5px;
   --shell-glass-card-bg: rgba(220, 230, 255, 0.18);
   --shell-glass-blur: 16px;
-  --shell-glass-saturate: 1.6;
-  --shell-glass-filter-saturate: 1.5;
   --shell-glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
   --shell-glass-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
 
-  /* Sidebar glass — very subtle, near-transparent */
   --shell-sidebar-bg: transparent;
   --shell-sidebar-bg-expanded: rgba(255, 255, 255, 0.25);
   --shell-sidebar-border: transparent;
   --shell-sidebar-border-expanded: rgba(255, 255, 255, 0.2);
 
-  /* Side sheet overlay backdrop */
   --shell-overlay-bg: rgba(0, 0, 0, 0.2);
 
-  /* Active route pill — the singular exception to glass-only backgrounds */
   --shell-pill-bg: rgba(59, 130, 246, 0.12);
   --shell-pill-border: rgba(59, 130, 246, 0.2);
   --shell-pill-text: rgb(37, 99, 235);
 
-  /* Nav item colors */
   --shell-nav-text: rgba(0, 0, 0, 0.82);
   --shell-nav-text-hover: rgba(0, 0, 0, 1);
   --shell-nav-icon: rgba(0, 0, 0, 0.68);
   --shell-nav-icon-hover: rgba(0, 0, 0, 0.9);
 
-  /* Auth island */
   --shell-auth-text: rgba(0, 0, 0, 0.7);
 }
 
@@ -217,7 +209,8 @@
 .shell-glass-dock,
 .shell-glass-sheet {
   background: var(--shell-glass-bg);
-  backdrop-filter: blur(5px) saturate(1.8) brightness(1.1);
+  backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
+  -webkit-backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
   border: var(--shell-glass-border-width) solid var(--shell-glass-border);
   box-shadow: var(--shell-glass-shadow);
 }
@@ -360,7 +353,8 @@
 .shell-root:has(#shell-sidebar-toggle:checked) .shell-sidebar {
   width: var(--shell-sidebar-w-expanded);
   background: var(--shell-sidebar-bg-expanded);
-  backdrop-filter: blur(16px) saturate(1.4) !important;
+  backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1) !important;
+  -webkit-backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1) !important;
   border-right-color: var(--shell-sidebar-border-expanded);
 }
 
@@ -529,7 +523,7 @@
   top: 50%;
   transform: translateY(-50%);
   background: var(--shell-glass-bg-active);
-  backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
   border: 1px solid var(--shell-glass-border);
   border-radius: 0.375rem;
   padding: 0.25rem 0.625rem;

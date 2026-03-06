@@ -1,4 +1,5 @@
 "use client";
+import "./react-flow.css";
 import React, { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import ReactFlow, {
     addEdge,

@@ -681,6 +681,18 @@
     --typography-p-lineHeight: 1.6;
     --typography-p-margin: 1rem;
     --typography-letter-spacing: 0.01em;
+
+    /* SSR Glass tokens — light mode */
+    --ssr-glass-bg:           rgba(210, 225, 255, 0.14);
+    --ssr-glass-bg-hover:     rgba(210, 225, 255, 0.22);
+    --ssr-glass-bg-active:    rgba(210, 225, 255, 0.32);
+    --ssr-glass-bg-card:      rgba(220, 230, 255, 0.18);
+    --ssr-glass-border:       rgba(180, 205, 255, 0.40);
+    --ssr-glass-border-width: 2.5px;
+    --ssr-glass-blur:         16px;
+    --ssr-glass-shadow:       0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --ssr-glass-shadow-lg:    0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+    --ssr-glass-overlay-bg:   rgba(0, 0, 0, 0.2);
   }
 
   .dark {
@@ -813,6 +825,16 @@
     --scrollbar-thumb: 240 4% 35%; /* zinc-700 - subtle and minimal */
     --scrollbar-thumb-hover: 240 5% 45%; /* zinc-600 - slightly more visible */
     --scrollbar-thumb-active: 240 5% 55%; /* zinc-500 - active state */
+
+    /* SSR Glass tokens — dark mode */
+    --ssr-glass-bg:           rgba(180, 200, 255, 0.05);
+    --ssr-glass-bg-hover:     rgba(180, 200, 255, 0.09);
+    --ssr-glass-bg-active:    rgba(180, 200, 255, 0.13);
+    --ssr-glass-bg-card:      rgba(255, 255, 255, 0.06);
+    --ssr-glass-border:       rgba(255, 255, 255, 0.07);
+    --ssr-glass-shadow:       0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
+    --ssr-glass-shadow-lg:    0 4px 16px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.12);
+    --ssr-glass-overlay-bg:   rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -1073,23 +1095,6 @@
     z-index: -1;
   }
 
-  /* Glass overlay — for modal/dialog backdrops */
-  .mx-glass-overlay {
-    background: var(--glass-bg-strong);
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow-lg);
-  }
-
-  /* Glass modal — for dialog and alert-dialog content panels */
-  .mx-glass-modal {
-    background: var(--glass-bg-strong);
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow-lg);
-  }
 
   /* Glass sheet — for side sheets sliding in from edges */
   .mx-glass-sheet {
@@ -1198,6 +1203,74 @@
     pointer-events: none;
     z-index: -1;
   }
+
+  /* ===== SSR GLASS SYSTEM — iOS-grade, battle-tested in the SSR shell =====
+
+     Tokens live in @layer base :root / .dark above (correct cascade level).
+     Only utility classes are defined here inside @layer utilities.
+
+  /* ── Core glass — shared backdrop-filter; all variants inherit this ── */
+  .ssr-glass,
+  .ssr-glass-dock,
+  .ssr-glass-sheet,
+  .ssr-glass-modal,
+  .ssr-glass-overlay {
+    background: var(--ssr-glass-bg);
+    backdrop-filter: blur(var(--ssr-glass-blur)) saturate(1.8) brightness(1.1);
+    -webkit-backdrop-filter: blur(var(--ssr-glass-blur)) saturate(1.8) brightness(1.1);
+    border: var(--ssr-glass-border-width) solid var(--ssr-glass-border);
+    box-shadow: var(--ssr-glass-shadow);
+  }
+
+  .ssr-glass:hover,
+  .ssr-glass-dock:hover {
+    background: var(--ssr-glass-bg-hover);
+  }
+
+  .ssr-glass:active,
+  .ssr-glass-dock:active {
+    background: var(--ssr-glass-bg-active);
+  }
+
+  /* Dock — heavier shadow */
+  .ssr-glass-dock {
+    box-shadow: var(--ssr-glass-shadow-lg);
+  }
+
+  /* Sheet — left-edge border only (slides in from side) */
+  .ssr-glass-sheet {
+    border: none;
+    border-right: var(--ssr-glass-border-width) solid var(--ssr-glass-border);
+  }
+
+  /* Overlay — dialog/modal backdrop scrim (no glass blur on the backdrop itself,
+     matches iOS: dark semi-transparent scrim + glass on the panel above it) */
+  .ssr-glass-overlay {
+    background: var(--ssr-glass-overlay-bg);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: none;
+    box-shadow: none;
+  }
+
+  /* Modal panel — the content surface that sits above the overlay */
+  .ssr-glass-modal {
+    background: var(--ssr-glass-bg);
+    backdrop-filter: blur(var(--ssr-glass-blur)) saturate(1.8) brightness(1.1);
+    -webkit-backdrop-filter: blur(var(--ssr-glass-blur)) saturate(1.8) brightness(1.1);
+    border: var(--ssr-glass-border-width) solid var(--ssr-glass-border);
+    box-shadow: var(--ssr-glass-shadow-lg);
+  }
+
+  /* Card — in-page content surfaces (NO backdrop-filter: avoids creating
+     stacking contexts that break shell chrome backdrop-filter in Chromium) */
+  .ssr-glass-card {
+    background: var(--ssr-glass-bg-card);
+    border: var(--ssr-glass-border-width) solid var(--ssr-glass-border);
+    box-shadow: var(--ssr-glass-shadow);
+  }
+
+  /* ===== END SSR GLASS SYSTEM ===== */
 
   /* ===== END GLASS EFFECT UTILITIES ===== */
 
@@ -1372,26 +1445,6 @@
     --tw-ring-offset-color: hsl(var(--background));
   }
 
-  .light-mode-shadow {
-    box-shadow:
-      0 4px 6px -1px rgb(0 0 0 / 0.1),
-      0 2px 4px -2px rgb(0 0 0 / 0.1);
-  }
-
-  .light-mode-border {
-    border-width: 1px;
-    border-style: solid;
-    border-color: rgb(229 231 235);
-  }
-
-  .light-mode-bg-gradient {
-    background-image: linear-gradient(
-      to bottom right,
-      hsl(var(--background)),
-      hsl(var(--elevation-3))
-    );
-  }
-
   .step {
     counter-increment: step;
   }
@@ -1417,23 +1470,6 @@
     margin-left: -50px;
     margin-top: -4px;
     content: counter(step);
-  }
-
-  .chunk-container {
-    box-shadow: none;
-  }
-
-  .chunk-container::after {
-    content: "";
-    position: absolute;
-    inset: -1rem;
-    box-shadow:
-      0 20px 25px -5px rgb(0 0 0 / 0.1),
-      0 8px 10px -6px rgb(0 0 0 / 0.1);
-    border-radius: 0.75rem;
-    border-width: 1px;
-    border-style: solid;
-    border-color: hsl(var(--border));
   }
 
   /* Hide scrollbar utility */
@@ -1620,121 +1656,6 @@
     max-height: calc(100dvh - var(--header-height));
   }
 
-  /* Texture utilities */
-  .texture-dots {
-    background-image: radial-gradient(currentColor 0.2px, transparent 0.2px);
-    background-size: 5px 5px;
-  }
-
-  .texture-dots-large {
-    background-image: radial-gradient(currentColor 0.4px, transparent 0.4px);
-    background-size: 8px 8px;
-  }
-
-  .texture-dots-medium-large {
-    background-image: radial-gradient(currentColor 0.3px, transparent 0.3px);
-    background-size: 6px 6px;
-  }
-
-  .texture-dots-medium {
-    background-image: radial-gradient(currentColor 0.25px, transparent 0.25px);
-    background-size: 5px 5px;
-  }
-
-  .texture-dots-medium-small {
-    background-image: radial-gradient(currentColor 0.18px, transparent 0.18px);
-    background-size: 4px 4px;
-  }
-
-  .texture-dots-small {
-    background-image: radial-gradient(currentColor 0.12px, transparent 0.12px);
-    background-size: 3px 3px;
-  }
-
-  .texture-dots-tiny {
-    background-image: radial-gradient(currentColor 0.08px, transparent 0.08px);
-    background-size: 2px 2px;
-  }
-
-  .texture-dots-ultra-fine {
-    background-image: radial-gradient(currentColor 0.05px, transparent 0.05px);
-    background-size: 2px 2px;
-  }
-
-  .texture-dots-balanced {
-    background-image: radial-gradient(currentColor 0.25px, transparent 0.25px);
-    background-size: 4.5px 4.5px;
-  }
-
-  .texture-dots-tight {
-    background-image: radial-gradient(currentColor 0.22px, transparent 0.22px);
-    background-size: 4px 4px;
-  }
-
-  .texture-dots-superfine {
-    background-image: radial-gradient(currentColor 0.04px, transparent 0.04px);
-    background-size: 1.5px 1.5px;
-  }
-
-  .texture-lines {
-    background-image:
-      linear-gradient(to right, currentColor 0.5px, transparent 0.5px),
-      linear-gradient(to bottom, currentColor 0.5px, transparent 0.5px);
-    background-size: 20px 20px;
-  }
-
-  .texture-noise {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.2'/%3E%3C/svg%3E");
-  }
-
-  .texture-noise-1 {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.2'/%3E%3C/svg%3E");
-  }
-
-  .texture-noise-2 {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E");
-  }
-
-  .texture-noise-3 {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.25'/%3E%3C/svg%3E");
-  }
-
-  .texture-noise-4 {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.5' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.18'/%3E%3C/svg%3E");
-  }
-
-  .texture-noise-5 {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' seed='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.22'/%3E%3C/svg%3E");
-  }
-
-  .texture-noise-6 {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='turbulence' baseFrequency='1' numOctaves='4' seed='10' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.2'/%3E%3C/svg%3E");
-  }
-
-  .texture-noise-7 {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='5' seed='15' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.17'/%3E%3C/svg%3E");
-  }
-
-  .texture-noise-8 {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='turbulence' baseFrequency='1.5' numOctaves='2' seed='20' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.23'/%3E%3C/svg%3E");
-  }
-
-  .texture-subtle-squares {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23999' fill-opacity='0.07' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");
-  }
-
-  .bg-textured-light {
-    background-color: rgb(244 244 245);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23999' fill-opacity='0.07' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");
-    color: rgb(39 39 42);
-  }
-
-  .bg-textured-dark {
-    background-color: rgb(39 39 42);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23999' fill-opacity='0.07' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");
-    color: rgb(229 229 229);
-  }
-
   .bg-textured {
     background-color: rgb(244 244 245);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23999' fill-opacity='0.07' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");
@@ -1789,11 +1710,6 @@
   }
 
   /* Mask utilities */
-  .mask-bottom {
-    mask-image: linear-gradient(to bottom, black 75%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 75%, transparent 100%);
-  }
-
   .fade-bottom {
     mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
@@ -1822,102 +1738,31 @@
   }
 }
 
-/* Contrast Red */
-.contrast-red {
-  --primary: 0 72.2% 50.6%;
-  --primary-foreground: 0 85.7% 97.3%;
-  --secondary: 0 0% 96.1%;
-  --secondary-foreground: 0 0% 9%;
-  --muted: 0 0% 96.1%;
-  --muted-foreground: 0 0% 45.1%;
-  --accent: 0 0% 96.1%;
-  --accent-foreground: 0 0% 9%;
-  --ring: 0 72.2% 50.6%;
+/* ── Dialog / Modal glass — defined outside @layer so nothing overrides it ── */
+.mx-glass-overlay {
+  background: rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
-/* Contrast Blue */
-.contrast-blue {
-  --primary: 221.2 83.2% 53.3%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-  --ring: 221.2 83.2% 53.3%;
+.dark .mx-glass-overlay {
+  background: rgba(0, 0, 0, 0.5) !important;
 }
 
-/* Contrast Green */
-.contrast-green {
-  --primary: 142.1 76.2% 36.3%;
-  --primary-foreground: 355.7 100% 97.3%;
-  --secondary: 240 4.8% 95.9%;
-  --secondary-foreground: 240 5.9% 10%;
-  --muted: 240 4.8% 95.9%;
-  --muted-foreground: 240 3.8% 46.1%;
-  --accent: 240 4.8% 95.9%;
-  --accent-foreground: 240 5.9% 10%;
-  --ring: 142.1 76.2% 36.3%;
+.mx-glass-modal {
+  background: rgba(210, 225, 255, 0.14) !important;
+  backdrop-filter: blur(16px) saturate(1.8) brightness(1.1) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.8) brightness(1.1) !important;
+  border: 2.5px solid rgba(180, 205, 255, 0.40) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04) !important;
 }
 
-/* Contrast Violet */
-.contrast-violet {
-  --primary: 262.1 83.3% 57.8%;
-  --primary-foreground: 210 20% 98%;
-  --secondary: 220 14.3% 95.9%;
-  --secondary-foreground: 220.9 39.3% 11%;
-  --muted: 220 14.3% 95.9%;
-  --muted-foreground: 220 8.9% 46.1%;
-  --accent: 220 14.3% 95.9%;
-  --accent-foreground: 220.9 39.3% 11%;
-  --ring: 262.1 83.3% 57.8%;
-}
-
-/* Contrast Yellow */
-.contrast-yellow {
-  --primary: 47.9 95.8% 53.1%;
-  --primary-foreground: 26 83.3% 14.1%;
-  --secondary: 60 4.8% 95.9%;
-  --secondary-foreground: 24 9.8% 10%;
-  --muted: 60 4.8% 95.9%;
-  --muted-foreground: 25 5.3% 44.7%;
-  --accent: 60 4.8% 95.9%;
-  --accent-foreground: 24 9.8% 10%;
-  --ring: 47.9 95.8% 53.1%;
-}
-
-/* Added for Grid-24, but added matrx to it. Real system doesn't have 'matrx' */
-.matrx-grid-cell {
-  min-width: 0;
-  min-height: 0;
-  max-width: 100%;
-  max-height: 100%;
-  overflow: hidden;
-  position: relative;
-}
-
-.matrx-grid-content {
-  position: absolute;
-  inset: 0;
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Portal styles */
-#help-panel-portal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 50;
-}
-
-#help-panel-portal > * {
-  pointer-events: auto;
+.dark .mx-glass-modal {
+  background: rgba(180, 200, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.07) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.12) !important;
 }
 
 .pointer-events-none {
@@ -1928,91 +1773,7 @@
   pointer-events: auto !important;
 }
 
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--scrollbar-thumb)) hsl(var(--scrollbar-track));
-}
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: hsl(var(--scrollbar-track));
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: hsl(var(--scrollbar-thumb));
-  border-radius: 2px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: hsl(var(--scrollbar-thumb-hover));
-}
-
-:root {
-  --primary-rgb: 14, 165, 233; /* Example RGB values for a blue color */
-}
-
-/* Field isolation wrapper for React Flow nodes */
-.field-isolation-wrapper {
-  /* Create a new stacking context and contain styles */
-  position: relative;
-  isolation: isolate;
-  contain: style layout;
-  /* Reset any inherited constraints */
-  max-width: none;
-  max-height: none;
-  width: 100%;
-}
-
-.field-isolation-wrapper .all-revert {
-  /* Reset most inherited styles while preserving layout */
-  all: revert-layer;
-  /* But maintain essential layout properties */
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  font-family: inherit;
-  color: inherit;
-  line-height: normal;
-}
-
-/* Ensure form elements inside React Flow nodes render properly */
-.field-isolation-wrapper input,
-.field-isolation-wrapper select,
-.field-isolation-wrapper textarea,
-.field-isolation-wrapper button {
-  /* Reset to default form styling */
-  all: revert;
-  /* Then apply our consistent styling */
-  font-family: inherit;
-  font-size: 0.75rem; /* text-xs equivalent */
-  line-height: 1.25;
-  color: inherit;
-  background-color: transparent;
-  border: 1px solid hsl(var(--border));
-  border-radius: calc(var(--radius) - 2px);
-  padding: 0.25rem 0.5rem;
-  transition: border-color 0.2s ease;
-}
-
-.field-isolation-wrapper input:focus,
-.field-isolation-wrapper select:focus,
-.field-isolation-wrapper textarea:focus {
-  outline: none;
-  border-color: hsl(var(--ring));
-  box-shadow: 0 0 0 1px hsl(var(--ring));
-}
-
-/* Dark mode support for isolated fields */
-.react-flow-dark-mode .field-isolation-wrapper input,
-.react-flow-dark-mode .field-isolation-wrapper select,
-.react-flow-dark-mode .field-isolation-wrapper textarea {
-  background-color: hsl(var(--background));
-  border-color: hsl(var(--border));
-  color: hsl(var(--foreground));
-}
 
 .mask-bottom {
   mask-image: linear-gradient(
@@ -2028,80 +1789,12 @@
     "Courier New", monospace;
 }
 
-/* Custom CSS for fixing markdown syntax in dark mode */
-.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-code,
-.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-code-block,
-.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-heading,
-.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-list,
-.toastui-editor-dark
-  .toastui-editor-md-container
-  .toastui-editor-md-marked-text,
-.toastui-editor-dark
-  .toastui-editor-md-container
-  .toastui-editor-md-block-quote,
-.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-link,
-.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-table {
-  color: #d5dff1 !important; /* Light blue color that stands out in dark mode */
-}
-
-/* Make syntax markers more visible in dark mode */
-.toastui-editor-dark .toastui-editor-md-delimiter,
-.toastui-editor-dark .toastui-editor-md-thematic-break,
-.toastui-editor-dark .toastui-editor-md-meta,
-.toastui-editor-dark .toastui-editor-md-marker {
-  color: #789be9 !important; /* Light blue color that stands out in dark mode */
-}
-
-/* Improve text content visibility */
-.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-text {
-  color: #d5dff1 !important; /* Light blue color that stands out in dark mode */
-}
-
-/* Fix inline code in dark mode */
-.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-code {
-  background-color: rgba(135, 135, 135, 0.15) !important;
-  border-radius: 3px;
-  padding: 0 0.25em;
-}
-
-/* Fix the cursor color in dark mode for better visibility */
-.toastui-editor-dark .toastui-editor-md-container .ProseMirror {
-  color: #ffffff !important; /* Light blue color that stands out in dark mode */
-}
-
-/* Increase font size for TUI editor content - improved readability */
-.toastui-editor .toastui-editor-md-container .ProseMirror,
-.toastui-editor .toastui-editor-ww-container .ProseMirror,
-.toastui-editor .ProseMirror,
-.toastui-editor .toastui-editor-contents,
-.toastui-editor .toastui-editor-md-container,
-.toastui-editor .toastui-editor-ww-container {
-  font-size: 20px !important;
-  line-height: 1.6 !important;
-}
 
 @layer utilities {
   @media (max-width: 640px) {
     .container {
       padding-left: 0.25rem;
       padding-right: 0.25rem;
-    }
-
-    .notes-mobile-layout {
-      .notes-list {
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        z-index: 10;
-        background: var(--background);
-        transform: translateX(-100%);
-        transition: transform 0.2s;
-
-        &.show {
-          transform: translateX(0);
-        }
-      }
     }
   }
 }
@@ -2112,163 +1805,6 @@
   backface-visibility: hidden;
 }
 
-/* React Flow Custom Styles */
-.react-flow {
-  --bg-color: hsl(var(--background));
-  --text-color: hsl(var(--foreground));
-  --node-border-radius: 10px;
-  --node-box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  background-color: var(--bg-color);
-  color: var(--text-color);
-}
-
-.dark .react-flow {
-  --node-box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-}
-
-/* Custom node wrapper styles */
-.react-flow__node-workflowNode,
-.react-flow__node-default {
-  position: relative;
-  /* Remove visual styling to prevent double backgrounds - let Card component handle all visuals */
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-}
-
-/* Floating icon container */
-.workflow-node-icon {
-  border-radius: 100%;
-  width: 28px;
-  height: 28px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform: translate(-50%, -50%);
-  display: flex;
-  transform-origin: center center;
-  padding: 2px;
-  overflow: hidden;
-  z-index: 1;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  background: conic-gradient(
-    from -160deg at 50% 50%,
-    hsl(var(--primary)) 0deg,
-    hsl(var(--secondary)) 120deg,
-    hsl(var(--accent-2)) 240deg,
-    hsl(var(--primary)) 360deg
-  );
-}
-
-.workflow-node-icon-inner {
-  background-color: var(--bg-color);
-  flex-grow: 1;
-  border-radius: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-}
-
-/* Enhanced selected state with spinning border */
-.react-flow__node.selected .workflow-node-icon {
-  animation: iconSpin 4s linear infinite;
-}
-
-@keyframes iconSpin {
-  100% {
-    transform: translate(-50%, -50%) rotate(-360deg);
-  }
-}
-
-/* Dark mode controls styling */
-.react-flow__controls {
-  background-color: hsl(var(--card));
-  border: 1px solid hsl(var(--border));
-  border-radius: 8px;
-  box-shadow: var(--node-box-shadow);
-}
-
-.react-flow__controls button {
-  background-color: hsl(var(--card));
-  color: hsl(var(--foreground));
-  border: none;
-  border-bottom: 1px solid hsl(var(--border));
-  transition: background-color 0.2s ease;
-}
-
-.react-flow__controls button:hover {
-  background-color: hsl(var(--accent));
-}
-
-.react-flow__controls button:first-child {
-  border-radius: 8px 8px 0 0;
-}
-
-.react-flow__controls button:last-child {
-  border-bottom: none;
-  border-radius: 0 0 8px 8px;
-}
-
-.react-flow__controls button path {
-  fill: hsl(var(--foreground));
-}
-
-/* Custom edge styling */
-.react-flow__edge .react-flow__edge-path {
-  stroke: hsl(var(--primary));
-  stroke-width: 2;
-  stroke-opacity: 0.75;
-}
-
-/* Handle styling improvements */
-.react-flow__handle {
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.react-flow__node:hover .react-flow__handle {
-  opacity: 1;
-}
-
-.react-flow__handle.source {
-  right: -8px;
-  background: hsl(var(--primary));
-  border: 2px solid hsl(var(--background));
-}
-
-.react-flow__handle.target {
-  left: -8px;
-  background: hsl(var(--secondary));
-  border: 2px solid hsl(var(--background));
-}
-
-/* Node focus styling */
-.react-flow__node:focus {
-  outline: none;
-}
-
-/* MiniMap styling */
-.react-flow__minimap {
-  background-color: hsl(var(--card));
-  border: 1px solid hsl(var(--border));
-  border-radius: 8px;
-  box-shadow: var(--node-box-shadow);
-}
-
-/* Attribution styling */
-.react-flow__attribution {
-  background: hsl(var(--muted));
-  color: hsl(var(--muted-foreground));
-  border-radius: 4px;
-}
-
-.react-flow__attribution a {
-  color: hsl(var(--primary));
-}
 
 /* ===== MOBILE OVERFLOW PREVENTION ===== */
 /* Ensure absolutely no horizontal scroll on mobile devices */
