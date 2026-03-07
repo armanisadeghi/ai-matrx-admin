@@ -431,6 +431,17 @@
   grid-template-columns: var(--shell-sidebar-w-expanded) 1fr;
 }
 
+/* Chat route — icon strip tracks the main sidebar width.
+   Uses the same :has() hook and spring transition as .shell-sidebar so
+   the shift is frame-perfectly synchronised with the sidebar expand. */
+.chat-sidebar-icon-strip {
+  transition: left var(--shell-duration-slow) var(--shell-ease-spring);
+}
+
+.shell-root:has(#shell-sidebar-toggle:checked) .chat-sidebar-icon-strip {
+  left: var(--shell-sidebar-w-expanded);
+}
+
 /* Sidebar brand section */
 .shell-sidebar-brand {
   display: flex;

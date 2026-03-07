@@ -2,9 +2,13 @@
 
 // ChatHeaderControls — Injects only the Share button into the shell header (right side).
 // Sidebar toggle, new chat, and agent controls live inside ChatSidebarClient.
+// Uses the canonical shell IconButton so the share icon is pixel-identical to
+// every other button in the shell header (same .icon-btn tap target, same
+// .icon-btn-glass shell-glass shell-tactile glass pill).
 
 import { Share2 } from 'lucide-react';
 import PageHeader from '@/app/(ssr)/_components/PageHeader';
+import IconButton from '@/app/(ssr)/_components/IconButton';
 
 interface ChatHeaderControlsProps {
     agentName: string;
@@ -30,13 +34,11 @@ export default function ChatHeaderControls({
 
     const shareButton = (
         <div className="flex items-center justify-end w-full">
-            <button
+            <IconButton
+                icon={<Share2 />}
                 onClick={onShare}
-                className="shell-glass shell-tactile flex items-center justify-center pr-2 w-[1.875rem] h-[1.875rem] rounded-full text-(--shell-nav-icon) hover:text-(--shell-nav-text-hover) cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5"
-                title="Share conversation"
-            >
-                <Share2 />
-            </button>
+                label="Share conversation"
+            />
         </div>
     );
 

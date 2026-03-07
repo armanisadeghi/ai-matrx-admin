@@ -33,7 +33,7 @@ export default function ChatLayoutGrid({
                 [&>div] overrides SidebarAgentHeader's h-10 + border-b to match our header height
                 and keep the strip borderless (the sidebar body has its own top border). */}
             <div
-                className="hidden lg:block fixed top-0 left-[var(--shell-sidebar-w)] z-[41] [&>div]:h-[var(--shell-header-h)] [&>div]:border-b-0"
+                className="chat-sidebar-icon-strip hidden lg:block fixed top-0 left-[var(--shell-sidebar-w)] z-[41] [&>div]:h-[var(--shell-header-h)] [&>div]:border-b-0"
                 aria-hidden="false"
             >
                 {sidebarHeader}
@@ -64,7 +64,7 @@ export default function ChatLayoutGrid({
                     className={`
                         col-start-1 row-start-1
                         flex flex-col overflow-hidden w-[280px] min-w-[280px]
-                        border-r border-border/30 bg-card
+                        border-r border-border/30 bg-background
                         transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
                         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
 
