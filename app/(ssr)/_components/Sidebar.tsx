@@ -4,7 +4,12 @@
 
 import NavItem from "./NavItem";
 import ShellIcon from "./ShellIcon";
-import { primaryNavItems, adminNavItems, settingsItem, type ShellNavItem } from "../nav-data";
+import {
+  primaryNavItems,
+  adminNavItems,
+  settingsItem,
+  type ShellNavItem,
+} from "../nav-data";
 
 interface SidebarProps {
   pathname: string;
@@ -30,7 +35,6 @@ export default function Sidebar({ pathname, isAdmin }: SidebarProps) {
         >
           <ShellIcon name="PanelLeft" size={18} strokeWidth={1.75} />
         </label>
-        <span className="shell-sidebar-brand-logo">AI Matrx</span>
       </div>
 
       {/* Navigation — Self-scrolling container */}
