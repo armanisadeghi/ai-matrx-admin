@@ -1,0 +1,37 @@
+// MobileDockItems — Pure Server Component. No "use client", no hooks, no props.
+//
+// Renders dock links with data-nav-href on each one.
+// CSS in shell.css reads .shell-root[data-pathname] to determine which
+// data-nav-href matches — zero client JS, zero prop drilling.
+//
+// Export MobileDockItem so custom route docks can reuse the same link shape.
+
+import Link from "next/link";
+import ShellIcon from "./ShellIcon";
+import { dockItems } from "../nav-data";
+import type { ShellNavItem } from "../nav-data";
+
+/** Single dock link — reusable by custom route docks. */
+export function MobileDockItem({ item }: { item: ShellNavItem }) {
+  return (
+    <Link
+      href={item.href}
+      data-nav-href={item.href}
+      className="shell-dock-item"
+      aria-label={item.label}
+    >
+      <ShellIcon name={item.iconName} size={22} strokeWidth={1.75} />
+    </Link>
+  );
+}
+
+/** Default shell dock — all nav items with a dockOrder in nav-data. */
+export default function MobileDockItems() {
+  return (
+    <>
+      {dockItems.map((item) => (
+        <MobileDockItem key={item.href} item={item} />
+      ))}
+    </>
+  );
+}

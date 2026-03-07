@@ -3,10 +3,11 @@
 // Layout wrapper (PageHeader + content div) lives in layout.tsx.
 
 import { createClient } from "@/utils/supabase/server";
-import DashboardGrid from "./components/DashboardGrid";
-import QuickActions from "./components/QuickActions";
-import WelcomeCard from "./components/WelcomeCard";
-import RecentActivity from "./components/RecentActivity";
+
+import QuickActions from "../../dashboard/components/QuickActions";
+import WelcomeCard from "../../dashboard/components/WelcomeCard";
+import RecentActivity from "../../dashboard/components/RecentActivity";
+import DashboardGrid from "../../dashboard/components/DashboardGrid";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -36,10 +37,11 @@ export default async function DashboardPage() {
   return (
     <>
       <section>
-        <DashboardGrid />
-      </section>
-      <section>
         <QuickActions />
+      </section>
+
+      <section>
+        <DashboardGrid />
       </section>
 
       <section>

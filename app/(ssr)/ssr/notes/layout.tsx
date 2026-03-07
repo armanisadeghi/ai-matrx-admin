@@ -21,9 +21,15 @@ export interface NoteSummary {
   position: number;
 }
 
-export default function NotesLayout({ children }: { children: React.ReactNode }) {
+export default function NotesLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <div className="notes-root grid grid-cols-[280px_1fr] grid-rows-[1fr] h-full overflow-hidden relative z-0">
+    <div className="notes-root grid grid-cols-[280px_1fr] grid-rows-[1fr] h-full overflow-hidden relative z-0" style={{ paddingTop: 'var(--shell-header-h)' }}>
+      {/* Shell sentinels — one class, zero logic. shell.css handles all consequences. */}
+      <span className="shell-hide-dock" aria-hidden="true" />
       <aside className="notes-sidebar flex flex-col overflow-hidden border-r border-border/30 pt-0 pb-2.5">
         <SidebarClient />
       </aside>

@@ -1,5 +1,3 @@
-"use client";
-
 // HamburgerIsland — Mobile nav toggle using IconButton.
 // Renders as a <label> that toggles the #shell-mobile-menu checkbox.
 // CSS :has() drives the side-sheet open/close — zero JS.

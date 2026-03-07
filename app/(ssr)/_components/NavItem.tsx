@@ -1,11 +1,13 @@
-"use client";
-
-// NavItem.tsx — Client component for sidebar navigation links
-// Uses usePathname() so active state stays correct after client-side navigation
-// Sidebar.tsx remains a Server Component — only the leaf links are client islands
+// NavItem — Pure Server Component. No client JS, no hooks.
+//
+// Active state is determined by Sidebar.tsx on the server using the pathname
+// from request headers. At runtime, CSS reads .shell-root[data-pathname]
+// (kept live by NavActiveSync) to maintain correct state after client navigation.
+//
+// Each link gets data-nav-href so CSS can style it:
+//   .shell-root[data-pathname^="/ssr/chat"] [data-nav-href="/ssr/chat"] { ... }
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import ShellIcon from "./ShellIcon";
 import type { ShellNavItem } from "../nav-data";
 
@@ -15,19 +17,12 @@ interface NavItemProps {
 }
 
 export default function NavItem({ item }: NavItemProps) {
-  const pathname = usePathname();
-
-  const active =
-    item.href === "/ssr/dashboard"
-      ? pathname === "/ssr/dashboard" || pathname === "/ssr"
-      : pathname.startsWith(item.href);
-
   return (
     <Link
       href={item.href}
       title={item.label}
-      className={`shell-nav-item shell-tactile-subtle ${active ? "shell-active-pill" : ""}`}
-      style={active ? { viewTransitionName: "shell-active-pill" } : undefined}
+      data-nav-href={item.href}
+      className="shell-nav-item shell-tactile-subtle"
     >
       <span className="shell-nav-icon">
         <ShellIcon name={item.iconName} size={18} strokeWidth={1.75} />

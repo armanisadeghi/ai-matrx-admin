@@ -1,26 +1,21 @@
-// Header.tsx — Server component for the transparent header
-// Completely transparent container — glass applies ONLY to child nodes
-// Left: reserved (hamburger on mobile) | Center: injection zone | Right: User Menu
-// User data is read from Redux inside UserMenuIsland — no props needed here.
-
-import UserMenuIsland from "./UserMenuIsland";
-import HamburgerIsland from "./HamburgerIsland";
+import HamburgerButton from "./HamburgerButton";
+import UserMenuTrigger from "./UserMenuTrigger";
+import UserMenuPanel from "./UserMenuPanel";
 
 export default function Header() {
   return (
     <header className="shell-header">
-      {/* Left — Mobile hamburger trigger (hidden on desktop via CSS) */}
-      <div className="shell-mobile-trigger">
-        <HamburgerIsland />
-      </div>
+      <HamburgerButton />
 
-      {/* Center — Dynamic injection zone for route-specific content */}
-      <div className="shell-header-center" id="shell-header-center">
-        {/* Intentionally empty at shell level. Route pages inject here via portal. */}
-      </div>
+      <div className="shell-header-center" id="shell-header-center" />
 
-      {/* Right — User Menu (hamburger + avatar trigger, lazy dropdown) */}
-      <UserMenuIsland />
+      <div className="shell-user-menu-wrapper">
+        <UserMenuTrigger />
+        <label htmlFor="shell-user-menu" className="shell-user-menu-backdrop" aria-hidden="true" />
+        <div className="shell-user-menu-panel">
+          <UserMenuPanel />
+        </div>
+      </div>
     </header>
   );
 }

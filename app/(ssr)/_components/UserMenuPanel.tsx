@@ -1,15 +1,10 @@
 "use client";
 
-// UserMenuPanel — Lazy-loaded dropdown panel for the user menu.
-// Only downloads when user opens the menu. Includes: user info, quick actions,
-// notifications, feedback (lazy FeedbackDialog), theme toggle, preferences, and sign out.
-
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import {
-  User,
   Settings,
   LogOut,
   Sun,
@@ -21,20 +16,29 @@ import {
   Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { UserMenuUser } from "./UserMenuIsland";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser, selectIsAdmin } from "@/lib/redux/slices/userSlice";
 
 const FeedbackDialog = dynamic(() => import("./FeedbackDialog"), {
   ssr: false,
   loading: () => null,
 });
 
-interface UserMenuPanelProps {
-  user: UserMenuUser | null;
-  isAdmin: boolean;
-  onClose: () => void;
+function closeMenu() {
+  const cb = document.getElementById("shell-user-menu") as HTMLInputElement | null;
+  if (cb) cb.checked = false;
 }
 
-export default function UserMenuPanel({ user, isAdmin, onClose }: UserMenuPanelProps) {
+export default function UserMenuPanel() {
+  const reduxUser = useAppSelector(selectUser);
+  const isAdmin = useAppSelector(selectIsAdmin) ?? false;
+
+  const user = reduxUser?.id ? {
+    name: reduxUser.userMetadata?.name || reduxUser.email?.split("@")[0] || "User",
+    email: reduxUser.email ?? undefined,
+    avatarUrl: reduxUser.userMetadata?.avatarUrl ?? undefined,
+  } : null;
+
   const [isDark, setIsDark] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
 
@@ -58,12 +62,12 @@ export default function UserMenuPanel({ user, isAdmin, onClose }: UserMenuPanelP
   }, []);
 
   const itemClass =
-    "flex items-center gap-2.5 w-full px-3 py-1.5 text-[0.8125rem] text-foreground rounded-lg cursor-pointer transition-colors hover:bg-[var(--shell-glass-bg-hover)] [&_svg]:w-4 [&_svg]:h-4 [&_svg]:text-muted-foreground [&_svg]:shrink-0";
+    "flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-foreground rounded-full cursor-pointer transition-colors hover:bg-[var(--shell-glass-bg-hover)] [&_svg]:w-4 [&_svg]:h-4 [&_svg]:text-foreground [&_svg]:shrink-0";
 
   if (!user) {
     return (
-      <div className="shell-glass absolute right-0 top-full mt-1.5 w-52 p-1.5 rounded-xl z-50 shadow-2xl">
-        <Link href="/login" className={itemClass} onClick={onClose}>
+      <div className="matrx-glass-core w-52 p-1.5 rounded-xl shadow-2xl">
+        <Link href="/login" className={itemClass} onClick={closeMenu}>
           <LogOut /> Sign In
         </Link>
       </div>
@@ -71,18 +75,13 @@ export default function UserMenuPanel({ user, isAdmin, onClose }: UserMenuPanelP
   }
 
   return (
-    <div className={cn(
-      "shell-glass",
-      "absolute right-0 top-full mt-1.5 w-60 p-1.5 rounded-xl z-50 shadow-2xl",
-      "max-lg:fixed max-lg:inset-x-3 max-lg:top-auto max-lg:right-3 max-lg:w-auto",
-      "max-lg:bottom-[calc(var(--shell-dock-h)+var(--shell-dock-bottom)+env(safe-area-inset-bottom,0px)+0.5rem)]",
-      "max-lg:rounded-2xl max-lg:p-2",
-    )}>
-      {/* User info */}
+    <div
+      className="matrx-glass-core w-60 max-lg:w-auto p-1.5 rounded-xl max-lg:rounded-2xl max-lg:p-2 shadow-2xl"
+    >
       <Link
         href="/ssr/settings"
         className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[var(--shell-glass-bg-hover)] transition-colors"
-        onClick={onClose}
+        onClick={closeMenu}
       >
         {user.avatarUrl ? (
           <Image
@@ -98,36 +97,38 @@ export default function UserMenuPanel({ user, isAdmin, onClose }: UserMenuPanelP
           </span>
         )}
         <span className="flex flex-col min-w-0">
-          <span className="text-sm font-medium text-foreground truncate">{user.name}</span>
+          <span className="text-base font-medium text-foreground truncate">
+            {user.name}
+          </span>
           {user.email && (
-            <span className="text-[0.6875rem] text-muted-foreground truncate">{user.email}</span>
+            <span className="text-xs text-foreground truncate">
+              {user.email}
+            </span>
           )}
         </span>
       </Link>
 
       <div className="h-px my-1 mx-2 bg-[var(--shell-glass-border)]" />
 
-      {/* Quick Actions */}
-      <Link href="/ssr/chat" className={itemClass} onClick={onClose}>
+      <Link href="/ssr/chat" className={itemClass} onClick={closeMenu}>
         <Zap /> Quick Actions
       </Link>
-      <Link href="/ssr/messages" className={itemClass} onClick={onClose}>
+      <Link href="/ssr/messages" className={itemClass} onClick={closeMenu}>
         <MessageSquare /> Direct Messages
       </Link>
-      <button className={itemClass} onClick={onClose}>
+      <button className={itemClass} onClick={closeMenu}>
         <Bell /> Notifications
       </button>
       <button
         className={itemClass}
         onClick={() => {
-          onClose();
+          closeMenu();
           setShowFeedback(true);
         }}
       >
         <Bug /> Submit Feedback
       </button>
 
-      {/* Feedback dialog — lazy loaded, renders as portal-like overlay */}
       {showFeedback && (
         <FeedbackDialog onClose={() => setShowFeedback(false)} />
       )}
@@ -138,7 +139,7 @@ export default function UserMenuPanel({ user, isAdmin, onClose }: UserMenuPanelP
           <Link
             href="/ssr/admin"
             className={cn(itemClass, "[&_svg]:text-amber-500")}
-            onClick={onClose}
+            onClick={closeMenu}
           >
             <Shield /> Admin Dashboard
           </Link>
@@ -147,19 +148,17 @@ export default function UserMenuPanel({ user, isAdmin, onClose }: UserMenuPanelP
 
       <div className="h-px my-1 mx-2 bg-[var(--shell-glass-border)]" />
 
-      {/* Theme toggle */}
       <button className={itemClass} onClick={toggleTheme}>
         {isDark ? <Sun /> : <Moon />}
         {isDark ? "Light Mode" : "Dark Mode"}
       </button>
 
-      <Link href="/ssr/settings" className={itemClass} onClick={onClose}>
+      <Link href="/ssr/settings" className={itemClass} onClick={closeMenu}>
         <Settings /> Preferences
       </Link>
 
       <div className="h-px my-1 mx-2 bg-[var(--shell-glass-border)]" />
 
-      {/* Sign out */}
       <button
         className={cn(itemClass, "text-destructive [&_svg]:text-destructive")}
         onClick={signOut}

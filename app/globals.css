@@ -1885,3 +1885,85 @@
    • Scrollbar utilities  → app/(ssr)/shell.css  (section 18)
    • Notes module CSS     → app/(ssr)/ssr/notes/notes.css
    ============================================================================= */
+
+/* =============================================================================
+   Shell Design Tokens
+   Tokens are defined in app/(ssr)/shell.css (loaded per-route).
+   The @layer utilities below make glass/tactile classes available globally
+   so non-shell routes (e.g. public chat, notes overlays) can use them too.
+   ============================================================================= */
+
+/* =============================================================================
+   Shell Glass + Tactile Utilities
+   Tokens live in app/(ssr)/shell.css. These @layer utilities entries make the
+   glass/tactile classes composable with Tailwind's cn() system globally.
+   ============================================================================= */
+
+@layer utilities {
+  /* Core glass — backdrop-filter clipped at the element boundary */
+  .shell-glass {
+    background: var(--shell-glass-bg);
+    backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
+    -webkit-backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
+    border: var(--shell-glass-border-width) solid var(--shell-glass-border);
+    box-shadow: var(--shell-glass-shadow);
+  }
+  .shell-glass:hover { background: var(--shell-glass-bg-hover); }
+  .shell-glass:active { background: var(--shell-glass-bg-active); }
+
+  /* Dock variant — heavier shadow, no border change */
+  .shell-glass-dock {
+    background: var(--shell-glass-bg);
+    backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
+    -webkit-backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
+    border: var(--shell-glass-border-width) solid var(--shell-glass-border);
+    box-shadow: var(--shell-glass-shadow-lg);
+  }
+  .shell-glass-dock:hover { background: var(--shell-glass-bg-hover); }
+  .shell-glass-dock:active { background: var(--shell-glass-bg-active); }
+
+  /* Sheet variant — left border only (for side panels) */
+  .shell-glass-sheet {
+    background: var(--shell-glass-bg);
+    backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
+    -webkit-backdrop-filter: blur(var(--shell-glass-blur)) saturate(1.8) brightness(1.1);
+    border: none;
+    border-right: var(--shell-glass-border-width) solid var(--shell-glass-border);
+    box-shadow: var(--shell-glass-shadow);
+  }
+
+  /* Card variant — NO backdrop-filter (avoids stacking-context issues) */
+  .shell-glass-card {
+    background: var(--shell-glass-card-bg);
+    border: var(--shell-glass-border-width) solid var(--shell-glass-border);
+    box-shadow: var(--shell-glass-shadow);
+  }
+
+  /* Tactile — iOS-grade spring scale on hover/active */
+  .shell-tactile {
+    transition:
+      transform var(--shell-duration-fast) var(--shell-ease-spring),
+      background var(--shell-duration-fast) var(--shell-ease-smooth);
+  }
+  .shell-tactile:hover  { transform: scale(1.05); }
+  .shell-tactile:active { transform: scale(0.95); }
+
+  /* Subtle tactile — for nav items (less dramatic) */
+  .shell-tactile-subtle {
+    transition:
+      transform var(--shell-duration-fast) var(--shell-ease-spring),
+      background var(--shell-duration-fast) var(--shell-ease-smooth);
+  }
+  .shell-tactile-subtle:hover  { transform: scale(1.02); }
+  .shell-tactile-subtle:active { transform: scale(0.98); }
+
+  /* Active route pill */
+  .shell-active-pill {
+    background: var(--shell-pill-bg);
+    border: 1px solid var(--shell-pill-border);
+    view-transition-name: shell-active-pill;
+  }
+  .shell-active-pill svg,
+  .shell-active-pill .shell-nav-icon { color: var(--shell-pill-text); }
+  .shell-active-pill .shell-nav-label { color: var(--shell-pill-text); font-weight: 600; }
+}

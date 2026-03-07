@@ -48,7 +48,12 @@ import type { MarkdownStreamProps } from "@/components/MarkdownStream";
 
 const MarkdownStream = dynamic<MarkdownStreamProps>(
   () => import("@/components/MarkdownStream"),
-  { ssr: false, loading: () => <div className="notes-preview-empty">Loading preview...</div> },
+  {
+    ssr: false,
+    loading: () => (
+      <div className="notes-preview-empty">Loading preview...</div>
+    ),
+  },
 );
 
 const NoteShareDialog = dynamic(() => import("./NoteShareDialog"), {
@@ -98,11 +103,17 @@ function generateLabelFromContent(content: string, maxLength = 30): string {
   let firstLine = lines[0].trim();
   if (!firstLine && lines.length > 1) {
     for (let i = 1; i < lines.length; i++) {
-      if (lines[i].trim()) { firstLine = lines[i].trim(); break; }
+      if (lines[i].trim()) {
+        firstLine = lines[i].trim();
+        break;
+      }
     }
   }
   if (!firstLine) return "";
-  firstLine = firstLine.replace(/\s+/g, " ").replace(/^[#\-*>\s]+/, "").trim();
+  firstLine = firstLine
+    .replace(/\s+/g, " ")
+    .replace(/^[#\-*>\s]+/, "")
+    .trim();
   if (firstLine.length > 0) {
     firstLine = firstLine.charAt(0).toUpperCase() + firstLine.slice(1);
   }
@@ -123,10 +134,7 @@ function extractNoteId(pathname: string): string {
   return pathname.split("/ssr/notes/")[1]?.split("/")[0]?.split("?")[0] ?? "";
 }
 
-function buildNotesUrl(
-  noteId: string | null,
-  params: URLSearchParams,
-): string {
+function buildNotesUrl(noteId: string | null, params: URLSearchParams): string {
   const base = noteId ? `/ssr/notes/${noteId}` : "/ssr/notes";
   const qs = params.toString();
   return qs ? `${base}?${qs}` : base;
@@ -139,13 +147,19 @@ interface NotesWorkspaceProps {
 }
 
 // Module evaluated = NotesWorkspace bundle parsed. Large gap to mount = hydration cost.
-console.debug(`⚡NotesWorkspace module evaluated at ${performance.now().toFixed(2)}ms`);
+console.debug(
+  `⚡NotesWorkspace module evaluated at ${performance.now().toFixed(2)}ms`,
+);
 
-export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorkspaceProps) {
+export default function NotesWorkspace({
+  notes: initialNotes = [],
+}: NotesWorkspaceProps) {
   const [notes, setNotes] = useState<NoteSummary[]>(initialNotes);
 
   useEffect(() => {
-    console.debug(`⚡NotesWorkspace mounted at ${performance.now().toFixed(2)}ms`);
+    console.debug(
+      `⚡NotesWorkspace mounted at ${performance.now().toFixed(2)}ms`,
+    );
   }, []);
 
   // Fetch notes after mount — directly from Supabase, no server roundtrip
@@ -154,22 +168,26 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
       supabase
-        .from('notes')
-        .select('id, label, folder_name, tags, updated_at, position')
-        .eq('user_id', user.id)
-        .eq('is_deleted', false)
-        .order('updated_at', { ascending: false })
+        .from("notes")
+        .select("id, label, folder_name, tags, updated_at, position")
+        .eq("user_id", user.id)
+        .eq("is_deleted", false)
+        .order("updated_at", { ascending: false })
         .then(({ data }) => {
-          console.debug(`⚡NotesWorkspace notes fetched in ${(performance.now() - t0).toFixed(2)}ms`);
+          console.debug(
+            `⚡NotesWorkspace notes fetched in ${(performance.now() - t0).toFixed(2)}ms`,
+          );
           if (!data) return;
-          setNotes(data.map(n => ({
-            id: n.id,
-            label: n.label ?? 'Untitled',
-            folder_name: n.folder_name ?? 'Draft',
-            tags: n.tags ?? [],
-            updated_at: n.updated_at ?? '',
-            position: n.position ?? 0,
-          })));
+          setNotes(
+            data.map((n) => ({
+              id: n.id,
+              label: n.label ?? "Untitled",
+              folder_name: n.folder_name ?? "Draft",
+              tags: n.tags ?? [],
+              updated_at: n.updated_at ?? "",
+              position: n.position ?? 0,
+            })),
+          );
         });
     });
   }, []);
@@ -196,10 +214,11 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
   } | null>(null);
   const [showNoteOptions, setShowNoteOptions] = useState(false);
 
-
   // Portal root for overlays that need to escape the notes z-index stacking context
   const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
-  useEffect(() => { setPortalRoot(document.body); }, []);
+  useEffect(() => {
+    setPortalRoot(document.body);
+  }, []);
 
   const saveTimerRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
     new Map(),
@@ -221,7 +240,9 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
       if (cached.data.folder_name) folderSet.add(cached.data.folder_name);
     }
     const defaults = DEFAULT_FOLDERS.filter((f) => folderSet.has(f));
-    const custom = [...folderSet].filter((f) => !DEFAULT_FOLDERS.includes(f)).sort();
+    const custom = [...folderSet]
+      .filter((f) => !DEFAULT_FOLDERS.includes(f))
+      .sort();
     return [...defaults, ...custom];
   }, [notes, noteCache]);
 
@@ -676,30 +697,27 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
     [noteCache],
   );
 
-  const moveNote = useCallback(
-    async (noteId: string, folder: string) => {
-      await supabase
-        .from("notes")
-        .update({ folder_name: folder })
-        .eq("id", noteId);
+  const moveNote = useCallback(async (noteId: string, folder: string) => {
+    await supabase
+      .from("notes")
+      .update({ folder_name: folder })
+      .eq("id", noteId);
 
-      setNoteCache((prev) => {
-        const next = new Map(prev);
-        const cached = next.get(noteId);
-        if (!cached) return prev;
-        next.set(noteId, {
-          ...cached,
-          data: { ...cached.data, folder_name: folder },
-        });
-        return next;
+    setNoteCache((prev) => {
+      const next = new Map(prev);
+      const cached = next.get(noteId);
+      if (!cached) return prev;
+      next.set(noteId, {
+        ...cached,
+        data: { ...cached.data, folder_name: folder },
       });
+      return next;
+    });
 
-      window.dispatchEvent(
-        new CustomEvent("notes:moved", { detail: { noteId, folder } }),
-      );
-    },
-    [],
-  );
+    window.dispatchEvent(
+      new CustomEvent("notes:moved", { detail: { noteId, folder } }),
+    );
+  }, []);
 
   // ── AI result handler ────────────────────────────────────────────────
 
@@ -714,7 +732,10 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
 
       if (action === "replace" && selectedTextRef.current) {
         // Replace the selected text with the AI result
-        const newContent = currentContent.replace(selectedTextRef.current, result);
+        const newContent = currentContent.replace(
+          selectedTextRef.current,
+          result,
+        );
         scheduleSave(activeNoteId, currentLabel, newContent);
       } else {
         // Insert at the end
@@ -732,7 +753,9 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
   const autoLabeledRef = useRef<Set<string>>(new Set());
 
   // Share dialog state
-  const [shareDialogNoteId, setShareDialogNoteId] = useState<string | null>(null);
+  const [shareDialogNoteId, setShareDialogNoteId] = useState<string | null>(
+    null,
+  );
 
   // Tag editing state (per-note, pushed deep)
   const [editingTags, setEditingTags] = useState(false);
@@ -740,27 +763,26 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
 
   // Folder selector state
   const [showFolderSelect, setShowFolderSelect] = useState(false);
-  const [showTabFolderDrop, setShowTabFolderDrop] = useState<string | null>(null);
+  const [showTabFolderDrop, setShowTabFolderDrop] = useState<string | null>(
+    null,
+  );
 
   // ── Tag management ────────────────────────────────────────────────────
 
-  const updateTags = useCallback(
-    async (noteId: string, newTags: string[]) => {
-      await supabase.from("notes").update({ tags: newTags }).eq("id", noteId);
+  const updateTags = useCallback(async (noteId: string, newTags: string[]) => {
+    await supabase.from("notes").update({ tags: newTags }).eq("id", noteId);
 
-      setNoteCache((prev) => {
-        const next = new Map(prev);
-        const cached = next.get(noteId);
-        if (!cached) return prev;
-        next.set(noteId, {
-          ...cached,
-          data: { ...cached.data, tags: newTags },
-        });
-        return next;
+    setNoteCache((prev) => {
+      const next = new Map(prev);
+      const cached = next.get(noteId);
+      if (!cached) return prev;
+      next.set(noteId, {
+        ...cached,
+        data: { ...cached.data, tags: newTags },
       });
-    },
-    [],
-  );
+      return next;
+    });
+  }, []);
 
   const addTag = useCallback(
     (noteId: string, tag: string) => {
@@ -777,7 +799,10 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
     (noteId: string, tag: string) => {
       const cached = noteCache.get(noteId);
       if (!cached) return;
-      updateTags(noteId, cached.data.tags.filter((t) => t !== tag));
+      updateTags(
+        noteId,
+        cached.data.tags.filter((t) => t !== tag),
+      );
     },
     [noteCache, updateTags],
   );
@@ -869,8 +894,10 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
   // ── Derived state ─────────────────────────────────────────────────────
 
   const activeCached = activeNoteId ? noteCache.get(activeNoteId) : null;
-  const activeLabel = activeCached?.localEdits?.label ?? activeCached?.data.label ?? "";
-  const activeContent = activeCached?.localEdits?.content ?? activeCached?.data.content ?? "";
+  const activeLabel =
+    activeCached?.localEdits?.label ?? activeCached?.data.label ?? "";
+  const activeContent =
+    activeCached?.localEdits?.content ?? activeCached?.data.content ?? "";
   const visibleTabs = tabIds.filter((id) => labelMap[id] || noteCache.has(id));
 
   const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -884,7 +911,10 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
     let label = activeLabel;
 
     // Auto-label: generate title from content if label is "New Note" or "Untitled"
-    const isDefaultLabel = !label || label.toLowerCase() === "new note" || label.toLowerCase() === "untitled";
+    const isDefaultLabel =
+      !label ||
+      label.toLowerCase() === "new note" ||
+      label.toLowerCase() === "untitled";
     if (isDefaultLabel && !autoLabeledRef.current.has(activeNoteId)) {
       const trimmed = newContent.trim();
       const hasNewline = newContent.includes("\n");
@@ -987,7 +1017,7 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
       {/* ── Compact Tab Row (VSCode-style) ─────────────────────────── */}
       {visibleTabs.length > 0 && (
         <div
-          className="notes-tab-bar-scroll flex items-stretch h-8 min-h-[2rem] overflow-x-auto overflow-y-hidden border-b border-border shrink-0 lg:flex hidden"
+          className="notes-tab-bar-scroll flex items-stretch h-8 min-h-[2rem] overflow-x-auto overflow-y-hidden border-b border-border shrink-0 lg:flex hidden mt-1"
           role="tablist"
           aria-label="Open notes"
         >
@@ -996,7 +1026,10 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
             {visibleTabs.map((id) => {
               const cached = noteCache.get(id);
               const label =
-                cached?.localEdits?.label ?? cached?.data.label ?? labelMap[id] ?? "Untitled";
+                cached?.localEdits?.label ??
+                cached?.data.label ??
+                labelMap[id] ??
+                "Untitled";
               const isDirty =
                 cached?.saveState === "dirty" || cached?.saveState === "saving";
               const isActive = id === activeNoteId;
@@ -1016,7 +1049,12 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
                   onClick={() => !isActive && switchTab(id)}
                   onContextMenu={(e) => {
                     e.preventDefault();
-                    setContextMenu({ x: e.clientX, y: e.clientY, noteId: id, type: "tab" });
+                    setContextMenu({
+                      x: e.clientX,
+                      y: e.clientY,
+                      noteId: id,
+                      type: "tab",
+                    });
                   }}
                 >
                   {isDirty && (
@@ -1032,37 +1070,61 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
                       spellCheck={false}
                     />
                   ) : (
-                    <span className="overflow-hidden text-ellipsis">{label}</span>
+                    <span className="overflow-hidden text-ellipsis">
+                      {label}
+                    </span>
                   )}
                   {isActive && (
-                    <div className="flex items-center gap-px shrink-0 ml-1" onClick={(e) => e.stopPropagation()}>
+                    <div
+                      className="flex items-center gap-px shrink-0 ml-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <button
-                        className={cn(actionBtnClass, saveState === "dirty" && "text-amber-500")}
+                        className={cn(
+                          actionBtnClass,
+                          saveState === "dirty" && "text-amber-500",
+                        )}
                         onClick={() => forceSave(id)}
                         title="Save (Ctrl+S)"
                       >
                         <Save />
                       </button>
-                      <button className={actionBtnClass} onClick={() => duplicateNote(id)} title="Duplicate">
+                      <button
+                        className={actionBtnClass}
+                        onClick={() => duplicateNote(id)}
+                        title="Duplicate"
+                      >
                         <Copy />
                       </button>
-                      <button className={actionBtnClass} onClick={() => setShareDialogNoteId(id)} title="Share note">
+                      <button
+                        className={actionBtnClass}
+                        onClick={() => setShareDialogNoteId(id)}
+                        title="Share note"
+                      >
                         <Share2 />
                       </button>
                       <div className="relative">
                         <button
                           className={actionBtnClass}
-                          onClick={() => setShowTabFolderDrop(showTabFolderDrop === id ? null : id)}
+                          onClick={() =>
+                            setShowTabFolderDrop(
+                              showTabFolderDrop === id ? null : id,
+                            )
+                          }
                           title="Move to folder"
                         >
                           <Folder />
                         </button>
                         {showTabFolderDrop === id && (
                           <>
-                            <div className="fixed inset-0 z-40" onClick={() => setShowTabFolderDrop(null)} />
+                            <div
+                              className="fixed inset-0 z-40"
+                              onClick={() => setShowTabFolderDrop(null)}
+                            />
                             <div className="absolute top-full right-0 mt-1 z-50 min-w-[160px] p-1 bg-card/95 backdrop-blur-2xl saturate-150 border border-border rounded-lg shadow-lg">
                               {allFolders.map((f) => {
-                                const isCurrent = activeCached?.data.folder_name === f;
+                                const isCurrent =
+                                  activeCached?.data.folder_name === f;
                                 return (
                                   <button
                                     key={f}
@@ -1072,12 +1134,19 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
                                         ? "text-amber-600 dark:text-amber-400 bg-amber-500/5"
                                         : "text-foreground hover:bg-accent",
                                     )}
-                                    onClick={() => { moveNote(id, f); setShowTabFolderDrop(null); }}
+                                    onClick={() => {
+                                      moveNote(id, f);
+                                      setShowTabFolderDrop(null);
+                                    }}
                                     disabled={isCurrent}
                                   >
                                     <FolderInput />
                                     {f}
-                                    {isCurrent && <span className="ml-auto text-[0.625rem] opacity-50">current</span>}
+                                    {isCurrent && (
+                                      <span className="ml-auto text-[0.625rem] opacity-50">
+                                        current
+                                      </span>
+                                    )}
                                   </button>
                                 );
                               })}
@@ -1109,7 +1178,6 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
               );
             })}
           </div>
-
         </div>
       )}
 
@@ -1125,7 +1193,8 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
           currentFolder={noteCache.get(contextMenu.noteId)?.data.folder_name}
           noteContent={
             noteCache.get(contextMenu.noteId)?.localEdits?.content ??
-            noteCache.get(contextMenu.noteId)?.data.content ?? ""
+            noteCache.get(contextMenu.noteId)?.data.content ??
+            ""
           }
           selectedText={selectedTextRef.current}
           onSave={() => forceSave(contextMenu.noteId)}
@@ -1149,7 +1218,12 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
           className="flex-1 flex flex-col overflow-hidden note-detail-active"
           onContextMenu={(e) => {
             e.preventDefault();
-            setContextMenu({ x: e.clientX, y: e.clientY, noteId: activeNoteId, type: "editor" });
+            setContextMenu({
+              x: e.clientX,
+              y: e.clientY,
+              noteId: activeNoteId,
+              type: "editor",
+            });
           }}
         >
           {/* ── Conflict Banner ──────────────────────────────────────── */}
@@ -1204,7 +1278,8 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
               <button
                 className={cn(
                   "flex items-center justify-center w-[1.875rem] h-[1.875rem] rounded-full shell-glass shell-tactile text-muted-foreground cursor-pointer hover:text-foreground [&_svg]:w-3.5 [&_svg]:h-3.5",
-                  showNoteOptions && "bg-(--shell-glass-bg-active)! text-foreground",
+                  showNoteOptions &&
+                    "bg-(--shell-glass-bg-active)! text-foreground",
                 )}
                 onClick={() => setShowNoteOptions((v) => !v)}
                 aria-label="Note options"
@@ -1215,22 +1290,26 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
           </div>
 
           {/* ── Note Options Bottom Sheet (mobile, portaled for z-index) ──── */}
-          {showNoteOptions && activeNoteId && activeCached && portalRoot && createPortal(
-            <NoteOptionsSheet
-              currentFolder={activeCached.data.folder_name ?? "Draft"}
-              allFolders={allFolders}
-              saveState={saveState}
-              onSave={() => forceSave(activeNoteId)}
-              onDuplicate={() => duplicateNote(activeNoteId)}
-              onShareLink={() => setShareDialogNoteId(activeNoteId)}
-              onShareClipboard={() => shareNote(activeNoteId)}
-              onExport={() => exportNote(activeNoteId)}
-              onMove={(folder) => moveNote(activeNoteId, folder)}
-              onDelete={() => deleteNote(activeNoteId)}
-              onClose={() => setShowNoteOptions(false)}
-            />,
-            portalRoot,
-          )}
+          {showNoteOptions &&
+            activeNoteId &&
+            activeCached &&
+            portalRoot &&
+            createPortal(
+              <NoteOptionsSheet
+                currentFolder={activeCached.data.folder_name ?? "Draft"}
+                allFolders={allFolders}
+                saveState={saveState}
+                onSave={() => forceSave(activeNoteId)}
+                onDuplicate={() => duplicateNote(activeNoteId)}
+                onShareLink={() => setShareDialogNoteId(activeNoteId)}
+                onShareClipboard={() => shareNote(activeNoteId)}
+                onExport={() => exportNote(activeNoteId)}
+                onMove={(folder) => moveNote(activeNoteId, folder)}
+                onDelete={() => deleteNote(activeNoteId)}
+                onClose={() => setShowNoteOptions(false)}
+              />,
+              portalRoot,
+            )}
 
           {/* ── Editor Content ─────────────────────────────────────── */}
           {editorMode === "plain" && (
@@ -1240,7 +1319,10 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
               onChange={handleContentChange}
               onSelect={(e) => {
                 const ta = e.currentTarget;
-                selectedTextRef.current = ta.value.substring(ta.selectionStart, ta.selectionEnd);
+                selectedTextRef.current = ta.value.substring(
+                  ta.selectionStart,
+                  ta.selectionEnd,
+                );
               }}
               placeholder="Start writing..."
               aria-label="Note content"
@@ -1250,7 +1332,12 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
           {editorMode === "preview" && (
             <div className="notes-preview-wrapper scrollbar-thin-auto flex-1 min-h-0 overflow-y-auto py-2 px-5">
               {activeContent ? (
-                <MarkdownStream content={activeContent} type="text" role="assistant" hideCopyButton />
+                <MarkdownStream
+                  content={activeContent}
+                  type="text"
+                  role="assistant"
+                  hideCopyButton
+                />
               ) : (
                 <p className="notes-preview-empty">Nothing to preview</p>
               )}
@@ -1265,7 +1352,10 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
                 onChange={handleContentChange}
                 onSelect={(e) => {
                   const ta = e.currentTarget;
-                  selectedTextRef.current = ta.value.substring(ta.selectionStart, ta.selectionEnd);
+                  selectedTextRef.current = ta.value.substring(
+                    ta.selectionStart,
+                    ta.selectionEnd,
+                  );
                 }}
                 placeholder="Start writing..."
                 aria-label="Note content"
@@ -1273,7 +1363,12 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
               <div className="notes-split-divider w-px bg-border" />
               <div className="notes-split-preview scrollbar-thin-auto overflow-y-auto py-2 px-5 min-w-0">
                 {activeContent ? (
-                  <MarkdownStream content={activeContent} type="text" role="assistant" hideCopyButton />
+                  <MarkdownStream
+                    content={activeContent}
+                    type="text"
+                    role="assistant"
+                    hideCopyButton
+                  />
                 ) : (
                   <p className="notes-preview-empty">Nothing to preview</p>
                 )}
@@ -1290,11 +1385,16 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
                 onClick={() => setShowFolderSelect((v) => !v)}
               >
                 <Folder />
-                <span className="max-w-[80px] truncate">{activeCached.data.folder_name}</span>
+                <span className="max-w-[80px] truncate">
+                  {activeCached.data.folder_name}
+                </span>
               </button>
               {showFolderSelect && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowFolderSelect(false)} />
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowFolderSelect(false)}
+                  />
                   <div className="absolute bottom-full left-0 mb-1 z-50 min-w-[160px] p-1 bg-card/95 backdrop-blur-2xl saturate-150 border border-border rounded-lg shadow-lg">
                     {allFolders.map((f) => {
                       const isCurrent = activeCached.data.folder_name === f;
@@ -1315,7 +1415,11 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
                         >
                           <FolderInput />
                           {f}
-                          {isCurrent && <span className="ml-auto text-[0.625rem] opacity-50">current</span>}
+                          {isCurrent && (
+                            <span className="ml-auto text-[0.625rem] opacity-50">
+                              current
+                            </span>
+                          )}
                         </button>
                       );
                     })}
@@ -1351,9 +1455,15 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       const v = tagInputValue.trim();
-                      if (v) { addTag(activeNoteId, v); setTagInputValue(""); }
+                      if (v) {
+                        addTag(activeNoteId, v);
+                        setTagInputValue("");
+                      }
                     }
-                    if (e.key === "Escape") { setEditingTags(false); setTagInputValue(""); }
+                    if (e.key === "Escape") {
+                      setEditingTags(false);
+                      setTagInputValue("");
+                    }
                   }}
                   onBlur={() => {
                     const v = tagInputValue.trim();
@@ -1426,14 +1536,15 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
       )}
 
       {/* ── Share Dialog (portaled for z-index) ─────────────────────── */}
-      {shareDialogNoteId && portalRoot && createPortal(
-        <NoteShareDialog
-          noteId={shareDialogNoteId}
-          onClose={() => setShareDialogNoteId(null)}
-        />,
-        portalRoot,
-      )}
+      {shareDialogNoteId &&
+        portalRoot &&
+        createPortal(
+          <NoteShareDialog
+            noteId={shareDialogNoteId}
+            onClose={() => setShareDialogNoteId(null)}
+          />,
+          portalRoot,
+        )}
     </>
   );
 }
-

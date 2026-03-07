@@ -26,6 +26,7 @@ import {
   User,
   PanelLeft,
   Menu,
+  X,
   type LucideProps,
 } from "lucide-react";
 
@@ -54,6 +55,7 @@ const iconMap: Record<string, React.ComponentType<LucideProps>> = {
   User,
   PanelLeft,
   Menu,
+  X,
 };
 
 interface ShellIconProps extends LucideProps {
