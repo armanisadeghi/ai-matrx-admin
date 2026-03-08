@@ -72,28 +72,29 @@ const mapCreateArgs = (args: CreateThunkArgs): RpcCreateType['Args'] => ({
 export const createPaginatedResponseSchema = <T extends z.ZodTypeAny>(
     itemSchema: T
 ): z.ZodType<PaginatedResponse<z.infer<T>>> => {
-    const schema = z.object({
+    const schema = z.strictObject({
         page: z.number(),
         allIdAndNames: z.array(z.object({ id: z.string(), name: z.string() })),
         pageSize: z.number(),
         totalCount: z.number(),
         paginatedData: z.array(z.union([itemSchema, z.string()])),
-    }).strict() as z.ZodType<PaginatedResponse<z.infer<T>>>;
+    }) as z.ZodType<PaginatedResponse<z.infer<T>>>;
 
-    return schema.superRefine((data, ctx) => {
+    return schema.check((ctx) => {
         try {
-            data.paginatedData = data.paginatedData.map(item => {
+            ctx.value.paginatedData = ctx.value.paginatedData.map((item: unknown) => {
                 if (typeof item === 'object') {
                     console.log('Unexpected object found, returning as is:', item);
                     return item;
                 }
-                return JSON.parse(item);
+                return JSON.parse(item as string);
             });
         } catch (error) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: `Failed to parse JSON string in paginatedData: ${error.message}`,
+            ctx.issues.push({
+                code: 'custom',
+                message: `Failed to parse JSON string in paginatedData: ${(error as Error).message}`,
                 path: ["paginatedData"],
+                input: ctx.value,
             });
         }
     }) as z.ZodType<PaginatedResponse<z.infer<T>>>;

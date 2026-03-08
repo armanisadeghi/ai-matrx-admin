@@ -14,7 +14,7 @@ import {
   SiGoogleanalytics, SiGoogleads, SiGooglecloud, 
   SiDigitalocean, SiHeroku, SiNetlify, SiVercel, SiFirebase,
   SiRedis, SiMongodb, SiPostgresql, SiMysql, SiElasticsearch,
-  SiAdobe
+  SiFigma
 } from 'react-icons/si';
 import { CgMonday } from "react-icons/cg";
 import { BiLogoZoom } from "react-icons/bi";
@@ -104,7 +104,7 @@ export const INTEGRATIONS: Integration[] = [
   { id: 'shopify', name: 'Shopify', icon: FaShopify, description: 'Connect your Shopify store', category: CATEGORIES.CMS },
   { id: 'wix', name: 'Wix', icon: FaWix, description: 'Connect your Wix site', category: CATEGORIES.CMS },
   { id: 'squarespace', name: 'Squarespace', icon: FaSquarespace, description: 'Connect your Squarespace site', category: CATEGORIES.CMS },
-  { id: 'adobe', name: 'Adobe Creative Cloud', icon: SiAdobe , description: 'Connect your Adobe Creative Cloud', category: CATEGORIES.CMS },
+  { id: 'adobe', name: 'Adobe Creative Cloud', icon: SiFigma , description: 'Connect your Adobe Creative Cloud', category: CATEGORIES.CMS },
   
   // Cloud Services
   { id: 'aws', name: 'Amazon Web Services', icon: FaAws, description: 'Connect your AWS account', category: CATEGORIES.CLOUD },

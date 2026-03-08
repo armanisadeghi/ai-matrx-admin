@@ -6,7 +6,7 @@ import { BsChatLeftText } from "react-icons/bs";
 import { MdOutlineImage } from "react-icons/md";
 import { TbTopologyComplex } from "react-icons/tb";
 import { GiBrainstorm } from "react-icons/gi";
-import { SiStudyverse } from "react-icons/si";
+import { SiTidyverse } from "react-icons/si";
 import { FaChartLine } from "react-icons/fa";
 import { IoCodeWorkingSharp } from "react-icons/io5";
 import HierarchicalToggleMenu from "@/components/matrx/toggles/HierarchicalToggleMenu";
@@ -94,7 +94,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onModeSelect, className =
             label: "Research",
             mode: "research" as const,
             defaultIcon: <TbTopologyComplex />,
-            enabledIcon: <SiStudyverse />,
+            enabledIcon: <SiTidyverse />,
             tooltip: "Research information",
         },
         {

@@ -1,9 +1,9 @@
 // File: lib/ai/adapters/anthropicAdapter.ts
 
 import { BaseAdapter } from "./baseAdapter";
-// @ts-ignore - COMPLEX: @ai-sdk/anthropic module not found - may need to install package or use different import path
-import {anthropic, AnthropicProvider} from '@ai-sdk/anthropic';
 import { generateText, streamText, generateObject, streamObject } from 'ai';
+
+type AnthropicProvider = unknown;
 
 export default class AnthropicAdapter implements BaseAdapter {
     private client:  AnthropicProvider;

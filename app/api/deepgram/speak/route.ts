@@ -1,6 +1,10 @@
-// @ts-nocheck
-import {UIMessage as Message} from "ai";
 import {NextRequest, NextResponse} from "next/server";
+
+interface Message {
+  role: string;
+  content: string;
+  id?: string;
+}
 
 /**
  * Return a stream from the API

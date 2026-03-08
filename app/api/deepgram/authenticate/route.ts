@@ -1,56 +1,51 @@
-import { DeepgramError, createClient } from "@deepgram/sdk";
+import { DeepgramError, DeepgramClient } from "@deepgram/sdk";
 import { NextResponse, type NextRequest } from "next/server";
 
 export const revalidate = 0;
 
 export async function GET(request: NextRequest) {
-  // exit early so we don't request 70000000 keys while in devmode
+  // exit early so we don't request tokens while in devmode
   if (process.env.DEEPGRAM_ENV === "development") {
     return NextResponse.json({
-      key: process.env.DEEPGRAM_API_KEY ?? "",
+      access_token: process.env.DEEPGRAM_API_KEY ?? "",
+      url: request.url,
     });
   }
 
-  // gotta use the request object to invalidate the cache every request :vomit:
   const url = request.url;
-  const deepgram = createClient(process.env.DEEPGRAM_API_KEY ?? "");
+  const deepgram = new DeepgramClient({
+    apiKey: process.env.DEEPGRAM_API_KEY ?? "",
+  });
 
-  let { result: projectsResult, error: projectsError } =
-    await deepgram.manage.getProjects();
+  try {
+    const tokenData = await deepgram.auth.v1.tokens.grant();
+    const access_token = tokenData?.access_token;
 
-  if (projectsError) {
-    return NextResponse.json(projectsError);
-  }
+    if (!access_token) {
+      return NextResponse.json(
+        { message: "Failed to obtain Deepgram access token." },
+        { status: 502 }
+      );
+    }
 
-  const project = projectsResult?.projects[0];
-
-  if (!project) {
+    const res = NextResponse.json({ access_token, url });
+    res.headers.set("Surrogate-Control", "no-store");
+    res.headers.set(
+      "Cache-Control",
+      "s-maxage=0, no-store, no-cache, must-revalidate, proxy-revalidate"
+    );
+    res.headers.set("Expires", "0");
+    return res;
+  } catch (err) {
+    if (err instanceof DeepgramError) {
+      return NextResponse.json(
+        err.body ?? { message: err.message },
+        { status: err.statusCode ?? 500 }
+      );
+    }
     return NextResponse.json(
-      new DeepgramError(
-        "Cannot find a Deepgram project. Please create a project first."
-      )
+      { message: err instanceof Error ? err.message : "Deepgram authentication failed." },
+      { status: 500 }
     );
   }
-
-  let { result: newKeyResult, error: newKeyError } =
-    await deepgram.manage.createProjectKey(project.project_id, {
-      comment: "Temporary API key",
-      scopes: ["usage:write"],
-      tags: ["next.js"],
-      time_to_live_in_seconds: 60,
-    });
-
-  if (newKeyError) {
-    return NextResponse.json(newKeyError);
-  }
-
-  const response = NextResponse.json({ ...newKeyResult, url });
-  response.headers.set("Surrogate-Control", "no-store");
-  response.headers.set(
-    "Cache-Control",
-    "s-maxage=0, no-store, no-cache, must-revalidate, proxy-revalidate"
-  );
-  response.headers.set("Expires", "0");
-
-  return response;
 }

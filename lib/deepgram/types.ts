@@ -1,6 +1,8 @@
-// @ts-ignore - Message type not exported from 'ai', using UIMessage or local type instead
-import type { UIMessage } from "ai";
-type Message = UIMessage; // Fallback type alias
+interface Message {
+  role: string;
+  content: string;
+  id?: string;
+}
 
 export interface MessageMetadata extends Partial<Message> {
   start?: number;

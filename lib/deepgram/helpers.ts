@@ -1,14 +1,27 @@
-import { LiveTranscriptionEvent } from "@deepgram/sdk";
 import { greetings } from "./constants";
 
 /**
- * get the sentence from a LiveTranscriptionEvent
- * @param {LiveTranscriptionEvent} event
- * @returns {string}
+ * Shape of a live transcription "Results" payload (v5 listen WebSocket).
+ * Compatible with ListenV1Response results channel structure.
  */
-const utteranceText = (event: LiveTranscriptionEvent) => {
-  const words = event.channel.alternatives[0].words;
-  return words.map((word: any) => word.punctuated_word ?? word.word).join(" ");
+interface LiveResultsPayload {
+  channel: {
+    alternatives: Array<{
+      words?: Array<{ word?: string; punctuated_word?: string }>;
+    }>;
+  };
+}
+
+/**
+ * Get the sentence text from a live transcription result (Deepgram listen v1 "Results" message).
+ * @param event - Payload with channel.alternatives[0].words
+ * @returns Concatenated word text (punctuated_word when present, else word)
+ */
+const utteranceText = (event: LiveResultsPayload) => {
+  const words = event.channel?.alternatives?.[0]?.words ?? [];
+  return words
+    .map((word) => word.punctuated_word ?? word.word ?? "")
+    .join(" ");
 };
 
 /**
