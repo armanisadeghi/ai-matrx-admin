@@ -246,6 +246,47 @@ const legacyMessages = canonicalArrayToLegacy(canonicalMessages);
 
 ---
 
+## Tool State Contract — Critical Rules for All Renderers
+
+`ToolCallBlock.phase` is the **single source of truth** for a tool's execution state:
+
+| `phase`    | Meaning                            | UI indicator           |
+|------------|------------------------------------|------------------------|
+| `pending`  | Tool request issued, not started   | Spinner (starting)     |
+| `running`  | `tool_started` received            | Spinner (working)      |
+| `complete` | `tool_completed` received          | Checkmark              |
+| `error`    | `tool_error` received              | Error icon             |
+
+**Rules:**
+
+- **ALWAYS read `phase` from the `ToolCallBlock` or from `ToolCallObject.phase` (on the `mcp_input` entry).** Never infer phase from the position of entries in an array, the presence of `mcp_output`, or the type of the last array entry.
+
+- **NEVER assume `mcp_output` is the last entry.** Progress messages (`user_message` type) may appear after the output in some code paths. Only `phase` is guaranteed to reflect the true execution state.
+
+- **Tool events can arrive out of order or interleaved.** The canonical protocol handles this — renderers must not assume a specific ordering of `mcp_input → progress → mcp_output`.
+
+- **A running tool with no output is valid.** Phase `'running'` with no `mcp_output` is the correct state while the tool is executing. Show a spinner. Do not wait for `mcp_output` to transition away from `"starting"`.
+
+### If you are building a new tool renderer
+
+Use `ToolCallBlock` directly from the canonical protocol when possible. If you must use the legacy `ToolCallObject[]` adapter path:
+
+```ts
+// ✅ Correct — use phase from the input entry
+const inputEntry = toolUpdates.find(u => u.type === 'mcp_input');
+const phase = inputEntry?.phase ?? 'pending';
+const isComplete = phase === 'complete' || phase === 'error';
+
+// ❌ Wrong — last entry is NOT reliably mcp_output
+const isComplete = toolUpdates[toolUpdates.length - 1]?.type === 'mcp_output';
+
+// ❌ Wrong — any() check also fails if progress arrives after output
+const isComplete = toolUpdates.some(u => u.type === 'mcp_output');
+// (use `phase` instead — it is always correct regardless of entry order)
+```
+
+---
+
 ## Backend Alignment
 
 This package is verified against two backend analysis documents:

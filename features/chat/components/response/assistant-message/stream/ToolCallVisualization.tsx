@@ -20,18 +20,35 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
     const [isOverlayOpen, setIsOverlayOpen] = useState<boolean>(false);
     const [initialOverlayTab, setInitialOverlayTab] = useState<string | undefined>(undefined);
 
-    // Determine the phase based on tool updates
+    // Determine phase from the authoritative `phase` field on the mcp_input entry.
+    // Falling back to position-based inference is intentionally removed — it was
+    // the source of the stuck-spinner bug (progress entries after mcp_output made
+    // the last entry non-output, keeping phase stuck at "processing").
     useEffect(() => {
         if (toolUpdates.length === 0) {
             setCurrentPhase("starting");
-        } else {
-            const lastUpdate = toolUpdates[toolUpdates.length - 1];
-            if (lastUpdate.type === "mcp_output") {
+            return;
+        }
+        // The mcp_input entry carries the authoritative phase set by the canonical
+        // protocol adapter. Read it from the first group's input entry.
+        const inputEntry = toolUpdates.find(u => u.type === 'mcp_input');
+        if (inputEntry?.phase) {
+            if (inputEntry.phase === 'complete') {
                 setCurrentPhase("complete");
+            } else if (inputEntry.phase === 'error') {
+                setCurrentPhase("complete"); // show as complete (with error content inside)
             } else {
+                // 'running' or 'pending'
                 setCurrentPhase("processing");
             }
+            return;
         }
+        // Legacy fallback for ToolCallObjects that predate the phase field:
+        // check if any mcp_output or mcp_error entry exists anywhere in the array.
+        const hasTerminalUpdate = toolUpdates.some(
+            u => u.type === 'mcp_output' || u.type === 'mcp_error'
+        );
+        setCurrentPhase(hasTerminalUpdate ? "complete" : "processing");
     }, [toolUpdates]);
 
     // Gradually reveal updates for smooth animation

@@ -22,6 +22,7 @@
  */
 
 import type { CanonicalMessage, CanonicalBlock, ToolCallBlock } from './types';
+import type { ToolCallPhase } from '@/lib/api/tool-call.types';
 
 // ============================================================================
 // LEGACY TOOL CALL OBJECT (matches lib/api/tool-call.types.ts)
@@ -39,6 +40,8 @@ export interface LegacyToolCallObject {
     mcp_output?: Record<string, unknown>;
     mcp_error?:  string;
     user_message?: string;
+    /** Authoritative phase — only present on the mcp_input entry. */
+    phase?: ToolCallPhase;
 }
 
 // ============================================================================
@@ -46,14 +49,26 @@ export interface LegacyToolCallObject {
 // ============================================================================
 
 /**
- * Convert a CanonicalToolCallBlock into the legacy ToolCallObject[] pair
- * (mcp_input + mcp_output or mcp_error) expected by ToolCallVisualization.
+ * Convert a CanonicalToolCallBlock into the legacy ToolCallObject[] array
+ * expected by ToolCallVisualization.
+ *
+ * OUTPUT ORDER:
+ *   1. mcp_input  — always first; carries the authoritative `phase` field
+ *   2. user_message entries — progress messages in arrival order
+ *   3. mcp_output | mcp_error — only present once the tool finishes
+ *
+ * IMPORTANT: Renderers MUST read `phase` from the mcp_input entry rather
+ * than inferring phase from the last item's type. The `phase` field is the
+ * single source of truth and is correct even while the tool is still running
+ * (phase = 'running') with no output entry present yet.
  *
  * @deprecated Use CanonicalBlock directly once renderers are upgraded.
  */
 export function toolCallBlockToLegacy(block: ToolCallBlock): LegacyToolCallObject[] {
     const updates: LegacyToolCallObject[] = [];
 
+    // 1. Input anchor — carries authoritative phase so renderers never need to
+    //    infer state from array position or the presence/absence of other entries.
     updates.push({
         id:        block.callId,
         type:      'mcp_input',
@@ -61,8 +76,19 @@ export function toolCallBlockToLegacy(block: ToolCallBlock): LegacyToolCallObjec
             name:      block.input.name,
             arguments: block.input.arguments as Record<string, unknown>,
         },
+        phase: block.phase,
     });
 
+    // 2. Progress messages in arrival order (interleaved during streaming)
+    for (const p of block.progress) {
+        updates.push({
+            id:           block.callId,
+            type:         'user_message',
+            user_message: p.message,
+        });
+    }
+
+    // 3. Terminal result — only present when phase is 'complete' or 'error'
     if (block.output) {
         updates.push({
             id:         block.callId,
@@ -74,15 +100,6 @@ export function toolCallBlockToLegacy(block: ToolCallBlock): LegacyToolCallObjec
             id:        block.callId,
             type:      'mcp_error',
             mcp_error: block.error.message,
-        });
-    }
-
-    // Progress messages (streaming only) become user_message updates
-    for (const p of block.progress) {
-        updates.push({
-            id:           block.callId,
-            type:         'user_message',
-            user_message: p.message,
         });
     }
 

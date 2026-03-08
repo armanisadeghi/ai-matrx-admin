@@ -2,7 +2,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { EnhancedChatMarkdownInternal, ChatMarkdownDisplayProps } from "./EnhancedChatMarkdown";
 import { StreamEvent } from "./types";
-import { convertStreamEventToToolCall } from "./tool-event-engine";
+import { buildCanonicalBlocks, toolCallBlockToLegacy } from "@/lib/chat-protocol";
+import type { ToolCallBlock } from "@/lib/chat-protocol";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 
 /**
@@ -58,9 +59,12 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
   // Track which events we've already processed (by index)
   const lastProcessedIndexRef = React.useRef(-1);
   
-  // Accumulate content in a ref to avoid reprocessing everything
+  // Accumulate text content in a ref to avoid reprocessing all chunks
   const accumulatedContentRef = React.useRef('');
-  const toolUpdatesRef = React.useRef<any[]>([]);
+  // Track whether tool events changed since last RAF flush
+  const toolEventsChangedRef = React.useRef(false);
+  // Always point to the latest events array so RAF callback can access most-current state
+  const eventsRef = React.useRef<StreamEvent[] | undefined>(events);
   
   // Throttle state updates using RAF to batch rapid chunks
   const rafIdRef = React.useRef<number | null>(null);
@@ -81,6 +85,11 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
     };
   }, []);
 
+  // Keep eventsRef current so the RAF callback always processes the latest events
+  useEffect(() => {
+    eventsRef.current = events;
+  });
+
   // Process ONLY new events (delta processing for efficiency)
   useEffect(() => {
     if (!events || events.length === 0) {
@@ -88,30 +97,23 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
       if (content !== undefined && content !== accumulatedContentRef.current) {
         setProcessedContent(content);
         accumulatedContentRef.current = content;
-        lastProcessedIndexRef.current = -1; // Reset for next stream
-        toolUpdatesRef.current = [];
+        lastProcessedIndexRef.current = -1;
+        toolEventsChangedRef.current = false;
       }
       return;
     }
 
     // Check if this is a new stream (events were cleared/reset)
-    // This happens when events.length is less than what we've processed
     if (events.length <= lastProcessedIndexRef.current) {
-      // Reset and start fresh
       lastProcessedIndexRef.current = -1;
       accumulatedContentRef.current = '';
-      toolUpdatesRef.current = [];
+      toolEventsChangedRef.current = false;
     }
 
-    // Event mode - process only NEW events since last render
+    // Process only the delta (new events since last render)
     const startIndex = lastProcessedIndexRef.current + 1;
+    if (startIndex >= events.length) return;
     
-    if (startIndex >= events.length) {
-      // No new events to process
-      return;
-    }
-    
-    // Process only the delta (new events)
     let hasNewContent = false;
     let hasNewTools = false;
     
@@ -120,7 +122,6 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
       
       switch (event.event) {
         case 'chunk': {
-          // New ChunkPayload shape: { text: string }
           const chunkData = event.data as unknown as { text: string };
           accumulatedContentRef.current += chunkData.text;
           hasNewContent = true;
@@ -128,11 +129,9 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
         }
 
         case 'tool_event': {
-          const toolCallObj = convertStreamEventToToolCall(event);
-          if (toolCallObj) {
-            toolUpdatesRef.current.push(toolCallObj);
-            hasNewTools = true;
-          }
+          // Mark that tool events changed — recompute canonical blocks in RAF
+          toolEventsChangedRef.current = true;
+          hasNewTools = true;
           break;
         }
 
@@ -154,8 +153,6 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
         case 'heartbeat':
         case 'data':
         case 'broker':
-          break;
-
         case 'end':
           break;
 
@@ -164,30 +161,30 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
       }
     }
     
-    // Update the last processed index
     lastProcessedIndexRef.current = events.length - 1;
     
-    // Mark what needs updating
-    if (hasNewContent) {
-      pendingContentUpdateRef.current = true;
-    }
-    if (hasNewTools) {
-      pendingToolsUpdateRef.current = true;
-    }
+    if (hasNewContent) pendingContentUpdateRef.current = true;
+    if (hasNewTools) pendingToolsUpdateRef.current = true;
     
-    // Batch state updates using RAF to avoid overwhelming React
-    // Only schedule if not already scheduled
+    // Batch state updates using RAF — only schedule if not already scheduled
     if ((hasNewContent || hasNewTools) && rafIdRef.current === null) {
       rafIdRef.current = requestAnimationFrame(() => {
         rafIdRef.current = null;
         
-        // Apply batched updates
         if (pendingContentUpdateRef.current) {
           setProcessedContent(accumulatedContentRef.current);
           pendingContentUpdateRef.current = false;
         }
-        if (pendingToolsUpdateRef.current) {
-          setToolUpdatesInternal([...toolUpdatesRef.current]);
+        if (pendingToolsUpdateRef.current && toolEventsChangedRef.current) {
+          // Use eventsRef to get the most current events at flush time
+          const currentEvents = eventsRef.current;
+          if (currentEvents) {
+            const blocks = buildCanonicalBlocks(currentEvents as any);
+            const toolBlocks = blocks.filter((b): b is ToolCallBlock => b.type === 'tool_call');
+            const legacyUpdates = toolBlocks.flatMap(b => toolCallBlockToLegacy(b));
+            setToolUpdatesInternal(legacyUpdates);
+          }
+          toolEventsChangedRef.current = false;
           pendingToolsUpdateRef.current = false;
         }
       });

@@ -158,7 +158,7 @@ export async function loginWithGoogle(redirectToArg: string, formData?: FormData
 
     const callbackUrl = `${baseUrl}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`;
     console.log(`[${timestamp}] Google login - OAuth callback URL:`, callbackUrl);
-    console.log(`[${timestamp}] 🚨 IMPORTANT: This URL must be whitelisted in Supabase Dashboard → Authentication → URL Configuration`);
+    // console.log(`[${timestamp}] 🚨 IMPORTANT: This URL must be whitelisted in Supabase Dashboard → Authentication → URL Configuration`);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -204,7 +204,6 @@ export async function loginWithGithub(redirectToArg: string, formData?: FormData
 
     const callbackUrl = `${baseUrl}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`;
     console.log(`[${timestamp}] GitHub login - OAuth callback URL:`, callbackUrl);
-    console.log(`[${timestamp}] 🚨 IMPORTANT: This URL must be whitelisted in Supabase Dashboard → Authentication → URL Configuration`);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "github",
@@ -214,7 +213,8 @@ export async function loginWithGithub(redirectToArg: string, formData?: FormData
     });
 
     if (data.url) {
-        console.log(`[${timestamp}] GitHub login - Redirecting to OAuth provider:`, data.url);
+        console.log(`[${timestamp}] GitHub login - Redirecting to OAuth provider:`);
+        console.log(` -> ${data.url}`);
         redirect(data.url);
     }
 
@@ -248,7 +248,8 @@ export async function loginWithApple(redirectToArg: string, formData?: FormData)
     console.log(`[${timestamp}] Apple login - final redirectTo:`, redirectTo);
 
     const callbackUrl = `${baseUrl}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`;
-    console.log(`[${timestamp}] Apple login - OAuth callback URL:`, callbackUrl);
+    console.log(`[${timestamp}] Apple login - OAuth callback URL:`);
+    console.log(` -> ${callbackUrl}`);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "apple",
@@ -258,7 +259,8 @@ export async function loginWithApple(redirectToArg: string, formData?: FormData)
     });
 
     if (data.url) {
-        console.log(`[${timestamp}] Apple login - Redirecting to OAuth provider:`, data.url);
+        console.log(`[${timestamp}] Apple login - Redirecting to OAuth provider:`);
+        console.log(` -> ${data.url}`);
         redirect(data.url);
     }
 

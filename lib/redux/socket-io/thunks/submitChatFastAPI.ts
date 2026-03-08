@@ -27,6 +27,7 @@ import type {
   ErrorPayload,
   ToolEventPayload,
   StatusUpdatePayload,
+  StreamEvent,
 } from '@/types/python-generated/stream-events';
 
 import {
@@ -36,6 +37,7 @@ import {
   updateInfoResponse,
   updateErrorResponse,
   updateToolUpdateResponse,
+  appendRawToolEvent,
   markResponseEnd,
 } from '../slices/socketResponseSlice';
 
@@ -332,6 +334,9 @@ export const submitChatFastAPI = createAsyncThunk<
 
           case 'tool_event': {
             const toolData = event.data as unknown as ToolEventPayload;
+            // Store the raw StreamEvent for canonical processing via buildCanonicalBlocks
+            dispatch(appendRawToolEvent({ listenerId, event }));
+            // Keep legacy ToolCallObject dispatch for backward compatibility with existing consumers
             dispatch(updateToolUpdateResponse({
               listenerId,
               toolUpdate: toolData as unknown as import('../socket.types').ToolCallObject,

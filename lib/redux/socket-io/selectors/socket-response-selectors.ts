@@ -4,6 +4,8 @@ import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import { ResponsesState, ResponseState } from "@/lib/redux/socket-io/socket.types";
 import { selectTaskListenerIds, selectTaskById } from "./socket-task-selectors";
+import { buildCanonicalBlocks } from "@/lib/chat-protocol";
+import type { ToolCallBlock } from "@/lib/chat-protocol";
 
 // Shared constants to avoid creating new array references
 export const EMPTY_ARRAY: any[] = [];
@@ -308,4 +310,29 @@ export const selectCombinedText = (listenerId: string) =>
             return response.textChunks.join("");
         }
         return response.text || "";
+    });
+
+// ==================== Canonical Protocol Selectors ====================
+// These selectors derive ToolCallBlock[] from rawToolEvents via buildCanonicalBlocks.
+// memoized by createSelector — recomputes only when rawToolEvents reference changes.
+
+const EMPTY_TOOL_BLOCKS: ToolCallBlock[] = [];
+
+export const selectPrimaryResponseRawToolEventsByTaskId = (taskId: string) =>
+    createSelector([selectPrimaryResponseForTask(taskId)], (response) => {
+        if (!taskId || !response) return EMPTY_ARRAY;
+        return response.rawToolEvents || EMPTY_ARRAY;
+    });
+
+/**
+ * Returns ToolCallBlock[] derived from raw tool StreamEvents via buildCanonicalBlocks.
+ * This is the canonical source for tool data — prefer over selectPrimaryResponseToolUpdatesByTaskId
+ * for new consumers. The adapter in adapters.ts can convert to legacy ToolCallObject[] if needed.
+ */
+export const selectPrimaryResponseToolBlocksByTaskId = (taskId: string) =>
+    createSelector([selectPrimaryResponseRawToolEventsByTaskId(taskId)], (rawToolEvents) => {
+        if (!rawToolEvents || rawToolEvents.length === 0) return EMPTY_TOOL_BLOCKS;
+        const blocks = buildCanonicalBlocks(rawToolEvents as any);
+        const toolBlocks = blocks.filter((b): b is ToolCallBlock => b.type === 'tool_call');
+        return toolBlocks.length > 0 ? toolBlocks : EMPTY_TOOL_BLOCKS;
     });

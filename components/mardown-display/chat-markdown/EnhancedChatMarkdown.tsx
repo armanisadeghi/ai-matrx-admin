@@ -1,13 +1,59 @@
 "use client";
-import React, { useState, useEffect, useMemo, useCallback, ErrorInfo, useContext, useRef } from "react";
+import React, { useState, useEffect, useMemo, useCallback, ErrorInfo, useContext } from "react";
 import { cn } from "@/styles/themes/utils";
 import { ContentBlock, splitContentIntoBlocksV2 } from "../markdown-classification/processors/utils/content-splitter-v2";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import ToolCallVisualization from "@/features/chat/components/response/assistant-message/stream/ToolCallVisualization";
-import { ReactReduxContext } from 'react-redux';
+import { ReactReduxContext, useSelector } from 'react-redux';
 import FullScreenMarkdownEditor from "./FullScreenMarkdownEditor";
 import { BlockRenderer } from "./block-registry/BlockRenderer";
+import { selectPrimaryResponseToolBlocksByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { toolCallBlockToLegacy } from "@/lib/chat-protocol";
+import type { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
+
+// ============================================================================
+// REDUX TOOL UPDATES — isolated subscriber so text-chunk re-renders don't
+// cause this to re-execute, and tool-event updates don't re-render text blocks.
+// ============================================================================
+
+interface ReduxToolVisualizationProps {
+    taskId: string;
+    hasContent: boolean;
+    className?: string;
+}
+
+/**
+ * Subscribes to Redux rawToolEvents for a given taskId and renders
+ * ToolCallVisualization. Isolated so that:
+ *   - Text chunk re-renders (from parent) don't re-run the canonical selector.
+ *   - New tool events re-render only this component, not the text blocks.
+ */
+const ReduxToolVisualization: React.FC<ReduxToolVisualizationProps> = ({ taskId, hasContent, className }) => {
+    // Stable selector instance — created once per taskId change (during render, not after).
+    // selectPrimaryResponseToolBlocksByTaskId(taskId) produces a memoized createSelector instance;
+    // keeping one reference per taskId ensures the memoization cache is reused across renders.
+    const selector = useMemo(
+        () => selectPrimaryResponseToolBlocksByTaskId(taskId),
+        [taskId]
+    );
+
+    const toolBlocks = useSelector(selector);
+    const toolUpdates: ToolCallObject[] = useMemo(
+        () => toolBlocks.flatMap((b: any) => toolCallBlockToLegacy(b) as ToolCallObject[]),
+        [toolBlocks]
+    );
+
+    if (toolUpdates.length === 0) return null;
+
+    return (
+        <ToolCallVisualization
+            toolUpdates={toolUpdates}
+            hasContent={hasContent}
+            className={className}
+        />
+    );
+};
 
 
 export interface ChatMarkdownDisplayProps {
@@ -154,39 +200,9 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
     const reduxContext = useContext(ReactReduxContext);
     const hasReduxProvider = reduxContext !== null && reduxContext.store !== undefined;
 
-    // Cache for the dynamically imported selector
-    const selectorRef = useRef<((taskId?: string) => (state: any) => any[]) | null>(null);
-    const [selectorLoaded, setSelectorLoaded] = useState(false);
-
-    // Dynamically import the selector only when needed (has Redux + taskId + no direct prop)
-    useEffect(() => {
-        if (hasReduxProvider && taskId && toolUpdatesProp === undefined && !selectorRef.current) {
-            import("@/lib/redux/socket-io").then((module) => {
-                selectorRef.current = module.selectPrimaryResponseToolUpdatesByTaskId;
-                setSelectorLoaded(true);
-            }).catch(() => {
-                // Silently fail - tool updates just won't be available
-            });
-        }
-    }, [hasReduxProvider, taskId, toolUpdatesProp]);
-
-    // Get tool updates from Redux only if Redux is available, selector is loaded, and we don't have direct prop
-    const toolUpdatesFromRedux = useMemo(() => {
-        if (!hasReduxProvider || toolUpdatesProp !== undefined || !selectorRef.current) {
-            return [];
-        }
-        try {
-            const state = reduxContext.store.getState();
-            const selector = selectorRef.current(taskId);
-            return selector(state) || [];
-        } catch (error) {
-            // Gracefully handle any selector errors
-            return [];
-        }
-    }, [hasReduxProvider, reduxContext?.store, taskId, toolUpdatesProp, selectorLoaded]);
-
-    // Use directly passed tool updates if provided, otherwise fall back to Redux
-    const toolUpdates = toolUpdatesProp !== undefined ? toolUpdatesProp : toolUpdatesFromRedux;
+    // toolUpdates: used only when passed directly as a prop (event mode / legacy adapter).
+    // Redux-based tool updates are handled by ReduxToolVisualization (rendered separately below).
+    const toolUpdates = toolUpdatesProp ?? [];
 
     // When the incoming content prop changes (new stream / stream reset), clear any local edits
     // so the component re-syncs to the authoritative prop value.
@@ -418,8 +434,35 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
         return <PlainTextFallback content={currentContent} className={className} role={role} type={type} />;
     }
 
-    // Show loading state if we have a taskId but no content yet
+    // Show loading state when taskId exists but no content has arrived yet.
+    // With Redux: mount the ReduxToolVisualization alongside the loader so tools
+    // can appear before text arrives. Without Redux: just show the loader.
     if (isWaitingForContent && toolUpdates.length === 0) {
+        const hasReduxTaskId = hasReduxProvider && !!taskId && toolUpdatesProp === undefined;
+
+        if (hasReduxTaskId) {
+            // Render loader + tool subscriber; tools will appear as they arrive
+            return (
+                <div className={`${type === "message" ? "mb-1 w-full min-w-0" : ""} ${role === "user" ? "text-right" : "text-left"} overflow-x-hidden`}>
+                    <MarkdownErrorBoundary
+                        fallback={null}
+                        onError={(error) => console.error("[MarkdownStream] ReduxToolVisualization error:", error)}
+                    >
+                        <ReduxToolVisualization
+                            taskId={taskId!}
+                            hasContent={false}
+                            className="mb-2"
+                        />
+                    </MarkdownErrorBoundary>
+                    <div className={containerStyles}>
+                        <div className="flex items-center justify-start py-6">
+                            <MatrxMiniLoader />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         try {
             return (
                 <div className={`${type === "message" ? "mb-1 w-full min-w-0" : ""} ${role === "user" ? "text-right" : "text-left"} overflow-x-hidden`}>
@@ -439,8 +482,22 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
     try {
         return (
             <div className={`${type === "message" ? "mb-1 w-full min-w-0" : ""} ${role === "user" ? "text-right" : "text-left"} overflow-x-hidden`}>
-                {/* Tool Call Visualization - show if we have tool updates */}
-                {toolUpdates.length > 0 && (
+                {/* Redux-based tool updates: isolated subscriber, only re-renders on tool events */}
+                {hasReduxProvider && taskId && toolUpdatesProp === undefined && (
+                    <MarkdownErrorBoundary
+                        fallback={null}
+                        onError={(error) => console.error("[MarkdownStream] ReduxToolVisualization error:", error)}
+                    >
+                        <ReduxToolVisualization
+                            taskId={taskId}
+                            hasContent={!!content.trim()}
+                            className="mb-2"
+                        />
+                    </MarkdownErrorBoundary>
+                )}
+
+                {/* Prop-based tool updates (event mode / legacy adapter) */}
+                {toolUpdatesProp !== undefined && toolUpdates.length > 0 && (
                     <MarkdownErrorBoundary
                         fallback={null}
                         onError={(error) => console.error("[MarkdownStream] ToolCallVisualization error:", error)}

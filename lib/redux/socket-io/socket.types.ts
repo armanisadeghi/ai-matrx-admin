@@ -88,13 +88,18 @@ export type McpInputObject = _McpInputObject;
 export type StepDataObject = _StepDataObject;
 export type ToolCallObject = _ToolCallObject;
 
+import type { StreamEvent } from '@/types/python-generated/stream-events';
+
 export interface ResponseState {
     text: string;
-    textChunks: string[]; // New: for performance optimization
+    textChunks: string[];
     data: any[];
     info: SocketInfoObject[];
     errors: SocketErrorObject[];
-    toolUpdates: ToolCallObject[]; // New: for tool_update events (MCP tool calls)
+    /** @deprecated Use rawToolEvents + buildCanonicalBlocks selector. Kept for backward compatibility. */
+    toolUpdates: ToolCallObject[];
+    /** Raw tool_event StreamEvents — derive ToolCallBlock[] via selectPrimaryResponseToolBlocksByTaskId */
+    rawToolEvents: StreamEvent[];
     ended: boolean;
     taskId: string;
 }

@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ResponsesState, SocketErrorObject, ToolCallObject } from '../socket.types';
+import type { StreamEvent } from '@/types/python-generated/stream-events';
 
 
 const initialState: ResponsesState = {};
@@ -15,11 +16,12 @@ export const socketResponseSlice = createSlice({
       const { listenerId, taskId } = action.payload;
       state[listenerId] = {
         text: '',
-        textChunks: [], // Initialize empty chunks array
+        textChunks: [],
         data: [],
         info: [],
         errors: [],
-        toolUpdates: [], // Initialize empty toolUpdates array
+        toolUpdates: [],
+        rawToolEvents: [],
         ended: false,
         taskId,
       };
@@ -79,6 +81,15 @@ export const socketResponseSlice = createSlice({
         state[listenerId].toolUpdates.push(toolUpdate);
       }
     },
+    appendRawToolEvent: (
+      state,
+      action: PayloadAction<{ listenerId: string; event: StreamEvent }>
+    ) => {
+      const { listenerId, event } = action.payload;
+      if (state[listenerId]) {
+        state[listenerId].rawToolEvents.push(event);
+      }
+    },
     markResponseEnd: (state, action: PayloadAction<string>) => {
       const listenerId = action.payload;
       if (state[listenerId]) {
@@ -91,11 +102,12 @@ export const socketResponseSlice = createSlice({
 export const {
   addResponse,
   updateTextResponse,
-  appendTextChunk, // Export new action
+  appendTextChunk,
   updateDataResponse,
   updateInfoResponse,
   updateErrorResponse,
   updateToolUpdateResponse,
+  appendRawToolEvent,
   markResponseEnd,
 } = socketResponseSlice.actions;
 
