@@ -5,6 +5,9 @@
 // Uses the feature/public-chat sidebar components directly.
 // Navigation is handled via window.history.pushState + popstate event
 // (same pattern used throughout the SSR chat workspace).
+//
+// Agent state is managed by SsrAgentContext — all components read from there
+// so a selection in the sidebar, header, or welcome screen all stay in sync.
 
 import { useState, useCallback } from "react";
 import { SidebarAgentHeader } from "@/features/public-chat/components/sidebar/SidebarAgentHeader";
@@ -13,6 +16,8 @@ import { SidebarAgents } from "@/features/public-chat/components/sidebar/Sidebar
 import { SidebarChats } from "@/features/public-chat/components/sidebar/SidebarChats";
 import { SidebarUserFooter } from "@/features/public-chat/components/sidebar/SidebarUserFooter";
 import { useChatSidebar } from "./ChatSidebarContext";
+import { useSsrAgent } from "./SsrAgentContext";
+import type { AgentConfig } from "@/features/public-chat/context/ChatContext";
 
 // ============================================================================
 // NAVIGATION HELPERS — SSR chat uses history API, not Next.js router
@@ -25,18 +30,25 @@ function navigate(path: string) {
 
 // ============================================================================
 // SIDEBAR HEADER — always pinned to the header zone (desktop)
-// Shows collapse toggle + new chat at all times.
-// The sidebar body starts with SidebarActions (no duplicate header row).
+// Shows collapse toggle + new chat + agent name picker trigger.
 // ============================================================================
 
 export function ChatSidebarHeader() {
   const { toggle } = useChatSidebar();
+  const { selectedAgent, openAgentPicker } = useSsrAgent();
 
   const handleNewChat = useCallback(() => {
     navigate("/ssr/chat");
   }, []);
 
-  return <SidebarAgentHeader onCollapse={toggle} onNewChat={handleNewChat} />;
+  return (
+    <SidebarAgentHeader
+      onCollapse={toggle}
+      onNewChat={handleNewChat}
+      selectedAgent={selectedAgent}
+      onAgentSelect={() => openAgentPicker()}  // clicking agent name opens full picker; ignore passed agent arg
+    />
+  );
 }
 
 // ============================================================================
@@ -45,6 +57,7 @@ export function ChatSidebarHeader() {
 
 export function ChatSidebarBody() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { selectedAgent, onAgentChange } = useSsrAgent();
 
   const handleSelectChat = useCallback((id: string) => {
     navigate(`/ssr/chat/${id}`);
@@ -53,6 +66,12 @@ export function ChatSidebarBody() {
   const handleNewChat = useCallback(() => {
     navigate("/ssr/chat");
   }, []);
+
+  // When an agent is selected from the sidebar list, update shared state
+  // and navigate to base chat (drop any existing conversation)
+  const handleAgentSelect = useCallback((agent: AgentConfig) => {
+    onAgentChange(agent);
+  }, [onAgentChange]);
 
   return (
     <div className="h-full flex flex-col overflow-hidden pt-8">
@@ -65,7 +84,12 @@ export function ChatSidebarBody() {
 
       {/* Scrollable: Agents + Chats */}
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none">
-        <SidebarAgents searchQuery={searchQuery} />
+        {/* Pass selectedAgent + onAgentSelect so selections are wired */}
+        <SidebarAgents
+          searchQuery={searchQuery}
+          selectedAgent={selectedAgent}
+          onAgentSelect={handleAgentSelect}
+        />
 
         <SidebarChats
           onSelectChat={handleSelectChat}

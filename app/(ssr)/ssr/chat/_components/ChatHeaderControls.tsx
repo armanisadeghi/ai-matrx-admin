@@ -9,6 +9,7 @@
 import { Share2 } from 'lucide-react';
 import PageHeader from '@/app/(ssr)/_components/PageHeader';
 import IconButton from '@/app/(ssr)/_components/IconButton';
+import type { AgentConfig } from '@/features/public-chat/context/ChatContext';
 
 interface ChatHeaderControlsProps {
     agentName: string;
@@ -16,8 +17,8 @@ interface ChatHeaderControlsProps {
     isConversation: boolean;
     isAuthenticated: boolean;
     dbConversationId?: string | null;
-    selectedAgent?: null;
-    onAgentSelect: (agent: unknown) => void;
+    selectedAgent?: AgentConfig | null;
+    onAgentSelect: (agent: AgentConfig) => void;
     onNewChat: () => void;
     onShare?: () => void;
 }

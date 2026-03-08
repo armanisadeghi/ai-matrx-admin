@@ -24,7 +24,10 @@ import { useChatContext } from '@/features/public-chat/context/ChatContext';
 import type { AgentConfig, ChatMessage } from '@/features/public-chat/context/ChatContext';
 import { useAgentChat } from '@/features/public-chat/hooks/useAgentChat';
 import { useChatPersistence } from '@/features/public-chat/hooks/useChatPersistence';
-import { resolveAgentFromId, DEFAULT_AGENT_CONFIG } from '@/features/public-chat/utils/agent-resolver';
+
+
+// Shared agent state — single source of truth for selected agent across the SSR chat route
+import { useSsrAgent } from './SsrAgentContext';
 
 // Header controls — rich header with sidebar toggle, agent picker, etc.
 import ChatHeaderControls from './ChatHeaderControls';
@@ -51,7 +54,10 @@ import { formatText } from '@/utils/text/text-case-converter';
 function ChatWorkspaceInner() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const { state, setAgent, setUseLocalhost, updateMessage, setDbConversationId, loadConversation: loadConversationAction, startNewConversation } = useChatContext();
+    const { state, setUseLocalhost, updateMessage, loadConversation: loadConversationAction, startNewConversation } = useChatContext();
+
+    // Shared agent state — drives header, sidebar, response-mode buttons, and welcome screen
+    const { selectedAgent, onAgentChange, openAgentPicker } = useSsrAgent();
 
     // Variables
     const useGuidedVars = searchParams.get('vars') !== 'classic';
@@ -122,19 +128,11 @@ function ChatWorkspaceInner() {
         setUseLocalhost(useLocalhost || localhostFromUrl);
     }, [useLocalhost, localhostFromUrl, setUseLocalhost]);
 
-    // Resolve agent from URL param
+    // Agent URL resolution is now handled by SsrAgentContext.
+    // ChatWorkspace just focuses the input when the agent changes.
     useEffect(() => {
         if (agentIdFromUrl) {
-            const resolved = resolveAgentFromId(agentIdFromUrl);
-            if (resolved) {
-                setAgent(resolved);
-                setFocusKey(k => k + 1);
-                return;
-            }
-        }
-        // Default agent if none set
-        if (!state.currentAgent) {
-            setAgent(DEFAULT_AGENT_CONFIG);
+            setFocusKey(k => k + 1);
         }
     }, [agentIdFromUrl]);
 
@@ -221,18 +219,13 @@ function ChatWorkspaceInner() {
     const hasMessages = state.messages.length > 0;
 
     useEffect(() => {
-        const agent = state.currentAgent;
-        if (!agent) {
-            setAgent(DEFAULT_AGENT_CONFIG);
-        }
-
         if (hasMessages) {
             setActiveVariables([]);
             setVariableValues({});
             return;
         }
 
-        const varDefs = (agent || DEFAULT_AGENTS[0]).variableDefaults;
+        const varDefs = selectedAgent.variableDefaults;
         if (varDefs && varDefs.length > 0) {
             setActiveVariables(varDefs);
             const initialValues: Record<string, string> = {};
@@ -246,7 +239,7 @@ function ChatWorkspaceInner() {
             setActiveVariables([]);
             setVariableValues({});
         }
-    }, [state.currentAgent?.promptId, hasMessages]);
+    }, [selectedAgent.promptId, hasMessages]);
 
     // Focus management — use refs, skip on mobile
     useEffect(() => {
@@ -279,23 +272,12 @@ function ChatWorkspaceInner() {
     // HANDLERS
     // ========================================================================
 
-    const handleAgentSelect = useCallback((agent: typeof DEFAULT_AGENTS[0]) => {
-        setAgent({
-            promptId: agent.promptId,
-            name: agent.name,
-            description: agent.description,
-            variableDefaults: agent.variableDefaults,
-        });
-
-        // Update URL with agent param
-        const params = new URLSearchParams(searchParams.toString());
-        params.set('agent', agent.promptId);
-        const url = `/ssr/chat?${params.toString()}`;
-        window.history.pushState(null, '', url);
-        window.dispatchEvent(new PopStateEvent('popstate'));
-
+    // Delegate all agent changes to the shared SsrAgentContext —
+    // this keeps sidebar, header, and welcome screen in sync automatically.
+    const handleAgentSelect = useCallback((agent: AgentConfig) => {
+        onAgentChange(agent);
         setFocusKey(k => k + 1);
-    }, [searchParams, setAgent]);
+    }, [onAgentChange]);
 
     const handleModeSelect = useCallback((_modeId: string, agentId: string | null) => {
         if (!agentId) return;
@@ -354,7 +336,7 @@ function ChatWorkspaceInner() {
     }, [updateMessage]);
 
     const handleHeaderAgentSelect = useCallback((agent: AgentConfig) => {
-        handleAgentSelect(agent as typeof DEFAULT_AGENTS[0]);
+        handleAgentSelect(agent);
     }, [handleAgentSelect]);
 
     const handleNewChat = useCallback(() => {
@@ -367,16 +349,15 @@ function ChatWorkspaceInner() {
     // DERIVED STATE
     // ========================================================================
 
-    const currentAgentOption = DEFAULT_AGENTS.find(a => a.promptId === state.currentAgent?.promptId) || DEFAULT_AGENTS[0];
     const hasVariables = activeVariables.length > 0;
     const isWelcomeScreen = messages.length === 0 && !isLoadingConversation;
 
-    // Header content — agent name on welcome, conversation snippet in conversation mode
+    // Header content — driven from shared agent context so it stays in sync with sidebar
     const headerLabel = !isWelcomeScreen && state.messages[0]?.content
         ? state.messages[0].content.slice(0, 40) + (state.messages[0].content.length > 40 ? '…' : '')
-        : (state.currentAgent?.name || 'Chat');
+        : (selectedAgent.name || 'Chat');
 
-    const agentName = state.currentAgent?.name || 'Chat';
+    const agentName = selectedAgent.name || 'Chat';
 
     // ========================================================================
     // LOADING STATE
@@ -391,7 +372,7 @@ function ChatWorkspaceInner() {
                     isConversation={!isWelcomeScreen}
                     isAuthenticated={isAuthenticated}
                     dbConversationId={state.dbConversationId}
-                    selectedAgent={state.currentAgent}
+                    selectedAgent={selectedAgent}
                     onAgentSelect={handleHeaderAgentSelect}
                     onNewChat={handleNewChat}
                     onShare={() => setIsShareOpen(true)}
@@ -409,8 +390,7 @@ function ChatWorkspaceInner() {
     // ========================================================================
 
     if (isWelcomeScreen) {
-        const agentName = hasVariables ? state.currentAgent?.name : null;
-        const agentDescription = hasVariables ? state.currentAgent?.description : null;
+        const agentDescription = hasVariables ? selectedAgent.description : null;
         const varCount = activeVariables.length;
         const showDescription = agentDescription && varCount <= 3;
 
@@ -435,7 +415,7 @@ function ChatWorkspaceInner() {
                     isConversation={!isWelcomeScreen}
                     isAuthenticated={isAuthenticated}
                     dbConversationId={state.dbConversationId}
-                    selectedAgent={state.currentAgent}
+                    selectedAgent={selectedAgent}
                     onAgentSelect={handleHeaderAgentSelect}
                     onNewChat={handleNewChat}
                     onShare={() => setIsShareOpen(true)}
@@ -479,7 +459,7 @@ function ChatWorkspaceInner() {
                                     conversationId={conversationId}
 
                                     hasVariables={hasVariables}
-                                    selectedAgent={state.currentAgent}
+                                    selectedAgent={selectedAgent}
                                     textInputRef={textInputRef}
                                     seamless
                                 />
@@ -514,7 +494,7 @@ function ChatWorkspaceInner() {
                     isConversation={!isWelcomeScreen}
                     isAuthenticated={isAuthenticated}
                     dbConversationId={state.dbConversationId}
-                    selectedAgent={state.currentAgent}
+                    selectedAgent={selectedAgent}
                     onAgentSelect={handleHeaderAgentSelect}
                     onNewChat={handleNewChat}
                     onShare={() => setIsShareOpen(true)}
@@ -561,7 +541,7 @@ function ChatWorkspaceInner() {
                                     conversationId={conversationId}
 
                                     hasVariables={hasVariables}
-                                    selectedAgent={state.currentAgent}
+                                    selectedAgent={selectedAgent}
                                     textInputRef={textInputRef}
                                 />
                             </div>
@@ -613,7 +593,7 @@ function ChatWorkspaceInner() {
                     isConversation={!isWelcomeScreen}
                     isAuthenticated={isAuthenticated}
                     dbConversationId={state.dbConversationId}
-                    selectedAgent={state.currentAgent}
+                    selectedAgent={selectedAgent}
                     onAgentSelect={handleHeaderAgentSelect}
                     onNewChat={handleNewChat}
                     onShare={() => setIsShareOpen(true)}
@@ -688,7 +668,7 @@ function ChatWorkspaceInner() {
                             disabled={isExecuting}
                             conversationId={conversationId}
                             hasVariables={hasVariables}
-                            selectedAgent={state.currentAgent}
+                            selectedAgent={selectedAgent}
                             textInputRef={textInputRef}
                             seamless={hasVariables && useGuidedVars}
                         />
