@@ -1,4 +1,10 @@
 // File: app/auth/callback/route.ts
+// Official Supabase SSR pattern for PKCE auth code exchange.
+// https://supabase.com/docs/guides/auth/server-side/nextjs
+//
+// Uses createClient() from server.ts which correctly reads and writes cookies
+// via next/headers in Route Handlers (cookies().set() is allowed in Route Handlers,
+// unlike Server Components where it throws).
 
 import { NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
@@ -36,9 +42,8 @@ export async function GET(request: Request) {
 
             console.log(`[${timestamp}] Auth callback - Successfully exchanged code for session, user: ${data.user?.email}`)
 
-            // Apple-specific: Persist user's name on first sign-in
-            // Apple only sends the user's name on the very first authorization and returns null for all subsequent sign-ins.
-            // We must capture and store it immediately.
+            // Apple-specific: Persist user's name on first sign-in.
+            // Apple only sends the user's name on the very first authorization.
             if (data.user) {
                 const provider = data.user.app_metadata?.provider
                 const userMeta = data.user.user_metadata
