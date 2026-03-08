@@ -16,6 +16,7 @@ interface PromptAssistantMessageProps {
     taskId?: string;
     messageIndex: number;
     isStreamActive?: boolean;
+    toolUpdates?: any[];
     onContentChange?: (messageIndex: number, newContent: string) => void;
     metadata?: {
         timeToFirstToken?: number;
@@ -31,6 +32,7 @@ export function PromptAssistantMessage({
     taskId, 
     messageIndex,
     isStreamActive = false,
+    toolUpdates,
     onContentChange,
     metadata,
     compact = false
@@ -112,6 +114,7 @@ export function PromptAssistantMessage({
                         type="message"
                         role="assistant"
                         isStreamActive={isStreamActive}
+                        toolUpdates={toolUpdates}
                         hideCopyButton={true}
                         allowFullScreenEditor={false}
                         className={markdownClassName}

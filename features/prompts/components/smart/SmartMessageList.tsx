@@ -132,6 +132,7 @@ export function SmartMessageList({
                         ) : (
                             <PromptAssistantMessage
                                 content={msg.content}
+                                toolUpdates={msg.toolUpdates}
                                 taskId={msg.taskId}
                                 messageIndex={idx}
                                 isStreamActive={false} // Historical messages are not streaming

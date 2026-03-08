@@ -21,6 +21,11 @@ export interface StreamAwareChatMarkdownProps extends Omit<ChatMarkdownDisplayPr
   events?: StreamEvent[];
   
   /**
+   * Legacy format tool updates. Passed straight to the renderer
+   */
+  toolUpdates?: any[];
+  
+  /**
    * Callback when an error event is received
    */
   onError?: (error: string) => void;
@@ -201,8 +206,8 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
     <EnhancedChatMarkdownInternal
       {...restProps}
       content={processedContent}
-      // In event mode, pass tool updates directly; in legacy mode, let Redux handle it
-      toolUpdates={isEventMode ? toolUpdatesInternal : undefined}
+      // In event mode, pass inner tool updates; in legacy mode, pass the prop
+      toolUpdates={isEventMode ? toolUpdatesInternal : restProps.toolUpdates}
     />
   );
 };
