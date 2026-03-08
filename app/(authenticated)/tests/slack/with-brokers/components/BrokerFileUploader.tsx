@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { brokerActions, brokerSelectors } from '@/lib/redux/brokerSlice';
 import { SLACK_BROKER_IDS } from './BrokerSlackClient';
 import { Upload, FileText, MessageSquare, Send, CheckCircle, XCircle, Loader2 } from 'lucide-react';

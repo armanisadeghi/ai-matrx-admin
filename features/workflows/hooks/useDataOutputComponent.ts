@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from "react";
-import { EntityActions, FetchMode } from "@/lib/redux";
+import { EntityActions } from "@/lib/redux/entity/slice";
+import { FetchMode } from "@/lib/redux/entity/actions";
 import { EntitySelectors } from "@/lib/redux/entity/selectors";
 import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
 import { DataOutputComponentData } from "@/types/AutomationSchemaTypes";

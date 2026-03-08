@@ -1,6 +1,9 @@
 // 'use client';
 
-// import { createEntitySelectors, GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+// import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { GetOrFetchSelectedRecordsPayload } from "@/lib/redux/entity/actions";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 // import { EntityData, EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
 // import { useCallback, useEffect } from 'react';
 // import { createRelationshipData, filterJoinForChild } from './utils';

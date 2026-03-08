@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { SchemaField } from "@/constants/socket-schema";
 import { formatLabel, formatPlaceholder } from "@/components/socket/utils/label-util";
 import { updateTaskFieldByPath } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { FieldOverrides } from "@/components/socket/form-builder/FormField";
 import { selectConnectionTestMode, selectTaskNameById, selectFieldValue } from "@/lib/redux/socket-io";
 import { isValidField } from "@/constants/socket-schema";

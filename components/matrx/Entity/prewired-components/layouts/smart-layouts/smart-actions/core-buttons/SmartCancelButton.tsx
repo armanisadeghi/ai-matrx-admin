@@ -4,7 +4,9 @@ import React, { useCallback, useMemo } from "react";
 import { X } from "lucide-react";
 import SmartButtonBase from "./SmartButtonBase";
 import { SmartButtonProps } from "../types";
-import { createEntitySelectors, getEntitySlice, useAppDispatch, useAppSelector } from "@/lib/redux";
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 
 export const SmartCancelButton = ({ entityKey, size = 'default', forceEnable }: SmartButtonProps) => {
     const dispatch = useAppDispatch();

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createEntitySelectors } from "@/lib/redux";
-import { useAppSelector } from "@/lib/redux";
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { EntityStateField, MatrxRecordId } from "@/lib/redux/entity/types/stateTypes";
 
 export const useFieldValue = (

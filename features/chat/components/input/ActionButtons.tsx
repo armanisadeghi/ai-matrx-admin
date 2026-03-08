@@ -12,7 +12,7 @@ import { IoCodeWorkingSharp } from "react-icons/io5";
 import HierarchicalToggleMenu from "@/components/matrx/toggles/HierarchicalToggleMenu";
 import { programmingLibraries } from "./constants";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import RecipeSelectionButton from "./RecipeSelectionButton";
 import { DEFAULT_IMAGE_MODEL_IDs } from "@/constants/chat";
 interface ActionButtonsProps {

@@ -7,7 +7,8 @@ import FieldSelectionControls from './form-helpers/FieldSelectionControls';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useFieldVisibility } from '../hooks/form-related/useFieldVisibility';
 import { useFieldRenderer } from '../hooks/form-related/useFieldRenderer';
-import { useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { useCreateRecord } from '../hooks/unsaved-records/useCreateRecord';
 import { Button } from '@/components/ui';
 

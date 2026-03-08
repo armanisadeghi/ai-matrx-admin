@@ -1,7 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import { FetchMode, GetOrFetchSelectedRecordsPayload, getRecordIdByRecord, useEntityTools } from '@/lib/redux';
+import { FetchMode, GetOrFetchSelectedRecordsPayload } from "@/lib/redux/entity/actions";
+import { getRecordIdByRecord } from "@/lib/redux/entity/utils/stateHelpUtils";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { MatrxRecordId, SelectionMode } from '@/lib/redux/entity/types/stateTypes';
 import { EntityKeys, EntityData } from '@/types/entityTypes';

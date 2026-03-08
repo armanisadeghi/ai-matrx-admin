@@ -1,7 +1,7 @@
 'use client';
 
 import React, { ReactNode, useEffect, useCallback } from 'react';
-import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { 
   selectFieldById,
   selectFieldIsDirty

@@ -5,7 +5,8 @@ import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
 import { useQuickRef } from '../hooks/useQuickRef';
 import { FetchMode } from '@/lib/redux/entity/actions';
 import { EntityKeys } from '@/types/entityTypes';
-import { selectEntitySelectText, useAppSelector } from '@/lib/redux';
+import { selectEntitySelectText } from "@/lib/redux/schema/globalCacheSelectors";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 import SearchableMultiSelect from '@/components/matrx/SearchableMultiSelect';
 

@@ -1,5 +1,5 @@
 // components/FileManager/FileMetadata/FileMetadataCard.tsx
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { createFileSystemSelectors } from "@/lib/redux/fileSystem/selectors";
 import { useFileSystem } from "@/providers/FileSystemProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

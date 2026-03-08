@@ -7,7 +7,8 @@ import SmartCrudButtons
 import {useFieldVisibility} from "@/app/entities/hooks/form-related/useFieldVisibility";
 import MultiSelect from '@/components/ui/loaders/multi-select';
 import {UnifiedLayoutProps} from "@/components/matrx/Entity";
-import {createEntitySelectors, useAppSelector} from "@/lib/redux";
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { useAppSelector } from "@/lib/redux/hooks";
 import EntityBaseFieldFinal from "@/app/entities/fields/EntityBaseFieldFinal";
 import { EntityStateField } from "@/lib/redux/entity/types/stateTypes";
 

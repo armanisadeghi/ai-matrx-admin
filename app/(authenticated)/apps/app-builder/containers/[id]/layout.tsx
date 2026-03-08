@@ -1,7 +1,7 @@
 'use client';
 
 import React, { ReactNode, useCallback } from 'react';
-import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { 
   selectContainerById,
   selectIsContainerDirtyById

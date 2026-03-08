@@ -3,7 +3,7 @@
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { CheckCircle, XCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAppSlugStatus } from "@/lib/redux/app-builder/selectors/appSelectors";
 import { checkAppSlugUniqueness } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";

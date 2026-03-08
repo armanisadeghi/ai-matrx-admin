@@ -1,7 +1,7 @@
 
 // middleware/shadowSync.ts
 
-import { AppDispatch } from "@/lib/redux";
+import { AppDispatch } from "@/lib/redux/store";
 import { EntityKeys } from "@/types/entityTypes";
 import { Action, MiddlewareAPI } from "@reduxjs/toolkit";
 

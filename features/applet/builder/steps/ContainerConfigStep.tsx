@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { Cpu } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import AppletTabsWrapper from "@/features/applet/builder/parts/AppletTabsWrapper";
 import ContainerTabContent from "@/features/applet/builder/modules/container-builder/ContainerTabContent";
 import { selectContainerError } from "@/lib/redux/app-builder/selectors/containerSelectors";

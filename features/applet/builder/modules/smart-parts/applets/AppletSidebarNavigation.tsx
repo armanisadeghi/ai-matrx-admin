@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletsByAppId, selectActiveAppletId } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectActiveContainerId, selectAllContainerIds } from "@/lib/redux/app-builder/selectors/containerSelectors";
 import { setActiveApplet } from "@/lib/redux/app-builder/slices/appletBuilderSlice";

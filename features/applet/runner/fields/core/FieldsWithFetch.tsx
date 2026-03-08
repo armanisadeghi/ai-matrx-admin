@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useMemo } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import FieldsWithLabels from "./FieldsWithlabels";
 import { selectFieldsByIds, selectFieldById } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { fetchFieldByIdThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";

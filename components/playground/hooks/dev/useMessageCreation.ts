@@ -1,5 +1,5 @@
 // import { useCallback, useState } from 'react';
-// import { useEntityTools } from '@/lib/redux';
+// import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 // import { MessageTemplateDataOptional, MatrxRecordId } from '@/types';
 // import { useCreateRecord } from '@/app/entities/hooks/unsaved-records/useCreateRecord';
 

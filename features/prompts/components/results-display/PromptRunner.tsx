@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useAppSelector, useAppDispatch } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { Button } from "@/components/ui/button";

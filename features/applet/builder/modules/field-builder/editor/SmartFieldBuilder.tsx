@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import SmartOptionsManager from "./SmartOptionsManager";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";

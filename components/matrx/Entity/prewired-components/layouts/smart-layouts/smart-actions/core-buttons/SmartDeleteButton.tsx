@@ -3,7 +3,8 @@ import SmartButtonBase from "./SmartButtonBase";
 import {Trash2} from "lucide-react";
 import {SmartButtonProps} from "../types";
 import SmartDeleteConfirmation from "../confirmation/SmartDeleteConfirmation";
-import {createEntitySelectors, useAppSelector} from "@/lib/redux";
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { useAppSelector } from "@/lib/redux/hooks";
 import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 
 export const SmartDeleteButton = memo((

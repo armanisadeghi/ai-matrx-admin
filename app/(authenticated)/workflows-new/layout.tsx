@@ -5,7 +5,7 @@ import { useCombinedFunctionsWithArgs } from "@/lib/redux/entity/hooks/functions
 import { useEffect } from "react";
 import { useDataBrokerWithFetch, useNodeCategoryWithFetch, useRegisteredNodeWithFetch, useAiModelWithFetch } from "@/lib/redux/entity/hooks/entityUsedHooks";
 import { fetchFieldsThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import WorkflowLoading from "@/features/workflows-xyflow/common/workflow-loading";
 
 export default function WorkflowLayout({ children }: { children: React.ReactNode }) {
@@ -30,7 +30,7 @@ export default function WorkflowLayout({ children }: { children: React.ReactNode
     // Show loading while data is being fetched
     if (isLoading || combinedFunctions.length === 0 || Object.keys(categoryHook.nodeCategoryRecordsById).length === 0 || Object.keys(registeredNodeHook.registeredNodeRecordsById).length === 0) {
         return (
-            <WorkflowLoading 
+            <WorkflowLoading
                 title="Loading Workflow System"
                 subtitle="Initializing functions, data brokers, and workflow components..."
                 step1="Functions"

@@ -13,7 +13,8 @@ import {
     MessageTemplateDataOptional,
 } from "@/types/AutomationSchemaTypes";
 import { useGetorFetchRecords } from "@/app/entities/hooks/records/useGetOrFetch";
-import { createEntitySelectors, useAppSelector } from "@/lib/redux";
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { useDebounce } from "@uidotdev/usehooks";
 
 export type DataBrokerData = {

@@ -2,7 +2,7 @@
 
 "use client";
 import React, { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAllApps, selectAppLoading } from "@/lib/redux/app-builder/selectors/appSelectors";
 import { deleteAppThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
 import { Eye, Pencil, AppWindow, Trash2, Check } from "lucide-react";

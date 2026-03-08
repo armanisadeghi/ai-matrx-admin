@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { SelectAppStep } from "@/features/applet/builder/modules/app-builder/SelectAppStep";
 import { AppConfigStep } from "@/features/applet/builder/modules/app-builder/AppConfigStep";
 import { v4 as uuidv4 } from "uuid";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { startNewApp } from "@/lib/redux/app-builder/slices/appBuilderSlice";
 import { Plus, ListTodo, ChevronLeft, Layers, Boxes } from "lucide-react";
 import SimpleTemplateDialog from "@/features/applet/builder/parts/SimpleTemplateDialog";

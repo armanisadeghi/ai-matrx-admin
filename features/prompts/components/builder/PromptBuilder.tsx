@@ -6,7 +6,8 @@ import { createUserPrompt, updateUserPrompt } from '@/lib/redux/thunks/promptCru
 import { PromptMessage } from "@/features/prompts/types/core";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useModelControls, getModelDefaults } from "@/features/prompts/hooks/useModelControls";
-import { useAppSelector, useAppDispatch, RootState } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { RootState } from "@/lib/redux/store";
 import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
 import { AiModelsPreferences, PromptsPreferences } from "@/lib/redux/slices/userPreferencesSlice";
 import { updateDebugData } from "@/lib/redux/slices/adminDebugSlice";

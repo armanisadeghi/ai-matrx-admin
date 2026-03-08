@@ -5,7 +5,7 @@ import { Loader2, RefreshCw, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectContainersForApplet, selectIsAppletDirtyById } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import {
     selectActiveContainerId,

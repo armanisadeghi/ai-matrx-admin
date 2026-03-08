@@ -9,7 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { startNewApp } from "@/lib/redux/app-builder/slices/appBuilderSlice";
 import { v4 as uuidv4 } from "uuid";
 
@@ -77,7 +77,7 @@ const ComplexTemplateDialog: React.FC<ComplexTemplateDialogProps> = ({
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             className="bg-blue-500 hover:bg-blue-600 text-white dark:bg-blue-600 dark:hover:bg-blue-700"
             onClick={handleCreateFromTemplate}
           >

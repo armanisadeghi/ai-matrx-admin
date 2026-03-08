@@ -1,7 +1,8 @@
 'use client';
 
 import React, {useCallback, useEffect, useState, useMemo} from 'react';
-import {createEntitySelectors, getEntitySlice} from "@/lib/redux";
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
 import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
 import {EntityKeys} from "@/types/entityTypes";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";

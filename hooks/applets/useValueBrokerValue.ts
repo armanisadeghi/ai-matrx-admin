@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useAppDispatch, useEntityTools } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { useThrottle } from "@uidotdev/usehooks";
 
 const convertValue = (value: any, dataType: string): any => {

@@ -19,7 +19,7 @@ import { usePathname } from "next/navigation";
 import { debugModules } from "@/components/admin/debug/debugModuleRegistry";
 import DebugModulePanel from "@/components/admin/debug/DebugModulePanel";
 import { getAvailableNamespaces } from "@/constants/socket-schema";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
 import { toggleDebugMode, selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";

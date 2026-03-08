@@ -4,7 +4,8 @@ import { processJoinedData } from '@/app/entities/hooks/relationships/utils';
 import { useMessageReordering } from '@/hooks/aiCockpit/useMessageReordering';
 import { RelationshipHook } from '@/app/entities/hooks/relationships/useRelationships';
 import { recipeMessageDef } from '@/app/entities/hooks/relationships/definitionConversionUtil';
-import { useAppDispatch, useEntityTools } from '@/lib/redux';
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { getAllMatrxRecordIdsFromMessages, MATRX_PATTERN } from '@/features/rich-text-editor/utils/patternUtils';
 import { getOrFetchSelectedRecordsThunk, RecordResult } from '@/lib/redux/entity/thunks';
 

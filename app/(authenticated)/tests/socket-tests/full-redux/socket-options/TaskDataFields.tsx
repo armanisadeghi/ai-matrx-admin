@@ -26,7 +26,7 @@ const TaskDataFields: React.FC<TaskDataFieldsProps> = ({
 
   useEffect(() => {
     if (!taskName || !taskId) {
-      dispatch(resetTaskData(taskId));
+      if (taskId) dispatch(resetTaskData({ taskId }));
     }
   }, [taskName, taskId, dispatch]);
 

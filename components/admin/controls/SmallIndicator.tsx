@@ -3,7 +3,7 @@ import React from "react";
 import { TbBrandSocketIo } from "react-icons/tb";
 import { Server, ChevronRight, Shield, ShieldOff, AlertCircle } from "lucide-react";
 import StateViewerButton from "@/components/admin/state-analyzer/components/StateViewerButton";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectPrimaryConnection, selectConnectionHealth } from "@/lib/redux/socket-io/selectors/socket-connection-selectors";
 
 interface SmallIndicatorProps {

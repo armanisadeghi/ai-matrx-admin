@@ -7,7 +7,8 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { EntityKeys } from '@/types/entityTypes';
 import { EntityOperationMode, EntityRecordMap, FlexibleQueryOptions, MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
 import { Callback, callbackManager } from '@/utils/callbackManager';
-import { UpdateRecordPayload, useEntityTools } from '@/lib/redux';
+import { UpdateRecordPayload } from "@/lib/redux/entity/actions";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 
 export const useEntitySelectionCrud = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const dispatch = useAppDispatch();

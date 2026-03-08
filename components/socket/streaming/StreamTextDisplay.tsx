@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useRef, useEffect, MouseEvent } from "react";
 import StreamDisplayOverlay from "./StreamDisplayOverlay";
 import { selectResponseTextByListenerId } from "@/lib/redux/socket-io";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 interface StreamTextDisplayProps {
   title: string;

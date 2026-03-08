@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { RootState } from "@/lib/redux/store";
 import { selectAppletById } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { saveAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";

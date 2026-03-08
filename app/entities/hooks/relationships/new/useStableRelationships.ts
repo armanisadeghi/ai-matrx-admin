@@ -1,4 +1,5 @@
-import { useAppSelector, useEntityTools } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { RecipeMessageRecordWithKey } from '@/types/AutomationSchemaTypes';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';

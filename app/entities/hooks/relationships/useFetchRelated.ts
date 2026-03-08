@@ -4,7 +4,7 @@ import { EntityKeys } from '@/types/entityTypes';
 import { MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
 import { Callback, callbackManager } from '@/utils/callbackManager';
 import * as React from 'react';
-import { useEntityTools } from '@/lib/redux';
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 
 interface useFetchRelatedFinalParams {
     parentEntity: EntityKeys;

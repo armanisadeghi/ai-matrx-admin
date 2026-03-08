@@ -5,7 +5,7 @@ import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SchemaField } from "@/constants/socket-schema";
 import { formatPlaceholder } from "@/components/socket/utils/label-util";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectFieldValue, selectConnectionTestMode, selectTaskNameById, updateTaskFieldByPath } from "@/lib/redux/socket-io";
 import { FieldOverrides } from "@/components/socket/form-builder/FormField";
 import { isValidField } from "@/constants/socket-schema";

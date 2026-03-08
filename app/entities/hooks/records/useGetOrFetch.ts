@@ -1,4 +1,6 @@
-import { FetchMode, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+import { FetchMode } from "@/lib/redux/entity/actions";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { toMatrxIdFromValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useEffect, useMemo } from 'react';

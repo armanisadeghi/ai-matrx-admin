@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { DebugLog } from "@/components/admin/debug-log-component";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectContainerById, selectContainerLoading } from "@/lib/redux/app-builder/selectors/containerSelectors";
 import { setLabel, setShortLabel, setDescription } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
 import { saveContainerThunk, saveOrUpdateContainerToAppletThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";

@@ -1,7 +1,9 @@
 'use client';
 
 import {memo, ReactNode, useEffect} from 'react';
-import {FetchMode, useAppSelector, useEntityTools} from '@/lib/redux';
+import { FetchMode } from "@/lib/redux/entity/actions";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import {EntityKeys} from '@/types/entityTypes';
 import {MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import {useSelectQuickRef} from '@/app/entities/hooks/useSelectQuickRef';

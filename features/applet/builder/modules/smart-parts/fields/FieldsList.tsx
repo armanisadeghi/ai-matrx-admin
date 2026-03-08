@@ -4,7 +4,7 @@ import React from 'react';
 import { XIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FieldDefinition } from '@/types/customAppTypes';
-import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectFieldLoading } from '@/lib/redux/app-builder/selectors/fieldSelectors';
 import { useToast } from '@/components/ui/use-toast';
 import SectionCard from '@/components/official/cards/SectionCard';

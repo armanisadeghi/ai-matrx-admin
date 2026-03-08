@@ -1,5 +1,7 @@
 import { useCallback, useMemo } from 'react';
-import { useAppDispatch, useEntityToasts, useEntityTools } from '@/lib/redux';
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEntityToasts } from "@/lib/redux/entity/hooks/useEntityToasts";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { EntityKeys } from '@/types/entityTypes';
 import { callbackManager } from '@/utils/callbackManager';
 import { v4 as uuidv4 } from 'uuid';

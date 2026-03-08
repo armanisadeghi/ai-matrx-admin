@@ -1,6 +1,5 @@
 import { createSelector } from "reselect";
 import { PayloadAction } from "@reduxjs/toolkit";
-import { RootState } from "@/lib/redux";
 import { BrokerState, BrokerIdentifier } from "../types";
 import { Table, Column, Row } from "../types";
 import { resolveBrokerId } from "../utils";

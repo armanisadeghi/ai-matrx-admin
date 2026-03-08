@@ -8,7 +8,7 @@
 "use client";
 
 import { useCallback } from 'react';
-import { useAppDispatch } from '@/lib/redux';
+import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   initializeDiffSession,
   addPendingDiffs,

@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useAppSelector } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
 import { supabase } from '@/utils/supabase/client';
 
 export function usePreferenceSync() {

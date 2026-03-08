@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useAppSelector, useAppDispatch } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { 
   selectCanvasIsOpen, 
   selectCurrentCanvasItem,

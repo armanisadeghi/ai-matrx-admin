@@ -17,12 +17,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
-import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { fetchFieldsThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 import { selectAllFields, selectFieldLoading, selectFieldError, selectFieldsByIds } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { FieldDefinition } from "@/types/customAppTypes";
 import { getFieldComponentStyle } from "@/features/applet/styles/styles";
-import { RootState } from "@/lib/redux";
+import { RootState } from "@/lib/redux/store";
 
 // Define type for fieldIds
 type FieldId = string;

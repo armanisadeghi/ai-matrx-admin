@@ -1,5 +1,5 @@
 import React from "react";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskById, selectTaskDataById } from "@/lib/redux/socket-io";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 

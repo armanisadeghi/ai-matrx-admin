@@ -1,5 +1,7 @@
 import { useCallback } from 'react';
-import { generateTemporaryRecordId, useAppDispatch, useEntityTools } from '@/lib/redux';
+import { generateTemporaryRecordId } from "@/lib/redux/entity/utils/stateHelpUtils";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { EntityKeys } from '@/types/entityTypes';
 
 interface UseTemporaryRecordOptions<T = any> {

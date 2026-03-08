@@ -5,7 +5,7 @@ import { NodeProps, useReactFlow } from "@xyflow/react";
 import { Download } from "lucide-react";
 import { BaseNode, NodeConfig, BaseNodeData } from "../../base/BaseNode";
 import UserInputNodeSettings from "./UserInputNodeSettings";
-import { useAppSelector, useAppDispatch } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectFieldLabel } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityUsedHooks";
 import { workflowsSelectors } from "@/lib/redux/workflow/selectors";

@@ -7,7 +7,7 @@ import { Plus, X, FormInput, Settings } from "lucide-react";
 import FieldsWithFetch from "@/features/applet/runner/fields/core/FieldsWithFetch";
 import SingleMappingForm from "./SingleMappingForm";
 import { brokerActions } from "@/lib/redux/brokerSlice";
-import { useAppSelector, useAppDispatch } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { workflowActions } from "@/lib/redux/workflow/slice";
 import { workflowsSelectors } from "@/lib/redux/workflow/selectors";
 import { selectFieldLabelsByIds } from "@/lib/redux/app-builder/selectors/fieldSelectors";

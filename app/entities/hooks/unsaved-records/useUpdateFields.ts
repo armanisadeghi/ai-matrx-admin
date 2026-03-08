@@ -1,5 +1,5 @@
 // useUpdateFields.ts
-import { useEntityTools } from '@/lib/redux';
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';

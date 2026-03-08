@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { XIcon, SaveIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { RootState } from "@/lib/redux/store";
 import {
     setAppId,

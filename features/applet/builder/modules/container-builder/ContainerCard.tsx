@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Trash2, X, RefreshCw, Save, Unlink, AlertTriangle, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { addField, removeField } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
 import { selectAllFields } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { selectAllContainerIds, selectContainerById } from "@/lib/redux/app-builder/selectors/containerSelectors";

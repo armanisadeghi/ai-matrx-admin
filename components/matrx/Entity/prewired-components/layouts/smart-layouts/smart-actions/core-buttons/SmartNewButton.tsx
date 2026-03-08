@@ -3,7 +3,8 @@ import {useCallback} from "react";
 import SmartButtonBase from "./SmartButtonBase";
 import {SmartButtonProps} from "../types";
 import {Plus} from "lucide-react";
-import {useAppDispatch, useAppSelector, useEntityTools} from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 
 export const SmartNewButton = (
     {

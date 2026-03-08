@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useState } from 'react';
-import { useAppDispatch } from '@/lib/redux';
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { startPromptAction, type StartActionPayload } from '@/lib/redux/prompt-execution';
 import type { ActionExecutionResult } from '../types';
 

@@ -4,7 +4,8 @@ import React, { useEffect, useCallback, useMemo } from 'react';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useQuickRef } from '@/app/entities/hooks/useQuickRef';
-import { useAppSelector, useEntityTools } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 
 import { ChipData } from '@/types/editor.types';
 import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';

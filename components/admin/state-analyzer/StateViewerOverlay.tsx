@@ -2,7 +2,7 @@
 import React from "react";
 import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
 import GenericSliceViewer from "./sliceViewers/GenericSliceViewer";
-import { RootState } from "@/lib/redux";
+import type { RootState } from "@/lib/redux/store";
 import EntitySliceViewer from "./sliceViewers/EntitySliceViewer";
 import { featureSchemas } from "@/lib/redux/dynamic/featureSchema";
 import { moduleSchemas } from "@/lib/redux/dynamic/moduleSchema";
@@ -39,7 +39,7 @@ const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({ isOpen, onClose
             id: "workflowNodes",
             label: "Workflow Nodes",
             content: <GenericSliceViewer sliceKey="workflowNodes" state={completeState.workflowNodes} />,
-        },        {
+        }, {
             id: "customAppletRuntime",
             label: "Custom Applet Runtime",
             content: <AppletRuntimeViewer sliceKey="customAppletRuntime" state={completeState.customAppletRuntime} />,

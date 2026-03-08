@@ -3,7 +3,8 @@
 import React, { useEffect, useCallback, useMemo, useState, useRef } from 'react';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
-import { useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { useEnhancedFetch, useEntityFetch } from '@/app/entities/hooks/useEntityFetch';
 import BrokerDisplayCard from '../BrokerDisplayCard';
 import { EnhancedRecord } from '@/lib/redux/entity/types/stateTypes';

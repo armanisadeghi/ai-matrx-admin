@@ -9,7 +9,7 @@ import { TbListSearch } from "react-icons/tb";
 import Link from "next/link";
 import { IoCreateOutline } from "react-icons/io5";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ConversationSearchOverlay } from "@/features/chat/components/conversations/ConversationSearchOverlay";
 
@@ -21,59 +21,56 @@ const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "
     const dispatch = useAppDispatch();
     const chatActions = getChatActionsWithThunks();
     const isMobile = useIsMobile();
-    
+
     // State for the search overlay
     const [isSearchOpen, setIsSearchOpen] = useState(false);
-    
+
     useEffect(() => {
         dispatch(chatActions.initialize());
     }, []);
-    
+
     const user = useSelector((state: RootState) => state.user);
     const displayName = user.userMetadata?.name || user.userMetadata?.fullName || user.email?.split("@")[0] || "User";
     const profilePhoto = user.userMetadata?.picture || null;
-    
+
     // Handle opening and closing the search overlay
     const handleOpenSearch = () => {
         setIsSearchOpen(true);
     };
-    
+
     const handleCloseSearch = () => {
         setIsSearchOpen(false);
     };
-    
+
     return (
         <>
             <div className={`flex items-center ${isMobile ? 'pr-10 gap-1' : 'gap-1'}`}>
                 {/* New Chat Button */}
                 <Link href={`${baseRoute}`}>
-                    <button className={`rounded-full text-foreground hover:bg-accent transition-colors ${
-                        isMobile ? 'p-2' : 'p-1.5'
-                    }`}>
+                    <button className={`rounded-full text-foreground hover:bg-accent transition-colors ${isMobile ? 'p-2' : 'p-1.5'
+                        }`}>
                         <IoCreateOutline size={isMobile ? 18 : 16} />
                     </button>
                 </Link>
-                
+
                 {/* Search Button - Opens the Search Overlay */}
-                <button 
-                    className={`rounded-full text-foreground hover:bg-accent transition-colors ${
-                        isMobile ? 'p-2' : 'p-1.5'
-                    }`}
+                <button
+                    className={`rounded-full text-foreground hover:bg-accent transition-colors ${isMobile ? 'p-2' : 'p-1.5'
+                        }`}
                     onClick={handleOpenSearch}
                     aria-label="Search conversations"
                 >
                     <TbListSearch size={isMobile ? 18 : 16} />
                 </button>
-                
+
                 {/* Theme Switcher */}
                 <div className="p-0">
                     <ThemeSwitcherIcon className="p-0.5" />
                 </div>
-                
+
                 {/* Profile */}
-                <button className={`rounded-full bg-accent ${
-                    isMobile ? 'p-1.5' : 'p-1'
-                }`}>
+                <button className={`rounded-full bg-accent ${isMobile ? 'p-1.5' : 'p-1'
+                    }`}>
                     {profilePhoto ? (
                         <Image
                             src={profilePhoto || "/happy-robot-avatar.jpg"}
@@ -89,9 +86,9 @@ const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "
                     )}
                 </button>
             </div>
-            
+
             {/* Conversation Search Overlay */}
-            <ConversationSearchOverlay 
+            <ConversationSearchOverlay
                 isOpen={isSearchOpen}
                 onClose={handleCloseSearch}
             />

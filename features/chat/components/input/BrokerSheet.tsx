@@ -5,7 +5,7 @@ import { Search, X, CheckSquare, Square, ChevronDown, ChevronUp, Filter } from "
 import FloatingSheet from "@/components/official/FloatingSheet";
 import { allInformationBrokers, InformationBroker } from "./constants";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 
 interface BrokerSheetProps {
     isOpen: boolean;

@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { RootState, useAppDispatch } from '@/lib/redux';
+import { RootState } from "@/lib/redux/store";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { setPreference } from '@/lib/redux/slices/userPreferencesSlice';
 import {
     playNotificationSound,

@@ -1,10 +1,10 @@
 // @ts-nocheck
 // hooks/useServerBrokerSync.ts
 import { useEffect, useRef, useMemo } from 'react';
-import { useAppSelector } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
 import { brokerSelectors, BrokerIdentifier } from '@/lib/redux/brokerSlice';
 import { createSelector } from 'reselect';
-import { RootState } from '@/lib/redux';
+import { RootState } from "@/lib/redux/store";
 
 interface SyncConfig {
   brokers: BrokerIdentifier[];

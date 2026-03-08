@@ -2,7 +2,8 @@
 
 import { useUser } from "@/lib/hooks/useUser";
 import { useCallback, useEffect, useState } from "react";
-import { useAppDispatch, useEntityTools } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { DataBrokerRecordWithKey } from "@/types/AutomationSchemaTypes";
 import { v4 as uuidv4 } from "uuid";
 import { useThrottle } from "@uidotdev/usehooks";

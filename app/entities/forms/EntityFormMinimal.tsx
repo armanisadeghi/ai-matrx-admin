@@ -3,7 +3,8 @@
 import React, { useMemo } from 'react';
 import SmartCrudButtons from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { createEntitySelectors, useAppSelector } from '@/lib/redux';
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { getFormStyle } from './formUtils';
 import { EntityKeys } from '@/types/entityTypes';
 import { useFieldVisibility } from '../hooks/form-related/useFieldVisibility';

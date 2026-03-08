@@ -13,7 +13,7 @@ import {
 import { SchemaEntity } from '@/types/schema';
 import { NameFormat } from '@/types/AutomationSchemaTypes';
 
-import { GlobalCacheState } from '@/lib/redux';
+import { GlobalCacheState } from "@/lib/redux/schema/globalCacheSlice";
 import {
     DisplayFieldMetadata,
     EntityStateField,

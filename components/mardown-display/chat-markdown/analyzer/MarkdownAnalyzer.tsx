@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { MarkdownAnalysisData } from "./types";
 import AnalysisTab from "./AnalysisTab";
 import SectionGroupTab from "./analyzer-options/SectionGroupTab";

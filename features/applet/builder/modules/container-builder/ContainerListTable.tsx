@@ -2,7 +2,7 @@
 
 "use client";
 import React, { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAllContainers, selectContainerLoading } from "@/lib/redux/app-builder/selectors/containerSelectors";
 import { deleteContainerThunk, fetchContainersThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { Eye, Pencil, Box, Trash2, LayoutGrid, Check } from "lucide-react";

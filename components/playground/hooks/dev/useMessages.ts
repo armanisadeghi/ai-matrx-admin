@@ -1,6 +1,8 @@
 // import React, { useCallback } from 'react';
 // import { DataBrokerDataRequired, MessageBrokerDataRequired, MessageTemplateDataOptional } from '@/types';
-// import { GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+// import { GetOrFetchSelectedRecordsPayload } from "@/lib/redux/entity/actions";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 // import { processJoinedData, RelationshipDefinition } from '@/app/entities/hooks/relationships/utils';
 // import { useActiveJoinedRecords } from '@/app/entities/hooks/relationships/useActiveJoinedRecords';
 // import { useJoinedRecordsActiveParent } from '@/app/entities/hooks/relationships/useJoinedRecords';

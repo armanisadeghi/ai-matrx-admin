@@ -2,7 +2,8 @@
 
 import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';
 import { useRelationshipCreate } from '@/app/entities/hooks/unsaved-records/useDirectCreate';
-import { useAppStore, useAppDispatch, useEntityTools } from '@/lib/redux';
+import { useAppStore, useAppDispatch } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { toMatrxIdFromValue, toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { EntityKeys } from '@/types/entityTypes';
 import { useCallback, useMemo } from 'react';

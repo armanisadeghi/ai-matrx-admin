@@ -90,15 +90,11 @@ async function* _parseNdjsonStream(
     // Background reader — never yields, never pauses on consumer backpressure.
     const readLoop = async () => {
         let buffer = '';
-        let readCount = 0;
-        let parsedCount = 0;
         try {
             while (true) {
                 if (signal?.aborted) break;
 
                 const { value, done } = await reader.read();
-                readCount++;
-                console.log(`[stream-parser] read() #${readCount}: done=${done}, bytes=${value?.length ?? 0}`);
                 if (done) break;
 
                 buffer += decoder.decode(value, { stream: true });
@@ -112,7 +108,6 @@ async function* _parseNdjsonStream(
 
                     try {
                         pushItem(JSON.parse(trimmed) as StreamEvent);
-                        parsedCount++;
                     } catch {
                         console.warn('[stream-parser] Failed to parse NDJSON line:', trimmed.slice(0, 100));
                     }
@@ -124,12 +119,10 @@ async function* _parseNdjsonStream(
             if (remaining) {
                 try {
                     pushItem(JSON.parse(remaining) as StreamEvent);
-                    parsedCount++;
                 } catch {
                     // Incomplete trailing data — discard silently.
                 }
             }
-            console.log(`[stream-parser] readLoop done: reads=${readCount}, parsed=${parsedCount}, bufferLeft=${buffer.length}`);
         } catch (err) {
             console.error('[stream-parser] readLoop error:', err);
             if (err instanceof BackendApiError) {

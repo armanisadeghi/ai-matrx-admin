@@ -17,7 +17,7 @@ import {
 import StreamMonitorPanel from "./StreamMonitorPanel";
 import ActiveEventsPanel from "./ActiveEventsPanel";
 import EventStatusIndicator from "./EventStatusIndicator";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskFirstListenerId, selectAllResponses, selectTaskResponsesByTaskId, selectAllTasks } from "@/lib/redux/socket-io";
 
 export const SocketStreamMonitor = ({ taskId }: { taskId: string }) => {

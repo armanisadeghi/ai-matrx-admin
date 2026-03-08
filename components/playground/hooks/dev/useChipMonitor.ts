@@ -3,7 +3,7 @@
 // import { ChipData } from '@/features/rich-text-editor/types/editor.types';
 // import { useAddBroker } from './messages/useAddBroker';
 // import { DataBrokerData, MatrxRecordId } from '@/types';
-// import { useEntityTools } from '@/lib/redux';
+// import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 
 // interface ChipChange {
 //     type: 'added' | 'removed' | 'updated';

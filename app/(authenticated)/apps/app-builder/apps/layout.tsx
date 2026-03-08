@@ -1,7 +1,7 @@
 "use client";
 
 import React, { ReactNode, useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { usePathname, useRouter } from "next/navigation";
 import { fetchAppsThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
 import { useToast } from "@/components/ui/use-toast";

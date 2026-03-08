@@ -1,6 +1,6 @@
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 const DEBUG = false;
 

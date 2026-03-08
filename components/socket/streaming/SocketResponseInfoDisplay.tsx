@@ -5,7 +5,7 @@ import { CopyButton } from "@/components/matrx/buttons/CopyButton";
 import JsonToCollapsible from "@/components/matrx/matrx-collapsible/json-to-collapsible";
 import StreamDisplayOverlay from "./StreamDisplayOverlay";
 import { MouseEvent } from "react";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectResponseInfoByListenerId } from "@/lib/redux/socket-io";
 
 interface StreamInfoDisplayProps {

@@ -3,7 +3,7 @@ import { EntityData, MatrxRecordId } from '@/types/entityTypes';
 import { AiAgentDataOptional, AiSettingsProcessed } from '@/types/AutomationSchemaTypes';
 import { RelationshipProcessingHook, useRelFetchProcessing } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import { getStandardRelationship } from '@/app/entities/hooks/relationships/definitionConversionUtil';
-import { useAppDispatch } from '@/lib/redux';
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { processReturnResults } from '@/app/entities/hooks/crud/useDirectRelCreate';
 import { v4 as uuidv4 } from 'uuid';
 

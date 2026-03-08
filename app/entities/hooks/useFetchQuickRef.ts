@@ -2,7 +2,8 @@
 "use client";
 
 import * as React from "react";
-import { getRecordIdByRecord, useEntityTools } from "@/lib/redux";
+import { getRecordIdByRecord } from "@/lib/redux/entity/utils/stateHelpUtils";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { entityDefaultSettings } from "@/lib/redux/entity/constants/defaults";
 import { EntityKeys } from "@/types/entityTypes";

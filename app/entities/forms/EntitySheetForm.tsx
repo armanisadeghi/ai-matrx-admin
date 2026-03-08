@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
-import { RootState, selectEntityPrettyName, useAppSelector, useEntityTools } from '@/lib/redux';
+import { RootState } from "@/lib/redux/store";
+import { selectEntityPrettyName } from "@/lib/redux/schema/globalCacheSelectors";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { Button } from '@/components/ui/button';
 import { useCreateRecord } from '../hooks/unsaved-records/useCreateRecord';
 import { useUpdateRecord } from '../hooks/crud/useUpdateRecord';

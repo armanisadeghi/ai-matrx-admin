@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
-import { useAppSelector } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAllConnections, selectPrimaryConnectionId } from '@/lib/redux/socket-io';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 

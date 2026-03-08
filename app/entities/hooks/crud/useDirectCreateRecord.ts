@@ -1,7 +1,10 @@
 'use client';
 
 import { useCallback } from 'react';
-import { createRecordKey, useAppDispatch, useAppSelector, useEntityData, useEntityToasts, useEntityTools } from '@/lib/redux';
+import { createRecordKey } from "@/lib/redux/entity/utils/stateHelpUtils";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useEntityData, useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
+import { useEntityToasts } from "@/lib/redux/entity/hooks/useEntityToasts";
 import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { v4 as uuidv4 } from 'uuid';
 import { useCallbackManager } from '@/hooks/useCallbackManager';

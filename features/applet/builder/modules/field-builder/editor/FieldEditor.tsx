@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { Broker } from "@/types/customAppTypes";
 import SectionCard from "@/components/official/cards/SectionCard";
 import {

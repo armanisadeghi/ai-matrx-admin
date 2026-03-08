@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { AlertTriangle, Save, RefreshCcw, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAllFields } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { useFieldAnalysis } from "@/features/applet/hooks/useFieldAnalysis";
 import { FieldDefinition } from "@/types/customAppTypes";

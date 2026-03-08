@@ -1,4 +1,5 @@
-import { createEntitySelectors, useAppSelector } from "@/lib/redux";
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { EntityDataWithKey, EntityKeys, MatrxRecordId } from "@/types/entityTypes";
 import { useCallback } from "react";
 import { toPkValue } from "@/lib/redux/entity/utils/entityPrimaryKeys";

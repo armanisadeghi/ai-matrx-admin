@@ -2,7 +2,7 @@
 
 import StreamTextDisplay from "./StreamTextDisplay";
 import ResponseDataDisplay from "./SocketResponseDataDisplay";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectResponseByListenerId } from "@/lib/redux/socket-io";
 import ResponseInfoDisplay from "./SocketResponseInfoDisplay";
 import ResponseErrorDisplay from "./SocketResponsErrorDisplay";

@@ -3,7 +3,7 @@ import React from 'react';
 import ConnectionForm from './ConnectionForm';
 import ConnectionList from './ConnectionList';
 import AccordionWrapper from '@/components/matrx/matrx-collapsible/AccordionWrapper';
-import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { cn } from '@/lib/utils';
 import { selectAllConnections } from '@/lib/redux/socket-io/selectors';
 

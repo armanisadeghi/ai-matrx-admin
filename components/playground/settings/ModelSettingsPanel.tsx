@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMeasure } from '@uidotdev/usehooks';
 import { CockpitPanelProps } from '../types';
-import { useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import NewSettingsCard from './NewSettingsCard';
 import AiSettingsRecord from './PromptSettings';
 

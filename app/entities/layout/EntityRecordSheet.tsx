@@ -2,7 +2,8 @@ import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import EntityFormAnyRecord from '../forms/EntityFormAnyRecordWithRelated';
 import EntitySheet from '../fields/other-components/EntitySheet';
-import { createEntitySelectors, useAppStore } from '@/lib/redux';
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { useAppStore } from "@/lib/redux/hooks";
 
 interface EntityRecordSheetProps {
     selectedEntity: EntityKeys;

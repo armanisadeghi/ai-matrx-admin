@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectActiveFieldId } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { startFieldCreation } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
 import { useRouter } from "next/navigation";

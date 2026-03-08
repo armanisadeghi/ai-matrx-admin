@@ -9,7 +9,7 @@ import { useConversationPanel } from '@/features/chat/hooks/useConversationPanel
 import { ConversationContextMenu, useContextMenu } from './ConversationContextMenu';
 import ResponseColumn from '@/features/chat/components/response/ResponseColumn';
 import { getChatActionsWithThunks } from '@/lib/redux/entity/custom-actions/chatActions';
-import { useAppDispatch } from '@/lib/redux';
+import { useAppDispatch } from "@/lib/redux/hooks";
 
 /**
  * Unified Conversations UI that handles both desktop and mobile layouts

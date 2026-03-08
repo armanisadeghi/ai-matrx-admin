@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Loader2, Workflow } from "lucide-react";
 import Link from 'next/link';
 import { createWorkflow } from '@/features/workflows/service/workflowService';
-import { useAppSelector } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from '@/lib/redux/selectors/userSelectors';
 
 export default function NewWorkflowPage() {

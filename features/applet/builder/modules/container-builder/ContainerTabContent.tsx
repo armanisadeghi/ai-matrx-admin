@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { PlusIcon, Loader2, Cpu, SaveIcon, Edit, Eye, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletById, selectContainersForApplet } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import {
     selectActiveContainerId,

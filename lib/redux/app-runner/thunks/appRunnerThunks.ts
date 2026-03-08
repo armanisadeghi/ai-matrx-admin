@@ -6,7 +6,7 @@ import { validateAppWithApplets, ValidationOptions, ValidationResult } from "../
 import { brokerActions, BrokerMapEntry } from "@/lib/redux/brokerSlice";
 import { coreSelectors as brokerSelectors } from "@/lib/redux/brokerSlice/selectors/core";
 import { CustomAppletConfig, CustomAppConfig, BrokerMapping } from "@/types/customAppTypes";
-import { RootState } from "@/lib/redux";
+import { RootState } from "@/lib/redux/store";
 
 // Object to store validation results for retrieval later
 const validationStore: Record<string, ValidationResult> = {};

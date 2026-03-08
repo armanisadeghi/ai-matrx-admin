@@ -20,7 +20,8 @@ import {
 } from '../messagesSlice';
 import { ChatMode } from '../conversationSlice';
 import { NewMessageState } from '../newMessageSlice';
-import { createMessageSelectors, RootState } from '@/lib/redux';
+import { createMessageSelectors } from "@/lib/redux/entity/selectors";
+import { RootState } from "@/lib/redux/store";
 import { MessageRecordWithKey } from '@/types/AutomationSchemaTypes';
 
 interface CreateNewConversationArgs {

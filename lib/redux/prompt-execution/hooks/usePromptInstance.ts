@@ -18,7 +18,7 @@
  */
 
 import { useCallback } from 'react';
-import { useAppSelector, useAppDispatch } from '@/lib/redux';
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   // Basic selectors (from slice)
   selectInstance,

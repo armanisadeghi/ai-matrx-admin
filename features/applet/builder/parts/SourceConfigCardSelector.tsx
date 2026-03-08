@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
 import { AppletSourceConfig } from '@/types/customAppTypes';
-import { useAppSelector, useAppDispatch } from '@/lib/redux';
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectTempSourceConfigList } from '@/lib/redux/app-builder/selectors/appletSelectors';
 import { selectActiveAppletId } from '@/lib/redux/app-builder/selectors/appletSelectors';
 import { fetchFieldsThunk } from '@/lib/redux/app-builder/thunks/fieldBuilderThunks';

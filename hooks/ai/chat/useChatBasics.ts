@@ -1,7 +1,8 @@
 import { useAiModelWithFetch } from "@/lib/redux/entity/hooks/useAllData";
 import { useCallback, useEffect } from "react";
 import { getChatActions, getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
-import { createConversationSelectors, createMessageSelectors, useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux";
+import { createConversationSelectors, createMessageSelectors } from "@/lib/redux/entity/selectors";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { ConversationRecordWithKey, MessageRecordWithKey } from "@/types/AutomationSchemaTypes";
 import { ConversationMetadata, MessageMetadata } from "@/types/chat/chat.types";
 import { useFileManagement } from "./useFileManagement";

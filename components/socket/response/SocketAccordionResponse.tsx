@@ -34,7 +34,7 @@ import {
     selectResponseEndedByListenerId,
     selectAllResponses,
 } from "@/lib/redux/socket-io";
-import { useAppSelector, useAppDispatch } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import ProcessorExtractor from "@/components/official/processor-extractor/ProcessorExtractor";

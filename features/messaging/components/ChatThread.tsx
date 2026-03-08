@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback, useMemo } from "react";
-import { useAppSelector, useAppDispatch } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectCurrentConversation } from "../redux/messagingSlice";
 import { useChat } from "@/hooks/useSupabaseMessaging";
 import { ScrollArea } from "@/components/ui/scroll-area";

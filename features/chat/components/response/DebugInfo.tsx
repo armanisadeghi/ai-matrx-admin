@@ -1,5 +1,6 @@
 import React from "react";
-import { RootState, useAppSelector } from "@/lib/redux";
+import { RootState } from "@/lib/redux/store";
+import { useAppSelector } from "@/lib/redux/hooks";
 import {selectListenerIdsByTaskId, SocketErrorObject} from "@/lib/redux/socket-io";
 import {
     selectResponseTextByListenerId,

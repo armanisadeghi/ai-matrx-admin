@@ -3,7 +3,7 @@
 import React from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
 import { getAvailableServices } from "@/constants/socket-schema";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { formatText } from "@/utils/text/text-case-converter";
 
 interface ServiceSelectorProps {

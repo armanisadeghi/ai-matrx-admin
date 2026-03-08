@@ -1,6 +1,8 @@
 import React, { useCallback } from 'react';
 import { MessageBrokerRecordWithKey, DataBrokerRecordWithKey, MessageTemplateDataOptional } from '@/types/AutomationSchemaTypes';
-import { GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+import { GetOrFetchSelectedRecordsPayload } from "@/lib/redux/entity/actions";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { useRecipe } from './useRecipe';
 
 export function useMessageTemplates() {

@@ -3,7 +3,7 @@ import { EntityKeys } from "@/types/entityTypes";
 import ConfirmationDialog from "./ConfirmationDialog";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
-import { useEntityTools } from "@/lib/redux";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { useCallback } from "react";
 import { useUpdateRecord } from "@/app/entities/hooks/crud/useUpdateRecord";
 import { formatFieldValue } from "./utils";

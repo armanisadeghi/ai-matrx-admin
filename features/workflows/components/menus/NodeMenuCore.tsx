@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Edit, Copy, Trash2, Play, Zap, User, LogOut, Sun, Moon, Eye } from "lucide-react";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTaskFromPreset";
 import { DbFunctionNode } from "@/features/workflows/types";
 import { useRouter } from "next/navigation";
@@ -51,7 +51,7 @@ export const NodeMenuCore: React.FC<NodeMenuCoreProps> = ({
     const dispatch = useAppDispatch();
     const router = useRouter();
     const theme = useTheme();
-    const toggleMode = 'toggleMode' in theme ? theme.toggleMode : () => {}; // TODO: Fix useTheme return type
+    const toggleMode = 'toggleMode' in theme ? theme.toggleMode : () => { }; // TODO: Fix useTheme return type
     const [isExecuting, setIsExecuting] = useState(false);
 
     const handleExecute = async () => {
@@ -64,7 +64,7 @@ export const NodeMenuCore: React.FC<NodeMenuCoreProps> = ({
                     user_inputs: userInputs || [],
                 }
             })).unwrap();
-            
+
             onExecuteComplete?.(taskId);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : String(err);
@@ -115,10 +115,10 @@ export const NodeMenuCore: React.FC<NodeMenuCoreProps> = ({
                 onClick: () => onDelete(data.id),
                 destructive: true,
             })}
-            
+
             {/* Separator and general items */}
             {showGeneralItems && renderSeparator && renderSeparator()}
-            
+
             {!hideProfile && renderMenuItem({
                 icon: <User className="h-4 w-4 mr-2" />,
                 label: "Profile Settings",
@@ -129,7 +129,7 @@ export const NodeMenuCore: React.FC<NodeMenuCoreProps> = ({
                 label: theme.mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
                 onClick: toggleMode,
             })}
-            
+
             {!hideLogout && renderMenuItem({
                 icon: <LogOut className="h-4 w-4 mr-2" />,
                 label: "Log out",

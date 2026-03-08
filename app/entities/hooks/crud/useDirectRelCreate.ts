@@ -1,5 +1,7 @@
 import { useCallback, useMemo } from 'react';
-import { createRecordKey, useAppSelector, useEntityTools } from '@/lib/redux';
+import { createRecordKey } from "@/lib/redux/entity/utils/stateHelpUtils";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { EntityData, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { DefinedRelationship, RelatedDataManager } from '../relationships/relationshipDefinitions';
 import { useSequentialCreate } from './useSequentialCreate';

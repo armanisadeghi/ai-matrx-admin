@@ -5,7 +5,7 @@ import remarkGfm from "remark-gfm";
 import { cn } from "@/styles/themes/utils";
 import { parseMarkdownTable } from "@/components/mardown-display/markdown-classification/processors/bock-processors/parse-markdown-table";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { parseTaggedContent } from "@/components/mardown-display/markdown-classification/processors/utils/thinking-parser";
 import ThinkingVisualization from "@/components/mardown-display/blocks/thinking-reasoning/ThinkingVisualization";
 import ReasoningVisualization from "@/components/mardown-display/blocks/thinking-reasoning/ReasoningVisualization";

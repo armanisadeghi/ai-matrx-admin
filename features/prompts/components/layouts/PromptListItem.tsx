@@ -7,7 +7,8 @@ import {
 } from "lucide-react";
 import { FaBars } from "react-icons/fa";
 import { cn } from "@/lib/utils";
-import { RootState, useAppSelector } from "@/lib/redux";
+import { RootState } from "@/lib/redux/store";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
 import { CreatePromptAppModal } from "@/features/prompt-apps/components";

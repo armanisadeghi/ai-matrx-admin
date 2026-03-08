@@ -25,7 +25,7 @@ import { NodeDeleteDialog } from "@/features/workflows/components/common/NodeDel
 import { useWorkflowData } from "@/features/workflows/hooks/useWorkflowData";
 import { useWorkflowActions } from "@/features/workflows/hooks/useWorkflowActions";
 import { NodeWrapper } from "@/features/workflows/react-flow/nodes/NodeWrapper";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { DataBrokerRecords, DataFlowManager, EnrichedBroker } from "@/features/workflows/utils/data-flow-manager";
 import { useEntityRecords } from "@/lib/redux/entity/hooks/useAllData";

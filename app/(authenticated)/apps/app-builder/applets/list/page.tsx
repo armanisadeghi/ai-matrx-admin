@@ -5,13 +5,13 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import AppletListTable from "@/features/applet/builder/modules/applet-builder/AppletListTable";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { deleteAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 
 export default function AppsListPage() {
     const router = useRouter();
     const dispatch = useAppDispatch();
-    
+
     const handleViewField = (id: string) => {
         router.push(`/apps/app-builder/applets/${id}`);
     };
@@ -19,11 +19,11 @@ export default function AppsListPage() {
     const handleEditField = (id: string) => {
         router.push(`/apps/app-builder/applets/${id}/edit`);
     };
-    
+
     const handleCreateField = () => {
         router.push(`/apps/app-builder/applets/create`);
     };
-    
+
     const handleDeleteField = async (id: string) => {
         try {
             await dispatch(deleteAppletThunk(id)).unwrap();
@@ -34,8 +34,8 @@ export default function AppsListPage() {
     };
 
     return (
-        <AppletListTable 
-            onAppletView={handleViewField} 
+        <AppletListTable
+            onAppletView={handleViewField}
             onAppletEdit={handleEditField}
             onAppletCreate={handleCreateField}
             onAppletDelete={handleDeleteField}

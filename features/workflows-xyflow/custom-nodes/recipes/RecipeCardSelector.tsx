@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { workflowNodesActions } from "@/lib/redux/workflow-nodes";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 
 interface RecipeOption {
     value: string;
@@ -23,7 +23,7 @@ const RecipeCardSelector: React.FC<RecipeCardSelectorProps> = ({ nodeId, onCance
     const dispatch = useAppDispatch();
 
     const handleRecipeSelect = (recipeId: string) => {
-        dispatch(workflowNodesActions.updateNodeInputByArgName({nodeId, argName: "recipe_id", updates: {default_value: recipeId, ready: true}}));
+        dispatch(workflowNodesActions.updateNodeInputByArgName({ nodeId, argName: "recipe_id", updates: { default_value: recipeId, ready: true } }));
         onRecipeSelect(recipeId);
     };
 

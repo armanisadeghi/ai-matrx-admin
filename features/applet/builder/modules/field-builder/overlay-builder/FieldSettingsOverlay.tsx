@@ -1,6 +1,6 @@
 // src/features/field-settings/FieldSettingsOverlay.tsx
 import React, { useState } from "react";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFieldById } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
 import FieldPreviewAs from "../previews/FieldPreviewAs";

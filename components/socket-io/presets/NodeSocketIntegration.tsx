@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTaskFromPreset";
 import { getPresetsForTask, getAvailablePresets } from "@/components/socket-io/presets/socket-task-presets";
 import { Play, Zap, Settings } from "lucide-react";
@@ -17,9 +17,9 @@ interface NodeSocketIntegrationProps {
  * Example integration component showing how to add socket functionality
  * to any component with data that can be transformed into socket tasks
  */
-const NodeSocketIntegration: React.FC<NodeSocketIntegrationProps> = ({ 
-    stepData, 
-    onTaskCreated 
+const NodeSocketIntegration: React.FC<NodeSocketIntegrationProps> = ({
+    stepData,
+    onTaskCreated
 }) => {
     const dispatch = useAppDispatch();
     const [isOpen, setIsOpen] = useState(false);
@@ -33,18 +33,18 @@ const NodeSocketIntegration: React.FC<NodeSocketIntegrationProps> = ({
         setIsExecuting(true);
         try {
             console.log(`🚀 Executing ${presetName} with data:`, stepData);
-            
+
             const taskId = await dispatch(createTaskFromPresetQuick({
                 presetName,
                 sourceData: stepData
             })).unwrap();
-            
+
             setLastTaskId(taskId);
             setResults({ taskId, preset: presetName, timestamp: new Date().toISOString() });
-            
+
             // Notify parent component
             onTaskCreated?.(taskId);
-            
+
             console.log(`✅ Task created successfully: ${taskId}`);
         } catch (error) {
             console.error(`❌ Failed to create task with preset ${presetName}:`, error);
@@ -59,8 +59,8 @@ const NodeSocketIntegration: React.FC<NodeSocketIntegrationProps> = ({
             {/* Trigger Button - This would go in your NodeWrapper or similar component */}
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogTrigger asChild>
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         size="sm"
                         className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 hover:from-blue-600 hover:to-purple-700"
                     >

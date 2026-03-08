@@ -16,7 +16,7 @@ import {useEntitySelection} from "@/lib/redux/entity/hooks/useEntitySelection";
 import {Callback, callbackManager} from "@/utils/callbackManager";
 import {useQuickReference} from "@/lib/redux/entity/hooks/useQuickReference";
 import {useEntityValidation} from "@/lib/redux/entity/hooks/useEntityValidation";
-import {useEntityToasts} from '@/lib/redux';
+import { useEntityToasts } from "@/lib/redux/entity/hooks/useEntityToasts";
 import {FetchRecordsPayload} from '../actions';
 
 const entityDefaultSettings = {

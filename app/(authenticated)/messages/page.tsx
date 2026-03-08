@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { closeMessaging } from "@/features/messaging/redux/messagingSlice";
 import { ConversationList } from "@/features/messaging/components/ConversationList";
 import { MessagesHeader } from "@/components/layout/new-layout/PageSpecificHeader";

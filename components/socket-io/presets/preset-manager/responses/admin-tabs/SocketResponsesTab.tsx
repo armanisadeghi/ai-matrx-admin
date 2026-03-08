@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectTaskResults,
   selectPrimaryResponseTextByTaskId,

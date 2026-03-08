@@ -1,6 +1,6 @@
 // hooks/useInputControls.ts
 import { useState, useCallback, useEffect, useRef } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { MatrxRecordId } from "@/types/entityTypes";
 import { FileManagerReturn } from "@/hooks/ai/chat/useFileManagement";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTaskFromPreset";
 import { SocketPresetExecutionConfig } from "../SocketPresetManager";
 
@@ -16,7 +16,7 @@ import { SocketPresetExecutionConfig } from "../SocketPresetManager";
  */
 export const useSocketPresetExecution = (config: SocketPresetExecutionConfig) => {
   const dispatch = useAppDispatch();
-  
+
   // Local state for execution tracking
   const [isExecuting, setIsExecuting] = useState(false);
   const [taskId, setTaskId] = useState<string | null>(null);
@@ -25,7 +25,7 @@ export const useSocketPresetExecution = (config: SocketPresetExecutionConfig) =>
   // Main execution function
   const execute = useCallback(async (dataOverride?: any) => {
     const dataToExecute = dataOverride !== undefined ? dataOverride : config.sourceData;
-    
+
     setIsExecuting(true);
     setError(null);
     setTaskId(null);
@@ -42,14 +42,14 @@ export const useSocketPresetExecution = (config: SocketPresetExecutionConfig) =>
 
       // Update state
       setTaskId(createdTaskId);
-      
+
       // Call the onExecuteComplete callback
       config.onExecuteComplete?.(createdTaskId);
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       setError(errorMessage);
-      
+
       // Call the onExecuteError callback
       config.onExecuteError?.(errorMessage);
 
@@ -70,11 +70,11 @@ export const useSocketPresetExecution = (config: SocketPresetExecutionConfig) =>
     isExecuting,
     taskId,
     error,
-    
+
     // Actions
     execute,
     reset,
-    
+
     // Computed
     hasResult: !!taskId,
     hasError: !!error,

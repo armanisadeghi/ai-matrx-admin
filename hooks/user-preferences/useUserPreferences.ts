@@ -1,5 +1,5 @@
 // hooks/useUserPreferences.ts
-import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
     AssistantPreferences,
     CodingPreferences,

@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { FieldDefinition } from '../page';
-import { useAppSelector } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletContainers } from '@/lib/redux/app-builder/selectors/appletSelectors';
 
 interface FieldsTabProps {

@@ -26,7 +26,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import AppPreviewCard from './AppPreviewCard';
 import AppletPreviewCard from './AppletPreviewCard';
-import { useAppSelector, useAppDispatch } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { 
   selectAppById
 } from "@/lib/redux/app-builder/selectors/appSelectors";

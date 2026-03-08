@@ -1,7 +1,7 @@
 "use client";
 
 import { Activity, CheckCircle2 } from "lucide-react";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectResponseEndedByListenerId, selectTaskStreamingByListenerId } from "@/lib/redux/socket-io";
 
 interface EventStatusIndicatorProps {

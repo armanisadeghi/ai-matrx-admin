@@ -4,7 +4,8 @@ import {SmartButtonProps} from "../types";
 import {Save} from "lucide-react";
 import SmartUpdateConfirmation from "../confirmation/SmartUpdateConfirmation";
 import SmartCreateConfirmation from "../confirmation/SmartCreateConfirmation";
-import {createEntitySelectors, useAppSelector} from "@/lib/redux";
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 export const SmartSaveButton = memo((
     {

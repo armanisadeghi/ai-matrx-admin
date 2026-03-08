@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { useDebounce } from "@/features/tasks/hooks/useDebounce";
 import { useUserConnections, type ConnectionUser } from "../hooks/useUserConnections";
 import type { UserBasicInfo } from "../types";

@@ -9,7 +9,7 @@ import { SocketTaskBuilder } from "../SocketTaskBuilder";
 import { useState } from "react";
 import SocketStreamMonitor from "../streaming/SocketStreamMonitor";
 import { ResponsiveSocketHeader } from "@/components/socket-io/headers/ResponsiveSocketHeader";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAllTasks, selectTaskById } from "@/lib/redux/socket-io";
 import TaskDebugDisplay from "@/components/socket-io/form-builder/TaskDebugDisplay";
 

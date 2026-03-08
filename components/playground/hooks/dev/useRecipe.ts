@@ -1,4 +1,7 @@
-import { createRecordKey, GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+import { createRecordKey } from "@/lib/redux/entity/utils/stateHelpUtils";
+import { GetOrFetchSelectedRecordsPayload } from "@/lib/redux/entity/actions";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { RecipeMessageRecordWithKey, AiAgentRecordWithKey, MessageTemplateDataRequired, AiSettingsDataRequired, RecipeDataRequired } from '@/types/AutomationSchemaTypes';
 import React, { useEffect, useCallback } from 'react';
 

@@ -5,7 +5,7 @@ import FloatingSheet from "@/components/official/FloatingSheet";
 import { Tool } from "@/types/mcp-tools";
 import { useTools } from "@/hooks/useTools";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 
 
 interface ToolSelectionSheetProps {

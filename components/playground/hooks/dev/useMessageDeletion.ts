@@ -1,9 +1,10 @@
 import { useCallback } from 'react';
-import { useAppSelector, useEntityTools } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { MatrxRecordId } from '@/types/entityTypes';
 import { RecipeMessageRecordWithKey } from '@/types/AutomationSchemaTypes';
 import { useDeleteRecord } from '@/app/entities/hooks/crud/useDeleteRecord';
-import { useAppDispatch } from '@/lib/redux';
+import { useAppDispatch } from "@/lib/redux/hooks";
 
 interface UseMessageDeletionOptions {
     activeRecipeFieldId: string | undefined;

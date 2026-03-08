@@ -3,10 +3,11 @@ import { EntityKeys, AnyEntityDatabaseTable } from '@/types/entityTypes';
 import { createEntitySlice } from './slice';
 import { FetchOneWithFkIfkPayload, GetOrFetchSelectedRecordsPayload } from './actions';
 import { QueryOptions } from './types/stateTypes';
-import { AppDispatch, createEntitySelectors, RootState } from '..';
+import { RootState } from '@/lib/redux/store';
 import { selectEntityDatabaseName } from '@/lib/redux/schema/globalCacheSelectors';
 import EntityLogger from './utils/entityLogger';
-
+import { AppDispatch } from '@/lib/redux/store';
+import { createEntitySelectors } from './selectors';
 
 export interface RecordResult<T> {
     recordId: string;
@@ -38,7 +39,7 @@ export const getOrFetchSelectedRecordsThunk = createAsyncThunk<
     const results: RecordResult<any>[] = [];
 
     entityLogger.log('info', 'Thunk Fetching Records with payload', payload);
-    
+
     try {
         const { existingRecords, recordIdsNotInState, primaryKeysToFetch } = entitySelectors.selectRecordsForFetching(payload.matrxRecordIds)(getState());
 

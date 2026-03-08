@@ -6,7 +6,7 @@ import { useSelectQuickRef } from '@/app/entities/hooks/useSelectQuickRef';
 import FieldListTableOverlay from '@/features/applet/builder/modules/field-builder/FieldListTableOverlay';
 import { ListIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useEntityTools } from '@/lib/redux';
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { entityDefaultSettings } from '@/lib/redux/entity/constants/defaults';
 

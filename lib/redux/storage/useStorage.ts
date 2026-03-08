@@ -1,7 +1,7 @@
 // lib/redux/storage/useStorage.ts
 import { useDispatch, useSelector } from 'react-redux';
 import { StorageItem } from '@/utils/supabase/StorageManager';
-import { AppDispatch, RootState } from '@/lib/redux';
+import { AppDispatch, RootState } from "@/lib/redux/store";
 import * as storageThunks from './storageThunks';
 
 export const useStorage = () => {

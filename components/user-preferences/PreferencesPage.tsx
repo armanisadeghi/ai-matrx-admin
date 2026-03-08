@@ -9,7 +9,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save, RotateCcw, Check } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { RootState, useAppDispatch } from '@/lib/redux';
+import { RootState } from "@/lib/redux/store";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import {
     UserPreferencesState,
     savePreferencesToDatabase,

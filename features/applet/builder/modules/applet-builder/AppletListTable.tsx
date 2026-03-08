@@ -2,7 +2,7 @@
 
 "use client";
 import React, { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useRouter } from "next/navigation";
 import { selectAllApplets, selectAppletLoading } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { deleteAppletThunk, fetchAppletsThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";

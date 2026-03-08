@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useGetorFetchRecords, useGetOrFetchRecord } from "@/app/entities/hooks/records/useGetOrFetch";
-import { createEntitySelectors, useAppSelector } from "@/lib/redux";
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { useDebounce } from "@uidotdev/usehooks";
 import { MatrxRecordId } from "@/types/entityTypes";
 import { DataInputComponentRecordWithKey, RecipeRecordWithKey, AppletRecordWithKey } from "@/types/AutomationSchemaTypes";

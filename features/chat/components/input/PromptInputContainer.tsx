@@ -7,7 +7,7 @@ import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWit
 import FileChipsWithPreview from "@/components/ui/file-preview/FileChipsWithPreview";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useFileManagement } from "@/hooks/ai/chat/useFileManagement";
 
 interface PromptInputContainerProps {

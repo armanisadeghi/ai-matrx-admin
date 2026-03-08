@@ -3,7 +3,7 @@ import { EntityKeys } from '@/types/entityTypes';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
 import { FetchMode, GetOrFetchSelectedRecordsPayload } from '@/lib/redux/entity/actions';
-import { useEntityTools } from '@/lib/redux';
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 
 export const useRecordMultiSelect = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const dispatch = useAppDispatch();

@@ -11,7 +11,7 @@ import { PreviewConfig } from "@/features/applet/builder/previews/PreviewConfig"
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { LoadingSpinner } from "@/components/ui/spinner";
-import { useAppSelector, useAppDispatch } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectAppLoading, selectAppError, selectHasUnsavedAppChanges, selectAppSlug } from "@/lib/redux/app-builder/selectors/appSelectors";
 import AppBuilderDebugOverlay from "@/components/admin/AppBuilderDebugOverlay";
 import {

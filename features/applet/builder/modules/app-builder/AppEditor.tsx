@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAppById, selectAppIsDirty, selectAppLoading } from "@/lib/redux/app-builder/selectors/appSelectors";
 import { saveAppThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
 import { setActiveApp } from "@/lib/redux/app-builder/slices/appBuilderSlice";

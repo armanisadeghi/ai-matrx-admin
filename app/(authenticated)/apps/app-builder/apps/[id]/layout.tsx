@@ -2,7 +2,7 @@
 
 import React, { ReactNode } from 'react';
 import StructuredSectionCard from '@/components/official/StructuredSectionCard';
-import { useAppSelector } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppName } from '@/lib/redux/app-builder/selectors/appSelectors';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';

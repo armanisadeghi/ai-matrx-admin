@@ -13,7 +13,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { useConversations } from "@/hooks/useSupabaseMessaging";
 import { useUserOrganizations } from "@/features/organizations/hooks";
 import type { UserBasicInfo } from "../types";

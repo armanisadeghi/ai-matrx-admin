@@ -7,7 +7,7 @@ import { GlobalMenuItems } from "./GlobalMenuItems";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import { createClient } from "@/utils/supabase/client";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTaskFromPreset";
 
 interface MenuCoreProps extends MenuRenderProps {
@@ -31,7 +31,7 @@ export const MenuCore: React.FC<MenuCoreProps> = ({
     // @ts-ignore - useTheme may return fallback object without toggleMode, but we know it exists in our context
     const { mode, toggleMode } = themeContext;
     const dispatch = useAppDispatch();
-    
+
     // Get the menu definition
     const menuDefinition = MenuRegistry.get(menuId);
     if (!menuDefinition) {
@@ -56,7 +56,7 @@ export const MenuCore: React.FC<MenuCoreProps> = ({
                                     user_inputs: userInputs || [],
                                 }
                             })).unwrap();
-                            
+
                             onExecuteComplete?.(taskId);
                         } catch (err) {
                             const errorMessage = err instanceof Error ? err.message : String(err);
@@ -84,7 +84,7 @@ export const MenuCore: React.FC<MenuCoreProps> = ({
         .map(item => {
             // Apply overrides and real implementations
             let finalItem = { ...item };
-            
+
             // Apply real implementations for core items
             if (item.id === 'theme') {
                 finalItem = {
@@ -123,10 +123,10 @@ export const MenuCore: React.FC<MenuCoreProps> = ({
             {customItems
                 .filter(item => item.visible !== false)
                 .map(item => renderMenuItem(item))}
-            
+
             {/* Separator if we have both custom and global items */}
             {showSeparator && renderSeparator && renderSeparator()}
-            
+
             {/* Render global items */}
             {globalItems
                 .filter(item => item.visible !== false)

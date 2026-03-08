@@ -6,7 +6,8 @@ import { MatrxRecordId } from "@/types/entityTypes";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { SelectionMode } from "@/lib/redux/entity/types/stateTypes";
 import { ConversationData } from "@/types/AutomationSchemaTypes";
-import { getEntitySlice, createEntitySelectors } from "@/lib/redux";
+import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
 
 
 export interface SaveConversationAndMessageResult {

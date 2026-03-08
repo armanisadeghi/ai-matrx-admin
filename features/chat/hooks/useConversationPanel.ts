@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subWeeks, subMonths, startOfDay, endOfDay } from "date-fns";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import formatRelativeTime from "@/features/chat/components/utils/formatRelativeTime";

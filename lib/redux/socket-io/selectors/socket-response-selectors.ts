@@ -1,7 +1,7 @@
 "use client";
 
 import { createSelector } from "@reduxjs/toolkit";
-import { RootState } from "@/lib/redux";
+import type { RootState } from "@/lib/redux/store";
 import { ResponsesState, ResponseState } from "@/lib/redux/socket-io/socket.types";
 import { selectTaskListenerIds, selectTaskById } from "./socket-task-selectors";
 

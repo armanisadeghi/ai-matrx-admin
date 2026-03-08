@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { fetchUserWorkflows } from '../service/workflowService';
 import { WorkflowCard } from './WorkflowCard';
 import { selectUser, selectActiveUserName } from "@/lib/redux/selectors/userSelectors";
-import { useAppSelector } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
 import { Workflow } from '@/lib/redux/workflow/types';
 
 export function WorkflowsGrid() {

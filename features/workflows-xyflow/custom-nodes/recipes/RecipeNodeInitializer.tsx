@@ -13,7 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useRecipeFetch } from "./useRecipeFetch";
 import RecipeCardSelector from "./RecipeCardSelector";
 import { workflowNodesActions, workflowNodesSelectors } from "@/lib/redux/workflow-nodes";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityUsedHooks";
 import { RECIPE_NODE_DEFINITION } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/custom-nodes/custom-node-definitions";
 import { normalizeBroker, normalizeInputMapping } from "@/features/workflows-xyflow/utils/normalizers";

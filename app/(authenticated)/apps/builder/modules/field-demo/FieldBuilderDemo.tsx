@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import FieldComponentsList from "@/features/applet/builder/modules/field-builder/FieldComponentsList";
 import FieldEditor from "@/features/applet/builder/modules/field-builder/editor/FieldEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

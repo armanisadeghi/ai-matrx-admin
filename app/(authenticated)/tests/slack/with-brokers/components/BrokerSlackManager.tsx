@@ -5,7 +5,7 @@ import { TokenManager } from './TokenManager';
 import { ChannelSelector } from './ChannelSelector';
 import { BrokerFileUploader } from './BrokerFileUploader';
 import { BrokerSlackClient } from './BrokerSlackClient';
-import { useAppSelector } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
 import { brokerSelectors } from '@/lib/redux/brokerSlice';
 import { SLACK_BROKER_IDS } from './BrokerSlackClient';
 

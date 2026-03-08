@@ -4,7 +4,8 @@ import {Card, CardContent} from '@/components/ui/card';
 import {Grid2X2} from 'lucide-react';
 import {memo} from 'react';
 import {cn} from '@/lib/utils';
-import {useAppSelector, useEntityTools} from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import {EntityKeys} from '@/types/entityTypes';
 
 interface EntityQuickRefCardItemProps {

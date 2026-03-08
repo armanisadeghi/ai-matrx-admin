@@ -14,7 +14,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useNotesContext } from '@/features/notes/context/NotesContext';
 import {
   initializeDiffSession,

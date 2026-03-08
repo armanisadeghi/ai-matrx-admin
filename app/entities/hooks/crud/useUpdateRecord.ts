@@ -1,5 +1,6 @@
 // useUpdateRecord.ts
-import { useEntityToasts, useEntityTools } from '@/lib/redux';
+import { useEntityToasts } from "@/lib/redux/entity/hooks/useEntityToasts";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { callbackManager } from '@/utils/callbackManager';
 import { useCallback } from 'react';

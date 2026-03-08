@@ -24,7 +24,7 @@ import { PromptContextResolver, type UIContext } from '@/lib/services/prompt-con
 import { PromptRunnerModal } from '@/features/prompts/components/results-display/PromptRunnerModal';
 import { TextActionResultModal } from '@/components/modals/TextActionResultModal';
 import { usePromptExecution } from '@/features/prompts/hooks/usePromptExecution';
-import { useAppSelector, useAppDispatch } from '@/lib/redux';
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectIsDebugMode, showPromptDebugIndicator } from '@/lib/redux/slices/adminDebugSlice';
 import { startPromptInstance } from '@/lib/redux/prompt-execution/thunks/startInstanceThunk';
 import { Loader2 } from 'lucide-react';

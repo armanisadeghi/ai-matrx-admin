@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import * as LucideIcons from "lucide-react";
 import { formatLabel, formatPlaceholder } from "../utils/label-util";
 import { SchemaField } from "@/constants/socket-schema";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { arrayOperation, updateTaskFieldByPath } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
@@ -20,18 +20,18 @@ interface ArrayFieldProps {
     testMode?: boolean;
 }
 
-const ArrayField: React.FC<ArrayFieldProps> = ({ 
+const ArrayField: React.FC<ArrayFieldProps> = ({
     taskId,
-    fieldName, 
-    fieldDefinition, 
-    path = "", 
+    fieldName,
+    fieldDefinition,
+    path = "",
     hasError = false,
     testMode = false
 }) => {
     const dispatch = useAppDispatch();
     const fullPath = path ? `${path}.${fieldName}` : fieldName;
     const taskData = useSelector((state: RootState) => selectTaskDataById(state, taskId));
-    
+
     // Get the value of this array field using the path
     const getValue = () => {
         if (!taskData) return [];
@@ -44,7 +44,7 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
             }
             return Array.isArray(current) ? current : [];
         }
-        
+
         return Array.isArray(taskData[fullPath]) ? taskData[fullPath] : [];
     };
 
@@ -53,42 +53,42 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
 
     const handleItemChange = (index: number, newValue: string) => {
         const newArray = [...arrayValues];
-        
+
         while (newArray.length <= index) {
             newArray.push("");
         }
-        
+
         newArray[index] = newValue;
-        
+
         // Remove empty trailing items except keep at least one empty item
-        const trimmedArray = newArray.filter((item, idx) => 
+        const trimmedArray = newArray.filter((item, idx) =>
             item !== "" || idx === newArray.length - 1 || idx <= index
         );
-        
+
         // Ensure we always have at least one item
         const finalArray = trimmedArray.length > 0 ? trimmedArray : [""];
-        
-        dispatch(updateTaskFieldByPath({ 
-            taskId, 
-            fieldPath: fullPath, 
-            value: finalArray 
+
+        dispatch(updateTaskFieldByPath({
+            taskId,
+            fieldPath: fullPath,
+            value: finalArray
         }));
     };
 
     const handleRemoveItem = (index: number) => {
         if (arrayValues.length <= 1) {
             // Always keep at least one empty item
-            dispatch(updateTaskFieldByPath({ 
-                taskId, 
-                fieldPath: fullPath, 
-                value: [""] 
+            dispatch(updateTaskFieldByPath({
+                taskId,
+                fieldPath: fullPath,
+                value: [""]
             }));
         } else {
             // Use array operation for proper removal
             const newArray = arrayValues.filter((_, idx) => idx !== index);
-            dispatch(updateTaskFieldByPath({ 
-                taskId, 
-                fieldPath: fullPath, 
+            dispatch(updateTaskFieldByPath({
+                taskId,
+                fieldPath: fullPath,
                 value: newArray.length > 0 ? newArray : [""]
             }));
         }
@@ -96,9 +96,9 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
 
     const handleAddItem = () => {
         const newArray = [...arrayValues, ""];
-        dispatch(updateTaskFieldByPath({ 
-            taskId, 
-            fieldPath: fullPath, 
+        dispatch(updateTaskFieldByPath({
+            taskId,
+            fieldPath: fullPath,
             value: newArray
         }));
     };
@@ -134,10 +134,10 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
         if (testMode && fieldDefinition.TEST_VALUE !== undefined) {
             // Use a microtask to ensure this is outside the current render cycle
             Promise.resolve().then(() => {
-                dispatch(updateTaskFieldByPath({ 
-                    taskId, 
-                    fieldPath: fullPath, 
-                    value: fieldDefinition.TEST_VALUE 
+                dispatch(updateTaskFieldByPath({
+                    taskId,
+                    fieldPath: fullPath,
+                    value: fieldDefinition.TEST_VALUE
                 }));
             });
         }

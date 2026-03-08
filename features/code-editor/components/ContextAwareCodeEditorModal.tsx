@@ -5,7 +5,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ContextAwarePromptRunner } from '@/features/prompts/components/results-display/ContextAwarePromptRunner';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
-import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { getBuiltinPrompt } from '@/lib/redux/thunks/promptSystemThunks';
 import { selectCachedPrompt } from '@/lib/redux/slices/promptCacheSlice';
 import { getBuiltinId } from '@/lib/redux/prompt-execution/builtins';

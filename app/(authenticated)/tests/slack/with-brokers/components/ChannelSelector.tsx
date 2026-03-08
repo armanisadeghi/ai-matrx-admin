@@ -1,6 +1,6 @@
 'use client';
 
-import { useAppSelector, useAppDispatch } from '@/lib/redux';
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { brokerSelectors, brokerActions } from '@/lib/redux/brokerSlice';
 import { SLACK_BROKER_IDS } from './BrokerSlackClient';
 import { SlackChannel } from '../../../slack/slackClientUtils';

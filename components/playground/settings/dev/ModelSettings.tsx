@@ -3,7 +3,8 @@
 // import { Save, SquarePlus } from 'lucide-react';
 // import { useAiSettings } from '../../hooks/useAiSettings';
 // import DynamicPromptSettings from './DynamicPromptSettings';
-// import { useAppSelector, useEntityTools } from '@/lib/redux';
+// import { useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 
 // const ModelSettings = () => {
 //     const { settingsMatrxId, aiProviderRecordid, aiModelRecordid, aiEndpointRecordid } = useAiSettings();

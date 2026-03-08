@@ -9,7 +9,7 @@ import AICockpitIntro from '@/components/playground/components/AICockpitIntro';
 import EntityCreateRecordSheet from '@/app/entities/layout/EntityCreateRecordSheet';
 import AddTemplateMessages from '@/components/playground/messages/AddTemplateMessages';
 import { useDispatch } from 'react-redux';
-import { useEntityTools } from '@/lib/redux';
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { getLayoutOptions } from './recipes/constants';
 import { useAiCockpit } from '@/components/playground/hooks/useAiCockpit';
 import { CockpitControls } from './types';

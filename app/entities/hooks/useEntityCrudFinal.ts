@@ -10,7 +10,7 @@ import {EntityOperationMode, FlexibleQueryOptions, MatrxRecordId,} from '@/lib/r
 import {getEntitySlice} from '@/lib/redux/entity/entitySlice';
 import {Callback, callbackManager} from "@/utils/callbackManager";
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
-import { UpdateRecordPayload } from '@/lib/redux';
+import { UpdateRecordPayload } from "@/lib/redux/entity/actions";
 
 export const useEntityCrudFinal = <TEntity extends EntityKeys>(entityKey: TEntity) => {
 

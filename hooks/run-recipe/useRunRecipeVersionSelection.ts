@@ -1,6 +1,7 @@
 'use client';
 
-import { createEntitySelectors, useAppSelector } from '@/lib/redux';
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
 import { useMemo, useState, useEffect } from 'react';
 import { RecipeRecordWithKey, CompiledRecipeRecordWithKey } from '@/types/AutomationSchemaTypes';

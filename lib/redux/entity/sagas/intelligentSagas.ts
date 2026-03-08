@@ -4,7 +4,7 @@ import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
 import { all, call, delay, put, select, take } from "redux-saga/effects";
 import { selectEntityPrimaryKeyMetadata, selectFrontendConversion } from "@/lib/redux/schema/globalCacheSelectors";
 import { createRecordKey } from "@/lib/redux/entity/utils/stateHelpUtils";
-import { BaseSagaContext } from "@/lib/redux";
+import { BaseSagaContext } from "@/lib/redux/entity/sagas/sagaHelpers";
 import { addUserIdToData } from "../utils/direct-schema";
 import { handleQuickReferenceUpdate } from "./sagaHandlers";
 

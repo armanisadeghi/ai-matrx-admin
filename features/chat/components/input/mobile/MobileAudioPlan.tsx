@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
 import { FileManagerReturn } from "@/hooks/ai/chat/useFileManagement";
 import createChatSelectors from "@/lib/redux/entity/custom-selectors/chatSelectors";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 interface MobileAudioPlanProps {
     fileManager: FileManagerReturn;

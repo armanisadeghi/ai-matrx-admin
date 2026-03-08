@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { SLACK_BROKER_IDS } from "./components/BrokerSlackClient";
 import { LoadingSpinner } from "@/components/ui/spinner";
@@ -8,7 +8,7 @@ import { LoadingSpinner } from "@/components/ui/spinner";
 export default function SlackBrokersLayout({ children }: { children: React.ReactNode }) {
     const dispatch = useAppDispatch();
     const [initialized, setInitialized] = useState(false);
-    
+
     useEffect(() => {
         const brokerMappings = Object.entries(SLACK_BROKER_IDS).map(([key, idArgs]) => {
             const mappedItemId = 'mappedItemId' in idArgs ? idArgs.mappedItemId : (idArgs as any).itemId || key;
@@ -21,12 +21,12 @@ export default function SlackBrokersLayout({ children }: { children: React.React
                 brokerId: brokerId,
             };
         });
-        
+
         dispatch(brokerActions.addOrUpdateRegisterEntries(brokerMappings));
-        
+
         setInitialized(true);
     }, [dispatch]);
-    
+
     if (!initialized) {
         return (
             <div className="h-full w-full flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900 transition-colors">
@@ -35,7 +35,7 @@ export default function SlackBrokersLayout({ children }: { children: React.React
             </div>
         );
     }
-    
+
     return (
         <div className="w-full h-full bg-slate-100 dark:bg-slate-900">
             {children}

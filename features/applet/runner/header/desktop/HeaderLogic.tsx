@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { RootState } from "@/lib/redux";
+import { RootState } from "@/lib/redux/store";
 import { useRouter, usePathname } from "next/navigation";
 import { 
     selectAppRuntimeConfig,

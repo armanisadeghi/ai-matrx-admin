@@ -14,7 +14,7 @@ import {
     getCompiledRecipeByVersionWithNeededBrokers,
     getUserRecipes,
 } from "@/lib/redux/app-builder/service/customAppletService";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { setTempAppletSourceConfig } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import { AppletSourceConfig } from "@/types/customAppTypes";
 
@@ -45,7 +45,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
 }) => {
     const { toast } = useToast();
     const dispatch = useAppDispatch();
-    
+
     // State
     const [versionSelection, setVersionSelection] = useState<"latest" | "specific">(initialSourceConfig?.config?.version ? "specific" : "latest");
     const [specificVersion, setSpecificVersion] = useState<number>(initialSourceConfig?.config?.version || 1);
@@ -57,7 +57,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
     const [userRecipes, setUserRecipes] = useState<RecipeInfo[]>([]);
     const [sourceConfig, setSourceConfig] = useState<AppletSourceConfig | null>(initialSourceConfig);
     const [selectedRecipe, setSelectedRecipe] = useState<string | null>(
-        initialSourceConfig?.sourceType === "recipe" && initialSourceConfig.config 
+        initialSourceConfig?.sourceType === "recipe" && initialSourceConfig.config
             ? initialSourceConfig.config.id
             : initialSelectedRecipe || null
     );
@@ -91,7 +91,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
             setSpecificVersion(config.version);
             setVersionSelection(config.version ? "specific" : "latest");
             setIsVersionValid(true);
-            
+
             if (setCompiledRecipeId) {
                 setCompiledRecipeId(config.compiledId);
             }
@@ -252,7 +252,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
         try {
             let recipeId: string | null = null;
             let sourceConfigResult: AppletSourceConfig | null = null;
-            
+
             if (versionSelection === "latest") {
                 recipeId = await getCompiledRecipeByVersion(selectedRecipe);
                 sourceConfigResult = await handleGetSourceConfig(selectedRecipe);
@@ -268,31 +268,30 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
                 recipeId = await getCompiledRecipeByVersion(selectedRecipe, specificVersion);
                 sourceConfigResult = await handleGetSourceConfig(selectedRecipe, specificVersion);
             }
-            
+
             if (recipeId) {
                 if (setCompiledRecipeId) {
                     setCompiledRecipeId(recipeId);
                 }
-                
+
                 if (setNewApplet) {
                     setNewApplet((prev) => ({
                         ...prev,
                         compiledRecipeId: recipeId,
                     }));
                 }
-                
+
                 if (setRecipeSourceConfig && sourceConfigResult) {
                     setRecipeSourceConfig(sourceConfigResult);
                 }
-                
+
                 const recipeName = userRecipes.find((recipe) => recipe.id === selectedRecipe)?.name;
                 toast({
                     title: "Recipe Selected",
-                    description: `Recipe "${recipeName}" ${
-                        versionSelection === "latest" ? "(latest version)" : `(version ${specificVersion})`
-                    } has been selected.`,
+                    description: `Recipe "${recipeName}" ${versionSelection === "latest" ? "(latest version)" : `(version ${specificVersion})`
+                        } has been selected.`,
                 });
-                
+
                 if (onConfirm) {
                     onConfirm();
                 }
@@ -325,7 +324,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
                 onSearchChange={(e) => setSearchTerm(e.target.value)}
                 onClearFilters={clearFilters}
             />
-            
+
             {/* Recipe List and Version Selection in columns */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Recipe List */}
@@ -335,7 +334,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
                     isLoading={isLoading}
                     onRecipeSelect={handleRecipeSelect}
                 />
-                
+
                 {/* Version Selector Component */}
                 {versionDisplay === "card" ? (
                     selectedRecipe ? (
@@ -373,7 +372,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
                     />
                 )}
             </div>
-            
+
             {/* Footer */}
             {renderFooter ? (
                 renderFooter(confirmRecipeSelection, !selectedRecipe || (versionSelection === "specific" && !isVersionValid))

@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
 import { MatrxRecordId } from '@/types/entityTypes';
 import { MessageTemplateProcessed } from '@/types/AutomationSchemaTypes';
-import { useAppDispatch, useAppStore, useEntityTools } from '@/lib/redux';
+import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { AppDispatch } from '@/lib/redux/store';
 
 // Single thunk for handling all message reordering

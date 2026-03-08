@@ -1,7 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { initializeTaskDataWithDefaults, validateTaskData } from "@/constants/socket-schema";
 import { v4 as uuidv4 } from "uuid";
 import { SocketTask } from "../socket.types";
+
+// NOTE: Schema-dependent helpers (initializeTaskDataWithDefaults, validateTaskData)
+// have been decoupled from this slice to avoid bundling the 133KB socket-schema.ts.
+// For schema-aware initialization/validation, use the companion thunks:
+//   - initializeTaskWithSchema (dynamic import of socket-schema)
+//   - validateTaskWithSchema   (dynamic import of socket-schema)
+// These are only needed by the legacy Socket.IO task builder UI.
+// The FastAPI path (executeMessageFastAPIThunk) never needs schemas.
 
 interface TasksState {
   tasks: Record<string, SocketTask>;
@@ -51,13 +58,12 @@ const socketTasksSlice = createSlice({
         service: string;
         taskName: string;
         connectionId: string;
+        taskData?: Record<string, any>; // Optional: pre-built from schema by caller
       }>
     ) => {
-      const { taskId = uuidv4(), service, taskName, connectionId } = action.payload;
+      const { taskId = uuidv4(), service, taskName, connectionId, taskData = {} } = action.payload;
 
       if (!state.tasks[taskId]) {
-        const taskData = initializeTaskDataWithDefaults(taskName);
-
         state.tasks[taskId] = {
           taskId,
           service,
@@ -214,12 +220,13 @@ const socketTasksSlice = createSlice({
       state,
       action: PayloadAction<{
         taskId: string;
+        isValid: boolean;
+        errors: string[];
       }>
     ) => {
-      const { taskId } = action.payload;
+      const { taskId, isValid, errors } = action.payload;
       const task = state.tasks[taskId];
       if (task) {
-        const { isValid, errors } = validateTaskData(task.taskName, task.taskData);
         task.isValid = isValid;
         task.validationErrors = errors;
         task.status = isValid ? "ready" : "building";
@@ -282,11 +289,11 @@ const socketTasksSlice = createSlice({
       }
     },
 
-    resetTaskData: (state, action: PayloadAction<string>) => {
-      const taskId = action.payload;
+    resetTaskData: (state, action: PayloadAction<{ taskId: string; taskData?: Record<string, any> }>) => {
+      const { taskId, taskData = {} } = action.payload;
       const task = state.tasks[taskId];
       if (task) {
-        task.taskData = initializeTaskDataWithDefaults(task.taskName);
+        task.taskData = taskData;
         task.isValid = false;
         task.validationErrors = [];
         task.status = "building";

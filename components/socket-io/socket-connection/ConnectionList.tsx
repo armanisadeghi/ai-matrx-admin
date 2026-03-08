@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import ConnectionItem from './ConnectionItem';
 import { selectAllConnections } from '@/lib/redux/socket-io/selectors';
 

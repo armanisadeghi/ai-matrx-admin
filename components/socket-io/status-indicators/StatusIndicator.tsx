@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { 
   Check, X, AlertCircle, Clock, Play, Box, Copy, 
   ChevronDown, ChevronUp, Info

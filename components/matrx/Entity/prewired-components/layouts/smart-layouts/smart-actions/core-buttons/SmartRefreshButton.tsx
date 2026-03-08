@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useState } from "react";
 import SmartButtonBase from "./SmartButtonBase";
 import {SmartButtonProps} from "../types";
 import { RotateCw } from "lucide-react";
-import { getEntitySlice, useAppDispatch} from "@/lib/redux";
+import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { Callback, callbackManager } from "@/utils/callbackManager";
 
 export interface SmartRefreshButtonProps extends SmartButtonProps {

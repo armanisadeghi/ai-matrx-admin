@@ -3,7 +3,9 @@ import { useMemo, useState, useEffect, useCallback } from "react";
 import { useUpdateRecordFields } from "../unsaved-records/useUpdateFields";
 import { useCreateRecord } from "../unsaved-records/useCreateRecord";
 import useStartCreate from "./useStartCreate";
-import { createEntitySelectors, getPermanentId, useAppSelector } from "@/lib/redux";
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { getPermanentId } from "@/lib/redux/entity/utils/stateHelpUtils";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { getEntityDefaultValues } from "@/lib/redux/entity/utils/direct-schema";
 import { callbackManager } from "@/utils/callbackManager";
 

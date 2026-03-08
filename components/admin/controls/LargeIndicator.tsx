@@ -4,7 +4,7 @@ import { ChevronRight, X, Server, Wifi, WifiOff, Shield, ShieldOff, AlertCircle 
 import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
 import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnalyzer";
 import PageDebugDisplay from "@/components/admin/debug/PageDebugDisplay";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsDebugMode, selectDebugData } from "@/lib/redux/slices/adminDebugSlice";
 import {
     selectPrimaryConnection,

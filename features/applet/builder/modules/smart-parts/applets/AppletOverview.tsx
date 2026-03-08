@@ -5,7 +5,7 @@ import { LinkIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { RootState } from "@/lib/redux/store";
 import { setName, setSlug, setDescription, setCreator } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import {

@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
-import { useAppDispatch, useAppSelector, useAppStore } from '@/lib/redux';
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { fetchContainersThunk } from '@/lib/redux/app-builder/thunks/containerBuilderThunks';
 import { 
   selectAllContainers, 
@@ -32,7 +32,7 @@ import {
   selectContainersByIds 
 } from '@/lib/redux/app-builder/selectors/containerSelectors';
 import { ComponentGroup } from '@/types/customAppTypes';
-import { RootState } from '@/lib/redux';
+import { RootState } from "@/lib/redux/store";
 
 // Define type for groupIds
 type GroupId = string;

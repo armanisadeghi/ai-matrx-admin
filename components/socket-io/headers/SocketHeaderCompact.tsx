@@ -8,7 +8,7 @@ import AuthStatusIndicator from "@/components/socket-io/status-indicators/AuthSt
 import ConnectionTypeIndicator from "@/components/socket-io/status-indicators/ConnectionTypeIndicator";
 import { StatusIndicator } from "@/components/socket-io/status-indicators/StatusIndicator";
 import ActiveConnectionSelector from "@/components/socket-io/socket-connection/ActiveConnectionSelector";
-import { useAppSelector, useAppDispatch } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectPrimaryConnectionId, selectConnectionTestMode } from "@/lib/redux/socket-io";
 import { ServiceTaskSelector } from "@/components/socket-io/select-components/ServiceTaskSelector";
 import { toggleTestMode } from "@/lib/redux/socket-io/slices/socketConnectionsSlice";

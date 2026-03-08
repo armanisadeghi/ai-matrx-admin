@@ -5,7 +5,7 @@ import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithlab
 import { FieldDefinition } from "@/types/customAppTypes";
 import { useFieldsWithBrokers } from "@/lib/redux/brokerSlice/hooks/useTempBroker";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 interface DirectFieldsProps {
     fields: Partial<FieldDefinition> | Partial<FieldDefinition>[];

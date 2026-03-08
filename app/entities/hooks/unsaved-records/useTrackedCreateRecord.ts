@@ -1,7 +1,10 @@
 'use client';
 
 import { useCallback, useRef } from 'react';
-import { generateTemporaryRecordId, useEntityTools, useEntityToasts, useAppDispatch } from '@/lib/redux';
+import { generateTemporaryRecordId } from "@/lib/redux/entity/utils/stateHelpUtils";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
+import { useEntityToasts } from "@/lib/redux/entity/hooks/useEntityToasts";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { callbackManager, CallbackContext, ProgressInfo } from '@/utils/callbackManager';
 

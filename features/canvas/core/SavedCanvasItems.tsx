@@ -2,13 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import { useCanvasItems } from "@/features/canvas/hooks/useCanvasItems";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { openCanvas } from "@/features/canvas/redux/canvasSlice";
-import { 
-  Star, 
-  Archive, 
-  Trash2, 
-  Share2, 
+import {
+  Star,
+  Archive,
+  Trash2,
+  Share2,
   ExternalLink,
   Search,
   Filter,
@@ -203,8 +203,8 @@ export function SavedCanvasItems({ showArchived = false }: SavedCanvasItemsProps
               {showArchived ? "No archived items" : "No saved canvas items yet"}
             </p>
             <p className="text-sm text-gray-400 dark:text-gray-600 mt-1">
-              {showArchived 
-                ? "Archive items to see them here" 
+              {showArchived
+                ? "Archive items to see them here"
                 : "Create and save canvas items to see them here"}
             </p>
           </div>
@@ -280,13 +280,13 @@ export function SavedCanvasItems({ showArchived = false }: SavedCanvasItemsProps
                     onClick={() => toggleFavorite(item.id, !item.is_favorited)}
                     className="h-7 w-7 p-0 rounded-full"
                   >
-                    <Star 
+                    <Star
                       className={cn(
-                        "w-3.5 h-3.5", 
-                        item.is_favorited 
-                          ? "fill-yellow-400 text-yellow-400" 
+                        "w-3.5 h-3.5",
+                        item.is_favorited
+                          ? "fill-yellow-400 text-yellow-400"
                           : "text-gray-400 dark:text-gray-600"
-                      )} 
+                      )}
                     />
                   </Button>
 
@@ -305,13 +305,13 @@ export function SavedCanvasItems({ showArchived = false }: SavedCanvasItemsProps
                     onClick={() => toggleArchive(item.id, !item.is_archived)}
                     className="h-7 w-7 p-0 rounded-full"
                   >
-                    <Archive 
+                    <Archive
                       className={cn(
                         "w-3.5 h-3.5",
-                        item.is_archived 
-                          ? "text-orange-500 dark:text-orange-400" 
+                        item.is_archived
+                          ? "text-orange-500 dark:text-orange-400"
                           : "text-gray-400 dark:text-gray-600"
-                      )} 
+                      )}
                     />
                   </Button>
 

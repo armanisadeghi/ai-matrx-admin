@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletsByAppId, selectActiveAppletId, selectAppletById } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectActiveContainerId, selectContainerById, selectContainerLoading } from "@/lib/redux/app-builder/selectors/containerSelectors";
 import { selectActiveFieldId, selectNewFieldId } from "@/lib/redux/app-builder/selectors/fieldSelectors";

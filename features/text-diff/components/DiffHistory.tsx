@@ -7,7 +7,7 @@
  */
 
 import React, { useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   fetchNoteVersions,
   restoreNoteVersion,

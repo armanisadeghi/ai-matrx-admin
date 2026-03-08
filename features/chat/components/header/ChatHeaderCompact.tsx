@@ -8,7 +8,7 @@ import { TbListSearch } from "react-icons/tb";
 import { IoCreateOutline } from "react-icons/io5";
 import Link from "next/link";
 import { ConversationSearchOverlay } from "@/features/chat/components/conversations/ConversationSearchOverlay";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 
 interface ChatHeaderCompactProps {
@@ -64,9 +64,9 @@ export function ChatHeaderCompact({ baseRoute = "/chat" }: ChatHeaderCompactProp
         <div className="hidden md:flex items-center gap-1">
           {/* New Chat Button */}
           <Link href={baseRoute}>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="h-6 w-6 p-0 rounded-full hover:bg-accent"
               title="New Chat"
             >
@@ -75,9 +75,9 @@ export function ChatHeaderCompact({ baseRoute = "/chat" }: ChatHeaderCompactProp
           </Link>
 
           {/* Search Button */}
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="h-6 w-6 p-0 rounded-full hover:bg-accent"
             onClick={handleOpenSearch}
             title="Search Conversations"
@@ -88,7 +88,7 @@ export function ChatHeaderCompact({ baseRoute = "/chat" }: ChatHeaderCompactProp
       </div>
 
       {/* Conversation Search Overlay */}
-      <ConversationSearchOverlay 
+      <ConversationSearchOverlay
         isOpen={isSearchOpen}
         onClose={handleCloseSearch}
       />

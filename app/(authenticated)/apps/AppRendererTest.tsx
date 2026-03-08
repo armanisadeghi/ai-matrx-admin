@@ -1,7 +1,8 @@
 'use client'
 
 import { loadApp } from "@/lib/redux/app-runner/thunks/loadApp";
-import { useAppDispatch, useAppSelector, RootState } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { RootState } from "@/lib/redux/store";
 import { useEffect, useState, useMemo } from "react";
 import * as appletSelectors from "@/lib/redux/app-runner/selectors/appletRuntimeSelectors";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";

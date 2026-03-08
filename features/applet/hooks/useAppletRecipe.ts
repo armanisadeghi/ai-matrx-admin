@@ -1,4 +1,4 @@
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeDataSourceConfig } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { addToArrayField, setArrayField } from "@/lib/redux/socket-io/slices/socketTasksSlice";

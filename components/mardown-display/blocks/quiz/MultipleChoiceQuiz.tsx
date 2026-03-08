@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Check, X, Trophy, AlertTriangle, CheckCircle2, XCircle, Maximize2, Minimize2, ChevronDown, ChevronUp, Download, Upload, RotateCcw, RefreshCw, Award, Star, ThumbsUp, Flame, Target, BookOpen, Save, Cloud, CloudOff, ExternalLink } from 'lucide-react';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
-import { useAppSelector } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectCanvasIsAvailable } from '@/features/canvas/redux/canvasSlice';
 import IconButton from '@/components/official/IconButton';
 import type { OriginalQuestion, QuizState } from './quiz-types';

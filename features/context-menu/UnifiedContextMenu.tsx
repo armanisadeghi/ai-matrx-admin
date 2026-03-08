@@ -69,7 +69,7 @@ import type { MenuItem, ContentBlockItem, ShortcutItem } from '@/features/prompt
 import { TextActionResultModal } from '@/components/modals/TextActionResultModal';
 import { FindReplaceModal } from '@/components/modals/FindReplaceModal';
 import { useQuickActions } from '@/features/quick-actions/hooks/useQuickActions';
-import { useAppSelector, useAppDispatch } from '@/lib/redux';
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectIsDebugMode, toggleDebugMode, showPromptDebugIndicator } from '@/lib/redux/slices/adminDebugSlice';
 import { selectIsAdmin } from '@/lib/redux/slices/userSlice';
 import { selectIsOverlayOpen, toggleOverlay } from '@/lib/redux/slices/overlaySlice';

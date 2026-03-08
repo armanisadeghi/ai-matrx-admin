@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { X, List, Eye, ArrowLeft, Plus, Edit } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { startFieldCreation, setActiveField } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
 import { selectFieldComponent } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { v4 as uuidv4 } from "uuid";

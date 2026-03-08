@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
-import { RootState } from "@/lib/redux";
+import { RootState } from "@/lib/redux/store";
 import { ContainerBuilder } from "../types";
 
 // ================================ Base Selectors ================================

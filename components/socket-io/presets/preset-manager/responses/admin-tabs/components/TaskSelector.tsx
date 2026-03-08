@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAllTasksArray } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 
 interface TaskSelectorProps {

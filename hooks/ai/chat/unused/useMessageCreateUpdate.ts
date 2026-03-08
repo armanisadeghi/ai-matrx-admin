@@ -1,6 +1,7 @@
 import { useMemo, useCallback } from "react";
 import useCreateUpdateRecord from "@/app/entities/hooks/crud/useCreateUpdateRecord";
-import { getPermanentId, useEntityTools } from "@/lib/redux";
+import { getPermanentId } from "@/lib/redux/entity/utils/stateHelpUtils";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { useDispatch } from "react-redux";
 import { v4 as uuidv4 } from 'uuid';
 import { Message, MessageType } from "@/types/chat/chat.types";

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEntityTools } from '@/lib/redux';
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { entityDefaultSettings } from '@/lib/redux/entity/constants/defaults';
 import { AllEntityFieldKeys, EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types/entityTypes';

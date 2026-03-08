@@ -1,5 +1,5 @@
 import React from "react";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { 
   selectTaskStatus, 
   selectTaskValidationState,

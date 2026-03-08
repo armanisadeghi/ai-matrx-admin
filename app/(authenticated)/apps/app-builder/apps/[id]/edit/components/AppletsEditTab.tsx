@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletIdsForApp } from '@/lib/redux/app-builder/selectors/appSelectors';
 import { selectAppletById } from '@/lib/redux/app-builder/selectors/appletSelectors';
 import { Button } from '@/components/ui/button';

@@ -12,7 +12,8 @@ import {MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import {useFetchQuickRef} from "@/app/entities/hooks/useFetchQuickRef";
 import {useSelectQuickRef} from "@/app/entities/hooks/useSelectQuickRef";
 import {memo} from "react";
-import {useAppSelector, useEntityTools} from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import {Card, CardContent} from "@/components/ui";
 
 interface EntityQuickReferenceCardsProps<TEntity extends EntityKeys> {

@@ -1,6 +1,6 @@
 // hooks/usePreferenceValue.ts
 import { useEffect, useRef, useState } from 'react';
-import { useAppSelector, useAppDispatch } from '@/lib/redux';
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { UserPreferences, setPreference } from '@/lib/redux/slices/userPreferencesSlice';
 
 export function usePreferenceValue<

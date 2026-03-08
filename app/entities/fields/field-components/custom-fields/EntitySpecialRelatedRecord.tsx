@@ -3,7 +3,8 @@ import React from 'react';
 import { Input } from "@/components/ui/input";
 import { MatrxRecordId, AllEntityFieldKeys, EntityKeys } from '@/types/entityTypes';
 import QuickRefRelatedRecordSelect from '@/app/entities/relationships/QuickRefRelatedRecordSelect';
-import { useAppSelector, useEntityTools } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 
 interface QuickReferenceRecord {
     recordKey: MatrxRecordId;

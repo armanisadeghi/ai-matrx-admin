@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { GitCompare, Sparkles, BarChart, Save, Maximize2, Settings, MoreHorizontal, Edit3, Play, Route, AppWindow, LayoutTemplate, Code2, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
 import { SystemPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/SystemPromptOptimizer";
 import { PromptActionsMenu } from "@/features/prompts/components/layouts/PromptActionsMenu";

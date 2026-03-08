@@ -6,7 +6,7 @@ import StructuredSectionCard from '@/components/official/StructuredSectionCard';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Save, Plus, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { 
   selectHasUnsavedFieldChanges, 
   selectActiveFieldId, 

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import MessageItem from "@/features/chat/components/response/MessageItem";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import AssistantStream from "@/features/chat/components/response/assistant-message/stream/AssistantStream";
 import useCartesiaControls from "@/hooks/tts/simple/useCartesiaControls";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";

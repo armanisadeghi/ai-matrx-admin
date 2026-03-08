@@ -1,4 +1,5 @@
-import { useAppDispatch, useEntityTools } from '@/lib/redux';
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { EntityAnyFieldKey, EntityKeys } from '@/types/entityTypes';
 import { useCallback } from 'react';
 

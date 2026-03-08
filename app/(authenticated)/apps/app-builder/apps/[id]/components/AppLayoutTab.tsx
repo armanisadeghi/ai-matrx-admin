@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { useAppSelector } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppById, selectAppLayoutType } from '@/lib/redux/app-builder/selectors/appSelectors';
 import { AppLayoutOptions } from '../page';
 import { CheckCircle } from 'lucide-react';

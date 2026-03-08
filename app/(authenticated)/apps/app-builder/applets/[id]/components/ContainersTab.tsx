@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { AppletContainer, FieldDefinition } from '../page';
-import { useAppSelector } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletContainers } from '@/lib/redux/app-builder/selectors/appletSelectors';
 
 interface ContainersTabProps {

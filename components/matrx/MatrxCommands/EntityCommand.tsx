@@ -24,7 +24,7 @@ import {
 import {showConfirmDialog, showErrorToast} from "@/components/matrx/MatrxCommands/helpers";
 import {cn} from '@/lib/utils';
 import {AppDispatch} from "@/lib/redux/store";
-import { useEntityTools } from "@/lib/redux";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 
 // Entity-specific command context
 export interface EntityCommandContext<TEntity extends EntityKeys> extends TableCommandContext {

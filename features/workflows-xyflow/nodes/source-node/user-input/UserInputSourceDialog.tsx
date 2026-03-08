@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import FieldListTableOverlay from "@/features/applet/builder/modules/field-builder/FieldListTableOverlay";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { BrokerMapEntry } from "@/lib/redux/brokerSlice/types";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { workflowActions } from "@/lib/redux/workflow/slice";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFieldLabel } from "@/lib/redux/app-builder/selectors/fieldSelectors";
@@ -37,7 +37,7 @@ const UserInputSourceDialog: React.FC<UserInputSourceDialogProps> = ({
     const dispatch = useAppDispatch();
 
     // Check if mapping exists in Redux (regardless of whether we're "creating" or "editing")
-    const existingSource = useAppSelector((state) => 
+    const existingSource = useAppSelector((state) =>
         brokerId ? workflowsSelectors.userInputSourceByBrokerId(state, workflowId, brokerId) : null
     );
 
@@ -124,9 +124,9 @@ const UserInputSourceDialog: React.FC<UserInputSourceDialogProps> = ({
 
             // If there's an existing source, remove it first
             if (existingSource) {
-                dispatch(workflowActions.removeSourceByBrokerId({ 
+                dispatch(workflowActions.removeSourceByBrokerId({
                     id: workflowId,
-                    brokerId: existingSource.brokerId 
+                    brokerId: existingSource.brokerId
                 }));
 
                 // If broker ID changed, remove old registry entry
@@ -137,7 +137,7 @@ const UserInputSourceDialog: React.FC<UserInputSourceDialogProps> = ({
                     }));
                 }
             }
-            
+
             // Add the source (create or update)
             dispatch(workflowActions.addSource({
                 id: workflowId,
@@ -163,9 +163,9 @@ const UserInputSourceDialog: React.FC<UserInputSourceDialogProps> = ({
 
         try {
             // Remove from workflow sources
-            dispatch(workflowActions.removeSourceByBrokerId({ 
+            dispatch(workflowActions.removeSourceByBrokerId({
                 id: workflowId,
-                brokerId: existingSource.brokerId 
+                brokerId: existingSource.brokerId
             }));
 
             // Remove from broker registry
@@ -245,9 +245,9 @@ const UserInputSourceDialog: React.FC<UserInputSourceDialogProps> = ({
                         {/* Source (Scope) */}
                         <div className="space-y-2">
                             <Label className="text-sm font-medium">Source</Label>
-                            <Select 
-                                value={formData.source} 
-                                onValueChange={handleSourceChange} 
+                            <Select
+                                value={formData.source}
+                                onValueChange={handleSourceChange}
                                 disabled={isSubmitting || isDeleting}
                             >
                                 <SelectTrigger>
@@ -279,11 +279,11 @@ const UserInputSourceDialog: React.FC<UserInputSourceDialogProps> = ({
 
                     <DialogFooter className="flex gap-2">
                         {existingSource && (
-                            <Button 
-                                variant="destructive" 
-                                size="sm" 
-                                onClick={handleDelete} 
-                                disabled={isSubmitting || isDeleting} 
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={handleDelete}
+                                disabled={isSubmitting || isDeleting}
                                 className="mr-auto"
                             >
                                 <Trash2 className="h-4 w-4 mr-2" />
@@ -291,18 +291,18 @@ const UserInputSourceDialog: React.FC<UserInputSourceDialogProps> = ({
                             </Button>
                         )}
 
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={handleCancel} 
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleCancel}
                             disabled={isSubmitting || isDeleting}
                         >
                             Cancel
                         </Button>
 
-                        <Button 
-                            size="sm" 
-                            onClick={handleSubmit} 
+                        <Button
+                            size="sm"
+                            onClick={handleSubmit}
                             disabled={!isFormValid || !hasChanges || isSubmitting || isDeleting}
                         >
                             {isSubmitting ? "Saving..." : "Save"}

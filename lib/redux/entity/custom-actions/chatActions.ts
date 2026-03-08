@@ -1,5 +1,5 @@
 import { EntityFieldKeys, MatrxRecordId } from "@/types/entityTypes";
-import { AppDispatch, RootState } from "@/lib/redux";
+import { AppDispatch, RootState } from "@/lib/redux/store";
 import { getEntitySlice } from "../entitySlice";
 import {
     createConversationAndMessage,

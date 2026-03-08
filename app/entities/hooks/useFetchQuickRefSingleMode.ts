@@ -1,7 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import { FetchMode, getRecordIdByRecord, useEntityTools } from '@/lib/redux';
+import { FetchMode } from "@/lib/redux/entity/actions";
+import { getRecordIdByRecord } from "@/lib/redux/entity/utils/stateHelpUtils";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { entityDefaultSettings } from '@/lib/redux/entity/constants/defaults';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';

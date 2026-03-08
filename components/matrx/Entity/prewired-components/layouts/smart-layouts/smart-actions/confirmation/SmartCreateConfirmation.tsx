@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { EntityKeys } from '@/types/entityTypes';
 import ConfirmationDialog from './ConfirmationDialog';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { useEntityTools } from '@/lib/redux';
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { useCreateRecord } from '@/app/entities/hooks/unsaved-records/useCreateRecord';
 import { formatFieldValue } from './utils';
 

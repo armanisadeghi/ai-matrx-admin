@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import FileSystemManager from "@/utils/file-operations/FileSystemManager";
 import { EnhancedFileDetails, getFileDetailsByUrl } from "@/utils/file-operations/constants";
 import { IconComponent, StorageMetadata } from "@/utils/file-operations/types";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 
 // type FileCategory = "CODE" | "DOCUMENT" | "AUDIO" | "IMAGE" | "VIDEO" | "ARCHIVE" | "DATA" | "UNKNOWN" | "FOLDER";

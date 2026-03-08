@@ -6,7 +6,7 @@ import { RootState, AppDispatch } from "../../store";
 import { getFieldDefinition } from "@/constants/socket-schema";
 import { updateTaskFieldByPath, arrayOperation } from "../thunks/taskFieldThunks";
 import { selectFieldValue } from "../selectors";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskNameById } from "../selectors";
 
 

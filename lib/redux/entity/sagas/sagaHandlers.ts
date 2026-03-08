@@ -23,7 +23,7 @@ import {
 import { createEntitySelectors } from "@/lib/redux/entity/selectors";
 import { createRecordKey, setLoading } from "@/lib/redux/entity/utils/stateHelpUtils";
 import { Draft } from "immer";
-import { BaseSagaContext } from "@/lib/redux";
+import { BaseSagaContext } from "@/lib/redux/entity/sagas/sagaHelpers";
 import { FetchOneWithFkIfkPayload, GetOrFetchSelectedRecordsPayload } from "../actions";
 import { createStructuredError } from "@/utils/errorContext";
 import { supabase } from "@/utils/supabase/client";

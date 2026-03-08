@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAppSelector, useAppDispatch } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { PromptMessage, PromptVariable } from "@/features/prompts/types/core";
 import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayout";
 import { Button } from "@/components/ui/button";

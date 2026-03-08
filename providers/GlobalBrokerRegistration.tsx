@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 
 // Define the system-wide broker entries that should be registered

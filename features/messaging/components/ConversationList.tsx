@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectConversations, selectMessagingIsLoading } from "../redux/messagingSlice";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";

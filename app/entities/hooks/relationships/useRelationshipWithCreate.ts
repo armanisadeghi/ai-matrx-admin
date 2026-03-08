@@ -1,4 +1,6 @@
-// import { createEntitySelectors, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+// import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 // import { EntityKeys, MatrxRecordId } from '@/types';
 // import { useCallback, useEffect, useMemo } from 'react';
 // import { DefinedRelationship, RelatedDataManager, RelationshipDefinition, RelationshipMapper } from './relationshipDefinitions';

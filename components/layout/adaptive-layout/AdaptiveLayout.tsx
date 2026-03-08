@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { useAppSelector, useAppDispatch } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectCanvasIsOpen, selectCanvasContent, setCanvasAvailable } from "@/features/canvas/redux/canvasSlice";
 import { CanvasRenderer } from "../../../features/canvas/core/CanvasRenderer";
 

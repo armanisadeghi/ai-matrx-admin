@@ -6,7 +6,8 @@ import { useFetchQuickRef } from "@/app/entities/hooks/useFetchQuickRef";
 import { useSelectQuickRef } from "@/app/entities/hooks/useSelectQuickRef";
 import { FetchMode } from "@/lib/redux/entity/actions";
 import { EntityKeys } from "@/types/entityTypes";
-import { selectEntitySelectText, useAppSelector } from "@/lib/redux";
+import { selectEntitySelectText } from "@/lib/redux/schema/globalCacheSelectors";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
 
 

@@ -1,5 +1,7 @@
 import { useEffect, useCallback } from 'react';
-import { createRecordKey, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+import { createRecordKey } from "@/lib/redux/entity/utils/stateHelpUtils";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { AiAgentDataRequired, AiSettingsDataRequired } from '@/types/AutomationSchemaTypes';
 import { useRecipe } from './useRecipe';
 

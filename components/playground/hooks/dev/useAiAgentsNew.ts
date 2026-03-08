@@ -1,6 +1,7 @@
 // import { useActiveJoinedRecords } from "@/app/entities/hooks/relationships/useActiveJoinedRecords";
 // import { RelationshipDefinition, processJoinedData } from "@/app/entities/hooks/relationships/utils";
-// import { useAppDispatch, GetOrFetchSelectedRecordsPayload } from "@/lib/redux";
+// import { useAppDispatch } from "@/lib/redux/hooks";
+import { GetOrFetchSelectedRecordsPayload } from "@/lib/redux/entity/actions";
 // import React, { useCallback, useEffect } from "react";
 
 // const aiSettingsRelationshipDefinition: RelationshipDefinition = {

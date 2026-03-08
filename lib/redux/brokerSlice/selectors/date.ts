@@ -1,6 +1,6 @@
 // types/date/index.ts
 import { createSelector } from "reselect";
-import { RootState } from "@/lib/redux";
+import { RootState } from "@/lib/redux/store";
 import { BrokerIdentifier } from "../types";
 import { resolveBrokerId } from "../utils";
 

@@ -11,7 +11,7 @@
  */
 
 import React from "react";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { ConversationList } from "@/features/messaging/components/ConversationList";
 
 export default function MessagesLayoutClient({

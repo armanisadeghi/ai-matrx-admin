@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAppById, selectAppLoading, selectAppName, selectHasUnsavedAppChanges } from "@/lib/redux/app-builder/selectors/appSelectors";
 import { setActiveAppWithFetchThunk, saveAppThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
 import { useRouter } from "next/navigation";

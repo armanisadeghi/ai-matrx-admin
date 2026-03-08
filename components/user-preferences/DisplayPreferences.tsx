@@ -3,7 +3,8 @@ import { useSelector } from 'react-redux';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RootState, useAppDispatch } from '@/lib/redux';
+import { RootState } from "@/lib/redux/store";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { setPreference } from '@/lib/redux/slices/userPreferencesSlice';
 
 const row = "flex items-center justify-between px-4 py-3.5 border-b border-border/40 last:border-b-0";

@@ -1,5 +1,5 @@
 import React from "react";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectConnectionStatus, selectTaskStatus } from "@/lib/redux/socket-io";
 
 // Define the status option type

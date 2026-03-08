@@ -4,7 +4,9 @@ import React, { useEffect, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from "@/app/entities/layout/configs";
-import { createEntitySelectors, useAppDispatch, useAppSelector, useEntityTools } from "@/lib/redux";
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import BrokerRecordsSimple from "../brokers/BrokerRecordsSimple";
 import { CockpitPanelProps } from "../types";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectPrimaryResponseDataByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { selectTaskById } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

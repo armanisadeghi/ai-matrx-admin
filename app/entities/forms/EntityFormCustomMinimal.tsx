@@ -8,7 +8,8 @@ import { getFormStyle } from './formUtils';
 import { ComponentDensity, ComponentSize } from '@/types/componentConfigTypes';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import EntityFormFooter from './form-helpers/EntityFormFooter';
-import { useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { CrudButtonOptions, CrudLayout } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper';
 
 interface EntityFormMinimalAnyRecordProps {

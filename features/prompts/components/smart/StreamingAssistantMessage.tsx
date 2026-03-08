@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useAppSelector } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectPrimaryResponseTextByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import { PromptAssistantMessage } from '../builder/PromptAssistantMessage';
 

@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect, useMemo } from "react";
 import useCreateUpdateRecord from "../useCreateUpdateRecord";
 import { Message, MessageRole, MessageType, MessageMetadata } from "@/types/chat/chat.types";
-import { getPermanentId } from "@/lib/redux";
+import { getPermanentId } from "@/lib/redux/entity/utils/stateHelpUtils";
 
 interface UseMessageProps {
     conversationId: string | undefined;

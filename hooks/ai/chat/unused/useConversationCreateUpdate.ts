@@ -1,5 +1,5 @@
 import useCreateUpdateRecord  from "@/app/entities/hooks/crud/useCreateUpdateRecord";
-import { getPermanentId } from '@/lib/redux';
+import { getPermanentId } from "@/lib/redux/entity/utils/stateHelpUtils";
 import { useMemo, useCallback } from 'react';
 import { MatrxRecordId } from "@/types/entityTypes";
 import { ChatMode, Conversation } from "@/types/chat/chat.types";

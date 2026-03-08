@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { ConfigBuilder } from "@/components/ui";
-import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskById, setTaskFields, submitTask, updateTaskFieldByPath } from '@/lib/redux/socket-io';
 interface SocketConfigBuilderProps {
   taskId: string;

@@ -1,12 +1,10 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { 
-  FetchRecordsPayload, 
-  RootState, 
-  useAppDispatch,
-  useEntityTools 
-} from '@/lib/redux';
+import { FetchRecordsPayload } from "@/lib/redux/entity/actions";
+import { RootState } from "@/lib/redux/store";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { FilterCondition } from '@/lib/redux/entity/types/stateTypes';
 import { useSelector } from 'react-redux';
 import { buildFilterConditions, ConditionInput } from './filter-utils';

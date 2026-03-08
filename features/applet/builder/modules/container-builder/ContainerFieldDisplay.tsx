@@ -4,7 +4,7 @@ import React from "react";
 import { ChevronUp, ChevronDown, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { moveFieldUpThunk, moveFieldDownThunk, removeFieldThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { FieldDefinition } from "@/types/customAppTypes";
 import { selectContainerById } from "@/lib/redux/app-builder/selectors/containerSelectors";

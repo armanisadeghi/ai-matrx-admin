@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw, Send, Copy } from "lucide-react";
 import { useSelector } from "react-redux";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { selectTaskDataById } from "@/lib/redux/socket-io";
 import { resetTaskData, validateTask } from "@/lib/redux/socket-io/slices/socketTasksSlice";
 import { submitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
@@ -15,8 +15,8 @@ interface ActionButtonsProps {
     onSubmit?: (data: Record<string, any>) => void;
 }
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ 
-    taskId, 
+const ActionButtons: React.FC<ActionButtonsProps> = ({
+    taskId,
     minimalSpace = false,
     onSubmit
 }) => {
@@ -39,7 +39,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     };
 
     const handleReset = () => {
-        dispatch(resetTaskData(taskId));
+        dispatch(resetTaskData({ taskId }));
     };
 
     const handleCopyToClipboard = () => {

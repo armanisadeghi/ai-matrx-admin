@@ -4,7 +4,7 @@ import useStartCreateRecord from './useStartCreateRecord';
 import { useUpdateFields } from './useUpdateFields';
 import { useCreateRecord } from './useCreateRecord';
 import { useSelector } from 'react-redux';
-import { useEntityTools } from '@/lib/redux';
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 
 export type FieldValue = string | number | boolean | null | Record<string, unknown> | unknown;
 type FieldUpdates = Record<string, FieldValue>;

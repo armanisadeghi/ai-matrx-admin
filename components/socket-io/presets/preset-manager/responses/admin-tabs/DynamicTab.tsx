@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskById, selectTaskListenerIds } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { selectPrimaryResponseForTask } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { selectCombinedText } from "@/lib/redux/socket-io/selectors/socket-response-selectors";

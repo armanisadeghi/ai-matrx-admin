@@ -5,7 +5,8 @@ import { useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Save, RotateCcw, AlertCircle, Check } from 'lucide-react';
-import { RootState, useAppDispatch } from '@/lib/redux';
+import { RootState } from "@/lib/redux/store";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import {
     UserPreferencesState,
     UserPreferences,

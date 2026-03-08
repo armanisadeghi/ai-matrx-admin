@@ -2,7 +2,7 @@
 "use client";
 
 import { brokerSelectors, BrokerIdentifier, brokerActions, useServerBrokerSync } from "@/lib/redux/brokerSlice";
-import { useAppSelector, useAppDispatch } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { SLACK_BROKER_IDS } from "./BrokerSlackClient";
 
 

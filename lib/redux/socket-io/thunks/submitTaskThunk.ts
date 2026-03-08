@@ -19,7 +19,7 @@ import {
     setTaskFields,
 } from "../slices/socketTasksSlice";
 import { selectPrimaryConnection } from "../selectors";
-import { RootState } from "@/lib/redux";
+import type { RootState } from "@/lib/redux/store";
 import { v4 as uuidv4 } from "uuid";
 import { SocketConnectionManager } from "../connection/socketConnectionManager";
 import { setConnection } from "../slices/socketConnectionsSlice";
@@ -38,8 +38,10 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
             return rejectWithValue(errorMessage);
         }
 
-        // Validate the task and update its state
-        dispatch(validateTask({ taskId }));
+        // Validate the task using dynamically-imported schema
+        const { validateTaskData } = await import('@/constants/socket-schema');
+        const { isValid, errors } = validateTaskData(task.taskName, task.taskData);
+        dispatch(validateTask({ taskId, isValid, errors }));
 
         const updatedState = getState();
         const validatedTask = updatedState.socketTasks.tasks[taskId];
@@ -275,8 +277,10 @@ export const submitTaskNew = createAsyncThunk<string[], { taskId: string }, { st
             return [];
         }
 
-        // Validate the task and update its state
-        dispatch(validateTask({ taskId }));
+        // Validate the task using dynamically-imported schema
+        const { validateTaskData } = await import('@/constants/socket-schema');
+        const { isValid: taskIsValid, errors: taskErrors } = validateTaskData(task.taskName, task.taskData);
+        dispatch(validateTask({ taskId, isValid: taskIsValid, errors: taskErrors }));
         const updatedState = getState();
         const validatedTask = updatedState.socketTasks.tasks[taskId];
 

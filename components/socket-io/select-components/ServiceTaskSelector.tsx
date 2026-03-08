@@ -6,7 +6,7 @@ import { TaskSelector } from "./TaskSelector";
 import { Button } from "@/components/ui";
 import { Play } from "lucide-react";
 import { formatText } from "@/utils/text/text-case-converter";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { createTask } from "@/lib/redux/socket-io/thunks/createTaskThunk";
 
 interface ServiceTaskSelectorProps {
@@ -16,11 +16,11 @@ interface ServiceTaskSelectorProps {
     inline?: boolean;
 }
 
-export function ServiceTaskSelector({ 
-    connectionId, 
-    onTaskCreate, 
-    compact = false, 
-    inline = false 
+export function ServiceTaskSelector({
+    connectionId,
+    onTaskCreate,
+    compact = false,
+    inline = false
 }: ServiceTaskSelectorProps) {
     const dispatch = useAppDispatch();
     const [service, setService] = React.useState("");
@@ -44,7 +44,7 @@ export function ServiceTaskSelector({
     const handleCreateTask = async () => {
         if (!service || !taskName) return;
         const result = await dispatch(createTask({ service, taskName, initialData: {}, connectionId }));
-        
+
         if (onTaskCreate && result.payload) {
             onTaskCreate(result.payload as string);
         }
@@ -59,11 +59,11 @@ export function ServiceTaskSelector({
                 <div className="flex-1 min-w-[120px]">
                     <ServiceSelector onServiceChange={handleServiceChange} compact />
                 </div>
-                
+
                 <div className="flex-1 min-w-[120px]">
                     <TaskSelector service={service} onTaskChange={handleTaskChange} compact />
                 </div>
-                
+
                 <Button
                     onClick={handleCreateTask}
                     disabled={!canCreateTask}
@@ -83,11 +83,11 @@ export function ServiceTaskSelector({
                 <div className="flex-1">
                     <ServiceSelector onServiceChange={handleServiceChange} compact />
                 </div>
-                
+
                 <div className="flex-1">
                     <TaskSelector service={service} onTaskChange={handleTaskChange} compact />
                 </div>
-                
+
                 <Button
                     onClick={handleCreateTask}
                     disabled={!canCreateTask}

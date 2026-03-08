@@ -2,7 +2,11 @@
 'use client';
 
 import { AllEntityFieldKeys, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
-import { createEntitySelectors, createRecordKey, getEntitySlice, parseRecordKey, RootState, useAppDispatch, useAppSelector, useAppStore } from '@/lib/redux';
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { createRecordKey, parseRecordKey } from "@/lib/redux/entity/utils/stateHelpUtils";
+import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
+import { RootState } from "@/lib/redux/store";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { useCallback, useMemo } from 'react';
 import { getEntityMetadata } from '../utils/direct-schema';
 import { EntityState } from '../types/stateTypes';

@@ -10,7 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
-import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { fetchAppletsThunk, deleteAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import { startNewApplet, setActiveApplet } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import { v4 as uuidv4 } from "uuid";

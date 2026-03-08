@@ -10,7 +10,8 @@ import {getEntitySlice} from '@/lib/redux/entity/entitySlice';
 import {Draft} from "immer";
 import {Callback, callbackManager} from "@/utils/callbackManager";
 import {useQuickRef} from './useQuickRef';
-import {FetchRecordsPayload, useEntityToasts} from '@/lib/redux';
+import { FetchRecordsPayload } from "@/lib/redux/entity/actions";
+import { useEntityToasts } from "@/lib/redux/entity/hooks/useEntityToasts";
 import {entityDefaultSettings} from "@/lib/redux/entity/constants/defaults";
 
 export const useEntityFinal = <TEntity extends EntityKeys>(entityKey: TEntity) => {

@@ -2,7 +2,8 @@
 
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
-import {createEntitySelectors, getEntitySlice} from "@/lib/redux";
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
 import {EntityKeys} from "@/types/entityTypes";
 
 const entityKey: EntityKeys = 'registeredFunction';

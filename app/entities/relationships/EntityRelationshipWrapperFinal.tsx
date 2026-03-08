@@ -8,7 +8,8 @@ import {
 import RelatedEntityAccordionFinal from "./RelatedEntityAccordionFinal";
 import { UnifiedLayoutProps } from "@/components/matrx/Entity";
 import { EntityKeys } from "@/types/entityTypes";
-import { createEntitySelectors, useAppSelector } from "@/lib/redux";
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 export interface EntityRelationshipWrapperProps {
   entityKey: EntityKeys;

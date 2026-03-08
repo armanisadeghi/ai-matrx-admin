@@ -3,7 +3,7 @@
 import React from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
 import { getTasksForService } from "@/constants/socket-schema";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 
 interface TaskSelectorProps {
   service: string;
@@ -31,17 +31,17 @@ export function TaskSelector({ service, onTaskChange, compact = false }: TaskSel
     <Select value={selectedTask} onValueChange={handleTaskChange} disabled={!service}>
       <SelectTrigger className={`
         bg-gray-200 dark:bg-gray-900 border-1 border-gray-400 dark:border-gray-500 
-        ${compact 
-          ? "h-8 text-xs rounded-xl px-2" 
+        ${compact
+          ? "h-8 text-xs rounded-xl px-2"
           : "rounded-3xl"
         }
       `}>
-        <SelectValue 
+        <SelectValue
           placeholder={
-            service 
-              ? compact ? "Task..." : "Select a task type..." 
+            service
+              ? compact ? "Task..." : "Select a task type..."
               : compact ? "Select service first" : "Select service first"
-          } 
+          }
         />
       </SelectTrigger>
       <SelectContent>

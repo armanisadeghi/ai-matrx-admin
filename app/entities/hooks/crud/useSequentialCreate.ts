@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useEntityToasts } from '@/lib/redux';
+import { useEntityToasts } from "@/lib/redux/entity/hooks/useEntityToasts";
 import { EntityData, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useCreateWithId } from './useDirectCreateRecord';
 

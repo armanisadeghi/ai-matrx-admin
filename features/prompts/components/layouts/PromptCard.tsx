@@ -3,7 +3,8 @@
 import { Card } from "@/components/ui/card";
 import IconButton from "@/components/official/IconButton";
 import { Eye, Pencil, Play, Copy, Trash2, Loader2, Share2, LayoutPanelTop, Settings, Globe, AppWindow, AlignJustify } from "lucide-react";
-import { RootState, useAppSelector } from "@/lib/redux";
+import { RootState } from "@/lib/redux/store";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
 import { PromptActionModal } from "./PromptActionModal";

@@ -4,7 +4,7 @@ import React from 'react';
 import { Server } from 'lucide-react';
 import { selectPrimaryConnection } from '@/lib/redux/socket-io';
 import { StatusIndicator } from '@/components/socket-io/status-indicators/StatusIndicator';
-import { useAppSelector } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
 
 interface ConnectionTypeIndicatorProps {
   compact?: boolean;

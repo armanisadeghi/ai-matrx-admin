@@ -1,4 +1,4 @@
-import { useAppSelector } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
 import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useDebounce } from '@uidotdev/usehooks';
 import { useGetorFetchRecords } from '../../records/useGetOrFetch';

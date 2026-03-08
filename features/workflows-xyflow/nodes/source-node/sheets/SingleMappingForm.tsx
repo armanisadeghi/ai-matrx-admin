@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import FieldListTableOverlay from "@/features/applet/builder/modules/field-builder/FieldListTableOverlay";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { BrokerMapEntry } from "@/lib/redux/brokerSlice/types";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { workflowActions } from "@/lib/redux/workflow/slice";
 import { useToast } from "@/components/ui/use-toast";
 import { BrokerSourceConfig } from "@/lib/redux/workflow/types";
@@ -21,10 +21,10 @@ interface SingleMappingFormProps {
     onCancel: () => void;
 }
 
-const SingleMappingForm: React.FC<SingleMappingFormProps> = ({ 
-    workflowId, 
-    onMappingCreated, 
-    onCancel 
+const SingleMappingForm: React.FC<SingleMappingFormProps> = ({
+    workflowId,
+    onMappingCreated,
+    onCancel
 }) => {
     const dispatch = useAppDispatch();
     const { toast } = useToast();
@@ -151,13 +151,13 @@ const SingleMappingForm: React.FC<SingleMappingFormProps> = ({
         <>
             <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
                 <div className="text-sm font-medium text-foreground mb-3">Create New User Input Source</div>
-                
+
                 {/* Field Component */}
                 <div className="space-y-2">
                     <Label className="text-sm font-medium">Field Component</Label>
-                    <Button 
-                        variant="outline" 
-                        onClick={() => setIsFieldSelectorOpen(true)} 
+                    <Button
+                        variant="outline"
+                        onClick={() => setIsFieldSelectorOpen(true)}
                         className="w-full justify-start"
                         disabled={isCreating}
                     >
@@ -168,9 +168,9 @@ const SingleMappingForm: React.FC<SingleMappingFormProps> = ({
                 {/* Broker ID */}
                 <div className="space-y-2">
                     <Label className="text-sm font-medium">Broker ID</Label>
-                    <Input 
-                        value={formData.brokerId} 
-                        onChange={(e) => handleBrokerIdChange(e.target.value)} 
+                    <Input
+                        value={formData.brokerId}
+                        onChange={(e) => handleBrokerIdChange(e.target.value)}
                         placeholder="Enter broker ID"
                         disabled={isCreating}
                     />
@@ -198,9 +198,9 @@ const SingleMappingForm: React.FC<SingleMappingFormProps> = ({
                 {/* Source ID */}
                 <div className="space-y-2">
                     <Label className="text-sm font-medium">Source ID</Label>
-                    <Input 
-                        value={formData.sourceId} 
-                        onChange={(e) => handleSourceIdChange(e.target.value)} 
+                    <Input
+                        value={formData.sourceId}
+                        onChange={(e) => handleSourceIdChange(e.target.value)}
                         placeholder="Enter source ID"
                         disabled={isCreating}
                     />
@@ -208,10 +208,10 @@ const SingleMappingForm: React.FC<SingleMappingFormProps> = ({
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 pt-2">
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={onCancel} 
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onCancel}
                         className="flex-1"
                         disabled={isCreating}
                     >

@@ -1,6 +1,6 @@
 // lib/redux/brokerSlice/hooks/useTempBroker.ts
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { createTempBroker, createTempBrokerMappings } from "@/lib/redux/brokerSlice/thunks/temp-mapping";
 import { BrokerIdentifier } from "@/lib/redux/brokerSlice/types";
 import { normalizeFieldDefinition } from "@/types/customAppTypes";
@@ -173,19 +173,19 @@ export function useFieldsWithBrokers(
     const normalizedFields: FieldDefinition[] = fieldArray.map(field => {
         return normalizeFieldDefinitionWithUuid(field as Partial<FieldDefinition>);
     });
-    
+
     const dispatch = useAppDispatch();
     const [result, setResult] = useState<{
         source: string;
         sourceId: string;
         fields: FieldDefinition[];
     } | null>(null);
-    
+
     const count = normalizedFields.length;
-    
+
     useEffect(() => {
         if (!normalizedFields.length) return;
-        
+
         dispatch(
             createTempBrokerMappings({
                 source,
@@ -206,7 +206,7 @@ export function useFieldsWithBrokers(
                     };
                     return normalizeFieldDefinition(fieldWithId);
                 });
-                
+
                 setResult({
                     source,
                     sourceId: brokerResult.sourceId,
@@ -214,6 +214,6 @@ export function useFieldsWithBrokers(
                 });
             });
     }, [dispatch, source, count, JSON.stringify(fields), sourceId, idPattern, brokerIdPattern]);
-    
+
     return result;
 }

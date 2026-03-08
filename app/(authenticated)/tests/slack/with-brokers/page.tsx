@@ -8,7 +8,7 @@ import { SlackAuthentication } from './components/SlackAuthentication';
 import { ChannelSelector } from './components/ChannelSelector';
 import { BrokerFileUploader } from './components/BrokerFileUploader';
 import { BrokerFormExample } from './components/BrokerForm';
-import { useAppSelector } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
 import { brokerSelectors } from '@/lib/redux/brokerSlice';
 import { SLACK_BROKER_IDS } from './components/BrokerSlackClient';
 import { MessageSquare, Upload, Users, Hash, Bell } from 'lucide-react';

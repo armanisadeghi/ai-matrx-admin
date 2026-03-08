@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import { selectTaskById, selectTaskDataById } from "@/lib/redux/socket-io";
 import { arrayOperation } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
 import { RootState } from "@/lib/redux/store";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import ActionButtons from "./ActionButtons";
 import TaskDataDebug from "./TaskDataDebug";
 import { updateTaskFieldByPath } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
@@ -37,7 +37,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
     const schema = useMemo(() => getTaskSchema(task?.taskName || "") || {}, [task?.taskName]);
     const schemaFields = React.useMemo(() => Object.entries(schema), [schema]);
-        
+
     const handleChange = React.useCallback(
         (fieldPath: string, value: any) => {
             dispatch(updateTaskFieldByPath({ taskId, fieldPath, value }));
@@ -61,13 +61,13 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                     let fieldValue = formData[fieldName];
                     if (fieldValue === undefined || fieldValue === null) {
                         fieldValue = fieldDefinition.DEFAULT;
-                        
+
                         // For arrays, ensure we have a proper default
                         if (fieldDefinition.DATA_TYPE === "array" && !Array.isArray(fieldValue)) {
                             fieldValue = fieldDefinition.REFERENCE ? [{}] : [""];
                         }
                     }
-                    
+
                     return (
                         <FormField
                             key={`${taskId}-${fieldName}-${index}`}

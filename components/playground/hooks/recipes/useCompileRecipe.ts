@@ -2,7 +2,8 @@ import {
     getUniqueBrokerRecordIds,
     transformEncodedToSimpleIdPattern,
 } from "@/features/rich-text-editor/utils/patternUtils";
-import { useAppSelector, useEntityTools } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { DataBrokerRecordWithKey, RecipeRecordWithKey } from "@/types/AutomationSchemaTypes";
 import { createNormalizer } from "@/utils/dataSchemaNormalizer";
 import { useCallback, useMemo } from "react";

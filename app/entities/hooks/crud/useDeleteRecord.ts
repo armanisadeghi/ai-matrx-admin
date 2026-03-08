@@ -1,5 +1,5 @@
 // useDeleteRecord.ts
-import { useEntityTools } from '@/lib/redux';
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { callbackManager } from '@/utils/callbackManager';
 import { useCallback } from 'react';

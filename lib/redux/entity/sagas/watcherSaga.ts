@@ -23,7 +23,7 @@ import {
 } from '@/lib/redux/entity/sagas/sagaHandlers';
 import { CreateRecordPayload, DeleteRecordPayload, DirectCreateRecordPayload, DirectUpdateRecordPayload, FetchOneWithFkIfkPayload, GetOrFetchSelectedRecordsPayload } from '../actions';
 import { withConversion, withFullConversion, withFullRelationConversion } from '@/lib/redux/entity/sagas/sagaHelpers';
-import { getEntitySlice } from '@/lib/redux';
+import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
 
 type SagaAction<P = any> = PayloadAction<P> & { type: string };
 

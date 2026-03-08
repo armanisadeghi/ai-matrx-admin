@@ -8,7 +8,8 @@ import { chipSyncManager } from '@/features/rich-text-editor/utils/ChipUpdater';
 import { DataBrokerData, DataBrokerRecordWithKey, MatrxRecordId, MessageBrokerData } from '@/types';
 import { EditorStates } from './Provider';
 import { RelationshipCreateResult, useRelationshipDirectCreate } from '@/app/entities/hooks/crud/useDirectRelCreate';
-import { useAppDispatch, useEntityTools } from '@/lib/redux';
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { useGetorFetchRecords } from '@/app/entities/hooks/records/useGetOrFetch';
 
 export const sanitizeId = (id?: string): string | undefined => {

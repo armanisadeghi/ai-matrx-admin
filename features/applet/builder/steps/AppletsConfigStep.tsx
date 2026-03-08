@@ -23,7 +23,7 @@ import {
     selectAppletsExcludingAppId,
 } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { useToast } from "@/components/ui/use-toast";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import AppletFormComponent from "@/features/applet/builder/modules/smart-parts/applets/AppletFormComponent";
 import AppletSelectorOverlay from "@/features/applet/builder/modules/smart-parts/applets/AppletSelectorOverlay";
 import SmartAppletListWrapper from "@/features/applet/builder/modules/smart-parts/applets/SmartAppletListWrapper";

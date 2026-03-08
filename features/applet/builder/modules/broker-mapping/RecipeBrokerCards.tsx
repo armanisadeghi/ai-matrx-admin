@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectActiveAppletId } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { Broker, BrokerMapping, AppletSourceConfig } from "@/types/customAppTypes";
 

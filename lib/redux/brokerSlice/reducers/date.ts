@@ -1,7 +1,6 @@
 // types/date/index.ts
 import { PayloadAction } from "@reduxjs/toolkit";
 import { createSelector } from "reselect";
-import { RootState } from "@/lib/redux";
 import { BrokerState, BrokerIdentifier } from "../types";
 import { resolveBrokerId } from "../utils";
 

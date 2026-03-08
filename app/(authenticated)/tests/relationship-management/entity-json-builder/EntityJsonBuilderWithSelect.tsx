@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, X, RefreshCcw, Copy, Check, Key } from 'lucide-react';
 import { EntityKeys } from '@/types/entityTypes';
-import { useAppSelector, useEntityTools } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EntitySelection } from '@/components/matrx/Entity';
-import { createRecordKey } from '@/lib/redux';
+import { createRecordKey } from "@/lib/redux/entity/utils/stateHelpUtils";
 
 interface EntityJsonBuilderProps {
     defaultEntity?: EntityKeys;

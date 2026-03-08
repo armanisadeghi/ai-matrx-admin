@@ -1,7 +1,7 @@
 'use client';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { fetchFieldsThunk, deleteFieldThunk, setFieldPublicThunk } from '@/lib/redux/app-builder/thunks/fieldBuilderThunks';
 import { setActiveField } from '@/lib/redux/app-builder/slices/fieldBuilderSlice';
 import { selectAllFields, selectFieldLoading, selectFieldError, selectActiveFieldId } from '@/lib/redux/app-builder/selectors/fieldSelectors';

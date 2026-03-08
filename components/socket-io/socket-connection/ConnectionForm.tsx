@@ -13,7 +13,7 @@ import { Plus, X } from 'lucide-react';
 import { IconButton } from '@/components/ui/icon-button';
 import { selectConnectionForm } from '@/lib/redux/socket-io/selectors';
 import { selectPredefinedConnections } from '@/lib/redux/socket-io/selectors';
-import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { v4 as uuidv4 } from 'uuid';
 
 const ConnectionForm: React.FC = () => {

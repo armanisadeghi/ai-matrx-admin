@@ -14,7 +14,7 @@ import {
     LucideIcon,
 } from "lucide-react";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectCanvasIsAvailable, type CanvasContentType } from "@/features/canvas/redux/canvasSlice";
 import IconButton from "@/components/official/IconButton";
 

@@ -5,7 +5,8 @@ import EntityBaseFieldFinal from '@/app/entities/fields/EntityBaseFieldFinal';
 import EntityRelationshipWrapperFinal from '@/app/entities/relationships/EntityRelationshipWrapperFinal';
 import { EntityKeys, EntityAnyFieldKey, MatrxRecordId } from '@/types/entityTypes';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { useAppDispatch, useEntityTools } from '@/lib/redux';
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 
 export interface FieldRendererOptions {
     onFieldChange?: (fieldName: string, value: unknown) => void;

@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/popover";
 import { SchemaField } from "@/constants/socket-schema";
 import { formatPlaceholder } from "@/components/socket/utils/label-util";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { 
   selectFieldValue, 
   selectConnectionTestMode, 

@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import ContainerListTable from "@/features/applet/builder/modules/container-builder/ContainerListTable";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { deleteContainerThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 
 export default function ContainersListPage() {

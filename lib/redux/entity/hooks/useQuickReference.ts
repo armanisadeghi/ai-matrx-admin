@@ -15,7 +15,7 @@ import {
 } from '@/lib/redux/entity/types/stateTypes';
 import {entityDefaultSettings} from "@/lib/redux/entity/constants/defaults";
 import {Callback, callbackManager} from "@/utils/callbackManager";
-import {getEntitySlice} from '@/lib/redux';
+import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
 import {FetchMode} from '../actions';
 import {useCallback, useMemo} from "react";
 

@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
 import AppEditor from '@/features/applet/builder/modules/app-builder/AppEditor';
-import { useAppSelector } from '@/lib/redux';
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectHasUnsavedAppChanges } from '@/lib/redux/app-builder/selectors/appSelectors';
 
 interface LegacyEditorTabProps {
