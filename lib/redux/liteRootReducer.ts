@@ -27,6 +27,11 @@ import promptExecutionReducer from "./prompt-execution/slice";
 import actionCacheReducer from "./prompt-execution/actionCacheSlice";
 import modelRegistryReducer from "./slices/modelRegistrySlice";
 
+// Execution infrastructure (empty initial state, populated only during active AI tasks)
+import socketResponseReducer from "./socket-io/slices/socketResponseSlice";
+import socketTasksReducer from "./socket-io/slices/socketTasksSlice";
+import brokerReducer from "./brokerSlice/slice";
+
 // SMS
 import smsReducer from "../../features/sms/redux/smsSlice";
 
@@ -46,13 +51,15 @@ import contextMenuCacheReducer from "./slices/contextMenuCacheSlice";
 // - canvas: Canvas panel state
 // - promptCache, promptRunner, promptExecution, actionCache: Prompt system
 // - modelRegistry: AI model list (pre-populated from SSR RPC; thunk skipped if hydrated)
+// - socketResponse, socketTasks: Execution task tracking (empty until AI execution)
+// - broker: Key-value broker (empty, no auto-providers; populated by streaming events)
 // - sms: SMS conversations (unreadTotal pre-populated; full list fetched on demand)
 // - contextMenuCache: Raw context_menu_unified_view rows (pre-populated from SSR RPC)
 //
 // EXCLUDED (require entities, sagas, or socket.io):
 // - entities, globalCache, entityFields: Entity system (~134 slices + 108K schema)
-// - socketConnections, socketResponse, socketTasks: Socket.io middleware
-// - broker, workflows, workflowNodes: Saga-dependent
+// - socketConnections: Socket.io connection middleware (not needed for FastAPI path)
+// - workflows, workflowNodes: Saga-dependent
 // - appBuilder, appletBuilder, etc.: Feature-specific builders
 // - fileSystem: Bucket-based file management
 // ============================================================================
@@ -87,6 +94,11 @@ export const createLiteRootReducer = () => {
         promptExecution: promptExecutionReducer,
         actionCache: actionCacheReducer,
         modelRegistry: modelRegistryReducer,
+
+        // Execution infrastructure (all start empty, populated during AI tasks)
+        socketResponse: socketResponseReducer,
+        socketTasks: socketTasksReducer,
+        broker: brokerReducer,
 
         // SMS
         sms: smsReducer,

@@ -33,10 +33,14 @@ export default function DeferredShellData() {
                 console.debug(`⚡DeferredShellData getUser: ${(performance.now() - t1).toFixed(2)}ms`);
                 if (!user) return;
 
+                // Fetch session for the access token (fast local read, no network call)
+                const { data: { session } } = await supabase.auth.getSession();
+                const accessToken = session?.access_token ?? null;
+
                 const t2 = performance.now();
                 const shellData = await getSSRShellData(supabase, user.id);
                 console.debug(`⚡DeferredShellData getSSRShellData: ${(performance.now() - t2).toFixed(2)}ms`);
-                const userData = mapUserData(user, undefined, shellData.is_admin);
+                const userData = mapUserData(user, accessToken, shellData.is_admin);
 
                 dispatch(setUser(userData));
 

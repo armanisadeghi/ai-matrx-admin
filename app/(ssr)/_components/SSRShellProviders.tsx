@@ -17,6 +17,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { ToastProvider } from '@/providers/toast-context';
 import { Toaster } from '@/components/ui/toaster';
 import { ReactQueryProvider } from '@/providers/ReactQueryProvider';
+import ClientOverlayProvider from '@/components/overlays/ClientOverlayProvider';
 
 
 interface SSRShellProvidersProps {
@@ -35,6 +36,7 @@ export default function SSRShellProviders({ children }: SSRShellProvidersProps) 
                                     <MountTimer name="SSRShellProviders (inner)">
                                         {children}
                                         <Toaster />
+                                        <ClientOverlayProvider />
                                     </MountTimer>
                                 </TooltipProvider>
                             </MountTimer>
