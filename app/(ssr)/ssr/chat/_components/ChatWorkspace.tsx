@@ -24,7 +24,7 @@ import { useChatContext } from '@/features/public-chat/context/ChatContext';
 import type { AgentConfig } from '@/features/public-chat/context/ChatContext';
 import { useAgentChat } from '@/features/public-chat/hooks/useAgentChat';
 import { useChatPersistence } from '@/features/public-chat/hooks/useChatPersistence';
-import { processDbMessagesForDisplay } from '@/features/public-chat/utils/cx-content-converter';
+import { buildCanonicalMessages, canonicalArrayToLegacy } from '@/lib/chat-protocol';
 
 
 // Shared agent state — single source of truth for selected agent across the SSR chat route
@@ -163,17 +163,13 @@ function ChatWorkspaceInner() {
                     return;
                 }
 
-                // Convert cx_messages to ChatMessage format using the same
-                // processDbMessagesForDisplay pipeline as the rest of the system.
-                // This correctly extracts tool_call/tool_result blocks so tool
-                // results are visible when revisiting past conversations.
-                const chatMessages = processDbMessagesForDisplay(
-                    data.messages,
-                    data.toolCalls,
-                );
+                // Normalize to canonical format via the chat-protocol layer,
+                // then adapt to legacy ChatMessage for the existing context/renderers.
+                const canonical    = buildCanonicalMessages(data.messages, data.toolCalls);
+                const chatMessages = canonicalArrayToLegacy(canonical);
 
                 // Load atomically — sets conversationId, dbConversationId, and messages in one dispatch
-                loadConversationAction(conversationIdFromUrl!, conversationIdFromUrl!, chatMessages);
+                loadConversationAction(conversationIdFromUrl!, conversationIdFromUrl!, chatMessages as any);
 
                 setIsLoadingConversation(false);
                 setFocusKey(k => k + 1);
