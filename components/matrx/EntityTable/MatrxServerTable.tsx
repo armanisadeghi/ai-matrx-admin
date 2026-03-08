@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useEffect, useMemo, useState} from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     getCoreRowModel,
     getPaginationRowModel,
@@ -10,17 +10,17 @@ import {
     ColumnDef,
 } from '@tanstack/react-table';
 
-import {Table} from "@/components/ui/table";
+import { Table } from "@/components/ui/table";
 import MatrxTableHeader from "@/components/matrx/EntityTable/MatrxTableHeader";
 import MatrxTableBody from "@/components/matrx/EntityTable/MatrxTableBody";
-import {cn} from "@/styles/themes";
+import { cn } from "@/styles/themes/utils";
 import TableTopOptions from "@/components/matrx/EntityTable/TableTopOptions";
 import TableBottomSection from "@/components/matrx/EntityTable/TableBottomSection";
 import MatrxColumnSettings from "@/components/matrx/EntityTable/MatrxColumnSettings";
-import {AllEntityFieldKeys, EntityData, EntityKeys} from '@/types/entityTypes';
-import {EntityCommandContext, EntityCommandName} from "@/components/matrx/MatrxCommands/EntityCommand";
+import { AllEntityFieldKeys, EntityData, EntityKeys } from '@/types/entityTypes';
+import { EntityCommandContext, EntityCommandName } from "@/components/matrx/MatrxCommands/EntityCommand";
 import { useAppDispatch } from '@/lib/redux/hooks';
-import {createEntitySelectors} from "@/lib/redux/entity/concepts/paramSelectors";
+import { createEntitySelectors } from "@/lib/redux/entity/concepts/paramSelectors";
 import { FieldSelectOption } from '@/lib/redux/entity/utils/direct-schema';
 
 export interface MatrxServerTableProps<TEntity extends EntityKeys> {
@@ -31,10 +31,10 @@ export interface MatrxServerTableProps<TEntity extends EntityKeys> {
     // Command Configuration
     commands?: {
         [key in EntityCommandName]?: boolean | {
-        useCallback?: boolean;
-        setActiveOnClick?: boolean;
-        hidden?: boolean;
-    };
+            useCallback?: boolean;
+            setActiveOnClick?: boolean;
+            hidden?: boolean;
+        };
     };
 
     // Command Callbacks
@@ -106,10 +106,10 @@ const MatrxServerTable = <TEntity extends EntityKeys>(
         data,
         primaryKey,
         commands = {
-            view: {useCallback: true},
-            edit: {useCallback: true},
-            delete: {useCallback: true},
-            expand: {useCallback: true},
+            view: { useCallback: true },
+            edit: { useCallback: true },
+            delete: { useCallback: true },
+            expand: { useCallback: true },
         },
         onCommandExecute,
         onModalOpen,
@@ -138,7 +138,7 @@ const MatrxServerTable = <TEntity extends EntityKeys>(
             ...row,
             _rowId: row[primaryKey] ? `${row[primaryKey]}` : `row-${index}`,
             // If there's a display field, add it as _displayValue for easier access
-            ...(displayField && {_displayValue: row[displayField as keyof EntityData<TEntity>]})
+            ...(displayField && { _displayValue: row[displayField as keyof EntityData<TEntity>] })
         }));
     }, [data, primaryKey, displayField]);
 
@@ -146,16 +146,16 @@ const MatrxServerTable = <TEntity extends EntityKeys>(
         if (allData.length === 0) return [];
         return generateColumns(allData[0], fieldSelectOptions);
     }, [allData, fieldSelectOptions]);
-    
+
     const allColumnNames = useMemo(
         () => allColumns.map((col) => (typeof col.header === 'string' ? col.header : '')),
         [allColumns]
     );
-    
+
     const [visibleColumnAccessors, setVisibleColumnAccessors] = useState<string[]>(
         defaultVisibleColumns.length > 0 ? defaultVisibleColumns : allColumnNames
     );
-    
+
     const [columnSettingsOpen, setColumnSettingsOpen] = useState(false);
     const dispatch = useAppDispatch();
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
@@ -212,7 +212,7 @@ const MatrxServerTable = <TEntity extends EntityKeys>(
     const table = useReactTable({
         columns: visibleColumns,
         data: allData,
-        state: {sorting, globalFilter, pagination},
+        state: { sorting, globalFilter, pagination },
         onSortingChange: setSorting,
         onGlobalFilterChange: setGlobalFilter,
         onPaginationChange: setPagination,
@@ -278,7 +278,7 @@ const MatrxServerTable = <TEntity extends EntityKeys>(
                     <div className="inline-block min-w-full align-middle scrollbar-hide">
                         <div className="overflow-hidden border rounded-xl bg-matrxBorder scrollbar-hide">
                             <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 scrollbar-hide">
-                                <MatrxTableHeader headerGroups={table.getHeaderGroups()}/>
+                                <MatrxTableHeader headerGroups={table.getHeaderGroups()} />
                                 <MatrxTableBody
                                     entityKey={entityKey}
                                     page={table.getRowModel().rows}
@@ -302,7 +302,7 @@ const MatrxServerTable = <TEntity extends EntityKeys>(
 
             <TableBottomSection
                 currentPage={pagination.pageIndex + 1}
-                pageNumbers={Array.from({length: table.getPageCount()}, (_, i) => i + 1)}
+                pageNumbers={Array.from({ length: table.getPageCount() }, (_, i) => i + 1)}
                 canPreviousPage={table.getCanPreviousPage()}
                 canNextPage={table.getCanNextPage()}
                 previousPage={handlePreviousPage}

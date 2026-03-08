@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
-import { RootState } from '../store';
+import type { RootState } from '@/lib/redux/store';
 import { Node } from '@xyflow/react';
 import { RegisteredNodeData } from '@/types/AutomationSchemaTypes';
 
@@ -21,7 +21,7 @@ export const selectWorkflowNodeById = createSelector(
 
 export const selectActiveWorkflowNode = createSelector(
   [selectWorkflowNodeState],
-  (nodeState) => 
+  (nodeState) =>
     nodeState.activeId ? nodeState.entities[nodeState.activeId] : null
 );
 
@@ -64,7 +64,7 @@ export const selectWorkflowNodesDataFreshness = createSelector(
   (nodeState) => ({
     fetchTimestamp: nodeState.fetchTimestamp,
     dataFetched: nodeState.dataFetched,
-    isStale: nodeState.fetchTimestamp ? 
+    isStale: nodeState.fetchTimestamp ?
       Date.now() - nodeState.fetchTimestamp > 5 * 60 * 1000 : true // 5 minutes
   })
 );
@@ -72,7 +72,7 @@ export const selectWorkflowNodesDataFreshness = createSelector(
 // FIXED: Properly parameterized selector that accepts workflowId
 export const selectWorkflowNodesByWorkflowId = createSelector(
   [selectAllWorkflowNodes, (_: RootState, workflowId: string) => workflowId],
-  (allNodes, workflowId) => 
+  (allNodes, workflowId) =>
     allNodes.filter(node => node.workflow_id === workflowId)
 );
 
@@ -112,7 +112,7 @@ export const selectWorkflowNodesByFunctionId = createSelector(
 // FIXED: Properly parameterized selector that accepts status
 export const selectWorkflowNodesByStatus = createSelector(
   [selectAllWorkflowNodes, selectWorkflowNodeState, (_: RootState, status: string) => status],
-  (nodes, nodeState, status) => 
+  (nodes, nodeState, status) =>
     nodes.filter(node => (nodeState.status[node.id] || 'pending') === status)
 );
 
@@ -233,19 +233,19 @@ export const workflowNodesSelectors = {
   nodeById: selectWorkflowNodeById,
   activeNode: selectActiveWorkflowNode,
   selectedNodes: selectSelectedWorkflowNodes,
-  
+
   // State selectors
   isLoading: selectWorkflowNodesIsLoading,
   error: selectWorkflowNodesError,
   isNodeDirty: selectWorkflowNodeIsDirty,
   dataFreshness: selectWorkflowNodesDataFreshness,
-  
+
   // Status and Results selectors
   nodeStatus: selectWorkflowNodeStatus,
   nodeResults: selectWorkflowNodeResults,
   allStatuses: selectAllWorkflowNodeStatuses,
   allResults: selectAllWorkflowNodeResults,
-  
+
   // Filter selectors (require parameters)
   nodesByWorkflowId: selectWorkflowNodesByWorkflowId,
   xyFlowNodesByWorkflowId: selectXyFlowNodesByWorkflowId,
@@ -253,17 +253,17 @@ export const workflowNodesSelectors = {
   nodesByStatus: selectWorkflowNodesByStatus,
   executionRequiredNodes: selectExecutionRequiredNodes,
   nodesByFunctionId: selectWorkflowNodesByFunctionId,
-  
+
   // Node array property selectors (require node ID parameter)
   nodeInputs: selectWorkflowNodeInputs,
   nodeOutputs: selectWorkflowNodeOutputs,
   nodeDependencies: selectWorkflowNodeDependencies,
-  
+
   // Active node array property selectors (no ID needed)
   activeNodeInputs: selectActiveWorkflowNodeInputs,
   activeNodeOutputs: selectActiveWorkflowNodeOutputs,
   activeNodeDependencies: selectActiveWorkflowNodeDependencies,
-  
+
   // Utility selectors (require node ID and additional parameters)
   nodeInputById: selectWorkflowNodeInputById, // (nodeId, index)
   nodeOutputByBrokerId: selectWorkflowNodeOutputByBrokerId, // (nodeId, brokerId)
@@ -272,7 +272,7 @@ export const workflowNodesSelectors = {
   // Safe metadata selectors
   nodeMetadata: selectWorkflowNodeMetadata,
   nodeDefinition: selectWorkflowNodeDefinition,
-  
+
   // Factory functions for creating parameterized selectors
   createNodesByWorkflowIdSelector: createWorkflowNodesByWorkflowIdSelector,
   createXyFlowNodesByWorkflowIdSelector: createXyFlowNodesByWorkflowIdSelector,

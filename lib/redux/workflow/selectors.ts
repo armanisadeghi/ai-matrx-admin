@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
-import { RootState } from '../store';
+import type { RootState } from '@/lib/redux/store';
 import { selectAllWorkflowNodes, selectWorkflowNodesByWorkflowId } from '../workflow-nodes/selectors';
 import { BrokerSourceConfig } from './types';
 
@@ -21,7 +21,7 @@ export const selectWorkflowById = createSelector(
 
 export const selectActiveWorkflow = createSelector(
   [selectWorkflowState],
-  (workflowState) => 
+  (workflowState) =>
     workflowState.activeId ? workflowState.entities[workflowState.activeId] : null
 );
 
@@ -54,7 +54,7 @@ export const selectWorkflowsDataFreshness = createSelector(
   (workflowState) => ({
     fetchTimestamp: workflowState.fetchTimestamp,
     dataFetched: workflowState.dataFetched,
-    isStale: workflowState.fetchTimestamp ? 
+    isStale: workflowState.fetchTimestamp ?
       Date.now() - workflowState.fetchTimestamp > 5 * 60 * 1000 : true // 5 minutes
   })
 );
@@ -189,31 +189,31 @@ export const selectWorkflowUserInputSourceByBrokerId = createSelector(
 );
 
 // ADDITIONAL HELPER SELECTORS: Factory functions for creating parameterized selectors
-export const createWorkflowInputsSelector = (workflowId: string) => 
+export const createWorkflowInputsSelector = (workflowId: string) =>
   createSelector(
     [(state: RootState) => selectWorkflowById(state, workflowId)],
     (workflow) => workflow?.inputs || []
   );
 
-export const createWorkflowOutputsSelector = (workflowId: string) => 
+export const createWorkflowOutputsSelector = (workflowId: string) =>
   createSelector(
     [(state: RootState) => selectWorkflowById(state, workflowId)],
     (workflow) => workflow?.outputs || []
   );
 
-export const createWorkflowDependenciesSelector = (workflowId: string) => 
+export const createWorkflowDependenciesSelector = (workflowId: string) =>
   createSelector(
     [(state: RootState) => selectWorkflowById(state, workflowId)],
     (workflow) => workflow?.dependencies || []
   );
 
-export const createWorkflowSourcesSelector = (workflowId: string) => 
+export const createWorkflowSourcesSelector = (workflowId: string) =>
   createSelector(
     [(state: RootState) => selectWorkflowById(state, workflowId)],
     (workflow) => workflow?.sources || []
   );
 
-export const createWorkflowDestinationsSelector = (workflowId: string) => 
+export const createWorkflowDestinationsSelector = (workflowId: string) =>
   createSelector(
     [(state: RootState) => selectWorkflowById(state, workflowId)],
     (workflow) => workflow?.destinations || []
@@ -225,48 +225,48 @@ export const workflowsSelectors = {
   workflowById: selectWorkflowById,
   activeWorkflow: selectActiveWorkflow,
   selectedWorkflows: selectSelectedWorkflows,
-  
+
   // State selectors
   isLoading: selectWorkflowsIsLoading,
   error: selectWorkflowsError,
   isDirty: selectWorkflowIsDirty,
   dataFreshness: selectWorkflowsDataFreshness,
-  
+
   // Filter selectors
   activeWorkflows: selectActiveWorkflows,
   workflowsByCategory: selectWorkflowsByCategory,
-  
+
   // Workflow with nodes selectors
   workflowWithNodes: selectWorkflowWithNodes,
   activeWorkflowWithNodes: selectActiveWorkflowWithNodes,
-  
+
   // Workflow array property selectors (require ID parameter)
   workflowInputs: selectWorkflowInputs,
   workflowOutputs: selectWorkflowOutputs,
   workflowDependencies: selectWorkflowDependencies,
   workflowSources: selectWorkflowSources,
   workflowDestinations: selectWorkflowDestinations,
-  
+
   // Active workflow array property selectors (no ID needed)
   activeWorkflowInputs: selectActiveWorkflowInputs,
   activeWorkflowOutputs: selectActiveWorkflowOutputs,
   activeWorkflowDependencies: selectActiveWorkflowDependencies,
   activeWorkflowSources: selectActiveWorkflowSources,
   activeWorkflowDestinations: selectActiveWorkflowDestinations,
-  
+
   // Utility selectors (require ID parameter)
   workflowInputById: selectWorkflowInputById,
   workflowOutputById: selectWorkflowOutputById,
   workflowSourceByBrokerId: selectWorkflowSourceByBrokerId,
-  
+
   // User data source selectors (require ID parameter)
   workflowUserDataSources: selectWorkflowUserDataSources,
   userDataSourceByBrokerId: selectWorkflowUserDataSourceByBrokerId,
-  
+
   // User input source selectors (require ID parameter)
   workflowUserInputSources: selectWorkflowUserInputSources,
   userInputSourceByBrokerId: selectWorkflowUserInputSourceByBrokerId,
-  
+
   // Factory functions for creating parameterized selectors
   createWorkflowInputsSelector,
   createWorkflowOutputsSelector,

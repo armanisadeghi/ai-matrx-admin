@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 import { Suspense } from "react";
 import { metadata } from "./config/metadata";
 import { viewport } from "./config/viewport";
-import { inter, montserrat, openSans, roboto } from "@/styles/themes";
+import { inter, montserrat, openSans, roboto } from "@/styles/themes/fonts";
 import { PostHogProvider } from "@/providers/PostHogProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 

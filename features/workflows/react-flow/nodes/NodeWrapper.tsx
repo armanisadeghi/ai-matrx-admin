@@ -9,7 +9,7 @@ import { EnrichedBroker } from "@/features/workflows/utils/data-flow-manager";
 import { DataBrokerData } from "@/types/AutomationSchemaTypes";
 import { DbNodeData, DbUserInput, DbBrokerRelayData, DbFunctionNode } from "@/features/workflows/types";
 import { getNodePotentialInputsAndOutputs, parseEdge } from "../../utils/node-utils";
-import { useTheme } from "@/styles/themes";
+import { useTheme } from "@/styles/themes/ThemeProvider";
 
 // TypeScript declaration for window object
 declare global {
@@ -36,7 +36,7 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, ty
     const updateNodeInternals = useUpdateNodeInternals();
     const { mode } = useTheme();
     const inputsAndOutputs = getNodePotentialInputsAndOutputs(data, type);
-    
+
     const enrichedBrokers = window.workflowEnrichedBrokers || [];
 
     const handleDelete = (nodeId: string) => {
@@ -73,7 +73,7 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, ty
     const handleOnConnect = (connection: Connection) => {
         const matrxEdge = parseEdge(connection);
         console.log("matrxEdge", JSON.stringify(matrxEdge, null, 2));
-        
+
         // Call the connection handler from the workflow system
         window.workflowSystemRef?.handleConnection?.(matrxEdge);
     };

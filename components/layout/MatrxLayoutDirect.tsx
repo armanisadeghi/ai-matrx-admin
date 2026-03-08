@@ -1,20 +1,20 @@
 "use client";
 
 import Image from "next/image";
-import {cn} from "@/lib/utils";
-import Link, {LinkProps} from "next/link";
-import {usePathname, useRouter} from 'next/navigation';
-import React, {useState, createContext, useContext, useEffect} from "react";
-import {AnimatePresence, motion} from "motion/react";
-import {IconMenu2, IconX, IconLogout, IconUser} from "@tabler/icons-react";
-import {Logo} from "@/components/layout/MatrixLogo";
+import { cn } from "@/lib/utils";
+import Link, { LinkProps } from "next/link";
+import { usePathname, useRouter } from 'next/navigation';
+import React, { useState, createContext, useContext, useEffect } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { IconMenu2, IconX, IconLogout, IconUser } from "@tabler/icons-react";
+import { Logo } from "@/components/layout/MatrixLogo";
 // @ts-ignore - constants module exists but TypeScript may not resolve it correctly
-import {appSidebarLinks} from "@/constants";
-import {Settings, User, ChevronLeft, ChevronRight} from "lucide-react";
-import {useSelector} from "react-redux";
-import {RootState} from "@/lib/redux/store";
-import {ThemeSwitcher} from "@/styles/themes";
-import {Tooltip, TooltipContent, TooltipTrigger,} from "@/components/ui/tooltip";
+import { appSidebarLinks } from "@/constants";
+import { Settings, User, ChevronLeft, ChevronRight } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/redux/store";
+import { ThemeSwitcher } from "@/styles/themes/ThemeSwitcher";
+import { Tooltip, TooltipContent, TooltipTrigger, } from "@/components/ui/tooltip";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -83,13 +83,13 @@ function SidebarToggle({ open, onToggle }: { open: boolean; onToggle: () => void
 // Logout function component to handle user logout
 function LogoutAction() {
     const router = useRouter();
-    
+
     const handleLogout = async () => {
         const supabase = createClient();
         await supabase.auth.signOut();
         router.push('/login');
     };
-    
+
     return (
         <DropdownMenuItem onClick={handleLogout} className="text-red-500 dark:text-red-400">
             <IconLogout className="mr-2 h-4 w-4" />
@@ -99,8 +99,8 @@ function LogoutAction() {
 }
 
 // User profile dropdown component
-function UserProfileDropdown({ userName, userProfilePhoto, open }: { 
-    userName: string, 
+function UserProfileDropdown({ userName, userProfilePhoto, open }: {
+    userName: string,
     userProfilePhoto: string | null,
     open: boolean
 }) {
@@ -184,12 +184,12 @@ export const SidebarProvider = (
     // Close sidebar on route changes only on mobile
     useEffect(() => {
         if (window.innerWidth < 768) {
-        setOpen(false);
+            setOpen(false);
         }
     }, [pathname, setOpen]);
 
     return (
-        <SidebarContext.Provider value={{open, setOpen}}>
+        <SidebarContext.Provider value={{ open, setOpen }}>
             {children}
         </SidebarContext.Provider>
     );
@@ -227,7 +227,7 @@ export const DesktopSidebar = (
         children,
         ...props
     }: React.ComponentProps<typeof motion.div>) => {
-    const {open, setOpen} = useSidebar();
+    const { open, setOpen } = useSidebar();
     return (
         <motion.div
             className={cn(
@@ -254,7 +254,7 @@ export const MobileSidebar = (
         children,
         ...props
     }: React.ComponentProps<typeof motion.div>) => {
-    const {open, setOpen} = useSidebar();
+    const { open, setOpen } = useSidebar();
     return (
         <motion.div
             className={cn(
@@ -271,9 +271,9 @@ export const MobileSidebar = (
             <AnimatePresence>
                 {open && (
                     <motion.div
-                        initial={{x: "-100%", opacity: 0}}
-                        animate={{x: 0, opacity: 1}}
-                        exit={{x: "-100%", opacity: 0}}
+                        initial={{ x: "-100%", opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: "-100%", opacity: 0 }}
                         transition={{
                             duration: 0.3,
                             ease: "easeInOut",
@@ -287,7 +287,7 @@ export const MobileSidebar = (
                             className="absolute right-10 top-10 z-50 text-neutral-800 dark:text-neutral-200"
                             onClick={() => setOpen(!open)}
                         >
-                            <IconX/>
+                            <IconX />
                         </div>
                         {children as React.ReactNode}
                     </motion.div>
@@ -301,8 +301,8 @@ export const SidebarLink: React.FC<{
     link: Links;
     className?: string;
     props?: LinkProps;
-}> = ({link, className, ...props}) => {
-    const {open} = useSidebar();
+}> = ({ link, className, ...props }) => {
+    const { open } = useSidebar();
     const pathname = usePathname();
     const isActive = pathname === link.href;
 
@@ -352,12 +352,12 @@ export function MatrxLayoutDirect(
         {
             label: "Settings",
             href: "/use/settings",
-            icon: (<Settings className="h-5 w-5 text-foreground"/>),
+            icon: (<Settings className="h-5 w-5 text-foreground" />),
         },
         {
             label: displayName,
             href: "/settings/profile",
-            icon: (<User className="h-5 w-5 text-foreground"/>),
+            icon: (<User className="h-5 w-5 text-foreground" />),
         }
     ];
 
@@ -372,11 +372,11 @@ export function MatrxLayoutDirect(
             <Sidebar open={open} setOpen={setOpen}>
                 <SidebarBody className={cn("justify-between", open ? "gap-10" : "gap-6")}>
                     <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden scrollbar-hide">
-                        <Logo open={open}/>
+                        <Logo open={open} />
                         <SidebarToggle open={open} onToggle={() => setOpen(!open)} />
                         <div className={cn("flex flex-col", open ? "mt-8" : "mt-4")}>
                             {primaryLinks.map((link, idx) => (
-                                <SidebarLink key={idx} link={link}/>
+                                <SidebarLink key={idx} link={link} />
                             ))}
                         </div>
                         <div className={cn(open ? "mt-4" : "mt-3")}>
@@ -390,13 +390,13 @@ export function MatrxLayoutDirect(
                                 </div>
                             )}
                             {secondaryLinks.map((link, idx) => (
-                                <SidebarLink key={idx} link={link}/>
+                                <SidebarLink key={idx} link={link} />
                             ))}
                         </div>
                     </div>
                     <div>
-                        <ThemeSwitcher open={open}/>
-                        <UserProfileDropdown 
+                        <ThemeSwitcher open={open} />
+                        <UserProfileDropdown
                             userName={displayName}
                             userProfilePhoto={profilePhoto}
                             open={open}
@@ -404,9 +404,9 @@ export function MatrxLayoutDirect(
                     </div>
                 </SidebarBody>
             </Sidebar>
-            
+
             {/* Main Content - with dynamic left margin based on sidebar state */}
-            <motion.div 
+            <motion.div
                 className="min-h-screen bg-white dark:bg-background"
                 initial={{
                     marginLeft: "32px",

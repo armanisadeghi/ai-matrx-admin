@@ -3,7 +3,7 @@
 import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { RootState } from "@/lib/redux/store";
-import { ThemeSwitcherIcon } from "@/styles/themes";
+import { ThemeSwitcherIcon } from "@/styles/themes/ThemeSwitcher";
 import Image from "next/image";
 import Link from "next/link";
 import MobileTabHeader from "./MobileTabHeader ";
@@ -29,15 +29,15 @@ interface MobileAppHeaderProps {
     isAdmin?: boolean;
     isPreview?: boolean;
 }
-  
 
 
 
-export const MobileAppHeader = ({ 
-    appId, 
-    activeAppletSlug, 
-    isDemo = false, 
-    isCreator, 
+
+export const MobileAppHeader = ({
+    appId,
+    activeAppletSlug,
+    isDemo = false,
+    isCreator,
     isAdmin,
     isPreview = false
 }: MobileAppHeaderProps) => {

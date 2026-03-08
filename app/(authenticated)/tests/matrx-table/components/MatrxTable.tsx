@@ -1,13 +1,13 @@
 // app/(authenticated)/tests/matrx-table/components/MatrxTable.tsx
 'use client';
 
-import React, {useEffect, useMemo, useState} from 'react';
-import {useTable, useSortBy, useGlobalFilter, usePagination} from 'react-table';
-import {Table} from "@/components/ui/table";
-import {MatrxTableProps, TableInstance, ExtendedTableState} from "@/types/tableTypes";
+import React, { useEffect, useMemo, useState } from 'react';
+import { useTable, useSortBy, useGlobalFilter, usePagination } from 'react-table';
+import { Table } from "@/components/ui/table";
+import { MatrxTableProps, TableInstance, ExtendedTableState } from "@/types/tableTypes";
 import MatrxTableHeader from "@/app/(authenticated)/tests/matrx-table/components/MatrxTableHeader";
 import MatrxTableBody from "@/app/(authenticated)/tests/matrx-table/components/MatrxTableBody";
-import {cn} from "@/styles/themes";
+import { cn } from "@/styles/themes/utils";
 import TableTopOptions from "@/components/matrx/table/TableTopOptions";
 import TableBottomSection from "@/components/matrx/table/TableBottomSection";
 import MatrxColumnSettings from "@/app/(authenticated)/tests/matrx-table/components/MatrxColumnSettings";
@@ -96,7 +96,7 @@ const MatrxTable: React.FC<MatrxTableProps> = (
         {
             columns: visibleColumns,
             data: allData,
-            initialState: {pageSize: 10} as Partial<ExtendedTableState>,
+            initialState: { pageSize: 10 } as Partial<ExtendedTableState>,
         },
         useGlobalFilter,
         useSortBy,
@@ -104,7 +104,7 @@ const MatrxTable: React.FC<MatrxTableProps> = (
     ) as unknown as TableInstance;
 
 
-    const {globalFilter, pageIndex, pageSize} = state as ExtendedTableState;
+    const { globalFilter, pageIndex, pageSize } = state as ExtendedTableState;
 
     const pageNumbers = [];
     const totalPages = pageCount;
@@ -147,8 +147,8 @@ const MatrxTable: React.FC<MatrxTableProps> = (
                     <div className="inline-block min-w-full align-middle scrollbar-hide">
                         <div className="overflow-hidden border rounded-xl bg-matrxBorder scrollbar-hide">
                             <Table {...getTableProps()}
-                                   className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 scrollbar-hide">
-                                <MatrxTableHeader headerGroups={headerGroups}/>
+                                className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 scrollbar-hide">
+                                <MatrxTableHeader headerGroups={headerGroups} />
                                 <MatrxTableBody
                                     page={page}
                                     prepareRow={prepareRow}

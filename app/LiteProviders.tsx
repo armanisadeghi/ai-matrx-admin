@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Toaster } from '@/components/ui/toaster';
-import { ThemeProvider } from '@/styles/themes';
+import { ThemeProvider } from '@/styles/themes/ThemeProvider';
 import LiteStoreProvider from '@/providers/LiteStoreProvider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { LiteInitialReduxState } from '@/types/reduxTypes';

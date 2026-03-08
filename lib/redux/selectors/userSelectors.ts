@@ -1,8 +1,8 @@
 // File: lib/redux/selectors/userSelectors.ts
 'use client';
 
-import { RootState } from '../store';
-import {createSelector} from "reselect";
+import type { RootState } from '@/lib/redux/store';
+import { createSelector } from "reselect";
 
 // Basic selectors
 export const selectUser = (state: RootState) => state.user;

@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import SectionCard from "@/components/official/cards/SectionCard";
-import { ThemeSwitcherMinimal, useTheme } from "@/styles/themes";
 import { ComponentType } from "@/types/customAppTypes";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFieldById } from "@/lib/redux/app-builder/selectors/fieldSelectors";
@@ -10,6 +9,8 @@ import FieldPreviewAs from "./FieldPreviewAs";
 import { componentOptions } from "@/features/applet/constants/field-constants";
 import FieldContainerPreview from "./FieldContainerPreview";
 import { usePreviewBrokers } from "@/lib/redux/brokerSlice/hooks/useTempBroker";
+import { useTheme } from "@/styles/themes/ThemeProvider";
+import { ThemeSwitcherMinimal } from "@/styles/themes/ThemeSwitcher";
 
 interface FieldPreviewProps {
     fieldId: string;
@@ -19,13 +20,13 @@ interface FieldPreviewProps {
 const FieldPreview: React.FC<FieldPreviewProps> = ({ fieldId, componentType = "textarea" }) => {
     const field = useAppSelector((state) => selectFieldById(state, fieldId));
     const { mode } = useTheme();
-    
+
     // Memoize component type values to prevent recreation on every render
-    const componentTypeValues = useMemo(() => 
-        componentOptions.map(option => option.value), 
+    const componentTypeValues = useMemo(() =>
+        componentOptions.map(option => option.value),
         []
     );
-    
+
     // Use the new usePreviewBrokers hook
     const brokerResult = usePreviewBrokers(fieldId, componentTypeValues);
 
@@ -47,7 +48,7 @@ const FieldPreview: React.FC<FieldPreviewProps> = ({ fieldId, componentType = "t
                     <h3 className="text-md font-semibold capitalize text-gray-900 dark:text-gray-100">
                         Your New <span className="text-blue-600 dark:text-blue-500 font-bold">{componentType}</span>
                     </h3>
-                    <ThemeSwitcherMinimal 
+                    <ThemeSwitcherMinimal
                         text={mode === 'dark' ? 'See it in light mode' : 'See it in dark mode'}
                         className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
                     />

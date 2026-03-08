@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@r
 import { createClient } from '@/utils/supabase/client';
 import { PromptMessage, PromptVariable, PromptSettings, PromptData } from '@/features/prompts/types/core';
 import { getModelDefaults } from '@/features/prompts/hooks/useModelControls';
-import { RootState } from '../store';
+import type { RootState } from '@/lib/redux/store';
 import { selectModelById } from './modelRegistrySlice';
 import { AIModel } from './modelRegistrySlice';
 

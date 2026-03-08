@@ -5,7 +5,7 @@ import { EntityData, EntityKeys } from "@/types/entityTypes";
 import { QueryOptions } from "@/utils/supabase/api-wrapper";
 import { createEntitySelectors } from './dynamicSelectors';
 import { actions } from './entitySliceCreator';
-import { RootState } from '../store';
+import type { RootState } from '@/lib/redux/store';
 
 interface UseEntityProps<TEntity extends EntityKeys> {
     entityKey: TEntity;

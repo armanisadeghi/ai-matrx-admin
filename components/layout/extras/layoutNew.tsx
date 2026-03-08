@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { Logo } from "@/components/layout/MatrixLogo";
 // @ts-ignore - constants module exists but TypeScript may not resolve it correctly
 import { appSidebarLinks } from "@/constants";
-import { ThemeSwitcher } from "@/styles/themes";
+import { ThemeSwitcher } from "@/styles/themes/ThemeSwitcher";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { CollapseToggleButton } from "../CollapseToggleButton";
 
@@ -38,11 +38,11 @@ const useSidebar = () => {
 };
 
 export function LayoutWithSidebar({
-                                      primaryLinks = appSidebarLinks,
-                                      secondaryLinks,
-                                      children,
-                                      initialOpen = false
-                                  }: {
+    primaryLinks = appSidebarLinks,
+    secondaryLinks,
+    children,
+    initialOpen = false
+}: {
     primaryLinks?: NavLink[];
     secondaryLinks?: NavLink[];
     children?: React.ReactNode;
@@ -96,10 +96,10 @@ export function LayoutWithSidebar({
 }
 
 function NavSidebar({
-                        primaryLinks,
-                        secondaryLinks,
-                        userProfile,
-                    }: {
+    primaryLinks,
+    secondaryLinks,
+    userProfile,
+}: {
     primaryLinks: NavLink[];
     secondaryLinks: NavLink[];
     userProfile: { name: string; photo: string | null };
@@ -184,16 +184,16 @@ function NavSidebar({
                                     </div>
                                 </div>
                             ) : (
-                                 <>
-                                     <button
-                                         onClick={() => setOpen(false)}
-                                         className="absolute right-10 top-10 z-50 text-neutral-800 dark:text-neutral-200"
-                                     >
-                                         <IconX />
-                                     </button>
-                                     {sidebarContent}
-                                 </>
-                             )}
+                                <>
+                                    <button
+                                        onClick={() => setOpen(false)}
+                                        className="absolute right-10 top-10 z-50 text-neutral-800 dark:text-neutral-200"
+                                    >
+                                        <IconX />
+                                    </button>
+                                    {sidebarContent}
+                                </>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>

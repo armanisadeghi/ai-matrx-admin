@@ -1,7 +1,7 @@
 // lib/redux/slices/promptRunnerSlice.ts
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '../store';
+import type { RootState } from '@/lib/redux/store';
 import { PromptRunnerModalConfig } from '@/features/prompts/types/modal';
 
 /**
@@ -22,7 +22,7 @@ export interface PromptRunnerState {
     taskId: string | null;
     openedAt: number | null;
   };
-  
+
   // Compact modal (modal-compact)
   compactModal: {
     isOpen: boolean;
@@ -31,7 +31,7 @@ export interface PromptRunnerState {
     taskId: string | null;
     openedAt: number | null;
   };
-  
+
   // Inline overlay (inline)
   inlineOverlay: {
     isOpen: boolean;
@@ -47,7 +47,7 @@ export interface PromptRunnerState {
       onInsertAfter?: (text: string) => void;
     } | null;
   };
-  
+
   // Sidebar result (sidebar)
   sidebarResult: {
     isOpen: boolean;
@@ -58,7 +58,7 @@ export interface PromptRunnerState {
     size: 'sm' | 'md' | 'lg';
     openedAt: number | null;
   };
-  
+
   // Flexible panel (flexible-panel) - Advanced resizable panel with position controls
   flexiblePanel: {
     isOpen: boolean;
@@ -68,7 +68,7 @@ export interface PromptRunnerState {
     position: 'left' | 'right' | 'top' | 'bottom';
     openedAt: number | null;
   };
-  
+
   // Toast notification (toast)
   toastQueue: Array<{
     id: string;
@@ -82,7 +82,7 @@ export interface PromptRunnerState {
     taskId?: string;
     isStreaming?: boolean;
   }>;
-  
+
   // Pre-execution input modal (NEW)
   preExecutionModal: {
     isOpen: boolean;
@@ -159,7 +159,7 @@ const promptRunnerSlice = createSlice({
       // Save to recent results before closing (with response text for persistence)
       if (state.activeModal.config && state.activeModal.openedAt) {
         const responseText = action.payload?.responseText ?? '';
-        
+
         const recent = {
           id: `result-${Date.now()}`,
           promptName: state.activeModal.config.promptData?.name || state.activeModal.config.title || 'Unknown Prompt',
@@ -176,7 +176,7 @@ const promptRunnerSlice = createSlice({
             },
           },
         };
-        
+
         // Save to session storage
         try {
           const existing = JSON.parse(sessionStorage.getItem('recentPromptResults') || '[]');
@@ -186,7 +186,7 @@ const promptRunnerSlice = createSlice({
           console.error('Failed to save recent result:', e);
         }
       }
-      
+
       state.activeModal = {
         isOpen: false,
         config: null,
@@ -223,7 +223,7 @@ const promptRunnerSlice = createSlice({
       // Save to recent results before closing (with response text for persistence)
       if (state.compactModal.config && state.compactModal.openedAt) {
         const responseText = action.payload?.responseText ?? '';
-        
+
         const recent = {
           id: `result-${Date.now()}`,
           promptName: state.compactModal.config.promptData?.name || state.compactModal.config.title || 'Unknown Prompt',
@@ -240,7 +240,7 @@ const promptRunnerSlice = createSlice({
             },
           },
         };
-        
+
         // Save to session storage
         try {
           const existing = JSON.parse(sessionStorage.getItem('recentPromptResults') || '[]');
@@ -250,7 +250,7 @@ const promptRunnerSlice = createSlice({
           console.error('Failed to save recent result:', e);
         }
       }
-      
+
       state.compactModal = {
         isOpen: false,
         config: null,
@@ -333,7 +333,7 @@ const promptRunnerSlice = createSlice({
       // Save to recent results before closing (with response text for persistence)
       if (state.sidebarResult.config && state.sidebarResult.openedAt) {
         const responseText = action.payload?.responseText ?? '';
-        
+
         const recent = {
           id: `result-${Date.now()}`,
           promptName: state.sidebarResult.config.promptData?.name || state.sidebarResult.config.title || 'Unknown Prompt',
@@ -350,7 +350,7 @@ const promptRunnerSlice = createSlice({
             },
           },
         };
-        
+
         // Save to session storage
         try {
           const existing = JSON.parse(sessionStorage.getItem('recentPromptResults') || '[]');
@@ -360,7 +360,7 @@ const promptRunnerSlice = createSlice({
           console.error('Failed to save recent result:', e);
         }
       }
-      
+
       state.sidebarResult = {
         isOpen: false,
         config: null,
@@ -405,7 +405,7 @@ const promptRunnerSlice = createSlice({
       // Save to recent results before closing (with response text for persistence)
       if (state.flexiblePanel.config && state.flexiblePanel.openedAt) {
         const responseText = action.payload?.responseText ?? '';
-        
+
         const recent = {
           id: `result-${Date.now()}`,
           promptName: state.flexiblePanel.config.promptData?.name || state.flexiblePanel.config.title || 'Unknown Prompt',
@@ -422,7 +422,7 @@ const promptRunnerSlice = createSlice({
             },
           },
         };
-        
+
         // Save to session storage
         try {
           const existing = JSON.parse(sessionStorage.getItem('recentPromptResults') || '[]');
@@ -432,7 +432,7 @@ const promptRunnerSlice = createSlice({
           console.error('Failed to save recent result:', e);
         }
       }
-      
+
       state.flexiblePanel = {
         isOpen: false,
         config: null,
@@ -483,7 +483,7 @@ const promptRunnerSlice = createSlice({
     clearAllToasts: (state) => {
       state.toastQueue = [];
     },
-    
+
     // ========== PRE-EXECUTION MODAL ==========
     openPreExecutionModal: (state, action: PayloadAction<{
       config: PromptRunnerModalConfig;

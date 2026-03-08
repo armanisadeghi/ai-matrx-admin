@@ -1,7 +1,7 @@
 // lib/redux/slices/promptCacheSlice.ts
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '../store';
+import type { RootState } from '@/lib/redux/store';
 import { PromptData, PromptMessage, PromptSettings, PromptVariable } from '@/features/prompts/types/core';
 import type { PermissionLevel } from '@/utils/permissions/types';
 
@@ -193,8 +193,8 @@ const promptCacheSlice = createSlice({
         state.sharedPrompts[idx] = {
           ...incoming,
           permissionLevel: state.sharedPrompts[idx].permissionLevel,
-          canEdit:         state.sharedPrompts[idx].canEdit,
-          canDelete:       state.sharedPrompts[idx].canDelete,
+          canEdit: state.sharedPrompts[idx].canEdit,
+          canDelete: state.sharedPrompts[idx].canDelete,
         };
       }
     },
@@ -262,7 +262,7 @@ export const selectSharedPromptsIsLoading = (state: RootState): boolean =>
  * Useful for the prompt-picker in the editor so both sources appear together.
  */
 export const selectEditablePrompts = (state: RootState) => ({
-  ownedPrompts:  state.promptCache?.allPrompts    ?? [],
+  ownedPrompts: state.promptCache?.allPrompts ?? [],
   sharedEditable: (state.promptCache?.sharedPrompts ?? []).filter((p) => p.canEdit),
 });
 
@@ -271,7 +271,7 @@ export const selectEditablePrompts = (state: RootState) => ({
  * (union of owned + every shared ID).
  */
 export const selectAllAccessiblePromptIds = (state: RootState): string[] => {
-  const ownedIds  = (state.promptCache?.allPrompts    ?? []).map((p) => p.id!);
+  const ownedIds = (state.promptCache?.allPrompts ?? []).map((p) => p.id!);
   const sharedIds = (state.promptCache?.sharedPrompts ?? []).map((p) => p.id);
   return [...new Set([...ownedIds, ...sharedIds])];
 };

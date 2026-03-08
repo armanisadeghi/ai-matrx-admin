@@ -36,10 +36,6 @@
     "name": "chat-tests"
   },
   {
-    "path": "/tests/compact-prompt-test",
-    "name": "compact-prompt-test"
-  },
-  {
     "path": "/tests/direct-chat-test",
     "name": "direct-chat-test"
   },
@@ -74,6 +70,10 @@
   {
     "path": "/tests/glass-effect",
     "name": "glass-effect"
+  },
+  {
+    "path": "/tests/glass-test",
+    "name": "glass-test"
   },
   {
     "path": "/tests/google-apis",

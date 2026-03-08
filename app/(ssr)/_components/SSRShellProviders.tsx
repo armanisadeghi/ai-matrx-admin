@@ -12,7 +12,7 @@ console.debug(`⚡SSRShellProviders module evaluated at ${performance.now().toFi
 
 import { MountTimer } from '@/utils/mount-timer';
 import LiteStoreProvider from '@/providers/LiteStoreProvider';
-import { ThemeProvider } from '@/styles/themes';
+import { ThemeProvider } from '@/styles/themes/ThemeProvider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ToastProvider } from '@/providers/toast-context';
 import { Toaster } from '@/components/ui/toaster';

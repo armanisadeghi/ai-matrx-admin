@@ -13,7 +13,7 @@ import userPreferencesReducer from "./slices/userPreferencesSlice";
 import testRoutesReducer from "./slices/testRoutesSlice";
 import flashcardChatReducer from "./slices/flashcardChatSlice";
 import adminDebugReducer from "./slices/adminDebugSlice";
-import { themeReducer } from "@/styles/themes";
+import themeReducer from "@/styles/themes/themeSlice";
 import { InitialReduxState } from "@/types/reduxTypes";
 import { createGlobalCacheSlice } from "@/lib/redux/schema/globalCacheSlice";
 import uiReducer from "./ui/uiSlice";

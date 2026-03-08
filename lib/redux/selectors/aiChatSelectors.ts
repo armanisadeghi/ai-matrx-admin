@@ -1,6 +1,6 @@
 // File: lib/redux/selectors/aiChatSelectors.ts
 
-import { RootState } from '../store';
+import type { RootState } from '@/lib/redux/store';
 
 export const selectAllChats = (state: RootState) => state.aiChat.chats;
 
