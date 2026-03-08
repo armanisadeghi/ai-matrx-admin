@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { XIcon, SaveIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import {
     setAppId,
     setActiveApplet,
@@ -35,11 +35,11 @@ export interface AppletActionsProps {
     onRemoveApplet?: () => void;
 }
 
-export const AppletActions: React.FC<AppletActionsProps> = ({ 
-    appletId, 
-    appId, 
-    isNew = false, 
-    onSaveApplet, 
+export const AppletActions: React.FC<AppletActionsProps> = ({
+    appletId,
+    appId,
+    isNew = false,
+    onSaveApplet,
     onRemoveApplet
 }) => {
     const dispatch = useAppDispatch();

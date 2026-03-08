@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
-import { RootState } from '../../store';
+import type { RootState } from '../../store';
 import { DbFunctionNode, WorkflowDependency, ArgumentMapping, ArgumentOverride } from '@/features/workflows/types';
 
 // ============================================================================
@@ -166,16 +166,16 @@ export const selectNodeArgOverridesCount = createSelector(
 /** Get specific additional dependency by source broker ID */
 export const selectNodeAdditionalDependencyBySourceId = createSelector(
   [selectNodeAdditionalDependencies, (_state: RootState, _nodeId: string, sourceBrokerId: string) => sourceBrokerId],
-  (dependencies, sourceBrokerId) => 
+  (dependencies, sourceBrokerId) =>
     dependencies.find(dep => dep.source_broker_id === sourceBrokerId) || null
 );
 
 /** Get specific argument mapping by source broker ID and target arg name */
 export const selectNodeArgMappingBySourceAndTarget = createSelector(
   [selectNodeArgMapping, (_state: RootState, _nodeId: string, sourceBrokerId: string, targetArgName: string) => ({ sourceBrokerId, targetArgName })],
-  (mappings, { sourceBrokerId, targetArgName }) => 
-    mappings.find(mapping => 
-      mapping.source_broker_id === sourceBrokerId && 
+  (mappings, { sourceBrokerId, targetArgName }) =>
+    mappings.find(mapping =>
+      mapping.source_broker_id === sourceBrokerId &&
       mapping.target_arg_name === targetArgName
     ) || null
 );
@@ -183,7 +183,7 @@ export const selectNodeArgMappingBySourceAndTarget = createSelector(
 /** Get specific argument override by name */
 export const selectNodeArgOverrideByName = createSelector(
   [selectNodeArgOverrides, (_state: RootState, _nodeId: string, name: string) => name],
-  (overrides, name) => 
+  (overrides, name) =>
     overrides.find(override => override.name === name) || null
 );
 
@@ -282,7 +282,7 @@ export const selectNodeIsConfigured = createSelector(
 // ============================================================================
 
 /** Create a factory for node-specific selectors to avoid repetitive patterns */
-export const createNodeSelector = <T>(selector: (node: DbFunctionNode | null) => T) => 
+export const createNodeSelector = <T>(selector: (node: DbFunctionNode | null) => T) =>
   createSelector(
     [selectNodeById],
     selector

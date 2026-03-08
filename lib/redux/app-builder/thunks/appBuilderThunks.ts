@@ -3,7 +3,7 @@ import { createCustomAppConfig, updateCustomAppConfig, deleteCustomAppConfig, ge
 
 import { updateCustomAppletConfig, getCustomAppletConfigsByAppId, getAllCustomAppletConfigs } from "../service/customAppletService";
 import { AppBuilder, AppletBuilder } from "../types";
-import { RootState } from "../../store";
+import type { RootState } from "../../store";
 import { setApp, setActiveApp } from "../slices/appBuilderSlice";
 import { selectAppById } from "../selectors/appSelectors";
 import { v4 as uuidv4 } from 'uuid';
@@ -31,12 +31,12 @@ export const updateAppThunk = createAsyncThunk<AppBuilder, { id: string; changes
     "appBuilder/updateApp",
     async ({ id, changes }, { rejectWithValue }) => {
         try {
-            const updatedApp = await updateCustomAppConfig(id, { 
-                id, 
-                name: changes.name || '', 
-                description: changes.description || '', 
-                slug: changes.slug || '', 
-                ...changes 
+            const updatedApp = await updateCustomAppConfig(id, {
+                id,
+                name: changes.name || '',
+                description: changes.description || '',
+                slug: changes.slug || '',
+                ...changes
             });
             if (!updatedApp.id) {
                 throw new Error('No ID returned for the updated app');
@@ -108,7 +108,7 @@ export const fetchAppsThunk = createAsyncThunk<AppBuilder[], void>(
         try {
             // Use the optimized function to get apps with applets in a single transaction
             const enhancedApps = await getAllCustomAppConfigsWithApplets();
-            
+
             // Map to the expected AppBuilder format
             const result = enhancedApps.map(app => ({
                 ...app,
@@ -118,7 +118,7 @@ export const fetchAppsThunk = createAsyncThunk<AppBuilder[], void>(
                 slug: app.slug || '',
                 appletIds: app.appletIds || [],
             }));
-            
+
             return result;
         } catch (error: any) {
             console.error("fetchAppsThunk - error:", error);
@@ -130,14 +130,14 @@ export const fetchAppsThunk = createAsyncThunk<AppBuilder[], void>(
 export const checkAppSlugUniqueness = createAsyncThunk<boolean, { slug: string; appId?: string }, { state: RootState }>(
     'appBuilder/checkSlugUniqueness',
     async ({ slug, appId }, { rejectWithValue }) => {
-      try {
-        const isAvailable = await isAppSlugAvailable(slug, appId);
-        return isAvailable;
-      } catch (error: any) {
-        return rejectWithValue(error.message || 'Failed to check slug uniqueness');
-      }
+        try {
+            const isAvailable = await isAppSlugAvailable(slug, appId);
+            return isAvailable;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to check slug uniqueness');
+        }
     }
-  );
+);
 
 // Define action creator for fetchAppByIdSuccess
 export const fetchAppByIdSuccess = (app: AppBuilder) => ({
@@ -161,7 +161,7 @@ export const setActiveAppWithFetchThunk = createAsyncThunk<
         try {
             // Check if app already exists in state
             const app = selectAppById(getState() as RootState, appId);
-            
+
             if (app) {
                 // If it exists, just dispatch the setActiveApp action
                 dispatch(setActiveApp(appId));
@@ -169,13 +169,13 @@ export const setActiveAppWithFetchThunk = createAsyncThunk<
                 // Otherwise, fetch it first
                 try {
                     const fetchedApp = await getCustomAppConfigById(appId);
-                    
+
                     if (fetchedApp) {
                         // Extract appletIds from appletList for AppBuilder type compatibility
-                        const appletIds = fetchedApp.appletList 
-                            ? fetchedApp.appletList.map(item => item.appletId) 
+                        const appletIds = fetchedApp.appletList
+                            ? fetchedApp.appletList.map(item => item.appletId)
                             : [];
-                            
+
                         // Add the fetched app to state
                         dispatch(fetchAppByIdSuccess({
                             ...fetchedApp,
@@ -184,7 +184,7 @@ export const setActiveAppWithFetchThunk = createAsyncThunk<
                             isLocal: false,
                             slugStatus: 'unique'
                         }));
-                        
+
                         // Set it as active
                         dispatch(setActiveApp(appId));
                     } else {
@@ -217,9 +217,9 @@ export const saveAppThunk = createAsyncThunk<
             if (!app) {
                 throw new Error(`App with ID ${appId} not found`);
             }
-            
+
             let savedApp;
-            
+
             // Determine if this is a new app (isLocal) or an existing one
             if (app.isLocal) {
                 // Create new app
@@ -228,7 +228,7 @@ export const saveAppThunk = createAsyncThunk<
                 // Update existing app
                 savedApp = await updateCustomAppConfig(appId, app);
             }
-            
+
             // Return consistently formatted result
             return {
                 ...savedApp,
@@ -265,26 +265,25 @@ export const createTemplateAppThunk = createAsyncThunk<
                 // 1. Create an applet
                 const appletId = uuidv4();
                 const appletName = "Simple Applet";
-                
+
                 // 2. Create a container
                 const containerId = uuidv4();
-                
+
                 // 3. Create a field
                 const fieldId = uuidv4();
-                
+
                 // 4. Set up the structure
                 // TODO: Implement the actual structure setup once we design the template
-                
+
             } else if (templateType === 'complex') {
                 // Create a complex app with multiple applets, containers, and fields
                 // TODO: Implement the complex template structure
-                
+
             }
-            
+
         } catch (error: any) {
             return rejectWithValue(error.message || "Failed to create template app");
         }
     }
 );
-  
-  
+

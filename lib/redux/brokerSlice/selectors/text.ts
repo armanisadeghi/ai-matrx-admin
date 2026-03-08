@@ -1,5 +1,5 @@
 import { createSelector } from "reselect";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { BrokerIdentifier } from "../types";
 import { resolveBrokerId } from "../utils";
 
@@ -32,7 +32,7 @@ const selectText = createSelector(
 );
 
 const selectTextLength = createSelector(
-    [selectText], 
+    [selectText],
     (text): number => text?.length || 0
 );
 

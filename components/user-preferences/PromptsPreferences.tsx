@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { setPreference, ThinkingMode } from '@/lib/redux/slices/userPreferencesSlice';
 import { supabase } from '@/utils/supabase/client';

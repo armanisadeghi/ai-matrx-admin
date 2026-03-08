@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { updateTaskField, updateNestedTaskField, addToArrayField, setArrayField, updateArrayItem, removeArrayItem } from "../slices/socketTasksSlice";
 import { getFieldDefinitions } from "@/constants/socket-schema";
-import { RootState } from "../../store";
+import type { RootState } from "../../store";
 
 export const updateTaskFieldByPath = createAsyncThunk<
   void,
@@ -57,11 +57,11 @@ export const updateTaskFieldByPath = createAsyncThunk<
       // Initialize new element with defaults from reference schema
       const defaultItem = rootFieldDef?.reference
         ? Object.fromEntries(
-            Object.entries(rootFieldDef.reference).map(([fieldName, fieldDefinition]) => [
-              fieldName,
-              fieldDefinition.DEFAULT,
-            ])
-          )
+          Object.entries(rootFieldDef.reference).map(([fieldName, fieldDefinition]) => [
+            fieldName,
+            fieldDefinition.DEFAULT,
+          ])
+        )
         : {};
 
       let newArray = [...currentArray];

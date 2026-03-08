@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAppSelector } from "@/lib/redux/hooks";
-import { RootState } from '@/lib/redux/store';
+import type { RootState } from '@/lib/redux/store';
 import { Button } from '@/components/ui/button';
 
 /**
@@ -15,21 +15,21 @@ const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({ fie
   const [isVisible, setIsVisible] = useState(false);
   // For tracking changes
   const [changeCount, setChangeCount] = useState(0);
-  
+
   // Force refresh every second to see real-time updates
   useEffect(() => {
     const timer = setInterval(() => {
       setChangeCount(prev => prev + 1);
     }, 1000);
-    
+
     return () => clearInterval(timer);
   }, []);
-  
+
   // Get the specific entry for this field if a fieldId is provided
   const mapKey = fieldId ? `applet:${fieldId}` : '';
   const fieldEntry = fieldId ? brokerState.brokerMap[mapKey] : null;
   const fieldValue = fieldEntry ? brokerState.brokers[fieldEntry.brokerId] : undefined;
-  
+
   // Get all entries related to applet preview
   const previewEntries = Object.entries(brokerState.brokerMap)
     .filter(([key]) => key.startsWith('applet:'))
@@ -39,12 +39,12 @@ const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({ fie
       // @ts-ignore - brokerId exists on BrokerMapEntry but type system doesn't recognize it
       value: brokerState.brokers[entry.brokerId]
     }));
-  
+
   if (!isVisible) {
     return (
       <div className="fixed bottom-4 right-4 z-50">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="sm"
           onClick={() => setIsVisible(true)}
           className="bg-red-100 hover:bg-red-200 border-red-300 text-red-800"
@@ -54,23 +54,23 @@ const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({ fie
       </div>
     );
   }
-  
+
   return (
     <div className="fixed bottom-4 right-4 z-50 w-96 max-h-96 overflow-auto bg-gray-50 dark:bg-gray-900 p-4 rounded-md border border-border shadow-lg">
       <div className="flex justify-between items-center mb-2">
         <h3 className="font-medium text-gray-900 dark:text-gray-100">
           Broker State Debug - Updated: {changeCount}
         </h3>
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => setIsVisible(false)}
           className="h-6 w-6 p-0"
         >
           ✕
         </Button>
       </div>
-      
+
       {/* Display full field object */}
       {fieldObject && (
         <div className="mb-4">
@@ -82,18 +82,18 @@ const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({ fie
           </div>
         </div>
       )}
-      
+
       {fieldId && (
         <div className="mb-4">
           <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200">Current Field</h4>
           <div className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded mb-1">
             <span className="font-medium">Map Key:</span> {mapKey}
           </div>
-          
+
           <div className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded mb-1">
             <span className="font-medium">Broker ID:</span> {fieldEntry?.brokerId || 'Not found'}
           </div>
-          
+
           <div className="text-xs p-2 bg-gray-100 dark:bg-gray-800 rounded mb-2">
             <span className="font-medium block mb-1">Value:</span>
             <pre className="whitespace-pre-wrap break-all">
@@ -104,7 +104,7 @@ const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({ fie
           </div>
         </div>
       )}
-      
+
       <div className="mb-4">
         <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200">All Preview Entries ({previewEntries.length})</h4>
         {previewEntries.length === 0 ? (
@@ -118,11 +118,11 @@ const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({ fie
               {/* @ts-ignore - brokerId exists on BrokerMapEntry but type system doesn't recognize it */}
               <div className="opacity-75">BrokerID: {entry.brokerId}</div>
               <div>
-                Value: {value !== undefined ? 
-                  (typeof value === 'object' ? 
-                    JSON.stringify(value) : 
+                Value: {value !== undefined ?
+                  (typeof value === 'object' ?
+                    JSON.stringify(value) :
                     String(value)
-                  ) : 
+                  ) :
                   'undefined'
                 }
               </div>

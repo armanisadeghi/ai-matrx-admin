@@ -7,7 +7,7 @@ import { EntityStateField, EntityStatus, EntityOperationMode } from '@/lib/redux
 import { noErrors } from '@/utils/utils';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { createEntitySelectors } from "@/lib/redux/entity/selectors";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { ENTITY_FIELD_COMPONENTS } from './component-lookup';
 import { AnimationPreset, ComponentDensity, ComponentSize, TextSizeOptions } from '@/types/componentConfigTypes';

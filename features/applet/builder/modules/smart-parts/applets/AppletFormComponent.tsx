@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { selectAppletById } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { saveAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
@@ -62,12 +62,12 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                 <div className="w-full space-y-4">
                     <AppletOverview appletId={appletId} isNew={isNew} />
                     <AppletVisuals appletId={appletId} isNew={isNew} />
-                    <AppletActions 
-                        appletId={appletId} 
-                        appId={appId} 
-                        isNew={isNew} 
-                        onSaveApplet={handleSaveApplet} 
-                        onRemoveApplet={onRemoveApplet} 
+                    <AppletActions
+                        appletId={appletId}
+                        appId={appId}
+                        isNew={isNew}
+                        onSaveApplet={handleSaveApplet}
+                        onRemoveApplet={onRemoveApplet}
                     />
                 </div>
             </div>

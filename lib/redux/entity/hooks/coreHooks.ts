@@ -5,7 +5,7 @@ import { AllEntityFieldKeys, EntityKeys, MatrxRecordId } from '@/types/entityTyp
 import { createEntitySelectors } from "@/lib/redux/entity/selectors";
 import { createRecordKey, parseRecordKey } from "@/lib/redux/entity/utils/stateHelpUtils";
 import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { useCallback, useMemo } from 'react';
 import { getEntityMetadata } from '../utils/direct-schema';
@@ -32,8 +32,8 @@ export const useEntityCore = (entityKey: EntityKeys) => {
 
 export const useEntityState = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     return useAppSelector((state: RootState) => state.entities[entityKey] as EntityState<TEntity>);
-  };
-    
+};
+
 
 export const useEntityTools = (entityKey: EntityKeys) => {
     const store = useAppStore();

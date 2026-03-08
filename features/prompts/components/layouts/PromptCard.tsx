@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card";
 import IconButton from "@/components/official/IconButton";
 import { Eye, Pencil, Play, Copy, Trash2, Loader2, Share2, LayoutPanelTop, Settings, Globe, AppWindow, AlignJustify } from "lucide-react";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
@@ -115,7 +115,7 @@ export function PromptCard({
 
     const handleConvertToTemplate = async () => {
         if (!effectiveIsAdmin || isConvertingToTemplate) return;
-        
+
         setIsConvertingToTemplate(true);
         try {
             const response = await fetch(`/api/prompts/${id}/convert-to-template`, {
@@ -124,7 +124,7 @@ export function PromptCard({
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
-                const errorMessage = errorData.details 
+                const errorMessage = errorData.details
                     ? `${errorData.error}: ${errorData.details}`
                     : errorData.error || `Failed to convert prompt to template (${response.status})`;
                 throw new Error(errorMessage);
@@ -143,7 +143,7 @@ export function PromptCard({
 
     const handleMakeGlobalBuiltin = async () => {
         if (!effectiveIsAdmin) return;
-        
+
         setIsAdminMenuOpen(false);
         setIsConvertToBuiltinModalOpen(true);
     };
@@ -161,12 +161,11 @@ export function PromptCard({
     const isDisabled = isNavigating || isAnyNavigating || isConvertingToTemplate;
 
     return (
-        <Card 
-            className={`flex flex-col h-full bg-card border border-border transition-all duration-200 overflow-hidden relative ${
-                isDisabled 
-                    ? 'opacity-60 cursor-not-allowed' 
+        <Card
+            className={`flex flex-col h-full bg-card border border-border transition-all duration-200 overflow-hidden relative ${isDisabled
+                    ? 'opacity-60 cursor-not-allowed'
                     : 'hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30 cursor-pointer hover:scale-[1.02] group'
-            }`}
+                }`}
             onClick={handleCardClick}
             title={isDisabled ? (isNavigating ? "Navigating..." : "Please wait...") : "Click to choose action"}
         >
@@ -179,21 +178,18 @@ export function PromptCard({
                     </div>
                 </div>
             )}
-            
+
             {/* Prompt Icon */}
             <div className="absolute top-3 left-3 z-10">
-                <div className={`w-7 h-7 bg-primary rounded-lg flex items-center justify-center shadow-sm transition-all duration-200 ${
-                    !isDisabled && 'group-hover:bg-primary/90 group-hover:shadow-md group-hover:scale-105'
-                }`}>
-                    <AlignJustify className={`w-4 h-4 text-primary-foreground transition-transform duration-200 ${
-                        !isDisabled && 'group-hover:scale-110'
-                    }`} />
+                <div className={`w-7 h-7 bg-primary rounded-lg flex items-center justify-center shadow-sm transition-all duration-200 ${!isDisabled && 'group-hover:bg-primary/90 group-hover:shadow-md group-hover:scale-105'
+                    }`}>
+                    <AlignJustify className={`w-4 h-4 text-primary-foreground transition-transform duration-200 ${!isDisabled && 'group-hover:scale-110'
+                        }`} />
                 </div>
             </div>
             <div className="p-4 pl-12 flex-1 flex items-center justify-center">
-                <h3 className={`text-md font-medium text-foreground text-center line-clamp-3 break-words transition-colors duration-200 ${
-                    !isDisabled && 'group-hover:text-primary'
-                }`}>
+                <h3 className={`text-md font-medium text-foreground text-center line-clamp-3 break-words transition-colors duration-200 ${!isDisabled && 'group-hover:text-primary'
+                    }`}>
                     {name || "Untitled Prompt"}
                 </h3>
             </div>

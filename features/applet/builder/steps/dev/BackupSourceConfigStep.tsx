@@ -8,7 +8,7 @@ import AppletSourceSelection from "@/features/applet/builder/modules/broker-mapp
 import { RecipeSelector } from "@/features/applet/builder/modules/smart-parts/applets";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { selectActiveAppletId } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectAppletCompiledRecipeId } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectAppletSourceConfig } from "@/lib/redux/app-builder/selectors/appletSelectors";
@@ -50,7 +50,7 @@ export const SourceConfigStep: React.FC<SelectAppStepProps> = ({ appId, onUpdate
     const [activeSourceType, setActiveSourceType] = useState<string | null>(sourceConfigs?.sourceType || null);
 
     // console.log("SourceConfigStep activeSourceConfig", JSON.stringify(activeSourceConfig, null, 2));
-    
+
     // console.log("SourceConfigStep activeSourceType", activeSourceType);
 
 
@@ -190,8 +190,8 @@ export const SourceConfigStep: React.FC<SelectAppStepProps> = ({ appId, onUpdate
                                             disabled={!isAppletDirty}
                                             className={cn(
                                                 "w-full",
-                                                isAppletDirty 
-                                                    ? "bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800" 
+                                                isAppletDirty
+                                                    ? "bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800"
                                                     : "bg-gray-200 text-gray-500 dark:bg-gray-800 dark:text-gray-400 cursor-not-allowed"
                                             )}
                                         >

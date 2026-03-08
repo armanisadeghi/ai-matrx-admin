@@ -1,6 +1,6 @@
 // types/boolean/index.ts
 import { createSelector } from "reselect";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { BrokerIdentifier } from "../types";
 import { resolveBrokerId } from "../utils";
 
@@ -19,7 +19,7 @@ const selectBoolean = createSelector(
     (broker, idArgs): boolean | undefined => {
         const brokerId = resolveBrokerId(broker, idArgs);
         if (!brokerId) return undefined;
-        
+
         const brokerValue = broker.brokers[brokerId];
         return isBoolean(brokerValue) ? brokerValue : undefined;
     }

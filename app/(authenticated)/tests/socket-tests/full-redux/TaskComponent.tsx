@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { createTask, deleteTask, submitTask } from "@/lib/redux/socket-io";
 import {

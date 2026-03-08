@@ -3,7 +3,7 @@
 
 import { createSelector } from "@reduxjs/toolkit";
 import { EntityKeys } from "@/types/entityTypes";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { createEntitySelectors } from "../selectors";
 import { MatrxRecordId } from "@/types/entityTypes";
 
@@ -193,11 +193,11 @@ export const createWorkflowSelectors = () => {
         [registeredFunctions, argsArray, (_: RootState, registeredFunctionId: string) => registeredFunctionId],
         (functions, argsArray, registeredFunctionId) => {
             if (!functions || !registeredFunctionId) return null;
-            
+
             const func = Object.values(functions).find(
                 (f: any) => f.id === registeredFunctionId
             ) as RegisteredFunctionRecordWithKey | undefined;
-            
+
             if (!func) return null;
 
             const functionArgs = argsArray.filter((arg: ArgRecordWithKey) => arg.registeredFunction === registeredFunctionId);
@@ -228,9 +228,9 @@ export const createWorkflowSelectors = () => {
         [activeRegisteredFunction, argsArray],
         (activeFunction, argsArray) => {
             if (!activeFunction) return null;
-            
+
             const functionArgs = argsArray.filter((arg: ArgRecordWithKey) => arg.registeredFunction === activeFunction.id);
-            
+
             return {
                 ...activeFunction,
                 args: functionArgs
@@ -284,7 +284,7 @@ export const createWorkflowSelectors = () => {
         ],
         (steps, functionsArray, argsArray, stepIndex) => {
             if (!steps || !steps[stepIndex]) return null;
-            
+
             const step = steps[stepIndex];
             if (step.function_type !== "registered_function") return null;
 
@@ -413,9 +413,9 @@ export const createWorkflowSelectors = () => {
         ],
         (steps, functionsArray, argsArray, stepIndex) => {
             if (!steps || !steps[stepIndex]) return null;
-            
+
             const step = steps[stepIndex];
-            
+
             if (step.function_type !== "registered_function") {
                 return { step, function: null, args: [], allArgsAsOverrides: [] };
             }
@@ -426,17 +426,17 @@ export const createWorkflowSelectors = () => {
             }
 
             const functionArgs = argsArray.filter((arg) => arg.registeredFunction === func.id);
-            
+
             // Create merged overrides that include ALL args from function
             const existingOverrides = step.override_data?.arg_overrides || [];
             const overrideMap = new Map(existingOverrides.map((o: any) => [o.name, o]));
-            
+
             const allArgsAsOverrides = functionArgs.map((arg) => {
                 const existing = overrideMap.get(arg.name) as any;
-                const defaultValue = arg.defaultValue && typeof arg.defaultValue === 'object' && 'value' in arg.defaultValue 
-                    ? arg.defaultValue.value 
+                const defaultValue = arg.defaultValue && typeof arg.defaultValue === 'object' && 'value' in arg.defaultValue
+                    ? arg.defaultValue.value
                     : arg.defaultValue;
-                
+
                 return {
                     name: arg.name,
                     ready: existing?.ready ?? arg.ready,
@@ -469,30 +469,30 @@ export const createWorkflowSelectors = () => {
         ],
         (steps, functionsArray, argsArray, stepIndex) => {
             if (!steps || !steps[stepIndex]) return [];
-            
+
             const step = steps[stepIndex];
             const errors: string[] = [];
-            
+
             // Basic step validation
             if (!step.function_id) {
                 errors.push("Missing function ID");
             }
-            
+
             if (!step.function_type) {
                 errors.push("Missing function type");
             }
-            
+
             if (step.function_type === "registered_function") {
                 const func = functionsArray.find((f) => f.id === step.function_id);
                 if (!func) {
                     errors.push("Function not found in database");
                     return errors;
                 }
-                
+
                 const functionArgs = argsArray.filter((arg) => arg.registeredFunction === func.id);
                 const overrides = step.override_data?.arg_overrides || [];
                 const overrideMap = new Map(overrides.map((o: any) => [o.name, o]));
-                
+
                 // Check required args
                 functionArgs.forEach((arg) => {
                     if (arg.required) {
@@ -500,13 +500,13 @@ export const createWorkflowSelectors = () => {
                         const hasValue = override?.value !== null && override?.value !== undefined;
                         const hasOldValue = override?.default_value !== null && override?.default_value !== undefined;
                         const isReady = override?.ready ?? arg.ready;
-                        
+
                         if (!isReady && !hasValue && !hasOldValue) {
                             errors.push(`Required argument '${arg.name}' is not ready and has no value`);
                         }
                     }
                 });
-                
+
                 // Type validation for overrides
                 overrides.forEach((override: any) => {
                     const arg = functionArgs.find((a) => a.name === override.name);
@@ -521,14 +521,14 @@ export const createWorkflowSelectors = () => {
                     }
                 });
             }
-            
+
             return errors;
         }
     );
 
     // Helper function for type validation
     const validatePythonType = (value: any, dataType: string): boolean => {
-        switch(dataType) {
+        switch (dataType) {
             case 'int':
                 return Number.isInteger(Number(value));
             case 'float':
@@ -575,7 +575,7 @@ export const createWorkflowSelectors = () => {
             if (isPotentialRealBroker) {
                 // Try to find real broker in loaded data
                 const realBroker = brokersArray.find((broker) => broker.id === brokerId);
-                
+
                 if (realBroker) {
                     return {
                         id: brokerId,
@@ -634,7 +634,7 @@ export const createWorkflowSelectors = () => {
         [dataBrokersArray, (_: RootState, brokerId: string, argType: string) => ({ brokerId, argType })],
         (brokersArray: DataBrokerRecordWithKey[], { brokerId, argType }) => {
             if (!brokerId || !argType) return { isValid: true, reason: '', isInformational: true };
-            
+
             if (!isValidUUID(brokerId)) {
                 // Consumable broker - assume valid (user responsibility)
                 return { isValid: true, reason: 'Consumable broker (type not validated)', isInformational: true };
@@ -645,11 +645,11 @@ export const createWorkflowSelectors = () => {
                 // Real broker but not loaded yet
                 return { isValid: true, reason: 'Broker not loaded yet', isInformational: true };
             }
-            
+
             if (broker.dataType === argType) {
                 return { isValid: true, reason: 'Types match perfectly', isInformational: true };
             }
-            
+
             // Check for compatible types
             const compatibleTypes: Record<string, string[]> = {
                 'str': ['url'],
@@ -657,16 +657,16 @@ export const createWorkflowSelectors = () => {
                 'int': ['float'],
                 'float': ['int']
             };
-            
-            if (compatibleTypes[broker.dataType]?.includes(argType) || 
+
+            if (compatibleTypes[broker.dataType]?.includes(argType) ||
                 compatibleTypes[argType]?.includes(broker.dataType)) {
                 return { isValid: true, reason: 'Compatible types (Python will handle conversion)', isInformational: true };
             }
-            
-            return { 
+
+            return {
                 isValid: true, // Still valid since Python handles conversions
-                reason: `Type difference: broker is ${broker.dataType}, argument expects ${argType} (Python will convert)`, 
-                isInformational: true 
+                reason: `Type difference: broker is ${broker.dataType}, argument expects ${argType} (Python will convert)`,
+                isInformational: true
             };
         }
     );

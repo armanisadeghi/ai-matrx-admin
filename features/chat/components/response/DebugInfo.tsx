@@ -1,7 +1,7 @@
 import React from "react";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { useAppSelector } from "@/lib/redux/hooks";
-import {selectListenerIdsByTaskId, SocketErrorObject} from "@/lib/redux/socket-io";
+import { selectListenerIdsByTaskId, SocketErrorObject } from "@/lib/redux/socket-io";
 import {
     selectResponseTextByListenerId,
     selectResponseEndedByListenerId,

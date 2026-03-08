@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Save, RotateCcw, AlertCircle, X } from 'lucide-react';
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {
     UserPreferencesState,
@@ -41,10 +41,10 @@ interface PreferencesModalProps {
     initialTab?: PreferenceTab;
 }
 
-const PreferencesModal: React.FC<PreferencesModalProps> = ({ 
-    isOpen, 
-    onClose, 
-    initialTab = 'display' 
+const PreferencesModal: React.FC<PreferencesModalProps> = ({
+    isOpen,
+    onClose,
+    initialTab = 'display'
 }) => {
     const dispatch = useAppDispatch();
     const [activeTab, setActiveTab] = useState<PreferenceTab>(initialTab);
@@ -134,9 +134,9 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription className="flex justify-between items-center">
                         <span>Error: {meta.error}</span>
-                        <Button 
-                            onClick={handleClearError} 
-                            size="sm" 
+                        <Button
+                            onClick={handleClearError}
+                            size="sm"
                             variant="ghost"
                             className="text-xs h-auto py-1"
                         >
@@ -155,7 +155,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                         </TabsTrigger>
                     ))}
                 </TabsList>
-                
+
                 <ScrollArea className="flex-1 -mx-1 px-1">
                     <AnimatePresence mode="wait">
                         <motion.div
@@ -193,7 +193,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                         </span>
                     )}
                 </div>
-                
+
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                     <Button
                         variant="outline"
@@ -231,11 +231,11 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
     // Use Dialog for both mobile and desktop with responsive styling
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent 
+            <DialogContent
                 className={`
                     flex flex-col p-0
-                    ${isMobile 
-                        ? 'w-full h-[90vh] max-h-[90vh] rounded-t-xl rounded-b-none fixed bottom-0 top-auto' 
+                    ${isMobile
+                        ? 'w-full h-[90vh] max-h-[90vh] rounded-t-xl rounded-b-none fixed bottom-0 top-auto'
                         : 'max-w-4xl max-h-[85vh]'
                     }
                 `}

@@ -1,7 +1,7 @@
 // factories/createShadowSlice.ts
 
 import { EntityKeys } from "@/types/entityTypes";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { EntityState, MatrxRecordId } from "../../entity/types/stateTypes";
 
@@ -27,7 +27,7 @@ export const createShadowSlice = <
     reducers: {
       syncWithEntity: (state, action: PayloadAction<EntityState<TEntity>>) => {
         state.entityStateRef = action.payload;
-        
+
         // Clean up local state for records that no longer exist
         Object.keys(state.localState).forEach(recordId => {
           if (!action.payload.records[recordId]) {
@@ -35,7 +35,7 @@ export const createShadowSlice = <
           }
         });
       },
-      
+
       updateLocalState: (
         state,
         action: PayloadAction<{

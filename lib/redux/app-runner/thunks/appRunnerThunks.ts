@@ -6,7 +6,7 @@ import { validateAppWithApplets, ValidationOptions, ValidationResult } from "../
 import { brokerActions, BrokerMapEntry } from "@/lib/redux/brokerSlice";
 import { coreSelectors as brokerSelectors } from "@/lib/redux/brokerSlice/selectors/core";
 import { CustomAppletConfig, CustomAppConfig, BrokerMapping } from "@/types/customAppTypes";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 
 // Object to store validation results for retrieval later
 const validationStore: Record<string, ValidationResult> = {};
@@ -99,7 +99,7 @@ export const fetchAppWithApplets = createAsyncThunk(
             // Check if the app's userId matches the global user ID
             const state = getState() as RootState;
             const globalUserId = brokerSelectors.selectValue(state, "GLOBAL_USER_ID");
-            
+
             // Set the APPLET_USER_IS_ADMIN broker value based on userId comparison
             if (appConfig.userId && globalUserId) {
                 const isUserAdmin = appConfig.userId === globalUserId;

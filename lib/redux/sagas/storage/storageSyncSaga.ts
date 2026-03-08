@@ -4,7 +4,7 @@
 import { select, call, fork, put, takeLatest, takeEvery, delay } from 'redux-saga/effects';
 import { StorageSyncConfig, MANUAL_SAVE, ManualSaveAction, SAVE_COMPLETE } from '@/types/storage.types';
 import { storageManager } from './storageManager';
-import { RootState } from '@/lib/redux/store';
+import type { RootState } from '@/lib/redux/store';
 import { toast } from '@/lib/toast-service';
 
 // console.log('Creating storage sync saga');

@@ -16,7 +16,7 @@ import {
     selectAppletName,
 } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { setAppletIcon, setAppletSubmitText } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 
 interface LayoutEditTabProps {

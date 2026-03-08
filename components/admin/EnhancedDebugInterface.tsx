@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { RootState } from '@/lib/redux/store';
+import type { RootState } from '@/lib/redux/store';
 import { EntityKeys } from '@/types/entityTypes';
 import ReorderableTabs from './ReorderableTab';
 import ResizableDebugPanel from './ResizableDebugPanel';
@@ -130,9 +130,9 @@ const StateNode: React.FC<StateNodeProps> = ({ path, name, value, depth = 0, isL
 
 
 export default function ReduxDebugInterface({
-                                                defaultExpanded = false,
-                                                initialSelectedEntity
-                                            }: {
+    defaultExpanded = false,
+    initialSelectedEntity
+}: {
     defaultExpanded?: boolean;
     initialSelectedEntity?: EntityKeys;
 }) {

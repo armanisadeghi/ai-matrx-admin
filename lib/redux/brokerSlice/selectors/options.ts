@@ -1,5 +1,5 @@
 import { createSelector } from "reselect";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { BrokerIdentifier } from "../types";
 import { FieldOptionsRuntime } from "../types";
 import { resolveBrokerId } from "../utils";
@@ -38,12 +38,12 @@ const selectOptionById = createSelector(
 );
 
 const selectIsOptionSelected = createSelector(
-    [selectOptionById], 
+    [selectOptionById],
     (option): boolean => !!option?.isSelected
 );
 
 const selectOptionOtherText = createSelector(
-    [selectOptionById], 
+    [selectOptionById],
     (option): string | undefined => option?.otherText
 );
 
@@ -55,7 +55,7 @@ const selectFilteredOptions = createSelector(
     (options, searchQuery): FieldOptionsRuntime[] => {
         if (!options) return [];
         if (!searchQuery.trim()) return options;
-        
+
         const query = searchQuery.toLowerCase();
         return options.filter((option) => {
             const matchLabel = option.label.toLowerCase().includes(query);

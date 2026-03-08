@@ -2,7 +2,7 @@ import { EntityKeys, EntityAnyFieldKey, MatrxRecordId } from "@/types/entityType
 import { useEffect, useCallback, useState, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { FetchRecordsPayload, SortPayload } from "../actions";
 import { FilterCondition } from "../types/stateTypes";
 
@@ -14,7 +14,7 @@ export interface UseOneRelationshipParams {
     parentReferenceField: EntityAnyFieldKey<EntityKeys>;
     childReferenceField: EntityAnyFieldKey<EntityKeys>;
     additionalFilters?: FilterCondition[];
-    sort?: SortPayload; 
+    sort?: SortPayload;
     maxCount?: number;
 }
 
@@ -44,7 +44,7 @@ export function useOneRelationship(params: UseOneRelationshipParams) {
     const activeParentId = activeParentRecord?.[parentReferenceField];
     const activeParentRecordKey = useAppSelector(parentSelectors.selectActiveRecordId);
     const parentLoading = useAppSelector(parentSelectors.selectIsLoading);
-    const isParentLoading = parentLoading || !fetchCompleted;    
+    const isParentLoading = parentLoading || !fetchCompleted;
     const isChildLoading = useAppSelector(childSelectors.selectIsLoading);
 
     const matchingChildRecords = useAppSelector((state: RootState) =>
@@ -67,15 +67,15 @@ export function useOneRelationship(params: UseOneRelationshipParams) {
                 resolve();
                 return;
             }
-    
+
             let iterationCount = 0;
             const unsubscribe = setInterval(() => {
                 iterationCount++;
-    
+
                 if (iterationCount % 10 === 0) {
                     console.warn(`waitForLoading still running after ${iterationCount} checks (${iterationCount * 100}ms)`);
                 }
-    
+
                 if (!isRelationshipLoading.current) {
                     clearInterval(unsubscribe);
                     resolve();
@@ -84,7 +84,7 @@ export function useOneRelationship(params: UseOneRelationshipParams) {
         });
     }, [isParentLoading, isChildLoading]);
 
-    
+
     const setActiveParent = useCallback(
         async (recordKey: MatrxRecordId) => {
             const isPermanentKey = recordKey.startsWith("id:")
@@ -133,7 +133,8 @@ export function useOneRelationship(params: UseOneRelationshipParams) {
     }, [activeParentId, additionalFilters, sort]);
 
 
-    useEffect(() => {        if (DEBUG) {
+    useEffect(() => {
+        if (DEBUG) {
             console.log("🔄 useOneRelationship 🔄");
             console.log("- parentLoading:", parentLoading);
             console.log("- fetchCompleted:", fetchCompleted);

@@ -7,7 +7,7 @@ import { TailwindColorPicker } from "@/components/ui/TailwindColorPicker";
 import { IconPicker } from "@/components/ui/IconPicker";
 import { SingleImageSelect } from "@/components/image/shared/SingleImageSelect";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import {
     setAppletIcon,
     setAppletSubmitText,

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { selectEntityPrettyName } from "@/lib/redux/schema/globalCacheSelectors";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
@@ -10,7 +10,7 @@ import { useCreateRecord } from '../hooks/unsaved-records/useCreateRecord';
 import { useUpdateRecord } from '../hooks/crud/useUpdateRecord';
 import { getUnifiedLayoutProps } from '../layout/configs';
 import { generateTemporaryRecordId } from '@/lib/redux/entity/utils/stateHelpUtils';
-import { 
+import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -101,14 +101,14 @@ const EntitySheetForm = ({
           <SheetTitle>{getTitle()}</SheetTitle>
         </SheetHeader>
         <ScrollArea className='h-[calc(100%-4rem)]'>
-        <EntityFormMinimalAnyRecord
-          recordId={mode === 'create' ? tempRecordId : recordId}
-          unifiedLayoutProps={unifiedLayoutProps}
-        />
+          <EntityFormMinimalAnyRecord
+            recordId={mode === 'create' ? tempRecordId : recordId}
+            unifiedLayoutProps={unifiedLayoutProps}
+          />
         </ScrollArea>
         <div className="flex justify-end space-x-2 mt-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handleClose}
           >
             Cancel

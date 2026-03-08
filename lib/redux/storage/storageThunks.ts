@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import StorageManager, { StorageItem } from '@/utils/supabase/StorageManager';
 import { setStorageState } from './storageSlice';
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 
 // Helper function to handle errors consistently
 const handleStorageError = (error: unknown, dispatch: any) => {

@@ -1,7 +1,7 @@
 // selectors/flashcardSelectors.ts
 
 import { createSelector } from '@reduxjs/toolkit';
-import { RootState } from '@/lib/redux/store';
+import type { RootState } from '@/lib/redux/store';
 
 const selectAllFlashcards = (state: RootState) => Object.values(state.flashcardChat.flashcards);
 const selectCurrentIndex = (state: RootState) => state.flashcardChat.currentIndex;

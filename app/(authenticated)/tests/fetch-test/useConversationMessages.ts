@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { FetchRecordsPayload } from "@/lib/redux/entity/actions";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { FilterCondition } from '@/lib/redux/entity/types/stateTypes';
@@ -16,13 +16,13 @@ export function useConversationMessages(conversationId: string, initialPage = 1,
   const [pageSize, setPageSize] = useState(initialPageSize);
   const dispatch = useAppDispatch();
   const { actions, selectors } = useEntityTools("message");
-  
+
   const records = useSelector((state: RootState) => selectors.selectAllRecords(state));
   const loadingState = useSelector((state: RootState) => selectors.selectLoadingState(state));
   const paginationInfo = useSelector((state: RootState) => selectors.selectPaginationInfo(state));
 
   const currentMessages = useSelector((state: RootState) => selectors.selectRecordsByFieldValue(state, "conversationId", conversationId)) as MessageRecordWithKey[];
-  
+
   const nextDisplayOrder = useMemo(() => Math.max(...currentMessages.map((m) => m.displayOrder)) + 1, [currentMessages]);
 
   const nextSystemOrder = useMemo(() => Math.max(...currentMessages.map((m) => m.systemOrder)) + 1, [currentMessages]);
@@ -30,28 +30,28 @@ export function useConversationMessages(conversationId: string, initialPage = 1,
   // Original conditions (kept for backwards compatibility)
   const createConditions = useCallback((): FilterCondition[] => {
     const conditions: FilterCondition[] = [];
-    
+
     if (conversationId) {
       conditions.push({
         field: 'display_order',
         operator: 'neq',
         value: 0
       });
-      
+
       conditions.push({
         field: 'conversation_id',
         operator: 'eq',
         value: conversationId
       });
     }
-    
+
     return conditions;
   }, [conversationId]);
-  
+
   // Fetch messages with default conditions
   const fetchMessages = useCallback(() => {
     if (!conversationId) return;
-    
+
     const payload: FetchRecordsPayload = {
       page,
       pageSize,
@@ -66,10 +66,10 @@ export function useConversationMessages(conversationId: string, initialPage = 1,
         }
       }
     };
-    
+
     dispatch(actions.fetchRecords(payload));
   }, [dispatch, actions, page, pageSize, conversationId, createConditions]);
-  
+
   // New fully dynamic fetch method
   const fetchWithDynamicFilters = useCallback((conditions: ConditionInput | ConditionInput[]) => {
     const payload: FetchRecordsPayload = {
@@ -87,30 +87,30 @@ export function useConversationMessages(conversationId: string, initialPage = 1,
         }
       }
     };
-    
+
     dispatch(actions.fetchRecords(payload));
   }, [dispatch, actions, page, pageSize]);
-  
+
   // Navigate to next page
   const nextPage = useCallback(() => {
     if (paginationInfo?.hasNextPage) {
       setPage(prevPage => prevPage + 1);
     }
   }, [paginationInfo?.hasNextPage]);
-  
+
   // Navigate to previous page
   const previousPage = useCallback(() => {
     if (paginationInfo?.hasPreviousPage) {
       setPage(prevPage => prevPage - 1);
     }
   }, [paginationInfo?.hasPreviousPage]);
-  
+
   // Change the page size
   const changePageSize = useCallback((newPageSize: number) => {
     setPageSize(newPageSize);
     setPage(1);
   }, []);
-  
+
   return {
     page,
     pageSize,

@@ -5,7 +5,7 @@ import { PlusIcon, BookOpenIcon, SaveIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { startNewApplet, setActiveApplet } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import {
     fetchAppletsThunk,
@@ -374,9 +374,8 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
                                     />
                                 }
                                 alternateState={appletsAlreadyInApp.length > 0}
-                                alternateTitle={`Excellent! You have ${appletsAlreadyInApp.length} ${
-                                    appletsAlreadyInApp.length === 1 ? "Applet" : "Applets"
-                                }`}
+                                alternateTitle={`Excellent! You have ${appletsAlreadyInApp.length} ${appletsAlreadyInApp.length === 1 ? "Applet" : "Applets"
+                                    }`}
                                 alternateDescription="You can select an applet from the list to edit it, or add more applets if you wish."
                                 alternateButtonText="Add Another Applet"
                             />

@@ -10,7 +10,7 @@ import {
     isAppletSlugAvailable,
 } from "../service/customAppletService";
 import { AppletBuilder, ContainerBuilder } from "../types";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { selectAppletById } from "../selectors/appletSelectors";
 import { setActiveApplet } from "../slices/appletBuilderSlice";
 
@@ -36,7 +36,7 @@ export const setActiveAppletWithFetchThunk = createAsyncThunk<
         try {
             // Check if applet already exists in state - using getState directly instead of a selector
             const appletState = getState().appletBuilder.applets[appletId];
-            
+
             if (appletState) {
                 // If it exists, just set it as active
                 dispatch(setActiveApplet(appletId));
@@ -45,7 +45,7 @@ export const setActiveAppletWithFetchThunk = createAsyncThunk<
                 // Otherwise, fetch it first
                 try {
                     const fetchedApplet = await getCustomAppletConfigById(appletId);
-                    
+
                     if (fetchedApplet) {
                         // Add the fetched applet to state with required type properties
                         dispatch(fetchAppletByIdSuccess({
@@ -54,7 +54,7 @@ export const setActiveAppletWithFetchThunk = createAsyncThunk<
                             isLocal: false,
                             slugStatus: "unique"
                         }));
-                        
+
                         // Set it as active
                         dispatch(setActiveApplet(appletId));
                         return { success: true, exists: false };
@@ -91,15 +91,15 @@ export const addAppletToAppThunk = createAsyncThunk<
             if (!applet) {
                 throw new Error(`Applet with ID ${appletId} not found`);
             }
-            
+
             // Update the applet with the new appId
             const updatedApplet = { ...applet, appId };
             const result = await updateCustomAppletConfig(appletId, updatedApplet);
-            
+
             return {
                 ...result,
                 containers: result.containers || [],
-                isDirty: false, 
+                isDirty: false,
                 isLocal: false,
                 slugStatus: 'unique',
                 appId // Ensure appId is in the result
@@ -123,9 +123,9 @@ export const saveAppletThunk = createAsyncThunk<
             if (!applet) {
                 throw new Error(`Applet with ID ${appletId} not found`);
             }
-            
+
             let savedApplet;
-            
+
             // Determine if this is a new applet (isLocal) or an existing one
             if (applet.isLocal) {
                 // Create new applet
@@ -134,7 +134,7 @@ export const saveAppletThunk = createAsyncThunk<
                 // Update existing applet
                 savedApplet = await updateCustomAppletConfig(appletId, applet);
             }
-            
+
             // Return consistently formatted result
             return {
                 ...savedApplet,
@@ -215,20 +215,20 @@ export const addContainerThunk = createAsyncThunk<
         try {
             // Add the container to the applet
             await addContainersToApplet(appletId, [containerId]);
-            
+
             // Get the updated applet with the new container
             const updatedApplet = await getCustomAppletConfigById(appletId);
-            
+
             if (!updatedApplet) {
                 throw new Error("Failed to fetch updated applet");
             }
-            
+
             // Verify the container was added
             const containerExists = updatedApplet.containers.some((c: ContainerBuilder) => c.id === containerId);
             if (!containerExists) {
                 throw new Error("Container not found in applet after adding");
             }
-            
+
             // Return the complete updated applet with consistent formatting
             return {
                 ...updatedApplet,

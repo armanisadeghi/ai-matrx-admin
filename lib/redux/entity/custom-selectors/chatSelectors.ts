@@ -3,7 +3,7 @@
 
 import { createSelector } from "@reduxjs/toolkit";
 import { EntityKeys, EntityFieldKeys } from "@/types/entityTypes";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { RuntimeFilter, RuntimeSort } from "@/lib/redux/entity/types/stateTypes";
 import { createEntitySelectors } from "../selectors";
 import { MatrxRecordId } from "@/types/entityTypes";
@@ -270,13 +270,13 @@ export const createChatSelectors = () => {
                     ? aValue > bValue
                         ? 1
                         : aValue < bValue
-                        ? -1
-                        : 0
+                            ? -1
+                            : 0
                     : bValue > aValue
-                    ? 1
-                    : bValue < aValue
-                    ? -1
-                    : 0;
+                        ? 1
+                        : bValue < aValue
+                            ? -1
+                            : 0;
             });
 
             return result;
@@ -304,13 +304,13 @@ export const createChatSelectors = () => {
                     ? aValue > bValue
                         ? 1
                         : aValue < bValue
-                        ? -1
-                        : 0
+                            ? -1
+                            : 0
                     : bValue > aValue
-                    ? 1
-                    : bValue < aValue
-                    ? -1
-                    : 0;
+                        ? 1
+                        : bValue < aValue
+                            ? -1
+                            : 0;
             });
 
             return result;
@@ -342,13 +342,13 @@ export const createChatSelectors = () => {
                     ? aValue > bValue
                         ? 1
                         : aValue < bValue
-                        ? -1
-                        : 0
+                            ? -1
+                            : 0
                     : bValue > aValue
-                    ? 1
-                    : bValue < aValue
-                    ? -1
-                    : 0;
+                        ? 1
+                        : bValue < aValue
+                            ? -1
+                            : 0;
             });
 
             return result;
@@ -398,12 +398,12 @@ export const createChatSelectors = () => {
             if (hasConversation && hasAiModel && hasConversationKey) {
                 return true;
             }
-            
+
             // New user case: No conversations but loading is complete and AI models are available
             if (!isLoading && !hasConversation && hasAiModel) {
                 return true;
             }
-            
+
             return false;
         }
     );
@@ -429,60 +429,60 @@ export const createChatSelectors = () => {
         (metadata): InputControlsSettings => {
 
             const settings: InputControlsSettings = {
-            searchEnabled: false,
-            toolsEnabled: false,
-            thinkEnabled: false,
-            researchEnabled: false,
-            recipesEnabled: false,
-            planEnabled: false,
-            audioEnabled: false,
-            enableAskQuestions: false,
-            enableBrokers: false,
-            hasFiles: false,
-            generateImages: false,
-            generateVideos: false
-          };
-          
-          // If no metadata, return default settings (all false)
-          if (!metadata) {
+                searchEnabled: false,
+                toolsEnabled: false,
+                thinkEnabled: false,
+                researchEnabled: false,
+                recipesEnabled: false,
+                planEnabled: false,
+                audioEnabled: false,
+                enableAskQuestions: false,
+                enableBrokers: false,
+                hasFiles: false,
+                generateImages: false,
+                generateVideos: false
+            };
+
+            // If no metadata, return default settings (all false)
+            if (!metadata) {
+                return settings;
+            }
+
+            // Process straightforward settings
+            // Only set to true if explicitly true in metadata
+            if (metadata.toolsEnabled === true) settings.toolsEnabled = true;
+            if (metadata.searchEnabled === true) settings.searchEnabled = true;
+            if (metadata.thinkEnabled === true) settings.thinkEnabled = true;
+            if (metadata.enableAskQuestions === true) settings.enableAskQuestions = true;
+            if (metadata.enableBrokers === true) settings.enableBrokers = true;
+            if (metadata.audioEnabled === true) settings.audioEnabled = true;
+            if (metadata.planEnabled === true) settings.planEnabled = true;
+            if (metadata.researchEnabled === true) settings.researchEnabled = true;
+            if (metadata.recipesEnabled === true) settings.recipesEnabled = true;
+
+            // Process files - if we have any files, enable research
+            if (metadata.files && Array.isArray(metadata.files) && metadata.files.length > 0) {
+                settings.hasFiles = true;
+            }
+
+            if (metadata.currentMode === "images") {
+                settings.generateImages = true;
+            }
+
+            if (metadata.currentMode === "videos") {
+                settings.generateVideos = true;
+            }
+
+            // Add any additional computed settings here
+            // For example, if you want to enable recipes based on other metadata
+            if (metadata.recipesEnabled === true) {
+                settings.recipesEnabled = true;
+            }
+
+            // Return the computed settings
             return settings;
-          }
-          
-          // Process straightforward settings
-          // Only set to true if explicitly true in metadata
-          if (metadata.toolsEnabled === true) settings.toolsEnabled = true;
-          if (metadata.searchEnabled === true) settings.searchEnabled = true;
-          if (metadata.thinkEnabled === true) settings.thinkEnabled = true;
-          if (metadata.enableAskQuestions === true) settings.enableAskQuestions = true;
-          if (metadata.enableBrokers === true) settings.enableBrokers = true;
-          if (metadata.audioEnabled === true) settings.audioEnabled = true;
-          if (metadata.planEnabled === true) settings.planEnabled = true;
-          if (metadata.researchEnabled === true) settings.researchEnabled = true;
-          if (metadata.recipesEnabled === true) settings.recipesEnabled = true;
-          
-          // Process files - if we have any files, enable research
-          if (metadata.files && Array.isArray(metadata.files) && metadata.files.length > 0) {
-            settings.hasFiles = true;
-          }
-
-          if (metadata.currentMode === "images") {
-            settings.generateImages = true;
-          }
-
-          if (metadata.currentMode === "videos") {
-            settings.generateVideos = true;
-          }
-          
-          // Add any additional computed settings here
-          // For example, if you want to enable recipes based on other metadata
-          if (metadata.recipesEnabled === true) {
-            settings.recipesEnabled = true;
-          }
-          
-          // Return the computed settings
-          return settings;
         }
-      );  
+    );
 
 
     const activeConversationMetadata = createSelector([activeConversation], (conversation) => conversation?.metadata);

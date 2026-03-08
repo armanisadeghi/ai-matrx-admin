@@ -15,7 +15,7 @@ import Link from "next/link";
 import { navigationLinks } from "@/constants/navigation-links";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { selectResponseTextByListenerId } from "@/lib/redux/socket-io";
@@ -74,24 +74,24 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
     const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split("@")[0] || "User";
     const profilePhoto = user.userMetadata.picture || null;
     const [feedbackOpen, setFeedbackOpen] = useState(false);
-    
+
     // Creator and admin status
     const userIsCreator = useAppSelector((state) => brokerSelectors.selectValue(state, "APPLET_USER_IS_ADMIN"));
     const isAdmin = useAppSelector((state) => brokerSelectors.selectValue(state, "GLOBAL_USER_IS_ADMIN"));
-    
+
     const handleThemeToggle = () => {
         setTheme(theme === 'dark' ? 'light' : 'dark');
     };
-    
+
     const handleFeedbackClick = () => {
         setFeedbackOpen(true);
     };
-    
+
     // Get current task information from redux state (only for applet-specific animations)
     const currentTaskId = useAppSelector((state) => brokerSelectors.selectValue(state, "CURRENT_TASK_ID"));
     const firstListenerId = useAppSelector((state) => (currentTaskId ? selectTaskFirstListenerId(state, currentTaskId) : null));
     const textResponse = useAppSelector((state) => (firstListenerId ? selectResponseTextByListenerId(firstListenerId)(state) : ""));
-    
+
     // Use the custom hook for animations
     const {
         shouldShowAnimation,
@@ -103,177 +103,177 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
         firstListenerId,
         customTrigger: animationTrigger,
     });
-    
+
     // Filter navigation links to only show those with profileMenu: true
     const defaultFilteredLinks = navigationLinks.filter((link) => link.profileMenu);
-    
+
     // Use custom links if provided, otherwise use default filtered links
     const menuLinks = customLinks || defaultFilteredLinks;
-    
+
     // Determine which menu sections to show
     const shouldShowCreatorMenu = showCreatorFeatures && (userIsCreator || isAdmin);
     const shouldShowAdminMenu = showAdminFeatures && isAdmin;
-    
+
     return (
         <>
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <button
-                    className={`flex items-center rounded-full pl-2 pr-1 mx-glass shadow-sm hover:shadow-md transition cursor-pointer focus:outline-none ${creatorButtonClass} ${triggerClassName}`}
-                >
-                    {userIsCreator && <Crown size={16} className="mr-1 text-amber-400" />}
-                    <Menu size={18} className="ml-2 text-gray-600 dark:text-gray-400" />
-                    {profilePhoto ? (
-                        <div className="w-8 h-8 rounded-full ml-3 overflow-hidden">
-                            <Image src={profilePhoto} width={32} height={32} alt={displayName} className="w-full h-full object-cover" />
-                        </div>
-                    ) : (
-                        <div className="w-8 h-8 bg-gray-500 dark:bg-gray-600 rounded-full ml-3 flex items-center justify-center">
-                            <span className="text-white text-sm font-medium">{displayName.charAt(0).toUpperCase()}</span>
-                        </div>
-                    )}
-                </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className={`w-72 ${contentClassName} ${creatorAnimClass} max-h-[calc(100vh-4rem)] flex flex-col overflow-hidden`} align={position === "right" ? "end" : "start"}>
-                {/* User info section - Fixed at top, clickable to profile */}
-                <Link href="/settings/profile" className="block flex-shrink-0">
-                    <div className="px-2 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-t-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
-                        <div className="flex items-center gap-3 min-w-0">
-                            {profilePhoto ? (
-                                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                                    <Image src={profilePhoto} width={40} height={40} alt={displayName} className="w-full h-full object-cover" />
-                                </div>
-                            ) : (
-                                <div className="w-10 h-10 bg-gray-500 dark:bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <span className="text-white text-sm font-medium">{displayName.charAt(0).toUpperCase()}</span>
-                                </div>
-                            )}
-                            <div className="flex flex-col min-w-0 flex-1">
-                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{displayName}</span>
-                                <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{user.email}</span>
-                                {userIsCreator && (
-                                    <span className="text-xs font-medium text-amber-500 dark:text-amber-400 flex items-center mt-1">
-                                        <Crown size={12} className="mr-1 flex-shrink-0" /> Creator
-                                    </span>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <button
+                        className={`flex items-center rounded-full pl-2 pr-1 mx-glass shadow-sm hover:shadow-md transition cursor-pointer focus:outline-none ${creatorButtonClass} ${triggerClassName}`}
+                    >
+                        {userIsCreator && <Crown size={16} className="mr-1 text-amber-400" />}
+                        <Menu size={18} className="ml-2 text-gray-600 dark:text-gray-400" />
+                        {profilePhoto ? (
+                            <div className="w-8 h-8 rounded-full ml-3 overflow-hidden">
+                                <Image src={profilePhoto} width={32} height={32} alt={displayName} className="w-full h-full object-cover" />
+                            </div>
+                        ) : (
+                            <div className="w-8 h-8 bg-gray-500 dark:bg-gray-600 rounded-full ml-3 flex items-center justify-center">
+                                <span className="text-white text-sm font-medium">{displayName.charAt(0).toUpperCase()}</span>
+                            </div>
+                        )}
+                    </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className={`w-72 ${contentClassName} ${creatorAnimClass} max-h-[calc(100vh-4rem)] flex flex-col overflow-hidden`} align={position === "right" ? "end" : "start"}>
+                    {/* User info section - Fixed at top, clickable to profile */}
+                    <Link href="/settings/profile" className="block flex-shrink-0">
+                        <div className="px-2 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-t-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                            <div className="flex items-center gap-3 min-w-0">
+                                {profilePhoto ? (
+                                    <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                                        <Image src={profilePhoto} width={40} height={40} alt={displayName} className="w-full h-full object-cover" />
+                                    </div>
+                                ) : (
+                                    <div className="w-10 h-10 bg-gray-500 dark:bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <span className="text-white text-sm font-medium">{displayName.charAt(0).toUpperCase()}</span>
+                                    </div>
                                 )}
+                                <div className="flex flex-col min-w-0 flex-1">
+                                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{displayName}</span>
+                                    <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{user.email}</span>
+                                    {userIsCreator && (
+                                        <span className="text-xs font-medium text-amber-500 dark:text-amber-400 flex items-center mt-1">
+                                            <Crown size={12} className="mr-1 flex-shrink-0" /> Creator
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </Link>
-                <DropdownMenuSeparator className="flex-shrink-0" />
-                
-                {/* Scrollable middle section */}
-                <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0">
-                    {/* Navigation links */}
-                    {menuLinks.map((link, index) => (
-                        <DropdownMenuItem key={link.href} asChild>
-                            <Link
-                                href={link.href}
-                                className={`flex items-center gap-3 w-full px-2 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 ${itemClassName}`}
-                            >
-                                <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">{link.icon}</div>
-                                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">{link.label}</span>
-                            </Link>
-                        </DropdownMenuItem>
-                    ))}
-                    
-                    {/* Creator Menu - conditionally rendered */}
-                    {shouldShowCreatorMenu && <CreatorMenu />}
-                    
-                    {/* Admin Menu - conditionally rendered */}
-                    {shouldShowAdminMenu && (
-                        <AdminMenu 
-                            isAdmin={isAdmin} 
-                            itemClassName={itemClassName} 
-                        />
-                    )}
-                    
-                    {/* Additional Menu Sections */}
-                    {additionalMenuSections.map((section, index) => {
-                        if (section.shouldRender === false) return null;
-                        
-                        const Component = section.component;
-                        return (
-                            <Component
-                                key={`additional-section-${index}`}
-                                {...section.props}
+                    </Link>
+                    <DropdownMenuSeparator className="flex-shrink-0" />
+
+                    {/* Scrollable middle section */}
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0">
+                        {/* Navigation links */}
+                        {menuLinks.map((link, index) => (
+                            <DropdownMenuItem key={link.href} asChild>
+                                <Link
+                                    href={link.href}
+                                    className={`flex items-center gap-3 w-full px-2 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 ${itemClassName}`}
+                                >
+                                    <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">{link.icon}</div>
+                                    <span className="text-sm text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">{link.label}</span>
+                                </Link>
+                            </DropdownMenuItem>
+                        ))}
+
+                        {/* Creator Menu - conditionally rendered */}
+                        {shouldShowCreatorMenu && <CreatorMenu />}
+
+                        {/* Admin Menu - conditionally rendered */}
+                        {shouldShowAdminMenu && (
+                            <AdminMenu
+                                isAdmin={isAdmin}
+                                itemClassName={itemClassName}
                             />
-                        );
-                    })}
-                </div>
-                
-                {/* Fixed bottom section */}
-                <div className="flex-shrink-0">
-                    <DropdownMenuSeparator />
-                    
-                    {/* Feedback - Only show on mobile */}
-                    {isMobile && (
-                        <DropdownMenuItem onClick={handleFeedbackClick}>
+                        )}
+
+                        {/* Additional Menu Sections */}
+                        {additionalMenuSections.map((section, index) => {
+                            if (section.shouldRender === false) return null;
+
+                            const Component = section.component;
+                            return (
+                                <Component
+                                    key={`additional-section-${index}`}
+                                    {...section.props}
+                                />
+                            );
+                        })}
+                    </div>
+
+                    {/* Fixed bottom section */}
+                    <div className="flex-shrink-0">
+                        <DropdownMenuSeparator />
+
+                        {/* Feedback - Only show on mobile */}
+                        {isMobile && (
+                            <DropdownMenuItem onClick={handleFeedbackClick}>
+                                <div className="flex items-center gap-3 w-full">
+                                    <Bug className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                                    <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                                        Send Feedback
+                                    </span>
+                                </div>
+                            </DropdownMenuItem>
+                        )}
+
+                        {/* Theme toggle */}
+                        <DropdownMenuItem onClick={handleThemeToggle}>
                             <div className="flex items-center gap-3 w-full">
-                                <Bug className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                                {theme === 'dark' ? (
+                                    <Sun className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                                ) : (
+                                    <Moon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                                )}
                                 <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                                    Send Feedback
+                                    {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
                                 </span>
                             </div>
                         </DropdownMenuItem>
-                    )}
-                    
-                    {/* Theme toggle */}
-                    <DropdownMenuItem onClick={handleThemeToggle}>
-                        <div className="flex items-center gap-3 w-full">
-                            {theme === 'dark' ? (
-                                <Sun className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                            ) : (
-                                <Moon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                            )}
-                            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                                {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-                            </span>
-                        </div>
-                    </DropdownMenuItem>
-                    
-                    {/* Preferences */}
-                    <DropdownMenuItem asChild>
-                        <Link
-                            href="/settings/preferences"
-                            className="flex items-center gap-3 w-full px-2 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
-                        >
-                            <Settings className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">Preferences</span>
-                        </Link>
-                    </DropdownMenuItem>
-                    
-                    {/* Sign out section */}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                        <Link
-                            href="/sign-out"
-                            className="flex items-center gap-3 w-full px-2 py-2 cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                                />
-                            </svg>
-                            <span className="text-sm font-medium">Sign out</span>
-                        </Link>
-                    </DropdownMenuItem>
+
+                        {/* Preferences */}
+                        <DropdownMenuItem asChild>
+                            <Link
+                                href="/settings/preferences"
+                                className="flex items-center gap-3 w-full px-2 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+                            >
+                                <Settings className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">Preferences</span>
+                            </Link>
+                        </DropdownMenuItem>
+
+                        {/* Sign out section */}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                            <Link
+                                href="/sign-out"
+                                className="flex items-center gap-3 w-full px-2 py-2 cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                    />
+                                </svg>
+                                <span className="text-sm font-medium">Sign out</span>
+                            </Link>
+                        </DropdownMenuItem>
+                    </div>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Hidden FeedbackButton for mobile menu trigger - rendered outside dropdown to avoid conflicts */}
+            {isMobile && (
+                <div className="hidden">
+                    <FeedbackButton
+                        triggerOpen={feedbackOpen}
+                        onOpenChange={setFeedbackOpen}
+                    />
                 </div>
-            </DropdownMenuContent>
-        </DropdownMenu>
-        
-        {/* Hidden FeedbackButton for mobile menu trigger - rendered outside dropdown to avoid conflicts */}
-        {isMobile && (
-            <div className="hidden">
-                <FeedbackButton 
-                    triggerOpen={feedbackOpen}
-                    onOpenChange={setFeedbackOpen}
-                />
-            </div>
-        )}
+            )}
         </>
     );
 };

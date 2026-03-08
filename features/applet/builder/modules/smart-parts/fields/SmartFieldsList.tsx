@@ -1,8 +1,10 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from "react";
-import { Search, Plus, Filter, Grid, List, ArrowUpDown, RefreshCw, LayoutIcon, CopyIcon, FileEditIcon, Trash2Icon, 
+import {
+    Search, Plus, Filter, Grid, List, ArrowUpDown, RefreshCw, LayoutIcon, CopyIcon, FileEditIcon, Trash2Icon,
     AlignLeftIcon, BoxSelectIcon, CalendarIcon, CheckSquareIcon, ClipboardCheckIcon, ListIcon, TextIcon, TypeIcon,
-    ImageIcon, ToggleLeftIcon, SlidersIcon, FileTextIcon, RadioIcon } from "lucide-react";
+    ImageIcon, ToggleLeftIcon, SlidersIcon, FileTextIcon, RadioIcon
+} from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,7 +24,7 @@ import { fetchFieldsThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThu
 import { selectAllFields, selectFieldLoading, selectFieldError, selectFieldsByIds } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { FieldDefinition } from "@/types/customAppTypes";
 import { getFieldComponentStyle } from "@/features/applet/styles/styles";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 
 // Define type for fieldIds
 type FieldId = string;
@@ -461,11 +463,10 @@ const SmartFieldsList = forwardRef<
                                             className={`
                                                         border hover:shadow-md transition-shadow duration-200 h-full
                                                         ${viewMode === "list" ? "flex overflow-hidden" : "overflow-hidden"}
-                                                        ${
-                                                            isSelected
-                                                                ? "border-indigo-400 dark:border-indigo-600 ring-2 ring-indigo-200 dark:ring-indigo-900"
-                                                                : "border-gray-200 dark:border-gray-700"
-                                                        }
+                                                        ${isSelected
+                                                    ? "border-indigo-400 dark:border-indigo-600 ring-2 ring-indigo-200 dark:ring-indigo-900"
+                                                    : "border-gray-200 dark:border-gray-700"
+                                                }
                                                         ${selectable ? "cursor-pointer" : ""}
                                                         `}
                                             onClick={selectable ? () => handleFieldSelect(field) : undefined}
@@ -489,7 +490,7 @@ const SmartFieldsList = forwardRef<
                                                             {getFieldIcon(field.component || "")}
                                                         </div>
                                                     )}
-                                                    
+
                                                     <div className={viewMode === "list" ? "flex-1" : ""}>
                                                         <h3 className="font-medium text-gray-900 dark:text-gray-100 truncate">
                                                             {field.label}
@@ -500,7 +501,7 @@ const SmartFieldsList = forwardRef<
                                                             </p>
                                                         )}
                                                     </div>
-                                                    
+
                                                     <Badge
                                                         className={`ml-2 ${componentStyle.bg} ${componentStyle.text} ${componentStyle.border} capitalize text-xs whitespace-nowrap`}
                                                     >
@@ -532,11 +533,10 @@ const SmartFieldsList = forwardRef<
                                                 <CardFooter
                                                     className={`
                                                             border-t border-border p-3
-                                                            ${
-                                                                viewMode === "list"
-                                                                    ? "w-auto border-l border-l-gray-200 dark:border-l-gray-700 flex items-center justify-center"
-                                                                    : ""
-                                                            }
+                                                            ${viewMode === "list"
+                                                            ? "w-auto border-l border-l-gray-200 dark:border-l-gray-700 flex items-center justify-center"
+                                                            : ""
+                                                        }
                                                         `}
                                                 >
                                                     <div className="flex flex-col w-full gap-2">
@@ -552,7 +552,7 @@ const SmartFieldsList = forwardRef<
                                                                 Select
                                                             </Button>
                                                         )}
-                                                        
+
                                                         {onEditField && (
                                                             <Button
                                                                 variant="outline"
@@ -566,7 +566,7 @@ const SmartFieldsList = forwardRef<
                                                                 Edit
                                                             </Button>
                                                         )}
-                                                        
+
                                                         {onDuplicateField && (
                                                             <Button
                                                                 variant="outline"
@@ -580,7 +580,7 @@ const SmartFieldsList = forwardRef<
                                                                 Duplicate
                                                             </Button>
                                                         )}
-                                                        
+
                                                         {onDeleteField && (
                                                             <Button
                                                                 variant="outline"

@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { ContainerBuilder } from "../types";
 
 // ================================ Base Selectors ================================
@@ -19,7 +19,7 @@ export const selectAllContainerIds = createSelector(
 );
 
 // Selector for a specific container by ID
-export const selectContainerById = (state: RootState, id?: string | null) => 
+export const selectContainerById = (state: RootState, id?: string | null) =>
   id ? getContainerBuilderState(state).containers[id] : undefined;
 
 // ================================ Status Selectors ================================
@@ -59,7 +59,7 @@ export const selectContainersByIds = createSelector(
   ],
   (containerBuilderState, containerIds) => {
     if (!containerIds?.length) return [];
-    
+
     return containerIds
       .map(id => containerBuilderState.containers[id])
       .filter(Boolean); // Typescript will infer the type correctly
@@ -107,7 +107,7 @@ export const selectActiveContainerId = createSelector(
 // Memoized selector for the active container
 export const selectActiveContainer = createSelector(
   [getContainerBuilderState, selectActiveContainerId],
-  (containerBuilderState, activeId) => 
+  (containerBuilderState, activeId) =>
     activeId ? containerBuilderState.containers[activeId] : undefined
 );
 
@@ -121,6 +121,6 @@ export const selectNewContainerId = createSelector(
 // Memoized selector for the new container
 export const selectNewContainer = createSelector(
   [getContainerBuilderState, selectNewContainerId],
-  (containerBuilderState, newId) => 
+  (containerBuilderState, newId) =>
     newId ? containerBuilderState.containers[newId] : undefined
 );

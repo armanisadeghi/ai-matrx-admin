@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import SectionCard from "@/components/official/cards/SectionCard";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { selectActiveAppletId } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectAppletsByAppId } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { setActiveApplet } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
@@ -77,11 +77,11 @@ export const AppletTabsWrapper: React.FC<AppletTabsWrapperProps> = ({
     if (typeof children === 'function') {
       return children(applet);
     }
-    
+
     // Otherwise, clone the children and pass applet ID as a prop
     return React.Children.map(children, (child) => {
       if (React.isValidElement(child)) {
-        return React.cloneElement(child, { 
+        return React.cloneElement(child, {
           appletId: applet.id,
           // You can pass more props here if needed
         } as any);

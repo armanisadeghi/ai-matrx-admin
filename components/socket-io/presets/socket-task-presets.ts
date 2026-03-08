@@ -1,6 +1,6 @@
 import { SchemaField, SOCKET_TASKS } from "../../../constants/socket-schema";
 import { flexibleJsonParse } from "@/utils/json/json-utils";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { BrokerValues } from "@/types/socket-schema-types";
 
 /* Socket Task Preset Creation Guide
@@ -290,10 +290,10 @@ function taskSupportsBrokers(taskName: SocketTaskName): boolean {
  */
 function getAllBrokerValues(state?: RootState, brokerSources?: string[]): BrokerValues[] {
     if (!state) return [];
-    
+
     const { brokers, brokerMap } = state.broker;
     const brokerValues: BrokerValues[] = [];
-    
+
     // If no source filtering, include all brokers
     if (!brokerSources || brokerSources.length === 0) {
         Object.entries(brokers).forEach(([brokerId, value]) => {
@@ -320,7 +320,7 @@ function getAllBrokerValues(state?: RootState, brokerSources?: string[]): Broker
             }
         });
     }
-    
+
     return brokerValues;
 }
 
@@ -330,10 +330,10 @@ function getAllBrokerValues(state?: RootState, brokerSources?: string[]): Broker
 function mergeBrokerValues(existingBrokers: BrokerValues[], autoBrokers: BrokerValues[]): BrokerValues[] {
     // Create a map of existing broker IDs for quick lookup
     const existingIds = new Set(existingBrokers.map(broker => broker.id));
-    
+
     // Only include auto-brokers that aren't already provided
     const filteredAutoBrokers = autoBrokers.filter(broker => !existingIds.has(broker.id));
-    
+
     // Combine existing (first priority) with filtered auto-brokers
     return [...existingBrokers, ...filteredAutoBrokers];
 }
@@ -345,7 +345,7 @@ function mergeBrokerValues(existingBrokers: BrokerValues[], autoBrokers: BrokerV
  */
 function getValueByPath(obj: any, path: string): any {
     if (!path || !obj) return undefined;
-    
+
     return path.split('.').reduce((current, key) => {
         return current && typeof current === 'object' ? current[key] : undefined;
     }, obj);
@@ -357,24 +357,24 @@ function getValueByPath(obj: any, path: string): any {
 function convertBySchemaType(value: any, targetField: string, taskName: SocketTaskName): any {
     const schema = SOCKET_TASKS[taskName];
     if (!schema || !schema[targetField]) return value;
-    
+
     const fieldDef = schema[targetField] as SchemaField;
     const expectedType = fieldDef.DATA_TYPE?.toLowerCase();
-    
+
     if (value === undefined || value === null) {
         return fieldDef.DEFAULT;
     }
-    
+
     try {
         switch (expectedType) {
             case "number":
                 const numValue = typeof value === "string" ? parseFloat(value) : value;
                 return isNaN(numValue) ? fieldDef.DEFAULT : numValue;
-                
+
             case "integer":
                 const intValue = typeof value === "string" ? parseInt(value, 10) : value;
                 return isNaN(intValue) ? fieldDef.DEFAULT : intValue;
-                
+
             case "boolean":
                 if (typeof value === "boolean") return value;
                 if (typeof value === "string") {
@@ -382,14 +382,14 @@ function convertBySchemaType(value: any, targetField: string, taskName: SocketTa
                     if (value === "false") return false;
                 }
                 return fieldDef.DEFAULT;
-                
+
             case "object":
                 if (typeof value === "string") {
                     const result = flexibleJsonParse(value);
                     return result.success ? result.data : fieldDef.DEFAULT;
                 }
                 return typeof value === "object" ? value : fieldDef.DEFAULT;
-                
+
             case "array":
                 if (Array.isArray(value)) return value;
                 if (typeof value === "string") {
@@ -397,7 +397,7 @@ function convertBySchemaType(value: any, targetField: string, taskName: SocketTa
                     return result.success && Array.isArray(result.data) ? result.data : fieldDef.DEFAULT;
                 }
                 return fieldDef.DEFAULT;
-                
+
             case "string":
             default:
                 return typeof value === "string" ? value : String(value || fieldDef.DEFAULT || "");
@@ -418,36 +418,36 @@ export function transformDataWithPreset(sourceData: any, preset: TaskPreset, sta
     try {
         // Step 1: Run preprocessor if available
         const processedSource = preset.preprocessor ? preset.preprocessor(sourceData) : sourceData;
-        
+
         // Step 2: Apply field mappings
         const taskData: any = {};
-        
+
         for (const [targetField, mapper] of Object.entries(preset.fieldMappings)) {
             let value: any;
-            
+
             // Get value from source
             if (typeof mapper.sourceField === "function") {
                 value = mapper.sourceField(processedSource);
             } else {
                 value = getValueByPath(processedSource, mapper.sourceField);
             }
-            
+
             // Apply custom transform if provided
             if (mapper.transform) {
                 value = mapper.transform(value);
             }
-            
+
             // Use default if value is undefined
             if (value === undefined && mapper.defaultValue !== undefined) {
                 value = mapper.defaultValue;
             }
-            
+
             // Apply schema-aware type conversion
             value = convertBySchemaType(value, targetField, preset.targetTask);
-            
+
             taskData[targetField] = value;
         }
-        
+
         // Step 3: Fill in schema defaults for unmapped fields
         const schema = SOCKET_TASKS[preset.targetTask];
         for (const [fieldName, fieldDef] of Object.entries(schema)) {
@@ -456,7 +456,7 @@ export function transformDataWithPreset(sourceData: any, preset: TaskPreset, sta
                 taskData[fieldName] = typedFieldDef.DEFAULT;
             }
         }
-        
+
         // Step 4: Auto-include brokers if task supports them and state is available
         if (state && taskSupportsBrokers(preset.targetTask)) {
             const autoBrokers = getAllBrokerValues(state, preset.brokerSources);
@@ -466,10 +466,10 @@ export function transformDataWithPreset(sourceData: any, preset: TaskPreset, sta
                 console.log(`🔗 Auto-included ${autoBrokers.length} brokers for task ${preset.targetTask}${preset.brokerSources ? ` (sources: ${preset.brokerSources.join(', ')})` : ''}`);
             }
         }
-        
+
         // Step 5: Run postprocessor if available
         const finalTaskData = preset.postprocessor ? preset.postprocessor(taskData) : taskData;
-        
+
         return finalTaskData;
     } catch (error) {
         console.error(`Failed to transform data with preset ${preset.name}:`, error);
@@ -513,11 +513,11 @@ export const WORKFLOW_STEP_TO_EXECUTE_SINGLE_STEP: TaskPreset = {
     },
     validation: (sourceData: any) => {
         const errors: string[] = [];
-        
+
         if (!sourceData.function_id && !sourceData.id) {
             errors.push("Step must have a function_id or id");
         }
-        
+
         return {
             isValid: errors.length === 0,
             errors
@@ -580,15 +580,15 @@ export const FLOW_NODES_TO_START_WORKFLOW: TaskPreset = {
     },
     validation: (sourceData: any) => {
         const errors: string[] = [];
-        
+
         if (!sourceData.nodes || !Array.isArray(sourceData.nodes)) {
             errors.push("Flow data must have a nodes array");
         }
-        
+
         if (sourceData.nodes && sourceData.nodes.length === 0) {
             errors.push("Workflow must have at least one node to execute");
         }
-        
+
         return {
             isValid: errors.length === 0,
             errors

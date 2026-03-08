@@ -1,11 +1,13 @@
 'use client';
 import React, { useState, useEffect, forwardRef, useImperativeHandle, useCallback, useRef } from 'react';
-import { Search, Plus, Grid, List, ArrowUpDown, RefreshCw, LayersIcon, SquareStackIcon, BoxIcon, PackageIcon, BoxesIcon,
-  LayoutGridIcon, Boxes, LayoutPanelTopIcon, LayoutTemplateIcon, FolderKanbanIcon, PanelTopIcon, TablePropertiesIcon, 
-  TableIcon, BoxSelectIcon, TriangleIcon, CircleIcon, SquareIcon, DiamondIcon, PanelsTopLeftIcon, ArrowUpRightSquareIcon } from 'lucide-react';
+import {
+  Search, Plus, Grid, List, ArrowUpDown, RefreshCw, LayersIcon, SquareStackIcon, BoxIcon, PackageIcon, BoxesIcon,
+  LayoutGridIcon, Boxes, LayoutPanelTopIcon, LayoutTemplateIcon, FolderKanbanIcon, PanelTopIcon, TablePropertiesIcon,
+  TableIcon, BoxSelectIcon, TriangleIcon, CircleIcon, SquareIcon, DiamondIcon, PanelsTopLeftIcon, ArrowUpRightSquareIcon
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Card, 
+import {
+  Card,
   CardContent,
   CardFooter,
   CardHeader,
@@ -25,14 +27,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { fetchContainersThunk } from '@/lib/redux/app-builder/thunks/containerBuilderThunks';
-import { 
-  selectAllContainers, 
-  selectContainerLoading, 
+import {
+  selectAllContainers,
+  selectContainerLoading,
   selectContainerError,
-  selectContainersByIds 
+  selectContainersByIds
 } from '@/lib/redux/app-builder/selectors/containerSelectors';
 import { ComponentGroup } from '@/types/customAppTypes';
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 
 // Define type for groupIds
 type GroupId = string;
@@ -56,8 +58,8 @@ export type SmartContainerListRefType = {
  * @param {Function} props.onRefreshComplete - Optional callback when refresh completes
  */
 const SmartContainerList = forwardRef<SmartContainerListRefType, {
-  onSelectGroup?: (group: ComponentGroup) => void, 
-  showCreateButton?: boolean, 
+  onSelectGroup?: (group: ComponentGroup) => void,
+  showCreateButton?: boolean,
   onCreateGroup?: () => void,
   onRefreshGroup?: (group: ComponentGroup) => void,
   onDeleteGroup?: (group: ComponentGroup) => void,
@@ -65,9 +67,9 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
   className?: string,
   groupIds?: string[],
   onRefreshComplete?: (groups: ComponentGroup[]) => void
-}>(({ 
-  onSelectGroup, 
-  showCreateButton = true, 
+}>(({
+  onSelectGroup,
+  showCreateButton = true,
   onCreateGroup,
   onRefreshGroup,
   onDeleteGroup,
@@ -79,18 +81,18 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
   const { toast } = useToast();
   const dispatch = useAppDispatch();
   const store = useAppStore();
-  
+
   // Local UI state
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [sortBy, setSortBy] = useState('label-asc'); // 'label-asc', 'label-desc', 'fields-asc', 'fields-desc'
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
+
   // Redux state
   const allContainers = useAppSelector(selectAllContainers);
   const isLoading = useAppSelector(selectContainerLoading);
   const error = useAppSelector(selectContainerError);
-  
+
   // Derived state - create a memoized selector function
   const selectGroups = React.useCallback(
     (state: RootState) => {
@@ -105,22 +107,22 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
 
   // Use the memoized selector
   const groups = useAppSelector(selectGroups);
-  
+
   // Apply filters and sorting to groups from Redux
   const filteredGroups = React.useMemo(() => {
     let result = [...groups];
-    
+
     // Apply search filter
     if (searchTerm.trim()) {
       const lowercaseTerm = searchTerm.toLowerCase();
-      result = result.filter(group => 
-        group.label?.toLowerCase().includes(lowercaseTerm) || 
+      result = result.filter(group =>
+        group.label?.toLowerCase().includes(lowercaseTerm) ||
         group.description?.toLowerCase().includes(lowercaseTerm) ||
         group.id?.toLowerCase().includes(lowercaseTerm) ||
         group.shortLabel?.toLowerCase().includes(lowercaseTerm)
       );
     }
-    
+
     // Apply sorting
     switch (sortBy) {
       case 'label-asc':
@@ -138,7 +140,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
       default:
         break;
     }
-    
+
     return result;
   }, [groups, searchTerm, sortBy]);
 
@@ -160,19 +162,19 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
         // Use specificGroupIds if provided, otherwise use the component's groupIds
         const groupsToRefresh = specificGroupIds || groupIds;
         await dispatch(fetchContainersThunk()).unwrap();
-        
+
         // Get the current state immediately after the fetch
         const currentState = store.getState();
         const currentAllContainers = selectAllContainers(currentState);
-        const currentGroups = groupsToRefresh 
-          ? selectContainersByIds(currentState, groupsToRefresh) 
+        const currentGroups = groupsToRefresh
+          ? selectContainersByIds(currentState, groupsToRefresh)
           : currentAllContainers;
-        
+
         // Call the callback if provided
         if (onRefreshComplete) {
           onRefreshComplete(currentGroups);
         }
-        
+
         return currentGroups;
       } catch (error) {
         toast({
@@ -185,10 +187,10 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
         setIsRefreshing(false);
       }
     };
-    
+
     // Store the function in our ref for internal use
     refreshRef.current = refreshFn;
-    
+
     // Return the interface
     return {
       refresh: refreshFn
@@ -219,7 +221,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
     if (e) {
       e.stopPropagation(); // Prevent card selection
     }
-    
+
     if (onRefreshGroup) {
       onRefreshGroup(group);
     } else {
@@ -238,7 +240,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
     if (e) {
       e.stopPropagation(); // Prevent card selection
     }
-    
+
     if (onDeleteGroup) {
       onDeleteGroup(group);
     }
@@ -249,7 +251,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
     if (e) {
       e.stopPropagation(); // Prevent card selection
     }
-    
+
     if (onEditGroup) {
       onEditGroup(group);
     }
@@ -283,30 +285,30 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
   const getContainerIcon = (groupId: string) => {
     // List of possible icons
     const icons = [
-      LayersIcon, SquareStackIcon, BoxIcon, PackageIcon, BoxesIcon, LayoutGridIcon, 
-      Boxes, LayoutPanelTopIcon, LayoutTemplateIcon, FolderKanbanIcon, PanelTopIcon, 
-      TablePropertiesIcon, TableIcon, BoxSelectIcon, TriangleIcon, CircleIcon, 
+      LayersIcon, SquareStackIcon, BoxIcon, PackageIcon, BoxesIcon, LayoutGridIcon,
+      Boxes, LayoutPanelTopIcon, LayoutTemplateIcon, FolderKanbanIcon, PanelTopIcon,
+      TablePropertiesIcon, TableIcon, BoxSelectIcon, TriangleIcon, CircleIcon,
       SquareIcon, DiamondIcon, PanelsTopLeftIcon, ArrowUpRightSquareIcon
     ];
-    
+
     // List of possible colors
     const colors = [
-      'amber', 'orange', 'yellow', 'green', 'emerald', 'teal', 'cyan', 
+      'amber', 'orange', 'yellow', 'green', 'emerald', 'teal', 'cyan',
       'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'
     ];
-    
+
     // Use the group ID to deterministically select an icon and color
     // This ensures the same group always gets the same icon and color
     const charSum = groupId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
     const iconIndex = charSum % icons.length;
     const colorIndex = (charSum * 13) % colors.length; // Use a different formula for color to reduce collisions
-    
+
     const IconComponent = icons[iconIndex];
     const color = colors[colorIndex];
-    
+
     // Generate tailwind classes for the icon and background
     const getColorClasses = (colorName: string) => {
-      switch(colorName) {
+      switch (colorName) {
         case 'amber':
           return { bg: 'bg-amber-100 dark:bg-amber-800/30', text: 'text-amber-600 dark:text-amber-300' };
         case 'orange':
@@ -339,9 +341,9 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
           return { bg: 'bg-gray-100 dark:bg-gray-800/30', text: 'text-gray-600 dark:text-gray-300' };
       }
     };
-    
+
     const colorClasses = getColorClasses(color);
-    
+
     return {
       Icon: IconComponent,
       colorClasses
@@ -352,19 +354,19 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
   const getColorClasses = (group: ComponentGroup) => {
     // Default to amber as primary color for groups
     const primaryColor = 'amber';
-    
+
     // Default text and card background colors
     const defaultTextClass = 'text-gray-900 dark:text-gray-100';
     const defaultCardBg = 'bg-textured';
     const defaultCardFooterBg = 'bg-gray-50 dark:bg-gray-800';
     const defaultDescriptionClass = 'text-gray-600 dark:text-gray-300';
-    
+
     // Apply amber coloring
     let cardBgClass = 'bg-amber-50 dark:bg-amber-900/10';
     let cardFooterBgClass = 'bg-amber-100/50 dark:bg-amber-900/20';
     let titleClass = 'text-amber-900 dark:text-amber-300';
     let descriptionClass = 'text-amber-700 dark:text-amber-400';
-    
+
     // Public groups get a different treatment
     if (group.isPublic) {
       cardBgClass = 'bg-emerald-50 dark:bg-emerald-900/10';
@@ -372,7 +374,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
       titleClass = 'text-emerald-900 dark:text-emerald-300';
       descriptionClass = 'text-emerald-700 dark:text-emerald-400';
     }
-    
+
     // No fields gets a muted treatment
     if (!group.fields || group.fields.length === 0) {
       cardBgClass = 'bg-gray-50 dark:bg-gray-900/10';
@@ -380,7 +382,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
       titleClass = defaultTextClass;
       descriptionClass = defaultDescriptionClass;
     }
-    
+
     return {
       cardBg: cardBgClass,
       cardFooterBg: cardFooterBgClass,
@@ -398,7 +400,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
         </div>
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Error Loading Groups</h3>
         <p className="text-gray-500 dark:text-gray-400 mt-1">{error}</p>
-        <Button 
+        <Button
           className="mt-4 bg-red-500 hover:bg-red-600 text-white"
           onClick={handleRefreshClick}
         >
@@ -421,7 +423,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
             onChange={handleSearch}
           />
         </div>
-        
+
         <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
           <Button
             variant="outline"
@@ -433,7 +435,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
             <RefreshCw className={`h-4 w-4 ${isLoading || isRefreshing ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Refresh</span>
           </Button>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="flex items-center gap-1">
@@ -456,7 +458,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
           <div className="flex border-border rounded-md overflow-hidden">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
@@ -475,9 +477,9 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
               <List className="h-4 w-4" />
             </Button>
           </div>
-          
+
           {showCreateButton && onCreateGroup && (
-            <Button 
+            <Button
               className="bg-amber-500 hover:bg-amber-600 text-white"
               size="sm"
               onClick={onCreateGroup}
@@ -487,11 +489,11 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
           )}
         </div>
       </div>
-      
+
       {/* Group cards */}
       <div className={
-        viewMode === 'grid' 
-          ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4' 
+        viewMode === 'grid'
+          ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
           : 'space-y-3'
       }>
         {isLoading ? (
@@ -506,7 +508,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
               {searchTerm ? "Try a different search term" : "Create your first group to get started"}
             </p>
             {showCreateButton && onCreateGroup && (
-              <Button 
+              <Button
                 className="bg-amber-500 hover:bg-amber-600 text-white mt-4"
                 onClick={onCreateGroup}
               >
@@ -520,7 +522,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
               const colorClasses = getColorClasses(group);
               const iconData = getContainerIcon(group.id || '');
               const IconComponent = iconData.Icon;
-              
+
               return (
                 <motion.div
                   key={group.id}
@@ -531,7 +533,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
                   layout
                   className="h-full"
                 >
-                  <Card 
+                  <Card
                     className={`
                       border-border hover:shadow-md transition-shadow duration-200 h-full
                       ${viewMode === 'list' ? 'flex overflow-hidden' : 'overflow-hidden'}
@@ -547,7 +549,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
                         </div>
                       </div>
                     )}
-                    
+
                     <div className={viewMode === 'list' ? 'flex-1' : ''}>
                       <CardHeader className="pb-2">
                         <div className="flex items-center space-x-2">
@@ -561,25 +563,25 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
                           </CardTitle>
                         </div>
                       </CardHeader>
-                      
+
                       <CardContent className="pt-0">
                         <div className={`text-sm ${colorClasses.descriptionClass}`}>
                           <p className="mb-2 truncate">{group.description || "No Description"}</p>
-                          
+
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-1">
-                              <span className="font-medium">Fields:</span> 
+                              <span className="font-medium">Fields:</span>
                               <span>{group.fields?.length || 0}</span>
                             </div>
                           </div>
-                          
+
                           <div className="flex flex-wrap gap-1.5 mt-2">
                             {group.isPublic && (
                               <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
                                 Public
                               </Badge>
                             )}
-                            
+
                             {viewMode === 'list' && group.authenticatedRead && (
                               <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
                                 Auth Required
@@ -589,7 +591,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
                         </div>
                       </CardContent>
                     </div>
-                    
+
                     <CardFooter className={`
                       border-t border-border p-3
                       ${viewMode === 'list' ? 'w-48 border-l border-l-gray-200 dark:border-l-gray-700 flex items-center justify-center flex-col gap-2' : ''}
@@ -604,7 +606,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
                             Select
                           </Button>
                         )}
-                        
+
                         {onEditGroup && (
                           <Button
                             variant="outline"
@@ -615,7 +617,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
                             Edit
                           </Button>
                         )}
-                        
+
                         {onDeleteGroup && (
                           <Button
                             variant="outline"
@@ -635,7 +637,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
           </AnimatePresence>
         )}
       </div>
-      
+
       {/* Status footer */}
       {!isLoading && filteredGroups.length > 0 && (
         <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 pt-2">

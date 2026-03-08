@@ -3,15 +3,15 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { initializeTask, setTaskFields } from "../slices/socketTasksSlice";
 import { selectPrimaryConnection } from "../selectors";
-import { RootState } from "../../store";
+import type { RootState } from "../../store";
 import { v4 as uuidv4 } from "uuid";
 
 export const createTask = createAsyncThunk<
   string,
-  { 
-    service: string; 
-    taskName: string; 
-    initialData?: Record<string, any>; 
+  {
+    service: string;
+    taskName: string;
+    initialData?: Record<string, any>;
     connectionId?: string;
     taskId?: string;
   },

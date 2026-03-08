@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { RootState } from '@/lib/redux/store';
+import type { RootState } from '@/lib/redux/store';
 import { setPreference } from '@/lib/redux/slices/userPreferencesSlice';
 
 const rowLabel = "text-sm font-medium";

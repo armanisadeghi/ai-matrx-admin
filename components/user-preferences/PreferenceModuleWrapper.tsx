@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Save, RotateCcw, AlertCircle, Check } from 'lucide-react';
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {
     UserPreferencesState,
@@ -56,11 +56,11 @@ const PreferenceModuleWrapper: React.FC<PreferenceModuleWrapperProps> = ({
     const handleSave = async () => {
         try {
             const modulePreferences = preferences[module];
-            const result = await dispatch(saveModulePreferencesToDatabase({ 
-                module, 
-                preferences: modulePreferences 
+            const result = await dispatch(saveModulePreferencesToDatabase({
+                module,
+                preferences: modulePreferences
             })).unwrap();
-            
+
             if (onSaveSuccess) {
                 onSaveSuccess();
             }
@@ -93,9 +93,9 @@ const PreferenceModuleWrapper: React.FC<PreferenceModuleWrapperProps> = ({
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription className="flex justify-between items-center">
                         <span>Error: {meta.error}</span>
-                        <Button 
-                            onClick={handleClearError} 
-                            size="sm" 
+                        <Button
+                            onClick={handleClearError}
+                            size="sm"
                             variant="ghost"
                             className="text-xs h-auto py-1"
                         >
@@ -132,7 +132,7 @@ const PreferenceModuleWrapper: React.FC<PreferenceModuleWrapperProps> = ({
                             </span>
                         )}
                     </div>
-                    
+
                     <div className="flex items-center gap-2 w-full sm:w-auto">
                         <Button
                             variant="outline"

@@ -1,5 +1,5 @@
 import { createSelector } from "reselect";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { BrokerIdentifier } from "../types";
 import { resolveBrokerId } from "../utils";
 
@@ -8,17 +8,17 @@ const selectBrokerSlice = (state: RootState) => state.broker;
 
 
 const selectError = createSelector(
-    [selectBrokerSlice], 
+    [selectBrokerSlice],
     (state) => state.error
 );
 
 const selectMap = createSelector(
-    [selectBrokerSlice], 
+    [selectBrokerSlice],
     (state) => state.brokerMap
 );
 
 const selectAllValues = createSelector(
-    [selectBrokerSlice], 
+    [selectBrokerSlice],
     (state) => state.brokers
 );
 
@@ -30,7 +30,7 @@ const selectBrokerIdInput = (_: RootState, brokerId: string) => brokerId;
 
 // Selects brokerId from idArgs (for mapped entities)
 const selectBrokerId = createSelector(
-    [selectBrokerSlice, selectIdArgs], 
+    [selectBrokerSlice, selectIdArgs],
     (state, idArgs) => resolveBrokerId(state, idArgs)
 );
 
@@ -74,7 +74,7 @@ const selectMultipleValues = createSelector(
         if (!brokerIds || brokerIds.length === 0) {
             return {};
         }
-        
+
         return brokerIds.reduce<Record<string, any>>((acc, brokerId) => {
             if (brokerId) {
                 acc[brokerId] = brokers[brokerId];

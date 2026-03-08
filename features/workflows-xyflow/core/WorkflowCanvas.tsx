@@ -33,7 +33,7 @@ import {
     OnReconnect,
 } from "@xyflow/react";
 import { useSelector } from "react-redux";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { WorkflowNodeItem } from "../nodes/wf-nodes/WorkflowNode";
 import { UserInputSourceNode } from "../nodes/source-node/user-input/UserInputSourceNode";
 import { UserDataSourceNode } from "../nodes/source-node/user-data/UserDataSourceNode";
@@ -281,11 +281,11 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
     const handleConnect: OnConnect = useCallback(
         (connection) => {
             console.log(JSON.stringify(connection, null, 2));
-        
+
             if (isValidConnection(connection)) {
-                
+
                 const connectionData = handleProcessConnection(connection);
-                
+
                 const newEdge: Edge = {
                     id: `edge-${connection.source}-${connection.target}-${Date.now()}`,
                     source: connection.source!,
@@ -316,10 +316,10 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
     const handleReconnect: OnReconnect = useCallback((oldEdge, newConnection) => {
         if (isValidConnection(newConnection)) {
             console.log('✅ Reconnecting edge');
-            setEdges((eds) => eds.map((edge) => 
-                edge.id === oldEdge.id 
-                    ? { 
-                        ...edge, 
+            setEdges((eds) => eds.map((edge) =>
+                edge.id === oldEdge.id
+                    ? {
+                        ...edge,
                         source: newConnection.source!,
                         target: newConnection.target!,
                         sourceHandle: newConnection.sourceHandle,
@@ -509,8 +509,8 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
 
                 {mode === "edit" && (
                     <Panel position="top-left" className="p-0">
-                        <QuickAccessPanel 
-                            workflowId={workflowId} 
+                        <QuickAccessPanel
+                            workflowId={workflowId}
                             onRecipeNodeCreated={onRecipeNodeCreated}
                             onOpenSourceInputCreator={onOpenSourceInputCreator}
                         />

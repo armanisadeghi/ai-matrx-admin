@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { AppDispatch, RootState } from '@/lib/redux/store';
+import type { AppDispatch, RootState } from '@/lib/redux/store';
 import { startPromptInstance, executeMessage } from './';
 import { createBuiltinConfig } from '../builtins';
 import { selectStreamingTextForInstance, selectIsResponseEndedForInstance } from '../selectors';

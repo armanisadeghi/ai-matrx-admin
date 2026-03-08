@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save, RotateCcw, Check } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {
     UserPreferencesState,
@@ -49,39 +49,39 @@ const validTabs: PreferenceTab[] = [
 
 // iOS Settings-style category list for mobile
 const tabCategories: { value: PreferenceTab; label: string; icon: React.ReactNode; description: string }[] = [
-    { value: 'display',        label: 'Display',          icon: <Monitor className="h-4 w-4" />,      description: 'Theme, dark mode, layout' },
-    { value: 'prompts',        label: 'Prompts',          icon: <Zap className="h-4 w-4" />,           description: 'Default model, temperature' },
-    { value: 'messaging',      label: 'Messaging',        icon: <MessageSquare className="h-4 w-4" />, description: 'Chat & message settings' },
-    { value: 'voice',          label: 'Voice',            icon: <Mic className="h-4 w-4" />,           description: 'Voice input & language' },
-    { value: 'textToSpeech',   label: 'TTS',              icon: <Volume2 className="h-4 w-4" />,       description: 'Text-to-speech settings' },
-    { value: 'assistant',      label: 'Assistant',        icon: <Bot className="h-4 w-4" />,           description: 'AI assistant behaviour' },
-    { value: 'aiModels',       label: 'AI Models',        icon: <Cpu className="h-4 w-4" />,           description: 'Active models & providers' },
-    { value: 'email',          label: 'Email',            icon: <Mail className="h-4 w-4" />,          description: 'Email integration settings' },
-    { value: 'videoConference',label: 'Video',            icon: <Video className="h-4 w-4" />,         description: 'Video conferencing preferences' },
-    { value: 'photoEditing',   label: 'Photo',            icon: <ImageIcon className="h-4 w-4" />,     description: 'Photo editing tools' },
-    { value: 'imageGeneration',label: 'Images',           icon: <ImageIcon className="h-4 w-4" />,     description: 'Image generation settings' },
-    { value: 'textGeneration', label: 'Text',             icon: <Type className="h-4 w-4" />,          description: 'Text generation settings' },
-    { value: 'coding',         label: 'Coding',           icon: <Code className="h-4 w-4" />,          description: 'Code editor preferences' },
-    { value: 'flashcard',      label: 'Flashcards',       icon: <BookOpen className="h-4 w-4" />,      description: 'Flashcard study settings' },
-    { value: 'playground',     label: 'Playground',       icon: <Gamepad2 className="h-4 w-4" />,      description: 'Playground defaults' },
+    { value: 'display', label: 'Display', icon: <Monitor className="h-4 w-4" />, description: 'Theme, dark mode, layout' },
+    { value: 'prompts', label: 'Prompts', icon: <Zap className="h-4 w-4" />, description: 'Default model, temperature' },
+    { value: 'messaging', label: 'Messaging', icon: <MessageSquare className="h-4 w-4" />, description: 'Chat & message settings' },
+    { value: 'voice', label: 'Voice', icon: <Mic className="h-4 w-4" />, description: 'Voice input & language' },
+    { value: 'textToSpeech', label: 'TTS', icon: <Volume2 className="h-4 w-4" />, description: 'Text-to-speech settings' },
+    { value: 'assistant', label: 'Assistant', icon: <Bot className="h-4 w-4" />, description: 'AI assistant behaviour' },
+    { value: 'aiModels', label: 'AI Models', icon: <Cpu className="h-4 w-4" />, description: 'Active models & providers' },
+    { value: 'email', label: 'Email', icon: <Mail className="h-4 w-4" />, description: 'Email integration settings' },
+    { value: 'videoConference', label: 'Video', icon: <Video className="h-4 w-4" />, description: 'Video conferencing preferences' },
+    { value: 'photoEditing', label: 'Photo', icon: <ImageIcon className="h-4 w-4" />, description: 'Photo editing tools' },
+    { value: 'imageGeneration', label: 'Images', icon: <ImageIcon className="h-4 w-4" />, description: 'Image generation settings' },
+    { value: 'textGeneration', label: 'Text', icon: <Type className="h-4 w-4" />, description: 'Text generation settings' },
+    { value: 'coding', label: 'Coding', icon: <Code className="h-4 w-4" />, description: 'Code editor preferences' },
+    { value: 'flashcard', label: 'Flashcards', icon: <BookOpen className="h-4 w-4" />, description: 'Flashcard study settings' },
+    { value: 'playground', label: 'Playground', icon: <Gamepad2 className="h-4 w-4" />, description: 'Playground defaults' },
 ];
 
 const tabContent: Record<PreferenceTab, React.ReactNode> = {
-    display:         <DisplayPreferences />,
-    prompts:         <PromptsPreferences />,
-    voice:           <VoicePreferences />,
-    textToSpeech:    <TextToSpeechPreferences />,
-    assistant:       <AssistantPreferences />,
-    email:           <EmailPreferences />,
+    display: <DisplayPreferences />,
+    prompts: <PromptsPreferences />,
+    voice: <VoicePreferences />,
+    textToSpeech: <TextToSpeechPreferences />,
+    assistant: <AssistantPreferences />,
+    email: <EmailPreferences />,
     videoConference: <VideoConferencePreferences />,
-    photoEditing:    <PhotoEditingPreferences />,
+    photoEditing: <PhotoEditingPreferences />,
     imageGeneration: <ImageGenerationPreferences />,
-    textGeneration:  <TextGenerationPreferences />,
-    coding:          <CodingPreferences />,
-    flashcard:       <FlashcardPreferences />,
-    playground:      <PlaygroundPreferences />,
-    aiModels:        <AiModelsPreferences />,
-    messaging:       <MessagingPreferences />,
+    textGeneration: <TextGenerationPreferences />,
+    coding: <CodingPreferences />,
+    flashcard: <FlashcardPreferences />,
+    playground: <PlaygroundPreferences />,
+    aiModels: <AiModelsPreferences />,
+    messaging: <MessagingPreferences />,
 };
 
 const PreferencesPage = () => {

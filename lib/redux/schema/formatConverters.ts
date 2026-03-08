@@ -1,5 +1,5 @@
 // lib/redux/schema/formatConverters.ts
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { EntityKeys, FieldDatabaseColumn } from "@/types/entityTypes";
 import {
     selectEntityNameToDatabase,
@@ -11,8 +11,8 @@ import {
     selectEntityNameFormats,
     selectFieldNameFormats
 } from './globalCacheSelectors';
-import {convertDataFormat, replaceKeysInObject} from './utils';
-import {NameFormat} from "@/types/AutomationSchemaTypes";
+import { convertDataFormat, replaceKeysInObject } from './utils';
+import { NameFormat } from "@/types/AutomationSchemaTypes";
 
 // =============== Replaced with selectors ===============
 

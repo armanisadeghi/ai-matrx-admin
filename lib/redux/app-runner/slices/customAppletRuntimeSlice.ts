@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '@/lib/redux/store';
-import { 
-  AppletLayoutOption, 
-  AppletContainer, 
+import type { RootState } from '@/lib/redux/store';
+import {
+  AppletLayoutOption,
+  AppletContainer,
   BrokerMapping,
   CustomAppletConfig,
 } from '@/types/customAppTypes';
@@ -51,9 +51,9 @@ const customAppletRuntimeSlice = createSlice({
   },
 });
 
-export const { 
-  setAppletRuntimeConfig, 
-  setAppletRuntimeLoading, 
+export const {
+  setAppletRuntimeConfig,
+  setAppletRuntimeLoading,
   resetAppletRuntimeConfig,
   setActiveAppletId
 } = customAppletRuntimeSlice.actions;
@@ -104,8 +104,8 @@ export const selectAppletRuntimeImageUrl = (state: RootState, appletId: string) 
 export const selectAppletRuntimeAppId = (state: RootState, appletId: string) => state.customAppletRuntime.applets[appletId]?.appId;
 
 
-export const selectActiveApplet = (state: RootState) => state.customAppletRuntime.activeAppletId 
-  ? state.customAppletRuntime.applets[state.customAppletRuntime.activeAppletId] 
+export const selectActiveApplet = (state: RootState) => state.customAppletRuntime.activeAppletId
+  ? state.customAppletRuntime.applets[state.customAppletRuntime.activeAppletId]
   : null;
 
 export const selectActiveAppletName = (state: RootState) => selectActiveApplet(state)?.name;

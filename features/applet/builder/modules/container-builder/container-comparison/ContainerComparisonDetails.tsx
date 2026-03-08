@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -68,7 +68,7 @@ export const ContainerComparisonDetails: React.FC<ContainerComparisonModalProps>
             isMatch !== undefined
                 ? isMatch
                 : normalizedAppletValue === normalizedCoreValue ||
-                  (normalizedAppletValue === "(empty)" && normalizedCoreValue === "(empty)");
+                (normalizedAppletValue === "(empty)" && normalizedCoreValue === "(empty)");
 
         return (
             <div className="grid grid-cols-3 gap-4 py-2 border-b dark:border-zinc-700 text-sm">

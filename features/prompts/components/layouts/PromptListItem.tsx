@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { 
-    Loader2, MoreVertical, Play, Pencil, Eye, Copy, 
-    Trash2, Share2, AppWindow, Settings, LayoutPanelTop, Globe 
+import {
+    Loader2, MoreVertical, Play, Pencil, Eye, Copy,
+    Trash2, Share2, AppWindow, Settings, LayoutPanelTop, Globe
 } from "lucide-react";
 import { FaBars } from "react-icons/fa";
 import { cn } from "@/lib/utils";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
@@ -123,7 +123,7 @@ export function PromptListItem({
     const handleConvertToTemplate = async (e: React.MouseEvent) => {
         e.stopPropagation();
         if (!isSystemAdmin || isConvertingToTemplate) return;
-        
+
         setIsConvertingToTemplate(true);
         setIsMenuOpen(false);
         try {
@@ -133,7 +133,7 @@ export function PromptListItem({
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
-                const errorMessage = errorData.details 
+                const errorMessage = errorData.details
                     ? `${errorData.error}: ${errorData.details}`
                     : errorData.error || `Failed to convert prompt to template (${response.status})`;
                 throw new Error(errorMessage);
@@ -152,7 +152,7 @@ export function PromptListItem({
     const handleMakeGlobalBuiltin = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (!isSystemAdmin) return;
-        
+
         setIsMenuOpen(false);
         setIsAdminMenuOpen(false);
         setIsConvertToBuiltinModalOpen(true);
@@ -197,9 +197,9 @@ export function PromptListItem({
                 <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                         <DropdownMenuTrigger asChild>
-                            <Button 
-                                variant="ghost" 
-                                size="sm" 
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 className="h-7 w-7 p-0"
                                 disabled={isDisabled}
                             >
@@ -235,11 +235,11 @@ export function PromptListItem({
                                 <AppWindow className="mr-2 h-4 w-4" />
                                 Create App
                             </DropdownMenuItem>
-                            
+
                             <DropdownMenuSeparator />
-                            
-                            <DropdownMenuItem 
-                                onClick={handleDelete} 
+
+                            <DropdownMenuItem
+                                onClick={handleDelete}
                                 disabled={isDeleting || isDisabled}
                                 className="text-destructive focus:text-destructive"
                             >

@@ -11,7 +11,7 @@ import ThinkingVisualization from "@/components/mardown-display/blocks/thinking-
 import ReasoningVisualization from "@/components/mardown-display/blocks/thinking-reasoning/ReasoningVisualization";
 import QuestionnaireLoadingVisualization from "@/components/mardown-display/chat-markdown/QuestionnaireLoadingVisualization";
 import ToolCallVisualization from "./ToolCallVisualization";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import ControlledLoadingIndicator from "@/features/chat/components/response/chat-loading/ControlledLoadingIndicator";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
 import {
@@ -100,22 +100,22 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ taskId, clas
     const renderContent = () => {
         const hasToolUpdates = streamToolUpdates.length > 0;
         const hasContent = content.length >= 2;
-        
+
         // Only show content if streaming
         if (!isStreaming && !hasToolUpdates) {
             return null;
         }
-        
+
         return (
             <>
                 {/* Show tool updates - collapsed if content has started */}
                 {hasToolUpdates && (
-                    <ToolCallVisualization 
-                        toolUpdates={streamToolUpdates} 
+                    <ToolCallVisualization
+                        toolUpdates={streamToolUpdates}
                         hasContent={hasContent}
                     />
                 )}
-                
+
                 {hasContent && parsedContent.contentSegments.map((segment, index) => (
                     <React.Fragment key={index}>
                         {segment.isQuestionnaire ? (

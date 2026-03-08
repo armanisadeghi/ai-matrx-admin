@@ -1,4 +1,4 @@
-import { RootState } from "..";
+import type { RootState } from "../store";
 import { getCachedNodes } from "./fileSystemUtils";
 import { FileManagement, FileSystemNode, NodeItemId, AvailableBuckets } from "./types";
 
@@ -29,14 +29,14 @@ export function getFileSystemDetails(
     : null;
   const storagePath: string = activeNode?.storagePath || "";
   const parentId: NodeItemId | null = activeNode?.itemId || null;
-  
+
   // CRITICAL FIX: Ensure parentPath always points to a FOLDER, not a FILE
   // If activeNode is a FILE, use its parent folder's path instead
-  const parentPath: string = activeNode?.contentType === 'FOLDER' 
-    ? activeNode.storagePath 
+  const parentPath: string = activeNode?.contentType === 'FOLDER'
+    ? activeNode.storagePath
     : (activeNode?.parentId && activeNode.parentId !== 'root'
-        ? state.nodes[activeNode.parentId]?.storagePath || ""
-        : "");
+      ? state.nodes[activeNode.parentId]?.storagePath || ""
+      : "");
 
   const cachedNodes: FileSystemNode[] | null = getCachedNodes(
     state.nodeCache,
@@ -103,19 +103,18 @@ export function getFileSystemDetailsWithSelection(
 
 
 export const isFreshData = (
-    fetchedAt: string | null,
-    staleDuration: number,
-    isStale: boolean = false
-  ): boolean => {
-    if (!fetchedAt || isStale) {
-      return false;
-    }
-  
-    const lastFetchTime = new Date(fetchedAt).getTime();
-    const currentTime = new Date().getTime();
-    const timeSinceLastFetch = currentTime - lastFetchTime;
-  
-    return timeSinceLastFetch < staleDuration;
-  };
-  
-  
+  fetchedAt: string | null,
+  staleDuration: number,
+  isStale: boolean = false
+): boolean => {
+  if (!fetchedAt || isStale) {
+    return false;
+  }
+
+  const lastFetchTime = new Date(fetchedAt).getTime();
+  const currentTime = new Date().getTime();
+  const timeSinceLastFetch = currentTime - lastFetchTime;
+
+  return timeSinceLastFetch < staleDuration;
+};
+

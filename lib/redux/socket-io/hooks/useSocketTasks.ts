@@ -20,7 +20,7 @@ import {
 } from '@/lib/redux/socket-io';
 
 import { selectCombinedText } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from '@/lib/redux/hooks';
 
 // Hook for creating and managing tasks

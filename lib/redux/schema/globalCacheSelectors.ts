@@ -1,5 +1,5 @@
 // lib/redux/selectors/globalCacheSelectors.ts
-import { RootState } from '@/lib/redux/store';
+import type { RootState } from '@/lib/redux/store';
 import { createSelector } from '@reduxjs/toolkit';
 import {
     AnyEntityDatabaseTable,
@@ -90,7 +90,7 @@ export const selectEntityFields = createSelector(
     (entities, entityName): EntityStateField[] => {
         const entity = entities[entityName];
         if (!entity) return [];
-        
+
         return Object.values(entity.entityFields);
     }
 );
@@ -101,7 +101,7 @@ export const selectField = createSelector(
         const { entityName, fieldName } = params;
         const entity = entities[entityName];
         if (!entity) return {};
-        
+
         const fieldId = `${entityName}__${fieldName}`;
         return entity.entityFields[fieldId] || {};
     }
@@ -790,7 +790,7 @@ export const selectUnifiedDatabaseObjectConversion2 = createSelector(
         if (options.recordKeys) {
             result.recordKeys = options.recordKeys;
             result.parsedFrontendRecords = parseRecordKeys(options.recordKeys) as Record<AllEntityFieldKeys, string>[];
-        
+
             if (result.parsedFrontendRecords) {
                 result.parsedDatabaseRecords = result.parsedFrontendRecords.map(record => {
                     const databaseRecord: Record<string, string> = {};
@@ -801,7 +801,7 @@ export const selectUnifiedDatabaseObjectConversion2 = createSelector(
                 });
             }
         }
-        
+
         if (options.filters) {
             result.filters = selectReplaceKeysInObject(state, options.filters, fieldMap) as Partial<Record<string, unknown>>;
         }

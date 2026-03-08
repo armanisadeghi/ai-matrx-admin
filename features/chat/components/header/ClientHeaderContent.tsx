@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import Image from "next/image";
 import { useSelector } from "react-redux";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { ThemeSwitcherIcon } from "@/styles/themes/ThemeSwitcher";
 import { TbListSearch } from "react-icons/tb";
 import Link from "next/link";

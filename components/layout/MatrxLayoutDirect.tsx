@@ -12,7 +12,7 @@ import { Logo } from "@/components/layout/MatrixLogo";
 import { appSidebarLinks } from "@/constants";
 import { Settings, User, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSelector } from "react-redux";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { ThemeSwitcher } from "@/styles/themes/ThemeSwitcher";
 import { Tooltip, TooltipContent, TooltipTrigger, } from "@/components/ui/tooltip";
 import {

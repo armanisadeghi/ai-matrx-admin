@@ -8,7 +8,7 @@ import { SchemaField } from "@/constants/socket-schema";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { arrayOperation, updateTaskFieldByPath } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
 import { useSelector } from "react-redux";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { selectTaskDataById } from "@/lib/redux/socket-io";
 
 interface ArrayFieldProps {

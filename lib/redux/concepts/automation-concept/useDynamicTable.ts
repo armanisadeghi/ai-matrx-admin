@@ -3,7 +3,7 @@
 //
 // import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 // import { createTableSlice } from "@/lib/redux/tables/tableSliceCreator";
-// import { RootState } from "@/lib/redux/store";
+// import type { RootState } from "@/lib/redux/store";
 // import {automationTableSchema} from "@/utils/schema/initialSchemas";
 //
 // type TableStateKeys = keyof typeof automationTableSchema & keyof RootState;

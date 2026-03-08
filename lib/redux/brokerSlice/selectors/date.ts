@@ -1,6 +1,6 @@
 // types/date/index.ts
 import { createSelector } from "reselect";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { BrokerIdentifier } from "../types";
 import { resolveBrokerId } from "../utils";
 
@@ -23,7 +23,7 @@ const selectDate = createSelector(
     (broker, idArgs): Date | undefined => {
         const brokerId = resolveBrokerId(broker, idArgs);
         if (!brokerId) return undefined;
-        
+
         const brokerValue = broker.brokers[brokerId];
         return isValidDate(brokerValue) ? new Date(brokerValue) : undefined;
     }
@@ -37,7 +37,7 @@ const selectDateString = createSelector(
     (broker, idArgs): string | undefined => {
         const brokerId = resolveBrokerId(broker, idArgs);
         if (!brokerId) return undefined;
-        
+
         const brokerValue = broker.brokers[brokerId];
         return isValidDate(brokerValue) ? brokerValue : undefined;
     }

@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Loader2, Search, Sparkles, type LucideIcon, Check, AlertCircle } from 'lucide-react';
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { setPreference, UserPreferencesState } from '@/lib/redux/slices/userPreferencesSlice';
 import { fetchAIModelsClient } from "@/lib/api/ai-models";
@@ -26,7 +26,7 @@ const AiModelsPreferences = () => {
     const dispatch = useAppDispatch();
     const preferences = useSelector((state: RootState) => state.userPreferences as UserPreferencesState);
     const { aiModels, _meta } = preferences;
-    
+
     const [models, setModels] = useState<AIModel[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [searchQuery, setSearchQuery] = useState<string>('');
@@ -61,14 +61,14 @@ const AiModelsPreferences = () => {
             // Moving from active to inactive
             const newActiveModels = aiModels.activeModels.filter(id => id !== modelId);
             const newInactiveModels = [...aiModels.inactiveModels, modelId];
-            
+
             dispatch(setPreference({ module: 'aiModels', preference: 'activeModels', value: newActiveModels }));
             dispatch(setPreference({ module: 'aiModels', preference: 'inactiveModels', value: newInactiveModels }));
         } else {
             // Moving from inactive/unset to active
             const newInactiveModels = aiModels.inactiveModels.filter(id => id !== modelId);
             const newActiveModels = [...aiModels.activeModels, modelId];
-            
+
             dispatch(setPreference({ module: 'aiModels', preference: 'inactiveModels', value: newInactiveModels }));
             dispatch(setPreference({ module: 'aiModels', preference: 'activeModels', value: newActiveModels }));
         }
@@ -77,8 +77,8 @@ const AiModelsPreferences = () => {
     // Categorize models
     const activeModels = models.filter(m => aiModels.activeModels.includes(m.id));
     const inactiveModels = models.filter(m => aiModels.inactiveModels.includes(m.id));
-    const availableModels = models.filter(m => 
-        !aiModels.activeModels.includes(m.id) && 
+    const availableModels = models.filter(m =>
+        !aiModels.activeModels.includes(m.id) &&
         !aiModels.inactiveModels.includes(m.id)
     );
 
@@ -86,7 +86,7 @@ const AiModelsPreferences = () => {
     const filterModels = (modelList: AIModel[]) => {
         if (!searchQuery.trim()) return modelList;
         const query = searchQuery.toLowerCase();
-        return modelList.filter(m => 
+        return modelList.filter(m =>
             m.common_name?.toLowerCase().includes(query) ||
             m.name.toLowerCase().includes(query) ||
             m.provider?.toLowerCase().includes(query)
@@ -124,16 +124,16 @@ const AiModelsPreferences = () => {
         </div>
     );
 
-    const ModelSection = ({ 
-        title, 
-        models, 
-        emptyMessage, 
+    const ModelSection = ({
+        title,
+        models,
+        emptyMessage,
         isActive,
         icon: Icon
-    }: { 
-        title: string; 
-        models: AIModel[]; 
-        emptyMessage: string; 
+    }: {
+        title: string;
+        models: AIModel[];
+        emptyMessage: string;
         isActive: boolean;
         icon: LucideIcon;
     }) => (

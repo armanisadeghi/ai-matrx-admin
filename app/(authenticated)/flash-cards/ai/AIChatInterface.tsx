@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Button } from "@/components/ui/button";
 import { Flashcard, FlashcardData, ChatMessage } from "@/types/flashcards.types";
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/lib/redux/store';
+import type { RootState } from '@/lib/redux/store';
 import { addMessage } from '@/lib/redux/slices/flashcardChatSlice';
-import {openai, defaultOpenAiModel} from "@/lib/ai/openAiBrowserClient";
+import { openai, defaultOpenAiModel } from "@/lib/ai/openAiBrowserClient";
 
 interface AIChatInterfaceProps {
     isOpen: boolean;

@@ -1,7 +1,7 @@
 // conversationThunks.ts
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
-import { 
+import {
   setActiveConversation,
   setCurrentDisplayOrder,
   setCurrentSystemOrder,
@@ -10,9 +10,9 @@ import {
   ConversationState,
 } from '../conversationSlice';
 import { startNewMessage } from './startNewMessageThunk';
-import { 
-  addMessage, 
-  clearMessagesForConversation, 
+import {
+  addMessage,
+  clearMessagesForConversation,
   selectLastDisplayOrder,
   selectLastSystemOrder,
   selectLastMessageRole,
@@ -21,7 +21,7 @@ import {
 import { ChatMode } from '../conversationSlice';
 import { NewMessageState } from '../newMessageSlice';
 import { createMessageSelectors } from "@/lib/redux/entity/selectors";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { MessageRecordWithKey } from '@/types/AutomationSchemaTypes';
 
 interface CreateNewConversationArgs {
@@ -137,7 +137,7 @@ export const updateExistingConversation = createAsyncThunk<
   async ({ conversationId }, { dispatch, getState }) => {
     // Get the current state
     const state = getState();
-    
+
     // Fetch messages from the entity slice using the selector
     const messages = createMessageSelectors.selectRecordsByFieldValue(
       state,
@@ -150,7 +150,7 @@ export const updateExistingConversation = createAsyncThunk<
 
     // Get the updated state after adding messages
     const updatedState = getState();
-    
+
     // Calculate the latest values based on all messages for this conversation
     const lastDisplayOrder = selectLastDisplayOrder(updatedState, conversationId);
     const lastSystemOrder = selectLastSystemOrder(updatedState, conversationId);

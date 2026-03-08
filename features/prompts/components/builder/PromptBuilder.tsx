@@ -7,7 +7,7 @@ import { PromptMessage } from "@/features/prompts/types/core";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useModelControls, getModelDefaults } from "@/features/prompts/hooks/useModelControls";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
 import { AiModelsPreferences, PromptsPreferences } from "@/lib/redux/slices/userPreferencesSlice";
 import { updateDebugData } from "@/lib/redux/slices/adminDebugSlice";
@@ -48,7 +48,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
     const modelPreferences = useAppSelector((state: RootState) => state.userPreferences.aiModels as AiModelsPreferences);
     const { formatMessageWithResources } = useResourceMessageFormatter();
     const promptsPreferences: PromptsPreferences = useAppSelector(selectPromptsPreferences);
-    
+
     // Mobile detection and tab state
     const isMobile = useIsMobile();
     const [mobileActiveTab, setMobileActiveTab] = useState<'edit' | 'test'>('edit');
@@ -62,14 +62,14 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
     const isSharedPrompt = accessInfo && !accessInfo.isOwner && accessInfo.permissionLevel !== null;
     const canEditOriginal = accessInfo?.canEdit ?? true; // Default to true for owned prompts
 
-    
+
     if (!models || models.length === 0) {
         return <div className="p-8 text-center text-destructive">Error: No models available</div>;
     }
-    
+
     // Determine if we're in edit mode based on whether we have an existing prompt ID
     const isEditMode = !!initialData?.id;
-    
+
     // Get initial model ID from settings.model_id (single source of truth)
     const getInitialModelId = () => {
         if (initialData?.settings && typeof initialData.settings === 'object' && 'model_id' in initialData.settings) {
@@ -78,15 +78,15 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
         // Default for new prompts
         return modelPreferences?.defaultModel || models[0]?.id;
     };
-    
+
     const initialModelId = getInitialModelId();
     const initialModel = models.find(m => m.id === initialModelId) || models[0];
-    
+
     // Get initial modelConfig from settings (single source of truth)
     // Extract all settings except model_id - those are the config options
     const getInitialModelConfig = () => {
         const defaults = getModelDefaults(initialModel);
-        
+
         if (initialData?.settings && typeof initialData.settings === 'object') {
             const { model_id, output_format, ...config } = initialData.settings as Record<string, any>;
             // Migrate legacy output_format from DB -> response_format dict
@@ -97,10 +97,10 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
             }
             return { ...defaults, ...config };
         }
-        
+
         return defaults;
     };
-    
+
     // Extract system message and user/assistant messages from initialData
     const getInitialMessages = () => {
         if (initialData?.messages && initialData.messages.length > 0) {
@@ -109,7 +109,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
         }
         return []; // Empty if no initial data provided
     };
-    
+
     const getInitialDeveloperMessage = () => {
         if (initialData?.messages && initialData.messages.length > 0) {
             const systemMessage = initialData.messages.find(m => m.role === "system");
@@ -117,22 +117,22 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
         }
         return ""; // Empty if no initial data provided
     };
-    
+
     // Core state - model state holds the model ID (UUID)
     const [promptName, setPromptName] = useState(initialData?.name || "");
     const [promptDescription, setPromptDescription] = useState(""); // TODO: Add to initialData when schema supports it
     const [model, setModel] = useState(initialModelId);
     const [modelConfig, setModelConfig] = useState<PromptSettings>(getInitialModelConfig());
-    
+
     const [developerMessage, setDeveloperMessage] = useState(getInitialDeveloperMessage());
     const [messages, setMessages] = useState<PromptMessage[]>(getInitialMessages());
-    
+
     // Get model controls to check capabilities
     const { normalizedControls } = useModelControls(models, model);
-    
+
     // Check if the current model supports tools
     const modelSupportsTools = normalizedControls?.tools?.default ?? false;
-    
+
     // Check attachment capabilities from actual prompt settings (not just model defaults)
     const supportsImageUrls = modelConfig?.image_urls ?? false;
     const supportsFileUrls = modelConfig?.file_urls ?? false;
@@ -155,7 +155,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
         }
         return []; // Empty if no initial data provided
     };
-    
+
     const [variableDefaults, setVariableDefaults] = useState<PromptVariable[]>(getInitialVariableDefaults());
     const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
 
@@ -175,8 +175,8 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
 
     const [chatInput, setChatInput] = useState("");
     const [resources, setResources] = useState<Resource[]>([]);
-    const [conversationMessages, setConversationMessages] = useState<Array<{ 
-        role: string; 
+    const [conversationMessages, setConversationMessages] = useState<Array<{
+        role: string;
         content: string;
         taskId?: string; // Store taskId with each message
         metadata?: {
@@ -187,14 +187,14 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
     }>>([]);
     // Track the actual API conversation history (separate from template and display)
     const [apiConversationHistory, setApiConversationHistory] = useState<PromptMessage[]>([]);
-    
+
     // Session state initialized from Redux preferences (users can toggle during session)
     const [submitOnEnter, setSubmitOnEnter] = useState(promptsPreferences?.submitOnEnter ?? false);
     const [autoClearResponsesInEditMode, setAutoClearResponsesInEditMode] = useState(promptsPreferences?.autoClearResponsesInEditMode ?? false);
-    
+
     // UI preference from Redux (read-only)
     const showSettingsOnMainPage = promptsPreferences?.showSettingsOnMainPage ?? true;
-    
+
     const [isTestingPrompt, setIsTestingPrompt] = useState(false);
     const [lastMessageStats, setLastMessageStats] = useState<{
         timeToFirstToken?: number;
@@ -206,7 +206,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
     const timeToFirstTokenRef = useRef<number | undefined>(undefined);
 
     // Get streaming response from socket
-    const streamingText = useAppSelector((state) => 
+    const streamingText = useAppSelector((state) =>
         currentTaskId ? selectPrimaryResponseTextByTaskId(currentTaskId)(state) : ""
     );
     const isResponseEnded = useAppSelector((state) =>
@@ -222,7 +222,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
     const [variablePopoverOpen, setVariablePopoverOpen] = useState<number | null>(null);
     const [systemMessageVariablePopoverOpen, setSystemMessageVariablePopoverOpen] = useState(false);
     const [cursorPositions, setCursorPositions] = useState<Record<number, number>>({});
-    
+
     // Refs for textarea elements (including system message at index -1)
     const textareaRefs = useRef<Record<number, HTMLTextAreaElement | null>>({});
 
@@ -232,8 +232,8 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
         if (autoRun === 'true' && initialData?.id) {
             // Open the modal after a short delay to ensure the page has loaded
             const timer = setTimeout(() => {
-                openPrompt({ 
-                    promptId: initialData.id, 
+                openPrompt({
+                    promptId: initialData.id,
                     executionConfig: {
                         auto_run: false,
                         allow_chat: true,
@@ -243,12 +243,12 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
                         use_pre_execution_input: false,
                     }
                 });
-                
+
                 // Clean up the URL by removing the query parameter
                 const newUrl = pathname;
                 router.replace(newUrl);
             }, 500);
-            
+
             return () => clearTimeout(timer);
         }
     }, [searchParams, initialData?.id, pathname, router]);
@@ -282,7 +282,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
 
     // Handler to update a variable's default value
     const handleUpdateVariableValue = (variableName: string, value: string) => {
-        setVariableDefaults((prev) => 
+        setVariableDefaults((prev) =>
             prev.map(v => v.name === variableName ? { ...v, defaultValue: value } : v)
         );
         setIsDirty(true);
@@ -366,12 +366,12 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
 
     const insertVariableIntoMessage = (messageIndex: number, variable: string) => {
         const textarea = textareaRefs.current[messageIndex];
-        
+
         // Use the stored cursor position (captured when the "+ Variable" button was clicked)
         // This is important because the popover interaction may affect the textarea's selectionStart
         const currentContent = messages[messageIndex].content;
         const cursorPos = cursorPositions[messageIndex] ?? currentContent.length;
-        
+
         const beforeCursor = currentContent.substring(0, cursorPos);
         const afterCursor = currentContent.substring(cursorPos);
         const newContent = beforeCursor + `{{${variable}}}` + afterCursor;
@@ -399,11 +399,11 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
 
     const insertVariableIntoSystemMessage = (variable: string) => {
         const textarea = textareaRefs.current[-1]; // System message uses index -1
-        
+
         // Use the stored cursor position (captured when the "+ Variable" button was clicked)
         const currentContent = developerMessage;
         const cursorPos = cursorPositions[-1] ?? currentContent.length;
-        
+
         const beforeCursor = currentContent.substring(0, cursorPos);
         const afterCursor = currentContent.substring(cursorPos);
         const newContent = beforeCursor + `{{${variable}}}` + afterCursor;
@@ -474,7 +474,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
                 // This prevents duplicate creation if user clicks save again before routing
                 const result = await dispatch(createUserPrompt(promptData as any)).unwrap();
                 setIsDirty(false);
-                
+
                 // Route to the newly created prompt's edit page
                 if (result?.id) {
                     router.push(`/ai/prompts/edit/${result.id}`);
@@ -497,7 +497,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
     // Handle "Save as My Copy" from the shared prompt warning modal
     const handleSaveAsCopy = async () => {
         if (!initialData?.id) return;
-        
+
         setIsCreatingCopy(true);
         try {
             const response = await fetch(`/api/prompts/${initialData.id}/duplicate`, {
@@ -546,15 +546,15 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
             // Calculate final stats
             const totalTime = Math.round(performance.now() - messageStartTime);
             const tokenCount = Math.round(streamingText.length / 4);
-            
+
             const finalStats = {
                 timeToFirstToken: timeToFirstTokenRef.current,
                 totalTime: totalTime,
                 tokens: tokenCount
             };
-            
+
             setLastMessageStats(finalStats);
-            
+
             // Add the completed assistant message with content, metadata, and taskId
             setConversationMessages((prev) => [
                 ...prev,
@@ -611,8 +611,8 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
                 // Combine the last user message with chatInput (if any)
                 const lastMessageContent = lastPromptMessage.content;
                 const additionalInput = chatInput.trim();
-                
-                userMessageContent = additionalInput 
+
+                userMessageContent = additionalInput
                     ? `${lastMessageContent}\n${additionalInput}`
                     : lastMessageContent;
             } else {
@@ -624,17 +624,17 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
         } else {
             // Subsequent messages: Just use the chat input
             if (!chatInput.trim()) return;
-            
+
             userMessageContent = chatInput;
             displayUserMessage = chatInput;
         }
 
         // Format message with resources before sending
         const { formattedMessage, settingsAttachments, metadata } = await formatMessageWithResources(userMessageContent, resources);
-        
+
         // Use formatted message for API
         userMessageContent = formattedMessage;
-        
+
         // Also update display message to include resources for UI rendering
         displayUserMessage = formattedMessage;
 
@@ -731,7 +731,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
                 },
                 customTaskId: taskId,
             })).unwrap();
-            
+
         } catch (error) {
             console.error("Error testing prompt:", error);
             setConversationMessages((prev) => [...prev, { role: "assistant", content: "Error: Failed to get response from AI" }]);
@@ -744,9 +744,9 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
     };
 
     // Handle settings modal updates
-    const handleSettingsUpdate = (id: string, data: { 
-        name: string; 
-        description?: string; 
+    const handleSettingsUpdate = (id: string, data: {
+        name: string;
+        description?: string;
         variableDefaults: PromptVariable[];
         messages?: PromptMessage[];
         settings?: Record<string, any>;
@@ -755,9 +755,9 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
         dispatch(updateUserPrompt({ id, data }));
     };
 
-    const handleLocalStateUpdate = (updates: { 
-        name?: string; 
-        description?: string; 
+    const handleLocalStateUpdate = (updates: {
+        name?: string;
+        description?: string;
         variableDefaults?: PromptVariable[];
         messages?: PromptMessage[];
         settings?: Record<string, any>;
@@ -772,7 +772,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
         if (updates.variableDefaults !== undefined) {
             setVariableDefaults(updates.variableDefaults);
         }
-        
+
         // Handle messages update - split back into developerMessage and messages
         if (updates.messages !== undefined && updates.messages.length > 0) {
             // First message should be the system message (developer message)
@@ -785,7 +785,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
                 setMessages(updates.messages);
             }
         }
-        
+
         // Handle settings update - extract model and modelConfig
         if (updates.settings !== undefined) {
             const { model_id, ...config } = updates.settings;
@@ -796,7 +796,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
                 setModelConfig(config as PromptSettings);
             }
         }
-        
+
         // Only mark as dirty if this is NOT from a save operation
         if (!isFromSave) {
             setIsDirty(true);
@@ -876,13 +876,13 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
     const handleAcceptFullPromptAsCopy = async (optimizedObject: any) => {
         try {
             // Prepare the name with " (Copy)" suffix
-            const newName = optimizedObject.name 
-                ? `${optimizedObject.name} (Copy)` 
+            const newName = optimizedObject.name
+                ? `${optimizedObject.name} (Copy)`
                 : `${promptName} (Copy)`;
 
             // Extract messages
-            const allMessages = Array.isArray(optimizedObject.messages) 
-                ? optimizedObject.messages 
+            const allMessages = Array.isArray(optimizedObject.messages)
+                ? optimizedObject.messages
                 : [{ role: "system", content: developerMessage }, ...messages];
 
             // Extract settings
@@ -905,7 +905,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
 
             // Create the new prompt
             const result = await dispatch(createUserPrompt(promptData as any)).unwrap();
-            
+
             if (result?.id) {
                 toast.success('Copy created successfully', {
                     description: 'Routing to the new prompt...'

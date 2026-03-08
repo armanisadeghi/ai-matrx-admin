@@ -8,13 +8,13 @@ import { getContainerBuilderState } from "@/lib/redux/app-builder/selectors/cont
 import { getFieldBuilderState } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { Button } from "@/components/ui/button";
 import { Bug } from "lucide-react";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import { useUser } from "@/lib/hooks/useUser";
 
 
-export type PositionType = 
+export type PositionType =
   | 'top-left'
   | 'top-right'
   | 'top-center'
@@ -50,14 +50,14 @@ const TabContentWithSubtabs: React.FC<TabContentWithSubtabsProps> = ({ data }) =
       <Tabs defaultValue="simple" className="w-full h-full">
         <div className="border-b border-zinc-200 dark:border-zinc-700 px-2">
           <TabsList className="h-9 bg-transparent">
-            <TabsTrigger 
-              value="simple" 
+            <TabsTrigger
+              value="simple"
               className="h-8 px-3 text-xs data-[state=active]:bg-zinc-100 data-[state=active]:dark:bg-zinc-800 rounded-t-md"
             >
               Simple View
             </TabsTrigger>
-            <TabsTrigger 
-              value="explorer" 
+            <TabsTrigger
+              value="explorer"
               className="h-8 px-3 text-xs data-[state=active]:bg-zinc-100 data-[state=active]:dark:bg-zinc-800 rounded-t-md"
             >
               Explorer
@@ -76,36 +76,36 @@ const TabContentWithSubtabs: React.FC<TabContentWithSubtabsProps> = ({ data }) =
 };
 
 const getPositionClasses = (position: PositionType): string => {
-  switch(position) {
-    case 'top-left': 
+  switch (position) {
+    case 'top-left':
       return 'fixed top-4 left-4';
-    case 'top-right': 
+    case 'top-right':
       return 'fixed top-4 right-4';
-    case 'top-center': 
+    case 'top-center':
       return 'fixed top-4 left-1/2 -translate-x-1/2';
-    case 'bottom-left': 
+    case 'bottom-left':
       return 'fixed bottom-4 left-4';
-    case 'bottom-right': 
+    case 'bottom-right':
       return 'fixed bottom-4 right-4';
-    case 'bottom-center': 
+    case 'bottom-center':
       return 'fixed bottom-4 left-1/2 -translate-x-1/2';
-    case 'middle-left': 
+    case 'middle-left':
       return 'fixed top-1/2 left-4 -translate-y-1/2';
-    case 'middle-right': 
+    case 'middle-right':
       return 'fixed top-1/2 right-4 -translate-y-1/2';
-    case 'center': 
+    case 'center':
       return 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2';
-    default: 
+    default:
       return 'fixed top-1/2 right-4 -translate-y-1/2';
   }
 };
 
-const AppBuilderDebugOverlay: React.FC<AppBuilderDebugOverlayProps> = ({ 
+const AppBuilderDebugOverlay: React.FC<AppBuilderDebugOverlayProps> = ({
   className = '',
-  position = 'middle-right' 
+  position = 'middle-right'
 }) => {
   const [isDebugOpen, setIsDebugOpen] = useState(false);
-  
+
   const appletState = useAppSelector(getAppletBuilderState);
   const appState = useAppSelector(getAppBuilderState);
   const containerState = useAppSelector(getContainerBuilderState);
@@ -155,7 +155,7 @@ const AppBuilderDebugOverlay: React.FC<AppBuilderDebugOverlayProps> = ({
           <Bug className="h-4 w-4" />
         </Button>
       </div>
-      
+
       <FullScreenOverlay
         isOpen={isDebugOpen}
         onClose={handleClose}

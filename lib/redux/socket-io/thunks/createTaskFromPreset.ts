@@ -1,14 +1,14 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { 
-    TaskPreset, 
-    getPreset, 
+import {
+    TaskPreset,
+    getPreset,
     transformDataWithPreset,
-    SocketTaskName 
+    SocketTaskName
 } from "@/components/socket-io/presets/socket-task-presets";
 import { createTask } from "./createTaskThunk";
 import { submitTask, submitTaskNew } from "./submitTaskThunk";
 import { nanoid } from "nanoid";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 
 // ===== INTERFACES =====
 
@@ -179,7 +179,7 @@ export const createTaskFromPresetQuick = createAsyncThunk<
                 presetName: params.presetName,
                 sourceData: params.sourceData
             })).unwrap();
-            
+
             return result.taskId;
         } catch (error) {
             return rejectWithValue(error.message || "Failed to create task from preset");

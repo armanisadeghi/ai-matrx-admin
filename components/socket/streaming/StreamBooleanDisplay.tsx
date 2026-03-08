@@ -1,7 +1,7 @@
 "use client";
 
 import { useSelector } from "react-redux";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { CheckCircleIcon, XCircleIcon } from "lucide-react";
 import StreamDisplayOverlay from "./StreamDisplayOverlay";
@@ -13,10 +13,10 @@ interface StreamBooleanDisplayProps {
   isFullscreen?: boolean;
 }
 
-const StreamBooleanDisplay = ({ 
-  title, 
+const StreamBooleanDisplay = ({
+  title,
   selector,
-  isFullscreen = false 
+  isFullscreen = false
 }: StreamBooleanDisplayProps) => {
   // Safely handle potentially null/undefined values
   const rawValue = useSelector(selector);
@@ -64,7 +64,7 @@ const StreamBooleanDisplay = ({
         <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">{title}</CardTitle>
       </CardHeader>
       <CardContent className="p-3 flex-grow">
-        <StreamDisplayOverlay 
+        <StreamDisplayOverlay
           title={title}
           className="h-[calc(95vh-5rem)]"
         >

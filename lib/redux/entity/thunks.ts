@@ -3,7 +3,7 @@ import { EntityKeys, AnyEntityDatabaseTable } from '@/types/entityTypes';
 import { createEntitySlice } from './slice';
 import { FetchOneWithFkIfkPayload, GetOrFetchSelectedRecordsPayload } from './actions';
 import { QueryOptions } from './types/stateTypes';
-import { RootState } from '@/lib/redux/store';
+import type { RootState } from '@/lib/redux/store';
 import { selectEntityDatabaseName } from '@/lib/redux/schema/globalCacheSelectors';
 import EntityLogger from './utils/entityLogger';
 import { AppDispatch } from '@/lib/redux/store';

@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useSelector } from "react-redux";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { selectAllResponses, selectTaskById, selectTaskListenerIds } from "@/lib/redux/socket-io";
 import SocketAdminErrorDisplay from "../socket-response/SocketErrors";
 import SocketTextDisplay from "../socket-response/SocketTextDisplay";

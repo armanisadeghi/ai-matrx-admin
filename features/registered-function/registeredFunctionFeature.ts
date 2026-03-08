@@ -6,7 +6,7 @@ import { createFeatureSelectors } from "@/lib/redux/selectors/featureSelectors";
 import { createFeatureActions } from '@/lib/redux/actions/featureActions';
 
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
-import { RootState } from '@/lib/redux/store';
+import type { RootState } from '@/lib/redux/store';
 
 const featureName = 'registeredFunction' as const;
 

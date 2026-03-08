@@ -5,7 +5,7 @@ import { ModelConfiguration } from "./ModelConfiguration";
 import { ModelSettingsDialog } from "@/features/prompts/components/configuration/ModelSettingsDialog";
 import { useModelControls } from "@/features/prompts/hooks/useModelControls";
 import { AiModelsPreferences } from "@/lib/redux/slices/userPreferencesSlice";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { PromptSettings } from "@/features/prompts/types/core";
 

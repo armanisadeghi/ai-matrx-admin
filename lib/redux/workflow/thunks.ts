@@ -7,7 +7,7 @@ import { updateViewport } from "./slice";
 import { workflowsSelectors } from "./selectors";
 import { workflowNodesSelectors } from "../workflow-nodes/selectors";
 import { WorkflowCreateInput, WorkflowUpdateInput } from "./types";
-import { RootState } from "../store";
+import type { RootState } from "../store";
 
 export const fetchAllWorkflows = createAsyncThunk("workflows/fetchAll", async () => {
     return await workflowService.fetchAll();

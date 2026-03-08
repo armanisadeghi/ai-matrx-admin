@@ -7,7 +7,7 @@ import AppletSourceSelection from "@/features/applet/builder/modules/broker-mapp
 import { RecipeSelectionList } from "@/features/applet/builder/modules/recipe-source/RecipeSelectionList";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { selectAppletCompiledRecipeId, selectAppletsByAppId } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectAppletSourceConfig } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectIsAppletDirtyById } from "@/lib/redux/app-builder/selectors/appletSelectors";
@@ -174,10 +174,10 @@ const SourceConfigContent: React.FC<SourceConfigContentProps> = ({ appletId, app
                 allApplets.length === 0
                     ? "No applets found. Please create applets first."
                     : !allHaveSourceConfigs
-                    ? `${appletstWithSourceConfigs.length}/${allApplets.length} applets have source configurations.`
-                    : anyNeedSaving
-                    ? "All applets have sources. Please save your changes."
-                    : "All applets have been configured and saved.",
+                        ? `${appletstWithSourceConfigs.length}/${allApplets.length} applets have source configurations.`
+                        : anyNeedSaving
+                            ? "All applets have sources. Please save your changes."
+                            : "All applets have been configured and saved.",
             footerButtons: saveButton,
         });
     }, [allApplets, appId, handleSaveAllApplets, onUpdateCompletion]);

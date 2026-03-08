@@ -1,5 +1,5 @@
 import { createSelector } from "reselect";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { BrokerIdentifier } from "../types";
 import { resolveBrokerId } from "../utils";
 
@@ -20,7 +20,7 @@ const selectDynamicValue = createSelector(
 );
 
 const selectDynamicValueType = createSelector(
-    [selectDynamicValue], 
+    [selectDynamicValue],
     (value): string => typeof value
 );
 

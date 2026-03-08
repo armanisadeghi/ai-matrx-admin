@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "@/lib/redux/hooks"; // Need this import
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Unlink } from "lucide-react";
@@ -32,24 +32,24 @@ export const ContainerComparisonModal: React.FC<ContainerComparisonModalProps> =
     const containersMatch = useSelector((state: RootState) => selectDoContainersMatch(state, appletId, containerId));
     const comparisonResult = useSelector((state: RootState) => selectContainerComparisonResult(state, appletId, containerId));
     const applet = useSelector((state: RootState) => selectAppletById(state, appletId));
-    
+
     // Check if the container exists in the database
     const missingDatabaseContainer = !comparisonResult.coreContainerExists;
-    
+
     if (containersMatch) {
         return null;
     }
-    
+
     const handleRecompile = () => {
         onRecompile?.();
         setOpen(false);
     };
-    
+
     const handleSetAsIdentical = () => {
         onSetAsIdentical?.();
         setOpen(false);
     };
-    
+
     const handleCancel = () => {
         onCancel?.();
         setOpen(false);
@@ -59,16 +59,16 @@ export const ContainerComparisonModal: React.FC<ContainerComparisonModalProps> =
         onDetach?.(e);
         setOpen(false);
     };
-    
+
     const handleCreateContainer = async () => {
         // Find the container data from the applet
         const appletContainer = applet?.containers?.find(c => c.id === containerId);
-        
+
         if (!appletContainer) {
             console.error("Container not found in applet");
             return;
         }
-        
+
         try {
             // Create the container using the applet's container data
             await dispatch(createContainerThunk({
@@ -76,7 +76,7 @@ export const ContainerComparisonModal: React.FC<ContainerComparisonModalProps> =
                 // You might want to add/modify some properties here
                 // For example, ensure isDirty is false, isLocal is false, etc.
             })).unwrap();
-            
+
             // Optionally close the modal or refresh data
             setOpen(false);
         } catch (error) {
@@ -84,7 +84,7 @@ export const ContainerComparisonModal: React.FC<ContainerComparisonModalProps> =
             // Handle error - maybe show a toast or error message
         }
     };
-    
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -102,16 +102,16 @@ export const ContainerComparisonModal: React.FC<ContainerComparisonModalProps> =
                 <div className="flex justify-end gap-3 mt-6 pt-4 border-t dark:border-zinc-700">
                     {missingDatabaseContainer && (
                         <>
-                            <Button 
-                                variant="default" 
+                            <Button
+                                variant="default"
                                 onClick={handleCreateContainer}
                                 className="bg-blue-600 hover:bg-blue-700"
                             >
                                 Create Container
                             </Button>
                             {onDetach && (
-                                <Button 
-                                    variant="outline" 
+                                <Button
+                                    variant="outline"
                                     onClick={handleDetach}
                                     className="flex items-center gap-1 text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/50"
                                 >

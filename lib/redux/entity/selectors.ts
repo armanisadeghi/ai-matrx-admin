@@ -3,7 +3,7 @@
 
 import { createSelector, Selector } from "@reduxjs/toolkit";
 import { EntityKeys, EntityData, EntityAnyFieldKey, EntityDataWithKey, AllEntityFieldKeys, EntityFieldKeys } from "@/types/entityTypes";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import {
     EnhancedRecord,
     EntityOperationMode,
@@ -448,19 +448,19 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
     const selectQuickReferenceSelectOptions = createSelector(
-        [selectQuickReference], 
+        [selectQuickReference],
         (records): SelectOption[] =>
             records.map((record) => {
                 const parsedKey = parseRecordKey(record.recordKey);
                 const firstPrimaryKeyValue = Object.values(parsedKey)[0] as string;
-                
+
                 return {
                     value: firstPrimaryKeyValue,
                     label: record.displayValue,
                 };
             })
     );
-    
+
     // Selection Selectors ==================================================
 
     const selectSelectionState = createSelector([selectEntity], (entity) => {
@@ -1593,7 +1593,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectIsInternalLoading,
         selectIsExternalLoading,
         getStableLoading,
-        
+
         selectPaginationExtended,
         selectHistoryState,
         // Newly added selectors

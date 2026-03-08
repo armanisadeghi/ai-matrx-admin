@@ -4,7 +4,7 @@ import { useEffect, useRef, useMemo } from 'react';
 import { useAppSelector } from "@/lib/redux/hooks";
 import { brokerSelectors, BrokerIdentifier } from '@/lib/redux/brokerSlice';
 import { createSelector } from 'reselect';
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 
 interface SyncConfig {
   brokers: BrokerIdentifier[];
@@ -14,7 +14,7 @@ interface SyncConfig {
 
 export function useServerBrokerSync({ brokers, syncInterval = 30000, syncOnChange = true }: SyncConfig) {
   const lastSyncRef = useRef<Record<string, any>>({});
-  
+
   // Create a stable reference to the brokers array
   const stableBrokers = useMemo(() => brokers, [
     // We stringify the brokers to create a proper dependency
@@ -27,7 +27,7 @@ export function useServerBrokerSync({ brokers, syncInterval = 30000, syncOnChang
       }
     }))
   ]);
-  
+
   // Create a memoized selector that will only recompute when the actual values change
   const selectBrokerValues = useMemo(() => {
     return createSelector(
@@ -38,7 +38,7 @@ export function useServerBrokerSync({ brokers, syncInterval = 30000, syncOnChang
           const key = JSON.stringify(idArgs);
           // Use existing helpers to get broker values
           const brokerId = brokerSelectors.selectBrokerId(
-            { brokerConcept } as RootState, 
+            { brokerConcept } as RootState,
             idArgs
           );
           values[key] = brokerId ? brokerConcept.brokers[brokerId] : undefined;
@@ -47,28 +47,28 @@ export function useServerBrokerSync({ brokers, syncInterval = 30000, syncOnChang
       }
     );
   }, [stableBrokers]);
-  
+
   // Get current broker values using our memoized selector
   const brokerValues = useAppSelector(selectBrokerValues);
 
   // Sync function
   const syncToServer = async () => {
     const brokersToSync = [];
-    
+
     // Check which brokers have changed
     stableBrokers.forEach(idArgs => {
       const key = JSON.stringify(idArgs);
       const currentValue = brokerValues[key];
-      
+
       if (syncOnChange && lastSyncRef.current[key] === currentValue) {
         return; // Skip unchanged values
       }
-      
+
       brokersToSync.push({
         idArgs,
         value: currentValue
       });
-      
+
       lastSyncRef.current[key] = currentValue;
     });
 
@@ -88,7 +88,7 @@ export function useServerBrokerSync({ brokers, syncInterval = 30000, syncOnChang
   // Sync on mount and on interval
   useEffect(() => {
     syncToServer();
-    
+
     if (syncInterval > 0) {
       const interval = setInterval(syncToServer, syncInterval);
       return () => clearInterval(interval);

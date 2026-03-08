@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Edge } from "@xyflow/react";
 import { useSelector } from "react-redux";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { workflowsSelectors } from "@/lib/redux/workflow/selectors";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { BrokerSourceConfig } from "@/lib/redux/workflow/types";
@@ -33,10 +33,10 @@ export const useWorkflowEdges = ({ workflowId }: UseWorkflowEdgesProps) => {
                             const sourceMapKey = `sourceNode:${sourceInputNode.sourceType}:${sourceInputNode.brokerId}`;
                             // Connect from source input node to this node
                             // Handle different input types: broker vs argument
-                            const targetHandle = input.type === "broker" 
+                            const targetHandle = input.type === "broker"
                                 ? `broker-${input.source_broker_id}`
                                 : `argument-${input.arg_name}`;
-                            
+
                             edges.push({
                                 id: `${sourceMapKey}-${node.id}-${inputIndex}`,
                                 source: sourceMapKey,
@@ -71,12 +71,12 @@ export const useWorkflowEdges = ({ workflowId }: UseWorkflowEdgesProps) => {
                                     sourceNode.outputs?.findIndex((output) => output.broker_id === input.source_broker_id) ?? 0;
 
                                 // Handle different input types: broker vs argument
-                                const targetHandle = input.type === "broker" 
+                                const targetHandle = input.type === "broker"
                                     ? `broker-${input.source_broker_id}`
                                     : `argument-${input.arg_name}`;
-                                
+
                                 const sourceOutput = sourceNode.outputs?.[outputIndex];
-                                
+
                                 edges.push({
                                     id: `${sourceNode.id}-${node.id}-${inputIndex}`,
                                     source: sourceNode.id,
@@ -126,10 +126,10 @@ export const useWorkflowEdges = ({ workflowId }: UseWorkflowEdgesProps) => {
                                             if (input.source_broker_id === relay.id) {
                                                 // Create edge from source node's output to target node's input
                                                 // Handle different input types: broker vs argument
-                                                const targetHandle = input.type === "broker" 
+                                                const targetHandle = input.type === "broker"
                                                     ? `broker-${input.source_broker_id}`
                                                     : `argument-${input.arg_name}`;
-                                                
+
                                                 edges.push({
                                                     id: `${sourceNode.id}-${targetNode.id}-relay-${outputIndex}-${inputIndex}`,
                                                     source: sourceNode.id,
@@ -183,10 +183,10 @@ export const useWorkflowEdges = ({ workflowId }: UseWorkflowEdgesProps) => {
                                         if (input.source_broker_id === relay.id) {
                                             const sourceMapKey = `sourceNode:${source.sourceType}:${source.brokerId}`;
                                             // Handle different input types: broker vs argument
-                                            const targetHandle = input.type === "broker" 
+                                            const targetHandle = input.type === "broker"
                                                 ? `broker-${input.source_broker_id}`
                                                 : `argument-${input.arg_name}`;
-                                            
+
                                             edges.push({
                                                 id: `${sourceMapKey}-${targetNode.id}-relay-${inputIndex}`,
                                                 source: sourceMapKey,

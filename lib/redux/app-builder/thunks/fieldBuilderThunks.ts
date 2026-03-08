@@ -9,7 +9,7 @@ import {
 } from "../service/fieldComponentService";
 import { FieldBuilder } from "../types";
 import { ContainerBuilder } from "../types";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { selectFieldById } from "../selectors/fieldSelectors";
 import { addOrRefreshFieldInGroup, refreshAllFieldsInGroup } from "../service/fieldContainerService";
 import { setActiveField } from "../slices/fieldBuilderSlice";
@@ -27,13 +27,13 @@ export const saveFieldThunk = createAsyncThunk<
 >("fieldBuilder/saveField", async (fieldId, { getState, rejectWithValue }) => {
     try {
         const field = selectFieldById(getState(), fieldId);
-        
+
         if (!field) {
             throw new Error(`Field with ID ${fieldId} not found`);
         }
-        
+
         let savedField: FieldBuilder;
-        
+
         // Determine if this is a new field (isLocal) or an existing one
         if (field.isLocal) {
             // Create new field
@@ -42,7 +42,7 @@ export const saveFieldThunk = createAsyncThunk<
             // Update existing field
             savedField = await updateFieldComponent(fieldId, field);
         }
-        
+
         // Return consistently formatted result
         return {
             ...savedField,
@@ -63,31 +63,31 @@ export const saveFieldAndUpdateContainerThunk = createAsyncThunk(
         try {
             // First save the field
             const saveResult = await dispatch(saveFieldThunk(fieldId)).unwrap();
-            
+
             if (!saveResult) {
                 throw new Error("Failed to save field");
             }
-            
+
             // If successful, refresh the field in its container
             if (containerId) {
                 // Refresh the specific field in the container and get the updated container
                 const updatedContainer = await addOrRefreshFieldInGroup(containerId, saveResult.id);
-                
+
                 // Verify we got a valid container back
                 if (!updatedContainer || typeof updatedContainer !== 'object' || !updatedContainer.id) {
                     console.error('Invalid container returned from addOrRefreshFieldInGroup:', updatedContainer);
                     throw new Error("Failed to get updated container from database");
                 }
-                
+
                 console.log('Container successfully updated:', updatedContainer);
-                
+
                 return {
                     field: saveResult,
                     containerId,
                     updatedContainer
                 };
             }
-            
+
             return {
                 field: saveResult,
                 containerId
@@ -191,11 +191,11 @@ export const saveFieldToContainerThunk = createAsyncThunk<
     try {
         // Refresh the field in the container and get the updated container
         const updatedContainer = await addOrRefreshFieldInGroup(containerId, fieldId);
-        
+
         // Return the updated container for the reducer to update state
-        return { 
+        return {
             containerId,
-            updatedContainer 
+            updatedContainer
         };
     } catch (error: any) {
         console.error("Error saving field to container:", error);
@@ -225,7 +225,7 @@ export const setActiveFieldWithFetchThunk = createAsyncThunk<
         try {
             // Check if field already exists in state
             const field = selectFieldById(getState() as RootState, fieldId);
-            
+
             if (field) {
                 // If it exists, just set it as active
                 dispatch(setActiveField(fieldId));
@@ -233,7 +233,7 @@ export const setActiveFieldWithFetchThunk = createAsyncThunk<
                 // Otherwise, fetch it first
                 try {
                     const fetchedField = await getFieldComponentById(fieldId);
-                    
+
                     if (fetchedField) {
                         // Add the fetched field to state with required type properties
                         dispatch(fetchFieldByIdSuccess({
@@ -241,7 +241,7 @@ export const setActiveFieldWithFetchThunk = createAsyncThunk<
                             isDirty: false,
                             isLocal: false
                         }));
-                        
+
                         // Set it as active
                         dispatch(setActiveField(fieldId));
                     } else {

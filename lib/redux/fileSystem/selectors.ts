@@ -1,6 +1,6 @@
 // lib/redux/fileSystem/selectors.ts
 import { createSelector } from "@reduxjs/toolkit";
-import { RootState } from "../store";
+import type { RootState } from "../store";
 import {
   FileSystemNode,
   NodeItemId,
@@ -51,12 +51,12 @@ export const createActiveNodeSelectors = (bucketName: AvailableBuckets) => ({
   selectActiveNodeStatus: createBucketSpecificSelector(bucketName, (state) =>
     state.activeNode
       ? {
-          status: state.nodes[state.activeNode]?.status,
-          operation: state.nodes[state.activeNode]?.operation,
-          isLoading: state.nodesInOperation.has(state.activeNode),
-          isDirty: state.nodes[state.activeNode]?.isDirty,
-          isStale: state.nodes[state.activeNode]?.isStale,
-        }
+        status: state.nodes[state.activeNode]?.status,
+        operation: state.nodes[state.activeNode]?.operation,
+        isLoading: state.nodesInOperation.has(state.activeNode),
+        isDirty: state.nodes[state.activeNode]?.isDirty,
+        isStale: state.nodes[state.activeNode]?.isStale,
+      }
       : null
   ),
 
@@ -229,12 +229,12 @@ export const createNodeUtilitySelectors = (bucketName: AvailableBuckets) => ({
       bucketName,
       (state) => {
         if (!state?.nodes) return [];
-        
+
         const nodes = Object.values(state.nodes)
-          .filter((node): node is FileSystemNode => 
+          .filter((node): node is FileSystemNode =>
             Boolean(node && node.parentId === nodeId)
           );
-        
+
         return nodes.sort((a, b) => {
           if (a.contentType !== b.contentType) {
             return a.contentType === "FOLDER" ? -1 : 1;
@@ -246,11 +246,11 @@ export const createNodeUtilitySelectors = (bucketName: AvailableBuckets) => ({
 
   selectRootNodes: createBucketSpecificSelector<FileSystemNode[]>(
     bucketName,
-    (state) => state?.nodes ? 
+    (state) => state?.nodes ?
       Object.values(state.nodes)
-        .filter((node): node is FileSystemNode => 
+        .filter((node): node is FileSystemNode =>
           Boolean(node && node.parentId === null)
-        ) : 
+        ) :
       []
   ),
 

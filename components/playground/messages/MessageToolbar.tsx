@@ -20,7 +20,7 @@ import { IoDiamondOutline } from "react-icons/io5";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MatrxRecordId } from "@/types/entityTypes";
 import { useSelector } from "react-redux";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { useUser } from "@/lib/hooks/useUser";
 
 
@@ -51,7 +51,7 @@ export interface MessageToolbarProps {
 
 // Super simple action button without tooltip
 const ActionIcon = ({ onClick, icon, label }) => (
-    <span 
+    <span
         onClick={onClick}
         className="inline-flex h-6 w-6 items-center justify-center rounded-md p-0 text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer transition-colors"
         aria-label={label}
@@ -63,7 +63,7 @@ const ActionIcon = ({ onClick, icon, label }) => (
 
 // Super simple display option icon without tooltip
 const DisplayIcon = ({ onClick, icon, label, isActive }) => (
-    <span 
+    <span
         onClick={onClick}
         className={
             isActive
@@ -109,23 +109,23 @@ const MessageToolbar = ({
     onDebugClick,
     onDisplayOptionChange,
     currentDisplayOption = "textChat",
-    onToggleFullDisplay = () => {},
+    onToggleFullDisplay = () => { },
 }) => {
     const [isDragOver, setIsDragOver] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const { isAdmin } = useUser();
     const [initialCooldownComplete, setInitialCooldownComplete] = useState(false);
-    
+
     // Set up the initial cooldown timer
     useEffect(() => {
         const timer = setTimeout(() => {
             setInitialCooldownComplete(true);
         }, 5000);
-        
+
         // Clean up the timer if the component unmounts
         return () => clearTimeout(timer);
     }, []);
-    
+
     // Display options - defined inline to avoid any memoization issues
     const displayOptions = [
         {
@@ -150,7 +150,7 @@ const MessageToolbar = ({
         },
 
     ];
-    
+
     // Define actions - defined inline to avoid any memoization issues
     const actions = [
         {
@@ -199,8 +199,8 @@ const MessageToolbar = ({
             onClick: () => onShowNames(messageRecordId),
         },
     ];
-    
-        // if (isAdmin && debug && initialCooldownComplete) {
+
+    // if (isAdmin && debug && initialCooldownComplete) {
     //     actions.push(
     //         {
     //             label: "Visible Encoded Text",
@@ -221,22 +221,22 @@ const MessageToolbar = ({
         e.dataTransfer.effectAllowed = "move";
         setIsDragging(true);
     };
-    
+
     const handleDragEnd = () => {
         setIsDragging(false);
     };
-    
+
     const handleDragOver = (e) => {
         e.preventDefault();
         if (!isDragging) {
             setIsDragOver(true);
         }
     };
-    
+
     const handleDragLeave = () => {
         setIsDragOver(false);
     };
-    
+
     const handleDrop = (e) => {
         e.preventDefault();
         setIsDragOver(false);
@@ -245,7 +245,7 @@ const MessageToolbar = ({
             onDragDrop(draggedId as MatrxRecordId, messageRecordId);
         }
     };
-    
+
     return (
         <div
             draggable
@@ -260,7 +260,7 @@ const MessageToolbar = ({
         >
             <div className="flex items-center gap-1">
                 <RoleSelector role={role} messageRecordId={messageRecordId} onRoleChange={onRoleChange} />
-                
+
                 {/* Display option icons */}
                 <div className="ml-2 flex gap-1 border-l pl-2">
                     {displayOptions.map((option) => (
@@ -274,14 +274,14 @@ const MessageToolbar = ({
                     ))}
                 </div>
             </div>
-            
+
             <div className="flex gap-1">
                 {actions.map((action) => (
-                    <ActionIcon 
-                        key={action.label} 
-                        onClick={action.onClick} 
-                        icon={action.icon} 
-                        label={action.label} 
+                    <ActionIcon
+                        key={action.label}
+                        onClick={action.onClick}
+                        icon={action.icon}
+                        label={action.label}
                     />
                 ))}
             </div>

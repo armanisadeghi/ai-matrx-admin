@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '@/lib/redux/store';
-import { 
+import type { RootState } from '@/lib/redux/store';
+import {
   AppLayoutOptions,
   CustomAppConfig
 } from '@/types/customAppTypes';

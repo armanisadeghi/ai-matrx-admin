@@ -1,6 +1,6 @@
 // types/number/index.ts
 import { createSelector } from "reselect";
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { BrokerIdentifier } from "../types";
 import { resolveBrokerId } from "../utils";
 
@@ -22,7 +22,7 @@ const selectNumber = createSelector(
     (broker, idArgs): number | undefined => {
         const brokerId = resolveBrokerId(broker, idArgs);
         if (!brokerId) return undefined;
-        
+
         const brokerValue = broker.brokers[brokerId];
         return isNumber(brokerValue) ? brokerValue : undefined;
     }
