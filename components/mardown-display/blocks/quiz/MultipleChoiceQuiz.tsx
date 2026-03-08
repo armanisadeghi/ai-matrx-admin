@@ -559,7 +559,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
         />
       )}
 
-      <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center border border-red-500' : 'py-3'}`}>
+      <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center' : 'py-3'}`}>
         <div
           className={`max-w-4xl mx-auto ${isFullScreen ? 'bg-textured rounded-xl shadow-2xl h-full max-h-[98vh] w-full flex flex-col overflow-hidden relative' : ''}`}
           onClick={(e) => {
@@ -615,7 +615,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
               }`}>
               <div className="text-gray-800 dark:text-gray-100">
                 <div className="flex justify-between items-center mb-4 gap-3">
-                  <div className={`flex items-center gap-4 ${isFullScreen ? 'text-base' : 'text-sm'}`}>
+                  <div className={`flex items-center gap-2 ${isFullScreen ? 'text-base' : 'text-sm'}`}>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-blue-600 dark:text-blue-400">
                         {currentQuestionIndex + 1} / {quizState.randomizedQuestions.length}

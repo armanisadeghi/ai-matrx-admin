@@ -1,0 +1,58 @@
+// ChatMobileHeaderBar — Pure server component. No 'use client'. Renders on first paint.
+//
+// Layout: [Hamburger] [New Chat] [Agent Name (flex-1)] [44px gap for shell avatar]
+//
+// The shell header already renders the user avatar (UserMenuTrigger, w-11) on the far
+// right. Our fixed bar covers the full width at the same z-index, so it MUST leave
+// the right 44px (pr-11) clear — otherwise we'd overlap the avatar.
+//
+// New Chat is placed LEFT (next to the hamburger), not right, for the same reason.
+//
+// The tiny ChatMobileAgentName client island hydrates the agent-name button in-place
+// with the same size/shape as the static text, so there is zero layout shift.
+
+import Link from 'next/link';
+import { SquarePen } from 'lucide-react';
+import { TapTargetButton } from '@/app/(ssr)/_components/core/TapTargetButton';
+import ChatMobileAgentName from './ChatMobileAgentName';
+
+export default function ChatMobileHeaderBar() {
+    return (
+        // Fixed to the header zone, mobile only (lg:hidden).
+        // pr-11 reserves 44px on the right for the shell's UserMenuTrigger (avatar).
+        // z-[41] matches the shell header elements — avatar is also z-41-ish.
+        <div
+            className="lg:hidden fixed top-0 left-0 right-0 z-[41] flex items-center pr-11"
+            style={{ height: 'var(--shell-header-h)' }}
+        >
+            {/* Hamburger — pure CSS label for #chat-sidebar-mobile checkbox.
+                Opens the mobile drawer via shell.css :has() rule. Zero JS. */}
+            <TapTargetButton
+                as="label"
+                htmlFor="chat-sidebar-mobile"
+                ariaLabel="Open chat menu"
+                strokeWidth={1.75}
+            >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </TapTargetButton>
+
+            {/* New chat — plain Link placed left, next to hamburger. Zero JS. */}
+            <Link
+                href="/ssr/chat"
+                aria-label="New chat"
+                className="flex h-11 w-11 items-center justify-center bg-transparent transition-transform active:scale-95 outline-none cursor-pointer flex-shrink-0"
+            >
+                <div className="flex h-8 w-8 items-center justify-center rounded-full matrx-shell-glass transition-colors">
+                    <SquarePen className="w-4 h-4 text-foreground" strokeWidth={1.75} />
+                </div>
+            </Link>
+
+            {/* Agent name — takes remaining center space.
+                ChatMobileAgentName (tiny client island) hydrates in-place.
+                Visual shape is identical before and after hydration → no layout shift. */}
+            <div className="flex-1 flex items-center justify-center min-w-0">
+                <ChatMobileAgentName />
+            </div>
+        </div>
+    );
+}

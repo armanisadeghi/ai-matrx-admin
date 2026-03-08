@@ -98,7 +98,7 @@ export function SidebarActions({ onNewChat, searchQuery, onSearchChange }: Sideb
     };
 
     return (
-        <div className="px-1.5 py-1.5 border-b border-border">
+        <div className="px-1.5 py-1.5 border-b border-border border-t border-red-500">
             {/* New Chat */}
             <ActionRow icon={Plus} label="New Chat" onClick={onNewChat} />
 

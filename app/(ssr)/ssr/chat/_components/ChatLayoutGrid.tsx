@@ -2,35 +2,34 @@
 
 // ChatLayoutGrid — Sidebar + workspace layout for the SSR chat route.
 //
-// Desktop behaviour:
-//   - The sidebar HEADER ROW (icons) is always visible, pinned into the shell
-//     header zone at z-[41]. It never moves or disappears.
-//   - The sidebar BODY slides in/out as a proper grid column (280px → 0px).
-//     No overlay — it pushes the workspace.
+// Desktop: CSS grid with animated column (280px ↔ 0px) + React-controlled translate.
+// Mobile:  Fixed drawer. The hamburger in ChatMobileHeaderBar is a <label> for
+//          #chat-sidebar-mobile (server-rendered, zero JS, visible instantly).
+//          After hydration, a useEffect bridges the checkbox to React isOpen state,
+//          so the drawer slide is driven by React className — reliable across all browsers.
 //
-// Mobile behaviour:
-//   - Default shell hamburger is hidden on /ssr/chat via CSS.
-//   - ChatHeaderControls renders a mobile bar: hamburger | agent name | new chat.
-//   - The chat sidebar slides in as a fixed drawer (z-45) from the left.
-//   - A back (ArrowLeft) button at top of the drawer closes it + opens the main
-//     app menu by programmatically checking #shell-mobile-menu.
-//
-// Dock hiding:
-//   A hidden sentinel div carries the .shell-hide-dock class so that
-//   body:has(.shell-hide-dock) in shell.css hides the portaled MobileDock
-//   (which lives outside .shell-root in #glass-layer) and removes the
-//   bottom padding from shell-main. display:none elements still match CSS :has().
+// Why bridge checkbox → React state:
+//   Tailwind's -translate-x-full uses CSS custom properties (--tw-translate-x).
+//   A CSS :has() override with transform: translateX(0) !important doesn't cleanly
+//   override those custom properties in all browser/build combinations.
+//   Bridging to React is simpler, reliable, and still server-first (the label/checkbox
+//   are server-rendered HTML; only the slide animation needs JS).
 
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useChatSidebar } from './ChatSidebarContext';
 
-// ── Mobile app-menu back button ──────────────────────────────────────────────
+// ── Mobile back button ────────────────────────────────────────────────────────
 function MobileAppMenuBack() {
     const { close } = useChatSidebar();
 
     const handleBack = useCallback(() => {
+        // Close drawer via React state
         close();
+        // Sync checkbox (so it's unchecked when drawer is closed)
+        const chatCheckbox = document.getElementById('chat-sidebar-mobile') as HTMLInputElement | null;
+        if (chatCheckbox) chatCheckbox.checked = false;
+        // Open main app menu
         const menuCheckbox = document.getElementById('shell-mobile-menu') as HTMLInputElement | null;
         if (menuCheckbox) {
             menuCheckbox.checked = true;
@@ -42,11 +41,11 @@ function MobileAppMenuBack() {
         <button
             type="button"
             onClick={handleBack}
-            className="lg:hidden flex items-center justify-center w-11 h-11 ml-1 mt-1 mb-0.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/40 active:bg-accent/60 transition-colors flex-shrink-0"
+            className="lg:hidden flex items-center justify-center w-9 h-9 ml-1 mt-0.5 mb-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/40 active:bg-accent/60 transition-colors flex-shrink-0"
             aria-label="Go to main navigation"
             style={{ WebkitTapHighlightColor: 'transparent' }}
         >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4" />
         </button>
     );
 }
@@ -60,16 +59,40 @@ export default function ChatLayoutGrid({
     sidebarBody: React.ReactNode;
     workspace: React.ReactNode;
 }) {
-    const { isOpen, close } = useChatSidebar();
+    const { isOpen, toggle, close } = useChatSidebar();
+
+    // Bridge the CSS checkbox to React state.
+    // The hamburger label (#chat-sidebar-mobile) can be clicked before hydration,
+    // but the drawer slide needs JS. After hydration this listener kicks in and
+    // the React isOpen state drives the drawer translate from then on.
+    useEffect(() => {
+        const checkbox = document.getElementById('chat-sidebar-mobile') as HTMLInputElement | null;
+        if (!checkbox) return;
+
+        const handleChange = () => {
+            if (checkbox.checked && !isOpen) toggle();
+            else if (!checkbox.checked && isOpen) toggle();
+        };
+
+        checkbox.addEventListener('change', handleChange);
+        return () => checkbox.removeEventListener('change', handleChange);
+    }, [isOpen, toggle]);
+
+    // When React closes the sidebar (e.g., navigating away), sync checkbox too.
+    useEffect(() => {
+        const checkbox = document.getElementById('chat-sidebar-mobile') as HTMLInputElement | null;
+        if (!checkbox) return;
+        // Only sync on mobile — on desktop the checkbox isn't the control mechanism
+        if (window.matchMedia('(min-width: 1024px)').matches) return;
+        checkbox.checked = isOpen;
+    }, [isOpen]);
 
     return (
         <>
-            {/* Dock-hide sentinel — invisible, only carries the CSS class.
-                body:has(.shell-hide-dock) in shell.css hides the portaled MobileDock
-                and removes dock padding from shell-main. display:none still matches :has(). */}
+            {/* Dock-hide sentinel */}
             <div className="shell-hide-dock" style={{ display: 'none' }} aria-hidden="true" />
 
-            {/* ── Persistent icon strip — always in the shell header zone ── */}
+            {/* ── Icon strip — desktop only, pinned in header zone ── */}
             <div
                 className="chat-sidebar-icon-strip hidden lg:block fixed top-0 left-[var(--shell-sidebar-w)] z-[41] [&>div]:h-[var(--shell-header-h)] [&>div]:border-b-0"
                 aria-hidden="false"
@@ -77,7 +100,7 @@ export default function ChatLayoutGrid({
                 {sidebarHeader}
             </div>
 
-            {/* ── Main layout grid ── */}
+            {/* ── Main grid ── */}
             <div
                 className={[
                     'grid grid-rows-[1fr] h-full overflow-hidden relative',
@@ -86,19 +109,20 @@ export default function ChatLayoutGrid({
                     'max-lg:grid-cols-[1fr]',
                 ].join(' ')}
             >
-                {/* Mobile backdrop */}
-                <div
-                    className={[
-                        'fixed inset-0 z-[44] bg-black/40 transition-opacity duration-300 lg:hidden',
-                        isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none',
-                    ].join(' ')}
-                    onClick={close}
-                    aria-hidden="true"
+                {/* Mobile backdrop — CSS-driven opacity, label closes via checkbox */}
+                <label
+                    htmlFor="chat-sidebar-mobile"
+                    className="chat-sidebar-backdrop lg:hidden"
+                    aria-label="Close chat menu"
                 />
 
-                {/* ── Sidebar ── */}
+                {/* ── Sidebar ──
+                    translate-x controlled by React isOpen for BOTH desktop + mobile.
+                    Desktop needs it to clip the overflow from 0px grid column.
+                    Mobile needs it to slide in/out as a fixed drawer. */}
                 <aside
                     className={[
+                        'chat-sidebar-drawer',
                         'col-start-1 row-start-1',
                         'flex flex-col overflow-hidden w-[280px] min-w-[280px]',
                         'border-r border-border/30 bg-background',
@@ -109,12 +133,8 @@ export default function ChatLayoutGrid({
                         'max-lg:shadow-[4px_0_24px_rgba(0,0,0,0.15)]',
                     ].join(' ')}
                 >
-                    {/* Mobile: header icons shown inside the drawer */}
-                    <div className="lg:hidden">
-                        {sidebarHeader}
-                    </div>
-
-                    {/* Mobile-only back arrow — closes chat sidebar, opens main app menu */}
+                    {/* Mobile: back arrow only — no header icons needed.
+                        ChatMobileHeaderBar (fixed in header zone) covers that role. */}
                     <MobileAppMenuBack />
 
                     {sidebarBody}

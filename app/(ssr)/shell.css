@@ -802,12 +802,45 @@
     padding-bottom: 0;
   }
 
-  /* ── Chat route — hide the shell's default hamburger on chat.
-     The chat layout renders its own mobile menu trigger (ChatHeaderControls mobile bar)
-     that opens the chat sidebar. This keeps ONE hamburger visible on mobile. */
+  /* ── Chat route — hide the shell's default hamburger.
+     ChatMobileHeaderBar renders its own hamburger as a label for #chat-sidebar-mobile. */
   .shell-root[data-pathname^="/ssr/chat"] .shell-mobile-trigger {
     display: none;
   }
+
+  /* ── Chat sidebar backdrop — dims when #chat-sidebar-mobile is checked ─────
+     Drawer translate is controlled by React isOpen state (JS bridge from checkbox).
+     Backdrop opacity remains CSS-driven since it works reliably. */
+
+  .chat-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 44;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+  }
+
+  .shell-root:has(#chat-sidebar-mobile:checked) .chat-sidebar-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* ── #chat-sidebar-mobile — visually hidden on ALL screen sizes ────────────
+   Must be outside any media query so desktop never renders a visible checkbox.
+   Mirrors the exact pattern used for #shell-mobile-menu and #shell-user-menu. */
+#chat-sidebar-mobile {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 @media (min-width: 1024px) {

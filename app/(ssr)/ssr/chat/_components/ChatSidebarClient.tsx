@@ -74,7 +74,7 @@ export function ChatSidebarBody() {
   }, [onAgentChange]);
 
   return (
-    <div className="h-full flex flex-col overflow-hidden pt-8">
+    <div className="h-full flex flex-col overflow-hidden pt-2 lg:pt-8">
       {/* Actions: New Chat, Generate, Search, Organization, Project, Tasks */}
       <SidebarActions
         onNewChat={handleNewChat}
