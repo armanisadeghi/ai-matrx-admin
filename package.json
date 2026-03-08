@@ -41,7 +41,7 @@
     "@babel/standalone": "^7.29.1",
     "@cartesia/cartesia-js": "^2.2.9",
     "@cerebras/cerebras_cloud_sdk": "latest",
-    "@deepgram/sdk": "5.0.0",
+    "@deepgram/sdk": "latest",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
