@@ -251,17 +251,18 @@ function compileHeaderFunction(
 
     let processedCode = stripImports(code);
 
-    // ── Detect if the raw code is already a complete callable definition ──
-    // We check BEFORE Babel so we know whether to wrap it as a function body.
+    // ── Detect if the raw code is already a complete, exportable callable ──
+    // Only patterns WITH `export` are truly complete — replaceExportDefault will
+    // reliably produce a `return` or append `return Name;` for all of them.
+    //
+    // Named function declarations WITHOUT export (e.g. `function foo(){}`) look
+    // "complete" but the factory can't return them without explicit `return foo;`.
+    // We treat them as NOT complete so they get wrapped before Babel instead.
     const trimmedRaw = processedCode.trim();
     const isAlreadyComplete =
         trimmedRaw.startsWith("export default") ||
-        trimmedRaw.startsWith("export async") ||
-        trimmedRaw.startsWith("function ") ||
-        trimmedRaw.startsWith("async function ") ||
-        trimmedRaw.startsWith("(function") ||
-        trimmedRaw.startsWith("(async function") ||
-        /^(?:const|let|var)\s+\w+\s*=/.test(trimmedRaw);
+        /^export\s+(?:async\s+)?function\s+\w+/.test(trimmedRaw) ||
+        /^export\s+(?:const|let|var)\s+\w+\s*=/.test(trimmedRaw);
 
     if (!isAlreadyComplete) {
         // Bare function body (has top-level `return`, `if`, etc.).
@@ -273,17 +274,26 @@ function compileHeaderFunction(
     processedCode = babelTransform(processedCode, language);
     processedCode = replaceExportDefault(processedCode);
 
-    // After replaceExportDefault the code starts with `return ` (wrapped case)
-    // or is a named function / arrow assignment (complete-function case).
-    // If for any reason neither fits, wrap as a final safety net.
+    // After replaceExportDefault:
+    //   export default function X()  → `return function X()...`   starts with "return "
+    //   export function X()          → `function X()...\nreturn X;`  ends with return
+    // Both make factory() return the function correctly.
+    //
+    // `function X()` WITHOUT `export` is NOT ready: declaring a function inside
+    // `new Function(...)` without returning it makes factory() return undefined.
     const trimmed = processedCode.trim();
-    const isReadyToExecute =
-        trimmed.startsWith("return ") ||
-        trimmed.startsWith("function ") ||
-        trimmed.startsWith("(");
+    const isReadyToExecute = trimmed.startsWith("return ");
 
     if (!isReadyToExecute) {
-        processedCode = `return function headerFn(toolUpdates) {\n${processedCode}\n}`;
+        // Named function declaration that replaceExportDefault didn't touch:
+        // append `return Name;` so the factory actually returns it.
+        const namedFnMatch = trimmed.match(/^function\s+(\w+)\s*\(/);
+        if (namedFnMatch) {
+            processedCode = processedCode.trimEnd() + `\nreturn ${namedFnMatch[1]};`;
+        } else {
+            // Unknown shape — wrap as a returning factory function
+            processedCode = `return function headerFn(toolUpdates) {\n${processedCode}\n}`;
+        }
     }
 
     patchScopeForMissingIdentifiers(processedCode, scope);
