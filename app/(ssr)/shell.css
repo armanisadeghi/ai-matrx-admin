@@ -801,6 +801,13 @@
   .shell-root:has(.note-detail-active) .shell-main {
     padding-bottom: 0;
   }
+
+  /* ── Chat route — hide the shell's default hamburger on chat.
+     The chat layout renders its own mobile menu trigger (ChatHeaderControls mobile bar)
+     that opens the chat sidebar. This keeps ONE hamburger visible on mobile. */
+  .shell-root[data-pathname^="/ssr/chat"] .shell-mobile-trigger {
+    display: none;
+  }
 }
 
 @media (min-width: 1024px) {

@@ -57,7 +57,7 @@ const QuestionText: React.FC<{ question: string, isFullScreen: boolean }> = ({ q
 
   if (isFullScreen) {
     return (
-      <h2 className="text-2xl font-bold mb-3 leading-tight">
+      <h2 className="text-lg font-bold mb-3 leading-tight">
         <InlineLatexRenderer content={question} />
       </h2>
     );
@@ -67,7 +67,7 @@ const QuestionText: React.FC<{ question: string, isFullScreen: boolean }> = ({ q
     <div className="mb-3">
       <h2
         ref={textRef}
-        className={`text-lg font-bold leading-tight transition-all duration-200 ${isExpanded ? '' : 'line-clamp-2'
+        className={`text-base font-bold leading-tight transition-all duration-200 ${isExpanded ? '' : 'line-clamp-2'
           }`}
       >
         <InlineLatexRenderer content={question} />
@@ -383,7 +383,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   };
 
   const getOptionStyle = (optionIndex: number) => {
-    const baseStyle = `rounded-lg border cursor-pointer transition-all duration-200 text-left ${isFullScreen ? 'p-4 text-lg' : 'p-3 text-base'
+    const baseStyle = `rounded-lg border cursor-pointer transition-all duration-200 text-left ${isFullScreen ? 'p-4 text-base' : 'p-3 text-base'
       }`;
 
     if (!isAnswered) {
@@ -427,13 +427,13 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
             <div className="text-center mb-4">
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Trophy className="h-6 w-6 text-yellow-500 dark:text-yellow-400" />
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+                <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">
                   {quizState.mode === 'retake' ? 'Retake Complete!' : 'Quiz Complete!'}
                 </h2>
               </div>
               <div className="flex items-center justify-center gap-2 mb-2">
                 {getPerformanceIcon(performanceData.icon)}
-                <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
+                <p className="text-base font-medium text-gray-700 dark:text-gray-300">
                   {performanceData.message}
                 </p>
               </div>
@@ -447,7 +447,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
               <div className="relative">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
                   <div className="w-16 h-16 rounded-full bg-textured flex flex-col items-center justify-center">
-                    <span className="text-lg font-bold text-gray-800 dark:text-gray-100">{scorePercentage}%</span>
+                    <span className="text-base font-bold text-gray-800 dark:text-gray-100">{scorePercentage}%</span>
                     <span className="text-xs text-gray-600 dark:text-gray-400">Score</span>
                   </div>
                 </div>
@@ -457,15 +457,15 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
             {/* Stats Grid */}
             <div className="grid grid-cols-3 gap-2 mb-4">
               <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-2 text-center border border-blue-200 dark:border-blue-800">
-                <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{results.totalQuestions}</div>
+                <div className="text-base font-bold text-blue-600 dark:text-blue-400">{results.totalQuestions}</div>
                 <div className="text-xs text-gray-600 dark:text-gray-400">Total</div>
               </div>
               <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-2 text-center border border-green-200 dark:border-green-800">
-                <div className="text-lg font-bold text-green-600 dark:text-green-400">{correctCount}</div>
+                <div className="text-base font-bold text-green-600 dark:text-green-400">{correctCount}</div>
                 <div className="text-xs text-gray-600 dark:text-gray-400">Correct</div>
               </div>
               <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-2 text-center border border-red-200 dark:border-red-800">
-                <div className="text-lg font-bold text-red-600 dark:text-red-400">{incorrectCount}</div>
+                <div className="text-base font-bold text-red-600 dark:text-red-400">{incorrectCount}</div>
                 <div className="text-xs text-gray-600 dark:text-gray-400">Incorrect</div>
               </div>
             </div>
@@ -559,7 +559,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
         />
       )}
 
-      <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-2' : 'py-3'}`}>
+      <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center border border-red-500' : 'py-3'}`}>
         <div
           className={`max-w-4xl mx-auto ${isFullScreen ? 'bg-textured rounded-xl shadow-2xl h-full max-h-[98vh] w-full flex flex-col overflow-hidden relative' : ''}`}
           onClick={(e) => {
@@ -587,7 +587,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
 
             {/* Quiz Title */}
             <div className="mb-3">
-              <h1 className={`font-bold text-center text-gray-800 dark:text-gray-100 ${isFullScreen ? 'text-3xl' : 'text-2xl'
+              <h1 className={`font-bold text-center text-gray-800 dark:text-gray-100 ${isFullScreen ? 'text-xl' : 'text-lg'
                 }`}>
                 {parsedQuiz.title}
               </h1>
@@ -625,7 +625,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
                       )}
                     </div>
                     <div className="h-4 w-px bg-gray-300 dark:bg-gray-600" />
-                    <span className="font-medium text-gray-600 dark:text-gray-400">
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
                       Answered: <span className="text-green-600 dark:text-green-400 font-semibold">{answeredCount}</span>
                     </span>
                   </div>
@@ -756,7 +756,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
                   ? 'bg-green-50 dark:bg-green-950/30 border-green-400 dark:border-green-600'
                   : 'bg-red-50 dark:bg-red-950/30 border-red-400 dark:border-red-600'
                 }`}>
-                <div className={`font-semibold mb-2 flex items-center gap-2 ${isFullScreen ? 'text-lg' : 'text-base'
+                <div className={`font-semibold mb-2 flex items-center gap-2 ${isFullScreen ? 'text-base' : 'text-base'
                   } ${isCorrect ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'
                   }`}>
                   {isCorrect ? (
