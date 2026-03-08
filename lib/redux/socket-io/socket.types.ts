@@ -96,9 +96,17 @@ export interface ResponseState {
     data: any[];
     info: SocketInfoObject[];
     errors: SocketErrorObject[];
-    /** @deprecated Use rawToolEvents + buildCanonicalBlocks selector. Kept for backward compatibility. */
+    /**
+     * Tool updates for the legacy socket.io task path (submitTaskThunk).
+     * The FastAPI chat paths (submitChatFastAPI, executeMessageFastAPIThunk) do NOT
+     * populate this — use rawToolEvents + selectPrimaryResponseToolBlocksByTaskId instead.
+     */
     toolUpdates: ToolCallObject[];
-    /** Raw tool_event StreamEvents — derive ToolCallBlock[] via selectPrimaryResponseToolBlocksByTaskId */
+    /**
+     * Raw tool_event StreamEvents for the FastAPI chat paths.
+     * Derive ToolCallBlock[] via selectPrimaryResponseToolBlocksByTaskId.
+     * The legacy socket.io task path does NOT populate this — use toolUpdates for those.
+     */
     rawToolEvents: StreamEvent[];
     ended: boolean;
     taskId: string;

@@ -18,7 +18,9 @@ import {
     selectTaskFirstListenerId,
     selectTaskStreamingById,
     createTaskResponseSelectors,
+    selectPrimaryResponseToolBlocksByTaskId,
 } from "@/lib/redux/socket-io";
+import { toolCallBlockToLegacy } from "@/lib/chat-protocol";
 import markdownComponents from "./markdownComponents";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
@@ -38,7 +40,15 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ taskId, clas
     const streamData = useAppSelector(responseSelectors.selectData);
     const isStreamEnded = useAppSelector(responseSelectors.selectEnded);
     const streamError = useAppSelector(responseSelectors.selectErrors);
-    const streamToolUpdates = useAppSelector(responseSelectors.selectToolUpdates);
+
+    // Canonical tool blocks — derived from rawToolEvents via buildCanonicalBlocks.
+    // Selector is stable per taskId; re-runs only when rawToolEvents changes.
+    const toolBlockSelector = useMemo(() => selectPrimaryResponseToolBlocksByTaskId(taskId), [taskId]);
+    const toolBlocks = useAppSelector(toolBlockSelector);
+    const streamToolUpdates = useMemo(
+        () => toolBlocks.flatMap(b => toolCallBlockToLegacy(b)),
+        [toolBlocks]
+    );
 
     const isStreaming = useAppSelector((state: RootState) => selectTaskStreamingById(state, taskId));
     const hasListenerId = useAppSelector((state: RootState) => selectTaskFirstListenerId(state, taskId));

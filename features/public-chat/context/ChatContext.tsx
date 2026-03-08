@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useReducer, useRef, useEffect, ReactNode } from 'react';
 import type { PromptVariable } from '@/features/prompts/types/core';
 import type { PublicResource, ContentItem } from '../types/content';
+import type { ToolCallObject } from '@/lib/api/tool-call.types';
 
 // ============================================================================
 // TYPES
@@ -20,7 +21,7 @@ export interface ChatMessage {
     contentItems?: ContentItem[];
     variables?: Record<string, any>;
     /** Tool call/result history for DB-loaded messages (displayed via ToolCallVisualization) */
-    toolUpdates?: any[];
+    toolUpdates?: ToolCallObject[];
     /** Whether this is a condensed message (out of context window but still visible) */
     isCondensed?: boolean;
 }

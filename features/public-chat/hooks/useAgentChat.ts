@@ -4,7 +4,7 @@ import { useRef, useEffect } from 'react';
 import { useChatContext } from '../context/ChatContext';
 import type { StreamEvent, ChunkPayload, ErrorPayload, CompletionPayload, EndPayload } from '@/types/python-generated/stream-events';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
-import { extractPersistableToolUpdates } from '@/components/mardown-display/chat-markdown/tool-event-engine';
+import { extractPersistableToolBlocks, toolCallBlockToLegacy } from '@/lib/chat-protocol';
 import { buildContentArray, ContentItem, PublicResource } from '../types/content';
 import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
 import { useApiAuth } from '@/hooks/useApiAuth';
@@ -249,7 +249,11 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 }
             }
 
-            const toolUpdates = extractPersistableToolUpdates(streamEventsRef.current);
+            // Extract completed tool blocks from the stream and convert to legacy
+            // ToolCallObject[] for DB-loaded message display. phase='complete' is
+            // set on the mcp_input entry so ToolCallVisualization shows checkmarks.
+            const persistableBlocks = extractPersistableToolBlocks(streamEventsRef.current);
+            const toolUpdates = persistableBlocks.flatMap(b => toolCallBlockToLegacy(b));
 
             updateMessage(assistantMessageId, {
                 status: 'complete',

@@ -29,11 +29,9 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
                 so it's inside shell-root. Positioned absolutely: takes no layout space. */}
             <input type="checkbox" id="chat-sidebar-mobile" aria-hidden="true" />
 
-            {/* Server-rendered mobile header bar — visible on first paint, zero JS.
-                Hamburger labels #chat-sidebar-mobile. New chat is a Link. */}
-            <ChatMobileHeaderBar />
-
-            <ChatShellProviders>
+            <ChatShellProviders
+                mobileHeader={<ChatMobileHeaderBar />}
+            >
                 <ChatLayoutGrid
                     sidebarHeader={<ChatSidebarHeader />}
                     sidebarBody={<ChatSidebarBody />}

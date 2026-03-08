@@ -7,7 +7,8 @@ import MarkdownStream from '@/components/MarkdownStream';
 import type { ChatMessage } from '../context/ChatContext';
 import type { PublicResource, PublicResourceType } from '../types/content';
 import type { StreamEvent } from '@/types/python-generated/stream-events';
-import { buildStreamBlocks } from '@/components/mardown-display/chat-markdown/tool-event-engine';
+import { buildCanonicalBlocks, toolCallBlockToLegacy } from '@/lib/chat-protocol';
+import type { ToolCallBlock } from '@/lib/chat-protocol';
 import { parseResourcesFromMessage, extractMessageWithoutResources, messageContainsResources } from '@/features/prompts/utils/resource-parsing';
 import { ResourcesContainer } from '@/features/prompts/components/resource-display/ResourceDisplay';
 
@@ -65,14 +66,10 @@ const HtmlPreviewModal = lazy(() => import('./HtmlPreviewModal'));
 const ToolCallVisualization = lazy(() => import('@/features/chat/components/response/assistant-message/stream/ToolCallVisualization'));
 
 // ============================================================================
-// INTERLEAVED STREAM BLOCKS
-// Uses the shared tool-event-engine for consistent conversion across all routes.
-// See: components/mardown-display/chat-markdown/tool-event-engine.ts
-// ============================================================================
-
-// ============================================================================
 // STREAMING CONTENT BLOCKS
-// Renders interleaved text + tool blocks in arrival order during a stream.
+// Uses the canonical chat-protocol to render interleaved text + tool blocks
+// in arrival order during a stream. ToolCallBlock.phase drives spinner state
+// so the UI never gets stuck (no positional inference).
 // ============================================================================
 
 interface StreamingContentBlocksProps {
@@ -81,12 +78,12 @@ interface StreamingContentBlocksProps {
 }
 
 function StreamingContentBlocks({ streamEvents, isStreaming }: StreamingContentBlocksProps) {
-    const blocks = useMemo(() => buildStreamBlocks(streamEvents), [streamEvents]);
+    const canonicalBlocks = useMemo(() => buildCanonicalBlocks(streamEvents), [streamEvents]);
 
     return (
         <>
-            {blocks.map((block, index) => {
-                const isLastBlock = index === blocks.length - 1;
+            {canonicalBlocks.map((block, index) => {
+                const isLastBlock = index === canonicalBlocks.length - 1;
 
                 if (block.type === 'text') {
                     return (
@@ -103,16 +100,21 @@ function StreamingContentBlocks({ streamEvents, isStreaming }: StreamingContentB
                     );
                 }
 
-                if (block.type === 'tool') {
+                if (block.type === 'tool_call') {
+                    const toolBlock = block as ToolCallBlock;
                     // Determine whether visible text content exists after this tool
-                    const hasContentAfter = blocks
+                    const hasContentAfter = canonicalBlocks
                         .slice(index + 1)
-                        .some((b) => b.type === 'text' && b.content.trim());
+                        .some((b) => b.type === 'text' && (b as { content: string }).content.trim());
+
+                    // Convert canonical block → legacy ToolCallObject[] for the renderer.
+                    // phase is embedded on the mcp_input entry so the renderer can read it.
+                    const toolUpdates = toolCallBlockToLegacy(toolBlock);
 
                     return (
-                        <Suspense key={`stream-tool-${block.toolId}`} fallback={null}>
+                        <Suspense key={`stream-tool-${toolBlock.callId}`} fallback={null}>
                             <ToolCallVisualization
-                                toolUpdates={block.updates}
+                                toolUpdates={toolUpdates}
                                 hasContent={hasContentAfter}
                                 className="mb-2"
                             />

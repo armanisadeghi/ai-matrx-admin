@@ -6,7 +6,7 @@
  *
  * The rendering pipeline expects:
  *  - A flat `content: string` (markdown text, with `<thinking>` XML tags for thinking)
- *  - An optional `toolUpdates: ToolUpdateDisplay[]` array for tool call visualization
+ *  - An optional `toolUpdates: ToolCallObject[]` array for tool call visualization
  *
  * This converter transforms structured CxContentBlock[] into those two pieces.
  */
@@ -19,26 +19,18 @@ import type {
     CxThinkingContent,
     CxMediaContent,
 } from '../types/cx-tables';
+import type { ToolCallObject } from '@/lib/api/tool-call.types';
 
 // ============================================================================
 // Types for the converter output
 // ============================================================================
-
-/** Tool update in the format ToolCallVisualization expects */
-export interface ToolUpdateDisplay {
-    id: string;
-    type: 'mcp_input' | 'mcp_output' | 'mcp_error';
-    mcp_input?: { name: string; arguments: Record<string, unknown> };
-    mcp_output?: Record<string, unknown>;
-    mcp_error?: string;
-}
 
 /** Result of converting a single message's content blocks */
 export interface ConvertedMessageContent {
     /** Markdown string for the rendering pipeline (text + thinking in XML tags + media as markdown) */
     content: string;
     /** Tool call/result visualizations */
-    toolUpdates: ToolUpdateDisplay[];
+    toolUpdates: ToolCallObject[];
 }
 
 /** Result of processing a full conversation from the database */
@@ -48,7 +40,7 @@ export interface ProcessedChatMessage {
     content: string;
     status: 'complete';
     timestamp: Date;
-    toolUpdates: ToolUpdateDisplay[];
+    toolUpdates: ToolCallObject[];
     /** Whether this message was condensed (out of context window) */
     isCondensed: boolean;
 }
@@ -100,7 +92,7 @@ export function convertCxContentToDisplay(
     }
 
     const parts: string[] = [];
-    const toolUpdates: ToolUpdateDisplay[] = [];
+    const toolUpdates: ToolCallObject[] = [];
 
     for (const block of contentBlocks) {
         if (!block || typeof block !== 'object' || !('type' in block)) {
@@ -158,6 +150,8 @@ export function convertCxContentToDisplay(
                 //   Typed interface: { tool_call_id, name, arguments (string) }
                 //   Actual DB data:  { id, name, arguments (object) }
                 // Handle both shapes.
+                // phase is set later when the output is paired; default to 'complete'
+                // because DB-loaded tool calls are always finished.
                 const raw = block as Record<string, unknown>;
                 const tcId = (raw.tool_call_id ?? raw.id ?? '') as string;
                 const tcName = (raw.name ?? '') as string;
@@ -170,6 +164,7 @@ export function convertCxContentToDisplay(
                         name: tcName,
                         arguments: toRecord(tcArgs),
                     },
+                    phase: 'complete',
                 });
                 break;
             }
@@ -194,9 +189,7 @@ export function convertCxContentToDisplay(
                     // Wrap in { status, result } to match the streaming mcp_output shape
                     // that the tool renderers expect.
                     // Preserve the original content type — it can be a string, object,
-                    // array, or any other JSON value. Don't force it into a Record;
-                    // downstream renderers (GenericRenderer, custom renderers) already
-                    // handle both string and object results.
+                    // array, or any other JSON value.
                     const resultValue = (typeof trContent === 'object' && trContent !== null)
                         ? trContent
                         : trContent ?? null;
@@ -233,15 +226,17 @@ export function convertCxContentToDisplay(
 // ============================================================================
 
 /**
- * Build ToolUpdateDisplay pairs (input + output) from a CxToolCall record.
+ * Build ToolCallObject pairs (input + output) from a CxToolCall record.
  *
+ * All DB-loaded tool calls are finished — phase is always 'complete' (or 'error').
  * This is used for V2 tool-role messages where content is [] and the actual
  * tool data lives in the cx_tool_call table.
  */
-function buildToolUpdatesFromToolCall(tc: CxToolCall): ToolUpdateDisplay[] {
-    const updates: ToolUpdateDisplay[] = [];
+function buildToolUpdatesFromToolCall(tc: CxToolCall): ToolCallObject[] {
+    const updates: ToolCallObject[] = [];
+    const isError = tc.is_error || !tc.success;
 
-    // Input (the tool call request)
+    // Input — carries phase so ToolCallVisualization shows checkmark/error icon
     updates.push({
         id: tc.call_id,
         type: 'mcp_input',
@@ -249,10 +244,11 @@ function buildToolUpdatesFromToolCall(tc: CxToolCall): ToolUpdateDisplay[] {
             name: tc.tool_name,
             arguments: tc.arguments,
         },
+        phase: isError ? 'error' : 'complete',
     });
 
-    // Output or error (the tool call result)
-    if (tc.is_error || !tc.success) {
+    // Output or error
+    if (isError) {
         updates.push({
             id: tc.call_id,
             type: 'mcp_error',

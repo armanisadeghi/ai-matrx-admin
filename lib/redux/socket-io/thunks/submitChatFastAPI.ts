@@ -25,7 +25,6 @@ import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
 import type {
   ChunkPayload,
   ErrorPayload,
-  ToolEventPayload,
   StatusUpdatePayload,
   StreamEvent,
 } from '@/types/python-generated/stream-events';
@@ -36,7 +35,6 @@ import {
   updateDataResponse,
   updateInfoResponse,
   updateErrorResponse,
-  updateToolUpdateResponse,
   appendRawToolEvent,
   markResponseEnd,
 } from '../slices/socketResponseSlice';
@@ -333,14 +331,9 @@ export const submitChatFastAPI = createAsyncThunk<
           }
 
           case 'tool_event': {
-            const toolData = event.data as unknown as ToolEventPayload;
-            // Store the raw StreamEvent for canonical processing via buildCanonicalBlocks
+            // Store the raw StreamEvent so buildCanonicalBlocks can derive ToolCallBlock[]
+            // with correct phase tracking. The canonical selector handles all rendering.
             dispatch(appendRawToolEvent({ listenerId, event }));
-            // Keep legacy ToolCallObject dispatch for backward compatibility with existing consumers
-            dispatch(updateToolUpdateResponse({
-              listenerId,
-              toolUpdate: toolData as unknown as import('../socket.types').ToolCallObject,
-            }));
             break;
           }
 
