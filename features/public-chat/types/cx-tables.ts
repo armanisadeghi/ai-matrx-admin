@@ -93,6 +93,11 @@ export interface CxTextContent {
     citations?: unknown[];
 }
 
+export interface CxThinkingSummaryItem {
+    type: string;        // "summary_text" from OpenAI
+    text: string;
+}
+
 /** AI thinking/reasoning — collapsible section */
 export interface CxThinkingContent {
     type: 'thinking';
@@ -100,16 +105,18 @@ export interface CxThinkingContent {
     provider?: string;
     signature?: string; // Internal provider data — never display
     signature_encoding?: string;
-    summary?: string[];
+    summary?: CxThinkingSummaryItem[];
+    metadata?: Record<string, unknown>;
 }
 
 /** Media attachments — images, audio, video, documents */
 export interface CxMediaContent {
     type: 'media';
-    kind: 'image' | 'audio' | 'video' | 'document';
-    url: string;
+    kind: 'image' | 'audio' | 'video' | 'document' | 'youtube';
+    url?: string;
     mime_type?: string;
     file_uri?: string;
+    base64_data?: string;
     metadata?: Record<string, unknown>;
 }
 
@@ -121,7 +128,8 @@ export interface CxMediaContent {
  */
 export interface CxToolCallContent {
     type: 'tool_call';
-    id: string;                                 // Provider call ID (joins to cx_tool_call.call_id)
+    id?: string;                                // Provider call ID (joins to cx_tool_call.call_id)
+    call_id?: string;                           // OpenAI call-level ID
     name: string;
     arguments: Record<string, unknown>;         // Parsed JSON object (DB stores jsonb, not string)
 }
@@ -135,10 +143,31 @@ export interface CxToolCallContent {
  */
 export interface CxToolResultContent {
     type: 'tool_result';
-    tool_call_id: string;
+    tool_use_id?: string;
+    tool_call_id?: string;
+    call_id?: string;
     name: string;
-    content: string;                            // JSON string — parse for display
-    is_error: boolean;
+    content: unknown;
+    is_error?: boolean;
+}
+
+export interface CxCodeExecContent {
+    type: 'code_exec';
+    language: string;
+    code: string;
+}
+
+export interface CxCodeResultContent {
+    type: 'code_result';
+    output: string;
+    outcome: string;
+}
+
+export interface CxWebSearchContent {
+    type: 'web_search';
+    id?: string;
+    status?: string;
+    metadata?: { action?: Record<string, unknown> };
 }
 
 /** Union of all content block types stored in cx_message.content */
@@ -147,7 +176,10 @@ export type CxContentBlock =
     | CxThinkingContent
     | CxMediaContent
     | CxToolCallContent
-    | CxToolResultContent;
+    | CxToolResultContent
+    | CxCodeExecContent
+    | CxCodeResultContent
+    | CxWebSearchContent;
 
 /**
  * @deprecated Use CxContentBlock instead. Kept for backward compatibility.

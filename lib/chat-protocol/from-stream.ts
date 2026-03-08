@@ -113,7 +113,7 @@ export function buildCanonicalBlocks(events: StreamEvent[]): CanonicalBlock[] {
     for (const event of events) {
         // ── Text chunk ──────────────────────────────────────────────────
         if (event.event === 'chunk') {
-            const text = (event.data as ChunkPayload).text ?? '';
+            const text = (event.data as unknown as ChunkPayload).text ?? '';
             if (!text) continue;
 
             const last = blocks[blocks.length - 1];
@@ -127,7 +127,7 @@ export function buildCanonicalBlocks(events: StreamEvent[]): CanonicalBlock[] {
 
         // ── Tool event ──────────────────────────────────────────────────
         if (event.event === 'tool_event') {
-            const te = event.data as ToolEventPayload;
+            const te = event.data as unknown as ToolEventPayload;
             const { call_id: callId, tool_name: toolName, message } = te;
             const data = te.data ?? {};
 
@@ -179,7 +179,7 @@ export function buildCanonicalBlocks(events: StreamEvent[]): CanonicalBlock[] {
 
         // ── Stream-level error ──────────────────────────────────────────
         if (event.event === 'error') {
-            const err = event.data as ErrorPayload;
+            const err = event.data as unknown as ErrorPayload;
             blocks.push({
                 type: 'error',
                 errorType: err.error_type ?? 'unknown',

@@ -1,7 +1,7 @@
 // app/api/auth/extension/generate-code/route.ts
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createRouteHandlerClient as createClient } from "@/utils/supabase/server";
 import { randomBytes } from 'crypto';
 
 /**

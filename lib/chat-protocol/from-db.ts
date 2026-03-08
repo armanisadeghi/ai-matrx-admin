@@ -25,6 +25,8 @@ import type {
     CxTextContent,
     CxThinkingContent,
     CxMediaContent,
+    CxCodeExecContent,
+    CxCodeResultContent,
 } from '@/features/public-chat/types/cx-tables';
 
 import type {
@@ -90,18 +92,26 @@ function convertTextContent(block: CxTextContent): TextBlock | null {
 }
 
 function convertThinkingContent(block: CxThinkingContent): ThinkingBlock {
-    const content =
-        block.text ||
-        (block.summary?.length ? block.summary.join('\n') : 'Thinking…');
-    return { type: 'thinking', content };
+    let content = block.text;
+    if (!content && block.summary?.length) {
+        // summary items are objects with a .text field from Python
+        content = block.summary
+            .map(item => (typeof item === 'string' ? item : (item as {text?: string}).text ?? ''))
+            .filter(Boolean)
+            .join('\n');
+    }
+    return { type: 'thinking', content: content || 'Thinking…' };
 }
 
 function convertMediaContent(block: CxMediaContent): MediaBlock | null {
-    if (!block.url) return null;
+    // Use url OR fall back to file_uri (Google Gemini File API)
+    const url = block.url ?? block.file_uri ?? null;
+    if (!url) return null;
     return {
         type: 'media',
-        kind: block.kind,
-        url: block.url,
+        kind: block.kind as MediaBlock['kind'], // youtube support added via cast
+        url,
+        ...(block.file_uri ? { fileUri: block.file_uri } : {}),
         ...(block.mime_type ? { mimeType: block.mime_type } : {}),
     };
 }
@@ -158,7 +168,8 @@ function convertContentBlocks(
                 // DB stores: { type, id (or tool_call_id), name, arguments }
                 // Cast through unknown to safely access arbitrary runtime fields.
                 const raw2     = block as unknown as Record<string, unknown>;
-                const callId   = String(raw2.id ?? raw2.tool_call_id ?? '');
+                // call_id (OpenAI) takes priority; fall back to id (Anthropic/Google) or tool_use_id (legacy)
+                const callId   = String(raw2.call_id ?? raw2.id ?? raw2.tool_call_id ?? raw2.tool_use_id ?? '');
                 const toolName = String(raw2.name ?? '');
                 const args     = toRecord(raw2.arguments);
 
@@ -200,6 +211,27 @@ function convertContentBlocks(
                     });
                 }
                 // Non-error orphan result — nothing renderable here
+                break;
+            }
+
+            case 'code_exec': {
+                // Render code blocks as text for now
+                const b = block as unknown as CxCodeExecContent;
+                blocks.push({ type: 'text', content: `\`\`\`${b.language}\n${b.code}\n\`\`\`` });
+                break;
+            }
+
+            case 'code_result': {
+                const b = block as unknown as CxCodeResultContent;
+                if (b.output) {
+                    blocks.push({ type: 'text', content: `\`\`\`\n${b.output}\n\`\`\`` });
+                }
+                break;
+            }
+
+            case 'web_search': {
+                // Web search is informational — gracefully skip rendering a visual block
+                // since the system will use tool_call blocks for the actual queries.
                 break;
             }
 
