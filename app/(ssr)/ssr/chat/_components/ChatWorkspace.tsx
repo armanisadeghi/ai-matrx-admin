@@ -21,9 +21,10 @@ import { MessageCircle, List, Layers } from 'lucide-react';
 
 // Chat infrastructure
 import { useChatContext } from '@/features/public-chat/context/ChatContext';
-import type { AgentConfig, ChatMessage } from '@/features/public-chat/context/ChatContext';
+import type { AgentConfig } from '@/features/public-chat/context/ChatContext';
 import { useAgentChat } from '@/features/public-chat/hooks/useAgentChat';
 import { useChatPersistence } from '@/features/public-chat/hooks/useChatPersistence';
+import { processDbMessagesForDisplay } from '@/features/public-chat/utils/cx-content-converter';
 
 
 // Shared agent state — single source of truth for selected agent across the SSR chat route
@@ -162,21 +163,14 @@ function ChatWorkspaceInner() {
                     return;
                 }
 
-                // Convert cx_messages to ChatMessage format
-                const chatMessages: ChatMessage[] = data.messages.map(msg => {
-                    const textContent = msg.content
-                        .filter(block => block.type === 'text')
-                        .map(block => ('text' in block ? block.text : ''))
-                        .join('\n');
-
-                    return {
-                        id: msg.id,
-                        role: msg.role as 'user' | 'assistant',
-                        content: textContent,
-                        status: 'complete' as const,
-                        timestamp: new Date(msg.created_at),
-                    };
-                });
+                // Convert cx_messages to ChatMessage format using the same
+                // processDbMessagesForDisplay pipeline as the rest of the system.
+                // This correctly extracts tool_call/tool_result blocks so tool
+                // results are visible when revisiting past conversations.
+                const chatMessages = processDbMessagesForDisplay(
+                    data.messages,
+                    data.toolCalls,
+                );
 
                 // Load atomically — sets conversationId, dbConversationId, and messages in one dispatch
                 loadConversationAction(conversationIdFromUrl!, conversationIdFromUrl!, chatMessages);
