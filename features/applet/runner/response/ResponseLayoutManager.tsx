@@ -7,13 +7,12 @@ import {
     selectResponseTextByListenerId,
     selectResponseEndedByListenerId,
     selectResponseDataByListenerId,
-    selectResponseInfoByListenerId,
-    selectResponseErrorsByListenerId,
 } from "@/lib/redux/socket-io";
 import MarkdownStream from "@/components/MarkdownStream";
 import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
 import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
 import AppletPostActionButtons from "./AppletPostActionButtons";
+import AppletFollowUpInput from "./AppletFollowUpInput";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { hasCoordinator } from "@/components/mardown-display/markdown-classification/markdown-coordinator";
 import DirectMarkdownRenderer from "@/components/mardown-display/markdown-classification/DirectMarkdownRenderer";
@@ -28,6 +27,8 @@ interface ResponseLayoutManagerProps {
     isPreview?: boolean;
     responseLayoutTypeOverride?: AppletLayoutOption;
     allowEditing?: boolean;
+    /** Conversation ID from the agent stream — enables follow-up input. Only present on the FastAPI path. */
+    conversationId?: string | null;
 }
 
 export default function ResponseLayoutManager({
@@ -39,23 +40,14 @@ export default function ResponseLayoutManager({
     isPreview = false,
     responseLayoutTypeOverride = "flat-accordion",
     allowEditing = false,
+    conversationId = null,
 }: ResponseLayoutManagerProps) {
     const dispatch = useAppDispatch();
     const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
     const textResponse = useAppSelector(selectResponseTextByListenerId(firstListenerId));
     const dataResponse = useAppSelector(selectResponseDataByListenerId(firstListenerId));
-    const infoResponse = useAppSelector(selectResponseInfoByListenerId(firstListenerId));
-    const errorsResponse = useAppSelector(selectResponseErrorsByListenerId(firstListenerId));
     const isTaskComplete = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
     const hasCustomView = useMemo(() => hasCoordinator(coordinatorId), [coordinatorId]);
-
-    useEffect(() => {
-        console.log("===> [RESPONSE LAYOUT MANAGER] Errors response:", JSON.stringify(errorsResponse, null, 2));
-    }, [errorsResponse]);
-
-    useEffect(() => {
-        console.log("===> [RESPONSE LAYOUT MANAGER] Info response:", JSON.stringify(infoResponse, null, 2));
-    }, [infoResponse]);
 
     useEffect(() => {
         if (coordinatorId) {
@@ -141,6 +133,9 @@ export default function ResponseLayoutManager({
                                 data={dataResponse}
                                 handleEdit={allowEditing ? () => {} : null}
                             />
+                            {conversationId && (
+                                <AppletFollowUpInput conversationId={conversationId} />
+                            )}
                         </div>
                     )}
                 </FullscreenWrapper>

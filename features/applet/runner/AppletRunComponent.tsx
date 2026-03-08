@@ -13,6 +13,7 @@ import { selectAppRuntimeIsInitialized } from "@/lib/redux/app-runner/slices/cus
 import { LoadingSpinner } from "@/components/ui/spinner";
 import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
 import useAppletRecipe from "@/features/applet/hooks/useAppletRecipe";
+import useAppletRecipeFastAPI from "@/features/applet/hooks/useAppletRecipeFastAPI";
 import ResponseLayoutManager from "@/features/applet/runner/response/ResponseLayoutManager";
 import PreviewLoadingWithMessage from "@/features/applet/builder/previews/PreviewLoadingWithMessage";
 import { AppletLayoutOption } from "@/types/customAppTypes";
@@ -37,6 +38,8 @@ interface AppletRunComponentProps {
     isFullScreenPreview?: boolean;
     responseLayoutTypeOverride?: AppletLayoutOption;
     coordinatorOverride?: string;
+    /** When true, routes execution through FastAPI agent endpoint instead of Socket.IO (?fx=1) */
+    useFastApi?: boolean;
 }
 
 export default function AppletRunComponent({
@@ -48,6 +51,7 @@ export default function AppletRunComponent({
     isFullScreenPreview = false,
     responseLayoutTypeOverride = "flat-accordion",
     coordinatorOverride = "default",
+    useFastApi = false,
 }: AppletRunComponentProps) {
     const dispatch = useAppDispatch();
     const isAppInitialized = useAppSelector(selectAppRuntimeIsInitialized);
@@ -59,7 +63,13 @@ export default function AppletRunComponent({
     const [socketTaskId, setSocketTaskId] = useState<string | null>(null);
     const toast = useToastManager();
 
-    const { taskId, submitRecipe } = useAppletRecipe({ appletId });
+    // Both hooks are always called (React rules — no conditional hooks).
+    // Only the result from the active path is used.
+    const socketResult = useAppletRecipe({ appletId });
+    const fastApiResult = useAppletRecipeFastAPI({ appletId });
+    const activeResult = useFastApi ? fastApiResult : socketResult;
+    const { taskId, submitRecipe } = activeResult;
+    const conversationId = useFastApi ? fastApiResult.conversationId : null;
 
     const coordinatorId = SLUG_TO_COORDINATOR_MAP[appletSlug] || "default";
 
@@ -129,6 +139,7 @@ export default function AppletRunComponent({
                     isPreview={isPreview}
                     responseLayoutTypeOverride={responseLayoutTypeOverride}
                     allowEditing={ALLOW_EDITING}
+                    conversationId={conversationId}
                 />
             )}
         </div>

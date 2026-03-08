@@ -32,11 +32,18 @@ export class HTMLPageService {
         is_indexable: metaFields.isIndexable || false
       };
 
+      console.log('[HTMLPageService] supabaseHtml.supabaseUrl:', supabaseHtml.supabaseUrl);
+      console.log('[HTMLPageService] insertData:', JSON.stringify(insertData, null, 2));
+
       const { data, error } = await supabaseHtml
         .from('html_pages')
         .insert(insertData)
         .select()
         .single();
+
+      console.log('[HTMLPageService] insert result — data:', data, '| error:', error);
+      console.log('[HTMLPageService] error type:', typeof error, '| error keys:', error ? Object.keys(error) : 'n/a');
+      console.log('[HTMLPageService] error.message:', error?.message, '| error.code:', error?.code, '| error.details:', error?.details);
 
       if (error) {
         console.error('Failed to create HTML page:', error);

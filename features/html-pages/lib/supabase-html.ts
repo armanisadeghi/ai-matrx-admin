@@ -10,34 +10,37 @@ let supabaseHtmlInstance: SupabaseClient | null = null;
  * This ensures the client is only created in the browser environment
  */
 export function getSupabaseHtml(): SupabaseClient {
-  // Return existing instance if available
   if (supabaseHtmlInstance) {
+    console.log('[supabase-html] Returning cached instance, supabaseUrl:', (supabaseHtmlInstance as any).supabaseUrl);
     return supabaseHtmlInstance;
   }
 
-  // Ensure we're in the browser
   if (typeof window === 'undefined') {
     throw new Error('Supabase HTML client can only be initialized in the browser');
   }
 
-  // Get environment variables
   const url = process.env.NEXT_PUBLIC_SUPABASE_HTML_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_HTML_ANON_KEY;
+
+  console.log('[supabase-html] Creating new client');
+  console.log('[supabase-html] URL:', url);
+  console.log('[supabase-html] anonKey present:', !!anonKey, '| first 20 chars:', anonKey?.slice(0, 20));
 
   if (!url || !anonKey) {
     throw new Error('Missing Supabase HTML environment variables');
   }
 
-  // Create and cache the client
   supabaseHtmlInstance = createBrowserClient(url, anonKey, {
+    isSingleton: false,
     auth: {
-      storageKey: 'sb-html-auth-token', // Unique storage key to avoid conflicts
+      storageKey: 'sb-html-auth-token',
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false
     }
   });
 
+  console.log('[supabase-html] Client created, supabaseUrl:', (supabaseHtmlInstance as any).supabaseUrl);
   return supabaseHtmlInstance;
 }
 

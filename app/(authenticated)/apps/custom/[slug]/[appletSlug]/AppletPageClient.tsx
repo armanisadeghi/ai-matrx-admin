@@ -20,6 +20,8 @@ export default function AppletPageClient({ slug, appletSlug }: AppletPageClientP
     const allowSubmit = searchParams.get("zs") !== "0"; // Default to true unless explicitly set to 0
     const responseLayoutTypeOverride = searchParams.get("rl") as AppletLayoutOption | undefined;
     const coordinatorId = searchParams.get("c") as string | undefined;
+    // ?fx=1 → use FastAPI agent path instead of Socket.IO
+    const useFastApi = searchParams.get("fx") === "1";
 
     return (
         <AppletRunComponent 
@@ -30,6 +32,7 @@ export default function AppletPageClient({ slug, appletSlug }: AppletPageClientP
             allowSubmit={allowSubmit} 
             responseLayoutTypeOverride={responseLayoutTypeOverride || "flat-accordion"}
             coordinatorOverride={coordinatorId}
+            useFastApi={useFastApi}
         />
     );
 }

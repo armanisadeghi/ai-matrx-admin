@@ -175,6 +175,8 @@ export interface RecipeSourceConfig {
   compiledId: string;
   version: number;
   neededBrokers: NeededBroker[];
+  /** Cached agent/prompt ID from convert_compiled_recipe_to_prompt. Set on first FastAPI execution; avoids repeat conversion calls. */
+  promptId?: string;
 }
 
 export interface AppletSourceConfig {
