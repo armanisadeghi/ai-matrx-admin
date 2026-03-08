@@ -2,7 +2,9 @@
 
 import React, { useState, useMemo } from "react";
 import { Plus } from "lucide-react";
-import { usePromptsWithFetch } from "@/features/prompts/hooks/usePrompts";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { selectAllUserPrompts } from "@/lib/redux/slices/promptCacheSlice";
+import { createUserPrompt, updateUserPrompt } from "@/lib/redux/thunks/promptCrudThunks";
 import { PromptMessage, PromptData } from "@/features/prompts/types/core";
 import PromptOverlayWrapper from "@/components/prompt-builder/components/PromptOverlayWrapper";
 import CompactPromptsList from "@/components/prompt-builder/components/CompactPromptsList";
@@ -12,7 +14,8 @@ export default function PromptManager() {
     const [isOverlayOpen, setIsOverlayOpen] = useState(false);
     const [currentPrompt, setCurrentPrompt] = useState<PromptData | null>(null);
     const [originalPromptData, setOriginalPromptData] = useState<any>(null);
-    const { promptsRecords, createPrompt, updatePrompt } = usePromptsWithFetch();
+    const dispatch = useAppDispatch();
+    const prompts = useAppSelector(selectAllUserPrompts);
 
     // Calculate dirty state
     const isDirty = useMemo(() => {
@@ -46,19 +49,22 @@ export default function PromptManager() {
         try {
             if (currentPrompt) {
                 // Update existing prompt
-                updatePrompt(currentPrompt.id, {
-                    name: promptData.name,
-                    messages: promptData.messages,
-                    variableDefaults: promptData.variableDefaults as any,
-                });
+                dispatch(updateUserPrompt({
+                    id: currentPrompt.id,
+                    data: {
+                        name: promptData.name,
+                        messages: promptData.messages,
+                        variableDefaults: promptData.variableDefaults as any,
+                    },
+                }));
                 console.log("Prompt updated successfully");
             } else {
                 // Create new prompt
-                const result = await createPrompt({
+                const result = await dispatch(createUserPrompt({
                     name: promptData.name,
                     messages: promptData.messages,
                     variableDefaults: promptData.variableDefaults as any,
-                });
+                } as any)).unwrap();
                 console.log("Prompt created successfully:", result);
             }
         } catch (error) {
@@ -107,7 +113,7 @@ export default function PromptManager() {
         },
     ];
 
-    const promptsList = Object.values(promptsRecords);
+    const promptsList = prompts;
 
     return (
         <div className="p-8 min-h-screen bg-gray-100 dark:bg-gray-900">

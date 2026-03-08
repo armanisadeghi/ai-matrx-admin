@@ -34,7 +34,7 @@ export interface PromptSettings {
     reasoning_effort?: string;
     verbosity?: string;
     reasoning_summary?: string;
-    
+
     // Image/Video model settings
     n?: number;
     seed?: number;
@@ -118,16 +118,15 @@ export interface PromptVariable {
 }
 
 export interface PromptDb {
-  id: string;
-  created_at: string;
-  updated_at: string | null;
-  name: string | null;
-  messages: unknown | null; // or define a specific type if you know the structure
-  variable_defaults: PromptVariable[] | null; // or more specific type
-  tools: unknown | null; // or define a specific type if you know the structure
-  user_id: string | null;
-  settings: PromptSettings | null; // or more specific type
-  description: string | null;
+    id: string;
+    created_at: string;
+    updated_at: string | null;
+    name: string | null;
+    messages: unknown | null; // or define a specific type if you know the structure
+    variable_defaults: PromptVariable[] | null; // or more specific type
+    user_id: string | null;
+    settings: PromptSettings | null; // or more specific type
+    description: string | null;
 }
 
 export type PromptData = {
@@ -137,7 +136,6 @@ export type PromptData = {
     name?: string;
     description?: string;
     userId?: string;
-    tools?: string[];
     messages?: PromptMessage[];
     variableDefaults?: PromptVariable[]; // Array of { name, defaultValue, customComponent? }
     settings?: PromptSettings;
@@ -148,11 +146,3 @@ export interface PromptsBatchData {
     overwriteExisting?: boolean; // If true, prompts with matching IDs will be updated
 }
 
-
-export type SimplePromptsData = {
-    id?: string;
-    name?: string;
-    tools?: string[];
-    messages?: PromptMessage[];
-    variableDefaults?: PromptVariable[];
-};

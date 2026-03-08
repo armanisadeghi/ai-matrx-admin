@@ -51,6 +51,8 @@ export default function DeferredShellData() {
                     }
                 }
 
+                console.log("[DeferredShellData] Context Menu length: ", shellData.context_menu.length);
+
                 if (shellData.context_menu.length > 0) {
                     dispatch(setContextMenuRows(shellData.context_menu as ContextMenuRow[]));
                 }

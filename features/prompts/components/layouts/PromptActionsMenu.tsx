@@ -31,7 +31,8 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { usePromptsWithFetch } from "@/features/prompts/hooks/usePrompts";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { createUserPrompt } from "@/lib/redux/thunks/promptCrudThunks";
 import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
 import { useUser } from "@/lib/hooks/useUser";
 import { ConvertToBuiltinModal } from "@/features/prompts/components/layouts/ConvertToBuiltinModal";
@@ -106,7 +107,7 @@ export function PromptActionsMenu({
 }: PromptActionsMenuProps) {
     const router = useRouter();
     const { openPrompt } = usePromptRunner();
-    const { createPrompt } = usePromptsWithFetch();
+    const dispatch = useAppDispatch();
     const { isAdmin } = useUser();
     
     const [isOpen, setIsOpen] = useState(false);
@@ -167,15 +168,13 @@ export function PromptActionsMenu({
             try {
                 const copyName = `${promptData.name} (Copy)`;
                 
-                const newPromptData = {
+                const result = await dispatch(createUserPrompt({
                     name: copyName,
                     description: promptData.description,
                     messages: promptData.messages || [],
                     variableDefaults: promptData.variableDefaults || [],
                     settings: promptData.settings || {},
-                };
-                
-                const result = await createPrompt(newPromptData as any);
+                } as any)).unwrap();
                 
                 if (result?.id) {
                     setDuplicatedPromptId(result.id);

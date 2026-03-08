@@ -24,11 +24,13 @@ const contextMenuCacheSlice = createSlice({
   reducers: {
     setContextMenuRows(state, action: PayloadAction<ContextMenuRow[]>) {
       state.rows = action.payload;
+      console.log("[contextMenuCacheSlice] setContextMenuRows: ", state.rows.length);
       state.hydrated = true;
     },
     clearContextMenuCache(state) {
       state.rows = [];
       state.hydrated = false;
+      console.log("[contextMenuCacheSlice] clearContextMenuCache Cleared Cache");
     },
   },
 });

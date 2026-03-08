@@ -6,7 +6,6 @@ export {
   createRuntimeVariable,
   createFunctionVariable
 } from './usePromptExecution';
-export { usePromptsWithFetch } from './usePrompts';
 export { usePromptRunnerModal } from './usePromptRunnerModal';
 export { usePromptRunner } from './usePromptRunner';
 

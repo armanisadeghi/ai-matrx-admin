@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from 'uuid';
-import { usePromptsWithFetch } from "@/features/prompts/hooks/usePrompts";
+import { createUserPrompt, updateUserPrompt } from '@/lib/redux/thunks/promptCrudThunks';
 import { PromptMessage } from "@/features/prompts/types/core";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useModelControls, getModelDefaults } from "@/features/prompts/hooks/useModelControls";
@@ -44,7 +44,6 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const dispatch = useAppDispatch();
-    const { createPrompt, updatePrompt } = usePromptsWithFetch();
     const modelPreferences = useAppSelector((state: RootState) => state.userPreferences.aiModels as AiModelsPreferences);
     const { formatMessageWithResources } = useResourceMessageFormatter();
     const promptsPreferences: PromptsPreferences = useAppSelector(selectPromptsPreferences);
@@ -467,12 +466,12 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
 
             if (isEditMode && initialData?.id) {
                 // Update existing prompt - no routing needed, stay on current edit page
-                updatePrompt(initialData.id, promptData as any);
+                await dispatch(updateUserPrompt({ id: initialData.id, data: promptData as any })).unwrap();
                 setIsDirty(false);
             } else {
                 // Create new prompt and immediately route to its edit page
                 // This prevents duplicate creation if user clicks save again before routing
-                const result = await createPrompt(promptData as any);
+                const result = await dispatch(createUserPrompt(promptData as any)).unwrap();
                 setIsDirty(false);
                 
                 // Route to the newly created prompt's edit page
@@ -752,7 +751,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
         settings?: Record<string, any>;
     }) => {
         // Update the database using the existing updatePrompt method
-        updatePrompt(id, data);
+        dispatch(updateUserPrompt({ id, data }));
     };
 
     const handleLocalStateUpdate = (updates: { 
@@ -904,7 +903,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
             };
 
             // Create the new prompt
-            const result = await createPrompt(promptData as any);
+            const result = await dispatch(createUserPrompt(promptData as any)).unwrap();
             
             if (result?.id) {
                 toast.success('Copy created successfully', {

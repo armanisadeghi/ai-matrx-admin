@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Wand2, Check, X, Loader2, Copy, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { usePromptsWithFetch } from '@/features/prompts/hooks/usePrompts';
+import { createUserPrompt } from '@/lib/redux/thunks/promptCrudThunks';
 import { FullPromptOptimizer } from './FullPromptOptimizer';
 import MarkdownStream from '@/components/MarkdownStream';
 
@@ -47,7 +47,6 @@ export function SystemPromptOptimizer({
 }: SystemPromptOptimizerProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { createPrompt } = usePromptsWithFetch();
   
   const [additionalGuidance, setAdditionalGuidance] = useState('');
   const [showGuidanceInput, setShowGuidanceInput] = useState(false);
@@ -200,7 +199,7 @@ export function SystemPromptOptimizer({
       };
 
       // Create the new prompt
-      const result = await createPrompt(promptData as any);
+      const result = await dispatch(createUserPrompt(promptData as any)).unwrap();
       
       if (result?.id) {
         toast.success('Copy created successfully', {

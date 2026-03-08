@@ -26,26 +26,56 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import type { SharedPrompt } from "@/features/prompts/types/shared";
-
-interface Prompt {
-    id: string;
-    name: string;
-    description?: string;
-}
-
-interface PromptsGridProps {
-    prompts: Prompt[];
-    sharedPrompts?: SharedPrompt[];
-}
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import {
+    selectAllUserPrompts,
+    selectSharedPrompts,
+    selectPromptsListStatus,
+} from "@/lib/redux/slices/promptCacheSlice";
+import {
+    deleteUserPrompt,
+    duplicateUserPrompt,
+} from "@/lib/redux/thunks/promptCrudThunks";
+import { SharedPrompt } from "../../types/shared";
+import { usePromptFilters } from "../../hooks/usePromptFilters";
+import type { PromptTab, PromptSortOption } from "../../hooks/usePromptFilters";
 
 // Threshold constants for hybrid card/list layout
 const CARDS_DISPLAY_LIMIT_DESKTOP = 8;
 const CARDS_DISPLAY_LIMIT_MOBILE = 4;
 
-export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
+/** Lightweight skeleton shown while the initial fetch is in-flight */
+function PromptsSkeleton({ count = 4 }: { count?: number }) {
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: count }).map((_, i) => (
+                <div key={i} className="rounded-xl border border-border p-5 space-y-3 animate-pulse">
+                    <div className="h-5 w-2/3 rounded bg-muted" />
+                    <div className="space-y-2">
+                        <div className="h-3 w-full rounded bg-muted" />
+                        <div className="h-3 w-4/5 rounded bg-muted" />
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                        <div className="h-8 w-16 rounded bg-muted" />
+                        <div className="h-8 w-16 rounded bg-muted" />
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+export function PromptsGrid() {
+    const dispatch = useAppDispatch();
     const router = useRouter();
     const isMobile = useIsMobile();
+
+    // Read from Redux — updated reactively after every mutation
+    const prompts = useAppSelector(selectAllUserPrompts);
+    const sharedPrompts = useAppSelector(selectSharedPrompts);
+    const listStatus = useAppSelector(selectPromptsListStatus);
+    const isLoading = listStatus === 'idle' || listStatus === 'loading';
+
     const cardsLimit = isMobile ? CARDS_DISPLAY_LIMIT_MOBILE : CARDS_DISPLAY_LIMIT_DESKTOP;
     const [isPending, startTransition] = useTransition();
     const [navigatingId, setNavigatingId] = useState<string | null>(null);
@@ -53,22 +83,29 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
     const [duplicatingIds, setDuplicatingIds] = useState<Set<string>>(new Set());
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [promptToDelete, setPromptToDelete] = useState<{ id: string; name: string } | null>(null);
-    
-    // Tab state
-    type PromptTab = "mine" | "shared";
-    const [activeTab, setActiveTab] = useState<PromptTab>("mine");
+
+    // URL-backed filter state (bookmarkable, shareable, history-aware)
+    const {
+        tab: activeTab,
+        sortBy,
+        searchTerm,
+        setTab: setActiveTab,
+        setSortBy,
+        setSearchTerm,
+        resetFilters,
+        hasActiveFilters,
+        isSearching,
+    } = usePromptFilters();
+
+    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+    const [isNewModalOpen, setIsNewModalOpen] = useState(false);
+
     const hasShared = sharedPrompts.length > 0;
-    
-    // Pagination state for list items
+
+    // Pagination — stays local: resets naturally when filters change, no URL clutter
     const [promptListPage, setPromptListPage] = useState(1);
     const [sharedListPage, setSharedListPage] = useState(1);
     const LIST_ITEMS_PER_PAGE = 20;
-    
-    // Search and filter state
-    const [searchTerm, setSearchTerm] = useState("");
-    const [sortBy, setSortBy] = useState("updated-desc");
-    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-    const [isNewModalOpen, setIsNewModalOpen] = useState(false);
 
     // Filter and sort prompts
     const filteredPrompts = useMemo(() => {
@@ -136,7 +173,7 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
     const allSharedListItems = useMemo(() => filteredSharedPrompts.slice(cardsLimit), [filteredSharedPrompts, cardsLimit]);
     const sharedPromptListItems = useMemo(() => allSharedListItems.slice(0, sharedListPage * LIST_ITEMS_PER_PAGE), [allSharedListItems, sharedListPage]);
     const hasMoreShared = allSharedListItems.length > sharedPromptListItems.length;
-    
+
     // Reset pagination when search/filter changes
     useMemo(() => {
         setPromptListPage(1);
@@ -150,57 +187,43 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
 
     const handleConfirmDelete = async () => {
         if (!promptToDelete) return;
-        
-        const { id } = promptToDelete;
+
+        const { id, name } = promptToDelete;
         setDeletingIds(prev => new Set(prev).add(id));
-        
+        setDeleteDialogOpen(false);
+        setPromptToDelete(null);
+
         try {
-            const response = await fetch(`/api/prompts/${id}`, {
-                method: "DELETE",
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to delete prompt");
-            }
-
-            router.refresh();
+            await dispatch(deleteUserPrompt(id)).unwrap();
+            // Redux removes the record from the list — no router.refresh() needed
             toast.success("Prompt deleted successfully!");
         } catch (error) {
             console.error("Error deleting prompt:", error);
             toast.error("Failed to delete prompt. Please try again.");
-            setDeletingIds(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(id);
-                return newSet;
-            });
         } finally {
-            setDeleteDialogOpen(false);
-            setPromptToDelete(null);
+            setDeletingIds(prev => {
+                const next = new Set(prev);
+                next.delete(id);
+                return next;
+            });
         }
     };
 
     const handleDuplicate = async (id: string) => {
         setDuplicatingIds(prev => new Set(prev).add(id));
-        
+
         try {
-            const response = await fetch(`/api/prompts/${id}/duplicate`, {
-                method: "POST",
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to duplicate prompt");
-            }
-
-            router.refresh();
+            await dispatch(duplicateUserPrompt(id)).unwrap();
+            // Redux prepends the copy to the list — no router.refresh() needed
             toast.success("Prompt duplicated successfully!");
         } catch (error) {
             console.error("Error duplicating prompt:", error);
             toast.error("Failed to duplicate prompt. Please try again.");
         } finally {
             setDuplicatingIds(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(id);
-                return newSet;
+                const next = new Set(prev);
+                next.delete(id);
+                return next;
             });
         }
     };
@@ -208,26 +231,19 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
     // Handler for duplicating shared prompts (copy to my prompts)
     const handleDuplicateShared = async (id: string) => {
         setDuplicatingIds(prev => new Set(prev).add(id));
-        
+
         try {
-            const response = await fetch(`/api/prompts/${id}/duplicate`, {
-                method: "POST",
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to copy prompt");
-            }
-
-            router.refresh();
+            await dispatch(duplicateUserPrompt(id)).unwrap();
+            // Redux prepends the copy to the owned list — tab switches automatically
             toast.success("Prompt copied to your prompts!");
         } catch (error) {
             console.error("Error copying shared prompt:", error);
             toast.error("Failed to copy prompt. Please try again.");
         } finally {
             setDuplicatingIds(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(id);
-                return newSet;
+                const next = new Set(prev);
+                next.delete(id);
+                return next;
             });
         }
     };
@@ -240,20 +256,20 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
     const handleNavigate = (id: string, path: string) => {
         // Prevent navigation if already navigating
         if (navigatingId) return;
-        
+
         setNavigatingId(id);
         startTransition(() => {
             router.push(path);
         });
     };
 
-    const hasActiveFilters = searchTerm !== "" || sortBy !== "updated-desc";
 
     const sortOptions = [
         { value: "updated-desc", label: "Recently Updated" },
         { value: "name-asc", label: "Name (A-Z)" },
         { value: "name-desc", label: "Name (Z-A)" },
     ];
+
     const showOptions: { value: PromptTab | "all"; label: string }[] = [
         { value: "all", label: "All Prompts" },
         { value: "mine", label: "My Prompts" },
@@ -269,7 +285,6 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
         if (!open) setFilterDetailKey(null);
     };
 
-    const isSearching = searchTerm.length > 0;
 
     // When searching, determine cross-tab matches for the "Also found in" section
     const otherTabLabel = activeTab === "mine" ? "Shared" : "Mine";
@@ -288,105 +303,92 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
                 />
             )}
 
-            {/* Pill Tabs */}
+            {/* Pill Tabs — only shown when the user has shared prompts */}
             {hasShared && (
                 <div className="flex items-center gap-1 mb-3 pl-1">
                     <button
                         onClick={() => setActiveTab("mine")}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
-                            activeTab === "mine"
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${activeTab === "mine"
                                 ? "bg-primary text-primary-foreground"
                                 : "border border-border text-muted-foreground hover:text-foreground hover:bg-muted"
-                        }`}
+                            }`}
                     >
                         Mine
                         <span className="text-[10px] opacity-70">{filteredPrompts.length}</span>
                     </button>
                     <button
                         onClick={() => setActiveTab("shared")}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
-                            activeTab === "shared"
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${activeTab === "shared"
                                 ? "bg-primary text-primary-foreground"
                                 : "border border-border text-muted-foreground hover:text-foreground hover:bg-muted"
-                        }`}
+                            }`}
                     >
                         Shared
                         <span className="text-[10px] opacity-70">{filteredSharedPrompts.length}</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab("all")}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${activeTab === "all"
+                                ? "bg-primary text-primary-foreground"
+                                : "border border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+                            }`}
+                    >
+                        All
+                        <span className="text-[10px] opacity-70">{filteredPrompts.length + filteredSharedPrompts.length}</span>
                     </button>
                 </div>
             )}
 
             {/* Active Tab Content */}
             <div className={cn(isMobile && "pb-24")}>
-            {activeTab === "mine" ? (
-                <>
-                    {prompts.length === 0 ? (
-                        <div className="mb-8">
-                            <div className="border border-primary/20 rounded-xl p-8 bg-gradient-to-br from-primary/5 to-secondary/5">
-                                <div className="flex flex-col items-center text-center space-y-4">
-                                    <div className="p-4 bg-primary/10 rounded-full">
-                                        <Plus className="h-8 w-8 text-primary" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl font-semibold mb-2">Create Your First Prompt</h3>
-                                        <p className="text-muted-foreground">
-                                            Start from scratch or use a template to build your prompt library
-                                        </p>
-                                    </div>
-                                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                                        <button
-                                            onClick={() => setIsNewModalOpen(true)}
-                                            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4"
-                                        >
-                                            <Plus className="h-4 w-4 mr-2" />
-                                            Create Blank Prompt
-                                        </button>
-                                        <button
-                                            onClick={() => router.push('/ai/prompts/templates')}
-                                            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input hover:bg-accent hover:text-accent-foreground h-10 py-2 px-4"
-                                        >
-                                            <LayoutPanelTop className="h-4 w-4 mr-2" />
-                                            Browse Templates
-                                        </button>
+                {activeTab === "mine" ? (
+                    <>
+                        {isLoading ? (
+                            <PromptsSkeleton count={cardsLimit} />
+                        ) : prompts.length === 0 ? (
+                            <div className="mb-8">
+                                <div className="border border-primary/20 rounded-xl p-8 bg-gradient-to-br from-primary/5 to-secondary/5">
+                                    <div className="flex flex-col items-center text-center space-y-4">
+                                        <div className="p-4 bg-primary/10 rounded-full">
+                                            <Plus className="h-8 w-8 text-primary" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-semibold mb-2">Create Your First Prompt</h3>
+                                            <p className="text-muted-foreground">
+                                                Start from scratch or use a template to build your prompt library
+                                            </p>
+                                        </div>
+                                        <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                                            <button
+                                                onClick={() => setIsNewModalOpen(true)}
+                                                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4"
+                                            >
+                                                <Plus className="h-4 w-4 mr-2" />
+                                                Create Blank Prompt
+                                            </button>
+                                            <button
+                                                onClick={() => router.push('/ai/prompts/templates')}
+                                                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input hover:bg-accent hover:text-accent-foreground h-10 py-2 px-4"
+                                            >
+                                                <LayoutPanelTop className="h-4 w-4 mr-2" />
+                                                Browse Templates
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ) : filteredPrompts.length === 0 ? (
-                        <div className="text-center py-12">
-                            <p className="text-muted-foreground">
-                                No prompts match your search.
-                            </p>
-                        </div>
-                    ) : (
-                        <>
-                            {promptCards.length > 0 && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                    {promptCards.map((prompt) => (
-                                        <PromptCard
-                                            key={prompt.id}
-                                            id={prompt.id}
-                                            name={prompt.name}
-                                            description={prompt.description}
-                                            onDelete={(id) => {
-                                                const p = prompts.find(x => x.id === id);
-                                                if (p) handleDeleteClick(id, p.name);
-                                            }}
-                                            onDuplicate={handleDuplicate}
-                                            onNavigate={handleNavigate}
-                                            isDeleting={deletingIds.has(prompt.id)}
-                                            isDuplicating={duplicatingIds.has(prompt.id)}
-                                            isNavigating={navigatingId === prompt.id}
-                                            isAnyNavigating={navigatingId !== null}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                            {promptListItems.length > 0 && (
-                                <>
-                                    <div className="mt-6 grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                                        {promptListItems.map((prompt) => (
-                                            <PromptListItem
+                        ) : filteredPrompts.length === 0 ? (
+                            <div className="text-center py-12">
+                                <p className="text-muted-foreground">
+                                    No prompts match your search.
+                                </p>
+                            </div>
+                        ) : (
+                            <>
+                                {promptCards.length > 0 && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                        {promptCards.map((prompt) => (
+                                            <PromptCard
                                                 key={prompt.id}
                                                 id={prompt.id}
                                                 name={prompt.name}
@@ -404,57 +406,62 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
                                             />
                                         ))}
                                     </div>
-                                    {hasMorePrompts && (
-                                        <div className="mt-4 flex justify-center">
-                                            <Button
-                                                variant="outline"
-                                                onClick={() => setPromptListPage(prev => prev + 1)}
-                                                className="w-full md:w-auto"
-                                            >
-                                                Show More ({allPromptListItems.length - promptListItems.length} remaining)
-                                            </Button>
+                                )}
+                                {promptListItems.length > 0 && (
+                                    <>
+                                        <div className="mt-6 grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                                            {promptListItems.map((prompt) => (
+                                                <PromptListItem
+                                                    key={prompt.id}
+                                                    id={prompt.id}
+                                                    name={prompt.name}
+                                                    description={prompt.description}
+                                                    onDelete={(id) => {
+                                                        const p = prompts.find(x => x.id === id);
+                                                        if (p) handleDeleteClick(id, p.name);
+                                                    }}
+                                                    onDuplicate={handleDuplicate}
+                                                    onNavigate={handleNavigate}
+                                                    isDeleting={deletingIds.has(prompt.id)}
+                                                    isDuplicating={duplicatingIds.has(prompt.id)}
+                                                    isNavigating={navigatingId === prompt.id}
+                                                    isAnyNavigating={navigatingId !== null}
+                                                />
+                                            ))}
                                         </div>
-                                    )}
-                                </>
-                            )}
-                        </>
-                    )}
-                </>
-            ) : (
-                /* Shared Tab */
-                <>
-                    {filteredSharedPrompts.length === 0 ? (
-                        <div className="text-center py-12">
-                            <p className="text-muted-foreground">
-                                {searchTerm ? "No shared prompts match your search." : "No prompts have been shared with you yet."}
-                            </p>
-                        </div>
-                    ) : (
-                        <>
-                            {sharedPromptCards.length > 0 && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                    {sharedPromptCards.map((prompt) => (
-                                        <SharedPromptCard
-                                            key={prompt.id}
-                                            id={prompt.id}
-                                            name={prompt.name}
-                                            description={prompt.description}
-                                            permissionLevel={prompt.permissionLevel}
-                                            ownerEmail={prompt.ownerEmail}
-                                            onDuplicate={handleDuplicateShared}
-                                            onNavigate={handleNavigate}
-                                            isDuplicating={duplicatingIds.has(prompt.id)}
-                                            isNavigating={navigatingId === prompt.id}
-                                            isAnyNavigating={navigatingId !== null}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                            {sharedPromptListItems.length > 0 && (
-                                <>
-                                    <div className="mt-6 grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                                        {sharedPromptListItems.map((prompt) => (
-                                            <SharedPromptListItem
+                                        {hasMorePrompts && (
+                                            <div className="mt-4 flex justify-center">
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => setPromptListPage(prev => prev + 1)}
+                                                    className="w-full md:w-auto"
+                                                >
+                                                    Show More ({allPromptListItems.length - promptListItems.length} remaining)
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </>
+                        )}
+                    </>
+                ) : activeTab === "shared" ? (
+                    /* Shared Tab */
+                    <>
+                        {isLoading ? (
+                            <PromptsSkeleton count={cardsLimit} />
+                        ) : filteredSharedPrompts.length === 0 ? (
+                            <div className="text-center py-12">
+                                <p className="text-muted-foreground">
+                                    {searchTerm ? "No shared prompts match your search." : "No prompts have been shared with you yet."}
+                                </p>
+                            </div>
+                        ) : (
+                            <>
+                                {sharedPromptCards.length > 0 && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                        {sharedPromptCards.map((prompt) => (
+                                            <SharedPromptCard
                                                 key={prompt.id}
                                                 id={prompt.id}
                                                 name={prompt.name}
@@ -469,73 +476,245 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
                                             />
                                         ))}
                                     </div>
-                                    {hasMoreShared && (
-                                        <div className="mt-4 flex justify-center">
-                                            <Button
-                                                variant="outline"
-                                                onClick={() => setSharedListPage(prev => prev + 1)}
-                                                className="w-full md:w-auto"
-                                            >
-                                                Show More ({allSharedListItems.length - sharedPromptListItems.length} remaining)
-                                            </Button>
+                                )}
+                                {sharedPromptListItems.length > 0 && (
+                                    <>
+                                        <div className="mt-6 grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                                            {sharedPromptListItems.map((prompt) => (
+                                                <SharedPromptListItem
+                                                    key={prompt.id}
+                                                    id={prompt.id}
+                                                    name={prompt.name}
+                                                    description={prompt.description}
+                                                    permissionLevel={prompt.permissionLevel}
+                                                    ownerEmail={prompt.ownerEmail}
+                                                    onDuplicate={handleDuplicateShared}
+                                                    onNavigate={handleNavigate}
+                                                    isDuplicating={duplicatingIds.has(prompt.id)}
+                                                    isNavigating={navigatingId === prompt.id}
+                                                    isAnyNavigating={navigatingId !== null}
+                                                />
+                                            ))}
                                         </div>
-                                    )}
-                                </>
-                            )}
-                        </>
-                    )}
-                </>
-            )}
-
-            {/* "Also found in" cross-tab results during search */}
-            {isSearching && hasShared && otherTabFiltered.length > 0 && (
-                <div className="mt-6 border-t border-border pt-4">
-                    <div className="flex items-center gap-2 mb-3">
-                        <Users className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-xs font-medium text-muted-foreground">
-                            Also found in {otherTabLabel} ({otherTabFiltered.length})
-                        </span>
-                    </div>
-                    <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                        {activeTab === "mine" ? (
-                            otherTabFiltered.map((prompt) => (
-                                <SharedPromptListItem
-                                    key={prompt.id}
-                                    id={prompt.id}
-                                    name={prompt.name}
-                                    description={prompt.description}
-                                    permissionLevel={(prompt as SharedPrompt).permissionLevel}
-                                    ownerEmail={(prompt as SharedPrompt).ownerEmail}
-                                    onDuplicate={handleDuplicateShared}
-                                    onNavigate={handleNavigate}
-                                    isDuplicating={duplicatingIds.has(prompt.id)}
-                                    isNavigating={navigatingId === prompt.id}
-                                    isAnyNavigating={navigatingId !== null}
-                                />
-                            ))
-                        ) : (
-                            otherTabFiltered.map((prompt) => (
-                                <PromptListItem
-                                    key={prompt.id}
-                                    id={prompt.id}
-                                    name={prompt.name}
-                                    description={prompt.description}
-                                    onDelete={(id) => {
-                                        const p = prompts.find(x => x.id === id);
-                                        if (p) handleDeleteClick(id, p.name);
-                                    }}
-                                    onDuplicate={handleDuplicate}
-                                    onNavigate={handleNavigate}
-                                    isDeleting={deletingIds.has(prompt.id)}
-                                    isDuplicating={duplicatingIds.has(prompt.id)}
-                                    isNavigating={navigatingId === prompt.id}
-                                    isAnyNavigating={navigatingId !== null}
-                                />
-                            ))
+                                        {hasMoreShared && (
+                                            <div className="mt-4 flex justify-center">
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => setSharedListPage(prev => prev + 1)}
+                                                    className="w-full md:w-auto"
+                                                >
+                                                    Show More ({allSharedListItems.length - sharedPromptListItems.length} remaining)
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </>
                         )}
+                    </>
+                ) : (
+                    /* All Tab — owned prompts first, shared below with a divider */
+                    <>
+                        {/* Owned section */}
+                        {filteredPrompts.length > 0 && (
+                            <>
+                                {filteredPrompts.length > 0 && hasShared && (
+                                    <p className="text-xs font-medium text-muted-foreground mb-3">My Prompts</p>
+                                )}
+                                {promptCards.length > 0 && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                        {promptCards.map((prompt) => (
+                                            <PromptCard
+                                                key={prompt.id}
+                                                id={prompt.id}
+                                                name={prompt.name}
+                                                description={prompt.description}
+                                                onDelete={(id) => {
+                                                    const p = prompts.find(x => x.id === id);
+                                                    if (p) handleDeleteClick(id, p.name);
+                                                }}
+                                                onDuplicate={handleDuplicate}
+                                                onNavigate={handleNavigate}
+                                                isDeleting={deletingIds.has(prompt.id)}
+                                                isDuplicating={duplicatingIds.has(prompt.id)}
+                                                isNavigating={navigatingId === prompt.id}
+                                                isAnyNavigating={navigatingId !== null}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                                {promptListItems.length > 0 && (
+                                    <>
+                                        <div className="mt-6 grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                                            {promptListItems.map((prompt) => (
+                                                <PromptListItem
+                                                    key={prompt.id}
+                                                    id={prompt.id}
+                                                    name={prompt.name}
+                                                    description={prompt.description}
+                                                    onDelete={(id) => {
+                                                        const p = prompts.find(x => x.id === id);
+                                                        if (p) handleDeleteClick(id, p.name);
+                                                    }}
+                                                    onDuplicate={handleDuplicate}
+                                                    onNavigate={handleNavigate}
+                                                    isDeleting={deletingIds.has(prompt.id)}
+                                                    isDuplicating={duplicatingIds.has(prompt.id)}
+                                                    isNavigating={navigatingId === prompt.id}
+                                                    isAnyNavigating={navigatingId !== null}
+                                                />
+                                            ))}
+                                        </div>
+                                        {hasMorePrompts && (
+                                            <div className="mt-4 flex justify-center">
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => setPromptListPage(prev => prev + 1)}
+                                                    className="w-full md:w-auto"
+                                                >
+                                                    Show More ({allPromptListItems.length - promptListItems.length} remaining)
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </>
+                        )}
+
+                        {/* Divider between sections (only when both have results) */}
+                        {filteredPrompts.length > 0 && filteredSharedPrompts.length > 0 && (
+                            <div className="flex items-center gap-3 my-6">
+                                <div className="flex-1 border-t border-border" />
+                                <div className="flex items-center gap-1.5">
+                                    <Users className="w-3.5 h-3.5 text-muted-foreground" />
+                                    <span className="text-xs text-muted-foreground font-medium">Shared with me</span>
+                                </div>
+                                <div className="flex-1 border-t border-border" />
+                            </div>
+                        )}
+
+                        {/* Shared section */}
+                        {filteredSharedPrompts.length > 0 && (
+                            <>
+                                {sharedPromptCards.length > 0 && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                        {sharedPromptCards.map((prompt) => (
+                                            <SharedPromptCard
+                                                key={prompt.id}
+                                                id={prompt.id}
+                                                name={prompt.name}
+                                                description={prompt.description}
+                                                permissionLevel={prompt.permissionLevel}
+                                                ownerEmail={prompt.ownerEmail}
+                                                onDuplicate={handleDuplicateShared}
+                                                onNavigate={handleNavigate}
+                                                isDuplicating={duplicatingIds.has(prompt.id)}
+                                                isNavigating={navigatingId === prompt.id}
+                                                isAnyNavigating={navigatingId !== null}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                                {sharedPromptListItems.length > 0 && (
+                                    <>
+                                        <div className="mt-6 grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                                            {sharedPromptListItems.map((prompt) => (
+                                                <SharedPromptListItem
+                                                    key={prompt.id}
+                                                    id={prompt.id}
+                                                    name={prompt.name}
+                                                    description={prompt.description}
+                                                    permissionLevel={prompt.permissionLevel}
+                                                    ownerEmail={prompt.ownerEmail}
+                                                    onDuplicate={handleDuplicateShared}
+                                                    onNavigate={handleNavigate}
+                                                    isDuplicating={duplicatingIds.has(prompt.id)}
+                                                    isNavigating={navigatingId === prompt.id}
+                                                    isAnyNavigating={navigatingId !== null}
+                                                />
+                                            ))}
+                                        </div>
+                                        {hasMoreShared && (
+                                            <div className="mt-4 flex justify-center">
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => setSharedListPage(prev => prev + 1)}
+                                                    className="w-full md:w-auto"
+                                                >
+                                                    Show More ({allSharedListItems.length - sharedPromptListItems.length} remaining)
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </>
+                        )}
+
+                        {/* Loading state for 'all' tab */}
+                        {isLoading && (
+                            <PromptsSkeleton count={cardsLimit} />
+                        )}
+
+                        {/* Empty state for 'all' tab */}
+                        {!isLoading && filteredPrompts.length === 0 && filteredSharedPrompts.length === 0 && (
+                            <div className="text-center py-12">
+                                <p className="text-muted-foreground">
+                                    {searchTerm ? "No prompts match your search." : "You have no prompts yet."}
+                                </p>
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {/* "Also found in" cross-tab — only on mine/shared tabs, not 'all' (both visible already) */}
+                {isSearching && hasShared && activeTab !== "all" && otherTabFiltered.length > 0 && (
+                    <div className="mt-6 border-t border-border pt-4">
+                        <div className="flex items-center gap-2 mb-3">
+                            <Users className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-xs font-medium text-muted-foreground">
+                                Also found in {otherTabLabel} ({otherTabFiltered.length})
+                            </span>
+                        </div>
+                        <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                            {activeTab === "mine" ? (
+                                otherTabFiltered.map((prompt) => (
+                                    <SharedPromptListItem
+                                        key={prompt.id}
+                                        id={prompt.id}
+                                        name={prompt.name}
+                                        description={prompt.description}
+                                        permissionLevel={(prompt as SharedPrompt).permissionLevel}
+                                        ownerEmail={(prompt as SharedPrompt).ownerEmail}
+                                        onDuplicate={handleDuplicateShared}
+                                        onNavigate={handleNavigate}
+                                        isDuplicating={duplicatingIds.has(prompt.id)}
+                                        isNavigating={navigatingId === prompt.id}
+                                        isAnyNavigating={navigatingId !== null}
+                                    />
+                                ))
+                            ) : (
+                                otherTabFiltered.map((prompt) => (
+                                    <PromptListItem
+                                        key={prompt.id}
+                                        id={prompt.id}
+                                        name={prompt.name}
+                                        description={prompt.description}
+                                        onDelete={(id) => {
+                                            const p = prompts.find(x => x.id === id);
+                                            if (p) handleDeleteClick(id, p.name);
+                                        }}
+                                        onDuplicate={handleDuplicate}
+                                        onNavigate={handleNavigate}
+                                        isDeleting={deletingIds.has(prompt.id)}
+                                        isDuplicating={duplicatingIds.has(prompt.id)}
+                                        isNavigating={navigatingId === prompt.id}
+                                        isAnyNavigating={navigatingId !== null}
+                                    />
+                                ))
+                            )}
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
             </div>
 
             {/* Mobile Action Bar */}
@@ -597,7 +776,7 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
                                 <button
                                     key={option.value}
                                     onClick={() => {
-                                        setSortBy(option.value);
+                                        setSortBy(option.value as PromptSortOption);
                                         setFilterDetailKey(null);
                                     }}
                                     className={cn(
@@ -720,7 +899,7 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
                             Delete Prompt
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete "{promptToDelete?.name}"? 
+                            Are you sure you want to delete "{promptToDelete?.name}"?
                             This action cannot be undone and will permanently remove the prompt from your account.
                         </AlertDialogDescription>
                     </AlertDialogHeader>

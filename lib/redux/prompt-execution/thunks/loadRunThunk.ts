@@ -10,7 +10,6 @@ import {
     setDynamicContexts
 } from '../slice';
 import type { ExecutionInstance, ConversationMessage } from '../types';
-import { PromptDb } from '@/features/prompts';
 import { getPrompt } from '../../thunks/promptSystemThunks';
 
 interface LoadRunPayload {
@@ -58,7 +57,7 @@ export const loadRun = createAsyncThunk<
                 const validSource = (run.source_type === 'prompts' || run.source_type === 'prompt_builtins')
                     ? run.source_type
                     : 'prompts';
-                
+
                 try {
                     const { promptData } = await dispatch(
                         getPrompt({
@@ -76,12 +75,12 @@ export const loadRun = createAsyncThunk<
 
             // Prepare instance data
             const now = Date.now();
-            
+
             // Ensure promptSource is valid type ('prompts' or 'prompt_builtins')
-            const validSource = (run.source_type === 'prompts' || run.source_type === 'prompt_builtins') 
-                ? run.source_type 
+            const validSource = (run.source_type === 'prompts' || run.source_type === 'prompt_builtins')
+                ? run.source_type
                 : 'prompts'; // Default fallback
-            
+
             const instance: ExecutionInstance = {
                 runId: run.id,
                 promptName: run.name || 'Unknown Prompt',

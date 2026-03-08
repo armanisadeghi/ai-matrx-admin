@@ -6,12 +6,12 @@ import dynamic from 'next/dynamic';
 import { Save, Clock, Loader2, FolderOpen, FileText, PilcrowRight, Eye, SplitSquareHorizontal } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-    Select, 
-    SelectContent, 
-    SelectItem, 
-    SelectTrigger, 
-    SelectValue 
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
 } from '@/components/ui/select';
 import { TagInput } from './TagInput';
 import type { Note } from '../types';
@@ -21,27 +21,27 @@ import { useNotesContext } from '../context/NotesContext';
 import { cn } from '@/lib/utils';
 import { useToastManager } from '@/hooks/useToastManager';
 import MarkdownStream from '@/components/MarkdownStream';
-import { UnifiedContextMenu } from '@/features/context-menu';
+// import { UnifiedContextMenu } from '@/features/context-menu';
 
 // Dynamic imports for heavy components (only load when needed)
 const TuiEditorContent = dynamic(
     () => import('@/components/mardown-display/chat-markdown/tui/TuiEditorContent'),
-    { 
-        ssr: false, 
+    {
+        ssr: false,
         loading: () => (
             <div className="flex items-center justify-center h-full">
                 <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
             </div>
-        ) 
+        )
     }
 );
 
-// // CRITICAL: Dynamic import to prevent loading on routes that don't use notes
-// // This prevents UnifiedContextMenu and all its hooks from bundling into every route
-// const UnifiedContextMenu = dynamic(
-//     () => import('@/components/unified').then(mod => ({ default: mod.UnifiedContextMenu })),
-//     { ssr: false }
-// );
+// CRITICAL: Dynamic import to prevent loading on routes that don't use notes
+// This prevents UnifiedContextMenu and all its hooks from bundling into every route
+const UnifiedContextMenu = dynamic(
+    () => import('@/features/context-menu').then(mod => ({ default: mod.UnifiedContextMenu })),
+    { ssr: false }
+);
 
 type EditorMode = 'plain' | 'wysiwyg' | 'markdown' | 'preview';
 
@@ -64,7 +64,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
     const labelSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const toast = useToastManager('notes');
     const { refreshNotes, setActiveNoteDirty } = useNotesContext();
-    
+
     // Use refs to avoid callback dependencies
     const localContentRef = useRef(localContent);
     const localFolderRef = useRef(localFolder);
@@ -83,10 +83,10 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
         onSaveSuccess: () => {
             // Notify parent with all updated fields + editor mode
             if (note) {
-                onUpdate?.(note.id, { 
-                    label: localLabel, 
-                    content: localContent, 
-                    folder_name: localFolder, 
+                onUpdate?.(note.id, {
+                    label: localLabel,
+                    content: localContent,
+                    folder_name: localFolder,
                     tags: localTags,
                     metadata: {
                         ...note.metadata,
@@ -143,21 +143,21 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
             // On cleanup (note changing), ensure latest content is saved
             const currentNote = noteRef.current;
             const currentMode = editorModeRef.current;
-            
+
             if (currentNote && (currentMode === 'wysiwyg' || currentMode === 'markdown') && tuiEditorRef.current?.getCurrentMarkdown) {
                 const markdown = tuiEditorRef.current.getCurrentMarkdown();
                 if (markdown !== localContentRef.current) {
-                // Update content immediately before switch
-                updateWithAutoSave({
-                    label: localLabelRef.current,
-                    content: markdown,
-                    folder_name: localFolderRef.current,
-                    tags: localTagsRef.current,
-                    metadata: { ...currentNote.metadata, lastEditorMode: currentMode }
-                });
+                    // Update content immediately before switch
+                    updateWithAutoSave({
+                        label: localLabelRef.current,
+                        content: markdown,
+                        folder_name: localFolderRef.current,
+                        tags: localTagsRef.current,
+                        metadata: { ...currentNote.metadata, lastEditorMode: currentMode }
+                    });
                 }
             }
-            
+
             // Force save any pending changes
             forceSave();
         };
@@ -171,7 +171,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
             setLocalTags(note.tags || []);
             setLocalLabel(note.label);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [note?.id]); // Only reset when note ID changes
 
     // Intentionally NOT syncing on note?.updated_at changes.
@@ -179,7 +179,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
     // about external changes and lets them choose to refresh. Silently overwriting local
     // state here is the primary cause of data loss — even a clean isDirty=false window
     // between saves can clobber content the user just typed.
-    
+
     // Cleanup label timeout on unmount
     useEffect(() => {
         return () => {
@@ -200,7 +200,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                 if ((currentMode === 'wysiwyg' || currentMode === 'markdown') && tuiEditorRef.current?.getCurrentMarkdown) {
                     currentContent = tuiEditorRef.current.getCurrentMarkdown();
                 }
-                
+
                 // Update the auto-save queue with all current data
                 updateWithAutoSave({
                     label: localLabelRef.current,
@@ -209,15 +209,15 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                     tags: localTagsRef.current,
                     metadata: { ...note.metadata, lastEditorMode: currentMode }
                 });
-                
+
                 // Force immediate save
                 forceSave();
             };
-            
+
             // Store reference for parent to call
             (window as any).__noteEditorForceSave = handleForceSave;
         }
-        
+
         return () => {
             delete (window as any).__noteEditorForceSave;
         };
@@ -233,10 +233,10 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                 setLocalContent(markdown);
             }
         }
-        
+
         // Simply update the editor mode - that's it!
         setEditorMode(newMode);
-        
+
         // Note: The editor mode will be saved automatically when the note is next saved
         // for other reasons (content, folder, tags). No need to trigger a save just for view mode.
     }, []); // No dependencies - stable function
@@ -244,10 +244,10 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
     const handleContentChange = (value: string) => {
         setLocalContent(value);
         if (note) {
-            updateWithAutoSave({ 
-                label: localLabel, 
-                content: value, 
-                folder_name: localFolder, 
+            updateWithAutoSave({
+                label: localLabel,
+                content: value,
+                folder_name: localFolder,
                 tags: localTags,
                 metadata: { ...note.metadata, lastEditorMode: editorMode }
             });
@@ -263,10 +263,10 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
         setLocalContent(value);
         const currentNote = noteRef.current;
         if (currentNote) {
-            updateWithAutoSave({ 
-                label: localLabelRef.current, 
-                content: value, 
-                folder_name: localFolderRef.current, 
+            updateWithAutoSave({
+                label: localLabelRef.current,
+                content: value,
+                folder_name: localFolderRef.current,
                 tags: localTagsRef.current,
                 metadata: { ...currentNote.metadata, lastEditorMode: editorModeRef.current }
             });
@@ -280,10 +280,10 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
     const handleFolderChange = (value: string) => {
         setLocalFolder(value);
         if (note) {
-            updateWithAutoSave({ 
-                label: localLabel, 
-                content: localContent, 
-                folder_name: value, 
+            updateWithAutoSave({
+                label: localLabel,
+                content: localContent,
+                folder_name: value,
                 tags: localTags,
                 metadata: { ...note.metadata, lastEditorMode: editorMode } // Include mode
             });
@@ -295,10 +295,10 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
     const handleTagsChange = (tags: string[]) => {
         setLocalTags(tags);
         if (note) {
-            updateWithAutoSave({ 
-                label: localLabel, 
-                content: localContent, 
-                folder_name: localFolder, 
+            updateWithAutoSave({
+                label: localLabel,
+                content: localContent,
+                folder_name: localFolder,
                 tags,
                 metadata: { ...note.metadata, lastEditorMode: editorMode } // Include mode
             });
@@ -311,25 +311,25 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
     const handleLabelChange = (newLabel: string) => {
         // Update local state immediately for responsive UI
         setLocalLabel(newLabel);
-        
+
         // For phantom notes, trigger materialisation immediately on label change
         if (note?.id === '__phantom__') {
             onUpdate?.(note.id, { label: newLabel, content: localContent, folder_name: localFolder, tags: localTags });
             return;
         }
-        
+
         // Clear existing timeout
         if (labelSaveTimeoutRef.current) {
             clearTimeout(labelSaveTimeoutRef.current);
         }
-        
+
         // Schedule save after 800ms of no typing (slightly longer than content for smoother UX)
         labelSaveTimeoutRef.current = setTimeout(() => {
             if (note) {
-                updateWithAutoSave({ 
-                    label: newLabel, 
-                    content: localContent, 
-                    folder_name: localFolder, 
+                updateWithAutoSave({
+                    label: newLabel,
+                    content: localContent,
+                    folder_name: localFolder,
                     tags: localTags,
                     metadata: { ...note.metadata, lastEditorMode: editorMode }
                 });
@@ -337,20 +337,20 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
             labelSaveTimeoutRef.current = null;
         }, 800);
     };
-    
+
     // Save label immediately on blur
     const handleLabelBlur = () => {
         if (labelSaveTimeoutRef.current) {
             clearTimeout(labelSaveTimeoutRef.current);
             labelSaveTimeoutRef.current = null;
         }
-        
+
         if (note && localLabel !== note.label) {
             // Force immediate save with forceSave
-            updateWithAutoSave({ 
-                label: localLabel, 
-                content: localContent, 
-                folder_name: localFolder, 
+            updateWithAutoSave({
+                label: localLabel,
+                content: localContent,
+                folder_name: localFolder,
                 tags: localTags,
                 metadata: { ...note.metadata, lastEditorMode: editorMode }
             });
@@ -399,7 +399,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                         placeholder="Untitled Note"
                     />
                 </div>
-                
+
                 {/* Folder, Tags, Status */}
                 <div className="flex items-center gap-2 px-3 py-2">
                     {/* View Mode Selector */}
@@ -505,7 +505,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                                 const after = localContent.substring(end);
                                 const updatedContent = before + newText + after;
                                 handleContentChange(updatedContent);
-                                
+
                                 // Restore focus and select replaced text
                                 setTimeout(() => {
                                     textarea.focus();
@@ -521,7 +521,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                                 const after = localContent.substring(start);
                                 const insertText = text + '\n\n';
                                 handleContentChange(before + insertText + after);
-                                
+
                                 setTimeout(() => {
                                     textarea.focus();
                                     textarea.setSelectionRange(start + insertText.length, start + insertText.length);
@@ -536,7 +536,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                                 const after = localContent.substring(end);
                                 const insertText = '\n\n' + text;
                                 handleContentChange(before + insertText + after);
-                                
+
                                 setTimeout(() => {
                                     textarea.focus();
                                     textarea.setSelectionRange(end + insertText.length, end + insertText.length);

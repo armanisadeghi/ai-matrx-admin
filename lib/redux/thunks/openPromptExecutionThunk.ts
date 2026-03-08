@@ -14,7 +14,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { RootState, AppDispatch } from '../store';
 import type { ResultDisplay, PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
-import type { PromptData, PromptDb } from '@/features/prompts/types/core';
+import type { PromptData } from '@/features/prompts/types/core';
 import {
   openPromptModal,
   openCompactModal,
@@ -32,30 +32,30 @@ export interface OpenPromptExecutionPayload {
   promptId?: string;
   promptData?: PromptData;
   promptSource?: 'prompts' | 'prompt_builtins'; // Which table to fetch from
-  
+
   // Execution configuration (all properties required)
   executionConfig: Omit<PromptExecutionConfig, 'result_display'>;
   result_display: ResultDisplay;
-  
+
   // Variables and initial message
   variables?: Record<string, string>;
   initialMessage?: string;
   title?: string;
   runId?: string;
-  
+
   // Resources (attachments)
   resources?: any[]; // Using any[] to match Resource type from different module
-  
+
   // Inline-specific: text manipulation callbacks
   onTextReplace?: (text: string) => void;
   onTextInsertBefore?: (text: string) => void;
   onTextInsertAfter?: (text: string) => void;
   originalText?: string;
-  
+
   // Sidebar-specific: position and size
   sidebarPosition?: 'left' | 'right';
   sidebarSize?: 'sm' | 'md' | 'lg';
-  
+
   // Callback for completion (background/direct modes)
   onExecutionComplete?: (result: { response: string; metadata?: any }) => void;
 }
@@ -154,19 +154,19 @@ export const openPromptExecution = createAsyncThunk<
     // ============================================================================
     // STEP 2.5: Check for Pre-Execution Input (NEW)
     // ============================================================================
-    if (executionConfig.use_pre_execution_input && 
-        result_display !== 'direct' && 
-        result_display !== 'background') {
-      
+    if (executionConfig.use_pre_execution_input &&
+      result_display !== 'direct' &&
+      result_display !== 'background') {
+
       // Import the action
       const { openPreExecutionModal } = await import('../slices/promptRunnerSlice');
-      
+
       // Open pre-execution input modal instead of final display
       dispatch(openPreExecutionModal({
         config: baseModalConfig,
         targetResultDisplay: result_display, // Store where to go after
       }));
-      
+
       // Don't auto-execute yet - wait for user submission
       // Pre-execution modal will handle the submission via submitPreExecutionThunk
       return createdRunId;
@@ -179,7 +179,7 @@ export const openPromptExecution = createAsyncThunk<
       case 'modal-full':
         // Open modal with runId
         dispatch(openPromptModal(baseModalConfig));
-        
+
         // Auto-execute if configured
         if (executionConfig.auto_run) {
           await dispatch(executeMessage({ runId: createdRunId }));
@@ -189,7 +189,7 @@ export const openPromptExecution = createAsyncThunk<
       case 'modal-compact':
         // Open compact modal with runId
         dispatch(openCompactModal(baseModalConfig));
-        
+
         // Auto-execute if configured
         if (executionConfig.auto_run) {
           await dispatch(executeMessage({ runId: createdRunId }));
@@ -203,7 +203,7 @@ export const openPromptExecution = createAsyncThunk<
           position: sidebarPosition || 'right',
           size: sidebarSize || 'md',
         }));
-        
+
         // Auto-execute if configured
         if (executionConfig.auto_run) {
           await dispatch(executeMessage({ runId: createdRunId }));
@@ -216,7 +216,7 @@ export const openPromptExecution = createAsyncThunk<
           config: baseModalConfig,
           position: sidebarPosition || 'right',
         }));
-        
+
         // Auto-execute if configured
         if (executionConfig.auto_run) {
           await dispatch(executeMessage({ runId: createdRunId }));
@@ -226,19 +226,19 @@ export const openPromptExecution = createAsyncThunk<
       case 'inline': {
         // Execute via unified system
         const taskId = await dispatch(executeMessage({ runId: createdRunId })).unwrap();
-        
+
         // Wait for streaming to complete
         await new Promise<void>((resolve) => {
           const checkInterval = setInterval(() => {
             const state = getState() as RootState;
             const isEnded = selectPrimaryResponseEndedByTaskId(taskId)(state);
-            
+
             if (isEnded) {
               clearInterval(checkInterval);
               resolve();
             }
           }, 100);
-          
+
           // Timeout after 5 minutes
           setTimeout(() => {
             clearInterval(checkInterval);
@@ -289,13 +289,13 @@ export const openPromptExecution = createAsyncThunk<
             const checkInterval = setInterval(() => {
               const state = getState() as RootState;
               const isEnded = selectPrimaryResponseEndedByTaskId(taskId)(state);
-              
+
               if (isEnded) {
                 clearInterval(checkInterval);
                 resolve();
               }
             }, 100);
-            
+
             setTimeout(() => {
               clearInterval(checkInterval);
               resolve();
@@ -306,7 +306,7 @@ export const openPromptExecution = createAsyncThunk<
           const response = selectPrimaryResponseTextByTaskId(taskId)(state);
           onExecutionComplete({ response, metadata: {} });
         }
-        
+
         break;
       }
 
@@ -319,13 +319,13 @@ export const openPromptExecution = createAsyncThunk<
           const checkInterval = setInterval(() => {
             const state = getState() as RootState;
             const isEnded = selectPrimaryResponseEndedByTaskId(taskId)(state);
-            
+
             if (isEnded) {
               clearInterval(checkInterval);
               resolve();
             }
           }, 100);
-          
+
           setTimeout(() => {
             clearInterval(checkInterval);
             resolve();
@@ -335,7 +335,7 @@ export const openPromptExecution = createAsyncThunk<
         // Get final result
         const state = getState() as RootState;
         const response = selectPrimaryResponseTextByTaskId(taskId)(state);
-        
+
         const result = {
           response,
           taskId,
@@ -358,13 +358,13 @@ export const openPromptExecution = createAsyncThunk<
           const checkInterval = setInterval(() => {
             const state = getState() as RootState;
             const isEnded = selectPrimaryResponseEndedByTaskId(taskId)(state);
-            
+
             if (isEnded) {
               clearInterval(checkInterval);
               resolve();
             }
           }, 100);
-          
+
           setTimeout(() => {
             clearInterval(checkInterval);
             resolve();
@@ -374,7 +374,7 @@ export const openPromptExecution = createAsyncThunk<
         // Get final result
         const state = getState() as RootState;
         const response = selectPrimaryResponseTextByTaskId(taskId)(state);
-        
+
         const result = {
           response,
           taskId,

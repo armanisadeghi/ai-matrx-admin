@@ -33,6 +33,8 @@ function createPhantomNote(): Note {
         created_at: now,
         updated_at: now,
         is_deleted: false,
+        shared_with: [],
+        position: 0,
         metadata: {},
     };
 }
@@ -110,7 +112,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                 e.preventDefault();
                 closeTab(activeNote.id);
             }
-            
+
             // Ctrl+Tab to cycle through tabs
             if (e.ctrlKey && e.key === 'Tab' && openTabs.length > 1) {
                 e.preventDefault();
@@ -130,15 +132,15 @@ export function NotesLayout({ className }: NotesLayoutProps) {
     const handleCreateNote = useCallback(async (folderName?: string) => {
         try {
             const targetFolder = folderName || 'Draft';
-            
+
             // Use the context method which handles duplicate checking
             const note = await findOrCreateEmptyNote(targetFolder);
-            
+
             // Open the new note in a tab
             if (note) {
                 openNoteInTab(note.id);
             }
-            
+
             setIsMobileSidebarOpen(false);
             toast.success('Note ready');
         } catch (error) {
@@ -156,7 +158,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
             // Use the context method which finds or creates an empty note
             await findOrCreateEmptyNote(folderName);
             setIsMobileSidebarOpen(false);
-            
+
             toast.success(`Folder "${folderName}" created`);
         } catch (error) {
             console.error('Error creating folder:', error);
@@ -168,7 +170,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
         try {
             const noteToDelete = notes.find(n => n.id === noteId);
             await deleteNote(noteId);
-            
+
             toast.success(`"${noteToDelete?.label || 'Note'}" deleted`);
         } catch (error) {
             console.error('Error deleting note:', error);
@@ -180,7 +182,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
         try {
             const noteToCopy = notes.find(n => n.id === noteId);
             await copyNote(noteId);
-            
+
             toast.success(`"${noteToCopy?.label || 'Note'}" copied`);
         } catch (error) {
             console.error('Error copying note:', error);
@@ -194,10 +196,10 @@ export function NotesLayout({ className }: NotesLayoutProps) {
 
     const handleSaveNote = useCallback(async () => {
         if (!activeNote) return;
-        
+
         try {
             setIsSaving(true);
-            
+
             // Call the editor's force save which captures ALL current state including unsaved content
             if ((window as any).__noteEditorForceSave) {
                 (window as any).__noteEditorForceSave();
@@ -211,7 +213,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                     metadata: activeNote.metadata,
                 });
             }
-            
+
             setOriginalLabel(activeNote.label);
             setIsDirty(false);
             toast.success('Note saved');
@@ -254,9 +256,9 @@ export function NotesLayout({ className }: NotesLayoutProps) {
         try {
             const note = notes.find(n => n.id === noteId);
             if (!note) return;
-            
+
             await updateNote(noteId, { folder_name: newFolder });
-            
+
             toast.success(`Moved "${note.label}" to "${newFolder}"`);
         } catch (error) {
             console.error('Error moving note:', error);
@@ -269,7 +271,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
             const { renameFolder } = await import('../service/notesService');
             await renameFolder(oldName, newName);
             await refreshNotes();
-            
+
             toast.success(`Renamed folder "${oldName}" to "${newName}"`);
         } catch (error) {
             console.error('Error renaming folder:', error);
@@ -282,7 +284,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
             const { deleteFolderNotes } = await import('../service/notesService');
             const count = await deleteFolderNotes(folderName);
             await refreshNotes();
-            
+
             toast.success(`Deleted ${count} note${count !== 1 ? 's' : ''} from "${folderName}"`);
         } catch (error) {
             console.error('Error deleting folder notes:', error);
@@ -318,7 +320,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                 sortConfig={sortConfig}
                 onSortChange={handleSortChange}
             />
-            
+
             <div className={cn("flex h-page overflow-hidden", className)}>
                 {/* Desktop Sidebar - Compact */}
                 <div
@@ -364,7 +366,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                                 />
                             </SheetContent>
                         </Sheet>
-                        
+
                         {/* Mobile - Show active note title */}
                         {activeNote && (
                             <div className="flex-1 px-2 text-xs font-medium text-foreground truncate">
@@ -373,44 +375,44 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                         )}
                     </div>
 
-                {/* Note Tabs - Desktop only (toolbar integrated) */}
-                <NoteTabs 
-                    onCreateNote={handleCreateNote}
-                    onDeleteNote={handleDeleteNote}
-                    onCopyNote={handleCopyNote}
-                    onShareNote={handleShareNote}
-                    onUpdateNote={handleUpdateNote}
-                    onSaveNote={handleSaveNote}
-                    isDirty={isDirty}
-                    isSaving={isSaving}
-                />
-                
-                <NoteEditor
-                    note={editorNote}
-                    onUpdate={handleUpdateNote}
-                    allNotes={notes}
-                    className="flex-1"
-                    onForceSave={() => {}}
-                />
-            </div>
+                    {/* Note Tabs - Desktop only (toolbar integrated) */}
+                    <NoteTabs
+                        onCreateNote={handleCreateNote}
+                        onDeleteNote={handleDeleteNote}
+                        onCopyNote={handleCopyNote}
+                        onShareNote={handleShareNote}
+                        onUpdateNote={handleUpdateNote}
+                        onSaveNote={handleSaveNote}
+                        isDirty={isDirty}
+                        isSaving={isSaving}
+                    />
 
-            {/* Create Folder Dialog */}
-            <CreateFolderDialog
-                open={isCreateFolderOpen}
-                onOpenChange={setIsCreateFolderOpen}
-                onConfirm={handleConfirmCreateFolder}
-                existingFolders={existingFolders}
-            />
+                    <NoteEditor
+                        note={editorNote}
+                        onUpdate={handleUpdateNote}
+                        allNotes={notes}
+                        className="flex-1"
+                        onForceSave={() => { }}
+                    />
+                </div>
 
-            {/* Share Note Dialog */}
-            {shareNoteId && (
-                <ShareNoteDialog
-                    open={shareNoteId !== null}
-                    onOpenChange={(open) => !open && setShareNoteId(null)}
-                    noteId={shareNoteId}
-                    noteLabel={notes.find(n => n.id === shareNoteId)?.label || 'Note'}
+                {/* Create Folder Dialog */}
+                <CreateFolderDialog
+                    open={isCreateFolderOpen}
+                    onOpenChange={setIsCreateFolderOpen}
+                    onConfirm={handleConfirmCreateFolder}
+                    existingFolders={existingFolders}
                 />
-            )}
+
+                {/* Share Note Dialog */}
+                {shareNoteId && (
+                    <ShareNoteDialog
+                        open={shareNoteId !== null}
+                        onOpenChange={(open) => !open && setShareNoteId(null)}
+                        noteId={shareNoteId}
+                        noteLabel={notes.find(n => n.id === shareNoteId)?.label || 'Note'}
+                    />
+                )}
             </div>
         </>
     );

@@ -185,7 +185,8 @@ export const switchModel = createAsyncThunk(
                     (mergedSettings as any)[key] = currentSettings[key];
                 } else if (key === 'tools') {
                     // Only preserve tools if new model supports tools
-                    if (newModel.controls?.tools?.allowed || newModel.controls?.tools?.default) {
+                    const toolsControl = newModel.controls?.tools as Record<string, unknown> | undefined;
+                    if (toolsControl?.allowed || toolsControl?.default) {
                         mergedSettings.tools = currentSettings.tools;
                     } else {
                         mergedSettings.tools = [];
