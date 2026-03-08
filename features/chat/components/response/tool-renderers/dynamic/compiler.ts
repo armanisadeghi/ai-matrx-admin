@@ -31,11 +31,67 @@ function stripImports(code: string): string {
         .replace(/^import\s+['"].*['"];?\s*$/gm, "");
 }
 
-/** Replace `export default` with `return` so it works inside new Function(). */
+/**
+ * Strip `export` keywords and inject a `return` so named/default exports work
+ * inside `new Function()` (which runs in script mode, not module mode).
+ *
+ * Handles:
+ *   export default ...              → return ...
+ *   export const Foo = ...          → const Foo = ...   (+ return Foo appended)
+ *   export let Foo = ...            → let Foo = ...     (+ return Foo appended)
+ *   export var Foo = ...            → var Foo = ...     (+ return Foo appended)
+ *   export function Foo() {}        → function Foo() {} (+ return Foo appended)
+ *   export class Foo {}             → class Foo {}      (+ return Foo appended)
+ *   export { Foo, Bar }             → (removed)
+ */
 function replaceExportDefault(code: string): string {
     let result = code;
-    result = result.replace(/^export\s+default\s+/m, "return ");
+
+    // If there's an `export default`, convert it to `return` and we're done
+    if (/^export\s+default\s+/m.test(result)) {
+        result = result.replace(/^export\s+default\s+/m, "return ");
+        result = result.replace(/^export\s+\{[^}]+\}\s*;?\s*$/gm, "");
+        return result;
+    }
+
+    // Track the last named export so we can return it at the end
+    let lastExportedName: string | null = null;
+
+    // export const/let/var Name = ... → const/let/var Name = ...
+    result = result.replace(
+        /^export\s+(const|let|var)\s+(\w+)/gm,
+        (_match, keyword, name) => {
+            lastExportedName = name;
+            return `${keyword} ${name}`;
+        }
+    );
+
+    // export function Name(...) { → function Name(...) {
+    result = result.replace(
+        /^export\s+function\s+(\w+)/gm,
+        (_match, name) => {
+            lastExportedName = name;
+            return `function ${name}`;
+        }
+    );
+
+    // export class Name { → class Name {
+    result = result.replace(
+        /^export\s+class\s+(\w+)/gm,
+        (_match, name) => {
+            lastExportedName = name;
+            return `class ${name}`;
+        }
+    );
+
+    // Remove bare re-export blocks: export { Foo, Bar };
     result = result.replace(/^export\s+\{[^}]+\}\s*;?\s*$/gm, "");
+
+    // If we stripped a named export, append a return for it
+    if (lastExportedName) {
+        result = result.trimEnd() + `\nreturn ${lastExportedName};`;
+    }
+
     return result;
 }
 
@@ -172,8 +228,16 @@ function compileUtilityCode(
 
 /**
  * Compiles a header function (subtitle or extras).
- * The code should be a function body that receives `toolUpdates` and returns
- * a string|null (subtitle) or ReactNode (extras).
+ *
+ * Accepts two code styles:
+ *   1. A complete function:  `export default function(toolUpdates) { ... }`
+ *   2. A bare function body: `const x = ...; return x;`
+ *
+ * In both cases, a callable `(toolUpdates) => any` is returned.
+ *
+ * IMPORTANT: the function-body wrapping must happen BEFORE babelTransform,
+ * otherwise Babel sees `return` at the top level of a script and throws
+ * "return outside of function".
  */
 function compileHeaderFunction(
     code: string,
@@ -186,18 +250,39 @@ function compileHeaderFunction(
         : buildToolRendererScope(allowedImports);
 
     let processedCode = stripImports(code);
+
+    // ── Detect if the raw code is already a complete callable definition ──
+    // We check BEFORE Babel so we know whether to wrap it as a function body.
+    const trimmedRaw = processedCode.trim();
+    const isAlreadyComplete =
+        trimmedRaw.startsWith("export default") ||
+        trimmedRaw.startsWith("export async") ||
+        trimmedRaw.startsWith("function ") ||
+        trimmedRaw.startsWith("async function ") ||
+        trimmedRaw.startsWith("(function") ||
+        trimmedRaw.startsWith("(async function") ||
+        /^(?:const|let|var)\s+\w+\s*=/.test(trimmedRaw);
+
+    if (!isAlreadyComplete) {
+        // Bare function body (has top-level `return`, `if`, etc.).
+        // Wrap it BEFORE Babel so `return` is inside a function — valid JS.
+        processedCode = `export default function __headerFn__(toolUpdates) {\n${processedCode}\n}`;
+    }
+
+    // Now Babel is always given syntactically complete code
     processedCode = babelTransform(processedCode, language);
     processedCode = replaceExportDefault(processedCode);
 
-    // If code doesn't have a return/function, wrap it as a function body
+    // After replaceExportDefault the code starts with `return ` (wrapped case)
+    // or is a named function / arrow assignment (complete-function case).
+    // If for any reason neither fits, wrap as a final safety net.
     const trimmed = processedCode.trim();
-    const isAlreadyFunction =
+    const isReadyToExecute =
         trimmed.startsWith("return ") ||
         trimmed.startsWith("function ") ||
         trimmed.startsWith("(");
 
-    if (!isAlreadyFunction) {
-        // Assume it's a function body — wrap it
+    if (!isReadyToExecute) {
         processedCode = `return function headerFn(toolUpdates) {\n${processedCode}\n}`;
     }
 
@@ -216,6 +301,7 @@ function compileHeaderFunction(
 
     return fn;
 }
+
 
 // ---------------------------------------------------------------------------
 // Main entry: compile a full ToolUiComponentRow

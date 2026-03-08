@@ -100,50 +100,26 @@ interface ShortcutWithRelations extends PromptShortcut {
 
 const DEFAULT_AVAILABLE_SCOPES = ['selection', 'content', 'context'];
 
-// Normalize a variable to a canonical shape for comparison.
-// Handles both camelCase (variableDefaults from builtin transform) and
-// snake_case (variable_defaults from prompt API) field names.
-function normalizeVar(v: PromptVariable & { default_value?: string }): { name: string; defaultValue: string } {
-  return {
-    name: (v.name || '').trim(),
-    defaultValue: ((v.defaultValue ?? v.default_value ?? '') as string).trim(),
-  };
+// Extract the canonical variable name (trimmed) for comparison.
+function normalizeVarName(v: PromptVariable): string {
+  return (v.name || '').trim();
 }
 
-// Helper to compare variables
+// Helper to compare variables by NAME ONLY.
+// Sample/default values are intentionally ignored — only structural changes
+// (variables added or removed, which includes renames) matter here.
 function compareVariables(
-  oldVars: PromptVariable[] | undefined, 
+  oldVars: PromptVariable[] | undefined,
   newVars: PromptVariable[] | undefined
-): { added: PromptVariable[]; removed: PromptVariable[]; changed: Array<{ old: PromptVariable; new: PromptVariable }> } {
-  const oldMap = new Map((oldVars || []).map(v => [v.name, v]));
-  const newMap = new Map((newVars || []).map(v => [v.name, v]));
+): { added: PromptVariable[]; removed: PromptVariable[]; changed: never[] } {
+  const oldNames = new Set((oldVars || []).map(normalizeVarName));
+  const newNames = new Set((newVars || []).map(normalizeVarName));
 
-  const added: PromptVariable[] = [];
-  const removed: PromptVariable[] = [];
-  const changed: Array<{ old: PromptVariable; new: PromptVariable }> = [];
+  const added: PromptVariable[] = (newVars || []).filter(v => !oldNames.has(normalizeVarName(v)));
+  const removed: PromptVariable[] = (oldVars || []).filter(v => !newNames.has(normalizeVarName(v)));
 
-  // Find added and changed
-  for (const [name, newVar] of newMap) {
-    const oldVar = oldMap.get(name);
-    if (!oldVar) {
-      added.push(newVar);
-    } else {
-      const oldNorm = normalizeVar(oldVar as PromptVariable & { default_value?: string });
-      const newNorm = normalizeVar(newVar as PromptVariable & { default_value?: string });
-      if (oldNorm.defaultValue !== newNorm.defaultValue) {
-        changed.push({ old: oldVar, new: newVar });
-      }
-    }
-  }
-
-  // Find removed
-  for (const [name, oldVar] of oldMap) {
-    if (!newMap.has(name)) {
-      removed.push(oldVar);
-    }
-  }
-
-  return { added, removed, changed };
+  // `changed` is intentionally empty — value changes are never a structural break.
+  return { added, removed, changed: [] };
 }
 
 export function ConvertToBuiltinModal({
@@ -558,17 +534,14 @@ export function ConvertToBuiltinModal({
                     <div className="space-y-1.5">
                       {currentVars.map((v) => {
                         const isRemoved = variableComparison?.removed.some(rv => rv.name === v.name);
-                        const isChanged = variableComparison?.changed.some(cv => cv.old.name === v.name);
-                        
+
                         return (
-                          <div 
-                            key={v.name} 
+                          <div
+                            key={v.name}
                             className={`p-1.5 rounded border text-xs ${
-                              isRemoved 
-                                ? 'bg-destructive/10 border-destructive/30' 
-                                : isChanged 
-                                  ? 'bg-warning/10 border-warning/30'
-                                  : 'bg-background border-border'
+                              isRemoved
+                                ? 'bg-destructive/10 border-destructive/30'
+                                : 'bg-background border-border'
                             }`}
                           >
                             <div className="flex items-start justify-between gap-1.5">
@@ -576,15 +549,7 @@ export function ConvertToBuiltinModal({
                               {isRemoved && (
                                 <Badge variant="destructive" className="text-[10px] px-1 py-0">REMOVED</Badge>
                               )}
-                              {isChanged && (
-                                <Badge variant="outline" className="text-[10px] px-1 py-0 bg-warning/20 border-warning">CHANGED</Badge>
-                              )}
                             </div>
-                            {v.defaultValue && (
-                              <div className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">
-                                {v.defaultValue}
-                              </div>
-                            )}
                           </div>
                         );
                       })}
@@ -607,17 +572,14 @@ export function ConvertToBuiltinModal({
                     <div className="space-y-1.5">
                       {updatedVars.map((v) => {
                         const isAdded = variableComparison?.added.some(av => av.name === v.name);
-                        const isChanged = variableComparison?.changed.some(cv => cv.new.name === v.name);
-                        
+
                         return (
-                          <div 
-                            key={v.name} 
+                          <div
+                            key={v.name}
                             className={`p-1.5 rounded border text-xs ${
-                              isAdded 
-                                ? 'bg-success/10 border-success/30' 
-                                : isChanged 
-                                  ? 'bg-warning/10 border-warning/30'
-                                  : 'bg-background border-border'
+                              isAdded
+                                ? 'bg-success/10 border-success/30'
+                                : 'bg-background border-border'
                             }`}
                           >
                             <div className="flex items-start justify-between gap-1.5">
@@ -625,15 +587,7 @@ export function ConvertToBuiltinModal({
                               {isAdded && (
                                 <Badge variant="outline" className="text-[10px] px-1 py-0 bg-success/20 border-success">NEW</Badge>
                               )}
-                              {isChanged && (
-                                <Badge variant="outline" className="text-[10px] px-1 py-0 bg-warning/20 border-warning">CHANGED</Badge>
-                              )}
                             </div>
-                            {v.defaultValue && (
-                              <div className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">
-                                {v.defaultValue}
-                              </div>
-                            )}
                           </div>
                         );
                       })}
@@ -644,7 +598,7 @@ export function ConvertToBuiltinModal({
             </div>
 
             {/* Summary of changes */}
-            {variableComparison && (variableComparison.added.length > 0 || variableComparison.removed.length > 0 || variableComparison.changed.length > 0) && (
+            {variableComparison && (variableComparison.added.length > 0 || variableComparison.removed.length > 0) && (
               <div className="p-2 bg-muted rounded border">
                 <div className="flex flex-wrap gap-2 text-xs">
                   {variableComparison.added.length > 0 && (
@@ -657,12 +611,6 @@ export function ConvertToBuiltinModal({
                     <div className="flex items-center gap-1">
                       <div className="w-1.5 h-1.5 rounded-full bg-destructive" />
                       <span><strong>{variableComparison.removed.length}</strong> removed</span>
-                    </div>
-                  )}
-                  {variableComparison.changed.length > 0 && (
-                    <div className="flex items-center gap-1">
-                      <div className="w-1.5 h-1.5 rounded-full bg-warning" />
-                      <span><strong>{variableComparison.changed.length}</strong> modified</span>
                     </div>
                   )}
                 </div>

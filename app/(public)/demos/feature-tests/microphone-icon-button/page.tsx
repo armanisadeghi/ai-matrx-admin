@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback } from 'react';
 import { MicrophoneIconButton, MicVariant } from '@/features/audio/components/MicrophoneIconButton';
-import { cn } from '@/lib/utils';
 
 // ── Variant descriptions ──────────────────────────────────────────────────────
 const VARIANTS: Array<{

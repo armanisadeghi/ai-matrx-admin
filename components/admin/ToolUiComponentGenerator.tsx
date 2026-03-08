@@ -97,7 +97,52 @@ type WizardStep = "select-tool" | "select-data" | "generate" | "review" | "saved
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+/** Extract a named section's code block content from the hybrid response format. */
+function extractSectionCode(text: string, section: string): string {
+    // Matches: ## SECTION_NAME\n```(jsx|js|tsx)?\nCODE\n```
+    const re = new RegExp(
+        `##\\s+${section}\\s*\\n\`\`\`(?:jsx|js|tsx)?\\s*\\n([\\s\\S]*?)\`\`\``,
+        "i"
+    );
+    const match = text.match(re);
+    return match ? match[1].trim() : "";
+}
+
+/**
+ * Parse the AI response into a GeneratedComponent.
+ *
+ * Tries two formats in order:
+ *   1. HYBRID (new): ## METADATA json block + ## SECTION_NAME jsx blocks
+ *   2. LEGACY (old): single ```json block or bare {...} containing all fields
+ *
+ * The hybrid format avoids JSON-escaping multi-line JSX code, which was the
+ * primary source of parse failures with the old format.
+ */
 function extractJsonFromResponse(text: string): GeneratedComponent | null {
+    // ── 1. Hybrid format ───────────────────────────────────────────────────
+    const metaMatch = text.match(/##\s+METADATA\s*\n```json\s*\n([\s\S]*?)```/i);
+    if (metaMatch) {
+        try {
+            const meta = JSON.parse(metaMatch[1].trim()) as Partial<GeneratedComponent>;
+            return {
+                tool_name:              meta.tool_name              ?? "",
+                display_name:           meta.display_name           ?? "",
+                results_label:          meta.results_label          ?? "",
+                keep_expanded_on_stream: meta.keep_expanded_on_stream ?? false,
+                allowed_imports:        meta.allowed_imports        ?? ["react", "lucide-react"],
+                version:                meta.version                ?? "1.0.0",
+                inline_code:           extractSectionCode(text, "INLINE_CODE"),
+                overlay_code:          extractSectionCode(text, "OVERLAY_CODE"),
+                utility_code:          extractSectionCode(text, "UTILITY_CODE"),
+                header_subtitle_code:  extractSectionCode(text, "HEADER_SUBTITLE_CODE"),
+                header_extras_code:    extractSectionCode(text, "HEADER_EXTRAS_CODE"),
+            };
+        } catch {
+            // fall through to legacy
+        }
+    }
+
+    // ── 2. Legacy format (backward compat) ────────────────────────────────
     const jsonBlockMatch = text.match(/```json\s*\n?([\s\S]*?)```/);
     if (jsonBlockMatch) {
         try {
@@ -114,6 +159,7 @@ function extractJsonFromResponse(text: string): GeneratedComponent | null {
             // fall through
         }
     }
+
     return null;
 }
 

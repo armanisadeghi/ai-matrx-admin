@@ -31,6 +31,13 @@ The code you write will look like a normal React file with imports and \`export 
 4. Wraps the code in \`new Function(...scopeParamNames, code)\`
 5. Calls the function with the scope values to get the React component
 
+⚠️ **CRITICAL**: \`new Function()\` runs in **script mode**, not module mode. This means:
+- \`export default MyComponent\` → ✅ works (converted to \`return MyComponent\`)
+- \`export const MyComponent = ...\` → ❌ **CRASHES** with SyntaxError
+- \`export { MyComponent }\` → ❌ **CRASHES** with SyntaxError
+
+You MUST use \`export default\` for the component, not a named export.
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PROPS INTERFACE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -126,6 +133,49 @@ RESTRICTIONS — MUST FOLLOW
 9. **No \`eval()\`, \`Function()\`, \`setTimeout\` (except in cleanup patterns), or \`setInterval\`.** The component must be purely reactive.
 10. **Handle null/undefined gracefully.** The data in \`toolUpdates\` comes from the network. Any field may be missing. Always guard with optional chaining (\`?.\`) and nullish coalescing (\`??\`).
 11. **No \`console.log\` in production code.** Use \`console.error\` only in catch blocks.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITICAL FAILURE MODES — WILL CRASH AT RUNTIME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+These patterns cause a **SyntaxError at runtime** and the component will completely fail to load. Do NOT write these:
+
+❌ **WRONG — named export with TypeScript (WILL CRASH):**
+\`\`\`jsx
+// This crashes: export const is not supported in new Function() context
+export const MyComponent: React.FC<ToolRendererProps> = ({ toolUpdates }) => {
+    return <div>...</div>;
+};
+\`\`\`
+
+❌ **WRONG — TypeScript interfaces in inline_code (WILL CRASH):**
+\`\`\`jsx
+// Do NOT define interfaces or type annotations in inline_code/overlay_code
+interface MyData {
+    id: string;
+    name: string;
+}
+\`\`\`
+
+✅ **CORRECT — plain JSX with export default:**
+\`\`\`jsx
+import React from "react";
+
+export default function MyComponent({ toolUpdates, currentIndex, onOpenOverlay, toolGroupId }) {
+    return <div>...</div>;
+}
+\`\`\`
+
+✅ **CORRECT — arrow function with export default:**
+\`\`\`jsx
+import React from "react";
+
+export default ({ toolUpdates, currentIndex, onOpenOverlay, toolGroupId = "default" }) => {
+    return <div>...</div>;
+};
+\`\`\`
+
+**Rule summary:** Every code field must be plain JavaScript with JSX. No TypeScript. No named exports. One \`export default\` per code field.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 COMPONENT PATTERNS & BEST PRACTICES

@@ -108,12 +108,34 @@ export const toolRendererRegistry: ToolRegistry = {
     },
 
     // News API - custom inline and overlay components
-    "get_news_headlines": {
+    "news_get_headlines": {
         displayName: "News Headlines",
         resultsLabel: "News Results",
         inline: NewsInline,
         overlay: NewsOverlay,
         keepExpandedOnStream: true,
+        getHeaderSubtitle: (toolUpdates) => {
+            const input = toolUpdates.find((u) => u.type === "mcp_input");
+            const query = input?.mcp_input?.arguments?.query;
+            return typeof query === "string" && query ? query : null;
+        },
+        getHeaderExtras: (toolUpdates) => {
+            const output = toolUpdates.find((u) => u.type === "mcp_output");
+            if (!output?.mcp_output?.result) return null;
+            const rawResult = output.mcp_output.result;
+            let totalResults: number | undefined;
+            if (typeof rawResult === "object" && rawResult !== null) {
+                totalResults = (rawResult as { total_results?: number }).total_results;
+            } else if (typeof rawResult === "string") {
+                try { totalResults = (JSON.parse(rawResult) as { total_results?: number }).total_results; } catch { /* ignore */ }
+            }
+            if (!totalResults) return null;
+            return (
+                <div className="flex items-center gap-3 text-white/90 text-xs mt-1">
+                    <span>{totalResults} {totalResults === 1 ? "article" : "articles"} found</span>
+                </div>
+            );
+        },
     },
 
     // SEO Meta Tags Checker - batch analysis display
