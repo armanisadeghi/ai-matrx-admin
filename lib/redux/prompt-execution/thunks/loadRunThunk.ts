@@ -141,7 +141,6 @@ export const loadRun = createAsyncThunk<
                     const message: ConversationMessage = {
                         role: msg.role,
                         content: msg.content,
-                        toolUpdates: msg.toolUpdates,
                         taskId: msg.taskId,
                         timestamp: msg.timestamp || new Date().toISOString(),
                         metadata: msg.metadata,

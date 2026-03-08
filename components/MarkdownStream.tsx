@@ -14,8 +14,6 @@ export interface MarkdownStreamProps {
     content?: string;
     /** Stream events to process (new mode) */
     events?: StreamEvent[];
-    /** Tool updates for legacy mode */
-    toolUpdates?: any[];
     /** Optional task ID for streaming updates (legacy mode with Redux) */
     taskId?: string;
     /** Content type (flashcard, message, text, etc.) */
@@ -87,7 +85,7 @@ export interface MarkdownStreamProps {
  * ```
  */
 const MarkdownStream: React.FC<MarkdownStreamProps> = (props) => {
-    const { content = '', events, toolUpdates, ...restProps } = props;
+    const { content = '', events, ...restProps } = props;
     
     return (
         <MarkdownErrorBoundary
@@ -106,7 +104,6 @@ const MarkdownStream: React.FC<MarkdownStreamProps> = (props) => {
             <StreamAwareChatMarkdown 
                 content={content}
                 events={events}
-                toolUpdates={toolUpdates}
                 {...restProps}
             />
         </MarkdownErrorBoundary>

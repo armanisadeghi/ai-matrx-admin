@@ -15,4 +15,5 @@
         "**/node_modules": true,
         "**/temp": true
     },
+    "terminal.integrated.scrollback": 20000,
 }

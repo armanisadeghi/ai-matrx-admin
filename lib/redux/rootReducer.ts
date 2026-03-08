@@ -101,7 +101,7 @@ const moduleReducers = Object.keys(moduleSchemas).reduce((acc, moduleName) => {
 }, {} as Record<string, any>);
 
 export const createRootReducer = (initialState: InitialReduxState) => {
-    console.log("[WARNING REDUX STARTED WITH LARGE INITIAL STATE] initialState", initialState);
+    console.log("[WARNING REDUX STARTED WITH LARGE INITIAL STATE] --- WARNING... ENTITIES MUST BE LAZY LOADED");
     initializeEntitySlices(initialState.globalCache.schema);
     const entityReducers = Object.fromEntries(Array.from(entitySliceRegistry.entries()).map(([key, slice]) => [key, slice.reducer]));
 

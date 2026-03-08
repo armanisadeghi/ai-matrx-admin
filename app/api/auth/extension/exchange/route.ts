@@ -1,7 +1,7 @@
 // app/api/auth/extension/exchange/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient as createClient } from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 
 /**
  * Exchange Extension Auth Code for Session

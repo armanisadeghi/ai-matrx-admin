@@ -1,7 +1,7 @@
 // File: app/auth/callback/route.ts
 
 import { NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@/utils/supabase/server'
+import { createClient } from '@/utils/supabase/server'
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url)
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 
         if (code) {
             console.log(`[${timestamp}] Auth callback - Creating Supabase client...`)
-            const supabase = await createRouteHandlerClient()
+            const supabase = await createClient()
             console.log(`[${timestamp}] Auth callback - Client created, exchanging code...`)
             const { data, error } = await supabase.auth.exchangeCodeForSession(code)
             console.log(`[${timestamp}] Auth callback - Exchange complete, error: ${!!error}`)

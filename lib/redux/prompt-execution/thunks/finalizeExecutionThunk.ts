@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { RootState, AppDispatch } from '../../store';
-import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseToolUpdatesByTaskId } from '../../socket-io/selectors/socket-response-selectors';
+import { selectPrimaryResponseTextByTaskId } from '../../socket-io/selectors/socket-response-selectors';
 import { addMessage, completeExecution, setInstanceStatus } from '../slice';
 import { selectInstance, selectDynamicContexts, selectHasDynamicContexts } from '../selectors';
 import { createClient } from '@/utils/supabase/client';
@@ -23,11 +23,11 @@ export const finalizeExecution = createAsyncThunk<
     async ({ runId, taskId }, { dispatch, getState }) => {
         const state = getState();
 
+        // 1. Get the final text from the socket response slice
         const finalText = selectPrimaryResponseTextByTaskId(taskId)(state);
-        const toolUpdates = selectPrimaryResponseToolUpdatesByTaskId(taskId)(state);
 
-        if (!finalText && (!toolUpdates || toolUpdates.length === 0)) {
-            console.warn(`No final text or tools found for task ${taskId}`);
+        if (!finalText) {
+            console.warn(`No final text found for task ${taskId}`);
             // Even if empty, we should probably finish the state to avoid sticking in 'executing'
         }
 
@@ -53,7 +53,6 @@ export const finalizeExecution = createAsyncThunk<
             message: {
                 role: 'assistant',
                 content: finalText || '',
-                toolUpdates: toolUpdates.length > 0 ? toolUpdates : undefined,
                 taskId,
                 timestamp: new Date().toISOString(),
                 metadata: {

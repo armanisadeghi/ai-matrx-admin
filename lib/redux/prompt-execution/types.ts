@@ -35,7 +35,6 @@ export interface ConversationMessage {
   content: string;
   taskId?: string;
   timestamp: string;
-  toolUpdates?: any[];
   metadata?: {
     fromTemplate?: boolean; // Marks messages that originated from prompt/builtin templates
     timeToFirstToken?: number;

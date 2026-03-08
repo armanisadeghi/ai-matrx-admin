@@ -2,7 +2,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import MessageHeader from "./MessageHeader";
 import EditMode from "./EditMode";
-import { prism } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 type SimpleMessage = {
     id: string;
@@ -27,7 +26,6 @@ const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onS
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
 
     const contentRef = useRef<HTMLDivElement>(null);
-    const headerRef = useRef<HTMLDivElement>(null);
 
     const canCollapse = message.content.length > 300 || isCollapsed;
 
@@ -170,15 +168,15 @@ const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onS
                                 {message.content}
                             </div>
                             {isCollapsed && (
-                            <div
-                                className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-neutral-900 to-transparent opacity-80 rounded-b-2xl cursor-pointer"
-                                onClick={toggleCollapse}
-                            >
-                                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-neutral-400 text-xs">
-                                    Click to expand {message.content.split("\n").length - 3} more lines
+                                <div
+                                    className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-neutral-900 to-transparent opacity-80 rounded-b-2xl cursor-pointer"
+                                    onClick={toggleCollapse}
+                                >
+                                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-neutral-400 text-xs">
+                                        Click to expand {message.content.split("\n").length - 3} more lines
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
 
                             {actionFeedback.show && actionFeedback.type === "saved" && (

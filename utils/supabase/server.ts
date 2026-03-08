@@ -1,19 +1,17 @@
 // utils/supabase/server.ts
 // Server client for Supabase - use in Server Components, Server Actions, Route Handlers
 // https://supabase.com/docs/guides/auth/server-side/nextjs
-//
-// createClient and getUser are wrapped in React cache() so multiple Server Components
-// in the same request share a single instance and a single auth call — no duplicate
-// network round-trips regardless of how many layouts call them.
-//
-// IMPORTANT: React.cache() only works inside the React render pipeline (Server Components).
-// Route Handlers (route.ts) run outside React — use createRouteHandlerClient() instead.
 
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { cache } from 'react'
 
-async function createClientBase() {
+/**
+ * Standard Supabase server client.
+ * Works everywhere: Server Components, Server Actions, Route Handlers.
+ * Creates a fresh client per call — safe for all contexts.
+ */
+export async function createClient() {
   const cookieStore = await cookies()
 
   return createServerClient(
@@ -41,25 +39,49 @@ async function createClientBase() {
 }
 
 /**
- * Per-request cached Supabase client for use in Server Components and Server Actions.
- * React.cache() deduplicates calls within a single render pass.
- * DO NOT use in Route Handlers — use createRouteHandlerClient() instead.
+ * Per-request CACHED Supabase client — for use ONLY in Server Components.
+ *
+ * React.cache() deduplicates calls within a single React render pass, so
+ * multiple Server Components in the same request share one client instance.
+ *
+ * DO NOT use in Route Handlers (route.ts) or Server Actions — React.cache()
+ * only works inside the React render pipeline. Use createClient() there instead.
  */
-export const createClient = cache(createClientBase)
+export const createCachedClient = cache(async () => {
+  const cookieStore = await cookies()
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!.trim(),
+    (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim(),
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // Ignored in Server Components — middleware handles session refresh.
+          }
+        },
+      },
+    }
+  )
+})
 
 /**
- * Uncached Supabase client for use in Route Handlers (route.ts files).
- * React.cache() does not work outside the React render pipeline, so route handlers
- * must use this function to get a fresh client per request.
- */
-export const createRouteHandlerClient = createClientBase
-
-/**
- * Per-request cached auth check. Call this anywhere in the Server Component tree
- * instead of supabase.auth.getUser() — guaranteed single network call per request.
+ * Per-request cached auth check — for use ONLY in Server Components.
+ *
+ * Guaranteed single network call per request regardless of how many
+ * Server Components call it. Uses createCachedClient() internally.
+ *
+ * DO NOT use in Route Handlers or Server Actions — use createClient() there.
  */
 export const getUser = cache(async () => {
-  const supabase = await createClient()
+  const supabase = await createCachedClient()
   const { data: { user } } = await supabase.auth.getUser()
   return user
 })
