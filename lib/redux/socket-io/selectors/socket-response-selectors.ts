@@ -12,11 +12,10 @@ export const EMPTY_ARRAY: any[] = [];
 const EMPTY_RESPONSE_STATE = { text: "", data: EMPTY_ARRAY, info: EMPTY_ARRAY, errors: EMPTY_ARRAY, toolUpdates: EMPTY_ARRAY, ended: false };
 
 // ==================== Base Response Selectors ====================
-export const selectAllResponses = createSelector([(state: RootState) => state.socketResponse], (responses) => responses);
+export const selectAllResponses = (state: RootState) => state.socketResponse;
 
-// Fixed: Use createSelector for proper memoization and build on selectAllResponses
 export const selectResponseByListenerId = (listenerId: string | undefined) =>
-    createSelector([selectAllResponses], (responses) => 
+    createSelector([(state: RootState) => state.socketResponse], (responses) =>
         listenerId ? responses[listenerId] as ResponseState | undefined : undefined
     );
 

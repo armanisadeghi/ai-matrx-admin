@@ -134,7 +134,7 @@ export const fetchAppWithApplets = createAsyncThunk(
 
             dispatch(brokerActions.addOrUpdateRegisterEntries(brokerMappings));
 
-            console.warn("NOTICE: fetchAppWithApplets -> Conceptual broker mapping being set to the broker map concept slice");
+            // console.warn("NOTICE: fetchAppWithApplets -> Conceptual broker mapping being set to the broker map concept slice");
 
             // Set app and applet configurations to make the app functional
             dispatch(setAppRuntimeConfig(appConfig));

@@ -26,6 +26,7 @@ import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { selectAppletRuntimeDataSourceConfig } from '@/lib/redux/app-runner/slices/customAppletRuntimeSlice';
 import { brokerSelectors } from '@/lib/redux/brokerSlice';
 import { submitAppletAgentThunk } from '@/lib/redux/socket-io/thunks/submitAppletAgentThunk';
+import { selectTaskDataById } from '@/lib/redux/socket-io/selectors/socket-task-selectors';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import type { NeededBroker } from '@/types/customAppTypes';
@@ -43,7 +44,6 @@ export function useAppletRecipeFastAPI({ appletId }: UseAppletRecipeFastAPIProps
     const [taskId] = useState<string>(() => uuidv4());
     const [neededBrokerIds, setNeededBrokerIds] = useState<string[]>([]);
     const [agentId, setAgentId] = useState<string | null>(null);
-    const [conversationId, setConversationId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -55,6 +55,10 @@ export function useAppletRecipeFastAPI({ appletId }: UseAppletRecipeFastAPIProps
     const rawBrokerValues = useAppSelector((state) =>
         brokerSelectors.selectMultipleValues(state, neededBrokerIds)
     );
+
+    // Read conversationId from taskData — dispatched by the thunk immediately from the response header.
+    const taskData = useAppSelector((state) => selectTaskDataById(state, taskId));
+    const conversationId = taskData?.conversationId as string | undefined;
 
     // Expose broker values in the same shape as useAppletRecipe for compatibility
     const brokerValues = Object.entries(rawBrokerValues ?? {}).reduce<Record<string, unknown>>(
@@ -144,8 +148,7 @@ export function useAppletRecipeFastAPI({ appletId }: UseAppletRecipeFastAPIProps
             })
         )
             .unwrap()
-            .then(({ conversationId: convId }) => {
-                if (convId) setConversationId(convId);
+            .then(() => {
                 setIsLoading(false);
             })
             .catch((err) => {
@@ -166,6 +169,11 @@ export function useAppletRecipeFastAPI({ appletId }: UseAppletRecipeFastAPIProps
         brokerValues,
         /** Populated after the first submission completes. Used for follow-up turns. */
         conversationId,
+        /**
+         * True when this applet has a cached promptId (agent conversion done).
+         * AppletRunComponent uses this to auto-enable the FastAPI path without requiring ?fx=1.
+         */
+        hasAgent: !!agentId,
     };
 }
 

@@ -4,7 +4,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { addToArrayField, setArrayField } from "@/lib/redux/socket-io/slices/socketTasksSlice";
 import { createTask } from "@/lib/redux/socket-io/thunks/createTaskThunk";
 import { submitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { selectTaskDataById, selectTaskValidationState } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
 
@@ -39,6 +39,8 @@ interface UseAppletRecipeProps {
     appletId: string;
 }
 
+const EMPTY_VALIDATION_STATE = { isValid: false, validationErrors: {} as Record<string, string> };
+
 export function useAppletRecipe({ appletId }: UseAppletRecipeProps) {
     const dispatch = useAppDispatch();
     const sourceConfig = useAppSelector((state) => selectAppletRuntimeDataSourceConfig(state, appletId));
@@ -49,8 +51,8 @@ export function useAppletRecipe({ appletId }: UseAppletRecipeProps) {
 
     const taskData = useAppSelector((state) => (taskId ? selectTaskDataById(state, taskId) : null));
     const taskValidationState = useAppSelector((state) =>
-        taskId ? selectTaskValidationState(state, taskId) : { isValid: false, validationErrors: {} }
-    );
+        taskId ? selectTaskValidationState(state, taskId) : null
+    ) ?? EMPTY_VALIDATION_STATE;
 
     // Get the raw broker values from Redux state
     const rawBrokerValues = useAppSelector((state) => brokerSelectors.selectMultipleValues(state, neededBrokerIds || []));

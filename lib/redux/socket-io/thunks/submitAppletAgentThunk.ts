@@ -43,6 +43,7 @@ import {
     initializeTask,
     setTaskListenerIds,
     setTaskStreaming,
+    updateTaskField,
     completeTask,
     setTaskError,
 } from '../slices/socketTasksSlice';
@@ -163,10 +164,16 @@ export const submitAppletAgentThunk = createAsyncThunk<
             throw apiError;
         }
 
-        // Extract conversation ID from response headers for future follow-up turns.
-        // The hook stores this so the applet can later continue the conversation.
+        // Extract conversation ID from response headers — available synchronously before the stream loop.
+        // Store immediately in taskData so the hook can read it via selectFieldValue without
+        // waiting for the full stream to complete.
         const { events, conversationId: headerConvId } = parseNdjsonStream(response);
         let resolvedConversationId: string | null = headerConvId ?? null;
+
+        if (resolvedConversationId) {
+            console.log('[submitAppletAgentThunk] conversationId from header:', resolvedConversationId);
+            dispatch(updateTaskField({ taskId, field: 'conversationId', value: resolvedConversationId }));
+        }
 
         let isFirstChunk = true;
 
@@ -204,9 +211,13 @@ export const submitAppletAgentThunk = createAsyncThunk<
 
                     case 'data': {
                         const dataPayload = event.data as unknown as Record<string, unknown>;
-                        // Capture conversation_id from data events as a fallback to the header
                         if (dataPayload.event === 'conversation_id' && dataPayload.conversation_id) {
                             resolvedConversationId = dataPayload.conversation_id as string;
+                            console.log('[submitAppletAgentThunk] conversationId from data event:', resolvedConversationId);
+                            // Fallback: if the header didn't have the conversationId, store it now
+                            if (!headerConvId) {
+                                dispatch(updateTaskField({ taskId, field: 'conversationId', value: resolvedConversationId }));
+                            }
                         }
                         dispatch(updateDataResponse({ listenerId, data: event.data }));
                         break;

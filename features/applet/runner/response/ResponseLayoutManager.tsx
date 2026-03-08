@@ -12,7 +12,6 @@ import MarkdownStream from "@/components/MarkdownStream";
 import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
 import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
 import AppletPostActionButtons from "./AppletPostActionButtons";
-import AppletFollowUpInput from "./AppletFollowUpInput";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { hasCoordinator } from "@/components/mardown-display/markdown-classification/markdown-coordinator";
 import DirectMarkdownRenderer from "@/components/mardown-display/markdown-classification/DirectMarkdownRenderer";
@@ -27,8 +26,6 @@ interface ResponseLayoutManagerProps {
     isPreview?: boolean;
     responseLayoutTypeOverride?: AppletLayoutOption;
     allowEditing?: boolean;
-    /** Conversation ID from the agent stream — enables follow-up input. Only present on the FastAPI path. */
-    conversationId?: string | null;
 }
 
 export default function ResponseLayoutManager({
@@ -40,7 +37,6 @@ export default function ResponseLayoutManager({
     isPreview = false,
     responseLayoutTypeOverride = "flat-accordion",
     allowEditing = false,
-    conversationId = null,
 }: ResponseLayoutManagerProps) {
     const dispatch = useAppDispatch();
     const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
@@ -83,7 +79,7 @@ export default function ResponseLayoutManager({
     }, [isTaskComplete, textResponse, dispatch, appletId]);
 
     return (
-        <div className="w-full overflow-y-auto px-2 h-full space-y-2 scrollbar-none pb-12">
+        <div className="w-full px-2 space-y-2">
             <AppletLayoutManager
                 appletId={appletId}
                 appSlug={appSlug}
@@ -99,7 +95,6 @@ export default function ResponseLayoutManager({
                     closeButtonTitle="Exit fullscreen"
                 >
                     <div className="w-full max-w-4xl mx-auto p-4">
-                        {/* For regular markdown or non-custom views */}
                         {!hasCustomView && (
                             <MarkdownStream
                                 content={textResponse}
@@ -111,8 +106,6 @@ export default function ResponseLayoutManager({
                                 hideCopyButton={true}
                             />
                         )}
-
-                        {/* For custom views - always show the DirectMarkdownRenderer but pass isLoading */}
                         {hasCustomView && (
                             <DirectMarkdownRenderer
                                 markdown={textResponse}
@@ -133,9 +126,6 @@ export default function ResponseLayoutManager({
                                 data={dataResponse}
                                 handleEdit={allowEditing ? () => {} : null}
                             />
-                            {conversationId && (
-                                <AppletFollowUpInput conversationId={conversationId} />
-                            )}
                         </div>
                     )}
                 </FullscreenWrapper>
