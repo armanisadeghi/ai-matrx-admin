@@ -26,5 +26,15 @@ export default async function NewPromptPage() {
         // settings will be initialized from user preferences or first available model
     };
 
-    return <PromptBuilder models={aiModels} initialData={newPromptDefaults} availableTools={availableTools} />;
+    return (
+        <div
+            className="ssr-prompt-page"
+            style={{
+                '--header-height': 'var(--shell-header-h)',
+                paddingTop: 'var(--shell-header-h)',
+            } as React.CSSProperties}
+        >
+            <PromptBuilder models={aiModels} initialData={newPromptDefaults} availableTools={availableTools} />
+        </div>
+    );
 }

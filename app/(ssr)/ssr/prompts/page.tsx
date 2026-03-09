@@ -14,13 +14,19 @@ export default function PromptsPage() {
     }, [dispatch]);
 
     return (
-        <>
+        <div
+            className="ssr-prompt-page"
+            style={{
+                '--header-height': 'var(--shell-header-h)',
+                paddingTop: 'var(--shell-header-h)',
+            } as React.CSSProperties}
+        >
             <PromptsSSRHeader />
-            <div className="w-full h-full" style={{ paddingTop: "var(--shell-header-h)" }}>
+            <div className="w-full">
                 <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6 max-w-[1800px]">
                     <PromptsGrid />
                 </div>
             </div>
-        </>
+        </div>
     );
 }
