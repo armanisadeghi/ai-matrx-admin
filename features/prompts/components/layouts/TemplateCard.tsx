@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Copy, Star, Loader2 } from "lucide-react";
+import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
 
 interface TemplateCardProps {
     id: string;
@@ -32,9 +33,10 @@ export function TemplateCard({
     isUsingTemplate,
     isAnyProcessing,
 }: TemplateCardProps) {
+    const basePath = usePromptsBasePath();
     const handleView = () => {
         if (onNavigate && !isAnyProcessing) {
-            onNavigate(id, `/ai/prompts/templates/${id}`);
+            onNavigate(id, `${basePath}/templates/${id}`);
         }
     };
 

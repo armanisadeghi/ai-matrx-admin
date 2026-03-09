@@ -56,7 +56,8 @@ const DEFAULT_SETTINGS = {
 export async function createPromptFromBuilder(
     config: PromptBuilderConfig,
     router: AppRouterInstance,
-    onClose?: () => void
+    onClose?: () => void,
+    basePath: string = '/ai/prompts'
 ): Promise<PromptBuilderResult> {
     try {
         // Validate required fields
@@ -135,7 +136,7 @@ export async function createPromptFromBuilder(
         }
 
         // Navigate to edit page with autoRun query param
-        router.push(`/ai/prompts/edit/${promptId}?autoRun=true`);
+        router.push(`${basePath}/edit/${promptId}?autoRun=true`);
         router.refresh();
 
         return { success: true, promptId };
@@ -156,11 +157,12 @@ export async function createPromptFromBuilder(
  */
 export function usePromptBuilder(
     router: AppRouterInstance,
-    onClose?: () => void
+    onClose?: () => void,
+    basePath: string = '/ai/prompts'
 ) {
     return {
         createPrompt: async (config: PromptBuilderConfig) => {
-            return createPromptFromBuilder(config, router, onClose);
+            return createPromptFromBuilder(config, router, onClose, basePath);
         }
     };
 }

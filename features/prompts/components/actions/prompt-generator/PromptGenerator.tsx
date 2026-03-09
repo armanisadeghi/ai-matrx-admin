@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import MarkdownStream from '@/components/MarkdownStream';
 import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
 import { useRouter } from 'next/navigation';
+import { usePromptsBasePath } from '../../../hooks/usePromptsBasePath';
 import { VoiceTextarea } from '@/features/audio';
 import { PromptJsonDisplay } from './PromptJsonDisplay';
 import { extractNonJsonContent } from './progressive-json-parser';
@@ -38,6 +39,7 @@ export function PromptGenerator({
 }: PromptGeneratorProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const basePath = usePromptsBasePath();
   
   const [promptPurpose, setPromptPurpose] = useState('');
   const [additionalContext, setAdditionalContext] = useState('');
@@ -257,7 +259,7 @@ export function PromptGenerator({
 
       // Close modal and navigate to the new prompt with autoRun query param
       handleClose();
-      router.push(`/ai/prompts/edit/${promptId}?autoRun=true`);
+      router.push(`${basePath}/edit/${promptId}?autoRun=true`);
       router.refresh();
       
     } catch (error) {

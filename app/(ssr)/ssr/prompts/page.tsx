@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { initializeUserPrompts } from "@/lib/redux/thunks/promptCrudThunks";
-import { PromptsPageHeader } from "@/features/prompts/components/layouts/PromptsPageHeader";
+import PromptsSSRHeader from "./_components/PromptsSSRHeader";
 import { PromptsGrid } from "@/features/prompts/components/layouts/PromptsGrid";
 
 export default function PromptsPage() {
@@ -15,8 +15,8 @@ export default function PromptsPage() {
 
     return (
         <>
-            <PromptsPageHeader />
-            <div className="w-full">
+            <PromptsSSRHeader />
+            <div className="w-full h-full" style={{ paddingTop: "var(--shell-header-h)" }}>
                 <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6 max-w-[1800px]">
                     <PromptsGrid />
                 </div>

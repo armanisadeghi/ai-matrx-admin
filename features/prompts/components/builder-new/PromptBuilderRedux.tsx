@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Save, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Toaster } from "@/components/ui/sonner";
+import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
 import { toast } from "sonner";
 
 interface PromptBuilderReduxProps {
@@ -38,6 +39,7 @@ export const PromptBuilderRedux: React.FC<PromptBuilderReduxProps> = ({ promptId
     const name = useAppSelector(selectPromptName);
     const status = useAppSelector(selectPromptStatus);
     const id = useAppSelector(selectPromptId);
+    const basePath = usePromptsBasePath();
 
     const [activeTab, setActiveTab] = useState("settings");
 
@@ -68,7 +70,7 @@ export const PromptBuilderRedux: React.FC<PromptBuilderReduxProps> = ({ promptId
             <div className="flex flex-col items-center justify-center h-screen space-y-4">
                 <div className="text-destructive font-medium">Error loading prompt</div>
                 <div className="text-muted-foreground">{status.error}</div>
-                <Link href="/ai/prompts">
+                <Link href={basePath}>
                     <Button variant="outline">Back to Prompts</Button>
                 </Link>
             </div>
@@ -80,7 +82,7 @@ export const PromptBuilderRedux: React.FC<PromptBuilderReduxProps> = ({ promptId
             {/* Header */}
             <header className="flex items-center justify-between px-4 py-2 border-b bg-card">
                 <div className="flex items-center space-x-4">
-                    <Link href="/ai/prompts">
+                    <Link href={basePath}>
                         <Button variant="ghost" size="icon">
                             <ArrowLeft className="h-4 w-4" />
                         </Button>

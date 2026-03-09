@@ -13,6 +13,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
 
 interface SharedPromptCardProps {
     id: string;
@@ -60,23 +61,24 @@ export function SharedPromptCard({
     isNavigating,
     isAnyNavigating
 }: SharedPromptCardProps) {
+    const basePath = usePromptsBasePath();
     const [isActionModalOpen, setIsActionModalOpen] = useState(false);
 
     const handleView = () => {
         if (onNavigate && !isAnyNavigating) {
-            onNavigate(id, `/ai/prompts/view/${id}`);
+            onNavigate(id, `${basePath}/view/${id}`);
         }
     };
 
     const handleEdit = () => {
         if (onNavigate && !isAnyNavigating) {
-            onNavigate(id, `/ai/prompts/edit/${id}`);
+            onNavigate(id, `${basePath}/edit/${id}`);
         }
     };
 
     const handleRun = () => {
         if (onNavigate && !isAnyNavigating) {
-            onNavigate(id, `/ai/prompts/run/${id}`);
+            onNavigate(id, `${basePath}/run/${id}`);
         }
     };
 

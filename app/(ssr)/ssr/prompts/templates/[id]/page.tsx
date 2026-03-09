@@ -31,7 +31,7 @@ export default async function PromptTemplatePage({
                         <p className="text-muted-foreground mb-4">
                             The template you're looking for doesn't exist.
                         </p>
-                        <Link href="/ai/prompts/templates">
+                        <Link href="/ssr/prompts/templates">
                             <Button>Back to Templates</Button>
                         </Link>
                     </div>
@@ -52,7 +52,7 @@ export default async function PromptTemplatePage({
         <Card className="h-full w-full bg-textured border-none shadow-lg">
             <div className="p-8 md:p-12">
                 <div className="flex items-center gap-4 mb-8">
-                    <Link href="/ai/prompts/templates">
+                    <Link href="/ssr/prompts/templates">
                         <Button
                             variant="ghost"
                             size="icon"
@@ -76,7 +76,7 @@ export default async function PromptTemplatePage({
                             </p>
                         )}
                     </div>
-                    <Link href={`/ai/prompts/new?template=${id}`}>
+                    <Link href={`/ssr/prompts/new?template=${id}`}>
                         <Button className="bg-success hover:bg-success/90">
                             <Copy className="h-4 w-4 mr-2" />
                             Use This Template

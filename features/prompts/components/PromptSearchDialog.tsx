@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Search, Play, Pencil, Eye, Loader2, MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { usePromptsBasePath } from "../hooks/usePromptsBasePath";
 
 interface Prompt {
     id: string;
@@ -25,6 +26,7 @@ export function PromptSearchDialog({ isOpen, onClose, prompts }: PromptSearchDia
     const [isPending, startTransition] = useTransition();
     const [navigatingId, setNavigatingId] = useState<string | null>(null);
     const router = useRouter();
+    const basePath = usePromptsBasePath();
 
     const filteredPrompts = useMemo(() => {
         if (!searchQuery.trim()) {
@@ -130,7 +132,7 @@ export function PromptSearchDialog({ isOpen, onClose, prompts }: PromptSearchDia
                                                     <Button
                                                         size="sm"
                                                         variant="ghost"
-                                                        onClick={() => handleNavigate(prompt.id, `/ai/prompts/run/${prompt.id}`)}
+                                                        onClick={() => handleNavigate(prompt.id, `${basePath}/run/${prompt.id}`)}
                                                         disabled={isDisabled}
                                                         className="h-8 w-8 p-0"
                                                         title="Run"
@@ -140,7 +142,7 @@ export function PromptSearchDialog({ isOpen, onClose, prompts }: PromptSearchDia
                                                     <Button
                                                         size="sm"
                                                         variant="ghost"
-                                                        onClick={() => handleNavigate(prompt.id, `/ai/prompts/edit/${prompt.id}`)}
+                                                        onClick={() => handleNavigate(prompt.id, `${basePath}/edit/${prompt.id}`)}
                                                         disabled={isDisabled}
                                                         className="h-8 w-8 p-0"
                                                         title="Edit"
@@ -150,7 +152,7 @@ export function PromptSearchDialog({ isOpen, onClose, prompts }: PromptSearchDia
                                                     <Button
                                                         size="sm"
                                                         variant="ghost"
-                                                        onClick={() => handleNavigate(prompt.id, `/ai/prompts/view/${prompt.id}`)}
+                                                        onClick={() => handleNavigate(prompt.id, `${basePath}/view/${prompt.id}`)}
                                                         disabled={isDisabled}
                                                         className="h-8 w-8 p-0"
                                                         title="View"

@@ -24,6 +24,7 @@ import { PromptBuilderDesktop } from "./PromptBuilderDesktop";
 import { PromptBuilderMobile } from "./PromptBuilderMobile";
 import { SharedPromptWarningModal, SharedPromptBanner } from "./SharedPromptWarningModal";
 import type { PromptAccessInfo } from "@/features/prompts/types/shared";
+import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
 
 interface PromptBuilderProps {
     models: any[];
@@ -45,6 +46,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const dispatch = useAppDispatch();
+    const basePath = usePromptsBasePath();
     const modelPreferences = useAppSelector((state: RootState) => state.userPreferences.aiModels as AiModelsPreferences);
     const { formatMessageWithResources } = useResourceMessageFormatter();
     const promptsPreferences: PromptsPreferences = useAppSelector(selectPromptsPreferences);
@@ -477,7 +479,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
 
                 // Route to the newly created prompt's edit page
                 if (result?.id) {
-                    router.push(`/ai/prompts/edit/${result.id}`);
+                    router.push(`${basePath}/edit/${result.id}`);
                 }
             }
         } catch (error) {
@@ -516,7 +518,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
                     description: 'Redirecting to your copy...'
                 });
                 setShowSharedWarningModal(false);
-                router.push(`/ai/prompts/edit/${data.prompt.id}`);
+                router.push(`${basePath}/edit/${data.prompt.id}`);
             }
         } catch (error) {
             console.error('Error creating copy:', error);
@@ -910,8 +912,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
                 toast.success('Copy created successfully', {
                     description: 'Routing to the new prompt...'
                 });
-                // Route to the newly created prompt's edit page
-                router.push(`/ai/prompts/edit/${result.id}`);
+                router.push(`${basePath}/edit/${result.id}`);
             } else {
                 throw new Error('Failed to create prompt copy');
             }

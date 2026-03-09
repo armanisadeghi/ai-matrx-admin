@@ -101,7 +101,7 @@ export default async function RunPromptPage({
                                 This prompt either doesn't exist or you don't have permission to access it.
                             </p>
                         </div>
-                        <Link href="/ai/prompts">
+                        <Link href="/ssr/prompts">
                             <Button>
                                 Back to Prompts
                             </Button>

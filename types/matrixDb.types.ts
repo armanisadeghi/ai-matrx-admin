@@ -5274,42 +5274,71 @@ export type Database = {
       }
       prompts: {
         Row: {
+          category: string | null
           created_at: string
           description: string | null
           id: string
+          is_archived: boolean
+          is_favorite: boolean
           messages: Json | null
+          model_id: string | null
           name: string | null
+          output_format: string | null
+          output_schema: Json | null
           settings: Json | null
+          tags: string[] | null
           tools: Json | null
           updated_at: string | null
           user_id: string | null
           variable_defaults: Json | null
         }
         Insert: {
+          category?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          is_archived?: boolean
+          is_favorite?: boolean
           messages?: Json | null
+          model_id?: string | null
           name?: string | null
+          output_format?: string | null
+          output_schema?: Json | null
           settings?: Json | null
+          tags?: string[] | null
           tools?: Json | null
           updated_at?: string | null
           user_id?: string | null
           variable_defaults?: Json | null
         }
         Update: {
+          category?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          is_archived?: boolean
+          is_favorite?: boolean
           messages?: Json | null
+          model_id?: string | null
           name?: string | null
+          output_format?: string | null
+          output_schema?: Json | null
           settings?: Json | null
+          tags?: string[] | null
           tools?: Json | null
           updated_at?: string | null
           user_id?: string | null
           variable_defaults?: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "prompts_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "ai_model"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quiz_sessions: {
         Row: {

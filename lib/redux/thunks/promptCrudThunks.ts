@@ -53,6 +53,14 @@ function toCachedPrompt(data: PromptData): CachedPrompt {
         source:           'prompts',
         fetchedAt:        Date.now(),
         status:           'cached',
+        tags:             data.tags,
+        category:         data.category,
+        isArchived:       data.isArchived,
+        isFavorite:       data.isFavorite,
+        modelId:          data.modelId,
+        outputFormat:     data.outputFormat,
+        outputSchema:     data.outputSchema,
+        tools:            data.tools,
     };
 }
 
@@ -301,6 +309,14 @@ export const duplicateUserPrompt = createAsyncThunk<
                 messages:         source.messages,
                 variableDefaults: source.variableDefaults,
                 settings:         source.settings,
+                tags:             source.tags,
+                category:         source.category,
+                isArchived:       false,
+                isFavorite:       false,
+                modelId:          source.modelId,
+                outputFormat:     source.outputFormat,
+                outputSchema:     source.outputSchema,
+                tools:            source.tools,
             })
         ).unwrap();
     }

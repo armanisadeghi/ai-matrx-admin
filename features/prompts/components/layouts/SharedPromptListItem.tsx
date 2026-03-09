@@ -12,6 +12,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
 
 interface SharedPromptListItemProps {
     id: string;
@@ -56,6 +57,7 @@ export function SharedPromptListItem({
     isNavigating,
     isAnyNavigating
 }: SharedPromptListItemProps) {
+    const basePath = usePromptsBasePath();
     const [lastModalCloseTime, setLastModalCloseTime] = useState(0);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -74,21 +76,21 @@ export function SharedPromptListItem({
     const handleRun = (e?: React.MouseEvent) => {
         e?.stopPropagation();
         if (onNavigate && !isDisabled) {
-            onNavigate(id, `/ai/prompts/run/${id}`);
+            onNavigate(id, `${basePath}/run/${id}`);
         }
     };
 
     const handleEdit = (e?: React.MouseEvent) => {
         e?.stopPropagation();
         if (onNavigate && !isDisabled) {
-            onNavigate(id, `/ai/prompts/edit/${id}`);
+            onNavigate(id, `${basePath}/edit/${id}`);
         }
     };
 
     const handleView = (e?: React.MouseEvent) => {
         e?.stopPropagation();
         if (onNavigate && !isDisabled) {
-            onNavigate(id, `/ai/prompts/view/${id}`);
+            onNavigate(id, `${basePath}/view/${id}`);
         }
     };
 

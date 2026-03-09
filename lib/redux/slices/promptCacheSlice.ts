@@ -26,9 +26,17 @@ export interface CachedPrompt {
   variableDefaults?: PromptVariable[];
   settings: PromptSettings;
   userId: string;
-  source: 'prompts' | 'prompt_builtins'; // Which table this came from
-  fetchedAt: number; // Timestamp when fetched
-  status: 'cached' | 'stale'; // For future cache invalidation
+  source: 'prompts' | 'prompt_builtins';
+  fetchedAt: number;
+  status: 'cached' | 'stale';
+  tags?: string[];
+  category?: string;
+  isArchived?: boolean;
+  isFavorite?: boolean;
+  modelId?: string;
+  outputFormat?: string;
+  outputSchema?: unknown;
+  tools?: unknown;
 }
 
 export type ListStatus = 'idle' | 'loading' | 'success' | 'error';

@@ -16,6 +16,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { usePromptsBasePath } from '../hooks/usePromptsBasePath';
 
 // ============================================================================
 // TYPES
@@ -215,6 +216,7 @@ function PromptListContent({
 
 function MobilePromptSwitcher({ open, onOpenChange, currentPromptId, mode }: PromptSwitcherSheetProps) {
     const router = useRouter();
+    const basePath = usePromptsBasePath();
     const { prompts, loading, error } = useUserPrompts(open);
     const [showSearch, setShowSearch] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -224,7 +226,7 @@ function MobilePromptSwitcher({ open, onOpenChange, currentPromptId, mode }: Pro
         setSearchQuery('');
         setShowSearch(false);
         if (prompt.id !== currentPromptId) {
-            router.push(`/ai/prompts/${mode}/${prompt.id}`);
+            router.push(`${basePath}/${mode}/${prompt.id}`);
         }
     };
 
@@ -292,6 +294,7 @@ function MobilePromptSwitcher({ open, onOpenChange, currentPromptId, mode }: Pro
 
 function DesktopPromptSwitcher({ open, onOpenChange, currentPromptId, mode }: PromptSwitcherSheetProps) {
     const router = useRouter();
+    const basePath = usePromptsBasePath();
     const { prompts, loading, error } = useUserPrompts(open);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -299,7 +302,7 @@ function DesktopPromptSwitcher({ open, onOpenChange, currentPromptId, mode }: Pr
         onOpenChange(false);
         setSearchQuery('');
         if (prompt.id !== currentPromptId) {
-            router.push(`/ai/prompts/${mode}/${prompt.id}`);
+            router.push(`${basePath}/${mode}/${prompt.id}`);
         }
     };
 

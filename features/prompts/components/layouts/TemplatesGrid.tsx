@@ -5,6 +5,7 @@ import { TemplateCard } from "./TemplateCard";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/lib/toast-service";
+import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
 
 interface Template {
     id: string;
@@ -23,6 +24,7 @@ interface TemplatesGridProps {
 
 export function TemplatesGrid({ templates }: TemplatesGridProps) {
     const router = useRouter();
+    const basePath = usePromptsBasePath();
     const [isPending, startTransition] = useTransition();
     const [navigatingId, setNavigatingId] = useState<string | null>(null);
     const [usingTemplateId, setUsingTemplateId] = useState<string | null>(null);
@@ -57,7 +59,7 @@ export function TemplatesGrid({ templates }: TemplatesGridProps) {
             
             // Redirect to edit the newly created prompt
             startTransition(() => {
-                router.push(`/ai/prompts/edit/${prompt.id}`);
+                router.push(`${basePath}/edit/${prompt.id}`);
             });
         } catch (error) {
             console.error("Error using template:", error);

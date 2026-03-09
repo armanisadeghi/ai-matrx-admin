@@ -31,6 +31,14 @@ export function toFrontend(row: PromptDb): PromptData {
         messages:         (row.messages          as PromptData["messages"])          ?? undefined,
         variableDefaults: (row.variable_defaults as PromptData["variableDefaults"]) ?? undefined,
         settings:         (row.settings          as PromptData["settings"])          ?? undefined,
+        tags:             row.tags             ?? undefined,
+        category:         row.category         ?? undefined,
+        isArchived:       row.is_archived,
+        isFavorite:       row.is_favorite,
+        modelId:          row.model_id         ?? undefined,
+        outputFormat:     row.output_format    ?? undefined,
+        outputSchema:     row.output_schema    ?? undefined,
+        tools:            row.tools            ?? undefined,
     };
 }
 
@@ -52,6 +60,14 @@ export function toDbInsert(
         messages:          data.messages           ?? null,
         variable_defaults: data.variableDefaults   ?? null,
         settings:          data.settings           ?? null,
+        tags:              data.tags               ?? null,
+        category:          data.category           ?? null,
+        is_archived:       data.isArchived         ?? false,
+        is_favorite:       data.isFavorite         ?? false,
+        model_id:          data.modelId            ?? null,
+        output_format:     data.outputFormat       ?? null,
+        output_schema:     data.outputSchema       ?? null,
+        tools:             data.tools              ?? null,
     };
 }
 
@@ -72,6 +88,14 @@ export function toDbUpdate(
     if ("messages"         in data) patch.messages           = data.messages           ?? null;
     if ("variableDefaults" in data) patch.variable_defaults = data.variableDefaults   ?? null;
     if ("settings"         in data) patch.settings           = data.settings           ?? null;
+    if ("tags"             in data) patch.tags               = data.tags              ?? null;
+    if ("category"         in data) patch.category           = data.category          ?? null;
+    if ("isArchived"       in data) patch.is_archived        = data.isArchived        ?? false;
+    if ("isFavorite"       in data) patch.is_favorite        = data.isFavorite        ?? false;
+    if ("modelId"          in data) patch.model_id           = data.modelId           ?? null;
+    if ("outputFormat"     in data) patch.output_format      = data.outputFormat      ?? null;
+    if ("outputSchema"     in data) patch.output_schema      = data.outputSchema      ?? null;
+    if ("tools"            in data) patch.tools              = data.tools             ?? null;
 
     return patch;
 }

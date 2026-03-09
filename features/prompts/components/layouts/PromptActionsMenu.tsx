@@ -38,6 +38,7 @@ import { useUser } from "@/lib/hooks/useUser";
 import { ConvertToBuiltinModal } from "@/features/prompts/components/layouts/ConvertToBuiltinModal";
 import { UpdatePromptAppModal } from "@/features/prompt-apps/components/UpdatePromptAppModal";
 import type { PromptMessage, PromptVariable } from "@/features/prompts/types/core";
+import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
 
 export interface PromptActionsMenuProps {
     /** Prompt ID - required */
@@ -109,6 +110,7 @@ export function PromptActionsMenu({
     const { openPrompt } = usePromptRunner();
     const dispatch = useAppDispatch();
     const { isAdmin } = useUser();
+    const basePath = usePromptsBasePath();
     
     const [isOpen, setIsOpen] = useState(false);
     const [isDuplicating, startDuplicating] = useTransition();
@@ -148,7 +150,7 @@ export function PromptActionsMenu({
     // Go To Run Page - Navigate to dedicated run page (full-page runner)
     const handleGoToRunPage = () => {
         setIsOpen(false);
-        router.push(`/ai/prompts/run/${promptId}`);
+        router.push(`${basePath}/run/${promptId}`);
     };
     
     // Duplicate - Create a copy of the prompt with loading modal
@@ -342,7 +344,7 @@ export function PromptActionsMenu({
                                             if (onDuplicateSuccess) {
                                                 onDuplicateSuccess(duplicatedPromptId);
                                             } else {
-                                                router.push(`/ai/prompts/edit/${duplicatedPromptId}`);
+                                                router.push(`${basePath}/edit/${duplicatedPromptId}`);
                                             }
                                         }
                                         setIsDuplicateModalOpen(false);
@@ -413,9 +415,9 @@ export function PromptActionsMenu({
                                 <Button 
                                     onClick={() => {
                                         if (createdTemplateId) {
-                                            router.push(`/ai/prompts/templates/${createdTemplateId}`);
+                                            router.push(`${basePath}/templates/${createdTemplateId}`);
                                         } else {
-                                            router.push('/ai/prompts/templates');
+                                            router.push(`${basePath}/templates`);
                                         }
                                         setIsTemplateModalOpen(false);
                                     }}

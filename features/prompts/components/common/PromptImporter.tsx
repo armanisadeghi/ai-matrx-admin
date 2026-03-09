@@ -28,6 +28,7 @@ import type { PromptImportResult } from '../../types/prompt-json';
 import { PromptData, PromptsBatchData } from '@/features/prompts/types/core';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { usePromptsBasePath } from '../../hooks/usePromptsBasePath';
 
 interface PromptImporterProps {
   isOpen: boolean;
@@ -37,6 +38,7 @@ interface PromptImporterProps {
 
 export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImporterProps) {
   const router = useRouter();
+  const basePath = usePromptsBasePath();
   const [jsonInput, setJsonInput] = useState('');
   const [isImporting, setIsImporting] = useState(false);
   const [results, setResults] = useState<PromptImportResult[]>([]);
@@ -97,7 +99,7 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
   };
 
   const handleViewPrompt = (promptId: string) => {
-    router.push(`/ai/prompts/edit/${promptId}`);
+    router.push(`${basePath}/edit/${promptId}`);
     handleClose();
   };
 

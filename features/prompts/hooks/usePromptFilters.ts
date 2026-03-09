@@ -25,7 +25,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 // Types
 // ---------------------------------------------------------------------------
 
-export type PromptSortOption = "updated-desc" | "name-asc" | "name-desc";
+export type PromptSortOption = "updated-desc" | "created-desc" | "name-asc" | "name-desc" | "category-asc";
 export type PromptTab        = "mine" | "shared" | "all";
 
 const DEFAULT_TAB:  PromptTab        = "mine";
@@ -33,22 +33,24 @@ const DEFAULT_SORT: PromptSortOption = "updated-desc";
 const DEFAULT_Q    = "";
 
 export interface PromptFilters {
-    /** Active tab — "mine" | "shared" */
     tab: PromptTab;
-    /** Sort order */
     sortBy: PromptSortOption;
-    /** Free-text search */
     searchTerm: string;
+    category: string;
+    tags: string[];
+    showArchived: boolean;
+    favoritesOnly: boolean;
 
-    // Setters — write the value to the URL using router.replace (no history entry)
-    setTab:        (tab: PromptTab)        => void;
-    setSortBy:     (sort: PromptSortOption) => void;
-    setSearchTerm: (q: string)             => void;
+    setTab:          (tab: PromptTab)          => void;
+    setSortBy:       (sort: PromptSortOption)  => void;
+    setSearchTerm:   (q: string)               => void;
+    setCategory:     (cat: string)             => void;
+    setTags:         (tags: string[])          => void;
+    setShowArchived: (show: boolean)           => void;
+    setFavoritesOnly:(fav: boolean)            => void;
 
-    /** Clears all filters back to defaults (no params in URL) */
     resetFilters: () => void;
 
-    // Derived convenience flags
     hasActiveFilters: boolean;
     isSearching:      boolean;
 }
@@ -63,15 +65,16 @@ export function usePromptFilters(): PromptFilters {
     const pathname     = usePathname();
 
     // ── Read ─────────────────────────────────────────────────────────────────
-    const tab    = (searchParams.get("tab")  as PromptTab        | null) ?? DEFAULT_TAB;
-    const sortBy = (searchParams.get("sort") as PromptSortOption | null) ?? DEFAULT_SORT;
-    const searchTerm = searchParams.get("q") ?? DEFAULT_Q;
+    const tab          = (searchParams.get("tab")  as PromptTab        | null) ?? DEFAULT_TAB;
+    const sortBy       = (searchParams.get("sort") as PromptSortOption | null) ?? DEFAULT_SORT;
+    const searchTerm   = searchParams.get("q") ?? DEFAULT_Q;
+    const category     = searchParams.get("category") ?? "";
+    const tagsRaw      = searchParams.get("tags") ?? "";
+    const tags         = tagsRaw ? tagsRaw.split(",").filter(Boolean) : [];
+    const showArchived = searchParams.get("archived") === "true";
+    const favoritesOnly = searchParams.get("favorites") === "true";
 
     // ── Write ─────────────────────────────────────────────────────────────────
-    /**
-     * Update a single param and push the new URL without adding a history entry.
-     * Passing `null` or the default value removes the param to keep URLs clean.
-     */
     const setParam = useCallback(
         (key: string, value: string | null, defaultValue: string) => {
             const params = new URLSearchParams(searchParams.toString());
@@ -89,25 +92,47 @@ export function usePromptFilters(): PromptFilters {
         [searchParams, pathname, router]
     );
 
-    const setTab        = useCallback((v: PromptTab)         => setParam("tab",  v, DEFAULT_TAB),  [setParam]);
-    const setSortBy     = useCallback((v: PromptSortOption)  => setParam("sort", v, DEFAULT_SORT), [setParam]);
-    const setSearchTerm = useCallback((v: string)            => setParam("q",    v, DEFAULT_Q),    [setParam]);
+    const setTab          = useCallback((v: PromptTab)         => setParam("tab",       v, DEFAULT_TAB),  [setParam]);
+    const setSortBy       = useCallback((v: PromptSortOption)  => setParam("sort",      v, DEFAULT_SORT), [setParam]);
+    const setSearchTerm   = useCallback((v: string)            => setParam("q",         v, DEFAULT_Q),    [setParam]);
+    const setCategory     = useCallback((v: string)            => setParam("category",  v, ""),           [setParam]);
+    const setShowArchived = useCallback((v: boolean)           => setParam("archived",  v ? "true" : "", ""), [setParam]);
+    const setFavoritesOnly = useCallback((v: boolean)          => setParam("favorites", v ? "true" : "", ""), [setParam]);
+
+    const setTags = useCallback((v: string[]) => {
+        setParam("tags", v.length > 0 ? v.join(",") : "", "");
+    }, [setParam]);
 
     const resetFilters  = useCallback(() => {
         router.replace(pathname, { scroll: false });
     }, [router, pathname]);
 
     // ── Derived ───────────────────────────────────────────────────────────────
-    const hasActiveFilters = tab !== DEFAULT_TAB || sortBy !== DEFAULT_SORT || searchTerm !== DEFAULT_Q;
-    const isSearching      = searchTerm.length > 0;
+    const hasActiveFilters =
+        tab !== DEFAULT_TAB ||
+        sortBy !== DEFAULT_SORT ||
+        searchTerm !== DEFAULT_Q ||
+        category !== "" ||
+        tags.length > 0 ||
+        showArchived ||
+        favoritesOnly;
+    const isSearching = searchTerm.length > 0;
 
     return {
         tab,
         sortBy,
         searchTerm,
+        category,
+        tags,
+        showArchived,
+        favoritesOnly,
         setTab,
         setSortBy,
         setSearchTerm,
+        setCategory,
+        setTags,
+        setShowArchived,
+        setFavoritesOnly,
         resetFilters,
         hasActiveFilters,
         isSearching,

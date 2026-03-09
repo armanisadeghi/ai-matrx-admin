@@ -20,6 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Wand2, Check, X, Loader2, Copy, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { usePromptsBasePath } from '../../../hooks/usePromptsBasePath';
 import { createUserPrompt } from '@/lib/redux/thunks/promptCrudThunks';
 import { FullPromptOptimizer } from './FullPromptOptimizer';
 import MarkdownStream from '@/components/MarkdownStream';
@@ -47,6 +48,7 @@ export function SystemPromptOptimizer({
 }: SystemPromptOptimizerProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const basePath = usePromptsBasePath();
   
   const [additionalGuidance, setAdditionalGuidance] = useState('');
   const [showGuidanceInput, setShowGuidanceInput] = useState(false);
@@ -207,7 +209,7 @@ export function SystemPromptOptimizer({
         });
         handleClose();
         // Route to the newly created prompt's edit page
-        router.push(`/ai/prompts/edit/${result.id}`);
+        router.push(`${basePath}/edit/${result.id}`);
       } else {
         throw new Error('Failed to create prompt copy');
       }

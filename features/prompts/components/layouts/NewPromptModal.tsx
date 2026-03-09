@@ -8,6 +8,7 @@ import { PromptImporter } from "@/features/prompts";
 import { PromptGenerator } from "../actions/prompt-generator/PromptGenerator";
 import { PromptBuilderModal } from "./PromptBuilderModal";
 import { useRouter } from "next/navigation";
+import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
 
 interface NewPromptModalProps {
     isOpen: boolean;
@@ -53,6 +54,7 @@ function ActionButton({ icon, title, description, gradient, onClick }: ActionBut
 
 export function NewPromptModal({ isOpen, onClose }: NewPromptModalProps) {
     const router = useRouter();
+    const basePath = usePromptsBasePath();
     const [isImportOpen, setIsImportOpen] = useState(false);
     const [isGenerateOpen, setIsGenerateOpen] = useState(false);
     const [isBuildOpen, setIsBuildOpen] = useState(false);
@@ -61,7 +63,7 @@ export function NewPromptModal({ isOpen, onClose }: NewPromptModalProps) {
 
     const handleNewManual = () => {
         onClose();
-        router.push("/ai/prompts/new");
+        router.push(`${basePath}/new`);
     };
 
     const handleImport = () => {
@@ -81,7 +83,7 @@ export function NewPromptModal({ isOpen, onClose }: NewPromptModalProps) {
 
     const handleTemplates = () => {
         onClose();
-        router.push("/ai/prompts/templates");
+        router.push(`${basePath}/templates`);
     };
 
     const handleImportClose = () => {

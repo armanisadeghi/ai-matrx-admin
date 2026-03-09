@@ -25,7 +25,7 @@ export default async function PromptTemplatesPage() {
             <div className="p-4 sm:p-6 md:p-8 lg:p-12">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-4 sm:mb-6 md:mb-8 gap-3 sm:gap-4">
                     <div className="flex items-start gap-2.5 sm:gap-3 md:gap-4">
-                        <Link href="/ai/prompts">
+                        <Link href="/ssr/prompts">
                             <Button
                                 variant="ghost"
                                 size="icon"

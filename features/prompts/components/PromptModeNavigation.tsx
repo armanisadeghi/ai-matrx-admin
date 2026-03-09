@@ -5,24 +5,26 @@ import { Button } from "@/components/ui/button";
 import { Edit3, Play, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PromptSwitcherButton } from "./PromptSwitcherSheet";
+import { usePromptsBasePath } from "../hooks/usePromptsBasePath";
 
 interface PromptModeNavigationProps {
     promptId: string;
     promptName: string;
     currentMode: "edit" | "run";
-    onPromptNameChange?: (value: string) => void; // Optional: for edit mode
+    onPromptNameChange?: (value: string) => void;
 }
 
 export function PromptModeNavigation({ promptId, promptName, currentMode, onPromptNameChange }: PromptModeNavigationProps) {
     const router = useRouter();
+    const basePath = usePromptsBasePath();
 
     const handleNavigation = (destination: "list" | "edit" | "run") => {
         if (destination === "list") {
-            router.push('/ai/prompts');
+            router.push(basePath);
         } else if (destination === "edit" && currentMode !== "edit") {
-            router.push(`/ai/prompts/edit/${promptId}`);
+            router.push(`${basePath}/edit/${promptId}`);
         } else if (destination === "run" && currentMode !== "run") {
-            router.push(`/ai/prompts/run/${promptId}`);
+            router.push(`${basePath}/run/${promptId}`);
         }
     };
 

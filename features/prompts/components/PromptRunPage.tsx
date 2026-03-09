@@ -15,6 +15,7 @@ import { PromptRunsSidebar } from "@/features/ai-runs/components/PromptRunsSideb
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PromptRunnerModalSidebarTester } from "./runner-tester/PromptRunnerModalSidebarTester";
 import { PromptModeNavigation } from "./PromptModeNavigation";
+import { usePromptsBasePath } from "../hooks/usePromptsBasePath";
 import { loadRun } from "@/lib/redux/prompt-execution/thunks/loadRunThunk";
 import { startPromptInstance } from "@/lib/redux/prompt-execution/thunks/startInstanceThunk";
 import { PromptRunner } from "./results-display/PromptRunner";
@@ -68,7 +69,7 @@ export function PromptRunPage({ promptData, accessInfo }: PromptRunnerProps) {
     // Get runId from URL query parameter
     const urlRunId = searchParams.get('runId');
 
-    // Mobile detection using consistent hook
+    const basePath = usePromptsBasePath();
     const isMobile = useIsMobile();
     const [showCanvasOnMobile, setShowCanvasOnMobile] = useState(false);
     const [showSidebarOnMobile, setShowSidebarOnMobile] = useState(false);
@@ -213,7 +214,7 @@ export function PromptRunPage({ promptData, accessInfo }: PromptRunnerProps) {
                             variant="ghost"
                             size="sm"
                             className="h-7 w-7 p-0 rounded-full text-muted-foreground hover:text-foreground flex-shrink-0"
-                            onClick={() => router.push('/ai/prompts')}
+                            onClick={() => router.push(basePath)}
                             title="Back to Prompts"
                         >
                             <ChevronLeft className="h-4 w-4" />
@@ -222,7 +223,7 @@ export function PromptRunPage({ promptData, accessInfo }: PromptRunnerProps) {
                         {/* Center: Edit/Run toggle */}
                         <div className="flex items-center gap-1 bg-muted rounded-md p-0.5 flex-shrink-0">
                             <button
-                                onClick={() => router.push(`/ai/prompts/edit/${promptData.id}`)}
+                                onClick={() => router.push(`${basePath}/edit/${promptData.id}`)}
                                 className="px-3 py-1 text-xs font-medium rounded transition-colors text-muted-foreground hover:text-foreground"
                             >
                                 <Edit3 className="h-3 w-3 inline mr-1" />

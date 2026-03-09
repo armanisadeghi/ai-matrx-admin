@@ -2,12 +2,14 @@
 
 import { Card } from "@/components/ui/card";
 import IconButton from "@/components/official/IconButton";
-import { Eye, Pencil, Play, Copy, Trash2, Loader2, Share2, LayoutPanelTop, Settings, Globe, AppWindow, AlignJustify } from "lucide-react";
+import { Eye, Pencil, Play, Copy, Trash2, Loader2, Share2, LayoutPanelTop, Settings, Globe, AppWindow, AlignJustify, FileText, Star, Archive } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { RootState } from "@/lib/redux/store";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
 import { PromptActionModal } from "./PromptActionModal";
+import { PromptMetadataModal } from "./PromptMetadataModal";
 import { CreatePromptAppModal } from "@/features/prompt-apps/components";
 import { ConvertToBuiltinModal } from "@/features/prompts/components/layouts/ConvertToBuiltinModal";
 import { useState } from "react";
@@ -19,11 +21,14 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import type { PromptData } from "../../types/core";
+import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
 
 interface PromptCardProps {
     id: string;
     name: string;
     description?: string;
+    promptData?: PromptData;
     isOwner?: boolean;
     isAdmin?: boolean;
     onDelete?: (id: string) => void;
@@ -39,6 +44,7 @@ export function PromptCard({
     id,
     name,
     description,
+    promptData,
     isOwner = true,
     isAdmin: isAdminProp,
     onDelete,
@@ -51,29 +57,31 @@ export function PromptCard({
 }: PromptCardProps) {
     const isSystemAdmin = useAppSelector((state: RootState) => selectIsAdmin(state));
     const effectiveIsAdmin = isAdminProp ?? isSystemAdmin;
+    const basePath = usePromptsBasePath();
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [isActionModalOpen, setIsActionModalOpen] = useState(false);
     const [isCreateAppModalOpen, setIsCreateAppModalOpen] = useState(false);
     const [isConvertToBuiltinModalOpen, setIsConvertToBuiltinModalOpen] = useState(false);
+    const [isMetadataModalOpen, setIsMetadataModalOpen] = useState(false);
     const [isConvertingToTemplate, setIsConvertingToTemplate] = useState(false);
     const [lastModalCloseTime, setLastModalCloseTime] = useState(0);
     const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
 
     const handleView = () => {
         if (onNavigate && !isAnyNavigating) {
-            onNavigate(id, `/ai/prompts/view/${id}`);
+            onNavigate(id, `${basePath}/view/${id}`);
         }
     };
 
     const handleEdit = () => {
         if (onNavigate && !isAnyNavigating) {
-            onNavigate(id, `/ai/prompts/edit/${id}`);
+            onNavigate(id, `${basePath}/edit/${id}`);
         }
     };
 
     const handleRun = () => {
         if (onNavigate && !isAnyNavigating) {
-            onNavigate(id, `/ai/prompts/run/${id}`);
+            onNavigate(id, `${basePath}/run/${id}`);
         }
     };
 
@@ -96,9 +104,14 @@ export function PromptCard({
     };
 
     const handleCreateApp = () => {
-        // Close action modal and open create app modal
         setIsActionModalOpen(false);
         setIsCreateAppModalOpen(true);
+    };
+
+    const handleEditDetails = (e?: React.MouseEvent) => {
+        e?.stopPropagation();
+        setIsActionModalOpen(false);
+        setIsMetadataModalOpen(true);
     };
 
     const handleShareClickInline = (e: React.MouseEvent) => {
@@ -149,10 +162,8 @@ export function PromptCard({
     };
 
     const handleCardClick = (e: React.MouseEvent) => {
-        // Only open modal if clicking the card itself, not if a modal is already open
-        // Also prevent reopening if modal was just closed (within 300ms) to avoid click-through from overlay
         const timeSinceClose = Date.now() - lastModalCloseTime;
-        if (!isDisabled && !isShareModalOpen && !isActionModalOpen && !isCreateAppModalOpen && !isConvertToBuiltinModalOpen && timeSinceClose > 300) {
+        if (!isDisabled && !isShareModalOpen && !isActionModalOpen && !isCreateAppModalOpen && !isConvertToBuiltinModalOpen && !isMetadataModalOpen && timeSinceClose > 300) {
             setIsActionModalOpen(true);
         }
     };
@@ -162,10 +173,13 @@ export function PromptCard({
 
     return (
         <Card
-            className={`flex flex-col h-full bg-card border border-border transition-all duration-200 overflow-hidden relative ${isDisabled
-                    ? 'opacity-60 cursor-not-allowed'
-                    : 'hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30 cursor-pointer hover:scale-[1.02] group'
-                }`}
+            className={cn(
+                "flex flex-col h-full bg-card border border-border transition-all duration-200 overflow-hidden relative",
+                isDisabled
+                    ? "opacity-60 cursor-not-allowed"
+                    : "hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30 cursor-pointer hover:scale-[1.02] group",
+                promptData?.isArchived && !isDisabled && "opacity-70"
+            )}
             onClick={handleCardClick}
             title={isDisabled ? (isNavigating ? "Navigating..." : "Please wait...") : "Click to choose action"}
         >
@@ -187,11 +201,50 @@ export function PromptCard({
                         }`} />
                 </div>
             </div>
-            <div className="p-4 pl-12 flex-1 flex items-center justify-center">
+
+            {/* Favorite indicator */}
+            {promptData?.isFavorite && (
+                <div className="absolute top-3 right-3 z-10">
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                </div>
+            )}
+
+            {/* Archived badge */}
+            {promptData?.isArchived && (
+                <div className="absolute top-3 right-3 z-10 flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                    <Archive className="h-3 w-3" />
+                    <span className="text-[10px] font-medium">Archived</span>
+                </div>
+            )}
+
+            <div className="p-4 pl-12 flex-1 flex flex-col items-center justify-center gap-1.5">
                 <h3 className={`text-md font-medium text-foreground text-center line-clamp-3 break-words transition-colors duration-200 ${!isDisabled && 'group-hover:text-primary'
                     }`}>
                     {name || "Untitled Prompt"}
                 </h3>
+                {/* Category + Tags row */}
+                {(promptData?.category || (promptData?.tags && promptData.tags.length > 0)) && (
+                    <div className="flex flex-wrap gap-1 justify-center max-w-full">
+                        {promptData.category && (
+                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-secondary/10 text-secondary-foreground truncate max-w-[100px]">
+                                {promptData.category}
+                            </span>
+                        )}
+                        {promptData.tags?.slice(0, 3).map((tag) => (
+                            <span
+                                key={tag}
+                                className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary truncate max-w-[80px]"
+                            >
+                                {tag}
+                            </span>
+                        ))}
+                        {(promptData.tags?.length ?? 0) > 3 && (
+                            <span className="text-[10px] text-muted-foreground">
+                                +{(promptData.tags?.length ?? 0) - 3}
+                            </span>
+                        )}
+                    </div>
+                )}
             </div>
             <div className="border-t border-border p-1 bg-card rounded-b-lg min-h-[36px]">
                 <div className="flex gap-2 justify-center items-center" onClick={(e) => e.stopPropagation()}>
@@ -244,6 +297,16 @@ export function PromptCard({
                         tooltipSide="top"
                         tooltipAlign="center"
                         onClick={handleShareClickInline}
+                        disabled={isDisabled}
+                    />
+                    <IconButton
+                        icon={FileText}
+                        tooltip={isDisabled ? "Please wait..." : "Edit Details"}
+                        size="sm"
+                        variant="ghost"
+                        tooltipSide="top"
+                        tooltipAlign="center"
+                        onClick={handleEditDetails}
                         disabled={isDisabled}
                     />
                     <IconButton
@@ -364,6 +427,17 @@ export function PromptCard({
                 promptId={id}
                 promptName={name}
             />
+
+            {promptData && (
+                <PromptMetadataModal
+                    isOpen={isMetadataModalOpen}
+                    onClose={() => {
+                        setIsMetadataModalOpen(false);
+                        setLastModalCloseTime(Date.now());
+                    }}
+                    prompt={promptData}
+                />
+            )}
         </Card>
     );
 }

@@ -8,6 +8,7 @@ import { SystemPromptOptimizer } from "@/features/prompts/components/actions/pro
 import { PromptActionsMenu } from "@/features/prompts/components/layouts/PromptActionsMenu";
 import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
 import { PromptModeNavigation } from "@/features/prompts/components/PromptModeNavigation";
+import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
 
 interface PromptBuilderHeaderCompactProps {
@@ -48,6 +49,7 @@ export function PromptBuilderHeaderCompact({
 }: PromptBuilderHeaderCompactProps) {
     const router = useRouter();
     const { openPrompt } = usePromptRunner();
+    const basePath = usePromptsBasePath();
     const [isOptimizerOpen, setIsOptimizerOpen] = useState(false);
     const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
     const isAdminMode = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
@@ -61,7 +63,7 @@ export function PromptBuilderHeaderCompact({
                     variant="ghost"
                     size="sm"
                     className="h-7 w-7 p-0 rounded-full text-muted-foreground hover:text-foreground"
-                    onClick={() => router.push('/ai/prompts')}
+                    onClick={() => router.push(basePath)}
                     title="Back to Prompts"
                 >
                     <ChevronLeft className="h-4 w-4" />
@@ -132,7 +134,7 @@ export function PromptBuilderHeaderCompact({
                             size="sm" 
                             className="h-7 w-7 p-0 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground flex-shrink-0"
                             title="Back to Prompts"
-                            onClick={() => router.push('/ai/prompts')}
+                            onClick={() => router.push(basePath)}
                         >
                             <ChevronLeft className="h-3.5 w-3.5" />
                         </Button>
@@ -267,7 +269,7 @@ export function PromptBuilderHeaderCompact({
                     {promptId && (
                         <DrawerClose asChild>
                             <button
-                                onClick={() => router.push(`/ai/prompts/run/${promptId}`)}
+                                onClick={() => router.push(`${basePath}/run/${promptId}`)}
                                 className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
                             >
                                 <Play className="h-4 w-4 text-muted-foreground" />
@@ -344,7 +346,7 @@ export function PromptBuilderHeaderCompact({
                             </DrawerClose>
                             <DrawerClose asChild>
                                 <button
-                                    onClick={() => router.push(`/ai/prompts/run/${fullPromptObject.id}`)}
+                                    onClick={() => router.push(`${basePath}/run/${fullPromptObject.id}`)}
                                     className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
                                 >
                                     <Route className="h-4 w-4 text-muted-foreground" />

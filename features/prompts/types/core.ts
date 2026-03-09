@@ -122,11 +122,19 @@ export interface PromptDb {
     created_at: string;
     updated_at: string | null;
     name: string | null;
-    messages: unknown | null; // or define a specific type if you know the structure
-    variable_defaults: PromptVariable[] | null; // or more specific type
+    messages: unknown | null;
+    variable_defaults: PromptVariable[] | null;
     user_id: string | null;
-    settings: PromptSettings | null; // or more specific type
+    settings: PromptSettings | null;
     description: string | null;
+    tags: string[] | null;
+    category: string | null;
+    is_archived: boolean;
+    is_favorite: boolean;
+    model_id: string | null;
+    output_format: string | null;
+    output_schema: unknown | null;
+    tools: unknown | null;
 }
 
 export type PromptData = {
@@ -137,8 +145,16 @@ export type PromptData = {
     description?: string;
     userId?: string;
     messages?: PromptMessage[];
-    variableDefaults?: PromptVariable[]; // Array of { name, defaultValue, customComponent? }
+    variableDefaults?: PromptVariable[];
     settings?: PromptSettings;
+    tags?: string[];
+    category?: string;
+    isArchived?: boolean;
+    isFavorite?: boolean;
+    modelId?: string;
+    outputFormat?: string;
+    outputSchema?: unknown;
+    tools?: unknown;
 };
 
 export interface PromptsBatchData {

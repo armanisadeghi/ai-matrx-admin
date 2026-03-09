@@ -14,6 +14,7 @@ interface DesktopSearchBarProps {
     onFilterClick: () => void;
     onNewClick: () => void;
     showFilterBadge?: boolean;
+    activeFilterCount?: number;
 }
 
 export function DesktopSearchBar({
@@ -22,6 +23,7 @@ export function DesktopSearchBar({
     onFilterClick,
     onNewClick,
     showFilterBadge = false,
+    activeFilterCount = 0,
 }: DesktopSearchBarProps) {
     const [localSearchValue, setLocalSearchValue] = useState(searchValue);
 
@@ -135,9 +137,13 @@ export function DesktopSearchBar({
                 >
                     <SlidersHorizontal className="h-4 w-4" />
                     Filter
-                    {showFilterBadge && (
+                    {activeFilterCount > 0 ? (
+                        <span className="ml-1 inline-flex items-center justify-center h-4 min-w-[16px] px-1 text-[10px] font-bold bg-primary text-primary-foreground rounded-full">
+                            {activeFilterCount}
+                        </span>
+                    ) : showFilterBadge ? (
                         <span className="absolute top-2 right-2 h-2 w-2 bg-primary rounded-full" />
-                    )}
+                    ) : null}
                 </Button>
 
                 {/* New Button */}

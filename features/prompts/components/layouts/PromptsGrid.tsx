@@ -37,8 +37,10 @@ import {
     duplicateUserPrompt,
 } from "@/lib/redux/thunks/promptCrudThunks";
 import { SharedPrompt } from "../../types/shared";
+import type { PromptData } from "../../types/core";
 import { usePromptFilters } from "../../hooks/usePromptFilters";
 import type { PromptTab, PromptSortOption } from "../../hooks/usePromptFilters";
+import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
 
 // Threshold constants for hybrid card/list layout
 const CARDS_DISPLAY_LIMIT_DESKTOP = 8;
@@ -69,6 +71,7 @@ export function PromptsGrid() {
     const dispatch = useAppDispatch();
     const router = useRouter();
     const isMobile = useIsMobile();
+    const basePath = usePromptsBasePath();
 
     // Read from Redux — updated reactively after every mutation
     const prompts = useAppSelector(selectAllUserPrompts);
@@ -89,9 +92,17 @@ export function PromptsGrid() {
         tab: activeTab,
         sortBy,
         searchTerm,
+        category: filterCategory,
+        tags: filterTags,
+        showArchived,
+        favoritesOnly,
         setTab: setActiveTab,
         setSortBy,
         setSearchTerm,
+        setCategory: setFilterCategory,
+        setTags: setFilterTags,
+        setShowArchived,
+        setFavoritesOnly,
         resetFilters,
         hasActiveFilters,
         isSearching,
@@ -107,32 +118,57 @@ export function PromptsGrid() {
     const [sharedListPage, setSharedListPage] = useState(1);
     const LIST_ITEMS_PER_PAGE = 20;
 
+    // Derived: all unique categories and tags across owned prompts (for filter UIs)
+    const allCategories = useMemo(() => {
+        const cats = new Set<string>();
+        prompts.forEach((p) => { if (p.category) cats.add(p.category); });
+        return Array.from(cats).sort();
+    }, [prompts]);
+
+    const allTags = useMemo(() => {
+        const tags = new Set<string>();
+        prompts.forEach((p) => { p.tags?.forEach((t) => tags.add(t)); });
+        return Array.from(tags).sort();
+    }, [prompts]);
+
     // Filter and sort prompts
     const filteredPrompts = useMemo(() => {
         let filtered = prompts.filter((prompt) => {
-            if (!searchTerm) return true;
-            const searchLower = searchTerm.toLowerCase();
-            return (
-                prompt.name.toLowerCase().includes(searchLower) ||
-                (prompt.description && prompt.description.toLowerCase().includes(searchLower))
-            );
+            if (!showArchived && prompt.isArchived) return false;
+            if (favoritesOnly && !prompt.isFavorite) return false;
+            if (filterCategory && prompt.category !== filterCategory) return false;
+            if (filterTags.length > 0 && !filterTags.some((t) => prompt.tags?.includes(t))) return false;
+
+            if (searchTerm) {
+                const searchLower = searchTerm.toLowerCase();
+                const nameMatch = prompt.name?.toLowerCase().includes(searchLower);
+                const descMatch = prompt.description?.toLowerCase().includes(searchLower);
+                const tagMatch = prompt.tags?.some((t) => t.toLowerCase().includes(searchLower));
+                const catMatch = prompt.category?.toLowerCase().includes(searchLower);
+                if (!nameMatch && !descMatch && !tagMatch && !catMatch) return false;
+            }
+
+            return true;
         });
 
-        // Sort
         filtered.sort((a, b) => {
             switch (sortBy) {
                 case "name-asc":
-                    return a.name.localeCompare(b.name);
+                    return (a.name ?? "").localeCompare(b.name ?? "");
                 case "name-desc":
-                    return b.name.localeCompare(a.name);
+                    return (b.name ?? "").localeCompare(a.name ?? "");
+                case "created-desc":
+                    return (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0);
+                case "category-asc":
+                    return (a.category ?? "").localeCompare(b.category ?? "");
                 case "updated-desc":
                 default:
-                    return 0;
+                    return (b.updatedAt?.getTime() ?? 0) - (a.updatedAt?.getTime() ?? 0);
             }
         });
 
         return filtered;
-    }, [prompts, searchTerm, sortBy]);
+    }, [prompts, searchTerm, sortBy, filterCategory, filterTags, showArchived, favoritesOnly]);
 
     // Filter and sort shared prompts
     const filteredSharedPrompts = useMemo(() => {
@@ -146,7 +182,6 @@ export function PromptsGrid() {
             );
         });
 
-        // Sort
         filtered.sort((a, b) => {
             switch (sortBy) {
                 case "name-asc":
@@ -154,6 +189,8 @@ export function PromptsGrid() {
                 case "name-desc":
                     return b.name.localeCompare(a.name);
                 case "updated-desc":
+                case "created-desc":
+                case "category-asc":
                 default:
                     return 0;
             }
@@ -178,7 +215,7 @@ export function PromptsGrid() {
     useMemo(() => {
         setPromptListPage(1);
         setSharedListPage(1);
-    }, [searchTerm, sortBy]);
+    }, [searchTerm, sortBy, filterCategory, filterTags, showArchived, favoritesOnly]);
 
     const handleDeleteClick = (id: string, name: string) => {
         setPromptToDelete({ id, name });
@@ -266,8 +303,10 @@ export function PromptsGrid() {
 
     const sortOptions = [
         { value: "updated-desc", label: "Recently Updated" },
+        { value: "created-desc", label: "Recently Created" },
         { value: "name-asc", label: "Name (A-Z)" },
         { value: "name-desc", label: "Name (Z-A)" },
+        { value: "category-asc", label: "Category (A-Z)" },
     ];
 
     const showOptions: { value: PromptTab | "all"; label: string }[] = [
@@ -278,7 +317,15 @@ export function PromptsGrid() {
     const [filterDetailKey, setFilterDetailKey] = useState<string | null>(null);
     const hasSortFilter = sortBy !== "updated-desc";
     const hasShowFilter = activeTab !== "mine";
-    const activeFilterCount = (hasSortFilter ? 1 : 0) + (hasShowFilter ? 1 : 0);
+    const hasCategoryFilter = filterCategory !== "";
+    const hasTagsFilter = filterTags.length > 0;
+    const activeFilterCount =
+        (hasSortFilter ? 1 : 0) +
+        (hasShowFilter ? 1 : 0) +
+        (hasCategoryFilter ? 1 : 0) +
+        (hasTagsFilter ? 1 : 0) +
+        (showArchived ? 1 : 0) +
+        (favoritesOnly ? 1 : 0);
 
     const handleFilterModalChange = (open: boolean) => {
         setIsFilterModalOpen(open);
@@ -300,6 +347,7 @@ export function PromptsGrid() {
                     onFilterClick={() => setIsFilterModalOpen(true)}
                     onNewClick={() => setIsNewModalOpen(true)}
                     showFilterBadge={hasActiveFilters}
+                    activeFilterCount={activeFilterCount}
                 />
             )}
 
@@ -367,7 +415,7 @@ export function PromptsGrid() {
                                                 Create Blank Prompt
                                             </button>
                                             <button
-                                                onClick={() => router.push('/ai/prompts/templates')}
+                                                onClick={() => router.push(`${basePath}/templates`)}
                                                 className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input hover:bg-accent hover:text-accent-foreground h-10 py-2 px-4"
                                             >
                                                 <LayoutPanelTop className="h-4 w-4 mr-2" />
@@ -393,6 +441,7 @@ export function PromptsGrid() {
                                                 id={prompt.id}
                                                 name={prompt.name}
                                                 description={prompt.description}
+                                                promptData={prompt}
                                                 onDelete={(id) => {
                                                     const p = prompts.find(x => x.id === id);
                                                     if (p) handleDeleteClick(id, p.name);
@@ -416,6 +465,7 @@ export function PromptsGrid() {
                                                     id={prompt.id}
                                                     name={prompt.name}
                                                     description={prompt.description}
+                                                    promptData={prompt}
                                                     onDelete={(id) => {
                                                         const p = prompts.find(x => x.id === id);
                                                         if (p) handleDeleteClick(id, p.name);
@@ -529,6 +579,7 @@ export function PromptsGrid() {
                                                 id={prompt.id}
                                                 name={prompt.name}
                                                 description={prompt.description}
+                                                promptData={prompt}
                                                 onDelete={(id) => {
                                                     const p = prompts.find(x => x.id === id);
                                                     if (p) handleDeleteClick(id, p.name);
@@ -552,6 +603,7 @@ export function PromptsGrid() {
                                                     id={prompt.id}
                                                     name={prompt.name}
                                                     description={prompt.description}
+                                                    promptData={prompt}
                                                     onDelete={(id) => {
                                                         const p = prompts.find(x => x.id === id);
                                                         if (p) handleDeleteClick(id, p.name);
@@ -699,6 +751,7 @@ export function PromptsGrid() {
                                         id={prompt.id}
                                         name={prompt.name}
                                         description={prompt.description}
+                                        promptData={activeTab === "shared" ? prompt as PromptData : undefined}
                                         onDelete={(id) => {
                                             const p = prompts.find(x => x.id === id);
                                             if (p) handleDeleteClick(id, p.name);
@@ -743,7 +796,9 @@ export function PromptsGrid() {
                     title={
                         filterDetailKey === "sortBy" ? "Sort By"
                             : filterDetailKey === "show" ? "Show"
-                                : "Filters"
+                                : filterDetailKey === "category" ? "Category"
+                                    : filterDetailKey === "tags" ? "Tags"
+                                        : "Filters"
                     }
                     showBack={filterDetailKey !== null}
                     onBack={() => setFilterDetailKey(null)}
@@ -751,8 +806,7 @@ export function PromptsGrid() {
                         !filterDetailKey && activeFilterCount > 0 ? (
                             <button
                                 onClick={() => {
-                                    setSortBy("updated-desc");
-                                    setActiveTab("mine");
+                                    resetFilters();
                                 }}
                                 className="flex items-center gap-1 text-primary active:opacity-70 min-h-[44px] px-1"
                             >
@@ -828,6 +882,68 @@ export function PromptsGrid() {
                                 </button>
                             ))}
                         </>
+                    ) : filterDetailKey === "category" ? (
+                        <>
+                            <button
+                                onClick={() => {
+                                    setFilterCategory("");
+                                    setFilterDetailKey(null);
+                                }}
+                                className={cn(
+                                    "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
+                                )}
+                            >
+                                <span className={cn("text-[15px] flex-1 text-left", !filterCategory && "font-medium")}>All Categories</span>
+                                {!filterCategory && <Check className="h-5 w-5 text-primary shrink-0" />}
+                            </button>
+                            {allCategories.map((cat, idx) => (
+                                <button
+                                    key={cat}
+                                    onClick={() => {
+                                        setFilterCategory(cat);
+                                        setFilterDetailKey(null);
+                                    }}
+                                    className={cn(
+                                        "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
+                                        idx < allCategories.length - 1 && "border-b border-white/[0.06]"
+                                    )}
+                                >
+                                    <span className={cn("text-[15px] flex-1 text-left", filterCategory === cat && "font-medium")}>{cat}</span>
+                                    {filterCategory === cat && <Check className="h-5 w-5 text-primary shrink-0" />}
+                                </button>
+                            ))}
+                            {allCategories.length === 0 && (
+                                <div className="px-5 py-6 text-center text-sm text-muted-foreground">No categories yet</div>
+                            )}
+                        </>
+                    ) : filterDetailKey === "tags" ? (
+                        <>
+                            {allTags.map((tag, idx) => {
+                                const isActive = filterTags.includes(tag);
+                                return (
+                                    <button
+                                        key={tag}
+                                        onClick={() => {
+                                            if (isActive) {
+                                                setFilterTags(filterTags.filter((t) => t !== tag));
+                                            } else {
+                                                setFilterTags([...filterTags, tag]);
+                                            }
+                                        }}
+                                        className={cn(
+                                            "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
+                                            idx < allTags.length - 1 && "border-b border-white/[0.06]"
+                                        )}
+                                    >
+                                        <span className={cn("text-[15px] flex-1 text-left", isActive && "font-medium")}>{tag}</span>
+                                        {isActive && <Check className="h-5 w-5 text-primary shrink-0" />}
+                                    </button>
+                                );
+                            })}
+                            {allTags.length === 0 && (
+                                <div className="px-5 py-6 text-center text-sm text-muted-foreground">No tags yet</div>
+                            )}
+                        </>
                     ) : (
                         <>
                             {/* Show filter */}
@@ -860,23 +976,52 @@ export function PromptsGrid() {
                                 <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                             </button>
 
-                            {/* Coming Soon filters */}
+                            {/* Category filter */}
                             <button
-                                disabled
-                                className="flex items-center w-full px-5 min-h-[52px] opacity-40 border-b border-white/[0.06]"
+                                onClick={() => setFilterDetailKey("category")}
+                                className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                             >
-                                <span className="text-[15px] font-medium flex-1 text-left">Tags</span>
-                                <span className="text-[13px] text-muted-foreground mr-1.5">Coming Soon</span>
+                                <span className="text-[15px] font-medium flex-1 text-left">Category</span>
+                                <span className={cn(
+                                    "text-[15px] mr-1.5 truncate max-w-[180px]",
+                                    hasCategoryFilter ? "text-foreground" : "text-muted-foreground"
+                                )}>
+                                    {filterCategory || "All"}
+                                </span>
                                 <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                             </button>
 
+                            {/* Tags filter */}
                             <button
-                                disabled
-                                className="flex items-center w-full px-5 min-h-[52px] opacity-40 border-b border-white/[0.06]"
+                                onClick={() => setFilterDetailKey("tags")}
+                                className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                             >
-                                <span className="text-[15px] font-medium flex-1 text-left">Categories</span>
-                                <span className="text-[13px] text-muted-foreground mr-1.5">Coming Soon</span>
+                                <span className="text-[15px] font-medium flex-1 text-left">Tags</span>
+                                <span className={cn(
+                                    "text-[15px] mr-1.5 truncate max-w-[180px]",
+                                    hasTagsFilter ? "text-foreground" : "text-muted-foreground"
+                                )}>
+                                    {filterTags.length > 0 ? `${filterTags.length} selected` : "Any"}
+                                </span>
                                 <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+                            </button>
+
+                            {/* Favorites toggle */}
+                            <button
+                                onClick={() => setFavoritesOnly(!favoritesOnly)}
+                                className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
+                            >
+                                <span className="text-[15px] font-medium flex-1 text-left">Favorites Only</span>
+                                {favoritesOnly && <Check className="h-5 w-5 text-primary shrink-0" />}
+                            </button>
+
+                            {/* Show Archived toggle */}
+                            <button
+                                onClick={() => setShowArchived(!showArchived)}
+                                className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
+                            >
+                                <span className="text-[15px] font-medium flex-1 text-left">Show Archived</span>
+                                {showArchived && <Check className="h-5 w-5 text-primary shrink-0" />}
                             </button>
 
                             {activeFilterCount > 0 && (

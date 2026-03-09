@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
     Loader2, MoreVertical, Play, Pencil, Eye, Copy,
-    Trash2, Share2, AppWindow, Settings, LayoutPanelTop, Globe
+    Trash2, Share2, AppWindow, Settings, LayoutPanelTop, Globe, FileText, Star
 } from "lucide-react";
 import { FaBars } from "react-icons/fa";
 import { cn } from "@/lib/utils";
@@ -14,8 +14,11 @@ import { ShareModal } from "@/features/sharing";
 import { CreatePromptAppModal } from "@/features/prompt-apps/components";
 import { ConvertToBuiltinModal } from "@/features/prompts/components/layouts/ConvertToBuiltinModal";
 import { PromptActionModal } from "./PromptActionModal";
+import { PromptMetadataModal } from "./PromptMetadataModal";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast-service";
+import type { PromptData } from "../../types/core";
+import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -29,6 +32,7 @@ interface PromptListItemProps {
     id: string;
     name: string;
     description?: string;
+    promptData?: PromptData;
     onDelete?: (id: string) => void;
     onDuplicate?: (id: string) => void;
     onNavigate?: (id: string, path: string) => void;
@@ -42,6 +46,7 @@ export function PromptListItem({
     id,
     name,
     description,
+    promptData,
     onDelete,
     onDuplicate,
     onNavigate,
@@ -51,10 +56,12 @@ export function PromptListItem({
     isAnyNavigating
 }: PromptListItemProps) {
     const isSystemAdmin = useAppSelector((state: RootState) => selectIsAdmin(state));
+    const basePath = usePromptsBasePath();
     const [isActionModalOpen, setIsActionModalOpen] = useState(false);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [isCreateAppModalOpen, setIsCreateAppModalOpen] = useState(false);
     const [isConvertToBuiltinModalOpen, setIsConvertToBuiltinModalOpen] = useState(false);
+    const [isMetadataModalOpen, setIsMetadataModalOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
     const [isConvertingToTemplate, setIsConvertingToTemplate] = useState(false);
@@ -85,24 +92,31 @@ export function PromptListItem({
         setIsCreateAppModalOpen(true);
     };
 
+    const handleEditDetails = (e?: React.MouseEvent) => {
+        e?.stopPropagation();
+        setIsMenuOpen(false);
+        setIsActionModalOpen(false);
+        setIsMetadataModalOpen(true);
+    };
+
     const handleRun = (e?: React.MouseEvent) => {
         e?.stopPropagation();
         if (onNavigate && !isDisabled) {
-            onNavigate(id, `/ai/prompts/run/${id}`);
+            onNavigate(id, `${basePath}/run/${id}`);
         }
     };
 
     const handleEdit = (e?: React.MouseEvent) => {
         e?.stopPropagation();
         if (onNavigate && !isDisabled) {
-            onNavigate(id, `/ai/prompts/edit/${id}`);
+            onNavigate(id, `${basePath}/edit/${id}`);
         }
     };
 
     const handleView = (e?: React.MouseEvent) => {
         e?.stopPropagation();
         if (onNavigate && !isDisabled) {
-            onNavigate(id, `/ai/prompts/view/${id}`);
+            onNavigate(id, `${basePath}/view/${id}`);
         }
     };
 
@@ -167,7 +181,8 @@ export function PromptListItem({
                     "flex items-center gap-2 px-3 py-2 border border-border rounded-lg",
                     "transition-all relative bg-card",
                     !isDisabled && "hover:bg-accent/50 hover:border-primary/30 cursor-pointer hover:shadow-sm",
-                    isDisabled && "opacity-50 cursor-not-allowed"
+                    isDisabled && "opacity-50 cursor-not-allowed",
+                    promptData?.isArchived && !isDisabled && "opacity-70"
                 )}
                 onClick={handleItemClick}
                 title={isDisabled ? (isNavigating ? "Navigating..." : "Please wait...") : "Click to choose action"}
@@ -186,11 +201,42 @@ export function PromptListItem({
                     </div>
                 </div>
 
-                {/* Name */}
+                {/* Favorite indicator */}
+                {promptData?.isFavorite && (
+                    <div className="flex-shrink-0">
+                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                    </div>
+                )}
+
+                {/* Name + metadata */}
                 <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-medium text-foreground truncate">
-                        {name || "Untitled Prompt"}
-                    </h4>
+                    <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-medium text-foreground truncate">
+                            {name || "Untitled Prompt"}
+                        </h4>
+                        {promptData?.isArchived && (
+                            <span className="flex-shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                                Archived
+                            </span>
+                        )}
+                    </div>
+                    {(promptData?.category || (promptData?.tags && promptData.tags.length > 0)) && (
+                        <div className="flex gap-1 mt-0.5">
+                            {promptData.category && (
+                                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-secondary/10 text-secondary-foreground truncate max-w-[80px]">
+                                    {promptData.category}
+                                </span>
+                            )}
+                            {promptData.tags?.slice(0, 2).map((tag) => (
+                                <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary truncate max-w-[60px]">
+                                    {tag}
+                                </span>
+                            ))}
+                            {(promptData.tags?.length ?? 0) > 2 && (
+                                <span className="text-[10px] text-muted-foreground">+{(promptData.tags?.length ?? 0) - 2}</span>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Actions Menu */}
@@ -234,6 +280,10 @@ export function PromptListItem({
                             <DropdownMenuItem onClick={handleCreateApp} disabled={isDisabled}>
                                 <AppWindow className="mr-2 h-4 w-4" />
                                 Create App
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleEditDetails} disabled={isDisabled || !promptData}>
+                                <FileText className="mr-2 h-4 w-4" />
+                                Edit Details
                             </DropdownMenuItem>
 
                             <DropdownMenuSeparator />
@@ -326,6 +376,16 @@ export function PromptListItem({
                     onClose={() => setIsConvertToBuiltinModalOpen(false)}
                     promptId={id}
                     promptName={name}
+                />
+            )}
+            {promptData && isMetadataModalOpen && (
+                <PromptMetadataModal
+                    isOpen={isMetadataModalOpen}
+                    onClose={() => {
+                        setIsMetadataModalOpen(false);
+                        setLastModalCloseTime(Date.now());
+                    }}
+                    prompt={promptData}
                 />
             )}
         </>
