@@ -124,16 +124,24 @@ export default async function RunPromptPage({
     };
 
     return (
-        <Suspense fallback={
-            <div className="h-page flex items-center justify-center bg-textured">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                    <p className="text-sm text-muted-foreground">Loading prompt runner...</p>
+        <div
+            className="ssr-prompt-page"
+            style={{
+                '--header-height': 'var(--shell-header-h)',
+                paddingTop: 'var(--shell-header-h)',
+            } as React.CSSProperties}
+        >
+            <Suspense fallback={
+                <div className="h-page flex items-center justify-center bg-textured">
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                        <p className="text-sm text-muted-foreground">Loading prompt runner...</p>
+                    </div>
                 </div>
-            </div>
-        }>
-            <PromptRunPage promptData={promptData} accessInfo={accessInfo} />
-        </Suspense>
+            }>
+                <PromptRunPage promptData={promptData} accessInfo={accessInfo} />
+            </Suspense>
+        </div>
     );
 }
 

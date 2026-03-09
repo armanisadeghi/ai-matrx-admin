@@ -15,12 +15,23 @@ export function PageSpecificHeader({ children }: PageSpecificHeaderProps) {
 
   useEffect(() => {
     setMounted(true);
-    const element = document.getElementById('page-specific-header-content');
+    // SSR shell header center takes priority, then authenticated layout header
+    const element =
+      document.getElementById('shell-header-center') ||
+      document.getElementById('page-specific-header-content');
     setTargetElement(element);
   }, []);
 
   if (!mounted || !targetElement) {
     return null;
+  }
+
+  // Wrap with shell-header-inject when portaling into SSR shell for proper styling
+  if (targetElement.id === 'shell-header-center') {
+    return createPortal(
+      <div className="shell-header-inject">{children}</div>,
+      targetElement,
+    );
   }
 
   return createPortal(children, targetElement);
@@ -75,14 +86,16 @@ export function PromptHeader(props: PromptHeaderProps) {
   const pathname = usePathname();
   const [PromptBuilderHeaderCompact, setPromptBuilderHeaderCompact] = useState<any>(null);
 
+  const isPromptRoute = pathname?.includes('/ai/prompts') || pathname?.includes('/ssr/prompts');
+
   useEffect(() => {
-    if (!pathname?.includes('/ai/prompts')) return;
+    if (!isPromptRoute) return;
     import('@/features/prompts/components/layouts/PromptBuilderHeaderCompact').then((module) => {
       setPromptBuilderHeaderCompact(() => module.PromptBuilderHeaderCompact);
     });
-  }, [pathname]);
+  }, [isPromptRoute]);
 
-  if (!pathname?.includes('/ai/prompts') || !PromptBuilderHeaderCompact) {
+  if (!isPromptRoute || !PromptBuilderHeaderCompact) {
     return null;
   }
 

@@ -124,5 +124,15 @@ export default async function EditPromptPage({
         settings: data.settings,
     };
 
-    return <PromptBuilder models={aiModels} initialData={initialData} availableTools={availableTools} accessInfo={accessInfo} />;
+    return (
+        <div
+            className="ssr-prompt-page"
+            style={{
+                '--header-height': 'var(--shell-header-h)',
+                paddingTop: 'var(--shell-header-h)',
+            } as React.CSSProperties}
+        >
+            <PromptBuilder models={aiModels} initialData={initialData} availableTools={availableTools} accessInfo={accessInfo} />
+        </div>
+    );
 }

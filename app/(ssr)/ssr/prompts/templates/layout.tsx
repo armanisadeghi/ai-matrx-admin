@@ -8,6 +8,6 @@ export const metadata = createRouteMetadata("/ai/prompts/templates", {
 });
 
 export default function TemplatesLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  return <div style={{ paddingTop: 'var(--shell-header-h)' }}>{children}</div>;
 }
 
