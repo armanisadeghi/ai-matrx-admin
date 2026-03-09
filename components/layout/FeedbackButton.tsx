@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Bug, Send, X, Check, PartyPopper, Clipboard, Plus, ExternalLink } from 'lucide-react';
+import { Bug, Send, X, Check, PartyPopper, Clipboard, Plus, ExternalLink, Camera } from 'lucide-react';
 import Link from 'next/link';
 import { submitFeedback, getUserFeedback } from '@/actions/feedback.actions';
 import { FeedbackType } from '@/types/feedback.types';
@@ -61,6 +61,8 @@ interface FeedbackFormContentProps {
     handleCancel: () => void;
     handleUploadComplete: (results: UploadedFileResult[]) => void;
     handlePasteButton: () => void;
+    handleScreenshot: () => void;
+    isCapturing: boolean;
     removeImage: (index: number) => void;
     onClose: () => void;
 }
@@ -81,6 +83,8 @@ function FeedbackFormContent({
     handleCancel,
     handleUploadComplete,
     handlePasteButton,
+    handleScreenshot,
+    isCapturing,
     removeImage,
     onClose,
 }: FeedbackFormContentProps) {
@@ -222,8 +226,8 @@ function FeedbackFormContent({
                         maxHeight="150px"
                     />
 
-                    {/* Paste button */}
-                    <div className="mt-2 flex items-center gap-2">
+                    {/* Paste + Screenshot buttons */}
+                    <div className="mt-2 flex items-center gap-2 flex-wrap">
                         <button
                             type="button"
                             onClick={handlePasteButton}
@@ -232,6 +236,16 @@ function FeedbackFormContent({
                         >
                             <Clipboard className="w-3 h-3" />
                             {isPasting ? 'Pasting...' : 'Paste Image'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleScreenshot}
+                            disabled={isSubmitting || isCapturing}
+                            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md border border-border bg-background hover:bg-accent text-foreground transition-colors disabled:opacity-50"
+                            title="Capture a screenshot of the current page"
+                        >
+                            <Camera className="w-3 h-3" />
+                            {isCapturing ? 'Capturing...' : 'Screenshot'}
                         </button>
                         <span className="text-[10px] text-muted-foreground">
                             or Ctrl+V
@@ -319,6 +333,7 @@ export default function FeedbackButton({ className = '', triggerOpen, onOpenChan
     const [uploadedImages, setUploadedImages] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isPasting, setIsPasting] = useState(false);
+    const [isCapturing, setIsCapturing] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [feedbackStats, setFeedbackStats] = useState<{ total: number; pending: number; resolved: number } | null>(null);
     const [showNewFeatureHighlight, setShowNewFeatureHighlight] = useState(false);
@@ -508,6 +523,36 @@ export default function FeedbackButton({ className = '', triggerOpen, onOpenChan
         }
     }, [uploadPastedImage]);
 
+    const handleScreenshot = useCallback(async () => {
+        setIsCapturing(true);
+        // Wait two animation frames so the overlay becomes invisible before capture
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        try {
+            const html2canvas = (await import('html2canvas')).default;
+            const canvas = await html2canvas(document.body, {
+                logging: false,
+                useCORS: true,
+                allowTaint: false,
+                scale: window.devicePixelRatio || 1,
+                ignoreElements: (el) => el.hasAttribute('data-feedback-overlay'),
+            });
+            const blob = await new Promise<Blob>((resolve, reject) => {
+                canvas.toBlob((b) => b ? resolve(b) : reject(new Error('canvas.toBlob failed')), 'image/png');
+            });
+            const file = new File([blob], `feedback-screenshot-${Date.now()}.png`, { type: 'image/png' });
+            const result = await uploadToPublicUserAssets(file);
+            if (result?.url) {
+                setUploadedImages(prev => [...prev, result.url]);
+                toast.success('Screenshot captured!');
+            }
+        } catch (err) {
+            console.error('Screenshot capture failed:', err);
+            toast.error('Failed to capture screenshot');
+        } finally {
+            setIsCapturing(false);
+        }
+    }, [uploadToPublicUserAssets]);
+
     const formProps: FeedbackFormContentProps = {
         feedbackType,
         setFeedbackType,
@@ -525,6 +570,8 @@ export default function FeedbackButton({ className = '', triggerOpen, onOpenChan
         handleCancel,
         handleUploadComplete,
         handlePasteButton,
+        handleScreenshot,
+        isCapturing,
         removeImage,
         onClose: () => setIsOpen(false),
     };
@@ -604,9 +651,12 @@ export default function FeedbackButton({ className = '', triggerOpen, onOpenChan
                     if (isSubmitting) return;
                     handleOpenChange(open);
                 }}>
-                    <DrawerContent className="max-h-[85dvh]">
+                    <DrawerContent data-feedback-overlay className={`flex flex-col max-h-[90dvh] transition-opacity duration-75 ${isCapturing ? 'opacity-0 pointer-events-none' : ''}`}>
                         <DrawerTitle className="sr-only">Submit Feedback</DrawerTitle>
-                        <div className="flex-1 overflow-y-auto overscroll-contain" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px))' }}>
+                        <div
+                            className="flex-1 min-h-0 overflow-y-auto overscroll-none pb-safe"
+                            data-vaul-no-drag
+                        >
                             <FeedbackFormContent {...formProps} />
                         </div>
                     </DrawerContent>
@@ -623,7 +673,8 @@ export default function FeedbackButton({ className = '', triggerOpen, onOpenChan
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 align="end"
-                className="w-[400px] p-0"
+                data-feedback-overlay
+                className={`w-[400px] p-0 transition-opacity duration-75 ${isCapturing ? 'opacity-0 pointer-events-none' : ''}`}
                 onInteractOutside={(e) => {
                     if (isSubmitting) {
                         e.preventDefault();

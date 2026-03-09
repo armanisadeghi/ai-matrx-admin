@@ -31,7 +31,6 @@ import {
   RefreshCw,
   AlertCircle,
   ArrowDownToLine,
-  Camera,
 } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/utils/supabase/client";
@@ -146,7 +145,6 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   const [promptUpdatedAt, setPromptUpdatedAt] = useState<string | null>(null);
   const [isPromptStale, setIsPromptStale] = useState(false);
   const [isUpdatePromptModalOpen, setIsUpdatePromptModalOpen] = useState(false);
-  const [isTakingScreenshot, setIsTakingScreenshot] = useState(false);
 
   // Regenerate favicon from app name
   const handleRegenerateFavicon = async () => {
@@ -172,35 +170,6 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
       toast.error("Failed to generate favicon");
     } finally {
       setIsRegeneratingFavicon(false);
-    }
-  };
-
-  const handleTakeScreenshot = async () => {
-    setIsTakingScreenshot(true);
-    // Close any open modals before capturing
-    setShowAIEditor(false);
-    setIsUpdatePromptModalOpen(false);
-    setDeleteDialogOpen(false);
-    // Wait for modals to animate out
-    await new Promise((resolve) => setTimeout(resolve, 350));
-    try {
-      const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(document.body, {
-        logging: false,
-        useCORS: true,
-        allowTaint: false,
-        scale: window.devicePixelRatio || 1,
-      });
-      const dataUrl = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.download = `${app.name.replace(/\s+/g, "-").toLowerCase()}-screenshot.png`;
-      link.href = dataUrl;
-      link.click();
-      toast.success("Screenshot saved!");
-    } catch {
-      toast.error("Failed to take screenshot");
-    } finally {
-      setIsTakingScreenshot(false);
     }
   };
 
@@ -526,20 +495,6 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                       Publish
                     </Button>
                   )}
-                  <Button
-                    variant="outline"
-                    onClick={handleTakeScreenshot}
-                    disabled={isTakingScreenshot}
-                    size="icon"
-                    className="shrink-0 h-8 w-8 rounded-full"
-                    title="Take screenshot"
-                  >
-                    {isTakingScreenshot ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Camera className="w-3.5 h-3.5" />
-                    )}
-                  </Button>
                   <Button
                     variant="destructive"
                     onClick={handleDeleteClick}

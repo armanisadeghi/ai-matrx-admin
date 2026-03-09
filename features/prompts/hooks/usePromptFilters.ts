@@ -37,17 +37,21 @@ export interface PromptFilters {
     sortBy: PromptSortOption;
     searchTerm: string;
     category: string;
+    excludeCategory: string;
     tags: string[];
+    excludeTags: string[];
     showArchived: boolean;
     favoritesOnly: boolean;
 
-    setTab:          (tab: PromptTab)          => void;
-    setSortBy:       (sort: PromptSortOption)  => void;
-    setSearchTerm:   (q: string)               => void;
-    setCategory:     (cat: string)             => void;
-    setTags:         (tags: string[])          => void;
-    setShowArchived: (show: boolean)           => void;
-    setFavoritesOnly:(fav: boolean)            => void;
+    setTab:             (tab: PromptTab)          => void;
+    setSortBy:          (sort: PromptSortOption)  => void;
+    setSearchTerm:      (q: string)               => void;
+    setCategory:        (cat: string)             => void;
+    setExcludeCategory: (cat: string)             => void;
+    setTags:            (tags: string[])          => void;
+    setExcludeTags:     (tags: string[])          => void;
+    setShowArchived:    (show: boolean)           => void;
+    setFavoritesOnly:   (fav: boolean)            => void;
 
     resetFilters: () => void;
 
@@ -68,11 +72,14 @@ export function usePromptFilters(): PromptFilters {
     const tab          = (searchParams.get("tab")  as PromptTab        | null) ?? DEFAULT_TAB;
     const sortBy       = (searchParams.get("sort") as PromptSortOption | null) ?? DEFAULT_SORT;
     const searchTerm   = searchParams.get("q") ?? DEFAULT_Q;
-    const category     = searchParams.get("category") ?? "";
-    const tagsRaw      = searchParams.get("tags") ?? "";
-    const tags         = tagsRaw ? tagsRaw.split(",").filter(Boolean) : [];
-    const showArchived = searchParams.get("archived") === "true";
-    const favoritesOnly = searchParams.get("favorites") === "true";
+    const category          = searchParams.get("category") ?? "";
+    const excludeCategory   = searchParams.get("cat-ex") ?? "";
+    const tagsRaw           = searchParams.get("tags") ?? "";
+    const tags              = tagsRaw ? tagsRaw.split(",").filter(Boolean) : [];
+    const excludeTagsRaw    = searchParams.get("tags-ex") ?? "";
+    const excludeTags       = excludeTagsRaw ? excludeTagsRaw.split(",").filter(Boolean) : [];
+    const showArchived      = searchParams.get("archived") === "true";
+    const favoritesOnly     = searchParams.get("favorites") === "true";
 
     // ── Write ─────────────────────────────────────────────────────────────────
     const setParam = useCallback(
@@ -95,12 +102,17 @@ export function usePromptFilters(): PromptFilters {
     const setTab          = useCallback((v: PromptTab)         => setParam("tab",       v, DEFAULT_TAB),  [setParam]);
     const setSortBy       = useCallback((v: PromptSortOption)  => setParam("sort",      v, DEFAULT_SORT), [setParam]);
     const setSearchTerm   = useCallback((v: string)            => setParam("q",         v, DEFAULT_Q),    [setParam]);
-    const setCategory     = useCallback((v: string)            => setParam("category",  v, ""),           [setParam]);
-    const setShowArchived = useCallback((v: boolean)           => setParam("archived",  v ? "true" : "", ""), [setParam]);
-    const setFavoritesOnly = useCallback((v: boolean)          => setParam("favorites", v ? "true" : "", ""), [setParam]);
+    const setCategory        = useCallback((v: string)  => setParam("category", v, ""),           [setParam]);
+    const setExcludeCategory = useCallback((v: string)  => setParam("cat-ex",   v, ""),           [setParam]);
+    const setShowArchived    = useCallback((v: boolean) => setParam("archived",  v ? "true" : "", ""), [setParam]);
+    const setFavoritesOnly   = useCallback((v: boolean) => setParam("favorites", v ? "true" : "", ""), [setParam]);
 
     const setTags = useCallback((v: string[]) => {
         setParam("tags", v.length > 0 ? v.join(",") : "", "");
+    }, [setParam]);
+
+    const setExcludeTags = useCallback((v: string[]) => {
+        setParam("tags-ex", v.length > 0 ? v.join(",") : "", "");
     }, [setParam]);
 
     const resetFilters  = useCallback(() => {
@@ -113,7 +125,9 @@ export function usePromptFilters(): PromptFilters {
         sortBy !== DEFAULT_SORT ||
         searchTerm !== DEFAULT_Q ||
         category !== "" ||
+        excludeCategory !== "" ||
         tags.length > 0 ||
+        excludeTags.length > 0 ||
         showArchived ||
         favoritesOnly;
     const isSearching = searchTerm.length > 0;
@@ -123,14 +137,18 @@ export function usePromptFilters(): PromptFilters {
         sortBy,
         searchTerm,
         category,
+        excludeCategory,
         tags,
+        excludeTags,
         showArchived,
         favoritesOnly,
         setTab,
         setSortBy,
         setSearchTerm,
         setCategory,
+        setExcludeCategory,
         setTags,
+        setExcludeTags,
         setShowArchived,
         setFavoritesOnly,
         resetFilters,

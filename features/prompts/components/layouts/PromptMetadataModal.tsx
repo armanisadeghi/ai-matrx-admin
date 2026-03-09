@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, KeyboardEvent } from "react";
+import { useState, useRef, KeyboardEvent } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAllUserPrompts } from "@/lib/redux/slices/promptCacheSlice";
 import { updateUserPrompt } from "@/lib/redux/thunks/promptCrudThunks";
-import { supabase } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast-service";
 import { cn } from "@/lib/utils";
 import {
@@ -24,21 +23,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { X, Loader2, Tag, Star, Archive } from "lucide-react";
+import { X, Tag, Star, Archive } from "lucide-react";
 import type { PromptData } from "../../types/core";
-
-interface AiModelOption {
-    id: string;
-    common_name: string;
-}
 
 interface PromptMetadataModalProps {
     isOpen: boolean;
@@ -207,32 +194,9 @@ function MetadataForm({
     const [description, setDescription] = useState(prompt.description ?? "");
     const [category, setCategory] = useState(prompt.category ?? "");
     const [tags, setTags] = useState<string[]>(prompt.tags ?? []);
-    const [outputFormat, setOutputFormat] = useState(prompt.outputFormat ?? "");
-    const [modelId, setModelId] = useState(prompt.modelId ?? "");
     const [isFavorite, setIsFavorite] = useState(prompt.isFavorite ?? false);
     const [isArchived, setIsArchived] = useState(prompt.isArchived ?? false);
     const [isSaving, setIsSaving] = useState(false);
-
-    const [aiModels, setAiModels] = useState<AiModelOption[]>([]);
-    const [modelsLoading, setModelsLoading] = useState(true);
-
-    useEffect(() => {
-        async function loadModels() {
-            try {
-                const { data } = await supabase
-                    .from("ai_model")
-                    .select("id, common_name")
-                    .eq("is_deprecated", false)
-                    .order("common_name", { ascending: true });
-                setAiModels(data ?? []);
-            } catch {
-                // Models selector will just be empty
-            } finally {
-                setModelsLoading(false);
-            }
-        }
-        loadModels();
-    }, []);
 
     const existingCategories = Array.from(
         new Set(allPrompts.map((p) => p.category).filter(Boolean) as string[])
@@ -254,8 +218,6 @@ function MetadataForm({
                         description: description || undefined,
                         category: category || undefined,
                         tags: tags.length > 0 ? tags : undefined,
-                        outputFormat: outputFormat || undefined,
-                        modelId: modelId || undefined,
                         isFavorite,
                         isArchived,
                     },
@@ -317,43 +279,6 @@ function MetadataForm({
                     onTagsChange={setTags}
                     suggestions={existingTags}
                 />
-            </div>
-
-            <div className="space-y-1.5">
-                <Label>Output Format</Label>
-                <Select value={outputFormat} onValueChange={setOutputFormat}>
-                    <SelectTrigger className="h-10 text-base" style={{ fontSize: "16px" }}>
-                        <SelectValue placeholder="Default (text)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="text">Text</SelectItem>
-                        <SelectItem value="json_object">JSON Object</SelectItem>
-                        <SelectItem value="json_schema">JSON Schema</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <div className="space-y-1.5">
-                <Label>Default Model</Label>
-                {modelsLoading ? (
-                    <div className="h-10 flex items-center text-sm text-muted-foreground">
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        Loading models...
-                    </div>
-                ) : (
-                    <Select value={modelId} onValueChange={setModelId}>
-                        <SelectTrigger className="h-10 text-base" style={{ fontSize: "16px" }}>
-                            <SelectValue placeholder="No default model" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {aiModels.map((m) => (
-                                <SelectItem key={m.id} value={m.id}>
-                                    {m.common_name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                )}
             </div>
 
             <div className="flex items-center justify-between py-1">

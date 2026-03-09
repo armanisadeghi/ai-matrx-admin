@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo, useRef, useEffect } from "react";
 import { PromptCard } from "./PromptCard";
 import { SharedPromptCard } from "./SharedPromptCard";
 import { PromptListItem } from "./PromptListItem";
 import { SharedPromptListItem } from "./SharedPromptListItem";
 import { MobileActionBar } from "@/components/official/mobile-action-bar";
 import { BottomSheet, BottomSheetHeader, BottomSheetBody } from "@/components/official/bottom-sheet";
-import { Check, ChevronRight, RotateCcw } from "lucide-react";
+import { Check, ChevronRight, RotateCcw, X } from "lucide-react";
 import { DesktopSearchBar } from "./DesktopSearchBar";
 import { NewPromptModal } from "./NewPromptModal";
 import { useRouter } from "next/navigation";
@@ -93,14 +93,18 @@ export function PromptsGrid() {
         sortBy,
         searchTerm,
         category: filterCategory,
+        excludeCategory,
         tags: filterTags,
+        excludeTags,
         showArchived,
         favoritesOnly,
         setTab: setActiveTab,
         setSortBy,
         setSearchTerm,
         setCategory: setFilterCategory,
+        setExcludeCategory,
         setTags: setFilterTags,
+        setExcludeTags,
         setShowArchived,
         setFavoritesOnly,
         resetFilters,
@@ -137,7 +141,9 @@ export function PromptsGrid() {
             if (!showArchived && prompt.isArchived) return false;
             if (favoritesOnly && !prompt.isFavorite) return false;
             if (filterCategory && prompt.category !== filterCategory) return false;
+            if (excludeCategory && prompt.category === excludeCategory) return false;
             if (filterTags.length > 0 && !filterTags.some((t) => prompt.tags?.includes(t))) return false;
+            if (excludeTags.length > 0 && excludeTags.some((t) => prompt.tags?.includes(t))) return false;
 
             if (searchTerm) {
                 const searchLower = searchTerm.toLowerCase();
@@ -168,7 +174,7 @@ export function PromptsGrid() {
         });
 
         return filtered;
-    }, [prompts, searchTerm, sortBy, filterCategory, filterTags, showArchived, favoritesOnly]);
+    }, [prompts, searchTerm, sortBy, filterCategory, excludeCategory, filterTags, excludeTags, showArchived, favoritesOnly]);
 
     // Filter and sort shared prompts
     const filteredSharedPrompts = useMemo(() => {
@@ -215,7 +221,35 @@ export function PromptsGrid() {
     useMemo(() => {
         setPromptListPage(1);
         setSharedListPage(1);
-    }, [searchTerm, sortBy, filterCategory, filterTags, showArchived, favoritesOnly]);
+    }, [searchTerm, sortBy, filterCategory, excludeCategory, filterTags, excludeTags, showArchived, favoritesOnly]);
+
+    // Mobile auto-pagination sentinels
+    const promptSentinelRef = useRef<HTMLDivElement>(null);
+    const sharedSentinelRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!isMobile) return;
+        const el = promptSentinelRef.current;
+        if (!el || !hasMorePrompts) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) setPromptListPage(prev => prev + 1); },
+            { rootMargin: '300px' }
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [isMobile, hasMorePrompts]);
+
+    useEffect(() => {
+        if (!isMobile) return;
+        const el = sharedSentinelRef.current;
+        if (!el || !hasMoreShared) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) setSharedListPage(prev => prev + 1); },
+            { rootMargin: '300px' }
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [isMobile, hasMoreShared]);
 
     const handleDeleteClick = (id: string, name: string) => {
         setPromptToDelete({ id, name });
@@ -317,8 +351,22 @@ export function PromptsGrid() {
     const [filterDetailKey, setFilterDetailKey] = useState<string | null>(null);
     const hasSortFilter = sortBy !== "updated-desc";
     const hasShowFilter = activeTab !== "mine";
-    const hasCategoryFilter = filterCategory !== "";
-    const hasTagsFilter = filterTags.length > 0;
+    const hasCategoryFilter = filterCategory !== "" || excludeCategory !== "";
+    const hasTagsFilter = filterTags.length > 0 || excludeTags.length > 0;
+
+    const categoryLabel = filterCategory
+        ? filterCategory
+        : excludeCategory
+        ? `Not ${excludeCategory}`
+        : "All";
+
+    const tagsLabel = (() => {
+        if (filterTags.length > 0 && excludeTags.length > 0)
+            return `${filterTags.length} incl · ${excludeTags.length} excl`;
+        if (filterTags.length > 0) return `${filterTags.length} included`;
+        if (excludeTags.length > 0) return `${excludeTags.length} excluded`;
+        return "Any";
+    })();
     const activeFilterCount =
         (hasSortFilter ? 1 : 0) +
         (hasShowFilter ? 1 : 0) +
@@ -480,15 +528,19 @@ export function PromptsGrid() {
                                             ))}
                                         </div>
                                         {hasMorePrompts && (
-                                            <div className="mt-4 flex justify-center">
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={() => setPromptListPage(prev => prev + 1)}
-                                                    className="w-full md:w-auto"
-                                                >
-                                                    Show More ({allPromptListItems.length - promptListItems.length} remaining)
-                                                </Button>
-                                            </div>
+                                            isMobile ? (
+                                                <div ref={promptSentinelRef} className="h-8" />
+                                            ) : (
+                                                <div className="mt-4 flex justify-center">
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => setPromptListPage(prev => prev + 1)}
+                                                        className="w-full md:w-auto"
+                                                    >
+                                                        Show More ({allPromptListItems.length - promptListItems.length} remaining)
+                                                    </Button>
+                                                </div>
+                                            )
                                         )}
                                     </>
                                 )}
@@ -547,15 +599,19 @@ export function PromptsGrid() {
                                             ))}
                                         </div>
                                         {hasMoreShared && (
-                                            <div className="mt-4 flex justify-center">
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={() => setSharedListPage(prev => prev + 1)}
-                                                    className="w-full md:w-auto"
-                                                >
-                                                    Show More ({allSharedListItems.length - sharedPromptListItems.length} remaining)
-                                                </Button>
-                                            </div>
+                                            isMobile ? (
+                                                <div ref={sharedSentinelRef} className="h-8" />
+                                            ) : (
+                                                <div className="mt-4 flex justify-center">
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => setSharedListPage(prev => prev + 1)}
+                                                        className="w-full md:w-auto"
+                                                    >
+                                                        Show More ({allSharedListItems.length - sharedPromptListItems.length} remaining)
+                                                    </Button>
+                                                </div>
+                                            )
                                         )}
                                     </>
                                 )}
@@ -618,15 +674,19 @@ export function PromptsGrid() {
                                             ))}
                                         </div>
                                         {hasMorePrompts && (
-                                            <div className="mt-4 flex justify-center">
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={() => setPromptListPage(prev => prev + 1)}
-                                                    className="w-full md:w-auto"
-                                                >
-                                                    Show More ({allPromptListItems.length - promptListItems.length} remaining)
-                                                </Button>
-                                            </div>
+                                            isMobile ? (
+                                                <div ref={promptSentinelRef} className="h-8" />
+                                            ) : (
+                                                <div className="mt-4 flex justify-center">
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => setPromptListPage(prev => prev + 1)}
+                                                        className="w-full md:w-auto"
+                                                    >
+                                                        Show More ({allPromptListItems.length - promptListItems.length} remaining)
+                                                    </Button>
+                                                </div>
+                                            )
                                         )}
                                     </>
                                 )}
@@ -687,15 +747,19 @@ export function PromptsGrid() {
                                             ))}
                                         </div>
                                         {hasMoreShared && (
-                                            <div className="mt-4 flex justify-center">
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={() => setSharedListPage(prev => prev + 1)}
-                                                    className="w-full md:w-auto"
-                                                >
-                                                    Show More ({allSharedListItems.length - sharedPromptListItems.length} remaining)
-                                                </Button>
-                                            </div>
+                                            isMobile ? (
+                                                <div ref={sharedSentinelRef} className="h-8" />
+                                            ) : (
+                                                <div className="mt-4 flex justify-center">
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => setSharedListPage(prev => prev + 1)}
+                                                        className="w-full md:w-auto"
+                                                    >
+                                                        Show More ({allSharedListItems.length - sharedPromptListItems.length} remaining)
+                                                    </Button>
+                                                </div>
+                                            )
                                         )}
                                     </>
                                 )}
@@ -884,48 +948,74 @@ export function PromptsGrid() {
                         </>
                     ) : filterDetailKey === "category" ? (
                         <>
+                            <div className="px-5 py-2 border-b border-white/[0.06]">
+                                <p className="text-[12px] text-muted-foreground">Tap to include · tap again to exclude · tap once more to clear</p>
+                            </div>
                             <button
                                 onClick={() => {
                                     setFilterCategory("");
-                                    setFilterDetailKey(null);
+                                    setExcludeCategory("");
                                 }}
                                 className={cn(
                                     "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                                 )}
                             >
-                                <span className={cn("text-[15px] flex-1 text-left", !filterCategory && "font-medium")}>All Categories</span>
-                                {!filterCategory && <Check className="h-5 w-5 text-primary shrink-0" />}
+                                <span className={cn("text-[15px] flex-1 text-left", !filterCategory && !excludeCategory && "font-medium")}>All Categories</span>
+                                {!filterCategory && !excludeCategory && <Check className="h-5 w-5 text-primary shrink-0" />}
                             </button>
-                            {allCategories.map((cat, idx) => (
-                                <button
-                                    key={cat}
-                                    onClick={() => {
-                                        setFilterCategory(cat);
-                                        setFilterDetailKey(null);
-                                    }}
-                                    className={cn(
-                                        "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
-                                        idx < allCategories.length - 1 && "border-b border-white/[0.06]"
-                                    )}
-                                >
-                                    <span className={cn("text-[15px] flex-1 text-left", filterCategory === cat && "font-medium")}>{cat}</span>
-                                    {filterCategory === cat && <Check className="h-5 w-5 text-primary shrink-0" />}
-                                </button>
-                            ))}
+                            {allCategories.map((cat, idx) => {
+                                const isIncluded = filterCategory === cat;
+                                const isExcluded = excludeCategory === cat;
+                                return (
+                                    <button
+                                        key={cat}
+                                        onClick={() => {
+                                            if (isIncluded) {
+                                                setFilterCategory("");
+                                                setExcludeCategory(cat);
+                                            } else if (isExcluded) {
+                                                setExcludeCategory("");
+                                            } else {
+                                                setExcludeCategory("");
+                                                setFilterCategory(cat);
+                                            }
+                                        }}
+                                        className={cn(
+                                            "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
+                                            idx < allCategories.length - 1 && "border-b border-white/[0.06]"
+                                        )}
+                                    >
+                                        <span className={cn(
+                                            "text-[15px] flex-1 text-left",
+                                            (isIncluded || isExcluded) && "font-medium",
+                                            isExcluded && "text-destructive"
+                                        )}>{cat}</span>
+                                        {isIncluded && <Check className="h-5 w-5 text-primary shrink-0" />}
+                                        {isExcluded && <X className="h-5 w-5 text-destructive shrink-0" />}
+                                    </button>
+                                );
+                            })}
                             {allCategories.length === 0 && (
                                 <div className="px-5 py-6 text-center text-sm text-muted-foreground">No categories yet</div>
                             )}
                         </>
                     ) : filterDetailKey === "tags" ? (
                         <>
+                            <div className="px-5 py-2 border-b border-white/[0.06]">
+                                <p className="text-[12px] text-muted-foreground">Tap to include · tap again to exclude · tap once more to clear</p>
+                            </div>
                             {allTags.map((tag, idx) => {
-                                const isActive = filterTags.includes(tag);
+                                const isIncluded = filterTags.includes(tag);
+                                const isExcluded = excludeTags.includes(tag);
                                 return (
                                     <button
                                         key={tag}
                                         onClick={() => {
-                                            if (isActive) {
+                                            if (isIncluded) {
                                                 setFilterTags(filterTags.filter((t) => t !== tag));
+                                                setExcludeTags([...excludeTags, tag]);
+                                            } else if (isExcluded) {
+                                                setExcludeTags(excludeTags.filter((t) => t !== tag));
                                             } else {
                                                 setFilterTags([...filterTags, tag]);
                                             }
@@ -935,8 +1025,13 @@ export function PromptsGrid() {
                                             idx < allTags.length - 1 && "border-b border-white/[0.06]"
                                         )}
                                     >
-                                        <span className={cn("text-[15px] flex-1 text-left", isActive && "font-medium")}>{tag}</span>
-                                        {isActive && <Check className="h-5 w-5 text-primary shrink-0" />}
+                                        <span className={cn(
+                                            "text-[15px] flex-1 text-left",
+                                            (isIncluded || isExcluded) && "font-medium",
+                                            isExcluded && "text-destructive"
+                                        )}>{tag}</span>
+                                        {isIncluded && <Check className="h-5 w-5 text-primary shrink-0" />}
+                                        {isExcluded && <X className="h-5 w-5 text-destructive shrink-0" />}
                                     </button>
                                 );
                             })}
@@ -984,9 +1079,9 @@ export function PromptsGrid() {
                                 <span className="text-[15px] font-medium flex-1 text-left">Category</span>
                                 <span className={cn(
                                     "text-[15px] mr-1.5 truncate max-w-[180px]",
-                                    hasCategoryFilter ? "text-foreground" : "text-muted-foreground"
+                                    hasCategoryFilter ? (excludeCategory ? "text-destructive" : "text-foreground") : "text-muted-foreground"
                                 )}>
-                                    {filterCategory || "All"}
+                                    {categoryLabel}
                                 </span>
                                 <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                             </button>
@@ -999,9 +1094,15 @@ export function PromptsGrid() {
                                 <span className="text-[15px] font-medium flex-1 text-left">Tags</span>
                                 <span className={cn(
                                     "text-[15px] mr-1.5 truncate max-w-[180px]",
-                                    hasTagsFilter ? "text-foreground" : "text-muted-foreground"
+                                    hasTagsFilter
+                                        ? (filterTags.length > 0 && excludeTags.length > 0
+                                            ? "text-foreground"
+                                            : excludeTags.length > 0
+                                            ? "text-destructive"
+                                            : "text-foreground")
+                                        : "text-muted-foreground"
                                 )}>
-                                    {filterTags.length > 0 ? `${filterTags.length} selected` : "Any"}
+                                    {tagsLabel}
                                 </span>
                                 <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                             </button>
