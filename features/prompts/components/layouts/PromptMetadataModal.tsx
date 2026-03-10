@@ -24,8 +24,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { X, Tag, Star, Archive } from "lucide-react";
+import { X, Tag, Star, Archive, Sparkles, Loader2 } from "lucide-react";
 import type { PromptData } from "../../types/core";
+import { usePromptCategorizer } from "../../hooks/usePromptCategorizer";
 
 interface PromptMetadataModalProps {
     isOpen: boolean;
@@ -189,6 +190,7 @@ function MetadataForm({
 }) {
     const dispatch = useAppDispatch();
     const allPrompts = useAppSelector(selectAllUserPrompts);
+    const { categorize, status: categorizerStatus, error: categorizerError } = usePromptCategorizer();
 
     const [name, setName] = useState(prompt.name ?? "");
     const [description, setDescription] = useState(prompt.description ?? "");
@@ -197,6 +199,28 @@ function MetadataForm({
     const [isFavorite, setIsFavorite] = useState(prompt.isFavorite ?? false);
     const [isArchived, setIsArchived] = useState(prompt.isArchived ?? false);
     const [isSaving, setIsSaving] = useState(false);
+
+    const isCategorizing = categorizerStatus === 'loading';
+
+    const handleAutoCategorize = async () => {
+        if (!prompt.id) return;
+        const result = await categorize(prompt.id);
+        if (!result) {
+            if (categorizerStatus === 'error') {
+                toast.error(categorizerError ?? "Auto-categorization failed");
+            }
+            return;
+        }
+        if (result.category) setCategory(result.category);
+        if (result.tags.length > 0) {
+            setTags(prev => {
+                const merged = [...prev, ...result.tags.filter(t => !prev.includes(t))];
+                return merged;
+            });
+        }
+        if (result.description) setDescription(result.description);
+        toast.success("Fields pre-filled — review and save when ready");
+    };
 
     const existingCategories = Array.from(
         new Set(allPrompts.map((p) => p.category).filter(Boolean) as string[])
@@ -259,6 +283,22 @@ function MetadataForm({
                     style={{ fontSize: "16px" }}
                 />
             </div>
+
+            <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAutoCategorize}
+                disabled={isCategorizing || isSaving}
+                className="w-full flex items-center gap-2"
+            >
+                {isCategorizing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                    <Sparkles className="h-4 w-4 text-primary" />
+                )}
+                {isCategorizing ? "Categorizing..." : "Auto-Categorize with AI"}
+            </Button>
 
             <div className="space-y-1.5">
                 <Label>Category</Label>

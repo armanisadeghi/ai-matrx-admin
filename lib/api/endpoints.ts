@@ -96,6 +96,14 @@ export const ENDPOINTS = {
         streamText: '/api/tests/stream/text',
     },
 
+    /** Builtin agent endpoints — Authenticated */
+    builtinAgents: {
+        /** POST — Categorize a single prompt (streaming) */
+        categorize: '/api/ai/builtin-agents/categorize' as const,
+        /** POST — Categorize a single prompt (sync, no streaming) */
+        categorizeSync: '/api/ai/builtin-agents/categorize/sync' as const,
+    },
+
     /** Health endpoints — Public */
     health: {
         /** GET — Basic health check */
