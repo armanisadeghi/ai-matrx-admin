@@ -1,74 +1,62 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { Loader2, ShieldCheck, AlertTriangle } from 'lucide-react';
 
 /**
  * Desktop App Auth Handoff
  *
- * This page is loaded inside the embedded iframe/webview in the Matrx Local
- * desktop application. It establishes the user's Supabase session in the web
- * app without requiring any third-party OAuth (Google, GitHub, Apple), which
- * would be rejected by those providers when run inside a non-standard browser.
+ * Loaded inside the embedded iframe in Matrx Local. The desktop app passes
+ * the user's already-valid Supabase tokens directly in the URL:
  *
- * Flow:
- *  1. Desktop app loads this page in its iframe with ?redirect=/some/path
- *  2. This page renders and posts { type: 'MATRX_HANDOFF_READY' } to the parent
- *  3. Desktop app receives READY, reads its own Supabase session, and posts back:
- *     { type: 'MATRX_HANDOFF_TOKENS', access_token: '...', refresh_token: '...' }
- *  4. This page calls supabase.auth.setSession() with those tokens
- *  5. Session cookies are written; page navigates to ?redirect destination
+ *   /auth/desktop-handoff
+ *     ?access_token=<jwt>
+ *     &refresh_token=<token>
+ *     &redirect=/demos/local-tools
  *
- * Security:
- *  - Messages are validated by type prefix and origin (MATRX_HANDOFF_*)
- *  - Tokens are Supabase JWTs already owned by the authenticated desktop user
- *  - No third-party credentials are exchanged
- *  - The page does nothing without a valid token message — it just shows a loader
+ * This page calls supabase.auth.setSession(), which writes the session into
+ * the browser client AND triggers Supabase SSR to set the auth cookie via its
+ * onAuthStateChange hook. We then do a hard navigation (window.location.href)
+ * to the redirect target so the Next.js server sees the fresh cookie and
+ * renders the authenticated route.
+ *
+ * Why URL params instead of postMessage:
+ *   postMessage from a Tauri parent to an https:// iframe has an unpredictable
+ *   origin (null / tauri://localhost / https://tauri.localhost depending on
+ *   platform and build mode), making reliable origin validation impossible.
+ *   URL params are simpler, work on first load with zero round-trips, and are
+ *   not exposed to any third party — the Tauri webview is not a real browser.
  */
 
-type PageState = 'waiting' | 'authenticating' | 'success' | 'error';
-
-interface HandoffTokenMessage {
-    type: 'MATRX_HANDOFF_TOKENS';
-    access_token: string;
-    refresh_token: string;
-}
-
-function isHandoffMessage(data: unknown): data is HandoffTokenMessage {
-    return (
-        typeof data === 'object' &&
-        data !== null &&
-        (data as Record<string, unknown>).type === 'MATRX_HANDOFF_TOKENS' &&
-        typeof (data as Record<string, unknown>).access_token === 'string' &&
-        typeof (data as Record<string, unknown>).refresh_token === 'string'
-    );
-}
+type PageState = 'working' | 'success' | 'error';
 
 export default function DesktopHandoffPage() {
-    const router = useRouter();
-    const [pageState, setPageState] = useState<PageState>('waiting');
+    const [pageState, setPageState] = useState<PageState>('working');
     const [errorMessage, setErrorMessage] = useState<string>('');
-    const handledRef = useRef(false);
+    const ranRef = useRef(false);
 
     useEffect(() => {
-        const supabase = createClient();
+        if (ranRef.current) return;
+        ranRef.current = true;
 
-        async function handleTokenMessage(event: MessageEvent) {
-            // Ignore duplicate calls (StrictMode double-fire, etc.)
-            if (handledRef.current) return;
+        async function run() {
+            const params = new URLSearchParams(window.location.search);
+            const accessToken = params.get('access_token');
+            const refreshToken = params.get('refresh_token');
+            const redirect = params.get('redirect') ?? '/';
 
-            if (!isHandoffMessage(event.data)) return;
+            if (!accessToken || !refreshToken) {
+                setPageState('error');
+                setErrorMessage('Missing auth tokens. Please close this tab and try again from Matrx Local.');
+                return;
+            }
 
-            handledRef.current = true;
-            setPageState('authenticating');
-
-            const { access_token, refresh_token } = event.data;
+            const supabase = createClient();
 
             const { error } = await supabase.auth.setSession({
-                access_token,
-                refresh_token,
+                access_token: accessToken,
+                refresh_token: refreshToken,
             });
 
             if (error) {
@@ -80,60 +68,45 @@ export default function DesktopHandoffPage() {
 
             setPageState('success');
 
-            // Navigate to the requested destination, defaulting to the home page
-            const params = new URLSearchParams(window.location.search);
-            const redirect = params.get('redirect') ?? '/';
-
-            // Small delay so the user sees the success state briefly
-            setTimeout(() => {
-                router.replace(redirect);
-            }, 400);
+            // Hard navigation — the Next.js server must see the new cookie on
+            // the next request. router.replace() would skip the server round-trip
+            // and land on a page that has no server-side session.
+            window.location.href = redirect;
         }
 
-        window.addEventListener('message', handleTokenMessage);
-
-        // Signal to the parent (desktop app) that we are ready to receive tokens
-        window.parent.postMessage({ type: 'MATRX_HANDOFF_READY' }, '*');
-
-        return () => {
-            window.removeEventListener('message', handleTokenMessage);
-        };
-    }, [router]);
+        run();
+    }, []);
 
     return (
         <div className="min-h-dvh w-full flex items-center justify-center bg-background">
             <div className="flex flex-col items-center gap-4 text-center px-6">
-                {pageState === 'waiting' || pageState === 'authenticating' ? (
+                {pageState === 'working' && (
                     <>
                         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
                             <Loader2 className="h-7 w-7 animate-spin text-primary" />
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                            {pageState === 'waiting'
-                                ? 'Connecting to Matrx Local...'
-                                : 'Signing you in...'}
-                        </p>
+                        <p className="text-sm text-muted-foreground">Signing you in...</p>
                     </>
-                ) : pageState === 'success' ? (
+                )}
+
+                {pageState === 'success' && (
                     <>
                         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-success/10">
                             <ShieldCheck className="h-7 w-7 text-success" />
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                            Signed in. Redirecting...
-                        </p>
+                        <p className="text-sm text-muted-foreground">Signed in. Loading...</p>
                     </>
-                ) : (
+                )}
+
+                {pageState === 'error' && (
                     <>
                         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
                             <AlertTriangle className="h-7 w-7 text-destructive" />
                         </div>
                         <div className="space-y-1">
-                            <p className="text-sm font-medium text-foreground">
-                                Sign-in failed
-                            </p>
+                            <p className="text-sm font-medium text-foreground">Sign-in failed</p>
                             <p className="text-xs text-muted-foreground max-w-xs">
-                                {errorMessage || 'Could not establish session. Please restart Matrx Local and try again.'}
+                                {errorMessage}
                             </p>
                         </div>
                     </>
