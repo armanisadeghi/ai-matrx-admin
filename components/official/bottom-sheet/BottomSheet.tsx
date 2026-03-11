@@ -28,7 +28,7 @@ function BottomSheet({ open, onOpenChange, title = "Bottom Sheet", children }: B
                     style={{ background: "rgba(0, 0, 0, 0.08)" }}
                 />
                 <DrawerPrimitive.Content
-                    className="fixed inset-x-0 bottom-0 z-50 mt-24 flex flex-col rounded-t-2xl overflow-hidden min-h-[60dvh]"
+                    className="fixed inset-x-0 bottom-0 z-50 mt-24 flex flex-col rounded-t-2xl overflow-hidden min-h-[60dvh] max-h-[90dvh]"
                     style={{
                         background: "var(--glass-bg-subtle)",
                         backdropFilter: "blur(20px) saturate(180%)",

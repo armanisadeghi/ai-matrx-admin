@@ -23,11 +23,11 @@ interface FilterModalProps {
     sortBy: PromptSortOption;
     onSortChange: (value: PromptSortOption) => void;
 
-    selectedCats: string[];
-    onSelectedCatsChange: (v: string[]) => void;
+    excludedCats: string[];
+    onExcludedCatsChange: (v: string[]) => void;
 
-    selectedTags: string[];
-    onSelectedTagsChange: (v: string[]) => void;
+    excludedTags: string[];
+    onExcludedTagsChange: (v: string[]) => void;
 
     favFilter: FavFilter;
     onFavFilterChange: (v: FavFilter) => void;
@@ -112,10 +112,10 @@ export function FilterModal({
     onClose,
     sortBy,
     onSortChange,
-    selectedCats,
-    onSelectedCatsChange,
-    selectedTags,
-    onSelectedTagsChange,
+    excludedCats,
+    onExcludedCatsChange,
+    excludedTags,
+    onExcludedTagsChange,
     favFilter,
     onFavFilterChange,
     archFilter,
@@ -129,8 +129,8 @@ export function FilterModal({
 
     // Local state — changes apply immediately on close (no "Apply" button for this panel)
     const [localSort, setLocalSort] = useState(sortBy);
-    const [localCats, setLocalCats] = useState<string[]>(selectedCats);
-    const [localTags, setLocalTags] = useState<string[]>(selectedTags);
+    const [localXCats, setLocalXCats] = useState<string[]>(excludedCats);
+    const [localXTags, setLocalXTags] = useState<string[]>(excludedTags);
     const [localFav, setLocalFav] = useState<FavFilter>(favFilter);
     const [localArch, setLocalArch] = useState<ArchFilter>(archFilter);
     const [localFavFirst, setLocalFavFirst] = useState(favoritesFirst);
@@ -138,17 +138,17 @@ export function FilterModal({
     // Sync local state when props change (e.g., reset from outside)
     useEffect(() => {
         setLocalSort(sortBy);
-        setLocalCats(selectedCats);
-        setLocalTags(selectedTags);
+        setLocalXCats(excludedCats);
+        setLocalXTags(excludedTags);
         setLocalFav(favFilter);
         setLocalArch(archFilter);
         setLocalFavFirst(favoritesFirst);
-    }, [sortBy, selectedCats, selectedTags, favFilter, archFilter, favoritesFirst]);
+    }, [sortBy, excludedCats, excludedTags, favFilter, archFilter, favoritesFirst]);
 
     const handleApply = () => {
         onSortChange(localSort);
-        onSelectedCatsChange(localCats);
-        onSelectedTagsChange(localTags);
+        onExcludedCatsChange(localXCats);
+        onExcludedTagsChange(localXTags);
         onFavFilterChange(localFav);
         onArchFilterChange(localArch);
         onFavoritesFirstChange(localFavFirst);
@@ -157,23 +157,24 @@ export function FilterModal({
 
     const handleClearAll = () => {
         setLocalSort("updated-desc");
-        setLocalCats([]);
-        setLocalTags([]);
+        setLocalXCats([]);
+        setLocalXTags([]);
         setLocalFav("all");
         setLocalArch("active");
         setLocalFavFirst(true);
     };
 
+    // Exclusion model: toggling a cat/tag adds/removes it from the exclusion list
     const toggleCat = (cat: string) =>
-        setLocalCats(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
+        setLocalXCats(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
 
     const toggleTag = (tag: string) =>
-        setLocalTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+        setLocalXTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
 
     const hasActiveFilters =
         localSort !== "updated-desc" ||
-        localCats.length > 0 ||
-        localTags.length > 0 ||
+        localXCats.length > 0 ||
+        localXTags.length > 0 ||
         localFav !== "all" ||
         localArch !== "active" ||
         !localFavFirst;
@@ -261,27 +262,27 @@ export function FilterModal({
                             />
                         </div>
 
-                        {/* Category */}
+                        {/* Category — exclusion model: checked = visible */}
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <label className="text-sm font-semibold text-foreground">Category</label>
-                                {localCats.length > 0 && (
+                                {localXCats.length > 0 && (
                                     <button
-                                        onClick={() => setLocalCats([])}
-                                        className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                                        onClick={() => setLocalXCats([])}
+                                        className="text-xs text-primary hover:text-primary/80 flex items-center gap-1"
                                     >
-                                        <X className="h-3 w-3" /> Clear
+                                        Restore all
                                     </button>
                                 )}
                             </div>
                             <div className="space-y-0.5">
                                 <CheckRow
-                                    checked={localCats.length === 0}
-                                    onToggle={() => setLocalCats([])}
+                                    checked={localXCats.length === 0}
+                                    onToggle={() => setLocalXCats([])}
                                     label="All Categories"
                                 />
                                 <CheckRow
-                                    checked={localCats.includes(NONE_SENTINEL)}
+                                    checked={!localXCats.includes(NONE_SENTINEL)}
                                     onToggle={() => toggleCat(NONE_SENTINEL)}
                                     label="Uncategorized"
                                     italic
@@ -289,7 +290,7 @@ export function FilterModal({
                                 {allCategories.map(cat => (
                                     <CheckRow
                                         key={cat}
-                                        checked={localCats.includes(cat)}
+                                        checked={!localXCats.includes(cat)}
                                         onToggle={() => toggleCat(cat)}
                                         label={cat}
                                     />
@@ -297,28 +298,28 @@ export function FilterModal({
                             </div>
                         </div>
 
-                        {/* Tags */}
+                        {/* Tags — exclusion model: checked = visible */}
                         {(allTags.length > 0 || true) && (
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <label className="text-sm font-semibold text-foreground">Tags</label>
-                                    {localTags.length > 0 && (
+                                    {localXTags.length > 0 && (
                                         <button
-                                            onClick={() => setLocalTags([])}
-                                            className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                                            onClick={() => setLocalXTags([])}
+                                            className="text-xs text-primary hover:text-primary/80 flex items-center gap-1"
                                         >
-                                            <X className="h-3 w-3" /> Clear
+                                            Restore all
                                         </button>
                                     )}
                                 </div>
                                 <div className="space-y-0.5">
                                     <CheckRow
-                                        checked={localTags.length === 0}
-                                        onToggle={() => setLocalTags([])}
+                                        checked={localXTags.length === 0}
+                                        onToggle={() => setLocalXTags([])}
                                         label="All Tags"
                                     />
                                     <CheckRow
-                                        checked={localTags.includes(NONE_SENTINEL)}
+                                        checked={!localXTags.includes(NONE_SENTINEL)}
                                         onToggle={() => toggleTag(NONE_SENTINEL)}
                                         label="No tags"
                                         italic
@@ -326,7 +327,7 @@ export function FilterModal({
                                     {allTags.map(tag => (
                                         <CheckRow
                                             key={tag}
-                                            checked={localTags.includes(tag)}
+                                            checked={!localXTags.includes(tag)}
                                             onToggle={() => toggleTag(tag)}
                                             label={tag}
                                         />

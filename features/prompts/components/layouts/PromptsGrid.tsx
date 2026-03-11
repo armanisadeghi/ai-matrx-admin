@@ -7,7 +7,7 @@ import { PromptListItem } from "./PromptListItem";
 import { SharedPromptListItem } from "./SharedPromptListItem";
 import { MobileActionBar } from "@/components/official/mobile-action-bar";
 import { BottomSheet, BottomSheetHeader, BottomSheetBody } from "@/components/official/bottom-sheet";
-import { Check, ChevronRight, RotateCcw, X } from "lucide-react";
+import { Check, ChevronRight, RotateCcw, X, Search } from "lucide-react";
 import { DesktopSearchBar } from "./DesktopSearchBar";
 import { NewPromptModal } from "./NewPromptModal";
 import { useRouter } from "next/navigation";
@@ -92,16 +92,16 @@ export function PromptsGrid() {
         tab: activeTab,
         sortBy,
         searchTerm,
-        selectedCats,
-        selectedTags,
+        excludedCats,
+        excludedTags,
         favFilter,
         archFilter,
         favoritesFirst,
         setTab: setActiveTab,
         setSortBy,
         setSearchTerm,
-        setSelectedCats,
-        setSelectedTags,
+        setExcludedCats,
+        setExcludedTags,
         setFavFilter,
         setArchFilter,
         setFavoritesFirst,
@@ -146,20 +146,20 @@ export function PromptsGrid() {
             if (favFilter === "no"  &&  prompt.isFavorite) return false;
             // "all" passes everything through
 
-            // Categories: OR logic — prompt must match at least one selected category
-            // NONE_SENTINEL means "prompt has no category"
-            if (selectedCats.length > 0) {
-                const matchesNone = selectedCats.includes(NONE_SENTINEL) && !prompt.category;
-                const matchesCat  = selectedCats.some(c => c !== NONE_SENTINEL && c === prompt.category);
-                if (!matchesNone && !matchesCat) return false;
+            // Categories: EXCLUSION model — hide prompts whose category is excluded.
+            // NONE_SENTINEL in exclusions = hide uncategorized prompts.
+            if (excludedCats.length > 0) {
+                const isUncategorized = !prompt.category;
+                if (isUncategorized && excludedCats.includes(NONE_SENTINEL)) return false;
+                if (!isUncategorized && excludedCats.includes(prompt.category!)) return false;
             }
 
-            // Tags: OR logic — prompt must match at least one selected tag
-            // NONE_SENTINEL means "prompt has no tags"
-            if (selectedTags.length > 0) {
-                const matchesNone = selectedTags.includes(NONE_SENTINEL) && !(prompt.tags?.length);
-                const matchesTag  = prompt.tags?.some(t => selectedTags.includes(t));
-                if (!matchesNone && !matchesTag) return false;
+            // Tags: EXCLUSION model — hide prompts that have ANY excluded tag.
+            // NONE_SENTINEL in exclusions = hide untagged prompts.
+            if (excludedTags.length > 0) {
+                const isUntagged = !(prompt.tags?.length);
+                if (isUntagged && excludedTags.includes(NONE_SENTINEL)) return false;
+                if (!isUntagged && prompt.tags?.some(t => excludedTags.includes(t))) return false;
             }
 
             if (searchTerm) {
@@ -212,7 +212,7 @@ export function PromptsGrid() {
         });
 
         return filtered;
-    }, [prompts, searchTerm, sortBy, selectedCats, selectedTags, favFilter, archFilter, favoritesFirst]);
+    }, [prompts, searchTerm, sortBy, excludedCats, excludedTags, favFilter, archFilter, favoritesFirst]);
 
     // Filter and sort shared prompts
     const filteredSharedPrompts = useMemo(() => {
@@ -259,7 +259,7 @@ export function PromptsGrid() {
     useMemo(() => {
         setPromptListPage(1);
         setSharedListPage(1);
-    }, [searchTerm, sortBy, selectedCats, selectedTags, favFilter, archFilter, favoritesFirst]);
+    }, [searchTerm, sortBy, excludedCats, excludedTags, favFilter, archFilter, favoritesFirst]);
 
     // Mobile auto-pagination sentinels
     const promptSentinelRef = useRef<HTMLDivElement>(null);
@@ -387,25 +387,22 @@ export function PromptsGrid() {
         { value: "shared", label: "Shared with Me" },
     ];
     const [filterDetailKey, setFilterDetailKey] = useState<string | null>(null);
+    const [listSearchQ, setListSearchQ] = useState("");
 
     const hasSortFilter     = sortBy !== "updated-desc";
     const hasShowFilter     = activeTab !== "mine";
-    const hasCatsFilter     = selectedCats.length > 0;
-    const hasTagsFilter     = selectedTags.length > 0;
+    const hasCatsFilter     = excludedCats.length > 0;
+    const hasTagsFilter     = excludedTags.length > 0;
     const hasFavFilter      = favFilter !== "all";
     const hasArchFilter     = archFilter !== "active";
     const hasFavFirstOff    = !favoritesFirst;
 
     const categoryLabel = hasCatsFilter
-        ? selectedCats.length === 1
-            ? (selectedCats[0] === NONE_SENTINEL ? "Uncategorized" : selectedCats[0])
-            : `${selectedCats.length} selected`
+        ? `${excludedCats.length} hidden`
         : "All";
 
     const tagsLabel = hasTagsFilter
-        ? selectedTags.length === 1
-            ? (selectedTags[0] === NONE_SENTINEL ? "No tags" : selectedTags[0])
-            : `${selectedTags.length} selected`
+        ? `${excludedTags.length} hidden`
         : "All";
 
     const archLabel =
@@ -429,7 +426,12 @@ export function PromptsGrid() {
 
     const handleFilterModalChange = (open: boolean) => {
         setIsFilterModalOpen(open);
-        if (!open) setFilterDetailKey(null);
+        if (!open) { setFilterDetailKey(null); setListSearchQ(""); }
+    };
+
+    const handleFilterDetailKey = (key: string | null) => {
+        setFilterDetailKey(key);
+        setListSearchQ("");
     };
 
 
@@ -919,7 +921,7 @@ export function PromptsGrid() {
                         : "Filters"
                     }
                     showBack={filterDetailKey !== null}
-                    onBack={() => setFilterDetailKey(null)}
+                    onBack={() => handleFilterDetailKey(null)}
                     trailing={
                         !filterDetailKey && activeFilterCount > 0 ? (
                             <button
@@ -946,7 +948,7 @@ export function PromptsGrid() {
                             {sortOptions.map((option, idx) => (
                                 <button
                                     key={option.value}
-                                    onClick={() => { setSortBy(option.value as PromptSortOption); setFilterDetailKey(null); }}
+                                    onClick={() => { setSortBy(option.value as PromptSortOption); handleFilterDetailKey(null); }}
                                     className={cn(
                                         "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
                                         idx < sortOptions.length - 1 && "border-b border-white/[0.06]"
@@ -970,7 +972,7 @@ export function PromptsGrid() {
                                         key={option.value}
                                         onClick={() => {
                                             setActiveTab(option.value === "all" ? "mine" : option.value as PromptTab);
-                                            setFilterDetailKey(null);
+                                            handleFilterDetailKey(null);
                                         }}
                                         className={cn(
                                             "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
@@ -989,66 +991,92 @@ export function PromptsGrid() {
                     ) : filterDetailKey === "cats" ? (
                     /* ── Category (multi-select checkbox list) ──────────── */
                         <>
-                            {/* "All" row — clears selection */}
-                            <button
-                                onClick={() => setSelectedCats([])}
-                                className="flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
-                            >
-                                <div className={cn(
-                                    "w-5 h-5 rounded border-2 flex items-center justify-center mr-3 shrink-0 transition-colors",
-                                    !hasCatsFilter ? "bg-primary border-primary" : "border-muted-foreground/40"
-                                )}>
-                                    {!hasCatsFilter && <Check className="h-3 w-3 text-primary-foreground" />}
+                            {/* Search input */}
+                            <div className="sticky top-0 z-10 px-4 py-2 border-b border-white/[0.06]" style={{ background: "var(--glass-bg-subtle)", backdropFilter: "blur(20px)" }}>
+                                <div className="flex items-center gap-2 px-3 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08]">
+                                    <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                    <input
+                                        type="text"
+                                        placeholder="Find a category…"
+                                        value={listSearchQ}
+                                        onChange={e => setListSearchQ(e.target.value)}
+                                        className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted-foreground/50 outline-none"
+                                        style={{ fontSize: "16px" }}
+                                    />
+                                    {listSearchQ && (
+                                        <button onClick={() => setListSearchQ("")} className="text-muted-foreground hover:text-foreground transition-colors">
+                                            <X className="h-3.5 w-3.5" />
+                                        </button>
+                                    )}
                                 </div>
-                                <span className={cn("text-[15px] flex-1 text-left", !hasCatsFilter && "font-medium")}>All Categories</span>
-                            </button>
-                            {/* "Uncategorized" option */}
-                            {(() => {
-                                const isChecked = selectedCats.includes(NONE_SENTINEL);
+                            </div>
+                            {/* "Check all / Clear all" row — only show when not searching */}
+                            {!listSearchQ && (
+                                <button
+                                    onClick={() => setExcludedCats([])}
+                                    className="flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
+                                >
+                                    <div className={cn(
+                                        "w-5 h-5 rounded border-2 flex items-center justify-center mr-3 shrink-0 transition-colors",
+                                        !hasCatsFilter ? "bg-primary border-primary" : "border-muted-foreground/40"
+                                    )}>
+                                        {!hasCatsFilter && <Check className="h-3 w-3 text-primary-foreground" />}
+                                    </div>
+                                    <span className={cn("text-[15px] flex-1 text-left", !hasCatsFilter && "font-medium")}>
+                                        All Categories
+                                        {hasCatsFilter && <span className="ml-2 text-[13px] text-primary font-normal">(tap to restore all)</span>}
+                                    </span>
+                                </button>
+                            )}
+                            {/* "Uncategorized" option — only show when not searching */}
+                            {!listSearchQ && (() => {
+                                const isVisible = !excludedCats.includes(NONE_SENTINEL);
                                 return (
                                     <button
-                                        onClick={() => setSelectedCats(
-                                            isChecked
-                                                ? selectedCats.filter(c => c !== NONE_SENTINEL)
-                                                : [...selectedCats, NONE_SENTINEL]
+                                        onClick={() => setExcludedCats(
+                                            isVisible
+                                                ? [...excludedCats, NONE_SENTINEL]
+                                                : excludedCats.filter(c => c !== NONE_SENTINEL)
                                         )}
                                         className="flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                                     >
                                         <div className={cn(
                                             "w-5 h-5 rounded border-2 flex items-center justify-center mr-3 shrink-0 transition-colors",
-                                            isChecked ? "bg-primary border-primary" : "border-muted-foreground/40"
+                                            isVisible ? "bg-primary border-primary" : "border-muted-foreground/40"
                                         )}>
-                                            {isChecked && <Check className="h-3 w-3 text-primary-foreground" />}
+                                            {isVisible && <Check className="h-3 w-3 text-primary-foreground" />}
                                         </div>
-                                        <span className={cn("text-[15px] flex-1 text-left italic text-muted-foreground", isChecked && "font-medium text-foreground")}>
+                                        <span className={cn("text-[15px] flex-1 text-left italic", isVisible ? "text-muted-foreground" : "line-through text-muted-foreground/50")}>
                                             Uncategorized
                                         </span>
                                     </button>
                                 );
                             })()}
-                            {/* Real categories */}
-                            {allCategories.map((cat, idx) => {
-                                const isChecked = selectedCats.includes(cat);
+                            {/* Real categories — checked = visible, unchecked = excluded */}
+                            {allCategories
+                                .filter(cat => !listSearchQ || cat.toLowerCase().includes(listSearchQ.toLowerCase()))
+                                .map((cat, idx, arr) => {
+                                const isVisible = !excludedCats.includes(cat);
                                 return (
                                     <button
                                         key={cat}
-                                        onClick={() => setSelectedCats(
-                                            isChecked
-                                                ? selectedCats.filter(c => c !== cat)
-                                                : [...selectedCats, cat]
+                                        onClick={() => setExcludedCats(
+                                            isVisible
+                                                ? [...excludedCats, cat]
+                                                : excludedCats.filter(c => c !== cat)
                                         )}
                                         className={cn(
                                             "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
-                                            idx < allCategories.length - 1 && "border-b border-white/[0.06]"
+                                            idx < arr.length - 1 && "border-b border-white/[0.06]"
                                         )}
                                     >
                                         <div className={cn(
                                             "w-5 h-5 rounded border-2 flex items-center justify-center mr-3 shrink-0 transition-colors",
-                                            isChecked ? "bg-primary border-primary" : "border-muted-foreground/40"
+                                            isVisible ? "bg-primary border-primary" : "border-muted-foreground/40"
                                         )}>
-                                            {isChecked && <Check className="h-3 w-3 text-primary-foreground" />}
+                                            {isVisible && <Check className="h-3 w-3 text-primary-foreground" />}
                                         </div>
-                                        <span className={cn("text-[15px] flex-1 text-left", isChecked && "font-medium")}>
+                                        <span className={cn("text-[15px] flex-1 text-left", !isVisible && "line-through text-muted-foreground/50")}>
                                             {cat}
                                         </span>
                                     </button>
@@ -1057,71 +1085,100 @@ export function PromptsGrid() {
                             {allCategories.length === 0 && (
                                 <div className="px-5 py-6 text-center text-sm text-muted-foreground">No categories yet</div>
                             )}
+                            {allCategories.length > 0 && listSearchQ && allCategories.filter(c => c.toLowerCase().includes(listSearchQ.toLowerCase())).length === 0 && (
+                                <div className="px-5 py-6 text-center text-sm text-muted-foreground">No matching categories</div>
+                            )}
                         </>
 
                     ) : filterDetailKey === "tags" ? (
                     /* ── Tags (multi-select checkbox list) ──────────────── */
                         <>
-                            {/* "All" row */}
-                            <button
-                                onClick={() => setSelectedTags([])}
-                                className="flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
-                            >
-                                <div className={cn(
-                                    "w-5 h-5 rounded border-2 flex items-center justify-center mr-3 shrink-0 transition-colors",
-                                    !hasTagsFilter ? "bg-primary border-primary" : "border-muted-foreground/40"
-                                )}>
-                                    {!hasTagsFilter && <Check className="h-3 w-3 text-primary-foreground" />}
+                            {/* Search input */}
+                            <div className="sticky top-0 z-10 px-4 py-2 border-b border-white/[0.06]" style={{ background: "var(--glass-bg-subtle)", backdropFilter: "blur(20px)" }}>
+                                <div className="flex items-center gap-2 px-3 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08]">
+                                    <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                    <input
+                                        type="text"
+                                        placeholder="Find a tag…"
+                                        value={listSearchQ}
+                                        onChange={e => setListSearchQ(e.target.value)}
+                                        className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted-foreground/50 outline-none"
+                                        style={{ fontSize: "16px" }}
+                                    />
+                                    {listSearchQ && (
+                                        <button onClick={() => setListSearchQ("")} className="text-muted-foreground hover:text-foreground transition-colors">
+                                            <X className="h-3.5 w-3.5" />
+                                        </button>
+                                    )}
                                 </div>
-                                <span className={cn("text-[15px] flex-1 text-left", !hasTagsFilter && "font-medium")}>All Tags</span>
-                            </button>
-                            {/* "No tags" option */}
-                            {(() => {
-                                const isChecked = selectedTags.includes(NONE_SENTINEL);
+                            </div>
+                            {/* "Check all / Clear all" row — only show when not searching */}
+                            {!listSearchQ && (
+                                <button
+                                    onClick={() => setExcludedTags([])}
+                                    className="flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
+                                >
+                                    <div className={cn(
+                                        "w-5 h-5 rounded border-2 flex items-center justify-center mr-3 shrink-0 transition-colors",
+                                        !hasTagsFilter ? "bg-primary border-primary" : "border-muted-foreground/40"
+                                    )}>
+                                        {!hasTagsFilter && <Check className="h-3 w-3 text-primary-foreground" />}
+                                    </div>
+                                    <span className={cn("text-[15px] flex-1 text-left", !hasTagsFilter && "font-medium")}>
+                                        All Tags
+                                        {hasTagsFilter && <span className="ml-2 text-[13px] text-primary font-normal">(tap to restore all)</span>}
+                                    </span>
+                                </button>
+                            )}
+                            {/* "No tags" option — only show when not searching */}
+                            {!listSearchQ && (() => {
+                                const isVisible = !excludedTags.includes(NONE_SENTINEL);
                                 return (
                                     <button
-                                        onClick={() => setSelectedTags(
-                                            isChecked
-                                                ? selectedTags.filter(t => t !== NONE_SENTINEL)
-                                                : [...selectedTags, NONE_SENTINEL]
+                                        onClick={() => setExcludedTags(
+                                            isVisible
+                                                ? [...excludedTags, NONE_SENTINEL]
+                                                : excludedTags.filter(t => t !== NONE_SENTINEL)
                                         )}
                                         className="flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                                     >
                                         <div className={cn(
                                             "w-5 h-5 rounded border-2 flex items-center justify-center mr-3 shrink-0 transition-colors",
-                                            isChecked ? "bg-primary border-primary" : "border-muted-foreground/40"
+                                            isVisible ? "bg-primary border-primary" : "border-muted-foreground/40"
                                         )}>
-                                            {isChecked && <Check className="h-3 w-3 text-primary-foreground" />}
+                                            {isVisible && <Check className="h-3 w-3 text-primary-foreground" />}
                                         </div>
-                                        <span className={cn("text-[15px] flex-1 text-left italic text-muted-foreground", isChecked && "font-medium text-foreground")}>
+                                        <span className={cn("text-[15px] flex-1 text-left italic", isVisible ? "text-muted-foreground" : "line-through text-muted-foreground/50")}>
                                             No tags
                                         </span>
                                     </button>
                                 );
                             })()}
-                            {/* Real tags */}
-                            {allTags.map((tag, idx) => {
-                                const isChecked = selectedTags.includes(tag);
+                            {/* Real tags — checked = visible, unchecked = excluded */}
+                            {allTags
+                                .filter(tag => !listSearchQ || tag.toLowerCase().includes(listSearchQ.toLowerCase()))
+                                .map((tag, idx, arr) => {
+                                const isVisible = !excludedTags.includes(tag);
                                 return (
                                     <button
                                         key={tag}
-                                        onClick={() => setSelectedTags(
-                                            isChecked
-                                                ? selectedTags.filter(t => t !== tag)
-                                                : [...selectedTags, tag]
+                                        onClick={() => setExcludedTags(
+                                            isVisible
+                                                ? [...excludedTags, tag]
+                                                : excludedTags.filter(t => t !== tag)
                                         )}
                                         className={cn(
                                             "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
-                                            idx < allTags.length - 1 && "border-b border-white/[0.06]"
+                                            idx < arr.length - 1 && "border-b border-white/[0.06]"
                                         )}
                                     >
                                         <div className={cn(
                                             "w-5 h-5 rounded border-2 flex items-center justify-center mr-3 shrink-0 transition-colors",
-                                            isChecked ? "bg-primary border-primary" : "border-muted-foreground/40"
+                                            isVisible ? "bg-primary border-primary" : "border-muted-foreground/40"
                                         )}>
-                                            {isChecked && <Check className="h-3 w-3 text-primary-foreground" />}
+                                            {isVisible && <Check className="h-3 w-3 text-primary-foreground" />}
                                         </div>
-                                        <span className={cn("text-[15px] flex-1 text-left", isChecked && "font-medium")}>
+                                        <span className={cn("text-[15px] flex-1 text-left", !isVisible && "line-through text-muted-foreground/50")}>
                                             {tag}
                                         </span>
                                     </button>
@@ -1129,6 +1186,9 @@ export function PromptsGrid() {
                             })}
                             {allTags.length === 0 && (
                                 <div className="px-5 py-6 text-center text-sm text-muted-foreground">No tags yet</div>
+                            )}
+                            {allTags.length > 0 && listSearchQ && allTags.filter(t => t.toLowerCase().includes(listSearchQ.toLowerCase())).length === 0 && (
+                                <div className="px-5 py-6 text-center text-sm text-muted-foreground">No matching tags</div>
                             )}
                         </>
 
@@ -1142,7 +1202,7 @@ export function PromptsGrid() {
                             ] as { value: FavFilter; label: string }[]).map((opt, idx, arr) => (
                                 <button
                                     key={opt.value}
-                                    onClick={() => { setFavFilter(opt.value); setFilterDetailKey(null); }}
+                                    onClick={() => { setFavFilter(opt.value); handleFilterDetailKey(null); }}
                                     className={cn(
                                         "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
                                         idx < arr.length - 1 && "border-b border-white/[0.06]"
@@ -1166,7 +1226,7 @@ export function PromptsGrid() {
                             ] as { value: ArchFilter; label: string }[]).map((opt, idx, arr) => (
                                 <button
                                     key={opt.value}
-                                    onClick={() => { setArchFilter(opt.value); setFilterDetailKey(null); }}
+                                    onClick={() => { setArchFilter(opt.value); handleFilterDetailKey(null); }}
                                     className={cn(
                                         "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
                                         idx < arr.length - 1 && "border-b border-white/[0.06]"
@@ -1185,7 +1245,7 @@ export function PromptsGrid() {
                         <>
                             {/* Show (tab) */}
                             <button
-                                onClick={() => setFilterDetailKey("show")}
+                                onClick={() => handleFilterDetailKey("show")}
                                 className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                             >
                                 <span className="text-[15px] font-medium flex-1 text-left">Show</span>
@@ -1197,7 +1257,7 @@ export function PromptsGrid() {
 
                             {/* Sort By */}
                             <button
-                                onClick={() => setFilterDetailKey("sortBy")}
+                                onClick={() => handleFilterDetailKey("sortBy")}
                                 className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                             >
                                 <span className="text-[15px] font-medium flex-1 text-left">Sort By</span>
@@ -1209,7 +1269,7 @@ export function PromptsGrid() {
 
                             {/* Favorites */}
                             <button
-                                onClick={() => setFilterDetailKey("fav")}
+                                onClick={() => handleFilterDetailKey("fav")}
                                 className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                             >
                                 <span className="text-[15px] font-medium flex-1 text-left">Favorites</span>
@@ -1221,7 +1281,7 @@ export function PromptsGrid() {
 
                             {/* Archived */}
                             <button
-                                onClick={() => setFilterDetailKey("arch")}
+                                onClick={() => handleFilterDetailKey("arch")}
                                 className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                             >
                                 <span className="text-[15px] font-medium flex-1 text-left">Archived</span>
@@ -1233,7 +1293,7 @@ export function PromptsGrid() {
 
                             {/* Category */}
                             <button
-                                onClick={() => setFilterDetailKey("cats")}
+                                onClick={() => handleFilterDetailKey("cats")}
                                 className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                             >
                                 <span className="text-[15px] font-medium flex-1 text-left">Category</span>
@@ -1245,7 +1305,7 @@ export function PromptsGrid() {
 
                             {/* Tags */}
                             <button
-                                onClick={() => setFilterDetailKey("tags")}
+                                onClick={() => handleFilterDetailKey("tags")}
                                 className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                             >
                                 <span className="text-[15px] font-medium flex-1 text-left">Tags</span>
