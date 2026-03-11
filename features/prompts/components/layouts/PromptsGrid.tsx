@@ -991,8 +991,8 @@ export function PromptsGrid() {
                     ) : filterDetailKey === "cats" ? (
                     /* ── Category (multi-select checkbox list) ──────────── */
                         <>
-                            {/* Search input */}
-                            <div className="sticky top-0 z-10 px-4 py-2 border-b border-white/[0.06]" style={{ background: "var(--glass-bg-subtle)", backdropFilter: "blur(20px)" }}>
+                            {/* Sticky header: search + Select All / Clear All */}
+                            <div className="sticky top-0 z-10 px-4 pt-2 pb-3 border-b border-white/[0.06] space-y-2" style={{ background: "var(--glass-bg-subtle)", backdropFilter: "blur(20px)" }}>
                                 <div className="flex items-center gap-2 px-3 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08]">
                                     <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                                     <input
@@ -1000,7 +1000,7 @@ export function PromptsGrid() {
                                         placeholder="Find a category…"
                                         value={listSearchQ}
                                         onChange={e => setListSearchQ(e.target.value)}
-                                        className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted-foreground/50 outline-none"
+                                        className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/50 outline-none"
                                         style={{ fontSize: "16px" }}
                                     />
                                     {listSearchQ && (
@@ -1009,26 +1009,25 @@ export function PromptsGrid() {
                                         </button>
                                     )}
                                 </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setExcludedCats([])}
+                                        className="flex-1 h-8 rounded-lg border border-white/[0.12] text-[13px] font-medium text-foreground active:bg-white/10 transition-colors bg-white/[0.04] hover:bg-white/[0.08]"
+                                    >
+                                        Select All
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const allCatValues = [NONE_SENTINEL, ...allCategories];
+                                            setExcludedCats(allCatValues);
+                                        }}
+                                        className="flex-1 h-8 rounded-lg border border-white/[0.12] text-[13px] font-medium text-muted-foreground active:bg-white/10 transition-colors bg-white/[0.04] hover:bg-white/[0.08]"
+                                    >
+                                        Clear All
+                                    </button>
+                                </div>
                             </div>
-                            {/* "Check all / Clear all" row — only show when not searching */}
-                            {!listSearchQ && (
-                                <button
-                                    onClick={() => setExcludedCats([])}
-                                    className="flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
-                                >
-                                    <div className={cn(
-                                        "w-5 h-5 rounded border-2 flex items-center justify-center mr-3 shrink-0 transition-colors",
-                                        !hasCatsFilter ? "bg-primary border-primary" : "border-muted-foreground/40"
-                                    )}>
-                                        {!hasCatsFilter && <Check className="h-3 w-3 text-primary-foreground" />}
-                                    </div>
-                                    <span className={cn("text-[15px] flex-1 text-left", !hasCatsFilter && "font-medium")}>
-                                        All Categories
-                                        {hasCatsFilter && <span className="ml-2 text-[13px] text-primary font-normal">(tap to restore all)</span>}
-                                    </span>
-                                </button>
-                            )}
-                            {/* "Uncategorized" option — only show when not searching */}
+                            {/* Uncategorized item */}
                             {!listSearchQ && (() => {
                                 const isVisible = !excludedCats.includes(NONE_SENTINEL);
                                 return (
@@ -1046,13 +1045,13 @@ export function PromptsGrid() {
                                         )}>
                                             {isVisible && <Check className="h-3 w-3 text-primary-foreground" />}
                                         </div>
-                                        <span className={cn("text-[15px] flex-1 text-left italic", isVisible ? "text-muted-foreground" : "line-through text-muted-foreground/50")}>
+                                        <span className={cn("text-[15px] flex-1 text-left italic", !isVisible && "line-through text-muted-foreground/50")}>
                                             Uncategorized
                                         </span>
                                     </button>
                                 );
                             })()}
-                            {/* Real categories — checked = visible, unchecked = excluded */}
+                            {/* Category items — checked = visible, unchecked = excluded */}
                             {allCategories
                                 .filter(cat => !listSearchQ || cat.toLowerCase().includes(listSearchQ.toLowerCase()))
                                 .map((cat, idx, arr) => {
@@ -1093,8 +1092,8 @@ export function PromptsGrid() {
                     ) : filterDetailKey === "tags" ? (
                     /* ── Tags (multi-select checkbox list) ──────────────── */
                         <>
-                            {/* Search input */}
-                            <div className="sticky top-0 z-10 px-4 py-2 border-b border-white/[0.06]" style={{ background: "var(--glass-bg-subtle)", backdropFilter: "blur(20px)" }}>
+                            {/* Sticky header: search + Select All / Clear All */}
+                            <div className="sticky top-0 z-10 px-4 pt-2 pb-3 border-b border-white/[0.06] space-y-2" style={{ background: "var(--glass-bg-subtle)", backdropFilter: "blur(20px)" }}>
                                 <div className="flex items-center gap-2 px-3 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08]">
                                     <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                                     <input
@@ -1102,7 +1101,7 @@ export function PromptsGrid() {
                                         placeholder="Find a tag…"
                                         value={listSearchQ}
                                         onChange={e => setListSearchQ(e.target.value)}
-                                        className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted-foreground/50 outline-none"
+                                        className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/50 outline-none"
                                         style={{ fontSize: "16px" }}
                                     />
                                     {listSearchQ && (
@@ -1111,26 +1110,25 @@ export function PromptsGrid() {
                                         </button>
                                     )}
                                 </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setExcludedTags([])}
+                                        className="flex-1 h-8 rounded-lg border border-white/[0.12] text-[13px] font-medium text-foreground active:bg-white/10 transition-colors bg-white/[0.04] hover:bg-white/[0.08]"
+                                    >
+                                        Select All
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const allTagValues = [NONE_SENTINEL, ...allTags];
+                                            setExcludedTags(allTagValues);
+                                        }}
+                                        className="flex-1 h-8 rounded-lg border border-white/[0.12] text-[13px] font-medium text-muted-foreground active:bg-white/10 transition-colors bg-white/[0.04] hover:bg-white/[0.08]"
+                                    >
+                                        Clear All
+                                    </button>
+                                </div>
                             </div>
-                            {/* "Check all / Clear all" row — only show when not searching */}
-                            {!listSearchQ && (
-                                <button
-                                    onClick={() => setExcludedTags([])}
-                                    className="flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
-                                >
-                                    <div className={cn(
-                                        "w-5 h-5 rounded border-2 flex items-center justify-center mr-3 shrink-0 transition-colors",
-                                        !hasTagsFilter ? "bg-primary border-primary" : "border-muted-foreground/40"
-                                    )}>
-                                        {!hasTagsFilter && <Check className="h-3 w-3 text-primary-foreground" />}
-                                    </div>
-                                    <span className={cn("text-[15px] flex-1 text-left", !hasTagsFilter && "font-medium")}>
-                                        All Tags
-                                        {hasTagsFilter && <span className="ml-2 text-[13px] text-primary font-normal">(tap to restore all)</span>}
-                                    </span>
-                                </button>
-                            )}
-                            {/* "No tags" option — only show when not searching */}
+                            {/* "No tags" item */}
                             {!listSearchQ && (() => {
                                 const isVisible = !excludedTags.includes(NONE_SENTINEL);
                                 return (
@@ -1148,13 +1146,13 @@ export function PromptsGrid() {
                                         )}>
                                             {isVisible && <Check className="h-3 w-3 text-primary-foreground" />}
                                         </div>
-                                        <span className={cn("text-[15px] flex-1 text-left italic", isVisible ? "text-muted-foreground" : "line-through text-muted-foreground/50")}>
+                                        <span className={cn("text-[15px] flex-1 text-left italic", !isVisible && "line-through text-muted-foreground/50")}>
                                             No tags
                                         </span>
                                     </button>
                                 );
                             })()}
-                            {/* Real tags — checked = visible, unchecked = excluded */}
+                            {/* Tag items — checked = visible, unchecked = excluded */}
                             {allTags
                                 .filter(tag => !listSearchQ || tag.toLowerCase().includes(listSearchQ.toLowerCase()))
                                 .map((tag, idx, arr) => {
