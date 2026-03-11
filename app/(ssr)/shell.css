@@ -16,6 +16,7 @@
   --shell-dock-h: 3.75rem;
   --shell-dock-bottom: 0.625rem;
   --shell-dock-mx: 0.5rem;
+  --shell-panel-w: 17.5rem;          /* 280px — secondary sidebar width */
   --shell-safe-area-top: env(safe-area-inset-top, 0px);
   --shell-safe-area-bottom: env(safe-area-inset-bottom, 0px);
 
@@ -431,17 +432,6 @@
   grid-template-columns: var(--shell-sidebar-w-expanded) 1fr;
 }
 
-/* Chat route — icon strip tracks the main sidebar width.
-   Uses the same :has() hook and spring transition as .shell-sidebar so
-   the shift is frame-perfectly synchronised with the sidebar expand. */
-.chat-sidebar-icon-strip {
-  transition: left var(--shell-duration-slow) var(--shell-ease-spring);
-}
-
-.shell-root:has(#shell-sidebar-toggle:checked) .chat-sidebar-icon-strip {
-  left: var(--shell-sidebar-w-expanded);
-}
-
 /* Sidebar brand section */
 .shell-sidebar-brand {
   display: flex;
@@ -802,45 +792,6 @@
     padding-bottom: 0;
   }
 
-  /* ── Chat route — hide the shell's default hamburger.
-     ChatMobileHeaderBar renders its own hamburger as a label for #chat-sidebar-mobile. */
-  .shell-root[data-pathname^="/ssr/chat"] .shell-mobile-trigger {
-    display: none;
-  }
-
-  /* ── Chat sidebar backdrop — dims when #chat-sidebar-mobile is checked ─────
-     Drawer translate is controlled by React isOpen state (JS bridge from checkbox).
-     Backdrop opacity remains CSS-driven since it works reliably. */
-
-  .chat-sidebar-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 44;
-    background: rgba(0, 0, 0, 0.4);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 200ms ease;
-  }
-
-  .shell-root:has(#chat-sidebar-mobile:checked) .chat-sidebar-backdrop {
-    opacity: 1;
-    pointer-events: auto;
-  }
-}
-
-/* ── #chat-sidebar-mobile — visually hidden on ALL screen sizes ────────────
-   Must be outside any media query so desktop never renders a visible checkbox.
-   Mirrors the exact pattern used for #shell-mobile-menu and #shell-user-menu. */
-#chat-sidebar-mobile {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 @media (min-width: 1024px) {
@@ -1388,7 +1339,224 @@
 }
 
 /* ---------------------------------------------------------------------------
-   17b. Hamburger Icon — CSS-only animated
+   17b. Panel Sidebar — Route-Level Secondary Sidebar (CSS-Only)
+
+   A route opts in by rendering:
+     <aside class="shell-panel"> ... content ... </aside>
+   inside shell-main. The shell detects it via :has(.shell-panel) and
+   automatically splits main into a two-column grid.
+
+   Desktop:
+     #shell-panel-toggle checkbox controls open/close with a smooth
+     grid-template-columns transition. Panel starts open (checked by default).
+     The toggle label can be rendered by the route's panel header.
+
+   Mobile:
+     #shell-panel-mobile checkbox drives a fixed drawer from the left.
+     Same backdrop/slide pattern as the shell-mobile-sheet.
+     Route renders a <label htmlFor="shell-panel-mobile"> for the trigger.
+   --------------------------------------------------------------------------- */
+
+/* ── Visually-hidden checkboxes ── */
+#shell-panel-toggle,
+#shell-panel-mobile {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Desktop panel — inside shell-main ── */
+@media (min-width: 1024px) {
+  /* When a route has a .shell-panel, split shell-main into a grid.
+     The panel column animates between panel-w and 0. */
+  .shell-main:has(.shell-panel) {
+    display: grid;
+    grid-template-columns: 0px 1fr;
+    grid-template-rows: 1fr;
+    overflow: hidden;
+    transition: grid-template-columns var(--shell-duration-slow) var(--shell-ease-out);
+  }
+
+  /* Panel open (checkbox checked — default state) */
+  .shell-root:has(#shell-panel-toggle:checked) .shell-main:has(.shell-panel) {
+    grid-template-columns: var(--shell-panel-w) 1fr;
+  }
+
+  .shell-panel {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: var(--shell-panel-w);
+    min-width: var(--shell-panel-w);
+    border-right: 1px solid var(--shell-glass-border);
+    background: var(--background);
+    padding-top: var(--shell-header-h);
+    transform: translateX(calc(-1 * var(--shell-panel-w)));
+    transition: transform var(--shell-duration-slow) var(--shell-ease-out);
+  }
+
+  .shell-root:has(#shell-panel-toggle:checked) .shell-panel {
+    transform: translateX(0);
+  }
+
+  /* Main content area beside the panel */
+  .shell-panel-content {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  /* Panel header strip — pinned in header zone, tracks main sidebar width */
+  .shell-panel-header-strip {
+    position: fixed;
+    top: 0;
+    z-index: 41;
+    left: var(--shell-sidebar-w);
+    width: var(--shell-panel-w);
+    height: var(--shell-header-h);
+    display: flex;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      left var(--shell-duration-slow) var(--shell-ease-spring),
+      opacity var(--shell-duration-normal) var(--shell-ease-smooth);
+  }
+
+  .shell-root:has(#shell-panel-toggle:checked) .shell-panel-header-strip {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .shell-root:has(#shell-sidebar-toggle:checked) .shell-panel-header-strip {
+    left: var(--shell-sidebar-w-expanded);
+  }
+
+  /* Panel toggle button styling — sits in the header strip */
+  .shell-panel-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    flex-shrink: 0;
+    color: var(--shell-nav-icon);
+    transition: color var(--shell-duration-fast) var(--shell-ease-smooth);
+  }
+
+  .shell-panel-toggle-btn:hover {
+    color: var(--shell-nav-icon-hover);
+  }
+
+  /* When panel is closed, show a collapsed toggle indicator */
+  .shell-root:not(:has(#shell-panel-toggle:checked)) .shell-panel-header-strip {
+    opacity: 1;
+    pointer-events: auto;
+    width: auto;
+  }
+}
+
+/* ── Mobile panel — fixed drawer from left ── */
+@media (max-width: 1023px) {
+  /* Hide desktop panel elements on mobile */
+  .shell-panel-header-strip {
+    display: none;
+  }
+
+  .shell-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 85%;
+    max-width: 20rem;
+    z-index: 46;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--background);
+    transform: translateX(-100%);
+    transition: transform var(--shell-duration-slow) var(--shell-ease-spring);
+    padding-top: var(--shell-header-h);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  }
+
+  .shell-root:has(#shell-panel-mobile:checked) .shell-panel {
+    transform: translateX(0);
+  }
+
+  /* Backdrop */
+  .shell-panel-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    background: var(--shell-overlay-bg);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--shell-duration-normal) var(--shell-ease-smooth);
+  }
+
+  .shell-root:has(#shell-panel-mobile:checked) .shell-panel-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Main content area — no grid on mobile, just flex */
+  .shell-panel-content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+    flex: 1;
+  }
+
+  /* Hide shell hamburger when a panel route is active — route renders its own trigger */
+  .shell-root:has(.shell-panel) .shell-mobile-trigger {
+    display: none;
+  }
+}
+
+/* ── Panel internal layout helpers ── */
+
+/* Scrollable body inside the panel */
+.shell-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.shell-panel-body:hover {
+  scrollbar-color: hsl(var(--border) / 0.3) transparent;
+}
+
+.shell-panel-body::-webkit-scrollbar { width: 3px; }
+.shell-panel-body::-webkit-scrollbar-track { background: transparent; }
+.shell-panel-body::-webkit-scrollbar-thumb { background: transparent; border-radius: 2px; }
+.shell-panel-body:hover::-webkit-scrollbar-thumb { background: hsl(var(--border) / 0.3); }
+
+/* Footer pinned to bottom of panel */
+.shell-panel-footer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--shell-glass-border);
+}
+
+/* ---------------------------------------------------------------------------
+   17c. Hamburger Icon — CSS-only animated
    --------------------------------------------------------------------------- */
 
 /* shell-mobile-menu-label / shell-hamburger replaced by IconButton + HamburgerIsland */

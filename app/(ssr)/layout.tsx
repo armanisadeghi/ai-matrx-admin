@@ -37,6 +37,8 @@ export default async function SSRLayout({ children }: { children: React.ReactNod
           <input type="checkbox" id="shell-sidebar-toggle" aria-hidden="true" />
           <input type="checkbox" id="shell-mobile-menu" aria-hidden="true" />
           <input type="checkbox" id="shell-user-menu" aria-hidden="true" />
+          <input type="checkbox" id="shell-panel-toggle" defaultChecked aria-hidden="true" />
+          <input type="checkbox" id="shell-panel-mobile" aria-hidden="true" />
 
           <Sidebar pathname={pathname} isAdmin={false} />
           <Header />
