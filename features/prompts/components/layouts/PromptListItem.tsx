@@ -15,7 +15,6 @@ import {
   LayoutPanelTop,
   Globe,
   FileText,
-  Star,
 } from "lucide-react";
 import { FaBars } from "react-icons/fa";
 import { cn } from "@/lib/utils";
@@ -25,6 +24,7 @@ import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
 import { CreatePromptAppModal } from "@/features/prompt-apps/components";
 import { ConvertToBuiltinModal } from "@/features/prompts/components/layouts/ConvertToBuiltinModal";
+import { FavoriteButton } from "./FavoriteButton";
 import { PromptActionModal } from "./PromptActionModal";
 import { PromptMetadataModal } from "./PromptMetadataModal";
 import { createClient } from "@/utils/supabase/client";
@@ -229,12 +229,13 @@ export function PromptListItem({
           </div>
         </div>
 
-        {/* Favorite indicator */}
-        {promptData?.isFavorite && (
-          <div className="flex-shrink-0">
-            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-          </div>
-        )}
+        {/* Favorite toggle */}
+        <FavoriteButton
+          id={id}
+          promptData={promptData}
+          variant="list"
+          disabled={isDisabled}
+        />
 
         {/* Name + metadata */}
         <div className="flex-1 min-w-0">

@@ -16,7 +16,6 @@ import {
   AppWindow,
   AlignJustify,
   FileText,
-  Star,
   Archive,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,6 +27,7 @@ import { PromptActionModal } from "./PromptActionModal";
 import { PromptMetadataModal } from "./PromptMetadataModal";
 import { CreatePromptAppModal } from "@/features/prompt-apps/components";
 import { ConvertToBuiltinModal } from "@/features/prompts/components/layouts/ConvertToBuiltinModal";
+import { FavoriteButton } from "./FavoriteButton";
 import { useState } from "react";
 import { toast } from "@/lib/toast-service";
 import {
@@ -250,22 +250,22 @@ export function PromptCard({
         </div>
       </div>
 
-      {/* Favorite indicator */}
-      {promptData?.isFavorite && (
-        <div className="absolute top-3 right-3 z-10">
-          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-        </div>
-      )}
+      {/* Favorite toggle — always visible, interactive */}
+      <FavoriteButton
+        id={id}
+        promptData={promptData}
+        disabled={isDisabled}
+      />
 
-      {/* Archived badge */}
+      {/* Archived badge — only when archived, offset left to avoid star overlap */}
       {promptData?.isArchived && (
-        <div className="absolute top-3 right-3 z-10 flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+        <div className="absolute top-3 right-8 z-10 flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
           <Archive className="h-3 w-3" />
           <span className="text-[10px] font-medium">Archived</span>
         </div>
       )}
 
-      <div className="p-4 pl-12 flex-1 flex flex-col items-center justify-center gap-1.5">
+      <div className="p-4 pl-12 pr-8 flex-1 flex flex-col items-center justify-center gap-1.5">
         <h3
           className={`text-md font-medium text-foreground text-center line-clamp-3 break-words transition-colors duration-200 ${
             !isDisabled && "group-hover:text-primary"

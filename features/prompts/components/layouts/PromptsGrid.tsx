@@ -38,8 +38,8 @@ import {
 } from "@/lib/redux/thunks/promptCrudThunks";
 import { SharedPrompt } from "../../types/shared";
 import type { PromptData } from "../../types/core";
-import { usePromptFilters } from "../../hooks/usePromptFilters";
-import type { PromptTab, PromptSortOption } from "../../hooks/usePromptFilters";
+import { usePromptFilters, NONE_SENTINEL } from "../../hooks/usePromptFilters";
+import type { PromptTab, PromptSortOption, FavFilter, ArchFilter } from "../../hooks/usePromptFilters";
 import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
 
 // Threshold constants for hybrid card/list layout
@@ -92,21 +92,19 @@ export function PromptsGrid() {
         tab: activeTab,
         sortBy,
         searchTerm,
-        category: filterCategory,
-        excludeCategory,
-        tags: filterTags,
-        excludeTags,
-        showArchived,
-        favoritesOnly,
+        selectedCats,
+        selectedTags,
+        favFilter,
+        archFilter,
+        favoritesFirst,
         setTab: setActiveTab,
         setSortBy,
         setSearchTerm,
-        setCategory: setFilterCategory,
-        setExcludeCategory,
-        setTags: setFilterTags,
-        setExcludeTags,
-        setShowArchived,
-        setFavoritesOnly,
+        setSelectedCats,
+        setSelectedTags,
+        setFavFilter,
+        setArchFilter,
+        setFavoritesFirst,
         resetFilters,
         hasActiveFilters,
         isSearching,
@@ -138,19 +136,38 @@ export function PromptsGrid() {
     // Filter and sort prompts
     const filteredPrompts = useMemo(() => {
         let filtered = prompts.filter((prompt) => {
-            if (!showArchived && prompt.isArchived) return false;
-            if (favoritesOnly && !prompt.isFavorite) return false;
-            if (filterCategory && prompt.category !== filterCategory) return false;
-            if (excludeCategory && prompt.category === excludeCategory) return false;
-            if (filterTags.length > 0 && !filterTags.some((t) => prompt.tags?.includes(t))) return false;
-            if (excludeTags.length > 0 && excludeTags.some((t) => prompt.tags?.includes(t))) return false;
+            // Archived radio filter
+            if (archFilter === "active"   && prompt.isArchived)  return false;
+            if (archFilter === "archived" && !prompt.isArchived) return false;
+            // "both" passes everything through
+
+            // Favorites radio filter
+            if (favFilter === "yes" && !prompt.isFavorite) return false;
+            if (favFilter === "no"  &&  prompt.isFavorite) return false;
+            // "all" passes everything through
+
+            // Categories: OR logic — prompt must match at least one selected category
+            // NONE_SENTINEL means "prompt has no category"
+            if (selectedCats.length > 0) {
+                const matchesNone = selectedCats.includes(NONE_SENTINEL) && !prompt.category;
+                const matchesCat  = selectedCats.some(c => c !== NONE_SENTINEL && c === prompt.category);
+                if (!matchesNone && !matchesCat) return false;
+            }
+
+            // Tags: OR logic — prompt must match at least one selected tag
+            // NONE_SENTINEL means "prompt has no tags"
+            if (selectedTags.length > 0) {
+                const matchesNone = selectedTags.includes(NONE_SENTINEL) && !(prompt.tags?.length);
+                const matchesTag  = prompt.tags?.some(t => selectedTags.includes(t));
+                if (!matchesNone && !matchesTag) return false;
+            }
 
             if (searchTerm) {
-                const searchLower = searchTerm.toLowerCase();
-                const nameMatch = prompt.name?.toLowerCase().includes(searchLower);
-                const descMatch = prompt.description?.toLowerCase().includes(searchLower);
-                const tagMatch = prompt.tags?.some((t) => t.toLowerCase().includes(searchLower));
-                const catMatch = prompt.category?.toLowerCase().includes(searchLower);
+                const q = searchTerm.toLowerCase();
+                const nameMatch = prompt.name?.toLowerCase().includes(q);
+                const descMatch = prompt.description?.toLowerCase().includes(q);
+                const tagMatch  = prompt.tags?.some(t => t.toLowerCase().includes(q));
+                const catMatch  = prompt.category?.toLowerCase().includes(q);
                 if (!nameMatch && !descMatch && !tagMatch && !catMatch) return false;
             }
 
@@ -158,6 +175,14 @@ export function PromptsGrid() {
         });
 
         filtered.sort((a, b) => {
+            // Pin favorites to the top (secondary sort) when favoritesFirst is on
+            // and we're not already scoped to one favorites group
+            if (favoritesFirst && favFilter === "all") {
+                const aFav = a.isFavorite ? 1 : 0;
+                const bFav = b.isFavorite ? 1 : 0;
+                if (bFav !== aFav) return bFav - aFav;
+            }
+
             switch (sortBy) {
                 case "name-asc":
                     return (a.name ?? "").localeCompare(b.name ?? "");
@@ -174,7 +199,7 @@ export function PromptsGrid() {
         });
 
         return filtered;
-    }, [prompts, searchTerm, sortBy, filterCategory, excludeCategory, filterTags, excludeTags, showArchived, favoritesOnly]);
+    }, [prompts, searchTerm, sortBy, selectedCats, selectedTags, favFilter, archFilter, favoritesFirst]);
 
     // Filter and sort shared prompts
     const filteredSharedPrompts = useMemo(() => {
@@ -221,7 +246,7 @@ export function PromptsGrid() {
     useMemo(() => {
         setPromptListPage(1);
         setSharedListPage(1);
-    }, [searchTerm, sortBy, filterCategory, excludeCategory, filterTags, excludeTags, showArchived, favoritesOnly]);
+    }, [searchTerm, sortBy, selectedCats, selectedTags, favFilter, archFilter, favoritesFirst]);
 
     // Mobile auto-pagination sentinels
     const promptSentinelRef = useRef<HTMLDivElement>(null);
@@ -349,31 +374,45 @@ export function PromptsGrid() {
         { value: "shared", label: "Shared with Me" },
     ];
     const [filterDetailKey, setFilterDetailKey] = useState<string | null>(null);
-    const hasSortFilter = sortBy !== "updated-desc";
-    const hasShowFilter = activeTab !== "mine";
-    const hasCategoryFilter = filterCategory !== "" || excludeCategory !== "";
-    const hasTagsFilter = filterTags.length > 0 || excludeTags.length > 0;
 
-    const categoryLabel = filterCategory
-        ? filterCategory
-        : excludeCategory
-        ? `Not ${excludeCategory}`
+    const hasSortFilter     = sortBy !== "updated-desc";
+    const hasShowFilter     = activeTab !== "mine";
+    const hasCatsFilter     = selectedCats.length > 0;
+    const hasTagsFilter     = selectedTags.length > 0;
+    const hasFavFilter      = favFilter !== "all";
+    const hasArchFilter     = archFilter !== "active";
+    const hasFavFirstOff    = !favoritesFirst;
+
+    const categoryLabel = hasCatsFilter
+        ? selectedCats.length === 1
+            ? (selectedCats[0] === NONE_SENTINEL ? "Uncategorized" : selectedCats[0])
+            : `${selectedCats.length} selected`
         : "All";
 
-    const tagsLabel = (() => {
-        if (filterTags.length > 0 && excludeTags.length > 0)
-            return `${filterTags.length} incl · ${excludeTags.length} excl`;
-        if (filterTags.length > 0) return `${filterTags.length} included`;
-        if (excludeTags.length > 0) return `${excludeTags.length} excluded`;
-        return "Any";
-    })();
+    const tagsLabel = hasTagsFilter
+        ? selectedTags.length === 1
+            ? (selectedTags[0] === NONE_SENTINEL ? "No tags" : selectedTags[0])
+            : `${selectedTags.length} selected`
+        : "All";
+
+    const archLabel =
+        archFilter === "archived" ? "Archived"
+        : archFilter === "both"   ? "All"
+        : "Active";
+
+    const favLabel =
+        favFilter === "yes" ? "Favorites"
+        : favFilter === "no" ? "Not Favorites"
+        : "All";
+
     const activeFilterCount =
-        (hasSortFilter ? 1 : 0) +
-        (hasShowFilter ? 1 : 0) +
-        (hasCategoryFilter ? 1 : 0) +
-        (hasTagsFilter ? 1 : 0) +
-        (showArchived ? 1 : 0) +
-        (favoritesOnly ? 1 : 0);
+        (hasSortFilter  ? 1 : 0) +
+        (hasShowFilter  ? 1 : 0) +
+        (hasCatsFilter  ? 1 : 0) +
+        (hasTagsFilter  ? 1 : 0) +
+        (hasFavFilter   ? 1 : 0) +
+        (hasArchFilter  ? 1 : 0) +
+        (hasFavFirstOff ? 1 : 0);
 
     const handleFilterModalChange = (open: boolean) => {
         setIsFilterModalOpen(open);
@@ -858,20 +897,20 @@ export function PromptsGrid() {
             <BottomSheet open={isFilterModalOpen} onOpenChange={handleFilterModalChange} title="Filters">
                 <BottomSheetHeader
                     title={
-                        filterDetailKey === "sortBy" ? "Sort By"
-                            : filterDetailKey === "show" ? "Show"
-                                : filterDetailKey === "category" ? "Category"
-                                    : filterDetailKey === "tags" ? "Tags"
-                                        : "Filters"
+                        filterDetailKey === "sortBy"   ? "Sort By"
+                        : filterDetailKey === "show"   ? "Show"
+                        : filterDetailKey === "cats"   ? "Category"
+                        : filterDetailKey === "tags"   ? "Tags"
+                        : filterDetailKey === "fav"    ? "Favorites"
+                        : filterDetailKey === "arch"   ? "Archived"
+                        : "Filters"
                     }
                     showBack={filterDetailKey !== null}
                     onBack={() => setFilterDetailKey(null)}
                     trailing={
                         !filterDetailKey && activeFilterCount > 0 ? (
                             <button
-                                onClick={() => {
-                                    resetFilters();
-                                }}
+                                onClick={resetFilters}
                                 className="flex items-center gap-1 text-primary active:opacity-70 min-h-[44px] px-1"
                             >
                                 <RotateCcw className="h-3.5 w-3.5" />
@@ -888,110 +927,117 @@ export function PromptsGrid() {
                     }
                 />
                 <BottomSheetBody>
+                    {/* ── Sort By ─────────────────────────────────────────── */}
                     {filterDetailKey === "sortBy" ? (
                         <>
                             {sortOptions.map((option, idx) => (
                                 <button
                                     key={option.value}
-                                    onClick={() => {
-                                        setSortBy(option.value as PromptSortOption);
-                                        setFilterDetailKey(null);
-                                    }}
+                                    onClick={() => { setSortBy(option.value as PromptSortOption); setFilterDetailKey(null); }}
                                     className={cn(
                                         "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
                                         idx < sortOptions.length - 1 && "border-b border-white/[0.06]"
                                     )}
                                 >
-                                    <span className={cn(
-                                        "text-[15px] flex-1 text-left",
-                                        sortBy === option.value && "font-medium"
-                                    )}>
+                                    <span className={cn("text-[15px] flex-1 text-left", sortBy === option.value && "font-medium")}>
                                         {option.label}
                                     </span>
-                                    {sortBy === option.value && (
-                                        <Check className="h-5 w-5 text-primary shrink-0" />
-                                    )}
+                                    {sortBy === option.value && <Check className="h-5 w-5 text-primary shrink-0" />}
                                 </button>
                             ))}
                         </>
+
                     ) : filterDetailKey === "show" ? (
+                    /* ── Show (tab) ─────────────────────────────────────── */
                         <>
-                            {showOptions.map((option, idx) => (
-                                <button
-                                    key={option.value}
-                                    onClick={() => {
-                                        if (option.value === "all") {
-                                            setActiveTab("mine");
-                                        } else {
-                                            setActiveTab(option.value);
-                                        }
-                                        setFilterDetailKey(null);
-                                    }}
-                                    className={cn(
-                                        "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
-                                        idx < showOptions.length - 1 && "border-b border-white/[0.06]"
-                                    )}
-                                >
-                                    <span className={cn(
-                                        "text-[15px] flex-1 text-left",
-                                        (option.value === "all" && activeTab === "mine" && !hasShowFilter) || option.value === activeTab
-                                            ? "font-medium"
-                                            : ""
-                                    )}>
-                                        {option.label}
-                                    </span>
-                                    {((option.value === "all" && activeTab === "mine") || (option.value !== "all" && option.value === activeTab)) && (
-                                        <Check className="h-5 w-5 text-primary shrink-0" />
-                                    )}
-                                </button>
-                            ))}
+                            {showOptions.map((option, idx) => {
+                                const isActive = option.value === "all" ? activeTab === "mine" : option.value === activeTab;
+                                return (
+                                    <button
+                                        key={option.value}
+                                        onClick={() => {
+                                            setActiveTab(option.value === "all" ? "mine" : option.value as PromptTab);
+                                            setFilterDetailKey(null);
+                                        }}
+                                        className={cn(
+                                            "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
+                                            idx < showOptions.length - 1 && "border-b border-white/[0.06]"
+                                        )}
+                                    >
+                                        <span className={cn("text-[15px] flex-1 text-left", isActive && "font-medium")}>
+                                            {option.label}
+                                        </span>
+                                        {isActive && <Check className="h-5 w-5 text-primary shrink-0" />}
+                                    </button>
+                                );
+                            })}
                         </>
-                    ) : filterDetailKey === "category" ? (
+
+                    ) : filterDetailKey === "cats" ? (
+                    /* ── Category (multi-select checkbox list) ──────────── */
                         <>
-                            <div className="px-5 py-2 border-b border-white/[0.06]">
-                                <p className="text-[12px] text-muted-foreground">Tap to include · tap again to exclude · tap once more to clear</p>
-                            </div>
+                            {/* "All" row — clears selection */}
                             <button
-                                onClick={() => {
-                                    setFilterCategory("");
-                                    setExcludeCategory("");
-                                }}
-                                className={cn(
-                                    "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
-                                )}
+                                onClick={() => setSelectedCats([])}
+                                className="flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                             >
-                                <span className={cn("text-[15px] flex-1 text-left", !filterCategory && !excludeCategory && "font-medium")}>All Categories</span>
-                                {!filterCategory && !excludeCategory && <Check className="h-5 w-5 text-primary shrink-0" />}
+                                <div className={cn(
+                                    "w-5 h-5 rounded border-2 flex items-center justify-center mr-3 shrink-0 transition-colors",
+                                    !hasCatsFilter ? "bg-primary border-primary" : "border-muted-foreground/40"
+                                )}>
+                                    {!hasCatsFilter && <Check className="h-3 w-3 text-primary-foreground" />}
+                                </div>
+                                <span className={cn("text-[15px] flex-1 text-left", !hasCatsFilter && "font-medium")}>All Categories</span>
                             </button>
+                            {/* "Uncategorized" option */}
+                            {(() => {
+                                const isChecked = selectedCats.includes(NONE_SENTINEL);
+                                return (
+                                    <button
+                                        onClick={() => setSelectedCats(
+                                            isChecked
+                                                ? selectedCats.filter(c => c !== NONE_SENTINEL)
+                                                : [...selectedCats, NONE_SENTINEL]
+                                        )}
+                                        className="flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
+                                    >
+                                        <div className={cn(
+                                            "w-5 h-5 rounded border-2 flex items-center justify-center mr-3 shrink-0 transition-colors",
+                                            isChecked ? "bg-primary border-primary" : "border-muted-foreground/40"
+                                        )}>
+                                            {isChecked && <Check className="h-3 w-3 text-primary-foreground" />}
+                                        </div>
+                                        <span className={cn("text-[15px] flex-1 text-left italic text-muted-foreground", isChecked && "font-medium text-foreground")}>
+                                            Uncategorized
+                                        </span>
+                                    </button>
+                                );
+                            })()}
+                            {/* Real categories */}
                             {allCategories.map((cat, idx) => {
-                                const isIncluded = filterCategory === cat;
-                                const isExcluded = excludeCategory === cat;
+                                const isChecked = selectedCats.includes(cat);
                                 return (
                                     <button
                                         key={cat}
-                                        onClick={() => {
-                                            if (isIncluded) {
-                                                setFilterCategory("");
-                                                setExcludeCategory(cat);
-                                            } else if (isExcluded) {
-                                                setExcludeCategory("");
-                                            } else {
-                                                setExcludeCategory("");
-                                                setFilterCategory(cat);
-                                            }
-                                        }}
+                                        onClick={() => setSelectedCats(
+                                            isChecked
+                                                ? selectedCats.filter(c => c !== cat)
+                                                : [...selectedCats, cat]
+                                        )}
                                         className={cn(
                                             "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
                                             idx < allCategories.length - 1 && "border-b border-white/[0.06]"
                                         )}
                                     >
-                                        <span className={cn(
-                                            "text-[15px] flex-1 text-left",
-                                            (isIncluded || isExcluded) && "font-medium",
-                                            isExcluded && "text-destructive"
-                                        )}>{cat}</span>
-                                        {isIncluded && <Check className="h-5 w-5 text-primary shrink-0" />}
-                                        {isExcluded && <X className="h-5 w-5 text-destructive shrink-0" />}
+                                        <div className={cn(
+                                            "w-5 h-5 rounded border-2 flex items-center justify-center mr-3 shrink-0 transition-colors",
+                                            isChecked ? "bg-primary border-primary" : "border-muted-foreground/40"
+                                        )}>
+                                            {isChecked && <Check className="h-3 w-3 text-primary-foreground" />}
+                                        </div>
+                                        <span className={cn("text-[15px] flex-1 text-left", isChecked && "font-medium")}>
+                                            {cat}
+                                        </span>
                                     </button>
                                 );
                             })}
@@ -999,39 +1045,72 @@ export function PromptsGrid() {
                                 <div className="px-5 py-6 text-center text-sm text-muted-foreground">No categories yet</div>
                             )}
                         </>
+
                     ) : filterDetailKey === "tags" ? (
+                    /* ── Tags (multi-select checkbox list) ──────────────── */
                         <>
-                            <div className="px-5 py-2 border-b border-white/[0.06]">
-                                <p className="text-[12px] text-muted-foreground">Tap to include · tap again to exclude · tap once more to clear</p>
-                            </div>
+                            {/* "All" row */}
+                            <button
+                                onClick={() => setSelectedTags([])}
+                                className="flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
+                            >
+                                <div className={cn(
+                                    "w-5 h-5 rounded border-2 flex items-center justify-center mr-3 shrink-0 transition-colors",
+                                    !hasTagsFilter ? "bg-primary border-primary" : "border-muted-foreground/40"
+                                )}>
+                                    {!hasTagsFilter && <Check className="h-3 w-3 text-primary-foreground" />}
+                                </div>
+                                <span className={cn("text-[15px] flex-1 text-left", !hasTagsFilter && "font-medium")}>All Tags</span>
+                            </button>
+                            {/* "No tags" option */}
+                            {(() => {
+                                const isChecked = selectedTags.includes(NONE_SENTINEL);
+                                return (
+                                    <button
+                                        onClick={() => setSelectedTags(
+                                            isChecked
+                                                ? selectedTags.filter(t => t !== NONE_SENTINEL)
+                                                : [...selectedTags, NONE_SENTINEL]
+                                        )}
+                                        className="flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
+                                    >
+                                        <div className={cn(
+                                            "w-5 h-5 rounded border-2 flex items-center justify-center mr-3 shrink-0 transition-colors",
+                                            isChecked ? "bg-primary border-primary" : "border-muted-foreground/40"
+                                        )}>
+                                            {isChecked && <Check className="h-3 w-3 text-primary-foreground" />}
+                                        </div>
+                                        <span className={cn("text-[15px] flex-1 text-left italic text-muted-foreground", isChecked && "font-medium text-foreground")}>
+                                            No tags
+                                        </span>
+                                    </button>
+                                );
+                            })()}
+                            {/* Real tags */}
                             {allTags.map((tag, idx) => {
-                                const isIncluded = filterTags.includes(tag);
-                                const isExcluded = excludeTags.includes(tag);
+                                const isChecked = selectedTags.includes(tag);
                                 return (
                                     <button
                                         key={tag}
-                                        onClick={() => {
-                                            if (isIncluded) {
-                                                setFilterTags(filterTags.filter((t) => t !== tag));
-                                                setExcludeTags([...excludeTags, tag]);
-                                            } else if (isExcluded) {
-                                                setExcludeTags(excludeTags.filter((t) => t !== tag));
-                                            } else {
-                                                setFilterTags([...filterTags, tag]);
-                                            }
-                                        }}
+                                        onClick={() => setSelectedTags(
+                                            isChecked
+                                                ? selectedTags.filter(t => t !== tag)
+                                                : [...selectedTags, tag]
+                                        )}
                                         className={cn(
                                             "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
                                             idx < allTags.length - 1 && "border-b border-white/[0.06]"
                                         )}
                                     >
-                                        <span className={cn(
-                                            "text-[15px] flex-1 text-left",
-                                            (isIncluded || isExcluded) && "font-medium",
-                                            isExcluded && "text-destructive"
-                                        )}>{tag}</span>
-                                        {isIncluded && <Check className="h-5 w-5 text-primary shrink-0" />}
-                                        {isExcluded && <X className="h-5 w-5 text-destructive shrink-0" />}
+                                        <div className={cn(
+                                            "w-5 h-5 rounded border-2 flex items-center justify-center mr-3 shrink-0 transition-colors",
+                                            isChecked ? "bg-primary border-primary" : "border-muted-foreground/40"
+                                        )}>
+                                            {isChecked && <Check className="h-3 w-3 text-primary-foreground" />}
+                                        </div>
+                                        <span className={cn("text-[15px] flex-1 text-left", isChecked && "font-medium")}>
+                                            {tag}
+                                        </span>
                                     </button>
                                 );
                             })}
@@ -1039,90 +1118,145 @@ export function PromptsGrid() {
                                 <div className="px-5 py-6 text-center text-sm text-muted-foreground">No tags yet</div>
                             )}
                         </>
-                    ) : (
+
+                    ) : filterDetailKey === "fav" ? (
+                    /* ── Favorites (radio) ──────────────────────────────── */
                         <>
-                            {/* Show filter */}
+                            {([
+                                { value: "all", label: "All" },
+                                { value: "yes", label: "Favorites only" },
+                                { value: "no",  label: "Not favorites" },
+                            ] as { value: FavFilter; label: string }[]).map((opt, idx, arr) => (
+                                <button
+                                    key={opt.value}
+                                    onClick={() => { setFavFilter(opt.value); setFilterDetailKey(null); }}
+                                    className={cn(
+                                        "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
+                                        idx < arr.length - 1 && "border-b border-white/[0.06]"
+                                    )}
+                                >
+                                    <span className={cn("text-[15px] flex-1 text-left", favFilter === opt.value && "font-medium")}>
+                                        {opt.label}
+                                    </span>
+                                    {favFilter === opt.value && <Check className="h-5 w-5 text-primary shrink-0" />}
+                                </button>
+                            ))}
+                        </>
+
+                    ) : filterDetailKey === "arch" ? (
+                    /* ── Archived (radio) ───────────────────────────────── */
+                        <>
+                            {([
+                                { value: "active",   label: "Active (not archived)" },
+                                { value: "archived", label: "Archived only" },
+                                { value: "both",     label: "All (active + archived)" },
+                            ] as { value: ArchFilter; label: string }[]).map((opt, idx, arr) => (
+                                <button
+                                    key={opt.value}
+                                    onClick={() => { setArchFilter(opt.value); setFilterDetailKey(null); }}
+                                    className={cn(
+                                        "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
+                                        idx < arr.length - 1 && "border-b border-white/[0.06]"
+                                    )}
+                                >
+                                    <span className={cn("text-[15px] flex-1 text-left", archFilter === opt.value && "font-medium")}>
+                                        {opt.label}
+                                    </span>
+                                    {archFilter === opt.value && <Check className="h-5 w-5 text-primary shrink-0" />}
+                                </button>
+                            ))}
+                        </>
+
+                    ) : (
+                    /* ── Main filter menu ───────────────────────────────── */
+                        <>
+                            {/* Show (tab) */}
                             <button
                                 onClick={() => setFilterDetailKey("show")}
                                 className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                             >
                                 <span className="text-[15px] font-medium flex-1 text-left">Show</span>
-                                <span className={cn(
-                                    "text-[15px] mr-1.5 truncate max-w-[180px]",
-                                    hasShowFilter ? "text-foreground" : "text-muted-foreground"
-                                )}>
-                                    {activeTab === "mine" ? "All Prompts" : activeTab === "shared" ? "Shared with Me" : "All Prompts"}
+                                <span className={cn("text-[15px] mr-1.5 truncate max-w-[180px]", hasShowFilter ? "text-foreground" : "text-muted-foreground")}>
+                                    {activeTab === "mine" ? "My Prompts" : activeTab === "shared" ? "Shared with Me" : "All"}
                                 </span>
                                 <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                             </button>
 
-                            {/* Sort By filter */}
+                            {/* Sort By */}
                             <button
                                 onClick={() => setFilterDetailKey("sortBy")}
                                 className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                             >
                                 <span className="text-[15px] font-medium flex-1 text-left">Sort By</span>
-                                <span className={cn(
-                                    "text-[15px] mr-1.5 truncate max-w-[180px]",
-                                    hasSortFilter ? "text-foreground" : "text-muted-foreground"
-                                )}>
+                                <span className={cn("text-[15px] mr-1.5 truncate max-w-[180px]", hasSortFilter ? "text-foreground" : "text-muted-foreground")}>
                                     {sortOptions.find(o => o.value === sortBy)?.label}
                                 </span>
                                 <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                             </button>
 
-                            {/* Category filter */}
+                            {/* Favorites */}
                             <button
-                                onClick={() => setFilterDetailKey("category")}
+                                onClick={() => setFilterDetailKey("fav")}
+                                className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
+                            >
+                                <span className="text-[15px] font-medium flex-1 text-left">Favorites</span>
+                                <span className={cn("text-[15px] mr-1.5 truncate max-w-[180px]", hasFavFilter ? "text-foreground" : "text-muted-foreground")}>
+                                    {favLabel}
+                                </span>
+                                <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+                            </button>
+
+                            {/* Archived */}
+                            <button
+                                onClick={() => setFilterDetailKey("arch")}
+                                className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
+                            >
+                                <span className="text-[15px] font-medium flex-1 text-left">Archived</span>
+                                <span className={cn("text-[15px] mr-1.5 truncate max-w-[180px]", hasArchFilter ? "text-foreground" : "text-muted-foreground")}>
+                                    {archLabel}
+                                </span>
+                                <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+                            </button>
+
+                            {/* Category */}
+                            <button
+                                onClick={() => setFilterDetailKey("cats")}
                                 className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                             >
                                 <span className="text-[15px] font-medium flex-1 text-left">Category</span>
-                                <span className={cn(
-                                    "text-[15px] mr-1.5 truncate max-w-[180px]",
-                                    hasCategoryFilter ? (excludeCategory ? "text-destructive" : "text-foreground") : "text-muted-foreground"
-                                )}>
+                                <span className={cn("text-[15px] mr-1.5 truncate max-w-[180px]", hasCatsFilter ? "text-foreground" : "text-muted-foreground")}>
                                     {categoryLabel}
                                 </span>
                                 <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                             </button>
 
-                            {/* Tags filter */}
+                            {/* Tags */}
                             <button
                                 onClick={() => setFilterDetailKey("tags")}
                                 className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                             >
                                 <span className="text-[15px] font-medium flex-1 text-left">Tags</span>
-                                <span className={cn(
-                                    "text-[15px] mr-1.5 truncate max-w-[180px]",
-                                    hasTagsFilter
-                                        ? (filterTags.length > 0 && excludeTags.length > 0
-                                            ? "text-foreground"
-                                            : excludeTags.length > 0
-                                            ? "text-destructive"
-                                            : "text-foreground")
-                                        : "text-muted-foreground"
-                                )}>
+                                <span className={cn("text-[15px] mr-1.5 truncate max-w-[180px]", hasTagsFilter ? "text-foreground" : "text-muted-foreground")}>
                                     {tagsLabel}
                                 </span>
                                 <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                             </button>
 
-                            {/* Favorites toggle */}
+                            {/* Favorites First (inline toggle) */}
                             <button
-                                onClick={() => setFavoritesOnly(!favoritesOnly)}
+                                onClick={() => setFavoritesFirst(!favoritesFirst)}
                                 className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
                             >
-                                <span className="text-[15px] font-medium flex-1 text-left">Favorites Only</span>
-                                {favoritesOnly && <Check className="h-5 w-5 text-primary shrink-0" />}
-                            </button>
-
-                            {/* Show Archived toggle */}
-                            <button
-                                onClick={() => setShowArchived(!showArchived)}
-                                className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
-                            >
-                                <span className="text-[15px] font-medium flex-1 text-left">Show Archived</span>
-                                {showArchived && <Check className="h-5 w-5 text-primary shrink-0" />}
+                                <span className="text-[15px] font-medium flex-1 text-left">Favorites First</span>
+                                <div className={cn(
+                                    "w-9 h-5 rounded-full relative transition-colors shrink-0",
+                                    favoritesFirst ? "bg-primary" : "bg-muted border border-border"
+                                )}>
+                                    <span className={cn(
+                                        "absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all",
+                                        favoritesFirst ? "left-4" : "left-0.5"
+                                    )} />
+                                </div>
                             </button>
 
                             {activeFilterCount > 0 && (
