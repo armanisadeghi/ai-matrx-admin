@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { name, description, messages, variable_defaults, tools, settings, shortcut_id } = body;
+    const { name, description, messages, variable_defaults, tools, settings, shortcut_id, tags, category, model_id, output_format, output_schema } = body;
 
     if (!name || !messages) {
       return NextResponse.json(
@@ -44,6 +44,11 @@ export async function POST(request: Request) {
         settings: settings || null,
         created_by_user_id: user.id,
         is_active: true,
+        tags: tags || null,
+        category: category || null,
+        model_id: model_id || null,
+        output_format: output_format || null,
+        output_schema: output_schema || null,
         // No source_prompt_id - this is AI-generated standalone
       }])
       .select()

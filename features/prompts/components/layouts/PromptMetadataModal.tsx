@@ -79,11 +79,11 @@ function TagInput({
 
   return (
     <div className="space-y-2">
-      <div className="flex flex-wrap gap-1.5 min-h-[36px]">
+      <div className="flex flex-wrap gap-1.5 p-1 min-h-[36px]">
         {tags.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium"
+            className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs rounded-full font-medium border border-primary hover:bg-primary/10"
           >
             {tag}
             <button

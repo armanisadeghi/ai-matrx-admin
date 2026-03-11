@@ -117,7 +117,14 @@ export async function importPrompt(promptData: PromptData): Promise<PromptImport
       description: promptData.description || null,
       messages: normalizedMessages, // Use normalized messages
       variable_defaults: variableDefaults,
-      settings: promptData.settings || {}
+      settings: promptData.settings || {},
+      tags: promptData.tags ?? null,
+      category: promptData.category ?? null,
+      model_id: promptData.modelId ?? null,
+      output_format: promptData.outputFormat ?? null,
+      output_schema: promptData.outputSchema ?? null,
+      is_favorite: promptData.isFavorite ?? false,
+      is_archived: promptData.isArchived ?? false,
       // created_at and updated_at are automatically set by the database
     };
 
@@ -218,7 +225,14 @@ export async function exportPromptAsJSON(promptId: string): Promise<PromptData |
       description: prompt.description,
       messages: prompt.messages,
       variableDefaults: prompt.variable_defaults, // Convert snake_case to camelCase
-      settings: prompt.settings
+      settings: prompt.settings,
+      tags: prompt.tags ?? undefined,
+      category: prompt.category ?? undefined,
+      modelId: prompt.model_id ?? undefined,
+      outputFormat: prompt.output_format ?? undefined,
+      outputSchema: prompt.output_schema ?? undefined,
+      isFavorite: prompt.is_favorite ?? false,
+      isArchived: prompt.is_archived ?? false,
     };
 
   } catch (error) {

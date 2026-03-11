@@ -87,6 +87,13 @@ export async function PUT(
       tools: body.tools,
       settings: body.settings,
       is_active: body.is_active,
+      tags: body.tags,
+      category: body.category,
+      model_id: body.model_id,
+      output_format: body.output_format,
+      output_schema: body.output_schema,
+      is_favorite: body.is_favorite,
+      is_archived: body.is_archived,
     });
 
     return NextResponse.json({ builtin: updatedBuiltin });

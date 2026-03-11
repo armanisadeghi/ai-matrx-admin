@@ -32,9 +32,14 @@ const useAutoGrow = (
         
         // Apply min/max constraints
         if (minHeight) newHeight = Math.max(newHeight, minHeight);
-        if (maxHeight) newHeight = Math.min(newHeight, maxHeight);
         
-        textarea.style.height = `${newHeight}px`;
+        if (maxHeight && newHeight >= maxHeight) {
+            textarea.style.height = `${maxHeight}px`;
+            textarea.style.overflowY = 'auto';
+        } else {
+            textarea.style.height = `${newHeight}px`;
+            textarea.style.overflowY = 'hidden';
+        }
     }, [value, autoGrow, minHeight, maxHeight, ref]);
 };
 
@@ -80,7 +85,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
                 dark:shadow-[0px_0px_1px_1px_var(--neutral-700)]
                 group-hover/textarea:shadow-none transition duration-400
                 `,
-                        autoGrow && "resize-none overflow-hidden",
+                        autoGrow && "resize-none",
                         className
                     )}
                     ref={textareaRef}
@@ -107,7 +112,7 @@ const BasicTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             <textarea
                 className={cn(
                     "flex h-auto w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-neutral-500 dark:placeholder:text-neutral-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-                    autoGrow && "resize-none overflow-hidden",
+                    autoGrow && "resize-none",
                     className
                 )}
                 ref={textareaRef}
@@ -143,7 +148,7 @@ const TextareaWithPrefix = React.forwardRef<HTMLTextAreaElement, TextareaWithPre
                     className={cn(
                         "flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm resize-y placeholder:text-neutral-500 dark:placeholder:text-neutral-400",
                         prefix && "pl-10",
-                        autoGrow && "resize-none overflow-hidden",
+                        autoGrow && "resize-none",
                         className
                     )}
                     style={{
@@ -186,7 +191,7 @@ const CopyTextarea = React.forwardRef<HTMLTextAreaElement, CopyTextareaProps>(
                     ref={textareaRef}
                     className={cn(
                         "flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm resize-y pr-10 placeholder:text-neutral-500 dark:placeholder:text-neutral-400",
-                        autoGrow && "resize-none overflow-hidden",
+                        autoGrow && "resize-none",
                         className
                     )}
                     style={{
@@ -273,7 +278,7 @@ const FancyTextarea = React.forwardRef<HTMLTextAreaElement, FancyTextareaProps>(
                         "focus-visible:outline-none focus-visible:ring-[2px] focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600",
                         prefix && "pl-10",
                         "pr-10", // Space for copy button
-                        autoGrow && "resize-none overflow-hidden",
+                        autoGrow && "resize-none",
                         className
                     )}
                     style={{

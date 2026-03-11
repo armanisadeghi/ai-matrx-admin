@@ -32,11 +32,19 @@ interface PromptBuilderProps {
         id?: string;
         name?: string;
         messages?: PromptMessage[];
-        variableDefaults?: PromptVariable[]; // Array of { name, defaultValue }
-        settings?: Record<string, any>; // Single source of truth: { model_id: string, temperature: number, ... }
+        variableDefaults?: PromptVariable[];
+        settings?: Record<string, any>;
+        tags?: string[];
+        category?: string;
+        isFavorite?: boolean;
+        isArchived?: boolean;
+        modelId?: string;
+        outputFormat?: string;
+        outputSchema?: unknown;
+        description?: string;
     };
-    availableTools?: any[]; // Array of database tool objects
-    accessInfo?: PromptAccessInfo; // Access level info for shared prompts
+    availableTools?: any[];
+    accessInfo?: PromptAccessInfo;
 }
 
 
@@ -122,7 +130,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
 
     // Core state - model state holds the model ID (UUID)
     const [promptName, setPromptName] = useState(initialData?.name || "");
-    const [promptDescription, setPromptDescription] = useState(""); // TODO: Add to initialData when schema supports it
+    const [promptDescription, setPromptDescription] = useState(initialData?.description ?? "");
     const [model, setModel] = useState(initialModelId);
     const [modelConfig, setModelConfig] = useState<PromptSettings>(getInitialModelConfig());
 
@@ -752,8 +760,14 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
         variableDefaults: PromptVariable[];
         messages?: PromptMessage[];
         settings?: Record<string, any>;
+        tags?: string[];
+        category?: string;
+        isFavorite?: boolean;
+        isArchived?: boolean;
+        modelId?: string;
+        outputFormat?: string;
+        outputSchema?: unknown;
     }) => {
-        // Update the database using the existing updatePrompt method
         dispatch(updateUserPrompt({ id, data }));
     };
 
@@ -763,8 +777,14 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
         variableDefaults?: PromptVariable[];
         messages?: PromptMessage[];
         settings?: Record<string, any>;
+        tags?: string[];
+        category?: string;
+        isFavorite?: boolean;
+        isArchived?: boolean;
+        modelId?: string;
+        outputFormat?: string;
+        outputSchema?: unknown;
     }, isFromSave: boolean = false) => {
-        // Update local state to reflect changes immediately
         if (updates.name !== undefined) {
             setPromptName(updates.name);
         }
@@ -775,20 +795,15 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
             setVariableDefaults(updates.variableDefaults);
         }
 
-        // Handle messages update - split back into developerMessage and messages
         if (updates.messages !== undefined && updates.messages.length > 0) {
-            // First message should be the system message (developer message)
             if (updates.messages[0].role === 'system') {
                 setDeveloperMessage(updates.messages[0].content);
-                // Rest are user/assistant messages
                 setMessages(updates.messages.slice(1));
             } else {
-                // If no system message, just set all as messages
                 setMessages(updates.messages);
             }
         }
 
-        // Handle settings update - extract model and modelConfig
         if (updates.settings !== undefined) {
             const { model_id, ...config } = updates.settings;
             if (model_id !== undefined) {
@@ -799,7 +814,6 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
             }
         }
 
-        // Only mark as dirty if this is NOT from a save operation
         if (!isFromSave) {
             setIsDirty(true);
         }

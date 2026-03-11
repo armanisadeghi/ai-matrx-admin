@@ -276,6 +276,13 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
                 settings={{ model_id: model, ...modelConfig }}
                 models={models}
                 availableTools={availableTools}
+                tags={initialData?.tags}
+                category={initialData?.category}
+                isFavorite={initialData?.isFavorite}
+                isArchived={initialData?.isArchived}
+                modelId={initialData?.modelId}
+                outputFormat={initialData?.outputFormat}
+                outputSchema={initialData?.outputSchema}
                 onUpdate={handleSettingsUpdate}
                 onLocalStateUpdate={handleLocalStateUpdate}
             />

@@ -133,6 +133,13 @@ export interface PromptBuilderSharedProps {
         messages?: PromptMessage[];
         variableDefaults?: PromptVariable[];
         settings?: Record<string, any>;
+        tags?: string[];
+        category?: string;
+        isFavorite?: boolean;
+        isArchived?: boolean;
+        modelId?: string;
+        outputFormat?: string;
+        outputSchema?: unknown;
     };
     promptDescription: string;
     handleSettingsUpdate: (id: string, data: any) => void;

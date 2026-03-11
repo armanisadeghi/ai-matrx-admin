@@ -594,6 +594,13 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
     variableDefaults: any[];
     messages?: any[];
     settings?: Record<string, any>;
+    tags?: string[];
+    category?: string;
+    isFavorite?: boolean;
+    isArchived?: boolean;
+    modelId?: string;
+    outputFormat?: string;
+    outputSchema?: unknown;
   }) => {
     try {
       const response = await fetch(`/api/admin/prompt-builtins/${id}`, {
@@ -603,8 +610,15 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
           name: data.name,
           description: data.description,
           messages: data.messages,
-          variable_defaults: data.variableDefaults, // Convert camelCase to snake_case for DB
+          variable_defaults: data.variableDefaults,
           settings: data.settings,
+          tags: data.tags,
+          category: data.category,
+          is_favorite: data.isFavorite,
+          is_archived: data.isArchived,
+          model_id: data.modelId,
+          output_format: data.outputFormat,
+          output_schema: data.outputSchema,
         }),
       });
 
@@ -1488,9 +1502,16 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
             settings={builtin.settings || {}}
             models={models}
             availableTools={availableTools}
+            tags={builtin.tags ?? undefined}
+            category={builtin.category ?? undefined}
+            isFavorite={builtin.is_favorite}
+            isArchived={builtin.is_archived}
+            modelId={builtin.model_id ?? undefined}
+            outputFormat={builtin.output_format ?? undefined}
+            outputSchema={builtin.output_schema ?? undefined}
             onUpdate={handleUpdateBuiltin}
             onLocalStateUpdate={() => {
-              // No-op for builtins, we don't need local state updates
+              // No-op for builtins — state is managed by the admin manager
             }}
           />
         );

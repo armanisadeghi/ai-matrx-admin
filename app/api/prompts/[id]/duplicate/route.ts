@@ -48,6 +48,14 @@ export async function POST(
                 user_id: user.id, // Always set to current user
                 settings: originalPrompt.settings,
                 description: originalPrompt.description,
+                tags: originalPrompt.tags,
+                category: originalPrompt.category,
+                model_id: originalPrompt.model_id,
+                output_format: originalPrompt.output_format,
+                output_schema: originalPrompt.output_schema,
+                // is_favorite and is_archived are intentionally reset for copies
+                is_favorite: false,
+                is_archived: false,
             })
             .select()
             .single();

@@ -266,12 +266,15 @@ export async function activateShortcutCategory(id: string): Promise<ShortcutCate
 // ============================================================================
 
 /**
- * Transform database prompt builtin (snake_case) to UI format (camelCase)
+ * Transform database prompt builtin (snake_case) to UI format (camelCase for variableDefaults)
  */
 function transformBuiltinFromDB(dbBuiltin: any): PromptBuiltin {
   return {
     ...dbBuiltin,
     variableDefaults: dbBuiltin.variable_defaults || [],
+    // Ensure boolean fields have defaults
+    is_favorite: dbBuiltin.is_favorite ?? false,
+    is_archived: dbBuiltin.is_archived ?? false,
   };
 }
 
@@ -381,6 +384,13 @@ export async function createPromptBuiltin(input: CreatePromptBuiltinInput): Prom
     settings: input.settings ?? {},
     is_active: input.is_active ?? true,
     created_by_user_id: user.id,
+    tags: input.tags ?? null,
+    category: input.category ?? null,
+    model_id: input.model_id ?? null,
+    output_format: input.output_format ?? null,
+    output_schema: input.output_schema ?? null,
+    is_favorite: input.is_favorite ?? false,
+    is_archived: input.is_archived ?? false,
   };
 
   // Only add ID if provided
@@ -399,7 +409,7 @@ export async function createPromptBuiltin(input: CreatePromptBuiltinInput): Prom
     throw new Error(`Failed to create prompt builtin: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
   }
 
-  return data as PromptBuiltin;
+  return transformBuiltinFromDB(data);
 }
 
 export async function updatePromptBuiltin(input: UpdatePromptBuiltinInput): Promise<PromptBuiltin> {
@@ -415,6 +425,13 @@ export async function updatePromptBuiltin(input: UpdatePromptBuiltinInput): Prom
   if (input.tools !== undefined) updateData.tools = input.tools;
   if (input.settings !== undefined) updateData.settings = input.settings;
   if (input.is_active !== undefined) updateData.is_active = input.is_active;
+  if (input.tags !== undefined) updateData.tags = input.tags;
+  if (input.category !== undefined) updateData.category = input.category;
+  if (input.model_id !== undefined) updateData.model_id = input.model_id;
+  if (input.output_format !== undefined) updateData.output_format = input.output_format;
+  if (input.output_schema !== undefined) updateData.output_schema = input.output_schema;
+  if (input.is_favorite !== undefined) updateData.is_favorite = input.is_favorite;
+  if (input.is_archived !== undefined) updateData.is_archived = input.is_archived;
 
   const { data, error } = await supabase
     .from('prompt_builtins')
@@ -428,7 +445,7 @@ export async function updatePromptBuiltin(input: UpdatePromptBuiltinInput): Prom
     throw new Error(`Failed to update prompt builtin: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
   }
 
-  return data as PromptBuiltin;
+  return transformBuiltinFromDB(data);
 }
 
 export async function deletePromptBuiltin(id: string): Promise<void> {

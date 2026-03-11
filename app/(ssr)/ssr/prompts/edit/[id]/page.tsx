@@ -119,9 +119,17 @@ export default async function EditPromptPage({
     const initialData = {
         id: data.id,
         name: data.name,
+        description: data.description ?? undefined,
         messages: data.messages,
         variableDefaults: data.variable_defaults,
         settings: data.settings,
+        tags: data.tags ?? undefined,
+        category: data.category ?? undefined,
+        isFavorite: data.is_favorite ?? false,
+        isArchived: data.is_archived ?? false,
+        modelId: data.model_id ?? undefined,
+        outputFormat: data.output_format ?? undefined,
+        outputSchema: data.output_schema ?? undefined,
     };
 
     return (

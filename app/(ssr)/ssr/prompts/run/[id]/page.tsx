@@ -121,6 +121,13 @@ export default async function RunPromptPage({
         variableDefaults: prompt.variable_defaults || [],
         settings: prompt.settings || {},
         userId: prompt.user_id || '',
+        tags: prompt.tags ?? null,
+        category: prompt.category ?? null,
+        isFavorite: prompt.is_favorite ?? false,
+        isArchived: prompt.is_archived ?? false,
+        modelId: prompt.model_id ?? null,
+        outputFormat: prompt.output_format ?? null,
+        outputSchema: prompt.output_schema ?? null,
     };
 
     return (

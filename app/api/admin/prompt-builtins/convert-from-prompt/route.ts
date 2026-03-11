@@ -47,6 +47,11 @@ export async function POST(request: Request) {
       let promptVariableDefaults: unknown;
       let promptTools: unknown;
       let promptSettings: unknown;
+      let promptTags: string[] | null = null;
+      let promptCategory: string | null = null;
+      let promptModelId: string | null = null;
+      let promptOutputFormat: string | null = null;
+      let promptOutputSchema: unknown = null;
 
       if (prompt_data) {
         // Use live editor data passed from the client — avoids stale DB snapshot
@@ -56,6 +61,11 @@ export async function POST(request: Request) {
         promptVariableDefaults = prompt_data.variableDefaults ?? null;
         promptTools = prompt_data.tools ?? null;
         promptSettings = prompt_data.settings ?? null;
+        promptTags = prompt_data.tags ?? null;
+        promptCategory = prompt_data.category ?? null;
+        promptModelId = prompt_data.modelId ?? null;
+        promptOutputFormat = prompt_data.outputFormat ?? null;
+        promptOutputSchema = prompt_data.outputSchema ?? null;
       } else {
         // Fallback: fetch from DB (used when called without live data)
         const { data: prompt, error: promptError } = await supabase
@@ -77,6 +87,11 @@ export async function POST(request: Request) {
         promptVariableDefaults = prompt.variable_defaults;
         promptTools = prompt.tools;
         promptSettings = prompt.settings;
+        promptTags = prompt.tags ?? null;
+        promptCategory = prompt.category ?? null;
+        promptModelId = prompt.model_id ?? null;
+        promptOutputFormat = prompt.output_format ?? null;
+        promptOutputSchema = prompt.output_schema ?? null;
       }
 
       // Update the builtin using the admin client (bypasses RLS on prompt_builtins)
@@ -91,7 +106,12 @@ export async function POST(request: Request) {
           settings: promptSettings,
           source_prompt_id: prompt_id,
           source_prompt_snapshot_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          tags: promptTags,
+          category: promptCategory,
+          model_id: promptModelId,
+          output_format: promptOutputFormat,
+          output_schema: promptOutputSchema,
         })
         .eq('id', builtin_id);
 

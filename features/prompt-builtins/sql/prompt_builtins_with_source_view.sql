@@ -32,6 +32,14 @@ SELECT
   pb.is_active,
   pb.source_prompt_id,
   pb.source_prompt_snapshot_at,
+  pb.tags,
+  pb.category,
+  pb.model_id,
+  pb.output_format,
+  pb.output_schema,
+  pb.is_favorite,
+  pb.is_archived,
+  pb.created_by_user_id,
   
   -- Source prompt info (if exists)
   p.name AS source_prompt_name,
@@ -49,8 +57,8 @@ GRANT SELECT ON public.prompt_builtins_with_source_view TO authenticated;
 -- Add helpful comment
 COMMENT ON VIEW public.prompt_builtins_with_source_view IS 
 'Optimized view for prompt builtins with source prompt information. 
-Eliminates N+1 query problem by joining with prompts table.
-Returns all builtin fields plus source_prompt_name for display.
+Includes all builtin fields (including tags, category, model_id, output_format, output_schema, is_favorite, is_archived)
+plus source_prompt_name for display. Eliminates N+1 query problem.
 Used by PromptBuiltinsTableManager and admin interfaces.';
 
 -- ============================================================================

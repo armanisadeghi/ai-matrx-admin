@@ -40,6 +40,13 @@ interface PromptRunnerProps {
         variableDefaults: PromptVariable[];
         settings: Record<string, any>;
         userId?: string | null;
+        tags?: string[] | null;
+        category?: string | null;
+        isFavorite?: boolean;
+        isArchived?: boolean;
+        modelId?: string | null;
+        outputFormat?: string | null;
+        outputSchema?: unknown;
     };
     accessInfo?: PromptAccessInfo;
 }
@@ -63,6 +70,13 @@ export function PromptRunPage({ promptData, accessInfo }: PromptRunnerProps) {
             source: 'prompts',
             fetchedAt: Date.now(),
             status: 'cached',
+            tags: promptData.tags ?? undefined,
+            category: promptData.category ?? undefined,
+            isFavorite: promptData.isFavorite,
+            isArchived: promptData.isArchived,
+            modelId: promptData.modelId ?? undefined,
+            outputFormat: promptData.outputFormat ?? undefined,
+            outputSchema: promptData.outputSchema,
         }));
     }, [dispatch, promptData]);
 

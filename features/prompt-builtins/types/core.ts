@@ -75,13 +75,21 @@ export interface PromptBuiltin {
   name: string
   description: string | null
   messages: PromptMessage[]
-  variableDefaults: PromptVariable[] | null // Matches actual prompt structure
+  variableDefaults: PromptVariable[] | null // Matches actual prompt structure (DB: variable_defaults)
   tools: Record<string, unknown> | null
   settings: PromptSettings
   created_by_user_id: string
   is_active: boolean // default true
   source_prompt_id: string | null // Track if this was converted from a user prompt
   source_prompt_snapshot_at: string | null // When the source prompt was snapshotted
+  // Fields synced with prompts table
+  tags: string[] | null
+  category: string | null
+  model_id: string | null
+  output_format: string | null
+  output_schema: unknown | null
+  is_favorite: boolean
+  is_archived: boolean
 }
 
 // prompt_shortcuts
@@ -150,6 +158,13 @@ export interface CreatePromptBuiltinInput {
   tools?: Record<string, unknown> | null;
   settings?: PromptSettings;
   is_active?: boolean;
+  tags?: string[] | null;
+  category?: string | null;
+  model_id?: string | null;
+  output_format?: string | null;
+  output_schema?: unknown | null;
+  is_favorite?: boolean;
+  is_archived?: boolean;
 }
 
 export interface UpdatePromptBuiltinInput {
@@ -161,6 +176,13 @@ export interface UpdatePromptBuiltinInput {
   tools?: Record<string, unknown> | null;
   settings?: PromptSettings;
   is_active?: boolean;
+  tags?: string[] | null;
+  category?: string | null;
+  model_id?: string | null;
+  output_format?: string | null;
+  output_schema?: unknown | null;
+  is_favorite?: boolean;
+  is_archived?: boolean;
 }
 
 export interface CreatePromptShortcutInput {
