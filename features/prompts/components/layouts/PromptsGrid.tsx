@@ -164,11 +164,24 @@ export function PromptsGrid() {
 
             if (searchTerm) {
                 const q = searchTerm.toLowerCase();
-                const nameMatch = prompt.name?.toLowerCase().includes(q);
-                const descMatch = prompt.description?.toLowerCase().includes(q);
-                const tagMatch  = prompt.tags?.some(t => t.toLowerCase().includes(q));
-                const catMatch  = prompt.category?.toLowerCase().includes(q);
-                if (!nameMatch && !descMatch && !tagMatch && !catMatch) return false;
+                if (!(
+                    prompt.id?.toLowerCase().includes(q) ||
+                    prompt.name?.toLowerCase().includes(q) ||
+                    prompt.description?.toLowerCase().includes(q) ||
+                    prompt.category?.toLowerCase().includes(q) ||
+                    prompt.modelId?.toLowerCase().includes(q) ||
+                    prompt.outputFormat?.toLowerCase().includes(q) ||
+                    prompt.tags?.some(t => t.toLowerCase().includes(q)) ||
+                    prompt.messages?.some(m =>
+                        m.content?.toLowerCase().includes(q) ||
+                        m.role?.toLowerCase().includes(q)
+                    ) ||
+                    prompt.variableDefaults?.some(v =>
+                        v.name?.toLowerCase().includes(q) ||
+                        v.defaultValue?.toLowerCase().includes(q) ||
+                        v.helpText?.toLowerCase().includes(q)
+                    )
+                )) return false;
             }
 
             return true;
