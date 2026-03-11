@@ -25,11 +25,11 @@ export default function ChatMobileHeaderBar() {
             className="lg:hidden fixed top-0 left-0 right-0 z-[41] flex items-center pr-11"
             style={{ height: 'var(--shell-header-h)' }}
         >
-            {/* Hamburger — pure CSS label for #chat-sidebar-mobile checkbox.
-                Opens the mobile drawer via shell.css :has() rule. Zero JS. */}
+            {/* Hamburger — pure CSS label for #shell-panel-mobile checkbox.
+                Opens the panel sidebar drawer via shell.css :has() rule. Zero JS. */}
             <TapTargetButton
                 as="label"
-                htmlFor="chat-sidebar-mobile"
+                htmlFor="shell-panel-mobile"
                 ariaLabel="Open chat menu"
                 strokeWidth={1.75}
             >

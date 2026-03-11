@@ -3,46 +3,64 @@
 // Server component — no async, no auth, no DB. Renders instantly.
 //
 // Architecture:
-//   1. #chat-sidebar-mobile hidden checkbox → CSS-driven mobile drawer toggle.
-//      The hamburger in ChatMobileHeaderBar is <label htmlFor="chat-sidebar-mobile">.
-//      Opens/closes with zero JS, exactly like the shell's #shell-mobile-menu.
+//   Uses the shell's core panel sidebar system (shell-panel).
+//   Desktop: CSS grid driven by #shell-panel-toggle checkbox — zero JS layout.
+//   Mobile: CSS drawer driven by #shell-panel-mobile checkbox — same pattern
+//           as shell-mobile-sheet. ChatMobileHeaderBar renders the trigger label.
 //
-//   2. ChatMobileHeaderBar → pure server component, renders on first paint.
-//      Users see the full mobile header (hamburger | agent name | new chat)
-//      before any JS hydrates. The agent name area is a tiny Suspense island.
-//
-//   3. ChatShellProviders / ChatLayoutGrid → client providers + desktop grid.
-//      Desktop sidebar uses React state for the CSS grid column animation.
+//   ChatShellProviders wraps everything with shared context for agent state.
+//   The sidebar content itself (ChatSidebarClient) is a client component for
+//   interactivity, but the LAYOUT is entirely CSS-driven server-side.
 
 import { ChatSidebarHeader, ChatSidebarBody } from './_components/ChatSidebarClient';
 import ChatWorkspace from './_components/ChatWorkspace';
 import ChatShellProviders from './_components/ChatShellProviders';
-import ChatLayoutGrid from './_components/ChatLayoutGrid';
 import ChatMobileHeaderBar from './_components/ChatMobileHeaderBar';
 
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
     return (
-        <>
-            {/* CSS checkbox for mobile sidebar drawer — must be inside shell-root
-                so .shell-root:has(#chat-sidebar-mobile:checked) selectors work.
-                shell-root is the parent of shell-main which is the parent of this layout,
-                so it's inside shell-root. Positioned absolutely: takes no layout space. */}
-            <input type="checkbox" id="chat-sidebar-mobile" aria-hidden="true" />
+        <ChatShellProviders
+            mobileHeader={<ChatMobileHeaderBar />}
+        >
+            {/* Hide mobile dock — chat owns the bottom chrome */}
+            <span className="shell-hide-dock" aria-hidden="true" />
 
-            <ChatShellProviders
-                mobileHeader={<ChatMobileHeaderBar />}
-            >
-                <ChatLayoutGrid
-                    sidebarHeader={<ChatSidebarHeader />}
-                    sidebarBody={<ChatSidebarBody />}
-                    workspace={
-                        <>
-                            <ChatWorkspace />
-                            <div style={{ display: 'none' }}>{children}</div>
-                        </>
-                    }
-                />
-            </ChatShellProviders>
-        </>
+            {/* Panel sidebar — detected by shell CSS via :has(.shell-panel) */}
+            <aside className="shell-panel">
+                {/* Mobile: back button to main nav */}
+                <div className="lg:hidden flex items-center px-1 pt-0.5">
+                    <label
+                        htmlFor="shell-panel-mobile"
+                        className="flex items-center justify-center w-9 h-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/40 active:bg-accent/60 transition-colors cursor-pointer"
+                        aria-label="Close panel"
+                        style={{ WebkitTapHighlightColor: 'transparent' }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                    </label>
+                </div>
+
+                <div className="shell-panel-body">
+                    <ChatSidebarBody />
+                </div>
+            </aside>
+
+            {/* Backdrop for mobile panel drawer */}
+            <label
+                htmlFor="shell-panel-mobile"
+                className="shell-panel-backdrop"
+                aria-label="Close chat menu"
+            />
+
+            {/* Desktop header strip — panel toggle + sidebar header in header zone */}
+            <div className="shell-panel-header-strip">
+                <ChatSidebarHeader />
+            </div>
+
+            {/* Main workspace */}
+            <div className="shell-panel-content">
+                <ChatWorkspace />
+                <div style={{ display: 'none' }}>{children}</div>
+            </div>
+        </ChatShellProviders>
     );
 }

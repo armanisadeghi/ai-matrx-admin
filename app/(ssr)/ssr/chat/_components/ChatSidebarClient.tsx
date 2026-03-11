@@ -2,8 +2,10 @@
 
 // app/(ssr)/ssr/chat/_components/ChatSidebarClient.tsx
 //
-// Uses the feature/public-chat sidebar components directly.
-// Navigation is handled via window.history.pushState + popstate event
+// Chat sidebar content components. Layout is handled by the shell's
+// panel sidebar system (CSS-only). These components provide interactivity.
+//
+// Navigation uses window.history.pushState + popstate event
 // (same pattern used throughout the SSR chat workspace).
 //
 // Agent state is managed by SsrAgentContext — all components read from there
@@ -15,7 +17,6 @@ import { SidebarActions } from "@/features/public-chat/components/sidebar/Sideba
 import { SidebarAgents } from "@/features/public-chat/components/sidebar/SidebarAgents";
 import { SidebarChats } from "@/features/public-chat/components/sidebar/SidebarChats";
 import { SidebarUserFooter } from "@/features/public-chat/components/sidebar/SidebarUserFooter";
-import { useChatSidebar } from "./ChatSidebarContext";
 import { useSsrAgent } from "./SsrAgentContext";
 import type { AgentConfig } from "@/features/public-chat/context/ChatContext";
 
@@ -29,12 +30,20 @@ function navigate(path: string) {
 }
 
 // ============================================================================
-// SIDEBAR HEADER — always pinned to the header zone (desktop)
+// PANEL TOGGLE — toggles the shell panel checkbox (CSS-driven)
+// ============================================================================
+
+function togglePanel() {
+  const checkbox = document.getElementById('shell-panel-toggle') as HTMLInputElement | null;
+  if (checkbox) checkbox.checked = !checkbox.checked;
+}
+
+// ============================================================================
+// SIDEBAR HEADER — pinned in the shell-panel-header-strip (desktop)
 // Shows collapse toggle + new chat + agent name picker trigger.
 // ============================================================================
 
 export function ChatSidebarHeader() {
-  const { toggle } = useChatSidebar();
   const { selectedAgent, openAgentPicker } = useSsrAgent();
 
   const handleNewChat = useCallback(() => {
@@ -43,16 +52,16 @@ export function ChatSidebarHeader() {
 
   return (
     <SidebarAgentHeader
-      onCollapse={toggle}
+      onCollapse={togglePanel}
       onNewChat={handleNewChat}
       selectedAgent={selectedAgent}
-      onAgentSelect={() => openAgentPicker()}  // clicking agent name opens full picker; ignore passed agent arg
+      onAgentSelect={() => openAgentPicker()}
     />
   );
 }
 
 // ============================================================================
-// SIDEBAR BODY — full sidebar content, only visible when open
+// SIDEBAR BODY — full sidebar content, rendered inside shell-panel
 // ============================================================================
 
 export function ChatSidebarBody() {
@@ -67,8 +76,6 @@ export function ChatSidebarBody() {
     navigate("/ssr/chat");
   }, []);
 
-  // When an agent is selected from the sidebar list, update shared state
-  // and navigate to base chat (drop any existing conversation)
   const handleAgentSelect = useCallback((agent: AgentConfig) => {
     onAgentChange(agent);
   }, [onAgentChange]);
@@ -84,7 +91,6 @@ export function ChatSidebarBody() {
 
       {/* Scrollable: Agents + Chats */}
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none">
-        {/* Pass selectedAgent + onAgentSelect so selections are wired */}
         <SidebarAgents
           searchQuery={searchQuery}
           selectedAgent={selectedAgent}
