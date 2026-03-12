@@ -1,0 +1,205 @@
+'use client';
+
+import { useCallback, useMemo } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+
+export type AiModelFilters = {
+    provider?: string;
+    is_deprecated?: boolean;
+    is_primary?: boolean;
+    is_premium?: boolean;
+    api_class?: string;
+};
+
+export type TabState = {
+    id: string;
+    label: string;
+    q: string;
+    sort: string;
+    dir: 'asc' | 'desc';
+    page: number;
+    perPage: number;
+    filters: AiModelFilters;
+};
+
+const DEFAULT_TAB: TabState = {
+    id: 'all',
+    label: 'All Models',
+    q: '',
+    sort: 'common_name',
+    dir: 'asc',
+    page: 1,
+    perPage: 25,
+    filters: {},
+};
+
+function parseBoolean(val: string | null): boolean | undefined {
+    if (val === 'true') return true;
+    if (val === 'false') return false;
+    return undefined;
+}
+
+function serializeTabState(params: URLSearchParams, tab: TabState) {
+    const p = tab.id;
+    if (tab.q) params.set(`${p}.q`, tab.q); else params.delete(`${p}.q`);
+    if (tab.sort !== DEFAULT_TAB.sort) params.set(`${p}.sort`, tab.sort); else params.delete(`${p}.sort`);
+    if (tab.dir !== DEFAULT_TAB.dir) params.set(`${p}.dir`, tab.dir); else params.delete(`${p}.dir`);
+    if (tab.page !== 1) params.set(`${p}.page`, String(tab.page)); else params.delete(`${p}.page`);
+    if (tab.perPage !== 25) params.set(`${p}.perPage`, String(tab.perPage)); else params.delete(`${p}.perPage`);
+    if (tab.label !== labelForId(tab.id)) params.set(`${p}.label`, tab.label); else params.delete(`${p}.label`);
+    // Filters
+    if (tab.filters.provider) params.set(`${p}.provider`, tab.filters.provider); else params.delete(`${p}.provider`);
+    if (tab.filters.is_deprecated !== undefined) params.set(`${p}.is_deprecated`, String(tab.filters.is_deprecated)); else params.delete(`${p}.is_deprecated`);
+    if (tab.filters.is_primary !== undefined) params.set(`${p}.is_primary`, String(tab.filters.is_primary)); else params.delete(`${p}.is_primary`);
+    if (tab.filters.is_premium !== undefined) params.set(`${p}.is_premium`, String(tab.filters.is_premium)); else params.delete(`${p}.is_premium`);
+    if (tab.filters.api_class) params.set(`${p}.api_class`, tab.filters.api_class); else params.delete(`${p}.api_class`);
+}
+
+function deserializeTabState(params: URLSearchParams, id: string): TabState {
+    const p = id;
+    return {
+        id,
+        label: params.get(`${p}.label`) ?? labelForId(id),
+        q: params.get(`${p}.q`) ?? '',
+        sort: params.get(`${p}.sort`) ?? DEFAULT_TAB.sort,
+        dir: (params.get(`${p}.dir`) as 'asc' | 'desc') ?? DEFAULT_TAB.dir,
+        page: parseInt(params.get(`${p}.page`) ?? '1', 10),
+        perPage: parseInt(params.get(`${p}.perPage`) ?? '25', 10),
+        filters: {
+            provider: params.get(`${p}.provider`) ?? undefined,
+            is_deprecated: parseBoolean(params.get(`${p}.is_deprecated`)),
+            is_primary: parseBoolean(params.get(`${p}.is_primary`)),
+            is_premium: parseBoolean(params.get(`${p}.is_premium`)),
+            api_class: params.get(`${p}.api_class`) ?? undefined,
+        },
+    };
+}
+
+function labelForId(id: string): string {
+    if (id === 'all') return 'All Models';
+    // Convert slug to title case, e.g. "my-tab" → "My Tab"
+    return id.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function generateTabId(existing: string[]): string {
+    let n = existing.length + 1;
+    while (existing.includes(`tab-${n}`)) n++;
+    return `tab-${n}`;
+}
+
+export function useTabUrlState() {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    const tabIds: string[] = useMemo(() => {
+        const raw = searchParams.get('tabs');
+        if (!raw) return ['all'];
+        const ids = raw.split(',').map((s) => s.trim()).filter(Boolean);
+        return ids.length > 0 ? ids : ['all'];
+    }, [searchParams]);
+
+    const activeTabId: string = useMemo(() => {
+        const active = searchParams.get('active');
+        return active && tabIds.includes(active) ? active : tabIds[0];
+    }, [searchParams, tabIds]);
+
+    const tabStates: TabState[] = useMemo(
+        () => tabIds.map((id) => deserializeTabState(searchParams, id)),
+        [searchParams, tabIds]
+    );
+
+    const activeTab: TabState = useMemo(
+        () => tabStates.find((t) => t.id === activeTabId) ?? tabStates[0],
+        [tabStates, activeTabId]
+    );
+
+    const push = useCallback(
+        (updater: (params: URLSearchParams) => void) => {
+            const params = new URLSearchParams(searchParams.toString());
+            updater(params);
+            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+        },
+        [router, pathname, searchParams]
+    );
+
+    const setActiveTab = useCallback(
+        (id: string) => {
+            push((params) => params.set('active', id));
+        },
+        [push]
+    );
+
+    const openTab = useCallback(
+        (initialFilters?: Partial<AiModelFilters>, label?: string) => {
+            const newId = generateTabId(tabIds);
+            push((params) => {
+                const newIds = [...tabIds, newId];
+                params.set('tabs', newIds.join(','));
+                params.set('active', newId);
+                if (label) params.set(`${newId}.label`, label);
+                if (initialFilters?.provider) params.set(`${newId}.provider`, initialFilters.provider);
+                if (initialFilters?.is_deprecated !== undefined) params.set(`${newId}.is_deprecated`, String(initialFilters.is_deprecated));
+                if (initialFilters?.is_primary !== undefined) params.set(`${newId}.is_primary`, String(initialFilters.is_primary));
+                if (initialFilters?.is_premium !== undefined) params.set(`${newId}.is_premium`, String(initialFilters.is_premium));
+                if (initialFilters?.api_class) params.set(`${newId}.api_class`, initialFilters.api_class);
+            });
+        },
+        [push, tabIds]
+    );
+
+    const closeTab = useCallback(
+        (id: string) => {
+            if (tabIds.length <= 1) return;
+            push((params) => {
+                const newIds = tabIds.filter((t) => t !== id);
+                params.set('tabs', newIds.join(','));
+                // Clear all params for this tab
+                Array.from(params.keys())
+                    .filter((k) => k.startsWith(`${id}.`))
+                    .forEach((k) => params.delete(k));
+                // Switch active if needed
+                if (activeTabId === id) {
+                    const idx = tabIds.indexOf(id);
+                    const next = newIds[Math.max(0, idx - 1)];
+                    params.set('active', next);
+                }
+            });
+        },
+        [push, tabIds, activeTabId]
+    );
+
+    const renameTab = useCallback(
+        (id: string, label: string) => {
+            push((params) => params.set(`${id}.label`, label));
+        },
+        [push]
+    );
+
+    const updateTabState = useCallback(
+        (id: string, patch: Partial<Omit<TabState, 'id'>>) => {
+            push((params) => {
+                const current = deserializeTabState(params, id);
+                const updated: TabState = { ...current, ...patch, id };
+                // Merge filters if provided
+                if (patch.filters) {
+                    updated.filters = { ...current.filters, ...patch.filters };
+                }
+                serializeTabState(params, updated);
+            });
+        },
+        [push]
+    );
+
+    return {
+        tabIds,
+        activeTabId,
+        tabStates,
+        activeTab,
+        setActiveTab,
+        openTab,
+        closeTab,
+        renameTab,
+        updateTabState,
+    };
+}

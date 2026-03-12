@@ -108,9 +108,7 @@ const AdminPage = () => {
                             <div
                                 key={category.name}
                                 onClick={() => handleSelectCategory(category.name)}
-                                className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-4
-                                     transform transition-all duration-200 hover:scale-105 hover:shadow-xl
-                                     cursor-pointer relative group"
+                                className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-4 transform transition-all duration-200 hover:scale-105 hover:shadow-xl cursor-pointer relative group"
                             >
                                 <div className="flex items-center space-x-4 mb-4">
                                     <div className={`p-3 rounded-lg text-white ${getCategoryBgClass(category.iconColor)}`}>
@@ -127,14 +125,7 @@ const AdminPage = () => {
                                                     e.stopPropagation();
                                                     handleSelectComponent(feature.title);
                                                 }}
-                                                className={`flex items-center h-6 
-                                                ${
-                                                    feature.isNew
-                                                        ? "text-amber-600 dark:text-amber-400 font-semibold"
-                                                        : "text-gray-600 dark:text-gray-300"
-                                                }
-                                                hover:text-blue-700 dark:hover:text-blue-500
-                                                cursor-pointer transition-colors duration-200`}
+                                                className={`flex items-center h-6 ${feature.isNew ? "text-amber-600 dark:text-amber-400 font-semibold" : "text-gray-600 dark:text-gray-300"} hover:text-blue-700 dark:hover:text-blue-500 cursor-pointer transition-colors duration-200`}
                                             >
                                                 <div className="flex items-center min-w-[28px]">
                                                     <div className="w-4 h-4">{feature.icon}</div>
@@ -156,10 +147,7 @@ const AdminPage = () => {
                                                 e.stopPropagation();
                                                 handleSelectCategory(category.name);
                                             }}
-                                            className="flex items-center text-sm text-blue-600 dark:text-blue-400
-                                                 hover:text-blue-800 dark:hover:text-blue-300
-                                                 cursor-pointer transition-colors duration-200
-                                                 mt-2 pl-7"
+                                            className="flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 cursor-pointer transition-colors duration-200 mt-2 pl-7"
                                         >
                                             <span>See all {category.features.length} features</span>
                                             <IconChevronRight className="w-4 h-4 ml-1" />

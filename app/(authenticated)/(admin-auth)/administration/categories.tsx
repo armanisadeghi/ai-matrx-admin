@@ -94,6 +94,14 @@ export const adminCategories = [
         iconColor: "text-violet-600",
         features: [
             {
+                title: "AI Models",
+                description:
+                    "Manage the AI model registry — edit parameters, JSON controls, capabilities, endpoints, and deprecation. Audit and replace model references across prompts and builtins.",
+                icon: <Brain />,
+                link: "/administration/ai-models",
+                isNew: true,
+            },
+            {
                 title: "Prompt Shortcuts",
                 description:
                     "Manage AI prompt shortcuts with keyboard bindings, scope mappings, and prompt connections for context menus, buttons, and cards",

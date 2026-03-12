@@ -10,6 +10,12 @@
 #   ./scripts/release.sh --major      # major bump
 #   ./scripts/release.sh --message "feat: something"   # custom commit message
 #   ./scripts/release.sh --dry-run    # preview without changes
+#   ./scripts/release.sh --monitor    # poll Vercel deployment status after push
+#
+# --monitor requires either:
+#   - VERCEL_TOKEN env var (personal access token from vercel.com/account/tokens)
+#   - VERCEL_TEAM_ID env var (optional, for team projects — e.g. team_xxxx)
+#   - VERCEL_PROJECT_ID env var (optional, speeds up lookup by skipping name match)
 set -euo pipefail
 
 # ── Failure trap ─────────────────────────────────────────────────────────────
@@ -54,6 +60,7 @@ preview() { echo -e "${YELLOW}[DRY]${NC}   $*"; }
 BUMP_TYPE="patch"
 CUSTOM_MESSAGE=""
 DRY_RUN=false
+MONITOR=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -64,10 +71,11 @@ while [[ $# -gt 0 ]]; do
             [[ -n "${2:-}" ]] || fail "--message requires an argument."
             CUSTOM_MESSAGE="$2"; shift 2 ;;
         --dry-run) DRY_RUN=true; shift ;;
+        --monitor) MONITOR=true; shift ;;
         -h|--help)
-            grep '^#' "$0" | head -20 | sed 's/^# \?//'
+            grep '^#' "$0" | head -25 | sed 's/^# \?//'
             exit 0 ;;
-        *) fail "Unknown flag: $1. Use --patch, --minor, --major, --message, or --dry-run." ;;
+        *) fail "Unknown flag: $1. Use --patch, --minor, --major, --message, --dry-run, or --monitor." ;;
     esac
 done
 
@@ -165,5 +173,144 @@ echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━
 echo -e "${GREEN}  Released ${PROJECT_NAME} ${NEW_VERSION}${NC}"
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-echo -e "  Monitor: ${CYAN}https://github.com/${GITHUB_REPO}/actions${NC}"
+echo -e "  GitHub:  ${CYAN}https://github.com/${GITHUB_REPO}/actions${NC}"
+echo -e "  Vercel:  ${CYAN}https://vercel.com/dashboard${NC}"
 echo ""
+
+# ── Vercel deployment monitor ─────────────────────────────────────────────────
+_monitor_vercel() {
+    local token="${VERCEL_TOKEN:-}"
+    local team_id="${VERCEL_TEAM_ID:-}"
+    local project_id="${VERCEL_PROJECT_ID:-}"
+
+    if [[ -z "$token" ]]; then
+        warn "--monitor requires VERCEL_TOKEN env var. Skipping."
+        warn "Get one at: https://vercel.com/account/tokens"
+        return
+    fi
+
+    local api_base="https://api.vercel.com"
+    local team_param=""
+    [[ -n "$team_id" ]] && team_param="?teamId=${team_id}"
+
+    # Resolve project ID from name if not provided
+    if [[ -z "$project_id" ]]; then
+        info "Resolving Vercel project ID for '${PROJECT_NAME}'..."
+        local projects_resp
+        projects_resp=$(curl -sf \
+            -H "Authorization: Bearer ${token}" \
+            "${api_base}/v9/projects${team_param}" 2>/dev/null) || {
+            warn "Could not reach Vercel API. Check VERCEL_TOKEN."; return
+        }
+        project_id=$(echo "$projects_resp" \
+            | node -e "
+                const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+                const p=(d.projects||[]).find(p=>p.name==='${PROJECT_NAME}');
+                process.stdout.write(p?p.id:'');
+              " 2>/dev/null)
+        if [[ -z "$project_id" ]]; then
+            warn "Project '${PROJECT_NAME}' not found on Vercel. Set VERCEL_PROJECT_ID to override."
+            return
+        fi
+        ok "Found project ID: ${project_id}"
+    fi
+
+    # Wait briefly for Vercel to register the push-triggered build
+    info "Waiting for Vercel to pick up the push..."
+    sleep 8
+
+    # Fetch the most recent deployment
+    local deploy_url="${api_base}/v6/deployments?projectId=${project_id}&limit=1"
+    [[ -n "$team_id" ]] && deploy_url="${deploy_url}&teamId=${team_id}"
+
+    local deploy_id deploy_inspect_url
+    deploy_id=$(curl -sf \
+        -H "Authorization: Bearer ${token}" \
+        "${deploy_url}" 2>/dev/null \
+        | node -e "
+            const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+            process.stdout.write((d.deployments&&d.deployments[0])?d.deployments[0].uid:'');
+          " 2>/dev/null)
+
+    if [[ -z "$deploy_id" ]]; then
+        warn "No recent deployment found. It may still be queuing — check the Vercel dashboard."
+        return
+    fi
+
+    deploy_inspect_url="https://vercel.com/${PROJECT_NAME}/_logs?deploymentId=${deploy_id}"
+    [[ -n "$team_id" ]] && deploy_inspect_url="https://vercel.com/dashboard"
+    ok "Deployment ID: ${deploy_id}"
+    echo -e "  Logs:    ${CYAN}${deploy_inspect_url}${NC}"
+    echo ""
+
+    # Poll until terminal state
+    local poll_url="${api_base}/v13/deployments/${deploy_id}"
+    [[ -n "$team_id" ]] && poll_url="${poll_url}?teamId=${team_id}"
+
+    local status prev_status="" elapsed=0 interval=10 max_wait=900
+    local spinner=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
+    local spin_i=0
+
+    echo -e "${CYAN}[INFO]${NC}  Polling Vercel build status (max ${max_wait}s)..."
+    echo ""
+
+    while [[ $elapsed -lt $max_wait ]]; do
+        status=$(curl -sf \
+            -H "Authorization: Bearer ${token}" \
+            "${poll_url}" 2>/dev/null \
+            | node -e "
+                const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+                process.stdout.write(d.readyState||d.status||'UNKNOWN');
+              " 2>/dev/null) || status="UNKNOWN"
+
+        if [[ "$status" != "$prev_status" ]]; then
+            echo ""
+            case "$status" in
+                QUEUED)      echo -e "  ${YELLOW}⏳  QUEUED${NC}     — waiting in build queue" ;;
+                INITIALIZING) echo -e "  ${YELLOW}🔧  INITIALIZING${NC} — preparing build environment" ;;
+                BUILDING)    echo -e "  ${CYAN}🔨  BUILDING${NC}   — compiling your app" ;;
+                DEPLOYING)   echo -e "  ${CYAN}🚀  DEPLOYING${NC}  — uploading to edge network" ;;
+                READY)       break ;;
+                ERROR)       break ;;
+                CANCELED)    break ;;
+                *)           echo -e "  ${YELLOW}❓  ${status}${NC}" ;;
+            esac
+            prev_status="$status"
+        fi
+
+        # Animate spinner on same line between status changes
+        printf "\r  ${spinner[$spin_i]}  %ds elapsed..." "$elapsed"
+        spin_i=$(( (spin_i + 1) % ${#spinner[@]} ))
+
+        sleep "$interval"
+        elapsed=$(( elapsed + interval ))
+    done
+
+    printf "\r%60s\r" ""  # clear spinner line
+
+    case "$status" in
+        READY)
+            echo ""
+            echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo -e "${GREEN}  ✓  Vercel deployment READY — ${NEW_VERSION} is live!${NC}"
+            echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            ;;
+        ERROR)
+            echo ""
+            echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo -e "${RED}  ✗  Vercel deployment FAILED — check logs above${NC}"
+            echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            ;;
+        CANCELED)
+            warn "Deployment was canceled."
+            ;;
+        *)
+            warn "Timed out after ${max_wait}s. Last status: ${status}. Check the dashboard."
+            ;;
+    esac
+    echo ""
+}
+
+if $MONITOR; then
+    _monitor_vercel
+fi

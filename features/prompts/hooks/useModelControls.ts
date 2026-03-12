@@ -176,18 +176,33 @@ export function useModelControls(models: any[], selectedModelId: string) {
             return;
         }
 
+        // Flatten object defaults with a "type" property (e.g. { type: "json_object" } → "json_object")
+        const rawDefault = value.default;
+        const flatDefault =
+            rawDefault !== null &&
+            typeof rawDefault === 'object' &&
+            !Array.isArray(rawDefault) &&
+            'type' in rawDefault
+                ? String(rawDefault.type)
+                : rawDefault;
+
         // Parse the control definition based on its structure
         const controlDef: ControlDefinition = {
             type: value.type || 'string',
             min: value.min,
             max: value.max,
-            default: value.default,
+            default: flatDefault,
             required: value.required,
         };
 
-        // Handle enum types
+        // Handle enum types — flatten object enum entries to strings (e.g. { type: "json_object" } → "json_object")
         if (value.enum && Array.isArray(value.enum)) {
-            controlDef.enum = value.enum;
+            controlDef.enum = value.enum.map((option: unknown) => {
+                if (option !== null && typeof option === 'object' && 'type' in (option as Record<string, unknown>)) {
+                    return String((option as Record<string, unknown>).type);
+                }
+                return String(option);
+            });
             controlDef.type = 'enum';
         }
         // Handle "allowed" property (feature flags)

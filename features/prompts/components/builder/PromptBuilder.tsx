@@ -223,8 +223,8 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
         currentTaskId ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state) : false
     );
 
-    // UI state
-    const [isDirty, setIsDirty] = useState(false);
+    // UI state — new prompts start dirty (pre-populated defaults are unsaved)
+    const [isDirty, setIsDirty] = useState(!initialData?.id);
     const [isSaving, setIsSaving] = useState(false);
     const [isEditingSystemMessage, setIsEditingSystemMessage] = useState(false);
     const [editingMessageIndex, setEditingMessageIndex] = useState<number | null>(null);
@@ -492,6 +492,9 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
             }
         } catch (error) {
             console.error("Error saving prompt:", error);
+            toast.error("Failed to save prompt", {
+                description: error instanceof Error ? error.message : "An unexpected error occurred",
+            });
         } finally {
             setIsSaving(false);
         }
