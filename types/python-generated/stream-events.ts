@@ -2,6 +2,8 @@
 // Source: matrx_ai/context/events.py
 // Run: .venv/bin/python scripts/generate_types.py stream
 
+import type { ContentBlockPayload } from "./content-blocks";
+
 export const EventType = {
   CHUNK: "chunk",
   STATUS_UPDATE: "status_update",
@@ -12,6 +14,7 @@ export const EventType = {
   BROKER: "broker",
   HEARTBEAT: "heartbeat",
   END: "end",
+  CONTENT_BLOCK: "content_block",
 } as const;
 
 export type EventType = (typeof EventType)[keyof typeof EventType];
@@ -135,6 +138,11 @@ export interface EndEvent {
   data: EndPayload;
 }
 
+export interface ContentBlockEvent {
+  event: "content_block";
+  data: ContentBlockPayload;
+}
+
 export type TypedStreamEvent =
   | ChunkEvent
   | StatusUpdateEvent
@@ -144,7 +152,8 @@ export type TypedStreamEvent =
   | ToolEventEvent
   | BrokerEvent
   | HeartbeatEvent
-  | EndEvent;
+  | EndEvent
+  | ContentBlockEvent;
 
 // Type guards
 export function isChunkEvent(e: StreamEvent): e is StreamEvent & { event: "chunk"; data: ChunkPayload } {
@@ -181,4 +190,13 @@ export function isHeartbeatEvent(e: StreamEvent): e is StreamEvent & { event: "h
 
 export function isEndEvent(e: StreamEvent): e is StreamEvent & { event: "end"; data: EndPayload } {
   return e.event === "end";
+}
+
+export function isContentBlockEvent(e: StreamEvent): e is StreamEvent & { event: "content_block"; data: ContentBlockPayload } {
+  return e.event === "content_block";
+}
+
+/** Check if an event stream uses the new content_block protocol. */
+export function isNewProtocol(events: StreamEvent[]): boolean {
+  return events.some(e => e.event === "content_block");
 }
