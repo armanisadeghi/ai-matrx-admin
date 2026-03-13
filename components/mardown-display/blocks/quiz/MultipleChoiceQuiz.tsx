@@ -24,7 +24,7 @@ import { InlineLatexRenderer } from '@/features/math/components';
 export type Question = OriginalQuestion;
 
 interface MultipleChoiceQuizProps {
-  quizData: RawQuizJSON; // Quiz object: { quiz_title, category?, multiple_choice }
+  quizData: RawQuizJSON; // Quiz object: { quizTitle, category?, multipleChoice }
   sessionId?: string; // Load existing quiz session from database
   taskId?: string; // Task ID for canvas deduplication
   enableAutoSave?: boolean; // Enable automatic saving to database (default: true)

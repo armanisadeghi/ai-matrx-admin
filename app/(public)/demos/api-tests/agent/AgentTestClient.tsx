@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useApiTestConfig, ApiTestConfigPanel } from "@/components/api-test-config";
-import { createClient } from "@/utils/supabase/client";
 import { cn } from "@/lib/utils";
 
 // ─────────────────────────────────────────────────────
@@ -166,22 +165,7 @@ function RunLogCard({ log, onCopy }: { log: RunLog; onCopy: (text: string) => vo
 export default function AgentTestClient() {
     const apiConfig = useApiTestConfig({ defaultServerType: "local" });
 
-    // Auto-populate auth token from current Supabase session
-    useEffect(() => {
-        const loadSessionToken = async () => {
-            try {
-                const supabase = createClient();
-                const { data: { session } } = await supabase.auth.getSession();
-                if (session?.access_token && !apiConfig.hasToken) {
-                    apiConfig.setAuthToken(session.access_token);
-                }
-            } catch {
-                // Silently ignore — user can set token manually
-            }
-        };
-        loadSessionToken();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    // Auth token is now auto-loaded from the Supabase session inside useApiTestConfig.
 
     // ── Test state ──
     const [promptId, setPromptId] = useState(SAMPLE_PROMPT_ID);
@@ -281,20 +265,26 @@ export default function AgentTestClient() {
 
             for await (const ev of events) {
                 if (controller.signal.aborted) break;
-                accumulated.push(ev);
+                accumulated.push(ev as unknown as AgentStreamEvent);
                 setLiveEvents([...accumulated]);
 
-                if (ev.event === "chunk" && ev.data?.text) {
-                    text += ev.data.text;
+                const d = ev.data;
+                if (ev.event === "chunk" && typeof d.text === "string") {
+                    text += d.text;
                     setLiveText(text);
                 }
-                if (ev.event === "conversation_id" || ev.data?.conversation_id) {
-                    convId = ev.data?.conversation_id || ev.data;
-                    if (convId) setActiveConversationId(convId);
+                if (typeof d.conversation_id === "string") {
+                    convId = d.conversation_id;
+                    setActiveConversationId(convId);
                 }
-                if (ev.data?.request_id) reqId = ev.data.request_id;
+                if (typeof d.request_id === "string") reqId = d.request_id;
                 if (ev.event === "error") {
-                    throw new Error(ev.data?.user_message || ev.data?.message || JSON.stringify(ev.data));
+                    const msg = typeof d.user_message === "string"
+                        ? d.user_message
+                        : typeof d.message === "string"
+                            ? d.message
+                            : JSON.stringify(d);
+                    throw new Error(msg);
                 }
             }
 

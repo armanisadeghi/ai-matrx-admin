@@ -53,6 +53,30 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // Handle authenticated users landing on /dashboard with a redirectTo param —
+  // forward them directly to the intended destination instead of showing the dashboard.
+  if (user && request.nextUrl.pathname === '/dashboard') {
+    const redirectTo = request.nextUrl.searchParams.get('redirectTo')
+    if (redirectTo && redirectTo !== '/' && redirectTo !== '/login' && redirectTo !== '/sign-up') {
+      const url = request.nextUrl.clone()
+      // redirectTo may be a full path+search like /some/path?foo=bar
+      try {
+        const target = new URL(redirectTo, request.nextUrl.origin)
+        // Only allow same-origin redirects to prevent open-redirect attacks
+        if (target.origin === request.nextUrl.origin) {
+          return NextResponse.redirect(target)
+        }
+      } catch {
+        // redirectTo is a relative path — construct the URL directly
+        const target = new URL(request.nextUrl.origin)
+        const [pathname, search] = redirectTo.split('?')
+        target.pathname = pathname
+        if (search) target.search = `?${search}`
+        return NextResponse.redirect(target)
+      }
+    }
+  }
+
   // Handle unauthenticated users trying to access protected routes
   if (
     !user &&

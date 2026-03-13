@@ -180,18 +180,23 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
         }
 
         case 'content_block': {
-          // New server-processed block protocol
+          // New server-processed block protocol.
+          // The Python backend sends snake_case keys (block_id, block_index);
+          // ContentBlockPayload uses camelCase. Normalise both forms so we
+          // work whether the payload has been transformed or not.
           isNewProtocolRef.current = true;
-          const blockPayload = event.data as unknown as ContentBlockPayload;
-          if (blockPayload?.blockId) {
-            serverBlockMapRef.current.set(blockPayload.blockId, {
-              blockId: blockPayload.blockId,
-              blockIndex: blockPayload.blockIndex,
-              type: blockPayload.type,
-              status: blockPayload.status as "streaming" | "complete" | "error",
-              content: blockPayload.content,
-              data: blockPayload.data,
-              metadata: blockPayload.metadata,
+          const raw = event.data as unknown as Record<string, unknown>;
+          const blockId = (raw.blockId ?? raw.block_id) as string | undefined;
+          const blockIndex = (raw.blockIndex ?? raw.block_index) as number | undefined;
+          if (blockId !== undefined) {
+            serverBlockMapRef.current.set(blockId, {
+              blockId,
+              blockIndex: blockIndex ?? 0,
+              type: raw.type as string,
+              status: (raw.status as "streaming" | "complete" | "error") ?? "streaming",
+              content: (raw.content as string | null) ?? null,
+              data: (raw.data as Record<string, unknown> | null) ?? null,
+              metadata: (raw.metadata as Record<string, unknown>) ?? {},
             });
             hasNewBlocks = true;
           }

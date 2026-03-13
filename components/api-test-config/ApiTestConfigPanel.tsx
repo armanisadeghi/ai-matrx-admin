@@ -146,26 +146,33 @@ export function ApiTestConfigPanel({
                 <>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Key className="h-3 w-3 text-green-600 dark:text-green-400 flex-shrink-0" />
+                      <Key className={`h-3 w-3 flex-shrink-0 ${config.isSessionToken ? 'text-blue-500 dark:text-blue-400' : 'text-green-600 dark:text-green-400'}`} />
                     </TooltipTrigger>
-                    <TooltipContent>Token stored</TooltipContent>
+                    <TooltipContent>
+                      {config.isSessionToken ? 'Using session token (auto-loaded from your login)' : 'Token stored in cookies'}
+                    </TooltipContent>
                   </Tooltip>
+                  <span className="text-[10px] text-muted-foreground truncate flex-1">
+                    {config.isSessionToken ? 'session token' : 'cookie token'}
+                  </span>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button size="sm" variant="ghost" onClick={() => { setTempToken(config.authToken); setIsEditingToken(true); }} className="h-6 w-6 p-0">
                         <Pencil className="h-3 w-3" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Edit token</TooltipContent>
+                    <TooltipContent>Override with manual token</TooltipContent>
                   </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button size="sm" variant="ghost" onClick={handleClearToken} className="h-6 w-6 p-0 text-destructive hover:text-destructive">
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Clear token</TooltipContent>
-                  </Tooltip>
+                  {!config.isSessionToken && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button size="sm" variant="ghost" onClick={handleClearToken} className="h-6 w-6 p-0 text-destructive hover:text-destructive">
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Clear cookie token</TooltipContent>
+                    </Tooltip>
+                  )}
                 </>
               ) : (
                 <>
@@ -228,12 +235,12 @@ export function ApiTestConfigPanel({
           </div>
         )}
       
-        {/* Warning if no token */}
-        {showAuthToken && !config.hasToken && !isEditingToken && (
+        {/* Warning if no token and not a session token */}
+        {showAuthToken && !config.hasToken && !config.isSessionToken && !isEditingToken && (
           <div className="px-3 py-2 bg-warning/10 border-t border-warning/20">
             <p className="text-xs text-warning-foreground">
               <Key className="h-3 w-3 inline mr-1" />
-              No auth token configured. API requests will fail.
+              No auth token. Log in or paste a token above.
             </p>
           </div>
         )}

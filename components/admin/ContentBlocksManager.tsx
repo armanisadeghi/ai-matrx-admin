@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,7 +39,11 @@ import {
     Settings,
     Check,
     Columns2,
-    PanelLeft
+    PanelLeft,
+    Loader2,
+    Waves,
+    Cpu,
+    RefreshCw,
 } from 'lucide-react';
 import {
     ContentBlockDB,
@@ -52,6 +56,10 @@ import {
 import { createClient } from '@/utils/supabase/client';
 import MarkdownStream from '@/components/MarkdownStream';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
+import { ENDPOINTS } from '@/lib/api/endpoints';
+import { parseNdjsonStream } from '@/lib/api/stream-parser';
+import type { StreamEvent } from '@/types/python-generated/stream-events';
+import { useApiTestConfig } from '@/components/api-test-config';
 
 interface ContentBlocksManagerProps {
     className?: string;
@@ -149,7 +157,87 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     const [quickCreateContext, setQuickCreateContext] = useState<'edit' | 'create'>('create');
     const [quickCategoryData, setQuickCategoryData] = useState({ label: '', icon_name: 'Folder', color: '#3b82f6', parent_category_id: null as string | null });
     // Preview mode for Template Content
-    const [previewMode, setPreviewMode] = useState<'editor' | 'preview'>('preview');
+    const [previewMode, setPreviewMode] = useState<'editor' | 'preview' | 'json' | 'stream'>('preview');
+
+    // Block-processing API state
+    const apiConfig = useApiTestConfig({ defaultServerType: 'local' });
+    const [processedEvents, setProcessedEvents] = useState<StreamEvent[]>([]);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [processError, setProcessError] = useState<string | null>(null);
+    const [lastProcessedTemplate, setLastProcessedTemplate] = useState<string>('');
+    const abortRef = useRef<AbortController | null>(null);
+
+    const runBlockProcessing = useCallback(async (mode: 'json' | 'stream', template: string) => {
+        if (!template.trim()) return;
+        abortRef.current?.abort();
+        const controller = new AbortController();
+        abortRef.current = controller;
+
+        setIsProcessing(true);
+        setProcessError(null);
+        setProcessedEvents([]);
+        setLastProcessedTemplate(template);
+
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (apiConfig.authToken) headers['Authorization'] = `Bearer ${apiConfig.authToken}`;
+        const body = JSON.stringify({ content: template });
+
+        try {
+            if (mode === 'json') {
+                const res = await fetch(`${apiConfig.baseUrl}${ENDPOINTS.blockProcessing.process}`, {
+                    method: 'POST', headers, body, signal: controller.signal,
+                });
+                if (!res.ok) {
+                    const d = await res.json().catch(() => ({}));
+                    throw new Error((d as any)?.detail || (d as any)?.message || `HTTP ${res.status}`);
+                }
+                const data = await res.json() as { blocks: Record<string, unknown>[] };
+                const synthetic: StreamEvent[] = data.blocks.map((block, i) => ({
+                    event: 'content_block' as const,
+                    data: {
+                        blockId: (block.blockId ?? block.block_id ?? `block-${i}`) as string,
+                        blockIndex: (block.blockIndex ?? block.block_index ?? i) as number,
+                        type: block.type as string,
+                        status: 'complete' as const,
+                        content: (block.content ?? null) as string | null,
+                        data: (block.data ?? null) as Record<string, unknown> | null,
+                        metadata: (block.metadata ?? {}) as Record<string, unknown>,
+                    } as unknown as Record<string, unknown>,
+                }));
+                setProcessedEvents(synthetic);
+            } else {
+                const res = await fetch(`${apiConfig.baseUrl}${ENDPOINTS.blockProcessing.processStream}`, {
+                    method: 'POST', headers, body, signal: controller.signal,
+                });
+                if (!res.ok) {
+                    const d = await res.json().catch(() => ({}));
+                    throw new Error((d as any)?.detail || (d as any)?.message || `HTTP ${res.status}`);
+                }
+                const { events } = parseNdjsonStream(res, controller.signal);
+                const acc: StreamEvent[] = [];
+                for await (const ev of events) {
+                    acc.push(ev);
+                    setProcessedEvents([...acc]);
+                }
+            }
+        } catch (err: unknown) {
+            if (err instanceof Error && err.name !== 'AbortError') {
+                setProcessError(err.message);
+            }
+        } finally {
+            abortRef.current = null;
+            setIsProcessing(false);
+        }
+    }, [apiConfig.authToken, apiConfig.baseUrl]);
+
+    // Re-run when switching to json/stream mode or when template changes while in those modes
+    useEffect(() => {
+        if (previewMode !== 'json' && previewMode !== 'stream') return;
+        const template = editData.template || '';
+        if (template === lastProcessedTemplate && processedEvents.length > 0) return;
+        runBlockProcessing(previewMode, template);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [previewMode]);
     // Delete confirmation dialog state
     const [deleteConfirmation, setDeleteConfirmation] = useState<{
         isOpen: boolean;
@@ -946,16 +1034,14 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                 {/* Template Content */}
                                 <Card>
                                     <CardHeader>
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <CardTitle>Template Content</CardTitle>
-                                            </div>
-                                            <div className="flex items-center gap-2">
+                                        <div className="flex items-center justify-between flex-wrap gap-2">
+                                            <CardTitle>Template Content</CardTitle>
+                                            <div className="flex items-center gap-1.5 flex-wrap">
                                                 <Button
                                                     variant={previewMode === 'editor' ? 'default' : 'outline'}
                                                     size="sm"
                                                     onClick={() => setPreviewMode('editor')}
-                                                    className="flex items-center gap-2"
+                                                    className="flex items-center gap-1.5"
                                                 >
                                                     <PanelLeft className="w-4 h-4" />
                                                     Editor
@@ -964,38 +1050,122 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                     variant={previewMode === 'preview' ? 'default' : 'outline'}
                                                     size="sm"
                                                     onClick={() => setPreviewMode('preview')}
-                                                    className="flex items-center gap-2"
+                                                    className="flex items-center gap-1.5"
                                                 >
                                                     <Columns2 className="w-4 h-4" />
                                                     Preview
                                                 </Button>
+                                                <Button
+                                                    variant={previewMode === 'json' ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={() => setPreviewMode('json')}
+                                                    className="flex items-center gap-1.5"
+                                                >
+                                                    <Cpu className="w-4 h-4" />
+                                                    JSON
+                                                </Button>
+                                                <Button
+                                                    variant={previewMode === 'stream' ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={() => setPreviewMode('stream')}
+                                                    className="flex items-center gap-1.5"
+                                                >
+                                                    <Waves className="w-4 h-4" />
+                                                    Stream
+                                                </Button>
+                                                {(previewMode === 'json' || previewMode === 'stream') && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => runBlockProcessing(previewMode, editData.template || '')}
+                                                        disabled={isProcessing || !(editData.template || '').trim()}
+                                                        title="Re-run"
+                                                        className="px-2"
+                                                    >
+                                                        {isProcessing
+                                                            ? <Loader2 className="w-4 h-4 animate-spin" />
+                                                            : <RefreshCw className="w-4 h-4" />}
+                                                    </Button>
+                                                )}
                                             </div>
                                         </div>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className={previewMode === 'preview' ? "flex flex-col lg:flex-row gap-4 items-stretch" : ""}>
-                                            {/* Editor Section */}
-                                            <div className={previewMode === 'preview' ? "flex-1 min-w-0" : ""}>
-                                                <AutoResizeTextarea
-                                                    value={editData.template || ''}
-                                                    onChange={(e) => handleEditChange('template', e.target.value)}
-                                                    placeholder="Enter the template content that will be inserted..."
-                                                    className="font-mono text-sm h-full"
-                                                    minHeight={300}
-                                                />
-                                            </div>
+                                        {/* Editor-only mode */}
+                                        {previewMode === 'editor' && (
+                                            <AutoResizeTextarea
+                                                value={editData.template || ''}
+                                                onChange={(e) => handleEditChange('template', e.target.value)}
+                                                placeholder="Enter the template content that will be inserted..."
+                                                className="font-mono text-sm"
+                                                minHeight={300}
+                                            />
+                                        )}
 
-                                            {/* Preview Section */}
-                                            {previewMode === 'preview' && (
-                                                <div className="flex-1 min-w-0 min-h-[300px] border-border rounded-lg p-4 bg-textured overflow-auto">
+                                        {/* Editor + client-side preview side by side */}
+                                        {previewMode === 'preview' && (
+                                            <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+                                                <div className="flex-1 min-w-0">
+                                                    <AutoResizeTextarea
+                                                        value={editData.template || ''}
+                                                        onChange={(e) => handleEditChange('template', e.target.value)}
+                                                        placeholder="Enter the template content that will be inserted..."
+                                                        className="font-mono text-sm h-full"
+                                                        minHeight={300}
+                                                    />
+                                                </div>
+                                                <div className="flex-1 min-w-0 min-h-[300px] border border-border rounded-lg p-4 bg-textured overflow-auto">
                                                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                                                        <MarkdownStream
-                                                            content={editData.template || ''}
-                                                        />
+                                                        <MarkdownStream content={editData.template || ''} />
                                                     </div>
                                                 </div>
-                                            )}
-                                        </div>
+                                            </div>
+                                        )}
+
+                                        {/* JSON / Stream processed render */}
+                                        {(previewMode === 'json' || previewMode === 'stream') && (
+                                            <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+                                                {/* Left: template editor (read-only context while processing) */}
+                                                <div className="flex-1 min-w-0">
+                                                    <AutoResizeTextarea
+                                                        value={editData.template || ''}
+                                                        onChange={(e) => handleEditChange('template', e.target.value)}
+                                                        placeholder="Enter the template content that will be inserted..."
+                                                        className="font-mono text-sm h-full"
+                                                        minHeight={300}
+                                                    />
+                                                </div>
+
+                                                {/* Right: server-processed render */}
+                                                <div className="flex-1 min-w-0 min-h-[300px] border border-border rounded-lg p-4 bg-textured overflow-auto">
+                                                    {isProcessing && processedEvents.length === 0 && (
+                                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                                            {previewMode === 'stream' ? 'Streaming blocks...' : 'Processing...'}
+                                                        </div>
+                                                    )}
+                                                    {processError && (
+                                                        <div className="p-2 rounded bg-destructive/10 border border-destructive/20 text-xs text-destructive">
+                                                            {processError}
+                                                        </div>
+                                                    )}
+                                                    {!isProcessing && !processError && processedEvents.length === 0 && (
+                                                        <p className="text-xs text-muted-foreground italic">
+                                                            No output yet — click <RefreshCw className="w-3 h-3 inline" /> to process.
+                                                        </p>
+                                                    )}
+                                                    {processedEvents.length > 0 && (
+                                                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                                                            <MarkdownStream
+                                                                content=""
+                                                                events={processedEvents}
+                                                                isStreamActive={isProcessing && previewMode === 'stream'}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                             </div>

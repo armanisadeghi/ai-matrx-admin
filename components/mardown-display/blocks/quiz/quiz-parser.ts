@@ -13,9 +13,9 @@ export type QuizData = {
 };
 
 export type RawQuizJSON = {
-  quiz_title: string;
+  quizTitle: string;
   category?: string;
-  multiple_choice: Array<{
+  multipleChoice: Array<{
     id: number;
     question: string;
     options: string[];
@@ -53,18 +53,12 @@ export async function generateQuizHash(questions: OriginalQuestion[]): Promise<s
  * Parse quiz JSON
  */
 export async function parseQuizJSON(jsonData: RawQuizJSON): Promise<QuizData> {
-  // Get questions from multiple_choice array
-  const questions = [...jsonData.multiple_choice];
-  
-  // Sort by ID for consistency
+  const questions = [...jsonData.multipleChoice];
   questions.sort((a, b) => a.id - b.id);
-  
-  // Generate content hash
   const contentHash = await generateQuizHash(questions);
-  
   return {
     questions,
-    title: jsonData.quiz_title,
+    title: jsonData.quizTitle,
     category: jsonData.category,
     contentHash
   };
@@ -89,22 +83,10 @@ export function quizHashesMatch(hash1: string, hash2: string): boolean {
  * Validate quiz data has required fields
  */
 export function isValidQuizData(data: any): data is RawQuizJSON {
-  if (!data || typeof data !== 'object') {
-    return false;
-  }
-  
-  // Must have quiz_title
-  if (!data.quiz_title || typeof data.quiz_title !== 'string') {
-    return false;
-  }
-  
-  // Must have multiple_choice array with questions
-  if (!Array.isArray(data.multiple_choice) || data.multiple_choice.length === 0) {
-    return false;
-  }
-  
-  // Validate question structure
-  return data.multiple_choice.every((q: any) => 
+  if (!data || typeof data !== 'object') return false;
+  if (!data.quizTitle || typeof data.quizTitle !== 'string') return false;
+  if (!Array.isArray(data.multipleChoice) || data.multipleChoice.length === 0) return false;
+  return data.multipleChoice.every((q: any) =>
     typeof q.id === 'number' &&
     typeof q.question === 'string' &&
     Array.isArray(q.options) &&

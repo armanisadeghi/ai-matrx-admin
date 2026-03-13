@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
 import { getStoredAdminToken, setStoredAdminToken } from '@/utils/api-test-auth';
 import { useAdminOverride } from '@/hooks/useAdminOverride';
+import { createClient } from '@/utils/supabase/client';
 import type { ContextScope } from '@/lib/api/types';
 
 export type ServerType = 'local' | 'production';
@@ -19,6 +20,8 @@ export interface UseApiTestConfigReturn extends ApiTestConfig {
   isCheckingLocalhost: boolean;
   isLocalhostAvailable: boolean;
   hasToken: boolean;
+  /** True when the token was auto-loaded from the active Supabase session (not manually entered) */
+  isSessionToken: boolean;
   /** Admin scope overrides for testing */
   scopeOverride: ContextScope;
   setScopeOverride: (scope: ContextScope) => void;
@@ -58,23 +61,44 @@ export function useApiTestConfig(options: UseApiTestConfigOptions = {}): UseApiT
 
   // Initialize with empty to avoid hydration mismatch (cookies only exist on client).
   const [authToken, setAuthTokenState] = useState<string>(defaultAuthToken);
+  // True when the current token was pulled from the active Supabase session automatically.
+  const [isSessionToken, setIsSessionToken] = useState(false);
 
   // Scope override for admin testing
   const [scopeOverride, setScopeOverride] = useState<ContextScope>({});
 
   const setAuthToken = (token: string) => {
     setAuthTokenState(token);
+    setIsSessionToken(false);
     if (token) {
       setStoredAdminToken(token);
     }
   };
 
-  // Load stored token from cookies after mount (avoids hydration mismatch)
+  // After mount: prefer cookie token, then fall back to the live Supabase session.
+  // This means logged-in users never need to manually paste a token.
   useEffect(() => {
     const stored = getStoredAdminToken();
     if (stored) {
       setAuthTokenState(stored);
+      setIsSessionToken(false);
+      return;
     }
+
+    // No cookie token — try the active session
+    const loadSessionToken = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          setAuthTokenState(session.access_token);
+          setIsSessionToken(true);
+        }
+      } catch {
+        // Silently ignore — token remains empty, user can paste manually
+      }
+    };
+    loadSessionToken();
   }, []);
 
   // Server type derived from unified admin override
@@ -107,6 +131,7 @@ export function useApiTestConfig(options: UseApiTestConfigOptions = {}): UseApiT
     isCheckingLocalhost,
     isLocalhostAvailable,
     hasToken: authToken.length > 0,
+    isSessionToken,
     scopeOverride,
     setScopeOverride,
   };

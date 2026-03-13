@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,7 +26,11 @@ import {
     PanelLeft,
     Tag,
     Globe,
-    Lock
+    Lock,
+    Loader2,
+    Waves,
+    Cpu,
+    RefreshCw,
 } from 'lucide-react';
 import { PromptEditorContextMenu } from '@/features/prompts/components/PromptEditorContextMenu';
 import {
@@ -45,6 +49,10 @@ import {
 } from '@/features/content-templates/services/content-templates-service';
 import MarkdownStream from '@/components/MarkdownStream';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
+import { useApiTestConfig } from '@/components/api-test-config';
+import { ENDPOINTS } from '@/lib/api/endpoints';
+import { parseNdjsonStream } from '@/lib/api/stream-parser';
+import type { StreamEvent } from '@/types/python-generated/stream-events';
 
 interface ContentTemplateManagerProps {
     className?: string;
@@ -124,8 +132,77 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [createFormData, setCreateFormData] = useState<Partial<CreateContentTemplateInput>>({});
     const [expandedRoles, setExpandedRoles] = useState<Set<string>>(new Set(['system', 'user', 'assistant']));
-    const [previewMode, setPreviewMode] = useState<'editor' | 'preview'>('preview');
-    
+    const [previewMode, setPreviewMode] = useState<'editor' | 'preview' | 'json' | 'stream'>('preview');
+
+    // Block-processing API
+    const apiConfig = useApiTestConfig({ defaultServerType: 'local' });
+    const [processedEvents, setProcessedEvents] = useState<StreamEvent[]>([]);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [processError, setProcessError] = useState<string | null>(null);
+    const abortRef = useRef<AbortController | null>(null);
+
+    const runBlockProcessing = useCallback(async (mode: 'json' | 'stream', content: string) => {
+        if (!content.trim()) return;
+        abortRef.current?.abort();
+        const controller = new AbortController();
+        abortRef.current = controller;
+
+        setIsProcessing(true);
+        setProcessError(null);
+        setProcessedEvents([]);
+
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (apiConfig.authToken) headers['Authorization'] = `Bearer ${apiConfig.authToken}`;
+        const body = JSON.stringify({ content });
+
+        try {
+            if (mode === 'json') {
+                const res = await fetch(`${apiConfig.baseUrl}${ENDPOINTS.blockProcessing.process}`, {
+                    method: 'POST', headers, body, signal: controller.signal,
+                });
+                if (!res.ok) {
+                    const d = await res.json().catch(() => ({}));
+                    throw new Error((d as any)?.detail || (d as any)?.message || `HTTP ${res.status}`);
+                }
+                const data = await res.json() as { blocks: Record<string, unknown>[] };
+                const synthetic: StreamEvent[] = data.blocks.map((block, i) => ({
+                    event: 'content_block' as const,
+                    data: {
+                        blockId: (block.blockId ?? block.block_id ?? `block-${i}`) as string,
+                        blockIndex: (block.blockIndex ?? block.block_index ?? i) as number,
+                        type: block.type as string,
+                        status: 'complete' as const,
+                        content: (block.content ?? null) as string | null,
+                        data: (block.data ?? null) as Record<string, unknown> | null,
+                        metadata: (block.metadata ?? {}) as Record<string, unknown>,
+                    } as unknown as Record<string, unknown>,
+                }));
+                setProcessedEvents(synthetic);
+            } else {
+                const res = await fetch(`${apiConfig.baseUrl}${ENDPOINTS.blockProcessing.processStream}`, {
+                    method: 'POST', headers, body, signal: controller.signal,
+                });
+                if (!res.ok) {
+                    const d = await res.json().catch(() => ({}));
+                    throw new Error((d as any)?.detail || (d as any)?.message || `HTTP ${res.status}`);
+                }
+                const { events } = parseNdjsonStream(res, controller.signal);
+                const acc: StreamEvent[] = [];
+                for await (const ev of events) {
+                    acc.push(ev);
+                    setProcessedEvents([...acc]);
+                }
+            }
+        } catch (err: unknown) {
+            if (err instanceof Error && err.name !== 'AbortError') {
+                setProcessError(err.message);
+            }
+        } finally {
+            abortRef.current = null;
+            setIsProcessing(false);
+        }
+    }, [apiConfig.authToken, apiConfig.baseUrl]);
+
     // Tag management for forms
     const [editTagInput, setEditTagInput] = useState('');
     const [createTagInput, setCreateTagInput] = useState('');
@@ -654,19 +731,19 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
                                 {/* Template Content */}
                                 <Card>
                                     <CardHeader>
-                                        <div className="flex items-center justify-between">
+                                        <div className="flex items-center justify-between flex-wrap gap-2">
                                             <div>
                                                 <CardTitle>Template Content</CardTitle>
                                                 <CardDescription>
                                                     The message content for this template
                                                 </CardDescription>
                                             </div>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-1.5 flex-wrap">
                                                 <Button
                                                     variant={previewMode === 'editor' ? 'default' : 'outline'}
                                                     size="sm"
                                                     onClick={() => setPreviewMode('editor')}
-                                                    className="flex items-center gap-2"
+                                                    className="flex items-center gap-1.5"
                                                 >
                                                     <PanelLeft className="w-4 h-4" />
                                                     Editor Only
@@ -675,47 +752,149 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
                                                     variant={previewMode === 'preview' ? 'default' : 'outline'}
                                                     size="sm"
                                                     onClick={() => setPreviewMode('preview')}
-                                                    className="flex items-center gap-2"
+                                                    className="flex items-center gap-1.5"
                                                 >
                                                     <Columns2 className="w-4 h-4" />
                                                     Split View
                                                 </Button>
+                                                <Button
+                                                    variant={previewMode === 'json' ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        setPreviewMode('json');
+                                                        runBlockProcessing('json', editData.content || '');
+                                                    }}
+                                                    className="flex items-center gap-1.5"
+                                                >
+                                                    <Cpu className="w-4 h-4" />
+                                                    JSON
+                                                </Button>
+                                                <Button
+                                                    variant={previewMode === 'stream' ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        setPreviewMode('stream');
+                                                        runBlockProcessing('stream', editData.content || '');
+                                                    }}
+                                                    className="flex items-center gap-1.5"
+                                                >
+                                                    <Waves className="w-4 h-4" />
+                                                    Stream
+                                                </Button>
+                                                {(previewMode === 'json' || previewMode === 'stream') && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => runBlockProcessing(previewMode, editData.content || '')}
+                                                        disabled={isProcessing || !(editData.content || '').trim()}
+                                                        title="Re-run"
+                                                        className="px-2"
+                                                    >
+                                                        {isProcessing
+                                                            ? <Loader2 className="w-4 h-4 animate-spin" />
+                                                            : <RefreshCw className="w-4 h-4" />}
+                                                    </Button>
+                                                )}
                                             </div>
                                         </div>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className={previewMode !== 'editor' ? "flex flex-col lg:flex-row gap-4 items-stretch" : ""}>
-                                            {/* Editor Section */}
-                                            <div className={previewMode !== 'editor' ? "flex-1 min-w-0" : ""}>
-                                                <PromptEditorContextMenu
-                                                    getTextarea={() => editTextareaRef.current}
-                                                    onContentInserted={() => {}}
-                                                >
-                                                    <AutoResizeTextarea
-                                                        ref={editTextareaRef}
-                                                        value={editData.content || ''}
-                                                        onChange={(e) => handleEditChange('content', e.target.value)}
-                                                        placeholder="Enter the template content..."
-                                                        className="font-mono text-sm h-full"
-                                                        minHeight={300}
-                                                    />
-                                                </PromptEditorContextMenu>
-                                            </div>
-                                            
-                                            {/* Preview Section */}
-                                            {previewMode !== 'editor' && (
-                                                <div className="flex-1 min-w-0 min-h-[300px] border-border rounded-lg p-4 bg-textured overflow-auto">
+                                        {/* Editor-only */}
+                                        {previewMode === 'editor' && (
+                                            <PromptEditorContextMenu
+                                                getTextarea={() => editTextareaRef.current}
+                                                onContentInserted={() => {}}
+                                            >
+                                                <AutoResizeTextarea
+                                                    ref={editTextareaRef}
+                                                    value={editData.content || ''}
+                                                    onChange={(e) => handleEditChange('content', e.target.value)}
+                                                    placeholder="Enter the template content..."
+                                                    className="font-mono text-sm"
+                                                    minHeight={300}
+                                                />
+                                            </PromptEditorContextMenu>
+                                        )}
+
+                                        {/* Editor + client-side preview */}
+                                        {previewMode === 'preview' && (
+                                            <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+                                                <div className="flex-1 min-w-0">
+                                                    <PromptEditorContextMenu
+                                                        getTextarea={() => editTextareaRef.current}
+                                                        onContentInserted={() => {}}
+                                                    >
+                                                        <AutoResizeTextarea
+                                                            ref={editTextareaRef}
+                                                            value={editData.content || ''}
+                                                            onChange={(e) => handleEditChange('content', e.target.value)}
+                                                            placeholder="Enter the template content..."
+                                                            className="font-mono text-sm h-full"
+                                                            minHeight={300}
+                                                        />
+                                                    </PromptEditorContextMenu>
+                                                </div>
+                                                <div className="flex-1 min-w-0 min-h-[300px] border border-border rounded-lg p-4 bg-textured overflow-auto">
                                                     <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 pb-2 border-b border-border">
                                                         PREVIEW
                                                     </div>
                                                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                                                        <MarkdownStream 
-                                                            content={editData.content || ''} 
-                                                        />
+                                                        <MarkdownStream content={editData.content || ''} />
                                                     </div>
                                                 </div>
-                                            )}
-                                        </div>
+                                            </div>
+                                        )}
+
+                                        {/* Editor + server-processed render */}
+                                        {(previewMode === 'json' || previewMode === 'stream') && (
+                                            <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+                                                <div className="flex-1 min-w-0">
+                                                    <PromptEditorContextMenu
+                                                        getTextarea={() => editTextareaRef.current}
+                                                        onContentInserted={() => {}}
+                                                    >
+                                                        <AutoResizeTextarea
+                                                            ref={editTextareaRef}
+                                                            value={editData.content || ''}
+                                                            onChange={(e) => handleEditChange('content', e.target.value)}
+                                                            placeholder="Enter the template content..."
+                                                            className="font-mono text-sm h-full"
+                                                            minHeight={300}
+                                                        />
+                                                    </PromptEditorContextMenu>
+                                                </div>
+                                                <div className="flex-1 min-w-0 min-h-[300px] border border-border rounded-lg p-4 bg-textured overflow-auto">
+                                                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 pb-2 border-b border-border flex items-center justify-between">
+                                                        <span>{previewMode === 'json' ? 'JSON PROCESSED' : 'STREAM PROCESSED'}</span>
+                                                        {isProcessing && <Loader2 className="w-3 h-3 animate-spin" />}
+                                                    </div>
+                                                    {isProcessing && processedEvents.length === 0 && (
+                                                        <p className="text-xs text-muted-foreground italic">
+                                                            {previewMode === 'stream' ? 'Streaming blocks...' : 'Processing...'}
+                                                        </p>
+                                                    )}
+                                                    {processError && (
+                                                        <div className="p-2 rounded bg-destructive/10 border border-destructive/20 text-xs text-destructive">
+                                                            {processError}
+                                                        </div>
+                                                    )}
+                                                    {!isProcessing && !processError && processedEvents.length === 0 && (
+                                                        <p className="text-xs text-muted-foreground italic">
+                                                            No output — click <RefreshCw className="w-3 h-3 inline" /> to process.
+                                                        </p>
+                                                    )}
+                                                    {processedEvents.length > 0 && (
+                                                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                                                            <MarkdownStream
+                                                                content=""
+                                                                events={processedEvents}
+                                                                isStreamActive={isProcessing && previewMode === 'stream'}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                             </div>

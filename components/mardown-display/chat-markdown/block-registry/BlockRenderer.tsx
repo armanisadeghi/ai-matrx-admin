@@ -234,8 +234,19 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             }
 
             const quizData = safeJsonParse(block.content) as any | null;
-            if (quizData && quizData.quiz_title && Array.isArray(quizData.multiple_choice) && quizData.multiple_choice.length > 0) {
-                return <BlockComponents.MultipleChoiceQuiz key={index} quizData={quizData} taskId={taskId} />;
+            if (quizData) {
+                // Normalise legacy snake_case LLM output to the canonical camelCase shape.
+                // The server-processed path already sends camelCase; raw markdown from the
+                // LLM uses quiz_title / multiple_choice. Either must produce the same shape
+                // for MultipleChoiceQuiz.
+                const normalised = quizData.quizTitle
+                    ? quizData
+                    : quizData.quiz_title
+                        ? { quizTitle: quizData.quiz_title, category: quizData.category, multipleChoice: quizData.multiple_choice }
+                        : null;
+                if (normalised && normalised.quizTitle && Array.isArray(normalised.multipleChoice) && normalised.multipleChoice.length > 0) {
+                    return <BlockComponents.MultipleChoiceQuiz key={index} quizData={normalised} taskId={taskId} />;
+                }
             }
             return renderFallbackContent(block.content);
 
