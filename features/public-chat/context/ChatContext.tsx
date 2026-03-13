@@ -4,6 +4,7 @@ import React, { createContext, useContext, useReducer, useRef, useEffect, ReactN
 import type { PromptVariable } from '@/features/prompts/types/core';
 import type { PublicResource, ContentItem } from '../types/content';
 import type { ToolCallObject } from '@/lib/api/tool-call.types';
+import type { StreamEvent } from '@/types/python-generated/stream-events';
 
 // ============================================================================
 // TYPES
@@ -24,6 +25,8 @@ export interface ChatMessage {
     toolUpdates?: ToolCallObject[];
     /** Whether this is a condensed message (out of context window but still visible) */
     isCondensed?: boolean;
+    /** Stream events for block-mode messages — passed to MarkdownStream instead of plain content */
+    streamEvents?: StreamEvent[];
 }
 
 export interface ChatSettings {
@@ -54,6 +57,8 @@ export interface ChatState {
     settings: ChatSettings;
     modelOverride?: string;
     useLocalhost: boolean;
+    /** When true, routes to agents-blocks endpoint which emits content_block events */
+    useBlockMode: boolean;
 }
 
 // ============================================================================
@@ -73,6 +78,7 @@ type ChatAction =
     | { type: 'START_NEW_CONVERSATION' }
     | { type: 'APPEND_TO_LAST_MESSAGE'; payload: string }
     | { type: 'SET_USE_LOCALHOST'; payload: boolean }
+    | { type: 'SET_USE_BLOCK_MODE'; payload: boolean }
     | { type: 'SET_DB_CONVERSATION_ID'; payload: string | null }
     | { type: 'SET_MESSAGES'; payload: ChatMessage[] }
     | { type: 'LOAD_CONVERSATION'; payload: { conversationId: string; dbConversationId: string; messages: ChatMessage[] } };
@@ -101,6 +107,7 @@ const createInitialState = (): ChatState => ({
     settings: defaultSettings,
     modelOverride: undefined,
     useLocalhost: false,
+    useBlockMode: false,
 });
 
 // ============================================================================
@@ -111,6 +118,9 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
     switch (action.type) {
         case 'SET_USE_LOCALHOST':
             return { ...state, useLocalhost: action.payload };
+
+        case 'SET_USE_BLOCK_MODE':
+            return { ...state, useBlockMode: action.payload };
 
         case 'SET_AGENT':
             return { ...state, currentAgent: action.payload };
@@ -209,6 +219,7 @@ interface ChatContextValue {
     clearMessages: () => void;
     startNewConversation: () => void;
     setUseLocalhost: (useLocalhost: boolean) => void;
+    setUseBlockMode: (useBlockMode: boolean) => void;
     setDbConversationId: (id: string | null) => void;
     setMessages: (messages: ChatMessage[]) => void;
     loadConversation: (conversationId: string, dbConversationId: string, messages: ChatMessage[]) => void;
@@ -243,6 +254,10 @@ export function ChatProvider({ children, initialAgent }: ChatProviderProps) {
 
     const setUseLocalhost = (useLocalhost: boolean) => {
         dispatch({ type: 'SET_USE_LOCALHOST', payload: useLocalhost });
+    };
+
+    const setUseBlockMode = (useBlockMode: boolean) => {
+        dispatch({ type: 'SET_USE_BLOCK_MODE', payload: useBlockMode });
     };
 
     const setAgent = (agent: AgentConfig) => {
@@ -322,6 +337,7 @@ export function ChatProvider({ children, initialAgent }: ChatProviderProps) {
         clearMessages,
         startNewConversation,
         setUseLocalhost,
+        setUseBlockMode,
         setDbConversationId,
         setMessages,
         loadConversation,
@@ -361,6 +377,7 @@ export function useChatActions() {
         clearMessages,
         startNewConversation,
         setUseLocalhost,
+        setUseBlockMode,
         setDbConversationId,
         setMessages,
     } = useChatContext();
@@ -378,6 +395,7 @@ export function useChatActions() {
         clearMessages,
         startNewConversation,
         setUseLocalhost,
+        setUseBlockMode,
         setDbConversationId,
         setMessages,
     };

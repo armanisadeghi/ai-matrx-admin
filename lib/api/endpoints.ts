@@ -52,8 +52,29 @@ export const ENDPOINTS = {
          */
         agentWarm: (agentId: string) => `/api/ai/agents/${agentId}/warm` as const,
 
+        /**
+         * POST — Start a new block-streaming agent session (Guest OK)
+         * POST /api/ai/agents-blocks/{agentId}
+         * Same as agentStart but emits 'content_block' NDJSON events instead of raw 'chunk' events.
+         */
+        agentBlocksStart: (agentId: string) => `/api/ai/agents-blocks/${agentId}` as const,
+
+        /**
+         * POST — Pre-warm a block-streaming agent (Public)
+         * POST /api/ai/agents-blocks/{agentId}/warm
+         */
+        agentBlocksWarm: (agentId: string) => `/api/ai/agents-blocks/${agentId}/warm` as const,
+
         /** POST — Cancel a running request by request_id (Authenticated) */
         cancel: (requestId: string) => `/api/ai/cancel/${requestId}` as const,
+    },
+
+    /** Block processing test endpoints — Guest OK */
+    blockProcessing: {
+        /** POST — Process raw text/markdown → structured blocks (JSON response) */
+        process: '/api/utilities/block-processing/process' as const,
+        /** POST — Process raw text/markdown → block events (NDJSON stream, simulates live agent) */
+        processStream: '/api/utilities/block-processing/process/stream' as const,
     },
 
     /** Tool testing endpoints — Authenticated */

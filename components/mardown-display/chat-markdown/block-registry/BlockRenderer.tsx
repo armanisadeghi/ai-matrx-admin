@@ -5,8 +5,13 @@ import { ContentBlock } from "@/components/mardown-display/markdown-classificati
 import { looksLikeDiff } from "../diff-blocks/diff-style-registry";
 import { safeJsonParse } from "./json-parse-utils";
 
+/** Extended ContentBlock that may include server-processed data. */
+interface BlockWithServerData extends ContentBlock {
+    serverData?: Record<string, unknown>;
+}
+
 interface BlockRendererProps {
-    block: ContentBlock;
+    block: BlockWithServerData;
     index: number;
     isStreamActive?: boolean;
     onContentChange?: (newContent: string) => void;
@@ -182,11 +187,21 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "questionnaire":
-            // Dynamic import the parser
+            // If server already parsed the data, render directly (no dynamic import)
+            if (block.serverData) {
+                return (
+                    <BlockComponents.QuestionnaireRenderer
+                        key={index}
+                        data={block.serverData as any}
+                        questionnaireId={`questionnaire-${messageId}-${index}`}
+                    />
+                );
+            }
+            // Fallback: Dynamic import the parser (legacy / client-side parsing)
             const QuestionnaireWithParser = React.lazy(async () => {
                 const { separatedMarkdownParser } = await import("../../markdown-classification/processors/custom/parser-separated");
                 const parsedContent = separatedMarkdownParser(block.content);
-                
+
                 return {
                     default: () => (
                         <BlockComponents.QuestionnaireRenderer
@@ -196,7 +211,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                     )
                 };
             });
-            
+
             return (
                 <React.Suspense key={index} fallback={null}>
                     <QuestionnaireWithParser />
@@ -207,15 +222,17 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             return <BlockComponents.FlashcardsBlock key={index} content={block.content} taskId={taskId} />;
 
         case "quiz":
+            // Server-processed path
+            if (block.serverData) {
+                return <BlockComponents.MultipleChoiceQuiz key={index} quizData={block.serverData as any} taskId={taskId} />;
+            }
             // Smart fallback: only show loading if genuinely incomplete
             if (!block.metadata?.isComplete) {
-                // Check if content is genuinely incomplete (unbalanced braces)
                 if (isGenuinelyIncomplete(block.content)) {
                     return <LoadingComponents.QuizLoading key={index} />;
                 }
-                // Otherwise, try to render it anyway (might just be a formatting issue)
             }
-            
+
             const quizData = safeJsonParse(block.content) as any | null;
             if (quizData && quizData.quiz_title && Array.isArray(quizData.multiple_choice) && quizData.multiple_choice.length > 0) {
                 return <BlockComponents.MultipleChoiceQuiz key={index} quizData={quizData} taskId={taskId} />;
@@ -223,15 +240,22 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             return renderFallbackContent(block.content);
 
         case "presentation":
-            // Smart fallback: only show loading if genuinely incomplete
+            if (block.serverData) {
+                const sd = block.serverData as any;
+                return (
+                    <BlockComponents.Slideshow
+                        key={index}
+                        slides={sd.slides}
+                        taskId={taskId}
+                        theme={sd.theme || { primaryColor: "#2563eb", secondaryColor: "#1e40af", accentColor: "#60a5fa", backgroundColor: "#ffffff", textColor: "#1f2937" }}
+                    />
+                );
+            }
             if (!block.metadata?.isComplete) {
-                // Check if content is genuinely incomplete (unbalanced braces)
                 if (isGenuinelyIncomplete(block.content)) {
                     return <LoadingComponents.PresentationLoading key={index} />;
                 }
-                // Otherwise, try to render it anyway (might just be a formatting issue)
             }
-            
             const presentationData = safeJsonParse(block.content) as any | null;
             if (presentationData && presentationData.presentation?.slides && Array.isArray(presentationData.presentation.slides)) {
                 return (
@@ -239,36 +263,25 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                         key={index}
                         slides={presentationData.presentation.slides}
                         taskId={taskId}
-                        theme={presentationData.presentation.theme || {
-                            primaryColor: "#2563eb",
-                            secondaryColor: "#1e40af",
-                            accentColor: "#60a5fa",
-                            backgroundColor: "#ffffff",
-                            textColor: "#1f2937"
-                        }}
+                        theme={presentationData.presentation.theme || { primaryColor: "#2563eb", secondaryColor: "#1e40af", accentColor: "#60a5fa", backgroundColor: "#ffffff", textColor: "#1f2937" }}
                     />
                 );
             }
             return renderFallbackContent(block.content);
 
         case "cooking_recipe":
+            if (block.serverData) {
+                return <BlockComponents.RecipeViewer key={index} recipe={block.serverData as any} taskId={taskId} />;
+            }
             if (block.metadata?.isComplete === false) {
                 return <LoadingComponents.RecipeLoading key={index} />;
             }
-            // Dynamic parser + renderer
             const RecipeWithParser = React.lazy(async () => {
                 const { parseRecipeMarkdown } = await import("../../blocks/cooking-recipes/parseRecipeMarkdown");
                 const recipeData = parseRecipeMarkdown(block.content);
-                
-                if (!recipeData) {
-                    throw new Error("Failed to parse recipe");
-                }
-                
-                return {
-                    default: () => <BlockComponents.RecipeViewer recipe={recipeData} taskId={taskId} />
-                };
+                if (!recipeData) throw new Error("Failed to parse recipe");
+                return { default: () => <BlockComponents.RecipeViewer recipe={recipeData} taskId={taskId} /> };
             });
-            
             return (
                 <React.Suspense key={index} fallback={renderBasicMarkdown(block.content)}>
                     <RecipeWithParser />
@@ -276,22 +289,18 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "timeline":
+            if (block.serverData) {
+                return <BlockComponents.TimelineBlock key={index} timeline={block.serverData as any} taskId={taskId} />;
+            }
             if (block.metadata?.isComplete === false) {
                 return <LoadingComponents.TimelineLoading key={index} />;
             }
             const TimelineWithParser = React.lazy(async () => {
                 const { parseTimelineMarkdown } = await import("../../blocks/timeline/parseTimelineMarkdown");
                 const timelineData = parseTimelineMarkdown(block.content);
-                
-                if (!timelineData) {
-                    throw new Error("Failed to parse timeline");
-                }
-                
-                return {
-                    default: () => <BlockComponents.TimelineBlock timeline={timelineData} taskId={taskId} />
-                };
+                if (!timelineData) throw new Error("Failed to parse timeline");
+                return { default: () => <BlockComponents.TimelineBlock timeline={timelineData} taskId={taskId} /> };
             });
-            
             return (
                 <React.Suspense key={index} fallback={renderBasicMarkdown(block.content)}>
                     <TimelineWithParser />
@@ -299,22 +308,18 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "research":
+            if (block.serverData) {
+                return <BlockComponents.ResearchBlock key={index} research={block.serverData as any} taskId={taskId} />;
+            }
             if (block.metadata?.isComplete === false) {
                 return <LoadingComponents.ResearchLoading key={index} />;
             }
             const ResearchWithParser = React.lazy(async () => {
                 const { parseResearchMarkdown } = await import("../../blocks/research/parseResearchMarkdown");
                 const researchData = parseResearchMarkdown(block.content);
-                
-                if (!researchData) {
-                    throw new Error("Failed to parse research");
-                }
-                
-                return {
-                    default: () => <BlockComponents.ResearchBlock research={researchData} taskId={taskId} />
-                };
+                if (!researchData) throw new Error("Failed to parse research");
+                return { default: () => <BlockComponents.ResearchBlock research={researchData} taskId={taskId} /> };
             });
-            
             return (
                 <React.Suspense key={index} fallback={renderBasicMarkdown(block.content)}>
                     <ResearchWithParser />
@@ -322,22 +327,18 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "resources":
+            if (block.serverData) {
+                return <BlockComponents.ResourceCollectionBlock key={index} collection={block.serverData as any} taskId={taskId} />;
+            }
             if (block.metadata?.isComplete === false) {
                 return <LoadingComponents.ResourcesLoading key={index} />;
             }
             const ResourcesWithParser = React.lazy(async () => {
                 const { parseResourcesMarkdown } = await import("../../blocks/resources/parseResourcesMarkdown");
                 const resourcesData = parseResourcesMarkdown(block.content);
-                
-                if (!resourcesData) {
-                    throw new Error("Failed to parse resources");
-                }
-                
-                return {
-                    default: () => <BlockComponents.ResourceCollectionBlock collection={resourcesData} taskId={taskId} />
-                };
+                if (!resourcesData) throw new Error("Failed to parse resources");
+                return { default: () => <BlockComponents.ResourceCollectionBlock collection={resourcesData} taskId={taskId} /> };
             });
-            
             return (
                 <React.Suspense key={index} fallback={renderBasicMarkdown(block.content)}>
                     <ResourcesWithParser />
@@ -345,22 +346,18 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "progress_tracker":
+            if (block.serverData) {
+                return <BlockComponents.ProgressTrackerBlock key={index} tracker={block.serverData as any} taskId={taskId} />;
+            }
             if (block.metadata?.isComplete === false) {
                 return <LoadingComponents.ProgressLoading key={index} />;
             }
             const ProgressWithParser = React.lazy(async () => {
                 const { parseProgressMarkdown } = await import("../../blocks/progress/parseProgressMarkdown");
                 const progressData = parseProgressMarkdown(block.content);
-                
-                if (!progressData) {
-                    throw new Error("Failed to parse progress");
-                }
-                
-                return {
-                    default: () => <BlockComponents.ProgressTrackerBlock tracker={progressData} taskId={taskId} />
-                };
+                if (!progressData) throw new Error("Failed to parse progress");
+                return { default: () => <BlockComponents.ProgressTrackerBlock tracker={progressData} taskId={taskId} /> };
             });
-            
             return (
                 <React.Suspense key={index} fallback={renderBasicMarkdown(block.content)}>
                     <ProgressWithParser />
@@ -368,27 +365,20 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "comparison_table":
-            // Smart fallback: only show loading if genuinely incomplete
+            if (block.serverData) {
+                return <BlockComponents.ComparisonTableBlock key={index} comparison={block.serverData as any} taskId={taskId} />;
+            }
             if (block.metadata?.isComplete === false) {
-                // Check if content is genuinely incomplete (unbalanced braces)
                 if (isGenuinelyIncomplete(block.content)) {
                     return <LoadingComponents.ComparisonLoading key={index} />;
                 }
-                // Otherwise, try to render it anyway (might just be a formatting issue)
             }
             const ComparisonWithParser = React.lazy(async () => {
                 const { parseComparisonJSON } = await import("../../blocks/comparison/parseComparisonJSON");
                 const comparisonData = parseComparisonJSON(block.content);
-                
-                if (!comparisonData) {
-                    throw new Error("Failed to parse comparison");
-                }
-                
-                return {
-                    default: () => <BlockComponents.ComparisonTableBlock comparison={comparisonData} taskId={taskId} />
-                };
+                if (!comparisonData) throw new Error("Failed to parse comparison");
+                return { default: () => <BlockComponents.ComparisonTableBlock comparison={comparisonData} taskId={taskId} /> };
             });
-            
             return (
                 <React.Suspense key={index} fallback={renderFallbackContent(block.content)}>
                     <ComparisonWithParser />
@@ -396,22 +386,18 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "troubleshooting":
+            if (block.serverData) {
+                return <BlockComponents.TroubleshootingBlock key={index} troubleshooting={block.serverData as any} taskId={taskId} />;
+            }
             if (block.metadata?.isComplete === false) {
                 return <LoadingComponents.TroubleshootingLoading key={index} />;
             }
             const TroubleshootingWithParser = React.lazy(async () => {
                 const { parseTroubleshootingMarkdown } = await import("../../blocks/troubleshooting/parseTroubleshootingMarkdown");
                 const troubleshootingData = parseTroubleshootingMarkdown(block.content);
-                
-                if (!troubleshootingData) {
-                    throw new Error("Failed to parse troubleshooting");
-                }
-                
-                return {
-                    default: () => <BlockComponents.TroubleshootingBlock troubleshooting={troubleshootingData} taskId={taskId} />
-                };
+                if (!troubleshootingData) throw new Error("Failed to parse troubleshooting");
+                return { default: () => <BlockComponents.TroubleshootingBlock troubleshooting={troubleshootingData} taskId={taskId} /> };
             });
-            
             return (
                 <React.Suspense key={index} fallback={renderBasicMarkdown(block.content)}>
                     <TroubleshootingWithParser />
@@ -419,27 +405,20 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "decision_tree":
-            // Smart fallback: only show loading if genuinely incomplete
+            if (block.serverData) {
+                return <BlockComponents.DecisionTreeBlock key={index} decisionTree={block.serverData as any} taskId={taskId} />;
+            }
             if (block.metadata?.isComplete === false) {
-                // Check if content is genuinely incomplete (unbalanced braces)
                 if (isGenuinelyIncomplete(block.content)) {
                     return <LoadingComponents.DecisionTreeLoading key={index} />;
                 }
-                // Otherwise, try to render it anyway (might just be a formatting issue)
             }
             const DecisionTreeWithParser = React.lazy(async () => {
                 const { parseDecisionTreeJSON } = await import("../../blocks/decision-tree/parseDecisionTreeJSON");
                 const decisionTreeData = parseDecisionTreeJSON(block.content);
-                
-                if (!decisionTreeData) {
-                    throw new Error("Failed to parse decision tree");
-                }
-                
-                return {
-                    default: () => <BlockComponents.DecisionTreeBlock decisionTree={decisionTreeData} taskId={taskId} />
-                };
+                if (!decisionTreeData) throw new Error("Failed to parse decision tree");
+                return { default: () => <BlockComponents.DecisionTreeBlock decisionTree={decisionTreeData} taskId={taskId} /> };
             });
-            
             return (
                 <React.Suspense key={index} fallback={renderFallbackContent(block.content)}>
                     <DecisionTreeWithParser />
@@ -447,27 +426,20 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "diagram":
-            // Smart fallback: only show loading if genuinely incomplete
+            if (block.serverData) {
+                return <BlockComponents.InteractiveDiagramBlock key={index} diagram={block.serverData as any} taskId={taskId} />;
+            }
             if (block.metadata?.isComplete === false) {
-                // Check if content is genuinely incomplete (unbalanced braces)
                 if (isGenuinelyIncomplete(block.content)) {
                     return <LoadingComponents.DiagramLoading key={index} />;
                 }
-                // Otherwise, try to render it anyway (might just be a formatting issue)
             }
             const DiagramWithParser = React.lazy(async () => {
                 const { parseDiagramJSON } = await import("../../blocks/diagram/parseDiagramJSON");
                 const diagramData = parseDiagramJSON(block.content);
-                
-                if (!diagramData) {
-                    throw new Error("Failed to parse diagram");
-                }
-                
-                return {
-                    default: () => <BlockComponents.InteractiveDiagramBlock diagram={diagramData} taskId={taskId} />
-                };
+                if (!diagramData) throw new Error("Failed to parse diagram");
+                return { default: () => <BlockComponents.InteractiveDiagramBlock diagram={diagramData} taskId={taskId} /> };
             });
-            
             return (
                 <React.Suspense key={index} fallback={renderFallbackContent(block.content)}>
                     <DiagramWithParser />
@@ -475,27 +447,17 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "math_problem":
-            // Smart fallback: only show loading if genuinely incomplete
+            if (block.serverData) {
+                return <BlockComponents.MathProblemBlock key={index} problemData={block.serverData as any} />;
+            }
             if (block.metadata?.isComplete === false) {
-                // Check if content is genuinely incomplete (unbalanced braces)
                 if (isGenuinelyIncomplete(block.content)) {
                     return <LoadingComponents.MathProblemLoading key={index} />;
                 }
-                // Otherwise, try to render it anyway (might just be a formatting issue)
             }
-
-            console.log("block.content", block.content);
-            
             const mathProblemData = safeJsonParse(block.content) as Record<string, unknown> | null;
-            console.log("mathProblemData", mathProblemData);
             if (mathProblemData && mathProblemData.math_problem) {
                 return <BlockComponents.MathProblemBlock key={index} problemData={mathProblemData} />;
-            }
-            
-            if (process.env.NODE_ENV === 'development') {
-                console.warn("Math problem JSON parsing failed:", {
-                    contentPreview: block.content.substring(0, 100) + '...'
-                });
             }
             return renderFallbackContent(block.content);
 

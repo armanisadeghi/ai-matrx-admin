@@ -136,11 +136,12 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             const userInput = contentItems.length > 1 ? contentItems : content;
 
             // ── Route to correct endpoint based on conversation state ──
+            const blockMode = isAdmin && state.useBlockMode;
             let executeUrl: string;
             let requestBody: AgentStartRequest | ConversationContinueRequest;
 
             if (state.dbConversationId) {
-                // Follow-up: continue existing conversation
+                // Follow-up: continue existing conversation (block mode not yet supported for continue)
                 executeUrl = `${BACKEND_URL}${ENDPOINTS.ai.conversationContinue(state.dbConversationId)}`;
                 requestBody = {
                     user_input: userInput,
@@ -151,7 +152,10 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 console.log('[useAgentChat] dbConversationId:', state.dbConversationId);
             } else {
                 // First message: start new agent conversation
-                executeUrl = `${BACKEND_URL}${ENDPOINTS.ai.agentStart(promptId)}`;
+                const startEndpoint = blockMode
+                    ? ENDPOINTS.ai.agentBlocksStart(promptId)
+                    : ENDPOINTS.ai.agentStart(promptId);
+                executeUrl = `${BACKEND_URL}${startEndpoint}`;
                 requestBody = {
                     user_input: userInput,
                     variables: Object.keys(variables).length > 0 ? variables : undefined,
@@ -159,7 +163,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                     stream: true,
                     debug: true,
                 };
-                console.log('[useAgentChat] START new agent conversation →', executeUrl);
+                console.log(`[useAgentChat] START ${blockMode ? 'BLOCK MODE' : 'normal'} agent conversation →`, executeUrl);
             }
 
             updateMessage(assistantMessageId, { status: 'streaming' });
@@ -204,6 +208,9 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             }
 
             let accumulatedContent = '';
+            // In block mode, we accumulate all events and push them onto the message
+            // so MarkdownStream can render via the server-processed content_block protocol.
+            const blockEventsBuffer: StreamEvent[] = [];
 
             for await (const event of events) {
                 streamEventsRef.current.push(event);
@@ -216,15 +223,44 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                             const serverId = dataPayload.conversation_id as string;
                             if (serverId !== conversationIdRef.current) {
                                 setDbConversationId(serverId);
-                                console.log('[useAgentChat] server conversation_id:', serverId); // This is correct as well.
+                                console.log('[useAgentChat] server conversation_id:', serverId);
                             }
                         }
                         break;
                     }
                     case 'chunk': {
-                        const chunkData = event.data as unknown as ChunkPayload;
-                        accumulatedContent += chunkData.text;
-                        updateMessage(assistantMessageId, { content: accumulatedContent });
+                        if (blockMode) {
+                            // Block mode: still accumulate text for fallback/copy, but
+                            // primary rendering uses events via streamEvents prop.
+                            const chunkData = event.data as unknown as ChunkPayload;
+                            accumulatedContent += chunkData.text;
+                            blockEventsBuffer.push(event);
+                            updateMessage(assistantMessageId, {
+                                content: accumulatedContent,
+                                streamEvents: [...blockEventsBuffer],
+                            });
+                        } else {
+                            const chunkData = event.data as unknown as ChunkPayload;
+                            accumulatedContent += chunkData.text;
+                            updateMessage(assistantMessageId, { content: accumulatedContent });
+                        }
+                        break;
+                    }
+                    case 'content_block': {
+                        // Block mode: push new block event and update message events array
+                        blockEventsBuffer.push(event);
+                        updateMessage(assistantMessageId, {
+                            streamEvents: [...blockEventsBuffer],
+                        });
+                        break;
+                    }
+                    case 'tool_event': {
+                        if (blockMode) {
+                            blockEventsBuffer.push(event);
+                            updateMessage(assistantMessageId, {
+                                streamEvents: [...blockEventsBuffer],
+                            });
+                        }
                         break;
                     }
                     case 'error': {
@@ -258,6 +294,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             updateMessage(assistantMessageId, {
                 status: 'complete',
                 ...(toolUpdates.length > 0 ? { toolUpdates } : {}),
+                ...(blockMode && blockEventsBuffer.length > 0 ? { streamEvents: [...blockEventsBuffer] } : {}),
             });
             options.onComplete?.();
             return true;

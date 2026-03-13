@@ -409,6 +409,8 @@ function AssistantMessage({ message, streamEvents, isStreaming = false, onConten
     // Check if this is a DB-loaded message with tool updates (no active stream)
     const hasDbToolUpdates = !streamEvents && message.toolUpdates && message.toolUpdates.length > 0;
     const hasStreamEvents = streamEvents && streamEvents.length > 0;
+    // Block mode: message carries its own events (content_block protocol)
+    const hasBlockModeEvents = message.streamEvents && message.streamEvents.length > 0;
 
     return (
         <div>
@@ -423,10 +425,22 @@ function AssistantMessage({ message, streamEvents, isStreaming = false, onConten
                 </Suspense>
             )}
 
-            {/* Streaming: render interleaved text + tool blocks in arrival order */}
-            {hasStreamEvents ? (
+            {/* Block mode: use MarkdownStream with events prop (content_block protocol) */}
+            {hasBlockModeEvents ? (
+                <MarkdownStream
+                    content={message.content}
+                    events={message.streamEvents}
+                    type="message"
+                    role="assistant"
+                    isStreamActive={isStreaming && message.status === 'streaming'}
+                    hideCopyButton={true}
+                    allowFullScreenEditor={false}
+                    className="text-xs bg-transparent"
+                />
+            ) : hasStreamEvents ? (
+                /* Normal streaming: render interleaved text + tool blocks in arrival order */
                 <StreamingContentBlocks
-                    streamEvents={streamEvents}
+                    streamEvents={streamEvents!}
                     isStreaming={isStreaming}
                 />
             ) : (

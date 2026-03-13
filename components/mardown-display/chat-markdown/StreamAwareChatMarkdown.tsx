@@ -5,6 +5,21 @@ import { StreamEvent } from "./types";
 import { buildCanonicalBlocks, toolCallBlockToLegacy } from "@/lib/chat-protocol";
 import type { ToolCallBlock } from "@/lib/chat-protocol";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
+import type { ContentBlockPayload } from "@/types/python-generated/content-blocks";
+
+// ---------------------------------------------------------------------------
+// Server-processed block state — used when backend sends content_block events
+// ---------------------------------------------------------------------------
+
+interface ProcessedBlockState {
+  blockId: string;
+  blockIndex: number;
+  type: string;
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: Record<string, unknown> | null;
+  metadata?: Record<string, unknown>;
+}
 
 /**
  * Extended props that include stream event handling
@@ -30,6 +45,13 @@ export interface StreamAwareChatMarkdownProps extends Omit<ChatMarkdownDisplayPr
    * Callback when status updates are received
    */
   onStatusUpdate?: (status: string, message?: string) => void;
+
+  /**
+   * Pre-processed blocks from the server (new content_block protocol).
+   * When present and non-empty, the component skips client-side parsing
+   * and renders these blocks directly.
+   */
+  serverProcessedBlocks?: ProcessedBlockState[];
 }
 
 /**
@@ -46,30 +68,37 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
   events,
   onError,
   onStatusUpdate,
+  serverProcessedBlocks: serverBlocksProp,
   ...restProps
 }) => {
   const [processedContent, setProcessedContent] = useState<string>(content || '');
   const [toolUpdatesInternal, setToolUpdatesInternal] = useState<any[]>([]);
   const [hasStreamError, setHasStreamError] = useState(false);
-  
+
+  // Server-processed blocks state (new content_block protocol)
+  const [serverBlocks, setServerBlocks] = useState<ProcessedBlockState[]>([]);
+  const serverBlockMapRef = React.useRef<Map<string, ProcessedBlockState>>(new Map());
+  const isNewProtocolRef = React.useRef(false);
+
   // Use refs to always have the latest callbacks without triggering rerenders
   const onErrorRef = React.useRef(onError);
   const onStatusUpdateRef = React.useRef(onStatusUpdate);
-  
+
   // Track which events we've already processed (by index)
   const lastProcessedIndexRef = React.useRef(-1);
-  
+
   // Accumulate text content in a ref to avoid reprocessing all chunks
   const accumulatedContentRef = React.useRef('');
   // Track whether tool events changed since last RAF flush
   const toolEventsChangedRef = React.useRef(false);
   // Always point to the latest events array so RAF callback can access most-current state
   const eventsRef = React.useRef<StreamEvent[] | undefined>(events);
-  
+
   // Throttle state updates using RAF to batch rapid chunks
   const rafIdRef = React.useRef<number | null>(null);
   const pendingContentUpdateRef = React.useRef(false);
   const pendingToolsUpdateRef = React.useRef(false);
+  const pendingBlocksUpdateRef = React.useRef(false);
   
   useEffect(() => {
     onErrorRef.current = onError;
@@ -116,6 +145,7 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
     
     let hasNewContent = false;
     let hasNewTools = false;
+    let hasNewBlocks = false;
     
     for (let i = startIndex; i < events.length; i++) {
       const event = events[i];
@@ -149,6 +179,25 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
           break;
         }
 
+        case 'content_block': {
+          // New server-processed block protocol
+          isNewProtocolRef.current = true;
+          const blockPayload = event.data as unknown as ContentBlockPayload;
+          if (blockPayload?.blockId) {
+            serverBlockMapRef.current.set(blockPayload.blockId, {
+              blockId: blockPayload.blockId,
+              blockIndex: blockPayload.blockIndex,
+              type: blockPayload.type,
+              status: blockPayload.status as "streaming" | "complete" | "error",
+              content: blockPayload.content,
+              data: blockPayload.data,
+              metadata: blockPayload.metadata,
+            });
+            hasNewBlocks = true;
+          }
+          break;
+        }
+
         case 'completion':
         case 'heartbeat':
         case 'data':
@@ -160,17 +209,18 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
           console.debug('[StreamAwareChatMarkdown] Unknown event type:', event.event);
       }
     }
-    
+
     lastProcessedIndexRef.current = events.length - 1;
-    
+
     if (hasNewContent) pendingContentUpdateRef.current = true;
     if (hasNewTools) pendingToolsUpdateRef.current = true;
-    
+    if (hasNewBlocks) pendingBlocksUpdateRef.current = true;
+
     // Batch state updates using RAF — only schedule if not already scheduled
-    if ((hasNewContent || hasNewTools) && rafIdRef.current === null) {
+    if ((hasNewContent || hasNewTools || hasNewBlocks) && rafIdRef.current === null) {
       rafIdRef.current = requestAnimationFrame(() => {
         rafIdRef.current = null;
-        
+
         if (pendingContentUpdateRef.current) {
           setProcessedContent(accumulatedContentRef.current);
           pendingContentUpdateRef.current = false;
@@ -187,6 +237,13 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
           toolEventsChangedRef.current = false;
           pendingToolsUpdateRef.current = false;
         }
+        if (pendingBlocksUpdateRef.current) {
+          // Convert map to sorted array for rendering
+          const blockArray = Array.from(serverBlockMapRef.current.values())
+            .sort((a, b) => a.blockIndex - b.blockIndex);
+          setServerBlocks(blockArray);
+          pendingBlocksUpdateRef.current = false;
+        }
       });
     }
   }, [events, content]);
@@ -194,12 +251,17 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
   // Determine if we're using events or legacy mode
   const isEventMode = events && events.length > 0;
 
+  // Merge server blocks from prop and from events
+  const effectiveServerBlocks = serverBlocksProp ?? (isNewProtocolRef.current ? serverBlocks : undefined);
+
   return (
     <EnhancedChatMarkdownInternal
       {...restProps}
       content={processedContent}
       // In event mode, pass tool updates directly; in legacy mode, let Redux handle it
       toolUpdates={isEventMode ? toolUpdatesInternal : undefined}
+      // Pass server-processed blocks when using the new content_block protocol
+      serverProcessedBlocks={effectiveServerBlocks}
     />
   );
 };

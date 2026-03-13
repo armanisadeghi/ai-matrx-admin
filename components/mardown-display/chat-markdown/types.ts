@@ -29,6 +29,7 @@ export type {
     BrokerEvent,
     HeartbeatEvent,
     EndEvent,
+    ContentBlockEvent,
 } from '@/types/python-generated/stream-events';
 
 export {
@@ -41,4 +42,6 @@ export {
     isBrokerEvent,
     isHeartbeatEvent,
     isEndEvent,
+    isContentBlockEvent,
+    isNewProtocol,
 } from '@/types/python-generated/stream-events';

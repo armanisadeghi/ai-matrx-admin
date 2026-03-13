@@ -56,6 +56,17 @@ const ReduxToolVisualization: React.FC<ReduxToolVisualizationProps> = ({ taskId,
 };
 
 
+/** Server-processed block from the content_block protocol. */
+export interface ServerProcessedBlock {
+    blockId: string;
+    blockIndex: number;
+    type: string;
+    status: "streaming" | "complete" | "error";
+    content?: string | null;
+    data?: Record<string, unknown> | null;
+    metadata?: Record<string, unknown>;
+}
+
 export interface ChatMarkdownDisplayProps {
     content: string;
     taskId?: string;
@@ -70,6 +81,8 @@ export interface ChatMarkdownDisplayProps {
     hideCopyButton?: boolean;
     useV2Parser?: boolean; // Default: true (V2 parser). Set to false to use legacy V1 parser.
     toolUpdates?: any[]; // Optional: Pass tool updates directly (bypasses Redux selector)
+    /** Pre-processed blocks from server (new content_block protocol). Bypasses client-side parsing. */
+    serverProcessedBlocks?: ServerProcessedBlock[];
 }
 
 // Fallback component that renders plain text with basic formatting
@@ -181,6 +194,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
     hideCopyButton = false,
     useV2Parser = true,
     toolUpdates: toolUpdatesProp,
+    serverProcessedBlocks,
 }) => {
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     // null = no local edits; use the `content` prop directly.
@@ -214,26 +228,46 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
         }
     }, [isStreamActive]);
 
+    // When server-processed blocks are available, use them directly (skip client-side parsing).
+    // Otherwise, fall back to the client-side splitContentIntoBlocksV2 pipeline.
+    const useServerBlocks = serverProcessedBlocks && serverProcessedBlocks.length > 0;
+
     // Memoize the content splitting to avoid unnecessary re-processing
     // Skip expensive processing if we're in loading state
     // NOTE: Do NOT call setState (like setHasError) inside useMemo — it's a React anti-pattern
     // that triggers re-renders during render, potentially causing infinite loops.
     const { blocks, blockError } = useMemo(() => {
         if (isWaitingForContent) return { blocks: [], blockError: false };
-        
+
+        // New protocol: server already processed the blocks — convert to ContentBlock shape
+        if (useServerBlocks && serverProcessedBlocks) {
+            const serverBlocks: ContentBlock[] = serverProcessedBlocks.map((sb) => ({
+                type: sb.type as ContentBlock["type"],
+                content: sb.content ?? "",
+                // Preserve server-parsed data and metadata so BlockRenderer can use it directly
+                serverData: sb.data ?? undefined,
+                metadata: sb.metadata,
+                language: (sb.data as any)?.language,
+                src: (sb.data as any)?.src,
+                alt: (sb.data as any)?.alt,
+            }));
+            return { blocks: serverBlocks, blockError: false };
+        }
+
+        // Legacy: client-side parsing
         try {
             const result = splitContentIntoBlocksV2(currentContent);
-            
+
             return { blocks: Array.isArray(result) ? result : [], blockError: false };
         } catch (error) {
             console.error("[MarkdownStream] Error splitting content into blocks:", error);
             // Return a single text block with the original content as fallback
-            return { 
-                blocks: [{ type: "text" as const, content: currentContent, startLine: 0, endLine: 0 }], 
-                blockError: true 
+            return {
+                blocks: [{ type: "text" as const, content: currentContent, startLine: 0, endLine: 0 }],
+                blockError: true
             };
         }
-    }, [currentContent, isWaitingForContent, useV2Parser]);
+    }, [currentContent, isWaitingForContent, useV2Parser, useServerBlocks, serverProcessedBlocks]);
 
     // Handle block processing errors outside of useMemo to avoid setState during render
     useEffect(() => {
