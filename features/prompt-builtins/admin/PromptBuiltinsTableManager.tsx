@@ -55,7 +55,9 @@ import {
   ExternalLink,
   Copy,
   Check,
+  Pen,
 } from 'lucide-react';
+import Link from 'next/link';
 import type {
   PromptBuiltin,
   PromptShortcut,
@@ -811,7 +813,21 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
                                 <Edit2 className="h-3 w-3" />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Edit</TooltipContent>
+                            <TooltipContent>Quick Edit</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                asChild
+                              >
+                                <Link href={`/administration/prompt-builtins/edit/${builtin.id}`}>
+                                  <Pen className="h-3 w-3" />
+                                </Link>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit in Full Builder</TooltipContent>
                           </Tooltip>
                           <Tooltip>
                             <TooltipTrigger asChild>

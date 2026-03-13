@@ -45,11 +45,21 @@ interface PromptBuilderProps {
     };
     availableTools?: any[];
     accessInfo?: PromptAccessInfo;
+    /** Optional custom save handler. When provided, bypasses Redux prompt CRUD and calls this instead. */
+    onCustomSave?: (data: {
+        id?: string;
+        name: string;
+        messages: PromptMessage[];
+        variableDefaults: PromptVariable[];
+        settings: Record<string, unknown>;
+    }) => Promise<void>;
+    /** Label override for the back/breadcrumb context (e.g. "Prompt Builtins") */
+    contextLabel?: string;
 }
 
 
 
-export function PromptBuilder({ models, initialData, availableTools, accessInfo }: PromptBuilderProps) {
+export function PromptBuilder({ models, initialData, availableTools, accessInfo, onCustomSave, contextLabel }: PromptBuilderProps) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -474,6 +484,16 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
                 variableDefaults, // Already in the correct format: array of { name, defaultValue }
                 settings,
             };
+
+            // Use custom save handler if provided (e.g. for builtin editing)
+            if (onCustomSave) {
+                await onCustomSave({
+                    id: initialData?.id,
+                    ...promptData,
+                });
+                setIsDirty(false);
+                return;
+            }
 
             if (isEditMode && initialData?.id) {
                 // Update existing prompt - no routing needed, stay on current edit page
