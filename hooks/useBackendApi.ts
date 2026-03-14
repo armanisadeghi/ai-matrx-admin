@@ -37,13 +37,16 @@ export function useBackendApi() {
     // Ready-to-use headers
     const getApiHeaders = useCallback((includeContentType = true) => {
         const authHeaders = getHeaders();
-        if (includeContentType) {
-            return {
-                'Content-Type': 'application/json',
-                ...authHeaders,
-            };
+        if (!includeContentType) {
+            // Remove Content-Type so the browser sets it automatically with the correct
+            // multipart/form-data boundary for FormData uploads.
+            const { 'Content-Type': _removed, ...rest } = authHeaders;
+            return rest;
         }
-        return authHeaders;
+        return {
+            'Content-Type': 'application/json',
+            ...authHeaders,
+        };
     }, [getHeaders]);
 
     // Unified POST helper

@@ -1,19 +1,26 @@
 export const runtime = 'nodejs';
 
+/**
+ * Handles IMAGE uploads only.
+ * Sharp runs fine on Vercel — images are processed server-side here.
+ *
+ * VIDEO uploads go DIRECTLY from the client to the Python backend via
+ * useBackendApi().upload() — they never touch this route.
+ * See: features/podcasts/components/admin/AssetUploader.tsx
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import sharp from 'sharp';
 import { randomUUID } from 'crypto';
-import { BACKEND_URLS } from '@/lib/api/endpoints';
 
 const BUCKET = 'podcast-assets';
-const MAX_IMAGE_SIZE = 20 * 1024 * 1024;  // 20MB
-const MAX_VIDEO_SIZE = 500 * 1024 * 1024; // 500MB
+const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
 
 const IMAGE_VARIANTS = [
-    { key: 'image_url',      width: 1400, height: 1400, suffix: 'cover' },
-    { key: 'og_image_url',   width: 1200, height: 630,  suffix: 'og' },
-    { key: 'thumbnail_url',  width: 400,  height: 400,  suffix: 'thumb' },
+    { key: 'image_url',     width: 1400, height: 1400, suffix: 'cover' },
+    { key: 'og_image_url',  width: 1200, height: 630,  suffix: 'og' },
+    { key: 'thumbnail_url', width: 400,  height: 400,  suffix: 'thumb' },
 ] as const;
 
 type VariantKey = (typeof IMAGE_VARIANTS)[number]['key'];
@@ -71,71 +78,29 @@ export async function POST(request: NextRequest) {
 
         const formData = await request.formData();
         const file = formData.get('file') as File | null;
-        const fileType = formData.get('type') as 'image' | 'video' | null;
+        const fileType = formData.get('type') as string | null;
 
         if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
-        if (!fileType || !['image', 'video'].includes(fileType)) {
-            return NextResponse.json({ error: 'type must be "image" or "video"' }, { status: 400 });
-        }
-
-        // ----------------------------------------------------------------
-        // IMAGE — processed entirely in Next.js with Sharp (Vercel-safe)
-        // ----------------------------------------------------------------
-        if (fileType === 'image') {
-            if (file.size > MAX_IMAGE_SIZE) {
-                return NextResponse.json({ error: 'Image exceeds 20MB limit' }, { status: 400 });
-            }
-
-            const folder = `${user.id}/${randomUUID()}`;
-            const fileBuffer = Buffer.from(await file.arrayBuffer());
-            const imageVariants = await processAndUploadImage(supabase, supabaseUrl, fileBuffer, folder);
-
-            return NextResponse.json({
-                video_url: null,
-                image_url: imageVariants.image_url,
-                og_image_url: imageVariants.og_image_url,
-                thumbnail_url: imageVariants.thumbnail_url,
-            } satisfies UploadAssetsResponse);
-        }
-
-        // ----------------------------------------------------------------
-        // VIDEO — forwarded to Python backend (FFmpeg lives there)
-        // ----------------------------------------------------------------
-        if (file.size > MAX_VIDEO_SIZE) {
-            return NextResponse.json({ error: 'Video exceeds 500MB limit' }, { status: 400 });
-        }
-
-        // Get the auth token from the current session to pass to Python
-        const { data: { session } } = await supabase.auth.getSession();
-        const authToken = session?.access_token;
-        if (!authToken) {
-            return NextResponse.json({ error: 'No active session' }, { status: 401 });
-        }
-
-        const backendUrl = process.env.BACKEND_URL || BACKEND_URLS.production;
-        const pythonEndpoint = `${backendUrl}/api/media/podcast/upload-video`;
-
-        // Forward the file as-is to Python in a new FormData
-        const forwardForm = new FormData();
-        forwardForm.append('file', file);
-
-        const pythonResponse = await fetch(pythonEndpoint, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${authToken}` },
-            body: forwardForm,
-        });
-
-        if (!pythonResponse.ok) {
-            const errText = await pythonResponse.text().catch(() => 'Unknown error');
-            console.error(`[upload-assets] Python backend error ${pythonResponse.status}:`, errText);
+        if (fileType !== 'image') {
             return NextResponse.json(
-                { error: `Video processing failed: ${errText}` },
-                { status: pythonResponse.status },
+                { error: 'This route handles images only. Send videos directly to the Python backend.' },
+                { status: 400 },
             );
         }
+        if (file.size > MAX_IMAGE_SIZE) {
+            return NextResponse.json({ error: 'Image exceeds 20MB limit' }, { status: 400 });
+        }
 
-        const result = await pythonResponse.json() as UploadAssetsResponse;
-        return NextResponse.json(result);
+        const folder = `${user.id}/${randomUUID()}`;
+        const fileBuffer = Buffer.from(await file.arrayBuffer());
+        const imageVariants = await processAndUploadImage(supabase, supabaseUrl, fileBuffer, folder);
+
+        return NextResponse.json({
+            video_url: null,
+            image_url: imageVariants.image_url,
+            og_image_url: imageVariants.og_image_url,
+            thumbnail_url: imageVariants.thumbnail_url,
+        } satisfies UploadAssetsResponse);
     } catch (err: unknown) {
         console.error('[upload-assets] error:', err);
         const message = err instanceof Error ? err.message : 'Upload failed';
