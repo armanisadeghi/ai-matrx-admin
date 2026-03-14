@@ -228,3 +228,85 @@ For each block event emitted (stream or JSON), the following must hold:
 
 These rules ensure any rendering client can consume block events directly without any
 transformation, field renaming, or type inference.
+
+---
+
+## Issue 7 — `data` field missing for structured blocks during streaming (presentation, quiz, etc.)
+
+**Severity:** Critical — silently falls back to client-side parsing, defeating the entire purpose.
+
+**What is currently happening:**
+
+For structured blocks like `presentation`, `quiz`, `table`, etc., the stream events carry the raw
+JSON in `content` but send **no `data` field** (or `data: null`) until the final `complete` event.
+The final `complete` event often also sends no `data`.
+
+**Confirmed with this real stream output:**
+```jsonc
+// All streaming events for blk_1:
+{"event":"content_block","data":{"blockId":"blk_1","blockIndex":1,"type":"presentation","status":"streaming","content":"{...partial json...}","metadata":{"language":"json"}}}
+// ← NO "data" field at all
+
+// Final complete event:
+{"event":"content_block","data":{"blockId":"blk_1","blockIndex":1,"type":"presentation","status":"complete","content":"{...full json...}","metadata":{"language":"json","isComplete":true}}}
+// ← STILL NO "data" field
+```
+
+**What this means in practice:**
+
+`block.serverData` is always `null` for these blocks. Every client falls through to parsing
+`block.content` themselves:
+
+```typescript
+// BlockRenderer.tsx — what actually runs:
+case "presentation":
+    if (block.serverData) { ... }  // null — skipped every time
+    const presentationData = safeJsonParse(block.content);  // ← client parses raw JSON
+    return <Slideshow slides={presentationData.presentation.slides} />;
+```
+
+**Why this is a critical architectural failure:**
+
+The entire point of server-side processing is that the `data` field carries an already-parsed,
+structured object that any client can use directly. Without it:
+
+- React falls back to client-side `JSON.parse` + field access — same as before the pipeline
+- Swift, React Native, and other clients **have no `data` to use** and must implement their own parsers
+- The pipeline provides zero value for these blocks beyond labelling the `type`
+
+**What Python must send on the `status: "complete"` event:**
+
+```jsonc
+{
+  "event": "content_block",
+  "data": {
+    "blockId": "blk_1",
+    "blockIndex": 1,
+    "type": "presentation",
+    "status": "complete",
+    "content": "{\"presentation\":{...}}",
+    "data": {
+      "presentation": {
+        "title": "Your Presentation Title Here",
+        "slides": [
+          { "type": "intro", "title": "Main Title", "subtitle": "..." },
+          { "type": "content", "title": "Slide Title", "description": "...", "bullets": ["..."] }
+        ]
+      }
+    },
+    "metadata": { "isComplete": true }
+  }
+}
+```
+
+**Affected block types (all structured blocks):**
+- `presentation` — needs `data.presentation.slides` (array)
+- `quiz` — needs `data.quizTitle`, `data.category`, `data.multipleChoice` (array)
+- `table` — needs parsed table structure (not just raw markdown)
+- `cooking_recipe`, `timeline`, `research`, `resources`, `progress_tracker`
+- `comparison_table`, `decision_tree`, `diagram`, `math_problem`
+- `questionnaire`
+
+**Rule:** For every block with `type` other than `text` or `code`, the final `status: "complete"`
+event **must** include a fully-parsed `data` object. The `content` field (raw string) is optional
+on the complete event but `data` is mandatory.

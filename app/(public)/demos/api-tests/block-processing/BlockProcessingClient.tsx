@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import MarkdownStream from "@/components/MarkdownStream";
 import type { StreamEvent } from "@/types/python-generated/stream-events";
-import { Loader2, Cpu, Send, Copy, Trash2, Waves, FileText, Layers } from "lucide-react";
+import { Loader2, Cpu, Send, Copy, Trash2, Waves, FileText, Layers, Play, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ─────────────────────────────────────────────────────
@@ -96,6 +96,17 @@ export default function BlockProcessingClient() {
 
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const [strictServerData, setStrictServerData] = useState(false);
+
+    // Replay state — re-feeds captured events one-by-one with a delay
+    const [replayDelay, setReplayDelay] = useState(100);
+    const [isReplaying, setIsReplaying] = useState(false);
+    const [replayIndex, setReplayIndex] = useState(0);
+
+    // Captured events from the last completed run (never cleared on replay)
+    const capturedRawRef = useRef<Record<string, unknown>[]>([]);
+    const capturedTypedRef = useRef<StreamEvent[]>([]);
+    const replayAbortRef = useRef<boolean>(false);
 
     const abortRef = useRef<AbortController | null>(null);
 
@@ -107,11 +118,16 @@ export default function BlockProcessingClient() {
 
     const handleRun = useCallback(async () => {
         if (!content.trim() || isRunning) return;
+        replayAbortRef.current = true; // stop any in-progress replay
         setError(null);
         setJsonResult(null);
         setRawEvents([]);
         setProcessedEvents([]);
         setIsRunning(true);
+        setIsReplaying(false);
+        setReplayIndex(0);
+        capturedRawRef.current = [];
+        capturedTypedRef.current = [];
 
         const controller = new AbortController();
         abortRef.current = controller;
@@ -163,10 +179,14 @@ export default function BlockProcessingClient() {
                 for await (const ev of events) {
                     accRaw.push(ev as unknown as Record<string, unknown>);
                     accTyped.push(ev);
-                    // Spread to trigger re-render on each event (live preview)
                     setRawEvents([...accRaw]);
                     setProcessedEvents([...accTyped]);
                 }
+
+                // Save full capture for replay
+                capturedRawRef.current = accRaw;
+                capturedTypedRef.current = accTyped;
+                setReplayIndex(accTyped.length);
             }
         } catch (err: unknown) {
             if (err instanceof Error && err.name !== "AbortError") {
@@ -181,6 +201,33 @@ export default function BlockProcessingClient() {
     const handleStop = useCallback(() => {
         abortRef.current?.abort();
     }, []);
+
+    const handleStopReplay = useCallback(() => {
+        replayAbortRef.current = true;
+    }, []);
+
+    const handleReplay = useCallback(async () => {
+        const raw = capturedRawRef.current;
+        const typed = capturedTypedRef.current;
+        if (!typed.length || isReplaying || isRunning) return;
+
+        replayAbortRef.current = false;
+        setIsReplaying(true);
+        setRawEvents([]);
+        setProcessedEvents([]);
+        setReplayIndex(0);
+
+        for (let i = 0; i < typed.length; i++) {
+            if (replayAbortRef.current) break;
+            await new Promise<void>(resolve => setTimeout(resolve, replayDelay));
+            if (replayAbortRef.current) break;
+            setRawEvents(raw.slice(0, i + 1));
+            setProcessedEvents(typed.slice(0, i + 1));
+            setReplayIndex(i + 1);
+        }
+
+        setIsReplaying(false);
+    }, [isReplaying, isRunning, replayDelay]);
 
     // Derive display values for Raw tab
     const rawOutputText = apiMode === "json" && jsonResult
@@ -345,7 +392,66 @@ export default function BlockProcessingClient() {
                             ) : undefined}
                         />
 
-                        <div className="ml-auto flex items-center gap-1 pr-1">
+                        <div className="ml-auto flex items-center gap-2 pr-1">
+                            {outputTab === "processed" && apiMode === "stream" && capturedTypedRef.current.length > 0 && (
+                                <>
+                                    {/* Replay speed */}
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-[10px] text-muted-foreground font-mono">
+                                            {replayDelay}ms
+                                        </span>
+                                        <input
+                                            type="range"
+                                            min={20}
+                                            max={1000}
+                                            step={20}
+                                            value={replayDelay}
+                                            onChange={e => setReplayDelay(Number(e.target.value))}
+                                            disabled={isReplaying}
+                                            className="w-16 h-1 accent-primary cursor-pointer disabled:opacity-40"
+                                            title="Replay delay between events"
+                                        />
+                                    </div>
+                                    {/* Replay / Stop replay */}
+                                    {isReplaying ? (
+                                        <Button
+                                            size="sm" variant="destructive"
+                                            className="h-6 px-2 text-[10px]"
+                                            onClick={handleStopReplay}
+                                        >
+                                            Stop
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            size="sm" variant="outline"
+                                            className="h-6 px-2 text-[10px] gap-1"
+                                            onClick={handleReplay}
+                                            disabled={isRunning}
+                                            title="Replay events with delay to observe streaming behaviour"
+                                        >
+                                            <Play className="w-2.5 h-2.5" />
+                                            Replay
+                                        </Button>
+                                    )}
+                                    {/* Progress indicator */}
+                                    {isReplaying && (
+                                        <span className="text-[10px] font-mono text-muted-foreground">
+                                            {replayIndex}/{capturedTypedRef.current.length}
+                                        </span>
+                                    )}
+                                </>
+                            )}
+                            {outputTab === "processed" && (
+                                <Button
+                                    size="sm"
+                                    variant={strictServerData ? "destructive" : "outline"}
+                                    className="h-6 px-2 text-[10px] font-mono"
+                                    onClick={() => setStrictServerData(v => !v)}
+                                    title={strictServerData ? "Strict mode ON — client fallback disabled" : "Strict mode OFF — click to enable"}
+                                >
+                                    {strictServerData ? "STRICT" : "strict"}
+                                </Button>
+                            )}
                             <Button
                                 size="sm" variant="ghost" className="h-5 w-5 p-0"
                                 onClick={() => { setJsonResult(null); setRawEvents([]); setProcessedEvents([]); setError(null); }}
@@ -427,24 +533,43 @@ export default function BlockProcessingClient() {
                                         If correct, this should look identical to the Direct Render tab.
                                     </p>
                                 )}
-                                {isRunning && processedEvents.length === 0 && (
-                                    <p className="text-xs text-muted-foreground italic">Waiting for blocks...</p>
+                                {(isRunning || isReplaying) && processedEvents.length === 0 && (
+                                    <p className="text-xs text-muted-foreground italic">
+                                        {isReplaying ? "Replaying..." : "Waiting for blocks..."}
+                                    </p>
                                 )}
                                 {processedEvents.length > 0 && (
                                     <>
-                                        <p className="text-[10px] text-muted-foreground mb-3 pb-2 border-b border-border">
-                                            Rendering server-processed <code className="font-mono">content_block</code> events
-                                            via <code className="font-mono">MarkdownStream</code>.
-                                            {processedEvents.filter(e => e.event === "content_block").length} block event{processedEvents.filter(e => e.event === "content_block").length !== 1 ? "s" : ""} received.
+                                        <p className="text-[10px] text-muted-foreground mb-3 pb-2 border-b border-border flex items-center gap-2">
+                                            <span>
+                                                {isReplaying
+                                                    ? <>Replaying — event <span className="font-mono">{replayIndex}</span> / <span className="font-mono">{capturedTypedRef.current.length}</span> at <span className="font-mono">{replayDelay}ms</span> intervals</>
+                                                    : <>
+                                                        Rendering server-processed <code className="font-mono">content_block</code> events
+                                                        via <code className="font-mono">MarkdownStream</code>.{" "}
+                                                        {processedEvents.filter(e => e.event === "content_block").length} block event{processedEvents.filter(e => e.event === "content_block").length !== 1 ? "s" : ""} received.
+                                                    </>
+                                                }
+                                            </span>
+                                            {!isReplaying && !isRunning && apiMode === "stream" && capturedTypedRef.current.length > 0 && (
+                                                <button
+                                                    onClick={handleReplay}
+                                                    className="ml-auto flex items-center gap-1 text-primary hover:underline text-[10px]"
+                                                >
+                                                    <RotateCcw className="w-2.5 h-2.5" />
+                                                    Replay at {replayDelay}ms
+                                                </button>
+                                            )}
                                         </p>
                                         <MarkdownStream
                                             content=""
                                             events={processedEvents}
                                             type="message"
                                             role="assistant"
-                                            isStreamActive={isRunning && apiMode === "stream"}
+                                            isStreamActive={isRunning || isReplaying}
                                             hideCopyButton={false}
                                             allowFullScreenEditor={false}
+                                            strictServerData={strictServerData}
                                         />
                                     </>
                                 )}

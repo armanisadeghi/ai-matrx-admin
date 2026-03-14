@@ -4,11 +4,27 @@ import { BlockComponents, LoadingComponents } from "./BlockComponentRegistry";
 import { ContentBlock } from "@/components/mardown-display/markdown-classification/processors/utils/content-splitter-v2";
 import { looksLikeDiff } from "../diff-blocks/diff-style-registry";
 import { safeJsonParse } from "./json-parse-utils";
+import { useBlockRenderingConfig } from "@/components/mardown-display/chat-markdown/BlockRenderingContext";
 
 /** Extended ContentBlock that may include server-processed data. */
 interface BlockWithServerData extends ContentBlock {
     serverData?: Record<string, unknown>;
 }
+
+/**
+ * Shown in strict-mode when block.serverData is null — means Python did not
+ * populate the `data` field. This is always a Python pipeline bug.
+ */
+const StrictModeError: React.FC<{ blockType: string; blockId?: string }> = ({ blockType, blockId }) => (
+    <div className="my-2 p-3 rounded-md border-2 border-red-500 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 text-xs font-mono">
+        <div className="font-bold mb-1">⚠ STRICT MODE — Python pipeline bug</div>
+        <div>Block type: <span className="font-semibold">{blockType}</span>{blockId ? ` (${blockId})` : ''}</div>
+        <div className="mt-1 text-red-600 dark:text-red-300">
+            <code>block.serverData</code> is null — Python did not populate the <code>data</code> field.
+            Client-side fallback parsing is disabled in strict mode.
+        </div>
+    </div>
+);
 
 interface BlockRendererProps {
     block: BlockWithServerData;
@@ -55,6 +71,8 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     handleMatrxBrokerChange,
     handleOpenEditor,
 }) => {
+    const { strictServerData } = useBlockRenderingConfig();
+
     const renderFallbackContent = useCallback((content: string, language: string = "json") => {
         return (
             <BlockComponents.CodeBlock
@@ -197,6 +215,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                     />
                 );
             }
+            if (strictServerData) {
+                return <StrictModeError key={index} blockType="questionnaire" blockId={(block as any).blockId} />;
+            }
             // Fallback: Dynamic import the parser (legacy / client-side parsing)
             const QuestionnaireWithParser = React.lazy(async () => {
                 const { separatedMarkdownParser } = await import("../../markdown-classification/processors/custom/parser-separated");
@@ -225,6 +246,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             // Server-processed path
             if (block.serverData) {
                 return <BlockComponents.MultipleChoiceQuiz key={index} quizData={block.serverData as any} taskId={taskId} />;
+            }
+            if (strictServerData) {
+                return <StrictModeError key={index} blockType="quiz" blockId={(block as any).blockId} />;
             }
             // Smart fallback: only show loading if genuinely incomplete
             if (!block.metadata?.isComplete) {
@@ -262,6 +286,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                     />
                 );
             }
+            if (strictServerData) {
+                return <StrictModeError key={index} blockType="presentation" blockId={(block as any).blockId} />;
+            }
             if (!block.metadata?.isComplete) {
                 if (isGenuinelyIncomplete(block.content)) {
                     return <LoadingComponents.PresentationLoading key={index} />;
@@ -284,6 +311,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             if (block.serverData) {
                 return <BlockComponents.RecipeViewer key={index} recipe={block.serverData as any} taskId={taskId} />;
             }
+            if (strictServerData) {
+                return <StrictModeError key={index} blockType="cooking_recipe" blockId={(block as any).blockId} />;
+            }
             if (block.metadata?.isComplete === false) {
                 return <LoadingComponents.RecipeLoading key={index} />;
             }
@@ -302,6 +332,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
         case "timeline":
             if (block.serverData) {
                 return <BlockComponents.TimelineBlock key={index} timeline={block.serverData as any} taskId={taskId} />;
+            }
+            if (strictServerData) {
+                return <StrictModeError key={index} blockType="timeline" blockId={(block as any).blockId} />;
             }
             if (block.metadata?.isComplete === false) {
                 return <LoadingComponents.TimelineLoading key={index} />;
@@ -322,6 +355,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             if (block.serverData) {
                 return <BlockComponents.ResearchBlock key={index} research={block.serverData as any} taskId={taskId} />;
             }
+            if (strictServerData) {
+                return <StrictModeError key={index} blockType="research" blockId={(block as any).blockId} />;
+            }
             if (block.metadata?.isComplete === false) {
                 return <LoadingComponents.ResearchLoading key={index} />;
             }
@@ -340,6 +376,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
         case "resources":
             if (block.serverData) {
                 return <BlockComponents.ResourceCollectionBlock key={index} collection={block.serverData as any} taskId={taskId} />;
+            }
+            if (strictServerData) {
+                return <StrictModeError key={index} blockType="resources" blockId={(block as any).blockId} />;
             }
             if (block.metadata?.isComplete === false) {
                 return <LoadingComponents.ResourcesLoading key={index} />;
@@ -360,6 +399,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             if (block.serverData) {
                 return <BlockComponents.ProgressTrackerBlock key={index} tracker={block.serverData as any} taskId={taskId} />;
             }
+            if (strictServerData) {
+                return <StrictModeError key={index} blockType="progress_tracker" blockId={(block as any).blockId} />;
+            }
             if (block.metadata?.isComplete === false) {
                 return <LoadingComponents.ProgressLoading key={index} />;
             }
@@ -378,6 +420,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
         case "comparison_table":
             if (block.serverData) {
                 return <BlockComponents.ComparisonTableBlock key={index} comparison={block.serverData as any} taskId={taskId} />;
+            }
+            if (strictServerData) {
+                return <StrictModeError key={index} blockType="comparison_table" blockId={(block as any).blockId} />;
             }
             if (block.metadata?.isComplete === false) {
                 if (isGenuinelyIncomplete(block.content)) {
@@ -400,6 +445,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             if (block.serverData) {
                 return <BlockComponents.TroubleshootingBlock key={index} troubleshooting={block.serverData as any} taskId={taskId} />;
             }
+            if (strictServerData) {
+                return <StrictModeError key={index} blockType="troubleshooting" blockId={(block as any).blockId} />;
+            }
             if (block.metadata?.isComplete === false) {
                 return <LoadingComponents.TroubleshootingLoading key={index} />;
             }
@@ -418,6 +466,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
         case "decision_tree":
             if (block.serverData) {
                 return <BlockComponents.DecisionTreeBlock key={index} decisionTree={block.serverData as any} taskId={taskId} />;
+            }
+            if (strictServerData) {
+                return <StrictModeError key={index} blockType="decision_tree" blockId={(block as any).blockId} />;
             }
             if (block.metadata?.isComplete === false) {
                 if (isGenuinelyIncomplete(block.content)) {
@@ -440,6 +491,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             if (block.serverData) {
                 return <BlockComponents.InteractiveDiagramBlock key={index} diagram={block.serverData as any} taskId={taskId} />;
             }
+            if (strictServerData) {
+                return <StrictModeError key={index} blockType="diagram" blockId={(block as any).blockId} />;
+            }
             if (block.metadata?.isComplete === false) {
                 if (isGenuinelyIncomplete(block.content)) {
                     return <LoadingComponents.DiagramLoading key={index} />;
@@ -460,6 +514,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
         case "math_problem":
             if (block.serverData) {
                 return <BlockComponents.MathProblemBlock key={index} problemData={block.serverData as any} />;
+            }
+            if (strictServerData) {
+                return <StrictModeError key={index} blockType="math_problem" blockId={(block as any).blockId} />;
             }
             if (block.metadata?.isComplete === false) {
                 if (isGenuinelyIncomplete(block.content)) {

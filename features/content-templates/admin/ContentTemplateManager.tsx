@@ -31,6 +31,8 @@ import {
     Waves,
     Cpu,
     RefreshCw,
+    Check,
+    Copy,
 } from 'lucide-react';
 import { PromptEditorContextMenu } from '@/features/prompts/components/PromptEditorContextMenu';
 import {
@@ -139,7 +141,17 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
     const [processedEvents, setProcessedEvents] = useState<StreamEvent[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
     const [processError, setProcessError] = useState<string | null>(null);
+    const [rawCopied, setRawCopied] = useState(false);
+    const [strictServerData, setStrictServerData] = useState(false);
     const abortRef = useRef<AbortController | null>(null);
+    const rawApiDataRef = useRef<string>('');
+
+    const copyRawApiData = useCallback(() => {
+        if (!rawApiDataRef.current) return;
+        navigator.clipboard.writeText(rawApiDataRef.current).catch(() => {});
+        setRawCopied(true);
+        setTimeout(() => setRawCopied(false), 1500);
+    }, []);
 
     const runBlockProcessing = useCallback(async (mode: 'json' | 'stream', content: string) => {
         if (!content.trim()) return;
@@ -150,6 +162,7 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
         setIsProcessing(true);
         setProcessError(null);
         setProcessedEvents([]);
+        rawApiDataRef.current = '';
 
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
         if (apiConfig.authToken) headers['Authorization'] = `Bearer ${apiConfig.authToken}`;
@@ -164,7 +177,9 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
                     const d = await res.json().catch(() => ({}));
                     throw new Error((d as any)?.detail || (d as any)?.message || `HTTP ${res.status}`);
                 }
-                const data = await res.json() as { blocks: Record<string, unknown>[] };
+                const text = await res.text();
+                rawApiDataRef.current = text;
+                const data = JSON.parse(text) as { blocks: Record<string, unknown>[] };
                 const synthetic: StreamEvent[] = data.blocks.map((block, i) => ({
                     event: 'content_block' as const,
                     data: {
@@ -188,8 +203,11 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
                 }
                 const { events } = parseNdjsonStream(res, controller.signal);
                 const acc: StreamEvent[] = [];
+                const lines: string[] = [];
                 for await (const ev of events) {
                     acc.push(ev);
+                    lines.push(JSON.stringify(ev));
+                    rawApiDataRef.current = lines.join('\n');
                     setProcessedEvents([...acc]);
                 }
             }
@@ -863,35 +881,62 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
                                                         />
                                                     </PromptEditorContextMenu>
                                                 </div>
-                                                <div className="flex-1 min-w-0 min-h-[300px] border border-border rounded-lg p-4 bg-textured overflow-auto">
-                                                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 pb-2 border-b border-border flex items-center justify-between">
+                                                <div className="flex-1 min-w-0 min-h-[300px] border border-border rounded-lg bg-textured overflow-auto relative">
+                                                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-0 px-4 pt-3 pb-2 border-b border-border flex items-center justify-between">
                                                         <span>{previewMode === 'json' ? 'JSON PROCESSED' : 'STREAM PROCESSED'}</span>
-                                                        {isProcessing && <Loader2 className="w-3 h-3 animate-spin" />}
+                                                        <div className="flex items-center gap-1">
+                                                            {isProcessing && <Loader2 className="w-3 h-3 animate-spin" />}
+                                                            <Button
+                                                                size="sm"
+                                                                variant={strictServerData ? "destructive" : "ghost"}
+                                                                className="h-6 px-2 text-[10px] font-mono"
+                                                                onClick={() => setStrictServerData(v => !v)}
+                                                                title={strictServerData ? "Strict mode ON — client fallback disabled" : "Strict mode OFF — click to enable"}
+                                                            >
+                                                                {strictServerData ? "STRICT" : "strict"}
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                className="h-6 px-2 text-[10px] text-muted-foreground hover:text-foreground"
+                                                                onClick={copyRawApiData}
+                                                                disabled={!processedEvents.length && !processError}
+                                                                title="Copy raw API response"
+                                                            >
+                                                                {rawCopied
+                                                                    ? <Check className="w-3 h-3 mr-1 text-green-500" />
+                                                                    : <Copy className="w-3 h-3 mr-1" />}
+                                                                {rawCopied ? 'Copied!' : 'Copy raw'}
+                                                            </Button>
+                                                        </div>
                                                     </div>
-                                                    {isProcessing && processedEvents.length === 0 && (
-                                                        <p className="text-xs text-muted-foreground italic">
-                                                            {previewMode === 'stream' ? 'Streaming blocks...' : 'Processing...'}
-                                                        </p>
-                                                    )}
-                                                    {processError && (
-                                                        <div className="p-2 rounded bg-destructive/10 border border-destructive/20 text-xs text-destructive">
-                                                            {processError}
-                                                        </div>
-                                                    )}
-                                                    {!isProcessing && !processError && processedEvents.length === 0 && (
-                                                        <p className="text-xs text-muted-foreground italic">
-                                                            No output — click <RefreshCw className="w-3 h-3 inline" /> to process.
-                                                        </p>
-                                                    )}
-                                                    {processedEvents.length > 0 && (
-                                                        <div className="prose prose-sm dark:prose-invert max-w-none">
-                                                            <MarkdownStream
-                                                                content=""
-                                                                events={processedEvents}
-                                                                isStreamActive={isProcessing && previewMode === 'stream'}
-                                                            />
-                                                        </div>
-                                                    )}
+                                                    <div className="p-4">
+                                                        {isProcessing && processedEvents.length === 0 && (
+                                                            <p className="text-xs text-muted-foreground italic">
+                                                                {previewMode === 'stream' ? 'Streaming blocks...' : 'Processing...'}
+                                                            </p>
+                                                        )}
+                                                        {processError && (
+                                                            <div className="p-2 rounded bg-destructive/10 border border-destructive/20 text-xs text-destructive">
+                                                                {processError}
+                                                            </div>
+                                                        )}
+                                                        {!isProcessing && !processError && processedEvents.length === 0 && (
+                                                            <p className="text-xs text-muted-foreground italic">
+                                                                No output — click <RefreshCw className="w-3 h-3 inline" /> to process.
+                                                            </p>
+                                                        )}
+                                                        {processedEvents.length > 0 && (
+                                                            <div className="prose prose-sm dark:prose-invert max-w-none">
+                                                                <MarkdownStream
+                                                                    content=""
+                                                                    events={processedEvents}
+                                                                    isStreamActive={isProcessing && previewMode === 'stream'}
+                                                                    strictServerData={strictServerData}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         )}

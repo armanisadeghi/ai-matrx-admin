@@ -5,6 +5,7 @@ import {
 } from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import { StreamAwareChatMarkdown } from '@/components/mardown-display/chat-markdown/StreamAwareChatMarkdown';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
+import { BlockRenderingProvider } from '@/components/mardown-display/chat-markdown/BlockRenderingContext';
 
 /**
  * Props for the MarkdownStream component
@@ -40,6 +41,14 @@ export interface MarkdownStreamProps {
     onError?: (error: string) => void;
     /** Callback when status updates are received (new mode) */
     onStatusUpdate?: (status: string, message?: string) => void;
+    /**
+     * Strict server-data mode — for testing/debugging only.
+     * When true, structured blocks (quiz, presentation, table, etc.) will NOT fall back
+     * to client-side content parsing if block.serverData is null. Instead they show a
+     * visible red error so you know Python failed to populate the `data` field.
+     * Leave false (default) for production.
+     */
+    strictServerData?: boolean;
 }
 
 /**
@@ -85,28 +94,30 @@ export interface MarkdownStreamProps {
  * ```
  */
 const MarkdownStream: React.FC<MarkdownStreamProps> = (props) => {
-    const { content = '', events, ...restProps } = props;
+    const { content = '', events, strictServerData = false, ...restProps } = props;
     
     return (
-        <MarkdownErrorBoundary
-            fallback={
-                <PlainTextFallback 
-                    content={content} 
-                    className={props.className} 
-                    role={props.role}
-                    type={props.type}
+        <BlockRenderingProvider strictServerData={strictServerData}>
+            <MarkdownErrorBoundary
+                fallback={
+                    <PlainTextFallback 
+                        content={content} 
+                        className={props.className} 
+                        role={props.role}
+                        type={props.type}
+                    />
+                }
+                onError={(error, errorInfo) => {
+                    console.error("[MarkdownStream] Top-level error boundary caught:", error, errorInfo);
+                }}
+            >
+                <StreamAwareChatMarkdown 
+                    content={content}
+                    events={events}
+                    {...restProps}
                 />
-            }
-            onError={(error, errorInfo) => {
-                console.error("[MarkdownStream] Top-level error boundary caught:", error, errorInfo);
-            }}
-        >
-            <StreamAwareChatMarkdown 
-                content={content}
-                events={events}
-                {...restProps}
-            />
-        </MarkdownErrorBoundary>
+            </MarkdownErrorBoundary>
+        </BlockRenderingProvider>
     );
 };
 

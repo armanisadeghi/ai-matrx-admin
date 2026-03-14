@@ -44,6 +44,7 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
   const [isAutoMode, setIsAutoMode] = useState(false); // Default to Manual mode
   const [isUpdating, setIsUpdating] = useState(false);
   const [activeTab, setActiveTab] = useState('enhanced-markdown');
+  const [strictServerData, setStrictServerData] = useState(false);
   const [audioModalOpen, setAudioModalOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -52,7 +53,16 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
   const [processedEvents, setProcessedEvents] = useState<StreamEvent[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processError, setProcessError] = useState<string | null>(null);
+  const [rawCopied, setRawCopied] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const rawApiDataRef = useRef<string>('');
+
+  const copyRawApiData = useCallback(() => {
+    if (!rawApiDataRef.current) return;
+    navigator.clipboard.writeText(rawApiDataRef.current).catch(() => {});
+    setRawCopied(true);
+    setTimeout(() => setRawCopied(false), 1500);
+  }, []);
 
   const runBlockProcessing = useCallback(async (mode: 'json' | 'stream', content: string) => {
     if (!content.trim()) return;
@@ -63,6 +73,7 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
     setIsProcessing(true);
     setProcessError(null);
     setProcessedEvents([]);
+    rawApiDataRef.current = '';
 
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (apiConfig.authToken) headers['Authorization'] = `Bearer ${apiConfig.authToken}`;
@@ -77,7 +88,9 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
           const d = await res.json().catch(() => ({}));
           throw new Error((d as any)?.detail || (d as any)?.message || `HTTP ${res.status}`);
         }
-        const data = await res.json() as { blocks: Record<string, unknown>[] };
+        const text = await res.text();
+        rawApiDataRef.current = text;
+        const data = JSON.parse(text) as { blocks: Record<string, unknown>[] };
         const synthetic: StreamEvent[] = data.blocks.map((block, i) => ({
           event: 'content_block' as const,
           data: {
@@ -101,8 +114,11 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
         }
         const { events } = parseNdjsonStream(res, controller.signal);
         const acc: StreamEvent[] = [];
+        const lines: string[] = [];
         for await (const ev of events) {
           acc.push(ev);
+          lines.push(JSON.stringify(ev));
+          rawApiDataRef.current = lines.join('\n');
           setProcessedEvents([...acc]);
         }
       }
@@ -323,22 +339,35 @@ Right-click for content block templates!"
 
                 <div className="flex-1 border rounded-lg bg-textured border-gray-200 dark:border-gray-700 min-h-0 flex flex-col overflow-hidden">
                   <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
-                    <TabsList className="grid w-full grid-cols-4 mx-3 mt-2 mb-0 flex-shrink-0" style={{ width: 'calc(100% - 1.5rem)' }}>
-                      <TabsTrigger value="enhanced-markdown" className="text-xs">
-                        Markdown
-                      </TabsTrigger>
-                      <TabsTrigger value="speech-text" className="text-xs">
-                        Speech
-                      </TabsTrigger>
-                      <TabsTrigger value="json" className="text-xs flex items-center gap-1">
-                        <Cpu className="h-3 w-3" />
-                        JSON
-                      </TabsTrigger>
-                      <TabsTrigger value="stream" className="text-xs flex items-center gap-1">
-                        <Waves className="h-3 w-3" />
-                        Stream
-                      </TabsTrigger>
-                    </TabsList>
+                    <div className="flex items-center gap-2 mx-3 mt-2 mb-0">
+                      <TabsList className="grid flex-1 grid-cols-4" >
+                        <TabsTrigger value="enhanced-markdown" className="text-xs">
+                          Markdown
+                        </TabsTrigger>
+                        <TabsTrigger value="speech-text" className="text-xs">
+                          Speech
+                        </TabsTrigger>
+                        <TabsTrigger value="json" className="text-xs flex items-center gap-1">
+                          <Cpu className="h-3 w-3" />
+                          JSON
+                        </TabsTrigger>
+                        <TabsTrigger value="stream" className="text-xs flex items-center gap-1">
+                          <Waves className="h-3 w-3" />
+                          Stream
+                        </TabsTrigger>
+                      </TabsList>
+                      {(activeTab === 'json' || activeTab === 'stream') && (
+                        <Button
+                          size="sm"
+                          variant={strictServerData ? "destructive" : "outline"}
+                          className="h-7 px-2 text-[10px] shrink-0 font-mono"
+                          onClick={() => setStrictServerData(v => !v)}
+                          title={strictServerData ? "Strict mode ON — client fallback disabled" : "Strict mode OFF — click to enable"}
+                        >
+                          {strictServerData ? "STRICT" : "strict"}
+                        </Button>
+                      )}
+                    </div>
 
                     <TabsContent value="enhanced-markdown" className="flex-1 overflow-auto m-0 p-3 mt-0">
                       <MarkdownStream
@@ -384,7 +413,14 @@ Right-click for content block templates!"
                       )}
                       {processedEvents.length > 0 && (
                         <>
-                          <div className="flex justify-end mb-2">
+                          <div className="flex justify-end gap-1 mb-2">
+                            <Button size="sm" variant="ghost" className="h-6 px-2 text-xs"
+                              onClick={copyRawApiData}
+                            >
+                              {rawCopied
+                                ? <><CheckCircle2 className="h-3 w-3 mr-1 text-green-500" />Copied!</>
+                                : <><Copy className="h-3 w-3 mr-1" />Copy raw</>}
+                            </Button>
                             <Button size="sm" variant="ghost" className="h-6 px-2 text-xs"
                               onClick={() => runBlockProcessing('json', renderedContent)}
                               disabled={isProcessing || !renderedContent.trim()}
@@ -404,6 +440,7 @@ Right-click for content block templates!"
                             isStreamActive={false}
                             hideCopyButton={true}
                             allowFullScreenEditor={true}
+                            strictServerData={strictServerData}
                           />
                         </>
                       )}
@@ -435,7 +472,14 @@ Right-click for content block templates!"
                       )}
                       {processedEvents.length > 0 && (
                         <>
-                          <div className="flex justify-end mb-2">
+                          <div className="flex justify-end gap-1 mb-2">
+                            <Button size="sm" variant="ghost" className="h-6 px-2 text-xs"
+                              onClick={copyRawApiData}
+                            >
+                              {rawCopied
+                                ? <><CheckCircle2 className="h-3 w-3 mr-1 text-green-500" />Copied!</>
+                                : <><Copy className="h-3 w-3 mr-1" />Copy raw</>}
+                            </Button>
                             <Button size="sm" variant="ghost" className="h-6 px-2 text-xs"
                               onClick={() => runBlockProcessing('stream', renderedContent)}
                               disabled={isProcessing || !renderedContent.trim()}
@@ -455,6 +499,7 @@ Right-click for content block templates!"
                             isStreamActive={isProcessing}
                             hideCopyButton={true}
                             allowFullScreenEditor={true}
+                            strictServerData={strictServerData}
                           />
                         </>
                       )}

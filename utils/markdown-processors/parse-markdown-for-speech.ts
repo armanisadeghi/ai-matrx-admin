@@ -157,6 +157,26 @@ export function parseMarkdownToText(markdown: string): string {
       // Replace code blocks (programming languages)
       .replace(/```(javascript|js|typescript|ts|python|py|java|csharp|cs|cpp|c\+\+|c|go|rust|php|ruby|swift|kotlin|scala|sql|bash|shell|powershell|yaml|yml|json|xml|html|css|markdown|md)[\s\S]*?```/g, 'Please see the $1 code provided.')
       .replace(/```[\s\S]*?```/g, 'Please see the code provided.')
+      // Replace tables BEFORE any other processing that would corrupt pipe/dash syntax
+      .replace(/(\|[^\n]+\|[ \t]*\n)([ \t]*\|[ \t]*[-:]+[ \t]*(?:\|[ \t]*[-:]+[ \t]*)*\|?[ \t]*\n)((?:[ \t]*\|[^\n]*\|[ \t]*\n?)*)/gm, (_fullMatch, headerRow, _separatorRow, dataRows) => {
+        const headers = headerRow
+          .split('|')
+          .map((h: string) => h.trim())
+          .filter((h: string) => h.length > 0);
+
+        const rowCount = dataRows
+          .split('\n')
+          .filter((line: string) => line.trim().startsWith('|') && line.trim().length > 1).length;
+
+        const headerText = headers.length > 1
+          ? headers.slice(0, -1).join(', ') + ', and ' + headers[headers.length - 1]
+          : headers.length === 1 ? headers[0] : 'unlabeled columns';
+        const rowText = rowCount === 1 ? 'one row' : rowCount > 0 ? `${rowCount} rows` : 'no rows';
+
+        return `There is a table with ${rowText} of data provided for ${headerText}.\n`;
+      })
+      // Replace any remaining table-like structures (fallback)
+      .replace(/^\|.*\|[ \t]*$/gm, '')
       // Replace inline code
       .replace(/`([^`]+)`/g, '$1')
       // Replace headers
@@ -199,21 +219,6 @@ export function parseMarkdownToText(markdown: string): string {
       .replace(/^([-*+])\s+(.+)$/gm, '$2')
       // Replace ordered lists
       .replace(/^(\d+)\.\s+(.+)$/gm, (_match, num, content) => `Number ${numberToWords(num)}: ${content}`)
-      // Replace tables (match entire table as one unit)
-      .replace(/(\|[^\n]+\|\n)(\|[\s:-]+\|[\s:-]*\n)((?:\|[^\n]+\|\n?)+)/gm, (fullMatch, headerRow) => {
-        // Extract header column names
-        const headers = headerRow
-          .split('|')
-          .map((h: string) => h.trim())
-          .filter((h: string) => h.length > 0);
-        
-        if (headers.length > 0) {
-          return `Table with columns: ${headers.join(', ')}. Please see the table for details.`;
-        }
-        return 'Please see the table provided.';
-      })
-      // Replace any remaining table-like structures (fallback)
-      .replace(/^\|.*\|$/gm, '')
       // Replace footnotes and citations
       .replace(/\[\^(\d+)\]/g, 'Reference $1')
       .replace(/^\[\d+\]:\s*(.+)$/gm, 'Reference: $1')

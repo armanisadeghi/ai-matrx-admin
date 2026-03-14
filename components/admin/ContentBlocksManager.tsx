@@ -38,6 +38,7 @@ import {
     Edit2,
     Settings,
     Check,
+    Copy,
     Columns2,
     PanelLeft,
     Loader2,
@@ -165,7 +166,17 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [processError, setProcessError] = useState<string | null>(null);
     const [lastProcessedTemplate, setLastProcessedTemplate] = useState<string>('');
+    const [rawCopied, setRawCopied] = useState(false);
+    const [strictServerData, setStrictServerData] = useState(false);
     const abortRef = useRef<AbortController | null>(null);
+    const rawApiDataRef = useRef<string>('');
+
+    const copyRawApiData = useCallback(() => {
+        if (!rawApiDataRef.current) return;
+        navigator.clipboard.writeText(rawApiDataRef.current).catch(() => {});
+        setRawCopied(true);
+        setTimeout(() => setRawCopied(false), 1500);
+    }, []);
 
     const runBlockProcessing = useCallback(async (mode: 'json' | 'stream', template: string) => {
         if (!template.trim()) return;
@@ -177,6 +188,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
         setProcessError(null);
         setProcessedEvents([]);
         setLastProcessedTemplate(template);
+        rawApiDataRef.current = '';
 
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
         if (apiConfig.authToken) headers['Authorization'] = `Bearer ${apiConfig.authToken}`;
@@ -191,7 +203,9 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                     const d = await res.json().catch(() => ({}));
                     throw new Error((d as any)?.detail || (d as any)?.message || `HTTP ${res.status}`);
                 }
-                const data = await res.json() as { blocks: Record<string, unknown>[] };
+                const text = await res.text();
+                rawApiDataRef.current = text;
+                const data = JSON.parse(text) as { blocks: Record<string, unknown>[] };
                 const synthetic: StreamEvent[] = data.blocks.map((block, i) => ({
                     event: 'content_block' as const,
                     data: {
@@ -215,8 +229,11 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                 }
                 const { events } = parseNdjsonStream(res, controller.signal);
                 const acc: StreamEvent[] = [];
+                const lines: string[] = [];
                 for await (const ev of events) {
                     acc.push(ev);
+                    lines.push(JSON.stringify(ev));
+                    rawApiDataRef.current = lines.join('\n');
                     setProcessedEvents([...acc]);
                 }
             }
@@ -1137,32 +1154,60 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                 </div>
 
                                                 {/* Right: server-processed render */}
-                                                <div className="flex-1 min-w-0 min-h-[300px] border border-border rounded-lg p-4 bg-textured overflow-auto">
-                                                    {isProcessing && processedEvents.length === 0 && (
-                                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                                            {previewMode === 'stream' ? 'Streaming blocks...' : 'Processing...'}
-                                                        </div>
-                                                    )}
-                                                    {processError && (
-                                                        <div className="p-2 rounded bg-destructive/10 border border-destructive/20 text-xs text-destructive">
-                                                            {processError}
-                                                        </div>
-                                                    )}
-                                                    {!isProcessing && !processError && processedEvents.length === 0 && (
-                                                        <p className="text-xs text-muted-foreground italic">
-                                                            No output yet — click <RefreshCw className="w-3 h-3 inline" /> to process.
-                                                        </p>
-                                                    )}
-                                                    {processedEvents.length > 0 && (
-                                                        <div className="prose prose-sm dark:prose-invert max-w-none">
-                                                            <MarkdownStream
-                                                                content=""
-                                                                events={processedEvents}
-                                                                isStreamActive={isProcessing && previewMode === 'stream'}
-                                                            />
-                                                        </div>
-                                                    )}
+                                                <div className="flex-1 min-w-0 min-h-[300px] border border-border rounded-lg bg-textured overflow-auto relative">
+                                                    {/* Toolbar: strict mode + copy raw */}
+                                                    <div className="sticky top-0 z-10 flex items-center justify-end gap-1 px-3 pt-2 pb-1">
+                                                        <Button
+                                                            size="sm"
+                                                            variant={strictServerData ? "destructive" : "ghost"}
+                                                            className="h-6 px-2 text-[10px] font-mono"
+                                                            onClick={() => setStrictServerData(v => !v)}
+                                                            title={strictServerData ? "Strict mode ON — client fallback disabled" : "Strict mode OFF — click to enable"}
+                                                        >
+                                                            {strictServerData ? "STRICT" : "strict"}
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            className="h-6 px-2 text-[10px] text-muted-foreground hover:text-foreground"
+                                                            onClick={copyRawApiData}
+                                                            disabled={!processedEvents.length && !processError}
+                                                            title="Copy raw API response"
+                                                        >
+                                                            {rawCopied
+                                                                ? <Check className="w-3 h-3 mr-1 text-green-500" />
+                                                                : <Copy className="w-3 h-3 mr-1" />}
+                                                            {rawCopied ? 'Copied!' : 'Copy raw'}
+                                                        </Button>
+                                                    </div>
+                                                    <div className="px-4 pb-4">
+                                                        {isProcessing && processedEvents.length === 0 && (
+                                                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                                {previewMode === 'stream' ? 'Streaming blocks...' : 'Processing...'}
+                                                            </div>
+                                                        )}
+                                                        {processError && (
+                                                            <div className="p-2 rounded bg-destructive/10 border border-destructive/20 text-xs text-destructive">
+                                                                {processError}
+                                                            </div>
+                                                        )}
+                                                        {!isProcessing && !processError && processedEvents.length === 0 && (
+                                                            <p className="text-xs text-muted-foreground italic">
+                                                                No output yet — click <RefreshCw className="w-3 h-3 inline" /> to process.
+                                                            </p>
+                                                        )}
+                                                        {processedEvents.length > 0 && (
+                                                            <div className="prose prose-sm dark:prose-invert max-w-none">
+                                                                <MarkdownStream
+                                                                    content=""
+                                                                    events={processedEvents}
+                                                                    isStreamActive={isProcessing && previewMode === 'stream'}
+                                                                    strictServerData={strictServerData}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         )}
