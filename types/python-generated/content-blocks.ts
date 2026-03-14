@@ -50,8 +50,10 @@ export type BlockType = (typeof BlockType)[keyof typeof BlockType];
 
 export const StreamingBehavior = {
   INCREMENTAL: "incremental",
-  COMPLETE_ONLY: "complete_only",
+  SEMANTIC_STREAM: "semantic_stream",
   PARTIAL_UPDATES: "partial_updates",
+  MARKDOWN_COMPLETE: "markdown_complete",
+  COMPLETE_ONLY: "complete_only",
 } as const;
 
 export type StreamingBehavior = (typeof StreamingBehavior)[keyof typeof StreamingBehavior];
