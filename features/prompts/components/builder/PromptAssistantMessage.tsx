@@ -142,7 +142,7 @@ export function PromptAssistantMessage({
                             <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-muted">{audioMimeType}</span>
                         )}
                     </div>
-                    <audio controls src={audioUrl} className="w-full" />
+                    <audio controls autoPlay src={audioUrl} className="w-full" />
                     <div className="flex items-center gap-2">
                         <Button
                             variant="ghost"
