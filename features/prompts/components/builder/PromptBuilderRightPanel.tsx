@@ -54,6 +54,7 @@ interface PromptBuilderRightPanelProps {
         supportsYoutubeVideos: boolean;
     };
     onMessageContentChange?: (messageIndex: number, newContent: string) => void;
+    isTtsRequest?: boolean;
 }
 
 export function PromptBuilderRightPanel({
@@ -81,6 +82,7 @@ export function PromptBuilderRightPanel({
     lastMessageStats = null,
     attachmentCapabilities = { supportsImageUrls: false, supportsFileUrls: false, supportsYoutubeVideos: false },
     onMessageContentChange,
+    isTtsRequest = false,
 }: PromptBuilderRightPanelProps) {
     
     // Get streaming text from Redux - this doesn't cause parent re-renders
@@ -149,6 +151,7 @@ export function PromptBuilderRightPanel({
                                             metadata={msg.metadata}
                                             audioUrl={msg.audioUrl}
                                             audioMimeType={msg.audioMimeType}
+                                            isTtsRequest={isTtsRequest}
                                         />
                                     )}
                                 </div>

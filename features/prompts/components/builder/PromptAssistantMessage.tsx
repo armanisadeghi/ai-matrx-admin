@@ -24,6 +24,8 @@ interface PromptAssistantMessageProps {
     };
     audioUrl?: string;
     audioMimeType?: string;
+    /** Whether this request is expected to produce audio (TTS model) */
+    isTtsRequest?: boolean;
     /** Compact mode: minimal header, reduced spacing */
     compact?: boolean;
 }
@@ -37,6 +39,7 @@ export function PromptAssistantMessage({
     metadata,
     audioUrl,
     audioMimeType,
+    isTtsRequest = false,
     compact = false
 }: PromptAssistantMessageProps) {
     const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -161,7 +164,7 @@ export function PromptAssistantMessage({
                 </div>
             ) : (
                 <>
-                    {isStreamActive && !content ? (
+                    {isStreamActive && !content && isTtsRequest ? (
                         <div className="relative flex items-center gap-2 text-sm py-2 px-3 rounded-lg border bg-card overflow-hidden">
                             <div className="absolute inset-0 animate-[audio-shimmer_1.6s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-primary/10 to-transparent" />
                             <Volume2 className="w-4 h-4 text-primary flex-shrink-0 relative z-10" />

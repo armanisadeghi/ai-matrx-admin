@@ -217,6 +217,7 @@ export function PromptBuilderMobile(props: PromptBuilderMobileProps) {
                             lastMessageStats={lastMessageStats}
                             attachmentCapabilities={attachmentCapabilities}
                             onMessageContentChange={onConversationMessageContentChange}
+                            isTtsRequest={!!modelConfig.tts_voice}
                         />
                     </div>
                 </div>

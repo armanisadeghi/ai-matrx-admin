@@ -175,6 +175,7 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
 
         case 'status_update': {
           const statusData = event.data as Record<string, unknown>;
+          console.log('[STREAM] status_update:', JSON.stringify(statusData, null, 2));
           onStatusUpdateRef.current?.(statusData?.status as string, (statusData?.user_message as string) || (statusData?.system_message as string));
           break;
         }
@@ -204,14 +205,22 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
         }
 
         case 'completion':
+          console.log('[STREAM] completion:', JSON.stringify(event.data, null, 2));
+          break;
         case 'heartbeat':
+          break;
         case 'data':
+          console.log('[STREAM] data:', JSON.stringify(event.data, null, 2));
+          break;
         case 'broker':
+          console.log('[STREAM] broker:', JSON.stringify(event.data, null, 2));
+          break;
         case 'end':
+          console.log('[STREAM] end:', JSON.stringify(event.data, null, 2));
           break;
 
         default:
-          console.debug('[StreamAwareChatMarkdown] Unknown event type:', event.event);
+          console.log('[STREAM] ⚠️ UNKNOWN event type:', event.event, JSON.stringify(event.data, null, 2));
       }
     }
 

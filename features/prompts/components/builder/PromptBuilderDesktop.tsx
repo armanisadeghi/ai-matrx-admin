@@ -241,6 +241,7 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
                         lastMessageStats={lastMessageStats}
                         attachmentCapabilities={attachmentCapabilities}
                         onMessageContentChange={onConversationMessageContentChange}
+                        isTtsRequest={!!modelConfig.tts_voice}
                     />
                 }
             />

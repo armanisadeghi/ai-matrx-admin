@@ -37,12 +37,10 @@ export interface PromptBuilderResult {
  * Default settings for new prompts
  */
 const DEFAULT_SETTINGS = {
-    model_id: "548126f2-714a-4562-9001-0c31cbeea375",
+    model_id: "c6539f9a-14ff-4449-8a33-644dfe49d2ea",
     store: true,
-    top_p: 1,
     stream: true,
-    temperature: 1,
-    max_tokens: 4096,
+    max_tokens: 8192,
 };
 
 /**
