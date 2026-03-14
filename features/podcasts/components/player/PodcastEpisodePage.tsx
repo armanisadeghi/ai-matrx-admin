@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Music } from 'lucide-react';
+import { Music, Share2, Link as LinkIcon } from 'lucide-react';
 import type { PcEpisodeWithShow } from '../../types';
 import { PodcastAudioPlayer } from './PodcastAudioPlayer';
+import { useShare } from '../../hooks/useShare';
 
 interface PodcastEpisodePageProps {
     episode: PcEpisodeWithShow;
@@ -15,6 +16,7 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
     const [videoFailed, setVideoFailed] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     const [videoSrc, setVideoSrc] = useState<string | null>(null);
+    const { share, copied } = useShare();
 
     const coverExists = !!(episode.title || coverImage || episode.description);
     const effectiveMode = (() => {
@@ -29,7 +31,42 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
         return () => clearTimeout(id);
     }, [effectiveMode, episode.video_url]);
 
-    // ── Video mode — full viewport, no scroll ──────────────────────────────
+    function handleShare() {
+        share({
+            title: episode.title,
+            text: episode.description ?? `Listen to ${episode.title}`,
+        });
+    }
+
+    // Reusable share button for dark backgrounds (video mode)
+    const ShareButtonDark = () => (
+        <button
+            onClick={handleShare}
+            aria-label="Share this episode"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all text-white text-xs font-medium border border-white/20"
+        >
+            {copied
+                ? <><LinkIcon className="h-3.5 w-3.5" /><span>Copied!</span></>
+                : <><Share2 className="h-3.5 w-3.5" /><span>Share</span></>
+            }
+        </button>
+    );
+
+    // Reusable share button for light backgrounds (metadata / audio-only mode)
+    const ShareButtonLight = () => (
+        <button
+            onClick={handleShare}
+            aria-label="Share this episode"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted hover:bg-accent active:scale-95 transition-all text-muted-foreground hover:text-foreground text-xs font-medium border border-border"
+        >
+            {copied
+                ? <><LinkIcon className="h-3.5 w-3.5" /><span>Copied!</span></>
+                : <><Share2 className="h-3.5 w-3.5" /><span>Share</span></>
+            }
+        </button>
+    );
+
+    // ── Video mode ─────────────────────────────────────────────────────────
     if (effectiveMode === 'with_video') {
         return (
             <div className="h-full w-full relative flex flex-col overflow-hidden bg-black">
@@ -46,16 +83,20 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/95 pointer-events-none" />
 
-                {/* Fixed bottom content — no scroll, fits in viewport */}
                 <div className="relative z-10 h-full flex flex-col justify-end px-3 pb-6 w-full">
-                    <div className="mb-3">
-                        {episode.show?.title && (
-                            <p className="text-white/50 text-xs font-medium uppercase tracking-widest mb-1 truncate">{episode.show.title}</p>
-                        )}
-                        <h1 className="text-white font-bold text-xl leading-tight line-clamp-2">{episode.title}</h1>
-                        {episode.description && (
-                            <p className="text-white/60 text-sm mt-1.5 leading-relaxed line-clamp-2">{episode.description}</p>
-                        )}
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                            {episode.show?.title && (
+                                <p className="text-white/50 text-xs font-medium uppercase tracking-widest mb-1 truncate">{episode.show.title}</p>
+                            )}
+                            <h1 className="text-white font-bold text-xl leading-tight line-clamp-2">{episode.title}</h1>
+                            {episode.description && (
+                                <p className="text-white/60 text-sm mt-1.5 leading-relaxed line-clamp-2">{episode.description}</p>
+                            )}
+                        </div>
+                        <div className="shrink-0 pt-1">
+                            <ShareButtonDark />
+                        </div>
                     </div>
 
                     <div className="bg-black/60 backdrop-blur-xl rounded-3xl p-4 border border-white/10 shadow-2xl">
@@ -71,11 +112,10 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
         );
     }
 
-    // ── Metadata mode — fixed layout, no page scroll ───────────────────────
+    // ── Metadata mode ──────────────────────────────────────────────────────
     if (effectiveMode === 'with_metadata') {
         return (
             <div className="h-full w-full flex flex-col overflow-hidden bg-background">
-                {/* Hero image — takes up the top portion, constrained */}
                 <div className="relative shrink-0 overflow-hidden bg-zinc-900" style={{ height: '38%' }}>
                     {coverImage ? (
                         <>
@@ -104,16 +144,23 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
                     <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-background to-transparent pointer-events-none" />
                 </div>
 
-                {/* Content below image — takes remaining height, scrolls only if needed */}
                 <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
                     <div className="px-3 pt-3 pb-4">
-                        {episode.show?.title && (
-                            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-0.5">{episode.show.title}</p>
-                        )}
-                        {episode.episode_number != null && (
-                            <p className="text-xs text-muted-foreground mb-0.5">Episode {episode.episode_number}</p>
-                        )}
-                        <h1 className="text-foreground font-bold text-xl leading-tight mb-3">{episode.title}</h1>
+                        {/* Title row + share */}
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                            <div className="min-w-0 flex-1">
+                                {episode.show?.title && (
+                                    <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-0.5">{episode.show.title}</p>
+                                )}
+                                {episode.episode_number != null && (
+                                    <p className="text-xs text-muted-foreground mb-0.5">Episode {episode.episode_number}</p>
+                                )}
+                                <h1 className="text-foreground font-bold text-xl leading-tight">{episode.title}</h1>
+                            </div>
+                            <div className="shrink-0 pt-1">
+                                <ShareButtonLight />
+                            </div>
+                        </div>
 
                         <div className="bg-card rounded-2xl border border-border shadow-sm p-3 mb-4">
                             <PodcastAudioPlayer
@@ -134,7 +181,7 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
         );
     }
 
-    // ── Audio only — perfectly centered, no scroll ─────────────────────────
+    // ── Audio only ─────────────────────────────────────────────────────────
     return (
         <div className="h-full w-full flex flex-col justify-center overflow-hidden bg-background px-3">
             <div className="flex flex-col items-center gap-4">
@@ -142,7 +189,10 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
                     <Music className="h-11 w-11 text-primary/50" />
                 </div>
                 {episode.title && (
-                    <h1 className="text-foreground font-bold text-xl text-center leading-snug line-clamp-2">{episode.title}</h1>
+                    <div className="flex items-center gap-2 w-full justify-center">
+                        <h1 className="text-foreground font-bold text-xl text-center leading-snug line-clamp-2 flex-1">{episode.title}</h1>
+                        <ShareButtonLight />
+                    </div>
                 )}
                 <div className="w-full bg-card rounded-2xl border border-border shadow-sm p-3">
                     <PodcastAudioPlayer

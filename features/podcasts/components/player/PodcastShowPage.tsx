@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Music, Mic, Clock, ChevronRight } from 'lucide-react';
+import { Music, Mic, Clock, ChevronRight, Share2, Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
 import type { PcShow, PcEpisode } from '../../types';
+import { useShare } from '../../hooks/useShare';
 
 interface PodcastShowPageProps {
     show: PcShow;
@@ -21,17 +22,22 @@ function formatDuration(seconds: number): string {
 export function PodcastShowPage({ show, episodes }: PodcastShowPageProps) {
     const publishedEpisodes = episodes.filter((e) => e.is_published);
     const coverImage = show.image_url ?? null;
+    const { share, copied } = useShare();
+
+    function handleShare() {
+        share({
+            title: show.title,
+            text: show.description ?? `Listen to ${show.title}`,
+        });
+    }
 
     return (
-        // Outer: fills the parent exactly — no overflow at this level
         <div className="h-full w-full flex flex-col overflow-hidden bg-background">
 
-            {/* ── Hero — full-width image with info below ───────────────── */}
+            {/* ── Hero — full-width image ───────────────────────────────── */}
             <div className="relative shrink-0 overflow-hidden bg-zinc-900">
-                {/* Full-width cover art */}
                 {coverImage ? (
                     <>
-                        {/* Blurred fill so edges don't show white on non-square images */}
                         <img
                             src={coverImage}
                             alt=""
@@ -55,10 +61,9 @@ export function PodcastShowPage({ show, episodes }: PodcastShowPageProps) {
                         <Mic className="h-16 w-16 text-white/20" />
                     </div>
                 )}
-                {/* Gradient fade at bottom into the info row */}
                 <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-zinc-900 to-transparent pointer-events-none z-20" />
 
-                {/* Info row — sits over the gradient at the bottom of the image */}
+                {/* Info + share row */}
                 <div className="relative z-30 px-4 pb-3 pt-2 flex items-end gap-3">
                     <div className="min-w-0 flex-1">
                         <h1 className="text-white font-bold text-xl leading-tight line-clamp-1">{show.title}</h1>
@@ -74,10 +79,22 @@ export function PodcastShowPage({ show, episodes }: PodcastShowPageProps) {
                             <p className="text-white/65 text-xs mt-1 line-clamp-2 leading-relaxed">{show.description}</p>
                         )}
                     </div>
+
+                    {/* Share button */}
+                    <button
+                        onClick={handleShare}
+                        aria-label="Share this show"
+                        className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all text-white text-xs font-medium border border-white/20"
+                    >
+                        {copied
+                            ? <><LinkIcon className="h-3.5 w-3.5" /><span>Copied!</span></>
+                            : <><Share2 className="h-3.5 w-3.5" /><span>Share</span></>
+                        }
+                    </button>
                 </div>
             </div>
 
-            {/* ── Episode list — flex-1 takes remaining height, scrolls internally ── */}
+            {/* ── Episode list ─────────────────────────────────────────── */}
             <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
                 <div className="max-w-2xl mx-auto px-4 py-3">
                     {publishedEpisodes.length === 0 ? (
