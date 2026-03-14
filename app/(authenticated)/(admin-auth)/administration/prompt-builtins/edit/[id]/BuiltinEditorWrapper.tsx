@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { PromptBuilder } from '@/features/prompts/components/builder/PromptBuilder';
 import type { PromptMessage, PromptVariable } from '@/features/prompts/types/core';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 
 interface BuiltinEditorWrapperProps {
     builtinId: string;
@@ -70,29 +68,13 @@ export function BuiltinEditorWrapper({
     };
 
     return (
-        <div className="h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden">
-            <div className="border-b px-4 bg-card flex items-center gap-3 h-10 shrink-0">
-                <Link
-                    href="/administration/prompt-builtins/builtins"
-                    className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5 text-sm"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back to Builtins
-                </Link>
-                <span className="text-muted-foreground/50">|</span>
-                <span className="text-sm text-muted-foreground">
-                    Editing Builtin: <span className="text-foreground font-medium">{initialData.name || 'Untitled'}</span>
-                </span>
-            </div>
-            <div className="flex-1 overflow-hidden">
-                <PromptBuilder
-                    models={models}
-                    initialData={initialData}
-                    availableTools={availableTools}
-                    onCustomSave={handleBuiltinSave}
-                    contextLabel="Prompt Builtins"
-                />
-            </div>
-        </div>
+        <PromptBuilder
+            models={models}
+            initialData={initialData}
+            availableTools={availableTools}
+            onCustomSave={handleBuiltinSave}
+            contextLabel="Prompt Builtins"
+            backHref="/administration/prompt-builtins/builtins"
+        />
     );
 }

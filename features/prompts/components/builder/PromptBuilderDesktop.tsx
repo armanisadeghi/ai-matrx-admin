@@ -1,4 +1,6 @@
 import React from "react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { PromptHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { PromptBuilderRightPanel } from "./PromptBuilderRightPanel";
 import { PromptBuilderLeftPanel } from "./PromptBuilderLeftPanel";
@@ -110,6 +112,10 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
         // Shared prompt info
         accessInfo,
         isSharedPrompt,
+
+        // Back navigation
+        backHref,
+        backLabel,
     } = props;
 
     return (
@@ -135,6 +141,26 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
                             onAcceptFullPrompt={handleAcceptFullPrompt}
                             onAcceptAsCopy={handleAcceptFullPromptAsCopy}
                         />
+                        {/* Back navigation for non-prompt routes (e.g. admin builtin editor) */}
+                        {backHref && (
+                            <div className="border-b px-4 bg-card flex items-center gap-3 h-9 shrink-0">
+                                <Link
+                                    href={backHref}
+                                    className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5 text-sm"
+                                >
+                                    <ArrowLeft className="w-3.5 h-3.5" />
+                                    {backLabel ?? 'Back'}
+                                </Link>
+                                {promptName && (
+                                    <>
+                                        <span className="text-muted-foreground/40">|</span>
+                                        <span className="text-sm text-muted-foreground truncate">
+                                            {promptName}
+                                        </span>
+                                    </>
+                                )}
+                            </div>
+                        )}
                         {/* Shared Prompt Banner */}
                         {isSharedPrompt && accessInfo && (
                             <SharedPromptBanner

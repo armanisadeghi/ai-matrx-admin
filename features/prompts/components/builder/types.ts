@@ -149,4 +149,8 @@ export interface PromptBuilderSharedProps {
     accessInfo?: PromptAccessInfo;
     isSharedPrompt?: boolean;
     canEditOriginal?: boolean;
+
+    // Optional back navigation (e.g. for admin builtin editor)
+    backHref?: string;
+    backLabel?: string;
 }

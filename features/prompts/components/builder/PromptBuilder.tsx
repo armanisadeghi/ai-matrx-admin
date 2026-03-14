@@ -55,11 +55,15 @@ interface PromptBuilderProps {
     }) => Promise<void>;
     /** Label override for the back/breadcrumb context (e.g. "Prompt Builtins") */
     contextLabel?: string;
+    /** Optional href for a back link rendered in the layout header */
+    backHref?: string;
+    /** Optional label for the back link (defaults to contextLabel) */
+    backLabel?: string;
 }
 
 
 
-export function PromptBuilder({ models, initialData, availableTools, accessInfo, onCustomSave, contextLabel }: PromptBuilderProps) {
+export function PromptBuilder({ models, initialData, availableTools, accessInfo, onCustomSave, contextLabel, backHref, backLabel }: PromptBuilderProps) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -1125,6 +1129,10 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
         accessInfo,
         isSharedPrompt,
         canEditOriginal,
+
+        // Back navigation
+        backHref,
+        backLabel: backLabel ?? contextLabel,
     };
 
     // Render appropriate component based on device type
