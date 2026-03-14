@@ -211,3 +211,8 @@ export function isEndEvent(e: StreamEvent): e is { event: "end"; data: EndPayloa
 export function isContentBlockEvent(e: StreamEvent): e is { event: "content_block"; data: ContentBlockPayload } {
   return e.event === "content_block";
 }
+
+/** Returns true if any event in the array is a content_block event (new server-processing protocol). */
+export function isNewProtocol(events: StreamEvent[]): boolean {
+  return events.some(e => e.event === "content_block");
+}

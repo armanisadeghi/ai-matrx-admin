@@ -5,7 +5,7 @@ import { cn } from "@/styles/themes/utils";
 
 interface FlashcardItemProps {
     front: string;
-    back: string;
+    back: string | null;
     index: number;
     layoutMode?: "grid" | "list";
 }
@@ -14,7 +14,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ front, back, index, layou
     const [isFlipped, setIsFlipped] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
 
-    const isMultiLineBack = back.includes('\n');
+    const isMultiLineBack = back != null && back.includes('\n');
 
     const handleClick = () => {
         setIsFlipped(!isFlipped);
@@ -54,10 +54,17 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ front, back, index, layou
     };
 
     const renderBackContent = () => {
+        if (back === null) {
+            return (
+                <div className="flex items-center gap-2 text-green-600/60 dark:text-green-400/60 animate-pulse">
+                    <div className="w-3 h-3 rounded-full bg-current" />
+                    <span className="text-xs">Loading...</span>
+                </div>
+            );
+        }
         if (!isMultiLineBack) {
             return back;
         }
-
         return back.split('\n').map((line, i) => (
             <div key={i} className={line === '' ? 'h-1.5' : undefined}>
                 {line}
@@ -148,7 +155,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ front, back, index, layou
                                 isMultiLineBack
                                     ? "text-left leading-snug"
                                     : "text-center leading-relaxed",
-                                getTextSizeClass(back, isMultiLineBack)
+                                getTextSizeClass(back ?? "", isMultiLineBack)
                             )}
                         >
                             {renderBackContent()}

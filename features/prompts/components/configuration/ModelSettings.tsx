@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { X, FileJson, AlertCircle } from "lucide-react";
+import { X, FileJson, AlertCircle, Plus, Volume2, Users } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
@@ -62,13 +62,71 @@ export function ModelSettings({
         setEnabledSettings(enabled);
     }, [settings]);
 
+    // Multi-speaker TTS state (Google only)
+    const initialSpeakers = useMemo(() => {
+        if (Array.isArray(settings.tts_voice) && settings.tts_voice.length > 0) {
+            return settings.tts_voice as { name: string; voice: string }[];
+        }
+        const defaultVoice = normalizedControls?.tts_voice?.default ?? '';
+        return [{ name: '', voice: String(defaultVoice) }];
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const [multiSpeakers, setMultiSpeakers] = useState<{ name: string; voice: string }[]>(initialSpeakers);
+    const [isMultiSpeakerActive, setIsMultiSpeakerActive] = useState(
+        Array.isArray(settings.tts_voice)
+    );
+
+    const handleToggleMultiSpeaker = (enabled: boolean) => {
+        setIsMultiSpeakerActive(enabled);
+        if (enabled) {
+            const current = multiSpeakers.length > 0 ? multiSpeakers : [
+                { name: '', voice: String(normalizedControls?.tts_voice?.default ?? '') },
+            ];
+            setMultiSpeakers(current);
+            onSettingsChange({ ...settings, tts_voice: current as any });
+        } else {
+            // Revert to single-speaker: use first speaker's voice or default
+            const singleVoice = multiSpeakers[0]?.voice || String(normalizedControls?.tts_voice?.default ?? '');
+            onSettingsChange({ ...settings, tts_voice: singleVoice });
+        }
+    };
+
+    const handleSpeakerChange = (index: number, field: 'name' | 'voice', value: string) => {
+        const updated = multiSpeakers.map((sp, i) => i === index ? { ...sp, [field]: value } : sp);
+        setMultiSpeakers(updated);
+        onSettingsChange({ ...settings, tts_voice: updated as any });
+    };
+
+    const handleAddSpeaker = () => {
+        if (multiSpeakers.length >= 2) return;
+        const updated = [...multiSpeakers, { name: '', voice: String(normalizedControls?.tts_voice?.default ?? '') }];
+        setMultiSpeakers(updated);
+        onSettingsChange({ ...settings, tts_voice: updated as any });
+    };
+
+    const handleRemoveSpeaker = (index: number) => {
+        const updated = multiSpeakers.filter((_, i) => i !== index);
+        setMultiSpeakers(updated);
+        onSettingsChange({ ...settings, tts_voice: updated as any });
+    };
+
     // JSON editor modal state
     const [showJsonEditor, setShowJsonEditor] = useState(false);
 
-    // Get all recognized keys from normalizedControls
+    // Get all recognized keys from normalizedControls.
+    // Also include keys that are universally valid settings regardless of model —
+    // these may be missing from normalizedControls when the DB stores them as
+    // primitives (e.g. temperature: 1.0) rather than control definition objects,
+    // or when the model simply doesn't declare them but they're still accepted.
     const recognizedKeys = useMemo(() => {
-        if (!normalizedControls) return new Set<string>();
-        const keys = new Set<string>();
+        const keys = new Set<string>([
+            // Always-valid submission keys
+            'model_id', 'temperature', 'max_tokens', 'max_output_tokens',
+            'top_p', 'top_k', 'stream', 'store', 'tools',
+            // Deprecated but still present in saved settings
+            'output_format',
+        ]);
+        if (!normalizedControls) return keys;
         Object.keys(normalizedControls).forEach(key => {
             if (key !== 'rawControls' && key !== 'unmappedControls') {
                 keys.add(key);
@@ -189,6 +247,10 @@ export function ModelSettings({
         );
     }
 
+    // Format a raw voice/enum value for display — capitalises each word, replaces _ and - with spaces
+    const formatVoiceLabel = (value: string) =>
+        value.replace(/[_-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
     // Helper to render a setting control consistently
     const renderControl = (
         key: keyof PromptSettings,
@@ -245,7 +307,7 @@ export function ModelSettings({
                     <SelectContent className="text-xs">
                         {control.enum.map((option) => (
                             <SelectItem key={option} value={option} className="text-xs py-1">
-                                {option}
+                                {key === 'tts_voice' ? formatVoiceLabel(option) : option}
                             </SelectItem>
                         ))}
                     </SelectContent>
@@ -434,6 +496,89 @@ export function ModelSettings({
                         if (!control) return null;
                         return renderControl(key as keyof PromptSettings, label, control);
                     })}
+                </div>
+            )}
+
+            {/* TTS Settings */}
+            {(normalizedControls.tts_voice || normalizedControls.audio_format) && (
+                <div className="border-t pt-2.5 mt-2.5">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <Volume2 className="w-3.5 h-3.5 text-primary" />
+                        Text-to-Speech Settings
+                    </div>
+
+                    {/* tts_voice — single speaker */}
+                    {normalizedControls.tts_voice && !isMultiSpeakerActive && (
+                        renderControl('tts_voice' as keyof PromptSettings, 'Voice', normalizedControls.tts_voice)
+                    )}
+
+                    {/* audio_format */}
+                    {normalizedControls.audio_format && (
+                        renderControl('audio_format' as keyof PromptSettings, 'Audio Format', normalizedControls.audio_format)
+                    )}
+
+                    {/* Multi-speaker (Google only) */}
+                    {normalizedControls.multi_speaker && (
+                        <div className="mt-2 space-y-2">
+                            <div
+                                className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                                onClick={() => handleToggleMultiSpeaker(!isMultiSpeakerActive)}
+                            >
+                                <Checkbox
+                                    id="multi-speaker"
+                                    checked={isMultiSpeakerActive}
+                                    onCheckedChange={(c) => handleToggleMultiSpeaker(c as boolean)}
+                                    className="cursor-pointer"
+                                />
+                                <Label htmlFor="multi-speaker" className={`flex items-center gap-1.5 text-xs cursor-pointer ${isMultiSpeakerActive ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                                    <Users className="w-3 h-3" />
+                                    Multi-speaker (up to 2)
+                                </Label>
+                            </div>
+
+                            {isMultiSpeakerActive && (
+                                <div className="ml-6 space-y-2">
+                                    {multiSpeakers.map((sp, i) => (
+                                        <div key={i} className="flex items-center gap-2">
+                                            <input
+                                                type="text"
+                                                value={sp.name}
+                                                onChange={(e) => handleSpeakerChange(i, 'name', e.target.value)}
+                                                placeholder={`Speaker name (e.g. ${i === 0 ? 'Alex' : 'Sarah'})`}
+                                                className="h-7 px-2 text-xs bg-textured border border-border rounded flex-1 text-gray-900 dark:text-gray-100"
+                                            />
+                                            <Select
+                                                value={sp.voice}
+                                                onValueChange={(v) => handleSpeakerChange(i, 'voice', v)}
+                                            >
+                                                <SelectTrigger className="h-7 text-xs w-32 flex-shrink-0">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent className="text-xs max-h-52">
+                                                    {(normalizedControls.tts_voice?.enum ?? []).map((v) => (
+                                                        <SelectItem key={v} value={v} className="text-xs py-1">{formatVoiceLabel(v)}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {multiSpeakers.length > 1 && (
+                                                <button onClick={() => handleRemoveSpeaker(i)} className="text-muted-foreground hover:text-destructive transition-colors">
+                                                    <X className="w-3.5 h-3.5" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                    {multiSpeakers.length < 2 && (
+                                        <button
+                                            onClick={handleAddSpeaker}
+                                            className="flex items-center gap-1 text-xs text-primary hover:underline"
+                                        >
+                                            <Plus className="w-3 h-3" /> Add speaker
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
 

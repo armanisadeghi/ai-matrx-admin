@@ -7,10 +7,13 @@ import { parseFlashcards } from "./flashcard-parser";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/styles/themes/utils";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
+import type { FlashcardsBlockData } from "@/types/python-generated/content-blocks";
 
 interface FlashcardsBlockProps {
-    content: string;
-    taskId?: string; // Task ID for canvas deduplication
+    content?: string;
+    /** Server-parsed structured data (from content_block serverData). When present, skips client-side parsing. */
+    serverData?: FlashcardsBlockData;
+    taskId?: string;
     className?: string;
 }
 
@@ -58,18 +61,26 @@ const LayoutToggle: React.FC<LayoutToggleProps> = ({ layoutMode, onLayoutChange 
     );
 };
 
-const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content, taskId, className }) => {
+const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content, serverData, taskId, className }) => {
     const [layoutMode, setLayoutMode] = useState<LayoutMode>("grid");
     const [isFullscreen, setIsFullscreen] = useState(false);
     const { open: openCanvas } = useCanvas();
 
-    // Parse flashcards from content
-    const { flashcards, isComplete, partialCard } = useMemo(() => {
-        return parseFlashcards(content);
-    }, [content]);
+    // Use server-parsed data when available; fall back to client-side parsing.
+    const { flashcards, isComplete } = useMemo(() => {
+        if (serverData) {
+            return {
+                flashcards: serverData.cards ?? [],
+                isComplete: serverData.isComplete ?? false,
+            };
+        }
+        const parsed = parseFlashcards(content ?? "");
+        return {
+            flashcards: parsed.flashcards,
+            isComplete: parsed.isComplete,
+        };
+    }, [content, serverData]);
 
-    // Calculate total count including partial card if streaming
-    const totalCount = flashcards.length + (partialCard && !isComplete ? 1 : 0);
     const completeCount = flashcards.length;
 
     // Handle ESC key to exit fullscreen
@@ -92,6 +103,9 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content, taskId, clas
         };
     }, [isFullscreen]);
 
+    // A card with back=null is in the Loader Exception state (front received, back still streaming).
+    const hasStreamingCard = !isComplete && flashcards.some(c => c.back === null || c.back === undefined);
+
     const renderFlashcards = () => (
         <div className={cn(
             "gap-2",
@@ -101,30 +115,25 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content, taskId, clas
             {flashcards.map((card, index) => (
                 <FlashcardItem
                     key={`flashcard-${index}`}
-                    front={card.front}
-                    back={card.back}
+                    front={card.front ?? ""}
+                    back={card.back ?? null}
                     index={index}
                     layoutMode={layoutMode}
                 />
             ))}
-            
-            {/* Show placeholder for partial card if streaming */}
-            {!isComplete && partialCard && (
-                <div 
+
+            {/* Show incoming-card placeholder when not complete and no card with back=null yet */}
+            {!isComplete && !hasStreamingCard && flashcards.length > 0 && (
+                <div
                     className={cn(
                         "relative w-full h-48 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg flex items-center justify-center animate-pulse",
                         layoutMode === "list" && "max-w-full"
                     )}
-                    aria-label="Loading flashcard"
+                    aria-label="Loading next flashcard"
                 >
                     <div className="text-center text-gray-500 dark:text-gray-400">
                         <BookOpen className="h-8 w-8 mx-auto mb-2 animate-pulse" />
                         <div className="text-sm">Loading flashcard...</div>
-                        {partialCard.front && (
-                            <div className="text-xs mt-1 px-4">
-                                {partialCard.front.substring(0, 30)}...
-                            </div>
-                        )}
                     </div>
                 </div>
             )}
@@ -166,7 +175,7 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content, taskId, clas
                     {/* Fullscreen content */}
                     <div className="flex-1 overflow-y-auto">
                         {renderFlashcards()}
-                        {flashcards.length === 0 && !partialCard && (
+                        {flashcards.length === 0 && (
                             <div className="text-center text-gray-500 dark:text-gray-400 p-8">
                                 No flashcards available yet...
                             </div>
@@ -235,7 +244,7 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content, taskId, clas
         >
             {renderFlashcards()}
 
-            {flashcards.length === 0 && !partialCard && (
+            {flashcards.length === 0 && (
                 <div className="text-center text-gray-500 dark:text-gray-400 p-8">
                     No flashcards available yet...
                 </div>

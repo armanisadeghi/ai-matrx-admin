@@ -240,6 +240,12 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "flashcards":
+            if (block.serverData) {
+                return <BlockComponents.FlashcardsBlock key={index} serverData={block.serverData as any} taskId={taskId} />;
+            }
+            if (strictServerData) {
+                return <StrictModeError key={index} blockType="flashcards" blockId={(block as any).blockId} />;
+            }
             return <BlockComponents.FlashcardsBlock key={index} content={block.content} taskId={taskId} />;
 
         case "quiz":

@@ -35,6 +35,10 @@ export interface PromptSettings {
     verbosity?: string;
     reasoning_summary?: string;
 
+    // TTS model settings
+    tts_voice?: string | { name: string; voice: string }[];
+    audio_format?: string;
+
     // Image/Video model settings
     n?: number;
     seed?: number;

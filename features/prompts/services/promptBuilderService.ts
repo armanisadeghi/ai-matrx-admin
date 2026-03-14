@@ -39,7 +39,6 @@ export interface PromptBuilderResult {
 const DEFAULT_SETTINGS = {
     model_id: "548126f2-714a-4562-9001-0c31cbeea375",
     store: true,
-    tools: [],
     top_p: 1,
     stream: true,
     temperature: 1,

@@ -44,6 +44,11 @@ export interface NormalizedControls {
     internal_url_context?: ControlDefinition;
     youtube_videos?: ControlDefinition;
 
+    // TTS model controls
+    tts_voice?: ControlDefinition;
+    audio_format?: ControlDefinition;
+    multi_speaker?: ControlDefinition;
+
     // Image/Video model controls
     n?: ControlDefinition;
     seed?: ControlDefinition;
@@ -153,6 +158,8 @@ export function useModelControls(models: any[], selectedModelId: string) {
         'reasoning_effort', 'verbosity', 'reasoning_summary', 'output_format', 'tool_choice',
         'stop_sequences', 'tools', 'stream', 'store',
         'file_urls', 'image_urls', 'internal_web_search', 'parallel_tool_calls', 'youtube_videos',
+        // TTS model controls
+        'tts_voice', 'audio_format', 'multi_speaker',
         // Image/Video model controls
         'n', 'seed', 'steps', 'width', 'height', 'guidance_scale', 'negative_prompt',
         'response_format', 'fps', 'seconds', 'output_quality', 'image_loras',
