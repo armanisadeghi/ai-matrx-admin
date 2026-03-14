@@ -125,6 +125,14 @@ export const ENDPOINTS = {
         categorizeSync: '/api/ai/builtin-agents/categorize/sync' as const,
     },
 
+    /** Media processing endpoints — Authenticated */
+    media: {
+        /** POST — Upload podcast image → resize to 3 variants, returns URLs */
+        uploadPodcastImage: '/api/media/podcast/upload-image' as const,
+        /** POST — Upload podcast video → extract frame, resize to 3 variants, returns URLs */
+        uploadPodcastVideo: '/api/media/podcast/upload-video' as const,
+    },
+
     /** Health endpoints — Public */
     health: {
         /** GET — Basic health check */

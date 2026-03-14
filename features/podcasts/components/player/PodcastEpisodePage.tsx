@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Music, Play, Pause } from 'lucide-react';
+import { Music } from 'lucide-react';
 import type { PcEpisodeWithShow } from '../../types';
 import { PodcastAudioPlayer } from './PodcastAudioPlayer';
 
@@ -23,18 +23,16 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
         return 'audio_only';
     })();
 
-    // Defer video load so audio gets bandwidth priority
     useEffect(() => {
         if (effectiveMode !== 'with_video' || !episode.video_url) return;
         const id = setTimeout(() => setVideoSrc(episode.video_url!), 300);
         return () => clearTimeout(id);
     }, [effectiveMode, episode.video_url]);
 
-    // ── Video mode ─────────────────────────────────────────────────────────
+    // ── Video mode — full viewport, no scroll ──────────────────────────────
     if (effectiveMode === 'with_video') {
         return (
             <div className="h-full w-full relative flex flex-col overflow-hidden bg-black">
-                {/* Full-bleed background video — muted always, no audio interference */}
                 <video
                     ref={videoRef}
                     src={videoSrc ?? undefined}
@@ -46,47 +44,41 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
                     preload="none"
                     onError={() => setVideoFailed(true)}
                 />
-                {/* Layered gradients: top for legibility, heavy bottom for player */}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/95 pointer-events-none" />
 
-                {/* Scrollable content layer */}
-                <div className="relative z-10 h-full overflow-y-auto overscroll-contain">
-                    <div className="min-h-full flex flex-col justify-end px-4 pt-16 pb-8 max-w-lg mx-auto">
-                        {/* Episode info */}
-                        <div className="mb-4">
-                            {episode.show?.title && (
-                                <p className="text-white/50 text-xs font-medium uppercase tracking-widest mb-1">{episode.show.title}</p>
-                            )}
-                            <h1 className="text-white font-bold text-2xl leading-tight">{episode.title}</h1>
-                            {episode.description && (
-                                <p className="text-white/60 text-sm mt-2 leading-relaxed">{episode.description}</p>
-                            )}
-                        </div>
+                {/* Fixed bottom content — no scroll, fits in viewport */}
+                <div className="relative z-10 h-full flex flex-col justify-end px-4 pb-8 max-w-lg mx-auto w-full">
+                    <div className="mb-4">
+                        {episode.show?.title && (
+                            <p className="text-white/50 text-xs font-medium uppercase tracking-widest mb-1 truncate">{episode.show.title}</p>
+                        )}
+                        <h1 className="text-white font-bold text-xl leading-tight line-clamp-2">{episode.title}</h1>
+                        {episode.description && (
+                            <p className="text-white/60 text-sm mt-1.5 leading-relaxed line-clamp-2">{episode.description}</p>
+                        )}
+                    </div>
 
-                        {/* Player card */}
-                        <div className="bg-black/60 backdrop-blur-xl rounded-3xl p-5 border border-white/10 shadow-2xl">
-                            <PodcastAudioPlayer
-                                audioUrl={episode.audio_url}
-                                title={episode.title}
-                                coverImageUrl={thumbnailImage ?? undefined}
-                                dark
-                            />
-                        </div>
+                    <div className="bg-black/60 backdrop-blur-xl rounded-3xl p-4 border border-white/10 shadow-2xl">
+                        <PodcastAudioPlayer
+                            audioUrl={episode.audio_url}
+                            title={episode.title}
+                            coverImageUrl={thumbnailImage ?? undefined}
+                            dark
+                        />
                     </div>
                 </div>
             </div>
         );
     }
 
-    // ── Metadata mode ──────────────────────────────────────────────────────
+    // ── Metadata mode — fixed layout, no page scroll ───────────────────────
     if (effectiveMode === 'with_metadata') {
         return (
-            <div className="h-full w-full overflow-y-auto overscroll-contain bg-background">
-                {/* Hero — image takes up the top third of the screen, edge-to-edge */}
-                <div className="relative w-full aspect-square sm:aspect-video max-h-[50vh] overflow-hidden bg-zinc-900">
+            <div className="h-full w-full flex flex-col overflow-hidden bg-background">
+                {/* Hero image — takes up the top portion, constrained */}
+                <div className="relative shrink-0 overflow-hidden bg-zinc-900" style={{ height: '38%' }}>
                     {coverImage ? (
                         <>
-                            {/* Blurred background fill */}
                             <img
                                 src={coverImage}
                                 alt=""
@@ -95,7 +87,6 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
                                 loading="eager"
                                 decoding="async"
                             />
-                            {/* Sharp foreground image, centered and contained */}
                             <img
                                 src={coverImage}
                                 alt={episode.title}
@@ -110,50 +101,48 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
                             <Music className="h-20 w-20 text-white/20" />
                         </div>
                     )}
-                    {/* Bottom fade into background */}
-                    <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+                    <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-background to-transparent pointer-events-none" />
                 </div>
 
-                {/* Content below image */}
-                <div className="px-4 pb-10 max-w-lg mx-auto -mt-2">
-                    {/* Show name + episode metadata */}
-                    {episode.show?.title && (
-                        <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">{episode.show.title}</p>
-                    )}
-                    {episode.episode_number != null && (
-                        <p className="text-xs text-muted-foreground mb-1">Episode {episode.episode_number}</p>
-                    )}
-                    <h1 className="text-foreground font-bold text-2xl leading-tight mb-4">{episode.title}</h1>
+                {/* Content below image — takes remaining height, scrolls only if needed */}
+                <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+                    <div className="px-4 pt-3 pb-6 max-w-lg mx-auto">
+                        {episode.show?.title && (
+                            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-0.5">{episode.show.title}</p>
+                        )}
+                        {episode.episode_number != null && (
+                            <p className="text-xs text-muted-foreground mb-0.5">Episode {episode.episode_number}</p>
+                        )}
+                        <h1 className="text-foreground font-bold text-xl leading-tight mb-3">{episode.title}</h1>
 
-                    {/* Player */}
-                    <div className="bg-card rounded-2xl border border-border shadow-sm p-4 mb-6">
-                        <PodcastAudioPlayer
-                            audioUrl={episode.audio_url}
-                            title={episode.title}
-                        />
-                    </div>
-
-                    {/* Full description — no truncation, this is the content */}
-                    {episode.description && (
-                        <div>
-                            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">About this episode</h2>
-                            <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-line">{episode.description}</p>
+                        <div className="bg-card rounded-2xl border border-border shadow-sm p-4 mb-4">
+                            <PodcastAudioPlayer
+                                audioUrl={episode.audio_url}
+                                title={episode.title}
+                            />
                         </div>
-                    )}
+
+                        {episode.description && (
+                            <div>
+                                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">About this episode</h2>
+                                <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-line">{episode.description}</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         );
     }
 
-    // ── Audio only ─────────────────────────────────────────────────────────
+    // ── Audio only — perfectly centered, no scroll ─────────────────────────
     return (
-        <div className="h-full w-full overflow-y-auto overscroll-contain bg-background flex flex-col items-center justify-center px-4">
-            <div className="w-full max-w-sm flex flex-col items-center gap-6 py-10">
-                <div className="w-32 h-32 rounded-3xl bg-primary/10 flex items-center justify-center shadow-lg">
-                    <Music className="h-14 w-14 text-primary/50" />
+        <div className="h-full w-full flex flex-col items-center justify-center overflow-hidden bg-background px-4">
+            <div className="w-full max-w-sm flex flex-col items-center gap-5">
+                <div className="w-28 h-28 rounded-3xl bg-primary/10 flex items-center justify-center shadow-lg">
+                    <Music className="h-12 w-12 text-primary/50" />
                 </div>
                 {episode.title && (
-                    <h1 className="text-foreground font-bold text-xl text-center leading-snug">{episode.title}</h1>
+                    <h1 className="text-foreground font-bold text-xl text-center leading-snug line-clamp-3">{episode.title}</h1>
                 )}
                 <div className="w-full bg-card rounded-2xl border border-border shadow-sm p-4">
                     <PodcastAudioPlayer

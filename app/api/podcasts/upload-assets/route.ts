@@ -3,18 +3,17 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import sharp from 'sharp';
-import os from 'os';
-import path from 'path';
-import fs from 'fs/promises';
 import { randomUUID } from 'crypto';
+import { BACKEND_URLS } from '@/lib/api/endpoints';
 
 const BUCKET = 'podcast-assets';
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+const MAX_IMAGE_SIZE = 20 * 1024 * 1024;  // 20MB
+const MAX_VIDEO_SIZE = 500 * 1024 * 1024; // 500MB
 
 const IMAGE_VARIANTS = [
-    { key: 'image_url', width: 1400, height: 1400, suffix: 'cover' },
-    { key: 'og_image_url', width: 1200, height: 630, suffix: 'og' },
-    { key: 'thumbnail_url', width: 400, height: 400, suffix: 'thumb' },
+    { key: 'image_url',      width: 1400, height: 1400, suffix: 'cover' },
+    { key: 'og_image_url',   width: 1200, height: 630,  suffix: 'og' },
+    { key: 'thumbnail_url',  width: 400,  height: 400,  suffix: 'thumb' },
 ] as const;
 
 type VariantKey = (typeof IMAGE_VARIANTS)[number]['key'];
@@ -30,71 +29,11 @@ function getSupabasePublicUrl(supabaseUrl: string, bucket: string, filePath: str
     return `${supabaseUrl}/storage/v1/object/public/${bucket}/${filePath}`;
 }
 
-function findFfmpegPath(): string | null {
-    // 1. Explicit env override (Docker/CI/Vercel)
-    if (process.env.FFMPEG_PATH) return process.env.FFMPEG_PATH;
-
-    // 2. ffmpeg-static bundled binary (works in all environments including Vercel)
-    try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const staticPath = require('ffmpeg-static') as string | null;
-        if (staticPath) return staticPath;
-    } catch {
-        // package not available
-    }
-
-    // 3. Common system install locations (local dev, Linux servers)
-    const candidates = [
-        '/opt/homebrew/bin/ffmpeg',
-        '/usr/local/bin/ffmpeg',
-        '/usr/bin/ffmpeg',
-    ];
-    for (const p of candidates) {
-        try {
-            require('fs').accessSync(p, require('fs').constants.X_OK);
-            return p;
-        } catch {
-            // not found at this path
-        }
-    }
-
-    return null;
-}
-
-async function extractVideoFrame(videoBuffer: Buffer, outputPath: string): Promise<void> {
-    const ffmpegPath = findFfmpegPath();
-    if (!ffmpegPath) throw new Error('ffmpeg not available');
-
-    const ffmpeg = (await import('fluent-ffmpeg')).default;
-    ffmpeg.setFfmpegPath(ffmpegPath);
-
-    const tmpInput = path.join(os.tmpdir(), `pc-video-${randomUUID()}.mp4`);
-    await fs.writeFile(tmpInput, videoBuffer);
-
-    return new Promise((resolve, reject) => {
-        ffmpeg(tmpInput)
-            .screenshots({
-                count: 1,
-                timemarks: ['10%'],
-                filename: path.basename(outputPath),
-                folder: path.dirname(outputPath),
-            })
-            .on('end', async () => {
-                await fs.unlink(tmpInput).catch(() => {});
-                resolve();
-            })
-            .on('error', async (err) => {
-                await fs.unlink(tmpInput).catch(() => {});
-                reject(err);
-            });
-    });
-}
-
 async function processAndUploadImage(
     supabase: Awaited<ReturnType<typeof createClient>>,
     supabaseUrl: string,
     imageBuffer: Buffer,
-    folder: string
+    folder: string,
 ): Promise<Record<VariantKey, string>> {
     const results = {} as Record<VariantKey, string>;
 
@@ -105,16 +44,11 @@ async function processAndUploadImage(
             .toBuffer();
 
         const filePath = `${folder}/${variant.suffix}.jpg`;
-
         const { error } = await supabase.storage
             .from(BUCKET)
-            .upload(filePath, processed, {
-                contentType: 'image/jpeg',
-                upsert: true,
-            });
+            .upload(filePath, processed, { contentType: 'image/jpeg', upsert: true });
 
         if (error) throw new Error(`Failed to upload ${variant.suffix}: ${error.message}`);
-
         results[variant.key] = getSupabasePublicUrl(supabaseUrl, BUCKET, filePath);
     }
 
@@ -124,9 +58,9 @@ async function processAndUploadImage(
 export async function POST(request: NextRequest) {
     try {
         const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-        if (!user) {
+        if (authError || !user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -139,62 +73,71 @@ export async function POST(request: NextRequest) {
         const file = formData.get('file') as File | null;
         const fileType = formData.get('type') as 'image' | 'video' | null;
 
-        if (!file) {
-            return NextResponse.json({ error: 'No file provided' }, { status: 400 });
-        }
+        if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
         if (!fileType || !['image', 'video'].includes(fileType)) {
             return NextResponse.json({ error: 'type must be "image" or "video"' }, { status: 400 });
         }
-        if (file.size > MAX_FILE_SIZE) {
-            return NextResponse.json({ error: 'File exceeds 100MB limit' }, { status: 400 });
-        }
 
-        const folder = `${user.id}/${randomUUID()}`;
-        const fileBuffer = Buffer.from(await file.arrayBuffer());
-        const response: UploadAssetsResponse = {
-            video_url: null,
-            image_url: null,
-            og_image_url: null,
-            thumbnail_url: null,
-        };
-
+        // ----------------------------------------------------------------
+        // IMAGE — processed entirely in Next.js with Sharp (Vercel-safe)
+        // ----------------------------------------------------------------
         if (fileType === 'image') {
-            const imageVariants = await processAndUploadImage(supabase, supabaseUrl, fileBuffer, folder);
-            response.image_url = imageVariants.image_url;
-            response.og_image_url = imageVariants.og_image_url;
-            response.thumbnail_url = imageVariants.thumbnail_url;
-        } else {
-            // Upload original video
-            const ext = file.name.split('.').pop()?.toLowerCase() ?? 'mp4';
-            const videoPath = `${folder}/video.${ext}`;
-            const { error: videoError } = await supabase.storage
-                .from(BUCKET)
-                .upload(videoPath, fileBuffer, {
-                    contentType: file.type || 'video/mp4',
-                    upsert: true,
-                });
-            if (videoError) throw new Error(`Video upload failed: ${videoError.message}`);
-            response.video_url = getSupabasePublicUrl(supabaseUrl, BUCKET, videoPath);
-
-            // Extract a frame and generate image variants
-            const framePath = path.join(os.tmpdir(), `pc-frame-${randomUUID()}.jpg`);
-            try {
-                await extractVideoFrame(fileBuffer, framePath);
-                const frameBuffer = await fs.readFile(framePath);
-                const imageVariants = await processAndUploadImage(supabase, supabaseUrl, frameBuffer, folder);
-                response.image_url = imageVariants.image_url;
-                response.og_image_url = imageVariants.og_image_url;
-                response.thumbnail_url = imageVariants.thumbnail_url;
-            } catch (frameErr) {
-                console.warn('Video frame extraction failed, skipping image variants:', frameErr);
-            } finally {
-                await fs.unlink(framePath).catch(() => {});
+            if (file.size > MAX_IMAGE_SIZE) {
+                return NextResponse.json({ error: 'Image exceeds 20MB limit' }, { status: 400 });
             }
+
+            const folder = `${user.id}/${randomUUID()}`;
+            const fileBuffer = Buffer.from(await file.arrayBuffer());
+            const imageVariants = await processAndUploadImage(supabase, supabaseUrl, fileBuffer, folder);
+
+            return NextResponse.json({
+                video_url: null,
+                image_url: imageVariants.image_url,
+                og_image_url: imageVariants.og_image_url,
+                thumbnail_url: imageVariants.thumbnail_url,
+            } satisfies UploadAssetsResponse);
         }
 
-        return NextResponse.json(response);
+        // ----------------------------------------------------------------
+        // VIDEO — forwarded to Python backend (FFmpeg lives there)
+        // ----------------------------------------------------------------
+        if (file.size > MAX_VIDEO_SIZE) {
+            return NextResponse.json({ error: 'Video exceeds 500MB limit' }, { status: 400 });
+        }
+
+        // Get the auth token from the current session to pass to Python
+        const { data: { session } } = await supabase.auth.getSession();
+        const authToken = session?.access_token;
+        if (!authToken) {
+            return NextResponse.json({ error: 'No active session' }, { status: 401 });
+        }
+
+        const backendUrl = process.env.BACKEND_URL || BACKEND_URLS.production;
+        const pythonEndpoint = `${backendUrl}/api/media/podcast/upload-video`;
+
+        // Forward the file as-is to Python in a new FormData
+        const forwardForm = new FormData();
+        forwardForm.append('file', file);
+
+        const pythonResponse = await fetch(pythonEndpoint, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${authToken}` },
+            body: forwardForm,
+        });
+
+        if (!pythonResponse.ok) {
+            const errText = await pythonResponse.text().catch(() => 'Unknown error');
+            console.error(`[upload-assets] Python backend error ${pythonResponse.status}:`, errText);
+            return NextResponse.json(
+                { error: `Video processing failed: ${errText}` },
+                { status: pythonResponse.status },
+            );
+        }
+
+        const result = await pythonResponse.json() as UploadAssetsResponse;
+        return NextResponse.json(result);
     } catch (err: unknown) {
-        console.error('upload-assets error:', err);
+        console.error('[upload-assets] error:', err);
         const message = err instanceof Error ? err.message : 'Upload failed';
         return NextResponse.json({ error: message }, { status: 500 });
     }

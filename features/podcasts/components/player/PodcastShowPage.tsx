@@ -23,10 +23,11 @@ export function PodcastShowPage({ show, episodes }: PodcastShowPageProps) {
     const coverImage = show.image_url ?? null;
 
     return (
-        <div className="h-full w-full overflow-y-auto overscroll-contain bg-background">
-            {/* ── Hero ─────────────────────────────────────────────────── */}
-            <div className="relative w-full overflow-hidden bg-zinc-900">
-                {/* Blurred background fill — always covers the full area */}
+        // Outer: fills the parent exactly — no overflow at this level
+        <div className="h-full w-full flex flex-col overflow-hidden bg-background">
+
+            {/* ── Hero — fixed height, never grows ─────────────────────── */}
+            <div className="relative shrink-0 overflow-hidden bg-zinc-900">
                 {coverImage && (
                     <img
                         src={coverImage}
@@ -39,99 +40,96 @@ export function PodcastShowPage({ show, episodes }: PodcastShowPageProps) {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/80 pointer-events-none" />
 
-                {/* Foreground hero content */}
-                <div className="relative z-10 px-4 pt-8 pb-10 max-w-2xl mx-auto flex flex-col items-center text-center gap-5">
-                    {/* Cover art — big, prominent, with shadow */}
+                <div className="relative z-10 px-4 pt-5 pb-5 max-w-2xl mx-auto flex items-center gap-4">
+                    {/* Cover art — compact on mobile */}
                     {coverImage ? (
                         <img
                             src={coverImage}
                             alt={show.title}
-                            className="w-48 h-48 sm:w-56 sm:h-56 rounded-3xl object-cover shadow-2xl ring-1 ring-white/10"
+                            className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 shrink-0"
                             loading="eager"
                             decoding="async"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                         />
                     ) : (
-                        <div className="w-48 h-48 rounded-3xl bg-white/10 flex items-center justify-center shadow-2xl">
-                            <Mic className="h-20 w-20 text-white/30" />
+                        <div className="w-20 h-20 rounded-2xl bg-white/10 flex items-center justify-center shadow-2xl shrink-0">
+                            <Mic className="h-10 w-10 text-white/30" />
                         </div>
                     )}
 
-                    {/* Titles */}
-                    <div>
-                        <h1 className="text-white font-bold text-3xl leading-tight">{show.title}</h1>
+                    {/* Title + meta — text truncated to prevent hero from growing */}
+                    <div className="min-w-0 flex-1">
+                        <h1 className="text-white font-bold text-xl leading-tight line-clamp-2">{show.title}</h1>
                         {show.author && (
-                            <p className="text-white/60 text-sm mt-1">by {show.author}</p>
+                            <p className="text-white/60 text-sm mt-0.5 truncate">by {show.author}</p>
                         )}
-                        <p className="text-white/40 text-xs mt-1.5">
+                        <p className="text-white/40 text-xs mt-1">
                             {publishedEpisodes.length} {publishedEpisodes.length === 1 ? 'episode' : 'episodes'}
                         </p>
+                        {show.description && (
+                            <p className="text-white/70 text-xs mt-1.5 line-clamp-2 leading-relaxed">{show.description}</p>
+                        )}
                     </div>
-
-                    {/* Full description */}
-                    {show.description && (
-                        <p className="text-white/75 text-sm leading-relaxed max-w-md">{show.description}</p>
-                    )}
                 </div>
             </div>
 
-            {/* ── Episode list ─────────────────────────────────────────── */}
-            <div className="max-w-2xl mx-auto px-4 pt-2 pb-10">
-                {publishedEpisodes.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-3 text-muted-foreground">
-                        <Music className="h-12 w-12 opacity-20" />
-                        <p className="text-sm">No episodes published yet.</p>
-                    </div>
-                ) : (
-                    <div className="flex flex-col gap-2 pt-4">
-                        {publishedEpisodes.map((ep, idx) => (
-                            <Link
-                                key={ep.id}
-                                href={`/p/podcast/${ep.slug}`}
-                                className="group flex items-center gap-4 p-4 rounded-2xl bg-card border border-border hover:border-primary/30 hover:bg-primary/5 transition-all active:scale-[0.98]"
-                            >
-                                {/* Thumbnail or fallback */}
-                                <div className="relative shrink-0">
-                                    {(ep.thumbnail_url ?? ep.image_url ?? coverImage) ? (
-                                        <img
-                                            src={(ep.thumbnail_url ?? ep.image_url ?? coverImage)!}
-                                            alt={ep.title}
-                                            className="w-16 h-16 rounded-xl object-cover shadow-sm"
-                                            loading="lazy"
-                                            decoding="async"
-                                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                        />
-                                    ) : (
-                                        <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center">
-                                            <Music className="h-7 w-7 text-muted-foreground/50" />
-                                        </div>
-                                    )}
-                                </div>
+            {/* ── Episode list — flex-1 takes remaining height, scrolls internally ── */}
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+                <div className="max-w-2xl mx-auto px-4 py-3">
+                    {publishedEpisodes.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-full py-20 gap-3 text-muted-foreground">
+                            <Music className="h-12 w-12 opacity-20" />
+                            <p className="text-sm">No episodes published yet.</p>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-2">
+                            {publishedEpisodes.map((ep) => (
+                                <Link
+                                    key={ep.id}
+                                    href={`/p/podcast/${ep.slug}`}
+                                    className="group flex items-center gap-3 p-3 rounded-2xl bg-card border border-border hover:border-primary/30 hover:bg-primary/5 transition-all active:scale-[0.98]"
+                                >
+                                    <div className="relative shrink-0">
+                                        {(ep.thumbnail_url ?? ep.image_url ?? coverImage) ? (
+                                            <img
+                                                src={(ep.thumbnail_url ?? ep.image_url ?? coverImage)!}
+                                                alt={ep.title}
+                                                className="w-14 h-14 rounded-xl object-cover shadow-sm"
+                                                loading="lazy"
+                                                decoding="async"
+                                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                            />
+                                        ) : (
+                                            <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center">
+                                                <Music className="h-6 w-6 text-muted-foreground/50" />
+                                            </div>
+                                        )}
+                                    </div>
 
-                                {/* Text */}
-                                <div className="min-w-0 flex-1">
-                                    {ep.episode_number != null && (
-                                        <p className="text-xs text-muted-foreground mb-0.5">Episode {ep.episode_number}</p>
-                                    )}
-                                    <p className="font-semibold text-foreground leading-tight group-hover:text-primary transition-colors line-clamp-2">
-                                        {ep.title}
-                                    </p>
-                                    {ep.description && (
-                                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{ep.description}</p>
-                                    )}
-                                    {ep.duration_seconds != null && (
-                                        <div className="flex items-center gap-1 mt-1.5 text-xs text-muted-foreground">
-                                            <Clock className="h-3 w-3" />
-                                            <span>{formatDuration(ep.duration_seconds)}</span>
-                                        </div>
-                                    )}
-                                </div>
+                                    <div className="min-w-0 flex-1">
+                                        {ep.episode_number != null && (
+                                            <p className="text-xs text-muted-foreground mb-0.5">Ep {ep.episode_number}</p>
+                                        )}
+                                        <p className="font-semibold text-sm text-foreground leading-tight group-hover:text-primary transition-colors line-clamp-1">
+                                            {ep.title}
+                                        </p>
+                                        {ep.description && (
+                                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1 leading-relaxed">{ep.description}</p>
+                                        )}
+                                        {ep.duration_seconds != null && (
+                                            <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                                                <Clock className="h-3 w-3" />
+                                                <span>{formatDuration(ep.duration_seconds)}</span>
+                                            </div>
+                                        )}
+                                    </div>
 
-                                <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary shrink-0 transition-colors" />
-                            </Link>
-                        ))}
-                    </div>
-                )}
+                                    <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary shrink-0 transition-colors" />
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
