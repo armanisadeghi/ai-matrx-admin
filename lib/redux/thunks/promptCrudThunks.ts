@@ -98,11 +98,11 @@ export const fetchAllUserPrompts = createAsyncThunk<
         const { data: rows, error } = await supabase
             .from('prompts')
             .select<'*', PromptDb>('*')
-            .order('created_at', { ascending: false });
+            .order('updated_at', { ascending: false });
 
         if (error) {
             dispatch(setListStatus({ status: 'error', error: error.message }));
-            throw error;
+            throw new Error(error.message ?? JSON.stringify(error));
         }
 
         const prompts = (rows ?? []).map(toFrontend);
@@ -138,9 +138,9 @@ export const fetchUserPrompt = createAsyncThunk<
             .eq('id', promptId)
             .single<PromptDb>();
 
-        if (error) throw error;
+        if (error) throw new Error(error.message ?? JSON.stringify(error));
 
-        const prompt = toFrontend(row);
+        const prompt = toFrontend(row!);
         syncBothCaches(dispatch, prompt);
         return prompt;
     }
@@ -162,15 +162,18 @@ export const createUserPrompt = createAsyncThunk<
 >(
     'promptCrud/create',
     async (data, { dispatch }) => {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) throw new Error('Not authenticated');
+
         const { data: row, error } = await supabase
             .from('prompts')
-            .insert(toDbInsert(data))
+            .insert({ ...toDbInsert(data), user_id: user.id })
             .select()
             .single<PromptDb>();
 
-        if (error) throw error;
+        if (error) throw new Error(error.message ?? JSON.stringify(error));
 
-        const prompt = toFrontend(row);
+        const prompt = toFrontend(row!);
         syncBothCaches(dispatch, prompt);
         return prompt;
     }
@@ -213,9 +216,9 @@ export const updateUserPrompt = createAsyncThunk<
             .select()
             .single<PromptDb>();
 
-        if (error) throw error;
+        if (error) throw new Error(error.message ?? JSON.stringify(error));
 
-        const prompt = toFrontend(row);
+        const prompt = toFrontend(row!);
         syncBothCaches(dispatch, prompt);  // overwrites the stale entry
         return prompt;
     }
@@ -236,9 +239,13 @@ export const upsertUserPrompt = createAsyncThunk<
 >(
     'promptCrud/upsert',
     async (data, { dispatch }) => {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) throw new Error('Not authenticated');
+
         const payload: Partial<PromptDb> = {
             ...(data.id ? { id: data.id } : {}),
             ...toDbInsert(data),
+            user_id: user.id,
         };
 
         if (data.id) dispatch(markPromptStale(data.id));
@@ -249,9 +256,9 @@ export const upsertUserPrompt = createAsyncThunk<
             .select()
             .single<PromptDb>();
 
-        if (error) throw error;
+        if (error) throw new Error(error.message ?? JSON.stringify(error));
 
-        const prompt = toFrontend(row);
+        const prompt = toFrontend(row!);
         syncBothCaches(dispatch, prompt);
         return prompt;
     }
@@ -277,7 +284,7 @@ export const deleteUserPrompt = createAsyncThunk<
             .delete()
             .eq('id', id);
 
-        if (error) throw error;
+        if (error) throw new Error(error.message ?? JSON.stringify(error));
 
         dispatch(removePrompt(id));          // evict from execution cache
         dispatch(removePromptFromList(id));  // evict from list
@@ -415,10 +422,10 @@ export const updateSharedPrompt = createAsyncThunk<
             .select()
             .single<PromptDb>();
 
-        if (error) throw error;
+        if (error) throw new Error(error.message ?? JSON.stringify(error));
 
         // ── Sync caches ───────────────────────────────────────────────────────
-        const updatedPrompt = toFrontend(row);
+        const updatedPrompt = toFrontend(row!);
         // Also pre-warm the execution cache with fresh data
         dispatch(cachePrompt(toCachedPrompt(updatedPrompt)));
 
@@ -468,7 +475,7 @@ export const deleteSharedPrompt = createAsyncThunk<
             .delete()
             .eq('id', id);
 
-        if (error) throw error;
+        if (error) throw new Error(error.message ?? JSON.stringify(error));
 
         // removeSharedPromptFromList also evicts from the execution cache
         dispatch(removeSharedPromptFromList(id));

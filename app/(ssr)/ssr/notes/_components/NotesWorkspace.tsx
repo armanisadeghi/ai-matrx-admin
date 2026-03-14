@@ -697,6 +697,44 @@ export default function NotesWorkspace({
     [noteCache],
   );
 
+  const createNoteInActiveFolder = useCallback(async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user?.id) return;
+
+    const folder = (activeNoteId ? noteCache.get(activeNoteId)?.data.folder_name : null) ?? "Draft";
+
+    const { data: note, error } = await supabase
+      .from("notes")
+      .insert({
+        user_id: userData.user.id,
+        label: "New Note",
+        content: "",
+        folder_name: folder,
+        tags: [],
+        metadata: {},
+        position: 0,
+      })
+      .select("id, label, folder_name, tags, updated_at, position")
+      .single();
+
+    if (error || !note) return;
+
+    window.dispatchEvent(
+      new CustomEvent("notes:created", {
+        detail: {
+          id: note.id,
+          label: note.label ?? "New Note",
+          folder_name: note.folder_name ?? folder,
+          tags: (note.tags as string[]) ?? [],
+          updated_at: note.updated_at ?? new Date().toISOString(),
+          position: note.position ?? 0,
+        } satisfies NoteSummary,
+      }),
+    );
+
+    switchTab(note.id);
+  }, [activeNoteId, noteCache, switchTab]);
+
   const moveNote = useCallback(async (noteId: string, folder: string) => {
     await supabase
       .from("notes")
@@ -1021,7 +1059,7 @@ export default function NotesWorkspace({
           role="tablist"
           aria-label="Open notes"
         >
-          {/* Tabs */}
+          {/* Tabs + new note button */}
           <div className="flex items-stretch flex-1 min-w-0 overflow-x-auto h-full">
             {visibleTabs.map((id) => {
               const cached = noteCache.get(id);
@@ -1177,6 +1215,16 @@ export default function NotesWorkspace({
                 </div>
               );
             })}
+
+            {/* New note tab button */}
+            <button
+              className={cn(actionBtnClass, "shrink-0 self-center mx-1")}
+              onClick={createNoteInActiveFolder}
+              title={`New note${activeCached?.data.folder_name ? ` in ${activeCached.data.folder_name}` : ""}`}
+              aria-label="New note"
+            >
+              <Plus />
+            </button>
           </div>
         </div>
       )}

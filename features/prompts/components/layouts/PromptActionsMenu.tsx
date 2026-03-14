@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
     DropdownMenu,
@@ -113,7 +113,7 @@ export function PromptActionsMenu({
     const basePath = usePromptsBasePath();
     
     const [isOpen, setIsOpen] = useState(false);
-    const [isDuplicating, startDuplicating] = useTransition();
+    const [isDuplicating, setIsDuplicating] = useState(false);
     
     // Modal states
     const [isConvertToBuiltinModalOpen, setIsConvertToBuiltinModalOpen] = useState(false);
@@ -154,7 +154,7 @@ export function PromptActionsMenu({
     };
     
     // Duplicate - Create a copy of the prompt with loading modal
-    const handleDuplicate = () => {
+    const handleDuplicate = async () => {
         if (!promptData) {
             toast.error("Cannot duplicate", {
                 description: "Prompt data not available",
@@ -165,31 +165,37 @@ export function PromptActionsMenu({
         setIsOpen(false);
         setIsDuplicateModalOpen(true);
         setDuplicateState('loading');
+        setIsDuplicating(true);
         
-        startDuplicating(async () => {
-            try {
-                const copyName = `${promptData.name} (Copy)`;
-                
-                const result = await dispatch(createUserPrompt({
-                    name: copyName,
-                    description: promptData.description,
-                    messages: promptData.messages || [],
-                    variableDefaults: promptData.variableDefaults || [],
-                    settings: promptData.settings || {},
-                } as any)).unwrap();
-                
-                if (result?.id) {
-                    setDuplicatedPromptId(result.id);
-                    setDuplicateState('success');
-                } else {
-                    throw new Error("Failed to create duplicate");
-                }
-            } catch (error) {
-                console.error("Error duplicating prompt:", error);
-                setDuplicateError(error instanceof Error ? error.message : "Unknown error");
-                setDuplicateState('error');
+        try {
+            const copyName = `${promptData.name} (Copy)`;
+            
+            const result = await dispatch(createUserPrompt({
+                name: copyName,
+                description: promptData.description,
+                messages: promptData.messages || [],
+                variableDefaults: promptData.variableDefaults || [],
+                settings: promptData.settings || {},
+            })).unwrap();
+            
+            if (result?.id) {
+                setDuplicatedPromptId(result.id);
+                setDuplicateState('success');
+            } else {
+                throw new Error("Failed to create duplicate");
             }
-        });
+        } catch (error) {
+            console.error("Error duplicating prompt:", error);
+            const msg = error instanceof Error
+                ? error.message
+                : (typeof error === 'object' && error !== null && 'message' in error)
+                    ? String((error as { message: unknown }).message)
+                    : JSON.stringify(error) || "Unknown error";
+            setDuplicateError(msg);
+            setDuplicateState('error');
+        } finally {
+            setIsDuplicating(false);
+        }
     };
     
     // Create App - Open modal to check for existing apps first

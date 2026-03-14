@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { GitCompare, Sparkles, BarChart, Save, Maximize2, Settings, MoreHorizontal, Edit3, Play, Route, AppWindow, LayoutTemplate, Code2, ChevronLeft } from "lucide-react";
+import { GitCompare, Sparkles, BarChart, Save, Maximize2, Settings, MoreHorizontal, Edit3, Play, Route, AppWindow, LayoutTemplate, Code2, ChevronLeft, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
 import { SystemPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/SystemPromptOptimizer";
 import { PromptActionsMenu } from "@/features/prompts/components/layouts/PromptActionsMenu";
@@ -10,6 +10,8 @@ import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
 import { PromptModeNavigation } from "@/features/prompts/components/PromptModeNavigation";
 import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
+import { createUserPrompt } from "@/lib/redux/thunks/promptCrudThunks";
+import { toast } from "sonner";
 
 interface PromptBuilderHeaderCompactProps {
     promptName: string;
@@ -49,10 +51,36 @@ export function PromptBuilderHeaderCompact({
 }: PromptBuilderHeaderCompactProps) {
     const router = useRouter();
     const { openPrompt } = usePromptRunner();
+    const dispatch = useAppDispatch();
     const basePath = usePromptsBasePath();
     const [isOptimizerOpen, setIsOptimizerOpen] = useState(false);
     const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+    const [isDuplicatingMobile, setIsDuplicatingMobile] = useState(false);
     const isAdminMode = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
+
+    const handleMobileDuplicate = async () => {
+        if (!fullPromptObject?.id || !fullPromptObject?.name) return;
+        setIsDuplicatingMobile(true);
+        setIsMobileDrawerOpen(false);
+        try {
+            const result = await dispatch(createUserPrompt({
+                name: `${fullPromptObject.name} (Copy)`,
+                description: fullPromptObject.description,
+                messages: fullPromptObject.messages || [],
+                variableDefaults: fullPromptObject.variableDefaults || [],
+                settings: fullPromptObject.settings || {},
+            })).unwrap();
+            if (result?.id) {
+                toast.success("Prompt duplicated!", { description: "Redirecting to your copy..." });
+                router.push(`${basePath}/edit/${result.id}`);
+            }
+        } catch (error) {
+            console.error("Error duplicating prompt:", error);
+            toast.error("Failed to duplicate prompt");
+        } finally {
+            setIsDuplicatingMobile(false);
+        }
+    };
 
     return (
         <>
@@ -226,9 +254,11 @@ export function PromptBuilderHeaderCompact({
                             promptId={fullPromptObject.id}
                             promptData={{
                                 name: fullPromptObject.name,
+                                description: fullPromptObject.description,
                                 messages: fullPromptObject.messages,
                                 variableDefaults: fullPromptObject.variableDefaults,
                                 settings: fullPromptObject.settings,
+                                tools: fullPromptObject.tools,
                             }}
                             triggerClassName=""
                         />
@@ -353,6 +383,18 @@ export function PromptBuilderHeaderCompact({
                                     Go To Run Page
                                 </button>
                             </DrawerClose>
+                            <button
+                                onClick={handleMobileDuplicate}
+                                disabled={isDuplicatingMobile}
+                                className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                            >
+                                {isDuplicatingMobile ? (
+                                    <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />
+                                ) : (
+                                    <Copy className="h-4 w-4 text-muted-foreground" />
+                                )}
+                                Duplicate
+                            </button>
                             <DrawerClose asChild>
                                 <button
                                     onClick={() => router.push(`/prompt-apps/new?promptId=${fullPromptObject.id}`)}

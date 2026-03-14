@@ -13,7 +13,7 @@ import type { Note } from '../types';
 type EditorMode = 'plain' | 'wysiwyg' | 'markdown' | 'preview';
 
 interface NoteTabsProps {
-    onCreateNote: () => void;
+    onCreateNote: (folderName?: string) => void;
     onDeleteNote: (noteId: string) => void;
     onCopyNote: (noteId: string) => void;
     onShareNote: (noteId: string) => void;
@@ -504,6 +504,21 @@ export function NoteTabs({
                             </div>
                         );
                     })}
+
+                    {/* New tab button */}
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div
+                                    onClick={() => onCreateNote(activeNote?.folder_name)}
+                                    className="flex items-center justify-center h-7 w-7 ml-0.5 rounded hover:bg-accent transition-colors cursor-pointer flex-shrink-0 self-center"
+                                >
+                                    <Plus className="h-3.5 w-3.5 text-muted-foreground" />
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>New note{activeNote?.folder_name ? ` in ${activeNote.folder_name}` : ''}</TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
                 </div>
                 <ScrollBar orientation="horizontal" className="h-1.5" />
             </ScrollArea>

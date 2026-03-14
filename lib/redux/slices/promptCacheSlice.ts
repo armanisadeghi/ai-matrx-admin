@@ -163,7 +163,7 @@ const promptCacheSlice = createSlice({
       if (idx !== -1) {
         state.allPrompts[idx] = incoming;
       } else {
-        // Prepend so newest appears first (matches created_at DESC order)
+        // Prepend so newest appears first (matches updated_at DESC order)
         state.allPrompts.unshift(incoming);
       }
     },

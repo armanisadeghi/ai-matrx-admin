@@ -256,7 +256,7 @@ export function PromptsGrid() {
     const hasMoreShared = allSharedListItems.length > sharedPromptListItems.length;
 
     // Reset pagination when search/filter changes
-    useMemo(() => {
+    useEffect(() => {
         setPromptListPage(1);
         setSharedListPage(1);
     }, [searchTerm, sortBy, excludedCats, excludedTags, favFilter, archFilter, favoritesFirst]);
