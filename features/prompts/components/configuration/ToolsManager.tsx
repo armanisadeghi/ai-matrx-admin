@@ -1,7 +1,8 @@
 import React from "react";
-import { Plus, X } from "lucide-react";
+import { Plus, X, AlertTriangle } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatText } from "@/utils/text/text-case-converter";
 import { mapIcon } from "@/utils/icons/icon-mapper";
 
@@ -24,6 +25,9 @@ export function ToolsManager({
     onRemoveTool,
     modelSupportsTools,
 }: ToolsManagerProps) {
+    // Create a set of valid tool names for fast lookup
+    const availableToolNames = new Set(availableTools?.map((t) => t.name) ?? []);
+
     // Create a map for quick lookup of tool display data (name and icon)
     const toolDisplayMap = availableTools?.reduce((acc, tool) => {
         acc[tool.name] = {
@@ -41,30 +45,45 @@ export function ToolsManager({
             </Label>
             {selectedTools.map((toolName) => {
                 const toolData = toolDisplayMap[toolName];
+                const isInvalid = availableTools && availableTools.length > 0 && !availableToolNames.has(toolName);
                 return (
-                    <span
-                        key={toolName}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium border ${
-                            modelSupportsTools
-                                ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800'
-                                : 'bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-500 border-gray-200 dark:border-gray-700'
-                        }`}
-                    >
-                        {toolData?.icon && (
-                            <span className="flex-shrink-0">
-                                {toolData.icon}
+                    <Tooltip key={toolName}>
+                        <TooltipTrigger asChild>
+                            <span
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium border ${
+                                    isInvalid
+                                        ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800'
+                                        : modelSupportsTools
+                                            ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800'
+                                            : 'bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-500 border-gray-200 dark:border-gray-700'
+                                }`}
+                            >
+                                {isInvalid ? (
+                                    <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                                ) : (
+                                    toolData?.icon && (
+                                        <span className="flex-shrink-0">
+                                            {toolData.icon}
+                                        </span>
+                                    )
+                                )}
+                                <span className="truncate">
+                                    {toolData?.displayName || toolName}
+                                </span>
+                                {(modelSupportsTools || isInvalid) && (
+                                    <X
+                                        className="w-3 h-3 cursor-pointer hover:text-red-500 dark:hover:text-red-400 flex-shrink-0 ml-1"
+                                        onClick={() => onRemoveTool(toolName)}
+                                    />
+                                )}
                             </span>
+                        </TooltipTrigger>
+                        {isInvalid && (
+                            <TooltipContent side="top" className="max-w-xs text-xs">
+                                <p>Tool <span className="font-mono font-semibold">{toolName}</span> no longer exists or has been removed. Remove it to avoid errors.</p>
+                            </TooltipContent>
                         )}
-                        <span className="truncate">
-                            {toolData?.displayName || toolName}
-                        </span>
-                        {modelSupportsTools && (
-                            <X
-                                className="w-3 h-3 cursor-pointer hover:text-red-500 dark:hover:text-red-400 flex-shrink-0 ml-1"
-                                onClick={() => onRemoveTool(toolName)}
-                            />
-                        )}
-                    </span>
+                    </Tooltip>
                 );
             })}
             <Popover open={isAddingTool} onOpenChange={modelSupportsTools ? onIsAddingToolChange : undefined}>

@@ -187,6 +187,22 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
     // Tools state - available tools list
     const [isAddingTool, setIsAddingTool] = useState(false);
 
+    // Warn once on mount if any saved tools are no longer available
+    useEffect(() => {
+        if (!availableTools || availableTools.length === 0) return;
+        const savedTools: string[] = modelConfig.tools || [];
+        if (savedTools.length === 0) return;
+        const availableNames = new Set(availableTools.map((t) => t.name as string));
+        const missing = savedTools.filter((name) => !availableNames.has(name));
+        if (missing.length > 0) {
+            toast.warning(`${missing.length} tool${missing.length > 1 ? 's' : ''} no longer exist`, {
+                description: `The following saved tool${missing.length > 1 ? 's' : ''} could not be found and will cause errors: ${missing.join(', ')}. Open configurations to review.`,
+                duration: 8000,
+            });
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     // Full-screen editor state
     type MessageItem = { type: 'system'; index: -1 } | { type: 'message'; index: number };
     const [isFullScreenEditorOpen, setIsFullScreenEditorOpen] = useState(false);

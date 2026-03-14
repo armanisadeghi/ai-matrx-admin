@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { X, FileJson, AlertCircle, Plus, Volume2, Users } from "lucide-react";
+import { X, FileJson, AlertCircle, Plus, Volume2, Users, AlertTriangle } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useModelControls, ControlDefinition } from "@/features/prompts/hooks/useModelControls";
 import { PromptSettings } from "@/features/prompts/types/core";
 import { SettingsJsonEditor } from "./SettingsJsonEditor";
@@ -677,25 +678,42 @@ export function ModelSettings({
 
                             {settings.tools && settings.tools.length > 0 ? (
                                 <div className="space-y-1 ml-10">
-                                    {settings.tools.map((toolName, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex items-center justify-between px-2 py-1 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded text-xs"
-                                        >
-                                            <span className="text-green-700 dark:text-green-300 font-mono">
-                                                {toolName}
-                                            </span>
-                                            <button
-                                                onClick={() => {
-                                                    const newTools = settings.tools?.filter((_, i) => i !== index) || [];
-                                                    handleSettingChange("tools", newTools);
-                                                }}
-                                                className="text-green-600 dark:text-green-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                                            >
-                                                <X className="w-3.5 h-3.5" />
-                                            </button>
-                                        </div>
-                                    ))}
+                                    {settings.tools.map((toolName, index) => {
+                                        const availableToolNames = new Set(availableTools.map(t => typeof t === 'string' ? t : t.name));
+                                        const isInvalid = availableTools.length > 0 && !availableToolNames.has(toolName);
+                                        return (
+                                            <Tooltip key={index}>
+                                                <TooltipTrigger asChild>
+                                                    <div
+                                                        className={`flex items-center justify-between px-2 py-1 border rounded text-xs ${
+                                                            isInvalid
+                                                                ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                                                                : 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                                                        }`}
+                                                    >
+                                                        <span className={`font-mono flex items-center gap-1.5 ${isInvalid ? 'text-red-700 dark:text-red-300' : 'text-green-700 dark:text-green-300'}`}>
+                                                            {isInvalid && <AlertTriangle className="w-3 h-3 flex-shrink-0" />}
+                                                            {toolName}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => {
+                                                                const newTools = settings.tools?.filter((_, i) => i !== index) || [];
+                                                                handleSettingChange("tools", newTools);
+                                                            }}
+                                                            className={`transition-colors hover:text-red-500 dark:hover:text-red-400 ${isInvalid ? 'text-red-500 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}
+                                                        >
+                                                            <X className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </TooltipTrigger>
+                                                {isInvalid && (
+                                                    <TooltipContent side="top" className="max-w-xs text-xs">
+                                                        <p>Tool <span className="font-mono font-semibold">{toolName}</span> no longer exists or has been removed. Remove it to avoid errors.</p>
+                                                    </TooltipContent>
+                                                )}
+                                            </Tooltip>
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <div className="text-xs text-gray-500 dark:text-gray-400 italic text-center py-2 ml-10">
