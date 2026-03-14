@@ -47,8 +47,8 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/95 pointer-events-none" />
 
                 {/* Fixed bottom content — no scroll, fits in viewport */}
-                <div className="relative z-10 h-full flex flex-col justify-end px-4 pb-8 max-w-lg mx-auto w-full">
-                    <div className="mb-4">
+                <div className="relative z-10 h-full flex flex-col justify-end px-3 pb-6 w-full">
+                    <div className="mb-3">
                         {episode.show?.title && (
                             <p className="text-white/50 text-xs font-medium uppercase tracking-widest mb-1 truncate">{episode.show.title}</p>
                         )}
@@ -106,7 +106,7 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
 
                 {/* Content below image — takes remaining height, scrolls only if needed */}
                 <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
-                    <div className="px-4 pt-3 pb-6 max-w-lg mx-auto">
+                    <div className="px-3 pt-3 pb-4">
                         {episode.show?.title && (
                             <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-0.5">{episode.show.title}</p>
                         )}
@@ -115,7 +115,7 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
                         )}
                         <h1 className="text-foreground font-bold text-xl leading-tight mb-3">{episode.title}</h1>
 
-                        <div className="bg-card rounded-2xl border border-border shadow-sm p-4 mb-4">
+                        <div className="bg-card rounded-2xl border border-border shadow-sm p-3 mb-4">
                             <PodcastAudioPlayer
                                 audioUrl={episode.audio_url}
                                 title={episode.title}
@@ -136,15 +136,15 @@ export function PodcastEpisodePage({ episode }: PodcastEpisodePageProps) {
 
     // ── Audio only — perfectly centered, no scroll ─────────────────────────
     return (
-        <div className="h-full w-full flex flex-col items-center justify-center overflow-hidden bg-background px-4">
-            <div className="w-full max-w-sm flex flex-col items-center gap-5">
-                <div className="w-28 h-28 rounded-3xl bg-primary/10 flex items-center justify-center shadow-lg">
-                    <Music className="h-12 w-12 text-primary/50" />
+        <div className="h-full w-full flex flex-col justify-center overflow-hidden bg-background px-3">
+            <div className="flex flex-col items-center gap-4">
+                <div className="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center shadow-lg">
+                    <Music className="h-11 w-11 text-primary/50" />
                 </div>
                 {episode.title && (
-                    <h1 className="text-foreground font-bold text-xl text-center leading-snug line-clamp-3">{episode.title}</h1>
+                    <h1 className="text-foreground font-bold text-xl text-center leading-snug line-clamp-2">{episode.title}</h1>
                 )}
-                <div className="w-full bg-card rounded-2xl border border-border shadow-sm p-4">
+                <div className="w-full bg-card rounded-2xl border border-border shadow-sm p-3">
                     <PodcastAudioPlayer
                         audioUrl={episode.audio_url}
                         title={episode.title}

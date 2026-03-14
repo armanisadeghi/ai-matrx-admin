@@ -26,48 +26,52 @@ export function PodcastShowPage({ show, episodes }: PodcastShowPageProps) {
         // Outer: fills the parent exactly — no overflow at this level
         <div className="h-full w-full flex flex-col overflow-hidden bg-background">
 
-            {/* ── Hero — fixed height, never grows ─────────────────────── */}
+            {/* ── Hero — full-width image with info below ───────────────── */}
             <div className="relative shrink-0 overflow-hidden bg-zinc-900">
-                {coverImage && (
-                    <img
-                        src={coverImage}
-                        alt=""
-                        aria-hidden
-                        className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-50"
-                        loading="eager"
-                        decoding="async"
-                    />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/80 pointer-events-none" />
-
-                <div className="relative z-10 px-4 pt-5 pb-5 max-w-2xl mx-auto flex items-center gap-4">
-                    {/* Cover art — compact on mobile */}
-                    {coverImage ? (
+                {/* Full-width cover art */}
+                {coverImage ? (
+                    <>
+                        {/* Blurred fill so edges don't show white on non-square images */}
+                        <img
+                            src={coverImage}
+                            alt=""
+                            aria-hidden
+                            className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-50"
+                            loading="eager"
+                            decoding="async"
+                        />
                         <img
                             src={coverImage}
                             alt={show.title}
-                            className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 shrink-0"
+                            className="relative z-10 w-full object-cover"
+                            style={{ maxHeight: '38vh' }}
                             loading="eager"
                             decoding="async"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                         />
-                    ) : (
-                        <div className="w-20 h-20 rounded-2xl bg-white/10 flex items-center justify-center shadow-2xl shrink-0">
-                            <Mic className="h-10 w-10 text-white/30" />
-                        </div>
-                    )}
+                    </>
+                ) : (
+                    <div className="w-full flex items-center justify-center bg-zinc-900" style={{ height: '20vh' }}>
+                        <Mic className="h-16 w-16 text-white/20" />
+                    </div>
+                )}
+                {/* Gradient fade at bottom into the info row */}
+                <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-zinc-900 to-transparent pointer-events-none z-20" />
 
-                    {/* Title + meta — text truncated to prevent hero from growing */}
+                {/* Info row — sits over the gradient at the bottom of the image */}
+                <div className="relative z-30 px-4 pb-3 pt-2 flex items-end gap-3">
                     <div className="min-w-0 flex-1">
-                        <h1 className="text-white font-bold text-xl leading-tight line-clamp-2">{show.title}</h1>
-                        {show.author && (
-                            <p className="text-white/60 text-sm mt-0.5 truncate">by {show.author}</p>
-                        )}
-                        <p className="text-white/40 text-xs mt-1">
-                            {publishedEpisodes.length} {publishedEpisodes.length === 1 ? 'episode' : 'episodes'}
-                        </p>
+                        <h1 className="text-white font-bold text-xl leading-tight line-clamp-1">{show.title}</h1>
+                        <div className="flex items-center gap-2 mt-0.5">
+                            {show.author && (
+                                <p className="text-white/60 text-xs truncate">by {show.author}</p>
+                            )}
+                            <p className="text-white/40 text-xs shrink-0">
+                                · {publishedEpisodes.length} {publishedEpisodes.length === 1 ? 'episode' : 'episodes'}
+                            </p>
+                        </div>
                         {show.description && (
-                            <p className="text-white/70 text-xs mt-1.5 line-clamp-2 leading-relaxed">{show.description}</p>
+                            <p className="text-white/65 text-xs mt-1 line-clamp-2 leading-relaxed">{show.description}</p>
                         )}
                     </div>
                 </div>

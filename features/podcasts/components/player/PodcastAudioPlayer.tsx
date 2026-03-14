@@ -142,7 +142,7 @@ export function PodcastAudioPlayer({ audioUrl, title, coverImageUrl, onError, da
     const waveformFill = dark ? 'bg-primary/20' : 'bg-primary/15';
 
     return (
-        <div className="w-full max-w-lg mx-auto flex flex-col gap-4">
+        <div className="w-full flex flex-col gap-4">
             <audio
                 ref={audioRef}
                 src={audioUrl}
