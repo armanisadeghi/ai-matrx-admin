@@ -491,6 +491,11 @@
   --animate-bounce: bounce 1s infinite ease-in-out;
   --animate-text-fade: textFade 12s infinite;
 
+  @keyframes audio-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+  }
+
   /* SSR module animations — migrated from per-route CSS */
   @keyframes ssr-shimmer {
     0% { background-position: -200px 0; }

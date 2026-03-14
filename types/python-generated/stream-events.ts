@@ -1,8 +1,6 @@
 // AUTO-GENERATED — do not edit manually.
-// Source: matrx_ai/context/events.py
+// Source: aidream/api/events.py
 // Run: .venv/bin/python scripts/generate_types.py stream
-
-import type { ContentBlockPayload } from "./content-blocks";
 
 export const EventType = {
   CHUNK: "chunk",
@@ -38,13 +36,21 @@ export interface StatusUpdatePayload {
   metadata?: Record<string, unknown> | null;
 }
 
-/** Freeform data payload — any additional fields are allowed (Python extra: allow). */
+export interface AudioOutputPayload {
+  type: "audio_output";
+  url: string;
+  mime_type: string;
+}
+
 export interface DataPayload {
+  type?: string;
+  url?: string;
+  mime_type?: string;
   [key: string]: unknown;
 }
 
 export interface CompletionPayload {
-  status: "complete" | "failed" | "max_iterations_exceeded";
+  status?: "complete" | "failed" | "max_iterations_exceeded";
   output?: unknown;
   iterations?: number | null;
   total_usage?: Record<string, unknown> | null;
@@ -57,7 +63,7 @@ export interface CompletionPayload {
 export interface ErrorPayload {
   error_type: string;
   message: string;
-  user_message: string;
+  user_message?: string;
   code?: string | null;
   details?: Record<string, unknown> | null;
 }
@@ -68,8 +74,8 @@ export interface ToolEventPayload {
   tool_name: string;
   timestamp?: number;
   message?: string | null;
-  show_spinner: boolean;
-  data: Record<string, unknown>;
+  show_spinner?: boolean;
+  data?: Record<string, unknown>;
 }
 
 export interface BrokerPayload {
@@ -87,9 +93,19 @@ export interface EndPayload {
   reason?: string;
 }
 
+export interface ContentBlockPayload {
+  blockId: string;
+  blockIndex: number;
+  type: string;
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: Record<string, unknown> | null;
+  metadata?: Record<string, unknown>;
+}
+
 export interface StreamEvent {
   event: EventType;
-  data: Record<string, unknown>;
+  data: unknown;
 }
 
 // Typed event helpers
@@ -156,47 +172,42 @@ export type TypedStreamEvent =
   | ContentBlockEvent;
 
 // Type guards
-export function isChunkEvent(e: StreamEvent): e is StreamEvent & { event: "chunk"; data: ChunkPayload } {
+export function isChunkEvent(e: StreamEvent): e is { event: "chunk"; data: ChunkPayload } {
   return e.event === "chunk";
 }
 
-export function isStatusUpdateEvent(e: StreamEvent): e is StreamEvent & { event: "status_update"; data: StatusUpdatePayload } {
+export function isStatusUpdateEvent(e: StreamEvent): e is { event: "status_update"; data: StatusUpdatePayload } {
   return e.event === "status_update";
 }
 
-export function isDataEvent(e: StreamEvent): e is StreamEvent & { event: "data"; data: DataPayload } {
+export function isDataEvent(e: StreamEvent): e is { event: "data"; data: DataPayload } {
   return e.event === "data";
 }
 
-export function isCompletionEvent(e: StreamEvent): e is StreamEvent & { event: "completion"; data: CompletionPayload } {
+export function isCompletionEvent(e: StreamEvent): e is { event: "completion"; data: CompletionPayload } {
   return e.event === "completion";
 }
 
-export function isErrorEvent(e: StreamEvent): e is StreamEvent & { event: "error"; data: ErrorPayload } {
+export function isErrorEvent(e: StreamEvent): e is { event: "error"; data: ErrorPayload } {
   return e.event === "error";
 }
 
-export function isToolEventEvent(e: StreamEvent): e is StreamEvent & { event: "tool_event"; data: ToolEventPayload } {
+export function isToolEventEvent(e: StreamEvent): e is { event: "tool_event"; data: ToolEventPayload } {
   return e.event === "tool_event";
 }
 
-export function isBrokerEvent(e: StreamEvent): e is StreamEvent & { event: "broker"; data: BrokerPayload } {
+export function isBrokerEvent(e: StreamEvent): e is { event: "broker"; data: BrokerPayload } {
   return e.event === "broker";
 }
 
-export function isHeartbeatEvent(e: StreamEvent): e is StreamEvent & { event: "heartbeat"; data: HeartbeatPayload } {
+export function isHeartbeatEvent(e: StreamEvent): e is { event: "heartbeat"; data: HeartbeatPayload } {
   return e.event === "heartbeat";
 }
 
-export function isEndEvent(e: StreamEvent): e is StreamEvent & { event: "end"; data: EndPayload } {
+export function isEndEvent(e: StreamEvent): e is { event: "end"; data: EndPayload } {
   return e.event === "end";
 }
 
-export function isContentBlockEvent(e: StreamEvent): e is StreamEvent & { event: "content_block"; data: ContentBlockPayload } {
+export function isContentBlockEvent(e: StreamEvent): e is { event: "content_block"; data: ContentBlockPayload } {
   return e.event === "content_block";
-}
-
-/** Check if an event stream uses the new content_block protocol. */
-export function isNewProtocol(events: StreamEvent[]): boolean {
-  return events.some(e => e.event === "content_block");
 }

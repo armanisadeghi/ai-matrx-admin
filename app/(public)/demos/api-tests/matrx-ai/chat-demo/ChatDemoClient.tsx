@@ -36,6 +36,7 @@ import {
   SlidersHorizontal,
   ChevronDown,
   ChevronRight,
+  Volume2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
@@ -74,6 +75,34 @@ const MODEL_GROUPS = [
       { id: 'gemini-2.0-flash-thinking-exp', label: 'Gemini 2.0 Flash Thinking' },
       { id: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
       { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+    ],
+  },
+  {
+    group: 'TTS — OpenAI',
+    models: [
+      { id: 'gpt-4o-mini-tts', label: 'GPT-4o Mini TTS' },
+      { id: 'tts-1', label: 'TTS-1' },
+      { id: 'tts-1-hd', label: 'TTS-1 HD' },
+    ],
+  },
+  {
+    group: 'TTS — Google',
+    models: [
+      { id: 'gemini-2.5-flash-preview-tts', label: 'Gemini 2.5 Flash TTS' },
+      { id: 'gemini-2.5-pro-preview-tts', label: 'Gemini 2.5 Pro TTS' },
+    ],
+  },
+  {
+    group: 'TTS — Groq',
+    models: [
+      { id: 'canopylabs/orpheus-v1-english', label: 'Orpheus V1 English' },
+      { id: 'canopylabs/orpheus-arabic-saudi', label: 'Orpheus Arabic (Saudi)' },
+    ],
+  },
+  {
+    group: 'TTS — xAI',
+    models: [
+      { id: 'xai-tts', label: 'xAI TTS' },
     ],
   },
 ];
@@ -201,6 +230,13 @@ export default function ChatDemoClient() {
   const [stopSequences, setStopSequences] = useState('');
   const [responseFormat, setResponseFormat] = useState('');
 
+  // TTS
+  const [ttsVoice, setTtsVoice] = useState('');
+  const [audioFormat, setAudioFormat] = useState('');
+  const [ttsOpen, setTtsOpen] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioMimeType, setAudioMimeType] = useState<string | null>(null);
+
   // Messages
   const [messages, setMessages] = useState<Message[]>(DEFAULT_MESSAGES);
 
@@ -244,6 +280,7 @@ export default function ChatDemoClient() {
 
   const clearResults = () => {
     setTextOutput(''); setRawEvents(''); setEventsLog([]); setErrorMessage(null);
+    setAudioUrl(null); setAudioMimeType(null);
     setStats({ events: 0, bytes: 0, ms: 0, startTime: 0 }); setExecStatus('idle');
   };
 
@@ -292,6 +329,8 @@ export default function ChatDemoClient() {
     const stops = stopSequences.trim().split(',').map(s => s.trim()).filter(Boolean);
     if (stops.length > 0) body.stop_sequences = stops;
     if (responseFormat === 'json_object') body.response_format = { type: 'json_object' };
+    if (ttsVoice.trim()) body.tts_voice = ttsVoice.trim();
+    if (audioFormat) body.audio_format = audioFormat;
     return body;
   };
 
@@ -332,6 +371,13 @@ export default function ChatDemoClient() {
         setStats(s => ({ ...s, events: eventCount, bytes: byteCount, ms: Date.now() - start }));
         if (evt.event === 'chunk' && evt.data && typeof evt.data === 'object' && 'text' in evt.data) {
           setTextOutput(prev => prev + (evt.data as { text: string }).text);
+        }
+        if (evt.event === 'data' && evt.data && typeof evt.data === 'object') {
+          const d = evt.data as Record<string, unknown>;
+          if (d.type === 'audio_output' && typeof d.url === 'string') {
+            setAudioUrl(d.url);
+            setAudioMimeType(typeof d.mime_type === 'string' ? d.mime_type : 'audio/wav');
+          }
         }
         if (evt.event === 'error') {
           const d = evt.data as Record<string, string> | null;
@@ -556,6 +602,41 @@ export default function ChatDemoClient() {
                     </CollapsibleContent>
                   </Collapsible>
 
+                  {/* TTS */}
+                  <Collapsible open={ttsOpen} onOpenChange={setTtsOpen}>
+                    <CollapsibleTrigger className="flex items-center gap-2 w-full py-1 text-left hover:text-foreground/80">
+                      <Volume2 className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                      <span className="text-xs font-semibold flex-1">Text-to-Speech</span>
+                      {ttsOpen ? <ChevronDown className="h-3 w-3 text-muted-foreground" /> : <ChevronRight className="h-3 w-3 text-muted-foreground" />}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="space-y-2 pt-2 p-2.5 bg-muted/30 rounded-md border mt-1">
+                        <p className="text-[10px] text-muted-foreground">Select a TTS model above, then set a voice. The response arrives as a <code className="font-mono">data</code> stream event with an audio URL.</p>
+                        <div className="space-y-1">
+                          <Label className="text-[10px] text-muted-foreground">Voice (tts_voice)</Label>
+                          <Input value={ttsVoice} onChange={e => setTtsVoice(e.target.value)} placeholder='e.g. alloy, coral, kore, Orus' className="h-7 text-xs font-mono" />
+                          <p className="text-[9px] text-muted-foreground">OpenAI: alloy, coral, echo, fable, onyx, nova, shimmer. Google: Kore, Charon, Fenrir, Orus, etc. Groq: tara, leah, leo. xAI: eve, isla, luma, orion, sol.</p>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[10px] text-muted-foreground">Audio Format (audio_format)</Label>
+                          <Select value={audioFormat || '__none__'} onValueChange={v => setAudioFormat(v === '__none__' ? '' : v)}>
+                            <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="__none__" className="text-xs">Provider default</SelectItem>
+                              <SelectItem value="mp3" className="text-xs">mp3</SelectItem>
+                              <SelectItem value="wav" className="text-xs">wav</SelectItem>
+                              <SelectItem value="ogg" className="text-xs">ogg</SelectItem>
+                              <SelectItem value="opus" className="text-xs">opus</SelectItem>
+                              <SelectItem value="aac" className="text-xs">aac</SelectItem>
+                              <SelectItem value="flac" className="text-xs">flac</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <p className="text-[9px] text-muted-foreground">Groq always returns wav regardless of this setting.</p>
+                        </div>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+
                   {/* Messages */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -657,6 +738,18 @@ export default function ChatDemoClient() {
               {errorMessage && (
                 <div className="flex-shrink-0 mb-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-xs text-destructive font-mono">
                   ❌ {errorMessage}
+                </div>
+              )}
+
+              {audioUrl && (
+                <div className="flex-shrink-0 mb-2 p-3 bg-muted/40 border rounded space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <Volume2 className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-xs font-semibold">Audio Output</span>
+                    {audioMimeType && <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono">{audioMimeType}</Badge>}
+                  </div>
+                  <audio controls src={audioUrl} className="w-full h-8" />
+                  <a href={audioUrl} download className="text-[10px] text-primary underline">Download audio</a>
                 </div>
               )}
 

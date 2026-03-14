@@ -1,6 +1,7 @@
 {
   "ChunkPayload": {
     "additionalProperties": false,
+    "description": "Streaming text chunk — emitted as the LLM generates tokens.",
     "properties": {
       "text": {
         "title": "Text",
@@ -15,6 +16,7 @@
   },
   "StatusUpdatePayload": {
     "additionalProperties": false,
+    "description": "Human-readable status update. system_message is for logs; user_message for UI.",
     "properties": {
       "status": {
         "title": "Status",
@@ -66,12 +68,14 @@
   },
   "DataPayload": {
     "additionalProperties": true,
+    "description": "Arbitrary structured data payload. Extra fields allowed — use for service-specific data.",
     "properties": {},
     "title": "DataPayload",
     "type": "object"
   },
   "CompletionPayload": {
     "additionalProperties": false,
+    "description": "Final completion event. Sent once per request, immediately before END.",
     "properties": {
       "status": {
         "default": "complete",
@@ -169,6 +173,7 @@
   },
   "ErrorPayload": {
     "additionalProperties": false,
+    "description": "Structured error. user_message is safe to display to end users.",
     "properties": {
       "error_type": {
         "title": "Error Type",
@@ -218,6 +223,7 @@
   },
   "ToolEventPayload": {
     "additionalProperties": false,
+    "description": "Tool lifecycle event. Emitted by the tool executor during tool calls.",
     "properties": {
       "event": {
         "enum": [
@@ -276,6 +282,7 @@
   },
   "BrokerPayload": {
     "additionalProperties": false,
+    "description": "Cross-service value delivery. broker_id identifies the subscriber.",
     "properties": {
       "broker_id": {
         "title": "Broker Id",
@@ -318,6 +325,7 @@
   },
   "HeartbeatPayload": {
     "additionalProperties": false,
+    "description": "Keepalive ping sent on idle connections to prevent proxy timeouts.",
     "properties": {
       "timestamp": {
         "title": "Timestamp",
@@ -329,6 +337,7 @@
   },
   "EndPayload": {
     "additionalProperties": false,
+    "description": "Stream termination signal. Always the last event in a stream.",
     "properties": {
       "reason": {
         "default": "complete",
@@ -337,6 +346,78 @@
       }
     },
     "title": "EndPayload",
+    "type": "object"
+  },
+  "ContentBlockPayload": {
+    "additionalProperties": false,
+    "description": "A structured content block emitted by StreamBlockProcessor.\n\nSent for every block lifecycle change: open (streaming), incremental\nupdate, and close (complete/error). The `content` field carries raw\ntext for Text Channel blocks; the `data` field carries parsed structured\ndata for Block Channel blocks. See streaming-constitution.md for the\nfull contract.",
+    "properties": {
+      "block_id": {
+        "description": "Stable ID for this block, e.g. 'blk_0'",
+        "title": "Block Id",
+        "type": "string"
+      },
+      "block_index": {
+        "description": "Ordering position among all blocks in the message",
+        "title": "Block Index",
+        "type": "integer"
+      },
+      "type": {
+        "description": "Block type key, e.g. 'text', 'timeline', 'quiz'",
+        "title": "Type",
+        "type": "string"
+      },
+      "status": {
+        "description": "Block lifecycle status",
+        "enum": [
+          "streaming",
+          "complete",
+          "error"
+        ],
+        "title": "Status",
+        "type": "string"
+      },
+      "content": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Raw text content (Text Channel blocks)",
+        "title": "Content"
+      },
+      "data": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Parsed structured data (Block Channel blocks)",
+        "title": "Data"
+      },
+      "metadata": {
+        "additionalProperties": true,
+        "description": "Block metadata (language, isComplete, etc.)",
+        "title": "Metadata",
+        "type": "object"
+      }
+    },
+    "required": [
+      "block_id",
+      "block_index",
+      "type",
+      "status"
+    ],
+    "title": "ContentBlockPayload",
     "type": "object"
   },
   "StreamEvent": {
@@ -351,7 +432,8 @@
           "tool_event",
           "broker",
           "heartbeat",
-          "end"
+          "end",
+          "content_block"
         ],
         "title": "EventType",
         "type": "string"
@@ -385,7 +467,8 @@
       "tool_event",
       "broker",
       "heartbeat",
-      "end"
+      "end",
+      "content_block"
     ]
   }
 }

@@ -11,7 +11,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Health Check */
+        /**
+         * Health Check
+         * @description Traefik/Coolify liveness ping. Never blocks.
+         */
         get: operations["health_check_health_get"];
         put?: never;
         post?: never;
@@ -28,8 +31,57 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Detailed Health Check */
+        /**
+         * Detailed Health Check
+         * @description Manual diagnostic — DB latency, tool count, env vars. Not called by infrastructure.
+         */
         get: operations["detailed_health_check_health_detailed_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/health/live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Liveness Check
+         * @description Explicit liveness probe for Coolify.
+         *     Returns 200 as long as the process is running — no I/O, never fails.
+         *     Configure this as Coolify's liveness check path.
+         */
+        get: operations["liveness_check_health_live_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/health/ready": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Readiness Check
+         * @description Readiness probe for Coolify / rolling deploys.
+         *     Returns 200 only when the system is fully ready to serve real requests.
+         *     Returns 503 during startup or if a critical subsystem failed to initialize.
+         *     Configure this as Coolify's health check path so traffic is only routed
+         *     to instances that are genuinely ready.
+         */
+        get: operations["readiness_check_health_ready_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -47,8 +99,34 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Warm Agent */
+        /**
+         * Warm Agent
+         * @description Pre-load an agent definition into the PromptManager cache.
+         *
+         *     Calling Agent.from_id() causes the PromptManager to cache the prompt
+         *     definition. Subsequent real requests for this agent skip the DB query.
+         */
         post: operations["warm_agent_ai_agents__agent_id__warm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/agents-blocks/{agent_id}/warm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Warm Agent Blocks
+         * @description Pre-load an agent definition into the PromptManager cache.
+         */
+        post: operations["warm_agent_blocks_ai_agents_blocks__agent_id__warm_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -64,7 +142,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Warm Conversation */
+        /**
+         * Warm Conversation
+         * @description Pre-load a conversation into the in-memory cache.
+         *
+         *     Fire-and-forget from the client's perspective — any error is logged
+         *     but never returned as a failure. The sole purpose is to shave latency
+         *     off the next real request.
+         */
         post: operations["warm_conversation_ai_conversations__conversation_id__warm_post"];
         delete?: never;
         options?: never;
@@ -81,8 +166,92 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Start Agent */
+        /**
+         * Start Agent
+         * @description Start a new agent conversation.
+         *
+         *     Resolves the agent's UnifiedConfig (with variables/overrides applied),
+         *     then hands off to the AI engine. A new conversation_id is generated here
+         *     and set on AppContext so execution and persistence use the same ID.
+         */
         post: operations["start_agent_ai_agents__agent_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/agents-blocks/{agent_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Agent Blocks
+         * @description Start a block-streaming agent session.
+         *
+         *     Identical to POST /agents/{agent_id} but the LLM token stream is parsed
+         *     server-side into typed content blocks.  The client receives 'content_block'
+         *     JSONL events instead of raw 'chunk' events.
+         *
+         *     Each content_block event carries:
+         *       - block_id / block_index — stable identity for UI reconciliation
+         *       - type — text | code | table | flashcards | quiz | ... (30+ types)
+         *       - status — streaming | complete
+         *       - content — raw text (for text-like blocks)
+         *       - data — parsed structured data (for rich block types)
+         *       - metadata — language, parse_error, etc.
+         */
+        post: operations["start_agent_blocks_ai_agents_blocks__agent_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/builtin-agents/categorize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Categorize Prompt Endpoint
+         * @description Categorize a single prompt using the builtin categorizer agent.
+         *
+         *     Streams progress via SSE. The final data event contains the
+         *     categorization result.
+         */
+        post: operations["categorize_prompt_endpoint_ai_builtin_agents_categorize_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/builtin-agents/categorize/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Categorize Prompt Sync
+         * @description Categorize a single prompt and return the result directly (no streaming).
+         *
+         *     Best for programmatic callers that don't need real-time progress.
+         */
+        post: operations["categorize_prompt_sync_ai_builtin_agents_categorize_sync_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -98,7 +267,13 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Chat */
+        /**
+         * Chat
+         * @description Direct chat endpoint — client supplies the full message history.
+         *
+         *     Builds a UnifiedConfig from the request, sets conversation scope on
+         *     AppContext, and hands off to the AI engine via run_ai_task.
+         */
         post: operations["chat_ai_chat_post"];
         delete?: never;
         options?: never;
@@ -115,7 +290,13 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Continue Conversation */
+        /**
+         * Continue Conversation
+         * @description Continue an existing conversation.
+         *
+         *     Resolves the UnifiedConfig from cache or DB via ConversationResolver,
+         *     appends the new user_input, then hands off to the AI engine.
+         */
         post: operations["continue_conversation_ai_conversations__conversation_id__post"];
         delete?: never;
         options?: never;
@@ -174,6 +355,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/utilities/pdf/compress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Compress Pdf */
+        post: operations["compress_pdf_utilities_pdf_compress_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/utilities/pdf/extract-text": {
         parameters: {
             query?: never;
@@ -185,6 +383,130 @@ export interface paths {
         put?: never;
         /** Extract Text From Pdf */
         post: operations["extract_text_from_pdf_utilities_pdf_extract_text_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/utilities/pdf/extract-text-remote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Extract Text Remote */
+        post: operations["extract_text_remote_utilities_pdf_extract_text_remote_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/utilities/pdf/extract-tables": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Extract Tables */
+        post: operations["extract_tables_utilities_pdf_extract_tables_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/utilities/pdf/process-with-ai": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Process With Ai */
+        post: operations["process_with_ai_utilities_pdf_process_with_ai_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/utilities/pdf/full-pipeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Full Pipeline */
+        post: operations["full_pipeline_utilities_pdf_full_pipeline_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/utilities/block-processing/process": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Process Blocks
+         * @description Process content into structured blocks (non-streaming).
+         *
+         *     Runs the full block detection and parsing pipeline on the provided content
+         *     and returns the final block list as JSON.
+         *
+         *     Useful for:
+         *     - Testing block detection and parser output
+         *     - Verifying how a saved LLM response would be structured
+         *     - Debugging parser behaviour for a specific block type
+         */
+        post: operations["process_blocks_utilities_block_processing_process_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/utilities/block-processing/process/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Process Blocks Stream
+         * @description Process content into structured blocks (streaming NDJSON).
+         *
+         *     Simulates the real-time block streaming pipeline by feeding content
+         *     token-by-token through StreamBlockProcessor and yielding each
+         *     ContentBlockEvent as a 'content_block' JSONL line.
+         *
+         *     The response format is identical to what a live agent-blocks endpoint
+         *     would emit, making this endpoint ideal for frontend integration testing
+         *     without requiring a live LLM call.
+         */
+        post: operations["process_blocks_stream_utilities_block_processing_process_stream_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1128,6 +1450,31 @@ export interface components {
             /** Urls */
             urls: string[];
         };
+        /** AgentBlocksStartRequest */
+        AgentBlocksStartRequest: {
+            /** User Input */
+            user_input?: string | {
+                [key: string]: unknown;
+            }[] | null;
+            /** Variables */
+            variables?: {
+                [key: string]: unknown;
+            } | null;
+            /** Config Overrides */
+            config_overrides?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Stream
+             * @default true
+             */
+            stream: boolean;
+            /**
+             * Debug
+             * @default false
+             */
+            debug: boolean;
+        };
         /** AgentStartRequest */
         AgentStartRequest: {
             /** User Input */
@@ -1175,6 +1522,14 @@ export interface components {
             /** Agent Id */
             agent_id?: string | null;
         };
+        /** Body_compress_pdf_utilities_pdf_compress_post */
+        Body_compress_pdf_utilities_pdf_compress_post: {
+            /**
+             * File
+             * Format: binary
+             */
+            file: string;
+        };
         /** Body_extract_text_from_pdf_utilities_pdf_extract_text_post */
         Body_extract_text_from_pdf_utilities_pdf_extract_text_post: {
             /**
@@ -1182,6 +1537,31 @@ export interface components {
              * Format: binary
              */
             file: string;
+        };
+        /** CategorizeRequest */
+        CategorizeRequest: {
+            /** Prompt Id */
+            prompt_id: string;
+            /**
+             * Dry Run
+             * @default false
+             */
+            dry_run: boolean;
+        };
+        /** CategorizeResponse */
+        CategorizeResponse: {
+            /** Prompt Id */
+            prompt_id: string;
+            /** Success */
+            success: boolean;
+            /** Category */
+            category?: string | null;
+            /** Tags */
+            tags?: string[] | null;
+            /** Description */
+            description?: string | null;
+            /** Error */
+            error?: string | null;
         };
         /** ChatRequest */
         ChatRequest: {
@@ -1261,8 +1641,8 @@ export interface components {
              * @default 1
              */
             count: number;
-            /** Audio Voice */
-            audio_voice?: string | null;
+            /** Tts Voice */
+            tts_voice?: unknown | null;
             /** Audio Format */
             audio_format?: string | null;
             /** Seconds */
@@ -1356,6 +1736,43 @@ export interface components {
             /** Html Content */
             html_content: string;
         };
+        /** ExtractTablesRequest */
+        ExtractTablesRequest: {
+            /** File */
+            file?: {
+                [key: string]: unknown;
+            } | null;
+            /** Url */
+            url?: string | null;
+            /** Local Path */
+            local_path?: string | null;
+            /**
+             * Output Format
+             * @default csv
+             */
+            output_format: string;
+        };
+        /** ExtractTextRequest */
+        ExtractTextRequest: {
+            /** File */
+            file?: {
+                [key: string]: unknown;
+            } | null;
+            /** Url */
+            url?: string | null;
+            /** Local Path */
+            local_path?: string | null;
+            /**
+             * Force Ocr
+             * @default false
+             */
+            force_ocr: boolean;
+            /**
+             * Use Ocr Threshold
+             * @default 100
+             */
+            use_ocr_threshold: number;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1397,6 +1814,123 @@ export interface components {
         MediaUpdate: {
             /** Is Relevant */
             is_relevant?: boolean | null;
+        };
+        /** PdfPipelineOptions */
+        PdfPipelineOptions: {
+            /**
+             * Extract Text
+             * @default true
+             */
+            extract_text: boolean;
+            /**
+             * Force Ocr
+             * @default false
+             */
+            force_ocr: boolean;
+            /**
+             * Use Ocr Threshold
+             * @default 100
+             */
+            use_ocr_threshold: number;
+            /**
+             * Extract Tables
+             * @default false
+             */
+            extract_tables: boolean;
+            /**
+             * Chunk And Process With Ai
+             * @default false
+             */
+            chunk_and_process_with_ai: boolean;
+            /**
+             * Template Name
+             * @default make_json_flashcards
+             */
+            template_name: string;
+            /**
+             * Chunk Size
+             * @default 2000
+             */
+            chunk_size: number;
+            /**
+             * Overlap Size
+             * @default 200
+             */
+            overlap_size: number;
+            /**
+             * Upload Result To Supabase
+             * @default false
+             */
+            upload_result_to_supabase: boolean;
+            /**
+             * Supabase Bucket
+             * @default any-file
+             */
+            supabase_bucket: string;
+        };
+        /** PdfRequest */
+        PdfRequest: {
+            /** File */
+            file?: {
+                [key: string]: unknown;
+            } | null;
+            /** Url */
+            url?: string | null;
+            /** Local Path */
+            local_path?: string | null;
+            /**
+             * @default {
+             *       "extract_text": true,
+             *       "force_ocr": false,
+             *       "use_ocr_threshold": 100,
+             *       "extract_tables": false,
+             *       "chunk_and_process_with_ai": false,
+             *       "template_name": "make_json_flashcards",
+             *       "chunk_size": 2000,
+             *       "overlap_size": 200,
+             *       "upload_result_to_supabase": false,
+             *       "supabase_bucket": "any-file"
+             *     }
+             */
+            options: components["schemas"]["PdfPipelineOptions"];
+        };
+        /** PdfResult */
+        PdfResult: {
+            /** Raw Text */
+            raw_text?: string | null;
+            /** Chunks */
+            chunks?: string[] | null;
+            /** Ai Processed */
+            ai_processed?: {
+                [key: string]: unknown;
+            }[] | null;
+            /** Tables Path */
+            tables_path?: string | null;
+            /** Supabase Url */
+            supabase_url?: string | null;
+        };
+        /** ProcessBlocksRequest */
+        ProcessBlocksRequest: {
+            /**
+             * Content
+             * @description Raw text or markdown content to process into blocks
+             */
+            content: string;
+            /**
+             * Include Raw
+             * @description If true, each block includes the raw_content field before parsing
+             * @default false
+             */
+            include_raw: boolean;
+        };
+        /** ProcessBlocksResponse */
+        ProcessBlocksResponse: {
+            /** Block Count */
+            block_count: number;
+            /** Blocks */
+            blocks: {
+                [key: string]: unknown;
+            }[];
         };
         /** QuickScrapeCompatRequest */
         QuickScrapeCompatRequest: {
@@ -1999,7 +2533,78 @@ export interface operations {
             };
         };
     };
+    liveness_check_health_live_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    readiness_check_health_ready_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
     warm_agent_ai_agents__agent_id__warm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                agent_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    warm_agent_blocks_ai_agents_blocks__agent_id__warm_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2083,6 +2688,107 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_agent_blocks_ai_agents_blocks__agent_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                agent_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgentBlocksStartRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    categorize_prompt_endpoint_ai_builtin_agents_categorize_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategorizeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    categorize_prompt_sync_ai_builtin_agents_categorize_sync_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategorizeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategorizeResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2261,6 +2967,42 @@ export interface operations {
             };
         };
     };
+    compress_pdf_utilities_pdf_compress_post: {
+        parameters: {
+            query?: {
+                level?: number;
+                target_size_mb?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_compress_pdf_utilities_pdf_compress_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     extract_text_from_pdf_utilities_pdf_extract_text_post: {
         parameters: {
             query?: never;
@@ -2283,6 +3025,204 @@ export interface operations {
                     "application/json": {
                         [key: string]: string;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    extract_text_remote_utilities_pdf_extract_text_remote_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExtractTextRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PdfResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    extract_tables_utilities_pdf_extract_tables_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExtractTablesRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PdfResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    process_with_ai_utilities_pdf_process_with_ai_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PdfRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    full_pipeline_utilities_pdf_full_pipeline_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PdfRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    process_blocks_utilities_block_processing_process_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProcessBlocksRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessBlocksResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    process_blocks_stream_utilities_block_processing_process_stream_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProcessBlocksRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

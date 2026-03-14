@@ -17,6 +17,7 @@
           "Health"
         ],
         "summary": "Health Check",
+        "description": "Traefik/Coolify liveness ping. Never blocks.",
         "operationId": "health_check_health_get",
         "responses": {
           "200": {
@@ -36,7 +37,48 @@
           "Health"
         ],
         "summary": "Detailed Health Check",
+        "description": "Manual diagnostic — DB latency, tool count, env vars. Not called by infrastructure.",
         "operationId": "detailed_health_check_health_detailed_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/live": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Liveness Check",
+        "description": "Explicit liveness probe for Coolify.\nReturns 200 as long as the process is running — no I/O, never fails.\nConfigure this as Coolify's liveness check path.",
+        "operationId": "liveness_check_health_live_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Readiness Check",
+        "description": "Readiness probe for Coolify / rolling deploys.\nReturns 200 only when the system is fully ready to serve real requests.\nReturns 503 during startup or if a critical subsystem failed to initialize.\nConfigure this as Coolify's health check path so traffic is only routed\nto instances that are genuinely ready.",
+        "operationId": "readiness_check_health_ready_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -55,7 +97,49 @@
           "AI"
         ],
         "summary": "Warm Agent",
+        "description": "Pre-load an agent definition into the PromptManager cache.\n\nCalling Agent.from_id() causes the PromptManager to cache the prompt\ndefinition. Subsequent real requests for this agent skip the DB query.",
         "operationId": "warm_agent_ai_agents__agent_id__warm_post",
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/agents-blocks/{agent_id}/warm": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Warm Agent Blocks",
+        "description": "Pre-load an agent definition into the PromptManager cache.",
+        "operationId": "warm_agent_blocks_ai_agents_blocks__agent_id__warm_post",
         "parameters": [
           {
             "name": "agent_id",
@@ -95,6 +179,7 @@
           "AI"
         ],
         "summary": "Warm Conversation",
+        "description": "Pre-load a conversation into the in-memory cache.\n\nFire-and-forget from the client's perspective — any error is logged\nbut never returned as a failure. The sole purpose is to shave latency\noff the next real request.",
         "operationId": "warm_conversation_ai_conversations__conversation_id__warm_post",
         "parameters": [
           {
@@ -135,6 +220,7 @@
           "AI"
         ],
         "summary": "Start Agent",
+        "description": "Start a new agent conversation.\n\nResolves the agent's UnifiedConfig (with variables/overrides applied),\nthen hands off to the AI engine. A new conversation_id is generated here\nand set on AppContext so execution and persistence use the same ID.",
         "operationId": "start_agent_ai_agents__agent_id__post",
         "parameters": [
           {
@@ -179,12 +265,146 @@
         }
       }
     },
+    "/ai/agents-blocks/{agent_id}": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Start Agent Blocks",
+        "description": "Start a block-streaming agent session.\n\nIdentical to POST /agents/{agent_id} but the LLM token stream is parsed\nserver-side into typed content blocks.  The client receives 'content_block'\nJSONL events instead of raw 'chunk' events.\n\nEach content_block event carries:\n  - block_id / block_index — stable identity for UI reconciliation\n  - type — text | code | table | flashcards | quiz | ... (30+ types)\n  - status — streaming | complete\n  - content — raw text (for text-like blocks)\n  - data — parsed structured data (for rich block types)\n  - metadata — language, parse_error, etc.",
+        "operationId": "start_agent_blocks_ai_agents_blocks__agent_id__post",
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentBlocksStartRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/builtin-agents/categorize": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Categorize Prompt Endpoint",
+        "description": "Categorize a single prompt using the builtin categorizer agent.\n\nStreams progress via SSE. The final data event contains the\ncategorization result.",
+        "operationId": "categorize_prompt_endpoint_ai_builtin_agents_categorize_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategorizeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/builtin-agents/categorize/sync": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Categorize Prompt Sync",
+        "description": "Categorize a single prompt and return the result directly (no streaming).\n\nBest for programmatic callers that don't need real-time progress.",
+        "operationId": "categorize_prompt_sync_ai_builtin_agents_categorize_sync_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategorizeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategorizeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/ai/chat": {
       "post": {
         "tags": [
           "AI"
         ],
         "summary": "Chat",
+        "description": "Direct chat endpoint — client supplies the full message history.\n\nBuilds a UnifiedConfig from the request, sets conversation scope on\nAppContext, and hands off to the AI engine via run_ai_task.",
         "operationId": "chat_ai_chat_post",
         "requestBody": {
           "content": {
@@ -224,6 +444,7 @@
           "AI"
         ],
         "summary": "Continue Conversation",
+        "description": "Continue an existing conversation.\n\nResolves the UnifiedConfig from cache or DB via ConversationResolver,\nappends the new user_input, then hands off to the AI engine.",
         "operationId": "continue_conversation_ai_conversations__conversation_id__post",
         "parameters": [
           {
@@ -386,6 +607,70 @@
         }
       }
     },
+    "/utilities/pdf/compress": {
+      "post": {
+        "tags": [
+          "Utilities"
+        ],
+        "summary": "Compress Pdf",
+        "operationId": "compress_pdf_utilities_pdf_compress_post",
+        "parameters": [
+          {
+            "name": "level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 3,
+              "minimum": 1,
+              "default": 2,
+              "title": "Level"
+            }
+          },
+          {
+            "name": "target_size_mb",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "default": 10.0,
+              "title": "Target Size Mb"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_compress_pdf_utilities_pdf_compress_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/utilities/pdf/extract-text": {
       "post": {
         "tags": [
@@ -415,6 +700,248 @@
                   "type": "object",
                   "title": "Response Extract Text From Pdf Utilities Pdf Extract Text Post"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utilities/pdf/extract-text-remote": {
+      "post": {
+        "tags": [
+          "Utilities"
+        ],
+        "summary": "Extract Text Remote",
+        "operationId": "extract_text_remote_utilities_pdf_extract_text_remote_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExtractTextRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PdfResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utilities/pdf/extract-tables": {
+      "post": {
+        "tags": [
+          "Utilities"
+        ],
+        "summary": "Extract Tables",
+        "operationId": "extract_tables_utilities_pdf_extract_tables_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExtractTablesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PdfResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utilities/pdf/process-with-ai": {
+      "post": {
+        "tags": [
+          "Utilities"
+        ],
+        "summary": "Process With Ai",
+        "operationId": "process_with_ai_utilities_pdf_process_with_ai_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PdfRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utilities/pdf/full-pipeline": {
+      "post": {
+        "tags": [
+          "Utilities"
+        ],
+        "summary": "Full Pipeline",
+        "operationId": "full_pipeline_utilities_pdf_full_pipeline_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PdfRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utilities/block-processing/process": {
+      "post": {
+        "tags": [
+          "Utilities"
+        ],
+        "summary": "Process Blocks",
+        "description": "Process content into structured blocks (non-streaming).\n\nRuns the full block detection and parsing pipeline on the provided content\nand returns the final block list as JSON.\n\nUseful for:\n- Testing block detection and parser output\n- Verifying how a saved LLM response would be structured\n- Debugging parser behaviour for a specific block type",
+        "operationId": "process_blocks_utilities_block_processing_process_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProcessBlocksRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessBlocksResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utilities/block-processing/process/stream": {
+      "post": {
+        "tags": [
+          "Utilities"
+        ],
+        "summary": "Process Blocks Stream",
+        "description": "Process content into structured blocks (streaming NDJSON).\n\nSimulates the real-time block streaming pipeline by feeding content\ntoken-by-token through StreamBlockProcessor and yielding each\nContentBlockEvent as a 'content_block' JSONL line.\n\nThe response format is identical to what a live agent-blocks endpoint\nwould emit, making this endpoint ideal for frontend integration testing\nwithout requiring a live LLM call.",
+        "operationId": "process_blocks_stream_utilities_block_processing_process_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProcessBlocksRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
@@ -3443,6 +3970,64 @@
         ],
         "title": "AddLinksToScope"
       },
+      "AgentBlocksStartRequest": {
+        "properties": {
+          "user_input": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Input"
+          },
+          "variables": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variables"
+          },
+          "config_overrides": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config Overrides"
+          },
+          "stream": {
+            "type": "boolean",
+            "title": "Stream",
+            "default": true
+          },
+          "debug": {
+            "type": "boolean",
+            "title": "Debug",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "AgentBlocksStartRequest"
+      },
       "AgentStartRequest": {
         "properties": {
           "user_input": {
@@ -3559,6 +4144,20 @@
         "type": "object",
         "title": "AnalyzeRequest"
       },
+      "Body_compress_pdf_utilities_pdf_compress_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_compress_pdf_utilities_pdf_compress_post"
+      },
       "Body_extract_text_from_pdf_utilities_pdf_extract_text_post": {
         "properties": {
           "file": {
@@ -3572,6 +4171,89 @@
           "file"
         ],
         "title": "Body_extract_text_from_pdf_utilities_pdf_extract_text_post"
+      },
+      "CategorizeRequest": {
+        "properties": {
+          "prompt_id": {
+            "type": "string",
+            "title": "Prompt Id"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "prompt_id"
+        ],
+        "title": "CategorizeRequest"
+      },
+      "CategorizeResponse": {
+        "properties": {
+          "prompt_id": {
+            "type": "string",
+            "title": "Prompt Id"
+          },
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "prompt_id",
+          "success"
+        ],
+        "title": "CategorizeResponse"
       },
       "ChatRequest": {
         "properties": {
@@ -3831,16 +4513,14 @@
             "title": "Count",
             "default": 1
           },
-          "audio_voice": {
+          "tts_voice": {
             "anyOf": [
-              {
-                "type": "string"
-              },
+              {},
               {
                 "type": "null"
               }
             ],
-            "title": "Audio Voice"
+            "title": "Tts Voice"
           },
           "audio_format": {
             "anyOf": [
@@ -4130,6 +4810,101 @@
         ],
         "title": "ExtensionContentSubmit"
       },
+      "ExtractTablesRequest": {
+        "properties": {
+          "file": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "local_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local Path"
+          },
+          "output_format": {
+            "type": "string",
+            "title": "Output Format",
+            "default": "csv"
+          }
+        },
+        "type": "object",
+        "title": "ExtractTablesRequest"
+      },
+      "ExtractTextRequest": {
+        "properties": {
+          "file": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "local_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local Path"
+          },
+          "force_ocr": {
+            "type": "boolean",
+            "title": "Force Ocr",
+            "default": false
+          },
+          "use_ocr_threshold": {
+            "type": "integer",
+            "title": "Use Ocr Threshold",
+            "default": 100
+          }
+        },
+        "type": "object",
+        "title": "ExtractTextRequest"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -4249,6 +5024,227 @@
         },
         "type": "object",
         "title": "MediaUpdate"
+      },
+      "PdfPipelineOptions": {
+        "properties": {
+          "extract_text": {
+            "type": "boolean",
+            "title": "Extract Text",
+            "default": true
+          },
+          "force_ocr": {
+            "type": "boolean",
+            "title": "Force Ocr",
+            "default": false
+          },
+          "use_ocr_threshold": {
+            "type": "integer",
+            "title": "Use Ocr Threshold",
+            "default": 100
+          },
+          "extract_tables": {
+            "type": "boolean",
+            "title": "Extract Tables",
+            "default": false
+          },
+          "chunk_and_process_with_ai": {
+            "type": "boolean",
+            "title": "Chunk And Process With Ai",
+            "default": false
+          },
+          "template_name": {
+            "type": "string",
+            "title": "Template Name",
+            "default": "make_json_flashcards"
+          },
+          "chunk_size": {
+            "type": "integer",
+            "title": "Chunk Size",
+            "default": 2000
+          },
+          "overlap_size": {
+            "type": "integer",
+            "title": "Overlap Size",
+            "default": 200
+          },
+          "upload_result_to_supabase": {
+            "type": "boolean",
+            "title": "Upload Result To Supabase",
+            "default": false
+          },
+          "supabase_bucket": {
+            "type": "string",
+            "title": "Supabase Bucket",
+            "default": "any-file"
+          }
+        },
+        "type": "object",
+        "title": "PdfPipelineOptions"
+      },
+      "PdfRequest": {
+        "properties": {
+          "file": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "local_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local Path"
+          },
+          "options": {
+            "$ref": "#/components/schemas/PdfPipelineOptions",
+            "default": {
+              "extract_text": true,
+              "force_ocr": false,
+              "use_ocr_threshold": 100,
+              "extract_tables": false,
+              "chunk_and_process_with_ai": false,
+              "template_name": "make_json_flashcards",
+              "chunk_size": 2000,
+              "overlap_size": 200,
+              "upload_result_to_supabase": false,
+              "supabase_bucket": "any-file"
+            }
+          }
+        },
+        "type": "object",
+        "title": "PdfRequest"
+      },
+      "PdfResult": {
+        "properties": {
+          "raw_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Text"
+          },
+          "chunks": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chunks"
+          },
+          "ai_processed": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Processed"
+          },
+          "tables_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tables Path"
+          },
+          "supabase_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supabase Url"
+          }
+        },
+        "type": "object",
+        "title": "PdfResult"
+      },
+      "ProcessBlocksRequest": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "Raw text or markdown content to process into blocks"
+          },
+          "include_raw": {
+            "type": "boolean",
+            "title": "Include Raw",
+            "description": "If true, each block includes the raw_content field before parsing",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "ProcessBlocksRequest"
+      },
+      "ProcessBlocksResponse": {
+        "properties": {
+          "block_count": {
+            "type": "integer",
+            "title": "Block Count"
+          },
+          "blocks": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Blocks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block_count",
+          "blocks"
+        ],
+        "title": "ProcessBlocksResponse"
       },
       "QuickScrapeCompatRequest": {
         "properties": {

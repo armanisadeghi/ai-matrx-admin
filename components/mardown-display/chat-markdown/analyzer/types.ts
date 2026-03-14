@@ -150,6 +150,7 @@ export interface ModelConfig {
     presence_penalty?: number;
     frequency_penalty?: number;
     stop_sequences?: string[];
+    tts_voice?: string | { name: string; voice: string }[] | null;
     audio_format?: string | null;
     model_id?: string;
     endpoint_id?: string | null;

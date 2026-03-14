@@ -39,7 +39,9 @@ export interface DataBroker {
     size?: string;
     quality?: string;
     count: number;
+    /** @deprecated Use tts_voice instead */
     audio_voice?: string;
+    tts_voice?: string | { name: string; voice: string }[];
     audio_format?: string;
     modalities: any;
     tools: any;

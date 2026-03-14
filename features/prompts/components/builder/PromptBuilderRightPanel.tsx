@@ -14,7 +14,9 @@ interface PromptBuilderRightPanelProps {
     conversationMessages: Array<{ 
         role: string; 
         content: string;
-        taskId?: string; // Store taskId with each message
+        taskId?: string;
+        audioUrl?: string;
+        audioMimeType?: string;
         metadata?: {
             timeToFirstToken?: number;
             totalTime?: number;
@@ -108,7 +110,6 @@ export function PromptBuilderRightPanel({
     // Build the messages to display: conversation messages + streaming message (if active)
     const displayMessages = useMemo(() => {
         if (currentTaskId) {
-            // Add the streaming message with its taskId
             return [...conversationMessages, { role: "assistant", content: streamingText, taskId: currentTaskId }];
         }
         return conversationMessages;
@@ -146,6 +147,8 @@ export function PromptBuilderRightPanel({
                                             isStreamActive={isStreaming}
                                             onContentChange={onMessageContentChange}
                                             metadata={msg.metadata}
+                                            audioUrl={msg.audioUrl}
+                                            audioMimeType={msg.audioMimeType}
                                         />
                                     )}
                                 </div>

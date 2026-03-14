@@ -77,13 +77,12 @@ export interface ContentBlockEvent {
 
 export interface FlashcardItem {
   front?: string;
-  back?: string;
+  back?: string | null;
 }
 
 export interface FlashcardsBlockData {
   cards?: FlashcardItem[];
   isComplete?: boolean;
-  partialCard: FlashcardItem | null;
 }
 
 export interface TranscriptSegment {

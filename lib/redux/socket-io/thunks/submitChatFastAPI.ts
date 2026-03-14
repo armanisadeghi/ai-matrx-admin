@@ -91,6 +91,8 @@ const UNIFIED_API_ALLOWED_FIELDS = new Set([
   'internal_url_context',
   'store',
   'metadata',
+  'tts_voice',
+  'audio_format',
 ]);
 
 /**
@@ -226,7 +228,7 @@ export const submitChatFastAPI = createAsyncThunk<
 
     console.warn(
       `%c🔄 FASTAPI MIGRATION [${callerContext}]: This call flows through submitChatFastAPI → POST /api/ai/chat. ` +
-      `The calling component should be updated to call the conversation API directly and pass the new field names (ai_model_id, max_output_tokens, response_format). ` +
+      `The calling component should be updated to call the conversation API directly and pass the new field names (ai_model_id, max_output_tokens, response_format, tts_voice, audio_format). ` +
       `This bridge thunk will be removed once all callers are updated.`,
       'font-weight: bold; color: #ff9800; font-size: 12px;',
     );
@@ -353,10 +355,22 @@ export const submitChatFastAPI = createAsyncThunk<
           }
 
           case 'data': {
-            dispatch(updateDataResponse({
-              listenerId,
-              data: event.data,
-            }));
+            const dataPayload = event.data as Record<string, unknown> | null;
+            if (dataPayload && dataPayload.type === 'audio_output') {
+              dispatch(updateDataResponse({
+                listenerId,
+                data: {
+                  type: 'audio_output',
+                  url: dataPayload.url as string,
+                  mime_type: dataPayload.mime_type as string,
+                },
+              }));
+            } else {
+              dispatch(updateDataResponse({
+                listenerId,
+                data: event.data,
+              }));
+            }
             break;
           }
 

@@ -6,13 +6,13 @@ import { createUserPrompt, updateUserPrompt } from '@/lib/redux/thunks/promptCru
 import { PromptMessage } from "@/features/prompts/types/core";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useModelControls, getModelDefaults } from "@/features/prompts/hooks/useModelControls";
-import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { useAppSelector, useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/store";
 import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
 import { AiModelsPreferences, PromptsPreferences } from "@/lib/redux/slices/userPreferencesSlice";
 import { updateDebugData } from "@/lib/redux/slices/adminDebugSlice";
 import { submitChatFastAPI as createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitChatFastAPI";
-import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId, selectPrimaryResponseDataByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { toast } from "sonner";
 import { PromptMessageRole, PromptSettings } from "@/features/prompts/types/core";
 import { PromptVariable, VariableCustomComponent } from "@/features/prompts/types/core";
@@ -68,6 +68,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const dispatch = useAppDispatch();
+    const store = useAppStore();
     const basePath = usePromptsBasePath();
     const modelPreferences = useAppSelector((state: RootState) => state.userPreferences.aiModels as AiModelsPreferences);
     const { formatMessageWithResources } = useResourceMessageFormatter();
@@ -202,13 +203,15 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
     const [conversationMessages, setConversationMessages] = useState<Array<{
         role: string;
         content: string;
-        taskId?: string; // Store taskId with each message
+        taskId?: string;
+        audioUrl?: string;
+        audioMimeType?: string;
         metadata?: {
             timeToFirstToken?: number;
             totalTime?: number;
             tokens?: number;
         }
-    }>>([]);
+    }>>([]); 
     // Track the actual API conversation history (separate from template and display)
     const [apiConversationHistory, setApiConversationHistory] = useState<PromptMessage[]>([]);
 
@@ -592,13 +595,26 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
 
             setLastMessageStats(finalStats);
 
+            // Read data events directly from store at completion time — not subscribed to avoid
+            // triggering re-renders on every data update during streaming.
+            const responseDataSnapshot = currentTaskId
+                ? selectPrimaryResponseDataByTaskId(currentTaskId)(store.getState())
+                : [];
+            const audioData = (responseDataSnapshot as Array<Record<string, unknown>>).find(
+                (d) => d?.type === 'audio_output'
+            );
+            const audioUrl = audioData ? (audioData.url as string) : undefined;
+            const audioMimeType = audioData ? (audioData.mime_type as string) : undefined;
+
             // Add the completed assistant message with content, metadata, and taskId
             setConversationMessages((prev) => [
                 ...prev,
                 {
                     role: "assistant",
                     content: streamingText,
-                    taskId: currentTaskId, // Preserve taskId so component can access Redux state
+                    taskId: currentTaskId,
+                    audioUrl,
+                    audioMimeType,
                     metadata: finalStats
                 }
             ]);
@@ -615,7 +631,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
             setMessageStartTime(null);
             timeToFirstTokenRef.current = undefined;
         }
-    }, [isResponseEnded, currentTaskId, isTestingPrompt, messageStartTime, streamingText]);
+    }, [isResponseEnded, currentTaskId, isTestingPrompt, messageStartTime, streamingText, store]);
 
     // Test chat handler
     const handleSendTestMessage = async () => {

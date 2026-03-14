@@ -16,12 +16,14 @@ export type {
     ChunkPayload,
     StatusUpdatePayload,
     DataPayload,
+    AudioOutputPayload,
     CompletionPayload,
     ErrorPayload,
     ToolEventPayload,
     BrokerPayload,
     HeartbeatPayload,
     EndPayload,
+    ContentBlockPayload,
     StreamEvent,
     TypedStreamEvent,
     ChunkEvent,
@@ -33,6 +35,7 @@ export type {
     BrokerEvent,
     HeartbeatEvent,
     EndEvent,
+    ContentBlockEvent,
 } from '@/types/python-generated/stream-events';
 
 export {
@@ -46,6 +49,7 @@ export {
     isBrokerEvent,
     isHeartbeatEvent,
     isEndEvent,
+    isContentBlockEvent,
 } from '@/types/python-generated/stream-events';
 
 // Request/response schemas (from OpenAPI)
@@ -57,6 +61,15 @@ export type {
 
 // Named aliases for the most-used request schemas
 import type { components } from '@/types/python-generated/api-types';
+
+/**
+ * TTS voice for a single speaker (string) or multi-speaker Google TTS (array).
+ * Pass as `tts_voice` in the request body — replaces the old `audio_voice` field.
+ *
+ * Single:      tts_voice: "alloy"
+ * Multi (Google only): tts_voice: [{ name: "Alex", voice: "Orus" }, { name: "Sarah", voice: "Kore" }]
+ */
+export type TTSVoice = string | { name: string; voice: string }[];
 
 /** @deprecated Warm endpoint no longer takes a body — agent_id is in the URL path. This type is kept for import compatibility only. */
 export type AgentWarmRequestBody = components['schemas']['AgentWarmRequest'];
