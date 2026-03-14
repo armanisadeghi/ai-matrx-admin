@@ -8,7 +8,10 @@ import type { PcEpisodeWithShow, PcShow, PcEpisode } from '@/features/podcasts/t
 
 export const revalidate = 3600;
 
-const DEFAULT_OG_IMAGE = '/images/podcast-default-og.png';
+// OG images must be absolute URLs — social crawlers (Telegram, WhatsApp, Twitter)
+// do not follow relative paths. Fall back to the production domain.
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.aimatrx.com').replace(/\/$/, '');
+const DEFAULT_OG_IMAGE = `${SITE_URL}/images/podcast-default-og.png`;
 
 function isUUID(str: string): boolean {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
@@ -60,45 +63,58 @@ export async function generateMetadata({
 
     if (result.type === 'episode') {
         const ep = result.data;
-        // Prefer dedicated OG image (1200×630), fall back to cover, then show cover, then default
-        const ogImage = ep.og_image_url ?? ep.image_url ?? ep.show?.og_image_url ?? ep.show?.image_url ?? DEFAULT_OG_IMAGE;
         const showName = ep.show?.title;
         const title = showName ? `${ep.title} — ${showName}` : ep.title;
+        const description = ep.description ?? (showName ? `${ep.title} — ${showName}` : `Listen to ${ep.title}`);
+
+        // Full fallback chain — episode OG → episode cover → show OG → show cover →
+        // show thumbnail → site default. This ensures episodes with a video but no
+        // extracted frame still get a rich preview using the show's artwork.
+        const ogImage =
+            ep.og_image_url ??
+            ep.image_url ??
+            ep.show?.og_image_url ??
+            ep.show?.image_url ??
+            ep.show?.thumbnail_url ??
+            DEFAULT_OG_IMAGE;
 
         return {
             title: `${title} | Podcast`,
-            description: ep.description ?? `Listen to ${ep.title}`,
+            description,
             openGraph: {
                 title,
-                description: ep.description ?? `Listen to ${ep.title}`,
-                images: ogImage ? [{ url: ogImage, width: 1200, height: 630 }] : [],
+                description,
+                images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
                 type: 'music.song',
+                siteName: showName,
             },
             twitter: {
                 card: 'summary_large_image',
                 title,
-                description: ep.description ?? `Listen to ${ep.title}`,
-                images: ogImage ? [ogImage] : [],
+                description,
+                images: [ogImage],
             },
         };
     }
 
     // Show metadata
     const show = result.data;
+    const showDescription = show.description ?? `Listen to ${show.title}`;
     const showOgImage = show.og_image_url ?? show.image_url ?? DEFAULT_OG_IMAGE;
     return {
         title: `${show.title} | Podcast`,
-        description: show.description ?? `Listen to ${show.title}`,
+        description: showDescription,
         openGraph: {
             title: show.title,
-            description: show.description ?? `Listen to ${show.title}`,
-            images: showOgImage ? [{ url: showOgImage, width: 1200, height: 630 }] : [],
+            description: showDescription,
+            images: [{ url: showOgImage, width: 1200, height: 630, alt: show.title }],
+            siteName: show.title,
         },
         twitter: {
             card: 'summary_large_image',
             title: show.title,
-            description: show.description ?? `Listen to ${show.title}`,
-            images: showOgImage ? [showOgImage] : [],
+            description: showDescription,
+            images: [showOgImage],
         },
     };
 }

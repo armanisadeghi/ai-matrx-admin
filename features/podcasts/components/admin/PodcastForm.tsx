@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -426,6 +426,41 @@ export function EpisodeForm({ episode, isNew, shows, onSaved, onCancel }: Episod
                     currentVideoUrl={form.video_url || null}
                     showVideoUpload={true}
                 />
+            </div>
+
+            {/* Social sharing preview status */}
+            <div className={`flex items-start gap-2.5 rounded-xl px-3 py-2.5 text-xs border ${
+                form.og_image_url
+                    ? 'bg-success/5 border-success/30 text-success'
+                    : 'bg-warning/10 border-warning/40 text-warning-foreground'
+            }`}>
+                {form.og_image_url
+                    ? <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-success" />
+                    : <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-warning" />
+                }
+                <div>
+                    <p className="font-semibold flex items-center gap-1">
+                        <Share2 className="h-3 w-3" />
+                        Social share preview
+                    </p>
+                    {form.og_image_url ? (
+                        <p className="mt-0.5 text-success/80">OG image set — shares will show a rich preview with image.</p>
+                    ) : (
+                        <p className="mt-0.5">
+                            <strong>No OG image set.</strong> When this episode is shared on Telegram, WhatsApp, or
+                            Twitter it will show as a plain link with no image.
+                            {form.video_url && !form.image_url && (
+                                <span> Upload a cover image or wait for Python video frame extraction to generate one automatically.</span>
+                            )}
+                            {!form.video_url && !form.image_url && (
+                                <span> Upload a cover image above to fix this.</span>
+                            )}
+                            {form.image_url && !form.og_image_url && (
+                                <span> A cover image is set but no 1200×630 OG variant was generated — re-upload the image through the uploader above to regenerate all variants.</span>
+                            )}
+                        </p>
+                    )}
+                </div>
             </div>
 
             {/* Manual URL override (collapsed) */}
