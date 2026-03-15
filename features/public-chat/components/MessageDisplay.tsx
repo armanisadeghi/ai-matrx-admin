@@ -373,7 +373,8 @@ function AssistantMessage({ message, streamEvents, isStreaming = false, onConten
         setShowOptionsMenu(!showOptionsMenu);
     };
 
-    const handleShowHtmlPreview = () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const handleShowHtmlPreview = (_html?: string, _title?: string) => {
         setShowHtmlModal(true);
     };
 

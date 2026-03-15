@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Database, BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain, Save, Volume2, Edit, CheckSquare, Mail } from "lucide-react";
+import { BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain, Save, Volume2, Edit, CheckSquare, Mail } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
@@ -365,20 +365,18 @@ ${cssContent}
       icon: Briefcase, 
       iconColor: "text-amber-500 dark:text-amber-400", 
       label: "Convert to broker",
-      action: () => {},
+      action: () => { toast.info('Coming soon', { description: 'Convert to broker will be available shortly.' }); onClose(); },
       category: "Actions",
-      disabled: true,
-      showToast: false
+      showToast: false,
     },
     { 
       key: 'add-docs',
       icon: BookText, 
       iconColor: "text-emerald-500 dark:text-emerald-400", 
       label: "Add to docs",
-      action: () => {},
+      action: () => { toast.info('Coming soon', { description: 'Add to docs will be available shortly.' }); onClose(); },
       category: "Actions",
-      disabled: true,
-      showToast: false
+      showToast: false,
     }
   ];
 

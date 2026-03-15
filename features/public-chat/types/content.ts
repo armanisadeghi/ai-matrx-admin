@@ -129,144 +129,162 @@ export type ContentItem =
     | TableContentItem;
 
 /**
- * Resource types that can be attached to messages
- * Mirrors the types from features/prompts/types/resources.ts but simplified for public chat
+ * Resource types that can be attached to messages.
+ * Aligned with features/prompts/types/resources.ts for full cross-route parity.
+ *
+ * - 'file'       — Uploaded file (to Supabase storage)
+ * - 'image_link' — Direct image URL (alias for image_url, kept for backward compat)
+ * - 'image_url'  — Direct image URL (canonical name, matches prompts system)
+ * - 'file_link'  — Direct file URL (alias for file_url, kept for backward compat)
+ * - 'file_url'   — Direct file URL (canonical name, matches prompts system)
+ * - 'audio'      — Audio file
+ * - 'youtube'    — YouTube video
+ * - 'webpage'    — Scraped webpage content
+ * - 'note'       — Matrx note (requires auth)
+ * - 'task'       — Matrx task (requires auth)
+ * - 'project'    — Matrx project (requires auth)
+ * - 'table'      — Matrx table / data reference (requires auth)
+ * - 'storage'    — File from Matrx storage browser (requires auth)
  */
 export type PublicResourceType =
-    | 'file'        // Uploaded file
-    | 'image_link'  // Direct image URL
-    | 'file_link'   // Direct file URL
-    | 'audio'       // Audio file
-    | 'youtube'     // YouTube video
-    | 'webpage'     // Scraped webpage
-    | 'note'        // Matrx note (placeholder)
-    | 'task'        // Matrx task (placeholder)
-    | 'table';      // Matrx table (placeholder)
+    | 'file'
+    | 'image_link'
+    | 'image_url'
+    | 'file_link'
+    | 'file_url'
+    | 'audio'
+    | 'youtube'
+    | 'webpage'
+    | 'note'
+    | 'task'
+    | 'project'
+    | 'table'
+    | 'storage';
 
 /**
- * Public resource structure
+ * Public resource structure.
+ * The `data` bag is intentionally flexible so that both the public chat
+ * and the authenticated prompts system can share the same type without
+ * requiring separate conversion layers.
  */
 export interface PublicResource {
     type: PublicResourceType;
     data: {
+        // Universal fields
         url?: string;
         filename?: string;
         mime_type?: string;
         type?: string;
         size?: number;
-        // For specific types
-        video_id?: string;
+        id?: string;
         title?: string;
         content?: string;
-        text_content?: string;
-        transcript?: string;
-        id?: string;
         description?: string;
+        // Note fields
+        label?: string;
+        folder_name?: string;
+        tags?: string[];
+        // Task fields
         status?: string;
+        priority?: string;
+        project_id?: string;
+        project_name?: string;
+        // Project fields
+        name?: string;
+        // Table fields
         table_name?: string;
-        [key: string]: any;
+        table_id?: string;
+        table_type?: 'full_table' | 'table_row' | 'table_column' | 'table_cell';
+        row_id?: string;
+        column_name?: string;
+        // Webpage fields
+        text_content?: string;
+        // YouTube fields
+        video_id?: string;
+        videoId?: string;
+        transcript?: string;
+        // Storage / file detail fields
+        filepath?: string;
+        // Audio fields
+        duration?: number;
+        [key: string]: unknown;
     };
 }
 
 /**
- * Convert a PublicResource to a ContentItem for the API
- * 
- * All media/file types use a consistent 'url' field:
- * - input_text: { type, text }
- * - input_image: { type, url }
- * - input_audio: { type, url }
- * - input_file: { type, url }
+ * Convert a PublicResource to a ContentItem for the API.
+ *
+ * Backend natively supports: input_text, input_image, input_audio, input_file.
+ * All other types are sent with their type name for future backend support.
  */
 export function resourceToContentItem(resource: PublicResource): ContentItem | null {
     const { type, data } = resource;
 
     switch (type) {
+        // ── Media / file types ────────────────────────────────────────────
         case 'image_link':
+        case 'image_url':
             if (!data.url) return null;
-            return {
-                type: 'input_image',
-                url: data.url,
-            };
-
-        case 'file':
-            if (!data.url) return null;
-            // Determine if it's an image, audio, or generic file
-            const mimeType = data.mime_type || data.type || '';
-            
-            if (mimeType.startsWith('image/')) {
-                return {
-                    type: 'input_image',
-                    url: data.url,
-                };
-            }
-            if (mimeType.startsWith('audio/')) {
-                return {
-                    type: 'input_audio',
-                    url: data.url,
-                };
-            }
-            // Video, document, and other files all go as input_file
-            return {
-                type: 'input_file',
-                url: data.url,
-            };
+            return { type: 'input_image', url: data.url };
 
         case 'file_link':
+        case 'file_url':
             if (!data.url) return null;
-            return {
-                type: 'input_file',
-                url: data.url,
-            };
+            return { type: 'input_file', url: data.url };
 
         case 'audio':
             if (!data.url) return null;
-            return {
-                type: 'input_audio',
-                url: data.url,
-            };
+            return { type: 'input_audio', url: data.url };
+
+        case 'file':
+        case 'storage': {
+            if (!data.url) return null;
+            const mimeType = (data.mime_type ?? data.type ?? '') as string;
+            if (mimeType.startsWith('image/')) return { type: 'input_image', url: data.url };
+            if (mimeType.startsWith('audio/')) return { type: 'input_audio', url: data.url };
+            return { type: 'input_file', url: data.url };
+        }
 
         case 'youtube':
-            // YouTube not officially supported by backend, but send for future support
             if (!data.url) return null;
-            return {
-                type: 'youtube_video',
-                url: data.url,
-            };
+            return { type: 'youtube_video', url: data.url };
 
         case 'webpage':
-            // Webpage not officially supported by backend, but send for future support
             if (!data.url) return null;
-            return {
-                type: 'input_webpage',
-                url: data.url,
-            };
+            return { type: 'input_webpage', url: data.url };
 
+        // ── Matrx data types (backend receives structured objects) ────────
         case 'note':
-            // Note not officially supported by backend, but send for future support
             return {
                 type: 'input_note',
-                note_id: data.id || '',
-                title: data.title || data.filename || 'Note',
-                content: data.content || '',
+                note_id: data.id ?? '',
+                title: (data.label ?? data.title ?? data.filename ?? 'Note') as string,
+                content: (data.content ?? '') as string,
             };
 
         case 'task':
-            // Task not officially supported by backend, but send for future support
             return {
                 type: 'input_task',
-                task_id: data.id || '',
-                title: data.title || 'Task',
-                description: data.description,
-                status: data.status,
+                task_id: data.id ?? '',
+                title: (data.title ?? 'Task') as string,
+                description: data.description as string | undefined,
+                status: data.status as string | undefined,
+            };
+
+        case 'project':
+            return {
+                type: 'input_task',
+                task_id: data.id ?? '',
+                title: (data.name ?? data.title ?? 'Project') as string,
+                description: data.description as string | undefined,
             };
 
         case 'table':
-            // Table not officially supported by backend, but send for future support
             return {
                 type: 'input_table',
-                table_id: data.id || '',
-                table_name: data.table_name || data.title || 'Table',
-                data: typeof data.content === 'string' ? data.content : JSON.stringify(data.content),
+                table_id: (data.table_id ?? data.id ?? '') as string,
+                table_name: (data.table_name ?? data.title ?? 'Table') as string,
+                data: typeof data.content === 'string' ? data.content : JSON.stringify(data.content ?? {}),
             };
 
         default:
@@ -301,4 +319,24 @@ export function buildContentArray(
     }
 
     return content;
+}
+
+/**
+ * Adapter: convert a prompts `Resource` (from features/prompts/types/resources.ts)
+ * to a `PublicResource` so that the prompts picker components can be reused in any route
+ * without requiring callers to depend on the prompts type system directly.
+ *
+ * The prompts Resource discriminated union uses canonical names that already match
+ * the extended PublicResourceType, so this is a safe cast with data normalisation.
+ */
+export function promptsResourceToPublicResource(resource: {
+    type: string;
+    data: Record<string, unknown>;
+}): PublicResource {
+    // All prompts resource types are valid PublicResourceType values after extending the union.
+    // We normalise the data to match the PublicResource.data shape.
+    return {
+        type: resource.type as PublicResourceType,
+        data: resource.data as PublicResource['data'],
+    };
 }

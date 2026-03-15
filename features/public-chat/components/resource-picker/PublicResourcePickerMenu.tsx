@@ -1,46 +1,69 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-    FileText, 
-    StickyNote, 
-    CheckSquare, 
-    Table2, 
-    Globe, 
-    Workflow, 
-    ChevronLeft, 
-    ChevronRight, 
-    Upload, 
-    Youtube, 
-    Image, 
-    File, 
-    Lock,
+import dynamic from "next/dynamic";
+import {
+    FileText,
+    StickyNote,
+    CheckSquare,
+    Table2,
+    Globe,
+    ChevronLeft,
+    ChevronRight,
+    Upload,
+    Youtube,
+    Image,
+    File,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AuthGateDialog } from "@/components/dialogs/AuthGateDialog";
 import type { PublicResource } from "../../types/content";
+import { promptsResourceToPublicResource } from "../../types/content";
 import { PublicUploadResourcePicker } from "./PublicUploadResourcePicker";
 import { PublicImageUrlPicker } from "./PublicImageUrlPicker";
 import { PublicFileUrlPicker } from "./PublicFileUrlPicker";
 import { PublicYouTubePicker } from "./PublicYouTubePicker";
 import { PublicWebpagePicker } from "./PublicWebpagePicker";
 
-type ResourceType = 
-    | "upload" 
-    | "storage" 
-    | "notes" 
-    | "tasks" 
-    | "tables" 
-    | "webpage" 
-    | "youtube" 
-    | "image_link" 
-    | "file_link" 
-    | "brokers" 
+// Dynamically import auth-gated pickers — only loaded when authenticated user opens them
+const NotesResourcePicker = dynamic(
+    () => import("@/features/prompts/components/resource-picker/NotesResourcePicker").then(m => ({ default: m.NotesResourcePicker })),
+    { ssr: false }
+);
+const TasksResourcePicker = dynamic(
+    () => import("@/features/prompts/components/resource-picker/TasksResourcePicker").then(m => ({ default: m.TasksResourcePicker })),
+    { ssr: false }
+);
+const TablesResourcePicker = dynamic(
+    () => import("@/features/prompts/components/resource-picker/TablesResourcePicker").then(m => ({ default: m.TablesResourcePicker })),
+    { ssr: false }
+);
+const FilesResourcePicker = dynamic(
+    () => import("@/features/prompts/components/resource-picker/FilesResourcePicker").then(m => ({ default: m.FilesResourcePicker })),
+    { ssr: false }
+);
+
+type ResourceView =
+    | "upload"
+    | "storage"
+    | "notes"
+    | "tasks"
+    | "tables"
+    | "webpage"
+    | "youtube"
+    | "image_url"
+    | "file_url"
     | null;
 
 interface PublicResourcePickerMenuProps {
     onResourceSelected: (resource: PublicResource) => void;
     onClose: () => void;
     isAuthenticated?: boolean;
+    attachmentCapabilities?: {
+        supportsImageUrls?: boolean;
+        supportsFileUrls?: boolean;
+        supportsYoutubeVideos?: boolean;
+    };
 }
 
 interface ResourceItem {
@@ -48,8 +71,9 @@ interface ResourceItem {
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     requiresAuth: boolean;
-    comingSoon?: boolean;
-    todoNote?: string;
+    capability?: keyof NonNullable<PublicResourcePickerMenuProps["attachmentCapabilities"]>;
+    featureName?: string;
+    featureDescription?: string;
 }
 
 interface ResourceCategory {
@@ -57,18 +81,45 @@ interface ResourceCategory {
     items: ResourceItem[];
 }
 
-export function PublicResourcePickerMenu({ 
-    onResourceSelected, 
+export function PublicResourcePickerMenu({
+    onResourceSelected,
     onClose,
     isAuthenticated = false,
+    attachmentCapabilities,
 }: PublicResourcePickerMenuProps) {
-    const [activeView, setActiveView] = useState<ResourceType>(null);
+    const [activeView, setActiveView] = useState<ResourceView>(null);
     const [currentUrl, setCurrentUrl] = useState<string>("");
+    const [authGateOpen, setAuthGateOpen] = useState(false);
+    const [authGateFeature, setAuthGateFeature] = useState<{ name: string; description: string }>({
+        name: "",
+        description: "",
+    });
 
-    // Helper to switch views and carry over the URL
-    const switchToView = (view: ResourceType, url: string) => {
+    const switchToView = (view: ResourceView, url: string) => {
         setCurrentUrl(url);
         setActiveView(view);
+    };
+
+    const handleItemClick = (item: ResourceItem) => {
+        if (item.requiresAuth && !isAuthenticated) {
+            setAuthGateFeature({
+                name: item.featureName ?? item.label,
+                description: item.featureDescription ?? `Sign in to use ${item.label} as a resource.`,
+            });
+            setAuthGateOpen(true);
+            return;
+        }
+        setActiveView(item.id as ResourceView);
+    };
+
+    const handleResourceSelected = (resource: PublicResource) => {
+        onResourceSelected(resource);
+        onClose();
+    };
+
+    // Adapter: prompts pickers return their own Resource shape; we normalise it.
+    const handlePromptsResource = (resource: { type: string; data: Record<string, unknown> }) => {
+        handleResourceSelected(promptsResourceToPublicResource(resource));
     };
 
     const resourceCategories: ResourceCategory[] = [
@@ -76,219 +127,232 @@ export function PublicResourcePickerMenu({
             category: "Files",
             items: [
                 { id: "upload", label: "Upload Files", icon: Upload, requiresAuth: false },
-            ]
+                {
+                    id: "storage",
+                    label: "Stored Files",
+                    icon: FileText,
+                    requiresAuth: true,
+                    featureName: "Stored Files",
+                    featureDescription: "Browse and attach files from your Matrx storage.",
+                },
+            ],
         },
         {
             category: "Web",
             items: [
                 { id: "webpage", label: "Webpage", icon: Globe, requiresAuth: false },
-                { id: "image_link", label: "Image URL", icon: Image, requiresAuth: false },
-                { id: "file_link", label: "File URL", icon: File, requiresAuth: false },
-                { id: "youtube", label: "YouTube", icon: Youtube, requiresAuth: false },
-            ]
+                {
+                    id: "image_url",
+                    label: "Image URL",
+                    icon: Image,
+                    requiresAuth: false,
+                    capability: "supportsImageUrls",
+                },
+                {
+                    id: "file_url",
+                    label: "File URL",
+                    icon: File,
+                    requiresAuth: false,
+                    capability: "supportsFileUrls",
+                },
+                {
+                    id: "youtube",
+                    label: "YouTube",
+                    icon: Youtube,
+                    requiresAuth: false,
+                    capability: "supportsYoutubeVideos",
+                },
+            ],
         },
         {
             category: "Matrx",
             items: [
-                { 
-                    id: "storage", 
-                    label: "Stored Files", 
-                    icon: FileText, 
+                {
+                    id: "tables",
+                    label: "Tables",
+                    icon: Table2,
                     requiresAuth: true,
-                    todoNote: "TODO: Implement file browser for authenticated users"
+                    featureName: "Tables",
+                    featureDescription: "Attach data tables from your Matrx workspace.",
                 },
-                { 
-                    id: "tables", 
-                    label: "Tables", 
-                    icon: Table2, 
+                {
+                    id: "notes",
+                    label: "Notes",
+                    icon: StickyNote,
                     requiresAuth: true,
-                    todoNote: "TODO: Implement table picker for authenticated users"
+                    featureName: "Notes",
+                    featureDescription: "Attach notes from your Matrx workspace.",
                 },
-                { 
-                    id: "notes", 
-                    label: "Notes", 
-                    icon: StickyNote, 
+                {
+                    id: "tasks",
+                    label: "Tasks",
+                    icon: CheckSquare,
                     requiresAuth: true,
-                    todoNote: "TODO: Implement notes picker for authenticated users"
+                    featureName: "Tasks",
+                    featureDescription: "Attach tasks or projects from your Matrx workspace.",
                 },
-                { 
-                    id: "tasks", 
-                    label: "Tasks", 
-                    icon: CheckSquare, 
-                    requiresAuth: true,
-                    todoNote: "TODO: Implement tasks picker for authenticated users"
-                },
-                { 
-                    id: "brokers", 
-                    label: "Brokers", 
-                    icon: Workflow, 
-                    requiresAuth: true,
-                    comingSoon: true,
-                    todoNote: "TODO: Implement broker picker"
-                },
-            ]
+            ],
         },
     ];
 
-    // Check if a resource is enabled
-    const isResourceEnabled = (resource: ResourceItem) => {
-        if (resource.comingSoon) return false;
-        if (resource.requiresAuth && !isAuthenticated) return false;
-        return true;
+    // Whether a capability-gated item is enabled (null capability = always enabled)
+    const isCapabilityEnabled = (item: ResourceItem) => {
+        if (!item.capability) return true;
+        if (!attachmentCapabilities) return true; // no caps config = show all
+        return attachmentCapabilities[item.capability] !== false;
     };
 
-    // Get disable reason
-    const getDisableReason = (resource: ResourceItem) => {
-        if (resource.comingSoon) return "Coming soon";
-        if (resource.requiresAuth && !isAuthenticated) return "Sign in required";
-        return undefined;
-    };
+    // ── Sub-picker views ──────────────────────────────────────────────────
 
-    // Handle resource selection from sub-pickers
-    const handleResourceSelected = (resource: PublicResource) => {
-        onResourceSelected(resource);
-        onClose();
-    };
-
-    // Show specific resource picker based on selection
-    if (activeView) {
-        if (activeView === "upload") {
-            return (
-                <PublicUploadResourcePicker 
-                    onBack={() => setActiveView(null)}
-                    onSelect={(files) => {
-                        files.forEach(file => handleResourceSelected(file));
-                    }}
-                />
-            );
-        }
-
-        if (activeView === "image_link") {
-            return (
-                <PublicImageUrlPicker 
-                    onBack={() => setActiveView(null)}
-                    onSelect={(imageData) => handleResourceSelected(imageData)}
-                    onSwitchTo={(type, url) => switchToView(type, url)}
-                    initialUrl={currentUrl}
-                />
-            );
-        }
-
-        if (activeView === "file_link") {
-            return (
-                <PublicFileUrlPicker 
-                    onBack={() => setActiveView(null)}
-                    onSelect={(fileData) => handleResourceSelected(fileData)}
-                    onSwitchTo={(type, url) => switchToView(type, url)}
-                    initialUrl={currentUrl}
-                />
-            );
-        }
-
-        if (activeView === "youtube") {
-            return (
-                <PublicYouTubePicker 
-                    onBack={() => setActiveView(null)}
-                    onSelect={(videoData) => handleResourceSelected(videoData)}
-                    initialUrl={currentUrl}
-                />
-            );
-        }
-
-        if (activeView === "webpage") {
-            return (
-                <PublicWebpagePicker 
-                    onBack={() => setActiveView(null)}
-                    onSelect={(webpageData) => handleResourceSelected(webpageData)}
-                    onSwitchTo={(type, url) => switchToView(type, url)}
-                    initialUrl={currentUrl}
-                />
-            );
-        }
-
-        // For auth-required features, show placeholder with sign-in prompt
-        const currentResource = resourceCategories
-            .flatMap(cat => cat.items)
-            .find(r => r.id === activeView);
-
+    if (activeView === "upload") {
         return (
-            <div className="p-3">
-                <div className="flex items-center gap-2 mb-3">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0"
-                        onClick={() => setActiveView(null)}
-                    >
-                        <ChevronLeft className="w-4 h-4" />
-                    </Button>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {currentResource?.label}
-                    </span>
-                </div>
-                <div className="text-center py-8">
-                    <Lock className="w-8 h-8 mx-auto mb-3 text-gray-400" />
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                        {currentResource?.requiresAuth 
-                            ? "Sign in to access this feature"
-                            : "Coming soon..."}
-                    </p>
-                    {currentResource?.requiresAuth && (
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs"
-                            onClick={() => {
-                                window.location.href = '/login';
-                            }}
-                        >
-                            Sign In
-                        </Button>
-                    )}
-                </div>
-            </div>
+            <PublicUploadResourcePicker
+                onBack={() => setActiveView(null)}
+                onSelect={(files) => files.forEach((f) => handleResourceSelected(f))}
+            />
         );
     }
 
-    // Main menu view
-    return (
-        <div className="py-1">
-            {resourceCategories.map((category) => (
-                <div key={category.category}>
-                    <div className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide px-2 py-0.5 mt-1">
-                        {category.category}
-                    </div>
-                    {category.items.map((resource) => {
-                        const Icon = resource.icon;
-                        const isEnabled = isResourceEnabled(resource);
-                        const disableReason = getDisableReason(resource);
+    if (activeView === "image_url") {
+        return (
+            <PublicImageUrlPicker
+                onBack={() => setActiveView(null)}
+                onSelect={(imageData) => handleResourceSelected(imageData)}
+                onSwitchTo={(type, url) => switchToView(type as ResourceView, url)}
+                initialUrl={currentUrl}
+            />
+        );
+    }
 
-                        return (
-                            <Button
-                                key={resource.id}
-                                variant="ghost"
-                                size="sm"
-                                disabled={!isEnabled}
-                                className="group w-full justify-start h-6 text-xs px-2 py-0 hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed rounded-none"
-                                onClick={() => setActiveView(resource.id as ResourceType)}
-                                title={disableReason}
-                            >
-                                <Icon className="w-3.5 h-3.5 mr-1.5 flex-shrink-0 text-gray-600 dark:text-gray-400" />
-                                <span className="text-gray-900 dark:text-gray-100 font-normal">
-                                    {resource.label}
-                                </span>
-                                {!isEnabled && (
-                                    <span className="ml-2 text-[8px] px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-400 flex items-center gap-0.5">
-                                        {resource.requiresAuth && <Lock className="w-2 h-2" />}
-                                        {disableReason}
+    if (activeView === "file_url") {
+        return (
+            <PublicFileUrlPicker
+                onBack={() => setActiveView(null)}
+                onSelect={(fileData) => handleResourceSelected(fileData)}
+                onSwitchTo={(type, url) => switchToView(type as ResourceView, url)}
+                initialUrl={currentUrl}
+            />
+        );
+    }
+
+    if (activeView === "youtube") {
+        return (
+            <PublicYouTubePicker
+                onBack={() => setActiveView(null)}
+                onSelect={(videoData) => handleResourceSelected(videoData)}
+                initialUrl={currentUrl}
+            />
+        );
+    }
+
+    if (activeView === "webpage") {
+        return (
+            <PublicWebpagePicker
+                onBack={() => setActiveView(null)}
+                onSelect={(webpageData) => handleResourceSelected(webpageData)}
+                onSwitchTo={(type, url) => switchToView(type as ResourceView, url)}
+                initialUrl={currentUrl}
+            />
+        );
+    }
+
+    // Auth-gated pickers — reused from prompts feature via dynamic import
+    if (activeView === "notes") {
+        return (
+            <NotesResourcePicker
+                onBack={() => setActiveView(null)}
+                onSelect={(note) => handlePromptsResource({ type: "note", data: note as unknown as Record<string, unknown> })}
+            />
+        );
+    }
+
+    if (activeView === "tasks") {
+        return (
+            <TasksResourcePicker
+                onBack={() => setActiveView(null)}
+                onSelect={(selection) => handlePromptsResource({
+                    type: selection.type,
+                    data: selection.data as unknown as Record<string, unknown>,
+                })}
+            />
+        );
+    }
+
+    if (activeView === "tables") {
+        return (
+            <TablesResourcePicker
+                onBack={() => setActiveView(null)}
+                onSelect={(reference) => handlePromptsResource({ type: "table", data: reference as unknown as Record<string, unknown> })}
+            />
+        );
+    }
+
+    if (activeView === "storage") {
+        return (
+            <FilesResourcePicker
+                onBack={() => setActiveView(null)}
+                onSelect={(selection) => handlePromptsResource({
+                    type: "storage",
+                    data: selection as unknown as Record<string, unknown>,
+                })}
+            />
+        );
+    }
+
+    // ── Main menu ─────────────────────────────────────────────────────────
+    return (
+        <>
+            <div className="py-1">
+                {resourceCategories.map((category) => (
+                    <div key={category.category}>
+                        <div className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide px-2 py-0.5 mt-1">
+                            {category.category}
+                        </div>
+                        {category.items.map((resource) => {
+                            const Icon = resource.icon;
+                            const capEnabled = isCapabilityEnabled(resource);
+                            const needsAuth = resource.requiresAuth && !isAuthenticated;
+                            const isEnabled = capEnabled;
+
+                            return (
+                                <Button
+                                    key={resource.id}
+                                    variant="ghost"
+                                    size="sm"
+                                    disabled={!capEnabled}
+                                    className="group w-full justify-start h-6 text-xs px-2 py-0 hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed rounded-none"
+                                    onClick={() => isEnabled && handleItemClick(resource)}
+                                    title={!capEnabled ? "Not supported by current model" : needsAuth ? "Sign in required" : undefined}
+                                >
+                                    <Icon className="w-3.5 h-3.5 mr-1.5 flex-shrink-0 text-gray-600 dark:text-gray-400" />
+                                    <span className="text-gray-900 dark:text-gray-100 font-normal">
+                                        {resource.label}
                                     </span>
-                                )}
-                                <ChevronRight className="w-3 h-3 ml-auto flex-shrink-0 text-gray-400 dark:text-gray-600 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors" />
-                            </Button>
-                        );
-                    })}
-                </div>
-            ))}
-        </div>
+                                    {needsAuth && (
+                                        <span className="ml-2 text-[8px] px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-500 dark:text-gray-400">
+                                            Sign in
+                                        </span>
+                                    )}
+                                    {!capEnabled && (
+                                        <span className="ml-2 text-[8px] px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-500 dark:text-gray-400">
+                                            N/A
+                                        </span>
+                                    )}
+                                    <ChevronRight className="w-3 h-3 ml-auto flex-shrink-0 text-gray-400 dark:text-gray-600 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors" />
+                                </Button>
+                            );
+                        })}
+                    </div>
+                ))}
+            </div>
+
+            {/* Auth gate dialog — shown when unauthenticated user clicks a restricted item */}
+            <AuthGateDialog
+                isOpen={authGateOpen}
+                onClose={() => setAuthGateOpen(false)}
+                featureName={authGateFeature.name}
+                featureDescription={authGateFeature.description}
+            />
+        </>
     );
 }

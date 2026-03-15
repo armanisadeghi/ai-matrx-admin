@@ -1,5 +1,5 @@
 // InputBottomControls.tsx
-import React from "react";
+import React, { useState } from "react";
 import { Paperclip, Search, ArrowUp, Mic } from "lucide-react";
 import { TbVariablePlus } from "react-icons/tb";
 import { LiaLightbulbSolid } from "react-icons/lia";
@@ -11,7 +11,6 @@ import ModelSelection from "@/features/chat/components/input/ModelSelection";
 import { FaMicrophoneLines } from "react-icons/fa6";
 import { LuBrainCircuit } from "react-icons/lu";
 import { LuBrain } from "react-icons/lu";
-import { CgAttachment } from "react-icons/cg";
 import { MdOutlineQuestionMark } from "react-icons/md";
 import { BsPatchQuestion } from "react-icons/bs";
 import { FileManagerReturn } from "@/hooks/ai/chat/useFileManagement";
@@ -21,6 +20,11 @@ import BrokerSheet from "./BrokerSheet";
 import AIToolsSheet from "./AIToolsSheet";
 import AudioPlanDialogButton from "@/features/chat/components/input/AudioPlanToggleButton";
 import useInputControls from "@/features/chat/hooks/useInputControls";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Database } from "lucide-react";
+import { ResourcePickerMenu } from "@/features/prompts/components/resource-picker/ResourcePickerMenu";
+import type { Resource } from "@/features/prompts/types/resources";
 
 
 interface InputBottomControlsProps {
@@ -29,10 +33,12 @@ interface InputBottomControlsProps {
     onToggleTools?: () => void;
     fileManager: FileManagerReturn;
     onAddSpecialContent?: (content: string) => void;
+    onResourceSelected?: (resource: Resource) => void;
 }
 
 const InputBottomControls: React.FC<InputBottomControlsProps> = (props) => {
     const isMobile = useIsMobile();
+    const [isResourcePickerOpen, setIsResourcePickerOpen] = useState(false);
 
     // Use our custom hook for all the logic
     const {
@@ -55,6 +61,8 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = (props) => {
         setIsBrokerSheetOpen,
     } = useInputControls(props);
 
+    const hasResources = hasUploadedFiles;
+
     // Conditionally render mobile or desktop version
     if (isMobile) {
         return <MobileInputBottomControls {...props} />;
@@ -66,6 +74,39 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = (props) => {
             <div className="absolute bottom-0 left-0 right-0 h-[50px] bg-muted z-5 rounded-b-2xl">
                 {/* Left side controls */}
                 <div className="absolute bottom-2 left-4 flex items-center space-x-2">
+                    {/* Resource picker — replaces bare attachment toggle */}
+                    <Popover open={isResourcePickerOpen} onOpenChange={setIsResourcePickerOpen}>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className={`h-7 w-7 p-0 transition-colors ${
+                                    hasResources || props.fileManager.showFileUpload
+                                        ? "text-primary"
+                                        : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                                }`}
+                                disabled={props.isDisabled}
+                                title="Add resources"
+                            >
+                                <Database className="w-4 h-4" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                            className="w-80 p-0 border-border"
+                            align="start"
+                            side="top"
+                            sideOffset={8}
+                        >
+                            <ResourcePickerMenu
+                                onResourceSelected={(resource: Resource) => {
+                                    props.onResourceSelected?.(resource);
+                                    setIsResourcePickerOpen(false);
+                                }}
+                                onClose={() => setIsResourcePickerOpen(false)}
+                            />
+                        </PopoverContent>
+                    </Popover>
+                    {/* Keep upload toggle so users can directly open the upload panel */}
                     <ToggleButton
                         isEnabled={hasUploadedFiles}
                         isWaiting={props.fileManager.showFileUpload}
@@ -73,8 +114,8 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = (props) => {
                         onClick={props.fileManager.toggleFileUpload}
                         disabled={props.isDisabled}
                         label=""
-                        defaultIcon={<CgAttachment />}
-                        enabledIcon={<Paperclip />}
+                        defaultIcon={<Paperclip className="w-4 h-4" />}
+                        enabledIcon={<Paperclip className="w-4 h-4" />}
                         tooltip="Upload Files"
                     />
                     <AudioPlanDialogButton

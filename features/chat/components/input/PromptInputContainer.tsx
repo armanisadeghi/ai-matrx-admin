@@ -9,6 +9,9 @@ import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useFileManagement } from "@/hooks/ai/chat/useFileManagement";
+import { ResourceChips } from "@/features/prompts/components/resource-display/ResourceChips";
+import type { Resource } from "@/features/prompts/types/resources";
+import { formatResourcesToXml } from "@/features/prompts/utils/resource-formatting";
 
 interface PromptInputContainerProps {
     onMessageSent?: () => void;
@@ -30,7 +33,6 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
     }, [disabled]);
 
     const dispatch = useAppDispatch();
-
     const textInputRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
@@ -45,8 +47,11 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
 
     const [content, setContent] = useState<string>("");
 
-    const activeMessageRecord = useAppSelector(chatSelectors.activeMessage);
+    // Non-file resources (notes, tasks, tables, webpage, youtube, url types).
+    // These are formatted as XML and appended to the message content on submit.
+    const [resources, setResources] = useState<Resource[]>([]);
 
+    const activeMessageRecord = useAppSelector(chatSelectors.activeMessage);
 
     const handleContentChange = useCallback(
         (newContent: string) => {
@@ -59,18 +64,33 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
                 onContentChange(syntheticEvent);
             }
         },
-        [onContentChange, chatActions, dispatch]
+        [onContentChange]
     );
 
-
     const handleAddSpecialContent = useCallback((contentToAdd: string) => {
-        if (content.trim() === "") {
-            setContent(contentToAdd);
-        } else {
-            setContent(content + "\n\n" + contentToAdd);
-        }
-    }, [content]);
+        setContent((prev) => (prev.trim() === "" ? contentToAdd : `${prev}\n\n${contentToAdd}`));
+    }, []);
 
+    // Called by ResourcePickerMenu when a resource is selected.
+    const handleResourceSelected = useCallback(
+        (resource: Resource) => {
+            const isFileType = resource.type === "file" || resource.type === "storage" || resource.type === "audio";
+
+            if (isFileType && (resource.data as { url?: string }).url) {
+                // File types go through the existing file manager → Redux
+                const fileData = resource.data as { url: string; type?: string; details?: EnhancedFileDetails };
+                fileManager.addFiles([{ url: fileData.url, type: fileData.type ?? "file", details: fileData.details }]);
+            } else {
+                // All other resource types are kept in local state and formatted on submit
+                setResources((prev) => [...prev, resource]);
+            }
+        },
+        [fileManager]
+    );
+
+    const handleRemoveResource = useCallback((index: number) => {
+        setResources((prev) => prev.filter((_, i) => i !== index));
+    }, []);
 
     const handleFileUpload = useCallback(
         async (results: { url: string; type: string; details?: EnhancedFileDetails }[]) => {
@@ -86,11 +106,23 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
             return;
         }
 
-        if (!content.trim() && fileManager.files.length === 0) {
+        const hasFileAttachments = fileManager.files.length > 0;
+        const hasResources = resources.length > 0;
+
+        if (!content.trim() && !hasFileAttachments && !hasResources) {
             return;
         }
 
-        dispatch(chatActions.updateMessageContent({ value: content }));
+        // Append non-file resources as XML before dispatching
+        let finalContent = content;
+        if (hasResources) {
+            const xml = formatResourcesToXml(resources);
+            if (xml) {
+                finalContent = finalContent.trim() ? `${finalContent}\n\n${xml}` : xml;
+            }
+        }
+
+        dispatch(chatActions.updateMessageContent({ value: finalContent }));
         dispatch(chatActions.updateMessageStatus({ status: "submitted" }));
         setContent("");
 
@@ -99,6 +131,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
 
             if (success) {
                 fileManager.clearFiles();
+                setResources([]);
 
                 if (onMessageSent) {
                     onMessageSent();
@@ -110,13 +143,15 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
             }
         } finally {
             setLocalDisabled(false);
-
         }
-    }, [content, fileManager, onSubmit, onMessageSent, chatActions, dispatch, activeMessageRecord, messageId]);
+    }, [content, fileManager, resources, onSubmit, onMessageSent, chatActions, dispatch, activeMessageRecord, messageId]);
 
     return (
         <div className="relative">
             <FileChipsWithPreview files={fileManager.files} onRemoveFile={fileManager.removeFile} />
+            {resources.length > 0 && (
+                <ResourceChips resources={resources} onRemove={handleRemoveResource} />
+            )}
 
             <div className="relative rounded-2xl border border-border">
                 <TextInput
@@ -133,7 +168,13 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
                 />
 
                 <div className="absolute bottom-0 left-0 right-0 rounded-2xl">
-                    <InputBottomControls isDisabled={localDisabled} onSendMessage={handleTriggerSubmit} fileManager={fileManager} onAddSpecialContent={handleAddSpecialContent} />
+                    <InputBottomControls
+                        isDisabled={localDisabled}
+                        onSendMessage={handleTriggerSubmit}
+                        fileManager={fileManager}
+                        onAddSpecialContent={handleAddSpecialContent}
+                        onResourceSelected={handleResourceSelected}
+                    />
                 </div>
             </div>
 

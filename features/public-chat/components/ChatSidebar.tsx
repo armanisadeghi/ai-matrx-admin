@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import { useIsMobile } from '@/hooks/use-mobile';
 import type { AgentConfig } from '../context/ChatContext';
 
 // ============================================================================
@@ -67,6 +68,7 @@ export function ChatSidebar({
     className = '',
 }: ChatSidebarProps) {
     const [searchQuery, setSearchQuery] = useState('');
+    const isMobile = useIsMobile();
 
     const toggleSidebar = useCallback(() => {
         onOpenChange(!isOpen);
@@ -75,6 +77,12 @@ export function ChatSidebar({
     const closeSidebar = useCallback(() => {
         onOpenChange(false);
     }, [onOpenChange]);
+
+    // Only close the sidebar when a conversation is selected on mobile (overlay mode).
+    // On desktop the sidebar is a persistent in-flow panel and should stay open.
+    const closeSidebarOnSelect = useCallback(() => {
+        if (isMobile) onOpenChange(false);
+    }, [isMobile, onOpenChange]);
 
     const handleNewChat = useCallback(() => {
         onNewChat();
@@ -114,7 +122,7 @@ export function ChatSidebar({
                     onSelectChat={onSelectChat}
                     onNewChat={onNewChat}
                     searchQuery={searchQuery}
-                    onCloseSidebar={closeSidebar}
+                    onCloseSidebar={closeSidebarOnSelect}
                 />
             </div>
 
