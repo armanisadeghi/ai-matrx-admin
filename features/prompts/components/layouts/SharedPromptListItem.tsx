@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Loader2, Users, MoreVertical, Play, Pencil, Eye, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -61,10 +62,16 @@ export function SharedPromptListItem({
     const [lastModalCloseTime, setLastModalCloseTime] = useState(0);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const handleItemClick = () => {
+    const handleItemClick = (e: React.MouseEvent) => {
+        if (e.metaKey || e.ctrlKey) {
+            const primaryUrl = permissionLevel === 'viewer'
+                ? `${basePath}/run/${id}`
+                : `${basePath}/edit/${id}`;
+            window.open(primaryUrl, "_blank");
+            return;
+        }
         const timeSinceClose = Date.now() - lastModalCloseTime;
         if (!isDisabled && timeSinceClose > 300) {
-            // Default action: Run for viewer, Edit for editor/admin
             if (permissionLevel === 'viewer') {
                 handleRun();
             } else {
@@ -74,6 +81,7 @@ export function SharedPromptListItem({
     };
 
     const handleRun = (e?: React.MouseEvent) => {
+        if (e && (e.metaKey || e.ctrlKey)) return;
         e?.stopPropagation();
         if (onNavigate && !isDisabled) {
             onNavigate(id, `${basePath}/run/${id}`);
@@ -81,6 +89,7 @@ export function SharedPromptListItem({
     };
 
     const handleEdit = (e?: React.MouseEvent) => {
+        if (e && (e.metaKey || e.ctrlKey)) return;
         e?.stopPropagation();
         if (onNavigate && !isDisabled) {
             onNavigate(id, `${basePath}/edit/${id}`);
@@ -88,6 +97,7 @@ export function SharedPromptListItem({
     };
 
     const handleView = (e?: React.MouseEvent) => {
+        if (e && (e.metaKey || e.ctrlKey)) return;
         e?.stopPropagation();
         if (onNavigate && !isDisabled) {
             onNavigate(id, `${basePath}/view/${id}`);
@@ -113,7 +123,7 @@ export function SharedPromptListItem({
                 !isDisabled && "hover:bg-accent/50 hover:border-secondary/30 cursor-pointer hover:shadow-sm",
                 isDisabled && "opacity-50 cursor-not-allowed"
             )}
-            onClick={handleItemClick}
+            onClick={(e) => handleItemClick(e)}
             title={isDisabled ? (isNavigating ? "Navigating..." : "Please wait...") : `Click to ${permissionLevel === 'viewer' ? 'run' : 'edit'}`}
         >
             {/* Loading Overlay */}
@@ -163,20 +173,26 @@ export function SharedPromptListItem({
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onClick={handleRun} disabled={isDisabled}>
-                            <Play className="mr-2 h-4 w-4" />
-                            Run
-                        </DropdownMenuItem>
-                        {canEdit && (
-                            <DropdownMenuItem onClick={handleEdit} disabled={isDisabled}>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit
+                        <Link href={`${basePath}/run/${id}`} tabIndex={-1} onClick={(e) => handleRun(e)}>
+                            <DropdownMenuItem disabled={isDisabled}>
+                                <Play className="mr-2 h-4 w-4" />
+                                Run
                             </DropdownMenuItem>
+                        </Link>
+                        {canEdit && (
+                            <Link href={`${basePath}/edit/${id}`} tabIndex={-1} onClick={(e) => handleEdit(e)}>
+                                <DropdownMenuItem disabled={isDisabled}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Edit
+                                </DropdownMenuItem>
+                            </Link>
                         )}
-                        <DropdownMenuItem onClick={handleView} disabled={isDisabled}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View
-                        </DropdownMenuItem>
+                        <Link href={`${basePath}/view/${id}`} tabIndex={-1} onClick={(e) => handleView(e)}>
+                            <DropdownMenuItem disabled={isDisabled}>
+                                <Eye className="mr-2 h-4 w-4" />
+                                View
+                            </DropdownMenuItem>
+                        </Link>
                         <DropdownMenuItem onClick={handleDuplicate} disabled={isDuplicating || isDisabled}>
                             {isDuplicating ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

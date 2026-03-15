@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   Loader2,
@@ -83,7 +84,11 @@ export function PromptListItem({
   const [lastModalCloseTime, setLastModalCloseTime] = useState(0);
   const supabase = createClient();
 
-  const handleItemClick = () => {
+  const handleItemClick = (e: React.MouseEvent) => {
+    if (e.metaKey || e.ctrlKey) {
+      window.open(`${basePath}/run/${id}`, "_blank");
+      return;
+    }
     const timeSinceClose = Date.now() - lastModalCloseTime;
     if (!isDisabled && !isActionModalOpen && timeSinceClose > 300) {
       setIsActionModalOpen(true);
@@ -115,6 +120,7 @@ export function PromptListItem({
   };
 
   const handleRun = (e?: React.MouseEvent) => {
+    if (e && (e.metaKey || e.ctrlKey)) return;
     e?.stopPropagation();
     if (onNavigate && !isDisabled) {
       onNavigate(id, `${basePath}/run/${id}`);
@@ -122,6 +128,7 @@ export function PromptListItem({
   };
 
   const handleEdit = (e?: React.MouseEvent) => {
+    if (e && (e.metaKey || e.ctrlKey)) return;
     e?.stopPropagation();
     if (onNavigate && !isDisabled) {
       onNavigate(id, `${basePath}/edit/${id}`);
@@ -129,6 +136,7 @@ export function PromptListItem({
   };
 
   const handleView = (e?: React.MouseEvent) => {
+    if (e && (e.metaKey || e.ctrlKey)) return;
     e?.stopPropagation();
     if (onNavigate && !isDisabled) {
       onNavigate(id, `${basePath}/view/${id}`);
@@ -206,7 +214,7 @@ export function PromptListItem({
           isDisabled && "opacity-50 cursor-not-allowed",
           promptData?.isArchived && !isDisabled && "opacity-70",
         )}
-        onClick={handleItemClick}
+        onClick={(e) => handleItemClick(e)}
         title={
           isDisabled
             ? isNavigating
@@ -282,18 +290,24 @@ export function PromptListItem({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={handleRun} disabled={isDisabled}>
-                <Play className="mr-2 h-4 w-4" />
-                Run
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleEdit} disabled={isDisabled}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleView} disabled={isDisabled}>
-                <Eye className="mr-2 h-4 w-4" />
-                View
-              </DropdownMenuItem>
+              <Link href={`${basePath}/run/${id}`} tabIndex={-1} onClick={(e) => handleRun(e)}>
+                <DropdownMenuItem disabled={isDisabled}>
+                  <Play className="mr-2 h-4 w-4" />
+                  Run
+                </DropdownMenuItem>
+              </Link>
+              <Link href={`${basePath}/edit/${id}`} tabIndex={-1} onClick={(e) => handleEdit(e)}>
+                <DropdownMenuItem disabled={isDisabled}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
+                </DropdownMenuItem>
+              </Link>
+              <Link href={`${basePath}/view/${id}`} tabIndex={-1} onClick={(e) => handleView(e)}>
+                <DropdownMenuItem disabled={isDisabled}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  View
+                </DropdownMenuItem>
+              </Link>
               <DropdownMenuItem
                 onClick={handleDuplicate}
                 disabled={isDuplicating || isDisabled}
@@ -390,7 +404,7 @@ export function PromptListItem({
         promptId={id}
         promptName={name}
         onRun={handleRun}
-        onEdit={() => handleEdit(null as any)}
+        onEdit={() => handleEdit()}
         onView={handleView}
         onDuplicate={handleDuplicate}
         onDelete={handleDelete}

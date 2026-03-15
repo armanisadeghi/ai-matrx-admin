@@ -51,7 +51,11 @@ export function PromptAppListItem({
     const isPublished = app.status === "published";
     const isDisabled = isNavigating || isAnyNavigating || false;
 
-    const handleItemClick = () => {
+    const handleItemClick = (e: React.MouseEvent) => {
+        if (e.metaKey || e.ctrlKey) {
+            window.open(`/prompt-apps/${app.id}`, "_blank");
+            return;
+        }
         const timeSinceClose = Date.now() - lastModalCloseTime;
         if (!isDisabled && !isActionModalOpen && timeSinceClose > 300) {
             setIsActionModalOpen(true);
@@ -60,6 +64,10 @@ export function PromptAppListItem({
 
     const handleEdit = (e?: React.MouseEvent) => {
         e?.stopPropagation();
+        if (e && (e.metaKey || e.ctrlKey)) {
+            window.open(`/prompt-apps/${app.id}`, "_blank");
+            return;
+        }
         if (onNavigate && !isDisabled) {
             onNavigate(app.id, `/prompt-apps/${app.id}`);
         }
@@ -76,6 +84,10 @@ export function PromptAppListItem({
 
     const handleView = (e?: React.MouseEvent) => {
         e?.stopPropagation();
+        if (e && (e.metaKey || e.ctrlKey)) {
+            window.open(`/prompt-apps/${app.id}`, "_blank");
+            return;
+        }
         if (onNavigate && !isDisabled) {
             onNavigate(app.id, `/prompt-apps/${app.id}`);
         }
@@ -128,7 +140,7 @@ export function PromptAppListItem({
                         "hover:bg-accent/50 hover:border-primary/30 cursor-pointer hover:shadow-sm",
                     isDisabled && "opacity-50 cursor-not-allowed"
                 )}
-                onClick={handleItemClick}
+                onClick={(e) => handleItemClick(e)}
                 title={
                     isDisabled
                         ? isNavigating
@@ -217,14 +229,14 @@ export function PromptAppListItem({
                                 {isPublished ? "Run" : "Test"}
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => handleEdit()}
+                                onClick={(e) => handleEdit(e)}
                                 disabled={isDisabled}
                             >
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => handleView()}
+                                onClick={(e) => handleView(e)}
                                 disabled={isDisabled}
                             >
                                 <Eye className="mr-2 h-4 w-4" />

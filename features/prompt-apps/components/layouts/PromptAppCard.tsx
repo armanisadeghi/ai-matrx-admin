@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import IconButton from "@/components/official/IconButton";
@@ -44,7 +45,9 @@ export function PromptAppCard({
     const isPublished = app.status === "published";
     const isDisabled = isNavigating || isAnyNavigating || false;
 
-    const handleEdit = () => {
+    const handleEdit = (e?: React.MouseEvent) => {
+        if (e && (e.metaKey || e.ctrlKey)) return;
+        e?.preventDefault();
         if (onNavigate && !isAnyNavigating) {
             onNavigate(app.id, `/prompt-apps/${app.id}`);
         }
@@ -58,7 +61,9 @@ export function PromptAppCard({
         }
     };
 
-    const handleView = () => {
+    const handleView = (e?: React.MouseEvent) => {
+        if (e && (e.metaKey || e.ctrlKey)) return;
+        e?.preventDefault();
         if (onNavigate && !isAnyNavigating) {
             onNavigate(app.id, `/prompt-apps/${app.id}`);
         }
@@ -97,7 +102,11 @@ export function PromptAppCard({
         }
     };
 
-    const handleCardClick = () => {
+    const handleCardClick = (e: React.MouseEvent) => {
+        if (e.metaKey || e.ctrlKey) {
+            window.open(`/prompt-apps/${app.id}`, "_blank");
+            return;
+        }
         const timeSinceClose = Date.now() - lastModalCloseTime;
         if (!isDisabled && !isActionModalOpen && timeSinceClose > 300) {
             setIsActionModalOpen(true);
@@ -225,16 +234,17 @@ export function PromptAppCard({
                         onClick={handleRun}
                         disabled={isDisabled}
                     />
-                    <IconButton
-                        icon={Pencil}
-                        tooltip={isDisabled ? "Please wait..." : "Edit"}
-                        size="sm"
-                        variant="ghost"
-                        tooltipSide="top"
-                        tooltipAlign="center"
-                        onClick={handleEdit}
-                        disabled={isDisabled}
-                    />
+                    <Link href={`/prompt-apps/${app.id}`} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleEdit(e); }}>
+                        <IconButton
+                            icon={Pencil}
+                            tooltip={isDisabled ? "Please wait..." : "Edit"}
+                            size="sm"
+                            variant="ghost"
+                            tooltipSide="top"
+                            tooltipAlign="center"
+                            disabled={isDisabled}
+                        />
+                    </Link>
                     <IconButton
                         icon={isDuplicating ? Loader2 : Copy}
                         tooltip={

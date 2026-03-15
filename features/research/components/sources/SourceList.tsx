@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import { ExternalLink, MoreVertical, RefreshCw, CheckCircle2, AlertTriangle, Download, ChevronDown, ChevronUp, ArrowUpDown, ArrowUp, ArrowDown, Loader2, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -80,7 +81,7 @@ interface SourceRowProps {
     onSelect: (id: string) => void;
     onToggleInclude: (source: ResearchSource) => void;
     onScrape: (source: ResearchSource, e: React.MouseEvent) => void;
-    onNavigate: (id: string) => void;
+    onNavigate: (id: string, e?: React.MouseEvent) => void;
 }
 
 function SourceRow({
@@ -110,7 +111,7 @@ function SourceRow({
                     !anyNavigating && 'hover:bg-muted/30 cursor-pointer',
                     anyNavigating && !navigating && 'cursor-not-allowed opacity-70',
                 )}
-                onClick={() => !anyNavigating && onNavigate(source.id)}
+                onClick={(e) => !anyNavigating && onNavigate(source.id, e)}
             >
                 {/* Checkbox + Include + Rank stacked vertically */}
                 <td className="px-2 py-2.5 w-12 align-top" onClick={e => e.stopPropagation()}>
@@ -215,7 +216,10 @@ function SourceRow({
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => onNavigate(source.id)}>
+                                    <DropdownMenuItem onClick={(e) => {
+                                        if (e.metaKey || e.ctrlKey) { window.open(`/p/research/topics/${topicId}/sources/${source.id}`, '_blank'); return; }
+                                        onNavigate(source.id);
+                                    }}>
                                         View Details
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => window.open(source.url, '_blank')}>
@@ -294,7 +298,9 @@ export default function SourceList() {
         [sourceList],
     );
 
-    const handleNavigate = useCallback((id: string) => {
+    const handleNavigate = useCallback((id: string, e?: React.MouseEvent) => {
+        if (e && (e.metaKey || e.ctrlKey)) return;
+        e?.preventDefault();
         if (navigatingId) return;
         setNavigatingId(id);
         startTransition(() => {
@@ -435,11 +441,12 @@ export default function SourceList() {
                         const isNavigating = navigatingId === source.id;
                         const needsScrape = source.scrape_status === 'pending' || source.scrape_status === 'failed' || source.scrape_status === 'thin';
                         return (
-                            <div
+                            <Link
                                 key={source.id}
-                                onClick={() => !anyNavigating && handleNavigate(source.id)}
+                                href={`/p/research/topics/${topicId}/sources/${source.id}`}
+                                onClick={(e) => !anyNavigating && handleNavigate(source.id, e)}
                                 className={cn(
-                                    'rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm overflow-hidden transition-colors relative',
+                                    'rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm overflow-hidden transition-colors relative block',
                                     !source.is_included && 'opacity-50',
                                     isNavigating && 'bg-muted/60',
                                     !anyNavigating && 'active:bg-muted/50 cursor-pointer',
@@ -526,7 +533,7 @@ export default function SourceList() {
                                         )}
                                     </div>
                                 </div>
-                            </div>
+                            </Link>
                         );
                     })}
                     {sourceList.length === 0 && (

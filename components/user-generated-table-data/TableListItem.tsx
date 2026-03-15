@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link';
 import { TableIcon, Edit2, Trash2, Eye, MoreVertical, Loader2, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,7 +23,7 @@ interface TableListItemProps {
   is_public: boolean;
   authenticated_read: boolean;
   isOwned: boolean;
-  onNavigate: (id: string) => void;
+  onNavigate: (id: string, e?: React.MouseEvent) => void;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   isNavigating?: boolean;
@@ -55,9 +56,11 @@ export function TableListItem({
     }
   };
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    if (e.metaKey || e.ctrlKey) return;
+    e.preventDefault();
     if (!isDisabled) {
-      onNavigate(id);
+      onNavigate(id, e);
     }
   };
 
@@ -76,7 +79,8 @@ export function TableListItem({
   };
 
   return (
-    <div
+    <Link
+      href={`/data/${id}`}
       className={cn(
         "flex items-center gap-3 px-3 py-2.5 border rounded-lg transition-all relative",
         isOwned 
@@ -161,7 +165,10 @@ export function TableListItem({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem onClick={() => onNavigate(id)} disabled={isDisabled}>
+              <DropdownMenuItem onClick={(e) => {
+                if (e.metaKey || e.ctrlKey) { window.open(`/data/${id}`, '_blank'); return; }
+                onNavigate(id);
+              }} disabled={isDisabled}>
                 <Eye className="mr-2 h-4 w-4" />
                 View
               </DropdownMenuItem>
@@ -192,6 +199,6 @@ export function TableListItem({
           </Button>
         )}
       </div>
-    </div>
+    </Link>
   );
 }

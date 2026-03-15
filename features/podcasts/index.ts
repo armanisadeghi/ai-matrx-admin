@@ -6,6 +6,9 @@ export { podcastService } from './service';
 
 // Admin components
 export { PodcastsContainer } from './components/admin/PodcastsContainer';
+export { ShowsClient } from './components/admin/ShowsClient';
+export { ShowDetailClient } from './components/admin/ShowDetailClient';
+export { EpisodeDetailClient } from './components/admin/EpisodeDetailClient';
 export { AssetUploader } from './components/admin/AssetUploader';
 export type { AssetUrls } from './components/admin/AssetUploader';
 

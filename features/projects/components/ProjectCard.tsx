@@ -14,6 +14,7 @@ import {
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { ProjectWithRole } from '@/features/projects';
 import { cn } from '@/lib/utils';
@@ -59,7 +60,9 @@ export function ProjectCard({ project, orgSlug, onUpdate, isAnyNavigating }: Pro
   const roleDisplay = getRoleDisplay();
   const canManage = project.role === 'owner' || project.role === 'admin';
 
-  const handleNavigate = (path: string) => {
+  const handleNavigate = (path: string, e?: React.MouseEvent) => {
+    if (e && (e.metaKey || e.ctrlKey)) return;
+    e?.preventDefault();
     if (isDisabled) return;
     setNavigating(true);
     startTransition(() => router.push(path));
@@ -75,7 +78,13 @@ export function ProjectCard({ project, orgSlug, onUpdate, isAnyNavigating }: Pro
         'p-5 transition-all duration-200 hover:shadow-md cursor-pointer group relative',
         isNavigating && 'opacity-50 pointer-events-none'
       )}
-      onClick={() => handleNavigate(projectPath)}
+      onClick={(e) => {
+        if (e.metaKey || e.ctrlKey) {
+          window.open(projectPath, '_blank');
+          return;
+        }
+        handleNavigate(projectPath);
+      }}
     >
       {isNavigating && (
         <div className="absolute inset-0 bg-background/40 backdrop-blur-sm z-20 flex items-center justify-center rounded-lg">
@@ -119,33 +128,29 @@ export function ProjectCard({ project, orgSlug, onUpdate, isAnyNavigating }: Pro
 
         <div className="flex flex-col gap-2 items-end">
           {canManage ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={isDisabled}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleNavigate(settingsPath);
-              }}
-              className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30"
-            >
-              <Settings className="h-4 w-4" />
-              Settings
-            </Button>
+            <Link href={settingsPath} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleNavigate(settingsPath, e); }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isDisabled}
+                className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </Button>
+            </Link>
           ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={isDisabled}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleNavigate(projectPath);
-              }}
-              className="text-muted-foreground"
-            >
-              View
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
+            <Link href={projectPath} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleNavigate(projectPath, e); }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isDisabled}
+                className="text-muted-foreground"
+              >
+                View
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </Link>
           )}
         </div>
       </div>

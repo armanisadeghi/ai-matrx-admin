@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,7 +35,9 @@ export function TemplateCard({
     isAnyProcessing,
 }: TemplateCardProps) {
     const basePath = usePromptsBasePath();
-    const handleView = () => {
+    const handleView = (e?: React.MouseEvent) => {
+        if (e && (e.metaKey || e.ctrlKey)) return;
+        e?.preventDefault();
         if (onNavigate && !isAnyProcessing) {
             onNavigate(id, `${basePath}/templates/${id}`);
         }
@@ -103,20 +106,21 @@ export function TemplateCard({
 
             <div className="border-t border-border p-4 bg-muted rounded-b-lg">
                 <div className="flex gap-2 justify-center">
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handleView}
-                        disabled={isDisabled}
-                        className="flex-1"
-                    >
-                        {isNavigating ? (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        ) : (
-                            <Eye className="h-4 w-4 mr-2" />
-                        )}
-                        View
-                    </Button>
+                    <Link href={`${basePath}/templates/${id}`} tabIndex={-1} onClick={(e) => handleView(e)} className="flex-1">
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={isDisabled}
+                            className="w-full"
+                        >
+                            {isNavigating ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                                <Eye className="h-4 w-4 mr-2" />
+                            )}
+                            View
+                        </Button>
+                    </Link>
                     <Button
                         size="sm"
                         onClick={handleUseTemplate}

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import IconButton from "@/components/official/IconButton";
 import { Eye, Pencil, Copy, Trash2, Loader2, ChefHat, ArrowRightLeft } from "lucide-react";
@@ -33,13 +34,17 @@ export function RecipeCard({
 }: RecipeCardProps) {
     const [isConversionDialogOpen, setIsConversionDialogOpen] = useState(false);
 
-    const handleView = () => {
+    const handleView = (e?: React.MouseEvent) => {
+        if (e && (e.metaKey || e.ctrlKey)) return;
+        e?.preventDefault();
         if (onNavigate && !isAnyNavigating) {
             onNavigate(id, `/ai/recipes/${id}`);
         }
     };
 
-    const handleEdit = () => {
+    const handleEdit = (e?: React.MouseEvent) => {
+        if (e && (e.metaKey || e.ctrlKey)) return;
+        e?.preventDefault();
         if (onNavigate && !isAnyNavigating) {
             onNavigate(id, `/ai/recipes/${id}/edit`);
         }
@@ -64,7 +69,11 @@ export function RecipeCard({
         }
     };
 
-    const handleCardClick = () => {
+    const handleCardClick = (e: React.MouseEvent) => {
+        if (e.metaKey || e.ctrlKey) {
+            window.open(`/ai/recipes/${id}`, "_blank");
+            return;
+        }
         if (!isDisabled) {
             handleView();
         }
@@ -81,7 +90,7 @@ export function RecipeCard({
                         ? 'opacity-60 cursor-not-allowed' 
                         : 'hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-300 dark:hover:border-purple-600 cursor-pointer hover:scale-[1.02] group'
                 }`}
-                onClick={isDisabled ? undefined : handleCardClick}
+                onClick={handleCardClick}
                 title={isDisabled ? (isNavigating ? "Navigating..." : "Please wait...") : "Click to view recipe"}
             >
                 {/* Loading Overlay */}
@@ -126,26 +135,28 @@ export function RecipeCard({
                             disabled={isDisabled}
                             className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300"
                         />
-                        <IconButton
-                            icon={Pencil}
-                            tooltip={isDisabled ? "Please wait..." : "Edit"}
-                            size="sm"
-                            variant="ghost"
-                            tooltipSide="top"
-                            tooltipAlign="center"
-                            onClick={handleEdit}
-                            disabled={isDisabled}
-                        />
-                        <IconButton
-                            icon={Eye}
-                            tooltip={isDisabled ? "Please wait..." : "View"}
-                            size="sm"
-                            variant="ghost"
-                            tooltipSide="top"
-                            tooltipAlign="center"
-                            onClick={handleView}
-                            disabled={isDisabled}
-                        />
+                        <Link href={`/ai/recipes/${id}/edit`} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleEdit(e); }}>
+                            <IconButton
+                                icon={Pencil}
+                                tooltip={isDisabled ? "Please wait..." : "Edit"}
+                                size="sm"
+                                variant="ghost"
+                                tooltipSide="top"
+                                tooltipAlign="center"
+                                disabled={isDisabled}
+                            />
+                        </Link>
+                        <Link href={`/ai/recipes/${id}`} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleView(e); }}>
+                            <IconButton
+                                icon={Eye}
+                                tooltip={isDisabled ? "Please wait..." : "View"}
+                                size="sm"
+                                variant="ghost"
+                                tooltipSide="top"
+                                tooltipAlign="center"
+                                disabled={isDisabled}
+                            />
+                        </Link>
                         <IconButton
                             icon={isDuplicating ? Loader2 : Copy}
                             tooltip={isDuplicating ? "Duplicating..." : isDisabled ? "Please wait..." : "Duplicate"}

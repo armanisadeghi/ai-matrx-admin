@@ -244,7 +244,9 @@ export default function TableCards() {
   };
 
   // Handle navigation with loading state
-  const handleNavigate = (id: string) => {
+  const handleNavigate = (id: string, e?: React.MouseEvent) => {
+    if (e && (e.metaKey || e.ctrlKey)) return;
+    e?.preventDefault();
     if (navigatingId) return;
     setNavigatingId(id);
     startTransition(() => {
@@ -272,10 +274,12 @@ export default function TableCards() {
     const isDisabled = isNavigating || navigatingId !== null;
     
     return (
-      <div 
-        key={table.id} 
+      <Link
+        key={table.id}
+        href={`/data/${table.id}`}
         className="group cursor-pointer"
-        onClick={() => !isDisabled && handleNavigate(table.id)}
+        onClick={(e) => { if (!isDisabled) handleNavigate(table.id, e); else e.preventDefault(); }}
+        tabIndex={-1}
       >
         <Card className={cn(
           "h-[280px] bg-white dark:bg-gray-950 border-border transition-all flex flex-col relative",
@@ -401,7 +405,7 @@ export default function TableCards() {
             </Button>
           </CardFooter>
         </Card>
-      </div>
+      </Link>
     );
   };
 

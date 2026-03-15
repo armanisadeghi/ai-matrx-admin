@@ -85,7 +85,9 @@ export default function TopicList() {
         });
     };
 
-    const handleNavigateToTopic = (topicId: string) => {
+    const handleNavigateToTopic = (topicId: string, e?: React.MouseEvent) => {
+        if (e && (e.metaKey || e.ctrlKey)) return;
+        e?.preventDefault();
         if (navigatingId) return;
         setNavigatingId(topicId);
         startTransition(() => {
@@ -175,14 +177,15 @@ export default function TopicList() {
                 ) : hasTopics ? (
                     <div className="space-y-1.5 pt-1">
                         {filteredTopics.map(topic => (
-                            <div
+                            <Link
                                 key={topic.id}
+                                href={`/p/research/topics/${topic.id}`}
                                 className={cn(
                                     'group relative flex items-center gap-3 rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm p-3 transition-all hover:border-primary/25 hover:bg-card/80 cursor-pointer min-h-[44px]',
                                     navigatingId === topic.id && 'opacity-60',
                                     navigatingId && navigatingId !== topic.id && 'pointer-events-none opacity-30',
                                 )}
-                                onClick={() => handleNavigateToTopic(topic.id)}
+                                onClick={(e) => handleNavigateToTopic(topic.id, e)}
                             >
                                 {navigatingId === topic.id && (
                                     <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/40 backdrop-blur-sm">
@@ -214,7 +217,7 @@ export default function TopicList() {
                                 >
                                     <Trash2 className="h-3 w-3 text-destructive/70" />
                                 </button>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 ) : (

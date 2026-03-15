@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import IconButton from "@/components/official/IconButton";
 import { Eye, Pencil, Play, Copy, Loader2, Users, User, Shield, ShieldCheck, ShieldAlert } from "lucide-react";
@@ -64,19 +65,25 @@ export function SharedPromptCard({
     const basePath = usePromptsBasePath();
     const [isActionModalOpen, setIsActionModalOpen] = useState(false);
 
-    const handleView = () => {
+    const handleView = (e?: React.MouseEvent) => {
+        if (e && (e.metaKey || e.ctrlKey)) return;
+        e?.preventDefault();
         if (onNavigate && !isAnyNavigating) {
             onNavigate(id, `${basePath}/view/${id}`);
         }
     };
 
-    const handleEdit = () => {
+    const handleEdit = (e?: React.MouseEvent) => {
+        if (e && (e.metaKey || e.ctrlKey)) return;
+        e?.preventDefault();
         if (onNavigate && !isAnyNavigating) {
             onNavigate(id, `${basePath}/edit/${id}`);
         }
     };
 
-    const handleRun = () => {
+    const handleRun = (e?: React.MouseEvent) => {
+        if (e && (e.metaKey || e.ctrlKey)) return;
+        e?.preventDefault();
         if (onNavigate && !isAnyNavigating) {
             onNavigate(id, `${basePath}/run/${id}`);
         }
@@ -89,8 +96,14 @@ export function SharedPromptCard({
     };
 
     const handleCardClick = (e: React.MouseEvent) => {
+        if (e.metaKey || e.ctrlKey) {
+            const primaryUrl = permissionLevel === 'viewer'
+                ? `${basePath}/run/${id}`
+                : `${basePath}/edit/${id}`;
+            window.open(primaryUrl, "_blank");
+            return;
+        }
         if (!isDisabled) {
-            // Default action: Run for viewer, Edit for editor/admin
             if (permissionLevel === 'viewer') {
                 handleRun();
             } else {
@@ -193,38 +206,41 @@ export function SharedPromptCard({
             {/* Action Bar */}
             <div className="border-t border-border p-1 bg-card rounded-b-lg">
                 <div className="flex gap-2 justify-center" onClick={(e) => e.stopPropagation()}>
-                    <IconButton
-                        icon={Play}
-                        tooltip={isDisabled ? "Please wait..." : "Run"}
-                        size="sm"
-                        variant="ghost"
-                        tooltipSide="top"
-                        tooltipAlign="center"
-                        onClick={handleRun}
-                        disabled={isDisabled}
-                    />
-                    {canEdit && (
+                    <Link href={`${basePath}/run/${id}`} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleRun(e); }}>
                         <IconButton
-                            icon={Pencil}
-                            tooltip={isDisabled ? "Please wait..." : "Edit"}
+                            icon={Play}
+                            tooltip={isDisabled ? "Please wait..." : "Run"}
                             size="sm"
                             variant="ghost"
                             tooltipSide="top"
                             tooltipAlign="center"
-                            onClick={handleEdit}
                             disabled={isDisabled}
                         />
+                    </Link>
+                    {canEdit && (
+                        <Link href={`${basePath}/edit/${id}`} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleEdit(e); }}>
+                            <IconButton
+                                icon={Pencil}
+                                tooltip={isDisabled ? "Please wait..." : "Edit"}
+                                size="sm"
+                                variant="ghost"
+                                tooltipSide="top"
+                                tooltipAlign="center"
+                                disabled={isDisabled}
+                            />
+                        </Link>
                     )}
-                    <IconButton
-                        icon={Eye}
-                        tooltip={isDisabled ? "Please wait..." : "View"}
-                        size="sm"
-                        variant="ghost"
-                        tooltipSide="top"
-                        tooltipAlign="center"
-                        onClick={handleView}
-                        disabled={isDisabled}
-                    />
+                    <Link href={`${basePath}/view/${id}`} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleView(e); }}>
+                        <IconButton
+                            icon={Eye}
+                            tooltip={isDisabled ? "Please wait..." : "View"}
+                            size="sm"
+                            variant="ghost"
+                            tooltipSide="top"
+                            tooltipAlign="center"
+                            disabled={isDisabled}
+                        />
+                    </Link>
                     <IconButton
                         icon={isDuplicating ? Loader2 : Copy}
                         tooltip={isDuplicating ? "Copying..." : isDisabled ? "Please wait..." : "Copy to My Prompts"}

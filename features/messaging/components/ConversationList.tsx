@@ -2,6 +2,7 @@
 
 import React, { useState, useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectConversations, selectMessagingIsLoading } from "../redux/messagingSlice";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -53,7 +54,9 @@ export function ConversationList({
     ? pathname.split('/messages/')[1]?.split('/')[0]
     : null;
 
-  const handleSelect = (conversationId: string) => {
+  const handleSelect = (conversationId: string, e?: React.MouseEvent) => {
+    if (e && (e.metaKey || e.ctrlKey)) return;
+    e?.preventDefault();
     setSelectedConversationId(conversationId);
     startTransition(() => {
       router.push(`/messages/${conversationId}`);
@@ -168,7 +171,7 @@ export function ConversationList({
                 key={conversation.id}
                 conversation={conversation}
                 isSelected={currentConversationId === conversation.id}
-                onClick={() => handleSelect(conversation.id)}
+                onClick={(e) => handleSelect(conversation.id, e)}
                 getInitials={getInitials}
                 formatTime={formatTime}
                 isPending={isPending}
@@ -196,7 +199,7 @@ export function ConversationList({
 interface ConversationItemProps {
   conversation: ConversationWithDetails;
   isSelected: boolean;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
   getInitials: (name: string | undefined | null) => string;
   formatTime: (date: string | null | undefined) => string;
   isPending: boolean;
@@ -220,15 +223,16 @@ function ConversationItem({
   const unread_count = isSelected ? 0 : (conversation.unread_count || 0);
 
   return (
-    <button
+    <Link
+      href={`/messages/${conversation.id}`}
       onClick={onClick}
-      disabled={isPending}
       className={cn(
         "relative w-full flex items-start gap-3 px-3 py-2.5 text-left transition-colors",
         "hover:bg-zinc-100 dark:hover:bg-zinc-800",
         isSelected && "bg-zinc-100 dark:bg-zinc-800",
         isPending && "opacity-50 cursor-not-allowed"
       )}
+      aria-disabled={isPending}
     >
       {/* Loading overlay for clicked conversation */}
       {isPending && isClicked && (
@@ -285,7 +289,7 @@ function ConversationItem({
           </time>
         </div>
       </div>
-    </button>
+    </Link>
   );
 }
 

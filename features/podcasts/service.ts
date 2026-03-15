@@ -65,6 +65,36 @@ export const podcastService = {
         return data as PcEpisode[];
     },
 
+    async fetchEpisodesForShow(showId: string): Promise<PcEpisodeWithShow[]> {
+        const { data, error } = await supabase
+            .from('pc_episodes')
+            .select('*, show:pc_shows(id, slug, title, image_url)')
+            .eq('show_id', showId)
+            .order('episode_number', { ascending: true, nullsFirst: false });
+        if (error) throw error;
+        return data as PcEpisodeWithShow[];
+    },
+
+    async fetchShowById(id: string): Promise<PcShow | null> {
+        const { data, error } = await supabase
+            .from('pc_shows')
+            .select('*')
+            .eq('id', id)
+            .single();
+        if (error) return null;
+        return data as PcShow;
+    },
+
+    async fetchEpisodeById(id: string): Promise<PcEpisodeWithShow | null> {
+        const { data, error } = await supabase
+            .from('pc_episodes')
+            .select('*, show:pc_shows(id, slug, title, image_url)')
+            .eq('id', id)
+            .single();
+        if (error) return null;
+        return data as PcEpisodeWithShow;
+    },
+
     async createEpisode(payload: Omit<PcEpisode, 'id' | 'created_at' | 'updated_at'>): Promise<PcEpisode> {
         const { data, error } = await supabase
             .from('pc_episodes')

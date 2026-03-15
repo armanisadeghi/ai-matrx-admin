@@ -220,6 +220,7 @@ interface EpisodeFormProps {
     episode: PcEpisodeWithShow | null;
     isNew: boolean;
     shows: PcShow[];
+    defaultShowId?: string;
     onSaved: (saved: PcEpisodeWithShow) => void;
     onCancel: () => void;
 }
@@ -240,7 +241,7 @@ const EMPTY_EPISODE: PcEpisodeFormData = {
     is_published: false,
 };
 
-export function EpisodeForm({ episode, isNew, shows, onSaved, onCancel }: EpisodeFormProps) {
+export function EpisodeForm({ episode, isNew, shows, defaultShowId, onSaved, onCancel }: EpisodeFormProps) {
     const [form, setForm] = useState<PcEpisodeFormData>(EMPTY_EPISODE);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -264,10 +265,10 @@ export function EpisodeForm({ episode, isNew, shows, onSaved, onCancel }: Episod
                 is_published: episode.is_published,
             });
         } else {
-            setForm(EMPTY_EPISODE);
+            setForm({ ...EMPTY_EPISODE, show_id: defaultShowId ?? '' });
         }
         setError(null);
-    }, [episode]);
+    }, [episode, defaultShowId]);
 
     const set = <K extends keyof PcEpisodeFormData>(key: K, value: PcEpisodeFormData[K]) =>
         setForm((prev) => ({ ...prev, [key]: value }));

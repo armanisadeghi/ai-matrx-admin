@@ -1,5 +1,6 @@
 import {
     IconAccessible,
+    IconMicrophone,
     IconAdjustmentsBolt,
     IconAlertOctagon,
     IconApi,
@@ -115,6 +116,20 @@ export const adminCategories = [
                     "Manage prompt shortcut categories with placement types, hierarchy, icons, and colors for organizing AI actions",
                 icon: <IconAdjustmentsBolt />,
                 link: "/administration/shortcut-categories",
+                isNew: true,
+            },
+        ],
+    },
+    {
+        name: "Podcasts",
+        icon: <IconMicrophone className="w-6 h-6" />,
+        iconColor: "text-sky-600",
+        features: [
+            {
+                title: "Podcast Manager",
+                description: "Manage podcast shows and episodes — create, edit, upload assets, and publish audio content with custom metadata and video backgrounds.",
+                icon: <IconMicrophone />,
+                link: "/administration/podcasts/shows",
                 isNew: true,
             },
         ],

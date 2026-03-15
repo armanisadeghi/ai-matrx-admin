@@ -5,6 +5,7 @@ import { Building2, Users, Settings, Crown, Shield, User as UserIcon, ChevronRig
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { OrganizationWithRole } from '@/features/organizations';
 import { cn } from '@/lib/utils';
@@ -71,16 +72,18 @@ export function OrganizationCard({ organization, onUpdate }: OrganizationCardPro
 
   const roleDisplay = getRoleDisplay();
 
-  // Navigate to org settings
-  const handleNavigate = () => {
+  const settingsPath = `/organizations/${organization.id}/settings`;
+
+  const handleNavigate = (e?: React.MouseEvent) => {
+    if (e && (e.metaKey || e.ctrlKey)) return;
+    e?.preventDefault();
     setIsNavigating(true);
-    router.push(`/organizations/${organization.id}/settings`);
+    router.push(settingsPath);
   };
 
-  // Quick action handlers
   const handleViewSettings = (e: React.MouseEvent) => {
     e.stopPropagation();
-    handleNavigate();
+    handleNavigate(e);
   };
 
   // Determine available actions based on role
@@ -94,7 +97,13 @@ export function OrganizationCard({ organization, onUpdate }: OrganizationCardPro
         isPersonal && 'border-purple-200 dark:border-purple-800 bg-purple-50/30 dark:bg-purple-900/10',
         isNavigating && 'opacity-50 pointer-events-none'
       )}
-      onClick={handleNavigate}
+      onClick={(e) => {
+        if (e.metaKey || e.ctrlKey) {
+          window.open(settingsPath, '_blank');
+          return;
+        }
+        handleNavigate();
+      }}
     >
       <div className="flex items-start justify-between gap-4">
         {/* Left side - Org info */}
@@ -170,39 +179,42 @@ export function OrganizationCard({ organization, onUpdate }: OrganizationCardPro
         {/* Right side - Actions */}
         <div className="flex flex-col gap-2 items-end">
           {canManageSettings && !isPersonal && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleViewSettings}
-              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
-            >
-              <Settings className="h-4 w-4" />
-              Settings
-            </Button>
+            <Link href={settingsPath} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleNavigate(e); }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </Button>
+            </Link>
           )}
-          
+
           {isPersonal && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleViewSettings}
-              className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/30"
-            >
-              View
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
+            <Link href={settingsPath} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleNavigate(e); }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/30"
+              >
+                View
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </Link>
           )}
 
           {!canManageSettings && !isPersonal && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleViewSettings}
-              className="text-gray-600 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800"
-            >
-              View
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
+            <Link href={settingsPath} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleNavigate(e); }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-600 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800"
+              >
+                View
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </Link>
           )}
         </div>
       </div>
