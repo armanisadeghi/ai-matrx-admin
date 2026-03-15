@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import IconButton from "@/components/official/IconButton";
 import {
@@ -86,19 +87,25 @@ export function PromptCard({
   const [lastModalCloseTime, setLastModalCloseTime] = useState(0);
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
 
-  const handleView = () => {
+  const handleView = (e?: React.MouseEvent) => {
+    if (e && (e.metaKey || e.ctrlKey)) return; // let Link href handle new-tab
+    e?.preventDefault();
     if (onNavigate && !isAnyNavigating) {
       onNavigate(id, `${basePath}/view/${id}`);
     }
   };
 
-  const handleEdit = () => {
+  const handleEdit = (e?: React.MouseEvent) => {
+    if (e && (e.metaKey || e.ctrlKey)) return; // let Link href handle new-tab
+    e?.preventDefault();
     if (onNavigate && !isAnyNavigating) {
       onNavigate(id, `${basePath}/edit/${id}`);
     }
   };
 
-  const handleRun = () => {
+  const handleRun = (e?: React.MouseEvent) => {
+    if (e && (e.metaKey || e.ctrlKey)) return; // let Link href handle new-tab
+    e?.preventDefault();
     if (onNavigate && !isAnyNavigating) {
       onNavigate(id, `${basePath}/run/${id}`);
     }
@@ -187,6 +194,11 @@ export function PromptCard({
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
+    // cmd/ctrl+click: open the run page in a new tab
+    if (e.metaKey || e.ctrlKey) {
+      window.open(`${basePath}/run/${id}`, "_blank");
+      return;
+    }
     const timeSinceClose = Date.now() - lastModalCloseTime;
     if (
       !isDisabled &&
@@ -303,36 +315,39 @@ export function PromptCard({
           className="flex gap-2 justify-center items-center"
           onClick={(e) => e.stopPropagation()}
         >
-          <IconButton
-            icon={Play}
-            tooltip={isDisabled ? "Please wait..." : "Run"}
-            size="sm"
-            variant="ghost"
-            tooltipSide="top"
-            tooltipAlign="center"
-            onClick={handleRun}
-            disabled={isDisabled}
-          />
-          <IconButton
-            icon={Pencil}
-            tooltip={isDisabled ? "Please wait..." : "Edit"}
-            size="sm"
-            variant="ghost"
-            tooltipSide="top"
-            tooltipAlign="center"
-            onClick={handleEdit}
-            disabled={isDisabled}
-          />
-          <IconButton
-            icon={Eye}
-            tooltip={isDisabled ? "Please wait..." : "View"}
-            size="sm"
-            variant="ghost"
-            tooltipSide="top"
-            tooltipAlign="center"
-            onClick={handleView}
-            disabled={isDisabled}
-          />
+          <Link href={`${basePath}/run/${id}`} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleRun(e); }}>
+            <IconButton
+              icon={Play}
+              tooltip={isDisabled ? "Please wait..." : "Run"}
+              size="sm"
+              variant="ghost"
+              tooltipSide="top"
+              tooltipAlign="center"
+              disabled={isDisabled}
+            />
+          </Link>
+          <Link href={`${basePath}/edit/${id}`} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleEdit(e); }}>
+            <IconButton
+              icon={Pencil}
+              tooltip={isDisabled ? "Please wait..." : "Edit"}
+              size="sm"
+              variant="ghost"
+              tooltipSide="top"
+              tooltipAlign="center"
+              disabled={isDisabled}
+            />
+          </Link>
+          <Link href={`${basePath}/view/${id}`} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleView(e); }}>
+            <IconButton
+              icon={Eye}
+              tooltip={isDisabled ? "Please wait..." : "View"}
+              size="sm"
+              variant="ghost"
+              tooltipSide="top"
+              tooltipAlign="center"
+              disabled={isDisabled}
+            />
+          </Link>
           <IconButton
             icon={isDuplicating ? Loader2 : Copy}
             tooltip={

@@ -9,7 +9,13 @@ globs:
 # Navigation Feedback Pattern
 
 ## Requirements
-All clickable cards/items that navigate to new routes must provide immediate visual feedback and prevent duplicate actions.
+All clickable cards/items that navigate to new routes must:
+1. Provide immediate visual feedback and prevent duplicate actions
+2. **Support cmd+click / ctrl+click to open in a new tab** — this is a critical UX requirement
+
+## The cmd+click Problem
+
+Using `onClick` with `router.push()` breaks cmd+click (open in new tab) because the browser can only intercept that natively on `<a>` elements with an `href`. **Always use `<Link>` wrappers with `href` for navigation buttons**.
 
 ## Implementation
 
@@ -25,24 +31,67 @@ const handleNavigate = (id: string, path: string) => {
 };
 ```
 
-### Child Component (Card/Item)
+### Child Component — Navigation Handlers
+```typescript
+// Accept optional event; bail out on cmd/ctrl+click so the Link href takes over
+const handleEdit = (e?: React.MouseEvent) => {
+  if (e && (e.metaKey || e.ctrlKey)) return; // let <Link href> handle new-tab
+  e?.preventDefault();
+  if (onNavigate && !isAnyNavigating) {
+    onNavigate(id, `${basePath}/edit/${id}`);
+  }
+};
+```
+
+### Child Component — Wrap navigation buttons in `<Link>`
+```tsx
+import Link from "next/link";
+
+// Wrap each navigation IconButton in a Link for native cmd+click support.
+// The onClick intercepts normal clicks to trigger loading states via router.push.
+// cmd/ctrl+click skips preventDefault and the href opens natively in a new tab.
+<Link href={`${basePath}/edit/${id}`} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleEdit(e); }}>
+  <IconButton
+    icon={Pencil}
+    tooltip={isDisabled ? "Please wait..." : "Edit"}
+    size="sm"
+    variant="ghost"
+    disabled={isDisabled}
+  />
+</Link>
+```
+
+### Card body with no primary URL (opens a modal on click)
+```typescript
+// For cards that open a modal on click (no single primary URL),
+// handle cmd/ctrl+click explicitly to open the most relevant destination.
+const handleCardClick = (e: React.MouseEvent) => {
+  if (e.metaKey || e.ctrlKey) {
+    window.open(`${basePath}/run/${id}`, "_blank");
+    return;
+  }
+  // normal click — open modal
+  setIsActionModalOpen(true);
+};
+```
+
+### Child Component — Loading Overlay
 ```typescript
 const isDisabled = isNavigating || isAnyNavigating;
 
-// Loading overlay on navigating card
 {isNavigating && (
-  <div className="absolute inset-0 bg-slate-900/20 dark:bg-slate-950/40 backdrop-blur-sm z-20 flex items-center justify-center">
-    <Loader2 className="w-8 h-8 animate-spin" />
+  <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-20 flex items-center justify-center">
+    <Loader2 className="w-8 h-8 text-primary animate-spin" />
   </div>
 )}
-
-// Disable card: opacity-60 cursor-not-allowed
-// Disable all buttons: disabled={isDisabled}
 ```
 
 ## Checklist
 - ✅ `useTransition` + `startTransition` for navigation
+- ✅ Navigation buttons wrapped in `<Link href={...}>` for cmd+click support
+- ✅ Handler accepts `(e?: React.MouseEvent)` and returns early on `e.metaKey || e.ctrlKey`
 - ✅ Loading overlay with spinner on active card
 - ✅ Disable all cards when any is navigating
 - ✅ Prevent duplicate clicks with state check
 - ✅ Update tooltips/aria-labels to "Please wait..."
+- ✅ Card body with modal: handle `e.metaKey || e.ctrlKey` with `window.open`
