@@ -9,15 +9,23 @@ import {
   LogOut,
   Sun,
   Moon,
-  Zap,
   MessageSquare,
   Bell,
   Bug,
   Shield,
+  Eye,
+  EyeOff,
+  StickyNote,
+  CheckSquare,
+  Database,
+  LayoutGrid,
+  FolderOpen,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectUser, selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsOverlayOpen, toggleOverlay, openOverlay } from "@/lib/redux/slices/overlaySlice";
 
 const FeedbackDialog = dynamic(() => import("./FeedbackDialog"), {
   ssr: false,
@@ -30,8 +38,45 @@ function closeMenu() {
 }
 
 export default function UserMenuPanel() {
+  const dispatch = useAppDispatch();
   const reduxUser = useAppSelector(selectUser);
   const isAdmin = useAppSelector(selectIsAdmin) ?? false;
+  const isAdminIndicatorOpen = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
+
+  const openQuickNotes = useCallback(() => {
+    dispatch(openOverlay({ overlayId: "quickNotes" }));
+    closeMenu();
+  }, [dispatch]);
+
+  const openQuickTasks = useCallback(() => {
+    dispatch(openOverlay({ overlayId: "quickTasks" }));
+    closeMenu();
+  }, [dispatch]);
+
+  const openQuickChat = useCallback(() => {
+    dispatch(openOverlay({ overlayId: "quickChat" }));
+    closeMenu();
+  }, [dispatch]);
+
+  const openQuickData = useCallback(() => {
+    dispatch(openOverlay({ overlayId: "quickData" }));
+    closeMenu();
+  }, [dispatch]);
+
+  const openQuickFiles = useCallback(() => {
+    dispatch(openOverlay({ overlayId: "quickFiles" }));
+    closeMenu();
+  }, [dispatch]);
+
+  const openQuickUtilities = useCallback(() => {
+    dispatch(openOverlay({ overlayId: "quickUtilities" }));
+    closeMenu();
+  }, [dispatch]);
+
+  const openQuickAIResults = useCallback(() => {
+    dispatch(openOverlay({ overlayId: "quickAIResults" }));
+    closeMenu();
+  }, [dispatch]);
 
   const user = reduxUser?.id ? {
     name: reduxUser.userMetadata?.name || reduxUser.email?.split("@")[0] || "User",
@@ -110,9 +155,30 @@ export default function UserMenuPanel() {
 
       <div className="h-px my-1 mx-2 bg-[var(--shell-glass-border)]" />
 
-      <Link href="/ssr/chat" className={itemClass} onClick={closeMenu}>
-        <Zap /> Quick Actions
-      </Link>
+      <button className={itemClass} onClick={openQuickNotes}>
+        <StickyNote /> Quick Note
+      </button>
+      <button className={itemClass} onClick={openQuickTasks}>
+        <CheckSquare /> Quick Task
+      </button>
+      <button className={itemClass} onClick={openQuickChat}>
+        <MessageSquare /> Quick Chat
+      </button>
+      <button className={itemClass} onClick={openQuickData}>
+        <Database /> Quick Data
+      </button>
+      <button className={itemClass} onClick={openQuickFiles}>
+        <FolderOpen /> Quick Files
+      </button>
+      <button className={itemClass} onClick={openQuickAIResults}>
+        <Sparkles /> AI Results
+      </button>
+      <button className={itemClass} onClick={openQuickUtilities}>
+        <LayoutGrid /> Utilities Hub
+      </button>
+
+      <div className="h-px my-1 mx-2 bg-[var(--shell-glass-border)]" />
+
       <Link href="/ssr/messages" className={itemClass} onClick={closeMenu}>
         <MessageSquare /> Direct Messages
       </Link>
@@ -143,6 +209,16 @@ export default function UserMenuPanel() {
           >
             <Shield /> Admin Dashboard
           </Link>
+          <button
+            className={cn(itemClass, "[&_svg]:text-amber-500")}
+            onClick={() => {
+              dispatch(toggleOverlay({ overlayId: "adminIndicator" }));
+              closeMenu();
+            }}
+          >
+            {isAdminIndicatorOpen ? <EyeOff /> : <Eye />}
+            {isAdminIndicatorOpen ? "Hide" : "Show"} Admin Indicator
+          </button>
         </>
       )}
 
