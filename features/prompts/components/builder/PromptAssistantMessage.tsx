@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef } from "react";
-import { Edit, MoreHorizontal, Copy, Check, Volume2, Download, Loader2 } from "lucide-react";
+import { Edit, MoreHorizontal, Copy, Check, Volume2, Download, Loader2, Link } from "lucide-react";
 import MarkdownStream from "@/components/MarkdownStream";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
 import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
@@ -46,6 +46,7 @@ export function PromptAssistantMessage({
     const [showOptionsMenu, setShowOptionsMenu] = useState(false);
     const [showHtmlModal, setShowHtmlModal] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
+    const [isAudioLinkCopied, setIsAudioLinkCopied] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
     const user = useAppSelector(selectUser);
@@ -160,6 +161,28 @@ export function PromptAssistantMessage({
                             }
                             {isDownloading ? 'Downloading…' : 'Download audio'}
                         </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={async () => {
+                                if (!audioUrl) return;
+                                try {
+                                    await navigator.clipboard.writeText(audioUrl);
+                                    setIsAudioLinkCopied(true);
+                                    setTimeout(() => setIsAudioLinkCopied(false), 2000);
+                                } catch {
+                                    // silent
+                                }
+                            }}
+                            className="h-6 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
+                            title="Copy audio link"
+                        >
+                            {isAudioLinkCopied
+                                ? <Check className="w-3 h-3" />
+                                : <Link className="w-3 h-3" />
+                            }
+                            {isAudioLinkCopied ? 'Copied!' : 'Copy link'}
+                        </Button>
                     </div>
                 </div>
             ) : (
@@ -222,6 +245,10 @@ export function PromptAssistantMessage({
                                 onShowHtmlPreview={handleShowHtmlPreview}
                                 onEditContent={handleEditClick}
                                 anchorElement={moreOptionsButtonRef.current}
+                                metadata={metadata ? {
+                                    taskId,
+                                    ...metadata,
+                                } : undefined}
                             />
                         </div>
                     )}
@@ -232,6 +259,8 @@ export function PromptAssistantMessage({
                 initialContent={content}
                 onSave={handleSaveEdit}
                 onCancel={handleCancelEdit}
+                tabs={["write", "markdown", "wysiwyg", "preview"]}
+                initialTab="write"
             />
             <HtmlPreviewFullScreenEditor
                 isOpen={showHtmlModal}

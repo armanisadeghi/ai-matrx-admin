@@ -84,8 +84,6 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
 
   // Edit Content handler
   const handleEditContent = () => {
-    console.log("📝 Edit Content clicked from menu");
-    console.log("📝 onEditContent callback:", onEditContent ? "exists" : "missing");
     if (onEditContent) {
       onEditContent();
     }
@@ -93,11 +91,17 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
   };
 
   // Copy handlers - simplified without state management
+  const getErrorMessage = (error: unknown, fallback: string): string => {
+    if (error instanceof Error) return error.message || fallback;
+    if (typeof error === 'string') return error || fallback;
+    return fallback;
+  };
+
   const handleCopyPlain = async () => {
     await copyToClipboard(content, {
       onSuccess: () => {},
       onError: (error) => {
-        throw new Error(error.message || "Failed to copy text");
+        throw new Error(getErrorMessage(error, "Failed to copy text"));
       }
     });
   };
@@ -108,7 +112,7 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
       formatForGoogleDocs: true,
       onSuccess: () => {},
       onError: (error) => {
-        throw new Error(error.message || "Failed to copy for Google Docs");
+        throw new Error(getErrorMessage(error, "Failed to copy for Google Docs"));
       }
     });
   };
@@ -119,7 +123,7 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
       includeThinking: true,
       onSuccess: () => {},
       onError: (error) => {
-        throw new Error(error.message || "Failed to copy with thinking");
+        throw new Error(getErrorMessage(error, "Failed to copy with thinking"));
       }
     });
   };
@@ -139,7 +143,7 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
       },
       onSuccess: () => {},
       onError: (error) => {
-        throw new Error(error.message || "Failed to generate HTML preview");
+        throw new Error(getErrorMessage(error, "Failed to generate HTML preview"));
       }
     });
   };
@@ -170,7 +174,7 @@ ${cssContent}
           await copyToClipboard(completeHTML, {
             onSuccess: () => {},
             onError: (error) => {
-              throw new Error(error.message || "Failed to copy HTML");
+              throw new Error(getErrorMessage(error, "Failed to copy HTML"));
             }
           });
         } catch (error) {
@@ -179,9 +183,25 @@ ${cssContent}
       },
       onSuccess: () => {},
       onError: (error) => {
-        throw new Error(error.message || "Failed to generate HTML");
+        throw new Error(getErrorMessage(error, "Failed to generate HTML"));
       }
     });
+  };
+
+  // Save as file handler
+  const handleSaveAsFile = () => {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const filename = `ai-response-${timestamp}.md`;
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    onClose();
   };
 
   // Email to me handler
@@ -331,6 +351,16 @@ ${cssContent}
       showToast: false
     },
     { 
+      key: 'save-file',
+      icon: FileCode, 
+      iconColor: "text-rose-500 dark:text-rose-400", 
+      label: "Save as file",
+      action: handleSaveAsFile,
+      category: "Actions",
+      successMessage: "File saved!",
+      errorMessage: "Failed to save file",
+    },
+    { 
       key: 'convert-broker',
       icon: Briefcase, 
       iconColor: "text-amber-500 dark:text-amber-400", 
@@ -345,16 +375,6 @@ ${cssContent}
       icon: BookText, 
       iconColor: "text-emerald-500 dark:text-emerald-400", 
       label: "Add to docs",
-      action: () => {},
-      category: "Actions",
-      disabled: true,
-      showToast: false
-    },
-    { 
-      key: 'save-file',
-      icon: FileCode, 
-      iconColor: "text-rose-500 dark:text-rose-400", 
-      label: "Save as file",
       action: () => {},
       category: "Actions",
       disabled: true,

@@ -158,6 +158,10 @@ export function PromptSystemMessage({
                                 onShowHtmlPreview={handleShowHtmlPreview}
                                 onEditContent={handleEditClick}
                                 anchorElement={moreOptionsButtonRef.current}
+                                metadata={metadata ? {
+                                    taskId,
+                                    ...metadata,
+                                } : undefined}
                             />
                         </div>
                     )}
@@ -168,6 +172,8 @@ export function PromptSystemMessage({
                 initialContent={content}
                 onSave={handleSaveEdit}
                 onCancel={handleCancelEdit}
+                tabs={["write", "markdown", "wysiwyg", "preview"]}
+                initialTab="write"
             />
             <HtmlPreviewFullScreenEditor
                 isOpen={showHtmlModal}

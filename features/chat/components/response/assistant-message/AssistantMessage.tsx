@@ -86,10 +86,6 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
         return () => clearTimeout(timer);
     }, []);
     
-    // Debug: Log when editor state changes
-    useEffect(() => {
-        console.log("🔍 isEditorOpen changed to:", isEditorOpen);
-    }, [isEditorOpen]);
     
     const handleCopy = async () => {
         try {
@@ -136,10 +132,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
     };
     
     const handleEditClick = () => {
-        // Always open editor - save functionality will be optional
-        console.log("🖊️ handleEditClick called, opening editor");
         setIsEditorOpen(true);
-        console.log("🖊️ isEditorOpen set to true");
     };
     
     const handleSaveEdit = (newContent: string) => {

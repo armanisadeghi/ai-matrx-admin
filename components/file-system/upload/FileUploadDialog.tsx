@@ -11,6 +11,36 @@ import { AvailableBuckets, FileSystemNode } from "@/lib/redux/fileSystem/types";
 import { formatBytes } from "@/components/ui/file-preview/utils/formatting";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+// Translate opaque Supabase/server error messages into human-readable explanations
+function translateUploadError(raw: string): string {
+    const lower = raw.toLowerCase();
+    if (lower.includes("payload too large") || lower.includes("entity too large") || lower.includes("413")) {
+        return "File is too large for this storage bucket. Try compressing the file or splitting it into smaller parts before uploading.";
+    }
+    if (lower.includes("exceeded") && lower.includes("size")) {
+        return "File exceeds the storage bucket size limit. Reduce the file size and try again.";
+    }
+    if (lower.includes("invalid mime type") || lower.includes("mime type not allowed")) {
+        return "This file type is not allowed in this storage bucket. Check the supported file types and try again.";
+    }
+    if (lower.includes("not found") && lower.includes("bucket")) {
+        return "Storage bucket not found. Please contact support.";
+    }
+    if (lower.includes("row-level security") || lower.includes("rls") || lower.includes("unauthorized") || lower.includes("403")) {
+        return "You do not have permission to upload to this location. Make sure you are signed in and try again.";
+    }
+    if (lower.includes("duplicate") || lower.includes("already exists")) {
+        return "A file with this name already exists at this location. Rename the file or choose a different folder.";
+    }
+    if (lower.includes("network") || lower.includes("failed to fetch") || lower.includes("timeout")) {
+        return "Network error — the upload was interrupted. Check your connection and try again.";
+    }
+    return raw;
+}
+
+const WARN_THRESHOLD = 50 * 1024 * 1024; // 50 MB
 
 interface FileUploadDialogProps {
     isOpen: boolean;
@@ -182,10 +212,11 @@ export function FileUploadDialog({ isOpen, onClose, bucket, initialPath }: FileU
                 updatedFiles[i] = { ...updatedFiles[i], status: "success" };
             } catch (error) {
                 console.error("Upload error:", error);
+                const rawMessage = error instanceof Error ? error.message : "Upload failed";
                 updatedFiles[i] = {
                     ...updatedFiles[i],
                     status: "error",
-                    error: error instanceof Error ? error.message : "Upload failed",
+                    error: translateUploadError(rawMessage),
                 };
             }
             setUploadingFiles([...updatedFiles]);
@@ -345,6 +376,21 @@ export function FileUploadDialog({ isOpen, onClose, bucket, initialPath }: FileU
                     </div>
                 ) : (
                     <>
+                        {/* Large-file warning */}
+                        {uploadingFiles.some(f => f.status === "pending" && f.file.size > WARN_THRESHOLD) && (
+                            <Alert className="py-2">
+                                <AlertCircle className="h-4 w-4 text-amber-500" />
+                                <AlertTitle className="text-xs font-semibold text-amber-700 dark:text-amber-400">Large Files Detected</AlertTitle>
+                                <AlertDescription className="text-xs text-amber-700 dark:text-amber-400">
+                                    {uploadingFiles
+                                        .filter(f => f.status === "pending" && f.file.size > WARN_THRESHOLD)
+                                        .map(f => `${f.file.name} (${formatBytes(f.file.size)})`)
+                                        .join(", ")}
+                                    {" "}may fail if the storage bucket has a size limit. If upload fails, compress or split the file before retrying.
+                                </AlertDescription>
+                            </Alert>
+                        )}
+
                         {/* Files List */}
                         <div className="max-h-[400px] overflow-y-auto space-y-2">
                             {uploadingFiles.map((item, index) => (

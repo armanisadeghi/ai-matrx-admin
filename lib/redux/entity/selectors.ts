@@ -45,7 +45,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const entityLogger = EntityLogger.createLoggerWithDefaults(trace, entityKey);
 
     const selectEntity = (state: RootState): EntityStateType<TEntity> => {
-        const entityState = state.entities[entityKey];
+        const entityState = state.entities?.[entityKey];
         if (!entityState) return {} as EntityStateType<TEntity>;
         return entityState as EntityStateType<TEntity>;
     };
@@ -468,7 +468,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     });
 
     const selectSelectedRecordIds = (state: RootState): MatrxRecordId[] => {
-        return state.entities[entityKey].selection.selectedRecords || [];
+        return state.entities?.[entityKey]?.selection?.selectedRecords || [];
     };
 
     const selectIsRecordSelected = createSelector(

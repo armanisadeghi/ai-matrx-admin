@@ -39,19 +39,19 @@ export const createChatSelectors = () => {
     }
 
     const selectConversationEntity = (state: RootState): ConversationState => {
-        const conversationState = state.entities[conversationEntity] as ConversationState;
+        const conversationState = state.entities?.[conversationEntity] as ConversationState;
         if (!conversationState) return {} as ConversationState;
         return conversationState;
     };
 
     const selectMessageEntity = (state: RootState): MessageState => {
-        const messageState = state.entities[messageEntity] as MessageState;
+        const messageState = state.entities?.[messageEntity] as MessageState;
         if (!messageState) return {} as MessageState;
         return messageState;
     };
 
     const selectAiModelEntity = (state: RootState): AiModelState => {
-        const aiModelState = state.entities[aiModelEntity] as AiModelState;
+        const aiModelState = state.entities?.[aiModelEntity] as AiModelState;
         if (!aiModelState) return {} as AiModelState;
         return aiModelState;
     };

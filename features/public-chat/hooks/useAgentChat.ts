@@ -103,7 +103,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             content,
             status: 'complete',
             resources: resources.length > 0 ? resources : undefined,
-            contentItems: contentItems.length > 1 ? contentItems : undefined,
+            contentItems: contentItems.length > 0 ? contentItems : undefined,
             variables,
         });
 
@@ -133,7 +133,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 configOverrides.thinking_enabled = true;
             }
 
-            const userInput = contentItems.length > 1 ? contentItems : content;
+            const userInput = contentItems.length > 0 ? contentItems : content;
 
             // ── Route to correct endpoint based on conversation state ──
             const blockMode = isAdmin && state.useBlockMode;
