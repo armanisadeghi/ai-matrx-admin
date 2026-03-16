@@ -1,219 +1,247 @@
-# SSR ↔ Authenticated Layout Convergence Plan
+# SSR Shell Convergence Plan
 
-**Goal:** Merge `(ssr)` and `(authenticated)` into a single layout system that has SSR's performance characteristics with authenticated's full feature support.
+**Goal:** Make `(ssr)` the only authenticated layout. No provider bloat. Entities phased out. Socket stays lean.
+
+---
+
+## Three Non-Negotiable Constraints
+
+1. **No global provider wrapping.** Providers live at the route/feature level, not the shell. The shell stays minimal.
+2. **Entities are being phased out.** They only get hydrated where and when needed. No global entity initialization. Routes that still depend on entities opt in explicitly; new features never use them.
+3. **Socket.IO stays lean.** Basic connection setup at shell level (already done via `LazySocketInitializer`). Feature-specific socket state hydrates on demand. No baggage imports.
 
 ---
 
 ## Current State
 
-### `(authenticated)/layout.tsx` — The Full System
-- **Server-side blocking:** Auth check, DB queries for user/preferences/admin status, schema initialization — all before first paint
-- **30 providers** nested in `Providers.tsx` (Schema, Entity, Editor, FileSystem, Audio, Notes, Tasks, etc.)
-- **Full Redux store** with entity system, sagas, socket middleware
-- **Eager socket connection** via `SocketInitializer`
-- **ResponsiveLayout** component — JS-driven mobile/desktop switching
-- **Everything loads upfront** — no lazy loading, no progressive hydration
+### `(ssr)/layout.tsx` — The Target (5 providers, instant paint)
+- `SSRShellProviders`: ReactQuery, LiteStore, Theme, Toast, Tooltip
+- `DeferredShellData`: fetches user/preferences/admin client-side after paint
+- CSS-only navigation (`:has()` selectors, checkbox toggles)
+- Lazy messaging + lazy socket
 
-### `(ssr)/layout.tsx` — The Fast Shell
-- **No server blocking:** Only reads `headers()`, paints immediately
-- **5 providers** in `SSRShellProviders` (ReactQuery, LiteStore, Theme, Toast, Tooltip)
-- **LiteStore** — no entity system, no sagas, no socket middleware
-- **Deferred data loading** via `DeferredShellData` (client-side, after paint)
-- **CSS-only navigation** — `:has()` selectors, checkbox toggles, zero re-renders
-- **Lazy messaging/socket** — loaded on demand
+### `(authenticated)/layout.tsx` — Being Retired (26 providers, blocking server calls)
+- Server-side auth + DB queries before first paint
+- `Providers.tsx` nests 26 providers (see inventory below)
+- Full Redux store with entity system + sagas
+- Eager socket connection
+- JS-driven responsive layout (`ResponsiveLayout`)
 
-### The Gap
-SSR is fast but incomplete. Authenticated is complete but slow. Routes in `(ssr)` will break if they need any of the 25 missing providers (Entity, Schema, Editor, FileSystem, etc.).
-
----
-
-## Key Decisions Needed
-
-### 1. Store Strategy: LiteStore vs Full Store
-
-**Current problem:** SSR uses `LiteStoreProvider` which has no entity system. Any route that uses `useAppSelector(state => state.entities.someEntity)` or entity hooks will fail.
-
-**Options:**
-
-**(A) Upgrade SSR to Full Store (deferred)**
-- Keep `DeferredShellData` pattern but also fetch schema → init entity system after paint
-- Store starts lite, gets upgraded via `replaceReducer()` when schema arrives
-- Pro: Full compatibility with all existing routes
-- Con: Adds complexity to store lifecycle; components need to handle "store not ready yet" state
-
-**(B) Keep LiteStore, lazy-load entity system per-route**
-- Routes that need entities wrap themselves in an `<EntityGate>` that fetches schema on demand
-- Pro: Only pays entity cost when needed
-- Con: Every entity-using route needs wrapping; first render shows loading state
-
-**(C) Two-phase store: LiteStore → Full Store on auth confirmation**
-- Paint with LiteStore immediately
-- `DeferredShellData` fetches user + schema, then swaps to full store
-- Pro: Best of both — fast paint, full compatibility once hydrated
-- Con: Brief window where entity data isn't available; need loading boundaries
-
-**Recommendation:** Option C — aligns with what `DeferredShellData` already does, just needs schema fetching added.
+### What SSR Shell Already Has Right
+- Instant first paint (no server blocking)
+- LiteStore (no sagas, no entities, no entity saga middleware)
+- CSS-only nav state (zero re-renders)
+- Lazy socket/messaging
+- Single DOM for mobile+desktop (no `ResponsiveLayout` component tree switching)
 
 ---
 
-### 2. Provider Strategy: All 30 vs On-Demand
+## Provider Inventory & Disposition
 
-**Current problem:** Authenticated wraps everything in 30 providers. Most routes use <5 of them.
+Audit of all 26 providers in `Providers.tsx`, classified by where they belong:
 
-**Options:**
+### Keep in Shell (already there or lightweight enough)
+These are truly global, lightweight, and have no data fetching:
 
-**(A) Add all 30 providers to SSRShellProviders**
-- Direct port — same nesting as `Providers.tsx`
-- Pro: Zero migration risk, every route just works
-- Con: Defeats the purpose; massive bundle, slow hydration
+| Provider | Weight | Notes |
+|----------|--------|-------|
+| ReactQueryProvider | Light | Already in SSRShellProviders |
+| LiteStoreProvider | Light | Already in SSRShellProviders |
+| ThemeProvider | Light | Already in SSRShellProviders |
+| ToastProvider | Light | Already in SSRShellProviders |
+| TooltipProvider | Light | Already in SSRShellProviders |
+| ClientOverlayProvider | Light | Already in SSRShellProviders |
 
-**(B) Tiered providers: Shell (always) + Feature (per-route)**
-- Shell tier (~10): Theme, Store, Schema, Entity, Toast, Tooltip, ReactQuery, ContextMenu, PreferenceSync, Overlay
-- Feature tier (~20): Editor, FileSystem, Audio, Notes, Tasks, Transcripts, GoogleAPI, etc.
-- Feature providers loaded via route-level `<FeatureProvider>` wrappers or layout segments
-- Pro: Only pays for what you use
-- Con: Need to identify which providers each route needs; some refactoring
+**Total shell providers: 6** (already done, no changes needed)
 
-**(C) Lazy context providers**
-- Providers that are rarely used (Audio, GoogleAPI, UniformHeight, etc.) become lazy — their context starts as null, provider mounts on first use
-- Pro: Minimal bundle impact; transparent to consumers if they handle null
-- Con: Need fallback handling in every consumer hook
+### Move to Route Level (feature-specific)
+Each of these belongs in the route or feature layout that uses it:
 
-**Recommendation:** Option B — Split into shell-tier (always present) and feature-tier (loaded as needed). This is the cleanest long-term architecture.
+| Provider | Weight | Used By | Action |
+|----------|--------|---------|--------|
+| EditorProvider | Medium | Rich-text editor routes | Wrap in editor route layouts |
+| FileSystemProvider (Redux) | Heavy | File manager routes | Wrap in file routes |
+| FileSystemProvider (Legacy) | Heavy | File manager routes | Same; eventually remove legacy |
+| FilePreviewProvider | Light | File manager routes | Wrap with FileSystemProvider |
+| NotesProvider | Medium | Notes feature only | Wrap in `app/(ssr)/notes/layout.tsx` |
+| TaskProvider | Medium | Tasks feature only | Wrap in `app/(ssr)/tasks/layout.tsx` |
+| TranscriptsProvider | Medium | Transcripts feature only | Wrap in transcripts layout |
+| GoogleAPIProvider | Heavy | Google integrations only | Wrap in routes that need Google |
+| AudioModalProvider | Light | Audio playback routes | Wrap where needed |
+| SelectedImagesProvider | Light | Image selection UI | Wrap where needed |
+| UniformHeightProvider | Light | Applet runner only | Wrap in applet routes |
+| ChipMenuProvider | Light | Rich-text editor only | Wrap with EditorProvider |
+| ModuleHeaderProvider | Light | Routes with dynamic headers | Wrap where needed |
 
----
+### Evaluate & Likely Remove
+These are candidates for simplification or removal:
 
-### 3. CSS Strategy: shell.css Cleanup
-
-**Current problem:** `shell.css` is 1,680 lines. ~60% is utility-style CSS that duplicates Tailwind. The other ~40% is structural CSS that genuinely requires raw CSS (`:has()` selectors, view transitions, grid template areas, pseudo-element tooltips).
-
-**Plan:**
-
-#### Keep as raw CSS (non-negotiable):
-- CSS custom properties (`:root` variables for geometry, easing, glass tokens)
-- Checkbox-driven state (`:has(#shell-sidebar-toggle:checked)`)
-- View transitions (`@view-transition`, `::view-transition-old/new`)
-- Grid template areas (`grid-template-areas` / `grid-area`)
-- Pseudo-element tooltips (`.shell-nav-item[title]:hover::after`)
-- Body-level `:has()` selectors (dock active state, route-level shell controls)
-- Complex backdrop-filter combinations
-
-#### Convert to Tailwind:
-- `.icon-btn` → inline Tailwind classes
-- `.shell-tactile` / `.shell-tactile-subtle` → Tailwind `@apply` or inline
-- `.shell-header` → Tailwind classes on element
-- `.shell-main` → Tailwind classes on element
-- `.shell-dock-item` → Tailwind classes on element
-- `.shell-auth-island` → Tailwind classes on element
-- `.shell-mobile-nav-item` → Tailwind classes on element
-- All dashboard-specific classes (`.shell-dashboard-grid`, `.shell-stat-card`, etc.)
-- Scrollbar utilities → Tailwind scrollbar plugin
-- Most flexbox/spacing/sizing rules
-
-#### Register as Tailwind utilities (via `@theme` or plugin):
-- `--shell-header-h`, `--shell-sidebar-w`, etc. → Tailwind spacing tokens
-- Glass design tokens → Tailwind color/opacity tokens
-- Easing functions → Tailwind transition-timing tokens
-- Shell duration values → Tailwind duration tokens
-
-**Target:** Reduce `shell.css` from ~1,680 lines to ~600-700 lines (only structural/behavioral CSS that can't be expressed in Tailwind).
+| Provider | Weight | Disposition |
+|----------|--------|-------------|
+| SchemaProvider | Light | Keep only if non-entity features need schema. Otherwise, remove with entity phase-out |
+| EntityProvider | Light | Phase out with entity system |
+| PersistentComponentProvider | Medium | Audit usage — may be replaceable with portals |
+| PersistentDOMConnector | Light | Tied to PersistentComponentProvider |
+| GlobalBrokerRegistration | Light | Audit — may be simplifiable to a dispatch in DeferredShellData |
+| GlobalBrokersInitializer | Light | Same as above |
+| RefProvider | Light | Audit — used by editor; move with editor if kept |
+| PreferenceSyncProvider | Medium | Move to DeferredShellData cleanup effect or a standalone hook |
+| ContextMenuProvider | Light | Audit usage breadth — may stay in shell if widely used |
 
 ---
 
-### 4. Navigation State: CSS-Only vs Hybrid
+## Socket.IO: Fix the Baggage
 
-**Current SSR approach:** Pure CSS with `data-pathname` attribute + checkbox toggles. Zero JS re-renders for nav state changes.
+### Problem Found
+`socketMiddleware.ts` line 3 has a static import:
+```typescript
+import { Socket } from 'socket.io-client';
+```
+This pulls socket.io-client type definitions (~50-100KB) into **both** stores (full and lite) on every page.
 
-**What's missing:**
-- `NavigationLoader` — loading overlay during route transitions (the authenticated system shows a spinner)
-- No `useTransition` integration for navigation feedback
+### Fix (Phase 1, immediate)
+```typescript
+// socketMiddleware.ts — BEFORE:
+import { Socket } from 'socket.io-client';
 
-**Plan:** Keep CSS-only for visual state (active highlights, sidebar expand/collapse, mobile menu). Add a small client island `<NavigationProgress />` that uses `useTransition` to show a loading indicator during navigation. This preserves the zero-rerender benefit while adding user feedback.
+// AFTER:
+import type { Socket } from 'socket.io-client';
+```
+If the bundler still doesn't tree-shake it, replace with a local interface:
+```typescript
+interface Socket {
+  emit(event: string, ...args: unknown[]): void;
+  on(event: string, fn: (...args: unknown[]) => void): void;
+  off(event: string, fn?: (...args: unknown[]) => void): void;
+  disconnect(): void;
+  connected: boolean;
+  id?: string;
+}
+```
+
+### Socket Architecture (already good)
+- `LazySocketInitializer` → dynamic imports `SocketConnectionManager` only when `connectionRequested`
+- `SocketConnectionManager` → dynamic imports `socket.io-client` only on actual connect
+- Socket slices are intentionally lightweight (explicitly avoid schema imports)
+- **No entity system, no sagas, no schema** in the socket path
+
+### Remaining Socket Concern
+`socketMiddleware` is `.concat()`'d into LiteStore, meaning its action-matching logic runs on every Redux dispatch. This is low overhead (string comparisons) but worth monitoring. If it becomes a concern, the middleware itself can be lazily injected via `store.replaceReducer()` only when socket connects.
 
 ---
 
-### 5. Layout Component: ResponsiveLayout vs CSS Grid
+## Entity System Phase-Out Strategy
 
-**Current authenticated:** `ResponsiveLayout` → `DesktopLayout` / `MobileLayout` — switches between two entirely different component trees based on `isMobile`.
+### Current Entity Usage (from audit)
 
-**Current SSR:** Single HTML structure, CSS media queries handle responsive behavior. Same DOM for desktop and mobile.
+**Active users (need migration path):**
+- **Chat** — `conversation` + `message` entities, custom actions/selectors. Fully entity-dependent.
+- **Workflows** — workflow step management via entities.
+- **Entity CRUD UI** — admin tool for browsing all entities. Entity-dependent by definition.
 
-**Plan:** Keep SSR's single-DOM approach. It's objectively better:
-- No layout shift when switching between mobile/desktop
-- No hydration mismatch risk
-- Simpler mental model
-- Already works
+**These routes will temporarily use `useEntitySystem()` on-demand hook** (already exists at `lib/redux/entity/useEntitySystem.ts`). It fetches schema and injects entity reducers via `store.replaceReducer()` only when the route mounts.
 
-The `ResponsiveLayout` / `DesktopLayout` / `MobileLayout` components become unnecessary once all routes use the SSR shell.
+### Phase-Out Path
+1. **No new features use entities.** New data fetching uses React Query + Supabase directly, or server components.
+2. **Chat migration:** Replace entity-backed conversation/message with React Query hooks + Supabase. Chat already has parallel legacy slices (`conversationSlice.ts`, `messagesSlice.ts`) that could serve as stepping stones.
+3. **Workflows migration:** Same pattern — React Query + Supabase.
+4. **Entity CRUD UI:** Last to migrate (it's an admin tool). Eventually replace with a generic Supabase table browser.
+5. **Remove entity system** once all consumers are migrated: `lib/redux/entity/`, sagas, `entitySlice.ts`, ~134 dynamic slices, 108KB schema.
+
+### Entity Opt-In Pattern (Transitional)
+Routes that still need entities during the phase-out wrap themselves:
+
+```tsx
+// app/(ssr)/chat/layout.tsx
+'use client';
+import { EntityGate } from '@/components/gates/EntityGate';
+
+export default function ChatLayout({ children }) {
+  return <EntityGate>{children}</EntityGate>;
+}
+```
+
+`EntityGate` calls `useEntitySystem()` → fetches schema → injects reducers → renders children. No global cost.
 
 ---
 
 ## Implementation Phases
 
-### Phase 1: Store Upgrade (SSR gets full Redux)
-1. Add `/api/schema` endpoint (if not already present) to serve `UnifiedSchemaCache`
-2. Update `DeferredShellData` to also fetch schema and initialize entity system
-3. Replace `LiteStoreProvider` with full `StoreProvider` in `SSRShellProviders`, using deferred initialization
-4. Verify entity hooks work in SSR routes after hydration
+### Phase 1: Socket Fix + Shell Stabilization
+1. Fix `socketMiddleware.ts` static import → `import type` or local interface
+2. Verify SSR shell compiles and loads cleanly (the `dynamic` fix is already done)
+3. Audit `ContextMenuProvider` usage breadth — decide shell vs route-level
+4. Move `PreferenceSyncProvider` logic into `DeferredShellData` cleanup effect
 
-### Phase 2: Shell-Tier Providers
-Add these to `SSRShellProviders` (they're lightweight, no network calls):
-1. `SchemaProvider` — needs schema from Phase 1
-2. `EntityProvider` — needs store from Phase 1
-3. `ContextMenuProvider`
-4. `PreferenceSyncProvider` (move from layout to providers)
-5. `RefProvider`
-6. `PersistentComponentProvider` + `PersistentDOMConnector`
-7. `GlobalBrokerRegistration` + `GlobalBrokersInitializer`
-8. `ChipMenuProvider`
+### Phase 2: Route-Level Provider Wrappers
+Create feature-specific layout wrappers for migrated routes:
+```
+app/(ssr)/notes/layout.tsx       → NotesProvider
+app/(ssr)/tasks/layout.tsx       → TaskProvider
+app/(ssr)/transcripts/layout.tsx → TranscriptsProvider
+app/(ssr)/files/layout.tsx       → FileSystemProvider + FilePreviewProvider
+app/(ssr)/editor/layout.tsx      → EditorProvider + RefProvider + ChipMenuProvider
+app/(ssr)/chat/layout.tsx        → EntityGate (transitional)
+```
 
-### Phase 3: Feature-Tier Provider System
-1. Create `<FeatureProviders features={['editor', 'fileSystem', 'audio']}>` wrapper
-2. Each feature provider is dynamically imported only when listed
-3. Create route-level configurations (e.g., notes route needs `['editor', 'notes', 'fileSystem']`)
-4. Document which features each route group needs
+Each wrapper is a `"use client"` component that wraps only `{children}`.
 
-### Phase 4: CSS Cleanup
-1. Extract Tailwind-convertible rules from `shell.css` → inline classes on components
-2. Register shell CSS variables as Tailwind tokens in `globals.css` or theme config
-3. Keep structural CSS in a reduced `shell.css` (~600-700 lines)
-4. Remove dashboard-specific CSS classes (move to Tailwind on components)
+### Phase 3: Route Migration (low-risk first)
+1. **Dashboard** — no feature providers needed, just shell
+2. **Settings/Profile** — minimal, maybe PreferenceSync
+3. **Sandbox** — already working in SSR
+4. **Notes** — needs NotesProvider wrapper
+5. **Tasks** — needs TaskProvider wrapper
+6. **Chat** — needs EntityGate (transitional) + editor providers
+7. **Admin routes** — needs EntityGate for entity browser
+
+For each route:
+- Move from `app/(authenticated)/[route]/` to `app/(ssr)/[route]/`
+- Test for missing provider errors
+- Add route-level provider wrapper if needed
+- Verify functionality
+
+### Phase 4: Entity Migration (Chat first)
+1. Create React Query hooks for conversation CRUD (`useConversations`, `useMessages`)
+2. Replace `getChatActionsWithThunks()` with direct Supabase mutations
+3. Replace `createChatSelectors()` with React Query cache reads
+4. Remove EntityGate from chat layout
+5. Repeat for workflows
 
 ### Phase 5: Navigation Polish
-1. Add `<NavigationProgress />` client island using `useTransition`
-2. Port any loading state patterns from `NavigationLoader`
-3. Ensure `startTransition` wrapping on all `<Link>` navigations
+1. Add `<NavigationProgress />` client island (`useTransition` + loading indicator)
+2. Port loading patterns from `NavigationLoader`
 
-### Phase 6: Route Migration
-1. Start with low-risk routes (dashboard, settings, simple pages)
-2. Move route files from `app/(authenticated)/[route]/` to `app/(ssr)/[route]/`
-3. Test each route for provider dependencies
-4. Add feature-tier providers where needed
-5. Gradually move all routes
+### Phase 6: CSS Cleanup
+1. Convert utility-style classes to Tailwind inline
+2. Register shell CSS variables as Tailwind tokens
+3. Reduce `shell.css` from ~1,680 to ~600-700 lines
 
-### Phase 7: Cleanup
-1. Once all routes are migrated, remove `(authenticated)` layout
-2. Rename `(ssr)` to `(authenticated)` (or just `(app)`)
-3. Remove `Providers.tsx` (replaced by `SSRShellProviders` + feature tiers)
-4. Remove `ResponsiveLayout`, `DesktopLayout`, `MobileLayout`
-5. Remove `LiteStoreProvider` and `liteStore.ts` (no longer needed)
+### Phase 7: Final Cleanup
+1. Remove `(authenticated)` layout entirely
+2. Rename `(ssr)` → `(app)` or just `(authenticated)`
+3. Delete `Providers.tsx`
+4. Delete `ResponsiveLayout`, `DesktopLayout`, `MobileLayout`
+5. Delete `LiteStoreProvider` / `liteStore.ts` (full store with deferred init replaces it)
+6. Delete entity system once all consumers migrated
 
 ---
 
 ## Risk Mitigation
 
-- **Both layouts coexist** during migration — no big bang cutover
-- **Route-by-route migration** — each route tested individually
-- **Feature providers are additive** — if a route breaks, add the missing provider
-- **CSS changes are cosmetic** — layout structure stays identical
-- **Full store upgrade is backward-compatible** — LiteStore actions still work in full store
+- **Both layouts coexist** — routes migrate one at a time, never a big-bang cutover
+- **EntityGate is transitional** — provides backward compatibility while entities are phased out
+- **Route-level providers are additive** — if a route breaks, the fix is wrapping it in the missing provider
+- **Socket fix is isolated** — one line change in `socketMiddleware.ts`, no behavioral change
+- **CSS cleanup is cosmetic** — layout structure stays identical throughout
 
 ---
 
-## Open Questions
+## What's NOT Changing
 
-1. Should `(public)` routes also use the SSR shell (with a different nav config), or stay separate?
-2. Are there any providers in the 30-provider stack that have ordering dependencies (must mount before others)?
-3. Is the `GlobalBrokerRegistration` → `GlobalBrokersInitializer` pattern still needed, or can it be simplified?
-4. Should the schema be fetched via API route or can we use a build-time static asset?
-5. What's the desired behavior during the "store upgrading" window — show content with loading boundaries, or show a shell skeleton?
+- SSR shell structure (header, sidebar, mobile dock, glass portal)
+- CSS-only navigation state (`:has()` selectors, checkbox toggles)
+- DeferredShellData pattern (client-side auth + data after paint)
+- LiteStore as the shell store (no sagas, no entities at shell level)
+- LazySocketInitializer pattern (dynamic import on demand)
+- Single-DOM responsive approach (CSS media queries, no component tree switching)
