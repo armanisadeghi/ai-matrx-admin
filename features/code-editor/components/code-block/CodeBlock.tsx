@@ -169,35 +169,14 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     };
   }, [isFullScreen]);
 
-  // Handle outside click to close full screen
+  // Manage body scroll lock when fullscreen is active
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      // Check if click is outside the component
-      if (
-        isFullScreen &&
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        // Restore scrolling
-        document.body.style.overflow = "auto";
-
-        // Small delay to allow animation to complete before changing state
-        setTimeout(() => {
-          setIsFullScreen(false);
-          setIsCollapsed(false);
-        }, 50);
-      }
-    };
-
     if (isFullScreen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      // Prevent background scrolling when fullscreen is active
       document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
     }
-
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      // Make sure scroll is restored when component unmounts
       document.body.style.overflow = "auto";
     };
   }, [isFullScreen]);
@@ -239,12 +218,12 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 
   const toggleLineNumbers = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setLineNumbers(!lineNumbers);
+    setLineNumbers((prev) => !prev);
   };
 
   const toggleWrapLines = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setShowWrapLines(!showWrapLines);
+    setShowWrapLines((prev) => !prev);
   };
 
   const toggleFullScreen = (e: React.MouseEvent) => {
@@ -271,7 +250,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   const toggleCollapse = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (isEditing) return;
-    setIsCollapsed(!isCollapsed);
+    setIsCollapsed((prev) => !prev);
     if (isFullScreen) setIsFullScreen(false);
   };
 
@@ -308,7 +287,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 
   const toggleMinimap = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setMinimapEnabled(!minimapEnabled);
+    setMinimapEnabled((prev) => !prev);
   };
 
   const handleOpenAIModal = (config: AIModalConfig) => {
@@ -327,20 +306,34 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   };
 
   return (
+    <>
+      {/* Backdrop overlay for fullscreen mode */}
+      {isFullScreen && (
+        <div
+          className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            document.body.style.overflow = "auto";
+            setTimeout(() => {
+              setIsFullScreen(false);
+              setIsCollapsed(false);
+            }, 150);
+          }}
+        />
+      )}
     <div
       ref={containerRef}
       className={cn(
-        "w-full my-4 rounded-t-xl rounded-b-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 transition-all duration-300 ease-in-out",
+        "w-full my-4 rounded-t-xl rounded-b-lg overflow-hidden border border-neutral-200 dark:border-neutral-700",
         isFullScreen &&
-          "fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95%] h-[90%] z-50 bg-textured flex flex-col shadow-2xl",
+          "fixed w-[95vw] h-[90vh] z-[9999] bg-textured flex flex-col shadow-2xl rounded-xl overflow-hidden",
         className,
       )}
-      style={{
-        opacity: isFullScreen ? 1 : undefined,
-        transform: isFullScreen ? "translate(-50%, -50%) scale(1)" : undefined,
-        transition:
-          "opacity 300ms ease-in-out, transform 300ms ease-in-out, width 300ms ease-in-out, height 300ms ease-in-out",
-      }}
+      style={isFullScreen ? {
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+      } : undefined}
     >
       <CodeBlockHeader
         language={rawLanguage}
@@ -516,6 +509,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         />
       )}
     </div>
+    </>
   );
 };
 
