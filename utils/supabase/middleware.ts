@@ -37,9 +37,17 @@ export async function updateSession(request: NextRequest) {
   // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
-  // IMPORTANT: getClaims() validates the JWT locally (no network call).
+  // IMPORTANT: getClaims() validates the JWT locally (no network call with asymmetric keys).
+  // Internally calls getSession() which refreshes expired tokens using the refresh token.
   // This is the official recommended approach for proxy/middleware.
-  const { data } = await supabase.auth.getClaims()
+  const { data, error } = await supabase.auth.getClaims()
+
+  if (error) {
+    // Log but don't redirect — transient JWKS fetch or refresh failures shouldn't
+    // immediately lock the user out. The claims will be null and the redirect logic
+    // below handles unauthenticated routes.
+    console.warn(`[Supabase middleware] getClaims error on ${request.nextUrl.pathname}:`, error.message)
+  }
 
   const user = data?.claims
 
@@ -90,6 +98,13 @@ export async function updateSession(request: NextRequest) {
 
   // Forward the pathname so server layouts can read it via headers()
   supabaseResponse.headers.set("x-pathname", request.nextUrl.pathname);
+
+  // Prevent CDN/Vercel from caching responses that include Set-Cookie headers.
+  // Without this, a cached response from one user's session refresh can be served
+  // to another user, causing cross-user session contamination or stale cookies
+  // replacing fresh ones — the most common cause of "random logouts" in production.
+  // https://supabase.com/docs/guides/auth/server-side/advanced-guide
+  supabaseResponse.headers.set('Cache-Control', 'private, no-store')
 
   return supabaseResponse
 }
