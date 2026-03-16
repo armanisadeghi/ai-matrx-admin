@@ -1,5 +1,5 @@
 // header-variants/index.ts
-// Barrel exports — import from "@/components/header-variants"
+// Barrel exports — import from "@/app/(ssr)/_components/header-variants"
 
 // Types
 export type { HeaderAction, HeaderOption, HeaderDropdownOption } from "./types";

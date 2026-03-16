@@ -124,7 +124,7 @@ export default function UserMenuPanel() {
       className="matrx-glass-core w-60 max-lg:w-auto p-1.5 rounded-xl max-lg:rounded-2xl max-lg:p-2 shadow-2xl"
     >
       <Link
-        href="/ssr/settings"
+        href="/settings"
         className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[var(--shell-glass-bg-hover)] transition-colors"
         onClick={closeMenu}
       >
@@ -179,7 +179,7 @@ export default function UserMenuPanel() {
 
       <div className="h-px my-1 mx-2 bg-[var(--shell-glass-border)]" />
 
-      <Link href="/ssr/messages" className={itemClass} onClick={closeMenu}>
+      <Link href="/messages" className={itemClass} onClick={closeMenu}>
         <MessageSquare /> Direct Messages
       </Link>
       <button className={itemClass} onClick={closeMenu}>
@@ -203,7 +203,7 @@ export default function UserMenuPanel() {
         <>
           <div className="h-px my-1 mx-2 bg-[var(--shell-glass-border)]" />
           <Link
-            href="/ssr/admin"
+            href="/administration"
             className={cn(itemClass, "[&_svg]:text-amber-500")}
             onClick={closeMenu}
           >
@@ -229,7 +229,7 @@ export default function UserMenuPanel() {
         {isDark ? "Light Mode" : "Dark Mode"}
       </button>
 
-      <Link href="/ssr/settings" className={itemClass} onClick={closeMenu}>
+      <Link href="/settings" className={itemClass} onClick={closeMenu}>
         <Settings /> Preferences
       </Link>
 
