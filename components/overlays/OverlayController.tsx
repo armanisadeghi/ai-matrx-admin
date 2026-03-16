@@ -53,8 +53,21 @@ const FullscreenBrokerState = dynamic(
 );
 
 // Quick Action Sheets
+// QuickNotesSheet requires NotesProvider — wrap it here so it works in both
+// the authenticated layout (which has NotesProvider globally) and the SSR layout (which doesn't).
+// NotesProvider is lazy and starts empty, so there's no performance cost until the sheet opens.
 const QuickNotesSheet = dynamic(
-  () => import("@/features/notes/components/QuickNotesSheet").then(mod => ({ default: mod.QuickNotesSheet })),
+  () => Promise.all([
+    import("@/features/notes/components/QuickNotesSheet"),
+    import("@/features/notes/context/NotesContext"),
+  ]).then(([sheetMod, ctxMod]) => {
+    const Sheet = sheetMod.QuickNotesSheet;
+    const Provider = ctxMod.NotesProvider;
+    function QuickNotesSheetWithProvider(props: React.ComponentProps<typeof Sheet>) {
+      return <Provider><Sheet {...props} /></Provider>;
+    }
+    return { default: QuickNotesSheetWithProvider };
+  }),
   { ssr: false }
 );
 
@@ -330,6 +343,7 @@ export const OverlayController: React.FC = () => {
           closeOnBackdropClick={true}
           closeOnEsc={true}
           showCloseButton={true}
+          lockScroll={false}
         >
           <QuickNotesSheet onClose={handleCloseQuickNotes} />
         </FloatingSheet>
@@ -347,6 +361,7 @@ export const OverlayController: React.FC = () => {
           closeOnBackdropClick={true}
           closeOnEsc={true}
           showCloseButton={true}
+          lockScroll={false}
         >
           <QuickTasksSheet onClose={handleCloseQuickTasks} />
         </FloatingSheet>
@@ -365,6 +380,7 @@ export const OverlayController: React.FC = () => {
           closeOnEsc={true}
           showCloseButton={false}
           contentClassName="p-0"
+          lockScroll={false}
         >
           <QuickChatSheet onClose={handleCloseQuickChat} />
         </FloatingSheet>
@@ -382,6 +398,7 @@ export const OverlayController: React.FC = () => {
           closeOnBackdropClick={true}
           closeOnEsc={true}
           showCloseButton={true}
+          lockScroll={false}
         >
           <QuickDataSheet onClose={handleCloseQuickData} />
         </FloatingSheet>
@@ -400,6 +417,7 @@ export const OverlayController: React.FC = () => {
           closeOnEsc={true}
           showCloseButton={false}
           contentClassName="p-0"
+          lockScroll={false}
         >
           <QuickFilesSheet onClose={handleCloseQuickFiles} />
         </FloatingSheet>
@@ -426,6 +444,7 @@ export const OverlayController: React.FC = () => {
           closeOnEsc={true}
           showCloseButton={false}
           contentClassName="p-0"
+          lockScroll={false}
         >
           <QuickAIResultsSheet />
         </FloatingSheet>

@@ -61,10 +61,7 @@ const NoteShareDialog = dynamic(() => import("./NoteShareDialog"), {
   loading: () => null,
 });
 
-const NoteContextMenu = dynamic(() => import("./NoteContextMenu"), {
-  ssr: false,
-  loading: () => null,
-});
+import NoteContextMenu from "./NoteContextMenu";
 
 const NoteOptionsSheet = dynamic(() => import("./NoteOptionsSheet"), {
   ssr: false,
@@ -206,12 +203,6 @@ export default function NotesWorkspace({
     () => new Map(),
   );
   const [editorMode, setEditorMode] = useState<EditorMode>("plain");
-  const [contextMenu, setContextMenu] = useState<{
-    x: number;
-    y: number;
-    noteId: string;
-    type: "tab" | "editor";
-  } | null>(null);
   const [showNoteOptions, setShowNoteOptions] = useState(false);
 
   // Portal root for overlays that need to escape the notes z-index stacking context
@@ -759,33 +750,8 @@ export default function NotesWorkspace({
 
   // ── AI result handler ────────────────────────────────────────────────
 
-  const handleAiResult = useCallback(
-    (result: string, action: "replace" | "insert") => {
-      if (!activeNoteId) return;
-      const cached = noteCache.get(activeNoteId);
-      if (!cached) return;
-
-      const currentLabel = cached.localEdits?.label ?? cached.data.label;
-      const currentContent = cached.localEdits?.content ?? cached.data.content;
-
-      if (action === "replace" && selectedTextRef.current) {
-        // Replace the selected text with the AI result
-        const newContent = currentContent.replace(
-          selectedTextRef.current,
-          result,
-        );
-        scheduleSave(activeNoteId, currentLabel, newContent);
-      } else {
-        // Insert at the end
-        const newContent = currentContent + "\n\n" + result;
-        scheduleSave(activeNoteId, currentLabel, newContent);
-      }
-    },
-    [activeNoteId, noteCache, scheduleSave],
-  );
-
-  // Track selected text in textarea for AI scope mapping
-  const selectedTextRef = useRef<string>("");
+  // Ref to the active textarea — passed to NoteContextMenu for clipboard + find/replace
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Auto-label tracking — prevents re-generating after user edits title
   const autoLabeledRef = useRef<Set<string>>(new Set());
@@ -910,15 +876,6 @@ export default function NotesWorkspace({
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [activeNoteId, tabIds, closeTab, switchTab, forceSave]);
-
-  // ── Close context menu on click outside ───────────────────────────────
-
-  useEffect(() => {
-    if (!contextMenu) return;
-    const close = () => setContextMenu(null);
-    window.addEventListener("click", close);
-    return () => window.removeEventListener("click", close);
-  }, [contextMenu]);
 
   // ── Cleanup save timers ───────────────────────────────────────────────
 
@@ -1085,15 +1042,6 @@ export default function NotesWorkspace({
                   data-active={isActive ? "true" : undefined}
                   aria-selected={isActive}
                   onClick={() => !isActive && switchTab(id)}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    setContextMenu({
-                      x: e.clientX,
-                      y: e.clientY,
-                      noteId: id,
-                      type: "tab",
-                    });
-                  }}
                 >
                   {isDirty && (
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
@@ -1229,50 +1177,28 @@ export default function NotesWorkspace({
         </div>
       )}
 
-      {/* ── Context Menu ───────────────────────────────────────────── */}
-      {contextMenu && (
-        <NoteContextMenu
-          x={contextMenu.x}
-          y={contextMenu.y}
-          noteId={contextMenu.noteId}
-          type={contextMenu.type}
-          isDirty={noteCache.get(contextMenu.noteId)?.saveState === "dirty"}
-          allFolders={allFolders}
-          currentFolder={noteCache.get(contextMenu.noteId)?.data.folder_name}
-          noteContent={
-            noteCache.get(contextMenu.noteId)?.localEdits?.content ??
-            noteCache.get(contextMenu.noteId)?.data.content ??
-            ""
-          }
-          selectedText={selectedTextRef.current}
-          onSave={() => forceSave(contextMenu.noteId)}
-          onDuplicate={() => duplicateNote(contextMenu.noteId)}
-          onExport={() => exportNote(contextMenu.noteId)}
-          onShareLink={() => setShareDialogNoteId(contextMenu.noteId)}
-          onShareClipboard={() => shareNote(contextMenu.noteId)}
-          onMove={(folder) => moveNote(contextMenu.noteId, folder)}
-          onAiResult={handleAiResult}
-          onCloseTab={() => closeTab(contextMenu.noteId)}
-          onCloseOtherTabs={() => closeOtherTabs(contextMenu.noteId)}
-          onCloseAllTabs={closeAllTabs}
-          onDelete={() => deleteNote(contextMenu.noteId)}
-          onClose={() => setContextMenu(null)}
-        />
-      )}
-
       {/* ── Editor or Empty State ──────────────────────────────────── */}
       {activeNoteId && activeCached ? (
+        <NoteContextMenu
+          noteId={activeNoteId}
+          isDirty={activeCached.saveState === "dirty"}
+          allFolders={allFolders}
+          currentFolder={activeCached.data.folder_name}
+          noteContent={activeContent}
+          textareaRef={textareaRef}
+          onSave={() => forceSave(activeNoteId)}
+          onDuplicate={() => duplicateNote(activeNoteId)}
+          onExport={() => exportNote(activeNoteId)}
+          onShareLink={() => setShareDialogNoteId(activeNoteId)}
+          onShareClipboard={() => shareNote(activeNoteId)}
+          onMove={(folder) => moveNote(activeNoteId, folder)}
+          onCloseTab={() => closeTab(activeNoteId)}
+          onCloseOtherTabs={() => closeOtherTabs(activeNoteId)}
+          onCloseAllTabs={closeAllTabs}
+          onDelete={() => deleteNote(activeNoteId)}
+        >
         <div
           className="flex-1 flex flex-col overflow-hidden note-detail-active"
-          onContextMenu={(e) => {
-            e.preventDefault();
-            setContextMenu({
-              x: e.clientX,
-              y: e.clientY,
-              noteId: activeNoteId,
-              type: "editor",
-            });
-          }}
         >
           {/* ── Conflict Banner ──────────────────────────────────────── */}
           {saveState === "conflict" && (
@@ -1362,16 +1288,10 @@ export default function NotesWorkspace({
           {/* ── Editor Content ─────────────────────────────────────── */}
           {editorMode === "plain" && (
             <textarea
+              ref={textareaRef}
               className="notes-editor-textarea scrollbar-thin-auto flex-1 min-h-0 w-full py-2 px-5 text-sm leading-[1.7] font-[inherit] text-foreground bg-transparent border-none outline-none resize-none overflow-y-auto placeholder:text-muted-foreground"
               value={activeContent}
               onChange={handleContentChange}
-              onSelect={(e) => {
-                const ta = e.currentTarget;
-                selectedTextRef.current = ta.value.substring(
-                  ta.selectionStart,
-                  ta.selectionEnd,
-                );
-              }}
               placeholder="Start writing..."
               aria-label="Note content"
             />
@@ -1395,16 +1315,10 @@ export default function NotesWorkspace({
           {editorMode === "split" && (
             <div className="notes-editor-split">
               <textarea
+                ref={textareaRef}
                 className="scrollbar-thin-auto w-full py-2 px-5 text-sm leading-[1.7] font-[inherit] text-foreground bg-transparent border-none outline-none resize-none overflow-y-auto min-w-0 placeholder:text-muted-foreground"
                 value={activeContent}
                 onChange={handleContentChange}
-                onSelect={(e) => {
-                  const ta = e.currentTarget;
-                  selectedTextRef.current = ta.value.substring(
-                    ta.selectionStart,
-                    ta.selectionEnd,
-                  );
-                }}
                 placeholder="Start writing..."
                 aria-label="Note content"
               />
@@ -1556,6 +1470,7 @@ export default function NotesWorkspace({
             )}
           </div>
         </div>
+        </NoteContextMenu>
       ) : activeNoteId ? (
         /* Loading state */
         <div className="flex-1 flex flex-col overflow-hidden note-detail-active">
