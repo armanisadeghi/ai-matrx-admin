@@ -7,14 +7,10 @@
 // This component has zero knowledge of routing.
 
 import ShellIcon from "./ShellIcon";
-import { primaryNavItems, adminNavItems, settingsItem } from "../nav-data";
+import { primaryNavItems, settingsItem } from "../nav-data";
 import MobileSheetNavLink from "./MobileSheetNavLink";
 
-interface MobileSideSheetProps {
-  isAdmin: boolean;
-}
-
-export default function MobileSideSheet({ isAdmin }: MobileSideSheetProps) {
+export default function MobileSideSheet() {
   return (
     <div className="shell-mobile-sheet-wrapper">
       {/* Backdrop — clicking closes the sheet */}
@@ -60,21 +56,8 @@ export default function MobileSideSheet({ isAdmin }: MobileSideSheetProps) {
             label={settingsItem.label}
           />
 
-          {/* Admin section */}
-          {isAdmin && adminNavItems.length > 0 && (
-            <>
-              <div className="shell-mobile-section-divider" />
-              <div className="shell-mobile-section-label">Admin</div>
-              {adminNavItems.map((item) => (
-                <MobileSheetNavLink
-                  key={item.href}
-                  href={item.href}
-                  iconName={item.iconName}
-                  label={item.label}
-                />
-              ))}
-            </>
-          )}
+          {/* Admin section — injected by AdminNavInjector (client component) */}
+          <div id="admin-nav-mobile-slot" />
         </nav>
       </div>
     </div>

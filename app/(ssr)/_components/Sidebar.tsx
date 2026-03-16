@@ -6,17 +6,15 @@ import NavItem from "./NavItem";
 import ShellIcon from "./ShellIcon";
 import {
   primaryNavItems,
-  adminNavItems,
   settingsItem,
   type ShellNavItem,
 } from "../nav-data";
 
 interface SidebarProps {
   pathname: string;
-  isAdmin: boolean;
 }
 
-export default function Sidebar({ pathname, isAdmin }: SidebarProps) {
+export default function Sidebar({ pathname }: SidebarProps) {
   const isActive = (item: ShellNavItem) => {
     if (item.href === "/ssr/dashboard") {
       return pathname === "/ssr/dashboard" || pathname === "/ssr";
@@ -43,20 +41,8 @@ export default function Sidebar({ pathname, isAdmin }: SidebarProps) {
           <NavItem key={item.href} item={item} isActive={isActive(item)} />
         ))}
 
-        {isAdmin && adminNavItems.length > 0 && (
-          <>
-            <div
-              style={{
-                height: 1,
-                background: "var(--shell-glass-border)",
-                margin: "0.5rem 0.25rem",
-              }}
-            />
-            {adminNavItems.map((item) => (
-              <NavItem key={item.href} item={item} isActive={isActive(item)} />
-            ))}
-          </>
-        )}
+        {/* Admin nav items injected here by AdminNavInjector (client component) */}
+        <div id="admin-nav-slot" />
       </nav>
 
       {/* Footer — Settings */}

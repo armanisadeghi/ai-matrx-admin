@@ -3,9 +3,10 @@ import { SocketConnectionManager } from '../connection/socketConnectionManager';
 import { socketConnectionStatus, SocketState } from '../socket.types';
 import { SocketConnection } from '../socket.types';
 
-// Extend SocketState to include testMode
+// Extend SocketState to include testMode and lazy connection request
 interface ExtendedSocketState extends SocketState {
   testMode: boolean;
+  connectionRequested: boolean;
   connectionAttempts: Record<string, number>;
   lastConnectionError: Record<string, string | null>;
   reconnectingConnections: Record<string, boolean>;
@@ -32,6 +33,7 @@ const initialState: ExtendedSocketState = {
     selectedPredefined: '',
   },
   testMode: false,
+  connectionRequested: false,
   connectionAttempts: {},
   lastConnectionError: {},
   reconnectingConnections: {},
@@ -182,6 +184,10 @@ const socketConnectionsSlice = createSlice({
     toggleTestMode: (state) => {
       state.testMode = !state.testMode;
     },
+    // Lazy connection — dispatched by useEnsureSocket() to trigger LazySocketInitializer
+    requestConnect: (state) => {
+      state.connectionRequested = true;
+    },
     // New actions for reconnection management
     incrementConnectionAttempt: (state, action: PayloadAction<string>) => {
       const currentAttempts = state.connectionAttempts[action.payload] || 0;
@@ -228,6 +234,7 @@ export const {
   updateFormNamespace,
   selectPredefinedConnection,
   toggleTestMode,
+  requestConnect,
   incrementConnectionAttempt,
   resetConnectionAttempts,
   setConnectionError,

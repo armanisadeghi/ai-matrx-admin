@@ -13,6 +13,8 @@ import { hydrateModels, type AIModel } from '@/lib/redux/slices/modelRegistrySli
 import { supabase } from '@/utils/supabase/client';
 import { getSSRShellData } from '@/utils/supabase/ssrShellData';
 import { mapUserData } from '@/utils/userDataMapper';
+import { setGlobalUserIdAndToken } from '@/lib/globalState';
+import { identifyUser } from '@/providers/PostHogProvider';
 import type { ContextMenuRow } from '@/utils/supabase/ssrShellData';
 
 export default function DeferredShellData() {
@@ -43,6 +45,12 @@ export default function DeferredShellData() {
                 const userData = mapUserData(user, accessToken, shellData.is_admin);
 
                 dispatch(setUser(userData));
+
+                // Set global state for socket middleware and other non-React consumers
+                setGlobalUserIdAndToken(user.id, accessToken ?? '', shellData.is_admin);
+
+                // Identify user in PostHog analytics
+                identifyUser(user.id, { email: user.email });
 
                 if (shellData.preferences_exists && shellData.preferences) {
                     for (const [key, value] of Object.entries(shellData.preferences)) {
