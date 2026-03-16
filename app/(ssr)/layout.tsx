@@ -11,6 +11,24 @@ import DevPerfOverlayIsland from "./_components/DevPerfOverlayIsland";
 import GlassPortal from "./_components/GlassPortal";
 import NavActiveSync from "./_components/NavActiveSync";
 import AdminIndicatorIsland from "./_components/AdminIndicatorIsland";
+import AdminNavInjector from "./_components/AdminNavInjector";
+import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
+import AppleKeyExpiryBanner from "@/components/admin/AppleKeyExpiryBanner";
+import { PreferenceSyncProvider } from "@/providers/usePreferenceSync";
+import { DebugIndicatorManager } from "@/components/debug/DebugIndicatorManager";
+import { CanvasSideSheet } from "@/features/canvas/core/CanvasSideSheet";
+import LazySocketInitializer from "@/lib/redux/socket-io/connection/LazySocketInitializer";
+import dynamic from "next/dynamic";
+
+const LazyMessagingInitializer = dynamic(
+  () => import("@/features/messaging/components/LazyMessagingInitializer"),
+  { ssr: false, loading: () => null }
+);
+const LazyMessagingSideSheet = dynamic(
+  () =>
+    import("@/features/messaging").then((m) => m.MessagingSideSheet),
+  { ssr: false, loading: () => null }
+);
 
 export const metadata = {
   title: "AI Matrx",
@@ -34,6 +52,14 @@ export default async function SSRLayout({
       <SSRShellProviders>
         {/* Fires after first paint — fetches user + shell data, hydrates store */}
         <DeferredShellData />
+        {/* Injects admin nav items into sidebar/mobile sheet after Redux hydration */}
+        <AdminNavInjector />
+        {/* Show announcements for users with unviewed system announcements */}
+        <AnnouncementProvider />
+        {/* Show Apple key expiry warning for admin users */}
+        <AppleKeyExpiryBanner />
+        {/* Socket.IO — connects on-demand when a component calls useEnsureSocket() */}
+        <LazySocketInitializer />
 
         {/* data-pathname is the single source of truth for active nav state.
             NavActiveSync updates this after every client-side navigation.
@@ -50,12 +76,14 @@ export default async function SSRLayout({
           />
           <input type="checkbox" id="shell-panel-mobile" aria-hidden="true" />
 
-          <Sidebar pathname={pathname} isAdmin={false} />
+          <Sidebar pathname={pathname} />
           <Header />
 
-          <main className="shell-main">{children}</main>
+          <main className="shell-main">
+            <PreferenceSyncProvider>{children}</PreferenceSyncProvider>
+          </main>
 
-          <MobileSideSheet isAdmin={false} />
+          <MobileSideSheet />
         </div>
 
         {/* Glass chrome — portaled into #glass-layer (direct child of body)
@@ -68,6 +96,12 @@ export default async function SSRLayout({
         <NavActiveSync />
         <DevPerfOverlayIsland />
         <AdminIndicatorIsland />
+        <DebugIndicatorManager />
+        {/* Global Canvas Side Sheet — Available everywhere (routes, modals, sheets) */}
+        <CanvasSideSheet />
+        {/* Global Messaging System — lazy-loaded on first panel open */}
+        <LazyMessagingInitializer />
+        <LazyMessagingSideSheet />
       </SSRShellProviders>
     </>
   );

@@ -94,7 +94,7 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
 
     return (
         <Providers initialReduxState={initialReduxState}>
-            <AppleKeyExpiryBanner isAdmin={isAdmin} />
+            <AppleKeyExpiryBanner />
             <SocketInitializer />
             <AnnouncementProvider />
             <ResponsiveLayout {...layoutProps}>

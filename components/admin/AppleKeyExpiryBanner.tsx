@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useAppSelector } from '@/lib/redux/hooks';
 import {
     isAppleKeyExpiringSoon,
     isAppleKeyExpired,
@@ -8,13 +9,10 @@ import {
     APPLE_KEY_GENERATION_DATE,
 } from '@/lib/apple-key-config';
 
-interface AppleKeyExpiryBannerProps {
-    isAdmin: boolean;
-}
-
 const DISMISS_KEY_PREFIX = 'apple-key-expiry-dismissed-';
 
-export default function AppleKeyExpiryBanner({ isAdmin }: AppleKeyExpiryBannerProps) {
+export default function AppleKeyExpiryBanner() {
+    const isAdmin = useAppSelector((state) => state.user.isAdmin);
     const [visible, setVisible] = useState(false);
     const [message, setMessage] = useState('');
 

@@ -2,6 +2,7 @@
 // Lightweight store for public/lite routes - no sagas, no socket.io, no entity system
 import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
 import { createLiteRootReducer, LiteRootState } from "@/lib/redux/liteRootReducer";
+import { socketMiddleware } from "@/lib/redux/socket-io/connection/socketMiddleware";
 import { enableMapSet } from "immer";
 import { LiteInitialReduxState } from "@/types/reduxTypes";
 
@@ -34,7 +35,7 @@ export const makeLiteStore = (initialState?: LiteInitialReduxState) => {
                 serializableCheck: false,
                 immutableCheck: false,
                 actionCreatorCheck: false,
-            }),
+            }).concat(socketMiddleware),
         devTools: process.env.NODE_ENV !== "production",
     });
 

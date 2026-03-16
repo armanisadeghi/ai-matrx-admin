@@ -27,13 +27,40 @@ import promptExecutionReducer from "./prompt-execution/slice";
 import actionCacheReducer from "./prompt-execution/actionCacheSlice";
 import modelRegistryReducer from "./slices/modelRegistrySlice";
 
+// Socket.IO (connection starts disconnected, connects on-demand via LazySocketInitializer)
+import socketConnectionReducer from "./socket-io/slices/socketConnectionsSlice";
+
 // Execution infrastructure (empty initial state, populated only during active AI tasks)
 import socketResponseReducer from "./socket-io/slices/socketResponseSlice";
 import socketTasksReducer from "./socket-io/slices/socketTasksSlice";
 import brokerReducer from "./brokerSlice/slice";
 
+// Messaging (empty until messaging panel opens, hydrated by LazyMessagingInitializer)
+import messagingReducer from "../../features/messaging/redux/messagingSlice";
+
 // SMS
 import smsReducer from "../../features/sms/redux/smsSlice";
+
+// Chat system (empty until chat page loads)
+import { conversationReducer } from "./features/aiChats/conversationSlice";
+import { messagesReducer } from "./features/aiChats/messagesSlice";
+import { newMessageReducer } from "./features/aiChats/newMessageSlice";
+import chatDisplayReducer from "./features/aiChats/chatDisplaySlice";
+import aiChatReducer from "./slices/aiChatSlice";
+import flashcardChatReducer from "./slices/flashcardChatSlice";
+
+// Text editing (empty until editor loads)
+import textDiffReducer from "./slices/textDiffSlice";
+import noteVersionsReducer from "./slices/noteVersionsSlice";
+import promptEditorReducer from "./slices/promptEditorSlice";
+
+// UI state (empty)
+import uiReducer from "./ui/uiSlice";
+import formReducer from "./slices/formSlice";
+import testRoutesReducer from "./slices/testRoutesSlice";
+
+// Entity system tracking (starts uninitialized, set when entities are loaded on-demand)
+import entitySystemReducer from "./slices/entitySystemSlice";
 
 // Context menu cache (populated server-side via get_ssr_shell_data RPC)
 import contextMenuCacheReducer from "./slices/contextMenuCacheSlice";
@@ -51,17 +78,27 @@ import contextMenuCacheReducer from "./slices/contextMenuCacheSlice";
 // - canvas: Canvas panel state
 // - promptCache, promptRunner, promptExecution, actionCache: Prompt system
 // - modelRegistry: AI model list (pre-populated from SSR RPC; thunk skipped if hydrated)
+// - socketConnections: Socket.io connection state (starts disconnected, lazy-connect)
 // - socketResponse, socketTasks: Execution task tracking (empty until AI execution)
 // - broker: Key-value broker (empty, no auto-providers; populated by streaming events)
 // - sms: SMS conversations (unreadTotal pre-populated; full list fetched on demand)
 // - contextMenuCache: Raw context_menu_unified_view rows (pre-populated from SSR RPC)
 //
-// EXCLUDED (require entities, sagas, or socket.io):
+// - messaging: Direct messages (empty, lazy-initialized on first panel open)
+// - conversation, messages, newMessage, chatDisplay: AI chat system
+// - aiChat, flashcardChat: Chat features
+// - textDiff, noteVersions: Text editing/versioning
+// - promptEditor: Prompt editor state
+// - ui, form, testRoutes: General UI state
+//
+// EXCLUDED (require entities, sagas, or dynamic injection via replaceReducer):
 // - entities, globalCache, entityFields: Entity system (~134 slices + 108K schema)
-// - socketConnections: Socket.io connection middleware (not needed for FastAPI path)
 // - workflows, workflowNodes: Saga-dependent
-// - appBuilder, appletBuilder, etc.: Feature-specific builders
-// - fileSystem: Bucket-based file management
+// - appBuilder, appletBuilder, etc.: Feature-specific builders (injected with entity system)
+// - fileSystem: Bucket-based file management (injected via provider packs)
+// - storage: File storage state (injected with fileSystem)
+// - componentDefinitions: App runner component defs (injected on demand)
+// - customAppRuntime, customAppletRuntime: App runners (injected on demand)
 // ============================================================================
 
 /**
@@ -95,13 +132,40 @@ export const createLiteRootReducer = () => {
         actionCache: actionCacheReducer,
         modelRegistry: modelRegistryReducer,
 
+        // Socket.IO connection (starts disconnected, connects on-demand)
+        socketConnections: socketConnectionReducer,
+
         // Execution infrastructure (all start empty, populated during AI tasks)
         socketResponse: socketResponseReducer,
         socketTasks: socketTasksReducer,
         broker: brokerReducer,
 
+        // Messaging (starts empty, initialized when messaging panel opens)
+        messaging: messagingReducer,
+
         // SMS
         sms: smsReducer,
+
+        // Chat system (all start empty, populated when chat pages load)
+        conversation: conversationReducer,
+        messages: messagesReducer,
+        newMessage: newMessageReducer,
+        chatDisplay: chatDisplayReducer,
+        aiChat: aiChatReducer,
+        flashcardChat: flashcardChatReducer,
+
+        // Text editing
+        textDiff: textDiffReducer,
+        noteVersions: noteVersionsReducer,
+        promptEditor: promptEditorReducer,
+
+        // UI state
+        ui: uiReducer,
+        form: formReducer,
+        testRoutes: testRoutesReducer,
+
+        // Entity system status (tracks on-demand loading)
+        entitySystem: entitySystemReducer,
 
         // Context menu cache (SSR pre-populated, no client fetch)
         contextMenuCache: contextMenuCacheReducer,
