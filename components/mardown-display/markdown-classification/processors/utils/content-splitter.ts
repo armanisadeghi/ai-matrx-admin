@@ -394,21 +394,56 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     };
 
     // Function to handle special tags
-    const handleSpecialTags = (tag: string, startIndex: number, lines: string[]): { content: string; newIndex: number; metadata?: any } => {
+    const handleSpecialTags = (
+        tag: string,
+        openingTag: string,
+        startIndex: number,
+        lines: string[]
+    ): { content: string; newIndex: number; metadata?: any } => {
         const content: string[] = [];
         let i = startIndex;
         let foundClosingTag = false;
         const closingTag = `</${tag}>`;
 
-        while (i < lines.length) {
-            const currentTrimmedLine = lines[i].trim();
+        // First line may have content after the opening tag: <info>test
+        let skipWhile = false;
+        const firstLine = lines[i];
+        const processedFirst = removeMatrxPattern(firstLine).trim();
+        if (processedFirst.startsWith(openingTag)) {
+            const afterTag = processedFirst.slice(openingTag.length);
+            const closingIdx = afterTag.indexOf(closingTag);
+            if (closingIdx !== -1) {
+                const beforeClosing = afterTag.slice(0, closingIdx).trim();
+                if (beforeClosing) content.push(beforeClosing);
+                foundClosingTag = true;
+                i++;
+                skipWhile = true;
+            } else {
+                const afterTagTrimmed = afterTag.trim();
+                if (afterTagTrimmed) content.push(afterTagTrimmed);
+                i++;
+            }
+        }
+
+        if (!skipWhile) {
+            while (i < lines.length) {
+            const currentTrimmedLine = removeMatrxPattern(lines[i]).trim();
             if (currentTrimmedLine === closingTag) {
                 foundClosingTag = true;
-                i++; // Skip the closing tag
+                i++;
+                break;
+            }
+            const closingIdx = currentTrimmedLine.indexOf(closingTag);
+            if (closingIdx !== -1) {
+                const beforeClosing = currentTrimmedLine.slice(0, closingIdx).trim();
+                if (beforeClosing) content.push(beforeClosing);
+                foundClosingTag = true;
+                i++;
                 break;
             }
             content.push(lines[i]);
             i++;
+        }
         }
 
         const fullContent = content.join("\n");
@@ -1111,13 +1146,16 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         }
 
         // Detect special tags (info, task, database, private, plan, event, tool, questionnaire)
-        const specialTagMatch = specialTags.find((tag) => processedTrimmedLine === `<${tag}>`);
+        const specialTagMatch = specialTags.find(
+            (tag) => processedTrimmedLine === `<${tag}>` || processedTrimmedLine.startsWith(`<${tag}>`)
+        );
         if (specialTagMatch) {
             if (currentText.trim()) {
                 blocks.push({ type: "text", content: currentText.trimEnd() });
                 currentText = "";
             }
-            const { content, newIndex, metadata } = handleSpecialTags(specialTagMatch, i + 1, lines);
+            const openingTag = `<${specialTagMatch}>`;
+            const { content, newIndex, metadata } = handleSpecialTags(specialTagMatch, openingTag, i, lines);
             blocks.push({
                 type: specialTagMatch,
                 content,
@@ -1128,7 +1166,12 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         }
 
         // Detect thinking blocks (<thinking> or <think>)
-        if (processedTrimmedLine === "<thinking>" || processedTrimmedLine === "<think>") {
+        const thinkingTag = processedTrimmedLine.startsWith("<thinking>")
+            ? "<thinking>"
+            : processedTrimmedLine.startsWith("<think>")
+              ? "<think>"
+              : null;
+        if (thinkingTag) {
             if (currentText.trim()) {
                 blocks.push({ type: "text", content: currentText.trimEnd() });
                 currentText = "";
@@ -1138,10 +1181,37 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             let foundMarker = false;
             let foundClosingTag = false;
 
-            while (i < lines.length) {
+            // First line may have content after the opening tag: <thinking>test
+            const firstLine = lines[i - 1];
+            const processedFirst = removeMatrxPattern(firstLine).trim();
+            if (processedFirst.startsWith(thinkingTag)) {
+                const afterTag = processedFirst.slice(thinkingTag.length);
+                const closingTag = thinkingTag.startsWith("<") ? "</thinking>" : "</think>";
+                const closingIdx = afterTag.indexOf(closingTag);
+                if (closingIdx !== -1) {
+                    const beforeClosing = afterTag.slice(0, closingIdx).trim();
+                    if (beforeClosing) thinkingContent.push(beforeClosing);
+                    foundClosingTag = true;
+                    i++;
+                } else {
+                    const afterTagTrimmed = afterTag.trim();
+                    if (afterTagTrimmed) thinkingContent.push(afterTagTrimmed);
+                }
+            }
+
+            while (!foundClosingTag && !foundMarker && i < lines.length) {
                 const currentTrimmedLine = removeMatrxPattern(lines[i]).trim();
                 if (currentTrimmedLine === "</thinking>" || currentTrimmedLine === "</think>") {
                     foundClosingTag = true;
+                    break;
+                }
+                const closingTag = thinkingTag.startsWith("<") ? "</thinking>" : "</think>";
+                const closingIdx = currentTrimmedLine.indexOf(closingTag);
+                if (closingIdx !== -1) {
+                    const beforeClosing = currentTrimmedLine.slice(0, closingIdx).trim();
+                    if (beforeClosing) thinkingContent.push(beforeClosing);
+                    foundClosingTag = true;
+                    i++;
                     break;
                 }
                 if (currentTrimmedLine.startsWith("### I have everything")) {
@@ -1181,7 +1251,7 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         }
 
         // Detect reasoning blocks (<reasoning>)
-        if (processedTrimmedLine === "<reasoning>") {
+        if (processedTrimmedLine === "<reasoning>" || processedTrimmedLine.startsWith("<reasoning>")) {
             if (currentText.trim()) {
                 blocks.push({ type: "text", content: currentText.trimEnd() });
                 currentText = "";
@@ -1190,10 +1260,35 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             i++;
             let foundClosingTag = false;
 
-            while (i < lines.length) {
+            // First line may have content after the opening tag: <reasoning>test
+            const firstLine = lines[i - 1];
+            const processedFirst = removeMatrxPattern(firstLine).trim();
+            if (processedFirst.startsWith("<reasoning>")) {
+                const afterTag = processedFirst.slice("<reasoning>".length);
+                const closingIdx = afterTag.indexOf("</reasoning>");
+                if (closingIdx !== -1) {
+                    const beforeClosing = afterTag.slice(0, closingIdx).trim();
+                    if (beforeClosing) reasoningContent.push(beforeClosing);
+                    foundClosingTag = true;
+                    i++;
+                } else {
+                    const afterTagTrimmed = afterTag.trim();
+                    if (afterTagTrimmed) reasoningContent.push(afterTagTrimmed);
+                }
+            }
+
+            while (!foundClosingTag && i < lines.length) {
                 const currentTrimmedLine = removeMatrxPattern(lines[i]).trim();
                 if (currentTrimmedLine === "</reasoning>") {
                     foundClosingTag = true;
+                    break;
+                }
+                const closingIdx = currentTrimmedLine.indexOf("</reasoning>");
+                if (closingIdx !== -1) {
+                    const beforeClosing = currentTrimmedLine.slice(0, closingIdx).trim();
+                    if (beforeClosing) reasoningContent.push(beforeClosing);
+                    foundClosingTag = true;
+                    i++;
                     break;
                 }
                 reasoningContent.push(lines[i]);
@@ -1206,7 +1301,7 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             });
 
             if (foundClosingTag) {
-                i++; // Skip the closing tag
+                i++;
             }
             continue;
         }

@@ -247,44 +247,79 @@ const XML_TAG_BLOCKS = {
     research: ['<research>']
 } as const;
 
-function detectXmlBlockType(line: string): keyof typeof XML_TAG_BLOCKS | null {
+/** Returns { type, matchedTag } when line starts with a known XML block tag (allows content on same line). */
+function detectXmlBlockType(line: string): { type: keyof typeof XML_TAG_BLOCKS; matchedTag: string } | null {
     const trimmed = line.trim();
-    
+
     for (const [type, tags] of Object.entries(XML_TAG_BLOCKS)) {
-        if (tags.some(tag => trimmed === tag)) {
-            return type as keyof typeof XML_TAG_BLOCKS;
+        const matchedTag = tags.find((tag) => trimmed === tag || trimmed.startsWith(tag));
+        if (matchedTag) {
+            return { type: type as keyof typeof XML_TAG_BLOCKS, matchedTag };
         }
     }
-    
+
     return null;
 }
 
-function extractXmlBlock(type: keyof typeof XML_TAG_BLOCKS, startIndex: number, lines: string[]): ExtractionResult {
+function extractXmlBlock(
+    type: keyof typeof XML_TAG_BLOCKS,
+    matchedTag: string,
+    startIndex: number,
+    lines: string[]
+): ExtractionResult {
     const content: string[] = [];
     let i = startIndex;
     let foundClosingTag = false;
-    
-    // Determine closing tag
-    const openingTag = XML_TAG_BLOCKS[type][0];
-    const tagName = openingTag.slice(1, -1);
+
+    const tagName = matchedTag.slice(1, -1);
     const closingTag = `</${tagName}>`;
-    
+
+    // First line may have content after the opening tag: <reasoning>test or <reasoning>test</reasoning>
+    const firstLine = lines[i];
+    const processedFirst = removeMatrxPattern(firstLine).trim();
+    if (processedFirst.startsWith(matchedTag)) {
+        const afterTag = processedFirst.slice(matchedTag.length);
+        const closingIdx = afterTag.indexOf(closingTag);
+        if (closingIdx !== -1) {
+            const beforeClosing = afterTag.slice(0, closingIdx).trim();
+            if (beforeClosing) content.push(beforeClosing);
+            foundClosingTag = true;
+            i++;
+            const fullContent = content.join("\n");
+            const result = validateStreamingXmlBlock(type, fullContent, foundClosingTag);
+            return { content: result.content || fullContent, nextIndex: i, metadata: result.metadata };
+        }
+        const afterTagTrimmed = afterTag.trim();
+        if (afterTagTrimmed) content.push(afterTagTrimmed);
+        i++;
+    }
+
     while (i < lines.length) {
         const currentTrimmed = removeMatrxPattern(lines[i]).trim();
-        
+
         if (currentTrimmed === closingTag) {
             foundClosingTag = true;
             i++;
             break;
         }
-        
+
+        // Closing tag inline: "content</reasoning>"
+        const closingIdx = currentTrimmed.indexOf(closingTag);
+        if (closingIdx !== -1) {
+            const beforeClosing = currentTrimmed.slice(0, closingIdx).trim();
+            if (beforeClosing) content.push(beforeClosing);
+            foundClosingTag = true;
+            i++;
+            break;
+        }
+
         // Special handling for thinking blocks with markers
-        if (type === 'thinking' && currentTrimmed.startsWith("### I have everything")) {
+        if (type === "thinking" && currentTrimmed.startsWith("### I have everything")) {
             content.push(lines[i]);
             i++;
             break;
         }
-        
+
         content.push(lines[i]);
         i++;
     }
@@ -822,21 +857,21 @@ export const splitContentIntoBlocksV2 = (mdContent: string): ContentBlock[] => {
         }
         
         // 3. Check for XML tag blocks
-        const xmlType = detectXmlBlockType(processedLine);
-        if (xmlType) {
+        const xmlMatch = detectXmlBlockType(processedLine);
+        if (xmlMatch) {
             if (currentText.trim()) {
                 blocks.push({ type: "text", content: currentText.trimEnd() });
                 currentText = "";
             }
-            
-            const extraction = extractXmlBlock(xmlType, i + 1, lines);
-            
+
+            const extraction = extractXmlBlock(xmlMatch.type, xmlMatch.matchedTag, i, lines);
+
             blocks.push({
-                type: xmlType as any,
+                type: xmlMatch.type as any,
                 content: extraction.content,
-                metadata: extraction.metadata
+                metadata: extraction.metadata,
             });
-            
+
             i = extraction.nextIndex;
             continue;
         }

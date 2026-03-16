@@ -3,8 +3,6 @@ import React, { useState, useRef, useEffect } from "react";
 import SmallIndicator from "./SmallIndicator";
 import MediumIndicator from "./MediumIndicator";
 import LargeIndicator from "./LargeIndicator";
-import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
-
 interface User {
   id: string;
   email?: string;
@@ -32,8 +30,6 @@ const AdminIndicator: React.FC<AdminIndicatorProps> = ({ user }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
   const indicatorRef = useRef<HTMLDivElement>(null);
-  const chatActions = getChatActionsWithThunks();
-
   // Drag handling functions
   const handleMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation();
