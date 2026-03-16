@@ -18,17 +18,7 @@ import { PreferenceSyncProvider } from "@/providers/usePreferenceSync";
 import { DebugIndicatorManager } from "@/components/debug/DebugIndicatorManager";
 import { CanvasSideSheet } from "@/features/canvas/core/CanvasSideSheet";
 import LazySocketInitializer from "@/lib/redux/socket-io/connection/LazySocketInitializer";
-import dynamic from "next/dynamic";
-
-const LazyMessagingInitializer = dynamic(
-  () => import("@/features/messaging/components/LazyMessagingInitializer"),
-  { ssr: false, loading: () => null }
-);
-const LazyMessagingSideSheet = dynamic(
-  () =>
-    import("@/features/messaging").then((m) => m.MessagingSideSheet),
-  { ssr: false, loading: () => null }
-);
+import { LazyMessaging } from "./_components/LazyMessaging";
 
 export const metadata = {
   title: "AI Matrx",
@@ -100,8 +90,7 @@ export default async function SSRLayout({
         {/* Global Canvas Side Sheet — Available everywhere (routes, modals, sheets) */}
         <CanvasSideSheet />
         {/* Global Messaging System — lazy-loaded on first panel open */}
-        <LazyMessagingInitializer />
-        <LazyMessagingSideSheet />
+        <LazyMessaging />
       </SSRShellProviders>
     </>
   );
