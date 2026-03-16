@@ -15,6 +15,7 @@ import { getSSRShellData } from '@/utils/supabase/ssrShellData';
 import { mapUserData } from '@/utils/userDataMapper';
 import { setGlobalUserIdAndToken } from '@/lib/globalState';
 import { identifyUser } from '@/providers/PostHogProvider';
+import { defaultUserPreferences } from '@/lib/redux/slices/defaultPreferences';
 import type { ContextMenuRow } from '@/utils/supabase/ssrShellData';
 
 export default function DeferredShellData() {
@@ -52,14 +53,28 @@ export default function DeferredShellData() {
                 // Identify user in PostHog analytics
                 identifyUser(user.id, { email: user.email });
 
-                if (shellData.preferences_exists && shellData.preferences) {
-                    for (const [key, value] of Object.entries(shellData.preferences)) {
-                        if (key !== '_meta' && value != null) {
-                            dispatch(setModulePreferences({
-                                module: key as keyof UserPreferences,
-                                preferences: value as Partial<UserPreferences[keyof UserPreferences]>,
-                            }));
-                        }
+                // Handle preferences — create defaults for new users if missing
+                let preferences = shellData.preferences;
+                if (!shellData.preferences_exists || !preferences) {
+                    // New user with no preferences — create defaults in DB
+                    const { error: insertError } = await supabase.from('user_preferences').insert({
+                        user_id: user.id,
+                        preferences: defaultUserPreferences,
+                    });
+                    if (insertError) {
+                        console.error('[DeferredShellData] Error creating default preferences:', insertError);
+                    } else {
+                        console.debug('[DeferredShellData] Created default preferences for new user');
+                    }
+                    preferences = defaultUserPreferences as unknown as Record<string, unknown>;
+                }
+
+                for (const [key, value] of Object.entries(preferences)) {
+                    if (key !== '_meta' && value != null) {
+                        dispatch(setModulePreferences({
+                            module: key as keyof UserPreferences,
+                            preferences: value as Partial<UserPreferences[keyof UserPreferences]>,
+                        }));
                     }
                 }
 

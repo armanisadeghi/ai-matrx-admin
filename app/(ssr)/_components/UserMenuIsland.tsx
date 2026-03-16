@@ -120,11 +120,7 @@ export default function UserMenuIsland() {
       </div>
 
       {open && (
-        <UserMenuPanel
-          user={user}
-          isAdmin={isAdmin}
-          onClose={() => setOpen(false)}
-        />
+        <UserMenuPanel />
       )}
     </div>
   );
