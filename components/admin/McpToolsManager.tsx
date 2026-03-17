@@ -14,6 +14,7 @@ import {
     Settings,
     Loader2,
     X,
+    Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,6 +53,12 @@ interface Tool {
     updated_at?: string;
 }
 
+/** Extracts the top-level module/app name from a dotted function_path (e.g. "myapp.module.fn" → "myapp") */
+function sourceAppFromPath(functionPath: string): string {
+    if (!functionPath) return "unknown";
+    return functionPath.split(".")[0] || "unknown";
+}
+
 export function McpToolsManager() {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
@@ -61,6 +68,9 @@ export function McpToolsManager() {
     const [tools, setTools] = useState<Tool[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState<string>("all");
+    const [selectedSourceApp, setSelectedSourceApp] = useState<string>("all");
+    const [selectedStatus, setSelectedStatus] = useState<"all" | "active" | "inactive">("all");
+    const [selectedTag, setSelectedTag] = useState<string>("all");
     const [deleteConfirmation, setDeleteConfirmation] = useState<{
         isOpen: boolean;
         toolId: string | null;
@@ -73,19 +83,52 @@ export function McpToolsManager() {
 
     const categories = React.useMemo(() => {
         const cats = new Set(tools.map(tool => tool.category).filter(Boolean));
-        return ["all", ...Array.from(cats)].sort();
+        return ["all", ...Array.from(cats as Set<string>).sort()];
     }, [tools]);
+
+    const sourceApps = React.useMemo(() => {
+        const apps = new Set(tools.map(tool => sourceAppFromPath(tool.function_path)));
+        return ["all", ...Array.from(apps).sort()];
+    }, [tools]);
+
+    const allTags = React.useMemo(() => {
+        const tagSet = new Set<string>();
+        tools.forEach(tool => tool.tags?.forEach(t => tagSet.add(t)));
+        return ["all", ...Array.from(tagSet).sort()];
+    }, [tools]);
+
+    const activeFilterCount = [
+        selectedCategory !== "all",
+        selectedSourceApp !== "all",
+        selectedStatus !== "all",
+        selectedTag !== "all",
+    ].filter(Boolean).length;
+
+    const clearFilters = () => {
+        setSelectedCategory("all");
+        setSelectedSourceApp("all");
+        setSelectedStatus("all");
+        setSelectedTag("all");
+        setSearchQuery("");
+    };
 
     const filteredTools = React.useMemo(() => {
         return tools.filter(tool => {
             const matchesSearch = !searchQuery ||
                 tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                tool.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+                tool.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                tool.function_path.toLowerCase().includes(searchQuery.toLowerCase());
             const matchesCategory = selectedCategory === "all" || tool.category === selectedCategory;
-            return matchesSearch && matchesCategory;
+            const matchesSourceApp = selectedSourceApp === "all" || sourceAppFromPath(tool.function_path) === selectedSourceApp;
+            const matchesStatus =
+                selectedStatus === "all" ||
+                (selectedStatus === "active" && tool.is_active) ||
+                (selectedStatus === "inactive" && !tool.is_active);
+            const matchesTag = selectedTag === "all" || tool.tags?.includes(selectedTag);
+            return matchesSearch && matchesCategory && matchesSourceApp && matchesStatus && matchesTag;
         });
-    }, [tools, searchQuery, selectedCategory]);
+    }, [tools, searchQuery, selectedCategory, selectedSourceApp, selectedStatus, selectedTag]);
 
     const navigateTo = (path: string) => {
         startTransition(() => router.push(path));
@@ -147,32 +190,33 @@ export function McpToolsManager() {
 
     return (
         <div className="space-y-4 pb-safe">
-            {/* Toolbar */}
+            {/* Toolbar — row 1: search + actions */}
             <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                 <div className="relative flex-1 max-w-sm">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Search tools…"
+                        placeholder="Search name, description, path, tags…"
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                         className="pl-10"
                         style={{ fontSize: "16px" }}
                     />
+                    {searchQuery && (
+                        <button
+                            onClick={() => setSearchQuery("")}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                            <X className="h-3.5 w-3.5" />
+                        </button>
+                    )}
                 </div>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger className="w-44">
-                        <Filter className="h-3.5 w-3.5 mr-1.5" />
-                        <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {categories.map(cat => (
-                            <SelectItem key={cat} value={cat}>
-                                {cat === "all" ? "All Categories" : formatText(cat)}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
                 <div className="flex items-center gap-2 ml-auto">
+                    {activeFilterCount > 0 && (
+                        <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 gap-1.5 text-muted-foreground hover:text-foreground">
+                            <X className="h-3.5 w-3.5" />
+                            Clear ({activeFilterCount})
+                        </Button>
+                    )}
                     <Button variant="outline" size="sm" onClick={refetch} disabled={isLoading} className="h-8 gap-1.5">
                         <Settings className="h-3.5 w-3.5" />
                         <span className="hidden sm:inline">Refresh</span>
@@ -184,9 +228,68 @@ export function McpToolsManager() {
                 </div>
             </div>
 
+            {/* Toolbar — row 2: filters */}
+            <div className="flex flex-wrap gap-2 items-center">
+                <Select value={selectedSourceApp} onValueChange={setSelectedSourceApp}>
+                    <SelectTrigger className={`h-8 w-40 text-xs ${selectedSourceApp !== "all" ? "border-primary text-primary" : ""}`}>
+                        <Filter className="h-3 w-3 mr-1 flex-shrink-0" />
+                        <SelectValue placeholder="Source App" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {sourceApps.map(app => (
+                            <SelectItem key={app} value={app} className="text-xs">
+                                {app === "all" ? "All Source Apps" : formatText(app)}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className={`h-8 w-40 text-xs ${selectedCategory !== "all" ? "border-primary text-primary" : ""}`}>
+                        <Filter className="h-3 w-3 mr-1 flex-shrink-0" />
+                        <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {categories.map(cat => (
+                            <SelectItem key={cat} value={cat} className="text-xs">
+                                {cat === "all" ? "All Categories" : formatText(cat)}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+
+                <Select value={selectedStatus} onValueChange={v => setSelectedStatus(v as "all" | "active" | "inactive")}>
+                    <SelectTrigger className={`h-8 w-36 text-xs ${selectedStatus !== "all" ? "border-primary text-primary" : ""}`}>
+                        <Filter className="h-3 w-3 mr-1 flex-shrink-0" />
+                        <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all" className="text-xs">All Statuses</SelectItem>
+                        <SelectItem value="active" className="text-xs">Active only</SelectItem>
+                        <SelectItem value="inactive" className="text-xs">Inactive only</SelectItem>
+                    </SelectContent>
+                </Select>
+
+                {allTags.length > 1 && (
+                    <Select value={selectedTag} onValueChange={setSelectedTag}>
+                        <SelectTrigger className={`h-8 w-36 text-xs ${selectedTag !== "all" ? "border-primary text-primary" : ""}`}>
+                            <Tag className="h-3 w-3 mr-1 flex-shrink-0" />
+                            <SelectValue placeholder="Tag" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {allTags.map(tag => (
+                                <SelectItem key={tag} value={tag} className="text-xs">
+                                    {tag === "all" ? "All Tags" : tag}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                )}
+            </div>
+
             {/* Stats row */}
             <div className="flex gap-4 text-xs text-muted-foreground">
-                <span><span className="font-semibold text-foreground">{filteredTools.length}</span> tools</span>
+                <span><span className="font-semibold text-foreground">{filteredTools.length}</span> of {tools.length} tools</span>
                 <span><span className="font-semibold text-success">{filteredTools.filter(t => t.is_active).length}</span> active</span>
                 <span><span className="font-semibold text-muted-foreground">{filteredTools.filter(t => !t.is_active).length}</span> inactive</span>
             </div>
@@ -196,7 +299,7 @@ export function McpToolsManager() {
                 {filteredTools.length === 0 ? (
                     <div className="text-center py-16 text-muted-foreground">
                         <Search className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                        <p className="text-sm">{searchQuery || selectedCategory !== "all" ? "No tools match your filters" : "No tools in the system"}</p>
+                        <p className="text-sm">{searchQuery || activeFilterCount > 0 ? "No tools match your filters" : "No tools in the system"}</p>
                     </div>
                 ) : (
                     filteredTools.map(tool => (
@@ -253,6 +356,7 @@ interface ToolListItemProps {
 
 function ToolListItem({ tool, isPending, onSelect, onEdit, onDelete, onToggleActive, onGenerateUi, onViewSamples, onViewIncidents }: ToolListItemProps) {
     const icon = mapIcon(tool.icon, tool.category, 16);
+    const sourceApp = sourceAppFromPath(tool.function_path);
 
     return (
         // Use div + role="button" so Switch (a <button>) can be nested without hydration error
@@ -271,6 +375,11 @@ function ToolListItem({ tool, isPending, onSelect, onEdit, onDelete, onToggleAct
                         <Badge variant={tool.is_active ? "default" : "secondary"} className="text-[10px] h-4 px-1.5">
                             {tool.is_active ? "Active" : "Inactive"}
                         </Badge>
+                        {sourceApp && sourceApp !== "unknown" && (
+                            <Badge variant="secondary" className="text-[10px] h-4 px-1.5 bg-primary/10 text-primary border-primary/20">
+                                {formatText(sourceApp)}
+                            </Badge>
+                        )}
                         {tool.category && (
                             <Badge variant="outline" className="text-[10px] h-4 px-1.5">{formatText(tool.category)}</Badge>
                         )}
@@ -279,6 +388,18 @@ function ToolListItem({ tool, isPending, onSelect, onEdit, onDelete, onToggleAct
                         )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{tool.description}</p>
+                    {tool.tags && tool.tags.length > 0 && (
+                        <div className="flex gap-1 flex-wrap mt-1">
+                            {tool.tags.slice(0, 4).map(tag => (
+                                <span key={tag} className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0 rounded">
+                                    {tag}
+                                </span>
+                            ))}
+                            {tool.tags.length > 4 && (
+                                <span className="text-[10px] text-muted-foreground">+{tool.tags.length - 4}</span>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Actions — stop propagation so clicks here don't trigger row navigation */}
