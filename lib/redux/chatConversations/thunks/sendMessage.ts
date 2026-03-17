@@ -1,13 +1,19 @@
 /**
  * sendMessage thunk — Unified NDJSON streaming for chatConversations slice
  *
- * Routes to:
- *   - POST /agents/{agentId}              — first message (new conversation)
- *   - POST /conversations/{conversationId} — follow-up messages
+ * Routes to one of three API patterns based on session.apiMode:
  *
- * Streams NDJSON events directly into chatConversationsSlice.
- * The conversationId is extracted from the X-Conversation-ID response header
- * and stored on the session.
+ *   agent mode (default):
+ *     - POST /agents/{agentId}              — first message (new conversation)
+ *     - POST /conversations/{conversationId} — follow-up messages (auto-switches)
+ *
+ *   conversation mode:
+ *     - POST /conversations/{conversationId} — always (requires pre-existing conversationId)
+ *
+ *   chat mode:
+ *     - POST /api/ai/chat                   — always (client sends full history each time)
+ *
+ * All modes stream NDJSON events directly into chatConversationsSlice.
  */
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
@@ -19,15 +25,13 @@ import { extractPersistableToolBlocks, toolCallBlockToLegacy } from '@/lib/chat-
 import type {
     ChunkPayload,
     ErrorPayload,
-    CompletionPayload,
-    EndPayload,
 } from '@/types/python-generated/stream-events';
 import type { StreamEvent } from '@/types/python-generated/stream-events';
 import { chatConversationsActions } from '../slice';
-import { selectConversationId, selectUIState } from '../selectors';
+import { selectConversationId, selectUIState, selectMessages } from '../selectors';
 import { selectAccessToken, selectIsAdmin } from '../../slices/userSlice';
 import { selectIsUsingLocalhost } from '../../slices/adminPreferencesSlice';
-import type { ConversationResource } from '../types';
+import type { ConversationResource, ChatModeConfig, ConversationMessage } from '../types';
 
 export interface SendMessagePayload {
     sessionId: string;
@@ -38,6 +42,108 @@ export interface SendMessagePayload {
     signal?: AbortSignal;
 }
 
+// ============================================================================
+// ENDPOINT BUILDERS — one per API mode
+// ============================================================================
+
+function buildAgentRequest(
+    backendUrl: string,
+    agentId: string,
+    existingConversationId: string | null,
+    content: string,
+    variables: Record<string, unknown>,
+    configOverrides: Record<string, unknown>,
+    blockMode: boolean,
+): { url: string; body: Record<string, unknown> } {
+    if (existingConversationId) {
+        return {
+            url: `${backendUrl}${ENDPOINTS.ai.conversationContinue(existingConversationId)}`,
+            body: {
+                user_input: content,
+                stream: true,
+                debug: true,
+            },
+        };
+    }
+    const startEndpoint = blockMode
+        ? ENDPOINTS.ai.agentBlocksStart(agentId)
+        : ENDPOINTS.ai.agentStart(agentId);
+    return {
+        url: `${backendUrl}${startEndpoint}`,
+        body: {
+            user_input: content,
+            variables: Object.keys(variables).length > 0 ? variables : undefined,
+            config_overrides: Object.keys(configOverrides).length > 0 ? configOverrides : undefined,
+            stream: true,
+            debug: true,
+        },
+    };
+}
+
+function buildConversationRequest(
+    backendUrl: string,
+    conversationId: string,
+    content: string,
+): { url: string; body: Record<string, unknown> } {
+    return {
+        url: `${backendUrl}${ENDPOINTS.ai.conversationContinue(conversationId)}`,
+        body: {
+            user_input: content,
+            stream: true,
+            debug: true,
+        },
+    };
+}
+
+function buildChatRequest(
+    backendUrl: string,
+    messages: ConversationMessage[],
+    newContent: string,
+    chatConfig: ChatModeConfig,
+    configOverrides: Record<string, unknown>,
+): { url: string; body: Record<string, unknown> } {
+    // Build the full message history for the chat endpoint
+    const chatMessages = messages
+        .filter(m => m.status !== 'error')
+        .map(m => ({ role: m.role, content: m.content }));
+
+    // Add the new user message
+    chatMessages.push({ role: 'user', content: newContent });
+
+    const body: Record<string, unknown> = {
+        messages: chatMessages,
+        ai_model_id: configOverrides.ai_model_id ?? chatConfig.aiModelId,
+        stream: true,
+        debug: true,
+    };
+
+    // Spread optional chat config
+    if (chatConfig.systemInstruction) body.system_instruction = chatConfig.systemInstruction;
+    if (chatConfig.temperature != null) body.temperature = chatConfig.temperature;
+    if (chatConfig.maxOutputTokens != null) body.max_output_tokens = chatConfig.maxOutputTokens;
+    if (chatConfig.topP != null) body.top_p = chatConfig.topP;
+    if (chatConfig.topK != null) body.top_k = chatConfig.topK;
+    if (chatConfig.tools) body.tools = chatConfig.tools;
+    if (chatConfig.toolChoice) body.tool_choice = chatConfig.toolChoice;
+    if (chatConfig.parallelToolCalls != null) body.parallel_tool_calls = chatConfig.parallelToolCalls;
+    if (chatConfig.responseFormat !== undefined) body.response_format = chatConfig.responseFormat;
+    if (chatConfig.internalWebSearch) body.internal_web_search = chatConfig.internalWebSearch;
+    if (chatConfig.internalUrlContext) body.internal_url_context = chatConfig.internalUrlContext;
+    if (chatConfig.reasoningEffort) body.reasoning_effort = chatConfig.reasoningEffort;
+    if (chatConfig.thinkingBudget != null) body.thinking_budget = chatConfig.thinkingBudget;
+    if (chatConfig.includeThoughts != null) body.include_thoughts = chatConfig.includeThoughts;
+    if (chatConfig.extraConfig) Object.assign(body, chatConfig.extraConfig);
+
+    return {
+        url: `${backendUrl}${ENDPOINTS.ai.chat}`,
+        body,
+    };
+}
+
+// ============================================================================
+// THUNK
+// ============================================================================
+
 export const sendMessage = createAsyncThunk<
     void,
     SendMessagePayload,
@@ -46,6 +152,9 @@ export const sendMessage = createAsyncThunk<
     'chatConversations/sendMessage',
     async ({ sessionId, agentId, content, resources = [], variables = {}, signal: externalSignal }, { dispatch, getState }) => {
         const state = getState();
+        const session = state.chatConversations.sessions[sessionId];
+        const apiMode = session?.apiMode ?? 'agent';
+        const chatModeConfig = session?.chatModeConfig ?? null;
         const existingConversationId = selectConversationId(state, sessionId);
         const uiState = selectUIState(state, sessionId);
         const accessToken = selectAccessToken(state);
@@ -69,7 +178,7 @@ export const sendMessage = createAsyncThunk<
             configOverrides.ai_model_id = uiState.modelOverride;
         }
 
-        // ── Build user message content ─────────────────────────────────────────
+        // ── Build user message in Redux ──────────────────────────────────────
         const userMessageId = uuidv4();
         dispatch(chatConversationsActions.addMessage({
             sessionId,
@@ -105,29 +214,42 @@ export const sendMessage = createAsyncThunk<
         let serverRequestId: string | null = null;
 
         try {
-            // ── Choose endpoint ────────────────────────────────────────────────
+            // ── Choose endpoint based on apiMode ───────────────────────────────
             let url: string;
             let body: Record<string, unknown>;
 
-            if (existingConversationId) {
-                url = `${backendUrl}${ENDPOINTS.ai.conversationContinue(existingConversationId)}`;
-                body = {
-                    user_input: content,
-                    stream: true,
-                    debug: true,
-                };
-            } else {
-                const startEndpoint = blockMode
-                    ? ENDPOINTS.ai.agentBlocksStart(agentId)
-                    : ENDPOINTS.ai.agentStart(agentId);
-                url = `${backendUrl}${startEndpoint}`;
-                body = {
-                    user_input: content,
-                    variables: Object.keys(variables).length > 0 ? variables : undefined,
-                    config_overrides: Object.keys(configOverrides).length > 0 ? configOverrides : undefined,
-                    stream: true,
-                    debug: true,
-                };
+            switch (apiMode) {
+                case 'chat': {
+                    if (!chatModeConfig) {
+                        throw new Error('Chat mode requires chatModeConfig on the session');
+                    }
+                    // For chat mode, get current messages BEFORE the user message we just added
+                    // (the thunk already added the user message to Redux, but we need the state
+                    // from before that for the API call — however since we're in the same tick,
+                    // we re-read from the updated state which now includes the user message)
+                    const currentMessages = selectMessages(getState(), sessionId);
+                    // Filter out the user message we just added and the pending assistant message
+                    const historyMessages = currentMessages.filter(
+                        m => m.id !== userMessageId && m.id !== assistantMessageId
+                    );
+                    ({ url, body } = buildChatRequest(backendUrl, historyMessages, content, chatModeConfig, configOverrides));
+                    break;
+                }
+                case 'conversation': {
+                    if (!existingConversationId) {
+                        throw new Error('Conversation mode requires a conversationId on the session');
+                    }
+                    ({ url, body } = buildConversationRequest(backendUrl, existingConversationId, content));
+                    break;
+                }
+                case 'agent':
+                default: {
+                    ({ url, body } = buildAgentRequest(
+                        backendUrl, agentId, existingConversationId,
+                        content, variables, configOverrides, blockMode,
+                    ));
+                    break;
+                }
             }
 
             const response = await fetch(url, {
@@ -147,13 +269,14 @@ export const sendMessage = createAsyncThunk<
             }
 
             if (!response.body) {
-                throw new Error('No response body from Agent API');
+                throw new Error('No response body from API');
             }
 
             const { events, requestId, conversationId: headerConvId } = parseNdjsonStream(response, combinedSignal);
             serverRequestId = requestId;
 
             // conversationId from header arrives before body — set immediately
+            // (agent and conversation modes may return this; chat mode typically won't)
             if (headerConvId) {
                 dispatch(chatConversationsActions.setConversationId({ sessionId, conversationId: headerConvId }));
             }
@@ -243,8 +366,6 @@ export const sendMessage = createAsyncThunk<
             }
 
             // ── Finalize ───────────────────────────────────────────────────────
-            // Extract completed tool blocks for DB-reload display
-            // We reconstruct from the streamEvents stored on the message
             const allStreamEvents = blockEventsBuffer;
             const persistableBlocks = extractPersistableToolBlocks(allStreamEvents);
             const toolUpdates = persistableBlocks.flatMap(b => toolCallBlockToLegacy(b));
@@ -284,8 +405,8 @@ export const sendMessage = createAsyncThunk<
                 }));
             }
 
-            // Best-effort cancel on server
-            if (serverRequestId) {
+            // Best-effort cancel on server (agent/conversation modes only)
+            if (serverRequestId && apiMode !== 'chat') {
                 const state2 = getState();
                 const token2 = selectAccessToken(state2);
                 const isLocal2 = selectIsUsingLocalhost(state2);

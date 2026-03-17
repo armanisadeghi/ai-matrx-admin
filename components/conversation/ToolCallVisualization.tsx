@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { CheckCircle, Loader2, Sparkles, ChevronDown, ChevronUp, Maximize2 } from "lucide-react";
-import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
+import type { ToolCallObject } from "@/lib/api/tool-call.types";
 import { cn } from "@/lib/utils";
 import { ToolUpdatesOverlay } from "@/features/chat/components/response/tool-updates";
 import { getToolName, getInlineRenderer, shouldKeepExpandedOnStream, getToolDisplayName, prefetchRenderer } from "@/lib/tool-renderers";

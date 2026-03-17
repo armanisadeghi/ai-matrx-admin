@@ -68,12 +68,17 @@ const chatConversationsSlice = createSlice({
                 variables = {},
                 requiresVariableReplacement = false,
                 modelOverride,
+                apiMode = 'agent',
+                chatModeConfig = null,
+                conversationId = null,
             } = action.payload;
 
             const session: ConversationSession = {
                 sessionId,
-                conversationId: null,
+                conversationId: conversationId ?? null,
                 agentId,
+                apiMode,
+                chatModeConfig: chatModeConfig ?? null,
                 status: 'ready',
                 error: null,
                 variableDefaults,
@@ -107,10 +112,15 @@ const chatConversationsSlice = createSlice({
         loadConversation: (state, action: PayloadAction<LoadConversationPayload>) => {
             const { sessionId, conversationId, messages, agentId, variableDefaults = [] } = action.payload;
 
+            // Preserve apiMode and chatModeConfig if session already exists
+            const existing = state.sessions[sessionId];
+
             state.sessions[sessionId] = {
                 sessionId,
                 conversationId,
                 agentId,
+                apiMode: existing?.apiMode ?? 'agent',
+                chatModeConfig: existing?.chatModeConfig ?? null,
                 status: 'ready',
                 error: null,
                 variableDefaults,
