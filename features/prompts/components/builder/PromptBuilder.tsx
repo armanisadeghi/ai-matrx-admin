@@ -110,23 +110,27 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
     const initialModelId = getInitialModelId();
     const initialModel = models.find(m => m.id === initialModelId) || models[0];
 
-    // Get initial modelConfig from settings (single source of truth)
-    // Extract all settings except model_id - those are the config options
+    // Get initial modelConfig from settings (single source of truth).
+    // - Existing prompt (has id): load exactly what was saved, nothing added.
+    // - Brand new prompt (no id): seed with model defaults so the user has a starting point.
     const getInitialModelConfig = () => {
-        const defaults = getModelDefaults(initialModel);
-
-        if (initialData?.settings && typeof initialData.settings === 'object') {
-            const { model_id, output_format, ...config } = initialData.settings as Record<string, any>;
-            // Migrate legacy output_format from DB -> response_format dict
-            if (output_format && typeof output_format === 'string' && output_format !== 'text') {
-                if (!config.response_format) {
-                    config.response_format = { type: output_format };
+        if (initialData?.id) {
+            // Existing prompt — use only what was saved, never inject defaults
+            if (initialData.settings && typeof initialData.settings === 'object') {
+                const { model_id, output_format, ...config } = initialData.settings as Record<string, any>;
+                // Migrate legacy output_format from DB -> response_format dict
+                if (output_format && typeof output_format === 'string' && output_format !== 'text') {
+                    if (!config.response_format) {
+                        config.response_format = { type: output_format };
+                    }
                 }
+                return config;
             }
-            return { ...defaults, ...config };
+            return {};
         }
 
-        return defaults;
+        // New prompt — seed with model defaults as a starting point
+        return getModelDefaults(initialModel);
     };
 
     // Extract system message and user/assistant messages from initialData
@@ -951,9 +955,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
                     const newModel = models.find((m: any) => m.id === model_id);
                     if (newModel) {
                         setModel(model_id);
-                        // Apply defaults for the new model and merge with provided config
-                        const defaults = getModelDefaults(newModel);
-                        setModelConfig({ ...defaults, ...config });
+                        setModelConfig(config as PromptSettings);
                     } else {
                         // Model not found, just update config
                         setModelConfig(config as PromptSettings);
