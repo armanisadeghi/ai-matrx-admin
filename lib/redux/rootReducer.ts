@@ -60,6 +60,7 @@ import promptExecutionReducer from "./prompt-execution/slice";
 import actionCacheReducer from "./prompt-execution/actionCacheSlice";
 import promptEditorReducer from "./slices/promptEditorSlice";
 import modelRegistryReducer from "./slices/modelRegistrySlice";
+import { chatConversationsReducer } from "./chatConversations";
 
 
 
@@ -177,6 +178,9 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
         // Admin preferences (server override, etc.)
         adminPreferences: adminPreferencesReducer,
+
+        // Unified chat conversation UI slice (replaces ChatContext + prompt-execution for display)
+        chatConversations: chatConversationsReducer,
     });
 };
 

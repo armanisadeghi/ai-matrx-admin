@@ -1,2 +1,5 @@
-export { UserListsInline } from "./UserListsInline";
-export { UserListsOverlay } from "./UserListsOverlay";
+/**
+ * @deprecated This module has moved to @/lib/tool-renderers/get-user-lists
+ * This file re-exports from the canonical location for backwards compatibility.
+ */
+export * from "@/lib/tool-renderers/get-user-lists";

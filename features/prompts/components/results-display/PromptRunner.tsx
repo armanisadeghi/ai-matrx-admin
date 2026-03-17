@@ -1,3 +1,9 @@
+/**
+ * @deprecated
+ * PromptRunner is superseded by components/conversation/ConversationShell.
+ * Use ConversationShell with usePromptExecutionAdapter for new code.
+ * This file will be removed after prompt-execution is fully migrated to chatConversations.
+ */
 "use client";
 
 import React, { useEffect, useState } from "react";

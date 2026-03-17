@@ -1,3 +1,8 @@
+/**
+ * @deprecated
+ * SmartMessageList is superseded by components/conversation/MessageList.
+ * Use MessageList with chatConversationsSlice for new code.
+ */
 "use client";
 
 import React, { useEffect, useRef } from "react";

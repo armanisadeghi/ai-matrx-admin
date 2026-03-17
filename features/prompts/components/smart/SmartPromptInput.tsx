@@ -1,3 +1,8 @@
+/**
+ * @deprecated
+ * SmartPromptInput is superseded by components/conversation/ConversationInput.
+ * Use ConversationInput with chatConversationsSlice for new code.
+ */
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { ArrowUp, CornerDownLeft, Mic, ChevronRight, Database, Crown, Bug, ChevronUp, Maximize2, Minimize2 } from "lucide-react";

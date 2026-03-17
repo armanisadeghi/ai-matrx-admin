@@ -1,3 +1,5 @@
-export { CoreWebSearchInline } from "./CoreWebSearchInline";
-export { CoreWebSearchOverlay } from "./CoreWebSearchOverlay";
-
+/**
+ * @deprecated This module has moved to @/lib/tool-renderers/core-web-search
+ * This file re-exports from the canonical location for backwards compatibility.
+ */
+export * from "@/lib/tool-renderers/core-web-search";

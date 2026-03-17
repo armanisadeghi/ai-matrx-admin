@@ -1,3 +1,9 @@
+/**
+ * @deprecated
+ * This legacy UserMessage (features/chat) lacks resource display support.
+ * Use components/conversation/UserMessage for new code — it supports XML-embedded
+ * resources, structured resource array display, and edit mode without window.confirm.
+ */
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import MessageHeader from "./MessageHeader";

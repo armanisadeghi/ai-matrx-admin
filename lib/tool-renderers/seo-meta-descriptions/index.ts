@@ -1,0 +1,2 @@
+export { SeoMetaDescriptionsInline } from "./SeoMetaDescriptionsInline";
+

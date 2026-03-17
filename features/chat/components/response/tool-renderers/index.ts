@@ -1,29 +1,6 @@
-// Barrel exports for tool renderers
-export * from "./types";
-export {
-    toolRendererRegistry,
-    hasCustomRenderer,
-    mightHaveDynamicRenderer,
-    getInlineRenderer,
-    getOverlayRenderer,
-    getToolName,
-    shouldKeepExpandedOnStream,
-    getToolDisplayName,
-    getResultsLabel,
-    getHeaderSubtitle,
-    getHeaderExtras,
-    registerToolRenderer
-} from "./registry";
-export { GenericRenderer } from "./GenericRenderer";
-export * from "./brave-search";
-export * from "./news-api";
-export * from "./seo-meta-tags";
-export * from "./seo-meta-titles";
-export * from "./seo-meta-descriptions";
-export * from "./web-research";
-export * from "./core-web-search";
-export * from "./deep-research";
-export * from "./get-user-lists";
-
-// Dynamic tool renderer system
-export { prefetchRenderer } from "./dynamic";
+/**
+ * @deprecated This module has moved to @/lib/tool-renderers
+ * This file re-exports from the canonical location for backwards compatibility.
+ * Update your imports to use @/lib/tool-renderers instead.
+ */
+export * from "@/lib/tool-renderers";
