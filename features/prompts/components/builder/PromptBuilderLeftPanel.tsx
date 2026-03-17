@@ -17,6 +17,8 @@ interface PromptBuilderLeftPanelProps {
     onModelChange: (value: string) => void;
     modelConfig: PromptSettings;
     onSettingsClick: () => void;
+    hasPendingConflict?: boolean;
+    onOpenSettingsConflictModal?: () => void;
 
     // Variables - single source of truth
     variableDefaults: PromptVariable[];
@@ -70,6 +72,8 @@ export function PromptBuilderLeftPanel({
     onModelChange,
     modelConfig,
     onSettingsClick,
+    hasPendingConflict,
+    onOpenSettingsConflictModal,
     variableDefaults,
     onAddVariable,
     onUpdateVariable,
@@ -126,6 +130,8 @@ export function PromptBuilderLeftPanel({
                     modelConfig={modelConfig}
                     onSettingsClick={onSettingsClick}
                     showSettingsDetails={showSettingsOnMainPage}
+                    hasPendingConflict={hasPendingConflict}
+                    onOpenSettingsConflictModal={onOpenSettingsConflictModal}
                 />
                 {/* Variables */}
                 <VariablesManager

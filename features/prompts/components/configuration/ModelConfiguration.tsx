@@ -1,5 +1,5 @@
 import React from "react";
-import { Settings2 } from "lucide-react";
+import { AlertTriangle, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,9 +12,11 @@ interface ModelConfigurationProps {
     modelConfig: PromptSettings;
     onSettingsClick: () => void;
     showSettingsDetails?: boolean; // Controls visibility of settings badges
+    hasPendingConflict?: boolean;
+    onOpenSettingsConflictModal?: () => void;
 }
 
-export function ModelConfiguration({ models, model, onModelChange, modelConfig, onSettingsClick, showSettingsDetails = true }: ModelConfigurationProps) {
+export function ModelConfiguration({ models, model, onModelChange, modelConfig, onSettingsClick, showSettingsDetails = true, hasPendingConflict, onOpenSettingsConflictModal }: ModelConfigurationProps) {
     return (
         <div className="space-y-3">
             <div className="flex items-center justify-between pt-2">
@@ -36,14 +38,27 @@ export function ModelConfiguration({ models, model, onModelChange, modelConfig, 
                         </SelectContent>
                     </Select>
                 </div>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                    onClick={onSettingsClick}
-                >
-                    <Settings2 className="w-3.5 h-3.5 mr-1" />
-                </Button>
+                <div className="flex items-center gap-1">
+                    {hasPendingConflict && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 gap-1"
+                            onClick={onOpenSettingsConflictModal}
+                        >
+                            <AlertTriangle className="w-3.5 h-3.5" />
+                            Review Conflicts
+                        </Button>
+                    )}
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                        onClick={onSettingsClick}
+                    >
+                        <Settings2 className="w-3.5 h-3.5 mr-1" />
+                    </Button>
+                </div>
             </div>
 
             {/* Settings details badges - conditionally shown */}

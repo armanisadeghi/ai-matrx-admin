@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Save, Maximize2, Settings, Sparkles, ChevronRight, Loader2 } from "lucide-react";
 import { PromptHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { PromptBuilderRightPanel } from "./PromptBuilderRightPanel";
 import { PromptBuilderLeftPanel } from "./PromptBuilderLeftPanel";
@@ -9,6 +9,7 @@ import { ModelSettingsDialog } from "@/features/prompts/components/configuration
 import { FullScreenEditor } from "@/features/prompts/components/FullScreenEditor";
 import { PromptSettingsModal } from "@/features/prompts/components/PromptSettingsModal";
 import { SharedPromptBanner } from "./SharedPromptWarningModal";
+import { SystemPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/SystemPromptOptimizer";
 import { PromptBuilderSharedProps } from "./types";
 
 export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
@@ -116,7 +117,14 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
         // Back navigation
         backHref,
         backLabel,
+        contextLabel,
+
+        // Model conflict resolution
+        hasPendingConflict,
+        onOpenSettingsConflictModal,
     } = props;
+
+    const [isOptimizerOpen, setIsOptimizerOpen] = useState(false);
 
     return (
         <>
@@ -141,25 +149,85 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
                             onAcceptFullPrompt={handleAcceptFullPrompt}
                             onAcceptAsCopy={handleAcceptFullPromptAsCopy}
                         />
-                        {/* Back navigation for non-prompt routes (e.g. admin builtin editor) */}
+                        {/* Standalone header for non-prompt routes (e.g. admin builtin editor) */}
                         {backHref && (
-                            <div className="border-b px-4 bg-card flex items-center gap-3 h-9 shrink-0">
-                                <Link
-                                    href={backHref}
-                                    className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5 text-sm"
-                                >
-                                    <ArrowLeft className="w-3.5 h-3.5" />
-                                    {backLabel ?? 'Back'}
-                                </Link>
-                                {promptName && (
-                                    <>
-                                        <span className="text-muted-foreground/40">|</span>
-                                        <span className="text-sm text-muted-foreground truncate">
-                                            {promptName}
-                                        </span>
-                                    </>
-                                )}
+                            <div className="border-b bg-card flex items-center justify-between gap-1 h-8 px-2 shrink-0">
+                                {/* Left: breadcrumb */}
+                                <div className="flex items-center gap-0.5 min-w-0 overflow-hidden">
+                                    <Link
+                                        href={backHref}
+                                        className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap flex-shrink-0 px-1 py-0.5 rounded hover:bg-accent"
+                                    >
+                                        <ArrowLeft className="w-3 h-3" />
+                                        {contextLabel ?? backLabel ?? 'Back'}
+                                    </Link>
+                                    <ChevronRight className="w-3 h-3 text-muted-foreground/40 flex-shrink-0" />
+                                    <input
+                                        type="text"
+                                        value={promptName}
+                                        onChange={(e) => {
+                                            onPromptNameChange(e.target.value);
+                                        }}
+                                        className="text-[11px] font-medium bg-transparent border-0 outline-none text-foreground min-w-0 truncate px-1 py-0.5 rounded hover:bg-accent/50 focus:bg-accent/50 w-full max-w-[280px]"
+                                        placeholder="Untitled"
+                                    />
+                                    {isDirty && (
+                                        <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-orange-400" title="Unsaved changes" />
+                                    )}
+                                </div>
+
+                                {/* Right: action buttons */}
+                                <div className="flex items-center gap-0.5 flex-shrink-0">
+                                    <button
+                                        onClick={() => setIsOptimizerOpen(true)}
+                                        className="h-6 w-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                                        title="Optimize System Message"
+                                    >
+                                        <Sparkles className="h-3 w-3" />
+                                    </button>
+                                    <button
+                                        onClick={() => setIsFullScreenEditorOpen(true)}
+                                        className="h-6 w-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                                        title="Full Editor"
+                                    >
+                                        <Maximize2 className="h-3 w-3" />
+                                    </button>
+                                    <button
+                                        onClick={() => setIsSettingsModalOpen(true)}
+                                        className="h-6 w-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                                        title="Settings"
+                                    >
+                                        <Settings className="h-3 w-3" />
+                                    </button>
+                                    <div className="w-px h-3.5 bg-border mx-0.5" />
+                                    <button
+                                        onClick={onSave}
+                                        disabled={isSaving || !isDirty}
+                                        className="h-6 flex items-center gap-1 px-2 rounded text-[11px] font-medium bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                        title="Save"
+                                    >
+                                        {isSaving ? (
+                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                        ) : (
+                                            <Save className="h-3 w-3" />
+                                        )}
+                                        <span>Save</span>
+                                    </button>
+                                </div>
                             </div>
+                        )}
+
+                        {/* Optimizer (only for standalone header mode) */}
+                        {backHref && (
+                            <SystemPromptOptimizer
+                                isOpen={isOptimizerOpen}
+                                onClose={() => setIsOptimizerOpen(false)}
+                                currentSystemMessage={developerMessage}
+                                onAccept={(optimizedText) => onDeveloperMessageChange(optimizedText)}
+                                fullPromptObject={fullPromptObject}
+                                onAcceptFullPrompt={handleAcceptFullPrompt}
+                                onAcceptAsCopy={handleAcceptFullPromptAsCopy}
+                            />
                         )}
                         {/* Shared Prompt Banner */}
                         {isSharedPrompt && accessInfo && (
@@ -178,6 +246,8 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
                         onModelChange={onModelChange}
                         modelConfig={modelConfig}
                         onSettingsClick={() => setIsSettingsOpen(true)}
+                        hasPendingConflict={hasPendingConflict}
+                        onOpenSettingsConflictModal={onOpenSettingsConflictModal}
                         variableDefaults={variableDefaults}
                         onAddVariable={onAddVariable}
                         onUpdateVariable={onUpdateVariable}

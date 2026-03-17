@@ -25,6 +25,9 @@ import { PromptBuilderMobile } from "./PromptBuilderMobile";
 import { SharedPromptWarningModal, SharedPromptBanner } from "./SharedPromptWarningModal";
 import type { PromptAccessInfo } from "@/features/prompts/types/shared";
 import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
+import { ModelChangeConflictModal } from "./ModelChangeConflictModal";
+import type { ModelChangeConflictData } from "./ModelChangeConflictModal";
+import { useModelChangeConflict } from "@/features/prompts/hooks/useModelChangeConflict";
 
 interface PromptBuilderProps {
     models: any[];
@@ -157,6 +160,11 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
 
     // Check if the current model supports tools
     const modelSupportsTools = normalizedControls?.tools?.default ?? false;
+
+    // Model change conflict resolution
+    const { buildConflictData } = useModelChangeConflict(models);
+    const [conflictModalOpen, setConflictModalOpen] = useState(false);
+    const [pendingConflictData, setPendingConflictData] = useState<ModelChangeConflictData | null>(null);
 
     // Check attachment capabilities from actual prompt settings (not just model defaults)
     const supportsImageUrls = modelConfig?.image_urls ?? false;
@@ -878,6 +886,23 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
         }
     };
 
+    // Handle conflict modal confirmation
+    const handleConflictConfirm = (resolvedSettings: PromptSettings) => {
+        if (!pendingConflictData) return;
+        setModel(pendingConflictData.newModelId);
+        setModelConfig(resolvedSettings);
+        setConflictModalOpen(false);
+        setPendingConflictData(null);
+        setIsDirty(true);
+    };
+
+    // Handle conflict modal cancel — undo the model selection (revert to old model)
+    const handleConflictCancel = () => {
+        setConflictModalOpen(false);
+        setPendingConflictData(null);
+        // model state is unchanged — never was switched
+    };
+
     // Build full prompt object for the experimental full prompt optimizer
     const fullPromptObject = {
         id: initialData?.id,
@@ -1031,21 +1056,26 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
         models,
         model,
         onModelChange: (value: string) => {
-            const newModel = models.find(m => m.id === value);
-            setModel(value);
-            if (newModel) {
-                setModelConfig(prev => {
-                    const defaults = getModelDefaults(newModel);
-                    return {
-                        ...defaults,
-                        tools: prev.tools || []
-                    };
-                });
+            if (value === model) return;
+            const conflictData = buildConflictData(model, value, modelConfig);
+            if (conflictData && conflictData.conflicts.length > 0) {
+                // Conflicts found — show modal, do NOT change model yet
+                setPendingConflictData(conflictData);
+                setConflictModalOpen(true);
+            } else {
+                // No conflicts — switch model immediately, keep all current settings
+                setModel(value);
+                setIsDirty(true);
             }
-            setIsDirty(true);
         },
         modelConfig,
         setModelConfig,
+        onOpenSettingsConflictModal: () => {
+            if (pendingConflictData) {
+                setConflictModalOpen(true);
+            }
+        },
+        hasPendingConflict: !!pendingConflictData,
 
         // Variables
         variableDefaults,
@@ -1165,7 +1195,17 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
         // Back navigation
         backHref,
         backLabel: backLabel ?? contextLabel,
+        contextLabel,
     };
+
+    const conflictModal = (
+        <ModelChangeConflictModal
+            isOpen={conflictModalOpen}
+            onClose={handleConflictCancel}
+            conflictData={pendingConflictData}
+            onConfirm={handleConflictConfirm}
+        />
+    );
 
     // Render appropriate component based on device type
     if (isMobile) {
@@ -1176,7 +1216,6 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
                     mobileActiveTab={mobileActiveTab}
                     onMobileTabChange={setMobileActiveTab}
                 />
-                {/* Shared Prompt Warning Modal */}
                 <SharedPromptWarningModal
                     isOpen={showSharedWarningModal}
                     onClose={() => setShowSharedWarningModal(false)}
@@ -1186,6 +1225,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
                     onCreateCopy={handleSaveAsCopy}
                     isCreatingCopy={isCreatingCopy}
                 />
+                {conflictModal}
             </>
         );
     }
@@ -1193,7 +1233,6 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
     return (
         <>
             <PromptBuilderDesktop {...sharedProps} />
-            {/* Shared Prompt Warning Modal */}
             <SharedPromptWarningModal
                 isOpen={showSharedWarningModal}
                 onClose={() => setShowSharedWarningModal(false)}
@@ -1203,6 +1242,7 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
                 onCreateCopy={handleSaveAsCopy}
                 isCreatingCopy={isCreatingCopy}
             />
+            {conflictModal}
         </>
     );
 }

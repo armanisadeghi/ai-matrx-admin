@@ -4,40 +4,16 @@ import React from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModelSettings } from "./ModelSettings";
-
-interface ModelSettingsType {
-    /** @deprecated Use response_format */
-    output_format?: string;
-    response_format?: { type: string; [key: string]: unknown };
-    tool_choice?: string;
-    temperature?: number;
-    max_tokens?: number;
-    top_p?: number;
-    top_k?: number;
-    thinking_budget?: number;
-    store?: boolean;
-    stream?: boolean;
-    parallel_tool_calls?: boolean;
-    include_thoughts?: boolean;
-    tools?: string[]; // Array of selected tool names
-    image_urls?: boolean;
-    file_urls?: boolean;
-    internal_web_search?: boolean;
-    internal_url_context?: boolean;
-    youtube_videos?: boolean;
-    reasoning_effort?: string;
-    verbosity?: string;
-    reasoning_summary?: string;
-}
+import { PromptSettings } from "@/features/prompts/types/core";
 
 interface ModelSettingsDialogProps {
     isOpen: boolean;
     onClose: () => void;
     modelId: string;
     models: any[];
-    settings: ModelSettingsType;
-    onSettingsChange: (settings: ModelSettingsType) => void;
-    availableTools?: any[]; // Array of database tool objects
+    settings: PromptSettings;
+    onSettingsChange: (settings: PromptSettings) => void;
+    availableTools?: any[];
 }
 
 export function ModelSettingsDialog({

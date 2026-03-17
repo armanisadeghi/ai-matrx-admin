@@ -35,6 +35,10 @@ export interface PromptBuilderSharedProps {
     modelConfig: PromptSettings;
     setModelConfig: (config: PromptSettings | ((prev: PromptSettings) => PromptSettings)) => void;
     setIsDirty: (value: boolean) => void;
+    /** Opens the settings conflict modal if a pending conflict exists */
+    onOpenSettingsConflictModal?: () => void;
+    /** True when a model change is pending conflict resolution */
+    hasPendingConflict?: boolean;
 
     // Variables
     variableDefaults: PromptVariable[];
@@ -153,4 +157,6 @@ export interface PromptBuilderSharedProps {
     // Optional back navigation (e.g. for admin builtin editor)
     backHref?: string;
     backLabel?: string;
+    /** Label override for the back/breadcrumb context (e.g. "Prompt Builtins") */
+    contextLabel?: string;
 }
