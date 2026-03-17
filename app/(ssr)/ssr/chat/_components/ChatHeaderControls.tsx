@@ -2,15 +2,15 @@
 
 // ChatHeaderControls — Desktop header controls for the SSR chat route.
 //
-// The mobile header bar (hamburger, agent name, new chat) is now handled by
-// ChatMobileHeaderBar — a pure server component that renders on first paint
-// with zero client JS. This component handles desktop controls:
-//   - Admin-only: localhost toggle + block mode toggle
-//   - Share button when in a conversation
-//
 // Injects via PageHeaderPortal into #shell-header-center on desktop (lg+).
 // On mobile, this component renders nothing (the mobile bar is separate).
+//
+// Features:
+//   - Admin-only: localhost toggle + block mode toggle
+//   - Share button when in a conversation
+//   - Model override selector when in agent mode
 
+import dynamic from 'next/dynamic';
 import { Share2, Blocks } from 'lucide-react';
 import PageHeaderPortal from '@/app/(ssr)/_components/PageHeaderPortal';
 import IconButton from '@/app/(ssr)/_components/IconButton';
@@ -18,6 +18,8 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import { selectIsAdmin } from '@/lib/redux/slices/userSlice';
 import { useChatContext } from '@/features/public-chat/context/ChatContext';
 import type { AgentConfig } from '@/features/public-chat/context/ChatContext';
+
+const ModelOverrideSelector = dynamic(() => import('./ModelOverrideSelector'), { ssr: false });
 
 interface ChatHeaderControlsProps {
     agentName: string;
@@ -29,6 +31,12 @@ interface ChatHeaderControlsProps {
     onAgentSelect: (agent: AgentConfig) => void;
     onNewChat: () => void;
     onShare?: () => void;
+    /** Current model override (null = default) */
+    modelOverride?: string | null;
+    /** Callback to set model override */
+    onModelOverrideChange?: (model: string | null) => void;
+    /** Whether to show the model override selector */
+    showModelOverride?: boolean;
 }
 
 export default function ChatHeaderControls({
@@ -36,21 +44,31 @@ export default function ChatHeaderControls({
     isAuthenticated,
     dbConversationId,
     onShare,
+    modelOverride,
+    onModelOverrideChange,
+    showModelOverride = false,
 }: ChatHeaderControlsProps) {
     const isAdmin = useAppSelector(selectIsAdmin);
     const { state, setUseLocalhost, setUseBlockMode } = useChatContext();
 
     const showShare = isAuthenticated && isConversation && !!dbConversationId && !!onShare;
     const showAdminToggles = isAdmin;
+    const showModel = showModelOverride && !!onModelOverrideChange;
 
-    // Mobile: nothing — ChatMobileHeaderBar handles mobile (server-rendered, instant).
-    // Desktop: admin toggles always, share button when in a conversation.
-    if (!showShare && !showAdminToggles) return null;
+    if (!showShare && !showAdminToggles && !showModel) return null;
 
     return (
         <PageHeaderPortal>
             <div className="hidden lg:flex items-center justify-end w-full gap-1">
-                {/* Admin-only toggles: localhost + block mode */}
+                {/* Model override selector */}
+                {showModel && (
+                    <ModelOverrideSelector
+                        currentOverride={modelOverride ?? null}
+                        onOverrideChange={onModelOverrideChange!}
+                    />
+                )}
+
+                {/* Admin-only toggles */}
                 {showAdminToggles && (
                     <>
                         <button
@@ -66,7 +84,7 @@ export default function ChatHeaderControls({
                         </button>
                         <button
                             onClick={() => setUseBlockMode(!state.useBlockMode)}
-                            title={state.useBlockMode ? 'Block mode ON — using agents-blocks endpoint. Click to disable.' : 'Block mode OFF — using standard agents endpoint. Click to enable.'}
+                            title={state.useBlockMode ? 'Block mode ON — click to disable.' : 'Block mode OFF — click to enable.'}
                             className={`p-1.5 rounded-md transition-colors ${
                                 state.useBlockMode
                                     ? 'text-violet-600 dark:text-violet-400 bg-violet-500/15 border border-violet-500/30'
@@ -78,7 +96,7 @@ export default function ChatHeaderControls({
                     </>
                 )}
 
-                {/* Share button — conversation mode only */}
+                {/* Share button */}
                 {showShare && (
                     <IconButton
                         icon={<Share2 />}

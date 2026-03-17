@@ -4,60 +4,125 @@
 // Main client island for the SSR chat route.
 //
 // Architecture:
-//   - ChatContext (reducer) for message/agent/settings state
-//   - useAgentChat for NDJSON streaming to the backend
-//   - useChatPersistence for cx_ table CRUD via API routes
-//   - useApiAuth for auth headers (from lite Redux store)
+//   - Welcome screen: renders the landing UI with agent picker, variables, and custom chat config
+//   - Conversation mode: delegates to UnifiedChatWrapper from the unified conversation system
 //   - URL state: pathname for conversationId, searchParams for agent/vars/localhost
 //   - Custom DOM events for sidebar sync
+//   - SsrAgentContext for shared agent state across header, sidebar, and workspace
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { useAppSelector } from '@/lib/redux/hooks';
+import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { selectUser } from '@/lib/redux/slices/userSlice';
 import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
 import { MessageCircle, List, Layers } from 'lucide-react';
 
-// Chat infrastructure
+// Chat infrastructure (ChatContext still used for welcome screen state + sidebar sync)
 import { useChatContext } from '@/features/public-chat/context/ChatContext';
 import type { AgentConfig } from '@/features/public-chat/context/ChatContext';
-import { useAgentChat } from '@/features/public-chat/hooks/useAgentChat';
 import { useChatPersistence } from '@/features/public-chat/hooks/useChatPersistence';
 import { buildCanonicalMessages, canonicalArrayToLegacy } from '@/lib/chat-protocol';
 
+// Unified conversation system
+import { useConversationSession } from '@/components/conversation/hooks/useConversationSession';
+import { ConversationShell } from '@/components/conversation/ConversationShell';
+import { chatConversationsActions } from '@/lib/redux/chatConversations/slice';
+import { selectConversationId as selectUnifiedConversationId } from '@/lib/redux/chatConversations/selectors';
+import type { ChatModeConfig, ApiMode } from '@/lib/redux/chatConversations/types';
 
-// Shared agent state — single source of truth for selected agent across the SSR chat route
+// Shared agent state
 import { useSsrAgent } from './SsrAgentContext';
 
-// Header controls — rich header with sidebar toggle, agent picker, etc.
+// Header controls
 import ChatHeaderControls from './ChatHeaderControls';
 
-// Eager imports — always rendered in conversation mode
+// Eager imports — always rendered on welcome screen
 import { ChatInputWithControls } from '@/features/public-chat/components/ChatInputWithControls';
-import { MessageList } from '@/features/public-chat/components/MessageDisplay';
 import { ResponseModeButtons, BackToStartButton, DEFAULT_AGENTS } from '@/features/public-chat/components/AgentSelector';
 
-// Lazy imports — conditionally rendered, not needed on first paint
+// Lazy imports — conditionally rendered
 const ShareModal = dynamic(() => import('@/features/sharing').then(m => ({ default: m.ShareModal })), { ssr: false });
 const PublicVariableInputs = dynamic(() => import('@/features/public-chat/components/PublicVariableInputs').then(m => ({ default: m.PublicVariableInputs })), { ssr: false });
 const GuidedVariableInputs = dynamic(() => import('@/features/public-chat/components/GuidedVariableInputs').then(m => ({ default: m.GuidedVariableInputs })), { ssr: false });
+const CustomChatConfig = dynamic(() => import('./CustomChatConfig'), { ssr: false });
+const ModelOverrideSelector = dynamic(() => import('./ModelOverrideSelector'), { ssr: false });
 
-import type { StreamEvent } from '@/types/python-generated/stream-events';
 import type { PublicResource } from '@/features/public-chat/types/content';
 import type { PromptVariable } from '@/features/prompts/types/core';
 import { formatText } from '@/utils/text/text-case-converter';
+
+// ============================================================================
+// CONVERSATION VIEW — Renders UnifiedChatWrapper when messages exist
+// ============================================================================
+
+interface ConversationViewProps {
+    agentId: string;
+    apiMode: ApiMode;
+    conversationId?: string;
+    chatModeConfig?: ChatModeConfig;
+    variableDefaults?: PromptVariable[];
+    variables?: Record<string, string>;
+    modelOverride?: string;
+    authenticated: boolean;
+    onConversationIdChange: (id: string) => void;
+}
+
+function ConversationView({
+    agentId,
+    apiMode,
+    conversationId,
+    chatModeConfig,
+    variableDefaults,
+    variables,
+    modelOverride,
+    authenticated,
+    onConversationIdChange,
+}: ConversationViewProps) {
+    const session = useConversationSession({
+        agentId,
+        apiMode,
+        conversationId,
+        loadHistory: !!conversationId,
+        chatModeConfig,
+        variableDefaults,
+        variables,
+        modelOverride,
+    });
+
+    // Notify parent when conversation ID changes (for URL sync)
+    useEffect(() => {
+        if (session.conversationId) {
+            onConversationIdChange(session.conversationId);
+        }
+    }, [session.conversationId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    return (
+        <ConversationShell
+            sessionId={session.sessionId}
+            compact={false}
+            inputProps={{
+                showVoice: authenticated,
+                showResourcePicker: authenticated,
+                showModelPicker: false,
+                showVariables: false,
+                seamless: false,
+            }}
+        />
+    );
+}
 
 // ============================================================================
 // INNER WORKSPACE — wrapped by ChatProvider
 // ============================================================================
 
 function ChatWorkspaceInner() {
+    const dispatch = useAppDispatch();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const { state, setUseLocalhost, updateMessage, loadConversation: loadConversationAction, startNewConversation } = useChatContext();
+    const { state, setUseLocalhost, loadConversation: loadConversationAction, startNewConversation } = useChatContext();
 
-    // Shared agent state — drives header, sidebar, response-mode buttons, and welcome screen
+    // Shared agent state
     const { selectedAgent, onAgentChange, openAgentPicker } = useSsrAgent();
 
     // Variables
@@ -65,19 +130,25 @@ function ChatWorkspaceInner() {
     const [variableValues, setVariableValues] = useState<Record<string, any>>({});
     const [activeVariables, setActiveVariables] = useState<PromptVariable[]>([]);
 
-    // Streaming
-    const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
+    // Mode state
     const [isShareOpen, setIsShareOpen] = useState(false);
-    const latestAssistantRef = useRef<HTMLDivElement>(null);
-    const prevAssistantCountRef = useRef(0);
+    const [isLoadingConversation, setIsLoadingConversation] = useState(false);
+    const [focusKey, setFocusKey] = useState(0);
     const textInputRef = useRef<HTMLTextAreaElement>(null);
     const variableInputRef = useRef<HTMLInputElement>(null);
 
-    // Loading state for conversation switch
-    const [isLoadingConversation, setIsLoadingConversation] = useState(false);
-    const [focusKey, setFocusKey] = useState(0);
+    // Custom chat mode state
+    const [customChatConfig, setCustomChatConfig] = useState<ChatModeConfig | null>(null);
+    const [isCustomChatActive, setIsCustomChatActive] = useState(false);
 
-    // Redux lite store — typed hooks
+    // Model override state (for agent mode)
+    const [modelOverride, setModelOverride] = useState<string | null>(null);
+
+    // Track whether we've entered conversation mode (first message sent or conversation loaded)
+    const [isInConversation, setIsInConversation] = useState(false);
+    const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+
+    // Redux state
     const user = useAppSelector(selectUser);
     const isAuthenticated = !!user?.id;
     const useLocalhost = useAppSelector(selectIsUsingLocalhost);
@@ -86,7 +157,7 @@ function ChatWorkspaceInner() {
     const persistence = useChatPersistence();
 
     // ========================================================================
-    // URL STATE — extract conversation ID and agent ID
+    // URL STATE
     // ========================================================================
 
     const conversationIdFromUrl = useMemo(() => {
@@ -98,29 +169,6 @@ function ChatWorkspaceInner() {
     const localhostFromUrl = searchParams.get('localhost') === '1';
 
     // ========================================================================
-    // STREAMING — useAgentChat
-    // ========================================================================
-
-    const { sendMessage, isStreaming, isExecuting, messages, conversationId } = useAgentChat({
-        onStreamEvent: (event) => {
-            setStreamEvents(prev => [...prev, event]);
-        },
-        onComplete: () => {
-            setTimeout(() => setStreamEvents([]), 100);
-
-            // Notify sidebar of update
-            if (state.dbConversationId) {
-                window.dispatchEvent(new CustomEvent('chat:conversationUpdated', {
-                    detail: { id: state.dbConversationId },
-                }));
-            }
-        },
-        onError: () => {
-            // useAgentChat handles error state internally
-        },
-    });
-
-    // ========================================================================
     // SYNC EFFECTS
     // ========================================================================
 
@@ -129,84 +177,62 @@ function ChatWorkspaceInner() {
         setUseLocalhost(useLocalhost || localhostFromUrl);
     }, [useLocalhost, localhostFromUrl, setUseLocalhost]);
 
-    // Agent URL resolution is now handled by SsrAgentContext.
-    // ChatWorkspace just focuses the input when the agent changes.
+    // Focus on agent URL change
     useEffect(() => {
         if (agentIdFromUrl) {
             setFocusKey(k => k + 1);
         }
     }, [agentIdFromUrl]);
 
-    // Load conversation when URL changes to a conversation route
+    // Handle URL conversation loading
     useEffect(() => {
         if (!conversationIdFromUrl) {
             // No conversation in URL — reset to welcome screen
-            if (state.dbConversationId) {
+            if (isInConversation || state.dbConversationId) {
+                setIsInConversation(false);
+                setActiveConversationId(null);
+                setCustomChatConfig(null);
+                setIsCustomChatActive(false);
                 startNewConversation();
             }
             return;
         }
 
         // Already loaded?
-        if (state.dbConversationId === conversationIdFromUrl) {
-            return;
-        }
+        if (activeConversationId === conversationIdFromUrl) return;
 
-        let cancelled = false;
-
-        async function doLoadConversation() {
-            setIsLoadingConversation(true);
-            try {
-                const data = await persistence.loadConversation(conversationIdFromUrl!);
-                if (cancelled || !data) {
-                    setIsLoadingConversation(false);
-                    return;
-                }
-
-                // Normalize to canonical format via the chat-protocol layer,
-                // then adapt to legacy ChatMessage for the existing context/renderers.
-                const canonical    = buildCanonicalMessages(data.messages, data.toolCalls);
-                const chatMessages = canonicalArrayToLegacy(canonical);
-
-                // Load atomically — sets conversationId, dbConversationId, and messages in one dispatch
-                loadConversationAction(conversationIdFromUrl!, conversationIdFromUrl!, chatMessages as any);
-
-                setIsLoadingConversation(false);
-                setFocusKey(k => k + 1);
-            } catch (error) {
-                console.error('Failed to load conversation:', error);
-                setIsLoadingConversation(false);
-            }
-        }
-
-        doLoadConversation();
-
-        return () => {
-            cancelled = true;
-        };
+        // Load the conversation from the database and switch to conversation view
+        setIsInConversation(true);
+        setActiveConversationId(conversationIdFromUrl);
+        setIsCustomChatActive(false);
+        setCustomChatConfig(null);
     }, [conversationIdFromUrl]);
 
-    // Update URL when dbConversationId changes (new conversation created via streaming)
-    useEffect(() => {
-        if (!state.dbConversationId) return;
-        if (conversationIdFromUrl === state.dbConversationId) return;
+    // ========================================================================
+    // CONVERSATION ID SYNC — Update URL when unified system creates a conversation
+    // ========================================================================
 
-        // New conversation created — update URL
-        const url = `/ssr/chat/${state.dbConversationId}`;
+    const handleConversationIdChange = useCallback((newConversationId: string) => {
+        if (!newConversationId) return;
+        if (conversationIdFromUrl === newConversationId) return;
+
+        // Update URL
+        const url = `/ssr/chat/${newConversationId}`;
         window.history.pushState(null, '', url);
 
         // Notify sidebar
-        const title = state.messages[0]?.content?.slice(0, 60) || 'New Chat';
         window.dispatchEvent(new CustomEvent('chat:conversationCreated', {
-            detail: { id: state.dbConversationId, title },
+            detail: { id: newConversationId, title: 'New Chat' },
         }));
-    }, [state.dbConversationId]);
+
+        setActiveConversationId(newConversationId);
+    }, [conversationIdFromUrl]);
 
     // ========================================================================
     // VARIABLE MANAGEMENT
     // ========================================================================
 
-    const hasMessages = state.messages.length > 0;
+    const hasMessages = isInConversation;
 
     useEffect(() => {
         if (hasMessages) {
@@ -231,9 +257,9 @@ function ChatWorkspaceInner() {
         }
     }, [selectedAgent.promptId, hasMessages]);
 
-    // Focus management — use refs, skip on mobile
+    // Focus management
     useEffect(() => {
-        if (isLoadingConversation) return;
+        if (isLoadingConversation || isInConversation) return;
 
         const isMobile = window.matchMedia('(max-width: 767px)').matches;
         if (isMobile) return;
@@ -247,25 +273,19 @@ function ChatWorkspaceInner() {
         }, 80);
 
         return () => clearTimeout(timer);
-    }, [state.currentAgent?.promptId, focusKey, isLoadingConversation, activeVariables.length]);
-
-    // Auto-scroll to latest assistant message
-    useEffect(() => {
-        const assistantCount = messages.filter(m => m.role === 'assistant').length;
-        if (assistantCount > prevAssistantCountRef.current && latestAssistantRef.current) {
-            latestAssistantRef.current.scrollIntoView({ behavior: 'instant', block: 'start' });
-        }
-        prevAssistantCountRef.current = assistantCount;
-    }, [messages]);
+    }, [selectedAgent.promptId, focusKey, isLoadingConversation, activeVariables.length, isInConversation]);
 
     // ========================================================================
     // HANDLERS
     // ========================================================================
 
-    // Delegate all agent changes to the shared SsrAgentContext —
-    // this keeps sidebar, header, and welcome screen in sync automatically.
     const handleAgentSelect = useCallback((agent: AgentConfig) => {
         onAgentChange(agent);
+        setIsInConversation(false);
+        setActiveConversationId(null);
+        setCustomChatConfig(null);
+        setIsCustomChatActive(false);
+        setModelOverride(null);
         setFocusKey(k => k + 1);
     }, [onAgentChange]);
 
@@ -283,9 +303,19 @@ function ChatWorkspaceInner() {
         setVariableValues(prev => ({ ...prev, [name]: value }));
     }, []);
 
-    const handleSubmit = useCallback(async (content: string, resources?: PublicResource[]) => {
-        setStreamEvents([]);
+    const handleNewChat = useCallback(() => {
+        setIsInConversation(false);
+        setActiveConversationId(null);
+        setCustomChatConfig(null);
+        setIsCustomChatActive(false);
+        setModelOverride(null);
+        const url = '/ssr/chat';
+        window.history.pushState(null, '', url);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+    }, []);
 
+    // Handle first message submit from welcome screen → transition to conversation
+    const handleFirstSubmit = useCallback(async (content: string, resources?: PublicResource[]) => {
         let displayContent = '';
 
         if (activeVariables.length > 0) {
@@ -297,7 +327,6 @@ function ChatWorkspaceInner() {
                     variableLines.push(`${formattedName}: ${value}`);
                 }
             });
-
             if (variableLines.length > 0) {
                 displayContent = variableLines.join('\n');
                 if (content.trim()) {
@@ -310,29 +339,34 @@ function ChatWorkspaceInner() {
             displayContent = content;
         }
 
-        const submittedVariables = { ...variableValues };
+        // Clear variables (they're only shown on welcome screen)
         setActiveVariables([]);
         setVariableValues({});
 
-        return sendMessage({
+        // Now transition to conversation mode — the ConversationView will handle sending
+        setIsInConversation(true);
+
+        // We need to queue the first message to be sent after the session initializes.
+        // Store it for the ConversationView to pick up.
+        firstMessageRef.current = {
             content: displayContent,
-            variables: submittedVariables,
-            resources,
-        });
-    }, [activeVariables, variableValues, sendMessage]);
+            variables: { ...variableValues },
+        };
+    }, [activeVariables, variableValues]);
 
-    const handleMessageContentChange = useCallback((messageId: string, newContent: string) => {
-        updateMessage(messageId, { content: newContent });
-    }, [updateMessage]);
+    // Ref to pass first message to ConversationView
+    const firstMessageRef = useRef<{ content: string; variables: Record<string, unknown> } | null>(null);
 
-    const handleHeaderAgentSelect = useCallback((agent: AgentConfig) => {
-        handleAgentSelect(agent);
-    }, [handleAgentSelect]);
+    // Handle custom chat activation
+    const handleCustomChatActivate = useCallback((config: ChatModeConfig) => {
+        setCustomChatConfig(config);
+        setIsCustomChatActive(true);
+        // Don't enter conversation mode yet — user still needs to type a message
+    }, []);
 
-    const handleNewChat = useCallback(() => {
-        const url = '/ssr/chat';
-        window.history.pushState(null, '', url);
-        window.dispatchEvent(new PopStateEvent('popstate'));
+    const handleCustomChatSubmit = useCallback(async (content: string) => {
+        setIsInConversation(true);
+        firstMessageRef.current = { content, variables: {} };
     }, []);
 
     // ========================================================================
@@ -340,14 +374,15 @@ function ChatWorkspaceInner() {
     // ========================================================================
 
     const hasVariables = activeVariables.length > 0;
-    const isWelcomeScreen = messages.length === 0 && !isLoadingConversation;
+    const isWelcomeScreen = !isInConversation && !isLoadingConversation;
 
-    // Header content — driven from shared agent context so it stays in sync with sidebar
-    const headerLabel = !isWelcomeScreen && state.messages[0]?.content
-        ? state.messages[0].content.slice(0, 40) + (state.messages[0].content.length > 40 ? '…' : '')
+    const headerLabel = !isWelcomeScreen
+        ? (selectedAgent.name || 'Chat')
         : (selectedAgent.name || 'Chat');
 
     const agentName = selectedAgent.name || 'Chat';
+    const currentApiMode: ApiMode = isCustomChatActive ? 'chat' : 'agent';
+    const currentAgentId = isCustomChatActive ? 'custom-chat' : selectedAgent.promptId;
 
     // ========================================================================
     // LOADING STATE
@@ -359,11 +394,11 @@ function ChatWorkspaceInner() {
                 <ChatHeaderControls
                     agentName={agentName}
                     headerLabel={headerLabel}
-                    isConversation={!isWelcomeScreen}
+                    isConversation={true}
                     isAuthenticated={isAuthenticated}
-                    dbConversationId={state.dbConversationId}
+                    dbConversationId={null}
                     selectedAgent={selectedAgent}
-                    onAgentSelect={handleHeaderAgentSelect}
+                    onAgentSelect={handleAgentSelect}
                     onNewChat={handleNewChat}
                     onShare={() => setIsShareOpen(true)}
                 />
@@ -376,39 +411,149 @@ function ChatWorkspaceInner() {
     }
 
     // ========================================================================
+    // CONVERSATION MODE — Unified system handles everything
+    // ========================================================================
+
+    if (isInConversation) {
+        const shareConversationId = activeConversationId;
+
+        return (
+            <>
+                <ChatHeaderControls
+                    agentName={isCustomChatActive ? 'Direct Chat' : agentName}
+                    headerLabel={isCustomChatActive ? 'Direct Chat' : headerLabel}
+                    isConversation={true}
+                    isAuthenticated={isAuthenticated}
+                    dbConversationId={activeConversationId}
+                    selectedAgent={selectedAgent}
+                    onAgentSelect={handleAgentSelect}
+                    onNewChat={handleNewChat}
+                    onShare={() => setIsShareOpen(true)}
+                    modelOverride={modelOverride}
+                    onModelOverrideChange={setModelOverride}
+                    showModelOverride={!isCustomChatActive}
+                />
+                <div className="h-full flex flex-col">
+                    {/* Share Modal */}
+                    {isShareOpen && shareConversationId && (
+                        <ShareModal
+                            isOpen={isShareOpen}
+                            onClose={() => setIsShareOpen(false)}
+                            resourceType="cx_conversation"
+                            resourceId={shareConversationId}
+                            resourceName="Chat"
+                            isOwner={true}
+                        />
+                    )}
+
+                    {/* Unified Conversation */}
+                    <ConversationViewWithFirstMessage
+                        agentId={currentAgentId}
+                        apiMode={currentApiMode}
+                        conversationId={activeConversationId ?? undefined}
+                        chatModeConfig={customChatConfig ?? undefined}
+                        variableDefaults={selectedAgent.variableDefaults}
+                        modelOverride={modelOverride ?? undefined}
+                        authenticated={isAuthenticated}
+                        onConversationIdChange={handleConversationIdChange}
+                        firstMessage={firstMessageRef.current}
+                        onFirstMessageSent={() => { firstMessageRef.current = null; }}
+                    />
+                </div>
+            </>
+        );
+    }
+
+    // ========================================================================
     // WELCOME SCREEN
     // ========================================================================
 
-    if (isWelcomeScreen) {
-        const agentDescription = hasVariables ? selectedAgent.description : null;
-        const varCount = activeVariables.length;
-        const showDescription = agentDescription && varCount <= 3;
+    const varCount = activeVariables.length;
+    const agentDescription = hasVariables ? selectedAgent.description : null;
+    const showDescription = agentDescription && varCount <= 3;
 
-        const toggleUrl = (() => {
-            const params = new URLSearchParams(searchParams.toString());
-            if (useGuidedVars) {
-                params.set('vars', 'classic');
-            } else {
-                params.delete('vars');
-            }
-            const qs = params.toString();
-            return qs ? `?${qs}` : pathname;
-        })();
+    const toggleUrl = (() => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (useGuidedVars) {
+            params.set('vars', 'classic');
+        } else {
+            params.delete('vars');
+        }
+        const qs = params.toString();
+        return qs ? `?${qs}` : pathname;
+    })();
 
-        // Guided mode: pin input to bottom
-        if (useGuidedVars && hasVariables) {
-            return (
-                <>
+    // Custom chat mode: show direct chat config + input
+    if (isCustomChatActive) {
+        return (
+            <>
+                <ChatHeaderControls
+                    agentName="Direct Chat"
+                    headerLabel="Direct Chat"
+                    isConversation={false}
+                    isAuthenticated={isAuthenticated}
+                    dbConversationId={null}
+                    selectedAgent={selectedAgent}
+                    onAgentSelect={handleAgentSelect}
+                    onNewChat={handleNewChat}
+                    onShare={() => {}}
+                />
+                <div className="h-full flex flex-col">
+                    <div className="flex-1 min-h-0 overflow-y-auto">
+                        <div className="min-h-full flex flex-col items-center justify-center px-3 md:px-8">
+                            <div className="w-full max-w-3xl">
+                                <div className="text-center mb-6 md:mb-8">
+                                    <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Direct Chat</h1>
+                                    <p className="mt-1 text-sm text-muted-foreground/70">
+                                        Custom model & configuration
+                                    </p>
+                                </div>
+
+                                <div className="mb-4">
+                                    <CustomChatConfig
+                                        onActivate={handleCustomChatActivate}
+                                        isActive={true}
+                                    />
+                                </div>
+
+                                <ChatInputWithControls
+                                    onSubmit={handleCustomChatSubmit}
+                                    disabled={false}
+                                    placeholder="Send a message..."
+                                    conversationId={null}
+                                    hasVariables={false}
+                                    selectedAgent={selectedAgent}
+                                    textInputRef={textInputRef}
+                                />
+
+                                <div className="flex items-center justify-between mt-3 md:mt-6 pb-4">
+                                    <BackToStartButton onBack={handleBackToStart} agentName="Direct Chat" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </>
+        );
+    }
+
+    // Guided mode: pin input to bottom
+    if (useGuidedVars && hasVariables) {
+        return (
+            <>
                 <ChatHeaderControls
                     agentName={agentName}
                     headerLabel={headerLabel}
-                    isConversation={!isWelcomeScreen}
+                    isConversation={false}
                     isAuthenticated={isAuthenticated}
-                    dbConversationId={state.dbConversationId}
+                    dbConversationId={null}
                     selectedAgent={selectedAgent}
-                    onAgentSelect={handleHeaderAgentSelect}
+                    onAgentSelect={handleAgentSelect}
                     onNewChat={handleNewChat}
                     onShare={() => setIsShareOpen(true)}
+                    modelOverride={modelOverride}
+                    onModelOverrideChange={setModelOverride}
+                    showModelOverride
                 />
                 <div className="h-full flex flex-col">
                     <div className="flex-1 min-h-0 overflow-y-auto">
@@ -435,19 +580,18 @@ function ChatWorkspaceInner() {
                                 variableDefaults={activeVariables}
                                 values={variableValues}
                                 onChange={handleVariableChange}
-                                disabled={isExecuting}
+                                disabled={false}
                                 textInputRef={textInputRef}
                                 submitOnEnter={true}
-                                onSubmit={handleSubmit}
+                                onSubmit={handleFirstSubmit}
                                 seamless
                             />
                             <div className="rounded-b-2xl bg-card/80 backdrop-blur-sm">
                                 <ChatInputWithControls
-                                    onSubmit={handleSubmit}
-                                    disabled={isExecuting}
+                                    onSubmit={handleFirstSubmit}
+                                    disabled={false}
                                     placeholder="Additional instructions (optional)…"
-                                    conversationId={conversationId}
-
+                                    conversationId={null}
                                     hasVariables={hasVariables}
                                     selectedAgent={selectedAgent}
                                     textInputRef={textInputRef}
@@ -471,24 +615,27 @@ function ChatWorkspaceInner() {
                         </div>
                     </div>
                 </div>
-                </>
-            );
-        }
+            </>
+        );
+    }
 
-        // Classic mode (or no variables): centered layout
-        return (
-            <>
+    // Classic mode (or no variables): centered layout
+    return (
+        <>
             <ChatHeaderControls
-                    agentName={agentName}
-                    headerLabel={headerLabel}
-                    isConversation={!isWelcomeScreen}
-                    isAuthenticated={isAuthenticated}
-                    dbConversationId={state.dbConversationId}
-                    selectedAgent={selectedAgent}
-                    onAgentSelect={handleHeaderAgentSelect}
-                    onNewChat={handleNewChat}
-                    onShare={() => setIsShareOpen(true)}
-                />
+                agentName={agentName}
+                headerLabel={headerLabel}
+                isConversation={false}
+                isAuthenticated={isAuthenticated}
+                dbConversationId={null}
+                selectedAgent={selectedAgent}
+                onAgentSelect={handleAgentSelect}
+                onNewChat={handleNewChat}
+                onShare={() => setIsShareOpen(true)}
+                modelOverride={modelOverride}
+                onModelOverrideChange={setModelOverride}
+                showModelOverride
+            />
             <div className="h-full flex flex-col">
                 <div className="flex-1 min-h-0 overflow-y-auto">
                     <div className={`min-h-full flex flex-col items-center px-3 md:px-8 ${varCount > 2 ? 'justify-start pt-8 md:pt-16 md:justify-center' : 'justify-center'}`}>
@@ -514,35 +661,44 @@ function ChatWorkspaceInner() {
                                         variableDefaults={activeVariables}
                                         values={variableValues}
                                         onChange={handleVariableChange}
-                                        disabled={isExecuting}
+                                        disabled={false}
                                         minimal
                                         textInputRef={textInputRef}
                                         submitOnEnter={true}
-                                        onSubmit={handleSubmit}
+                                        onSubmit={handleFirstSubmit}
                                     />
                                 </div>
                             )}
 
                             <div>
                                 <ChatInputWithControls
-                                    onSubmit={handleSubmit}
-                                    disabled={isExecuting}
+                                    onSubmit={handleFirstSubmit}
+                                    disabled={false}
                                     placeholder={hasVariables ? 'Additional instructions (optional)…' : 'What do you want to know?'}
-                                    conversationId={conversationId}
-
+                                    conversationId={null}
                                     hasVariables={hasVariables}
                                     selectedAgent={selectedAgent}
                                     textInputRef={textInputRef}
                                 />
                             </div>
 
+                            {/* Custom Chat Config — below input, only when no variables */}
+                            {!hasVariables && (
+                                <div className="mt-4">
+                                    <CustomChatConfig
+                                        onActivate={handleCustomChatActivate}
+                                        isActive={false}
+                                    />
+                                </div>
+                            )}
+
                             <div className="flex items-center justify-between mt-3 md:mt-6 pb-4">
                                 {hasVariables ? (
                                     <BackToStartButton onBack={handleBackToStart} agentName={agentName || undefined} />
                                 ) : (
                                     <ResponseModeButtons
-                                        disabled={isExecuting}
-                                        selectedAgentId={state.currentAgent?.promptId}
+                                        disabled={false}
+                                        selectedAgentId={selectedAgent.promptId}
                                         onModeSelect={handleModeSelect}
                                     />
                                 )}
@@ -564,114 +720,90 @@ function ChatWorkspaceInner() {
                     </div>
                 </div>
             </div>
-            </>
-        );
-    }
-
-    // ========================================================================
-    // CONVERSATION MODE
-    // ========================================================================
-
-    const shareConversationId = state.dbConversationId;
-    const conversationTitle = state.messages[0]?.content?.slice(0, 60) || 'Chat';
-
-    return (
-        <>
-        <ChatHeaderControls
-                    agentName={agentName}
-                    headerLabel={headerLabel}
-                    isConversation={!isWelcomeScreen}
-                    isAuthenticated={isAuthenticated}
-                    dbConversationId={state.dbConversationId}
-                    selectedAgent={selectedAgent}
-                    onAgentSelect={handleHeaderAgentSelect}
-                    onNewChat={handleNewChat}
-                    onShare={() => setIsShareOpen(true)}
-                />
-        <div className="h-full flex flex-col">
-            {/* Share Modal — lazy-loaded, only rendered on click */}
-            {isShareOpen && shareConversationId && (
-                <ShareModal
-                    isOpen={isShareOpen}
-                    onClose={() => setIsShareOpen(false)}
-                    resourceType="cx_conversation"
-                    resourceId={shareConversationId}
-                    resourceName={conversationTitle}
-                    isOwner={true}
-                />
-            )}
-
-            {/* Messages area */}
-            <div className="flex-1 min-h-0 relative">
-                <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-background/60 to-transparent z-10 pointer-events-none" />
-
-                <div className="h-full overflow-y-auto scrollbar-thin-hover">
-                    <div className="w-full max-w-[800px] mx-auto px-3 pt-12 pb-2 md:px-3 md:pt-12 md:pb-4 relative">
-                        <MessageList
-                            messages={messages}
-                            streamEvents={streamEvents.length > 0 ? streamEvents : undefined}
-                            isStreaming={isStreaming}
-                            onMessageContentChange={handleMessageContentChange}
-                            latestAssistantRef={latestAssistantRef}
-                        />
-                    </div>
-                </div>
-
-                <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background/40 to-transparent z-10 pointer-events-none md:hidden" />
-            </div>
-
-            {/* Input area */}
-            <div
-                className="flex-shrink-0 px-2 md:px-4 md:pt-2 bg-transparent"
-                style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
-            >
-                <div className="w-full max-w-[800px] mx-auto">
-                    {hasVariables && useGuidedVars && (
-                        <GuidedVariableInputs
-                            variableDefaults={activeVariables}
-                            values={variableValues}
-                            onChange={handleVariableChange}
-                            disabled={isExecuting}
-                            textInputRef={textInputRef}
-                            submitOnEnter={true}
-                            onSubmit={handleSubmit}
-                            seamless
-                        />
-                    )}
-                    {hasVariables && !useGuidedVars && (
-                        <div className="mb-2">
-                            <PublicVariableInputs
-                                variableDefaults={activeVariables}
-                                values={variableValues}
-                                onChange={handleVariableChange}
-                                disabled={isExecuting}
-                                minimal
-                                textInputRef={textInputRef}
-                                submitOnEnter={true}
-                                onSubmit={handleSubmit}
-                            />
-                        </div>
-                    )}
-                    <div className={`bg-card/80 backdrop-blur-sm ${hasVariables && useGuidedVars ? 'rounded-b-2xl' : 'rounded-2xl'}`}>
-                        <ChatInputWithControls
-                            onSubmit={handleSubmit}
-                            disabled={isExecuting}
-                            conversationId={conversationId}
-                            hasVariables={hasVariables}
-                            selectedAgent={selectedAgent}
-                            textInputRef={textInputRef}
-                            seamless={hasVariables && useGuidedVars}
-                        />
-                    </div>
-                </div>
-            </div>
-        </div>
         </>
     );
 }
 
 // ============================================================================
-// OUTER WRAPPER — provides ChatContext
+// CONVERSATION VIEW WITH FIRST MESSAGE — Sends queued message after init
+// ============================================================================
+
+interface ConversationViewWithFirstMessageProps extends ConversationViewProps {
+    firstMessage: { content: string; variables: Record<string, unknown> } | null;
+    onFirstMessageSent: () => void;
+}
+
+function ConversationViewWithFirstMessage({
+    firstMessage,
+    onFirstMessageSent,
+    agentId,
+    apiMode,
+    conversationId,
+    chatModeConfig,
+    variableDefaults,
+    modelOverride,
+    authenticated,
+    onConversationIdChange,
+}: ConversationViewWithFirstMessageProps) {
+    const session = useConversationSession({
+        agentId,
+        apiMode,
+        conversationId,
+        loadHistory: !!conversationId,
+        chatModeConfig,
+        variableDefaults,
+        modelOverride,
+    });
+
+    // Send first message after session initializes
+    const sentRef = useRef(false);
+    useEffect(() => {
+        if (firstMessage && session.sessionId && !sentRef.current) {
+            sentRef.current = true;
+            // Small delay to ensure Redux session is fully initialized
+            const timer = setTimeout(() => {
+                session.send(firstMessage.content, {
+                    variables: firstMessage.variables,
+                });
+                onFirstMessageSent();
+            }, 50);
+            return () => clearTimeout(timer);
+        }
+    }, [session.sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Notify parent when conversation ID changes
+    useEffect(() => {
+        if (session.conversationId) {
+            onConversationIdChange(session.conversationId);
+        }
+    }, [session.conversationId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Sidebar notification on message completion
+    useEffect(() => {
+        if (session.status === 'ready' && session.conversationId && session.messages.length > 0) {
+            window.dispatchEvent(new CustomEvent('chat:conversationUpdated', {
+                detail: { id: session.conversationId },
+            }));
+        }
+    }, [session.status, session.conversationId, session.messages.length]);
+
+    return (
+        <ConversationShell
+            sessionId={session.sessionId}
+            compact={false}
+            inputProps={{
+                showVoice: authenticated,
+                showResourcePicker: authenticated,
+                showModelPicker: false,
+                showVariables: false,
+                seamless: false,
+            }}
+        />
+    );
+}
+
+// ============================================================================
+// OUTER WRAPPER
 // ============================================================================
 
 export default function ChatWorkspace() {
