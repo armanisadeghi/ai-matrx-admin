@@ -1,11 +1,12 @@
 "use client";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { 
   FolderOpen, ExternalLink, Star, BookOpen, Video, FileText, 
   Maximize2, Minimize2, Search, Filter, Check, Clock, 
   Award, Bookmark, Eye, Play, Download, Globe, Code, 
-  Users, Zap, Target, TrendingUp, Heart
+  Users, Zap, Target, TrendingUp, Heart, Printer
 } from 'lucide-react';
+import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 
 interface ResourceItem {
@@ -42,6 +43,12 @@ interface ResourceCollectionBlockProps {
 
 const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ collection, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const blockContentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useCallback(() => {
+    if (blockContentRef.current) {
+      captureBlockElement(blockContentRef.current, collection.title.replace(/\s+/g, '-').toLowerCase() || 'resources');
+    }
+  }, [collection.title]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
@@ -246,6 +253,13 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
                         <span>Side Panel</span>
                       </button>
                       <button
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      >
+                        <Printer className="h-4 w-4" />
+                        <span>Print</span>
+                      </button>
+                      <button
                         onClick={() => setIsFullScreen(true)}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-violet-500 dark:bg-violet-600 text-white text-sm font-semibold shadow-md hover:bg-violet-600 dark:hover:bg-violet-700 hover:shadow-lg transform hover:scale-105 transition-all"
                       >
@@ -348,7 +362,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
               </div>
 
               {/* Resource Categories */}
-              <div className="space-y-6">
+              <div ref={blockContentRef} className="space-y-6">
                 {filteredCategories.map((category, categoryIndex) => (
                   <div key={category.id} className="bg-textured rounded-xl shadow-lg border-border overflow-hidden">
                     <button

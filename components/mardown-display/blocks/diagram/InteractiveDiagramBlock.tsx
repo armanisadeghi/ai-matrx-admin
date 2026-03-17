@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+// captureBlockElement imported below with diagram-specific capture
+import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 import ReactFlow, {
   Node,
   Edge,
@@ -25,7 +27,7 @@ import 'reactflow/dist/style.css';
 import { 
   Network, Maximize2, Minimize2, Download, Layers, Settings, 
   CheckCircle2, XCircle, GitBranch, Users, Database, Server, Globe, 
-  Cpu, HardDrive, RotateCcw, Square, Circle, Sparkles, Shuffle, Camera, ExternalLink
+  Cpu, HardDrive, RotateCcw, Square, Circle, Sparkles, Shuffle, Camera, ExternalLink, Printer
 } from 'lucide-react';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 import { getLayoutedElements, getLayoutOptionsForDiagramType, getRadialLayout, getOrgChartLayout } from './layout-utils';
@@ -554,6 +556,12 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
   const [showMiniMap, setShowMiniMap] = useState(false);
   const [backgroundVariant, setBackgroundVariant] = useState<BackgroundVariant>(BackgroundVariant.Dots);
   const { open: openCanvas } = useCanvas();
+  const diagramContainerRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useCallback(() => {
+    if (diagramContainerRef.current) {
+      captureBlockElement(diagramContainerRef.current, diagram.title.replace(/\s+/g, '-').toLowerCase() || 'diagram');
+    }
+  }, [diagram.title]);
 
   const exportDiagramJSON = () => {
     const exportData = {
@@ -668,6 +676,13 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                   {!isFullScreen && (
                     <>
                       <button
+                        onClick={handlePrint}
+                        className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                        title="Print / Save as PDF"
+                      >
+                        <Printer className="h-4 w-4" />
+                      </button>
+                      <button
                         onClick={() => openCanvas({
                           type: 'diagram',
                           data: diagram,
@@ -712,7 +727,7 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
           </div>
 
           {/* ReactFlow Container */}
-          <div className={`${isFullScreen ? 'flex-1' : 'h-[600px] mt-4'} bg-textured rounded-xl shadow-lg border-border overflow-hidden`}>
+          <div ref={diagramContainerRef} className={`${isFullScreen ? 'flex-1' : 'h-[600px] mt-4'} bg-textured rounded-xl shadow-lg border-border overflow-hidden`}>
             <ReactFlowProvider>
               <DiagramFlow 
                 diagram={diagram}

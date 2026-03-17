@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { 
   ChefHat, Clock, Users, CheckCircle2, Circle, 
   Maximize2, Minimize2, Timer, Flame, UtensilsCrossed,
-  AlertCircle, Sparkles, Plus, Minus, ExternalLink
+  AlertCircle, Sparkles, Plus, Minus, ExternalLink, Printer
 } from 'lucide-react';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
+import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 
 interface Ingredient {
   amount: string;
@@ -39,6 +40,12 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [servingMultiplier, setServingMultiplier] = useState(1);
   const { open: openCanvas } = useCanvas();
+  const blockContentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useCallback(() => {
+    if (blockContentRef.current) {
+      captureBlockElement(blockContentRef.current, recipe.title.replace(/\s+/g, '-').toLowerCase() || 'recipe');
+    }
+  }, [recipe.title]);
 
   // Calculate progress
   const ingredientProgress = useMemo(() => 
@@ -154,6 +161,13 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe, taskId }) => {
                           <span>Side Panel</span>
                         </button>
                         <button
+                          onClick={handlePrint}
+                          className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-xs font-semibold shadow-sm hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-md transform hover:scale-105 transition-all"
+                        >
+                          <Printer className="h-3 w-3" />
+                          <span>Print</span>
+                        </button>
+                        <button
                           onClick={() => setIsFullScreen(true)}
                           className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-orange-500 dark:bg-orange-600 text-white text-xs font-semibold shadow-sm hover:bg-orange-600 dark:hover:bg-orange-700 hover:shadow-md transform hover:scale-105 transition-all"
                         >
@@ -208,7 +222,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe, taskId }) => {
               </div>
 
               {/* Main Content Grid */}
-              <div className="grid lg:grid-cols-2 gap-3">
+              <div ref={blockContentRef} className="grid lg:grid-cols-2 gap-3">
                 
                 {/* Ingredients Section */}
                 <div className="space-y-2">

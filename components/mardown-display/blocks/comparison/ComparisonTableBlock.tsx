@@ -1,12 +1,13 @@
 "use client";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { 
   Table, ArrowUpDown, ArrowUp, ArrowDown, Star, DollarSign, Check, X,
   Maximize2, Minimize2, Search, Filter, Trophy, Medal, Award,
   TrendingUp, TrendingDown, Minus, Plus, Eye, EyeOff, Sparkles,
-  Crown, Zap, Target, ThumbsUp, ThumbsDown, AlertCircle, ExternalLink
+  Crown, Zap, Target, ThumbsUp, ThumbsDown, AlertCircle, ExternalLink, Printer
 } from 'lucide-react';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
+import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 
 interface ComparisonCriterion {
   name: string;
@@ -32,6 +33,12 @@ type SortDirection = 'asc' | 'desc' | null;
 
 const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const blockContentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useCallback(() => {
+    if (blockContentRef.current) {
+      captureBlockElement(blockContentRef.current, comparison.title.replace(/\s+/g, '-').toLowerCase() || 'comparison');
+    }
+  }, [comparison.title]);
   const [sortBy, setSortBy] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
@@ -359,6 +366,13 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                           <span>Side Panel</span>
                         </button>
                         <button
+                          onClick={handlePrint}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                        >
+                          <Printer className="h-4 w-4" />
+                          <span>Print</span>
+                        </button>
+                        <button
                           onClick={() => setIsFullScreen(true)}
                           className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 dark:bg-emerald-600 text-white text-sm font-semibold shadow-md hover:bg-emerald-600 dark:hover:bg-emerald-700 hover:shadow-lg transform hover:scale-105 transition-all"
                         >
@@ -492,7 +506,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
               </div>
 
               {/* Comparison Table */}
-              <div className="bg-textured rounded-xl shadow-lg border-border overflow-hidden">
+              <div ref={blockContentRef} className="bg-textured rounded-xl shadow-lg border-border overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50 dark:bg-gray-900/50">

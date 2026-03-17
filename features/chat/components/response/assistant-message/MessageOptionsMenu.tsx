@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain, Save, Volume2, Edit, CheckSquare, Mail } from "lucide-react";
+import { BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain, Save, Volume2, Edit, CheckSquare, Mail, Printer, ScanLine } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
+import { printMarkdownContent } from "@/features/chat/utils/markdown-print-utils";
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
 import { NotesAPI } from "@/features/notes";
@@ -15,6 +16,8 @@ interface MessageOptionsMenuProps {
   onClose: () => void;
   onShowHtmlPreview?: (html: string, title?: string) => void;
   onEditContent?: () => void;
+  /** Trigger full DOM-capture PDF export of the entire rendered message */
+  onFullPrint?: () => void;
   isOpen: boolean;
   anchorElement?: HTMLElement | null;
   metadata?: {
@@ -25,7 +28,7 @@ interface MessageOptionsMenuProps {
   };
 }
 
-const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClose, onShowHtmlPreview, onEditContent, isOpen, anchorElement, metadata }) => {
+const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClose, onShowHtmlPreview, onEditContent, onFullPrint, isOpen, anchorElement, metadata }) => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const { openQuickTasks } = useQuickActions();
   
@@ -204,6 +207,20 @@ ${cssContent}
     onClose();
   };
 
+  // Print / Save as PDF handler (Tier 1 — regex-based, prose only)
+  const handlePrint = () => {
+    printMarkdownContent(content, 'AI Response');
+    onClose();
+  };
+
+  // Full Print — DOM-capture PDF of all rendered blocks (Tier 2)
+  const handleFullPrint = () => {
+    if (onFullPrint) {
+      onFullPrint();
+      onClose();
+    }
+  };
+
   // Email to me handler
   const handleEmailToMe = async () => {
     const response = await fetch('/api/chat/email-response', {
@@ -327,6 +344,29 @@ ${cssContent}
       category: "Export",
       successMessage: "Email sent!",
       errorMessage: "Failed to send email"
+    },
+    { 
+      key: 'print',
+      icon: Printer, 
+      iconColor: "text-slate-500 dark:text-slate-400", 
+      label: "Print / Save PDF",
+      action: handlePrint,
+      category: "Export",
+      successMessage: "Opening print view...",
+      errorMessage: "Failed to open print view",
+      showToast: false,
+    },
+    {
+      key: 'full-print',
+      icon: ScanLine,
+      iconColor: "text-slate-600 dark:text-slate-300",
+      label: "Full Print (all blocks)",
+      action: handleFullPrint,
+      category: "Export",
+      successMessage: "Generating PDF...",
+      errorMessage: "Failed to generate PDF",
+      showToast: false,
+      hidden: !onFullPrint,
     },
     // Action Options
     { 

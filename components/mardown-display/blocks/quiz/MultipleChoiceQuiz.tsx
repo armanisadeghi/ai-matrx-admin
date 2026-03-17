@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Check, X, Trophy, AlertTriangle, CheckCircle2, XCircle, Maximize2, Minimize2, ChevronDown, ChevronUp, Download, Upload, RotateCcw, RefreshCw, Award, Star, ThumbsUp, Flame, Target, BookOpen, Save, Cloud, CloudOff, ExternalLink } from 'lucide-react';
+import { Check, X, Trophy, AlertTriangle, CheckCircle2, XCircle, Maximize2, Minimize2, ChevronDown, ChevronUp, Download, Upload, RotateCcw, RefreshCw, Award, Star, ThumbsUp, Flame, Target, BookOpen, Save, Cloud, CloudOff, ExternalLink, Printer } from 'lucide-react';
+import { quizPrinter } from './quiz-printer';
+import { PrintOptionsDialog, usePrintOptions } from '@/features/chat/components/print/PrintOptionsDialog';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectCanvasIsAvailable } from '@/features/canvas/redux/canvasSlice';
@@ -151,6 +153,9 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   // Canvas integration
   const { open: openCanvas } = useCanvas();
   const isCanvasAvailable = useAppSelector(selectCanvasIsAvailable);
+
+  // Print integration
+  const { open: printOpen, setOpen: setPrintOpen, triggerPrint } = usePrintOptions(quizPrinter, quizData);
 
   // Parse quiz data and extract metadata
   const [parsedQuiz, setParsedQuiz] = useState<{
@@ -679,6 +684,13 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
                       className="bg-gray-500 dark:bg-gray-600 text-white hover:bg-gray-600 dark:hover:bg-gray-700"
                     />
 
+                    <IconButton
+                      icon={Printer}
+                      tooltip="Print quiz"
+                      onClick={triggerPrint}
+                      size="md"
+                      className="bg-slate-500 dark:bg-slate-600 text-white hover:bg-slate-600 dark:hover:bg-slate-700"
+                    />
                     {!isFullScreen && (
                       <>
                         {showCanvasButton && isCanvasAvailable && (
@@ -816,6 +828,12 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
           </div>
         </div>
       </div>
+      <PrintOptionsDialog
+        printer={quizPrinter}
+        data={quizData}
+        open={printOpen}
+        onOpenChange={setPrintOpen}
+      />
     </>
   );
 };

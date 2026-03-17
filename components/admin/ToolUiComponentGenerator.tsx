@@ -40,8 +40,7 @@ import MarkdownStream from "@/components/MarkdownStream";
 import { useToolComponentAgent } from "./hooks/useToolComponentAgent";
 import { COMPONENT_GENERATOR_PROMPT_ID } from "./tool-ui-generator-prompt";
 
-// Import only for the preview type bridge — not the full component tree
-import type { ToolStreamEvent, FinalPayload } from "@/app/(public)/demos/api-tests/tool-testing/types";
+import type { ToolCallObject } from "@/lib/api/tool-call.types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -115,30 +114,47 @@ function extractSectionCode(text: string, section: string): string {
  *   1. HYBRID (new): ## METADATA json block + ## SECTION_NAME jsx blocks
  *   2. LEGACY (old): single ```json block or bare {...} containing all fields
  *
- * The hybrid format avoids JSON-escaping multi-line JSX code, which was the
- * primary source of parse failures with the old format.
+ * IMPORTANT: Never returns null when we have any usable code. A missing
+ * tool_name is filled in by the caller from context (we always know the tool).
+ * Partial results are returned rather than discarding expensive AI output.
  */
-function extractJsonFromResponse(text: string): GeneratedComponent | null {
+function extractJsonFromResponse(
+    text: string,
+    fallbackToolName = ""
+): GeneratedComponent | null {
     // ── 1. Hybrid format ───────────────────────────────────────────────────
     const metaMatch = text.match(/##\s+METADATA\s*\n```json\s*\n([\s\S]*?)```/i);
     if (metaMatch) {
+        let meta: Partial<GeneratedComponent> = {};
         try {
-            const meta = JSON.parse(metaMatch[1].trim()) as Partial<GeneratedComponent>;
-            return {
-                tool_name:              meta.tool_name              ?? "",
-                display_name:           meta.display_name           ?? "",
-                results_label:          meta.results_label          ?? "",
-                keep_expanded_on_stream: meta.keep_expanded_on_stream ?? false,
-                allowed_imports:        meta.allowed_imports        ?? ["react", "lucide-react"],
-                version:                meta.version                ?? "1.0.0",
-                inline_code:           extractSectionCode(text, "INLINE_CODE"),
-                overlay_code:          extractSectionCode(text, "OVERLAY_CODE"),
-                utility_code:          extractSectionCode(text, "UTILITY_CODE"),
-                header_subtitle_code:  extractSectionCode(text, "HEADER_SUBTITLE_CODE"),
-                header_extras_code:    extractSectionCode(text, "HEADER_EXTRAS_CODE"),
-            };
+            meta = JSON.parse(metaMatch[1].trim()) as Partial<GeneratedComponent>;
         } catch {
-            // fall through to legacy
+            // Metadata block malformed — still extract code sections below
+        }
+
+        const inline_code = extractSectionCode(text, "INLINE_CODE");
+        const overlay_code = extractSectionCode(text, "OVERLAY_CODE");
+        const utility_code = extractSectionCode(text, "UTILITY_CODE");
+        const header_subtitle_code = extractSectionCode(text, "HEADER_SUBTITLE_CODE");
+        const header_extras_code = extractSectionCode(text, "HEADER_EXTRAS_CODE");
+
+        // Only discard if there is literally no code at all
+        if (!inline_code && !overlay_code && !utility_code) {
+            // Fall through to legacy parser
+        } else {
+            return {
+                tool_name: meta.tool_name || fallbackToolName,
+                display_name: meta.display_name || fallbackToolName,
+                results_label: meta.results_label || "Results",
+                keep_expanded_on_stream: meta.keep_expanded_on_stream ?? false,
+                allowed_imports: meta.allowed_imports ?? ["react", "lucide-react"],
+                version: meta.version ?? "1.0.0",
+                inline_code,
+                overlay_code,
+                utility_code,
+                header_subtitle_code,
+                header_extras_code,
+            };
         }
     }
 
@@ -146,15 +162,47 @@ function extractJsonFromResponse(text: string): GeneratedComponent | null {
     const jsonBlockMatch = text.match(/```json\s*\n?([\s\S]*?)```/);
     if (jsonBlockMatch) {
         try {
-            return JSON.parse(jsonBlockMatch[1].trim()) as GeneratedComponent;
+            const parsed = JSON.parse(jsonBlockMatch[1].trim()) as Partial<GeneratedComponent>;
+            if (parsed.inline_code) {
+                return {
+                    tool_name: parsed.tool_name || fallbackToolName,
+                    display_name: parsed.display_name || fallbackToolName,
+                    results_label: parsed.results_label || "Results",
+                    keep_expanded_on_stream: parsed.keep_expanded_on_stream ?? false,
+                    allowed_imports: parsed.allowed_imports ?? ["react", "lucide-react"],
+                    version: parsed.version ?? "1.0.0",
+                    inline_code: parsed.inline_code || "",
+                    overlay_code: parsed.overlay_code || "",
+                    utility_code: parsed.utility_code || "",
+                    header_subtitle_code: parsed.header_subtitle_code || "",
+                    header_extras_code: parsed.header_extras_code || "",
+                };
+            }
         } catch {
             // fall through
         }
     }
-    const braceMatch = text.match(/\{[\s\S]*"tool_name"[\s\S]*"inline_code"[\s\S]*\}/);
+
+    // ── 3. Bare object match ───────────────────────────────────────────────
+    const braceMatch = text.match(/\{[\s\S]*"inline_code"[\s\S]*\}/);
     if (braceMatch) {
         try {
-            return JSON.parse(braceMatch[0]) as GeneratedComponent;
+            const parsed = JSON.parse(braceMatch[0]) as Partial<GeneratedComponent>;
+            if (parsed.inline_code) {
+                return {
+                    tool_name: parsed.tool_name || fallbackToolName,
+                    display_name: parsed.display_name || fallbackToolName,
+                    results_label: parsed.results_label || "Results",
+                    keep_expanded_on_stream: parsed.keep_expanded_on_stream ?? false,
+                    allowed_imports: parsed.allowed_imports ?? ["react", "lucide-react"],
+                    version: parsed.version ?? "1.0.0",
+                    inline_code: parsed.inline_code || "",
+                    overlay_code: parsed.overlay_code || "",
+                    utility_code: parsed.utility_code || "",
+                    header_subtitle_code: parsed.header_subtitle_code || "",
+                    header_extras_code: parsed.header_extras_code || "",
+                };
+            }
         } catch {
             // fall through
         }
@@ -316,77 +364,41 @@ interface LivePreviewProps {
 }
 
 function LivePreview({ toolName, rawStreamEvents }: LivePreviewProps) {
-    // Dynamically import ToolRendererPreview to avoid bundling the test suite unnecessarily
-    const [PreviewComponent, setPreviewComponent] = useState<React.ComponentType<{
-        toolName: string;
-        args: Record<string, unknown>;
-        toolEvents: ToolStreamEvent[];
-        finalPayload: FinalPayload | null;
-        isRunning: boolean;
-    }> | null>(null);
+    type VisualizationType = React.ComponentType<{ toolUpdates: ToolCallObject[] }>;
+    const [Visualization, setVisualization] = useState<VisualizationType | null>(null);
 
     useEffect(() => {
-        import("@/app/(public)/demos/api-tests/tool-testing/components/ToolRendererPreview")
-            .then(m => setPreviewComponent(() => m.ToolRendererPreview))
-            .catch(() => setPreviewComponent(null));
+        import("@/features/chat/components/response/assistant-message/stream/ToolCallVisualization")
+            .then(m => setVisualization(() => m.default as VisualizationType))
+            .catch(() => setVisualization(null));
     }, []);
 
-    // Extract args from stream events
-    const inputEvent = (rawStreamEvents as Array<{ type?: string; mcp_input?: { arguments?: Record<string, unknown> } }>)
-        .find(e => e?.type === "mcp_input");
-    const args = inputEvent?.mcp_input?.arguments ?? {};
+    const events = rawStreamEvents as Array<{
+        event?: string;
+        call_id?: string;
+        message?: string | null;
+        data?: Record<string, unknown>;
+    }>;
+    const callId = events.find(e => e.call_id)?.call_id ?? "preview";
+    const args = (events.find(e => e.event === "tool_started")?.data as Record<string, unknown> | undefined) ?? {};
 
-    // Build tool events from stream — execution_events format from cx_tool_call
-    const toolEvents: ToolStreamEvent[] = (rawStreamEvents as Array<{
-        type?: string;
-        user_message?: string;
-        step_data?: { type?: string; content?: Record<string, unknown> };
-        mcp_output?: Record<string, unknown>;
-    }>).flatMap((e, i): ToolStreamEvent[] => {
-        if (e.type === "user_message" && e.user_message) {
-            return [{
-                event: "tool_progress",
-                call_id: "preview",
-                tool_name: toolName,
-                timestamp: i,
-                message: e.user_message,
-                show_spinner: true,
-                data: {},
-            }];
-        }
-        return [];
-    });
+    const objects: ToolCallObject[] = [
+        { id: callId, type: "mcp_input", phase: "complete", mcp_input: { name: toolName, arguments: args } },
+        ...events.flatMap((e): ToolCallObject[] => {
+            if ((e.event === "tool_progress" || e.event === "tool_step") && e.message) {
+                return [{ id: callId, type: "user_message", user_message: e.message }];
+            }
+            return [];
+        }),
+    ];
 
-    // Build final payload from mcp_output
-    const outputEvent = (rawStreamEvents as Array<{ type?: string; mcp_output?: { result?: unknown } }>)
-        .find(e => e?.type === "mcp_output");
+    const completedEvent = events.find(e => e.event === "tool_completed");
+    const completedResult = (completedEvent?.data as Record<string, unknown> | undefined)?.result;
+    if (completedResult !== undefined) {
+        objects.push({ id: callId, type: "mcp_output", mcp_output: { result: completedResult } });
+    }
 
-    const finalPayload: FinalPayload | null = outputEvent?.mcp_output?.result != null ? {
-        status: "complete",
-        output: {
-            model_facing_result: {
-                tool_use_id: "preview",
-                call_id: "preview",
-                name: toolName,
-                content: JSON.stringify(outputEvent.mcp_output.result),
-                is_error: false,
-            },
-            full_result: {
-                success: true,
-                output: outputEvent.mcp_output.result,
-                error: null,
-                duration_ms: 0,
-                usage: null,
-                child_usages: [],
-            },
-        },
-        metadata: {
-            cost_estimate: null,
-            output_schema: null,
-        },
-    } : null;
-
-    if (!PreviewComponent) {
+    if (!Visualization) {
         return (
             <div className="flex items-center justify-center py-8 text-xs text-muted-foreground gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -395,15 +407,16 @@ function LivePreview({ toolName, rawStreamEvents }: LivePreviewProps) {
         );
     }
 
-    return (
-        <PreviewComponent
-            toolName={toolName}
-            args={args}
-            toolEvents={toolEvents}
-            finalPayload={finalPayload}
-            isRunning={false}
-        />
-    );
+    if (objects.length <= 1) {
+        return (
+            <div className="flex items-center justify-center py-8 text-xs text-muted-foreground gap-2">
+                <Eye className="w-4 h-4 opacity-40" />
+                No usable output in this sample
+            </div>
+        );
+    }
+
+    return <Visualization toolUpdates={objects} />;
 }
 
 // ─── Step Progress Bar ────────────────────────────────────────────────────────
@@ -598,13 +611,13 @@ export function ToolUiComponentGenerator({ tools, onComplete, preselectedToolNam
 
         if (fullText) {
             setRawResponse(fullText);
-            const parsed = extractJsonFromResponse(fullText);
+            const parsed = extractJsonFromResponse(fullText, selectedToolName || preselectedToolName || "");
             if (parsed) {
                 setGeneratedComponent(parsed);
                 setParseError(null);
             } else {
                 setParseError(
-                    "Could not extract a valid JSON component object from the model's response. " +
+                    "Could not extract any component code from the model's response. " +
                     "Review the raw response below — you may copy the code manually into the editor."
                 );
             }

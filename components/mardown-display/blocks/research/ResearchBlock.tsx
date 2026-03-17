@@ -1,11 +1,12 @@
 "use client";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { 
   BookOpen, ExternalLink, ChevronDown, ChevronRight, 
   Maximize2, Minimize2, Search, TrendingUp, AlertTriangle,
   CheckCircle2, Target, Lightbulb, Award, Eye, Filter,
-  BarChart3, Users, Briefcase, Scale, Clock, Star
+  BarChart3, Users, Briefcase, Scale, Clock, Star, Printer
 } from 'lucide-react';
+import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 
 interface ResearchFinding {
@@ -118,6 +119,12 @@ interface ResearchBlockProps {
 
 const ResearchBlock: React.FC<ResearchBlockProps> = ({ research, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const blockContentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useCallback(() => {
+    if (blockContentRef.current) {
+      captureBlockElement(blockContentRef.current, research.title.replace(/\s+/g, '-').toLowerCase() || 'research');
+    }
+  }, [research.title]);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [expandedFindings, setExpandedFindings] = useState<Set<string>>(new Set());
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'HIGH' | 'MEDIUM' | 'LOW'>('all');
@@ -247,6 +254,13 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research, taskId }) => {
                         <span>Side Panel</span>
                       </button>
                       <button
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      >
+                        <Printer className="h-4 w-4" />
+                        <span>Print</span>
+                      </button>
+                      <button
                         onClick={() => setIsFullScreen(true)}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 dark:bg-emerald-600 text-white text-sm font-semibold shadow-md hover:bg-emerald-600 dark:hover:bg-emerald-700 hover:shadow-lg transform hover:scale-105 transition-all"
                       >
@@ -316,6 +330,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research, taskId }) => {
               </div>
 
               {/* Tab Content */}
+              <div ref={blockContentRef}>
               {activeTab === 'overview' && (
                 <div className="space-y-6">
                   {/* Executive Summary */}
@@ -748,6 +763,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research, taskId }) => {
                   </div>
                 </div>
               )}
+              </div>
 
             </div>
           </div>

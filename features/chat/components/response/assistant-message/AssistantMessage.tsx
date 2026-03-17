@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, Pause, RefreshCw, Edit, Share2 } from "lucide-react";
+import { useDomCapturePrint } from "@/features/chat/hooks/useDomCapturePrint";
 import MessageOptionsMenu from "./MessageOptionsMenu";
 import MarkdownStream from "@/components/MarkdownStream";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
@@ -42,6 +43,12 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
     const [showHtmlModal, setShowHtmlModal] = useState(false);
     const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
     const content = message.content;
+
+    // DOM-capture print (Tier 2 — captures all rendered blocks)
+    const { captureRef, isCapturing, captureAsPDF } = useDomCapturePrint();
+    const handleFullPrint = useCallback(() => {
+        captureAsPDF({ filename: `ai-response-${message.id ?? 'export'}` });
+    }, [captureAsPDF, message.id]);
     const user = useAppSelector(selectUser);
     
     // HTML Preview state using the proper hook
@@ -155,7 +162,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
 
     return (
         <div className={`flex min-w-0 overflow-x-hidden ${isAppearing ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}>
-            <div className="max-w-full min-w-0 w-full relative overflow-x-hidden">
+            <div ref={captureRef} className="max-w-full min-w-0 w-full relative overflow-x-hidden">
                 <MarkdownStream
                     content={content}
                     taskId={taskId}
@@ -241,6 +248,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                             onClose={() => setShowOptions(false)}
                             onShowHtmlPreview={handleShowHtmlPreview}
                             onEditContent={handleEditClick}
+                            onFullPrint={handleFullPrint}
                             anchorElement={moreOptionsButtonRef.current}
                             metadata={{
                                 taskId: taskId,

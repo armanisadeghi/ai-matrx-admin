@@ -1,12 +1,13 @@
 "use client";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { 
   GitBranch, ArrowRight, ArrowLeft, CheckCircle2, XCircle, 
   Maximize2, Minimize2, RotateCcw, Home, HelpCircle,
   Target, Lightbulb, AlertCircle, Info, Zap, Star,
-  ChevronRight, ChevronDown, PlayCircle, StopCircle, Clock, ExternalLink
+  ChevronRight, ChevronDown, PlayCircle, StopCircle, Clock, ExternalLink, Printer
 } from 'lucide-react';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
+import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 
 interface DecisionNode {
   id: string;
@@ -41,6 +42,12 @@ interface NavigationStep {
 
 const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const blockContentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useCallback(() => {
+    if (blockContentRef.current) {
+      captureBlockElement(blockContentRef.current, decisionTree.title.replace(/\s+/g, '-').toLowerCase() || 'decision-tree');
+    }
+  }, [decisionTree.title]);
   const [currentNode, setCurrentNode] = useState<DecisionNode>(decisionTree.root);
   const [navigationHistory, setNavigationHistory] = useState<NavigationStep[]>([]);
   const [completedPaths, setCompletedPaths] = useState<Set<string>>(new Set());
@@ -349,6 +356,13 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree, tas
                     {!isFullScreen && (
                       <>
                         <button
+                          onClick={handlePrint}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                        >
+                          <Printer className="h-4 w-4" />
+                          <span>Print</span>
+                        </button>
+                        <button
                           onClick={() => openCanvas({
                             type: 'decision-tree',
                             data: decisionTree,
@@ -421,7 +435,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree, tas
                 </div>
 
                 {/* Progress Stats */}
-                <div className="grid md:grid-cols-4 gap-4">
+                <div ref={blockContentRef} className="grid md:grid-cols-4 gap-4">
                   <div className="bg-textured/50 rounded-lg p-3 border border-indigo-200 dark:border-indigo-800/50">
                     <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 mb-1">
                       <GitBranch className="h-4 w-4" />

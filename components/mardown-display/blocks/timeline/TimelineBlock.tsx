@@ -1,9 +1,9 @@
 "use client";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   Calendar, Clock, CheckCircle2, Circle,
   ArrowRight, Play, Pause, RotateCcw,
-  ChevronDown, ChevronRight, Flag, CheckSquare
+  ChevronDown, ChevronRight, Flag, CheckSquare, Printer
 } from 'lucide-react';
 import ImportTasksModal from '@/features/tasks/components/ImportTasksModal';
 import { convertTimelineToTasks } from '@/features/tasks/utils/importConverters';
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import BlockHeaderWrapper from '@/components/mardown-display/blocks/common/BlockHeaderWrapper';
 import IconButton from '@/components/official/IconButton';
 import type { MenuItem } from '@/components/official/AdvancedMenu';
+import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 
 interface TimelineEvent {
   id: string;
@@ -39,6 +40,12 @@ interface TimelineBlockProps {
 
 const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline: initialTimeline, taskId }) => {
   const [timeline, setTimeline] = useState<TimelineData>(initialTimeline);
+  const blockContentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useCallback(() => {
+    if (blockContentRef.current) {
+      captureBlockElement(blockContentRef.current, timeline.title.replace(/\s+/g, '-').toLowerCase() || 'timeline');
+    }
+  }, [timeline.title]);
   const [completedEvents, setCompletedEvents] = useState<Set<string>>(new Set());
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -232,15 +239,32 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline: initialTimeline
         exportFilename={timeline.title.replace(/\s+/g, '-').toLowerCase() || 'timeline'}
         onDataImport={handleDataImport}
         extraActions={
-          <IconButton
-            icon={CheckSquare}
-            tooltip="Import into Task Manager"
-            onClick={() => setIsImportModalOpen(true)}
-            size="sm"
-            className="bg-primary text-primary-foreground shadow-sm hover:bg-primary/80 hover:shadow-md transform hover:scale-105 transition-all"
-          />
+          <>
+            <IconButton
+              icon={Printer}
+              tooltip="Print / Save as PDF"
+              onClick={handlePrint}
+              size="sm"
+              className="bg-slate-500 dark:bg-slate-600 text-white hover:bg-slate-600 dark:hover:bg-slate-700 shadow-sm hover:shadow-md transform hover:scale-105 transition-all"
+            />
+            <IconButton
+              icon={CheckSquare}
+              tooltip="Import into Task Manager"
+              onClick={() => setIsImportModalOpen(true)}
+              size="sm"
+              className="bg-primary text-primary-foreground shadow-sm hover:bg-primary/80 hover:shadow-md transform hover:scale-105 transition-all"
+            />
+          </>
         }
         extraMenuItems={[
+          {
+            key: 'print',
+            icon: Printer,
+            iconColor: 'text-slate-500',
+            label: 'Print / Save as PDF',
+            action: handlePrint,
+            showToast: false,
+          } satisfies MenuItem,
           {
             key: 'import-tasks',
             icon: CheckSquare,
@@ -252,7 +276,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline: initialTimeline
         ]}
       >
         {/* Timeline periods */}
-        <div className="space-y-6">
+        <div ref={blockContentRef} className="space-y-6">
           {filteredPeriods.map((period, periodIndex) => {
             const isCollapsed = collapsedPeriods.has(period.period);
             const isCompleted = isPeriodCompleted(period);

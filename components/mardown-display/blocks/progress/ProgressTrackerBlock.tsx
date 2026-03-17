@@ -1,15 +1,16 @@
 "use client";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { 
   BarChart3, CheckCircle2, Circle, Target, Trophy, Flame, Calendar,
   Maximize2, Minimize2, Play, Pause, RotateCcw, TrendingUp, Award,
   Zap, Clock, Star, ChevronRight, ChevronDown, Plus, Minus,
   BookOpen, Code, Lightbulb, Users, Coffee, Heart, PartyPopper, Sparkles,
-  ExternalLink, Upload
+  ExternalLink, Upload, Printer
 } from 'lucide-react';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 import ImportTasksModal from '@/features/tasks/components/ImportTasksModal';
 import { convertProgressToTasks } from '@/features/tasks/utils/importConverters';
+import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 
 interface ProgressItem {
   id: string;
@@ -48,6 +49,12 @@ interface ProgressTrackerBlockProps {
 
 const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const blockContentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useCallback(() => {
+    if (blockContentRef.current) {
+      captureBlockElement(blockContentRef.current, tracker.title.replace(/\s+/g, '-').toLowerCase() || 'progress');
+    }
+  }, [tracker.title]);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const { open: openCanvas } = useCanvas();
   
@@ -310,6 +317,13 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker, ta
                         <span>Side Panel</span>
                       </button>
                       <button
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      >
+                        <Printer className="h-4 w-4" />
+                        <span>Print</span>
+                      </button>
+                      <button
                         onClick={() => setIsFullScreen(true)}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-500 dark:bg-blue-600 text-white text-sm font-semibold shadow-md hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all"
                       >
@@ -423,7 +437,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker, ta
               </div>
 
               {/* Progress Categories */}
-              <div className="space-y-4">
+              <div ref={blockContentRef} className="space-y-4">
                 {filteredCategories.map((category, categoryIndex) => {
                   const IconComponent = getCategoryIcon(category.name);
                   const gradientColor = getCategoryColor(category.color, categoryIndex);

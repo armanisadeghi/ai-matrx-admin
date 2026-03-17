@@ -1,11 +1,12 @@
 "use client";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { 
   HelpCircle, ChevronDown, ChevronRight, AlertTriangle, CheckCircle2, 
   Maximize2, Minimize2, Search, Filter, Lightbulb, ExternalLink,
   Bug, Wrench, Zap, Clock, Star, Copy, Check, ArrowRight,
-  AlertCircle, Info, Target, BookOpen, Users, MessageSquare, Upload
+  AlertCircle, Info, Target, BookOpen, Users, MessageSquare, Upload, Printer
 } from 'lucide-react';
+import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 import ImportTasksModal from '@/features/tasks/components/ImportTasksModal';
 import { convertTroubleshootingToTasks } from '@/features/tasks/utils/importConverters';
@@ -53,6 +54,12 @@ interface TroubleshootingBlockProps {
 
 const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshooting, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const blockContentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useCallback(() => {
+    if (blockContentRef.current) {
+      captureBlockElement(blockContentRef.current, troubleshooting.title.replace(/\s+/g, '-').toLowerCase() || 'troubleshooting');
+    }
+  }, [troubleshooting.title]);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [expandedIssues, setExpandedIssues] = useState<Set<string>>(new Set(['issue-0'])); // First issue expanded by default
   const [expandedSolutions, setExpandedSolutions] = useState<Set<string>>(new Set());
@@ -289,6 +296,13 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
                         <span>Side Panel</span>
                       </button>
                       <button
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      >
+                        <Printer className="h-4 w-4" />
+                        <span>Print</span>
+                      </button>
+                      <button
                         onClick={() => setIsFullScreen(true)}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-500 dark:bg-red-600 text-white text-sm font-semibold shadow-md hover:bg-red-600 dark:hover:bg-red-700 hover:shadow-lg transform hover:scale-105 transition-all"
                       >
@@ -335,7 +349,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
               </div>
 
               {/* Issues List */}
-              <div className="space-y-4">
+              <div ref={blockContentRef} className="space-y-4">
                 {filteredIssues.map((issue) => {
                   const isExpanded = expandedIssues.has(issue.id);
                   const severityColor = getSeverityColor(issue.severity);

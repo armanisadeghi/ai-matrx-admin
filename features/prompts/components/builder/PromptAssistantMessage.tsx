@@ -1,6 +1,7 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { Edit, MoreHorizontal, Copy, Check, Volume2, Download, Loader2, Link } from "lucide-react";
+import { useDomCapturePrint } from "@/features/chat/hooks/useDomCapturePrint";
 import MarkdownStream from "@/components/MarkdownStream";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
 import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
@@ -49,6 +50,12 @@ export function PromptAssistantMessage({
     const [isAudioLinkCopied, setIsAudioLinkCopied] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
+
+    // DOM-capture print (Tier 2 — captures all rendered blocks)
+    const { captureRef, captureAsPDF } = useDomCapturePrint();
+    const handleFullPrint = useCallback(() => {
+        captureAsPDF({ filename: `ai-response-${messageIndex}` });
+    }, [captureAsPDF, messageIndex]);
     const user = useAppSelector(selectUser);
     
     // HTML Preview state using the proper hook
@@ -194,17 +201,19 @@ export function PromptAssistantMessage({
                             <span className="text-muted-foreground relative z-10">Generating audio…</span>
                         </div>
                     ) : (
-                        <MarkdownStream
-                            content={content}
-                            taskId={taskId}
-                            type="message"
-                            role="assistant"
-                            isStreamActive={isStreamActive}
-                            hideCopyButton={true}
-                            allowFullScreenEditor={false}
-                            className={markdownClassName}
-                            onContentChange={handleContentChange}
-                        />
+                        <div ref={captureRef}>
+                            <MarkdownStream
+                                content={content}
+                                taskId={taskId}
+                                type="message"
+                                role="assistant"
+                                isStreamActive={isStreamActive}
+                                hideCopyButton={true}
+                                allowFullScreenEditor={false}
+                                className={markdownClassName}
+                                onContentChange={handleContentChange}
+                            />
+                        </div>
                     )}
                     {!isStreamActive && (
                         <div className={`flex items-center gap-1 ${buttonMargin}`}>
@@ -244,6 +253,7 @@ export function PromptAssistantMessage({
                                 onClose={() => setShowOptionsMenu(false)}
                                 onShowHtmlPreview={handleShowHtmlPreview}
                                 onEditContent={handleEditClick}
+                                onFullPrint={handleFullPrint}
                                 anchorElement={moreOptionsButtonRef.current}
                                 metadata={metadata ? {
                                     taskId,
