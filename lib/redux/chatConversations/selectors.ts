@@ -31,6 +31,12 @@ export const selectAgentId = (state: RootState, sessionId: string) =>
 export const selectRequiresVariableReplacement = (state: RootState, sessionId: string) =>
     state.chatConversations.sessions[sessionId]?.requiresVariableReplacement ?? false;
 
+export const selectApiMode = (state: RootState, sessionId: string) =>
+    state.chatConversations.sessions[sessionId]?.apiMode ?? 'agent';
+
+export const selectChatModeConfig = (state: RootState, sessionId: string) =>
+    state.chatConversations.sessions[sessionId]?.chatModeConfig ?? null;
+
 // ============================================================================
 // MESSAGE SELECTORS
 // ============================================================================

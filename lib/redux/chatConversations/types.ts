@@ -66,6 +66,63 @@ export type SessionStatus =
     | 'completed'
     | 'error';
 
+/**
+ * API mode determines which endpoint pattern to use:
+ *
+ * - `agent`:        POST /agents/{agentId} for first message, then auto-switches
+ *                   to POST /conversations/{conversationId} for follow-ups.
+ *                   Server manages all state. This is the default mode.
+ *
+ * - `conversation`: POST /conversations/{conversationId} only.
+ *                   Used when you already have a conversationId (e.g. from a
+ *                   previous session or deeplink). Server manages all state.
+ *
+ * - `chat`:         POST /api/ai/chat every time.
+ *                   Client sends full message history each request.
+ *                   Full control over model, system prompt, tools, etc.
+ *                   Server is stateless — no conversation persistence.
+ */
+export type ApiMode = 'agent' | 'conversation' | 'chat';
+
+/**
+ * Configuration for the stateless chat API mode.
+ * Only used when apiMode === 'chat'.
+ */
+export interface ChatModeConfig {
+    /** Model ID to use (required for chat mode) */
+    aiModelId: string;
+    /** Optional system instruction prepended to messages */
+    systemInstruction?: string;
+    /** Temperature (0-2) */
+    temperature?: number;
+    /** Max output tokens */
+    maxOutputTokens?: number;
+    /** Top-p sampling */
+    topP?: number;
+    /** Top-k sampling */
+    topK?: number;
+    /** Tool definitions to send */
+    tools?: unknown[];
+    /** Tool choice strategy */
+    toolChoice?: string;
+    /** Whether to enable parallel tool calls */
+    parallelToolCalls?: boolean;
+    /** Response format override */
+    responseFormat?: { type: string; [key: string]: unknown } | null;
+    /** Enable internal web search */
+    internalWebSearch?: boolean;
+    /** Enable internal URL context */
+    internalUrlContext?: boolean;
+    /** Reasoning effort level */
+    reasoningEffort?: string;
+    /** Thinking budget tokens */
+    thinkingBudget?: number;
+    /** Whether to include thinking in response */
+    includeThoughts?: boolean;
+    /** Additional config overrides sent as-is */
+    extraConfig?: Record<string, unknown>;
+}
+
 export interface SessionUIState {
     expandedVariable: string | null;
     showVariables: boolean;
@@ -82,6 +139,12 @@ export interface ConversationSession {
     conversationId: string | null;
     /** Agent / Prompt ID to send to the backend */
     agentId: string;
+
+    // ========== API Mode ==========
+    /** Which API pattern this session uses */
+    apiMode: ApiMode;
+    /** Config for stateless chat mode (only when apiMode === 'chat') */
+    chatModeConfig: ChatModeConfig | null;
 
     // ========== Status ==========
     status: SessionStatus;
@@ -130,6 +193,12 @@ export interface StartSessionPayload {
     variables?: Record<string, string>;
     requiresVariableReplacement?: boolean;
     modelOverride?: string;
+    /** API mode — defaults to 'agent' */
+    apiMode?: ApiMode;
+    /** Config for chat mode (required when apiMode === 'chat') */
+    chatModeConfig?: ChatModeConfig;
+    /** Pre-existing conversationId (required when apiMode === 'conversation') */
+    conversationId?: string;
 }
 
 export interface AddMessagePayload {
