@@ -512,12 +512,22 @@ export function ToolComponentPreview({ tool, onSaveRevision }: ToolComponentPrev
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function extractSectionCode(text: string, section: string): string {
-    const re = new RegExp(
-        `##\\s+${section}\\s*\\n\`\`\`(?:jsx|js|tsx)?\\s*\\n([\\s\\S]*?)\`\`\``,
+    const primary = new RegExp(
+        `##\\s*${section}\\s*[\\r\\n]+\`\`\`(?:jsx|js|tsx|ts|javascript|typescript)?[^\\n]*[\\r\\n]([\\s\\S]*?)\`\`\``,
         "i"
     );
-    const match = text.match(re);
-    return match ? match[1].trim() : "";
+    const primaryMatch = text.match(primary);
+    if (primaryMatch) return primaryMatch[1].trim();
+
+    const relaxedSection = section.replace(/_/g, "[_\\s]");
+    const fallback = new RegExp(
+        `##\\s*${relaxedSection}\\s*[\\r\\n]+\`\`\`(?:jsx|js|tsx|ts|javascript|typescript)?[^\\n]*[\\r\\n]([\\s\\S]*?)\`\`\``,
+        "i"
+    );
+    const fallbackMatch = text.match(fallback);
+    if (fallbackMatch) return fallbackMatch[1].trim();
+
+    return "";
 }
 
 function parseRevision(text: string, fallbackToolName: string): GeneratedComponent | null {

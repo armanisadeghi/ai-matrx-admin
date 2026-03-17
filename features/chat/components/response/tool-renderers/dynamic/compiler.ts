@@ -24,11 +24,39 @@ import type {
 // Code transformation helpers
 // ---------------------------------------------------------------------------
 
-/** Strip all import statements — deps are injected via scope. */
+/**
+ * Strip all import statements — deps are injected via scope.
+ * Handles both single-line and multiline imports:
+ *   import React from 'react';
+ *   import {
+ *       foo, bar,
+ *   } from 'baz';
+ * Also strips "use client" / "use server" directives which are meaningless
+ * (and potentially breaking) inside new Function() script mode.
+ */
 function stripImports(code: string): string {
-    return code
-        .replace(/^import\s+.*from\s+['"].*['"];?\s*$/gm, "")
-        .replace(/^import\s+['"].*['"];?\s*$/gm, "");
+    // Remove "use client" / "use server" directives (with or without semicolons)
+    let result = code.replace(/^\s*["']use (client|server)["'];?\s*$/gm, "");
+
+    // Remove multiline imports: import ... from '...';
+    // Matches from `import` through the closing `from '...';` spanning multiple lines
+    result = result.replace(
+        /^import\s[\s\S]*?from\s+['"][^'"]+['"]\s*;?\s*$/gm,
+        ""
+    );
+
+    // The above regex uses $ in multiline mode which only matches end-of-line,
+    // so multiline imports won't be fully removed by it alone.
+    // Use a non-greedy block match for multiline imports instead:
+    result = result.replace(
+        /import\s+(?:type\s+)?(?:\*\s+as\s+\w+|\w+(?:\s*,\s*\{[^}]*\})?|\{[^}]*\})\s+from\s+['"][^'"]+['"];?/gs,
+        ""
+    );
+
+    // Side-effect imports: import 'foo';
+    result = result.replace(/^import\s+['"][^'"]+['"];?\s*$/gm, "");
+
+    return result;
 }
 
 /**

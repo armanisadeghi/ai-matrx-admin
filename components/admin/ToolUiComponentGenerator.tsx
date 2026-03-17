@@ -98,13 +98,25 @@ type WizardStep = "select-tool" | "select-data" | "generate" | "review" | "saved
 
 /** Extract a named section's code block content from the hybrid response format. */
 function extractSectionCode(text: string, section: string): string {
-    // Matches: ## SECTION_NAME\n```(jsx|js|tsx)?\nCODE\n```
-    const re = new RegExp(
-        `##\\s+${section}\\s*\\n\`\`\`(?:jsx|js|tsx)?\\s*\\n([\\s\\S]*?)\`\`\``,
+    // Primary: ## SECTION_NAME (optional spaces/newlines) ```lang\nCODE\n```
+    // Handles: spaces in header, optional lang tag, CRLF, trailing content after closing ```
+    const primary = new RegExp(
+        `##\\s*${section}\\s*[\\r\\n]+\`\`\`(?:jsx|js|tsx|ts|javascript|typescript)?[^\\n]*[\\r\\n]([\\s\\S]*?)\`\`\``,
         "i"
     );
-    const match = text.match(re);
-    return match ? match[1].trim() : "";
+    const primaryMatch = text.match(primary);
+    if (primaryMatch) return primaryMatch[1].trim();
+
+    // Fallback: look for the section header anywhere (e.g. "OVERLAY CODE" vs "OVERLAY_CODE")
+    const relaxedSection = section.replace(/_/g, "[_\\s]");
+    const fallback = new RegExp(
+        `##\\s*${relaxedSection}\\s*[\\r\\n]+\`\`\`(?:jsx|js|tsx|ts|javascript|typescript)?[^\\n]*[\\r\\n]([\\s\\S]*?)\`\`\``,
+        "i"
+    );
+    const fallbackMatch = text.match(fallback);
+    if (fallbackMatch) return fallbackMatch[1].trim();
+
+    return "";
 }
 
 /**
