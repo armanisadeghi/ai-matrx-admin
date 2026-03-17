@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { SquarePen } from 'lucide-react';
 import { TapTargetButton } from '@/app/(ssr)/_components/core/TapTargetButton';
 import ChatMobileAgentName from './ChatMobileAgentName';
+import ChatMobileAdminToggles from './ChatMobileAdminToggles';
 
 export default function ChatMobileHeaderBar() {
     return (
@@ -53,6 +54,9 @@ export default function ChatMobileHeaderBar() {
             <div className="flex-1 flex items-center justify-center min-w-0">
                 <ChatMobileAgentName />
             </div>
+
+            {/* Admin toggles — client island, renders nothing for non-admins. */}
+            <ChatMobileAdminToggles />
         </div>
     );
 }

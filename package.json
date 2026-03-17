@@ -97,7 +97,7 @@
     "@sentry/nextjs": "^10.42.0",
     "@slack/web-api": "^7.14.1",
     "@supabase/ssr": "0.9.0",
-    "@supabase/supabase-js": "^2.98.0",
+    "@supabase/supabase-js": "^2.99.2",
     "@tabler/icons-react": "latest",
     "@tailwindcss/container-queries": "^0.1.1",
     "@tanstack/react-query": "^5.90.21",

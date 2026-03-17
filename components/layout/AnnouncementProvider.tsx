@@ -5,13 +5,21 @@ import { getActiveAnnouncements } from '@/actions/feedback.actions';
 import { SystemAnnouncement } from '@/types/feedback.types';
 import SystemAnnouncementModal from './SystemAnnouncementModal';
 import { useAppSelector } from '@/lib/redux/hooks';
+import { selectShellDataLoaded } from '@/lib/redux/slices/userSlice';
 
 export default function AnnouncementProvider() {
     const [announcements, setAnnouncements] = useState<SystemAnnouncement[]>([]);
     const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
     const viewedAnnouncements = useAppSelector(state => state.userPreferences.system.viewedAnnouncements);
+    // Wait until DeferredShellData has finished loading user preferences before
+    // fetching announcements. Without this gate, the first render sees an empty
+    // viewedAnnouncements array (default state) and shows already-dismissed
+    // announcements for a flash until preferences load and the effect re-fires.
+    const shellDataLoaded = useAppSelector(selectShellDataLoaded);
 
     useEffect(() => {
+        if (!shellDataLoaded) return;
+
         const fetchAnnouncements = async () => {
             const result = await getActiveAnnouncements();
             if (result.success && result.data) {
@@ -24,7 +32,7 @@ export default function AnnouncementProvider() {
         };
 
         fetchAnnouncements();
-    }, [viewedAnnouncements]);
+    }, [shellDataLoaded, viewedAnnouncements]);
 
     // Show announcements one at a time
     const currentAnnouncement = announcements[currentAnnouncementIndex];

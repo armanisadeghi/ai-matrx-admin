@@ -40,6 +40,9 @@ interface UserState {
     fingerprintId: string | null;
     // Tracks if auth initialization is complete (either got user or fingerprint)
     authReady: boolean;
+    // Tracks if shell data (user + preferences) has fully loaded — gates components
+    // that must not render stale defaults (e.g. AnnouncementProvider).
+    shellDataLoaded: boolean;
 }
 
 const initialState: UserState = {
@@ -65,6 +68,7 @@ const initialState: UserState = {
     tokenExpiresAt: null,
     fingerprintId: null,
     authReady: false,
+    shellDataLoaded: false,
 };
 
 const userSlice = createSlice({
@@ -87,11 +91,14 @@ const userSlice = createSlice({
         setAuthReady: (state, action: PayloadAction<boolean>) => {
             state.authReady = action.payload;
         },
+        setShellDataLoaded: (state, action: PayloadAction<boolean>) => {
+            state.shellDataLoaded = action.payload;
+        },
         clearUser: () => initialState,
     },
 });
 
-export const { setUser, setAccessToken, setTokenExpiry, setFingerprintId, setAuthReady, clearUser } = userSlice.actions;
+export const { setUser, setAccessToken, setTokenExpiry, setFingerprintId, setAuthReady, setShellDataLoaded, clearUser } = userSlice.actions;
 export default userSlice.reducer;
 
 // Selectors
@@ -129,4 +136,8 @@ export const selectAuthReady = (state: any) => {
 
 export const selectIsAuthenticated = (state: any) => {
   return !!state.user.id;
+};
+
+export const selectShellDataLoaded = (state: any) => {
+  return state.user.shellDataLoaded || false;
 };

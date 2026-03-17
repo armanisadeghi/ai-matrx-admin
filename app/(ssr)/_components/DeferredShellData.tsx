@@ -5,7 +5,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useAppDispatch } from '@/lib/redux/hooks';
-import { setUser } from '@/lib/redux/slices/userSlice';
+import { setUser, setShellDataLoaded } from '@/lib/redux/slices/userSlice';
 import { setModulePreferences, type UserPreferences } from '@/lib/redux/slices/userPreferencesSlice';
 import { setContextMenuRows } from '@/lib/redux/slices/contextMenuCacheSlice';
 import { hydrateModels, type AIModel } from '@/lib/redux/slices/modelRegistrySlice';
@@ -81,8 +81,15 @@ export default function DeferredShellData() {
                     dispatch(setUnreadTotal(shellData.sms_unread_total));
                 }
                 console.debug(`⚡DeferredShellData dispatches done at ${performance.now().toFixed(2)}ms (total: ${(performance.now() - t0).toFixed(2)}ms)`);
+
+                // Signal that all shell data (user + preferences) is loaded.
+                // Components that must not render stale defaults (e.g. AnnouncementProvider)
+                // gate themselves on this flag to avoid a flash of already-dismissed content.
+                dispatch(setShellDataLoaded(true));
             } catch (err) {
                 console.error('[DeferredShellData]', err);
+                // Still mark as loaded so gated components don't hang indefinitely on error.
+                dispatch(setShellDataLoaded(true));
             }
         }
 

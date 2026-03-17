@@ -34,14 +34,15 @@ export async function updateSession(request: NextRequest) {
   )
 
   // Do not run code between createServerClient and
-  // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
+  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
-  // IMPORTANT: getClaims() validates the JWT locally (no network call).
-  // This is the official recommended approach for proxy/middleware.
-  const { data } = await supabase.auth.getClaims()
-
-  const user = data?.claims
+  // IMPORTANT: getUser() validates the JWT against the Supabase auth server and
+  // will automatically refresh the access token using the refresh token cookie when
+  // the access token is expired. This prevents the "forced refresh" that users see
+  // when returning after hours/days away — getClaims() only does local JWT validation
+  // and returns null for expired tokens, causing an incorrect redirect to /login.
+  const { data: { user } } = await supabase.auth.getUser()
 
   // Handle authenticated users trying to access login/signup pages
   if (
