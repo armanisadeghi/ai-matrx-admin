@@ -7,7 +7,7 @@ import {
     Printer, ScanLine,
 } from 'lucide-react';
 import { copyToClipboard } from '@/components/matrx/buttons/markdown-copy-utils';
-import { printMarkdownContent } from '@/features/chat/utils/markdown-print-utils';
+import { printMarkdownContent } from '@/features/conversation/utils/markdown-print';
 import { loadWordPressCSS } from '@/features/html-pages/css/wordpress-styles';
 import AdvancedMenu, { MenuItem } from '@/components/official/AdvancedMenu';
 import { EmailInputDialog } from '@/components/dialogs/EmailInputDialog';

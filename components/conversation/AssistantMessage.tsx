@@ -8,7 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import MarkdownStream from '@/components/MarkdownStream';
 import { StreamingContentBlocks } from '@/components/conversation/StreamingContentBlocks';
-import { useDomCapturePrint } from '@/features/chat/hooks/useDomCapturePrint';
+import { useDomCapturePrint } from '@/features/conversation/hooks/useDomCapturePrint';
 import { useHtmlPreviewState } from '@/features/html-pages/hooks/useHtmlPreviewState';
 import { parseMarkdownToText } from '@/utils/markdown-processors/parse-markdown-for-speech';
 import { useAppSelector } from '@/lib/redux/hooks';

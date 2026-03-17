@@ -7,8 +7,8 @@ import {
     parseResourcesFromMessage,
     extractMessageWithoutResources,
     messageContainsResources,
-} from '@/features/prompts/utils/resource-parsing';
-import { ResourcesContainer } from '@/features/prompts/components/resource-display/ResourceDisplay';
+} from '@/features/conversation/utils/resource-parsing';
+import { ResourcesContainer } from '@/features/prompts/components/resource-display/ResourceDisplay'; // shared UI component
 import type { ConversationMessage, ConversationResource } from '@/lib/redux/chatConversations/types';
 
 // ============================================================================

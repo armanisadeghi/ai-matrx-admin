@@ -41,6 +41,9 @@ import messagingReducer from "../../features/messaging/redux/messagingSlice";
 // SMS
 import smsReducer from "../../features/sms/redux/smsSlice";
 
+// Unified conversation system (empty until chat session starts)
+import { chatConversationsReducer } from "./chatConversations";
+
 // Chat system (empty until chat page loads)
 import { conversationReducer } from "./features/aiChats/conversationSlice";
 import { messagesReducer } from "./features/aiChats/messagesSlice";
@@ -145,6 +148,9 @@ export const createLiteRootReducer = () => {
 
         // SMS
         sms: smsReducer,
+
+        // Unified conversation system (starts empty, initialized per session)
+        chatConversations: chatConversationsReducer,
 
         // Chat system (all start empty, populated when chat pages load)
         conversation: conversationReducer,
