@@ -249,7 +249,9 @@ export function useHtmlPreviewState({
      */
     const handleRegenerateHtml = useCallback(async (useMetadata: boolean = false) => {
         if (!user?.id) {
-            alert("You must be logged in to generate pages");
+            clearError();
+            // Surface as error state so the UI can display it (no browser alert)
+            console.error('[HtmlPreview] Cannot generate page: user not authenticated');
             return;
         }
 
@@ -318,7 +320,6 @@ export function useHtmlPreviewState({
             }
         } catch (err: any) {
             console.error("Generate/update failed:", err);
-            alert(`Failed to ${publishedPageId ? "update" : "create"} page: ${err.message}`);
         }
     }, [
         user,
@@ -339,12 +340,12 @@ export function useHtmlPreviewState({
      */
     const handleSavePage = useCallback(async () => {
         if (!metadata.title.trim()) {
-            alert("Please enter a page title before publishing");
+            // The Save button is already disabled when title is empty — this is a safety guard
             return;
         }
 
         if (!user?.id) {
-            alert("You must be logged in to publish HTML pages");
+            // Save button is disabled when !user — this is a safety guard
             return;
         }
 
