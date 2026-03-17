@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { addUtmSource } from "@/utils/url-utm";
@@ -178,6 +179,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     onContentChange,
     isStreamActive = false,
 }) => {
+    const isMobile = useIsMobile();
     const [savedTableInfo, setSavedTableInfo] = useState<SavedTableInfo | null>(null);
 
     // Use useMemo to create stable table data based on content, not object references
@@ -516,12 +518,22 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                     </Button>
                 </div>
             ) : (
-                <div className={isEditingEnabled ? editingBorderStyle : normalBorderStyle}>
-                    <table className="w-full border-collapse" style={{ fontSize: `${tableFontsize}px` }}>
+                <div className={cn(
+                    isEditingEnabled ? editingBorderStyle : normalBorderStyle,
+                    "overflow-x-auto",
+                    isMobile && "-mx-1"
+                )}>
+                    <table
+                        className={cn(
+                            "border-collapse",
+                            isMobile ? "min-w-max w-full" : "w-full"
+                        )}
+                        style={{ fontSize: `${tableFontsize}px` }}
+                    >
                         <thead className={tableTheme.header}>
                             <tr onClick={handleHeaderClick}>
                                 {internalTableData.headers.map((header, i) => (
-                                    <th key={i} className={cn("p-2 text-left", tableTheme.headerText)}>
+                                    <th key={i} className={cn("p-2 text-left", tableTheme.headerText, isMobile && "whitespace-nowrap")}>
                                         {isEditingHeader ? (
                                             <input
                                                 type="text"
@@ -548,7 +560,11 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                                     onClick={() => handleRowClick(rowIndex)}
                                 >
                                     {row.map((cell, colIndex) => (
-                                        <td key={colIndex} className={cn("p-2", colIndex === 0 && "font-semibold")}>
+                                        <td key={colIndex} className={cn(
+                                            "p-2",
+                                            colIndex === 0 && "font-semibold",
+                                            isMobile && "whitespace-nowrap max-w-[200px] overflow-hidden text-ellipsis"
+                                        )}>
                                             {editMode === rowIndex ? (
                                                 <textarea
                                                     value={internalTableData.rows[rowIndex]?.[colIndex] || cell}
@@ -573,7 +589,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                 </div>
             )}
             {!isStreamActive && (
-            <div className="flex justify-end gap-2 mt-2">
+            <div className={cn("flex gap-2 mt-2", isMobile ? "flex-wrap justify-start" : "justify-end")}>
                 {internalTableData.normalizedData && (
                     <Button
                         variant="outline"

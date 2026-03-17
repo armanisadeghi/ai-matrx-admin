@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { addUtmSource } from "@/utils/url-utm";
@@ -195,6 +196,7 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
     onContentChange,
 }) => {
     const toast = useToastManager();
+    const isMobile = useIsMobile();
     const tableTheme = THEMES[theme]?.table || THEMES.professional.table;
     
     // State Management
@@ -576,15 +578,29 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
                 </div>
             ) : (
                 <>
-                    <div className={cn("overflow-x-auto border border-border rounded-lg shadow-sm", isEditingEnabled && "border-dashed border-red-500 border-2")}>
-                        <table className="min-w-full divide-y divide-border" style={{ fontSize: `${fontSize}px` }}>
+                    <div className={cn(
+                        "overflow-x-auto border border-border rounded-lg shadow-sm",
+                        isEditingEnabled && "border-dashed border-red-500 border-2",
+                        isMobile && "-mx-1"
+                    )}>
+                        <table
+                            className={cn(
+                                "divide-y divide-border",
+                                isMobile ? "min-w-max w-full" : "min-w-full"
+                            )}
+                            style={{ fontSize: `${fontSize}px` }}
+                        >
                             {/* Header */}
                             <thead className={tableTheme.header} onClick={handleHeaderClick}>
                                 <tr>
                                     {headers.map((header, index) => (
                                         <th
                                             key={index}
-                                            className={cn("px-4 py-3 text-left font-semibold", tableTheme.headerText)}
+                                            className={cn(
+                                                "px-4 py-3 text-left font-semibold",
+                                                tableTheme.headerText,
+                                                isMobile && "whitespace-nowrap"
+                                            )}
                                         >
                                             {isEditingHeader ? (
                                                 <input
@@ -620,7 +636,10 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
                                         {headers.map((_, colIndex) => (
                                             <td
                                                 key={colIndex}
-                                                className="px-4 py-3 text-sm text-foreground whitespace-normal"
+                                                className={cn(
+                                                    "px-4 py-3 text-sm text-foreground",
+                                                    isMobile ? "whitespace-nowrap max-w-[200px] overflow-hidden text-ellipsis" : "whitespace-normal"
+                                                )}
                                             >
                                                 {editMode === rowIndex ? (
                                                     <textarea
@@ -664,7 +683,7 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
                     
                     {/* Action Buttons - Only show when not streaming and table is complete */}
                     {!isStreamActive && metadata?.isComplete && (
-                        <div className="flex justify-end gap-2 mt-2">
+                        <div className={cn("flex gap-2 mt-2", isMobile ? "flex-wrap justify-start" : "justify-end")}>
                             {tableData.normalizedData && (
                                 <Button
                                     variant="outline"
