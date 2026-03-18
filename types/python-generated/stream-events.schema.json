@@ -232,7 +232,8 @@
           "tool_step",
           "tool_result_preview",
           "tool_completed",
-          "tool_error"
+          "tool_error",
+          "tool_delegated"
         ],
         "title": "Event",
         "type": "string"
@@ -350,16 +351,16 @@
   },
   "ContentBlockPayload": {
     "additionalProperties": false,
-    "description": "A structured content block emitted by StreamBlockProcessor.\n\nSent for every block lifecycle change: open (streaming), incremental\nupdate, and close (complete/error). The `content` field carries raw\ntext for Text Channel blocks; the `data` field carries parsed structured\ndata for Block Channel blocks. See streaming-constitution.md for the\nfull contract.",
+    "description": "A structured content block emitted by StreamBlockProcessor.\n\nSent for every block lifecycle change: open (streaming), incremental\nupdate, and close (complete/error). The `content` field carries raw\ntext for Text Channel blocks; the `data` field carries parsed structured\ndata for Block Channel blocks. See streaming-constitution.md for the\nfull contract.\n\nNote: Fields are camelCase on the wire (matching ContentBlockEvent alias_generator=to_camel).",
     "properties": {
-      "block_id": {
+      "blockId": {
         "description": "Stable ID for this block, e.g. 'blk_0'",
-        "title": "Block Id",
+        "title": "Blockid",
         "type": "string"
       },
-      "block_index": {
+      "blockIndex": {
         "description": "Ordering position among all blocks in the message",
-        "title": "Block Index",
+        "title": "Blockindex",
         "type": "integer"
       },
       "type": {
@@ -412,8 +413,8 @@
       }
     },
     "required": [
-      "block_id",
-      "block_index",
+      "blockId",
+      "blockIndex",
       "type",
       "status"
     ],

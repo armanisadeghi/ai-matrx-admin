@@ -10,6 +10,7 @@
  */
 
 import type { StreamEvent } from '@/types/python-generated/stream-events';
+import type { LLMParams } from '@/lib/api/types';
 import type { Resource } from '@/features/prompts/types/resources';
 import type { PromptVariable } from '@/features/prompts/types/core';
 
@@ -87,39 +88,30 @@ export type ApiMode = 'agent' | 'conversation' | 'chat';
 /**
  * Configuration for the stateless chat API mode.
  * Only used when apiMode === 'chat'.
+ *
+ * These are camelCase frontend fields that map 1:1 to ChatRequest snake_case
+ * fields in the Python backend. The mapping to API fields happens in
+ * sendMessage.ts via buildChatRequest(). If LLMParams changes server-side,
+ * re-run `pnpm update-api-types` — type errors here will show any drift.
  */
 export interface ChatModeConfig {
-    /** Model ID to use (required for chat mode) */
     aiModelId: string;
-    /** Optional system instruction prepended to messages */
     systemInstruction?: string;
-    /** Temperature (0-2) */
-    temperature?: number;
-    /** Max output tokens */
-    maxOutputTokens?: number;
-    /** Top-p sampling */
-    topP?: number;
-    /** Top-k sampling */
-    topK?: number;
-    /** Tool definitions to send */
-    tools?: unknown[];
-    /** Tool choice strategy */
-    toolChoice?: string;
-    /** Whether to enable parallel tool calls */
-    parallelToolCalls?: boolean;
-    /** Response format override */
-    responseFormat?: { type: string; [key: string]: unknown } | null;
-    /** Enable internal web search */
-    internalWebSearch?: boolean;
-    /** Enable internal URL context */
-    internalUrlContext?: boolean;
-    /** Reasoning effort level */
-    reasoningEffort?: string;
-    /** Thinking budget tokens */
-    thinkingBudget?: number;
-    /** Whether to include thinking in response */
-    includeThoughts?: boolean;
-    /** Additional config overrides sent as-is */
+    temperature?: LLMParams['temperature'];
+    maxOutputTokens?: LLMParams['max_output_tokens'];
+    topP?: LLMParams['top_p'];
+    topK?: LLMParams['top_k'];
+    tools?: string[];
+    toolChoice?: LLMParams['tool_choice'];
+    parallelToolCalls?: LLMParams['parallel_tool_calls'];
+    responseFormat?: LLMParams['response_format'];
+    internalWebSearch?: LLMParams['internal_web_search'];
+    internalUrlContext?: LLMParams['internal_url_context'];
+    reasoningEffort?: LLMParams['reasoning_effort'];
+    reasoningSummary?: LLMParams['reasoning_summary'];
+    thinkingLevel?: LLMParams['thinking_level'];
+    thinkingBudget?: LLMParams['thinking_budget'];
+    includeThoughts?: LLMParams['include_thoughts'];
     extraConfig?: Record<string, unknown>;
 }
 

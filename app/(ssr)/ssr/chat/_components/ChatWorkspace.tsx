@@ -28,8 +28,8 @@ import { useChatContext } from "@/features/public-chat/context/ChatContext";
 import type { AgentConfig } from "@/features/public-chat/context/ChatContext";
 
 // Unified conversation system
-import { useConversationSession } from "@/components/conversation/hooks/useConversationSession";
-import { ConversationShell } from "@/components/conversation/ConversationShell";
+import { useConversationSession } from "@/features/cx-conversation/hooks/useConversationSession";
+import { ConversationShell } from "@/features/cx-conversation/ConversationShell";
 import { chatConversationsActions } from "@/lib/redux/chatConversations/slice";
 import type { ApiMode } from "@/lib/redux/chatConversations/types";
 
@@ -310,7 +310,7 @@ function ChatWorkspaceInner() {
 
   // Handle first message submit from welcome screen → transition to conversation
   const handleFirstSubmit = useCallback(
-    async (content: string, resources?: PublicResource[]) => {
+    async (content: string, resources?: PublicResource[]): Promise<boolean> => {
       let displayContent = "";
 
       if (activeVariables.length > 0) {
@@ -347,6 +347,8 @@ function ChatWorkspaceInner() {
         content: displayContent,
         variables: { ...variableValues },
       };
+
+      return true;
     },
     [activeVariables, variableValues],
   );

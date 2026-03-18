@@ -84,6 +84,7 @@ import {
   formDataToUpdateInput,
   validateCategoryFormData 
 } from '../components/CategoryFormFields';
+import { useModels } from '@/hooks/useModels';
 
 interface PromptBuiltinsManagerProps {
   className?: string;
@@ -96,7 +97,8 @@ type SelectedItem =
   | null;
 
 export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps) {
-  // State
+  const { models } = useModels();
+
   const [categories, setCategories] = useState<ShortcutCategory[]>([]);
   const [categoryItems, setCategoryItems] = useState<CategoryItem[]>([]);
   const [builtins, setBuiltins] = useState<PromptBuiltin[]>([]);
@@ -148,7 +150,6 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   // Prompt settings modal state
   const [isPromptSettingsOpen, setIsPromptSettingsOpen] = useState(false);
   const [editingBuiltinId, setEditingBuiltinId] = useState<string | null>(null);
-  const [models, setModels] = useState<any[]>([]);
   const [availableTools, setAvailableTools] = useState<any[]>([]);
   
   // Confirmation dialog state
@@ -173,18 +174,16 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const [categoriesData, categoryItemsData, builtinsData, modelsResponse, toolsResponse] = await Promise.all([
+      const [categoriesData, categoryItemsData, builtinsData, toolsResponse] = await Promise.all([
         fetchShortcutCategories(),
         fetchCategoryItemsWithRelations(),
         fetchPromptBuiltins({ is_active: true }),
-        fetch('/api/ai-models').then(r => r.json()).catch(() => ({ models: [] })),
         fetch('/api/tools').then(r => r.json()).catch(() => ({ tools: [] })),
       ]);
       
       setCategories(categoriesData);
       setCategoryItems(categoryItemsData);
       setBuiltins(builtinsData);
-      setModels(modelsResponse?.models || []);
       setAvailableTools(toolsResponse?.tools || []);
     } catch (error) {
       console.error('Error loading data:', error);

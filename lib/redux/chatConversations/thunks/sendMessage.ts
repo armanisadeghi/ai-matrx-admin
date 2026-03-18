@@ -122,19 +122,20 @@ function buildChatRequest(
         debug: true,
     };
 
-    // Spread optional chat config
     if (chatConfig.systemInstruction) body.system_instruction = chatConfig.systemInstruction;
     if (chatConfig.temperature != null) body.temperature = chatConfig.temperature;
     if (chatConfig.maxOutputTokens != null) body.max_output_tokens = chatConfig.maxOutputTokens;
     if (chatConfig.topP != null) body.top_p = chatConfig.topP;
     if (chatConfig.topK != null) body.top_k = chatConfig.topK;
     if (chatConfig.tools) body.tools = chatConfig.tools;
-    if (chatConfig.toolChoice) body.tool_choice = chatConfig.toolChoice;
+    if (chatConfig.toolChoice != null) body.tool_choice = chatConfig.toolChoice;
     if (chatConfig.parallelToolCalls != null) body.parallel_tool_calls = chatConfig.parallelToolCalls;
     if (chatConfig.responseFormat !== undefined) body.response_format = chatConfig.responseFormat;
-    if (chatConfig.internalWebSearch) body.internal_web_search = chatConfig.internalWebSearch;
-    if (chatConfig.internalUrlContext) body.internal_url_context = chatConfig.internalUrlContext;
-    if (chatConfig.reasoningEffort) body.reasoning_effort = chatConfig.reasoningEffort;
+    if (chatConfig.internalWebSearch != null) body.internal_web_search = chatConfig.internalWebSearch;
+    if (chatConfig.internalUrlContext != null) body.internal_url_context = chatConfig.internalUrlContext;
+    if (chatConfig.reasoningEffort != null) body.reasoning_effort = chatConfig.reasoningEffort;
+    if (chatConfig.reasoningSummary != null) body.reasoning_summary = chatConfig.reasoningSummary;
+    if (chatConfig.thinkingLevel != null) body.thinking_level = chatConfig.thinkingLevel;
     if (chatConfig.thinkingBudget != null) body.thinking_budget = chatConfig.thinkingBudget;
     if (chatConfig.includeThoughts != null) body.include_thoughts = chatConfig.includeThoughts;
     if (chatConfig.extraConfig) Object.assign(body, chatConfig.extraConfig);

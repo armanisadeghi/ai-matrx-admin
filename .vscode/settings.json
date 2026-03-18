@@ -1,19 +1,19 @@
 {
-    "java.project.explorer.showNonJavaResources": false,
-    "files.exclude": {
-        "**/__pycache__": true,
-        "**/.history": true,
-        "**/.next": false,
-        "**/.idea": true,
-        "**/node_modules": true
-    },
-    "search.exclude": {
-        "**/__pycache__": true,
-        "**/.history": true,
-        "**/.next": true,
-        "**/.idea": true,
-        "**/node_modules": true,
-        "**/temp": true
-    },
-    "terminal.integrated.scrollback": 20000,
+  "java.project.explorer.showNonJavaResources": false,
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.history": true,
+    "**/.next": false,
+    "**/.idea": true,
+    "**/node_modules": true
+  },
+  "search.exclude": {
+    "**/__pycache__": true,
+    "**/.history": true,
+    "**/.next": true,
+    "**/.idea": true,
+    "**/node_modules": true,
+    "**/temp": true
+  },
+  "terminal.integrated.scrollback": 20000
 }

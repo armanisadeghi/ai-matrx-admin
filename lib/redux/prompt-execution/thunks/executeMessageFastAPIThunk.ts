@@ -25,6 +25,7 @@ import type {
   StatusUpdatePayload,
   StreamEvent,
 } from '@/types/python-generated/stream-events';
+import type { ChatRequestBody } from '@/lib/api/types';
 
 import {
   addResponse,
@@ -98,18 +99,22 @@ export const executeMessageFastAPI = createAsyncThunk<
     dispatch(addResponse({ listenerId, taskId }));
     dispatch(setTaskListenerIds({ taskId, listenerIds: [listenerId] }));
 
-    // Fields accepted by POST /api/ai/chat — anything else gets stripped.
-    // conversation_id is optional in the body: used as a label/tracking ID only (server never fetches state).
-    // is_new_conversation has been removed entirely from the API.
-    const ALLOWED_FIELDS = new Set([
+    // Type-checked: every entry must be a valid ChatRequestBody key.
+    // If the backend schema changes, TypeScript will flag mismatches here.
+    const CHAT_FIELDS = [
       'ai_model_id', 'messages', 'conversation_id', 'stream', 'debug', 'max_iterations',
       'max_retries_per_iteration', 'system_instruction', 'max_output_tokens',
       'temperature', 'top_p', 'top_k', 'tools', 'tool_choice',
       'parallel_tool_calls', 'reasoning_effort', 'reasoning_summary',
       'thinking_level', 'include_thoughts', 'thinking_budget',
       'response_format', 'stop_sequences', 'internal_web_search',
-      'internal_url_context', 'store', 'metadata',
-    ]);
+      'internal_url_context', 'store', 'metadata', 'tts_voice', 'audio_format',
+      'model', 'verbosity', 'size', 'quality', 'count', 'seconds', 'fps',
+      'steps', 'seed', 'guidance_scale', 'output_quality', 'negative_prompt',
+      'output_format', 'width', 'height', 'frame_images', 'reference_images',
+      'disable_safety_checker', 'config_overrides', 'client_tools', 'ide_state',
+    ] as const satisfies readonly (keyof ChatRequestBody)[];
+    const ALLOWED_FIELDS = new Set<string>(CHAT_FIELDS);
 
     const requestBody: Record<string, unknown> = {
       stream: true,
@@ -126,30 +131,21 @@ export const executeMessageFastAPI = createAsyncThunk<
       requestBody.ai_model_id = chatConfig.ai_model_id;
     }
 
-    // Rename max_tokens -> max_output_tokens
+    // Safety net: normalizer should have already converted these at the Redux boundary.
     if (chatConfig.max_tokens !== undefined) {
-      console.warn(
-        '%c⚠️ FASTAPI MIGRATION [executeMessageFastAPI]: chatConfig uses "max_tokens" — rename to "max_output_tokens".',
-        'font-weight: bold; color: orange; font-size: 14px;',
-      );
+      console.debug('[executeMessageFastAPI] Legacy "max_tokens" detected — converting to "max_output_tokens"');
       requestBody.max_output_tokens = chatConfig.max_tokens;
     }
 
-    // Rename output_format -> response_format AND normalize string -> dict
     const rawFormat = chatConfig.output_format ?? chatConfig.response_format;
     if (rawFormat !== undefined) {
       if (chatConfig.output_format !== undefined) {
-        console.warn(
-          '%c⚠️ FASTAPI MIGRATION [executeMessageFastAPI]: chatConfig uses "output_format" — rename to "response_format".',
-          'font-weight: bold; color: orange; font-size: 14px;',
-        );
+        console.debug('[executeMessageFastAPI] Legacy "output_format" detected — converting to "response_format"');
       }
-      // Backend expects Dict[str, Any] | null, not a bare string
       if (typeof rawFormat === 'string') {
         if (rawFormat !== 'text' && rawFormat !== '') {
           requestBody.response_format = { type: rawFormat };
         }
-        // "text" is the default — omit entirely
       } else if (rawFormat !== null && typeof rawFormat === 'object') {
         requestBody.response_format = rawFormat;
       }

@@ -46,14 +46,14 @@ export type {
 export type {
     ConversationSessionConfig,
     ConversationSessionReturn,
-} from '@/components/conversation/hooks/useConversationSession';
+} from '@/features/cx-conversation/hooks/useConversationSession';
 
 // Component prop types
-export type { UnifiedChatWrapperProps } from '@/components/conversation/UnifiedChatWrapper';
-export type { ConversationShellProps } from '@/components/conversation/ConversationShell';
-export type { ConversationInputProps } from '@/components/conversation/ConversationInput';
-export type { AssistantMessageProps } from '@/components/conversation/AssistantMessage';
-export type { MessageOptionsMenuProps } from '@/components/conversation/MessageOptionsMenu';
+export type { UnifiedChatWrapperProps } from '@/features/cx-conversation/UnifiedChatWrapper';
+export type { ConversationShellProps } from '@/features/cx-conversation/ConversationShell';
+export type { ConversationInputProps } from '@/features/cx-conversation/ConversationInput';
+export type { AssistantMessageProps } from '@/features/cx-conversation/AssistantMessage';
+export type { MessageOptionsMenuProps } from '@/features/cx-conversation/MessageOptionsMenu';
 
 // Internalized utility types
 export type { ParsedResource } from '@/features/conversation/utils/resource-parsing';

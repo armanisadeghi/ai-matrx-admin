@@ -27,6 +27,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { toast } from 'sonner';
 import { UsageStatsModal } from '@/components/chat/UsageStatsModal';
 import { supabase } from '@/utils/supabase/client';
+import { useModels } from '@/hooks/useModels';
 
 const StreamAnalyzer = lazy(() => import('./StreamAnalyzer'));
 
@@ -78,8 +79,8 @@ export default function ChatTestClient() {
     requireToken: true,
   });
 
-  // Data loading states
-  const [models, setModels] = useState<any[]>([]);
+  const { models, isLoading: modelsLoading } = useModels();
+
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [availableTools, setAvailableTools] = useState<Tool[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -152,17 +153,9 @@ export default function ChatTestClient() {
       try {
         setLoadingData(true);
 
-        // Load models and tools from API routes
-        const [modelsRes, toolsRes] = await Promise.all([
-          fetch('/api/ai-models').then(r => r.json()).catch(() => ({ models: [] })),
-          fetch('/api/tools').then(r => r.json()).catch(() => ({ tools: [] })),
-        ]);
-
-        const loadedModels = modelsRes?.models || [];
-        setModels(loadedModels);
+        const toolsRes = await fetch('/api/tools').then(r => r.json()).catch(() => ({ tools: [] }));
         setAvailableTools(toolsRes?.tools || []);
 
-        // Load prompts directly via Supabase client (works for authenticated users)
         try {
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
@@ -179,13 +172,6 @@ export default function ChatTestClient() {
         } catch (e) {
           console.error('Error loading prompts:', e);
         }
-
-        // Set default model
-        if (loadedModels.length > 0 && !selectedModelId) {
-          const defaultModelId = loadedModels[0].id;
-          setSelectedModelId(defaultModelId);
-          setModelConfig(getModelDefaults(loadedModels[0]));
-        }
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -196,7 +182,13 @@ export default function ChatTestClient() {
     loadData();
   }, []);
 
-  // Get model controls
+  useEffect(() => {
+    if (models.length > 0 && !selectedModelId) {
+      setSelectedModelId(models[0].id);
+      setModelConfig(getModelDefaults(models[0]));
+    }
+  }, [models, selectedModelId]);
+
   const { normalizedControls } = useModelControls(models, selectedModelId);
 
   // Handle model change - when a prompt is selected, do NOT overwrite config (prompt config is source of truth)

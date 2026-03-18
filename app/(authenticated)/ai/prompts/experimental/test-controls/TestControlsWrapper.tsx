@@ -31,8 +31,8 @@ export function TestControlsWrapper({ models }: TestControlsWrapperProps) {
         internal_web_search: false,
         youtube_videos: false,
         reasoning_effort: "none",
-        verbosity: "none",
-        reasoning_summary: "none",
+        verbosity: undefined,
+        reasoning_summary: undefined,
     });
 
     const { normalizedControls } = useModelControls(models, selectedModelId);

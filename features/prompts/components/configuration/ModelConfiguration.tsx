@@ -121,7 +121,7 @@ export function ModelConfiguration({ models, model, onModelChange, modelConfig, 
                 )}
                 
                 {/* Summary */}
-                {modelConfig.reasoning_summary && modelConfig.reasoning_summary !== 'none' && (
+                {modelConfig.reasoning_summary && modelConfig.reasoning_summary !== 'never' && (
                     <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded font-mono">
                         summary: <span className="text-green-600 dark:text-green-400">{modelConfig.reasoning_summary}</span>
                     </span>

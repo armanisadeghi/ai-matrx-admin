@@ -3,6 +3,7 @@
 import { useRef, useEffect } from 'react';
 import { useChatContext } from '../context/ChatContext';
 import type { StreamEvent, ChunkPayload, ErrorPayload, CompletionPayload, EndPayload } from '@/types/python-generated/stream-events';
+import type { AgentStartRequestBody, ConversationContinueRequestBody } from '@/lib/api/types';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
 import { extractPersistableToolBlocks, toolCallBlockToLegacy } from '@/lib/chat-protocol';
 import { buildContentArray, ContentItem, PublicResource } from '../types/content';
@@ -23,22 +24,6 @@ interface SendMessageParams {
     content: string;
     variables?: Record<string, unknown>;
     resources?: PublicResource[];
-}
-
-/** Body for POST /agents/{agentId} — first message, new conversation */
-interface AgentStartRequest {
-    user_input: string | ContentItem[];
-    variables?: Record<string, unknown>;
-    config_overrides?: Record<string, unknown>;
-    stream: boolean;
-    debug: boolean;
-}
-
-/** Body for POST /conversations/{conversationId} — follow-up messages */
-interface ConversationContinueRequest {
-    user_input: string | ContentItem[];
-    stream: boolean;
-    debug: boolean;
 }
 
 // ============================================================================
@@ -133,25 +118,25 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 configOverrides.thinking_enabled = true;
             }
 
-            const userInput = contentItems.length > 0 ? contentItems : content;
+            const userInput: string | Record<string, unknown>[] =
+                contentItems.length > 0 ? contentItems as unknown as Record<string, unknown>[] : content;
 
             // ── Route to correct endpoint based on conversation state ──
             const blockMode = isAdmin && state.useBlockMode;
             let executeUrl: string;
-            let requestBody: AgentStartRequest | ConversationContinueRequest;
+            let requestBody: AgentStartRequestBody | ConversationContinueRequestBody;
 
             if (state.dbConversationId) {
-                // Follow-up: continue existing conversation (block mode not yet supported for continue)
                 executeUrl = `${BACKEND_URL}${ENDPOINTS.ai.conversationContinue(state.dbConversationId)}`;
                 requestBody = {
                     user_input: userInput,
                     stream: true,
                     debug: true,
-                };
+                    client_tools: [],
+                } satisfies ConversationContinueRequestBody;
                 console.log('[useAgentChat] CONTINUE conversation →', executeUrl);
                 console.log('[useAgentChat] dbConversationId:', state.dbConversationId);
             } else {
-                // First message: start new agent conversation
                 const startEndpoint = blockMode
                     ? ENDPOINTS.ai.agentBlocksStart(promptId)
                     : ENDPOINTS.ai.agentStart(promptId);
@@ -162,7 +147,8 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                     config_overrides: Object.keys(configOverrides).length > 0 ? configOverrides : undefined,
                     stream: true,
                     debug: true,
-                };
+                    client_tools: [],
+                } satisfies AgentStartRequestBody;
                 console.log(`[useAgentChat] START ${blockMode ? 'BLOCK MODE' : 'normal'} agent conversation →`, executeUrl);
             }
 

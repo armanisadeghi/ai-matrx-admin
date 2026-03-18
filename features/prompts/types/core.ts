@@ -1,3 +1,5 @@
+import type { LLMParams } from '@/lib/api/types';
+
 export type PromptMessageRole = "system" | "user" | "assistant";
 
 export type ResponseFormatType = 'text' | 'json_object' | 'json_schema';
@@ -11,50 +13,64 @@ export interface ResponseFormatDict {
     [key: string]: unknown;
 }
 
+/**
+ * Prompt settings stored in the database and edited in the UI.
+ *
+ * LLM-related fields derive their types from the generated LLMParams schema.
+ * If the Python backend adds/removes/renames an LLM param, re-run
+ * `pnpm update-api-types` and TypeScript will flag any drift here.
+ *
+ * Frontend-only fields (image_urls, file_urls, youtube_videos, etc.) that
+ * control UI feature toggles but are NOT part of the API request body are
+ * listed separately and are NOT constrained by LLMParams.
+ */
 export interface PromptSettings {
     model_id?: string;
     /** @deprecated Legacy field — may exist in DB records. Use response_format instead. */
     output_format?: string;
-    tool_choice?: string;
-    temperature?: number;
-    max_output_tokens?: number;
-    top_p?: number;
-    top_k?: number;
-    thinking_budget?: number;
-    store?: boolean;
-    stream?: boolean;
-    parallel_tool_calls?: boolean;
-    include_thoughts?: boolean;
+
+    // Fields that map 1:1 to LLMParams on the backend
+    tool_choice?: LLMParams['tool_choice'];
+    temperature?: LLMParams['temperature'];
+    max_output_tokens?: LLMParams['max_output_tokens'];
+    top_p?: LLMParams['top_p'];
+    top_k?: LLMParams['top_k'];
+    thinking_budget?: LLMParams['thinking_budget'];
+    store?: LLMParams['store'];
+    stream?: LLMParams['stream'];
+    parallel_tool_calls?: LLMParams['parallel_tool_calls'];
+    include_thoughts?: LLMParams['include_thoughts'];
+    reasoning_effort?: LLMParams['reasoning_effort'];
+    reasoning_summary?: LLMParams['reasoning_summary'];
+    thinking_level?: LLMParams['thinking_level'];
+    verbosity?: LLMParams['verbosity'];
+    internal_web_search?: LLMParams['internal_web_search'];
+    internal_url_context?: LLMParams['internal_url_context'];
+    tts_voice?: LLMParams['tts_voice'];
+    audio_format?: LLMParams['audio_format'];
+    seed?: LLMParams['seed'];
+    steps?: LLMParams['steps'];
+    width?: LLMParams['width'];
+    height?: LLMParams['height'];
+    guidance_scale?: LLMParams['guidance_scale'];
+    negative_prompt?: LLMParams['negative_prompt'];
+    fps?: LLMParams['fps'];
+    seconds?: LLMParams['seconds'];
+    output_quality?: LLMParams['output_quality'];
+    frame_images?: LLMParams['frame_images'];
+    reference_images?: LLMParams['reference_images'];
+    disable_safety_checker?: LLMParams['disable_safety_checker'];
+
+    // Backend accepts response_format as Dict[str, Any] | null. DB may store a string.
+    response_format?: ResponseFormatDict | string;
+
+    // Frontend-only fields (not in LLMParams)
     tools?: string[];
     image_urls?: boolean;
     file_urls?: boolean;
-    internal_web_search?: boolean;
-    internal_url_context?: boolean;
     youtube_videos?: boolean;
-    reasoning_effort?: string;
-    verbosity?: string;
-    reasoning_summary?: string;
-
-    // TTS model settings
-    tts_voice?: string | { name: string; voice: string }[];
-    audio_format?: string;
-
-    // Image/Video model settings
     n?: number;
-    seed?: number;
-    steps?: number;
-    width?: number;
-    height?: number;
-    guidance_scale?: number;
-    negative_prompt?: string;
-    response_format?: ResponseFormatDict | string;
-    fps?: number;
-    seconds?: string; // Video: duration
-    output_quality?: number;
-    image_loras?: any[]; // Object array for image LoRAs
-    frame_images?: any[]; // Object array for video frame images
-    reference_images?: string[]; // String array of image URLs
-    disable_safety_checker?: boolean;
+    image_loras?: unknown[];
 }
 
 /**

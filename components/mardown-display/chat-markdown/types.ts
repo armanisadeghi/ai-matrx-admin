@@ -43,5 +43,10 @@ export {
     isHeartbeatEvent,
     isEndEvent,
     isContentBlockEvent,
-    isNewProtocol,
 } from '@/types/python-generated/stream-events';
+
+import type { StreamEvent } from '@/types/python-generated/stream-events';
+
+export function isNewProtocol(events: StreamEvent[]): boolean {
+    return events.some(e => e.event === 'content_block');
+}

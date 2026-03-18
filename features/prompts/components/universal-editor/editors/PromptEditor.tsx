@@ -6,30 +6,17 @@ import { normalizePromptData, UniversalPromptData } from '../types';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
+import { useModels } from '@/hooks/useModels';
 
 interface PromptEditorProps {
-    /** Prompt ID to edit */
     promptId: string;
-    
-    /** Whether the editor is open */
     isOpen: boolean;
-    
-    /** Callback when editor closes */
     onClose: () => void;
-    
-    /** Optional callback after successful save */
     onSaveSuccess?: () => void;
-    
-    /** Optional initial selection in editor */
     initialSelection?: any;
-    
-    /** Optional pre-loaded data (skips loading from API) */
     promptData?: any;
-    
-    /** Optional pre-loaded models */
+    /** @deprecated Pass nothing — models come from Redux automatically */
     models?: any[];
-    
-    /** Optional pre-loaded tools */
     tools?: any[];
 }
 
@@ -56,25 +43,21 @@ export function PromptEditor({
     onSaveSuccess,
     initialSelection,
     promptData: preloadedPromptData,
-    models: preloadedModels,
     tools: preloadedTools,
 }: PromptEditorProps) {
+    const { models } = useModels();
     const [promptData, setPromptData] = useState<UniversalPromptData | null>(null);
-    const [models, setModels] = useState<any[]>(preloadedModels || []);
     const [tools, setTools] = useState<any[]>(preloadedTools || []);
     const [loading, setLoading] = useState(!preloadedPromptData);
     const [isSaving, setIsSaving] = useState(false);
     const supabase = createClient();
 
-    // Load all data when modal opens (only if not preloaded)
     useEffect(() => {
         if (isOpen && promptId) {
             if (preloadedPromptData) {
-                // Use preloaded data
                 setPromptData(normalizePromptData(preloadedPromptData, 'prompt'));
                 setLoading(false);
             } else {
-                // Load from API
                 loadData();
             }
         }
@@ -84,14 +67,11 @@ export function PromptEditor({
         try {
             setLoading(true);
 
-            // Load in parallel
-            const [modelsRes, toolsRes, promptRes] = await Promise.all([
-                fetch('/api/ai-models').then(r => r.json()).catch(() => ({ models: [] })),
+            const [toolsRes, promptRes] = await Promise.all([
                 fetch('/api/tools').then(r => r.json()).catch(() => ({ tools: [] })),
                 supabase.from('prompts').select('*').eq('id', promptId).single(),
             ]);
 
-            setModels(modelsRes?.models || []);
             setTools(toolsRes?.tools || []);
 
             if (promptRes.data) {

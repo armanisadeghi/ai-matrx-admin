@@ -32,7 +32,9 @@
     "ship:init": "tsx scripts/matrx/ship.ts init",
     "ship:setup": "tsx scripts/matrx/ship.ts setup",
     "ship:history": "tsx scripts/matrx/ship.ts history",
-    "check:public-imports": "npx tsx scripts/check-public-imports.ts"
+    "check:public-imports": "npx tsx scripts/check-public-imports.ts",
+    "sync-types": "node scripts/update-api-types.mjs --skip-typecheck",
+    "update-api-types": "node scripts/update-api-types.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.43",

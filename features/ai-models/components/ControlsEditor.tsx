@@ -11,6 +11,12 @@ import { Separator } from '@/components/ui/separator';
 import { EnhancedEditableJsonViewer } from '@/components/ui/JsonComponents/JsonEditor';
 import { Plus, Trash2, Code2, Table2, ChevronDown, ChevronRight } from 'lucide-react';
 import type { ControlParam, ControlParamType, ControlsSchema } from '../types';
+import {
+    TOOL_CHOICE_OPTIONS,
+    REASONING_EFFORT_OPTIONS,
+    REASONING_SUMMARY_OPTIONS,
+    THINKING_LEVEL_OPTIONS,
+} from '@/types/python-generated/llm-enums';
 
 // ─── Known controls catalog ───────────────────────────────────────────────────
 // Each entry defines what fields are relevant so the UI can render appropriate inputs.
@@ -41,12 +47,12 @@ const KNOWN_CONTROLS: Record<string, KnownControlMeta> = {
     top_p:               { label: 'Top P',              kind: 'number_range',  description: 'Nucleus sampling probability mass', defaultMin: 0, defaultMax: 1 },
     top_k:               { label: 'Top K',              kind: 'integer_range', description: 'Top-K sampling pool size', defaultMin: 0, defaultMax: 500 },
     thinking_budget:     { label: 'Thinking Budget',    kind: 'integer_range', description: 'Token budget for extended thinking', defaultMin: 0, defaultMax: 100000 },
-    reasoning_effort:    { label: 'Reasoning Effort',   kind: 'enum',          description: 'Reasoning depth level', enumOptions: ['none', 'low', 'medium', 'high', 'xhigh'] },
+    reasoning_effort:    { label: 'Reasoning Effort',   kind: 'enum',          description: 'Reasoning depth level', enumOptions: [...REASONING_EFFORT_OPTIONS] },
     verbosity:           { label: 'Verbosity',          kind: 'enum',          description: 'Response verbosity level', enumOptions: ['low', 'medium', 'high'] },
-    reasoning_summary:   { label: 'Reasoning Summary',  kind: 'enum',          description: 'How to include reasoning summary', enumOptions: ['auto', 'always', 'never', 'concise', 'detailed', 'null'] },
+    reasoning_summary:   { label: 'Reasoning Summary',  kind: 'enum',          description: 'How to include reasoning summary', enumOptions: [...REASONING_SUMMARY_OPTIONS] },
     output_format:       { label: 'Output Format',      kind: 'enum',          description: 'Response format (mapped to response_format)', enumOptions: ['text', 'json_schema', 'json_object'] },
     response_format:     { label: 'Response Format',    kind: 'enum',          description: 'Structured output format', enumOptions: ['text', 'json_schema', 'json_object'] },
-    tool_choice:         { label: 'Tool Choice',        kind: 'enum',          description: 'How the model selects tools', enumOptions: ['auto', 'none', 'required'] },
+    tool_choice:         { label: 'Tool Choice',        kind: 'enum',          description: 'How the model selects tools', enumOptions: [...TOOL_CHOICE_OPTIONS] },
     stop_sequences:      { label: 'Stop Sequences',     kind: 'array',         description: 'Sequences that stop generation' },
 
     // ── Boolean toggles ──

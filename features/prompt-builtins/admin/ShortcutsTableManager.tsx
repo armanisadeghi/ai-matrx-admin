@@ -90,6 +90,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { getUserFriendlyError } from '../utils/error-handler';
+import { useModels } from '@/hooks/useModels';
 
 type SortField = 'label' | 'category' | 'status' | 'connection' | 'placement' | 'display' | 'auto_run' | 'allow_chat' | 'show_variables' | 'apply_variables';
 type SortDirection = 'asc' | 'desc';
@@ -123,11 +124,11 @@ function getResultDisplayMeta(display: string | null | undefined): { label: stri
 }
 
 export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps) {
+  const { models } = useModels();
   const [categories, setCategories] = useState<ShortcutCategory[]>([]);
   const [shortcuts, setShortcuts] = useState<ShortcutWithRelations[]>([]);
   const [builtins, setBuiltins] = useState<PromptBuiltin[]>([]);
   const [loading, setLoading] = useState(true);
-  const [models, setModels] = useState<any[]>([]);
   const [availableTools, setAvailableTools] = useState<any[]>([]);
 
   // Filters
@@ -161,18 +162,16 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
   const loadData = React.useCallback(async () => {
     try {
       setLoading(true);
-      const [categoriesData, shortcutsData, builtinsData, modelsResponse, toolsResponse] = await Promise.all([
+      const [categoriesData, shortcutsData, builtinsData, toolsResponse] = await Promise.all([
         fetchShortcutCategories(),
         fetchShortcutsWithRelations(),
         fetchPromptBuiltins({ is_active: true }),
-        fetch('/api/ai-models').then(r => r.json()).catch(() => ({ models: [] })),
         fetch('/api/tools').then(r => r.json()).catch(() => ({ tools: [] })),
       ]);
 
       setCategories(categoriesData);
       setShortcuts(shortcutsData);
       setBuiltins(builtinsData);
-      setModels(modelsResponse?.models || []);
       setAvailableTools(toolsResponse?.tools || []);
     } catch (error) {
       console.error('Error loading data:', error);

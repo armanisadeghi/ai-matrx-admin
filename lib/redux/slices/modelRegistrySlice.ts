@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
 import { createClient } from '@/utils/supabase/client';
+import { normalizeModels } from './model-normalizer';
 
-// AIModel — matches the ai_model table schema exactly (from matrixDb.types.ts)
 export interface AIModel {
     id: string;
     name: string;
@@ -53,7 +53,7 @@ export const fetchAvailableModels = createAsyncThunk(
                 .order('common_name', { ascending: true });
 
             if (error) throw error;
-            return data as AIModel[];
+            return normalizeModels(data as AIModel[]);
         } catch (error: unknown) {
             return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
         }
@@ -65,7 +65,7 @@ const modelRegistrySlice = createSlice({
     initialState,
     reducers: {
         hydrateModels(state, action: { payload: { availableModels: AIModel[]; lastFetched: number } }) {
-            state.availableModels = action.payload.availableModels;
+            state.availableModels = normalizeModels(action.payload.availableModels);
             state.lastFetched = action.payload.lastFetched;
             state.isLoading = false;
             state.error = null;

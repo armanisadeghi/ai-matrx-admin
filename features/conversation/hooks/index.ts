@@ -2,8 +2,8 @@
  * features/conversation/hooks — Hook barrel exports.
  */
 
-export { useConversationSession } from '@/components/conversation/hooks/useConversationSession';
-export type { ConversationSessionConfig, ConversationSessionReturn } from '@/components/conversation/hooks/useConversationSession';
+export { useConversationSession } from '@/features/cx-conversation/hooks/useConversationSession';
+export type { ConversationSessionConfig, ConversationSessionReturn } from '@/features/cx-conversation/hooks/useConversationSession';
 
 export { useDomCapturePrint } from './useDomCapturePrint';
 export type { UseDomCapturePrintReturn, DomCaptureOptions } from './useDomCapturePrint';

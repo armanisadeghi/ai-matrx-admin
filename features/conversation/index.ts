@@ -49,22 +49,22 @@
 // COMPONENTS (primary exports)
 // ============================================================================
 
-export { UnifiedChatWrapper } from '@/components/conversation/UnifiedChatWrapper';
-export { ConversationShell } from '@/components/conversation/ConversationShell';
-export { ConversationInput } from '@/components/conversation/ConversationInput';
-export { MessageList } from '@/components/conversation/MessageList';
-export { AssistantMessage } from '@/components/conversation/AssistantMessage';
-export { UserMessage } from '@/components/conversation/UserMessage';
-export { MessageErrorBoundary } from '@/components/conversation/MessageErrorBoundary';
-export { StreamingContentBlocks } from '@/components/conversation/StreamingContentBlocks';
-export { default as ToolCallVisualization } from '@/components/conversation/ToolCallVisualization';
-export { default as MessageOptionsMenu } from '@/components/conversation/MessageOptionsMenu';
+export { UnifiedChatWrapper } from '@/features/cx-conversation/UnifiedChatWrapper';
+export { ConversationShell } from '@/features/cx-conversation/ConversationShell';
+export { ConversationInput } from '@/features/cx-conversation/ConversationInput';
+export { MessageList } from '@/features/cx-conversation/MessageList';
+export { AssistantMessage } from '@/features/cx-conversation/AssistantMessage';
+export { UserMessage } from '@/features/cx-conversation/UserMessage';
+export { MessageErrorBoundary } from '@/features/cx-conversation/MessageErrorBoundary';
+export { StreamingContentBlocks } from '@/features/cx-conversation/StreamingContentBlocks';
+export { default as ToolCallVisualization } from '@/features/cx-conversation/ToolCallVisualization';
+export { default as MessageOptionsMenu } from '@/features/cx-conversation/MessageOptionsMenu';
 
 // ============================================================================
 // HOOKS
 // ============================================================================
 
-export { useConversationSession } from '@/components/conversation/hooks/useConversationSession';
+export { useConversationSession } from '@/features/cx-conversation/hooks/useConversationSession';
 export { useDomCapturePrint } from './hooks/useDomCapturePrint';
 export { usePublicChatProps } from './hooks/usePublicChatProps';
 export { useAuthenticatedChatProps } from './hooks/useAuthenticatedChatProps';
@@ -107,12 +107,12 @@ export { printMarkdownContent } from './utils/markdown-print';
 // TYPES
 // ============================================================================
 
-export type { UnifiedChatWrapperProps } from '@/components/conversation/UnifiedChatWrapper';
-export type { ConversationShellProps } from '@/components/conversation/ConversationShell';
-export type { ConversationInputProps } from '@/components/conversation/ConversationInput';
-export type { AssistantMessageProps } from '@/components/conversation/AssistantMessage';
-export type { MessageOptionsMenuProps } from '@/components/conversation/MessageOptionsMenu';
-export type { ConversationSessionConfig, ConversationSessionReturn } from '@/components/conversation/hooks/useConversationSession';
+export type { UnifiedChatWrapperProps } from '@/features/cx-conversation/UnifiedChatWrapper';
+export type { ConversationShellProps } from '@/features/cx-conversation/ConversationShell';
+export type { ConversationInputProps } from '@/features/cx-conversation/ConversationInput';
+export type { AssistantMessageProps } from '@/features/cx-conversation/AssistantMessage';
+export type { MessageOptionsMenuProps } from '@/features/cx-conversation/MessageOptionsMenu';
+export type { ConversationSessionConfig, ConversationSessionReturn } from '@/features/cx-conversation/hooks/useConversationSession';
 export type { UseDomCapturePrintReturn, DomCaptureOptions } from './hooks/useDomCapturePrint';
 export type { PublicChatPropsConfig } from './hooks/usePublicChatProps';
 export type { AuthenticatedChatPropsConfig } from './hooks/useAuthenticatedChatProps';

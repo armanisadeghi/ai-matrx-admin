@@ -16,7 +16,7 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import type { UnifiedChatWrapperProps } from '@/components/conversation/UnifiedChatWrapper';
+import type { UnifiedChatWrapperProps } from '@/features/cx-conversation/UnifiedChatWrapper';
 import type { PromptVariable } from '@/features/prompts/types/core';
 
 export interface PublicChatPropsConfig {

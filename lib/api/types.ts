@@ -4,19 +4,21 @@
 // Stream event types and request/response schemas are auto-generated from
 // the Python Pydantic models. This file re-exports them alongside the
 // frontend-only types (auth, scope, error) that have no Python counterpart.
+//
+// NEVER define API types manually here. If the type comes from Python, it
+// MUST be imported from @/types/python-generated/. Run `pnpm update-api-types`
+// to regenerate after backend changes.
 
 // ============================================================================
-// RE-EXPORTS — Auto-generated from Python
+// RE-EXPORTS — Auto-generated from Python (stream events)
 // ============================================================================
 
-// Stream event types (wire protocol)
 export type {
     EventType,
     ToolEventType,
     ChunkPayload,
     StatusUpdatePayload,
     DataPayload,
-    AudioOutputPayload,
     CompletionPayload,
     ErrorPayload,
     ToolEventPayload,
@@ -52,30 +54,29 @@ export {
     isContentBlockEvent,
 } from '@/types/python-generated/stream-events';
 
-// Request/response schemas (from OpenAPI)
+// ============================================================================
+// RE-EXPORTS — Auto-generated from Python (OpenAPI request/response schemas)
+// ============================================================================
+
 export type {
     components,
     operations,
     paths,
 } from '@/types/python-generated/api-types';
 
-// Named aliases for the most-used request schemas
 import type { components } from '@/types/python-generated/api-types';
 
-/**
- * TTS voice for a single speaker (string) or multi-speaker Google TTS (array).
- * Pass as `tts_voice` in the request body — replaces the old `audio_voice` field.
- *
- * Single:      tts_voice: "alloy"
- * Multi (Google only): tts_voice: [{ name: "Alex", voice: "Orus" }, { name: "Sarah", voice: "Kore" }]
- */
-export type TTSVoice = string | { name: string; voice: string }[];
-
-/** @deprecated Warm endpoint no longer takes a body — agent_id is in the URL path. This type is kept for import compatibility only. */
-export type AgentWarmRequestBody = components['schemas']['AgentWarmRequest'];
-export type AgentExecuteRequestBody = components['schemas']['AgentExecuteRequest'];
-export type UnifiedChatRequestBody = components['schemas']['UnifiedChatRequest'];
+// Named aliases — every one of these resolves to a generated schema.
+// If a schema is renamed/removed in Python, TypeScript will error here immediately.
+export type ChatRequestBody = components['schemas']['ChatRequest'];
+export type AgentStartRequestBody = components['schemas']['AgentStartRequest'];
+export type AgentBlocksStartRequestBody = components['schemas']['AgentBlocksStartRequest'];
+export type ConversationContinueRequestBody = components['schemas']['ConversationContinueRequest'];
+export type LLMParams = components['schemas']['LLMParams'];
 export type ToolTestExecuteRequestBody = components['schemas']['ToolTestExecuteRequest'];
+export type ClientToolResult = components['schemas']['ClientToolResult'];
+export type ToolResultsRequestBody = components['schemas']['ToolResultsRequest'];
+export type DirectChatRequestBody = components['schemas']['DirectChatRequest'];
 
 export type ResearchConfigCreateBody = Record<string, unknown>;
 export type ResearchConfigUpdateBody = Record<string, unknown>;
@@ -86,6 +87,15 @@ export type SynthesisRequestBody = components['schemas']['SynthesisRequest'];
 export type SuggestRequestBody = components['schemas']['SuggestRequest'];
 export type TagCreateBody = components['schemas']['TagCreate'];
 export type TemplateCreateBody = components['schemas']['TemplateCreate'];
+
+/**
+ * Utility: extract the keys of ChatRequest as a runtime Set.
+ * Use this instead of hardcoding allowed field lists.
+ * NOTE: This is a compile-time type — for runtime validation, use the
+ * llm-params.schema.json or openapi.json directly.
+ */
+export type ChatRequestKey = keyof ChatRequestBody;
+export type LLMParamsKey = keyof LLMParams;
 
 // ============================================================================
 // ERROR TYPES (frontend-only — no Python counterpart)

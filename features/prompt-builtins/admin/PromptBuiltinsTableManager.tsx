@@ -77,6 +77,7 @@ import { getUserFriendlyError } from '../utils/error-handler';
 import { BuiltinEditor } from '@/features/prompts/components/universal-editor';
 import { updatePromptShortcut } from '../services/admin-service';
 import type { ScopeMapping } from '../types/core';
+import { useModels } from '@/hooks/useModels';
 
 type SortField = 'name' | 'variables' | 'usage' | 'source' | 'active';
 type SortDirection = 'asc' | 'desc';
@@ -86,11 +87,11 @@ interface PromptBuiltinsTableManagerProps {
 }
 
 export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableManagerProps) {
+  const { models } = useModels();
   const [builtins, setBuiltins] = useState<PromptBuiltin[]>([]);
   const [shortcuts, setShortcuts] = useState<PromptShortcut[]>([]);
   const [categories, setCategories] = useState<ShortcutCategory[]>([]);
   const [loading, setLoading] = useState(true);
-  const [models, setModels] = useState<any[]>([]);
   const [availableTools, setAvailableTools] = useState<any[]>([]);
 
   // Filters
@@ -130,18 +131,16 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
   const loadData = React.useCallback(async () => {
     try {
       setLoading(true);
-      const [builtinsData, shortcutsData, categoriesData, modelsResponse, toolsResponse] = await Promise.all([
-        fetchPromptBuiltinsWithSource({}), // ✅ OPTIMIZED: Single query with JOIN instead of N+1
+      const [builtinsData, shortcutsData, categoriesData, toolsResponse] = await Promise.all([
+        fetchPromptBuiltinsWithSource({}),
         fetchPromptShortcuts(),
         fetchShortcutCategories(),
-        fetch('/api/ai-models').then(r => r.json()).catch(() => ({ models: [] })),
         fetch('/api/tools').then(r => r.json()).catch(() => ({ tools: [] })),
       ]);
 
       setBuiltins(builtinsData);
       setShortcuts(shortcutsData);
       setCategories(categoriesData);
-      setModels(modelsResponse?.models || []);
       setAvailableTools(toolsResponse?.tools || []);
       
       // ✅ OPTIMIZED: Source prompt names are now included in builtinsData!

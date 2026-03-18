@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -9,51 +9,24 @@ import { Loader2, Search, Sparkles, type LucideIcon, Check, AlertCircle } from '
 import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { setPreference, UserPreferencesState } from '@/lib/redux/slices/userPreferencesSlice';
-import { fetchAIModelsClient } from "@/lib/api/ai-models";
+import { useModels, type AIModel } from '@/hooks/useModels';
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-
-type AIModel = {
-    id: string;
-    name: string;
-    common_name: string | null;
-    model_class: string;
-    provider: string | null;
-    is_deprecated: boolean;
-};
 
 const AiModelsPreferences = () => {
     const dispatch = useAppDispatch();
     const preferences = useSelector((state: RootState) => state.userPreferences as UserPreferencesState);
     const { aiModels, _meta } = preferences;
 
-    const [models, setModels] = useState<AIModel[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    const { models, isLoading: loading } = useModels();
     const [searchQuery, setSearchQuery] = useState<string>('');
 
-    // Safety check for _meta
     const meta = _meta || {
         isLoading: false,
         error: null,
         lastSaved: null,
         hasUnsavedChanges: false,
     };
-
-    // Fetch models on mount
-    useEffect(() => {
-        const loadModels = async () => {
-            setLoading(true);
-            try {
-                const fetchedModels = await fetchAIModelsClient();
-                setModels(fetchedModels);
-            } catch (error) {
-                console.error('Error loading AI models:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        loadModels();
-    }, []);
 
 
     const toggleModel = (modelId: string, currentlyActive: boolean) => {

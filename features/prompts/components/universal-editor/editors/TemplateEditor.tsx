@@ -6,30 +6,17 @@ import { normalizePromptData, UniversalPromptData } from '../types';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
+import { useModels } from '@/hooks/useModels';
 
 interface TemplateEditorProps {
-    /** Template ID to edit */
     templateId: string;
-    
-    /** Whether the editor is open */
     isOpen: boolean;
-    
-    /** Callback when editor closes */
     onClose: () => void;
-    
-    /** Optional callback after successful save */
     onSaveSuccess?: () => void;
-    
-    /** Optional initial selection in editor */
     initialSelection?: any;
-    
-    /** Optional pre-loaded data (skips loading from API) */
     templateData?: any;
-    
-    /** Optional pre-loaded models */
+    /** @deprecated Pass nothing — models come from Redux automatically */
     models?: any[];
-    
-    /** Optional pre-loaded tools */
     tools?: any[];
 }
 
@@ -56,25 +43,21 @@ export function TemplateEditor({
     onSaveSuccess,
     initialSelection,
     templateData: preloadedTemplateData,
-    models: preloadedModels,
     tools: preloadedTools,
 }: TemplateEditorProps) {
+    const { models } = useModels();
     const [templateData, setTemplateData] = useState<UniversalPromptData | null>(null);
-    const [models, setModels] = useState<any[]>(preloadedModels || []);
     const [tools, setTools] = useState<any[]>(preloadedTools || []);
     const [loading, setLoading] = useState(!preloadedTemplateData);
     const [isSaving, setIsSaving] = useState(false);
     const supabase = createClient();
 
-    // Load all data when modal opens (only if not preloaded)
     useEffect(() => {
         if (isOpen && templateId) {
             if (preloadedTemplateData) {
-                // Use preloaded data
                 setTemplateData(normalizePromptData(preloadedTemplateData, 'template'));
                 setLoading(false);
             } else {
-                // Load from API
                 loadData();
             }
         }
@@ -84,14 +67,11 @@ export function TemplateEditor({
         try {
             setLoading(true);
 
-            // Load in parallel
-            const [modelsRes, toolsRes, templateRes] = await Promise.all([
-                fetch('/api/ai-models').then(r => r.json()).catch(() => ({ models: [] })),
+            const [toolsRes, templateRes] = await Promise.all([
                 fetch('/api/tools').then(r => r.json()).catch(() => ({ tools: [] })),
                 supabase.from('prompt_templates').select('*').eq('id', templateId).single(),
             ]);
 
-            setModels(modelsRes?.models || []);
             setTools(toolsRes?.tools || []);
 
             if (templateRes.data) {

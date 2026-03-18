@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -9,10 +9,8 @@ import { Slider } from "@/components/ui/slider";
 import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { setPreference, ThinkingMode } from '@/lib/redux/slices/userPreferencesSlice';
-import { supabase } from '@/utils/supabase/client';
+import { useModels } from '@/hooks/useModels';
 import { Loader2 } from 'lucide-react';
-
-type AIModel = { id: string; name: string; common_name: string | null; model_class: string; provider: string | null; is_deprecated: boolean; };
 
 const row = "flex items-center justify-between px-4 py-3.5 border-b border-border/40 last:border-b-0";
 const rowLabel = "text-sm font-medium";
@@ -21,19 +19,8 @@ const PromptsPreferences = () => {
     const dispatch = useAppDispatch();
     const prompts = useSelector((state: RootState) => state.userPreferences.prompts);
     const aiModels = useSelector((state: RootState) => state.userPreferences.aiModels);
-    const [activeModels, setActiveModels] = useState<AIModel[]>([]);
-    const [isLoadingModels, setIsLoadingModels] = useState(true);
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const { data: models } = await supabase
-                    .from('ai_model').select('*').eq('is_deprecated', false).order('common_name', { ascending: true });
-                setActiveModels(models?.filter(m => aiModels.activeModels.includes(m.id)) || []);
-            } finally { setIsLoadingModels(false); }
-        };
-        load();
-    }, [aiModels.activeModels]);
+    const { models: allModels, isLoading: isLoadingModels } = useModels();
+    const activeModels = allModels.filter(m => aiModels.activeModels.includes(m.id));
 
     const handleSwitch = (preference: keyof typeof prompts) => (checked: boolean) =>
         dispatch(setPreference({ module: 'prompts', preference, value: checked }));

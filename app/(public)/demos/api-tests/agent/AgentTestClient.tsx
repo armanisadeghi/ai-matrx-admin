@@ -268,7 +268,7 @@ export default function AgentTestClient() {
                 accumulated.push(ev as unknown as AgentStreamEvent);
                 setLiveEvents([...accumulated]);
 
-                const d = ev.data;
+                const d = ev.data as Record<string, unknown>;
                 if (ev.event === "chunk" && typeof d.text === "string") {
                     text += d.text;
                     setLiveText(text);

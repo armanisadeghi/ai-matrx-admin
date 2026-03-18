@@ -15,6 +15,7 @@ import { TEST_ADMIN_TOKEN } from '../sample-prompt';
 import MarkdownStream from '@/components/MarkdownStream';
 import { useApiTestConfig, ApiTestConfigPanel } from '@/components/api-test-config';
 import { supabase } from '@/utils/supabase/client';
+import { useModels } from '@/hooks/useModels';
 import { useModelControls, getModelDefaults } from '@/features/prompts/hooks/useModelControls';
 import { PromptMessage, PromptSettings } from '@/features/prompts/types/core';
 import { ModelSettings } from '@/features/prompts/components/configuration/ModelSettings';
@@ -43,8 +44,8 @@ export default function ChatDemoClient() {
     defaultAuthToken: TEST_ADMIN_TOKEN,
   });
 
-  // Data loading states
-  const [models, setModels] = useState<any[]>([]);
+  const { models, isLoading: modelsLoading } = useModels();
+
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [availableTools, setAvailableTools] = useState<Tool[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -109,23 +110,13 @@ export default function ChatDemoClient() {
           authHeaders['Authorization'] = `Bearer ${session.access_token}`;
         }
 
-        const [modelsRes, promptsRes, toolsRes] = await Promise.all([
-          fetch('/api/ai-models').then(r => r.json()).catch(() => ({ models: [] })),
+        const [promptsRes, toolsRes] = await Promise.all([
           fetch('/api/admin/prompt-builtins/user-prompts', { headers: authHeaders }).then(r => r.json()).catch(() => ({ prompts: [] })),
           fetch('/api/tools').then(r => r.json()).catch(() => ({ tools: [] })),
         ]);
 
-        const loadedModels = modelsRes?.models || [];
-        setModels(loadedModels);
         setPrompts(promptsRes?.prompts || []);
         setAvailableTools(toolsRes?.tools || []);
-
-        // Set default model
-        if (loadedModels.length > 0 && !selectedModelId) {
-          const defaultModelId = loadedModels[0].id;
-          setSelectedModelId(defaultModelId);
-          setModelConfig(getModelDefaults(loadedModels[0]));
-        }
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -136,7 +127,13 @@ export default function ChatDemoClient() {
     loadData();
   }, []);
 
-  // Get model controls
+  useEffect(() => {
+    if (models.length > 0 && !selectedModelId) {
+      setSelectedModelId(models[0].id);
+      setModelConfig(getModelDefaults(models[0]));
+    }
+  }, [models, selectedModelId]);
+
   const { normalizedControls } = useModelControls(models, selectedModelId);
 
   // Handle model change

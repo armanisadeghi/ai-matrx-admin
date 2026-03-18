@@ -416,7 +416,7 @@ export const executePromptById = createAsyncThunk<
         ...modelOverrides,
       };
 
-      // Migrate legacy output_format -> response_format (dict format)
+      // Safety net: normalizer should have handled this upstream.
       if (chatConfig.output_format !== undefined) {
         const fmt = chatConfig.output_format;
         delete chatConfig.output_format;

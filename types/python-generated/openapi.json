@@ -5,11 +5,6 @@
     "description": "REST API endpoints for AI Dream application",
     "version": "2.0.0"
   },
-  "servers": [
-    {
-      "url": "/api"
-    }
-  ],
   "paths": {
     "/health": {
       "get": {
@@ -85,6 +80,115 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schema/manifest": {
+      "get": {
+        "tags": [
+          "Schema"
+        ],
+        "summary": "Schema Manifest",
+        "description": "List all available schema bundles with descriptions.",
+        "operationId": "schema_manifest_schema_manifest_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Schema Manifest Schema Manifest Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schema/bundle/{name}": {
+      "get": {
+        "tags": [
+          "Schema"
+        ],
+        "summary": "Schema Bundle",
+        "description": "Fetch a single schema bundle by name.",
+        "operationId": "schema_bundle_schema_bundle__name__get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schema/openapi": {
+      "get": {
+        "tags": [
+          "Schema"
+        ],
+        "summary": "Schema Openapi",
+        "description": "OpenAPI JSON — same as /openapi.json but always available under /schema/.",
+        "operationId": "schema_openapi_schema_openapi_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schema/all": {
+      "get": {
+        "tags": [
+          "Schema"
+        ],
+        "summary": "Schema All",
+        "description": "Every schema bundle in a single response.\n\nJSON bundles are returned as objects, text bundles as strings.",
+        "operationId": "schema_all_schema_all_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Schema All Schema All Get"
+                }
               }
             }
           }
@@ -214,13 +318,287 @@
         }
       }
     },
+    "/prompts/builtins": {
+      "get": {
+        "tags": [
+          "Prompts"
+        ],
+        "summary": "Get All Prompt Builtins",
+        "operationId": "get_all_prompt_builtins_prompts_builtins_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai-models": {
+      "get": {
+        "tags": [
+          "AI Models"
+        ],
+        "summary": "Get All Ai Models",
+        "operationId": "get_all_ai_models_ai_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai-tools": {
+      "get": {
+        "tags": [
+          "AI Tools"
+        ],
+        "summary": "Get All Tools",
+        "operationId": "get_all_tools_ai_tools_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai-tools/app/{source_app}": {
+      "get": {
+        "tags": [
+          "AI Tools"
+        ],
+        "summary": "Get Tools By App",
+        "operationId": "get_tools_by_app_ai_tools_app__source_app__get",
+        "parameters": [
+          {
+            "name": "source_app",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source App"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai-tools/app/matrx_ai/all": {
+      "get": {
+        "tags": [
+          "AI Tools"
+        ],
+        "summary": "Get Matrx Ai Tools",
+        "operationId": "get_matrx_ai_tools_ai_tools_app_matrx_ai_all_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai-tools/app/matrx_local/all": {
+      "get": {
+        "tags": [
+          "AI Tools"
+        ],
+        "summary": "Get Matrx Local Tools",
+        "operationId": "get_matrx_local_tools_ai_tools_app_matrx_local_all_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai-tools/{tool_id}": {
+      "get": {
+        "tags": [
+          "AI Tools"
+        ],
+        "summary": "Get Tool By Id",
+        "operationId": "get_tool_by_id_ai_tools__tool_id__get",
+        "parameters": [
+          {
+            "name": "tool_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Tool Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/content-blocks": {
+      "get": {
+        "tags": [
+          "Content Blocks"
+        ],
+        "summary": "Get All Content Blocks",
+        "operationId": "get_all_content_blocks_content_blocks_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/content-blocks/category/{category_id}": {
+      "get": {
+        "tags": [
+          "Content Blocks"
+        ],
+        "summary": "Get Content Blocks By Category",
+        "operationId": "get_content_blocks_by_category_content_blocks_category__category_id__get",
+        "parameters": [
+          {
+            "name": "category_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Category Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/content-blocks/{block_id}": {
+      "get": {
+        "tags": [
+          "Content Blocks"
+        ],
+        "summary": "Get Content Block By Id",
+        "operationId": "get_content_block_by_id_content_blocks__block_id__get",
+        "parameters": [
+          {
+            "name": "block_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Block Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/ai/agents/{agent_id}": {
       "post": {
         "tags": [
           "AI"
         ],
         "summary": "Start Agent",
-        "description": "Start a new agent conversation.\n\nResolves the agent's UnifiedConfig (with variables/overrides applied),\nthen hands off to the AI engine. A new conversation_id is generated here\nand set on AppContext so execution and persistence use the same ID.",
+        "description": "Start a new agent conversation.\n\nResolves the agent's UnifiedConfig (with variables/overrides applied),\nthen hands off to the AI engine. A new conversation_id is generated here\nand set on AppContext so execution and persistence use the same ID.\n\nOptional fields (all default to no-op when absent):\n- ``client_tools``: tool names the client will execute instead of the server.\n- ``ide_state``: current editor snapshot (active file, diagnostics, git, workspace)\n  serialized into the system prompt so the AI can reason about the user's environment.",
         "operationId": "start_agent_ai_agents__agent_id__post",
         "parameters": [
           {
@@ -444,7 +822,7 @@
           "AI"
         ],
         "summary": "Continue Conversation",
-        "description": "Continue an existing conversation.\n\nResolves the UnifiedConfig from cache or DB via ConversationResolver,\nappends the new user_input, then hands off to the AI engine.",
+        "description": "Continue an existing conversation.\n\nResolves the UnifiedConfig from cache or DB via ConversationResolver,\nappends the new user_input, then hands off to the AI engine.\n\nOptional fields (zero impact when absent):\n- ``client_tools``: tool names the client will execute instead of the server.\n- ``ide_state``: per-turn ephemeral editor state (selected_text, diagnostics) appended\n  to user_input for this turn.  Stable session fields (git, workspace, active_file)\n  are ignored here — they were set as variables on the first agent turn.",
         "operationId": "continue_conversation_ai_conversations__conversation_id__post",
         "parameters": [
           {
@@ -463,6 +841,57 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ConversationContinueRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/conversations/{conversation_id}/tool_results": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Submit Tool Results",
+        "description": "Submit client-side tool execution results back to the suspended AI loop.\n\nCalled by the VSCode extension (or any other client-side executor) after it\nhas executed one or more client-delegated tool calls.  Each ``call_id`` in\nthe request body must match a ``tool_delegated`` event that was previously\nstreamed to the client.\n\nThe AI loop is automatically unblocked and continues with the provided\nresults as if the tools had been executed server-side.",
+        "operationId": "submit_tool_results_ai_conversations__conversation_id__tool_results_post",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolResultsRequest"
               }
             }
           }
@@ -634,7 +1063,7 @@
             "schema": {
               "type": "number",
               "exclusiveMinimum": 0,
-              "default": 10.0,
+              "default": 10,
               "title": "Target Size Mb"
             }
           }
@@ -3652,6 +4081,284 @@
         }
       }
     },
+    "/prompts": {
+      "get": {
+        "tags": [
+          "Prompts"
+        ],
+        "summary": "Get User Prompts",
+        "operationId": "get_user_prompts_prompts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/prompts/all": {
+      "get": {
+        "tags": [
+          "Prompts"
+        ],
+        "summary": "Get User Prompts And Builtins",
+        "operationId": "get_user_prompts_and_builtins_prompts_all_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agents": {
+      "get": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "List Agents",
+        "description": "Return all agents available to the authenticated user.\n\nIncludes both user-owned prompts and system builtins. Results are merged\ninto a single flat list sorted by name for easy consumption by IDE clients.",
+        "operationId": "list_agents_agents_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cx/conversations": {
+      "get": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Get User Conversations",
+        "operationId": "get_user_conversations_cx_conversations_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cx/conversations/{conversation_id}": {
+      "get": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Get Conversation With All Related",
+        "operationId": "get_conversation_with_all_related_cx_conversations__conversation_id__get",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cx/conversations/{conversation_id}/requests": {
+      "get": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Get Conversation Requests",
+        "operationId": "get_conversation_requests_cx_conversations__conversation_id__requests_get",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/media/podcast/upload-image": {
+      "post": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Upload Podcast Image",
+        "operationId": "upload_podcast_image_media_podcast_upload_image_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_podcast_image_media_podcast_upload_image_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PodcastMediaUploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/media/podcast/upload-video": {
+      "post": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Upload Podcast Video",
+        "operationId": "upload_podcast_video_media_podcast_upload_video_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_podcast_video_media_podcast_upload_video_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PodcastMediaUploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/podcast/generate": {
+      "post": {
+        "tags": [
+          "Podcast"
+        ],
+        "summary": "Generate Podcast Endpoint",
+        "operationId": "generate_podcast_endpoint_podcast_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PodcastGenerateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/tests/examples": {
       "get": {
         "tags": [
@@ -4005,14 +4712,12 @@
           "config_overrides": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/LLMParams"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Config Overrides"
+            ]
           },
           "stream": {
             "type": "boolean",
@@ -4063,14 +4768,12 @@
           "config_overrides": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/LLMParams"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Config Overrides"
+            ]
           },
           "stream": {
             "type": "boolean",
@@ -4081,6 +4784,24 @@
             "type": "boolean",
             "title": "Debug",
             "default": false
+          },
+          "client_tools": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Client Tools",
+            "default": []
+          },
+          "ide_state": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdeState"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -4144,6 +4865,15 @@
         "type": "object",
         "title": "AnalyzeRequest"
       },
+      "AudioStyle": {
+        "type": "string",
+        "enum": [
+          "Podcast Interview",
+          "Educational Podcast",
+          "پادکست خبری ایران"
+        ],
+        "title": "AudioStyle"
+      },
       "Body_compress_pdf_utilities_pdf_compress_post": {
         "properties": {
           "file": {
@@ -4171,6 +4901,34 @@
           "file"
         ],
         "title": "Body_extract_text_from_pdf_utilities_pdf_extract_text_post"
+      },
+      "Body_upload_podcast_image_media_podcast_upload_image_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_podcast_image_media_podcast_upload_image_post"
+      },
+      "Body_upload_podcast_video_media_podcast_upload_video_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_podcast_video_media_podcast_upload_video_post"
       },
       "CategorizeRequest": {
         "properties": {
@@ -4257,19 +5015,7 @@
       },
       "ChatRequest": {
         "properties": {
-          "ai_model_id": {
-            "type": "string",
-            "title": "Ai Model Id"
-          },
-          "messages": {
-            "items": {
-              "additionalProperties": true,
-              "type": "object"
-            },
-            "type": "array",
-            "title": "Messages"
-          },
-          "conversation_id": {
+          "model": {
             "anyOf": [
               {
                 "type": "string"
@@ -4278,38 +5024,7 @@
                 "type": "null"
               }
             ],
-            "title": "Conversation Id"
-          },
-          "max_iterations": {
-            "type": "integer",
-            "title": "Max Iterations",
-            "default": 20
-          },
-          "max_retries_per_iteration": {
-            "type": "integer",
-            "title": "Max Retries Per Iteration",
-            "default": 2
-          },
-          "stream": {
-            "type": "boolean",
-            "title": "Stream",
-            "default": true
-          },
-          "debug": {
-            "type": "boolean",
-            "title": "Debug",
-            "default": false
-          },
-          "system_instruction": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "System Instruction"
+            "title": "Model"
           },
           "max_output_tokens": {
             "anyOf": [
@@ -4355,23 +5070,16 @@
             ],
             "title": "Top K"
           },
-          "tools": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Tools"
-          },
           "tool_choice": {
             "anyOf": [
-              {},
+              {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "auto",
+                  "required"
+                ]
+              },
               {
                 "type": "null"
               }
@@ -4379,14 +5087,29 @@
             "title": "Tool Choice"
           },
           "parallel_tool_calls": {
-            "type": "boolean",
-            "title": "Parallel Tool Calls",
-            "default": true
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parallel Tool Calls"
           },
           "reasoning_effort": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "none",
+                  "minimal",
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh"
+                ]
               },
               {
                 "type": "null"
@@ -4397,7 +5120,14 @@
           "reasoning_summary": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "concise",
+                  "detailed",
+                  "never",
+                  "auto",
+                  "always"
+                ]
               },
               {
                 "type": "null"
@@ -4408,7 +5138,13 @@
           "thinking_level": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "minimal",
+                  "low",
+                  "medium",
+                  "high"
+                ]
               },
               {
                 "type": "null"
@@ -4464,6 +5200,27 @@
             ],
             "title": "Stop Sequences"
           },
+          "stream": {
+            "type": "boolean",
+            "title": "Stream",
+            "default": true
+          },
+          "store": {
+            "type": "boolean",
+            "title": "Store",
+            "default": true
+          },
+          "verbosity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verbosity"
+          },
           "internal_web_search": {
             "anyOf": [
               {
@@ -4509,13 +5266,30 @@
             "title": "Quality"
           },
           "count": {
-            "type": "integer",
-            "title": "Count",
-            "default": 1
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Count"
           },
           "tts_voice": {
             "anyOf": [
-              {},
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
               {
                 "type": "null"
               }
@@ -4678,6 +5452,97 @@
             ],
             "title": "Disable Safety Checker"
           },
+          "ai_model_id": {
+            "type": "string",
+            "title": "Ai Model Id"
+          },
+          "messages": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Messages"
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "max_iterations": {
+            "type": "integer",
+            "title": "Max Iterations",
+            "default": 20
+          },
+          "max_retries_per_iteration": {
+            "type": "integer",
+            "title": "Max Retries Per Iteration",
+            "default": 2
+          },
+          "debug": {
+            "type": "boolean",
+            "title": "Debug",
+            "default": false
+          },
+          "system_instruction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Instruction"
+          },
+          "tools": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tools"
+          },
+          "config_overrides": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LLMParams"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "client_tools": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Client Tools",
+            "default": []
+          },
+          "ide_state": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdeState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "metadata": {
             "anyOf": [
               {
@@ -4689,11 +5554,6 @@
               }
             ],
             "title": "Metadata"
-          },
-          "store": {
-            "type": "boolean",
-            "title": "Store",
-            "default": true
           }
         },
         "additionalProperties": true,
@@ -4703,6 +5563,43 @@
           "messages"
         ],
         "title": "ChatRequest"
+      },
+      "ClientToolResult": {
+        "properties": {
+          "call_id": {
+            "type": "string",
+            "title": "Call Id"
+          },
+          "tool_name": {
+            "type": "string",
+            "title": "Tool Name"
+          },
+          "output": {
+            "title": "Output"
+          },
+          "is_error": {
+            "type": "boolean",
+            "title": "Is Error",
+            "default": false
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "call_id",
+          "tool_name"
+        ],
+        "title": "ClientToolResult"
       },
       "ContentEditRequest": {
         "properties": {
@@ -4755,14 +5652,12 @@
           "config_overrides": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/LLMParams"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Config Overrides"
+            ]
           },
           "stream": {
             "type": "boolean",
@@ -4773,6 +5668,24 @@
             "type": "boolean",
             "title": "Debug",
             "default": false
+          },
+          "client_tools": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Client Tools",
+            "default": []
+          },
+          "ide_state": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdeState"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -4918,6 +5831,169 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "IdeDiagnostic": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity"
+          },
+          "range": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Range"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "severity",
+          "range"
+        ],
+        "title": "IdeDiagnostic"
+      },
+      "IdeFileState": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "content",
+          "language"
+        ],
+        "title": "IdeFileState"
+      },
+      "IdeGitState": {
+        "properties": {
+          "branch": {
+            "type": "string",
+            "title": "Branch"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "branch",
+          "status"
+        ],
+        "title": "IdeGitState"
+      },
+      "IdeState": {
+        "properties": {
+          "active_file": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdeFileState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "selected_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Text"
+          },
+          "diagnostics": {
+            "items": {
+              "$ref": "#/components/schemas/IdeDiagnostic"
+            },
+            "type": "array",
+            "title": "Diagnostics",
+            "default": []
+          },
+          "workspace": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdeWorkspaceState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "git": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdeGitState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "IdeState",
+        "description": "Structured IDE snapshot sent with a request.\n\nAll fields are optional.  When the whole object is absent (field is None\non the request model), ``to_variables()`` returns an empty dict — zero cost,\nzero side-effects.\n\nField name on all request models: ``ide_state``"
+      },
+      "IdeWorkspaceState": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "folders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Folders"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "folders"
+        ],
+        "title": "IdeWorkspaceState"
+      },
+      "InputDataType": {
+        "type": "string",
+        "enum": [
+          "topic",
+          "partial_content",
+          "full_content",
+          "file_url"
+        ],
+        "title": "InputDataType"
+      },
       "Item": {
         "properties": {
           "name": {
@@ -5007,6 +6083,462 @@
           "keywords"
         ],
         "title": "KeywordCreate"
+      },
+      "LLMParams": {
+        "properties": {
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "max_output_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Output Tokens"
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature"
+          },
+          "top_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top P"
+          },
+          "top_k": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top K"
+          },
+          "tool_choice": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "auto",
+                  "required"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool Choice"
+          },
+          "parallel_tool_calls": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parallel Tool Calls"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "none",
+                  "minimal",
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Effort"
+          },
+          "reasoning_summary": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "concise",
+                  "detailed",
+                  "never",
+                  "auto",
+                  "always"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Summary"
+          },
+          "thinking_level": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "minimal",
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thinking Level"
+          },
+          "include_thoughts": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Include Thoughts"
+          },
+          "thinking_budget": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thinking Budget"
+          },
+          "response_format": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Response Format"
+          },
+          "stop_sequences": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop Sequences"
+          },
+          "stream": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream"
+          },
+          "store": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Store"
+          },
+          "verbosity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verbosity"
+          },
+          "internal_web_search": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Internal Web Search"
+          },
+          "internal_url_context": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Internal Url Context"
+          },
+          "size": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size"
+          },
+          "quality": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quality"
+          },
+          "count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Count"
+          },
+          "tts_voice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tts Voice"
+          },
+          "audio_format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audio Format"
+          },
+          "seconds": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seconds"
+          },
+          "fps": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fps"
+          },
+          "steps": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Steps"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          },
+          "guidance_scale": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guidance Scale"
+          },
+          "output_quality": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Quality"
+          },
+          "negative_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Negative Prompt"
+          },
+          "output_format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Format"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          },
+          "frame_images": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frame Images"
+          },
+          "reference_images": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Images"
+          },
+          "disable_safety_checker": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disable Safety Checker"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "LLMParams"
       },
       "MediaUpdate": {
         "properties": {
@@ -5203,6 +6735,167 @@
         },
         "type": "object",
         "title": "PdfResult"
+      },
+      "PodcastGenerateRequest": {
+        "properties": {
+          "show_id": {
+            "type": "string",
+            "title": "Show Id"
+          },
+          "input_data_type": {
+            "$ref": "#/components/schemas/InputDataType"
+          },
+          "input_data": {
+            "type": "string",
+            "title": "Input Data",
+            "default": ""
+          },
+          "file_urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "File Urls",
+            "default": []
+          },
+          "podcast_type": {
+            "$ref": "#/components/schemas/PodcastType"
+          },
+          "post_prep_option": {
+            "$ref": "#/components/schemas/PostPrepOption",
+            "default": "none"
+          },
+          "number_of_speakers": {
+            "type": "integer",
+            "title": "Number Of Speakers",
+            "default": 2
+          },
+          "first_show_info_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Show Info Text"
+          },
+          "audio_style": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AudioStyle"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "prep_user_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prep User Message"
+          },
+          "extraction_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extraction Unit"
+          },
+          "truncate_audio_for_testing": {
+            "type": "boolean",
+            "title": "Truncate Audio For Testing",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "show_id",
+          "input_data_type",
+          "podcast_type"
+        ],
+        "title": "PodcastGenerateRequest"
+      },
+      "PodcastMediaUploadResponse": {
+        "properties": {
+          "video_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Video Url"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "og_image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Og Image Url"
+          },
+          "thumbnail_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thumbnail Url"
+          }
+        },
+        "type": "object",
+        "title": "PodcastMediaUploadResponse"
+      },
+      "PodcastType": {
+        "type": "string",
+        "enum": [
+          "educational",
+          "news",
+          "persian"
+        ],
+        "title": "PodcastType"
+      },
+      "PostPrepOption": {
+        "type": "string",
+        "enum": [
+          "none",
+          "translation",
+          "summarization",
+          "expansion",
+          "fact_checking"
+        ],
+        "title": "PostPrepOption"
       },
       "ProcessBlocksRequest": {
         "properties": {
@@ -5403,8 +7096,8 @@
           },
           "anchor_size": {
             "type": "integer",
-            "maximum": 1000.0,
-            "minimum": 10.0,
+            "maximum": 1000,
+            "minimum": 10,
             "title": "Anchor Size",
             "default": 100
           },
@@ -5501,8 +7194,8 @@
           },
           "anchor_size": {
             "type": "integer",
-            "maximum": 1000.0,
-            "minimum": 10.0,
+            "maximum": 1000,
+            "minimum": 10,
             "title": "Anchor Size",
             "default": 100
           },
@@ -5517,8 +7210,8 @@
           },
           "max_page_read": {
             "type": "integer",
-            "maximum": 20.0,
-            "minimum": 1.0,
+            "maximum": 20,
+            "minimum": 1,
             "title": "Max Page Read",
             "default": 10
           },
@@ -5598,8 +7291,8 @@
           },
           "anchor_size": {
             "type": "integer",
-            "maximum": 1000.0,
-            "minimum": 10.0,
+            "maximum": 1000,
+            "minimum": 10,
             "title": "Anchor Size",
             "default": 100
           },
@@ -5617,8 +7310,8 @@
           },
           "total_results_per_keyword": {
             "type": "integer",
-            "maximum": 30.0,
-            "minimum": 10.0,
+            "maximum": 30,
+            "minimum": 10,
             "title": "Total Results Per Keyword",
             "default": 10
           },
@@ -5650,8 +7343,8 @@
           },
           "total_results_per_keyword": {
             "type": "integer",
-            "maximum": 100.0,
-            "minimum": 1.0,
+            "maximum": 100,
+            "minimum": 1,
             "title": "Total Results Per Keyword",
             "default": 5
           },
@@ -5962,6 +7655,22 @@
           "name"
         ],
         "title": "TemplateCreate"
+      },
+      "ToolResultsRequest": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/ClientToolResult"
+            },
+            "type": "array",
+            "title": "Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "results"
+        ],
+        "title": "ToolResultsRequest"
       },
       "ToolTestExecuteRequest": {
         "properties": {

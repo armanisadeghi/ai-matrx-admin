@@ -5,6 +5,8 @@
  * Keeps snake_case naming for compatibility with Python backend
  */
 
+import { LLM_PARAMS_KEYS } from '@/types/python-generated/llm-enums';
+
 export interface ControlDefinition {
     type: 'number' | 'integer' | 'boolean' | 'string' | 'enum' | 'array' | 'string_array' | 'object_array';
     min?: number;
@@ -151,19 +153,18 @@ export function useModelControls(models: any[], selectedModelId: string) {
         unmappedControls: {},
     };
 
-    // Known control keys we handle
-    const knownKeys = new Set([
-        'temperature', 'max_tokens', 'max_output_tokens', 'top_p', 'top_k',
-        'thinking_budget', 'include_thoughts', 'internal_url_context',
-        'reasoning_effort', 'verbosity', 'reasoning_summary', 'output_format', 'tool_choice',
-        'stop_sequences', 'tools', 'stream', 'store',
-        'file_urls', 'image_urls', 'internal_web_search', 'parallel_tool_calls', 'youtube_videos',
-        // TTS model controls
-        'tts_voice', 'audio_format', 'multi_speaker',
-        // Image/Video model controls
-        'n', 'seed', 'steps', 'width', 'height', 'guidance_scale', 'negative_prompt',
-        'response_format', 'fps', 'seconds', 'output_quality', 'image_loras',
-        'frame_images', 'reference_images', 'disable_safety_checker'
+    // LLM_PARAMS_KEYS is type-checked against the generated LLMParams schema.
+    // Frontend-only keys (not in LLMParams) are listed separately.
+    const knownKeys = new Set<string>([
+        ...LLM_PARAMS_KEYS,
+        // Legacy DB keys — normalizer converts these at the Redux boundary,
+        // but we still recognise them here for any un-normalised controls data.
+        'max_tokens', 'output_format', 'n',
+        // Frontend-only UI capability flags (never sent to the API)
+        'tools', 'file_urls', 'image_urls', 'youtube_videos', 'multi_speaker',
+        // Backend param not yet in generated types — move to LLM_PARAMS_KEYS
+        // after next `pnpm update-api-types`
+        'image_loras',
     ]);
 
     // Parse each control

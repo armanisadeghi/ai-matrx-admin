@@ -10,28 +10,28 @@
  */
 
 // ── Top-level wrapper ────────────────────────────────────────────────────────
-export { UnifiedChatWrapper } from '@/components/conversation/UnifiedChatWrapper';
-export type { UnifiedChatWrapperProps } from '@/components/conversation/UnifiedChatWrapper';
+export { UnifiedChatWrapper } from '@/features/cx-conversation/UnifiedChatWrapper';
+export type { UnifiedChatWrapperProps } from '@/features/cx-conversation/UnifiedChatWrapper';
 
 // ── Shell & Layout ───────────────────────────────────────────────────────────
-export { ConversationShell } from '@/components/conversation/ConversationShell';
-export type { ConversationShellProps } from '@/components/conversation/ConversationShell';
+export { ConversationShell } from '@/features/cx-conversation/ConversationShell';
+export type { ConversationShellProps } from '@/features/cx-conversation/ConversationShell';
 
 // ── Input ────────────────────────────────────────────────────────────────────
-export { ConversationInput } from '@/components/conversation/ConversationInput';
-export type { ConversationInputProps } from '@/components/conversation/ConversationInput';
+export { ConversationInput } from '@/features/cx-conversation/ConversationInput';
+export type { ConversationInputProps } from '@/features/cx-conversation/ConversationInput';
 
 // ── Messages ─────────────────────────────────────────────────────────────────
-export { MessageList } from '@/components/conversation/MessageList';
-export { AssistantMessage } from '@/components/conversation/AssistantMessage';
-export type { AssistantMessageProps } from '@/components/conversation/AssistantMessage';
-export { UserMessage } from '@/components/conversation/UserMessage';
-export { MessageErrorBoundary } from '@/components/conversation/MessageErrorBoundary';
-export { StreamingContentBlocks } from '@/components/conversation/StreamingContentBlocks';
+export { MessageList } from '@/features/cx-conversation/MessageList';
+export { AssistantMessage } from '@/features/cx-conversation/AssistantMessage';
+export type { AssistantMessageProps } from '@/features/cx-conversation/AssistantMessage';
+export { UserMessage } from '@/features/cx-conversation/UserMessage';
+export { MessageErrorBoundary } from '@/features/cx-conversation/MessageErrorBoundary';
+export { StreamingContentBlocks } from '@/features/cx-conversation/StreamingContentBlocks';
 
 // ── Tool visualization ───────────────────────────────────────────────────────
-export { default as ToolCallVisualization } from '@/components/conversation/ToolCallVisualization';
+export { default as ToolCallVisualization } from '@/features/cx-conversation/ToolCallVisualization';
 
 // ── Menus ────────────────────────────────────────────────────────────────────
-export { default as MessageOptionsMenu } from '@/components/conversation/MessageOptionsMenu';
-export type { MessageOptionsMenuProps } from '@/components/conversation/MessageOptionsMenu';
+export { default as MessageOptionsMenu } from '@/features/cx-conversation/MessageOptionsMenu';
+export type { MessageOptionsMenuProps } from '@/features/cx-conversation/MessageOptionsMenu';

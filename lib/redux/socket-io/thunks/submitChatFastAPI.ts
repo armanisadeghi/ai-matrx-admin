@@ -28,6 +28,7 @@ import type {
   StatusUpdatePayload,
   StreamEvent,
 } from '@/types/python-generated/stream-events';
+import type { ChatRequestBody } from '@/lib/api/types';
 
 import {
   addResponse,
@@ -61,10 +62,12 @@ interface SubmitChatPayload {
 /**
  * Fields the POST /api/ai/chat endpoint actually accepts.
  * Anything NOT in this set is stripped from the request to prevent 422 errors.
- * conversation_id is optional in the body (omit for new, include for existing).
- * is_new_conversation has been removed entirely.
+ *
+ * Type-checked: if ChatRequestBody adds/removes a field, TypeScript will error
+ * here because the satisfies clause enforces that every key in this array is a
+ * valid ChatRequestBody key.
  */
-const UNIFIED_API_ALLOWED_FIELDS = new Set([
+const CHAT_REQUEST_FIELDS = [
   'ai_model_id',
   'messages',
   'conversation_id',
@@ -93,7 +96,30 @@ const UNIFIED_API_ALLOWED_FIELDS = new Set([
   'metadata',
   'tts_voice',
   'audio_format',
-]);
+  'model',
+  'verbosity',
+  'size',
+  'quality',
+  'count',
+  'seconds',
+  'fps',
+  'steps',
+  'seed',
+  'guidance_scale',
+  'output_quality',
+  'negative_prompt',
+  'output_format',
+  'width',
+  'height',
+  'frame_images',
+  'reference_images',
+  'disable_safety_checker',
+  'config_overrides',
+  'client_tools',
+  'ide_state',
+] as const satisfies readonly (keyof ChatRequestBody)[];
+
+const UNIFIED_API_ALLOWED_FIELDS = new Set<string>(CHAT_REQUEST_FIELDS);
 
 /**
  * The backend expects response_format as Dict[str, Any] | null.
@@ -149,23 +175,16 @@ function transformChatConfigToUnifiedBody(
     body.ai_model_id = chatConfig.ai_model_id;
   }
 
-  // Rename max_tokens -> max_output_tokens
+  // Safety net: normalizer should have already converted these at the Redux boundary.
   if (chatConfig.max_tokens !== undefined) {
-    console.warn(
-      `%c⚠️ FASTAPI MIGRATION [${callerContext}]: Caller is passing "max_tokens" — rename to "max_output_tokens" at the source.`,
-      'font-weight: bold; color: orange; font-size: 14px;',
-    );
+    console.debug(`[${callerContext}] Legacy "max_tokens" detected — converting to "max_output_tokens"`);
     body.max_output_tokens = chatConfig.max_tokens;
   }
 
-  // Rename output_format -> response_format AND normalize string -> dict
   const rawFormat = chatConfig.output_format ?? chatConfig.response_format;
   if (rawFormat !== undefined) {
     if (chatConfig.output_format !== undefined) {
-      console.warn(
-        `%c⚠️ FASTAPI MIGRATION [${callerContext}]: Caller is passing "output_format" — rename to "response_format" at the source.`,
-        'font-weight: bold; color: orange; font-size: 14px;',
-      );
+      console.debug(`[${callerContext}] Legacy "output_format" detected — converting to "response_format"`);
     }
     const normalized = normalizeResponseFormat(rawFormat);
     if (normalized !== null) {

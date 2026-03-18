@@ -36,17 +36,7 @@ export interface StatusUpdatePayload {
   metadata?: Record<string, unknown> | null;
 }
 
-export interface AudioOutputPayload {
-  type: "audio_output";
-  url: string;
-  mime_type: string;
-}
-
 export interface DataPayload {
-  type?: string;
-  url?: string;
-  mime_type?: string;
-  [key: string]: unknown;
 }
 
 export interface CompletionPayload {
@@ -69,7 +59,7 @@ export interface ErrorPayload {
 }
 
 export interface ToolEventPayload {
-  event: "tool_started" | "tool_progress" | "tool_step" | "tool_result_preview" | "tool_completed" | "tool_error";
+  event: "tool_started" | "tool_progress" | "tool_step" | "tool_result_preview" | "tool_completed" | "tool_error" | "tool_delegated";
   call_id: string;
   tool_name: string;
   timestamp?: number;
@@ -210,9 +200,4 @@ export function isEndEvent(e: StreamEvent): e is { event: "end"; data: EndPayloa
 
 export function isContentBlockEvent(e: StreamEvent): e is { event: "content_block"; data: ContentBlockPayload } {
   return e.event === "content_block";
-}
-
-/** Returns true if any event in the array is a content_block event (new server-processing protocol). */
-export function isNewProtocol(events: StreamEvent[]): boolean {
-  return events.some(e => e.event === "content_block");
 }

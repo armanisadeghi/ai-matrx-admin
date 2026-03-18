@@ -6,30 +6,17 @@ import { normalizePromptData, UniversalPromptData } from '../types';
 import { toast } from 'sonner';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 import { updatePromptBuiltin } from '@/features/prompt-builtins/services/admin-service';
+import { useModels } from '@/hooks/useModels';
 
 interface BuiltinEditorProps {
-    /** Builtin ID to edit */
     builtinId: string;
-    
-    /** Whether the editor is open */
     isOpen: boolean;
-    
-    /** Callback when editor closes */
     onClose: () => void;
-    
-    /** Optional callback after successful save */
     onSaveSuccess?: () => void;
-    
-    /** Optional initial selection in editor */
     initialSelection?: any;
-    
-    /** Optional pre-loaded data (skips loading from API) */
     builtinData?: any;
-    
-    /** Optional pre-loaded models */
+    /** @deprecated Pass nothing — models come from Redux automatically */
     models?: any[];
-    
-    /** Optional pre-loaded tools */
     tools?: any[];
 }
 
@@ -56,18 +43,15 @@ export function BuiltinEditor({
     onSaveSuccess,
     initialSelection,
     builtinData: preloadedBuiltinData,
-    models: preloadedModels,
     tools: preloadedTools,
 }: BuiltinEditorProps) {
+    const { models } = useModels();
     const [builtinData, setBuiltinData] = useState<UniversalPromptData | null>(null);
-    const [models, setModels] = useState<any[]>(preloadedModels || []);
     const [tools, setTools] = useState<any[]>(preloadedTools || []);
     const [loading, setLoading] = useState(!preloadedBuiltinData);
     const [isSaving, setIsSaving] = useState(false);
     const initializedForId = useRef<string | null>(null);
 
-    // Initialize data when modal opens — only once per builtin ID to prevent
-    // parent re-renders from resetting editor state and isDirty flag
     useEffect(() => {
         if (isOpen && builtinId && initializedForId.current !== builtinId) {
             initializedForId.current = builtinId;
@@ -87,14 +71,11 @@ export function BuiltinEditor({
         try {
             setLoading(true);
 
-            // Load in parallel
-            const [modelsRes, toolsRes, builtinRes] = await Promise.all([
-                fetch('/api/ai-models').then(r => r.json()).catch(() => ({ models: [] })),
+            const [toolsRes, builtinRes] = await Promise.all([
                 fetch('/api/tools').then(r => r.json()).catch(() => ({ tools: [] })),
                 fetch(`/api/admin/prompt-builtins/${builtinId}`).then(r => r.json()),
             ]);
 
-            setModels(modelsRes?.models || []);
             setTools(toolsRes?.tools || []);
 
             if (builtinRes && !builtinRes.error) {
