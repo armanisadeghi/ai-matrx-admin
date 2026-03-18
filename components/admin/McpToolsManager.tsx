@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useTools } from "@/hooks/useTools";
+import { supabase } from "@/utils/supabase/client";
 import { mapIcon } from "@/utils/icons/icon-mapper";
 import { formatText } from "@/utils/text/text-case-converter";
 
@@ -54,32 +55,38 @@ interface Tool {
     updated_at?: string;
 }
 
+/** tool_name → sample count, ui component count */
+interface ToolCounts {
+    sampleCount: number;
+    uiComponentCount: number;
+}
+
 /** Extracts the top-level module/app name from a dotted function_path (e.g. "myapp.module.fn" → "myapp") */
 function sourceAppFromPath(functionPath: string): string {
     if (!functionPath) return "unknown";
     return functionPath.split(".")[0] || "unknown";
 }
 
-function hasParams(tool: Tool): boolean {
-    if (!tool.parameters) return false;
-    const p = tool.parameters as Record<string, unknown>;
-    const props = p.properties as Record<string, unknown> | undefined;
-    return !!(props && Object.keys(props).length > 0);
-}
-
 function hasOutputSchema(tool: Tool): boolean {
     if (!tool.output_schema) return false;
-    const o = tool.output_schema as Record<string, unknown>;
-    return Object.keys(o).length > 0;
+    return Object.keys(tool.output_schema).length > 0;
 }
 
 function hasAnnotations(tool: Tool): boolean {
     return Array.isArray(tool.annotations) && tool.annotations.length > 0;
 }
 
-function isTestReady(tool: Tool): boolean {
-    return hasParams(tool) && hasOutputSchema(tool) && hasAnnotations(tool);
-}
+type TestFilter =
+    | "all"
+    | "fully_ready"
+    | "has_samples"
+    | "no_samples"
+    | "has_ui"
+    | "no_ui"
+    | "has_output_schema"
+    | "no_output_schema"
+    | "has_annotations"
+    | "no_annotations";
 
 export function McpToolsManager() {
     const router = useRouter();
@@ -88,12 +95,13 @@ export function McpToolsManager() {
     const { toast } = useToast();
 
     const [tools, setTools] = useState<Tool[]>([]);
+    const [toolCounts, setToolCounts] = useState<Record<string, ToolCounts>>({});
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState<string>("all");
     const [selectedSourceApp, setSelectedSourceApp] = useState<string>("all");
     const [selectedStatus, setSelectedStatus] = useState<"all" | "active" | "inactive">("all");
     const [selectedTag, setSelectedTag] = useState<string>("all");
-    const [selectedTestReady, setSelectedTestReady] = useState<"all" | "ready" | "missing_params" | "missing_output" | "missing_annotations">("all");
+    const [selectedTestFilter, setSelectedTestFilter] = useState<TestFilter>("all");
     const [deleteConfirmation, setDeleteConfirmation] = useState<{
         isOpen: boolean;
         toolId: string | null;
@@ -102,6 +110,39 @@ export function McpToolsManager() {
 
     useEffect(() => {
         setTools(databaseTools.map(tool => ({ ...tool })));
+    }, [databaseTools]);
+
+    // Fetch sample + UI component counts for all tools in one go
+    useEffect(() => {
+        if (databaseTools.length === 0) return;
+        const toolNames = databaseTools.map(t => t.name);
+
+        async function fetchCounts() {
+            const [samplesRes, uiRes] = await Promise.all([
+                supabase
+                    .from("tool_test_samples")
+                    .select("tool_name")
+                    .in("tool_name", toolNames),
+                supabase
+                    .from("tool_ui_components")
+                    .select("tool_name")
+                    .in("tool_name", toolNames),
+            ]);
+
+            const counts: Record<string, ToolCounts> = {};
+            for (const name of toolNames) {
+                counts[name] = { sampleCount: 0, uiComponentCount: 0 };
+            }
+            for (const row of samplesRes.data ?? []) {
+                if (counts[row.tool_name]) counts[row.tool_name].sampleCount++;
+            }
+            for (const row of uiRes.data ?? []) {
+                if (counts[row.tool_name]) counts[row.tool_name].uiComponentCount++;
+            }
+            setToolCounts(counts);
+        }
+
+        fetchCounts().catch(console.error);
     }, [databaseTools]);
 
     const categories = React.useMemo(() => {
@@ -125,7 +166,7 @@ export function McpToolsManager() {
         selectedSourceApp !== "all",
         selectedStatus !== "all",
         selectedTag !== "all",
-        selectedTestReady !== "all",
+        selectedTestFilter !== "all",
     ].filter(Boolean).length;
 
     const clearFilters = () => {
@@ -133,7 +174,7 @@ export function McpToolsManager() {
         setSelectedSourceApp("all");
         setSelectedStatus("all");
         setSelectedTag("all");
-        setSelectedTestReady("all");
+        setSelectedTestFilter("all");
         setSearchQuery("");
     };
 
@@ -151,15 +192,29 @@ export function McpToolsManager() {
                 (selectedStatus === "active" && tool.is_active) ||
                 (selectedStatus === "inactive" && !tool.is_active);
             const matchesTag = selectedTag === "all" || tool.tags?.includes(selectedTag);
-            const matchesTestReady =
-                selectedTestReady === "all" ||
-                (selectedTestReady === "ready" && isTestReady(tool)) ||
-                (selectedTestReady === "missing_params" && !hasParams(tool)) ||
-                (selectedTestReady === "missing_output" && !hasOutputSchema(tool)) ||
-                (selectedTestReady === "missing_annotations" && !hasAnnotations(tool));
-            return matchesSearch && matchesCategory && matchesSourceApp && matchesStatus && matchesTag && matchesTestReady;
+
+            const counts = toolCounts[tool.name] ?? { sampleCount: 0, uiComponentCount: 0 };
+            const hasSamples = counts.sampleCount > 0;
+            const hasUi = counts.uiComponentCount > 0;
+            const hasOutput = hasOutputSchema(tool);
+            const hasAnn = hasAnnotations(tool);
+            const fullyReady = hasSamples && hasUi && hasOutput && hasAnn;
+
+            const matchesTest =
+                selectedTestFilter === "all" ||
+                (selectedTestFilter === "fully_ready" && fullyReady) ||
+                (selectedTestFilter === "has_samples" && hasSamples) ||
+                (selectedTestFilter === "no_samples" && !hasSamples) ||
+                (selectedTestFilter === "has_ui" && hasUi) ||
+                (selectedTestFilter === "no_ui" && !hasUi) ||
+                (selectedTestFilter === "has_output_schema" && hasOutput) ||
+                (selectedTestFilter === "no_output_schema" && !hasOutput) ||
+                (selectedTestFilter === "has_annotations" && hasAnn) ||
+                (selectedTestFilter === "no_annotations" && !hasAnn);
+
+            return matchesSearch && matchesCategory && matchesSourceApp && matchesStatus && matchesTag && matchesTest;
         });
-    }, [tools, searchQuery, selectedCategory, selectedSourceApp, selectedStatus, selectedTag, selectedTestReady]);
+    }, [tools, toolCounts, searchQuery, selectedCategory, selectedSourceApp, selectedStatus, selectedTag, selectedTestFilter]);
 
     const navigateTo = (path: string) => {
         startTransition(() => router.push(path));
@@ -317,17 +372,22 @@ export function McpToolsManager() {
                     </Select>
                 )}
 
-                <Select value={selectedTestReady} onValueChange={v => setSelectedTestReady(v as typeof selectedTestReady)}>
-                    <SelectTrigger className={`h-8 w-44 text-xs ${selectedTestReady !== "all" ? "border-primary text-primary" : ""}`}>
+                <Select value={selectedTestFilter} onValueChange={v => setSelectedTestFilter(v as TestFilter)}>
+                    <SelectTrigger className={`h-8 w-48 text-xs ${selectedTestFilter !== "all" ? "border-primary text-primary" : ""}`}>
                         <TestTube2 className="h-3 w-3 mr-1 flex-shrink-0" />
                         <SelectValue placeholder="Test Readiness" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all" className="text-xs">All Tools</SelectItem>
-                        <SelectItem value="ready" className="text-xs">Test Ready (all 3)</SelectItem>
-                        <SelectItem value="missing_params" className="text-xs">Missing Parameters</SelectItem>
-                        <SelectItem value="missing_output" className="text-xs">Missing Output Schema</SelectItem>
-                        <SelectItem value="missing_annotations" className="text-xs">Missing Annotations</SelectItem>
+                        <SelectItem value="fully_ready" className="text-xs">Fully Ready (all 4)</SelectItem>
+                        <SelectItem value="has_samples" className="text-xs">Has Samples</SelectItem>
+                        <SelectItem value="no_samples" className="text-xs">Missing Samples</SelectItem>
+                        <SelectItem value="has_ui" className="text-xs">Has UI Component</SelectItem>
+                        <SelectItem value="no_ui" className="text-xs">Missing UI Component</SelectItem>
+                        <SelectItem value="has_output_schema" className="text-xs">Has Output Schema</SelectItem>
+                        <SelectItem value="no_output_schema" className="text-xs">Missing Output Schema</SelectItem>
+                        <SelectItem value="has_annotations" className="text-xs">Has Annotations</SelectItem>
+                        <SelectItem value="no_annotations" className="text-xs">Missing Annotations</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -336,11 +396,14 @@ export function McpToolsManager() {
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                 <span><span className="font-semibold text-foreground">{filteredTools.length}</span> of {tools.length} tools</span>
                 <span><span className="font-semibold text-success">{filteredTools.filter(t => t.is_active).length}</span> active</span>
-                <span><span className="font-semibold text-muted-foreground">{filteredTools.filter(t => !t.is_active).length}</span> inactive</span>
                 <span className="border-l border-border pl-4">
-                    <span className="font-semibold text-info">{filteredTools.filter(isTestReady).length}</span> test ready
+                    <span className="font-semibold text-info">{filteredTools.filter(t => {
+                        const c = toolCounts[t.name] ?? { sampleCount: 0, uiComponentCount: 0 };
+                        return c.sampleCount > 0 && c.uiComponentCount > 0 && hasOutputSchema(t) && hasAnnotations(t);
+                    }).length}</span> fully ready
                 </span>
-                <span><span className="font-semibold text-warning">{filteredTools.filter(t => !hasParams(t)).length}</span> no params</span>
+                <span><span className="font-semibold text-success">{filteredTools.filter(t => (toolCounts[t.name]?.sampleCount ?? 0) > 0).length}</span> w/ samples</span>
+                <span><span className="font-semibold text-success">{filteredTools.filter(t => (toolCounts[t.name]?.uiComponentCount ?? 0) > 0).length}</span> w/ UI</span>
                 <span><span className="font-semibold text-warning">{filteredTools.filter(t => !hasOutputSchema(t)).length}</span> no output schema</span>
                 <span><span className="font-semibold text-warning">{filteredTools.filter(t => !hasAnnotations(t)).length}</span> no annotations</span>
             </div>
@@ -357,6 +420,7 @@ export function McpToolsManager() {
                         <ToolListItem
                             key={tool.id}
                             tool={tool}
+                            counts={toolCounts[tool.name] ?? { sampleCount: 0, uiComponentCount: 0 }}
                             isPending={isPending}
                             onSelect={() => navigateTo(`/administration/mcp-tools/${tool.id}`)}
                             onEdit={(e) => { e.stopPropagation(); navigateTo(`/administration/mcp-tools/${tool.id}/edit`); }}
@@ -395,6 +459,7 @@ export function McpToolsManager() {
 
 interface ToolListItemProps {
     tool: Tool;
+    counts: ToolCounts;
     isPending: boolean;
     onSelect: () => void;
     onEdit: (e: React.MouseEvent) => void;
@@ -405,13 +470,14 @@ interface ToolListItemProps {
     onViewIncidents: (e: React.MouseEvent) => void;
 }
 
-function ToolListItem({ tool, isPending, onSelect, onEdit, onDelete, onToggleActive, onGenerateUi, onViewSamples, onViewIncidents }: ToolListItemProps) {
+function ToolListItem({ tool, counts, isPending, onSelect, onEdit, onDelete, onToggleActive, onGenerateUi, onViewSamples, onViewIncidents }: ToolListItemProps) {
     const icon = mapIcon(tool.icon, tool.category, 16);
     const sourceApp = sourceAppFromPath(tool.function_path);
-    const toolHasParams = hasParams(tool);
     const toolHasOutput = hasOutputSchema(tool);
     const toolHasAnnotations = hasAnnotations(tool);
-    const toolIsReady = toolHasParams && toolHasOutput && toolHasAnnotations;
+    const toolHasSamples = counts.sampleCount > 0;
+    const toolHasUi = counts.uiComponentCount > 0;
+    const toolIsReady = toolHasOutput && toolHasAnnotations && toolHasSamples && toolHasUi;
 
     return (
         // Use div + role="button" so Switch (a <button>) can be nested without hydration error
@@ -443,15 +509,18 @@ function ToolListItem({ tool, isPending, onSelect, onEdit, onDelete, onToggleAct
                         )}
                         {toolIsReady ? (
                             <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-success/50 text-success bg-success/10">
-                                test ready
+                                fully ready
                             </Badge>
                         ) : (
-                            <span className="flex items-center gap-0.5">
-                                {!toolHasParams && (
-                                    <span title="Missing parameters" className="text-[10px] px-1 py-0 rounded bg-warning/10 text-warning border border-warning/30">no params</span>
-                                )}
+                            <span className="flex items-center gap-1 flex-wrap">
+                                <span title={toolHasSamples ? `${counts.sampleCount} sample(s)` : "No test samples"} className={`text-[10px] px-1 py-0 rounded border ${toolHasSamples ? "bg-success/10 text-success border-success/30" : "bg-warning/10 text-warning border-warning/30"}`}>
+                                    {toolHasSamples ? `${counts.sampleCount} sample${counts.sampleCount !== 1 ? "s" : ""}` : "no samples"}
+                                </span>
+                                <span title={toolHasUi ? "Has UI component" : "No UI component"} className={`text-[10px] px-1 py-0 rounded border ${toolHasUi ? "bg-success/10 text-success border-success/30" : "bg-warning/10 text-warning border-warning/30"}`}>
+                                    {toolHasUi ? "UI ✓" : "no UI"}
+                                </span>
                                 {!toolHasOutput && (
-                                    <span title="Missing output schema" className="text-[10px] px-1 py-0 rounded bg-warning/10 text-warning border border-warning/30">no output</span>
+                                    <span title="Missing output schema" className="text-[10px] px-1 py-0 rounded bg-warning/10 text-warning border border-warning/30">no output schema</span>
                                 )}
                                 {!toolHasAnnotations && (
                                     <span title="Missing annotations" className="text-[10px] px-1 py-0 rounded bg-warning/10 text-warning border border-warning/30">no annotations</span>

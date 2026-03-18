@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useTransition } from "react";
+import React, { useTransition, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Wand2, Paintbrush, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { ToolUiComponentGenerator } from "@/components/admin/ToolUiComponentGene
 import { ToolUiComponentEditor } from "@/components/admin/ToolUiComponentEditor";
 import { ToolComponentPreview } from "@/components/admin/mcp-tools/ToolComponentPreview";
 import { formatText } from "@/utils/text/text-case-converter";
+import { invalidateCachedRenderer } from "@/lib/tool-renderers/dynamic";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -53,10 +54,17 @@ export function ToolUiPage({ tool }: Props) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const { toast } = useToast();
+    const [previewKey, setPreviewKey] = useState(0);
 
     const navigateTo = (path: string) => {
         startTransition(() => router.push(path));
     };
+
+    /** Bust the in-memory renderer cache and force the preview to remount. */
+    const invalidateAndRefreshPreview = useCallback(() => {
+        invalidateCachedRenderer(tool.name);
+        setPreviewKey(k => k + 1);
+    }, [tool.name]);
 
     const handleSaveRevision = async (component: GeneratedComponent) => {
         // Check if a component already exists to decide PUT vs POST
@@ -102,6 +110,9 @@ export function ToolUiPage({ tool }: Props) {
             } catch { /* body not JSON */ }
             throw Object.assign(new Error(errMsg), { detail: errDetail });
         }
+
+        // Bust the renderer cache so the preview shows the fresh component
+        invalidateAndRefreshPreview();
     };
 
     return (
@@ -149,6 +160,7 @@ export function ToolUiPage({ tool }: Props) {
                         {/* Preview + AI revision tab */}
                         <TabsContent value="preview" className="p-6 m-0">
                             <ToolComponentPreview
+                                key={previewKey}
                                 tool={tool}
                                 onSaveRevision={handleSaveRevision}
                             />
@@ -160,6 +172,7 @@ export function ToolUiPage({ tool }: Props) {
                                 tools={[tool]}
                                 preselectedToolName={tool.name}
                                 onComplete={() => {
+                                    invalidateAndRefreshPreview();
                                     toast({
                                         title: "Component generated",
                                         description: "Switch to the Preview tab to test it.",
@@ -173,9 +186,10 @@ export function ToolUiPage({ tool }: Props) {
                             <ToolUiComponentEditor
                                 toolName={tool.name}
                                 toolId={tool.id}
-                                onSaved={() =>
-                                    toast({ title: "Saved", description: "Switch to Preview to test the updated component." })
-                                }
+                                onSaved={() => {
+                                    invalidateAndRefreshPreview();
+                                    toast({ title: "Saved", description: "Switch to Preview to test the updated component." });
+                                }}
                             />
                         </TabsContent>
                     </div>
