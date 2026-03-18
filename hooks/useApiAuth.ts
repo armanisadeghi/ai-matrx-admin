@@ -2,7 +2,7 @@
 // Centralized hook for API authentication headers
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
     selectAccessToken,
@@ -44,9 +44,17 @@ export function useApiAuth() {
     const authReady = useSelector(selectAuthReady);
     const isAuthenticated = useSelector(selectIsAuthenticated);
     const isAdmin = useSelector(selectIsAdmin);
-    
-    // Track if we're currently fetching fingerprint (for waitForAuth)
-    const [isFetching, setIsFetching] = useState(false);
+
+    // Live refs so async loops always read current Redux state, not stale closures
+    const accessTokenRef = useRef(accessToken);
+    const fingerprintIdRef = useRef(fingerprintId);
+    const authReadyRef = useRef(authReady);
+    useEffect(() => { accessTokenRef.current = accessToken; }, [accessToken]);
+    useEffect(() => { fingerprintIdRef.current = fingerprintId; }, [fingerprintId]);
+    useEffect(() => { authReadyRef.current = authReady; }, [authReady]);
+
+    // Shared promise so concurrent waitForAuth calls all resolve together
+    const fingerprintFetchPromiseRef = useRef<Promise<boolean> | null>(null);
 
     /**
      * Get headers for API requests.
@@ -58,10 +66,8 @@ export function useApiAuth() {
         };
 
         if (accessToken) {
-            // Authenticated user - use JWT token
             headers['Authorization'] = `Bearer ${accessToken}`;
         } else if (fingerprintId) {
-            // Guest user - use fingerprint
             headers['X-Fingerprint-ID'] = fingerprintId;
         }
 
@@ -70,54 +76,50 @@ export function useApiAuth() {
 
     /**
      * Wait for authentication to be ready.
-     * If auth isn't ready yet (rare - user is very fast), this will:
-     * 1. Wait a short time for the normal auth flow
-     * 2. If still not ready, fetch fingerprint directly
-     * 
-     * Returns true when auth is ready.
+     * Uses refs so the async polling loop always sees current Redux state.
+     * Concurrent calls share a single fingerprint-fetch promise to avoid races.
+     * Always returns true — falls back to a temporary fingerprint as last resort.
      */
     const waitForAuth = useCallback(async (): Promise<boolean> => {
-        // Already ready
-        if (authReady && (accessToken || fingerprintId)) {
+        // Fast path: already ready
+        if (authReadyRef.current && (accessTokenRef.current || fingerprintIdRef.current)) {
             return true;
         }
 
-        // Wait for the normal auth flow (max 500ms)
-        const maxWait = 500;
+        // Poll for up to 800ms, reading live refs on each tick
+        const maxWait = 800;
         const checkInterval = 50;
         let waited = 0;
 
         while (waited < maxWait) {
             await new Promise(resolve => setTimeout(resolve, checkInterval));
             waited += checkInterval;
-            
-            // Check if auth became ready
-            if (authReady || accessToken || fingerprintId) {
+            if (authReadyRef.current || accessTokenRef.current || fingerprintIdRef.current) {
                 return true;
             }
         }
 
-        // Auth flow didn't complete in time - fetch fingerprint directly
-        if (!isFetching && !accessToken && !fingerprintId) {
-            setIsFetching(true);
-            try {
-                const fp = await getFingerprint();
-                dispatch(setFingerprintId(fp));
-                return true;
-            } catch (error) {
-                console.error('Failed to get fingerprint:', error);
-                // Create temporary fingerprint as last resort
-                const tempFp = `temp_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-                dispatch(setFingerprintId(tempFp));
-                return true;
-            } finally {
-                setIsFetching(false);
-            }
+        // Auth flow didn't complete in time — fetch fingerprint directly.
+        // Share a single in-flight promise so concurrent callers don't race.
+        if (!fingerprintFetchPromiseRef.current) {
+            fingerprintFetchPromiseRef.current = (async () => {
+                try {
+                    const fp = await getFingerprint();
+                    dispatch(setFingerprintId(fp));
+                    return true;
+                } catch (error) {
+                    console.error('Failed to get fingerprint:', error);
+                    const tempFp = `temp_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+                    dispatch(setFingerprintId(tempFp));
+                    return true;
+                } finally {
+                    fingerprintFetchPromiseRef.current = null;
+                }
+            })();
         }
 
-        // Return current ready state
-        return !!(accessToken || fingerprintId);
-    }, [authReady, accessToken, fingerprintId, isFetching, dispatch]);
+        return fingerprintFetchPromiseRef.current;
+    }, [dispatch]);
 
     /**
      * Check if auth is ready (has either token or fingerprint).
