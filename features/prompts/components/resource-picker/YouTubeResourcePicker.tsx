@@ -22,14 +22,43 @@ type YouTubeVideo = {
 
 // Extract YouTube video ID from various URL formats
 function extractVideoId(url: string): string | null {
+    const trimmed = url.trim();
+
+    // Try URL parsing first (handles all query param formats robustly)
+    try {
+        // Normalize: prepend https:// if no protocol
+        const normalized = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+        const urlObj = new URL(normalized);
+
+        if (urlObj.hostname.includes('youtu.be')) {
+            // youtu.be/VIDEO_ID?si=... — strip everything after the ID
+            return urlObj.pathname.slice(1).split('/')[0] || null;
+        }
+
+        if (urlObj.hostname.includes('youtube.com')) {
+            const v = urlObj.searchParams.get('v');
+            if (v) return v;
+
+            if (urlObj.pathname.startsWith('/embed/')) {
+                return urlObj.pathname.split('/embed/')[1].split('?')[0] || null;
+            }
+            if (urlObj.pathname.startsWith('/shorts/')) {
+                return urlObj.pathname.split('/shorts/')[1].split('?')[0] || null;
+            }
+        }
+    } catch {
+        // Fall through to regex fallback
+    }
+
+    // Regex fallback for edge cases
     const patterns = [
-        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
         /^([a-zA-Z0-9_-]{11})$/ // Direct video ID
     ];
 
     for (const pattern of patterns) {
-        const match = url.match(pattern);
-        if (match && match[1]) {
+        const match = trimmed.match(pattern);
+        if (match?.[1]) {
             return match[1];
         }
     }
@@ -139,20 +168,40 @@ export function YouTubeResourcePicker({ onBack, onSelect, initialUrl }: YouTubeR
     };
 
     const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-        // Get the pasted text from clipboard
         const pastedText = e.clipboardData.getData('text');
-        
-        // Update the state immediately
         setUrl(pastedText);
-        
-        // Auto-validate after state has been set
+
+        // Validate using pastedText directly to avoid stale closure on url state
         setTimeout(() => {
-            handleValidate();
-        }, 150);
+            setError(null);
+            setVideoPreview(null);
+
+            const videoId = extractVideoId(pastedText.trim());
+            if (!videoId) {
+                setError("Invalid YouTube URL. Please enter a valid YouTube video link.");
+                return;
+            }
+
+            setIsValidating(true);
+            fetchVideoInfo(videoId).then((info) => {
+                const video: YouTubeVideo = {
+                    url: `https://www.youtube.com/watch?v=${videoId}`,
+                    videoId,
+                    title: info.title || 'YouTube Video',
+                    thumbnail: getThumbnailUrl(videoId),
+                    channelName: info.channelName,
+                };
+                setVideoPreview(video);
+            }).catch(() => {
+                setError("Could not fetch video information. The video might be private or unavailable.");
+            }).finally(() => {
+                setIsValidating(false);
+            });
+        }, 50);
     };
 
     return (
-        <div className="flex flex-col h-[450px]">
+        <div className="flex flex-col max-h-[min(460px,70dvh)]">
             {/* Header */}
             <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                 <Button
@@ -168,7 +217,7 @@ export function YouTubeResourcePicker({ onBack, onSelect, initialUrl }: YouTubeR
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-3">
+            <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3">
                 <div className="space-y-2">
                     <div className="flex gap-2">
                         <Input

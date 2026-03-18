@@ -22,33 +22,36 @@ interface WebpageResourcePickerProps {
     initialUrl?: string;
 }
 
-// Detect URL type
-function detectUrlType(url: string): 'youtube' | 'image' | 'file' | 'webpage' | null {
+// Normalize a URL by prepending https:// if no protocol is present
+function normalizeUrl(url: string): string {
+    const trimmed = url.trim();
+    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+// Detect URL type — tolerates bare domains (no protocol)
+function detectUrlType(url: string): 'youtube' | 'image' | 'file' | 'webpage' {
     try {
-        const urlObj = new URL(url);
-        
-        // YouTube detection
+        const urlObj = new URL(normalizeUrl(url));
+
         if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
             return 'youtube';
         }
-        
-        // Image detection
+
         const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico'];
         const pathname = urlObj.pathname.toLowerCase();
         if (imageExtensions.some(ext => pathname.endsWith(ext))) {
             return 'image';
         }
-        
-        // File detection
+
         const fileExtensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.csv', '.json', '.xml', '.zip', '.md'];
         if (fileExtensions.some(ext => pathname.endsWith(ext))) {
             return 'file';
         }
-        
-        // Default to webpage
+
         return 'webpage';
     } catch {
-        return null;
+        // Couldn't parse even after normalization — still treat as webpage
+        return 'webpage';
     }
 }
 
@@ -68,8 +71,9 @@ export function WebpageResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
     // Auto-scrape if initialUrl is provided
     useEffect(() => {
         if (initialUrl && initialUrl.trim()) {
-            handleScrape();
+            handleScrape(initialUrl);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialUrl]);
 
     // Set edited content when data is loaded
@@ -79,31 +83,33 @@ export function WebpageResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
         }
     }, [data]);
 
-    const handleScrape = async () => {
-        if (!url.trim()) return;
-        
-        // Check URL type
-        const detectedType = detectUrlType(url.trim());
-        
+    const handleScrape = async (rawUrl?: string) => {
+        const target = rawUrl ?? url;
+        if (!target.trim()) return;
+
+        const normalized = normalizeUrl(target);
+        // Update displayed URL to the normalized version
+        setUrl(normalized);
+
+        const detectedType = detectUrlType(normalized);
+
         if (detectedType === 'youtube') {
             setSuggestedType('youtube');
             return;
         }
-        
         if (detectedType === 'image') {
             setSuggestedType('image_url');
             return;
         }
-        
         if (detectedType === 'file') {
             setSuggestedType('file_url');
             return;
         }
-        
+
         setSuggestedType(null);
-        
+
         try {
-            await scrapeUrl(url.trim());
+            await scrapeUrl(normalized);
             setShowPreview(true);
         } catch (err) {
             console.error('Scraping failed:', err);
@@ -141,24 +147,16 @@ export function WebpageResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
     };
 
     const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-        // Prevent default paste behavior to avoid duplication
         e.preventDefault();
-        
-        // Get the pasted text from clipboard
         const pastedText = e.clipboardData.getData('text');
-        
-        // Update the state immediately
         setUrl(pastedText);
-        
-        // Auto-scrape after state has been set
-        setTimeout(() => {
-            handleScrape();
-        }, 150);
+        // Pass pastedText directly to avoid stale url state closure
+        setTimeout(() => handleScrape(pastedText), 50);
     };
 
     return (
         <>
-            <div className="flex flex-col h-[450px]">
+            <div className="flex flex-col max-h-[min(460px,70dvh)]">
                 {/* Header */}
                 <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                     <Button
@@ -177,8 +175,8 @@ export function WebpageResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 flex flex-col overflow-hidden">
-                    <div className="flex-1 overflow-y-auto p-3">
+                <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+                    <div className="flex-1 min-h-0 overflow-y-auto p-3">
                         <div className="space-y-3">
                         {/* URL Input */}
                         <div className="space-y-2">
@@ -195,7 +193,7 @@ export function WebpageResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
                                     className="flex-1 text-xs h-8"
                                 />
                                 <Button
-                                    onClick={handleScrape}
+                                    onClick={() => handleScrape()}
                                     disabled={!url.trim() || isLoading}
                                     size="sm"
                                     className="h-8 w-8 p-0"

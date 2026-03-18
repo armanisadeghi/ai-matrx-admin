@@ -4,6 +4,7 @@ import React, { useState, useCallback } from "react";
 import { Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useDialogContainer } from "@/components/ui/dialog";
 import { ResourcePickerMenu } from "../resource-picker/ResourcePickerMenu";
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { selectAttachmentCapabilities } from '@/lib/redux/prompt-execution/selectors';
@@ -39,6 +40,7 @@ export function SmartResourcePickerButton({
 }: SmartResourcePickerButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dispatch = useAppDispatch();
+  const dialogContainer = useDialogContainer();
 
   // Get attachment capabilities from Redux
   const attachmentCapabilities = useAppSelector(state => 
@@ -61,7 +63,7 @@ export function SmartResourcePickerButton({
   }, [runId, dispatch]);
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen} modal={false}>
       <PopoverTrigger asChild>
         <Button 
           variant="ghost" 
@@ -74,10 +76,11 @@ export function SmartResourcePickerButton({
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-80 p-0 border-gray-300 dark:border-gray-700" 
+        className="w-80 p-0 border-gray-300 dark:border-gray-700 z-[200]" 
         align="start" 
         side="top"
         sideOffset={8}
+        container={dialogContainer}
       >
         <ResourcePickerMenu 
           onResourceSelected={handleResourceSelected}

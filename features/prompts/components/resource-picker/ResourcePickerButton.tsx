@@ -19,7 +19,7 @@ export function ResourcePickerButton({ onResourceSelected, attachmentCapabilitie
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <Popover open={isOpen} onOpenChange={setIsOpen} modal={false}>
             <PopoverTrigger asChild>
                 <Button 
                     variant="ghost" 
@@ -32,7 +32,7 @@ export function ResourcePickerButton({ onResourceSelected, attachmentCapabilitie
                 </Button>
             </PopoverTrigger>
             <PopoverContent 
-                className="w-80 p-0 border-gray-300 dark:border-gray-700" 
+                className="w-80 p-0 border-gray-300 dark:border-gray-700 z-[200]" 
                 align="start" 
                 side="top"
                 sideOffset={8}

@@ -13,29 +13,35 @@ interface PublicFileUrlPickerProps {
     initialUrl?: string;
 }
 
-// Detect URL type
-function detectUrlType(url: string): 'youtube' | 'image' | 'webpage' | 'file' | null {
+// Normalize a URL by prepending https:// if no protocol is present
+function normalizeUrl(url: string): string {
+    const trimmed = url.trim();
+    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+// Detect URL type — tolerates bare domains (no protocol)
+function detectUrlType(url: string): 'youtube' | 'image' | 'webpage' | 'file' {
     try {
-        const urlObj = new URL(url);
-        
+        const urlObj = new URL(normalizeUrl(url));
+
         if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
             return 'youtube';
         }
-        
+
         const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico'];
         const pathname = urlObj.pathname.toLowerCase();
         if (imageExtensions.some(ext => pathname.endsWith(ext))) {
             return 'image';
         }
-        
+
         const fileExtensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.csv', '.json', '.xml', '.zip', '.md'];
         if (fileExtensions.some(ext => pathname.endsWith(ext))) {
             return 'file';
         }
-        
+
         return 'webpage';
     } catch {
-        return null;
+        return 'webpage';
     }
 }
 
@@ -82,16 +88,19 @@ export function PublicFileUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl }
 
     useEffect(() => {
         if (initialUrl?.trim()) {
-            handleValidate();
+            handleValidate(initialUrl);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialUrl]);
 
-    const handleValidate = () => {
+    const handleValidate = (rawUrl?: string) => {
+        const target = normalizeUrl(rawUrl ?? url);
+        setUrl(target);
         setError(null);
         setSuggestedType(null);
         setFileInfo(null);
 
-        if (!url.trim()) {
+        if (!target.trim()) {
             setError("Please enter a file URL");
             return;
         }
@@ -99,22 +108,16 @@ export function PublicFileUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl }
         setIsValidating(true);
 
         try {
-            const urlObj = new URL(url.trim());
-            if (!urlObj.protocol.startsWith('http')) {
-                setError('URL must use HTTP or HTTPS protocol');
-                setIsValidating(false);
-                return;
-            }
+            const urlObj = new URL(target);
+            const detectedType = detectUrlType(target);
 
-            const detectedType = detectUrlType(url.trim());
-            
             if (detectedType === 'youtube') {
                 setError('This appears to be a YouTube URL');
                 setSuggestedType('youtube');
                 setIsValidating(false);
                 return;
             }
-            
+
             if (detectedType === 'image') {
                 setError('This appears to be an image URL');
                 setSuggestedType('image_link');
@@ -129,11 +132,11 @@ export function PublicFileUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl }
                 return;
             }
 
-            const filename = getFilename(url.trim());
+            const filename = getFilename(target);
             const mimeType = getMimeType(urlObj.pathname);
 
             setFileInfo({
-                url: url.trim(),
+                url: target,
                 filename,
                 mimeType,
             });
@@ -165,8 +168,14 @@ export function PublicFileUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl }
         }
     };
 
+    const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+        const pastedText = e.clipboardData.getData('text');
+        setUrl(pastedText);
+        setTimeout(() => handleValidate(pastedText), 50);
+    };
+
     return (
-        <div className="flex flex-col h-[450px]">
+        <div className="flex flex-col max-h-[min(460px,70dvh)]">
             {/* Header */}
             <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                 <Button
@@ -182,7 +191,7 @@ export function PublicFileUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl }
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-3">
+            <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3">
                 <div className="space-y-2">
                     <div className="flex gap-2">
                         <Input
@@ -191,6 +200,7 @@ export function PublicFileUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl }
                             value={url}
                             onChange={(e) => setUrl(e.target.value)}
                             onKeyDown={handleKeyPress}
+                            onPaste={handlePaste}
                             placeholder="https://example.com/document.pdf"
                             className="flex-1 text-xs h-8"
                             disabled={isValidating}

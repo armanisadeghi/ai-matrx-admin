@@ -64,7 +64,7 @@ export function PromptRunnerModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="w-full max-w-3xl h-[90dvh] p-0 gap-0 overflow-hidden flex flex-col">
+            <DialogContent className="w-full max-w-3xl h-[90dvh] p-0 gap-0 flex flex-col">
                 <PromptRunner
                     runId={runId}
                     title={title}

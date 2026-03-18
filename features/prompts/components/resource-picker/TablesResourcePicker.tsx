@@ -307,7 +307,7 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
     };
 
     return (
-        <div className="flex flex-col h-[400px]">
+        <div className="flex flex-col max-h-[min(460px,70dvh)]">
             {/* Header */}
             <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                 <Button
@@ -341,7 +341,7 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto scrollbar-thin">
+            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin">
                 {loading ? (
                     <div className="flex items-center justify-center h-full">
                         <Loader2 className="w-5 h-5 animate-spin text-gray-400" />

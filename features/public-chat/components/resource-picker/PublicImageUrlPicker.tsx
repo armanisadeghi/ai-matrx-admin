@@ -13,45 +13,45 @@ interface PublicImageUrlPickerProps {
     initialUrl?: string;
 }
 
-// Detect URL type
-function detectUrlType(url: string): 'youtube' | 'image' | 'webpage' | 'file' | null {
+// Normalize a URL by prepending https:// if no protocol is present
+function normalizeUrl(url: string): string {
+    const trimmed = url.trim();
+    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+// Detect URL type — tolerates bare domains (no protocol)
+function detectUrlType(url: string): 'youtube' | 'image' | 'webpage' | 'file' {
     try {
-        const urlObj = new URL(url);
-        
-        // YouTube detection
+        const urlObj = new URL(normalizeUrl(url));
+
         if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
             return 'youtube';
         }
-        
-        // Image detection
+
         const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico'];
         const pathname = urlObj.pathname.toLowerCase();
         if (imageExtensions.some(ext => pathname.endsWith(ext))) {
             return 'image';
         }
-        
-        // File detection
+
         const fileExtensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.csv', '.json', '.xml', '.zip'];
         if (fileExtensions.some(ext => pathname.endsWith(ext))) {
             return 'file';
         }
-        
-        // Default to webpage
+
         return 'webpage';
     } catch {
-        return null;
+        return 'webpage';
     }
 }
 
 // Validate if URL is an image
 function validateImageUrl(url: string): { isValid: boolean; type?: string; error?: string; suggestedType?: 'webpage' | 'youtube' | 'file_link' } {
     try {
-        const urlObj = new URL(url);
-        if (!urlObj.protocol.startsWith('http')) {
-            return { isValid: false, error: 'URL must use HTTP or HTTPS protocol' };
-        }
+        const normalized = normalizeUrl(url);
+        const urlObj = new URL(normalized);
 
-        const detectedType = detectUrlType(url);
+        const detectedType = detectUrlType(normalized);
         
         if (detectedType === 'youtube') {
             return { isValid: false, error: 'This appears to be a YouTube URL', suggestedType: 'youtube' };
@@ -98,19 +98,21 @@ export function PublicImageUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl 
         }
     }, [initialUrl]);
 
-    const handleValidate = () => {
+    const handleValidate = (rawUrl?: string) => {
+        const target = normalizeUrl(rawUrl ?? url);
+        setUrl(target);
         setError(null);
         setSuggestedType(null);
         setPreviewUrl(null);
 
-        if (!url.trim()) {
+        if (!target.trim()) {
             setError("Please enter an image URL");
             return;
         }
 
         setIsValidating(true);
 
-        const validation = validateImageUrl(url.trim());
+        const validation = validateImageUrl(target);
 
         if (!validation.isValid) {
             setError(validation.error || 'Invalid image URL');
@@ -120,7 +122,7 @@ export function PublicImageUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl 
         }
 
         setMimeType(validation.type || 'image/jpeg');
-        setPreviewUrl(url.trim());
+        setPreviewUrl(target);
         setIsValidating(false);
     };
 
@@ -144,8 +146,14 @@ export function PublicImageUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl 
         }
     };
 
+    const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+        const pastedText = e.clipboardData.getData('text');
+        setUrl(pastedText);
+        setTimeout(() => handleValidate(pastedText), 50);
+    };
+
     return (
-        <div className="flex flex-col h-[450px]">
+        <div className="flex flex-col max-h-[min(460px,70dvh)]">
             {/* Header */}
             <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                 <Button
@@ -161,7 +169,7 @@ export function PublicImageUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl 
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-3">
+            <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3">
                 <div className="space-y-2">
                     <div className="flex gap-2">
                         <Input
@@ -170,6 +178,7 @@ export function PublicImageUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl 
                             value={url}
                             onChange={(e) => setUrl(e.target.value)}
                             onKeyDown={handleKeyPress}
+                            onPaste={handlePaste}
                             placeholder="https://example.com/image.jpg"
                             className="flex-1 text-xs h-8"
                             disabled={isValidating}

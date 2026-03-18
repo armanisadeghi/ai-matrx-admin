@@ -237,7 +237,7 @@ export function PublicUploadResourcePicker({ onBack, onSelect }: PublicUploadRes
     const displayError = uploadError || (!isUploading && hookError);
 
     return (
-        <div className="flex flex-col h-[400px]">
+        <div className="flex flex-col max-h-[min(460px,70dvh)]">
             {/* Header */}
             <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                 <Button

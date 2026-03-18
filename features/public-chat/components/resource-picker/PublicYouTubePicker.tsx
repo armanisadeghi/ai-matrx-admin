@@ -12,36 +12,39 @@ interface PublicYouTubePickerProps {
     initialUrl?: string;
 }
 
-// Extract YouTube video ID from various URL formats
+// Normalize a URL by prepending https:// if no protocol is present
+function normalizeUrl(url: string): string {
+    const trimmed = url.trim();
+    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+// Extract YouTube video ID from various URL formats — tolerates bare domains and tracking params
 function extractYouTubeVideoId(url: string): string | null {
     try {
-        const urlObj = new URL(url);
-        
-        // Handle youtu.be format
+        const urlObj = new URL(normalizeUrl(url));
+
         if (urlObj.hostname.includes('youtu.be')) {
-            return urlObj.pathname.slice(1).split('?')[0];
+            // youtu.be/VIDEO_ID?si=... — pathname is /VIDEO_ID
+            return urlObj.pathname.slice(1).split('/')[0] || null;
         }
-        
-        // Handle youtube.com format
+
         if (urlObj.hostname.includes('youtube.com')) {
-            // Standard watch URL
-            const videoId = urlObj.searchParams.get('v');
-            if (videoId) return videoId;
-            
-            // Embed URL
+            const v = urlObj.searchParams.get('v');
+            if (v) return v;
+
             if (urlObj.pathname.startsWith('/embed/')) {
-                return urlObj.pathname.split('/embed/')[1].split('?')[0];
+                return urlObj.pathname.split('/embed/')[1].split('?')[0] || null;
             }
-            
-            // Shorts URL
             if (urlObj.pathname.startsWith('/shorts/')) {
-                return urlObj.pathname.split('/shorts/')[1].split('?')[0];
+                return urlObj.pathname.split('/shorts/')[1].split('?')[0] || null;
             }
         }
-        
+
         return null;
     } catch {
-        return null;
+        // Regex fallback
+        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
+        return match?.[1] ?? null;
     }
 }
 
@@ -52,16 +55,14 @@ function validateYouTubeUrl(url: string): { isValid: boolean; videoId?: string; 
     }
 
     try {
-        const urlObj = new URL(url);
-        if (!urlObj.protocol.startsWith('http')) {
-            return { isValid: false, error: 'URL must use HTTP or HTTPS protocol' };
-        }
+        const normalized = normalizeUrl(url);
+        const urlObj = new URL(normalized);
 
         if (!urlObj.hostname.includes('youtube.com') && !urlObj.hostname.includes('youtu.be')) {
             return { isValid: false, error: 'This is not a YouTube URL' };
         }
 
-        const videoId = extractYouTubeVideoId(url);
+        const videoId = extractYouTubeVideoId(normalized);
         if (!videoId) {
             return { isValid: false, error: 'Could not extract video ID from URL' };
         }
@@ -129,7 +130,7 @@ export function PublicYouTubePicker({ onBack, onSelect, initialUrl }: PublicYouT
     };
 
     return (
-        <div className="flex flex-col h-[450px]">
+        <div className="flex flex-col max-h-[min(460px,70dvh)]">
             {/* Header */}
             <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                 <Button
@@ -145,7 +146,7 @@ export function PublicYouTubePicker({ onBack, onSelect, initialUrl }: PublicYouT
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-3">
+            <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3">
                 <div className="space-y-2">
                     <div className="flex gap-2">
                         <Input

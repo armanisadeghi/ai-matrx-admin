@@ -23,7 +23,7 @@ export function AudioResourcePicker({ onBack, onSelect }: AudioResourcePickerPro
     const [url, setUrl] = useState("");
 
     return (
-        <div className="flex flex-col h-[400px]">
+        <div className="flex flex-col max-h-[min(460px,70dvh)]">
             {/* Header */}
             <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                 <Button
@@ -39,7 +39,7 @@ export function AudioResourcePicker({ onBack, onSelect }: AudioResourcePickerPro
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-3">
+            <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3">
                 {/* Coming Soon Message */}
                 <div className="flex flex-col items-center justify-center h-full space-y-4 text-center px-4">
                     <div className="w-16 h-16 rounded-full bg-pink-100 dark:bg-pink-950/30 flex items-center justify-center">
