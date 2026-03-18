@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { transform } from '@babel/standalone';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Copy, Check, MoreHorizontal } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useApiAuth } from '@/hooks/useApiAuth';
 import { useGuestLimit } from '@/hooks/useGuestLimit';
@@ -11,6 +11,7 @@ import { SignupConversionModal } from '@/components/guest/SignupConversionModal'
 import { buildComponentScope, getScopeFunctionParameters, patchScopeForMissingIdentifiers } from '../utils/allowed-imports';
 import { PromptAppErrorBoundary } from './PromptAppErrorBoundary';
 import MarkdownStream from '@/components/MarkdownStream';
+import PublicMessageOptionsMenu from '@/features/public-chat/components/PublicMessageOptionsMenu';
 import type { StreamEvent, ChunkPayload, ErrorPayload } from '@/types/python-generated/stream-events';
 import type { PromptApp } from '../types';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
@@ -452,8 +453,23 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             .join('');
     }, [streamEvents]);
 
-    // Admin localhost toggle is now in the header (AdminMenu)
-    // No need for local toggle - reads from Redux
+    // Action bar state (copy + options menu)
+    const [isCopied, setIsCopied] = useState(false);
+    const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+    const moreButtonRef = useRef<HTMLButtonElement>(null);
+
+    const handleCopy = useCallback(async () => {
+        if (!responseText) return;
+        try {
+            await navigator.clipboard.writeText(responseText);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
+        } catch {
+            // silently fail
+        }
+    }, [responseText]);
+
+    const showActionBar = isStreamComplete && !!responseText;
 
     return (
         <div className="h-full flex flex-col">
@@ -535,6 +551,38 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                     </div>
                 )}
             </div>
+
+            {/* Response action bar — appears when stream completes and there is content */}
+            {showActionBar && (
+                <div className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 border-t border-border/40">
+                    <button
+                        onClick={handleCopy}
+                        className="flex items-center gap-1.5 h-7 px-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    >
+                        {isCopied ? (
+                            <><Check className="w-3.5 h-3.5 text-green-500" /><span>Copied</span></>
+                        ) : (
+                            <><Copy className="w-3.5 h-3.5" /><span>Copy</span></>
+                        )}
+                    </button>
+                    <button
+                        ref={moreButtonRef}
+                        onClick={() => setIsOptionsOpen(true)}
+                        className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                        aria-label="More options"
+                    >
+                        <MoreHorizontal className="w-3.5 h-3.5" />
+                    </button>
+                </div>
+            )}
+
+            {/* Options menu portal */}
+            <PublicMessageOptionsMenu
+                isOpen={isOptionsOpen}
+                onClose={() => setIsOptionsOpen(false)}
+                content={responseText}
+                anchorElement={moreButtonRef.current}
+            />
         </div>
     );
 }
