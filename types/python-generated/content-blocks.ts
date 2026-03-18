@@ -44,6 +44,7 @@ export const BlockType = {
   PLAN: "plan",
   EVENT: "event",
   TOOL: "tool",
+  SEARCH_REPLACE: "search_replace",
 } as const;
 
 export type BlockType = (typeof BlockType)[keyof typeof BlockType];
@@ -411,6 +412,25 @@ export interface DiffBlockData {
   code?: string;
 }
 
+/**
+ * Structured data for a SEARCH/REPLACE content block.
+ * Emitted by Python when type === "search_replace".
+ */
+export interface SearchReplaceBlockData {
+  /** The exact code / text to find in the target file. */
+  search: string;
+  /** The replacement code / text. */
+  replace: string;
+  /** True once the SEARCH section has been fully emitted. */
+  searchComplete: boolean;
+  /** True once the REPLACE section has been fully emitted. */
+  replaceComplete: boolean;
+  /** True when both sections are complete (searchComplete && replaceComplete). */
+  isComplete: boolean;
+  /** Source language for syntax highlighting (e.g. "typescript", "python"). */
+  language?: string;
+}
+
 export interface ConsolidatedReasoningBlockData {
   reasoningTexts?: string[];
 }
@@ -454,4 +474,5 @@ export interface BlockDataTypeMap {
   questionnaire: QuestionnaireBlockData;
   matrxBroker: MatrxBrokerBlockData;
   diff: DiffBlockData;
+  search_replace: SearchReplaceBlockData;
 }

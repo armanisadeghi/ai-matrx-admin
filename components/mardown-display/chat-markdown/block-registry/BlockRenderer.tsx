@@ -535,6 +535,18 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             }
             return renderFallbackContent(block.content);
 
+        case "search_replace":
+            return (
+                <BlockComponents.SearchReplaceBlock
+                    key={index}
+                    serverData={block.serverData as any}
+                    content={block.serverData ? undefined : block.content}
+                    language={(block.metadata?.language as string) || 'typescript'}
+                    isStreamActive={isStreamActive}
+                    className="my-3"
+                />
+            );
+
         case "text":
         case "info":
         case "task":
