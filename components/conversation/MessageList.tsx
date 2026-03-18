@@ -112,7 +112,7 @@ export function MessageList({
     }
 
     return (
-        <div className="flex flex-col gap-4 px-3 py-4">
+        <div className="flex flex-col gap-4 px-3 pt-16 pb-4">
             {visibleMessages.map((message, index) => {
                 const isLast = index === visibleMessages.length - 1;
                 const isCondensed = message.isCondensed;

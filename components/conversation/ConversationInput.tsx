@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ArrowUp, CornerDownLeft, Mic, ChevronRight, MicOff, Loader2, X } from 'lucide-react';
+import { ArrowUp, CornerDownLeft, Mic, ChevronRight, ChevronDown, MicOff, Loader2, X, Plus, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { chatConversationsActions } from '@/lib/redux/chatConversations/slice';
@@ -15,12 +15,19 @@ import {
     selectShowVariables,
     selectUIState,
 } from '@/lib/redux/chatConversations/selectors';
+import {
+    selectAvailableModels,
+    selectModelOptions,
+    fetchAvailableModels,
+} from '@/lib/redux/slices/modelRegistrySlice';
 import { ResourceChips } from '@/features/prompts/components/resource-display';
 import { useClipboardPaste } from '@/components/ui/file-upload/useClipboardPaste';
 import { useFileUploadWithStorage } from '@/components/ui/file-upload/useFileUploadWithStorage';
 import { useRecordAndTranscribe, TranscriptionLoader } from '@/features/audio';
+import { ModelSettingsDialog } from '@/features/prompts/components/configuration/ModelSettingsDialog';
 import { toast } from 'sonner';
 import type { Resource } from '@/features/prompts/types/resources';
+import type { PromptSettings } from '@/features/prompts/types/core';
 
 // ============================================================================
 // PROPS
@@ -33,7 +40,8 @@ export interface ConversationInputProps {
     showVariables?: boolean;
     showVoice?: boolean;          // default: true
     showResourcePicker?: boolean; // default: true
-    showModelPicker?: boolean;
+    showModelPicker?: boolean;    // inline model selector for dynamic_model agents
+    showSettings?: boolean;       // settings icon (opens ModelSettingsDialog)
     showAgentPicker?: boolean;
     showSubmitOnEnterToggle?: boolean;
     showAutoClearToggle?: boolean;
@@ -62,6 +70,7 @@ export function ConversationInput({
     showVoice = true,
     showResourcePicker = true,
     showModelPicker = false,
+    showSettings = false,
     showAgentPicker = false,
     showSubmitOnEnterToggle = false,
     showAutoClearToggle = false,
@@ -70,17 +79,20 @@ export function ConversationInput({
     uploadPath = 'prompt-attachments',
     sendButtonVariant = 'blue',
     seamless = false,
-    placeholder = 'Send a message...',
+    placeholder = 'Ask anything',
     compact = false,
     showShiftEnterHint = false,
     onSend,
 }: ConversationInputProps) {
     const dispatch = useAppDispatch();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const pendingVoiceSubmitRef = useRef(false);
     const [submitOnEnter, setSubmitOnEnter] = useState(false);
     const [previewSheetOpen, setPreviewSheetOpen] = useState(false);
     const [previewResource, setPreviewResource] = useState<Resource | null>(null);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
 
     // ── Redux state ────────────────────────────────────────────────────────────
     const content = useAppSelector((state) => selectCurrentInput(state, sessionId));
@@ -94,6 +106,22 @@ export function ConversationInput({
     const session = useAppSelector((state) => state.chatConversations.sessions[sessionId]);
     const agentId = session?.agentId ?? '';
     const conversationId = session?.conversationId ?? null;
+
+    // ── Model registry ─────────────────────────────────────────────────────────
+    const modelOptions = useAppSelector(selectModelOptions);
+    const availableModels = useAppSelector(selectAvailableModels);
+
+    // Ensure models are loaded when model picker or settings are shown
+    useEffect(() => {
+        if ((showModelPicker || showSettings) && availableModels.length === 0) {
+            dispatch(fetchAvailableModels());
+        }
+    }, [showModelPicker, showSettings, availableModels.length, dispatch]);
+
+    const currentModelId = uiState?.modelOverride || null;
+    const currentModelName = currentModelId
+        ? (modelOptions.find(m => m.value === currentModelId)?.label ?? currentModelId)
+        : null;
 
     // ── File upload ────────────────────────────────────────────────────────────
     const { uploadFile, isLoading: isUploading } = useFileUploadWithStorage(uploadBucket, uploadPath);
@@ -207,13 +235,37 @@ export function ConversationInput({
         }
     };
 
+    // ── Model override ─────────────────────────────────────────────────────────
+    const handleModelSelect = useCallback((modelId: string) => {
+        dispatch(chatConversationsActions.updateUIState({
+            sessionId,
+            updates: { modelOverride: modelId },
+        }));
+        setIsModelPickerOpen(false);
+    }, [dispatch, sessionId]);
+
+    // ── Settings dialog ────────────────────────────────────────────────────────
+    // Build PromptSettings from current uiState for the dialog
+    const settingsForDialog: PromptSettings = {
+        model_id: uiState?.modelOverride ?? undefined,
+    };
+
+    const handleSettingsChange = useCallback((newSettings: PromptSettings) => {
+        if (newSettings.model_id) {
+            dispatch(chatConversationsActions.updateUIState({
+                sessionId,
+                updates: { modelOverride: newSettings.model_id },
+            }));
+        }
+    }, [dispatch, sessionId]);
+
     const hasVariables = showVariables && variableDefaults.length > 0;
     const hasContent = content.trim().length > 0;
     const isDisabled = isExecuting || !agentId;
 
     const containerClass = [
         'flex flex-col gap-1.5 w-full bg-background',
-        seamless ? '' : 'border border-border rounded-xl p-2',
+        seamless ? '' : 'border border-border rounded-3xl px-3 py-2',
     ].filter(Boolean).join(' ');
 
     const sendBtnClass = [
@@ -281,12 +333,45 @@ export function ConversationInput({
 
             {/* ── Textarea row ──────────────────────────────────────────────── */}
             <div className="flex items-end gap-1.5">
+                {/* + Resource picker button */}
+                {showResourcePicker && (
+                    <>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => {
+                                if (e.target.files && e.target.files.length > 0) {
+                                    handleFilesSelected(e.target.files);
+                                    e.target.value = '';
+                                }
+                            }}
+                        />
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                            className="h-8 w-8 p-0 flex-shrink-0 text-muted-foreground hover:text-foreground"
+                            aria-label="Add attachments"
+                        >
+                            {isUploading ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Plus className="w-5 h-5" />
+                            )}
+                        </Button>
+                    </>
+                )}
+
                 <textarea
                     ref={textareaRef}
                     value={content}
                     onChange={(e) => dispatch(chatConversationsActions.setCurrentInput({ sessionId, input: e.target.value }))}
                     onKeyDown={handleKeyDown}
-                    placeholder={isRecording ? '🎙 Recording...' : placeholder}
+                    placeholder={isRecording ? 'Recording...' : placeholder}
                     disabled={isDisabled || isRecording}
                     className={[
                         'flex-1 resize-none bg-transparent text-foreground placeholder:text-muted-foreground',
@@ -296,6 +381,20 @@ export function ConversationInput({
                     style={{ fontSize: '16px' }} // iOS zoom prevention
                     rows={1}
                 />
+
+                {/* Settings button */}
+                {showSettings && (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsSettingsOpen(true)}
+                        className="h-8 w-8 p-0 flex-shrink-0 text-muted-foreground hover:text-foreground"
+                        aria-label="Settings"
+                    >
+                        <Settings2 className="w-4 h-4" />
+                    </Button>
+                )}
 
                 {/* Voice button */}
                 {showVoice && (
@@ -334,6 +433,36 @@ export function ConversationInput({
                 </Button>
             </div>
 
+            {/* ── Model picker (inline, text-only for dynamic_model agents) ── */}
+            {showModelPicker && (
+                <div className="relative px-1">
+                    <button
+                        type="button"
+                        onClick={() => setIsModelPickerOpen(!isModelPickerOpen)}
+                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        <span>{currentModelName || 'Select model'}</span>
+                        <ChevronDown className="w-3 h-3" />
+                    </button>
+                    {isModelPickerOpen && (
+                        <div className="absolute bottom-full left-0 mb-1 w-64 max-h-60 overflow-y-auto rounded-xl border border-border bg-background shadow-lg z-50">
+                            {modelOptions.map(opt => (
+                                <button
+                                    key={opt.value}
+                                    onClick={() => handleModelSelect(opt.value)}
+                                    className={[
+                                        'w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors',
+                                        currentModelId === opt.value ? 'text-primary font-medium' : 'text-foreground',
+                                    ].join(' ')}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* ── Submit hint ───────────────────────────────────────────────── */}
             {showShiftEnterHint && (
                 <p className="text-[10px] text-muted-foreground/60 px-1">
@@ -355,6 +484,18 @@ export function ConversationInput({
                         <span>Enter to send</span>
                     </button>
                 </div>
+            )}
+
+            {/* ── Settings dialog (ModelSettingsDialog) ─────────────────────── */}
+            {showSettings && (
+                <ModelSettingsDialog
+                    isOpen={isSettingsOpen}
+                    onClose={() => setIsSettingsOpen(false)}
+                    modelId={uiState?.modelOverride ?? ''}
+                    models={availableModels}
+                    settings={settingsForDialog}
+                    onSettingsChange={handleSettingsChange}
+                />
             )}
         </div>
     );
