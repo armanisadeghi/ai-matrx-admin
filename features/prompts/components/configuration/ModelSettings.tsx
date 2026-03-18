@@ -240,10 +240,38 @@ export function ModelSettings({
         setEnabledSettings(newEnabled);
     };
 
-    if (error || !normalizedControls) {
+    if (error) {
         return (
             <div className="text-xs text-red-600 dark:text-red-400">
                 Error loading model controls: {error}
+            </div>
+        );
+    }
+
+    // When no model is selected or controls aren't available yet,
+    // show just the model selector so users can pick one first
+    if (!normalizedControls) {
+        return (
+            <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                    <Label className="text-xs text-muted-foreground w-36">Model</Label>
+                    <Select
+                        value={modelId || ''}
+                        onValueChange={(value) => onSettingsChange({ ...settings, model_id: value })}
+                    >
+                        <SelectTrigger className="h-7 text-xs flex-1">
+                            <SelectValue placeholder="Select a model..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {models.map((m: any) => (
+                                <SelectItem key={m.id} value={m.id} className="text-xs">
+                                    {m.common_name || m.name || m.id}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <p className="text-xs text-muted-foreground">Select a model to see available settings.</p>
             </div>
         );
     }
