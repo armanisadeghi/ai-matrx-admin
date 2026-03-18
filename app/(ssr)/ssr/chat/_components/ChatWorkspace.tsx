@@ -17,7 +17,7 @@ import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { selectUser } from '@/lib/redux/slices/userSlice';
 import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
 import { selectModelOptions, selectAvailableModels, fetchAvailableModels } from '@/lib/redux/slices/modelRegistrySlice';
-import { MessageCircle, List, Layers, ChevronDown, Settings2 } from 'lucide-react';
+import { MessageCircle, List, Layers } from 'lucide-react';
 
 // Chat infrastructure (ChatContext still used for welcome screen state + sidebar sync)
 import { useChatContext } from '@/features/public-chat/context/ChatContext';
@@ -26,6 +26,7 @@ import type { AgentConfig } from '@/features/public-chat/context/ChatContext';
 // Unified conversation system
 import { useConversationSession } from '@/components/conversation/hooks/useConversationSession';
 import { ConversationShell } from '@/components/conversation/ConversationShell';
+import { chatConversationsActions } from '@/lib/redux/chatConversations/slice';
 import type { ApiMode } from '@/lib/redux/chatConversations/types';
 
 // Shared agent state
@@ -43,6 +44,9 @@ const ShareModal = dynamic(() => import('@/features/sharing').then(m => ({ defau
 const PublicVariableInputs = dynamic(() => import('@/features/public-chat/components/PublicVariableInputs').then(m => ({ default: m.PublicVariableInputs })), { ssr: false });
 const GuidedVariableInputs = dynamic(() => import('@/features/public-chat/components/GuidedVariableInputs').then(m => ({ default: m.GuidedVariableInputs })), { ssr: false });
 const ModelSettingsDialog = dynamic(() => import('@/features/prompts/components/configuration/ModelSettingsDialog').then(m => ({ default: m.ModelSettingsDialog })), { ssr: false });
+
+// Model configuration component from prompts feature
+import { ModelConfiguration } from '@/features/prompts/components/configuration/ModelConfiguration';
 
 import type { PublicResource } from '@/features/public-chat/types/content';
 import type { PromptVariable, PromptSettings } from '@/features/prompts/types/core';
@@ -75,8 +79,8 @@ function ChatWorkspaceInner() {
 
     // Model override + settings (for Custom Chat and all agents)
     const [modelOverride, setModelOverride] = useState<string | null>(null);
+    const [modelSettings, setModelSettings] = useState<PromptSettings>({});
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
 
     // Track whether we've entered conversation mode (first message sent or conversation loaded)
     const [isInConversation, setIsInConversation] = useState(false);
@@ -97,9 +101,6 @@ function ChatWorkspaceInner() {
     }, [availableModels.length, dispatch]);
 
     const isCustomChat = selectedAgent.id === 'custom-chat';
-    const currentModelName = modelOverride
-        ? (modelOptions.find(m => m.value === modelOverride)?.label ?? modelOverride)
-        : null;
 
     // ========================================================================
     // URL STATE
@@ -225,8 +226,8 @@ function ChatWorkspaceInner() {
         setIsInConversation(false);
         setActiveConversationId(null);
         setModelOverride(null);
+        setModelSettings({});
         setIsSettingsOpen(false);
-        setIsModelPickerOpen(false);
         setFocusKey(k => k + 1);
     }, [onAgentChange]);
 
@@ -248,6 +249,7 @@ function ChatWorkspaceInner() {
         setIsInConversation(false);
         setActiveConversationId(null);
         setModelOverride(null);
+        setModelSettings({});
         const url = '/ssr/chat';
         window.history.pushState(null, '', url);
         window.dispatchEvent(new PopStateEvent('popstate'));
@@ -369,6 +371,7 @@ function ChatWorkspaceInner() {
                         conversationId={activeConversationId ?? undefined}
                         variableDefaults={selectedAgent.variableDefaults}
                         modelOverride={modelOverride ?? undefined}
+                        modelSettings={modelSettings}
                         authenticated={isAuthenticated}
                         onConversationIdChange={handleConversationIdChange}
                         firstMessage={firstMessageRef.current}
@@ -450,6 +453,8 @@ function ChatWorkspaceInner() {
                                     disabled={false}
                                     placeholder="Additional instructions (optional)..."
                                     conversationId={null}
+                                    isAuthenticated={isAuthenticated}
+                                    enableResourcePicker={isAuthenticated}
                                     hasVariables={hasVariables}
                                     selectedAgent={selectedAgent}
                                     textInputRef={textInputRef}
@@ -531,55 +536,27 @@ function ChatWorkspaceInner() {
                                     disabled={false}
                                     placeholder={hasVariables ? 'Additional instructions (optional)...' : 'What do you want to know?'}
                                     conversationId={null}
+                                    isAuthenticated={isAuthenticated}
+                                    enableResourcePicker={isAuthenticated}
                                     hasVariables={hasVariables}
                                     selectedAgent={selectedAgent}
                                     textInputRef={textInputRef}
                                 />
                             </div>
 
-                            {/* Model picker + settings — shown for all agents */}
-                            <div className="flex items-center gap-2 mt-2 px-1">
-                                {/* Model selector */}
-                                <div className="relative">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsModelPickerOpen(!isModelPickerOpen)}
-                                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-accent"
-                                    >
-                                        <span>{currentModelName || 'Default model'}</span>
-                                        <ChevronDown className="w-3 h-3" />
-                                    </button>
-                                    {isModelPickerOpen && (
-                                        <div className="absolute bottom-full left-0 mb-1 w-72 max-h-60 overflow-y-auto rounded-xl border border-border bg-background shadow-lg z-50">
-                                            <button
-                                                onClick={() => { setModelOverride(null); setIsModelPickerOpen(false); }}
-                                                className={`w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors ${!modelOverride ? 'text-primary font-medium' : 'text-foreground'}`}
-                                            >
-                                                Default (agent default)
-                                            </button>
-                                            {modelOptions.map(opt => (
-                                                <button
-                                                    key={opt.value}
-                                                    onClick={() => { setModelOverride(opt.value); setIsModelPickerOpen(false); }}
-                                                    className={`w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors ${modelOverride === opt.value ? 'text-primary font-medium' : 'text-foreground'}`}
-                                                >
-                                                    {opt.label}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
+                            {/* Model configuration — shown for all agents */}
+                            {availableModels.length > 0 && (
+                                <div className="mt-2 px-1">
+                                    <ModelConfiguration
+                                        models={availableModels}
+                                        model={modelOverride ?? ''}
+                                        onModelChange={(value) => setModelOverride(value || null)}
+                                        modelConfig={modelSettings}
+                                        onSettingsClick={() => setIsSettingsOpen(true)}
+                                        showSettingsDetails={Object.keys(modelSettings).filter(k => k !== 'model_id').length > 0}
+                                    />
                                 </div>
-
-                                {/* Settings button */}
-                                <button
-                                    type="button"
-                                    onClick={() => setIsSettingsOpen(true)}
-                                    className="p-1 text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors"
-                                    title="Model settings"
-                                >
-                                    <Settings2 className="w-4 h-4" />
-                                </button>
-                            </div>
+                            )}
 
                             {/* Settings dialog */}
                             {isSettingsOpen && (
@@ -588,11 +565,13 @@ function ChatWorkspaceInner() {
                                     onClose={() => setIsSettingsOpen(false)}
                                     modelId={modelOverride ?? ''}
                                     models={availableModels}
-                                    settings={{ model_id: modelOverride ?? undefined }}
+                                    settings={{ model_id: modelOverride ?? undefined, ...modelSettings }}
                                     onSettingsChange={(newSettings: PromptSettings) => {
-                                        if (newSettings.model_id) {
-                                            setModelOverride(newSettings.model_id);
+                                        const { model_id, ...rest } = newSettings;
+                                        if (model_id) {
+                                            setModelOverride(model_id);
                                         }
+                                        setModelSettings(rest);
                                     }}
                                 />
                             )}
@@ -639,6 +618,7 @@ interface ConversationViewWithFirstMessageProps {
     conversationId?: string;
     variableDefaults?: PromptVariable[];
     modelOverride?: string;
+    modelSettings?: PromptSettings;
     authenticated: boolean;
     onConversationIdChange: (id: string) => void;
     firstMessage: { content: string; variables: Record<string, unknown> } | null;
@@ -653,9 +633,11 @@ function ConversationViewWithFirstMessage({
     conversationId,
     variableDefaults,
     modelOverride,
+    modelSettings,
     authenticated,
     onConversationIdChange,
 }: ConversationViewWithFirstMessageProps) {
+    const dispatch = useAppDispatch();
     const session = useConversationSession({
         agentId,
         apiMode,
@@ -664,6 +646,16 @@ function ConversationViewWithFirstMessage({
         variableDefaults,
         modelOverride,
     });
+
+    // Sync model settings to Redux uiState when session is ready
+    useEffect(() => {
+        if (session.sessionId && modelSettings && Object.keys(modelSettings).length > 0) {
+            dispatch(chatConversationsActions.updateUIState({
+                sessionId: session.sessionId,
+                updates: { modelSettings: modelSettings as Record<string, unknown> },
+            }));
+        }
+    }, [session.sessionId, modelSettings, dispatch]);
 
     // Send first message after session initializes
     const sentRef = useRef(false);
@@ -697,6 +689,14 @@ function ConversationViewWithFirstMessage({
         }
     }, [session.status, session.conversationId, session.messages.length]);
 
+    // Derive attachment capabilities from model settings
+    const derivedCapabilities = modelSettings ? {
+        supportsImageUrls: modelSettings.image_urls !== false,
+        supportsFileUrls: modelSettings.file_urls !== false,
+        supportsYoutubeVideos: modelSettings.youtube_videos !== false,
+        supportsAudio: true,
+    } : undefined;
+
     return (
         <ConversationShell
             sessionId={session.sessionId}
@@ -708,6 +708,7 @@ function ConversationViewWithFirstMessage({
                 showModelPicker: false,
                 showVariables: false,
                 seamless: false,
+                attachmentCapabilities: derivedCapabilities,
             }}
         />
     );

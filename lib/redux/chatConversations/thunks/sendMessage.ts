@@ -54,12 +54,14 @@ function buildAgentRequest(
     variables: Record<string, unknown>,
     configOverrides: Record<string, unknown>,
     blockMode: boolean,
+    resources: ConversationResource[],
 ): { url: string; body: Record<string, unknown> } {
     if (existingConversationId) {
         return {
             url: `${backendUrl}${ENDPOINTS.ai.conversationContinue(existingConversationId)}`,
             body: {
                 user_input: content,
+                resources: resources.length > 0 ? resources : undefined,
                 stream: true,
                 debug: true,
             },
@@ -74,6 +76,7 @@ function buildAgentRequest(
             user_input: content,
             variables: Object.keys(variables).length > 0 ? variables : undefined,
             config_overrides: Object.keys(configOverrides).length > 0 ? configOverrides : undefined,
+            resources: resources.length > 0 ? resources : undefined,
             stream: true,
             debug: true,
         },
@@ -101,6 +104,7 @@ function buildChatRequest(
     newContent: string,
     chatConfig: ChatModeConfig,
     configOverrides: Record<string, unknown>,
+    resources: ConversationResource[] = [],
 ): { url: string; body: Record<string, unknown> } {
     // Build the full message history for the chat endpoint
     const chatMessages = messages
@@ -113,6 +117,7 @@ function buildChatRequest(
     const body: Record<string, unknown> = {
         messages: chatMessages,
         ai_model_id: configOverrides.ai_model_id ?? chatConfig.aiModelId,
+        resources: resources.length > 0 ? resources : undefined,
         stream: true,
         debug: true,
     };
@@ -172,10 +177,14 @@ export const sendMessage = createAsyncThunk<
         // ── Backend URL ────────────────────────────────────────────────────────
         const backendUrl = isAdmin && isLocalhost ? BACKEND_URLS.localhost : BACKEND_URLS.production;
 
-        // ── Config overrides (model, etc.) ────────────────────────────────────
+        // ── Config overrides (model, settings, etc.) ────────────────────────────
         const configOverrides: Record<string, unknown> = {};
         if (uiState.modelOverride) {
             configOverrides.ai_model_id = uiState.modelOverride;
+        }
+        // Merge full model settings (temperature, max_tokens, etc.)
+        if (uiState.modelSettings && Object.keys(uiState.modelSettings).length > 0) {
+            Object.assign(configOverrides, uiState.modelSettings);
         }
 
         // ── Build user message in Redux ──────────────────────────────────────
@@ -232,7 +241,7 @@ export const sendMessage = createAsyncThunk<
                     const historyMessages = currentMessages.filter(
                         m => m.id !== userMessageId && m.id !== assistantMessageId
                     );
-                    ({ url, body } = buildChatRequest(backendUrl, historyMessages, content, chatModeConfig, configOverrides));
+                    ({ url, body } = buildChatRequest(backendUrl, historyMessages, content, chatModeConfig, configOverrides, resources));
                     break;
                 }
                 case 'conversation': {
@@ -246,7 +255,7 @@ export const sendMessage = createAsyncThunk<
                 default: {
                     ({ url, body } = buildAgentRequest(
                         backendUrl, agentId, existingConversationId,
-                        content, variables, configOverrides, blockMode,
+                        content, variables, configOverrides, blockMode, resources,
                     ));
                     break;
                 }

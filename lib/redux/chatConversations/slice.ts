@@ -35,6 +35,7 @@ export const DEFAULT_UI_STATE: SessionUIState = {
     showVariables: false,
     showSystemMessages: false,
     modelOverride: null,
+    modelSettings: {},
     useLocalhost: false,
     useBlockMode: false,
 };

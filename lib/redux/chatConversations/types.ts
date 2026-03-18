@@ -128,6 +128,8 @@ export interface SessionUIState {
     showVariables: boolean;
     showSystemMessages: boolean;
     modelOverride: string | null;
+    /** Full model settings (temperature, max_tokens, etc.) — sent as config_overrides */
+    modelSettings: Record<string, unknown>;
     useLocalhost: boolean;
     useBlockMode: boolean;
 }

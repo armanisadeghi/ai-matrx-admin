@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ArrowUp, CornerDownLeft, Mic, ChevronRight, ChevronDown, MicOff, Loader2, X, Plus, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { chatConversationsActions } from '@/lib/redux/chatConversations/slice';
 import { sendMessage } from '@/lib/redux/chatConversations/thunks/sendMessage';
@@ -21,6 +22,7 @@ import {
     fetchAvailableModels,
 } from '@/lib/redux/slices/modelRegistrySlice';
 import { ResourceChips } from '@/features/prompts/components/resource-display';
+import { ResourcePickerMenu } from '@/features/prompts/components/resource-picker/ResourcePickerMenu';
 import { useClipboardPaste } from '@/components/ui/file-upload/useClipboardPaste';
 import { useFileUploadWithStorage } from '@/components/ui/file-upload/useFileUploadWithStorage';
 import { useRecordAndTranscribe, TranscriptionLoader } from '@/features/audio';
@@ -56,6 +58,14 @@ export interface ConversationInputProps {
     compact?: boolean;
     showShiftEnterHint?: boolean;
 
+    /** Attachment capabilities derived from model settings — gates resource types */
+    attachmentCapabilities?: {
+        supportsImageUrls?: boolean;
+        supportsFileUrls?: boolean;
+        supportsYoutubeVideos?: boolean;
+        supportsAudio?: boolean;
+    };
+
     // ── Callbacks ──────────────────────────────────────────────────────────────
     onSend?: () => void;
 }
@@ -82,11 +92,11 @@ export function ConversationInput({
     placeholder = 'Ask anything',
     compact = false,
     showShiftEnterHint = false,
+    attachmentCapabilities,
     onSend,
 }: ConversationInputProps) {
     const dispatch = useAppDispatch();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const pendingVoiceSubmitRef = useRef(false);
     const [submitOnEnter, setSubmitOnEnter] = useState(false);
     const [previewSheetOpen, setPreviewSheetOpen] = useState(false);
@@ -123,6 +133,9 @@ export function ConversationInput({
         ? (modelOptions.find(m => m.value === currentModelId)?.label ?? currentModelId)
         : null;
 
+    // ── Resource picker state ──────────────────────────────────────────────────
+    const [isResourcePickerOpen, setIsResourcePickerOpen] = useState(false);
+
     // ── File upload ────────────────────────────────────────────────────────────
     const { uploadFile, isLoading: isUploading } = useFileUploadWithStorage(uploadBucket, uploadPath);
 
@@ -147,6 +160,14 @@ export function ConversationInput({
             }
         }
     }, [dispatch, sessionId, uploadFile]);
+
+    const handleResourceSelected = useCallback((resource: { type: string; data: unknown }) => {
+        dispatch(chatConversationsActions.addResource({
+            sessionId,
+            resource: resource as Resource,
+        }));
+        setIsResourcePickerOpen(false);
+    }, [dispatch, sessionId]);
 
     // ── Clipboard paste ────────────────────────────────────────────────────────
     useClipboardPaste({
@@ -205,17 +226,23 @@ export function ConversationInput({
             }
         });
 
+        // Convert Resource[] to ConversationResource[] for the API
+        const conversationResources = resources.length > 0
+            ? resources.map(r => ({ type: r.type, data: r.data as Record<string, unknown> }))
+            : undefined;
+
         dispatch(sendMessage({
             sessionId,
             agentId,
             content: finalContent,
+            resources: conversationResources,
             variables: Object.keys(variables).length > 0 ? variables : undefined,
         }));
 
         dispatch(chatConversationsActions.setCurrentInput({ sessionId, input: '' }));
         dispatch(chatConversationsActions.clearResources(sessionId));
         onSend?.();
-    }, [content, isExecuting, agentId, sessionId, variableDefaults, dispatch, onSend]);
+    }, [content, isExecuting, agentId, sessionId, variableDefaults, resources, dispatch, onSend]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (submitOnEnter && e.key === 'Enter' && !e.shiftKey) {
@@ -248,15 +275,22 @@ export function ConversationInput({
     // Build PromptSettings from current uiState for the dialog
     const settingsForDialog: PromptSettings = {
         model_id: uiState?.modelOverride ?? undefined,
+        ...(uiState?.modelSettings as Record<string, unknown> ?? {}),
     };
 
     const handleSettingsChange = useCallback((newSettings: PromptSettings) => {
-        if (newSettings.model_id) {
+        const { model_id, ...restSettings } = newSettings;
+        if (model_id) {
             dispatch(chatConversationsActions.updateUIState({
                 sessionId,
-                updates: { modelOverride: newSettings.model_id },
+                updates: { modelOverride: model_id },
             }));
         }
+        // Store full model settings (temperature, max_tokens, etc.)
+        dispatch(chatConversationsActions.updateUIState({
+            sessionId,
+            updates: { modelSettings: restSettings },
+        }));
     }, [dispatch, sessionId]);
 
     const hasVariables = showVariables && variableDefaults.length > 0;
@@ -333,37 +367,43 @@ export function ConversationInput({
 
             {/* ── Textarea row ──────────────────────────────────────────────── */}
             <div className="flex items-end gap-1.5">
-                {/* + Resource picker button */}
+                {/* + Resource picker button with popover */}
                 {showResourcePicker && (
-                    <>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            multiple
-                            className="hidden"
-                            onChange={(e) => {
-                                if (e.target.files && e.target.files.length > 0) {
-                                    handleFilesSelected(e.target.files);
-                                    e.target.value = '';
-                                }
-                            }}
-                        />
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isUploading}
-                            className="h-8 w-8 p-0 flex-shrink-0 text-muted-foreground hover:text-foreground"
-                            aria-label="Add attachments"
+                    <Popover open={isResourcePickerOpen} onOpenChange={setIsResourcePickerOpen}>
+                        <PopoverTrigger asChild>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                disabled={isUploading}
+                                className="h-8 w-8 p-0 flex-shrink-0 text-muted-foreground hover:text-foreground"
+                                aria-label="Add attachments"
+                            >
+                                {isUploading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <Plus className="w-5 h-5" />
+                                )}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                            side="top"
+                            align="start"
+                            className="w-56 p-0"
+                            onOpenAutoFocus={(e) => e.preventDefault()}
                         >
-                            {isUploading ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <Plus className="w-5 h-5" />
-                            )}
-                        </Button>
-                    </>
+                            <ResourcePickerMenu
+                                onResourceSelected={handleResourceSelected}
+                                onClose={() => setIsResourcePickerOpen(false)}
+                                attachmentCapabilities={attachmentCapabilities ?? {
+                                    supportsImageUrls: true,
+                                    supportsFileUrls: true,
+                                    supportsYoutubeVideos: true,
+                                    supportsAudio: true,
+                                }}
+                            />
+                        </PopoverContent>
+                    </Popover>
                 )}
 
                 <textarea
