@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { ChevronDown, ChevronLeft, Bot, Search, BookOpen, Code, Image, MessageCircle, Newspaper, Lightbulb, Video, BarChart, ChefHat } from 'lucide-react';
+import { ChevronDown, ChevronLeft, Bot, Search, BookOpen, Code, Image, MessageCircle, Newspaper, Lightbulb, Video, BarChart, ChefHat, Sparkles } from 'lucide-react';
 import type { AgentConfig } from '../context/ChatContext';
 
 // ============================================================================
@@ -35,6 +35,14 @@ export const DEFAULT_AGENTS: AgentOption[] = [
         description: 'Helpful general assistant.',
         icon: <MessageCircle size={18} />,
         promptId: '35d8f884-5178-4c3e-858d-c5b7adfa186a',
+        variableDefaults: [],
+    },
+    {
+        id: 'custom-chat',
+        name: 'Custom Chat',
+        description: 'A warm, chatty assistant with customizable model & settings.',
+        icon: <Sparkles size={18} />,
+        promptId: '3ca61863-43cf-49cd-8da5-7e0a4b192867',
         variableDefaults: [],
     },
     {

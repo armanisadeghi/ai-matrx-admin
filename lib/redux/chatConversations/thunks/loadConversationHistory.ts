@@ -1,16 +1,18 @@
 /**
  * loadConversationHistory thunk — loads existing conversation messages from backend
+ *
+ * Uses the cx-chat API endpoint (same as p/chat) which reads from Supabase
+ * cx_conversation/cx_message tables, then processes through processDbMessagesForDisplay
+ * to properly handle content blocks, tool calls, thinking, and condensed messages.
  */
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
 import type { RootState, AppDispatch } from '../../store';
 import { chatConversationsActions } from '../slice';
-import { selectAccessToken } from '../../slices/userSlice';
-import { BACKEND_URLS } from '@/lib/api/endpoints';
-import { selectIsUsingLocalhost } from '../../slices/adminPreferencesSlice';
-import { selectIsAdmin } from '../../slices/userSlice';
 import type { ConversationMessage } from '../types';
+import { processDbMessagesForDisplay } from '@/features/public-chat/utils/cx-content-converter';
+import type { CxConversationWithMessages } from '@/features/public-chat/types/cx-tables';
 
 interface LoadConversationPayload {
     sessionId: string;
@@ -24,39 +26,41 @@ export const loadConversationHistory = createAsyncThunk<
     { dispatch: AppDispatch; state: RootState }
 >(
     'chatConversations/loadConversationHistory',
-    async ({ sessionId, conversationId, agentId }, { dispatch, getState }) => {
-        const state = getState();
-        const accessToken = selectAccessToken(state);
-        const isLocalhost = selectIsUsingLocalhost(state);
-        const isAdmin = selectIsAdmin(state);
-
-        const backendUrl = isAdmin && isLocalhost ? BACKEND_URLS.localhost : BACKEND_URLS.production;
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (accessToken) {
-            headers['Authorization'] = `Bearer ${accessToken}`;
-        }
-
+    async ({ sessionId, conversationId, agentId }, { dispatch }) => {
         dispatch(chatConversationsActions.setSessionStatus({ sessionId, status: 'initializing' }));
 
         try {
-            const response = await fetch(`${backendUrl}/api/ai/conversations/${conversationId}/messages`, {
-                headers,
-            });
+            // Use the same API endpoint that works in p/chat
+            const url = `/api/cx-chat/request?id=${conversationId}`;
+            const response = await fetch(url);
 
             if (!response.ok) {
                 throw new Error(`Failed to load conversation: HTTP ${response.status}`);
             }
 
-            const data = await response.json();
-            const rawMessages: Array<{ role: string; content: string; id?: string; created_at?: string }> =
-                data.messages ?? data ?? [];
+            const json = await response.json();
 
-            const messages: ConversationMessage[] = rawMessages.map(m => ({
-                id: m.id ?? uuidv4(),
-                role: (m.role as ConversationMessage['role']) ?? 'user',
-                content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content),
+            if (!json.success || !json.data) {
+                throw new Error(json.error || 'Conversation not found');
+            }
+
+            const data: CxConversationWithMessages = json.data;
+
+            // Process DB messages through the same pipeline as p/chat
+            // This handles content blocks, tool calls, thinking, condensed messages, etc.
+            const processedMessages = processDbMessagesForDisplay(data.messages, data.toolCalls);
+
+            // Convert ProcessedChatMessage[] to ConversationMessage[]
+            const messages: ConversationMessage[] = processedMessages.map(msg => ({
+                id: msg.id || uuidv4(),
+                role: msg.role,
+                content: msg.content,
                 status: 'complete' as const,
-                timestamp: m.created_at ?? new Date().toISOString(),
+                timestamp: msg.timestamp instanceof Date
+                    ? msg.timestamp.toISOString()
+                    : new Date(msg.timestamp).toISOString(),
+                toolUpdates: msg.toolUpdates?.length > 0 ? msg.toolUpdates : undefined,
+                isCondensed: msg.isCondensed || undefined,
             }));
 
             dispatch(chatConversationsActions.loadConversation({

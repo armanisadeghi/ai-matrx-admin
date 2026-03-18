@@ -4,8 +4,8 @@
 // Main client island for the SSR chat route.
 //
 // Architecture:
-//   - Welcome screen: renders the landing UI with agent picker, variables, and custom chat config
-//   - Conversation mode: delegates to UnifiedChatWrapper from the unified conversation system
+//   - Welcome screen: renders the landing UI with agent picker and variables
+//   - Conversation mode: delegates to ConversationShell from the unified conversation system
 //   - URL state: pathname for conversationId, searchParams for agent/vars/localhost
 //   - Custom DOM events for sidebar sync
 //   - SsrAgentContext for shared agent state across header, sidebar, and workspace
@@ -13,7 +13,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { useAppSelector } from '@/lib/redux/hooks';
 import { selectUser } from '@/lib/redux/slices/userSlice';
 import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
 import { MessageCircle, List, Layers } from 'lucide-react';
@@ -21,15 +21,11 @@ import { MessageCircle, List, Layers } from 'lucide-react';
 // Chat infrastructure (ChatContext still used for welcome screen state + sidebar sync)
 import { useChatContext } from '@/features/public-chat/context/ChatContext';
 import type { AgentConfig } from '@/features/public-chat/context/ChatContext';
-import { useChatPersistence } from '@/features/public-chat/hooks/useChatPersistence';
-import { buildCanonicalMessages, canonicalArrayToLegacy } from '@/lib/chat-protocol';
 
 // Unified conversation system
 import { useConversationSession } from '@/components/conversation/hooks/useConversationSession';
 import { ConversationShell } from '@/components/conversation/ConversationShell';
-import { chatConversationsActions } from '@/lib/redux/chatConversations/slice';
-import { selectConversationId as selectUnifiedConversationId } from '@/lib/redux/chatConversations/selectors';
-import type { ChatModeConfig, ApiMode } from '@/lib/redux/chatConversations/types';
+import type { ApiMode } from '@/lib/redux/chatConversations/types';
 
 // Shared agent state
 import { useSsrAgent } from './SsrAgentContext';
@@ -45,85 +41,22 @@ import { ResponseModeButtons, BackToStartButton, DEFAULT_AGENTS } from '@/featur
 const ShareModal = dynamic(() => import('@/features/sharing').then(m => ({ default: m.ShareModal })), { ssr: false });
 const PublicVariableInputs = dynamic(() => import('@/features/public-chat/components/PublicVariableInputs').then(m => ({ default: m.PublicVariableInputs })), { ssr: false });
 const GuidedVariableInputs = dynamic(() => import('@/features/public-chat/components/GuidedVariableInputs').then(m => ({ default: m.GuidedVariableInputs })), { ssr: false });
-const CustomChatConfig = dynamic(() => import('./CustomChatConfig'), { ssr: false });
-const ModelOverrideSelector = dynamic(() => import('./ModelOverrideSelector'), { ssr: false });
 
 import type { PublicResource } from '@/features/public-chat/types/content';
 import type { PromptVariable } from '@/features/prompts/types/core';
 import { formatText } from '@/utils/text/text-case-converter';
 
 // ============================================================================
-// CONVERSATION VIEW — Renders UnifiedChatWrapper when messages exist
-// ============================================================================
-
-interface ConversationViewProps {
-    agentId: string;
-    apiMode: ApiMode;
-    conversationId?: string;
-    chatModeConfig?: ChatModeConfig;
-    variableDefaults?: PromptVariable[];
-    variables?: Record<string, string>;
-    modelOverride?: string;
-    authenticated: boolean;
-    onConversationIdChange: (id: string) => void;
-}
-
-function ConversationView({
-    agentId,
-    apiMode,
-    conversationId,
-    chatModeConfig,
-    variableDefaults,
-    variables,
-    modelOverride,
-    authenticated,
-    onConversationIdChange,
-}: ConversationViewProps) {
-    const session = useConversationSession({
-        agentId,
-        apiMode,
-        conversationId,
-        loadHistory: !!conversationId,
-        chatModeConfig,
-        variableDefaults,
-        variables,
-        modelOverride,
-    });
-
-    // Notify parent when conversation ID changes (for URL sync)
-    useEffect(() => {
-        if (session.conversationId) {
-            onConversationIdChange(session.conversationId);
-        }
-    }, [session.conversationId]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    return (
-        <ConversationShell
-            sessionId={session.sessionId}
-            compact={false}
-            inputProps={{
-                showVoice: authenticated,
-                showResourcePicker: authenticated,
-                showModelPicker: false,
-                showVariables: false,
-                seamless: false,
-            }}
-        />
-    );
-}
-
-// ============================================================================
 // INNER WORKSPACE — wrapped by ChatProvider
 // ============================================================================
 
 function ChatWorkspaceInner() {
-    const dispatch = useAppDispatch();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const { state, setUseLocalhost, loadConversation: loadConversationAction, startNewConversation } = useChatContext();
+    const { state, setUseLocalhost, startNewConversation } = useChatContext();
 
     // Shared agent state
-    const { selectedAgent, onAgentChange, openAgentPicker } = useSsrAgent();
+    const { selectedAgent, onAgentChange } = useSsrAgent();
 
     // Variables
     const useGuidedVars = searchParams.get('vars') !== 'classic';
@@ -137,13 +70,6 @@ function ChatWorkspaceInner() {
     const textInputRef = useRef<HTMLTextAreaElement>(null);
     const variableInputRef = useRef<HTMLInputElement>(null);
 
-    // Custom chat mode state
-    const [customChatConfig, setCustomChatConfig] = useState<ChatModeConfig | null>(null);
-    const [isCustomChatActive, setIsCustomChatActive] = useState(false);
-
-    // Model override state (for agent mode)
-    const [modelOverride, setModelOverride] = useState<string | null>(null);
-
     // Track whether we've entered conversation mode (first message sent or conversation loaded)
     const [isInConversation, setIsInConversation] = useState(false);
     const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
@@ -152,9 +78,6 @@ function ChatWorkspaceInner() {
     const user = useAppSelector(selectUser);
     const isAuthenticated = !!user?.id;
     const useLocalhost = useAppSelector(selectIsUsingLocalhost);
-
-    // Persistence hook
-    const persistence = useChatPersistence();
 
     // ========================================================================
     // URL STATE
@@ -191,8 +114,6 @@ function ChatWorkspaceInner() {
             if (isInConversation || state.dbConversationId) {
                 setIsInConversation(false);
                 setActiveConversationId(null);
-                setCustomChatConfig(null);
-                setIsCustomChatActive(false);
                 startNewConversation();
             }
             return;
@@ -204,8 +125,6 @@ function ChatWorkspaceInner() {
         // Load the conversation from the database and switch to conversation view
         setIsInConversation(true);
         setActiveConversationId(conversationIdFromUrl);
-        setIsCustomChatActive(false);
-        setCustomChatConfig(null);
     }, [conversationIdFromUrl]);
 
     // ========================================================================
@@ -283,9 +202,6 @@ function ChatWorkspaceInner() {
         onAgentChange(agent);
         setIsInConversation(false);
         setActiveConversationId(null);
-        setCustomChatConfig(null);
-        setIsCustomChatActive(false);
-        setModelOverride(null);
         setFocusKey(k => k + 1);
     }, [onAgentChange]);
 
@@ -306,9 +222,6 @@ function ChatWorkspaceInner() {
     const handleNewChat = useCallback(() => {
         setIsInConversation(false);
         setActiveConversationId(null);
-        setCustomChatConfig(null);
-        setIsCustomChatActive(false);
-        setModelOverride(null);
         const url = '/ssr/chat';
         window.history.pushState(null, '', url);
         window.dispatchEvent(new PopStateEvent('popstate'));
@@ -346,8 +259,7 @@ function ChatWorkspaceInner() {
         // Now transition to conversation mode — the ConversationView will handle sending
         setIsInConversation(true);
 
-        // We need to queue the first message to be sent after the session initializes.
-        // Store it for the ConversationView to pick up.
+        // Queue the first message to be sent after the session initializes.
         firstMessageRef.current = {
             content: displayContent,
             variables: { ...variableValues },
@@ -357,32 +269,13 @@ function ChatWorkspaceInner() {
     // Ref to pass first message to ConversationView
     const firstMessageRef = useRef<{ content: string; variables: Record<string, unknown> } | null>(null);
 
-    // Handle custom chat activation
-    const handleCustomChatActivate = useCallback((config: ChatModeConfig) => {
-        setCustomChatConfig(config);
-        setIsCustomChatActive(true);
-        // Don't enter conversation mode yet — user still needs to type a message
-    }, []);
-
-    const handleCustomChatSubmit = useCallback(async (content: string) => {
-        setIsInConversation(true);
-        firstMessageRef.current = { content, variables: {} };
-    }, []);
-
     // ========================================================================
     // DERIVED STATE
     // ========================================================================
 
     const hasVariables = activeVariables.length > 0;
-    const isWelcomeScreen = !isInConversation && !isLoadingConversation;
-
-    const headerLabel = !isWelcomeScreen
-        ? (selectedAgent.name || 'Chat')
-        : (selectedAgent.name || 'Chat');
-
     const agentName = selectedAgent.name || 'Chat';
-    const currentApiMode: ApiMode = isCustomChatActive ? 'chat' : 'agent';
-    const currentAgentId = isCustomChatActive ? 'custom-chat' : selectedAgent.promptId;
+    const headerLabel = selectedAgent.name || 'Chat';
 
     // ========================================================================
     // LOADING STATE
@@ -420,8 +313,8 @@ function ChatWorkspaceInner() {
         return (
             <>
                 <ChatHeaderControls
-                    agentName={isCustomChatActive ? 'Direct Chat' : agentName}
-                    headerLabel={isCustomChatActive ? 'Direct Chat' : headerLabel}
+                    agentName={agentName}
+                    headerLabel={headerLabel}
                     isConversation={true}
                     isAuthenticated={isAuthenticated}
                     dbConversationId={activeConversationId}
@@ -429,9 +322,6 @@ function ChatWorkspaceInner() {
                     onAgentSelect={handleAgentSelect}
                     onNewChat={handleNewChat}
                     onShare={() => setIsShareOpen(true)}
-                    modelOverride={modelOverride}
-                    onModelOverrideChange={setModelOverride}
-                    showModelOverride={!isCustomChatActive}
                 />
                 <div className="h-full flex flex-col">
                     {/* Share Modal */}
@@ -448,12 +338,10 @@ function ChatWorkspaceInner() {
 
                     {/* Unified Conversation */}
                     <ConversationViewWithFirstMessage
-                        agentId={currentAgentId}
-                        apiMode={currentApiMode}
+                        agentId={selectedAgent.promptId}
+                        apiMode="agent"
                         conversationId={activeConversationId ?? undefined}
-                        chatModeConfig={customChatConfig ?? undefined}
                         variableDefaults={selectedAgent.variableDefaults}
-                        modelOverride={modelOverride ?? undefined}
                         authenticated={isAuthenticated}
                         onConversationIdChange={handleConversationIdChange}
                         firstMessage={firstMessageRef.current}
@@ -483,60 +371,6 @@ function ChatWorkspaceInner() {
         return qs ? `?${qs}` : pathname;
     })();
 
-    // Custom chat mode: show direct chat config + input
-    if (isCustomChatActive) {
-        return (
-            <>
-                <ChatHeaderControls
-                    agentName="Direct Chat"
-                    headerLabel="Direct Chat"
-                    isConversation={false}
-                    isAuthenticated={isAuthenticated}
-                    dbConversationId={null}
-                    selectedAgent={selectedAgent}
-                    onAgentSelect={handleAgentSelect}
-                    onNewChat={handleNewChat}
-                    onShare={() => {}}
-                />
-                <div className="h-full flex flex-col">
-                    <div className="flex-1 min-h-0 overflow-y-auto">
-                        <div className="min-h-full flex flex-col items-center justify-center px-3 md:px-8">
-                            <div className="w-full max-w-3xl">
-                                <div className="text-center mb-6 md:mb-8">
-                                    <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Direct Chat</h1>
-                                    <p className="mt-1 text-sm text-muted-foreground/70">
-                                        Custom model & configuration
-                                    </p>
-                                </div>
-
-                                <div className="mb-4">
-                                    <CustomChatConfig
-                                        onActivate={handleCustomChatActivate}
-                                        isActive={true}
-                                    />
-                                </div>
-
-                                <ChatInputWithControls
-                                    onSubmit={handleCustomChatSubmit}
-                                    disabled={false}
-                                    placeholder="Send a message..."
-                                    conversationId={null}
-                                    hasVariables={false}
-                                    selectedAgent={selectedAgent}
-                                    textInputRef={textInputRef}
-                                />
-
-                                <div className="flex items-center justify-between mt-3 md:mt-6 pb-4">
-                                    <BackToStartButton onBack={handleBackToStart} agentName="Direct Chat" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </>
-        );
-    }
-
     // Guided mode: pin input to bottom
     if (useGuidedVars && hasVariables) {
         return (
@@ -551,9 +385,6 @@ function ChatWorkspaceInner() {
                     onAgentSelect={handleAgentSelect}
                     onNewChat={handleNewChat}
                     onShare={() => setIsShareOpen(true)}
-                    modelOverride={modelOverride}
-                    onModelOverrideChange={setModelOverride}
-                    showModelOverride
                 />
                 <div className="h-full flex flex-col">
                     <div className="flex-1 min-h-0 overflow-y-auto">
@@ -590,7 +421,7 @@ function ChatWorkspaceInner() {
                                 <ChatInputWithControls
                                     onSubmit={handleFirstSubmit}
                                     disabled={false}
-                                    placeholder="Additional instructions (optional)…"
+                                    placeholder="Additional instructions (optional)..."
                                     conversationId={null}
                                     hasVariables={hasVariables}
                                     selectedAgent={selectedAgent}
@@ -632,9 +463,6 @@ function ChatWorkspaceInner() {
                 onAgentSelect={handleAgentSelect}
                 onNewChat={handleNewChat}
                 onShare={() => setIsShareOpen(true)}
-                modelOverride={modelOverride}
-                onModelOverrideChange={setModelOverride}
-                showModelOverride
             />
             <div className="h-full flex flex-col">
                 <div className="flex-1 min-h-0 overflow-y-auto">
@@ -674,23 +502,13 @@ function ChatWorkspaceInner() {
                                 <ChatInputWithControls
                                     onSubmit={handleFirstSubmit}
                                     disabled={false}
-                                    placeholder={hasVariables ? 'Additional instructions (optional)…' : 'What do you want to know?'}
+                                    placeholder={hasVariables ? 'Additional instructions (optional)...' : 'What do you want to know?'}
                                     conversationId={null}
                                     hasVariables={hasVariables}
                                     selectedAgent={selectedAgent}
                                     textInputRef={textInputRef}
                                 />
                             </div>
-
-                            {/* Custom Chat Config — below input, only when no variables */}
-                            {!hasVariables && (
-                                <div className="mt-4">
-                                    <CustomChatConfig
-                                        onActivate={handleCustomChatActivate}
-                                        isActive={false}
-                                    />
-                                </div>
-                            )}
 
                             <div className="flex items-center justify-between mt-3 md:mt-6 pb-4">
                                 {hasVariables ? (
@@ -728,7 +546,13 @@ function ChatWorkspaceInner() {
 // CONVERSATION VIEW WITH FIRST MESSAGE — Sends queued message after init
 // ============================================================================
 
-interface ConversationViewWithFirstMessageProps extends ConversationViewProps {
+interface ConversationViewWithFirstMessageProps {
+    agentId: string;
+    apiMode: ApiMode;
+    conversationId?: string;
+    variableDefaults?: PromptVariable[];
+    authenticated: boolean;
+    onConversationIdChange: (id: string) => void;
     firstMessage: { content: string; variables: Record<string, unknown> } | null;
     onFirstMessageSent: () => void;
 }
@@ -739,9 +563,7 @@ function ConversationViewWithFirstMessage({
     agentId,
     apiMode,
     conversationId,
-    chatModeConfig,
     variableDefaults,
-    modelOverride,
     authenticated,
     onConversationIdChange,
 }: ConversationViewWithFirstMessageProps) {
@@ -750,9 +572,7 @@ function ConversationViewWithFirstMessage({
         apiMode,
         conversationId,
         loadHistory: !!conversationId,
-        chatModeConfig,
         variableDefaults,
-        modelOverride,
     });
 
     // Send first message after session initializes
@@ -794,6 +614,7 @@ function ConversationViewWithFirstMessage({
             inputProps={{
                 showVoice: authenticated,
                 showResourcePicker: authenticated,
+                showSettings: authenticated,
                 showModelPicker: false,
                 showVariables: false,
                 seamless: false,

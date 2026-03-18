@@ -100,13 +100,15 @@ export function ConversationShell({
             <div className="flex flex-1 overflow-hidden min-h-0">
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto min-h-0">
-                    <MessageList
-                        sessionId={sessionId}
-                        showSystemMessages={showSystemMessages}
-                        compact={compact}
-                        audioControls={audioControls}
-                        onMessageContentChange={onMessageContentChange}
-                    />
+                    <div className="max-w-[800px] mx-auto w-full">
+                        <MessageList
+                            sessionId={sessionId}
+                            showSystemMessages={showSystemMessages}
+                            compact={compact}
+                            audioControls={audioControls}
+                            onMessageContentChange={onMessageContentChange}
+                        />
+                    </div>
                 </div>
 
                 {/* Inline canvas (side-by-side, right panel) */}
@@ -122,13 +124,15 @@ export function ConversationShell({
             </div>
 
             {/* ── Input ─────────────────────────────────────────────────────── */}
-            <div className="flex-shrink-0 border-t border-border p-2 pb-safe">
-                <ConversationInput
-                    sessionId={sessionId}
-                    showVoice={true}
-                    showResourcePicker={true}
-                    {...inputProps}
-                />
+            <div className="flex-shrink-0 p-2 pb-safe">
+                <div className="max-w-[800px] mx-auto">
+                    <ConversationInput
+                        sessionId={sessionId}
+                        showVoice={true}
+                        showResourcePicker={true}
+                        {...inputProps}
+                    />
+                </div>
             </div>
         </div>
     );

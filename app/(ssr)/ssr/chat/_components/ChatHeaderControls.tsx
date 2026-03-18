@@ -8,9 +8,7 @@
 // Features:
 //   - Admin-only: localhost toggle + block mode toggle
 //   - Share button when in a conversation
-//   - Model override selector when in agent mode
 
-import dynamic from 'next/dynamic';
 import { Share2, Blocks } from 'lucide-react';
 import PageHeaderPortal from '@/app/(ssr)/_components/PageHeaderPortal';
 import IconButton from '@/app/(ssr)/_components/IconButton';
@@ -18,8 +16,6 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import { selectIsAdmin } from '@/lib/redux/slices/userSlice';
 import { useChatContext } from '@/features/public-chat/context/ChatContext';
 import type { AgentConfig } from '@/features/public-chat/context/ChatContext';
-
-const ModelOverrideSelector = dynamic(() => import('./ModelOverrideSelector'), { ssr: false });
 
 interface ChatHeaderControlsProps {
     agentName: string;
@@ -31,12 +27,6 @@ interface ChatHeaderControlsProps {
     onAgentSelect: (agent: AgentConfig) => void;
     onNewChat: () => void;
     onShare?: () => void;
-    /** Current model override (null = default) */
-    modelOverride?: string | null;
-    /** Callback to set model override */
-    onModelOverrideChange?: (model: string | null) => void;
-    /** Whether to show the model override selector */
-    showModelOverride?: boolean;
 }
 
 export default function ChatHeaderControls({
@@ -44,30 +34,18 @@ export default function ChatHeaderControls({
     isAuthenticated,
     dbConversationId,
     onShare,
-    modelOverride,
-    onModelOverrideChange,
-    showModelOverride = false,
 }: ChatHeaderControlsProps) {
     const isAdmin = useAppSelector(selectIsAdmin);
     const { state, setUseLocalhost, setUseBlockMode } = useChatContext();
 
     const showShare = isAuthenticated && isConversation && !!dbConversationId && !!onShare;
     const showAdminToggles = isAdmin;
-    const showModel = showModelOverride && !!onModelOverrideChange;
 
-    if (!showShare && !showAdminToggles && !showModel) return null;
+    if (!showShare && !showAdminToggles) return null;
 
     return (
         <PageHeaderPortal>
             <div className="hidden lg:flex items-center justify-end w-full gap-1">
-                {/* Model override selector */}
-                {showModel && (
-                    <ModelOverrideSelector
-                        currentOverride={modelOverride ?? null}
-                        onOverrideChange={onModelOverrideChange!}
-                    />
-                )}
-
                 {/* Admin-only toggles */}
                 {showAdminToggles && (
                     <>
