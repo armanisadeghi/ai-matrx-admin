@@ -19,6 +19,9 @@ import {
     X,
     BookmarkCheck,
     ThumbsUp,
+    Copy,
+    ClipboardList,
+    HardDrive,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,6 +36,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/utils/supabase/client";
 import { formatDistanceToNow } from "date-fns";
@@ -93,6 +103,27 @@ interface GeneratedComponent {
 }
 
 type WizardStep = "select-tool" | "select-data" | "generate" | "review" | "saved";
+
+// ─── Draft persistence ────────────────────────────────────────────────────────
+
+const DRAFT_KEY_PREFIX = "tool-ui-generator-draft:";
+
+function saveDraft(toolName: string, component: GeneratedComponent, rawResponse: string) {
+    try {
+        localStorage.setItem(`${DRAFT_KEY_PREFIX}${toolName}`, JSON.stringify({ component, rawResponse, savedAt: Date.now() }));
+    } catch { /* quota exceeded — silently ignore */ }
+}
+
+function loadDraft(toolName: string): { component: GeneratedComponent; rawResponse: string; savedAt: number } | null {
+    try {
+        const raw = localStorage.getItem(`${DRAFT_KEY_PREFIX}${toolName}`);
+        return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+}
+
+function clearDraft(toolName: string) {
+    try { localStorage.removeItem(`${DRAFT_KEY_PREFIX}${toolName}`); } catch { /* ignore */ }
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -487,6 +518,8 @@ export function ToolUiComponentGenerator({ tools, onComplete, preselectedToolNam
     // Save state
     const [isSaving, setIsSaving] = useState(false);
     const [savedSampleStreamEvents, setSavedSampleStreamEvents] = useState<unknown[]>([]);
+    const [saveError, setSaveError] = useState<{ title: string; detail: string; raw?: string } | null>(null);
+    const [hasDraft, setHasDraft] = useState(false);
 
     const selectedTool = tools.find(t => t.name === selectedToolName);
 
@@ -551,6 +584,14 @@ export function ToolUiComponentGenerator({ tools, onComplete, preselectedToolNam
     // Only run on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Check for a saved draft when the tool is known
+    useEffect(() => {
+        const toolName = selectedToolName || preselectedToolName || "";
+        if (!toolName) return;
+        const draft = loadDraft(toolName);
+        setHasDraft(!!draft);
+    }, [selectedToolName, preselectedToolName]);
 
     // ── Step 1: Tool selection ─────────────────────────────────────────────────
 
@@ -623,55 +664,96 @@ export function ToolUiComponentGenerator({ tools, onComplete, preselectedToolNam
 
         if (fullText) {
             setRawResponse(fullText);
-            const parsed = extractJsonFromResponse(fullText, selectedToolName || preselectedToolName || "");
+            const toolNameForDraft = selectedToolName || preselectedToolName || "";
+            const parsed = extractJsonFromResponse(fullText, toolNameForDraft);
             if (parsed) {
                 setGeneratedComponent(parsed);
                 setParseError(null);
+                // Persist draft immediately — protects against save failure
+                saveDraft(toolNameForDraft, parsed, fullText);
+                setHasDraft(true);
             } else {
                 setParseError(
                     "Could not extract any component code from the model's response. " +
                     "Review the raw response below — you may copy the code manually into the editor."
                 );
+                // Still save the raw response so it's recoverable
+                saveDraft(toolNameForDraft, { tool_name: toolNameForDraft, display_name: toolNameForDraft, results_label: "Results", inline_code: "", overlay_code: "", utility_code: "", header_extras_code: "", header_subtitle_code: "", keep_expanded_on_stream: false, allowed_imports: [], version: "1.0.0" }, fullText);
+                setHasDraft(true);
             }
         }
 
         setStep("review");
     };
 
-    // ── Step 4: Save ──────────────────────────────────────────────────────────
+    // ── Step 4: Save (upsert — create or update existing) ────────────────────
 
     const handleSave = async () => {
         if (!generatedComponent) return;
 
         setIsSaving(true);
+        setSaveError(null);
         try {
             const toolRecord = tools.find(t => t.name === generatedComponent.tool_name);
 
-            const response = await fetch("/api/admin/tool-ui-components", {
-                method: "POST",
+            // Check for an existing component so we can PUT instead of POST
+            let existingId: string | null = null;
+            try {
+                const checkRes = await fetch(
+                    `/api/admin/tool-ui-components?tool_name=${encodeURIComponent(generatedComponent.tool_name)}`
+                );
+                if (checkRes.ok) {
+                    const checkData = await checkRes.json() as { components?: Array<{ id: string }> };
+                    if (checkData.components && checkData.components.length > 0) {
+                        existingId = checkData.components[0].id;
+                    }
+                }
+            } catch {
+                // Network error on check — attempt POST anyway
+            }
+
+            const url = existingId
+                ? `/api/admin/tool-ui-components/${existingId}`
+                : "/api/admin/tool-ui-components";
+            const method = existingId ? "PUT" : "POST";
+
+            const payload = {
+                ...generatedComponent,
+                tool_id: toolRecord?.id ?? null,
+                language: "tsx",
+                is_active: true,
+                notes: `${existingId ? "Updated" : "Created"} by AI Component Generator`,
+            };
+
+            const response = await fetch(url, {
+                method,
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ...generatedComponent,
-                    tool_id: toolRecord?.id ?? null,
-                    language: "tsx",
-                    is_active: true,
-                    notes: "Auto-generated by AI Component Generator",
-                }),
+                body: JSON.stringify(payload),
             });
 
             if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.error || "Failed to save");
+                let errTitle = `HTTP ${response.status}`;
+                let errDetail = "Unknown error";
+                try {
+                    const errData = await response.json() as { error?: string; details?: string; message?: string };
+                    errTitle = errData.error || errTitle;
+                    errDetail = errData.details || errData.message || errDetail;
+                } catch { /* body not json */ }
+                throw Object.assign(new Error(errTitle), { detail: errDetail });
             }
 
-            toast({ title: "Saved", description: "Component saved. It will be active on the next tool use." });
+            // Success — clear draft
+            clearDraft(generatedComponent.tool_name);
+            setHasDraft(false);
+            toast({ title: `Component ${existingId ? "updated" : "saved"}`, description: "It will be active on the next tool use." });
             setStep("saved");
             onComplete?.();
         } catch (err) {
-            toast({
-                title: "Save failed",
-                description: err instanceof Error ? err.message : "Unknown error",
-                variant: "destructive",
+            const e = err as Error & { detail?: string };
+            setSaveError({
+                title: e.message || "Save failed",
+                detail: e.detail || "The component could not be saved. Your draft is preserved in local storage — you can retry or copy the code manually.",
+                raw: rawResponse,
             });
         } finally {
             setIsSaving(false);
@@ -693,6 +775,21 @@ export function ToolUiComponentGenerator({ tools, onComplete, preselectedToolNam
         setParseError(null);
         setRawResponse("");
         setSavedSampleStreamEvents([]);
+        setSaveError(null);
+        setHasDraft(false);
+    };
+
+    // ── Draft recovery ────────────────────────────────────────────────────────
+
+    const handleRestoreDraft = () => {
+        const toolName = selectedToolName || preselectedToolName || "";
+        const draft = loadDraft(toolName);
+        if (!draft) return;
+        setGeneratedComponent(draft.component);
+        setRawResponse(draft.rawResponse);
+        setSaveError(null);
+        setParseError(null);
+        setStep("review");
     };
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -702,6 +799,100 @@ export function ToolUiComponentGenerator({ tools, onComplete, preselectedToolNam
     return (
         <div className="space-y-4 p-1">
             {!preselectedToolName && <StepProgress current={step} />}
+
+            {/* ── Draft recovery banner ─────────────────────────────────────── */}
+            {hasDraft && step !== "review" && step !== "saved" && (
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-warning/10 border border-warning/30">
+                    <HardDrive className="w-4 h-4 text-warning flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-warning">Unsaved draft detected</p>
+                        <p className="text-[11px] text-muted-foreground">A previous AI generation was not saved. You can restore it.</p>
+                    </div>
+                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1 flex-shrink-0" onClick={handleRestoreDraft}>
+                        <ClipboardList className="w-3 h-3" />
+                        Restore Draft
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 flex-shrink-0"
+                        onClick={() => {
+                            clearDraft(selectedToolName || preselectedToolName || "");
+                            setHasDraft(false);
+                        }}
+                    >
+                        <X className="w-3 h-3" />
+                    </Button>
+                </div>
+            )}
+
+            {/* ── Save Error Dialog ─────────────────────────────────────────── */}
+            <Dialog open={!!saveError} onOpenChange={(open) => { if (!open) setSaveError(null); }}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-destructive">
+                            <AlertTriangle className="w-5 h-5" />
+                            Save Failed — Your Work Is Safe
+                        </DialogTitle>
+                        <DialogDescription>
+                            The component could not be saved to the database. Your draft is preserved in local storage — close this dialog and retry, or copy the code manually.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 space-y-1">
+                            <p className="text-xs font-semibold text-destructive">Error</p>
+                            <p className="text-xs font-mono text-destructive">{saveError?.title}</p>
+                            {saveError?.detail && saveError.detail !== "Unknown error" && (
+                                <>
+                                    <p className="text-xs font-semibold text-destructive mt-2">Details</p>
+                                    <p className="text-xs font-mono text-destructive break-all">{saveError.detail}</p>
+                                </>
+                            )}
+                        </div>
+
+                        {saveError?.raw && (
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs font-medium text-muted-foreground">Full AI Response (copy &amp; paste into the Edit Code tab if needed)</p>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-6 text-[11px] gap-1"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(saveError.raw ?? "").then(() => {
+                                                toast({ title: "Copied to clipboard" });
+                                            }).catch(() => {
+                                                toast({ title: "Copy failed", description: "Use Ctrl+A / Cmd+A to select the text below manually.", variant: "destructive" });
+                                            });
+                                        }}
+                                    >
+                                        <Copy className="w-3 h-3" />
+                                        Copy All
+                                    </Button>
+                                </div>
+                                <pre className="text-[11px] bg-muted/40 p-3 rounded-lg overflow-auto max-h-[300px] whitespace-pre-wrap font-mono">
+                                    {saveError.raw}
+                                </pre>
+                            </div>
+                        )}
+
+                        <div className="flex gap-2 pt-1">
+                            <Button
+                                size="sm"
+                                onClick={() => { setSaveError(null); handleSave(); }}
+                                disabled={isSaving}
+                                className="gap-1.5"
+                            >
+                                {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                                Retry Save
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => setSaveError(null)}>
+                                Close &amp; Keep Draft
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* ── Step 1: Select Tool ───────────────────────────────────────── */}
             {step === "select-tool" && (

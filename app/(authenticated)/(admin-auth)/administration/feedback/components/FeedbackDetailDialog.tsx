@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { updateFeedback, setAdminDecision, getFeedbackComments, addFeedbackComment, getFeedbackById, sendUserReviewMessage, getUserMessages, adminReplyUserReview } from '@/actions/feedback.actions';
+import { updateFeedback, setAdminDecision, getFeedbackComments, addFeedbackComment, getFeedbackById, sendUserReviewMessage, getUserMessages, adminReplyUserReview, forceCloseFeedback } from '@/actions/feedback.actions';
 import { useFileUploadWithStorage } from '@/components/ui/file-upload/useFileUploadWithStorage';
 import {
     UserFeedback,
@@ -537,7 +537,28 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
             }
 
             if (Object.keys(updates).length > 0) {
-                const updateResult = await updateFeedback(item.id, updates);
+                const terminalStatuses = ['closed', 'resolved', 'wont_fix'];
+                const isTerminalTransition =
+                    updates.status &&
+                    terminalStatuses.includes(updates.status as string) &&
+                    !terminalStatuses.includes(item.status);
+
+                let updateResult;
+                if (isTerminalTransition) {
+                    // Bypasses the testing_result trigger — admin force close
+                    updateResult = await forceCloseFeedback(
+                        item.id,
+                        updates.status as 'closed' | 'resolved' | 'wont_fix'
+                    );
+                    // Apply any remaining non-status updates separately
+                    const { status: _s, ...remainingUpdates } = updates;
+                    if (Object.keys(remainingUpdates).length > 0) {
+                        await updateFeedback(item.id, remainingUpdates);
+                    }
+                } else {
+                    updateResult = await updateFeedback(item.id, updates);
+                }
+
                 if (!updateResult.success) {
                     toast.error(`Failed to save updates: ${updateResult.error}`);
                     setIsSaving(false);

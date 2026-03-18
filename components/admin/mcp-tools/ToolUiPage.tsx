@@ -63,11 +63,13 @@ export function ToolUiPage({ tool }: Props) {
         let existingId: string | null = null;
         try {
             const res = await fetch(`/api/admin/tool-ui-components?tool_name=${encodeURIComponent(tool.name)}`);
-            const data = await res.json();
-            if (data.components && data.components.length > 0) {
-                existingId = data.components[0].id;
+            if (res.ok) {
+                const data = await res.json() as { components?: Array<{ id: string }> };
+                if (data.components && data.components.length > 0) {
+                    existingId = data.components[0].id;
+                }
             }
-        } catch { /* ignore — will create new */ }
+        } catch { /* network error on check — attempt POST anyway */ }
 
         const url = existingId
             ? `/api/admin/tool-ui-components/${existingId}`
@@ -82,7 +84,7 @@ export function ToolUiPage({ tool }: Props) {
                 tool_id: tool.id,
                 language: "tsx",
                 is_active: true,
-                notes: "Updated via AI revision",
+                notes: `${existingId ? "Updated" : "Created"} via AI revision`,
                 overlay_code: component.overlay_code || null,
                 utility_code: component.utility_code || null,
                 header_extras_code: component.header_extras_code || null,
@@ -91,8 +93,14 @@ export function ToolUiPage({ tool }: Props) {
         });
 
         if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.error || "Failed to save revision");
+            let errMsg = `HTTP ${response.status}`;
+            let errDetail = "";
+            try {
+                const errData = await response.json() as { error?: string; details?: string; message?: string };
+                errMsg = errData.error || errMsg;
+                errDetail = errData.details || errData.message || "";
+            } catch { /* body not JSON */ }
+            throw Object.assign(new Error(errMsg), { detail: errDetail });
         }
     };
 

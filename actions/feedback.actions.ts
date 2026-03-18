@@ -629,6 +629,54 @@ export async function getFeedbackSummary(): Promise<{ success: boolean; error?: 
 }
 
 /**
+ * Admin force-closes a feedback item regardless of testing status.
+ * Sets testing_result = 'admin_closed' atomically with status to bypass the
+ * enforce_testing_before_close trigger (which only blocks when testing_result is NULL).
+ */
+export async function forceCloseFeedback(
+    feedbackId: string,
+    targetStatus: 'closed' | 'resolved' | 'wont_fix' = 'closed'
+): Promise<{ success: boolean; error?: string; data?: UserFeedback }> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return { success: false, error: 'User not authenticated' };
+        }
+
+        const now = new Date().toISOString();
+        const updateData: Record<string, unknown> = {
+            status: targetStatus,
+            testing_result: 'admin_closed',
+            resolved_at: now,
+            resolved_by: user.id,
+            updated_at: now,
+            ...(targetStatus === 'closed' ? { user_confirmed_at: now } : {}),
+            admin_decision: targetStatus === 'wont_fix' ? 'rejected' : 'approved',
+        };
+
+        const { data, error } = await supabase
+            .from('user_feedback')
+            .update(updateData)
+            .eq('id', feedbackId)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Error force-closing feedback:', error);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true, data };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        console.error('Error in forceCloseFeedback:', error);
+        return { success: false, error: message };
+    }
+}
+
+/**
  * User confirms a resolved feedback item (marks as closed)
  */
 export async function confirmFeedbackResolution(feedbackId: string): Promise<{ success: boolean; error?: string; data?: UserFeedback }> {

@@ -95,9 +95,16 @@ export const fetchAllUserPrompts = createAsyncThunk<
     async (_, { dispatch }) => {
         dispatch(setListStatus({ status: 'loading' }));
 
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+            dispatch(setListStatus({ status: 'error', error: 'Not authenticated' }));
+            throw new Error('Not authenticated');
+        }
+
         const { data: rows, error } = await supabase
             .from('prompts')
             .select<'*', PromptDb>('*')
+            .eq('user_id', user.id)
             .order('updated_at', { ascending: false });
 
         if (error) {

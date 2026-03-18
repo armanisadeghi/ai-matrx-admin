@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Search, Mic, SlidersHorizontal, Plus, X } from "lucide-react";
+import { Search, Mic, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRecordAndTranscribe } from "@/features/audio/hooks";
 import { TranscriptionResult } from "@/features/audio/types";
@@ -11,19 +11,19 @@ import { TranscriptionLoader } from "@/features/audio/components/TranscriptionLo
 interface DesktopSearchBarProps {
     searchValue: string;
     onSearchChange: (value: string) => void;
-    onFilterClick: () => void;
     onNewClick: () => void;
+    /** @deprecated No longer used — filter button moved to DesktopFilterPanel */
+    onFilterClick?: () => void;
+    /** @deprecated */
     showFilterBadge?: boolean;
+    /** @deprecated */
     activeFilterCount?: number;
 }
 
 export function DesktopSearchBar({
     searchValue,
     onSearchChange,
-    onFilterClick,
     onNewClick,
-    showFilterBadge = false,
-    activeFilterCount = 0,
 }: DesktopSearchBarProps) {
     const [localSearchValue, setLocalSearchValue] = useState(searchValue);
 
@@ -97,65 +97,42 @@ export function DesktopSearchBar({
     }
 
     return (
-        <div className="mb-4">
-            {/* Main Search and Action Bar */}
-            <div className="flex items-center gap-2">
-                {/* Search Container - Prominent and Beautiful */}
-                <div className="flex-1 relative">
-                    <div className="flex items-center gap-3 p-1 rounded-full mx-glass hover:shadow-xl transition-shadow">
-                        <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <input
-                            type="text"
-                            value={localSearchValue}
-                            onChange={(e) => handleSearchChange(e.target.value)}
-                            placeholder="Search prompts..."
-                            className="flex-1 bg-transparent border-0 outline-none text-base text-foreground placeholder:text-muted-foreground"
-                        />
-                        {localSearchValue && (
-                            <button
-                                onClick={() => handleSearchChange("")}
-                                className="p-1.5 hover:bg-muted/50 rounded-lg transition-colors flex-shrink-0"
-                            >
-                                <X className="h-4 w-4 text-muted-foreground" />
-                            </button>
-                        )}
+        <div className="flex items-center gap-2">
+            <div className="flex-1 relative">
+                <div className="flex items-center gap-3 p-1 rounded-full mx-glass hover:shadow-xl transition-shadow">
+                    <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <input
+                        type="text"
+                        value={localSearchValue}
+                        onChange={(e) => handleSearchChange(e.target.value)}
+                        placeholder="Search prompts..."
+                        className="flex-1 bg-transparent border-0 outline-none text-base text-foreground placeholder:text-muted-foreground"
+                    />
+                    {localSearchValue && (
                         <button
-                            onClick={handleMicClick}
+                            onClick={() => handleSearchChange("")}
                             className="p-1.5 hover:bg-muted/50 rounded-lg transition-colors flex-shrink-0"
                         >
-                            <Mic className="h-4 w-4 text-muted-foreground" />
+                            <X className="h-4 w-4 text-muted-foreground" />
                         </button>
-                    </div>
+                    )}
+                    <button
+                        onClick={handleMicClick}
+                        className="p-1.5 hover:bg-muted/50 rounded-lg transition-colors flex-shrink-0"
+                    >
+                        <Mic className="h-4 w-4 text-muted-foreground" />
+                    </button>
                 </div>
-
-                {/* Filter Button */}
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onFilterClick}
-                    className="h-8 px-3 rounded-full mx-glass hover:shadow-xl relative border border-border/50"
-                >
-                    <SlidersHorizontal className="h-4 w-4" />
-                    Filter
-                    {activeFilterCount > 0 ? (
-                        <span className="ml-1 inline-flex items-center justify-center h-4 min-w-[16px] px-1 text-[10px] font-bold bg-primary text-primary-foreground rounded-full">
-                            {activeFilterCount}
-                        </span>
-                    ) : showFilterBadge ? (
-                        <span className="absolute top-2 right-2 h-2 w-2 bg-primary rounded-full" />
-                    ) : null}
-                </Button>
-
-                {/* New Button */}
-                <Button
-                    size="sm"
-                    onClick={onNewClick}
-                    className="h-8 px-3 rounded-full mx-glass hover:shadow-xl bg-primary hover:bg-primary/90"
-                >
-                    <Plus className="h-4 w-4" />
-                    New
-                </Button>
             </div>
+
+            <Button
+                size="sm"
+                onClick={onNewClick}
+                className="h-8 px-3 rounded-full mx-glass hover:shadow-xl bg-primary hover:bg-primary/90"
+            >
+                <Plus className="h-4 w-4" />
+                New
+            </Button>
         </div>
     );
 }

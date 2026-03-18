@@ -384,11 +384,13 @@ export function ModelSettings({
                         step={step}
                         value={actualValue}
                         onChange={(e) => {
-                            const val = control.type === 'integer' ? parseInt(e.target.value) : parseFloat(e.target.value);
+                            const raw = e.target.value;
+                            if (raw === '' || raw === '-') return;
+                            const val = control.type === 'integer' ? parseInt(raw, 10) : parseFloat(raw);
                             if (!isNaN(val)) handleSettingChange(key, val);
                         }}
                         disabled={!isEnabled}
-                        className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-border rounded disabled:opacity-50"
+                        className="w-24 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-border rounded disabled:opacity-50"
                     />
                 </div>
             );
@@ -403,7 +405,9 @@ export function ModelSettings({
                     max={control.max}
                     value={actualValue}
                     onChange={(e) => {
-                        const val = control.type === 'integer' ? parseInt(e.target.value) : parseFloat(e.target.value);
+                        const raw = e.target.value;
+                        if (raw === '' || raw === '-') return;
+                        const val = control.type === 'integer' ? parseInt(raw, 10) : parseFloat(raw);
                         if (!isNaN(val)) handleSettingChange(key, val);
                     }}
                     disabled={!isEnabled}

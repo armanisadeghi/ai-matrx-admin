@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { getAllFeedback, updateFeedback, setAdminDecision } from '@/actions/feedback.actions';
+import { getAllFeedback, updateFeedback, setAdminDecision, forceCloseFeedback } from '@/actions/feedback.actions';
 import { UserFeedback, FeedbackStatus, FeedbackType, FeedbackCategory, AdminDecision, TestingResult, ADMIN_DECISION_COLORS, ADMIN_DECISION_LABELS, ADMIN_STATUS_LABELS, CATEGORY_COLORS } from '@/types/feedback.types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -314,7 +314,10 @@ export default function FeedbackTable() {
     };
 
     const handleStatusChange = async (feedbackId: string, newStatus: FeedbackStatus) => {
-        const result = await updateFeedback(feedbackId, { status: newStatus });
+        const terminalStatuses: FeedbackStatus[] = ['closed', 'resolved', 'wont_fix'];
+        const result = terminalStatuses.includes(newStatus)
+            ? await forceCloseFeedback(feedbackId, newStatus as 'closed' | 'resolved' | 'wont_fix')
+            : await updateFeedback(feedbackId, { status: newStatus });
         if (result.success) {
             toast.success('Status updated successfully');
             await loadFeedback();

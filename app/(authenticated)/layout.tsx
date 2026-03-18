@@ -17,6 +17,7 @@ import ResponsiveLayout from "@/components/layout/new-layout/ResponsiveLayout";
 import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
 import { initializeUserPreferencesState } from "@/lib/redux/slices/userPreferencesSlice";
 import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
+import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
 import { CanvasSideSheet } from "@/features/canvas/core/CanvasSideSheet";
 import { MessagingSideSheet, MessagingInitializer } from "@/features/messaging";
 import AppleKeyExpiryBanner from "@/components/admin/AppleKeyExpiryBanner";
@@ -95,6 +96,7 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     return (
         <Providers initialReduxState={initialReduxState}>
             <AppleKeyExpiryBanner />
+            <AuthSessionWatcher />
             <SocketInitializer />
             <AnnouncementProvider />
             <ResponsiveLayout {...layoutProps}>

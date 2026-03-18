@@ -15,6 +15,7 @@ import {
     Loader2,
     X,
     Tag,
+    TestTube2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +60,27 @@ function sourceAppFromPath(functionPath: string): string {
     return functionPath.split(".")[0] || "unknown";
 }
 
+function hasParams(tool: Tool): boolean {
+    if (!tool.parameters) return false;
+    const p = tool.parameters as Record<string, unknown>;
+    const props = p.properties as Record<string, unknown> | undefined;
+    return !!(props && Object.keys(props).length > 0);
+}
+
+function hasOutputSchema(tool: Tool): boolean {
+    if (!tool.output_schema) return false;
+    const o = tool.output_schema as Record<string, unknown>;
+    return Object.keys(o).length > 0;
+}
+
+function hasAnnotations(tool: Tool): boolean {
+    return Array.isArray(tool.annotations) && tool.annotations.length > 0;
+}
+
+function isTestReady(tool: Tool): boolean {
+    return hasParams(tool) && hasOutputSchema(tool) && hasAnnotations(tool);
+}
+
 export function McpToolsManager() {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
@@ -71,6 +93,7 @@ export function McpToolsManager() {
     const [selectedSourceApp, setSelectedSourceApp] = useState<string>("all");
     const [selectedStatus, setSelectedStatus] = useState<"all" | "active" | "inactive">("all");
     const [selectedTag, setSelectedTag] = useState<string>("all");
+    const [selectedTestReady, setSelectedTestReady] = useState<"all" | "ready" | "missing_params" | "missing_output" | "missing_annotations">("all");
     const [deleteConfirmation, setDeleteConfirmation] = useState<{
         isOpen: boolean;
         toolId: string | null;
@@ -102,6 +125,7 @@ export function McpToolsManager() {
         selectedSourceApp !== "all",
         selectedStatus !== "all",
         selectedTag !== "all",
+        selectedTestReady !== "all",
     ].filter(Boolean).length;
 
     const clearFilters = () => {
@@ -109,6 +133,7 @@ export function McpToolsManager() {
         setSelectedSourceApp("all");
         setSelectedStatus("all");
         setSelectedTag("all");
+        setSelectedTestReady("all");
         setSearchQuery("");
     };
 
@@ -126,9 +151,15 @@ export function McpToolsManager() {
                 (selectedStatus === "active" && tool.is_active) ||
                 (selectedStatus === "inactive" && !tool.is_active);
             const matchesTag = selectedTag === "all" || tool.tags?.includes(selectedTag);
-            return matchesSearch && matchesCategory && matchesSourceApp && matchesStatus && matchesTag;
+            const matchesTestReady =
+                selectedTestReady === "all" ||
+                (selectedTestReady === "ready" && isTestReady(tool)) ||
+                (selectedTestReady === "missing_params" && !hasParams(tool)) ||
+                (selectedTestReady === "missing_output" && !hasOutputSchema(tool)) ||
+                (selectedTestReady === "missing_annotations" && !hasAnnotations(tool));
+            return matchesSearch && matchesCategory && matchesSourceApp && matchesStatus && matchesTag && matchesTestReady;
         });
-    }, [tools, searchQuery, selectedCategory, selectedSourceApp, selectedStatus, selectedTag]);
+    }, [tools, searchQuery, selectedCategory, selectedSourceApp, selectedStatus, selectedTag, selectedTestReady]);
 
     const navigateTo = (path: string) => {
         startTransition(() => router.push(path));
@@ -285,13 +316,33 @@ export function McpToolsManager() {
                         </SelectContent>
                     </Select>
                 )}
+
+                <Select value={selectedTestReady} onValueChange={v => setSelectedTestReady(v as typeof selectedTestReady)}>
+                    <SelectTrigger className={`h-8 w-44 text-xs ${selectedTestReady !== "all" ? "border-primary text-primary" : ""}`}>
+                        <TestTube2 className="h-3 w-3 mr-1 flex-shrink-0" />
+                        <SelectValue placeholder="Test Readiness" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all" className="text-xs">All Tools</SelectItem>
+                        <SelectItem value="ready" className="text-xs">Test Ready (all 3)</SelectItem>
+                        <SelectItem value="missing_params" className="text-xs">Missing Parameters</SelectItem>
+                        <SelectItem value="missing_output" className="text-xs">Missing Output Schema</SelectItem>
+                        <SelectItem value="missing_annotations" className="text-xs">Missing Annotations</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
 
             {/* Stats row */}
-            <div className="flex gap-4 text-xs text-muted-foreground">
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                 <span><span className="font-semibold text-foreground">{filteredTools.length}</span> of {tools.length} tools</span>
                 <span><span className="font-semibold text-success">{filteredTools.filter(t => t.is_active).length}</span> active</span>
                 <span><span className="font-semibold text-muted-foreground">{filteredTools.filter(t => !t.is_active).length}</span> inactive</span>
+                <span className="border-l border-border pl-4">
+                    <span className="font-semibold text-info">{filteredTools.filter(isTestReady).length}</span> test ready
+                </span>
+                <span><span className="font-semibold text-warning">{filteredTools.filter(t => !hasParams(t)).length}</span> no params</span>
+                <span><span className="font-semibold text-warning">{filteredTools.filter(t => !hasOutputSchema(t)).length}</span> no output schema</span>
+                <span><span className="font-semibold text-warning">{filteredTools.filter(t => !hasAnnotations(t)).length}</span> no annotations</span>
             </div>
 
             {/* Tool list */}
@@ -357,6 +408,10 @@ interface ToolListItemProps {
 function ToolListItem({ tool, isPending, onSelect, onEdit, onDelete, onToggleActive, onGenerateUi, onViewSamples, onViewIncidents }: ToolListItemProps) {
     const icon = mapIcon(tool.icon, tool.category, 16);
     const sourceApp = sourceAppFromPath(tool.function_path);
+    const toolHasParams = hasParams(tool);
+    const toolHasOutput = hasOutputSchema(tool);
+    const toolHasAnnotations = hasAnnotations(tool);
+    const toolIsReady = toolHasParams && toolHasOutput && toolHasAnnotations;
 
     return (
         // Use div + role="button" so Switch (a <button>) can be nested without hydration error
@@ -385,6 +440,23 @@ function ToolListItem({ tool, isPending, onSelect, onEdit, onDelete, onToggleAct
                         )}
                         {tool.version && (
                             <span className="text-[10px] text-muted-foreground font-mono">v{tool.version}</span>
+                        )}
+                        {toolIsReady ? (
+                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-success/50 text-success bg-success/10">
+                                test ready
+                            </Badge>
+                        ) : (
+                            <span className="flex items-center gap-0.5">
+                                {!toolHasParams && (
+                                    <span title="Missing parameters" className="text-[10px] px-1 py-0 rounded bg-warning/10 text-warning border border-warning/30">no params</span>
+                                )}
+                                {!toolHasOutput && (
+                                    <span title="Missing output schema" className="text-[10px] px-1 py-0 rounded bg-warning/10 text-warning border border-warning/30">no output</span>
+                                )}
+                                {!toolHasAnnotations && (
+                                    <span title="Missing annotations" className="text-[10px] px-1 py-0 rounded bg-warning/10 text-warning border border-warning/30">no annotations</span>
+                                )}
+                            </span>
                         )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{tool.description}</p>

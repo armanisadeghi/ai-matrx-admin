@@ -13,12 +13,21 @@ import {
     FlaskConical,
     Play,
     FastForward,
+    Copy,
+    HardDrive,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/utils/supabase/client";
 import { formatDistanceToNow } from "date-fns";
@@ -232,6 +241,7 @@ export function ToolComponentPreview({ tool, onSaveRevision }: ToolComponentPrev
     const [lastRevision, setLastRevision] = useState<GeneratedComponent | null>(null);
     const [simulateStream, setSimulateStream] = useState(false);
     const [streamKey, setStreamKey] = useState(0);
+    const [saveError, setSaveError] = useState<{ title: string; detail: string } | null>(null);
 
     const selectedSample = samples.find(s => s.id === selectedSampleId);
 
@@ -307,6 +317,7 @@ export function ToolComponentPreview({ tool, onSaveRevision }: ToolComponentPrev
     const handleSaveRevision = async () => {
         if (!lastRevision || !onSaveRevision) return;
         setIsSavingRevision(true);
+        setSaveError(null);
         try {
             await onSaveRevision(lastRevision);
             toast({ title: "Revision saved", description: "Component updated. Reload the preview to see changes." });
@@ -314,7 +325,11 @@ export function ToolComponentPreview({ tool, onSaveRevision }: ToolComponentPrev
             setLastRevision(null);
             agent.reset();
         } catch (err) {
-            toast({ title: "Save failed", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
+            const e = err as Error & { detail?: string };
+            setSaveError({
+                title: e.message || "Save failed",
+                detail: e.detail || "The revision could not be saved. Your generated code is still visible below — copy it manually if needed.",
+            });
         } finally {
             setIsSavingRevision(false);
         }
@@ -324,6 +339,72 @@ export function ToolComponentPreview({ tool, onSaveRevision }: ToolComponentPrev
 
     return (
         <div className="space-y-4">
+            {/* Save Error Dialog */}
+            <Dialog open={!!saveError} onOpenChange={(open) => { if (!open) setSaveError(null); }}>
+                <DialogContent className="max-w-xl">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-destructive">
+                            <AlertTriangle className="w-5 h-5" />
+                            Revision Save Failed — Your Work Is Safe
+                        </DialogTitle>
+                        <DialogDescription>
+                            The revision could not be saved. The generated code is still visible in the panel below — copy it manually into the Edit Code tab if needed.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 space-y-1">
+                            <p className="text-xs font-semibold text-destructive">Error</p>
+                            <p className="text-xs font-mono text-destructive">{saveError?.title}</p>
+                            {saveError?.detail && saveError.detail !== "Unknown error" && (
+                                <>
+                                    <p className="text-xs font-semibold text-destructive mt-2">Details</p>
+                                    <p className="text-xs font-mono text-destructive break-all">{saveError.detail}</p>
+                                </>
+                            )}
+                        </div>
+                        {agent.accumulatedText && (
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs font-medium text-muted-foreground">Generated code (copy to Edit Code tab)</p>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-6 text-[11px] gap-1"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(agent.accumulatedText).then(() => {
+                                                toast({ title: "Copied to clipboard" });
+                                            }).catch(() => {
+                                                toast({ title: "Copy failed", description: "Select the text below manually.", variant: "destructive" });
+                                            });
+                                        }}
+                                    >
+                                        <Copy className="w-3 h-3" />
+                                        Copy All
+                                    </Button>
+                                </div>
+                                <pre className="text-[11px] bg-muted/40 p-3 rounded-lg overflow-auto max-h-[250px] whitespace-pre-wrap font-mono">
+                                    {agent.accumulatedText}
+                                </pre>
+                            </div>
+                        )}
+                        <div className="flex gap-2 pt-1">
+                            <Button
+                                size="sm"
+                                onClick={() => { setSaveError(null); handleSaveRevision(); }}
+                                disabled={isSavingRevision}
+                                className="gap-1.5"
+                            >
+                                {isSavingRevision ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <HardDrive className="w-3.5 h-3.5" />}
+                                Retry Save
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => setSaveError(null)}>
+                                Close
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
             {/* Sample selector */}
             <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 flex-shrink-0">

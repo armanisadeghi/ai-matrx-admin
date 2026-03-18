@@ -1,6 +1,6 @@
 // features/prompts/hooks/usePromptFilters.ts
 //
-// URL-parameter–backed filter state for the prompts UI.
+// URL-parameter-backed filter state for the prompts UI.
 //
 // Values are stored in the URL so they are:
 //   - Bookmarkable — save a filtered view as a browser bookmark
@@ -11,9 +11,8 @@
 // Defaults are never written to the URL to keep links clean.
 //
 // Filter logic:
-//   - Tags / Categories: EXCLUSION model — all shown by default, uncheck to hide
-//     xcats / xtags store the excluded values (comma-separated)
-//     NONE_SENTINEL in exclusions means "hide uncategorized / untagged"
+//   - Tags / Categories: INCLUSION model — empty = show all, non-empty = show only matching
+//     The special NONE_SENTINEL value means "include uncategorized / untagged"
 //   - Favorites / Archived: single-choice radio
 //   - favoritesFirst: secondary sort that pins favorites to the top
 
@@ -22,20 +21,12 @@
 import { useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
 export type PromptSortOption = "updated-desc" | "created-desc" | "name-asc" | "name-desc" | "category-asc";
 export type PromptTab        = "mine" | "shared" | "all";
-
-/** Radio for favorites dimension. "all" = default, omitted from URL. */
 export type FavFilter = "all" | "yes" | "no";
-
-/** Radio for archived dimension. "active" = default, omitted from URL. */
 export type ArchFilter = "active" | "archived" | "both";
 
-/** Sentinel value in exclusion lists meaning "has none" (no category / no tags). */
+/** Sentinel value meaning "has none" (no category / no tags). */
 export const NONE_SENTINEL = "__none__";
 
 const DEFAULT_TAB:   PromptTab        = "mine";
@@ -49,56 +40,48 @@ export interface PromptFilters {
     searchTerm:   string;
 
     /**
-     * Excluded categories. Empty = no exclusions (show all).
-     * NONE_SENTINEL = hide uncategorized prompts.
+     * Included categories. Empty = no category filter (show all).
+     * NONE_SENTINEL in the list = include uncategorized prompts.
      */
-    excludedCats: string[];
+    includedCats: string[];
     /**
-     * Excluded tags. Empty = no exclusions (show all).
-     * NONE_SENTINEL = hide untagged prompts.
+     * Included tags. Empty = no tag filter (show all).
+     * NONE_SENTINEL in the list = include untagged prompts.
      */
-    excludedTags: string[];
+    includedTags: string[];
 
-    /** "all" | "yes" (favorites only) | "no" (non-favorites only) */
     favFilter:    FavFilter;
-    /** "active" (default) | "archived" | "both" */
     archFilter:   ArchFilter;
-    /** When true, favorites are pinned to the top within the chosen sort order. */
     favoritesFirst: boolean;
 
-    setTab:           (tab: PromptTab)         => void;
-    setSortBy:        (sort: PromptSortOption) => void;
-    setSearchTerm:    (q: string)              => void;
-    setExcludedCats:  (cats: string[])         => void;
-    setExcludedTags:  (tags: string[])         => void;
-    setFavFilter:     (v: FavFilter)           => void;
-    setArchFilter:    (v: ArchFilter)          => void;
-    setFavoritesFirst:(v: boolean)             => void;
+    setTab:            (tab: PromptTab)         => void;
+    setSortBy:         (sort: PromptSortOption) => void;
+    setSearchTerm:     (q: string)              => void;
+    setIncludedCats:   (cats: string[])         => void;
+    setIncludedTags:   (tags: string[])         => void;
+    setFavFilter:      (v: FavFilter)           => void;
+    setArchFilter:     (v: ArchFilter)          => void;
+    setFavoritesFirst: (v: boolean)             => void;
 
     resetFilters:    () => void;
     hasActiveFilters: boolean;
     isSearching:      boolean;
 }
 
-// ---------------------------------------------------------------------------
-// Hook
-// ---------------------------------------------------------------------------
-
 export function usePromptFilters(): PromptFilters {
     const searchParams = useSearchParams();
     const router       = useRouter();
     const pathname     = usePathname();
 
-    // ── Read ─────────────────────────────────────────────────────────────────
     const tab        = (searchParams.get("tab")  as PromptTab        | null) ?? DEFAULT_TAB;
     const sortBy     = (searchParams.get("sort") as PromptSortOption | null) ?? DEFAULT_SORT;
     const searchTerm = searchParams.get("q") ?? "";
 
-    const xcatsRaw    = searchParams.get("xcats") ?? "";
-    const excludedCats = xcatsRaw ? xcatsRaw.split(",").filter(Boolean) : [];
+    const icatsRaw    = searchParams.get("icats") ?? "";
+    const includedCats = icatsRaw ? icatsRaw.split(",").filter(Boolean) : [];
 
-    const xtagsRaw    = searchParams.get("xtags") ?? "";
-    const excludedTags = xtagsRaw ? xtagsRaw.split(",").filter(Boolean) : [];
+    const itagsRaw    = searchParams.get("itags") ?? "";
+    const includedTags = itagsRaw ? itagsRaw.split(",").filter(Boolean) : [];
 
     const favRaw  = searchParams.get("fav");
     const favFilter: FavFilter =
@@ -112,10 +95,8 @@ export function usePromptFilters(): PromptFilters {
         : archRaw === "both"   ? "both"
         : DEFAULT_ARCH;
 
-    // favoritesFirst: default true; only written to URL as "false" when disabled
     const favoritesFirst = searchParams.get("fav-first") !== "false";
 
-    // ── Write ─────────────────────────────────────────────────────────────────
     const setParam = useCallback(
         (key: string, value: string, defaultValue: string) => {
             const params = new URLSearchParams(searchParams.toString());
@@ -124,6 +105,9 @@ export function usePromptFilters(): PromptFilters {
             } else {
                 params.set(key, value);
             }
+            // Clean up old exclusion params if present (migration)
+            params.delete("xcats");
+            params.delete("xtags");
             const qs = params.toString();
             router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
         },
@@ -139,23 +123,22 @@ export function usePromptFilters(): PromptFilters {
     const setFavoritesFirst = useCallback((v: boolean) =>
         setParam("fav-first", v ? "" : "false", ""), [setParam]);
 
-    const setExcludedCats = useCallback((v: string[]) =>
-        setParam("xcats", v.join(","), ""), [setParam]);
+    const setIncludedCats = useCallback((v: string[]) =>
+        setParam("icats", v.join(","), ""), [setParam]);
 
-    const setExcludedTags = useCallback((v: string[]) =>
-        setParam("xtags", v.join(","), ""), [setParam]);
+    const setIncludedTags = useCallback((v: string[]) =>
+        setParam("itags", v.join(","), ""), [setParam]);
 
     const resetFilters = useCallback(() => {
         router.replace(pathname, { scroll: false });
     }, [router, pathname]);
 
-    // ── Derived ───────────────────────────────────────────────────────────────
     const hasActiveFilters =
         tab !== DEFAULT_TAB ||
         sortBy !== DEFAULT_SORT ||
         searchTerm !== "" ||
-        excludedCats.length > 0 ||
-        excludedTags.length > 0 ||
+        includedCats.length > 0 ||
+        includedTags.length > 0 ||
         favFilter !== DEFAULT_FAV ||
         archFilter !== DEFAULT_ARCH ||
         !favoritesFirst;
@@ -164,16 +147,16 @@ export function usePromptFilters(): PromptFilters {
         tab,
         sortBy,
         searchTerm,
-        excludedCats,
-        excludedTags,
+        includedCats,
+        includedTags,
         favFilter,
         archFilter,
         favoritesFirst,
         setTab,
         setSortBy,
         setSearchTerm,
-        setExcludedCats,
-        setExcludedTags,
+        setIncludedCats,
+        setIncludedTags,
         setFavFilter,
         setArchFilter,
         setFavoritesFirst,

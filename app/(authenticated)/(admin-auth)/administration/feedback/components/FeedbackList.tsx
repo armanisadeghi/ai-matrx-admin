@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getAllFeedback, updateFeedback } from '@/actions/feedback.actions';
+import { getAllFeedback, updateFeedback, forceCloseFeedback } from '@/actions/feedback.actions';
 import { UserFeedback, FeedbackStatus } from '@/types/feedback.types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -49,7 +49,10 @@ export default function FeedbackList() {
     };
 
     const handleStatusChange = async (feedbackId: string, newStatus: FeedbackStatus) => {
-        const result = await updateFeedback(feedbackId, { status: newStatus });
+        const terminalStatuses: FeedbackStatus[] = ['closed', 'resolved', 'wont_fix'];
+        const result = terminalStatuses.includes(newStatus)
+            ? await forceCloseFeedback(feedbackId, newStatus as 'closed' | 'resolved' | 'wont_fix')
+            : await updateFeedback(feedbackId, { status: newStatus });
         if (result.success) {
             loadFeedback();
             if (selectedFeedback?.id === feedbackId) {
