@@ -2,7 +2,12 @@ import React, { useState, RefObject, useMemo } from "react";
 import { MessageSquare, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PromptUserMessage } from "./PromptUserMessage";
-import { PromptAssistantMessage } from "./PromptAssistantMessage";
+import dynamic from "next/dynamic";
+
+const PromptAssistantMessage = dynamic(
+    () => import("./PromptAssistantMessage").then(m => ({ default: m.PromptAssistantMessage })),
+    { ssr: false }
+);
 import { PromptStats } from "./PromptStats";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectPrimaryResponseTextByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";

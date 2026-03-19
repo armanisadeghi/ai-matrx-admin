@@ -2,27 +2,50 @@
 
 // ChatMobileAdminToggles — Admin-only client island for the mobile header.
 //
-// Shows localhost + block mode toggles on mobile for admin users.
-// Renders nothing for non-admin users.
+// Migrated to pure Redux: no context dependencies.
 
 import { Blocks } from 'lucide-react';
-import { useAppSelector } from '@/lib/redux/hooks';
+import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { selectIsAdmin } from '@/lib/redux/slices/userSlice';
-import { useChatContext } from '@/features/public-chat/context/ChatContext';
+import { selectIsUsingLocalhost, setServerOverride } from '@/lib/redux/slices/adminPreferencesSlice';
+import {
+    activeChatActions,
+    selectActiveChatUseBlockMode,
+    selectActiveChatSessionId,
+} from '@/lib/redux/slices/activeChatSlice';
+import { chatConversationsActions } from '@/features/cx-conversation/redux/slice';
 
 export default function ChatMobileAdminToggles() {
+    const dispatch = useAppDispatch();
     const isAdmin = useAppSelector(selectIsAdmin);
-    const { state, setUseLocalhost, setUseBlockMode } = useChatContext();
+    const isUsingLocalhost = useAppSelector(selectIsUsingLocalhost);
+    const useBlockMode = useAppSelector(selectActiveChatUseBlockMode);
+    const sessionId = useAppSelector(selectActiveChatSessionId);
 
     if (!isAdmin) return null;
+
+    const handleToggleLocalhost = () => {
+        dispatch(setServerOverride(isUsingLocalhost ? null : 'localhost'));
+    };
+
+    const handleToggleBlockMode = () => {
+        const newVal = !useBlockMode;
+        dispatch(activeChatActions.setUseBlockMode(newVal));
+        if (sessionId) {
+            dispatch(chatConversationsActions.updateUIState({
+                sessionId,
+                updates: { useBlockMode: newVal },
+            }));
+        }
+    };
 
     return (
         <div className="flex items-center gap-1">
             <button
-                onClick={() => setUseLocalhost(!state.useLocalhost)}
-                title={state.useLocalhost ? 'Using localhost — click to switch to production' : 'Using production — click to switch to localhost'}
+                onClick={handleToggleLocalhost}
+                title={isUsingLocalhost ? 'Using localhost — click to switch to production' : 'Using production — click to switch to localhost'}
                 className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold transition-colors ${
-                    state.useLocalhost
+                    isUsingLocalhost
                         ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40'
                         : 'text-muted-foreground/50 hover:text-muted-foreground border border-transparent hover:border-border'
                 }`}
@@ -30,10 +53,10 @@ export default function ChatMobileAdminToggles() {
                 local
             </button>
             <button
-                onClick={() => setUseBlockMode(!state.useBlockMode)}
-                title={state.useBlockMode ? 'Block mode ON — using agents-blocks endpoint. Click to disable.' : 'Block mode OFF — using standard agents endpoint. Click to enable.'}
+                onClick={handleToggleBlockMode}
+                title={useBlockMode ? 'Block mode ON — using agents-blocks endpoint. Click to disable.' : 'Block mode OFF — using standard agents endpoint. Click to enable.'}
                 className={`p-1.5 rounded-md transition-colors ${
-                    state.useBlockMode
+                    useBlockMode
                         ? 'text-violet-600 dark:text-violet-400 bg-violet-500/15 border border-violet-500/30'
                         : 'text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 border border-transparent'
                 }`}

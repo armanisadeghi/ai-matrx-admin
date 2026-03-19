@@ -1,5 +1,5 @@
-import type { AgentConfig } from '../context/ChatContext';
-import type { MinimalPrompt } from '../context/AgentsContext';
+import type { AgentConfig } from '../context/DEPRECATED-ChatContext';
+import type { MinimalPrompt } from '../context/DEPRECATED-AgentsContext';
 import { DEFAULT_AGENTS } from '../components/AgentSelector';
 
 export const DEFAULT_AGENT_CONFIG: AgentConfig = {

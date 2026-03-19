@@ -12,8 +12,16 @@ import { Loader2, AlertCircle } from "lucide-react";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ResizableCanvas } from "@/features/canvas/core/ResizableCanvas";
-import { CanvasRenderer } from "@/features/canvas/core/CanvasRenderer";
+import dynamic from "next/dynamic";
+
+const ResizableCanvas = dynamic(
+  () => import("@/features/canvas/core/ResizableCanvas").then(m => ({ default: m.ResizableCanvas })),
+  { ssr: false }
+);
+const CanvasRenderer = dynamic(
+  () => import("@/features/canvas/core/CanvasRenderer").then(m => ({ default: m.CanvasRenderer })),
+  { ssr: false }
+);
 import { 
     selectCanvasWidth, 
     setCanvasWidth,

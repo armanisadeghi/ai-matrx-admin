@@ -1,6 +1,7 @@
 "use client";
 
-import React, { lazy, Suspense } from "react";
+import React, { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MessageList } from "@/features/cx-conversation/MessageList";
@@ -8,15 +9,13 @@ import { ConversationInput } from "@/features/cx-conversation/ConversationInput"
 import type { ConversationInputProps } from "@/features/cx-conversation/ConversationInput";
 import { useCartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
 
-const ResizableCanvas = lazy(() =>
-  import("@/features/canvas/core/ResizableCanvas").then((m) => ({
-    default: m.ResizableCanvas,
-  })),
+const ResizableCanvas = dynamic(
+  () => import("@/features/canvas/core/ResizableCanvas").then((m) => ({ default: m.ResizableCanvas })),
+  { ssr: false }
 );
-const CanvasRenderer = lazy(() =>
-  import("@/features/canvas/core/CanvasRenderer").then((m) => ({
-    default: m.CanvasRenderer,
-  })),
+const CanvasRenderer = dynamic(
+  () => import("@/features/canvas/core/CanvasRenderer").then((m) => ({ default: m.CanvasRenderer })),
+  { ssr: false }
 );
 
 // ============================================================================

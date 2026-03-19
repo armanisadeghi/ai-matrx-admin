@@ -61,7 +61,6 @@ export default async function SSRLayout({
           <input
             type="checkbox"
             id="shell-panel-toggle"
-            defaultChecked
             aria-hidden="true"
           />
           <input type="checkbox" id="shell-panel-mobile" aria-hidden="true" />

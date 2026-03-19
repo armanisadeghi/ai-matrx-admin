@@ -49,26 +49,26 @@ interface DropdownConfig<T extends string = string> {
   onSelect: (value: T) => void;
 }
 
-interface HeaderStructuredProps {
+interface HeaderStructuredProps<T extends string = string> {
   /** Show back chevron. Pass true (uses history.back) or a handler function. */
   back?: boolean | (() => void);
   /** Static title text — ignored if dropdown is provided */
   title?: string;
   /** Replaces the title with a tappable dropdown */
-  dropdown?: DropdownConfig;
+  dropdown?: DropdownConfig<T>;
   /** Right-side actions — auto glass icons on desktop, bottom sheet on mobile */
   actions?: HeaderAction[];
   /** Max inline action icons on desktop before overflow. Default: 3 */
   maxInlineActions?: number;
 }
 
-export default function HeaderStructured({
+export default function HeaderStructured<T extends string = string>({
   back,
   title,
   dropdown,
   actions = [],
   maxInlineActions,
-}: HeaderStructuredProps) {
+}: HeaderStructuredProps<T>) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const backHandler = typeof back === "function" ? back : undefined;

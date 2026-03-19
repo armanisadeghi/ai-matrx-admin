@@ -23,21 +23,34 @@ import {
 } from "@/lib/redux/slices/modelRegistrySlice";
 import { MessageCircle, List, Layers } from "lucide-react";
 
-// Chat infrastructure (ChatContext still used for welcome screen state + sidebar sync)
-import { useChatContext } from "@/features/public-chat/context/ChatContext";
-import type { AgentConfig } from "@/features/public-chat/context/ChatContext";
+// Supabase client for agent config fetch
+import { createClient } from "@/utils/supabase/client";
+
+// Active chat state (replaces ChatContext + SsrAgentContext)
+import {
+  activeChatActions,
+  selectActiveChatAgent,
+  selectIsAgentPickerOpen,
+  type ActiveChatAgent,
+} from "@/lib/redux/slices/activeChatSlice";
 
 // Unified conversation system
 import { useConversationSession } from "@/features/cx-conversation/hooks/useConversationSession";
 import { ConversationShell } from "@/features/cx-conversation/ConversationShell";
-import { chatConversationsActions } from "@/lib/redux/chatConversations/slice";
-import type { ApiMode } from "@/lib/redux/chatConversations/types";
-
-// Shared agent state
-import { useSsrAgent } from "./SsrAgentContext";
+import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
+import type { ApiMode } from "@/features/cx-conversation/redux/types";
 
 // Header controls
 import ChatHeaderControls from "./ChatHeaderControls";
+
+// Agent picker sheet (lazy — opened on demand)
+const AgentPickerSheet = dynamic(
+  () =>
+    import("@/features/public-chat/components/AgentPickerSheet").then((m) => ({
+      default: m.AgentPickerSheet,
+    })),
+  { ssr: false },
+);
 
 // Eager imports — always rendered on welcome screen
 import { ChatInputWithControls } from "@/features/public-chat/components/ChatInputWithControls";
@@ -74,9 +87,6 @@ const ModelSettingsDialog = dynamic(
   { ssr: false },
 );
 
-// Model configuration component from prompts feature
-import { ModelConfiguration } from "@/features/prompts/components/configuration/ModelConfiguration";
-
 import type { PublicResource } from "@/features/public-chat/types/content";
 import type {
   PromptVariable,
@@ -92,10 +102,22 @@ function ChatWorkspaceInner() {
   const dispatch = useAppDispatch();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { state, setUseLocalhost, startNewConversation } = useChatContext();
 
-  // Shared agent state
-  const { selectedAgent, onAgentChange } = useSsrAgent();
+  // Active chat state from Redux (replaces useChatContext + useSsrAgent)
+  const selectedAgent = useAppSelector(selectActiveChatAgent);
+  const isAgentPickerOpen = useAppSelector(selectIsAgentPickerOpen);
+
+  // Agent picker sheet — rendered once, available in all branches
+  const agentPickerEl = (
+    <AgentPickerSheet
+      open={isAgentPickerOpen}
+      onOpenChange={(open) => !open && dispatch(activeChatActions.closeAgentPicker())}
+      selectedAgent={selectedAgent}
+      onSelect={(agent) => {
+        dispatch(activeChatActions.setSelectedAgent(agent as ActiveChatAgent));
+      }}
+    />
+  );
 
   // Variables
   const useGuidedVars = searchParams.get("vars") !== "classic";
@@ -123,8 +145,6 @@ function ChatWorkspaceInner() {
   // Redux state
   const user = useAppSelector(selectUser);
   const isAuthenticated = !!user?.id;
-  const useLocalhost = useAppSelector(selectIsUsingLocalhost);
-  const modelOptions = useAppSelector(selectModelOptions);
   const availableModels = useAppSelector(selectAvailableModels);
 
   // Fetch models on mount
@@ -134,7 +154,9 @@ function ChatWorkspaceInner() {
     }
   }, [availableModels.length, dispatch]);
 
-  const isCustomChat = selectedAgent.promptId === "custom-chat";
+  // Custom Chat agent — the only agent where users are allowed to change settings freely
+  const CUSTOM_CHAT_PROMPT_ID = "3ca61863-43cf-49cd-8da5-7e0a4b192867";
+  const isCustomChat = selectedAgent.promptId === CUSTOM_CHAT_PROMPT_ID;
 
   // ========================================================================
   // URL STATE
@@ -146,16 +168,10 @@ function ChatWorkspaceInner() {
   }, [pathname]);
 
   const agentIdFromUrl = searchParams.get("agent");
-  const localhostFromUrl = searchParams.get("localhost") === "1";
 
   // ========================================================================
   // SYNC EFFECTS
   // ========================================================================
-
-  // Sync localhost preference
-  useEffect(() => {
-    setUseLocalhost(useLocalhost || localhostFromUrl);
-  }, [useLocalhost, localhostFromUrl, setUseLocalhost]);
 
   // Focus on agent URL change
   useEffect(() => {
@@ -168,10 +184,9 @@ function ChatWorkspaceInner() {
   useEffect(() => {
     if (!conversationIdFromUrl) {
       // No conversation in URL — reset to welcome screen
-      if (isInConversation || state.dbConversationId) {
+      if (isInConversation) {
         setIsInConversation(false);
         setActiveConversationId(null);
-        startNewConversation();
       }
       return;
     }
@@ -263,12 +278,79 @@ function ChatWorkspaceInner() {
   ]);
 
   // ========================================================================
+  // AGENT CONFIG FETCH — load model/settings from DB when agent changes
+  // Messages are explicitly excluded from the select query.
+  // ========================================================================
+
+  useEffect(() => {
+    if (!selectedAgent.promptId || selectedAgent.configFetched) return;
+
+    let cancelled = false;
+
+    async function loadAgentConfig() {
+      try {
+        const supabase = createClient();
+        // Explicitly select only safe fields — messages column is never fetched
+        const { data, error } = await supabase
+          .from("prompts")
+          .select("id, name, description, variable_defaults, settings, dynamic_model")
+          .eq("id", selectedAgent.promptId)
+          .single();
+
+        if (cancelled) return;
+
+        if (error) {
+          // PGRST116 = no rows found (agent not in prompts table) — not an error
+          if (error.code !== "PGRST116") {
+            console.warn("[loadAgentConfig] DB error for", selectedAgent.promptId, error);
+          }
+          dispatch(activeChatActions.setSelectedAgent({ ...selectedAgent, configFetched: true }));
+          return;
+        }
+
+        if (data) {
+          const settings = (data.settings ?? {}) as Record<string, unknown>;
+          const { model_id, ...restSettings } = settings;
+          const resolvedModelId = typeof model_id === "string" ? model_id : null;
+          setModelOverride(resolvedModelId);
+          setModelSettings(restSettings as PromptSettings);
+          dispatch(
+            activeChatActions.setSelectedAgent({
+              ...selectedAgent,
+              description: (data.description ?? selectedAgent.description) || undefined,
+              variableDefaults: data.variable_defaults ?? selectedAgent.variableDefaults ?? undefined,
+              modelOverride: resolvedModelId,
+              modelSettings: restSettings as PromptSettings,
+              dynamicModel: data.dynamic_model === true,
+              configFetched: true,
+            }),
+          );
+        } else {
+          // Null data with no error — treat as not found
+          dispatch(activeChatActions.setSelectedAgent({ ...selectedAgent, configFetched: true }));
+        }
+      } catch (err) {
+        // Network-level failure — log it so we can debug
+        if (!cancelled) {
+          console.warn("[loadAgentConfig] Unexpected error for", selectedAgent.promptId, err);
+          dispatch(activeChatActions.setSelectedAgent({ ...selectedAgent, configFetched: true }));
+        }
+      }
+    }
+
+    loadAgentConfig();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedAgent.promptId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ========================================================================
   // HANDLERS
   // ========================================================================
 
   const handleAgentSelect = useCallback(
-    (agent: AgentConfig) => {
-      onAgentChange(agent);
+    (agent: ActiveChatAgent) => {
+      dispatch(activeChatActions.setSelectedAgent(agent));
       setIsInConversation(false);
       setActiveConversationId(null);
       setModelOverride(null);
@@ -276,7 +358,7 @@ function ChatWorkspaceInner() {
       setIsSettingsOpen(false);
       setFocusKey((k) => k + 1);
     },
-    [onAgentChange],
+    [dispatch],
   );
 
   const handleModeSelect = useCallback(
@@ -284,7 +366,9 @@ function ChatWorkspaceInner() {
       if (!agentId) return;
       const match = DEFAULT_AGENTS.find((a) => a.promptId === agentId);
       handleAgentSelect(
-        match || { ...DEFAULT_AGENTS[0], promptId: agentId, id: agentId },
+        match
+          ? { promptId: match.promptId, name: match.name, description: match.description, variableDefaults: match.variableDefaults }
+          : { promptId: agentId, name: agentId },
       );
     },
     [handleAgentSelect],
@@ -380,11 +464,10 @@ function ChatWorkspaceInner() {
           isConversation={true}
           isAuthenticated={isAuthenticated}
           dbConversationId={null}
-          selectedAgent={selectedAgent}
-          onAgentSelect={handleAgentSelect}
           onNewChat={handleNewChat}
           onShare={() => setIsShareOpen(true)}
         />
+        {agentPickerEl}
         <div className="h-full flex flex-col items-center justify-center">
           <MessageCircle className="h-8 w-8 text-primary animate-pulse mb-3" />
           <p className="text-sm text-muted-foreground">
@@ -410,11 +493,10 @@ function ChatWorkspaceInner() {
           isConversation={true}
           isAuthenticated={isAuthenticated}
           dbConversationId={activeConversationId}
-          selectedAgent={selectedAgent}
-          onAgentSelect={handleAgentSelect}
           onNewChat={handleNewChat}
           onShare={() => setIsShareOpen(true)}
         />
+        {agentPickerEl}
         <div className="h-full flex flex-col">
           {/* Share Modal */}
           {isShareOpen && shareConversationId && (
@@ -477,11 +559,10 @@ function ChatWorkspaceInner() {
           isConversation={false}
           isAuthenticated={isAuthenticated}
           dbConversationId={null}
-          selectedAgent={selectedAgent}
-          onAgentSelect={handleAgentSelect}
           onNewChat={handleNewChat}
           onShare={() => setIsShareOpen(true)}
         />
+        {agentPickerEl}
         <div className="h-full flex flex-col">
           <div className="flex-1 min-h-0 overflow-y-auto">
             <div className="flex flex-col items-center justify-end min-h-full px-3 md:px-8 pb-4">
@@ -529,6 +610,10 @@ function ChatWorkspaceInner() {
                   selectedAgent={selectedAgent}
                   textInputRef={textInputRef}
                   seamless
+                  availableModels={selectedAgent.dynamicModel && availableModels.length > 0 ? availableModels : undefined}
+                  selectedModel={modelOverride ?? undefined}
+                  onModelChange={(id) => setModelOverride(id || null)}
+                  onSettingsClick={isAuthenticated ? () => setIsSettingsOpen(true) : undefined}
                 />
               </div>
               <div className="flex items-center justify-between mt-3 pb-2">
@@ -564,11 +649,10 @@ function ChatWorkspaceInner() {
         isConversation={false}
         isAuthenticated={isAuthenticated}
         dbConversationId={null}
-        selectedAgent={selectedAgent}
-        onAgentSelect={handleAgentSelect}
         onNewChat={handleNewChat}
         onShare={() => setIsShareOpen(true)}
       />
+      {agentPickerEl}
       <div className="h-full flex flex-col">
         <div className="flex-1 min-h-0 overflow-y-auto">
           <div
@@ -624,27 +708,14 @@ function ChatWorkspaceInner() {
                   hasVariables={hasVariables}
                   selectedAgent={selectedAgent}
                   textInputRef={textInputRef}
+                  availableModels={selectedAgent.dynamicModel && availableModels.length > 0 ? availableModels : undefined}
+                  selectedModel={modelOverride ?? undefined}
+                  onModelChange={(id) => setModelOverride(id || null)}
+                  onSettingsClick={isAuthenticated ? () => setIsSettingsOpen(true) : undefined}
                 />
               </div>
 
-              {/* Model configuration — shown for all agents */}
-              {availableModels.length > 0 && (
-                <div className="mt-2 px-1">
-                  <ModelConfiguration
-                    models={availableModels}
-                    model={modelOverride ?? ""}
-                    onModelChange={(value) => setModelOverride(value || null)}
-                    modelConfig={modelSettings}
-                    onSettingsClick={() => setIsSettingsOpen(true)}
-                    showSettingsDetails={
-                      Object.keys(modelSettings).filter((k) => k !== "model_id")
-                        .length > 0
-                    }
-                  />
-                </div>
-              )}
-
-              {/* Settings dialog */}
+              {/* Settings dialog — only shown when user explicitly clicks settings icon */}
               {isSettingsOpen && (
                 <ModelSettingsDialog
                   isOpen={isSettingsOpen}
@@ -662,6 +733,9 @@ function ChatWorkspaceInner() {
                     }
                     setModelSettings(rest);
                   }}
+                  showModelSelector={true}
+                  onModelChange={(id) => setModelOverride(id || null)}
+                  requireConfirmation={isCustomChat ? false : true}
                 />
               )}
 

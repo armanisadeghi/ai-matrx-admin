@@ -1,14 +1,10 @@
-import React from 'react';
-import { 
-    PlainTextFallback,
-    MarkdownErrorBoundary,
-} from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
-import { StreamAwareChatMarkdown } from '@/components/mardown-display/chat-markdown/StreamAwareChatMarkdown';
+import dynamic from 'next/dynamic';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
-import { BlockRenderingProvider } from '@/components/mardown-display/chat-markdown/BlockRenderingContext';
 
 /**
- * Props for the MarkdownStream component
+ * Props for the MarkdownStream component.
+ * Defined here (in the shell) so consumers can import the type without
+ * pulling in the heavy implementation module.
  */
 export interface MarkdownStreamProps {
     /** Markdown content to render (legacy mode) */
@@ -43,83 +39,26 @@ export interface MarkdownStreamProps {
     onStatusUpdate?: (status: string, message?: string) => void;
     /**
      * Strict server-data mode — for testing/debugging only.
-     * When true, structured blocks (quiz, presentation, table, etc.) will NOT fall back
-     * to client-side content parsing if block.serverData is null. Instead they show a
-     * visible red error so you know Python failed to populate the `data` field.
-     * Leave false (default) for production.
+     * When true, structured blocks will NOT fall back to client-side parsing
+     * if block.serverData is null. Leave false (default) for production.
      */
     strictServerData?: boolean;
 }
 
 /**
  * MarkdownStream - Universal Markdown Renderer
- * 
- * A powerful markdown component that works in multiple modes:
- * 
- * **Legacy Mode (Redux/Socket.io):**
- * - Pass `content` and optionally `taskId`
- * - Tool updates fetched via Redux selectors
- * 
- * **Event Mode (Direct API):**
- * - Pass `events` array from unified chat API
- * - Tool updates extracted from events
- * - Automatic text accumulation
- * 
- * **Features:**
- * - Standard markdown syntax
- * - Code blocks with syntax highlighting
- * - Tables, JSON, and structured data
- * - Real-time streaming content updates
- * - Tool call visualizations
- * - Full-screen editing mode
- * - Content copying
- * - Error resilience
- * 
- * @example Legacy Mode (unchanged)
- * ```tsx
- * <MarkdownStream 
- *   content={content} 
- *   taskId={taskId} 
- *   isStreamActive 
- * />
- * ```
- * 
- * @example Event Mode (new)
- * ```tsx
- * <MarkdownStream 
- *   events={streamEvents} 
- *   isStreamActive 
- *   onError={handleError}
- * />
- * ```
+ *
+ * Loaded dynamically (client-only, no SSR) so the heavy markdown pipeline —
+ * block registry, code highlighter, jspdf, html2canvas, etc. — is never
+ * bundled into the server render. The shell renders nothing until the JS
+ * chunk is ready, which is fine because markdown content is always dynamic.
+ *
+ * All consumers import this exactly as before:
+ *   import MarkdownStream from '@/components/MarkdownStream'
  */
-const MarkdownStream: React.FC<MarkdownStreamProps> = (props) => {
-    const { content = '', events, strictServerData = false, ...restProps } = props;
-    
-    return (
-        <BlockRenderingProvider strictServerData={strictServerData}>
-            <MarkdownErrorBoundary
-                fallback={
-                    <PlainTextFallback 
-                        content={content} 
-                        className={props.className} 
-                        role={props.role}
-                        type={props.type}
-                    />
-                }
-                onError={(error, errorInfo) => {
-                    console.error("[MarkdownStream] Top-level error boundary caught:", error, errorInfo);
-                }}
-            >
-                <StreamAwareChatMarkdown 
-                    content={content}
-                    events={events}
-                    {...restProps}
-                />
-            </MarkdownErrorBoundary>
-        </BlockRenderingProvider>
-    );
-};
+const MarkdownStream = dynamic(
+    () => import('./MarkdownStreamImpl'),
+    { ssr: false }
+);
 
 export default MarkdownStream;
-

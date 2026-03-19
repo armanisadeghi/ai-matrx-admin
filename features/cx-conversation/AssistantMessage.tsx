@@ -30,7 +30,7 @@ import { parseMarkdownToText } from "@/utils/markdown-processors/parse-markdown-
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import type { CartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
-import type { ConversationMessage } from "@/lib/redux/chatConversations/types";
+import type { ConversationMessage } from "@/features/cx-conversation/redux/types";
 
 // ── Lazy-load heavy deps (only when needed) ───────────────────────────────────
 const FullScreenMarkdownEditor = lazy(

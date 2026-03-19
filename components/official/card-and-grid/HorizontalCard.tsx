@@ -101,6 +101,16 @@ const colorClasses: Record<CardColor, {
     iconColor: "text-rose-500 dark:text-rose-400",
     hover: "hover:bg-rose-50 dark:hover:bg-rose-900/30",
   },
+  violet: {
+    iconBg: "bg-violet-100 dark:bg-violet-900/70",
+    iconColor: "text-violet-500 dark:text-violet-400",
+    hover: "hover:bg-violet-50 dark:hover:bg-violet-900/30",
+  },
+  slate: {
+    iconBg: "bg-slate-100 dark:bg-slate-800/70",
+    iconColor: "text-slate-500 dark:text-slate-400",
+    hover: "hover:bg-slate-50 dark:hover:bg-slate-800/40",
+  },
 };
 
 export const HorizontalCard = ({

@@ -1,7 +1,7 @@
 'use client';
 
 import { PanelLeft, SquarePen, ChevronDown } from 'lucide-react';
-import type { AgentConfig } from '../../context/ChatContext';
+import type { AgentConfig } from '../../context/DEPRECATED-ChatContext';
 
 // ============================================================================
 // TYPES

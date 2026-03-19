@@ -1348,7 +1348,7 @@
 
    Desktop:
      #shell-panel-toggle checkbox controls open/close with a smooth
-     grid-template-columns transition. Panel starts open (checked by default).
+     grid-template-columns transition. Panel starts closed (unchecked by default).
      The toggle label can be rendered by the route's panel header.
 
    Mobile:

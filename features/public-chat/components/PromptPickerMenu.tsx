@@ -5,9 +5,9 @@ import { Search, Loader2, Sparkles, ChevronDown } from 'lucide-react';
 import { LuBrain } from 'react-icons/lu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
-import { useAgentsContext } from '../context/AgentsContext';
+import { useAgentsContext } from '../context/DEPRECATED-AgentsContext';
 import { DEFAULT_AGENTS } from './AgentSelector';
-import type { AgentConfig } from '../context/ChatContext';
+import type { AgentConfig } from '../context/DEPRECATED-ChatContext';
 
 // ============================================================================
 // TYPES

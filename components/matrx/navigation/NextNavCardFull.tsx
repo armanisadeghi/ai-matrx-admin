@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -102,7 +103,9 @@ const cardVariants = cva(
                       <div className="flex items-center space-x-2">
                         {item.icon && (
                           <div className="flex-shrink-0">
-                            {item.icon}
+                            {typeof item.icon === 'function'
+                              ? React.createElement(item.icon, { className: 'h-5 w-5' })
+                              : item.icon}
                           </div>
                         )}
                         <CardTitle className={cn(

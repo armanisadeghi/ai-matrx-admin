@@ -42,7 +42,7 @@ import messagingReducer from "../../features/messaging/redux/messagingSlice";
 import smsReducer from "../../features/sms/redux/smsSlice";
 
 // Unified conversation system (empty until chat session starts)
-import { chatConversationsReducer } from "./chatConversations";
+import { chatConversationsReducer } from "../../features/cx-conversation/redux";
 
 // Chat system (empty until chat page loads)
 import { conversationReducer } from "./features/aiChats/conversationSlice";
@@ -67,6 +67,12 @@ import entitySystemReducer from "./slices/entitySystemSlice";
 
 // Context menu cache (populated server-side via get_ssr_shell_data RPC)
 import contextMenuCacheReducer from "./slices/contextMenuCacheSlice";
+
+// Active chat page state (selected agent, block mode, agent picker)
+import activeChatReducer from "./slices/activeChatSlice";
+
+// App context (org/workspace/project/task/conversation scope — required by callApi resolveScope)
+import appContextReducer from "./slices/appContextSlice";
 
 // ============================================================================
 // LITE ROOT REDUCER — SSR Shell + Public Routes
@@ -175,6 +181,12 @@ export const createLiteRootReducer = () => {
 
         // Context menu cache (SSR pre-populated, no client fetch)
         contextMenuCache: contextMenuCacheReducer,
+
+        // Active chat page state (selected agent, block mode, agent picker)
+        activeChat: activeChatReducer,
+
+        // App context scope — required by callApi.resolveScope() for org/workspace/project/task/conversation
+        appContext: appContextReducer,
     });
 };
 

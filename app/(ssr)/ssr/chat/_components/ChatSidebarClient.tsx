@@ -17,8 +17,12 @@ import { SidebarActions } from "@/features/public-chat/components/sidebar/Sideba
 import { SidebarAgents } from "@/features/public-chat/components/sidebar/SidebarAgents";
 import { SidebarChats } from "@/features/public-chat/components/sidebar/SidebarChats";
 import { SidebarUserFooter } from "@/features/public-chat/components/sidebar/SidebarUserFooter";
-import { useSsrAgent } from "./SsrAgentContext";
-import type { AgentConfig } from "@/features/public-chat/context/ChatContext";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import {
+  activeChatActions,
+  selectActiveChatAgent,
+  type ActiveChatAgent,
+} from "@/lib/redux/slices/activeChatSlice";
 
 // ============================================================================
 // NAVIGATION HELPERS — SSR chat uses history API, not Next.js router
@@ -44,7 +48,8 @@ function togglePanel() {
 // ============================================================================
 
 export function ChatSidebarHeader() {
-  const { selectedAgent, openAgentPicker } = useSsrAgent();
+  const dispatch = useAppDispatch();
+  const selectedAgent = useAppSelector(selectActiveChatAgent);
 
   const handleNewChat = useCallback(() => {
     navigate("/ssr/chat");
@@ -55,7 +60,7 @@ export function ChatSidebarHeader() {
       onCollapse={togglePanel}
       onNewChat={handleNewChat}
       selectedAgent={selectedAgent}
-      onAgentSelect={() => openAgentPicker()}
+      onAgentSelect={() => dispatch(activeChatActions.openAgentPicker())}
     />
   );
 }
@@ -65,8 +70,9 @@ export function ChatSidebarHeader() {
 // ============================================================================
 
 export function ChatSidebarBody() {
+  const dispatch = useAppDispatch();
   const [searchQuery, setSearchQuery] = useState("");
-  const { selectedAgent, onAgentChange } = useSsrAgent();
+  const selectedAgent = useAppSelector(selectActiveChatAgent);
 
   const handleSelectChat = useCallback((id: string) => {
     navigate(`/ssr/chat/${id}`);
@@ -76,9 +82,11 @@ export function ChatSidebarBody() {
     navigate("/ssr/chat");
   }, []);
 
-  const handleAgentSelect = useCallback((agent: AgentConfig) => {
-    onAgentChange(agent);
-  }, [onAgentChange]);
+  const handleAgentSelect = useCallback((agent: ActiveChatAgent) => {
+    dispatch(activeChatActions.setSelectedAgent(agent));
+    // Navigate to base chat when switching agents
+    navigate("/ssr/chat");
+  }, [dispatch]);
 
   return (
     <div className="h-full flex flex-col overflow-hidden pt-2 lg:pt-8">

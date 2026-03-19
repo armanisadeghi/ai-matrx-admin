@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback } from "react";
-import { captureToPDF, type DomCaptureOptions } from "@/features/chat/utils/dom-capture-print-utils";
+import type { DomCaptureOptions } from "@/features/chat/utils/dom-capture-print-utils";
 
 export interface UseDomCapturePrintReturn {
     /** Attach this ref to the element you want to capture */
@@ -44,6 +44,7 @@ export function useDomCapturePrint(): UseDomCapturePrintReturn {
         setError(null);
 
         try {
+            const { captureToPDF } = await import("@/features/chat/utils/dom-capture-print-utils");
             await captureToPDF(el, {
                 filename: 'ai-response',
                 scale: 2,

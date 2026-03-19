@@ -782,7 +782,6 @@
           "AI"
         ],
         "summary": "Chat",
-        "description": "Direct chat endpoint — client supplies the full message history.\n\nBuilds a UnifiedConfig from the request, sets conversation scope on\nAppContext, and hands off to the AI engine via run_ai_task.",
         "operationId": "chat_ai_chat_post",
         "requestBody": {
           "content": {
@@ -4802,6 +4801,12 @@
                 "type": "null"
               }
             ]
+          },
+          "context": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Context",
+            "default": {}
           }
         },
         "type": "object",
@@ -5441,6 +5446,18 @@
             ],
             "title": "Reference Images"
           },
+          "image_loras": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Loras"
+          },
           "disable_safety_checker": {
             "anyOf": [
               {
@@ -5543,6 +5560,12 @@
               }
             ]
           },
+          "context": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Context",
+            "default": {}
+          },
           "metadata": {
             "anyOf": [
               {
@@ -5554,6 +5577,17 @@
               }
             ],
             "title": "Metadata"
+          },
+          "deprecated_keys_found": {
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Deprecated Keys Found",
+            "default": []
           }
         },
         "additionalProperties": true,
@@ -5686,6 +5720,12 @@
                 "type": "null"
               }
             ]
+          },
+          "context": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Context",
+            "default": {}
           }
         },
         "type": "object",
@@ -6523,6 +6563,18 @@
               }
             ],
             "title": "Reference Images"
+          },
+          "image_loras": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Loras"
           },
           "disable_safety_checker": {
             "anyOf": [

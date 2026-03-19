@@ -7,12 +7,17 @@ import {
   selectMessages,
   selectIsStreaming,
   selectUIState,
-} from "@/lib/redux/chatConversations/selectors";
-import { chatConversationsActions } from "@/lib/redux/chatConversations/slice";
+} from "@/features/cx-conversation/redux/selectors";
+import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
+import dynamic from "next/dynamic";
 import { MessageErrorBoundary } from "@/features/cx-conversation/MessageErrorBoundary";
 import { UserMessage } from "@/features/cx-conversation/UserMessage";
-import { AssistantMessage } from "@/features/cx-conversation/AssistantMessage";
 import type { CartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
+
+const AssistantMessage = dynamic(
+  () => import("@/features/cx-conversation/AssistantMessage").then((m) => m.AssistantMessage),
+  { ssr: false }
+);
 
 interface MessageListProps {
   sessionId: string;

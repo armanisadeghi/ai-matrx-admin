@@ -136,6 +136,13 @@ export function useContextMenuShortcuts(
             is_active: row.builtin_is_active,
             source_prompt_id: row.source_prompt_id,
             source_prompt_snapshot_at: row.source_prompt_snapshot_at,
+            tags: null,
+            category: null,
+            model_id: null,
+            output_format: null,
+            output_schema: null,
+            is_favorite: false,
+            is_archived: false,
           } : null,
         };
 

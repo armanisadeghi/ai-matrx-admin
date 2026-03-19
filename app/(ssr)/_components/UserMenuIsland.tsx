@@ -10,7 +10,7 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectUser, selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectUser } from "@/lib/redux/slices/userSlice";
 const UserMenuPanel = dynamic(() => import("./UserMenuPanel"), {
   ssr: false,
   loading: () => null,
@@ -26,7 +26,6 @@ export default function UserMenuIsland() {
   // Store is initialized empty — user data arrives once DeferredShellData resolves.
   // Safely handle null/uninitialized state throughout.
   const reduxUser = useAppSelector(selectUser);
-  const isAdmin = useAppSelector(selectIsAdmin) ?? false;
 
   const user: UserMenuUser | null = reduxUser?.id ? {
     name: reduxUser.userMetadata?.name || reduxUser.email?.split('@')[0] || 'User',
@@ -119,13 +118,7 @@ export default function UserMenuIsland() {
       </button>
       </div>
 
-      {open && (
-        <UserMenuPanel
-          user={user}
-          isAdmin={isAdmin}
-          onClose={() => setOpen(false)}
-        />
-      )}
+      {open && <UserMenuPanel />}
     </div>
   );
 }

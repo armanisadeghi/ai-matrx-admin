@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, isValidElement } from "react";
+import dynamic from "next/dynamic";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { 
   closeCanvas, 
@@ -15,28 +16,28 @@ import {
 } from "@/features/canvas/redux/canvasSlice";
 import { CanvasHeader, ViewMode } from "./CanvasHeader";
 import { CanvasNavigation } from "./CanvasNavigation";
-import { SavedCanvasItems } from "./SavedCanvasItems";
-import { CanvasShareSheet } from "@/features/canvas/social/CanvasShareSheet";
 import type { CanvasType } from "@/types/canvas-social";
-import { isValidElement } from "react";
 
-// Import all interactive blocks
-import MultipleChoiceQuiz from "@/components/mardown-display/blocks/quiz/MultipleChoiceQuiz";
-import Slideshow from "@/components/mardown-display/blocks/presentations/Slideshow";
-import RecipeViewer from "@/components/mardown-display/blocks/cooking-recipes/cookingRecipeDisplay";
-import TimelineBlock from "@/components/mardown-display/blocks/timeline/TimelineBlock";
-import ResearchBlock from "@/components/mardown-display/blocks/research/ResearchBlock";
-import ResourceCollectionBlock from "@/components/mardown-display/blocks/resources/ResourceCollectionBlock";
-import ProgressTrackerBlock from "@/components/mardown-display/blocks/progress/ProgressTrackerBlock";
-import ComparisonTableBlock from "@/components/mardown-display/blocks/comparison/ComparisonTableBlock";
-import TroubleshootingBlock from "@/components/mardown-display/blocks/troubleshooting/TroubleshootingBlock";
-import DecisionTreeBlock from "@/components/mardown-display/blocks/decision-tree/DecisionTreeBlock";
-import InteractiveDiagramBlock from "@/components/mardown-display/blocks/diagram/InteractiveDiagramBlock";
-import FlashcardsBlock from "@/components/mardown-display/blocks/flashcards/FlashcardsBlock";
-import CodeBlock from "@/features/code-editor/components/code-block/CodeBlock";
-import MathProblem from "@/features/math/components/MathProblem";
-import { CodePreviewCanvas } from "@/features/canvas/custom-components/CodePreviewCanvas";
-import { CodeEditErrorCanvas } from "@/features/canvas/custom-components/CodeEditErrorCanvas";
+// next/dynamic requires inline object literals for options — no variable references allowed.
+// All blocks use ssr: false so they are completely excluded from SSR module analysis.
+const SavedCanvasItems = dynamic(() => import("./SavedCanvasItems").then((m) => m.SavedCanvasItems), { ssr: false });
+const CanvasShareSheet = dynamic(() => import("@/features/canvas/social/CanvasShareSheet").then((m) => m.CanvasShareSheet), { ssr: false });
+const MultipleChoiceQuiz = dynamic(() => import("@/components/mardown-display/blocks/quiz/MultipleChoiceQuiz"), { ssr: false });
+const Slideshow = dynamic(() => import("@/components/mardown-display/blocks/presentations/Slideshow"), { ssr: false });
+const RecipeViewer = dynamic(() => import("@/components/mardown-display/blocks/cooking-recipes/cookingRecipeDisplay"), { ssr: false });
+const TimelineBlock = dynamic(() => import("@/components/mardown-display/blocks/timeline/TimelineBlock"), { ssr: false });
+const ResearchBlock = dynamic(() => import("@/components/mardown-display/blocks/research/ResearchBlock"), { ssr: false });
+const ResourceCollectionBlock = dynamic(() => import("@/components/mardown-display/blocks/resources/ResourceCollectionBlock"), { ssr: false });
+const ProgressTrackerBlock = dynamic(() => import("@/components/mardown-display/blocks/progress/ProgressTrackerBlock"), { ssr: false });
+const ComparisonTableBlock = dynamic(() => import("@/components/mardown-display/blocks/comparison/ComparisonTableBlock"), { ssr: false });
+const TroubleshootingBlock = dynamic(() => import("@/components/mardown-display/blocks/troubleshooting/TroubleshootingBlock"), { ssr: false });
+const DecisionTreeBlock = dynamic(() => import("@/components/mardown-display/blocks/decision-tree/DecisionTreeBlock"), { ssr: false });
+const InteractiveDiagramBlock = dynamic(() => import("@/components/mardown-display/blocks/diagram/InteractiveDiagramBlock"), { ssr: false });
+const FlashcardsBlock = dynamic(() => import("@/components/mardown-display/blocks/flashcards/FlashcardsBlock"), { ssr: false });
+const CodeBlock = dynamic(() => import("@/features/code-editor/components/code-block/CodeBlock"), { ssr: false });
+const MathProblem = dynamic(() => import("@/features/math/components/MathProblem"), { ssr: false });
+const CodePreviewCanvas = dynamic(() => import("@/features/canvas/custom-components/CodePreviewCanvas").then((m) => ({ default: m.CodePreviewCanvas })), { ssr: false });
+const CodeEditErrorCanvas = dynamic(() => import("@/features/canvas/custom-components/CodeEditErrorCanvas").then((m) => ({ default: m.CodeEditErrorCanvas })), { ssr: false });
 
 interface CanvasRendererProps {
   // Props are now optional - component gets data from Redux

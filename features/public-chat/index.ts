@@ -2,8 +2,8 @@
 // Export all components, hooks, and utilities for the public chat feature
 
 // Context
-export { ChatProvider, useChatContext, useChatState, useChatActions } from './context/ChatContext';
-export type { ChatMessage, ChatSettings, AgentConfig, ChatState } from './context/ChatContext';
+export { ChatProvider, useChatContext, useChatState, useChatActions } from './context/DEPRECATED-ChatContext';
+export type { ChatMessage, ChatSettings, AgentConfig, ChatState } from './context/DEPRECATED-ChatContext';
 export { LayoutAgentContext, useLayoutAgent } from './context/LayoutAgentContext';
 export type { LayoutAgentContextValue } from './context/LayoutAgentContext';
 
@@ -30,7 +30,7 @@ export type {
 export { resourceToContentItem, buildContentArray } from './types/content';
 
 // Hooks
-export { useAgentChat } from './hooks/useAgentChat';
+export { useAgentChat } from './hooks/DEPRECATED-useAgentChat';
 
 // Components
 export { ChatContainer } from './components/ChatContainer';

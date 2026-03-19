@@ -17,7 +17,7 @@
 
 import { useCallback, useMemo } from 'react';
 import type { UnifiedChatWrapperProps } from '@/features/cx-conversation/UnifiedChatWrapper';
-import type { ApiMode, ChatModeConfig } from '@/lib/redux/chatConversations/types';
+import type { ApiMode, ChatModeConfig } from '@/features/cx-conversation/redux/types';
 import type { PromptVariable } from '@/features/prompts/types/core';
 
 export interface AuthenticatedChatPropsConfig {

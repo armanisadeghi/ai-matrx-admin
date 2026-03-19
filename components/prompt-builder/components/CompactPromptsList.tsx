@@ -20,14 +20,16 @@ export default function CompactPromptsList({
   onCreateNew,
   onViewPrompt,
   onDeletePrompt,
-  onDuplicatePrompt
+  onDuplicatePrompt,
 }: CompactPromptsListProps) {
   if (prompts.length === 0) {
     return (
-      <Card className="bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700">
+      <Card className="bg-textured">
         <CardContent className="p-6 text-center">
           <MessageSquare className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
-          <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-3">No prompts created yet</p>
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-3">
+            No prompts created yet
+          </p>
           {onCreateNew && (
             <Button onClick={onCreateNew} size="sm">
               Create Your First Prompt
@@ -47,13 +49,15 @@ export default function CompactPromptsList({
     <div className="space-y-3">
       {prompts.map((prompt) => {
         const messageCount = prompt.messages?.length || 0;
-        const variableCount = prompt.variableDefaults ? Object.keys(prompt.variableDefaults).length : 0;
-        const hasContent = prompt.messages?.some(msg => msg.content.trim());
+        const variableCount = prompt.variableDefaults
+          ? Object.keys(prompt.variableDefaults).length
+          : 0;
+        const hasContent = prompt.messages?.some((msg) => msg.content.trim());
 
         return (
           <Card
             key={prompt.id}
-            className="bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 group cursor-pointer"
+            className="bg-textured hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 group cursor-pointer"
             onClick={() => onEditPrompt(prompt)}
           >
             <CardContent className="p-4">
@@ -93,7 +97,9 @@ export default function CompactPromptsList({
                         variant="ghost"
                         size="sm"
                         className="h-7 px-2 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400"
-                        onClick={(e) => handleActionClick(e, () => onViewPrompt(prompt))}
+                        onClick={(e) =>
+                          handleActionClick(e, () => onViewPrompt(prompt))
+                        }
                         title="View prompt"
                       >
                         <Eye className="w-3 h-3" />
@@ -103,7 +109,9 @@ export default function CompactPromptsList({
                       variant="ghost"
                       size="sm"
                       className="h-7 px-2 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400"
-                      onClick={(e) => handleActionClick(e, () => onEditPrompt(prompt))}
+                      onClick={(e) =>
+                        handleActionClick(e, () => onEditPrompt(prompt))
+                      }
                       title="Edit prompt"
                     >
                       <Edit2 className="w-3 h-3" />
@@ -113,7 +121,9 @@ export default function CompactPromptsList({
                         variant="ghost"
                         size="sm"
                         className="h-7 px-2 text-zinc-600 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400"
-                        onClick={(e) => handleActionClick(e, () => onDuplicatePrompt(prompt))}
+                        onClick={(e) =>
+                          handleActionClick(e, () => onDuplicatePrompt(prompt))
+                        }
                         title="Duplicate prompt"
                       >
                         <Copy className="w-3 h-3" />
@@ -124,7 +134,9 @@ export default function CompactPromptsList({
                         variant="ghost"
                         size="sm"
                         className="h-7 px-2 text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400"
-                        onClick={(e) => handleActionClick(e, () => onDeletePrompt(prompt))}
+                        onClick={(e) =>
+                          handleActionClick(e, () => onDeletePrompt(prompt))
+                        }
                         title="Delete prompt"
                       >
                         <Trash2 className="w-3 h-3" />

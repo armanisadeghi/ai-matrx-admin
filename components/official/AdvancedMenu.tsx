@@ -17,6 +17,8 @@ export interface MenuItem {
   action: MenuItemAction;
   category?: string;
   disabled?: boolean;
+  /** When true, item is omitted from the menu */
+  hidden?: boolean;
   showToast?: boolean; // Default true
   successMessage?: string;
   errorMessage?: string;
@@ -268,13 +270,14 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
     }
   };
 
-  // Categorize items
+  // Categorize items (drop hidden entries)
   const groupedItems = React.useMemo(() => {
+    const visible = items.filter((item) => !item.hidden);
     if (!categorizeItems) {
-      return { "": items };
+      return { "": visible };
     }
 
-    return items.reduce((acc, item) => {
+    return visible.reduce((acc, item) => {
       const category = item.category || "Actions";
       if (!acc[category]) {
         acc[category] = [];

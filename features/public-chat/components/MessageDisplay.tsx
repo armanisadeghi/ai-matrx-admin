@@ -4,7 +4,7 @@ import React, { useRef, useEffect, useState, useMemo, lazy, Suspense } from 'rea
 import { Copy, Check, ChevronDown, MessageSquare, AlertCircle, Edit, MoreHorizontal, FileText, Image as ImageIcon, Music, Youtube, Globe, Paperclip, TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MarkdownStream from '@/components/MarkdownStream';
-import type { ChatMessage } from '../context/ChatContext';
+import type { ChatMessage } from '../context/DEPRECATED-ChatContext';
 import type { PublicResource, PublicResourceType } from '../types/content';
 import type { StreamEvent } from '@/types/python-generated/stream-events';
 import { buildCanonicalBlocks, toolCallBlockToLegacy } from '@/lib/chat-protocol';

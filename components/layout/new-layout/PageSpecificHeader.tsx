@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { CockpitControls } from '@/components/playground/types';
+import type { ModulePage } from '@/components/matrx/navigation/types';
 
 interface PageSpecificHeaderProps {
   children: React.ReactNode;
@@ -342,15 +343,7 @@ export function PromptAppHeader(props: PromptAppHeaderProps) {
 }
 
 interface ModuleHeaderProps {
-  pages: Array<{
-    title: string;
-    path: string;
-    relative: boolean;
-    description: string;
-    icon?: React.ReactNode;
-    color?: string;
-    layout?: string;
-  }>;
+  pages: ModulePage[];
   currentPath: string;
   moduleHome: string;
   moduleName?: string;

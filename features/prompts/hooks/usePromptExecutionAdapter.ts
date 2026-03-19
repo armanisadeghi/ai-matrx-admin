@@ -22,13 +22,13 @@
 
 import { useEffect, useRef } from 'react';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
-import { chatConversationsActions } from '@/lib/redux/chatConversations/slice';
+import { chatConversationsActions } from '@/features/cx-conversation/redux/slice';
 import {
     selectIsExecuting,
     selectStreamingTextForInstance,
 } from '@/lib/redux/prompt-execution/selectors';
 import { selectMessages } from '@/lib/redux/prompt-execution/slice';
-import type { ConversationMessage as ChatConversationMessage } from '@/lib/redux/chatConversations/types';
+import type { ConversationMessage as ChatConversationMessage } from '@/features/cx-conversation/redux/types';
 import { v4 as uuidv4 } from 'uuid';
 
 interface UsePromptExecutionAdapterOptions {

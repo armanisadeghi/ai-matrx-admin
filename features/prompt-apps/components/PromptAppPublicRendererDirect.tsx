@@ -268,7 +268,7 @@ export function PromptAppPublicRendererDirect({ app, slug }: PromptAppPublicRend
                     metadata: {
                         timestamp: new Date().toISOString(),
                         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                        model_id: chatConfig.model_id,
+                        model_id: chatConfig.ai_model_id,
                         direct_api: true, // Flag to indicate this used direct API
                     }
                 })

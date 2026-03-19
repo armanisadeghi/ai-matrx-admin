@@ -3,9 +3,9 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Search, X, Check, Bot, Loader2, Sparkles, User, Users, Globe } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useAgentsContext } from '../context/AgentsContext';
+import { useAgentsContext } from '../context/DEPRECATED-AgentsContext';
 import { DEFAULT_AGENTS } from './AgentSelector';
-import type { AgentConfig } from '../context/ChatContext';
+import type { AgentConfig } from '../context/DEPRECATED-ChatContext';
 import {
     Drawer,
     DrawerContent,

@@ -1,28 +1,34 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, CheckCircle, XCircle, Play, RefreshCw } from 'lucide-react';
-import { startPromptAction } from '@/lib/redux/prompt-execution';
-import { usePromptInstance } from '@/lib/redux/prompt-execution/hooks';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, CheckCircle, XCircle, Play, RefreshCw } from "lucide-react";
+import { startPromptAction } from "@/lib/redux/prompt-execution";
+import { usePromptInstance } from "@/lib/redux/prompt-execution/hooks";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function ActionTestPage() {
   const dispatch = useAppDispatch();
 
-  const [actionId, setActionId] = useState<string>('');
-  const [userId, setUserId] = useState<string>('');
-  const [workspaceId, setWorkspaceId] = useState<string>('');
-  const [projectId, setProjectId] = useState<string>('');
-  const [taskId, setTaskId] = useState<string>('');
-  const [userVariables, setUserVariables] = useState<string>('{}');
-  const [initialMessage, setInitialMessage] = useState<string>('');
+  const [actionId, setActionId] = useState<string>("");
+  const [userId, setUserId] = useState<string>("");
+  const [workspaceId, setWorkspaceId] = useState<string>("");
+  const [projectId, setProjectId] = useState<string>("");
+  const [taskId, setTaskId] = useState<string>("");
+  const [userVariables, setUserVariables] = useState<string>("{}");
+  const [initialMessage, setInitialMessage] = useState<string>("");
 
   const [instanceId, setInstanceId] = useState<string | null>(null);
   const [executionResult, setExecutionResult] = useState<any | null>(null);
@@ -44,7 +50,7 @@ export default function ActionTestPage() {
         try {
           parsedVariables = JSON.parse(userVariables);
         } catch (err) {
-          throw new Error('Invalid JSON for user variables');
+          throw new Error("Invalid JSON for user variables");
         }
       }
 
@@ -60,16 +66,16 @@ export default function ActionTestPage() {
           },
           userProvidedVariables: parsedVariables,
           initialMessage: initialMessage || undefined,
-        })
+        }),
       ).unwrap();
 
       setExecutionResult(result);
       setInstanceId(result.runId);
 
-      console.log('✅ Action executed:', result);
+      console.log("✅ Action executed:", result);
     } catch (err: any) {
-      setError(err.message || 'Unknown error occurred');
-      console.error('❌ Execution failed:', err);
+      setError(err.message || "Unknown error occurred");
+      console.error("❌ Execution failed:", err);
     } finally {
       setLoading(false);
     }
@@ -234,13 +240,15 @@ export default function ActionTestPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>Instance ID</Label>
-                    <p className="font-mono text-sm">{executionResult.instanceId}</p>
+                    <p className="font-mono text-sm">
+                      {executionResult.instanceId}
+                    </p>
                   </div>
 
                   <div>
                     <Label>Run ID</Label>
                     <p className="font-mono text-sm">
-                      {executionResult.runId || 'N/A'}
+                      {executionResult.runId || "N/A"}
                     </p>
                   </div>
 
@@ -269,12 +277,12 @@ export default function ActionTestPage() {
                     <Label>Status</Label>
                     <Badge
                       variant={
-                        executionResult.fullyResolved ? 'default' : 'secondary'
+                        executionResult.fullyResolved ? "default" : "secondary"
                       }
                     >
                       {executionResult.fullyResolved
-                        ? 'Fully Resolved'
-                        : 'Partially Resolved'}
+                        ? "Fully Resolved"
+                        : "Partially Resolved"}
                     </Badge>
                   </div>
                 </div>
@@ -287,9 +295,7 @@ export default function ActionTestPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Execution Instance</CardTitle>
-                <CardDescription>
-                  Real-time state from Redux
-                </CardDescription>
+                <CardDescription>Real-time state from Redux</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -311,7 +317,9 @@ export default function ActionTestPage() {
                       {displayMessages.map((msg, idx) => (
                         <div key={idx} className="p-4 bg-muted rounded">
                           <p className="font-bold capitalize">{msg.role}</p>
-                          <p className="mt-2 whitespace-pre-wrap">{msg.content}</p>
+                          <p className="mt-2 whitespace-pre-wrap">
+                            {msg.content}
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -326,10 +334,14 @@ export default function ActionTestPage() {
             <CardHeader>
               <CardTitle>How to Test</CardTitle>
             </CardHeader>
-            <CardContent className="prose prose-sm max-w-none">
+            <CardContent>
               <ol>
-                <li>First, run the database migration to create the prompt_actions table</li>
-                <li>Create a test action in your database with:
+                <li>
+                  First, run the database migration to create the prompt_actions
+                  table
+                </li>
+                <li>
+                  Create a test action in your database with:
                   <ul>
                     <li>A prompt reference (prompt_id or prompt_builtin_id)</li>
                     <li>Broker mappings (optional)</li>
@@ -339,10 +351,13 @@ export default function ActionTestPage() {
                 </li>
                 <li>Enter the action UUID in the form above</li>
                 <li>Optionally provide context IDs for broker resolution</li>
-                <li>Optionally provide user variable overrides (JSON format)</li>
+                <li>
+                  Optionally provide user variable overrides (JSON format)
+                </li>
                 <li>Click Execute Action</li>
                 <li>Watch the console for detailed logs</li>
-                <li>View results showing:
+                <li>
+                  View results showing:
                   <ul>
                     <li>How many variables were auto-filled from brokers</li>
                     <li>How many were provided by user</li>
@@ -355,9 +370,18 @@ export default function ActionTestPage() {
               <h4>Variable Precedence Test:</h4>
               <p>To test variable precedence, create an action with:</p>
               <ul>
-                <li>Broker mapping for a variable (e.g., client_name → broker_uuid)</li>
-                <li>Hardcoded value for same variable (e.g., client_name: &quot;Hardcoded Inc.&quot;)</li>
-                <li>Then provide user variable (e.g., client_name: &quot;User Corp.&quot;)</li>
+                <li>
+                  Broker mapping for a variable (e.g., client_name →
+                  broker_uuid)
+                </li>
+                <li>
+                  Hardcoded value for same variable (e.g., client_name:
+                  &quot;Hardcoded Inc.&quot;)
+                </li>
+                <li>
+                  Then provide user variable (e.g., client_name: &quot;User
+                  Corp.&quot;)
+                </li>
               </ul>
               <p>Expected: User value wins!</p>
             </CardContent>
@@ -367,4 +391,3 @@ export default function ActionTestPage() {
     </div>
   );
 }
-

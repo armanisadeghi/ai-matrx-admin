@@ -255,15 +255,23 @@ export default function ConsentClient() {
                 return;
             }
 
-            // Step 3: Already consented → redirect immediately
-            if (authData.redirect_url) {
+            // Step 3: Already consented → redirect immediately (Supabase may return OAuthRedirect)
+            const redirectUrl =
+                authData && typeof authData === 'object' && 'redirect_url' in authData
+                    ? (authData as { redirect_url?: string }).redirect_url
+                    : undefined;
+            if (redirectUrl) {
                 setPageState({ kind: 'redirecting', message: 'You have already authorized this application. Redirecting...' });
-                window.location.href = authData.redirect_url;
+                window.location.href = redirectUrl;
                 return;
             }
 
             // Step 4: Show consent
-            setPageState({ kind: 'consent', details: authData, user });
+            setPageState({
+                kind: 'consent',
+                details: authData as OAuthAuthorizationDetails,
+                user,
+            });
         }
 
         initialize();

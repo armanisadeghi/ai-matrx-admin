@@ -1,31 +1,44 @@
 "use client";
 
-import React from 'react';
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectPrimaryResponseTextByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
-import { PromptAssistantMessage } from '../builder/PromptAssistantMessage';
+import { selectPrimaryResponseTextByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import dynamic from "next/dynamic";
+
+const PromptAssistantMessage = dynamic(
+  () =>
+    import("../builder/PromptAssistantMessage").then((m) => ({
+      default: m.PromptAssistantMessage,
+    })),
+  { ssr: false },
+);
 
 interface StreamingAssistantMessageProps {
-    taskId: string;
-    messageIndex: number;
-    compact?: boolean;
+  taskId: string;
+  messageIndex: number;
+  compact?: boolean;
 }
 
 /**
  * Isolated component that connects to Redux for streaming text.
  * This prevents the parent (SmartMessageList) from re-rendering on every chunk.
  */
-export function StreamingAssistantMessage({ taskId, messageIndex, compact }: StreamingAssistantMessageProps) {
-    // Select the streaming text ONLY in this component
-    const streamingText = useAppSelector(selectPrimaryResponseTextByTaskId(taskId));
+export function StreamingAssistantMessage({
+  taskId,
+  messageIndex,
+  compact,
+}: StreamingAssistantMessageProps) {
+  // Select the streaming text ONLY in this component
+  const streamingText = useAppSelector(
+    selectPrimaryResponseTextByTaskId(taskId),
+  );
 
-    return (
-        <PromptAssistantMessage
-            content={streamingText || ''}
-            taskId={taskId}
-            messageIndex={messageIndex}
-            isStreamActive={true}
-            compact={compact}
-        />
-    );
+  return (
+    <PromptAssistantMessage
+      content={streamingText || ""}
+      taskId={taskId}
+      messageIndex={messageIndex}
+      isStreamActive={true}
+      compact={compact}
+    />
+  );
 }

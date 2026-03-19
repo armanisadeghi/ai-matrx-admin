@@ -524,13 +524,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Chat
-         * @description Direct chat endpoint — client supplies the full message history.
-         *
-         *     Builds a UnifiedConfig from the request, sets conversation scope on
-         *     AppContext, and hands off to the AI engine via run_ai_task.
-         */
+        /** Chat */
         post: operations["chat_ai_chat_post"];
         delete?: never;
         options?: never;
@@ -1949,6 +1943,13 @@ export interface components {
              */
             client_tools: string[];
             ide_state?: components["schemas"]["IdeState"] | null;
+            /**
+             * Context
+             * @default {}
+             */
+            context: {
+                [key: string]: unknown;
+            };
         };
         /** AnalyzeBulkRequest */
         AnalyzeBulkRequest: {
@@ -2118,6 +2119,8 @@ export interface components {
             frame_images?: unknown[] | null;
             /** Reference Images */
             reference_images?: unknown[] | null;
+            /** Image Loras */
+            image_loras?: unknown[] | null;
             /** Disable Safety Checker */
             disable_safety_checker?: boolean | null;
             /** Ai Model Id */
@@ -2154,10 +2157,22 @@ export interface components {
              */
             client_tools: string[];
             ide_state?: components["schemas"]["IdeState"] | null;
+            /**
+             * Context
+             * @default {}
+             */
+            context: {
+                [key: string]: unknown;
+            };
             /** Metadata */
             metadata?: {
                 [key: string]: unknown;
             } | null;
+            /**
+             * Deprecated Keys Found
+             * @default []
+             */
+            deprecated_keys_found: string[][];
         } & {
             [key: string]: unknown;
         };
@@ -2215,6 +2230,13 @@ export interface components {
              */
             client_tools: string[];
             ide_state?: components["schemas"]["IdeState"] | null;
+            /**
+             * Context
+             * @default {}
+             */
+            context: {
+                [key: string]: unknown;
+            };
         };
         /** DirectChatRequest */
         DirectChatRequest: {
@@ -2448,6 +2470,8 @@ export interface components {
             frame_images?: unknown[] | null;
             /** Reference Images */
             reference_images?: unknown[] | null;
+            /** Image Loras */
+            image_loras?: unknown[] | null;
             /** Disable Safety Checker */
             disable_safety_checker?: boolean | null;
         };

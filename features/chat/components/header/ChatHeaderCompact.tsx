@@ -7,7 +7,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { TbListSearch } from "react-icons/tb";
 import { IoCreateOutline } from "react-icons/io5";
 import Link from "next/link";
-import { ConversationSearchOverlay } from "@/features/chat/components/conversations/ConversationSearchOverlay";
+import dynamic from "next/dynamic";
+
+const ConversationSearchOverlay = dynamic(
+    () => import("@/features/chat/components/conversations/ConversationSearchOverlay").then(m => ({ default: m.ConversationSearchOverlay })),
+    { ssr: false }
+);
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 

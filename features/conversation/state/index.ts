@@ -1,18 +1,18 @@
 /**
- * features/conversation/state — Re-export of Redux chatConversations module.
+ * features/conversation/redux — Re-export of Redux chatConversations module.
  *
- * The slice lives at lib/redux/chatConversations/ (where Redux slices belong).
+ * The slice lives at @/features/cx-conversation/redux/ (where Redux slices belong).
  * This barrel lets feature-internal code import from a consistent path:
  *
- *   import { chatConversationsActions, sendMessage } from '@/features/conversation/state';
+ *   import { chatConversationsActions, sendMessage } from '@/features/conversation/redux';
  */
 
 export {
     chatConversationsReducer,
     chatConversationsActions,
-} from '@/lib/redux/chatConversations/slice';
+} from '@/features/cx-conversation/redux/slice';
 
-export * from '@/lib/redux/chatConversations/types';
-export * from '@/lib/redux/chatConversations/selectors';
-export { sendMessage } from '@/lib/redux/chatConversations/thunks/sendMessage';
-export { loadConversationHistory } from '@/lib/redux/chatConversations/thunks/loadConversationHistory';
+export * from '@/features/cx-conversation/redux/types';
+export * from '@/features/cx-conversation/redux/selectors';
+export { sendMessage } from '@/features/cx-conversation/redux/thunks/sendMessage';
+export { loadConversationHistory } from '@/features/cx-conversation/redux/thunks/loadConversationHistory';

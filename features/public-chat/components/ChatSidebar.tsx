@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useIsMobile } from '@/hooks/use-mobile';
-import type { AgentConfig } from '../context/ChatContext';
+import type { AgentConfig } from '../context/DEPRECATED-ChatContext';
 
 // ============================================================================
 // TYPES

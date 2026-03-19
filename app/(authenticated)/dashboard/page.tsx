@@ -9,7 +9,10 @@ import {
     Brain, Settings, User, Building2, ImageIcon,
 } from "lucide-react";
 import Image from "next/image";
-import { Grid, CardProps, HorizontalCardProps, List } from "@/components/official/card-and-grid";
+import { Grid } from "@/components/official/card-and-grid/Grid";
+import type { CardProps } from "@/components/official/card-and-grid/Card";
+import type { HorizontalCardProps } from "@/components/official/card-and-grid/HorizontalCard";
+import { List } from "@/components/official/card-and-grid/List";
 import { IosWidget } from "@/components/official/card-and-grid/IosWidget";
 import { useUserStats } from "./user-stats-fetch";
 import { FaTasks } from "react-icons/fa";

@@ -10,17 +10,17 @@ import { InitialReduxState } from "@/types/reduxTypes";
 import NavigationLoader from "@/components/loaders/NavigationLoader";
 import { headers } from "next/headers";
 import { setGlobalUserIdAndToken } from "@/lib/globalState";
-import SocketInitializer from "@/lib/redux/socket-io/connection/SocketInitializer";
-import AdminIndicatorWrapper from "@/components/admin/controls/AdminIndicatorWrapper";
-import { DebugIndicatorManager } from "@/components/debug/DebugIndicatorManager";
 import ResponsiveLayout from "@/components/layout/new-layout/ResponsiveLayout";
 import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
 import { initializeUserPreferencesState } from "@/lib/redux/slices/userPreferencesSlice";
-import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
 import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
 import { CanvasSideSheet } from "@/features/canvas/core/CanvasSideSheet";
-import { MessagingSideSheet, MessagingInitializer } from "@/features/messaging";
-import AppleKeyExpiryBanner from "@/components/admin/AppleKeyExpiryBanner";
+import { DynamicSocketInitializer } from "@/app/(authenticated)/dynamic-imports/DynamicSocketInitializer";
+import { DynamicAdminIndicatorWrapper } from "@/app/(authenticated)/dynamic-imports/DynamicAdminIndicatorWrapper";
+import { DynamicDebugIndicatorManager } from "@/app/(authenticated)/dynamic-imports/DynamicDebugIndicatorManager";
+import { DynamicAnnouncementProvider } from "@/app/(authenticated)/dynamic-imports/DynamicAnnouncementProvider";
+import { DynamicMessagingInitializer, DynamicMessagingSideSheet } from "@/app/(authenticated)/dynamic-imports/DynamicMessaging";
+import { DynamicAppleKeyExpiryBanner } from "@/app/(authenticated)/dynamic-imports/DynamicAppleKeyExpiryBanner";
 
 const schemaSystem = initializeSchemaSystem();
 const clientGlobalCache = generateClientGlobalCache();
@@ -95,21 +95,21 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
 
     return (
         <Providers initialReduxState={initialReduxState}>
-            <AppleKeyExpiryBanner />
+            <DynamicAppleKeyExpiryBanner />
             <AuthSessionWatcher />
-            <SocketInitializer />
-            <AnnouncementProvider />
+            <DynamicSocketInitializer />
+            <DynamicAnnouncementProvider />
             <ResponsiveLayout {...layoutProps}>
                 <NavigationLoader />
                 {children}
-                <AdminIndicatorWrapper />
-                <DebugIndicatorManager />
+                <DynamicAdminIndicatorWrapper />
+                <DynamicDebugIndicatorManager />
             </ResponsiveLayout>
             {/* Global Canvas Side Sheet - Available everywhere (routes, modals, sheets) */}
             <CanvasSideSheet />
             {/* Global Messaging System - Side Sheet + Data Loader */}
-            <MessagingInitializer />
-            <MessagingSideSheet />
+            <DynamicMessagingInitializer />
+            <DynamicMessagingSideSheet />
         </Providers>
     );
 }

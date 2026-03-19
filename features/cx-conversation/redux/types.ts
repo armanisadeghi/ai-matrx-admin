@@ -124,6 +124,8 @@ export interface SessionUIState {
     modelSettings: Record<string, unknown>;
     useLocalhost: boolean;
     useBlockMode: boolean;
+    /** Admin/creator debug panel open — shows system messages, raw state, etc. */
+    showDebugInfo: boolean;
 }
 
 export interface ConversationSession {

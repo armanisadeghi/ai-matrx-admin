@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { AgentsProvider } from '@/features/public-chat/context/AgentsContext';
+import { AgentsProvider } from '@/features/public-chat/context/DEPRECATED-AgentsContext';
 import ChatLayoutShell from './ChatLayoutShell';
 import ChatLoading from './loading';
 

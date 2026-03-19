@@ -38,6 +38,7 @@ export const DEFAULT_UI_STATE: SessionUIState = {
     modelSettings: {},
     useLocalhost: false,
     useBlockMode: false,
+    showDebugInfo: false,
 };
 
 // ============================================================================

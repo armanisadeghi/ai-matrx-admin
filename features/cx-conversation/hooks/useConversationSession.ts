@@ -18,9 +18,9 @@
 import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { chatConversationsActions } from '@/lib/redux/chatConversations/slice';
-import { sendMessage } from '@/lib/redux/chatConversations/thunks/sendMessage';
-import { loadConversationHistory } from '@/lib/redux/chatConversations/thunks/loadConversationHistory';
+import { chatConversationsActions } from '@/features/cx-conversation/redux/slice';
+import { sendMessage } from '@/features/cx-conversation/redux/thunks/sendMessage';
+import { loadConversationHistory } from '@/features/cx-conversation/redux/thunks/loadConversationHistory';
 import {
     selectMessages,
     selectIsStreaming,
@@ -33,8 +33,8 @@ import {
     selectVariableDefaults,
     selectUIState,
     selectApiMode,
-} from '@/lib/redux/chatConversations/selectors';
-import type { ApiMode, ChatModeConfig, ConversationResource } from '@/lib/redux/chatConversations/types';
+} from '@/features/cx-conversation/redux/selectors';
+import type { ApiMode, ChatModeConfig, ConversationResource } from '@/features/cx-conversation/redux/types';
 import type { PromptVariable } from '@/features/prompts/types/core';
 import type { Resource } from '@/features/prompts/types/resources';
 
@@ -151,8 +151,10 @@ export function useConversationSession(config: ConversationSessionConfig): Conve
     const sessionIdRef = useRef(config.sessionId ?? uuidv4());
     const sessionId = sessionIdRef.current;
 
-    // Track abort controller for cancellation
-    const abortControllerRef = useRef<AbortController | null>(null);
+    // Track active abort controllers: callId → AbortController
+    // Map (not a single ref) so multiple in-flight calls on the same session are
+    // all trackable and cancellable independently.
+    const abortControllersRef = useRef<Map<string, AbortController>>(new Map());
 
     // Track whether we've initialized to avoid double-init in StrictMode
     const initializedRef = useRef(false);
@@ -205,24 +207,29 @@ export function useConversationSession(config: ConversationSessionConfig): Conve
     // ── Actions ──────────────────────────────────────────────────────────────
 
     const send = useCallback((content: string, options?: { resources?: ConversationResource[]; variables?: Record<string, unknown> }) => {
+        const callId = uuidv4();
         const controller = new AbortController();
-        abortControllerRef.current = controller;
+        abortControllersRef.current.set(callId, controller);
 
-        dispatch(sendMessage({
+        const thunk = dispatch(sendMessage({
             sessionId,
-            agentId: config.agentId,
             content,
             resources: options?.resources,
             variables: options?.variables,
             signal: controller.signal,
         }));
-    }, [dispatch, sessionId, config.agentId]);
+
+        // Clean up the controller once the thunk resolves (success or error)
+        Promise.resolve(thunk).finally(() => {
+            abortControllersRef.current.delete(callId);
+        });
+    }, [dispatch, sessionId]);
 
     const cancel = useCallback(() => {
-        if (abortControllerRef.current) {
-            abortControllerRef.current.abort();
-            abortControllerRef.current = null;
+        for (const controller of abortControllersRef.current.values()) {
+            controller.abort();
         }
+        abortControllersRef.current.clear();
     }, []);
 
     const clearMessages = useCallback(() => {

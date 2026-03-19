@@ -18,7 +18,7 @@ import {
 import { ShareModal } from '@/features/sharing';
 import { supabase } from '@/utils/supabase/client';
 import { useChatPersistence } from '../../hooks/useChatPersistence';
-import { useAgentsContext } from '../../context/AgentsContext';
+import { useAgentsContext } from '../../context/DEPRECATED-AgentsContext';
 import type { CxConversationSummary, SharedCxConversationSummary } from '../../types/cx-tables';
 
 // ============================================================================

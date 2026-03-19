@@ -30,7 +30,7 @@ export const exportToPDF = async (
 ): Promise<ExportResult> => {
     try {
         const { filename = presentationTitle, quality = 2 } = options;
-        
+
         // Create PDF in landscape mode (standard presentation size)
         const pdf = new jsPDF({
             orientation: 'landscape',

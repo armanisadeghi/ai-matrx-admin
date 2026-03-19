@@ -9,9 +9,9 @@
 // ChatMobileAgentName island) render inside the SsrAgentProvider tree.
 
 import { ReactNode } from 'react';
-import { AgentsProvider } from '@/features/public-chat/context/AgentsContext';
-import { ChatProvider } from '@/features/public-chat/context/ChatContext';
-import { SsrAgentProvider } from './SsrAgentContext';
+import { AgentsProvider } from '@/features/public-chat/context/DEPRECATED-AgentsContext';
+import { ChatProvider } from '@/features/public-chat/context/DEPRECATED-ChatContext';
+import { SsrAgentProvider } from './DEPRECATED-SsrAgentContext';
 
 interface ChatShellProvidersProps {
     children: ReactNode;

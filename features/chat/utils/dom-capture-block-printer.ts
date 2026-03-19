@@ -11,7 +11,6 @@
  *   // add printAction to customActions or controls
  */
 
-import { captureToPDF } from "./dom-capture-print-utils";
 import type { BlockPrinter } from "./block-print-utils";
 
 /**
@@ -39,6 +38,7 @@ export async function captureBlockElement(
     element: HTMLElement,
     filename: string,
 ): Promise<void> {
+    const { captureToPDF } = await import("./dom-capture-print-utils");
     await captureToPDF(element, {
         filename,
         scale: 2,

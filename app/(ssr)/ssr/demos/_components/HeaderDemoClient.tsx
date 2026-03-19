@@ -155,8 +155,8 @@ export default function HeaderDemoClient() {
 
       {active === "v2d" && (
         <PageHeader>
-          <HeaderStructured
-            dropdown={{ options: VIEW_OPTIONS, selected: view, onSelect: setView }}
+          <HeaderStructured<ViewValue>
+            dropdown={{ options: VIEW_OPTIONS, selected: view, onSelect: (v) => setView(v) }}
             actions={ACTIONS}
           />
         </PageHeader>
@@ -164,11 +164,11 @@ export default function HeaderDemoClient() {
 
       {active === "v3" && (
         <PageHeader>
-          <HeaderToggle
+          <HeaderToggle<ToggleValue>
             back
             options={TOGGLE_OPTIONS}
             active={toggle}
-            onChange={setToggle}
+            onChange={(v) => setToggle(v)}
             actions={[{ icon: "Search", label: "Search", onPress: () => {} }]}
           />
         </PageHeader>
@@ -182,13 +182,13 @@ export default function HeaderDemoClient() {
 
       {active === "v5" && (
         <PageHeader>
-          <HeaderPills options={PILL_OPTIONS} active={pill} onChange={setPill} />
+          <HeaderPills<PillValue> options={PILL_OPTIONS} active={pill} onChange={(v) => setPill(v)} />
         </PageHeader>
       )}
 
       {active === "v6" && (
         <PageHeader>
-          <HeaderTabs options={TAB_OPTIONS} active={tab} onChange={setTab} />
+          <HeaderTabs<TabValue> options={TAB_OPTIONS} active={tab} onChange={(v) => setTab(v)} />
         </PageHeader>
       )}
 

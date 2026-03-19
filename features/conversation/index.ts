@@ -34,13 +34,13 @@
  *   │   ├── index.ts          ← eager exports
  *   │   └── lazy.ts           ← lazy/dynamic exports for code splitting
  *   ├── hooks/                ← useConversationSession, useDomCapturePrint
- *   ├── state/                ← re-exports from lib/redux/chatConversations/
+ *   ├── redux/                ← re-exports from @/features/cx-conversation/redux/
  *   ├── types/                ← all type re-exports
  *   ├── utils/                ← internalized utilities (resource parsing, print)
  *   └── DEPENDENCIES.md       ← external dependency manifest
  *
  * The actual component files live in components/conversation/ (shared component
- * directory) and state lives in lib/redux/chatConversations/ (Redux convention).
+ * directory) and redux lives in @/features/cx-conversation/redux/ (Redux convention).
  * This feature directory provides a unified import surface and owns the
  * internalized utilities.
  */
@@ -73,9 +73,9 @@ export { useAuthenticatedChatProps } from './hooks/useAuthenticatedChatProps';
 // STATE (actions, selectors, thunks)
 // ============================================================================
 
-export { chatConversationsActions } from '@/lib/redux/chatConversations/slice';
-export { sendMessage } from '@/lib/redux/chatConversations/thunks/sendMessage';
-export { loadConversationHistory } from '@/lib/redux/chatConversations/thunks/loadConversationHistory';
+export { chatConversationsActions } from '@/features/cx-conversation/redux/slice';
+export { sendMessage } from '@/features/cx-conversation/redux/thunks/sendMessage';
+export { loadConversationHistory } from '@/features/cx-conversation/redux/thunks/loadConversationHistory';
 export {
     selectMessages,
     selectIsStreaming,
@@ -89,7 +89,7 @@ export {
     selectUIState,
     selectApiMode,
     selectChatModeConfig,
-} from '@/lib/redux/chatConversations/selectors';
+} from '@/features/cx-conversation/redux/selectors';
 
 // ============================================================================
 // UTILS (internalized)
@@ -125,4 +125,4 @@ export type {
     SessionUIState,
     ApiMode,
     ChatModeConfig,
-} from '@/lib/redux/chatConversations/types';
+} from '@/features/cx-conversation/redux/types';

@@ -14,7 +14,7 @@
 import { useState, useCallback, useRef } from "react";
 import { UnifiedChatWrapper } from "@/features/cx-conversation";
 import type { ConversationSessionReturn } from "@/features/cx-conversation";
-import type { ApiMode } from "@/lib/redux/chatConversations/types";
+import type { ApiMode } from "@/features/cx-conversation/redux/types";
 import { Button } from "@/components/ui/button";
 import {
   MessageSquare,

@@ -14,9 +14,14 @@ import {
     selectShowTemplateMessages
 } from "@/lib/redux/prompt-execution/selectors";
 import { PromptUserMessage } from "../builder/PromptUserMessage";
-import { PromptAssistantMessage } from "../builder/PromptAssistantMessage";
 import { PromptSystemMessage } from "../builder/PromptSystemMessage";
 import { StreamingAssistantMessage } from "./StreamingAssistantMessage";
+import dynamic from "next/dynamic";
+
+const PromptAssistantMessage = dynamic(
+    () => import("../builder/PromptAssistantMessage").then(m => ({ default: m.PromptAssistantMessage })),
+    { ssr: false }
+);
 import { MessageSquare } from "lucide-react";
 import { selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 

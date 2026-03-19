@@ -51,6 +51,9 @@ import noteVersionsReducer from "./slices/noteVersionsSlice";
 import messagingReducer from "../../features/messaging/redux/messagingSlice";
 import smsReducer from "../../features/sms/redux/smsSlice";
 import adminPreferencesReducer from "./slices/adminPreferencesSlice";
+import appContextReducer from "./slices/appContextSlice";
+import activeChatReducer from "./slices/activeChatSlice";
+import entitySystemReducer from "./slices/entitySystemSlice";
 
 // Prompt system
 import promptCacheReducer from "./slices/promptCacheSlice";
@@ -60,7 +63,7 @@ import promptExecutionReducer from "./prompt-execution/slice";
 import actionCacheReducer from "./prompt-execution/actionCacheSlice";
 import promptEditorReducer from "./slices/promptEditorSlice";
 import modelRegistryReducer from "./slices/modelRegistrySlice";
-import { chatConversationsReducer } from "./chatConversations";
+import { chatConversationsReducer } from "../../features/cx-conversation/redux";
 
 
 
@@ -179,8 +182,17 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         // Admin preferences (server override, etc.)
         adminPreferences: adminPreferencesReducer,
 
+        // App context — unified "where are you working" hierarchy (org → workspace → project → task → conversation)
+        appContext: appContextReducer,
+
+        // Active chat page state (selected agent, block mode, agent picker)
+        activeChat: activeChatReducer,
+
         // Unified chat conversation UI slice (replaces ChatContext + prompt-execution for display)
         chatConversations: chatConversationsReducer,
+
+        // Entity system load status (on-demand schema + slices)
+        entitySystem: entitySystemReducer,
     });
 };
 

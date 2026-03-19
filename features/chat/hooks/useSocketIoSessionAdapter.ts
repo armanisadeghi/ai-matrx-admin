@@ -24,7 +24,7 @@
 import { useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
-import { chatConversationsActions } from '@/lib/redux/chatConversations/slice';
+import { chatConversationsActions } from '@/features/cx-conversation/redux/slice';
 import {
     selectPrimaryResponseTextByTaskId,
     selectResponseToolUpdatesByListenerId,

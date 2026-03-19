@@ -29,7 +29,7 @@ export type {
     RemoveResourcePayload,
     UpdateUIStatePayload,
     LoadConversationPayload,
-} from '@/lib/redux/chatConversations/types';
+} from '@/features/cx-conversation/redux/types';
 
 // Stream event types
 export type { StreamEvent } from '@/types/python-generated/stream-events';

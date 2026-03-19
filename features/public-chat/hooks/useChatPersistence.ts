@@ -7,7 +7,7 @@ import type {
     CxMessageInsert,
     CxContentBlock,
 } from '../types/cx-tables';
-import type { ChatMessage } from '../context/ChatContext';
+import type { ChatMessage } from '../context/DEPRECATED-ChatContext';
 
 /**
  * Client-side hook for persisting chat data to cx_ tables via API routes.

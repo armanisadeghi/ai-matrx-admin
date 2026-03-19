@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
-import type { RootState } from '../store';
+import type { RootState } from '../../../lib/redux/store';
 import { EMPTY_MESSAGES, EMPTY_RESOURCES, EMPTY_VARIABLE_DEFAULTS, DEFAULT_UI_STATE } from './slice';
 import type { ConversationSession, SessionUIState } from './types';
 
@@ -108,3 +108,6 @@ export const selectUseLocalhost = (state: RootState, sessionId: string) =>
 
 export const selectUseBlockMode = (state: RootState, sessionId: string) =>
     state.chatConversations.uiState[sessionId]?.useBlockMode ?? false;
+
+export const selectShowDebugInfo = (state: RootState, sessionId: string) =>
+    state.chatConversations.uiState[sessionId]?.showDebugInfo ?? false;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
-import { useChatContext } from '../context/ChatContext';
+import { useChatContext } from '../context/DEPRECATED-ChatContext';
 import type { StreamEvent, ChunkPayload, ErrorPayload, CompletionPayload, EndPayload } from '@/types/python-generated/stream-events';
 import type { AgentStartRequestBody, ConversationContinueRequestBody } from '@/lib/api/types';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
@@ -133,6 +133,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                     stream: true,
                     debug: true,
                     client_tools: [],
+                    context: {},
                 } satisfies ConversationContinueRequestBody;
                 console.log('[useAgentChat] CONTINUE conversation →', executeUrl);
                 console.log('[useAgentChat] dbConversationId:', state.dbConversationId);
@@ -148,6 +149,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                     stream: true,
                     debug: true,
                     client_tools: [],
+                    context: {},
                 } satisfies AgentStartRequestBody;
                 console.log(`[useAgentChat] START ${blockMode ? 'BLOCK MODE' : 'normal'} agent conversation →`, executeUrl);
             }

@@ -15,8 +15,8 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
-import type { AgentConfig } from '@/features/public-chat/context/ChatContext';
-import { useChatContext } from '@/features/public-chat/context/ChatContext';
+import type { AgentConfig } from '@/features/public-chat/context/DEPRECATED-ChatContext';
+import { useChatContext } from '@/features/public-chat/context/DEPRECATED-ChatContext';
 import { resolveAgentFromId, DEFAULT_AGENT_CONFIG } from '@/features/public-chat/utils/agent-resolver';
 import { AgentPickerSheet } from '@/features/public-chat/components/AgentPickerSheet';
 

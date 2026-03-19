@@ -207,7 +207,7 @@ export function PublicFileUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl }
                         />
                         <Button
                             size="sm"
-                            onClick={handleValidate}
+                            onClick={() => void handleValidate()}
                             disabled={isValidating || !url.trim()}
                             className="h-8 w-8 p-0"
                             variant="ghost"

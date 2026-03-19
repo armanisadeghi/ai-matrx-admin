@@ -4,7 +4,7 @@ import { EntityState, MatrxRecordId } from "@/lib/redux/entity/types/stateTypes"
 import { createRecordKey, setLoading, setSuccess, setNewActiveRecord } from "@/lib/redux/entity/utils/stateHelpUtils";
 import EntityLogger from "../utils/entityLogger";
 import { EntityModeManager } from "../utils/crudOpsManagement";
-import { AppDispatch, RootState } from "../..";
+import type { AppDispatch, RootState } from "@/lib/redux/store";
 import { getEntitySlice } from "../entitySlice";
 import { ensureUnsavedRecord, getRecordKeyInfo } from "./utils";
 

@@ -27,8 +27,8 @@ import {
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { selectUser, selectIsAdmin } from '@/lib/redux/slices/userSlice';
-import type { AgentConfig } from '../context/ChatContext';
-import { useChatContext } from '../context/ChatContext';
+import type { AgentConfig } from '../context/DEPRECATED-ChatContext';
+import { useChatContext } from '../context/DEPRECATED-ChatContext';
 
 const AdminMenu = lazy(() => import('@/components/matrx/AdminMenu'));
 const FeedbackButton = lazy(() => import('@/components/layout/FeedbackButton'));

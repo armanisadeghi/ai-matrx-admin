@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext } from 'react';
-import type { AgentConfig } from './ChatContext';
+import type { AgentConfig } from './DEPRECATED-ChatContext';
 import { DEFAULT_AGENTS } from '../components/AgentSelector';
 
 // ============================================================================

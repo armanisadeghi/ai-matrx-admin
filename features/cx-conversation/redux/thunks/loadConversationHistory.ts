@@ -8,7 +8,7 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
-import type { RootState, AppDispatch } from '../../store';
+import type { RootState, AppDispatch } from '@/lib/redux/store';
 import { chatConversationsActions } from '../slice';
 import type { ConversationMessage } from '../types';
 import { processDbMessagesForDisplay } from '@/features/public-chat/utils/cx-content-converter';

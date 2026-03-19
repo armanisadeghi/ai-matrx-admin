@@ -181,10 +181,27 @@ export const ENDPOINTS = {
 } as const;
 
 /**
- * Default backend URLs.
- * Production URL from environment variable, with hardcoded fallback.
+ * Backend base URLs — one entry per ServerEnvironment in adminPreferencesSlice.
+ *
+ * ALL values MUST come from environment variables. No fallback URLs are
+ * hardcoded here — if a variable is missing the value is undefined, which
+ * will surface as a clear error rather than silently pointing at the wrong
+ * server. Configure every env in .env.local / Vercel project settings.
+ *
+ * Environment variables:
+ *   NEXT_PUBLIC_BACKEND_URL_PROD     → production server
+ *   NEXT_PUBLIC_BACKEND_URL_DEV      → development/feature-branch server
+ *   NEXT_PUBLIC_BACKEND_URL_STAGING  → staging server
+ *   NEXT_PUBLIC_BACKEND_URL_LOCAL    → local dev (default: http://localhost:8000)
+ *   NEXT_PUBLIC_BACKEND_URL_GPU      → dedicated GPU inference server
+ *
+ * 'custom' is not listed here — it is stored in adminPreferences.customServerUrl
+ * and resolved dynamically in resolveBaseUrl().
  */
-export const BACKEND_URLS = {
-    production: process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com',
-    localhost: process.env.NEXT_PUBLIC_LOCAL_SOCKET_URL || 'http://localhost:8000',
+export const BACKEND_URLS: Record<string, string | undefined> = {
+    production: process.env.NEXT_PUBLIC_BACKEND_URL_PROD,
+    development: process.env.NEXT_PUBLIC_BACKEND_URL_DEV,
+    staging: process.env.NEXT_PUBLIC_BACKEND_URL_STAGING,
+    localhost: process.env.NEXT_PUBLIC_BACKEND_URL_LOCAL ?? 'http://localhost:8000',
+    gpu: process.env.NEXT_PUBLIC_BACKEND_URL_GPU,
 } as const;

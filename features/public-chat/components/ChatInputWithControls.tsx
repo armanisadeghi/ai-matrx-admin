@@ -12,10 +12,10 @@ import {
     Paperclip,
     Image as ImageIcon,
     FileText,
-    Video,
     Music,
     Youtube,
     Globe,
+    Settings2,
 } from 'lucide-react';
 
 import { VoiceMicButton } from './VoiceMicButton';
@@ -26,7 +26,8 @@ import { Button } from "@/components/ui/button";
 import { PublicResourcePickerMenu } from './resource-picker/PublicResourcePickerMenu';
 
 import type { PublicResource, PublicResourceType } from '../types/content';
-import type { AgentConfig } from '../context/ChatContext';
+import type { AgentConfig } from '../context/DEPRECATED-ChatContext';
+import type { AIModel } from '@/lib/redux/slices/modelRegistrySlice';
 
 const PdfOptimizePrompt = lazy(() => import('./PdfOptimizePrompt'));
 
@@ -258,6 +259,11 @@ interface InputBottomControlsProps {
     selectedAgent?: AgentConfig | null;
     seamless?: boolean;
     onTranscription?: (text: string) => void;
+    // Model picker props (inline inside input)
+    availableModels?: AIModel[];
+    selectedModel?: string;
+    onModelChange?: (modelId: string) => void;
+    onSettingsClick?: () => void;
 }
 
 function InputBottomControls({
@@ -271,8 +277,18 @@ function InputBottomControls({
     selectedAgent,
     seamless = false,
     onTranscription,
+    availableModels,
+    selectedModel,
+    onModelChange,
+    onSettingsClick,
 }: InputBottomControlsProps) {
     const [isResourcePickerOpen, setIsResourcePickerOpen] = useState(false);
+    const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
+
+    const currentModelName = availableModels?.find(m => m.id === selectedModel)?.common_name
+        ?? availableModels?.find(m => m.id === selectedModel)?.name
+        ?? selectedModel
+        ?? null;
 
     return (
         <div className={`absolute bottom-0 left-0 right-0 h-[50px] bg-muted z-5 ${seamless ? 'rounded-b-none' : 'rounded-b-2xl'}`}>
@@ -312,6 +328,47 @@ function InputBottomControls({
                     </PopoverContent>
                 </Popover>
 
+                {/* Inline model picker */}
+                {availableModels && availableModels.length > 0 && onModelChange && (
+                    <Popover open={isModelPickerOpen} onOpenChange={setIsModelPickerOpen}>
+                        <PopoverTrigger asChild>
+                            <button
+                                disabled={disabled}
+                                className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-md transition-colors text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed min-w-0 max-w-[180px]"
+                                title="Change model"
+                            >
+                                <span className="text-xs truncate">
+                                    {currentModelName || 'Select model'}
+                                </span>
+                                <ChevronDown size={11} className="flex-shrink-0" />
+                            </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                            className="w-64 p-1 border-border"
+                            align="start"
+                            side="top"
+                            sideOffset={8}
+                        >
+                            <div className="max-h-72 overflow-y-auto">
+                                {availableModels.filter(m => !m.is_deprecated).map((m) => (
+                                    <button
+                                        key={m.id}
+                                        onClick={() => {
+                                            onModelChange(m.id);
+                                            setIsModelPickerOpen(false);
+                                        }}
+                                        className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors hover:bg-accent ${
+                                            m.id === selectedModel ? 'text-foreground font-medium bg-accent/60' : 'text-muted-foreground'
+                                        }`}
+                                    >
+                                        {m.common_name || m.name || m.id}
+                                    </button>
+                                ))}
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                )}
+
                 {onOpenAgentPicker && (
                     <button
                         onClick={onOpenAgentPicker}
@@ -329,6 +386,17 @@ function InputBottomControls({
 
             {/* Right side controls */}
             <div className="absolute bottom-2 right-4 flex items-center space-x-2">
+                {/* Settings icon — same size/style as mic */}
+                {onSettingsClick && (
+                    <button
+                        onClick={onSettingsClick}
+                        disabled={disabled}
+                        className="h-7 w-7 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Model settings"
+                    >
+                        <Settings2 size={16} />
+                    </button>
+                )}
                 {onTranscription && (
                     <VoiceMicButton
                         disabled={disabled}
@@ -370,6 +438,14 @@ interface ChatInputWithControlsProps {
     textInputRef?: React.RefObject<HTMLTextAreaElement | null>;
     /** When true, removes top border-radius for seamless join with component above */
     seamless?: boolean;
+    /** Available models for inline model picker */
+    availableModels?: AIModel[];
+    /** Currently selected model id */
+    selectedModel?: string;
+    /** Called when user picks a different model */
+    onModelChange?: (modelId: string) => void;
+    /** Called when user clicks the settings icon */
+    onSettingsClick?: () => void;
 }
 
 export function ChatInputWithControls({
@@ -383,6 +459,10 @@ export function ChatInputWithControls({
     selectedAgent,
     textInputRef: externalTextInputRef,
     seamless = false,
+    availableModels,
+    selectedModel,
+    onModelChange,
+    onSettingsClick,
 }: ChatInputWithControlsProps) {
     const [content, setContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -549,6 +629,10 @@ export function ChatInputWithControls({
                     selectedAgent={selectedAgent}
                     seamless={seamless}
                     onTranscription={handleTranscription}
+                    availableModels={availableModels}
+                    selectedModel={selectedModel}
+                    onModelChange={onModelChange}
+                    onSettingsClick={onSettingsClick}
                 />
             </div>
         </div>

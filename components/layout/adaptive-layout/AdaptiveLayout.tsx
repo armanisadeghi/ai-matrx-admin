@@ -4,7 +4,12 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectCanvasIsOpen, selectCanvasContent, setCanvasAvailable } from "@/features/canvas/redux/canvasSlice";
-import { CanvasRenderer } from "../../../features/canvas/core/CanvasRenderer";
+import dynamic from "next/dynamic";
+
+const CanvasRenderer = dynamic(
+  () => import("@/features/canvas/core/CanvasRenderer").then(m => ({ default: m.CanvasRenderer })),
+  { ssr: false }
+);
 
 interface AdaptiveLayoutProps {
     header?: React.ReactNode;

@@ -2,7 +2,7 @@ import { PayloadAction } from "@reduxjs/toolkit";
 import { EntityKeys } from "@/types/entityTypes";
 import { EntityState, MatrxRecordId } from "@/lib/redux/entity/types/stateTypes";
 import EntityLogger from "../utils/entityLogger";
-import { AppDispatch } from "../..";
+import type { AppDispatch } from "@/lib/redux/store";
 import { getEntitySlice } from "../entitySlice";
 
 const INFO = "info";

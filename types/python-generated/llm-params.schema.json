@@ -475,6 +475,19 @@
       "default": null,
       "title": "Reference Images"
     },
+    "image_loras": {
+      "anyOf": [
+        {
+          "items": {},
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Image Loras"
+    },
     "disable_safety_checker": {
       "anyOf": [
         {

@@ -2,7 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import UserMessage from "@/features/chat/components/response/user-message/UserMessage";
-import AssistantMessage from "@/features/chat/components/response/assistant-message/AssistantMessage";
+import dynamic from "next/dynamic";
+
+const AssistantMessage = dynamic(
+    () => import("@/features/chat/components/response/assistant-message/AssistantMessage"),
+    { ssr: false }
+);
 import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/analyzer/types";
 import { CartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
 
