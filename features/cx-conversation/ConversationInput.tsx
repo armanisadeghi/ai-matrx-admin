@@ -15,7 +15,10 @@ import {
   Bug,
   Database,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import {
+  TapTargetButtonTransparent,
+  TapTargetButtonSolid,
+} from "@/app/(ssr)/_components/core/TapTargetButton";
 import {
   Popover,
   PopoverContent,
@@ -401,16 +404,6 @@ export function ConversationInput({
     .filter(Boolean)
     .join(" ");
 
-  const sendBtnClass = [
-    "h-8 w-8 flex-shrink-0 rounded-full p-0",
-    sendButtonVariant === "blue"
-      ? "bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-40"
-      : sendButtonVariant === "gray"
-        ? "bg-muted hover:bg-muted/80 text-foreground disabled:opacity-40"
-        : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
 
   return (
     <div className={containerClass}>
@@ -504,28 +497,24 @@ export function ConversationInput({
       {isTranscribing && <TranscriptionLoader />}
 
       {/* ── Textarea row ──────────────────────────────────────────────── */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-0">
         {/* + Resource picker button with popover */}
         {showResourcePicker && (
           <Popover
             open={isResourcePickerOpen}
             onOpenChange={setIsResourcePickerOpen}
           >
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={isUploading}
-                className="h-8 w-8 p-0 flex-shrink-0 text-muted-foreground hover:text-foreground"
-                aria-label="Add attachments"
-              >
-                {isUploading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Plus className="w-5 h-5" />
-                )}
-              </Button>
+            <PopoverTrigger>
+              <TapTargetButtonTransparent
+                ariaLabel="Add attachments"
+                icon={
+                  isUploading ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                  ) : (
+                    <Plus className="w-5 h-5 text-muted-foreground" />
+                  )
+                }
+              />
             </PopoverTrigger>
             <PopoverContent
               side="top"
@@ -574,72 +563,59 @@ export function ConversationInput({
 
         {/* Settings button */}
         {showSettings && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
+          <TapTargetButtonTransparent
             onClick={() => setIsSettingsOpen(true)}
-            className="h-8 w-8 p-0 flex-shrink-0 text-muted-foreground hover:text-foreground"
-            aria-label="Settings"
-          >
-            <Settings2 className="w-4 h-4" />
-          </Button>
+            ariaLabel="Settings"
+            icon={<Settings2 className="w-4 h-4 text-muted-foreground" />}
+          />
         )}
 
         {/* Admin bug button — only shown for admins */}
         {isAdmin && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
+          <TapTargetButtonTransparent
             onClick={() => setIsDebugModalOpen(true)}
-            className={`h-8 w-8 p-0 flex-shrink-0 transition-colors ${
-              showDebugInfo
-                ? "text-red-500 hover:text-red-600"
-                : "text-muted-foreground hover:text-red-500"
-            }`}
-            aria-label="Admin debug options"
-            title="Admin debug options"
-          >
-            <Bug className="w-4 h-4" />
-          </Button>
+            ariaLabel="Admin debug options"
+            icon={
+              <Bug
+                className={`w-4 h-4 ${showDebugInfo ? "text-red-500" : "text-muted-foreground"}`}
+              />
+            }
+          />
         )}
 
         {/* Voice button */}
         {showVoice && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
+          <TapTargetButtonTransparent
             onClick={handleVoiceMicToggle}
-            disabled={isTranscribing}
-            className={`h-8 w-8 p-0 flex-shrink-0 ${isRecording ? "text-red-500" : "text-muted-foreground"}`}
-            aria-label={isRecording ? "Stop recording" : "Start recording"}
-          >
-            {isTranscribing ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : isRecording ? (
-              <MicOff className="w-4 h-4" />
-            ) : (
-              <Mic className="w-4 h-4" />
-            )}
-          </Button>
+            ariaLabel={isRecording ? "Stop recording" : "Start recording"}
+            icon={
+              isTranscribing ? (
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              ) : isRecording ? (
+                <MicOff className="w-4 h-4 text-red-500" />
+              ) : (
+                <Mic className="w-4 h-4 text-muted-foreground" />
+              )
+            }
+          />
         )}
 
         {/* Send button */}
-        <Button
-          type="button"
-          className={sendBtnClass}
+        <TapTargetButtonSolid
           onClick={() => handleSubmit()}
           disabled={!hasContent || isDisabled || isUploading}
-          aria-label="Send message"
-        >
-          {isExecuting ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <ArrowUp className="w-4 h-4" />
-          )}
-        </Button>
+          ariaLabel="Send message"
+          bgColor={sendButtonVariant === "gray" ? "bg-muted" : "bg-blue-600"}
+          hoverBgColor={sendButtonVariant === "gray" ? "hover:bg-muted/80" : "hover:bg-blue-700"}
+          iconColor={sendButtonVariant === "gray" ? "text-foreground" : "text-white"}
+          icon={
+            isExecuting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <ArrowUp className="w-4 h-4" />
+            )
+          }
+        />
       </div>
 
       {/* ── Model picker (inline, text-only for dynamic_model agents) ── */}
