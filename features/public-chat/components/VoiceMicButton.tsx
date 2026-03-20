@@ -4,6 +4,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Mic, Loader2, X, History, Copy, Check } from 'lucide-react';
 import { FaMicrophoneLines } from 'react-icons/fa6';
+import { TapTargetButtonTransparent } from '@/app/(ssr)/_components/core/TapTargetButton';
 import { motion, AnimatePresence } from 'motion/react';
 import {
     Popover,
@@ -185,32 +186,24 @@ export function VoiceMicButton({ disabled = false, onTranscription }: VoiceMicBu
                 </AnimatePresence>
 
                 {/* Mic button */}
-                <button
-                    type="button"
+                <TapTargetButtonTransparent
                     onClick={handleClick}
                     disabled={disabled || isTranscribing}
-                    className={`p-1.5 rounded-full transition-all flex-shrink-0 ${
-                        isRecording
-                            ? 'bg-red-100 dark:bg-red-900/30 text-red-500 hover:bg-red-200 dark:hover:bg-red-900/50'
-                            : isTranscribing
-                            ? 'text-blue-500 cursor-wait'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                    } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    title={isRecording ? 'Stop recording' : isTranscribing ? 'Transcribing...' : 'Voice input'}
-                >
-                    {isTranscribing ? (
-                        <Loader2 className="h-[18px] w-[18px] animate-spin" />
-                    ) : isRecording ? (
-                        <FaMicrophoneLines
-                            size={18}
-                            style={{
-                                filter: `drop-shadow(0 0 ${Math.min(audioLevel / 10, 8)}px currentColor)`,
-                            }}
-                        />
-                    ) : (
-                        <Mic className="h-[18px] w-[18px]" />
-                    )}
-                </button>
+                    ariaLabel={isRecording ? 'Stop recording' : isTranscribing ? 'Transcribing...' : 'Voice input'}
+                    icon={
+                        isTranscribing ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                        ) : isRecording ? (
+                            <FaMicrophoneLines
+                                size={16}
+                                className="text-red-500"
+                                style={{ filter: `drop-shadow(0 0 ${Math.min(audioLevel / 10, 8)}px currentColor)` }}
+                            />
+                        ) : (
+                            <Mic className="h-4 w-4 text-muted-foreground" />
+                        )
+                    }
+                />
 
                 {/* History popover */}
                 {history.length > 0 && !isActive && (

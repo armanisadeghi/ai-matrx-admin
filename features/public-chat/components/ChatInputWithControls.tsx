@@ -22,7 +22,7 @@ import { VoiceMicButton } from './VoiceMicButton';
 import { usePublicFileUpload, PublicUploadResult } from '@/hooks/usePublicFileUpload';
 import { useClipboardPaste } from '@/components/ui/file-upload/useClipboardPaste';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+import { TapTargetButtonTransparent, TapTargetButtonSolid } from '@/app/(ssr)/_components/core/TapTargetButton';
 import { PublicResourcePickerMenu } from './resource-picker/PublicResourcePickerMenu';
 
 import type { PublicResource, PublicResourceType } from '../types/content';
@@ -293,23 +293,15 @@ function InputBottomControls({
     return (
         <div className={`absolute bottom-0 left-0 right-0 h-[50px] bg-muted z-5 ${seamless ? 'rounded-b-none' : 'rounded-b-2xl'}`}>
             {/* Left side controls */}
-            <div className="absolute bottom-2 left-2 flex items-center space-x-2">
+            <div className="absolute bottom-0 left-0 flex items-center">
                 {/* Resource Picker Popover */}
                 <Popover open={isResourcePickerOpen} onOpenChange={setIsResourcePickerOpen}>
-                    <PopoverTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className={`h-7 w-7 p-0 rounded-full hover:bg-accent ${
-                                hasResources
-                                    ? 'text-primary bg-primary/10'
-                                    : 'text-muted-foreground'
-                            }`}
+                    <PopoverTrigger>
+                        <TapTargetButtonTransparent
                             disabled={disabled || isUploading}
-                            title="Add resources"
-                        >
-                            <Plus className="w-5 h-5" />
-                        </Button>
+                            ariaLabel="Add resources"
+                            icon={<Plus className={`w-5 h-5 ${hasResources ? 'text-primary' : 'text-muted-foreground'}`} />}
+                        />
                     </PopoverTrigger>
                     <PopoverContent
                         className="w-80 p-0 border-border"
@@ -385,17 +377,14 @@ function InputBottomControls({
             </div>
 
             {/* Right side controls */}
-            <div className="absolute bottom-2 right-4 flex items-center space-x-2">
-                {/* Settings icon — same size/style as mic */}
+            <div className="absolute bottom-0 right-0 flex items-center">
                 {onSettingsClick && (
-                    <button
+                    <TapTargetButtonTransparent
                         onClick={onSettingsClick}
                         disabled={disabled}
-                        className="h-7 w-7 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Model settings"
-                    >
-                        <Settings2 size={16} />
-                    </button>
+                        ariaLabel="Model settings"
+                        icon={<Settings2 className="w-4 h-4 text-muted-foreground" />}
+                    />
                 )}
                 {onTranscription && (
                     <VoiceMicButton
@@ -403,15 +392,12 @@ function InputBottomControls({
                         onTranscription={onTranscription}
                     />
                 )}
-                <button
-                    className={`p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors ${
-                        disabled ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
+                <TapTargetButtonSolid
                     onClick={onSendMessage}
                     disabled={disabled}
-                >
-                    <ArrowUp size={18} />
-                </button>
+                    ariaLabel="Send message"
+                    icon={<ArrowUp className="w-4 h-4" />}
+                />
             </div>
         </div>
     );
