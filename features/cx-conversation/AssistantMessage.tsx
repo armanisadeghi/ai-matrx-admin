@@ -22,6 +22,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TapTargetButtonTransparent } from "@/app/(ssr)/_components/core/TapTargetButton";
 import MarkdownStream from "@/components/MarkdownStream";
 import { StreamingContentBlocks } from "@/features/cx-conversation/StreamingContentBlocks";
 import { useDomCapturePrint } from "@/features/conversation/hooks/useDomCapturePrint";
@@ -92,7 +93,7 @@ export function AssistantMessage({
   const [isAppearing, setIsAppearing] = useState(true);
   const [isAudioLinkCopied, setIsAudioLinkCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
+  const moreOptionsButtonRef = useRef<HTMLDivElement>(null);
 
   const user = useAppSelector(selectUser);
 
@@ -394,59 +395,54 @@ export function AssistantMessage({
 
               {/* Action bar — hidden during stream and in overlay mode */}
               {!isStreamActive && !isOverlay && message.content && (
-                <div className={`flex items-center space-x-0 ${buttonMargin}`}>
-                  <button
-                    className={`p-1.5 hover:bg-accent ${isLiked ? "text-green-500 dark:text-green-400" : "text-muted-foreground"}`}
+                <div className={`flex items-center -ml-1.5 ${buttonMargin}`}>
+                  <TapTargetButtonTransparent
                     onClick={() => {
                       setIsLiked(!isLiked);
                       if (isDisliked) setIsDisliked(false);
                     }}
-                    aria-label="Like message"
-                  >
-                    <ThumbsUp size={16} />
-                  </button>
-                  <button
-                    className={`p-1.5 hover:bg-accent ${isDisliked ? "text-red-500 dark:text-red-400" : "text-muted-foreground"}`}
+                    ariaLabel="Like message"
+                    icon={<ThumbsUp className={`w-4 h-4 ${isLiked ? "text-green-500 dark:text-green-400" : "text-muted-foreground"}`} />}
+                  />
+                  <TapTargetButtonTransparent
                     onClick={() => {
                       setIsDisliked(!isDisliked);
                       if (isLiked) setIsLiked(false);
                     }}
-                    aria-label="Dislike message"
-                  >
-                    <ThumbsDown size={16} />
-                  </button>
-                  <button
-                    className={`p-1.5 hover:bg-accent ${isCopied ? "text-blue-500 dark:text-blue-400" : "text-muted-foreground"}`}
+                    ariaLabel="Dislike message"
+                    icon={<ThumbsDown className={`w-4 h-4 ${isDisliked ? "text-red-500 dark:text-red-400" : "text-muted-foreground"}`} />}
+                  />
+                  <TapTargetButtonTransparent
                     onClick={handleCopy}
-                    aria-label="Copy message"
-                  >
-                    {isCopied ? <Check size={16} /> : <Copy size={16} />}
-                  </button>
+                    ariaLabel="Copy message"
+                    icon={isCopied
+                      ? <Check className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+                      : <Copy className="w-4 h-4 text-muted-foreground" />
+                    }
+                  />
                   {audioControls && (
-                    <button
-                      className={`p-1.5 hover:bg-accent ${isPlaying || isPaused ? "text-purple-500 dark:text-purple-400" : "text-muted-foreground"}`}
+                    <TapTargetButtonTransparent
                       onClick={handleSpeakToggle}
                       disabled={!isAudioReady}
-                      aria-label={isPlaying ? "Pause" : "Read aloud"}
-                    >
-                      {isPlaying ? <Pause size={16} /> : <Volume2 size={16} />}
-                    </button>
+                      ariaLabel={isPlaying ? "Pause" : "Read aloud"}
+                      icon={isPlaying
+                        ? <Pause className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+                        : <Volume2 className={`w-4 h-4 ${isPaused ? "text-purple-500 dark:text-purple-400" : "text-muted-foreground"}`} />
+                      }
+                    />
                   )}
-                  <button
-                    className="p-1.5 text-muted-foreground hover:bg-accent"
+                  <TapTargetButtonTransparent
                     onClick={handleEditClick}
-                    aria-label="Edit message"
-                  >
-                    <Edit size={16} />
-                  </button>
-                  <button
-                    ref={moreOptionsButtonRef}
-                    className="p-1.5 text-muted-foreground hover:bg-accent"
-                    onClick={() => setShowOptionsMenu(true)}
-                    aria-label="More options"
-                  >
-                    <MoreHorizontal size={16} />
-                  </button>
+                    ariaLabel="Edit message"
+                    icon={<Edit className="w-4 h-4 text-muted-foreground" />}
+                  />
+                  <div ref={moreOptionsButtonRef}>
+                    <TapTargetButtonTransparent
+                      onClick={() => setShowOptionsMenu(true)}
+                      ariaLabel="More options"
+                      icon={<MoreHorizontal className="w-4 h-4 text-muted-foreground" />}
+                    />
+                  </div>
 
                   {showOptionsMenu && (
                     <Suspense fallback={null}>
