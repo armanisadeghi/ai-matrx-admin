@@ -156,7 +156,9 @@ export function ConversationInput({
   // ── Admin / debug ──────────────────────────────────────────────────────────
   const isAdmin = useAppSelector(selectIsAdmin);
   const isGlobalDebugMode = useAppSelector(selectIsDebugMode);
-  const showDebugInfo = useAppSelector((s) => selectShowDebugInfo(s, sessionId));
+  const showDebugInfo = useAppSelector((s) =>
+    selectShowDebugInfo(s, sessionId),
+  );
 
   // ── Model registry ─────────────────────────────────────────────────────────
   const modelOptions = useAppSelector(selectModelOptions);
@@ -311,7 +313,16 @@ export function ConversationInput({
       dispatch(chatConversationsActions.clearResources(sessionId));
       onSend?.();
     },
-    [content, isExecuting, agentId, sessionId, variableDefaults, resources, dispatch, onSend],
+    [
+      content,
+      isExecuting,
+      agentId,
+      sessionId,
+      variableDefaults,
+      resources,
+      dispatch,
+      onSend,
+    ],
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -406,7 +417,9 @@ export function ConversationInput({
       {/* ── Admin global debug toolbar ────────────────────────────────── */}
       {isAdmin && isGlobalDebugMode && (
         <div className="flex items-center gap-2 px-1 py-1 bg-red-950/20 border-b border-red-800/40 rounded-t-2xl">
-          <span className="text-[10px] font-semibold text-red-400 uppercase tracking-wide">Debug</span>
+          <span className="text-[10px] font-semibold text-red-400 uppercase tracking-wide">
+            Debug
+          </span>
           <button
             onClick={() => setIsDebugModalOpen(true)}
             className="flex items-center gap-1 px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-medium rounded transition-colors"
@@ -491,7 +504,7 @@ export function ConversationInput({
       {isTranscribing && <TranscriptionLoader />}
 
       {/* ── Textarea row ──────────────────────────────────────────────── */}
-      <div className="flex items-end gap-1.5">
+      <div className="flex items-center gap-1.5">
         {/* + Resource picker button with popover */}
         {showResourcePicker && (
           <Popover
@@ -552,7 +565,7 @@ export function ConversationInput({
           disabled={isDisabled || isRecording}
           className={[
             "flex-1 resize-none bg-transparent text-foreground placeholder:text-muted-foreground",
-            "focus:outline-none py-1 px-1 min-h-[36px] max-h-[200px] overflow-y-auto",
+            "focus:outline-none py-[9px] min-h-[36px] max-h-[200px] overflow-y-auto leading-[18px]",
             compact ? "text-xs" : "text-sm",
           ].join(" ")}
           style={{ fontSize: "16px" }} // iOS zoom prevention
