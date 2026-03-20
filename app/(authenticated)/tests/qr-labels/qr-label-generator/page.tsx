@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Papa from 'papaparse';
-import LabelGenerator from '@/lib/qr-labels/LabelGenerator';
+import dynamic from 'next/dynamic';
+
+const LabelGenerator = dynamic(() => import('@/lib/qr-labels/LabelGenerator'), { ssr: false });
 
 interface LabelEntry {
   qr_value: string;
