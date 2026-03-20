@@ -3,7 +3,6 @@
 import { useRef, useState } from 'react';
 import { Upload, FileText, X, CheckCircle2, AlertCircle, FileSpreadsheet } from 'lucide-react';
 import Papa from 'papaparse';
-import * as XLSX from 'xlsx';
 import { ZipCodeData } from '../page';
 import ColumnMapper from './ColumnMapper';
 
@@ -73,8 +72,9 @@ export default function FileUpload({ onDataUpload, onLoadingChange }: FileUpload
     } else {
       // Handle Excel files
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         try {
+          const XLSX = await import('xlsx');
           const data = e.target?.result;
           const workbook = XLSX.read(data, { type: 'binary' });
           const sheetName = workbook.SheetNames[0];

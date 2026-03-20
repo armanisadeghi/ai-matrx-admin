@@ -6,7 +6,6 @@ import { Loader2 } from 'lucide-react';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
-import * as XLSX from 'xlsx';
 
 interface SpreadsheetPreviewProps {
     file: NodeStructure;
@@ -24,6 +23,7 @@ export const SpreadsheetPreview: React.FC<SpreadsheetPreviewProps> = ({ file }) 
             try {
                 const blob = await downloadFile(currentBucket!, file.path);
                 if (blob) {
+                    const XLSX = await import('xlsx');
                     const arrayBuffer = await blob.arrayBuffer();
                     const workbook = XLSX.read(arrayBuffer);
                     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
