@@ -395,14 +395,18 @@ export function AssistantMessage({
 
               {/* Action bar — hidden during stream and in overlay mode */}
               {!isStreamActive && !isOverlay && message.content && (
-                <div className={`flex items-center -ml-1.5 ${buttonMargin}`}>
+                <div className={`flex items-center ${buttonMargin}`}>
                   <TapTargetButtonTransparent
                     onClick={() => {
                       setIsLiked(!isLiked);
                       if (isDisliked) setIsDisliked(false);
                     }}
                     ariaLabel="Like message"
-                    icon={<ThumbsUp className={`w-4 h-4 ${isLiked ? "text-green-500 dark:text-green-400" : "text-muted-foreground"}`} />}
+                    icon={
+                      <ThumbsUp
+                        className={`w-4 h-4 ${isLiked ? "text-green-500 dark:text-green-400" : "text-muted-foreground"}`}
+                      />
+                    }
                   />
                   <TapTargetButtonTransparent
                     onClick={() => {
@@ -410,14 +414,21 @@ export function AssistantMessage({
                       if (isLiked) setIsLiked(false);
                     }}
                     ariaLabel="Dislike message"
-                    icon={<ThumbsDown className={`w-4 h-4 ${isDisliked ? "text-red-500 dark:text-red-400" : "text-muted-foreground"}`} />}
+                    icon={
+                      <ThumbsDown
+                        className={`w-4 h-4 ${isDisliked ? "text-red-500 dark:text-red-400" : "text-muted-foreground"}`}
+                      />
+                    }
                   />
                   <TapTargetButtonTransparent
                     onClick={handleCopy}
                     ariaLabel="Copy message"
-                    icon={isCopied
-                      ? <Check className="w-4 h-4 text-blue-500 dark:text-blue-400" />
-                      : <Copy className="w-4 h-4 text-muted-foreground" />
+                    icon={
+                      isCopied ? (
+                        <Check className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+                      ) : (
+                        <Copy className="w-4 h-4 text-muted-foreground" />
+                      )
                     }
                   />
                   {audioControls && (
@@ -425,9 +436,14 @@ export function AssistantMessage({
                       onClick={handleSpeakToggle}
                       disabled={!isAudioReady}
                       ariaLabel={isPlaying ? "Pause" : "Read aloud"}
-                      icon={isPlaying
-                        ? <Pause className="w-4 h-4 text-purple-500 dark:text-purple-400" />
-                        : <Volume2 className={`w-4 h-4 ${isPaused ? "text-purple-500 dark:text-purple-400" : "text-muted-foreground"}`} />
+                      icon={
+                        isPlaying ? (
+                          <Pause className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+                        ) : (
+                          <Volume2
+                            className={`w-4 h-4 ${isPaused ? "text-purple-500 dark:text-purple-400" : "text-muted-foreground"}`}
+                          />
+                        )
                       }
                     />
                   )}
@@ -440,7 +456,9 @@ export function AssistantMessage({
                     <TapTargetButtonTransparent
                       onClick={() => setShowOptionsMenu(true)}
                       ariaLabel="More options"
-                      icon={<MoreHorizontal className="w-4 h-4 text-muted-foreground" />}
+                      icon={
+                        <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+                      }
                     />
                   </div>
 

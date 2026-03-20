@@ -11,52 +11,52 @@
 // The tiny ChatMobileAgentName client island hydrates the agent-name button in-place
 // with the same size/shape as the static text, so there is zero layout shift.
 
-import Link from 'next/link';
-import { SquarePen } from 'lucide-react';
-import { TapTargetButton } from '@/app/(ssr)/_components/core/TapTargetButton';
-import ChatMobileAgentName from './ChatMobileAgentName';
-import ChatMobileAdminToggles from './ChatMobileAdminToggles';
+import Link from "next/link";
+import { SquarePen } from "lucide-react";
+import { TapTargetButton } from "@/app/(ssr)/_components/core/TapTargetButton";
+import ChatMobileAgentName from "./ChatMobileAgentName";
+import ChatMobileAdminToggles from "./ChatMobileAdminToggles";
 
 export default function ChatMobileHeaderBar() {
-    return (
-        // Fixed to the header zone, mobile only (lg:hidden).
-        // pr-11 reserves 44px on the right for the shell's UserMenuTrigger (avatar).
-        // z-[41] matches the shell header elements — avatar is also z-41-ish.
-        <div
-            className="lg:hidden fixed top-0 left-0 right-0 z-[41] flex items-center pr-11"
-            style={{ height: 'var(--shell-header-h)' }}
-        >
-            {/* Hamburger — pure CSS label for #shell-panel-mobile checkbox.
+  return (
+    // Fixed to the header zone, mobile only (lg:hidden).
+    // pr-11 reserves 44px on the right for the shell's UserMenuTrigger (avatar).
+    // z-[41] matches the shell header elements — avatar is also z-41-ish.
+    <div
+      className="lg:hidden fixed top-0 left-0 right-0 z-[41] flex items-center pr-11"
+      style={{ height: "var(--shell-header-h)" }}
+    >
+      {/* Hamburger — pure CSS label for #shell-panel-mobile checkbox.
                 Opens the panel sidebar drawer via shell.css :has() rule. Zero JS. */}
-            <TapTargetButton
-                as="label"
-                htmlFor="shell-panel-mobile"
-                ariaLabel="Open chat menu"
-                strokeWidth={1.75}
-            >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-            </TapTargetButton>
+      <TapTargetButton
+        as="label"
+        htmlFor="shell-panel-mobile"
+        ariaLabel="Open chat menu"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+        />
+      </TapTargetButton>
 
-            {/* New chat — plain Link placed left, next to hamburger. Zero JS. */}
-            <Link
-                href="/ssr/chat"
-                aria-label="New chat"
-                className="flex h-11 w-11 items-center justify-center bg-transparent transition-transform active:scale-95 outline-none cursor-pointer flex-shrink-0"
-            >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full matrx-shell-glass transition-colors">
-                    <SquarePen className="w-4 h-4 text-foreground" strokeWidth={1.75} />
-                </div>
-            </Link>
+      {/* New chat — Link wrapper preserves native Cmd+click → new tab behaviour. */}
+      <Link href="/ssr/chat" aria-label="New chat" className="flex-shrink-0">
+        <TapTargetButton
+          ariaLabel="New chat"
+          icon={<SquarePen className="w-4 h-4 text-foreground" />}
+        />
+      </Link>
 
-            {/* Agent name — takes remaining center space.
+      {/* Agent name — takes remaining center space.
                 ChatMobileAgentName (tiny client island) hydrates in-place.
                 Visual shape is identical before and after hydration → no layout shift. */}
-            <div className="flex-1 flex items-center justify-center min-w-0">
-                <ChatMobileAgentName />
-            </div>
+      <div className="flex-1 flex items-center justify-center min-w-0">
+        <ChatMobileAgentName />
+      </div>
 
-            {/* Admin toggles — client island, renders nothing for non-admins. */}
-            <ChatMobileAdminToggles />
-        </div>
-    );
+      {/* Admin toggles — client island, renders nothing for non-admins. */}
+      <ChatMobileAdminToggles />
+    </div>
+  );
 }

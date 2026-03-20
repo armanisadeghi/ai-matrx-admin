@@ -39,18 +39,28 @@ function AgentListItem({
     description,
     isSelected,
     onClick,
+    newTabHref = '/ssr/chat',
 }: {
     name: string;
     description?: string;
     isSelected: boolean;
     onClick: () => void;
+    newTabHref?: string;
 }) {
+    const handleClick = (e: React.MouseEvent) => {
+        if (e.metaKey || e.ctrlKey) {
+            window.open(newTabHref, '_blank');
+            return;
+        }
+        onClick();
+    };
+
     // Always wrap in Tooltip to keep DOM structure consistent (prevents layout shift)
     return (
         <Tooltip>
             <TooltipTrigger asChild>
                 <button
-                    onClick={onClick}
+                    onClick={handleClick}
                     className={`flex items-center gap-2 w-full px-2 py-[3px] rounded-md text-left transition-colors ${
                         isSelected
                             ? 'bg-accent/60 text-foreground'

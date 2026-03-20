@@ -188,13 +188,21 @@ function ConversationItem({
         />;
     }
 
+    const handleSelect = (e: React.MouseEvent) => {
+        if (e.metaKey || e.ctrlKey) {
+            window.open(`/ssr/chat/${item.id}`, '_blank');
+            return;
+        }
+        onSelect();
+    };
+
     return (
         <>
             <div className={`relative group rounded-md transition-all duration-150 ${
                 isActive ? 'bg-accent/70 dark:bg-accent/50' : 'hover:bg-accent/40 dark:hover:bg-accent/20'
             }`}>
                 <div className="flex items-center">
-                    <button onClick={onSelect} className="flex-1 min-w-0 px-2.5 py-1 text-left">
+                    <button onClick={handleSelect} className="flex-1 min-w-0 px-2.5 py-1 text-left">
                         <div className={`text-[11px] truncate leading-relaxed ${
                             isActive ? 'text-foreground font-medium' : 'text-foreground/70'
                         }`}>
@@ -263,11 +271,19 @@ function SharedConversationItem({
     const levelLabel = item.permission_level === 'admin' ? 'Full access'
         : item.permission_level === 'editor' ? 'Can edit' : 'View only';
 
+    const handleSelect = (e: React.MouseEvent) => {
+        if (e.metaKey || e.ctrlKey) {
+            window.open(`/ssr/chat/${item.id}`, '_blank');
+            return;
+        }
+        onSelect();
+    };
+
     return (
         <div className={`relative group rounded-md transition-all duration-150 ${
             isActive ? 'bg-accent/70 dark:bg-accent/50' : 'hover:bg-accent/40 dark:hover:bg-accent/20'
         }`}>
-            <button onClick={onSelect} className="w-full px-2.5 py-1 text-left">
+            <button onClick={handleSelect} className="w-full px-2.5 py-1 text-left">
                 <div className={`text-[11px] truncate leading-relaxed ${
                     isActive ? 'text-foreground font-medium' : 'text-foreground/70'
                 }`}>

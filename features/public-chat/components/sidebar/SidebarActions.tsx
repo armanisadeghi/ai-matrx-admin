@@ -20,6 +20,7 @@ interface SidebarActionsProps {
     onNewChat: () => void;
     searchQuery: string;
     onSearchChange: (query: string) => void;
+    newChatHref?: string;
 }
 
 // ============================================================================
@@ -34,7 +35,7 @@ function ActionRow({
 }: {
     icon: React.ComponentType<{ className?: string }>;
     label: string;
-    onClick?: () => void;
+    onClick?: (e: React.MouseEvent) => void;
     children?: React.ReactNode;
 }) {
     if (children) {
@@ -85,7 +86,7 @@ function PlaceholderDropdownRow({
 // SIDEBAR ACTIONS
 // ============================================================================
 
-export function SidebarActions({ onNewChat, searchQuery, onSearchChange }: SidebarActionsProps) {
+export function SidebarActions({ onNewChat, searchQuery, onSearchChange, newChatHref = '/ssr/chat' }: SidebarActionsProps) {
     const [showSearch, setShowSearch] = useState(false);
 
     const handleSearchToggle = () => {
@@ -97,10 +98,18 @@ export function SidebarActions({ onNewChat, searchQuery, onSearchChange }: Sideb
         }
     };
 
+    const handleNewChat = (e: React.MouseEvent) => {
+        if (e.metaKey || e.ctrlKey) {
+            window.open(newChatHref, '_blank');
+            return;
+        }
+        onNewChat();
+    };
+
     return (
         <div className="px-1.5 py-1.5 border-b border-border border-t border-red-500">
             {/* New Chat */}
-            <ActionRow icon={Plus} label="New Chat" onClick={onNewChat} />
+            <ActionRow icon={Plus} label="New Chat" onClick={handleNewChat} />
 
             {/* Generate — dropdown with sub-options */}
             <DropdownMenu>

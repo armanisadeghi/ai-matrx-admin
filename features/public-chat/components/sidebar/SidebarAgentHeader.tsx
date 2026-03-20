@@ -1,6 +1,7 @@
 'use client';
 
 import { PanelLeft, SquarePen, ChevronDown } from 'lucide-react';
+import { TapTargetButton } from '@/app/(ssr)/_components/core/TapTargetButton';
 import type { AgentConfig } from '../../context/DEPRECATED-ChatContext';
 
 // ============================================================================
@@ -12,6 +13,8 @@ interface SidebarAgentHeaderProps {
     onAgentSelect?: (agent: AgentConfig) => void;
     onCollapse?: () => void;
     onNewChat?: () => void;
+    /** The URL that "New chat" navigates to — used for Cmd+click new tab */
+    newChatHref?: string;
 }
 
 // ============================================================================
@@ -21,32 +24,40 @@ interface SidebarAgentHeaderProps {
 // visual position when the sidebar opens.
 // ============================================================================
 
-export function SidebarAgentHeader({ selectedAgent, onAgentSelect, onCollapse, onNewChat }: SidebarAgentHeaderProps) {
+export function SidebarAgentHeader({ selectedAgent, onAgentSelect, onCollapse, onNewChat, newChatHref = '/ssr/chat' }: SidebarAgentHeaderProps) {
     const displayName = selectedAgent?.name || 'General Chat';
 
-    const handleAgentClick = () => {
+    const handleNewChatClick = (e: React.MouseEvent) => {
+        if (e.metaKey || e.ctrlKey) {
+            window.open(newChatHref, '_blank');
+            return;
+        }
+        onNewChat?.();
+    };
+
+    const handleAgentClick = (e: React.MouseEvent) => {
+        if (e.metaKey || e.ctrlKey) {
+            window.open(newChatHref, '_blank');
+            return;
+        }
         onAgentSelect?.(selectedAgent || { promptId: '', name: '' });
     };
 
     return (
-        <div className="flex items-center gap-0.5 h-10 px-1.5 flex-shrink-0">
+        <div className="flex items-center flex-shrink-0">
             {/* Collapse sidebar */}
-            <button
+            <TapTargetButton
                 onClick={onCollapse}
-                className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors flex-shrink-0"
-                title="Close sidebar"
-            >
-                <PanelLeft className="h-[18px] w-[18px]" />
-            </button>
-            {/* New chat */}
-            <button
-                onClick={onNewChat}
-                className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors flex-shrink-0"
-                title="New chat"
-            >
-                <SquarePen className="h-[18px] w-[18px]" />
-            </button>
-            {/* Agent name — opens unified picker */}
+                ariaLabel="Close sidebar"
+                icon={<PanelLeft className="h-[18px] w-[18px] text-muted-foreground" />}
+            />
+            {/* New chat — Cmd+click opens in new tab */}
+            <TapTargetButton
+                onClick={handleNewChatClick}
+                ariaLabel="New chat"
+                icon={<SquarePen className="h-[18px] w-[18px] text-muted-foreground" />}
+            />
+            {/* Agent name — opens unified picker. Cmd+click opens new chat tab */}
             <button
                 onClick={handleAgentClick}
                 className="flex items-center gap-1 min-w-0 px-1.5 py-1 rounded-md hover:bg-accent/50 transition-colors"
