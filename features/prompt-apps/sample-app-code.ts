@@ -212,7 +212,23 @@ export default function PromptAppComponent({
   );
 }`;
 
+import { getTemplateForDisplayMode } from './sample-code/templates';
+import type { AppDisplayMode } from './types';
+
+/**
+ * Get sample prompt app code by style or display mode.
+ *
+ * @param appStyle - Legacy style string ('simple') or an AppDisplayMode value
+ * @returns Component code string for the template
+ */
 const getSamplePromptAppCode = (appStyle: string) => {
+  // Support new display modes
+  const displayModes = ['form', 'form-to-chat', 'chat', 'centered-input', 'chat-with-history'] as const;
+  if (displayModes.indexOf(appStyle as AppDisplayMode) !== -1) {
+    return getTemplateForDisplayMode(appStyle as AppDisplayMode);
+  }
+
+  // Legacy style mappings
   switch (appStyle) {
     case 'simple':
       return sampleSimplePromptAppCode;

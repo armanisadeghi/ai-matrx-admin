@@ -5,7 +5,7 @@
  * that will be used to instruct the AI model when generating custom prompt apps.
  */
 
-export type FormatType = 'chat' | 'form' | 'widget';
+export type FormatType = 'chat' | 'form' | 'widget' | 'form-to-chat' | 'centered-input' | 'chat-with-history';
 export type DisplayMode = 'matrx-format' | 'custom';
 export type ResponseMode = 'stream' | 'loader';
 
@@ -13,14 +13,23 @@ export type ResponseMode = 'stream' | 'loader';
  * App Format Descriptions (page_layout_format)
  */
 export const formatInstructions: Record<FormatType, string> = {
-  chat: 
+  chat:
     "Chat layout with input at bottom, messages flowing up like ChatGPT",
 
-  form: 
+  form:
     "Form layout with inputs at top, results displayed below",
 
-  widget: 
-    "Compact widget layout, all in one contained space"
+  widget:
+    "Compact widget layout, all in one contained space",
+
+  'form-to-chat':
+    "Form layout for initial input, then transitions to a chat interface after the first response. The form collapses and a chat input appears at the bottom for follow-up conversation.",
+
+  'centered-input':
+    "Large centered input like a landing page. After the first message, converts to a full chat interface with messages flowing up and input pinned at bottom.",
+
+  'chat-with-history':
+    "Full chat interface with a collapsible sidebar on the left showing past conversation runs. Sidebar only visible for authenticated users."
 };
 
 /**
@@ -190,7 +199,10 @@ export const shortDescriptions = {
   format: {
     chat: "Conversational interface with messages flowing vertically",
     form: "Traditional form layout with inputs at top, results below",
-    widget: "Compact widget for embedding"
+    widget: "Compact widget for embedding",
+    'form-to-chat': "Form for initial input, then transitions to chat for follow-ups",
+    'centered-input': "Landing-page input that converts to chat after first message",
+    'chat-with-history': "Full chat with sidebar showing past conversation runs"
   },
   displayMode: {
     'matrx-format': "Rich formatted output with Matrx styling",
