@@ -11,7 +11,8 @@ import {
     MarkdownPreviewTab,
     HtmlCodeFilesTab,
     CustomCopyTab,
-    SavePageTab
+    SavePageTab,
+    MatrxSplitTab
 } from "./tabs";
 
 interface HtmlPreviewFullScreenEditorProps {
@@ -110,6 +111,17 @@ export default function HtmlPreviewFullScreenEditor({
                 />
             ),
             className: "p-0"
+        },
+        {
+            id: "matrx-split",
+            label: "Matrx Split",
+            content: (
+                <MatrxSplitTab
+                    state={htmlPreviewState}
+                    actions={htmlPreviewState}
+                />
+            ),
+            className: "p-0 overflow-hidden"
         },
         {
             id: "preview",

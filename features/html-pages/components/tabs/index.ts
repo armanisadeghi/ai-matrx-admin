@@ -17,4 +17,5 @@ export { MarkdownSplitViewTab } from "./MarkdownSplitViewTab";
 export { MarkdownWysiwygTab } from "./MarkdownWysiwygTab";
 export { MarkdownPlainTextTab } from "./MarkdownPlainTextTab";
 export { MarkdownPreviewTab } from "./MarkdownPreviewTab";
+export { MatrxSplitTab } from "./MatrxSplitTab";
 

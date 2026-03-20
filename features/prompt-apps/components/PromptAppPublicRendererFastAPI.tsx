@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { transform } from '@babel/standalone';
 import { AlertCircle, Copy, Check, MoreHorizontal } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
@@ -18,6 +19,10 @@ import { parseNdjsonStream } from '@/lib/api/stream-parser';
 import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
 import { useSelector } from 'react-redux';
 import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
+import { useCanvas } from '@/features/canvas/hooks/useCanvas';
+
+const HtmlPreviewModal = dynamic(() => import('@/features/html-pages/components/HtmlPreviewModal'), { ssr: false });
+const QuickHtmlShareModal = dynamic(() => import('./QuickHtmlShareModal'), { ssr: false });
 
 interface PromptAppPublicRendererFastAPIProps {
     app: PromptApp;
@@ -453,6 +458,31 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             .join('');
     }, [streamEvents]);
 
+    // Canvas hook
+    const { open: openCanvas } = useCanvas();
+
+    // HTML preview modal state
+    const [htmlPreviewOpen, setHtmlPreviewOpen] = useState(false);
+    const [htmlPreviewContent, setHtmlPreviewContent] = useState('');
+    const [htmlPreviewTitle, setHtmlPreviewTitle] = useState('');
+
+    // Quick HTML share modal state
+    const [quickShareOpen, setQuickShareOpen] = useState(false);
+
+    const handleShowHtmlPreview = useCallback((html: string, title?: string) => {
+        setHtmlPreviewContent(html);
+        setHtmlPreviewTitle(title || app.name || 'HTML Preview');
+        setHtmlPreviewOpen(true);
+    }, [app.name]);
+
+    const handleOpenCanvas = useCallback(() => {
+        openCanvas({
+            type: 'html',
+            data: { html: responseText },
+            metadata: { title: app.name || 'Response', sourceMessageId: dbConversationId ?? undefined },
+        });
+    }, [openCanvas, responseText, app.name, dbConversationId]);
+
     // Action bar state (copy + options menu)
     const [isCopied, setIsCopied] = useState(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
@@ -582,7 +612,30 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                 onClose={() => setIsOptionsOpen(false)}
                 content={responseText}
                 anchorElement={moreButtonRef.current}
+                onShowHtmlPreview={handleShowHtmlPreview}
+                onOpenCanvas={handleOpenCanvas}
+                onQuickHtmlShare={() => setQuickShareOpen(true)}
             />
+
+            {/* HTML preview modal — dynamically loaded, zero initial bundle cost */}
+            {htmlPreviewOpen && (
+                <HtmlPreviewModal
+                    isOpen={htmlPreviewOpen}
+                    onClose={() => setHtmlPreviewOpen(false)}
+                    htmlContent={htmlPreviewContent}
+                    title={htmlPreviewTitle}
+                />
+            )}
+
+            {/* Quick HTML share modal — lightweight, no external CSS */}
+            {quickShareOpen && (
+                <QuickHtmlShareModal
+                    isOpen={quickShareOpen}
+                    onClose={() => setQuickShareOpen(false)}
+                    markdown={responseText}
+                    title={app.name}
+                />
+            )}
         </div>
     );
 }

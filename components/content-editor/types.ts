@@ -1,6 +1,6 @@
 // components/content-editor/types.ts
 
-export type EditorMode = 'plain' | 'wysiwyg' | 'markdown' | 'preview';
+export type EditorMode = 'plain' | 'wysiwyg' | 'markdown' | 'matrx-split' | 'preview';
 
 export interface HeaderAction {
   id: string;

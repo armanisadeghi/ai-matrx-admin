@@ -45,6 +45,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
 import type { NoteSummary } from "../layout";
 import type { MarkdownStreamProps } from "@/components/MarkdownStream";
+import { MatrxSplit } from "@/components/matrx/MatrxSplit";
 
 const MarkdownStream = dynamic<MarkdownStreamProps>(
   () => import("@/components/MarkdownStream"),
@@ -1313,29 +1314,17 @@ export default function NotesWorkspace({
           )}
 
           {editorMode === "split" && (
-            <div className="notes-editor-split">
-              <textarea
-                ref={textareaRef}
-                className="scrollbar-thin-auto w-full py-2 px-5 text-sm leading-[1.7] font-[inherit] text-foreground bg-transparent border-none outline-none resize-none overflow-y-auto min-w-0 placeholder:text-muted-foreground"
-                value={activeContent}
-                onChange={handleContentChange}
-                placeholder="Start writing..."
-                aria-label="Note content"
-              />
-              <div className="notes-split-divider w-px bg-border" />
-              <div className="notes-split-preview scrollbar-thin-auto overflow-y-auto py-2 px-5 min-w-0">
-                {activeContent ? (
-                  <MarkdownStream
-                    content={activeContent}
-                    type="text"
-                    role="assistant"
-                    hideCopyButton
-                  />
-                ) : (
-                  <p className="notes-preview-empty">Nothing to preview</p>
-                )}
-              </div>
-            </div>
+            <MatrxSplit
+              value={activeContent}
+              onChange={(val) =>
+                handleContentChange({
+                  target: { value: val },
+                } as React.ChangeEvent<HTMLTextAreaElement>)
+              }
+              textareaRef={textareaRef}
+              placeholder="Start writing..."
+              className="flex-1 min-h-0"
+            />
           )}
 
           {/* ── Tags & Folder Bar (deep hydration — renders shell immediately) */}

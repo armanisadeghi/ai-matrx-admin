@@ -774,7 +774,7 @@ export const splitContentIntoBlocksV2 = (mdContent: string): ContentBlock[] => {
         const processedLine = removeMatrxPattern(line);
         const trimmedLine = processedLine.trim();
         
-        // Skip empty lines after pattern removal
+        // 🟠SKIP: line trimmed to empty after MATRX pattern removal — skipping it entirely
         if (trimmedLine === "" && processedLine !== "") {
             i++;
             continue;
@@ -939,12 +939,12 @@ export const splitContentIntoBlocksV2 = (mdContent: string): ContentBlock[] => {
             continue;
         }
         
-        // 6. Accumulate as text
-        currentText += processedLine + (processedLine && i < lines.length - 1 ? "\n" : "");
+        // 6. Accumulate as text - DO NOT GOBBLE UP BLANK LINES -- NEVER MODIFY THE CONTENT!!!!!!!!!!!!!!
+        currentText += processedLine + (i < lines.length - 1 ? "\n" : "");
         i++;
     }
     
-    // Push remaining text
+    // Push remaining text — 🟣TRIM: trimEnd() strips trailing whitespace/newlines from final block
     if (currentText.trim()) {
         blocks.push({ type: "text", content: currentText.trimEnd() });
     }

@@ -3,7 +3,8 @@
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { FileText, PilcrowRight, Eye, SplitSquareHorizontal, Loader2, Save, Clock, ChevronDown, ChevronRight } from 'lucide-react';
+import { FileText, PilcrowRight, Eye, SplitSquareHorizontal, Loader2, Save, Clock, ChevronDown, ChevronRight, Columns } from 'lucide-react';
+import { MatrxSplit } from '@/components/matrx/MatrxSplit';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { 
@@ -53,6 +54,12 @@ const MODE_CONFIGS: EditorModeConfig[] = [
         icon: SplitSquareHorizontal,
         label: 'Split View',
         description: 'Markdown + Preview'
+    },
+    {
+        value: 'matrx-split',
+        icon: Columns,
+        label: 'Matrx Split',
+        description: 'Editor + Preview'
     },
     {
         value: 'preview',
@@ -379,6 +386,17 @@ export function ContentEditor({
                             isActive={true}
                             editMode="markdown"
                             className="w-full h-full"
+                        />
+                    </div>
+                )}
+                
+                {/* Matrx Split Mode */}
+                {currentMode === 'matrx-split' && (
+                    <div style={{ height: '500px', minHeight: '500px' }}>
+                        <MatrxSplit
+                            value={localContent}
+                            onChange={handleContentChange}
+                            placeholder={placeholder}
                         />
                     </div>
                 )}

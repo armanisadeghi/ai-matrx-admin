@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { X, FileText, Copy, Share2, Trash2, Plus, Save, PilcrowRight, Eye, SplitSquareHorizontal, XCircle, FolderInput, Edit3, Download } from 'lucide-react';
+import { X, FileText, Copy, Share2, Trash2, Plus, Save, PilcrowRight, Eye, SplitSquareHorizontal, XCircle, FolderInput, Edit3, Download, Columns } from 'lucide-react';
 import { useNotesContext } from '../context/NotesContext';
 import { cn } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import AdvancedMenu, { MenuItem } from '@/components/official/AdvancedMenu';
 import type { Note } from '../types';
 
-type EditorMode = 'plain' | 'wysiwyg' | 'markdown' | 'preview';
+type EditorMode = 'plain' | 'wysiwyg' | 'markdown' | 'matrx-split' | 'preview';
 
 interface NoteTabsProps {
     onCreateNote: (folderName?: string) => void;
@@ -167,6 +167,7 @@ export function NoteTabs({
             case 'plain': return FileText;
             case 'wysiwyg': return PilcrowRight;
             case 'markdown': return SplitSquareHorizontal;
+            case 'matrx-split': return Columns;
             case 'preview': return Eye;
             default: return FileText;
         }
@@ -207,6 +208,14 @@ export function NoteTabs({
             description: 'Markdown with preview',
             action: () => handleViewModeChange('markdown'),
             iconColor: currentMode === 'markdown' ? 'text-primary' : undefined,
+        },
+        {
+            key: 'matrx-split',
+            icon: Columns,
+            label: 'Matrx Split',
+            description: 'Editor + Matrx preview',
+            action: () => handleViewModeChange('matrx-split'),
+            iconColor: currentMode === 'matrx-split' ? 'text-primary' : undefined,
         },
         {
             key: 'preview',

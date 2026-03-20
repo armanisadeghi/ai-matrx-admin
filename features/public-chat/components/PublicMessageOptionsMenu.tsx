@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import {
     BookText, Briefcase, Copy, FileCode, FileText, Eye, Globe,
-    Brain, Save, Volume2, Edit, CheckSquare, Mail, Database
+    Brain, Save, Volume2, Edit, CheckSquare, Mail, Database, LayoutDashboard, Share2
 } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
@@ -24,6 +24,8 @@ interface PublicMessageOptionsMenuProps {
     onClose: () => void;
     onShowHtmlPreview?: (html: string, title?: string) => void;
     onEditContent?: () => void;
+    onOpenCanvas?: () => void;
+    onQuickHtmlShare?: () => void;
     isOpen: boolean;
     anchorElement?: HTMLElement | null;
     metadata?: {
@@ -46,6 +48,8 @@ const PublicMessageOptionsMenu: React.FC<PublicMessageOptionsMenuProps> = ({
     onClose,
     onShowHtmlPreview,
     onEditContent,
+    onOpenCanvas,
+    onQuickHtmlShare,
     isOpen,
     anchorElement,
     metadata,
@@ -173,7 +177,16 @@ const PublicMessageOptionsMenu: React.FC<PublicMessageOptionsMenuProps> = ({
     // ── HTML/Export handlers ───────────────────────────────────────────────────
 
     const handleHtmlPreview = async () => {
-        if (!onShowHtmlPreview) throw new Error("HTML preview handler not configured");
+        if (!onShowHtmlPreview) {
+            // Fallback: open the quick share modal if available, otherwise toast
+            if (onQuickHtmlShare) {
+                onQuickHtmlShare();
+                onClose();
+                return;
+            }
+            toast.info('HTML preview not available in this context');
+            return;
+        }
         await copyToClipboard(content, {
             isMarkdown: true, formatForWordPress: true, showHtmlPreview: true,
             onShowHtmlPreview: (html) => {
@@ -183,6 +196,29 @@ const PublicMessageOptionsMenu: React.FC<PublicMessageOptionsMenuProps> = ({
             onSuccess: () => {},
             onError: (error) => { throw new Error(getErrorMessage(error, "Failed to generate HTML preview")); }
         });
+    };
+
+    const handleQuickHtmlShare = () => {
+        if (onQuickHtmlShare) {
+            onQuickHtmlShare();
+            onClose();
+        } else {
+            toast.info('Share not available in this context');
+        }
+    };
+
+    const handleOpenCanvas = () => {
+        if (isAuthenticated) {
+            if (onOpenCanvas) {
+                onOpenCanvas();
+                onClose();
+            } else {
+                toast.info('Canvas not available in this context');
+            }
+        } else {
+            requireAuth('view-canvas', 'Canvas View', "Sign in to view this response in the interactive canvas. You'll be right back.");
+            onClose();
+        }
     };
 
     const handleCopyCompleteHTML = async () => {
@@ -365,6 +401,28 @@ const PublicMessageOptionsMenu: React.FC<PublicMessageOptionsMenuProps> = ({
             errorMessage: "Failed to copy",
         },
         {
+            key: 'quick-share-html',
+            icon: Share2,
+            iconColor: "text-pink-500 dark:text-pink-400",
+            label: "Share as HTML",
+            action: handleQuickHtmlShare,
+            category: "Export",
+            successMessage: "Opening share...",
+            errorMessage: "Failed to open share",
+            showToast: false,
+        },
+        {
+            key: 'view-canvas',
+            icon: LayoutDashboard,
+            iconColor: "text-violet-500 dark:text-violet-400",
+            label: "View in Canvas",
+            action: handleOpenCanvas,
+            category: "Export",
+            successMessage: "Opening Canvas...",
+            errorMessage: "Failed to open Canvas",
+            showToast: false,
+        },
+        {
             key: 'html-preview',
             icon: Eye,
             iconColor: "text-indigo-500 dark:text-indigo-400",
@@ -373,6 +431,7 @@ const PublicMessageOptionsMenu: React.FC<PublicMessageOptionsMenuProps> = ({
             category: "Export",
             successMessage: "Preview opened",
             errorMessage: "Failed to open preview",
+            showToast: false,
         },
         {
             key: 'copy-html',

@@ -3,7 +3,8 @@
 
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { Save, Clock, Loader2, FolderOpen, FileText, PilcrowRight, Eye, SplitSquareHorizontal } from 'lucide-react';
+import { Save, Clock, Loader2, FolderOpen, FileText, PilcrowRight, Eye, SplitSquareHorizontal, Columns } from 'lucide-react';
+import { MatrxSplit } from '@/components/matrx/MatrxSplit';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -43,7 +44,7 @@ const UnifiedContextMenu = dynamic(
     { ssr: false }
 );
 
-type EditorMode = 'plain' | 'wysiwyg' | 'markdown' | 'preview';
+type EditorMode = 'plain' | 'wysiwyg' | 'markdown' | 'matrx-split' | 'preview';
 
 interface NoteEditorProps {
     note: Note | null;
@@ -409,6 +410,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                                 {editorMode === 'plain' && <FileText className="h-3.5 w-3.5" />}
                                 {editorMode === 'wysiwyg' && <PilcrowRight className="h-3.5 w-3.5" />}
                                 {editorMode === 'markdown' && <SplitSquareHorizontal className="h-3.5 w-3.5" />}
+                                {editorMode === 'matrx-split' && <Columns className="h-3.5 w-3.5" />}
                                 {editorMode === 'preview' && <Eye className="h-3.5 w-3.5" />}
                             </div>
                         </SelectTrigger>
@@ -437,6 +439,15 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                                     <div className="flex flex-col">
                                         <span className="font-medium">Split View</span>
                                         <span className="text-[10px] text-muted-foreground">Markdown + Preview</span>
+                                    </div>
+                                </div>
+                            </SelectItem>
+                            <SelectItem value="matrx-split" className="text-xs">
+                                <div className="flex items-center gap-2">
+                                    <Columns className="h-3.5 w-3.5" />
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">Matrx Split</span>
+                                        <span className="text-[10px] text-muted-foreground">Editor + Preview</span>
                                     </div>
                                 </div>
                             </SelectItem>
@@ -644,6 +655,16 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                             />
                         </div>
                     </UnifiedContextMenu>
+                )}
+
+                {editorMode === 'matrx-split' && (
+                    <MatrxSplit
+                        value={localContent}
+                        onChange={handleContentChange}
+                        textareaRef={textareaRef}
+                        placeholder="Start typing your note..."
+                        className="absolute inset-0"
+                    />
                 )}
 
                 {editorMode === 'preview' && (
