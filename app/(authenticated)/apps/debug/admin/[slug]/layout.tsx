@@ -1,31 +1,16 @@
 // app/(authenticated)/apps/debug/admin/[slug]/layout.tsx
 
 import React from "react";
-import { fetchAppBySlug } from "@/utils/supabase/fetchAppAndAppletConfig";
 
 type LayoutProps = {
     children: React.ReactNode;
     params: Promise<{ slug: string }>;
 };
 
-export default async function Layout({ children, params }: LayoutProps) {
-    const resolvedParams = await params;
-    const { slug } = resolvedParams;
-
-    // Fetch the app and applet configuration once at the layout level
-    const appConfig = await fetchAppBySlug(slug);
-
+export default async function Layout({ children }: LayoutProps) {
     return (
         <div className="h-full w-full bg-textured transition-colors">
             <div className="h-full w-full">
-                {appConfig && (
-                    <template
-                        id="app-config-data"
-                        dangerouslySetInnerHTML={{
-                            __html: JSON.stringify({ appConfig }),
-                        }}
-                    />
-                )}
                 {children}
             </div>
         </div>
