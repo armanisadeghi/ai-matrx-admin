@@ -18,15 +18,11 @@ export default async function Layout({ children, params }: LayoutProps) {
     return (
         <div className="h-full w-full bg-textured transition-colors">
             <div className="h-full w-full">
-                {/* Create a hidden data element to store the configuration if config exists */}
                 {appConfig && (
-                    <script
-                        type="application/json"
+                    <template
                         id="app-config-data"
                         dangerouslySetInnerHTML={{
-                            __html: JSON.stringify({
-                                appConfig: appConfig,
-                            }),
+                            __html: JSON.stringify({ appConfig }),
                         }}
                     />
                 )}
