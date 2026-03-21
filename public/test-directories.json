@@ -136,6 +136,10 @@
     "name": "tailwind-test"
   },
   {
+    "path": "/tests/unified-chat-test",
+    "name": "unified-chat-test"
+  },
+  {
     "path": "/tests/utility-function-tests",
     "name": "utility-function-tests"
   },
