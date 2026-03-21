@@ -1,8 +1,13 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { createClient } from '@/utils/supabase/server';
-import { SharedCanvasView } from '@/features/canvas/shared/SharedCanvasView';
+import dynamic from 'next/dynamic';
 import { siteConfig } from '@/config/extras/site';
+
+const SharedCanvasView = dynamic(
+    () => import('@/features/canvas/shared/SharedCanvasView').then((m) => m.SharedCanvasView),
+    { ssr: false }
+);
 
 interface PageProps {
     params: Promise<{
