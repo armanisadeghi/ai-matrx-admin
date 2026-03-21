@@ -1,13 +1,8 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { createClient } from '@/utils/supabase/server';
-import dynamic from 'next/dynamic';
 import { siteConfig } from '@/config/extras/site';
-
-const SharedCanvasView = dynamic(
-    () => import('@/features/canvas/shared/SharedCanvasView').then((m) => m.SharedCanvasView),
-    { ssr: false }
-);
+import { SharedCanvasViewClient } from './SharedCanvasViewClient';
 
 interface PageProps {
     params: Promise<{
@@ -68,6 +63,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function SharedCanvasPage({ params }: PageProps) {
     const resolvedParams = await params;
     
-    return <SharedCanvasView shareToken={resolvedParams.token} />;
+    return <SharedCanvasViewClient shareToken={resolvedParams.token} />;
 }
 
