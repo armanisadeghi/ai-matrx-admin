@@ -9,7 +9,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Menu, Crown, Settings, Sun, Moon, Bug } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/hooks/useTheme";
 import Image from "next/image";
 import Link from "next/link";
 import { navigationLinks } from "@/constants/navigation-links";

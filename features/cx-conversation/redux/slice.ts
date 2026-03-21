@@ -21,6 +21,7 @@ import type {
     LoadConversationPayload,
 } from './types';
 import type { Resource } from '@/features/prompts/types/resources';
+import type { CxToolCall } from '@/features/public-chat/types/cx-tables';
 
 // ============================================================================
 // STABLE EMPTY REFERENCES (used by selectors to avoid unnecessary re-renders)
@@ -28,6 +29,8 @@ import type { Resource } from '@/features/prompts/types/resources';
 
 export const EMPTY_MESSAGES: ConversationSession['messages'] = [];
 export const EMPTY_RESOURCES: Resource[] = [];
+export const EMPTY_TOOL_CALLS_BY_ID: Record<string, CxToolCall> = {};
+export const EMPTY_RAW_TOOL_CALLS: CxToolCall[] = [];
 export const EMPTY_VARIABLE_DEFAULTS: ConversationSession['variableDefaults'] = [];
 
 export const DEFAULT_UI_STATE: SessionUIState = {
@@ -86,6 +89,7 @@ const chatConversationsSlice = createSlice({
                 variableDefaults,
                 requiresVariableReplacement,
                 messages: [],
+                toolCallsById: {},
                 createdAt: Date.now(),
                 updatedAt: Date.now(),
             };
@@ -112,7 +116,7 @@ const chatConversationsSlice = createSlice({
         },
 
         loadConversation: (state, action: PayloadAction<LoadConversationPayload>) => {
-            const { sessionId, conversationId, messages, agentId, variableDefaults = [] } = action.payload;
+            const { sessionId, conversationId, messages, agentId, variableDefaults = [], toolCallsById = {} } = action.payload;
 
             // Preserve apiMode and chatModeConfig if session already exists
             const existing = state.sessions[sessionId];
@@ -128,6 +132,7 @@ const chatConversationsSlice = createSlice({
                 variableDefaults,
                 requiresVariableReplacement: false,
                 messages,
+                toolCallsById,
                 createdAt: Date.now(),
                 updatedAt: Date.now(),
             };
@@ -221,6 +226,7 @@ const chatConversationsSlice = createSlice({
             session.messages = [];
             session.conversationId = null;
             session.status = 'ready';
+            session.toolCallsById = {};
             session.updatedAt = Date.now();
         },
 

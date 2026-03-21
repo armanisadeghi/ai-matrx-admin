@@ -59,6 +59,17 @@ const nextConfig = {
     },
     reactStrictMode: false,
     headers: getHeaders,
+    async redirects() {
+        return [
+            // Static redirect — runs before proxy/auth, eliminates the flash+bounce
+            // that occurred when /ssr/page.tsx did redirect() server-side after auth resolved.
+            {
+                source: '/ssr',
+                destination: '/ssr/dashboard',
+                permanent: false,
+            },
+        ];
+    },
     async rewrites() {
         return [
             {

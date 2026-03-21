@@ -1,7 +1,8 @@
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '../../../lib/redux/store';
-import { EMPTY_MESSAGES, EMPTY_RESOURCES, EMPTY_VARIABLE_DEFAULTS, DEFAULT_UI_STATE } from './slice';
+import { EMPTY_MESSAGES, EMPTY_RESOURCES, EMPTY_VARIABLE_DEFAULTS, DEFAULT_UI_STATE, EMPTY_TOOL_CALLS_BY_ID, EMPTY_RAW_TOOL_CALLS } from './slice';
 import type { ConversationSession, SessionUIState } from './types';
+import type { CxToolCall } from '@/features/public-chat/types/cx-tables';
 
 // ============================================================================
 // BASE SELECTORS
@@ -111,3 +112,39 @@ export const selectUseBlockMode = (state: RootState, sessionId: string) =>
 
 export const selectShowDebugInfo = (state: RootState, sessionId: string) =>
     state.chatConversations.uiState[sessionId]?.showDebugInfo ?? false;
+
+// ============================================================================
+// TOOL CALL SELECTORS
+// ============================================================================
+
+/**
+ * All CxToolCall records for this session, keyed by call_id.
+ * Returns stable EMPTY_TOOL_CALLS_BY_ID when session has no tool calls.
+ */
+export const selectToolCallsById = (state: RootState, sessionId: string): Record<string, CxToolCall> =>
+    state.chatConversations.sessions[sessionId]?.toolCallsById ?? EMPTY_TOOL_CALLS_BY_ID;
+
+/**
+ * Look up a single CxToolCall by its call_id (the provider-assigned tool call ID).
+ * Returns undefined if not found.
+ */
+export const selectToolCallByCallId = (state: RootState, sessionId: string, callId: string): CxToolCall | undefined =>
+    state.chatConversations.sessions[sessionId]?.toolCallsById?.[callId];
+
+/**
+ * All CxToolCall records for a specific message (i.e. the tool calls it invoked).
+ * Returns stable EMPTY_RAW_TOOL_CALLS when the message has no rawToolCalls.
+ */
+export const selectMessageRawToolCalls = (state: RootState, sessionId: string, messageId: string): CxToolCall[] => {
+    const message = state.chatConversations.sessions[sessionId]?.messages.find(m => m.id === messageId);
+    return (message?.rawToolCalls as CxToolCall[] | undefined) ?? EMPTY_RAW_TOOL_CALLS;
+};
+
+/**
+ * All tool call records for a session as a flat array (for iteration/display).
+ */
+export const selectAllToolCalls = createSelector(
+    (state: RootState, sessionId: string) =>
+        state.chatConversations.sessions[sessionId]?.toolCallsById ?? EMPTY_TOOL_CALLS_BY_ID,
+    (byId): CxToolCall[] => Object.values(byId),
+);

@@ -3,7 +3,7 @@
 import React from 'react';
 import { Prism as SyntaxHighlighterBase } from 'react-syntax-highlighter';
 import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/cjs/styles/prism';
-import { useTheme } from 'next-themes';
+import { useTheme } from '@/hooks/useTheme';
 import { mapLanguageForPrism } from '@/features/code-editor/config/languages';
 
 const SyntaxHighlighter = ({

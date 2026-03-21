@@ -12,7 +12,7 @@ import type { RootState, AppDispatch } from '@/lib/redux/store';
 import { chatConversationsActions } from '../slice';
 import type { ConversationMessage } from '../types';
 import { processDbMessagesForDisplay } from '@/features/public-chat/utils/cx-content-converter';
-import type { CxConversationWithMessages } from '@/features/public-chat/types/cx-tables';
+import type { CxConversationWithMessages, CxToolCall } from '@/features/public-chat/types/cx-tables';
 
 interface LoadConversationPayload {
     sessionId: string;
@@ -50,6 +50,14 @@ export const loadConversationHistory = createAsyncThunk<
             // This handles content blocks, tool calls, thinking, condensed messages, etc.
             const processedMessages = processDbMessagesForDisplay(data.messages, data.toolCalls);
 
+            // Build toolCallsById for O(1) lookup at session level
+            const toolCallsById: Record<string, CxToolCall> = {};
+            if (data.toolCalls) {
+                for (const tc of data.toolCalls) {
+                    toolCallsById[tc.call_id] = tc;
+                }
+            }
+
             // Convert ProcessedChatMessage[] to ConversationMessage[]
             const messages: ConversationMessage[] = processedMessages.map(msg => ({
                 id: msg.id || uuidv4(),
@@ -59,7 +67,19 @@ export const loadConversationHistory = createAsyncThunk<
                 timestamp: msg.timestamp instanceof Date
                     ? msg.timestamp.toISOString()
                     : new Date(msg.timestamp).toISOString(),
+                // Preserve all raw DB data
+                rawContent: msg.rawContent,
+                dbRole: msg.dbRole,
+                dbStatus: msg.dbStatus,
+                conversationId: msg.conversationId,
+                position: msg.position,
+                dbMetadata: msg.dbMetadata,
+                contentHistory: msg.contentHistory,
+                createdAt: msg.createdAt,
+                deletedAt: msg.deletedAt,
+                // Derived
                 toolUpdates: msg.toolUpdates?.length > 0 ? msg.toolUpdates : undefined,
+                rawToolCalls: msg.rawToolCalls?.length > 0 ? msg.rawToolCalls : undefined,
                 isCondensed: msg.isCondensed || undefined,
             }));
 
@@ -68,6 +88,7 @@ export const loadConversationHistory = createAsyncThunk<
                 conversationId,
                 agentId,
                 messages,
+                toolCallsById,
             }));
 
         } catch (error: unknown) {

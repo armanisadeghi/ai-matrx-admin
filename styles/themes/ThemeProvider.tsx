@@ -2,7 +2,6 @@
 'use client';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import type { RootState } from "@/lib/redux/store";
 import { setMode } from './themeSlice';
 
@@ -65,14 +64,7 @@ export const ThemeProvider: React.FC<{
 
     return (
         <ThemeContext.Provider value={contextValue}>
-            <NextThemesProvider
-                attribute="class"
-                defaultTheme={mode}
-                enableSystem={enableSystem}
-                value={{light: 'light', dark: 'dark'}}
-            >
-                {children}
-            </NextThemesProvider>
+            {children}
         </ThemeContext.Provider>
     );
 };

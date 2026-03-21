@@ -14,6 +14,8 @@
 import type {
     CxContentBlock,
     CxMessage,
+    CxMessageRole,
+    CxMessageDbStatus,
     CxToolCall,
     CxTextContent,
     CxThinkingContent,
@@ -36,13 +38,36 @@ export interface ConvertedMessageContent {
 /** Result of processing a full conversation from the database */
 export interface ProcessedChatMessage {
     id: string;
+    /** Display role mapped from DB role — use this for rendering */
     role: 'user' | 'assistant' | 'system';
+    /** Raw DB role before display mapping (e.g. 'output', 'tool') — preserved for full fidelity */
+    dbRole: CxMessageRole;
+    /** Flat markdown string for the rendering pipeline */
     content: string;
+    /** Original content blocks from DB before any conversion — preserved for full fidelity */
+    rawContent: CxContentBlock[];
     status: 'complete';
     timestamp: Date;
     toolUpdates: ToolCallObject[];
     /** Whether this message was condensed (out of context window) */
     isCondensed: boolean;
+    // ── Preserved DB fields ──────────────────────────────────────────────
+    /** DB conversation_id this message belongs to */
+    conversationId: string;
+    /** Message position in the conversation (0-based) */
+    position: number;
+    /** Raw DB status field before display mapping */
+    dbStatus: CxMessageDbStatus;
+    /** Raw metadata JSON from DB */
+    dbMetadata: Record<string, unknown>;
+    /** Content version history from DB */
+    contentHistory: unknown | null;
+    /** ISO creation timestamp from DB */
+    createdAt: string;
+    /** Soft-delete timestamp from DB, null if active */
+    deletedAt: string | null;
+    /** Full CxToolCall DB records for tool calls invoked by this message — preserved for full fidelity */
+    rawToolCalls: CxToolCall[];
 }
 
 // ============================================================================
@@ -110,10 +135,10 @@ export function convertCxContentToDisplay(
 
             case 'thinking': {
                 const thinkingBlock = block as CxThinkingContent;
-                // Use text if available, otherwise use summary, otherwise show placeholder
+                // Use text if available, otherwise join summary item texts, otherwise placeholder
                 const thinkingText = thinkingBlock.text
                     || (thinkingBlock.summary && thinkingBlock.summary.length > 0
-                        ? thinkingBlock.summary.join('\n')
+                        ? thinkingBlock.summary.map(s => s.text).join('\n')
                         : 'Thinking...');
                 // Wrap in XML tags — content-splitter-v2 recognizes <thinking> and <think>
                 parts.push(`<reasoning>\n${thinkingText}\n</reasoning>`);
@@ -367,21 +392,25 @@ export function processDbMessagesForDisplay(
         // Process user / assistant / system messages
         const { content, toolUpdates } = convertCxContentToDisplay(msg.content);
 
-        // For assistant messages with tool_call content blocks, enrich with
+        // For assistant and output messages with tool_call content blocks, enrich with
         // cx_tool_call output data so the full input+output is available.
-        if (msg.role === 'assistant' && callIdToolCallMap && toolUpdates.length > 0) {
-            // For each mcp_input tool update, check if we have a corresponding
-            // cx_tool_call with output data and add the result.
+        // Also collect the raw CxToolCall records so all rich metadata is preserved.
+        const rawToolCalls: CxToolCall[] = [];
+        if ((msg.role === 'assistant' || msg.role === 'output') && callIdToolCallMap && toolUpdates.length > 0) {
             const enrichedUpdates = [...toolUpdates];
             for (const tu of toolUpdates) {
                 if (tu.type === 'mcp_input') {
                     const tc = callIdToolCallMap.get(tu.id);
-                    if (tc && tc.output != null) {
-                        // Add the output entry from the tool call record
-                        const outputUpdates = buildToolUpdatesFromToolCall(tc);
-                        // Only add the output part (skip the duplicate input)
-                        const outputOnly = outputUpdates.filter(u => u.type !== 'mcp_input');
-                        enrichedUpdates.push(...outputOnly);
+                    if (tc) {
+                        // Collect the full DB record — has execution_events, duration, tokens, cost, etc.
+                        rawToolCalls.push(tc);
+                        if (tc.output != null || tc.is_error) {
+                            // Add the output/error entry from the tool call record
+                            const outputUpdates = buildToolUpdatesFromToolCall(tc);
+                            // Only add the output part (input already represented by the content block)
+                            const outputOnly = outputUpdates.filter(u => u.type !== 'mcp_input');
+                            enrichedUpdates.push(...outputOnly);
+                        }
                     }
                 }
             }
@@ -390,20 +419,57 @@ export function processDbMessagesForDisplay(
             toolUpdates.push(...enrichedUpdates);
         }
 
-        // Map role — treat any unexpected roles as 'assistant'
-        const role: 'user' | 'assistant' | 'system' =
-            msg.role === 'user' ? 'user'
-                : msg.role === 'system' ? 'system'
-                    : 'assistant';
+        // Secondary path: for V2 tool-role messages that were skipped, their CxToolCall
+        // records are linked via message_id. Check the msgToolCallMap to find any tool calls
+        // that reference tool-placeholder messages following this message (by position).
+        // This handles edge cases where a tool_call content block id doesn't match a call_id
+        // directly but the association is tracked via message_id.
+        if (msgToolCallMap && rawToolCalls.length === 0 && (msg.role === 'assistant' || msg.role === 'output')) {
+            // Not strictly needed for normal V2 flow (callIdToolCallMap handles it), but acts
+            // as a safety net for any provider-specific id format mismatches.
+            // Left as a no-op stub — future enhancement if edge cases surface.
+        }
+
+        // Map DB role to display role — explicitly handle every known role.
+        // Unknown roles log an error so they surface during development.
+        let displayRole: 'user' | 'assistant' | 'system';
+        switch (msg.role as string) {
+            case 'user':
+                displayRole = 'user';
+                break;
+            case 'system':
+                displayRole = 'system';
+                break;
+            case 'assistant':
+            case 'output':  // OpenAI intermediate thinking/reasoning output
+                displayRole = 'assistant';
+                break;
+            default:
+                console.error(
+                    `[processDbMessagesForDisplay] Unknown DB role "${msg.role}" on message ${msg.id} (position ${msg.position}) — defaulting to "assistant". Add this role to CxMessageRole and update the role mapping.`,
+                    { id: msg.id, role: msg.role, position: msg.position },
+                );
+                displayRole = 'assistant';
+        }
 
         result.push({
             id: msg.id,
-            role,
+            role: displayRole,
+            dbRole: msg.role,
             content,
+            rawContent: Array.isArray(msg.content) ? [...msg.content] : [],
             status: 'complete',
             timestamp: new Date(msg.created_at),
             toolUpdates,
+            rawToolCalls,
             isCondensed,
+            conversationId: msg.conversation_id,
+            position: msg.position,
+            dbStatus: msg.status,
+            dbMetadata: msg.metadata,
+            contentHistory: msg.content_history,
+            createdAt: msg.created_at,
+            deletedAt: msg.deleted_at,
         });
     }
 

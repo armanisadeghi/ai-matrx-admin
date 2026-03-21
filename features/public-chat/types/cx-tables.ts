@@ -74,9 +74,16 @@ export interface CxMessage {
     created_at: string;                         // timestamptz NOT NULL
     deleted_at: string | null;                  // timestamptz
     metadata: Record<string, unknown>;          // jsonb NOT NULL, default '{}'
+    content_history: unknown | null;            // jsonb — previous content versions (reserved for future use)
 }
 
-export type CxMessageRole = 'user' | 'assistant' | 'system' | 'tool';
+/**
+ * Roles used in cx_message.role.
+ * - user/assistant/system: standard roles
+ * - tool: tool-result placeholder row (content is usually [])
+ * - output: OpenAI-style intermediate thinking/reasoning output (content is thinking blocks only)
+ */
+export type CxMessageRole = 'user' | 'assistant' | 'output' | 'system' | 'tool';
 
 /** DB status — NOT the same as UI streaming status */
 export type CxMessageDbStatus = 'active' | 'condensed' | 'summary' | 'deleted';

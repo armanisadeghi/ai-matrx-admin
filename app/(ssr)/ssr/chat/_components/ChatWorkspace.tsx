@@ -15,7 +15,6 @@ import { usePathname, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
-import { selectIsUsingLocalhost } from "@/lib/redux/slices/adminPreferencesSlice";
 import {
   selectModelOptions,
   selectAvailableModels,
@@ -39,8 +38,11 @@ import { useConversationSession } from "@/features/cx-conversation/hooks/useConv
 import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
 import type { ApiMode } from "@/features/cx-conversation/redux/types";
 const ConversationShell = dynamic(
-  () => import("@/features/cx-conversation/ConversationShell").then((m) => ({ default: m.ConversationShell })),
-  { ssr: false }
+  () =>
+    import("@/features/cx-conversation/ConversationShell").then((m) => ({
+      default: m.ConversationShell,
+    })),
+  { ssr: false },
 );
 
 // Header controls
@@ -108,12 +110,12 @@ function ChatWorkspaceInner() {
 
   // usePathname() may not react to manual pushState — track it manually too
   // Initialize with '' (SSR-safe); sync to window.location.pathname after mount
-  const [manualPathname, setManualPathname] = useState('');
+  const [manualPathname, setManualPathname] = useState("");
   useEffect(() => {
     setManualPathname(window.location.pathname);
     const onPopState = () => setManualPathname(window.location.pathname);
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
   }, []);
   const pathname = manualPathname || nextPathname;
 
@@ -125,7 +127,9 @@ function ChatWorkspaceInner() {
   const agentPickerEl = (
     <AgentPickerSheet
       open={isAgentPickerOpen}
-      onOpenChange={(open) => !open && dispatch(activeChatActions.closeAgentPicker())}
+      onOpenChange={(open) =>
+        !open && dispatch(activeChatActions.closeAgentPicker())
+      }
       selectedAgent={selectedAgent}
       onSelect={(agent) => {
         dispatch(activeChatActions.setSelectedAgent(agent as ActiveChatAgent));
@@ -307,7 +311,9 @@ function ChatWorkspaceInner() {
         // Explicitly select only safe fields — messages column is never fetched
         const { data, error } = await supabase
           .from("prompts")
-          .select("id, name, description, variable_defaults, settings, dynamic_model")
+          .select(
+            "id, name, description, variable_defaults, settings, dynamic_model",
+          )
           .eq("id", selectedAgent.promptId)
           .single();
 
@@ -316,23 +322,37 @@ function ChatWorkspaceInner() {
         if (error) {
           // PGRST116 = no rows found (agent not in prompts table) — not an error
           if (error.code !== "PGRST116") {
-            console.warn("[loadAgentConfig] DB error for", selectedAgent.promptId, error);
+            console.warn(
+              "[loadAgentConfig] DB error for",
+              selectedAgent.promptId,
+              error,
+            );
           }
-          dispatch(activeChatActions.setSelectedAgent({ ...selectedAgent, configFetched: true }));
+          dispatch(
+            activeChatActions.setSelectedAgent({
+              ...selectedAgent,
+              configFetched: true,
+            }),
+          );
           return;
         }
 
         if (data) {
           const settings = (data.settings ?? {}) as Record<string, unknown>;
           const { model_id, ...restSettings } = settings;
-          const resolvedModelId = typeof model_id === "string" ? model_id : null;
+          const resolvedModelId =
+            typeof model_id === "string" ? model_id : null;
           setModelOverride(resolvedModelId);
           setModelSettings(restSettings as PromptSettings);
           dispatch(
             activeChatActions.setSelectedAgent({
               ...selectedAgent,
-              description: (data.description ?? selectedAgent.description) || undefined,
-              variableDefaults: data.variable_defaults ?? selectedAgent.variableDefaults ?? undefined,
+              description:
+                (data.description ?? selectedAgent.description) || undefined,
+              variableDefaults:
+                data.variable_defaults ??
+                selectedAgent.variableDefaults ??
+                undefined,
               modelOverride: resolvedModelId,
               modelSettings: restSettings as PromptSettings,
               dynamicModel: data.dynamic_model === true,
@@ -341,13 +361,27 @@ function ChatWorkspaceInner() {
           );
         } else {
           // Null data with no error — treat as not found
-          dispatch(activeChatActions.setSelectedAgent({ ...selectedAgent, configFetched: true }));
+          dispatch(
+            activeChatActions.setSelectedAgent({
+              ...selectedAgent,
+              configFetched: true,
+            }),
+          );
         }
       } catch (err) {
         // Network-level failure — log it so we can debug
         if (!cancelled) {
-          console.warn("[loadAgentConfig] Unexpected error for", selectedAgent.promptId, err);
-          dispatch(activeChatActions.setSelectedAgent({ ...selectedAgent, configFetched: true }));
+          console.warn(
+            "[loadAgentConfig] Unexpected error for",
+            selectedAgent.promptId,
+            err,
+          );
+          dispatch(
+            activeChatActions.setSelectedAgent({
+              ...selectedAgent,
+              configFetched: true,
+            }),
+          );
         }
       }
     }
@@ -381,7 +415,12 @@ function ChatWorkspaceInner() {
       const match = DEFAULT_AGENTS.find((a) => a.promptId === agentId);
       handleAgentSelect(
         match
-          ? { promptId: match.promptId, name: match.name, description: match.description, variableDefaults: match.variableDefaults }
+          ? {
+              promptId: match.promptId,
+              name: match.name,
+              description: match.description,
+              variableDefaults: match.variableDefaults,
+            }
           : { promptId: agentId, name: agentId },
       );
     },
@@ -624,10 +663,16 @@ function ChatWorkspaceInner() {
                   selectedAgent={selectedAgent}
                   textInputRef={textInputRef}
                   seamless
-                  availableModels={selectedAgent.dynamicModel && availableModels.length > 0 ? availableModels : undefined}
+                  availableModels={
+                    selectedAgent.dynamicModel && availableModels.length > 0
+                      ? availableModels
+                      : undefined
+                  }
                   selectedModel={modelOverride ?? undefined}
                   onModelChange={(id) => setModelOverride(id || null)}
-                  onSettingsClick={isAuthenticated ? () => setIsSettingsOpen(true) : undefined}
+                  onSettingsClick={
+                    isAuthenticated ? () => setIsSettingsOpen(true) : undefined
+                  }
                 />
               </div>
               <div className="flex items-center justify-between mt-3 pb-2">
@@ -722,10 +767,16 @@ function ChatWorkspaceInner() {
                   hasVariables={hasVariables}
                   selectedAgent={selectedAgent}
                   textInputRef={textInputRef}
-                  availableModels={selectedAgent.dynamicModel && availableModels.length > 0 ? availableModels : undefined}
+                  availableModels={
+                    selectedAgent.dynamicModel && availableModels.length > 0
+                      ? availableModels
+                      : undefined
+                  }
                   selectedModel={modelOverride ?? undefined}
                   onModelChange={(id) => setModelOverride(id || null)}
-                  onSettingsClick={isAuthenticated ? () => setIsSettingsOpen(true) : undefined}
+                  onSettingsClick={
+                    isAuthenticated ? () => setIsSettingsOpen(true) : undefined
+                  }
                 />
               </div>
 

@@ -10,7 +10,7 @@ import {HexColorPicker} from 'react-colorful';
 import {tailwindColors} from '@/constants/tailwind-colors';
 import {predefinedColors} from '@/constants/standard-colors';
 import {colorFormats, getColorString, isValidColor, normalizeColorInput} from '@/utils/color-utils/color-change-util';
-import {useTheme} from 'next-themes';
+import {useTheme} from '@/hooks/useTheme';
 import {Sun, Moon, CheckCircle, AlertTriangle} from 'lucide-react';
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription} from '@/components/ui/dialog';
 import {Label} from '@/components/ui/label';

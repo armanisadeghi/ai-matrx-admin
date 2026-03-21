@@ -13,6 +13,7 @@ import type { StreamEvent } from '@/types/python-generated/stream-events';
 import type { LLMParams } from '@/lib/api/types';
 import type { Resource } from '@/features/prompts/types/resources';
 import type { PromptVariable } from '@/features/prompts/types/core';
+import type { CxToolCall } from '@/features/public-chat/types/cx-tables';
 
 // ============================================================================
 // MESSAGE TYPES
@@ -32,19 +33,53 @@ export interface ConversationResource {
 }
 
 export interface ConversationMessage {
+    // ── Core display fields (always present, populated for both new and DB-loaded messages) ──
     id: string;
+    /** Display role for rendering: 'user' | 'assistant' | 'system' */
     role: MessageRole;
+    /** Flat markdown string for the rendering pipeline */
     content: string;
     status: MessageStatus;
     timestamp: string;
-    /** Resources attached to this message (structured array) */
-    resources?: ConversationResource[];
+
+    // ── Preserved raw data from DB (populated for DB-loaded messages) ─────────────────────
+    /** Original CxContentBlock[] as stored in DB — preserved before any text conversion.
+     *  Runtime type is CxContentBlock[] from features/public-chat/types/cx-tables. */
+    rawContent?: unknown[];
+    /** Raw DB role string (e.g. 'output', 'tool') — before display role mapping */
+    dbRole?: string;
+    /** Raw DB status field (active/condensed/summary/deleted) — before display mapping */
+    dbStatus?: string;
+    /** DB conversation_id this message belongs to */
+    conversationId?: string;
+    /** Message ordering position in the conversation (0-based) */
+    position?: number;
+    /** Raw metadata JSON from DB */
+    dbMetadata?: Record<string, unknown>;
+    /** Content version history from DB (reserved for future use) */
+    contentHistory?: unknown | null;
+    /** ISO creation timestamp from DB */
+    createdAt?: string;
+    /** Soft-delete timestamp from DB, null if active */
+    deletedAt?: string | null;
+
+    // ── Streaming & tool updates ──────────────────────────────────────────────────────────
     /** Stream events for NDJSON normal-mode streaming (interleaved text + tool blocks) */
     streamEvents?: StreamEvent[];
-    /** Tool call updates persisted after stream ends (for DB-loaded messages) */
+    /** Display-ready tool call objects (mcp_input/mcp_output pairs) — for rendering */
     toolUpdates?: unknown[];
+    /**
+     * Full CxToolCall DB records for every tool call on this message.
+     * Only present on DB-loaded messages that invoked tools.
+     * Contains complete data: execution_events, duration_ms, token counts, cost, etc.
+     */
+    rawToolCalls?: CxToolCall[];
     /** Whether this is a condensed/historical message (dimmed in the UI) */
     isCondensed?: boolean;
+
+    // ── Resources & metadata ──────────────────────────────────────────────────────────────
+    /** Resources attached to this message (structured array) */
+    resources?: ConversationResource[];
     metadata?: {
         fromTemplate?: boolean;
         timeToFirstToken?: number;
@@ -155,6 +190,14 @@ export interface ConversationSession {
     // ========== Messages ==========
     messages: ConversationMessage[];
 
+    // ========== Tool Calls (DB-loaded) ==========
+    /**
+     * All CxToolCall records for this conversation, keyed by call_id.
+     * Populated when loading a conversation from DB.
+     * Use selectToolCallByCallId(state, sessionId, callId) for O(1) access.
+     */
+    toolCallsById: Record<string, CxToolCall>;
+
     // ========== Timestamps ==========
     createdAt: number;
     updatedAt: number;
@@ -262,4 +305,6 @@ export interface LoadConversationPayload {
     messages: ConversationMessage[];
     agentId: string;
     variableDefaults?: PromptVariable[];
+    /** All CxToolCall records for the conversation, keyed by call_id */
+    toolCallsById?: Record<string, CxToolCall>;
 }

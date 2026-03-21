@@ -12,7 +12,7 @@ import { StickyNote, CheckSquare, Database, LayoutGrid, Bell, MessageSquare, Cro
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useTheme } from 'next-themes';
+import { useTheme } from '@/hooks/useTheme';
 import { useAppSelector } from '@/lib/redux/hooks';
 import type { RootState } from '@/lib/redux/store';
 import { brokerSelectors } from '@/lib/redux/brokerSlice';

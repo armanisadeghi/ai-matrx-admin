@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { Download, Filter, Search, Trash2, RefreshCw, MaximizeIcon, MinimizeIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useTheme } from 'next-themes';
+import { useTheme } from '@/hooks/useTheme';
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
