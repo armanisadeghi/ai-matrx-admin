@@ -84,7 +84,7 @@ export function RequestsContent({ result }: Props) {
                   <tr
                     key={req.id}
                     className="border-b border-border/50 hover:bg-muted/20 cursor-pointer transition-colors"
-                    onClick={() => router.push(`/admin/cx-dashboard/requests/${req.id}`)}
+                    onClick={() => router.push(`/administration/cx-dashboard/requests/${req.id}`)}
                   >
                     <td className="py-2 px-3">
                       <div className="min-w-0">

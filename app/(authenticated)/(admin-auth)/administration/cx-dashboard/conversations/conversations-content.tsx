@@ -69,7 +69,7 @@ export function ConversationsContent({ result }: Props) {
                 <tr
                   key={conv.id}
                   className="border-b border-border/50 hover:bg-muted/20 cursor-pointer transition-colors"
-                  onClick={() => router.push(`/admin/cx-dashboard/conversations/${conv.id}`)}
+                  onClick={() => router.push(`/administration/cx-dashboard/conversations/${conv.id}`)}
                 >
                   <td className="py-2 px-3">
                     <div className="flex items-center gap-2">

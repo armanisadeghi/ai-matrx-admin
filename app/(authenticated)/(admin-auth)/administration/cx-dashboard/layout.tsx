@@ -13,11 +13,11 @@ import {
 import { CxDashboardErrorBoundary } from "@/features/cx-dashboard/components/CxDashboardErrorBoundary";
 
 const NAV_ITEMS = [
-  { href: "/admin/cx-dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
-  { href: "/admin/cx-dashboard/conversations", label: "Conversations", icon: MessageSquare },
-  { href: "/admin/cx-dashboard/requests", label: "Requests", icon: Send },
-  { href: "/admin/cx-dashboard/usage", label: "Usage & Cost", icon: BarChart3 },
-  { href: "/admin/cx-dashboard/errors", label: "Errors", icon: AlertCircle },
+  { href: "/administration/cx-dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
+  { href: "/administration/cx-dashboard/conversations", label: "Conversations", icon: MessageSquare },
+  { href: "/administration/cx-dashboard/requests", label: "Requests", icon: Send },
+  { href: "/administration/cx-dashboard/usage", label: "Usage & Cost", icon: BarChart3 },
+  { href: "/administration/cx-dashboard/errors", label: "Errors", icon: AlertCircle },
 ];
 
 export default function CxDashboardLayout({ children }: { children: React.ReactNode }) {

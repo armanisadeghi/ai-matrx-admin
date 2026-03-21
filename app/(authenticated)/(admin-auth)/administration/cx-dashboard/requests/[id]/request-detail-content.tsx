@@ -63,7 +63,7 @@ export function RequestDetailContent({ detail }: { detail: Detail }) {
 
       {/* Conversation link */}
       <Link
-        href={`/admin/cx-dashboard/conversations/${ur.conversation_id}`}
+        href={`/administration/cx-dashboard/conversations/${ur.conversation_id}`}
         className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground p-2 rounded border border-border/50 bg-muted/20 transition-colors"
       >
         <span>Conversation:</span>

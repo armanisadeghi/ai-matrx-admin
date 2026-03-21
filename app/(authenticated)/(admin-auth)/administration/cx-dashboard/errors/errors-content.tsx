@@ -93,7 +93,7 @@ export function ErrorsContent({ errors }: { errors: ErrorsData }) {
                 {pendingRequests.map((r: any) => (
                   <tr key={r.id} className="border-b border-border/50 hover:bg-muted/20">
                     <td className="py-1.5 px-3 font-mono">
-                      <Link href={`/admin/cx-dashboard/requests/${r.id}`} className="hover:text-primary">
+                      <Link href={`/administration/cx-dashboard/requests/${r.id}`} className="hover:text-primary">
                         {truncateId(r.id)}
                       </Link>
                     </td>
@@ -102,7 +102,7 @@ export function ErrorsContent({ errors }: { errors: ErrorsData }) {
                     <td className="text-right py-1.5 px-3 font-mono">{formatCost(Number(r.total_cost))}</td>
                     <td className="text-right py-1.5 px-3 text-muted-foreground">{formatDate(r.created_at)}</td>
                     <td className="px-1">
-                      <Link href={`/admin/cx-dashboard/requests/${r.id}`}>
+                      <Link href={`/administration/cx-dashboard/requests/${r.id}`}>
                         <ExternalLink className="w-3 h-3 text-muted-foreground" />
                       </Link>
                     </td>
@@ -138,7 +138,7 @@ export function ErrorsContent({ errors }: { errors: ErrorsData }) {
                 {maxTokensRequests.map((r: any) => (
                   <tr key={r.id} className="border-b border-border/50 hover:bg-muted/20">
                     <td className="py-1.5 px-3 font-mono">
-                      <Link href={`/admin/cx-dashboard/requests/${r.id}`} className="hover:text-primary">
+                      <Link href={`/administration/cx-dashboard/requests/${r.id}`} className="hover:text-primary">
                         {truncateId(r.id)}
                       </Link>
                     </td>

@@ -42,13 +42,13 @@ export function OverviewContent({ kpis }: { kpis: CxOverviewKpis }) {
           label="Conversations"
           value={kpis.total_conversations.toString()}
           icon={MessageSquare}
-          onClick={() => router.push("/admin/cx-dashboard/conversations")}
+          onClick={() => router.push("/administration/cx-dashboard/conversations")}
         />
         <CxKpiCard
           label="User Requests"
           value={kpis.total_user_requests.toString()}
           icon={Send}
-          onClick={() => router.push("/admin/cx-dashboard/requests")}
+          onClick={() => router.push("/administration/cx-dashboard/requests")}
         />
         <CxKpiCard
           label="API Requests"
@@ -61,7 +61,7 @@ export function OverviewContent({ kpis }: { kpis: CxOverviewKpis }) {
           value={formatCost(kpis.total_cost)}
           subValue={`avg ${formatCost(kpis.avg_cost_per_request)}/req`}
           icon={DollarSign}
-          onClick={() => router.push("/admin/cx-dashboard/usage")}
+          onClick={() => router.push("/administration/cx-dashboard/usage")}
         />
         <CxKpiCard
           label="Avg Duration"
@@ -74,7 +74,7 @@ export function OverviewContent({ kpis }: { kpis: CxOverviewKpis }) {
           subValue={`${(kpis.error_rate * 100).toFixed(1)}% rate`}
           trend={kpis.error_count > 0 ? "down" : "neutral"}
           icon={AlertTriangle}
-          onClick={() => router.push("/admin/cx-dashboard/errors")}
+          onClick={() => router.push("/administration/cx-dashboard/errors")}
         />
       </div>
 

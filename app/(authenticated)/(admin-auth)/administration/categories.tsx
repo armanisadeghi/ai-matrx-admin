@@ -43,9 +43,51 @@ import {
     IconUsers,
 } from "@tabler/icons-react";
 import React from "react";
-import { Container, Database, DatabaseBackup, DatabaseZap, MessageSquare, Megaphone, Layout, Brain, Beaker, Search } from "lucide-react";
+import { Container, Database, DatabaseBackup, DatabaseZap, MessageSquare, Megaphone, Layout, Brain, Beaker, Search, BarChart3, Send, AlertCircle, DollarSign } from "lucide-react";
 
 export const adminCategories = [
+    {
+        name: "CX Conversations",
+        icon: <MessageSquare className="w-6 h-6" />,
+        iconColor: "text-cyan-600",
+        features: [
+            {
+                title: "CX Dashboard",
+                description: "Overview with KPIs, cost trends, model usage, and aggregate metrics for the CX conversation system.",
+                icon: <BarChart3 />,
+                link: "/administration/cx-dashboard",
+                isNew: true,
+            },
+            {
+                title: "Conversations",
+                description: "Browse all conversations with filtering, search, message drill-down, and sub-agent chain tracking.",
+                icon: <MessageSquare />,
+                link: "/administration/cx-dashboard/conversations",
+                isNew: true,
+            },
+            {
+                title: "User Requests",
+                description: "Track every user request with token usage, cost, iterations, tool calls, and performance metrics.",
+                icon: <Send />,
+                link: "/administration/cx-dashboard/requests",
+                isNew: true,
+            },
+            {
+                title: "Usage & Cost Analytics",
+                description: "Cost analytics by model, provider, and day with charts and detailed breakdowns.",
+                icon: <DollarSign />,
+                link: "/administration/cx-dashboard/usage",
+                isNew: true,
+            },
+            {
+                title: "Errors & Issues",
+                description: "Track pending requests, max_tokens hits, tool call errors, and system failures.",
+                icon: <AlertCircle />,
+                link: "/administration/cx-dashboard/errors",
+                isNew: true,
+            },
+        ],
+    },
     {
         name: "Experimental",
         icon: <Beaker className="w-6 h-6" />,

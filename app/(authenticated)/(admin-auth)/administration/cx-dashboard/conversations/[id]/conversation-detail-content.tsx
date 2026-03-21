@@ -66,7 +66,7 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
       {/* Parent link */}
       {conv.parent_conversation_id && (
         <Link
-          href={`/admin/cx-dashboard/conversations/${conv.parent_conversation_id}`}
+          href={`/administration/cx-dashboard/conversations/${conv.parent_conversation_id}`}
           className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground p-2 rounded border border-border/50 bg-muted/20 transition-colors"
         >
           <GitBranch className="w-3.5 h-3.5" />
@@ -87,7 +87,7 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
             {child_conversations.map((child) => (
               <Link
                 key={child.id}
-                href={`/admin/cx-dashboard/conversations/${child.id}`}
+                href={`/administration/cx-dashboard/conversations/${child.id}`}
                 className="flex items-center gap-3 text-xs p-2 rounded hover:bg-muted/50 transition-colors group"
               >
                 <span className="font-mono text-muted-foreground">{truncateId(child.id)}</span>
@@ -116,7 +116,7 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
               return (
                 <Link
                   key={ur.id}
-                  href={`/admin/cx-dashboard/requests/${ur.id}`}
+                  href={`/administration/cx-dashboard/requests/${ur.id}`}
                   className="flex items-center gap-3 text-xs p-2 rounded hover:bg-muted/50 transition-colors group"
                 >
                   <span className="font-mono text-muted-foreground">{truncateId(ur.id)}</span>

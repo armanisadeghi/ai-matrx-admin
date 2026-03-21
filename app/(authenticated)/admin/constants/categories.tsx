@@ -48,22 +48,8 @@ import { Database, DatabaseBackup, DatabaseZap } from "lucide-react";
 import SchemaVisualizer from "../components/SchemaVisualizer";
 import { SchemaVisualizerLayout } from "../components/SchemaVisualizer/SchemaVisualizerLayout";
 import DatabaseAdminDashboard from "@/app/(authenticated)/admin/components/database-admin/DatabaseAdminDashboard";
-import CxDashboardRedirect from "@/features/cx-dashboard/components/CxDashboardRedirect";
-import { IconMessageChatbot, IconReportAnalytics } from "@tabler/icons-react";
 
 export const adminCategories = [
-    {
-        name: "CX Conversation Dashboard",
-        icon: <IconMessageChatbot className="w-6 h-6" />,
-        features: [
-            {
-                title: "CX Dashboard Overview",
-                description: "Monitor conversations, user requests, token usage, costs, errors, and performance metrics with deep drill-down.",
-                icon: <IconReportAnalytics />,
-                component: <CxDashboardRedirect />
-            },
-        ]
-    },
     {
         name: "File Explorer & Basic Operations",
         icon: <IconFolder className="w-6 h-6" />,
