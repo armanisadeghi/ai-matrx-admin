@@ -1,6 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
-import { jsPDF } from 'jspdf';
 
 // Configuration object matching Python script's specs
 const CONFIG = {
@@ -64,6 +63,7 @@ const LabelGenerator: React.FC<LabelGeneratorProps> = ({ entries, onGenerate }) 
 
   const generatePDF = async () => {
     setIsGenerating(true);
+    const { jsPDF } = await import('jspdf');
     const doc = new jsPDF({
       unit: 'pt',
       format: 'letter'

@@ -5,7 +5,6 @@ import {
   AlertCircle, Sparkles, Plus, Minus, ExternalLink, Printer
 } from 'lucide-react';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
-import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 
 interface Ingredient {
   amount: string;
@@ -41,8 +40,9 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe, taskId }) => {
   const [servingMultiplier, setServingMultiplier] = useState(1);
   const { open: openCanvas } = useCanvas();
   const blockContentRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useCallback(() => {
+  const handlePrint = useCallback(async () => {
     if (blockContentRef.current) {
+      const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
       captureBlockElement(blockContentRef.current, recipe.title.replace(/\s+/g, '-').toLowerCase() || 'recipe');
     }
   }, [recipe.title]);

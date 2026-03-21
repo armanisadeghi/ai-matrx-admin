@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import BlockHeaderWrapper from '@/components/mardown-display/blocks/common/BlockHeaderWrapper';
 import IconButton from '@/components/official/IconButton';
 import type { MenuItem } from '@/components/official/AdvancedMenu';
-import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 
 interface TimelineEvent {
   id: string;
@@ -41,8 +40,9 @@ interface TimelineBlockProps {
 const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline: initialTimeline, taskId }) => {
   const [timeline, setTimeline] = useState<TimelineData>(initialTimeline);
   const blockContentRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useCallback(() => {
+  const handlePrint = useCallback(async () => {
     if (blockContentRef.current) {
+      const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
       captureBlockElement(blockContentRef.current, timeline.title.replace(/\s+/g, '-').toLowerCase() || 'timeline');
     }
   }, [timeline.title]);

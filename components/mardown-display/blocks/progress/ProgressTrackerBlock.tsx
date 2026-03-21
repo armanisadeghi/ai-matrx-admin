@@ -10,7 +10,6 @@ import {
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 import ImportTasksModal from '@/features/tasks/components/ImportTasksModal';
 import { convertProgressToTasks } from '@/features/tasks/utils/importConverters';
-import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 
 interface ProgressItem {
   id: string;
@@ -50,8 +49,9 @@ interface ProgressTrackerBlockProps {
 const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const blockContentRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useCallback(() => {
+  const handlePrint = useCallback(async () => {
     if (blockContentRef.current) {
+      const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
       captureBlockElement(blockContentRef.current, tracker.title.replace(/\s+/g, '-').toLowerCase() || 'progress');
     }
   }, [tracker.title]);

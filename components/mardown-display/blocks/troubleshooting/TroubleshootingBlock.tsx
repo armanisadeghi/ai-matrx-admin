@@ -6,7 +6,6 @@ import {
   Bug, Wrench, Zap, Clock, Star, Copy, Check, ArrowRight,
   AlertCircle, Info, Target, BookOpen, Users, MessageSquare, Upload, Printer
 } from 'lucide-react';
-import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 import ImportTasksModal from '@/features/tasks/components/ImportTasksModal';
 import { convertTroubleshootingToTasks } from '@/features/tasks/utils/importConverters';
@@ -55,8 +54,9 @@ interface TroubleshootingBlockProps {
 const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshooting, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const blockContentRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useCallback(() => {
+  const handlePrint = useCallback(async () => {
     if (blockContentRef.current) {
+      const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
       captureBlockElement(blockContentRef.current, troubleshooting.title.replace(/\s+/g, '-').toLowerCase() || 'troubleshooting');
     }
   }, [troubleshooting.title]);

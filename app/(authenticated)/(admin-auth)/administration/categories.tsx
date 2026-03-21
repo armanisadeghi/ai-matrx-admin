@@ -264,6 +264,12 @@ export const adminCategories = [
                 link: "/administration/invitation-requests",
                 isNew: true,
             },
+            {
+                title: "Email Users",
+                description: "Send emails to users directly from the admin portal using custom or template-based messages.",
+                icon: <Send />,
+                link: "/administration/email",
+            },
         ],
     },
 
@@ -299,6 +305,12 @@ export const adminCategories = [
                 description: "Directly access and browse files stored on the local filesystem, enabling quick file management.",
                 icon: <IconFolder />,
                 link: "/administration/file-explorer",
+            },
+            {
+                title: "Local Storage Admin",
+                description: "Inspect, edit, and manage browser localStorage and cookies with import/export support.",
+                icon: <IconDatabase />,
+                link: "/administration/local-storage",
             },
         ],
     },

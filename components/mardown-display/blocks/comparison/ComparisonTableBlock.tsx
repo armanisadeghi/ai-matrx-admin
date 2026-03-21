@@ -7,7 +7,6 @@ import {
   Crown, Zap, Target, ThumbsUp, ThumbsDown, AlertCircle, ExternalLink, Printer
 } from 'lucide-react';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
-import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 
 interface ComparisonCriterion {
   name: string;
@@ -34,8 +33,9 @@ type SortDirection = 'asc' | 'desc' | null;
 const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const blockContentRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useCallback(() => {
+  const handlePrint = useCallback(async () => {
     if (blockContentRef.current) {
+      const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
       captureBlockElement(blockContentRef.current, comparison.title.replace(/\s+/g, '-').toLowerCase() || 'comparison');
     }
   }, [comparison.title]);

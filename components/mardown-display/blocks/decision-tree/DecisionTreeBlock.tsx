@@ -7,7 +7,6 @@ import {
   ChevronRight, ChevronDown, PlayCircle, StopCircle, Clock, ExternalLink, Printer
 } from 'lucide-react';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
-import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 
 interface DecisionNode {
   id: string;
@@ -43,8 +42,9 @@ interface NavigationStep {
 const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const blockContentRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useCallback(() => {
+  const handlePrint = useCallback(async () => {
     if (blockContentRef.current) {
+      const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
       captureBlockElement(blockContentRef.current, decisionTree.title.replace(/\s+/g, '-').toLowerCase() || 'decision-tree');
     }
   }, [decisionTree.title]);

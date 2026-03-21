@@ -6,7 +6,6 @@ import {
   CheckCircle2, Target, Lightbulb, Award, Eye, Filter,
   BarChart3, Users, Briefcase, Scale, Clock, Star, Printer
 } from 'lucide-react';
-import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 
 interface ResearchFinding {
@@ -120,8 +119,9 @@ interface ResearchBlockProps {
 const ResearchBlock: React.FC<ResearchBlockProps> = ({ research, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const blockContentRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useCallback(() => {
+  const handlePrint = useCallback(async () => {
     if (blockContentRef.current) {
+      const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
       captureBlockElement(blockContentRef.current, research.title.replace(/\s+/g, '-').toLowerCase() || 'research');
     }
   }, [research.title]);

@@ -6,7 +6,6 @@ import {
   Award, Bookmark, Eye, Play, Download, Globe, Code, 
   Users, Zap, Target, TrendingUp, Heart, Printer
 } from 'lucide-react';
-import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 
 interface ResourceItem {
@@ -44,8 +43,9 @@ interface ResourceCollectionBlockProps {
 const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ collection, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const blockContentRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useCallback(() => {
+  const handlePrint = useCallback(async () => {
     if (blockContentRef.current) {
+      const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
       captureBlockElement(blockContentRef.current, collection.title.replace(/\s+/g, '-').toLowerCase() || 'resources');
     }
   }, [collection.title]);

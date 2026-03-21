@@ -1,7 +1,5 @@
 "use client";
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-// captureBlockElement imported below with diagram-specific capture
-import { captureBlockElement } from '@/features/chat/utils/dom-capture-block-printer';
 import ReactFlow, {
   Node,
   Edge,
@@ -557,8 +555,9 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
   const [backgroundVariant, setBackgroundVariant] = useState<BackgroundVariant>(BackgroundVariant.Dots);
   const { open: openCanvas } = useCanvas();
   const diagramContainerRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useCallback(() => {
+  const handlePrint = useCallback(async () => {
     if (diagramContainerRef.current) {
+      const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
       captureBlockElement(diagramContainerRef.current, diagram.title.replace(/\s+/g, '-').toLowerCase() || 'diagram');
     }
   }, [diagram.title]);
