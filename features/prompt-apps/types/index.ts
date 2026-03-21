@@ -6,6 +6,30 @@
 
 export type AppStatus = 'draft' | 'published' | 'archived' | 'suspended';
 
+// ============================================================================
+// App Display Mode — Controls the UI pattern for prompt app rendering
+// ============================================================================
+
+/**
+ * Determines how a prompt app renders and interacts with the user.
+ *
+ * - `form`:            (Default) Form inputs at top, response below. Single execution, no follow-up.
+ * - `form-to-chat`:    Form inputs for first execution, then reveals a chat input for follow-up
+ *                      conversation. The form collapses after first response.
+ * - `chat`:            Full chat interface from the start. Input pinned at bottom, messages flow up.
+ *                      Like ChatGPT but scoped to the app's agent.
+ * - `centered-input`:  Large centered input (landing-page style). After first message, converts
+ *                      to a full chat interface with messages and input at bottom.
+ * - `chat-with-history`: Full chat interface with a collapsible sidebar showing past app runs.
+ *                        Only shows history for authenticated users.
+ */
+export type AppDisplayMode =
+  | 'form'
+  | 'form-to-chat'
+  | 'chat'
+  | 'centered-input'
+  | 'chat-with-history';
+
 // Component languages for syntax highlighting
 // Note: 'react' is legacy (mapped to 'tsx' for backward compatibility)
 export type ComponentLanguage = 
@@ -145,6 +169,8 @@ export interface LayoutConfig {
   showBranding?: boolean;
   showCredit?: boolean;
   customLayout?: string;
+  /** Controls the UI pattern: form, form-to-chat, chat, centered-input, chat-with-history */
+  displayMode?: AppDisplayMode;
 }
 
 export interface StylingConfig {
@@ -343,27 +369,35 @@ export interface UpdateAppInput {
 // ============================================================================
 
 export interface PromptAppComponentProps {
-  // Execution function to call
-  onExecute: (variables: Record<string, any>) => Promise<void>;
-  
+  // Execution function — call with variables for initial run, or with userInput for chat follow-ups
+  onExecute: (variables: Record<string, any>, userInput?: string) => Promise<void>;
+
   // Real-time streaming response
   response: string;
   isStreaming: boolean;
-  
+
   // State
   isExecuting: boolean;
   error?: {
     type: ExecutionErrorType;
     message: string;
   };
-  
+
   // Rate limit info
   rateLimitInfo?: RateLimitInfo;
-  
+
   // App metadata (safe to expose)
   appName: string;
   appTagline?: string;
   appCategory?: string;
+
+  // Chat / conversation support (provided by the renderer)
+  /** The active conversation ID — null until first execution completes */
+  conversationId?: string | null;
+  /** Resets the conversation, clearing all messages and starting fresh */
+  onResetConversation?: () => void;
+  /** All raw stream events from the current or most recent execution */
+  streamEvents?: any[];
 }
 
 // ============================================================================
