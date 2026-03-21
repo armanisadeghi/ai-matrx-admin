@@ -2,7 +2,7 @@
 
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider, usePostHog } from "posthog-js/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 /**
@@ -30,6 +30,8 @@ interface PostHogProviderProps {
 }
 
 export function PostHogProvider({ children }: PostHogProviderProps) {
+  const [initialized, setInitialized] = useState(false);
+
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return;
     posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
@@ -47,9 +49,10 @@ export function PostHogProvider({ children }: PostHogProviderProps) {
         maskInputOptions: { password: true },
       },
     });
+    setInitialized(true);
   }, []);
 
-  if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) {
+  if (!process.env.NEXT_PUBLIC_POSTHOG_KEY || !initialized) {
     return <>{children}</>;
   }
 
