@@ -3,7 +3,6 @@
 import { useState, useRef } from 'react';
 import { supabase } from '@/utils/supabase/client';
 import Papa from 'papaparse';
-import * as XLSX from 'xlsx';
 import {
   Dialog,
   DialogContent,
@@ -211,8 +210,9 @@ export default function ImportTableModal({ isOpen, onClose, onSuccess }: ImportT
     } else {
       // Handle Excel files
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         try {
+          const XLSX = await import('xlsx');
           const data = e.target?.result;
           const workbook = XLSX.read(data, { type: 'binary' });
           const sheetName = workbook.SheetNames[0];

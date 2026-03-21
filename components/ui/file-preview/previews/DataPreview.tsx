@@ -4,7 +4,6 @@ import {
   FileSpreadsheet, FileJson, Database, AlertTriangle, 
   Search, Filter, ArrowUpDown, ChevronDown, Download, Copy
 } from 'lucide-react';
-import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 
 interface DataPreviewProps {
@@ -108,15 +107,16 @@ const DataPreview: React.FC<DataPreviewProps> = ({ file, isLoading }) => {
         }
         else if (['xlsx', 'xls'].includes(extension)) {
           try {
+            const XLSX = await import('xlsx');
             let arrayBuffer;
-            
+
             if (file.blob) {
               arrayBuffer = await file.blob.arrayBuffer();
             } else {
               const response = await fetch(file.url);
               arrayBuffer = await response.arrayBuffer();
             }
-            
+
             const workbook = XLSX.read(arrayBuffer, { type: 'array' });
             const sheets = workbook.SheetNames;
             setSheetNames(sheets);
@@ -176,15 +176,16 @@ const DataPreview: React.FC<DataPreviewProps> = ({ file, isLoading }) => {
       const extension = file.details?.extension?.toLowerCase();
       
       if (['xlsx', 'xls'].includes(extension)) {
+        const XLSX = await import('xlsx');
         let arrayBuffer;
-        
+
         if (file.blob) {
           arrayBuffer = await file.blob.arrayBuffer();
         } else {
           const response = await fetch(file.url);
           arrayBuffer = await response.arrayBuffer();
         }
-        
+
         const workbook = XLSX.read(arrayBuffer, { type: 'array' });
         
         // Convert sheet to JSON

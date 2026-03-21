@@ -7,8 +7,12 @@ import { TextPreview } from './TextPreview';
 import { ImagePreview } from './ImagePreview';
 import { AudioPreview } from './AudioPreview';
 import { VideoPreview } from './VideoPreview';
-import { CodePreview } from './CodePreview';
 import { DefaultPreview } from './DefaultPreview';
+
+const CodePreview = dynamic(() => import('./CodePreview').then(mod => ({ default: mod.CodePreview })), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+});
 import { Loader2, FolderIcon } from 'lucide-react';
 import { getFileDetails } from "@/utils/file-operations";
 

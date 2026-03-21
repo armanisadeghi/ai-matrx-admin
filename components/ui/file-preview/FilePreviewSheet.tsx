@@ -11,7 +11,10 @@ import CodePreview from "./previews/CodePreview";
 import GenericPreview from "./previews/GenericPreview";
 import VideoPreview from "./previews/VideoPreview";
 import AudioPreview from "./previews/AudioPreview";
-import DataPreview from "./previews/DataPreview";
+const DataPreview = dynamic(() => import("./previews/DataPreview"), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-full">Loading data preview...</div>
+});
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 import { formatBytes } from "./utils/formatting";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";

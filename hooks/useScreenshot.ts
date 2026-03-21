@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import html2canvas from 'html2canvas';
 import type {
     UseScreenshotOptions,
     UseScreenshotReturn,
@@ -115,6 +114,7 @@ export const useScreenshot = (options: UseScreenshotOptions = {}): UseScreenshot
 
             const { elements, originalVisibilities } = hideExcludedElements();
 
+            const { default: html2canvas } = await import('html2canvas');
             const canvas = await html2canvas(document.body, {
                 logging: false,
                 useCORS: true,

@@ -1,15 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Papa from 'papaparse';
-import dynamic from 'next/dynamic';
 
-const LabelGenerator = dynamic(() => import('@/lib/qr-labels/LabelGenerator'), { ssr: false });
+const LabelGenerator = dynamic(() => import('@/lib/qr-labels/LabelGenerator'), {
+  ssr: false,
+  loading: () => <div className="text-center p-4">Loading label generator...</div>,
+});
 
 interface LabelEntry {
   qr_value: string;

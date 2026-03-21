@@ -12,7 +12,10 @@ import TextPreview from "@/components/ui/file-preview/previews/TextPreview";
 import CodePreview from "@/components/ui/file-preview/previews/CodePreview";
 import VideoPreview from "@/components/ui/file-preview/previews/VideoPreview";
 import AudioPreview from "@/components/ui/file-preview/previews/AudioPreview";
-import DataPreview from "@/components/ui/file-preview/previews/DataPreview";
+const DataPreview = dynamic(() => import("@/components/ui/file-preview/previews/DataPreview"), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+});
 import GenericPreview from "@/components/ui/file-preview/previews/GenericPreview";
 import { getFileDetailsByUrl } from "@/utils/file-operations/constants";
 import { FileIcon, Loader2, FolderOpen } from "lucide-react";

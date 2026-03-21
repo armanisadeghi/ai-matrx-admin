@@ -1,5 +1,3 @@
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import { PresentationData } from "./Slideshow";
 
 /**
@@ -30,6 +28,12 @@ export const exportToPDF = async (
 ): Promise<ExportResult> => {
     try {
         const { filename = presentationTitle, quality = 2 } = options;
+
+        // Dynamic imports — both are large deps, only load when needed
+        const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+            import('html2canvas'),
+            import('jspdf'),
+        ]);
 
         // Create PDF in landscape mode (standard presentation size)
         const pdf = new jsPDF({
