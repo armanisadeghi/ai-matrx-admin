@@ -1,4 +1,4 @@
-// File: app/(authenticated)/admin/official-components/page.tsx
+// File: app/(authenticated)/(admin-auth)/administration/official-components/page.tsx
 
 'use client';
 
@@ -81,7 +81,7 @@ export default function OfficialComponentsPage() {
               Official Components
             </p>
           </div>
-          <Link href="/admin/official-components/documentation">
+          <Link href="/administration/official-components/documentation">
             <Button variant="outline" className="gap-2">
               <FolderOpen className="h-4 w-4" />
               Documentation
@@ -213,7 +213,7 @@ export default function OfficialComponentsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredComponents.map((component) => (
                     <Link 
-                      href={`/admin/official-components/${component.id}`}
+                      href={`/administration/official-components/${component.id}`}
                       key={component.id}
                     >
                       <Card className="h-full hover:bg-accent/50 transition-colors cursor-pointer">

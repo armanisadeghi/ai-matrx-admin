@@ -153,14 +153,14 @@ export const adminNavItems: ShellNavItem[] = [
   },
   {
     label: "Official Components",
-    href: "/admin/official-components",
+    href: "/administration/official-components",
     iconName: "Puzzle",
     section: "admin",
     color: "violet",
   },
   {
     label: "Schema Manager",
-    href: "/admin/schema-manager",
+    href: "/administration/schema-manager",
     iconName: "Database",
     section: "admin",
     color: "cyan",

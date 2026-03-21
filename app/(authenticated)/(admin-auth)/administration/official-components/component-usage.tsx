@@ -1,4 +1,4 @@
-// File: app/(authenticated)/admin/official-components/component-usage.tsx
+// File: app/(authenticated)/(admin-auth)/administration/official-components/component-usage.tsx
 
 import React from 'react';
 import { ComponentEntry } from './parts/component-list';

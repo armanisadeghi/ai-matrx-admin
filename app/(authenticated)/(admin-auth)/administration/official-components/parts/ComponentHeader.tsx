@@ -19,7 +19,7 @@ export default function ComponentHeader({ title }: ComponentHeaderProps) {
   
   // Extract component ID from the URL if we're on a component detail page
   const componentId = useMemo(() => {
-    const match = pathname.match(/\/admin\/official-components\/([^\/]+)$/);
+    const match = pathname.match(/\/administration\/official-components\/([^\/]+)$/);
     return match ? match[1] : null;
   }, [pathname]);
 
@@ -31,12 +31,12 @@ export default function ComponentHeader({ title }: ComponentHeaderProps) {
 
   // Determine if we're on the main components page
   const isMainPage = useMemo(() => {
-    return pathname === '/admin/official-components';
+    return pathname === '/administration/official-components';
   }, [pathname]);
 
   // Determine if we're on the documentation page
   const isDocPage = useMemo(() => {
-    return pathname === '/admin/official-components/documentation';
+    return pathname === '/administration/official-components/documentation';
   }, [pathname]);
 
   // Find related components (same category as current component)
@@ -66,7 +66,7 @@ export default function ComponentHeader({ title }: ComponentHeaderProps) {
             <Button 
               variant="ghost" 
               size="sm"
-              onClick={() => router.push('/admin/official-components')}
+              onClick={() => router.push('/administration/official-components')}
               className="mr-2"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -87,7 +87,7 @@ export default function ComponentHeader({ title }: ComponentHeaderProps) {
           )}
         </div>
         
-        <Link href="/admin/official-components/documentation">
+        <Link href="/administration/official-components/documentation">
           <Button variant="outline" size="sm" className="gap-2">
             <FolderOpen className="h-4 w-4" />
             Documentation
@@ -99,7 +99,7 @@ export default function ComponentHeader({ title }: ComponentHeaderProps) {
       <div className="mt-4">
         <ScrollArea className="w-full" dir="ltr">
           <div className="flex space-x-2 pb-2">
-            <Link href="/admin/official-components">
+            <Link href="/administration/official-components">
               <Badge 
                 variant={isMainPage ? "default" : "outline"}
                 className="cursor-pointer whitespace-nowrap"
@@ -111,7 +111,7 @@ export default function ComponentHeader({ title }: ComponentHeaderProps) {
             {allCategories.map(category => (
               <Link 
                 key={category} 
-                href={`/admin/official-components?category=${category}`}
+                href={`/administration/official-components?category=${category}`}
               >
                 <Badge 
                   variant={(currentComponent?.categories.includes(category)) ? "default" : "outline"}
@@ -135,7 +135,7 @@ export default function ComponentHeader({ title }: ComponentHeaderProps) {
               {relatedComponents.map(component => (
                 <Link 
                   key={component.id} 
-                  href={`/admin/official-components/${component.id}`}
+                  href={`/administration/official-components/${component.id}`}
                   className="min-w-48 flex-shrink-0"
                 >
                   <div className="border-border rounded-md p-3 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors cursor-pointer h-full">

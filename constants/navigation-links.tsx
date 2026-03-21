@@ -295,7 +295,7 @@ export const allNavigationLinks: NavigationLink[] = [
     },
     {
         label: "Official Components",
-        href: "/admin/official-components",
+        href: "/administration/official-components",
         icon: <Puzzle className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "admin",
         category: "primary",
@@ -411,14 +411,14 @@ export const allNavigationLinks: NavigationLink[] = [
     },
     {
         label: "Schema Manager",
-        href: "/admin/schema-manager",
+        href: "/administration/schema-manager",
         icon: <DatabaseZap className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "admin",
         category: "Concepts",
     },
     {
         label: "Text Cleaner",
-        href: "/admin/utils/text-cleaner",
+        href: "/administration/utils/text-cleaner",
         icon: <ClipboardCheck className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "admin",
         category: "Concepts",

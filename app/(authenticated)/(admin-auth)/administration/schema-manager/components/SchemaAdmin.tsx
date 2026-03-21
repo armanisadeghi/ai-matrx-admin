@@ -1,4 +1,4 @@
-// /admin/schema-manager/components/SchemaAdmin.tsx
+// /administration/schema-manager/components/SchemaAdmin.tsx
 
 'use client';
 

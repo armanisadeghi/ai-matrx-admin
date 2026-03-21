@@ -1,5 +1,5 @@
 // utils/pattern-utils.ts
-import { patterns, PatternConfig } from '../configs/patterns';
+import { patterns, PatternConfig } from './patterns';
 
 export type PatternCategory = {
     title: string;

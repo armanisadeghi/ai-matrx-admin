@@ -46,7 +46,7 @@ export default function ComponentDetailPage({ params }: { params: Promise<{ comp
       <Button 
         variant="ghost" 
         className="mb-6 flex items-center"
-        onClick={() => router.push('/admin/official-components')}
+        onClick={() => router.push('/administration/official-components')}
       >
         <ChevronLeft className="mr-2 h-4 w-4" />
         Back to components
@@ -159,7 +159,7 @@ export default function ComponentDetailPage({ params }: { params: Promise<{ comp
                         key={related.id}
                         variant="ghost"
                         className="w-full justify-start font-normal text-left"
-                        onClick={() => router.push(`/admin/official-components/${related.id}`)}
+                        onClick={() => router.push(`/administration/official-components/${related.id}`)}
                       >
                         <div className="flex items-center gap-2">
                           {categoryIcons[related.categories[0]]}
