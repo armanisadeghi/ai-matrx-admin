@@ -41,6 +41,7 @@ export type ContextItemManifest = {
   char_count: number | null;
   data_point_count: number | null;
   has_nested_objects: boolean;
+  json_keys?: string[];
   value_source_type: ContextSourceType | null;
   value_last_updated: string | null;
   last_verified_at: string | null;

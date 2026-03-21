@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   Type, Hash, ToggleLeft, Braces, List, FileText, Link as LinkIcon,
-  Plus, Trash2, Bot, ChevronDown, ChevronUp, Info,
+  Plus, Trash2, Bot, ChevronDown, ChevronUp, Info, Wand2, Globe,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -15,9 +14,8 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { ContextStatusBadge } from './ContextStatusBadge';
-import { VALUE_TYPE_CONFIG, FETCH_HINT_CONFIG, SENSITIVITY_CONFIG, DEFAULT_CATEGORIES, REFERENCE_TYPES, STATUS_CONFIG, STATUS_PHASES } from '../constants';
+import { ContextStatusStepper } from './ContextStatusBadge';
+import { VALUE_TYPE_CONFIG, FETCH_HINT_CONFIG, SENSITIVITY_CONFIG, DEFAULT_CATEGORIES, REFERENCE_TYPES, STATUS_CONFIG } from '../constants';
 import type {
   ContextItem, ContextItemValue, ContextItemFormData, ContextValueFormData,
   ContextValueType, ContextFetchHint, ContextSensitivity, ContextItemStatus,
@@ -32,7 +30,9 @@ type Props = {
 
 export function ContextItemForm({ item, value, onSave, isPending }: Props) {
   const isEdit = !!item;
+  const hasExistingValue = !!(value && (value.value_text || value.value_number != null || value.value_boolean != null || value.value_json || value.value_document_url || value.value_reference_id));
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [changeSummaryTouched, setChangeSummaryTouched] = useState(false);
 
   // Form state
   const [displayName, setDisplayName] = useState(item?.display_name ?? '');
@@ -77,10 +77,27 @@ export function ContextItemForm({ item, value, onSave, isPending }: Props) {
     }
   }, [displayName, isEdit]);
 
-  const charCount = valueType === 'string' ? valueText.length : 0;
+  const charCount = valueType === 'string' ? valueText.length
+    : valueType === 'document' ? valueDocSummary.length
+    : 0;
   const dataPointCount = valueType === 'object' ? valueJson.filter(r => r.key).length
     : valueType === 'array' ? valueArray.filter(Boolean).length
     : 0;
+
+  // JSON preview for object type
+  const jsonPreview = useMemo(() => {
+    if (valueType !== 'object') return '';
+    const obj: Record<string, unknown> = {};
+    valueJson.forEach(r => { if (r.key) obj[r.key] = r.value; });
+    return JSON.stringify(obj, null, 2);
+  }, [valueType, valueJson]);
+
+  const hasNestedObjects = useMemo(() => {
+    if (valueType !== 'object') return false;
+    return valueJson.some(r => {
+      try { const parsed = JSON.parse(r.value); return typeof parsed === 'object' && parsed !== null; } catch { return false; }
+    });
+  }, [valueType, valueJson]);
 
   const handleAddTag = useCallback(() => {
     const trimmed = tagInput.trim();
@@ -90,30 +107,36 @@ export function ContextItemForm({ item, value, onSave, isPending }: Props) {
     setTagInput('');
   }, [tagInput, tags]);
 
+  const changeSummaryRequired = isEdit && hasExistingValue;
+  const changeSummaryError = changeSummaryRequired && changeSummaryTouched && !changeSummary.trim();
+
   const buildValueData = (): ContextValueFormData => {
+    const base = { change_summary: changeSummary || null };
+    const empty = { value_text: null, value_number: null, value_boolean: null, value_json: null, value_document_url: null, value_document_size_bytes: null, value_reference_id: null, value_reference_type: null };
+
     switch (valueType) {
-      case 'string':
-        return { value_text: valueText || null, value_number: null, value_boolean: null, value_json: null, value_document_url: null, value_document_size_bytes: null, value_reference_id: null, value_reference_type: null, change_summary: changeSummary || null };
-      case 'number':
-        return { value_text: null, value_number: valueNumber, value_boolean: null, value_json: null, value_document_url: null, value_document_size_bytes: null, value_reference_id: null, value_reference_type: null, change_summary: changeSummary || null };
-      case 'boolean':
-        return { value_text: null, value_number: null, value_boolean: valueBoolean, value_json: null, value_document_url: null, value_document_size_bytes: null, value_reference_id: null, value_reference_type: null, change_summary: changeSummary || null };
+      case 'string': return { ...empty, ...base, value_text: valueText || null };
+      case 'number': return { ...empty, ...base, value_number: valueNumber };
+      case 'boolean': return { ...empty, ...base, value_boolean: valueBoolean };
       case 'object': {
         const obj: Record<string, unknown> = {};
         valueJson.forEach(r => { if (r.key) obj[r.key] = r.value; });
-        return { value_text: null, value_number: null, value_boolean: null, value_json: obj, value_document_url: null, value_document_size_bytes: null, value_reference_id: null, value_reference_type: null, change_summary: changeSummary || null };
+        return { ...empty, ...base, value_json: obj };
       }
-      case 'array':
-        return { value_text: null, value_number: null, value_boolean: null, value_json: valueArray.filter(Boolean), value_document_url: null, value_document_size_bytes: null, value_reference_id: null, value_reference_type: null, change_summary: changeSummary || null };
-      case 'document':
-        return { value_text: valueDocSummary || null, value_number: null, value_boolean: null, value_json: null, value_document_url: valueDocUrl || null, value_document_size_bytes: null, value_reference_id: null, value_reference_type: null, change_summary: changeSummary || null };
-      case 'reference':
-        return { value_text: null, value_number: null, value_boolean: null, value_json: null, value_document_url: null, value_document_size_bytes: null, value_reference_id: valueRefId || null, value_reference_type: valueRefType || null, change_summary: changeSummary || null };
+      case 'array': return { ...empty, ...base, value_json: valueArray.filter(Boolean) };
+      case 'document': return { ...empty, ...base, value_text: valueDocSummary || null, value_document_url: valueDocUrl || null };
+      case 'reference': return { ...empty, ...base, value_reference_id: valueRefId || null, value_reference_type: valueRefType || null };
     }
   };
 
+  const canSubmit = displayName && key && description && (!changeSummaryRequired || changeSummary.trim());
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (changeSummaryRequired && !changeSummary.trim()) {
+      setChangeSummaryTouched(true);
+      return;
+    }
     const formData: ContextItemFormData = {
       display_name: displayName,
       key,
@@ -220,33 +243,14 @@ export function ContextItemForm({ item, value, onSave, isPending }: Props) {
               </div>
             </div>
 
-            {/* Status */}
+            {/* Status — visual stepper with phases */}
             <div>
-              <Label className="text-xs font-medium mb-1.5 block">Status</Label>
-              <div className="flex flex-wrap gap-1">
-                {STATUS_PHASES.map(phase => (
-                  phase.statuses.map(s => {
-                    const config = STATUS_CONFIG[s];
-                    const isSelected = s === status;
-                    return (
-                      <button
-                        key={s}
-                        type="button"
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] transition-all border ${isSelected ? `${config.colorBg} ${config.colorText} border-current/20 ring-1 ring-current/10` : 'border-transparent hover:bg-muted text-muted-foreground'}`}
-                        onClick={() => setStatus(s)}
-                      >
-                        <span className={`h-1.5 w-1.5 rounded-full ${config.colorDot}`} />
-                        {config.label}
-                      </button>
-                    );
-                  })
-                ))}
-              </div>
-              <Input
-                value={statusNote}
-                onChange={e => setStatusNote(e.target.value)}
-                placeholder="Status note (optional)"
-                className="mt-2 h-7 text-xs"
+              <Label className="text-xs font-medium mb-2 block">Status</Label>
+              <ContextStatusStepper
+                value={status}
+                onChange={setStatus}
+                statusNote={statusNote}
+                onStatusNoteChange={setStatusNote}
               />
             </div>
           </CardContent>
@@ -258,7 +262,7 @@ export function ContextItemForm({ item, value, onSave, isPending }: Props) {
             <CardTitle className="text-sm font-semibold">Value</CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 space-y-3">
-            {/* Value type selector */}
+            {/* Value type selector — 7 visual toggle buttons */}
             <div className="flex flex-wrap gap-1">
               {(Object.entries(VALUE_TYPE_CONFIG) as [ContextValueType, { label: string; iconName: string }][]).map(([vt, cfg]) => {
                 const icons: Record<string, React.ComponentType<{ className?: string }>> = { Type, Hash, ToggleLeft, Braces, List, FileText, Link: LinkIcon };
@@ -277,16 +281,34 @@ export function ContextItemForm({ item, value, onSave, isPending }: Props) {
               })}
             </div>
 
-            {/* Agent placeholders */}
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" size="sm" className="text-xs gap-1 h-7">
-                <Bot className="h-3 w-3" /> Let AI Interview Me
-                {/* TODO: Wire agent */}
-              </Button>
-              <Button type="button" variant="outline" size="sm" className="text-xs gap-1 h-7">
-                <Bot className="h-3 w-3" /> Research This For Me
-                {/* TODO: Wire agent */}
-              </Button>
+            {/* Agent placeholders — prominent */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                className="flex items-center gap-2 rounded-lg border border-purple-500/20 bg-purple-500/5 p-3 text-left hover:bg-purple-500/10 transition-colors"
+              >
+                <div className="h-8 w-8 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
+                  <Wand2 className="h-4 w-4 text-purple-500" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium">Let AI Interview Me</p>
+                  <p className="text-[10px] text-muted-foreground">AI asks targeted questions to fill this item</p>
+                </div>
+                {/* TODO: Wire structured interview agent — asks 3-7 targeted questions for the item type, populates value fields, sets source_type='ai_generated' and status='ai_enriched' */}
+              </button>
+              <button
+                type="button"
+                className="flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/5 p-3 text-left hover:bg-blue-500/10 transition-colors"
+              >
+                <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                  <Globe className="h-4 w-4 text-blue-500" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium">Research This For Me</p>
+                  <p className="text-[10px] text-muted-foreground">AI researches and auto-populates from the web</p>
+                </div>
+                {/* TODO: Wire web research agent — researches using org/client name and item type, sets source_type='scraped' or 'ai_generated' */}
+              </button>
             </div>
 
             {/* Value input by type */}
@@ -301,24 +323,39 @@ export function ContextItemForm({ item, value, onSave, isPending }: Props) {
               valueDocSummary={valueDocSummary} onValueDocSummaryChange={setValueDocSummary}
               valueRefId={valueRefId} onValueRefIdChange={setValueRefId}
               valueRefType={valueRefType} onValueRefTypeChange={setValueRefType}
+              jsonPreview={jsonPreview}
+              hasNestedObjects={hasNestedObjects}
             />
 
-            {/* Stats */}
+            {/* Live stats */}
             <div className="flex gap-3 text-[10px] text-muted-foreground">
               {charCount > 0 && <span>{charCount.toLocaleString()} chars</span>}
               {dataPointCount > 0 && <span>{dataPointCount} data points</span>}
+              {hasNestedObjects && (
+                <Badge variant="outline" className="h-4 text-[9px] px-1">Contains nested objects — AI can navigate these</Badge>
+              )}
             </div>
 
-            {/* Change summary */}
+            {/* Change summary — required when editing with existing value */}
             {isEdit && (
               <div>
-                <Label className="text-xs font-medium">What changed?</Label>
+                <div className="flex items-center justify-between mb-1">
+                  <Label className="text-xs font-medium">
+                    What changed?
+                    {changeSummaryRequired && <span className="text-destructive ml-0.5">*</span>}
+                  </Label>
+                </div>
                 <Input
                   value={changeSummary}
-                  onChange={e => setChangeSummary(e.target.value)}
+                  onChange={e => { setChangeSummary(e.target.value); setChangeSummaryTouched(true); }}
+                  onBlur={() => setChangeSummaryTouched(true)}
                   placeholder="Shown in version history"
-                  className="mt-1 h-7 text-xs"
+                  className={`h-7 text-xs ${changeSummaryError ? 'border-destructive ring-1 ring-destructive/30' : ''}`}
+                  required={changeSummaryRequired}
                 />
+                {changeSummaryError && (
+                  <p className="text-[10px] text-destructive mt-0.5">Required when updating an existing value</p>
+                )}
               </div>
             )}
           </CardContent>
@@ -337,7 +374,7 @@ export function ContextItemForm({ item, value, onSave, isPending }: Props) {
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="px-4 pb-4 space-y-4">
-                {/* Fetch hint */}
+                {/* Fetch hint — visual option cards */}
                 <div>
                   <Label className="text-xs font-medium mb-1.5 block">Fetch Hint</Label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -345,7 +382,7 @@ export function ContextItemForm({ item, value, onSave, isPending }: Props) {
                       <button
                         key={fh}
                         type="button"
-                        className={`rounded-lg border p-2.5 text-left transition-all ${fetchHint === fh ? 'border-primary/30 bg-primary/5' : 'border-border hover:bg-muted'}`}
+                        className={`rounded-lg border p-2.5 text-left transition-all ${fetchHint === fh ? 'border-primary/30 bg-primary/5 ring-1 ring-primary/10' : 'border-border hover:bg-muted'}`}
                         onClick={() => setFetchHint(fh)}
                       >
                         <p className="text-xs font-medium">{cfg.label}</p>
@@ -355,7 +392,7 @@ export function ContextItemForm({ item, value, onSave, isPending }: Props) {
                   </div>
                 </div>
 
-                {/* Sensitivity */}
+                {/* Sensitivity — visual option cards */}
                 <div>
                   <Label className="text-xs font-medium mb-1.5 block">Sensitivity</Label>
                   <div className="grid grid-cols-2 gap-2">
@@ -363,7 +400,7 @@ export function ContextItemForm({ item, value, onSave, isPending }: Props) {
                       <button
                         key={s}
                         type="button"
-                        className={`rounded-lg border p-2.5 text-left transition-all ${sensitivity === s ? 'border-primary/30 bg-primary/5' : 'border-border hover:bg-muted'}`}
+                        className={`rounded-lg border p-2.5 text-left transition-all ${sensitivity === s ? 'border-primary/30 bg-primary/5 ring-1 ring-primary/10' : 'border-border hover:bg-muted'}`}
                         onClick={() => setSensitivity(s)}
                       >
                         <p className="text-xs font-medium">{cfg.label}</p>
@@ -400,7 +437,7 @@ export function ContextItemForm({ item, value, onSave, isPending }: Props) {
 
         {/* Submit */}
         <div className="flex gap-2">
-          <Button type="submit" disabled={isPending || !displayName || !key || !description} className="text-xs">
+          <Button type="submit" disabled={isPending || !canSubmit} className="text-xs">
             {isPending ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Item'}
           </Button>
           <Button type="button" variant="outline" className="text-xs" onClick={() => window.history.back()}>
@@ -466,9 +503,13 @@ type ValueInputProps = {
   valueDocSummary: string; onValueDocSummaryChange: (v: string) => void;
   valueRefId: string; onValueRefIdChange: (v: string) => void;
   valueRefType: string; onValueRefTypeChange: (v: string) => void;
+  jsonPreview?: string;
+  hasNestedObjects?: boolean;
 };
 
 function ValueInput(props: ValueInputProps) {
+  const [showJsonPreview, setShowJsonPreview] = useState(false);
+
   switch (props.type) {
     case 'string':
       return (
@@ -498,7 +539,7 @@ function ValueInput(props: ValueInputProps) {
       );
     case 'object':
       return (
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           {props.valueJson.map((row, i) => (
             <div key={i} className="flex gap-1.5">
               <Input
@@ -532,15 +573,31 @@ function ValueInput(props: ValueInputProps) {
               </Button>
             </div>
           ))}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs gap-1"
-            onClick={() => props.onValueJsonChange([...props.valueJson, { key: '', value: '' }])}
-          >
-            <Plus className="h-3 w-3" /> Add field
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs gap-1"
+              onClick={() => props.onValueJsonChange([...props.valueJson, { key: '', value: '' }])}
+            >
+              <Plus className="h-3 w-3" /> Add field
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs text-muted-foreground"
+              onClick={() => setShowJsonPreview(!showJsonPreview)}
+            >
+              {showJsonPreview ? 'Hide' : 'Show'} JSON Preview
+            </Button>
+          </div>
+          {showJsonPreview && props.jsonPreview && (
+            <pre className="rounded-lg bg-muted/50 border border-border p-2 text-[10px] font-mono overflow-x-auto max-h-40">
+              {props.jsonPreview}
+            </pre>
+          )}
         </div>
       );
     case 'array':
@@ -591,6 +648,7 @@ function ValueInput(props: ValueInputProps) {
               placeholder="https://storage.example.com/..."
               className="mt-1 h-7 text-xs"
             />
+            <p className="text-[10px] text-muted-foreground mt-0.5">Paste the storage URL. Add a summary so the AI knows what's in the document before fetching.</p>
           </div>
           <div>
             <Label className="text-xs">Summary</Label>

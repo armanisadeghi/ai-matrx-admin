@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { MoreHorizontal, Copy, History, Archive, Zap, MousePointerClick, Layers, Coffee, EyeOff, Lock, ShieldCheck } from 'lucide-react';
+import { MoreHorizontal, Copy, History, Archive, Zap, MousePointerClick, Layers, Coffee, EyeOff, Lock, ShieldCheck, RefreshCw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -73,6 +73,16 @@ export function ContextItemCard({ item, onStatusChange, onDuplicate, onArchive }
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push(`/ssr/context/items/${item.id}/history`)}>
                   <History className="h-3.5 w-3.5 mr-2" /> View History
+                </DropdownMenuItem>
+                <DropdownMenuItem className="p-0">
+                  <div className="w-full" onClick={e => e.stopPropagation()}>
+                    <ContextStatusBadge
+                      status={item.status}
+                      size="sm"
+                      interactive
+                      onStatusChange={(status, note) => onStatusChange?.(item.id, status, note)}
+                    />
+                  </div>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => onArchive?.(item.id)} className="text-destructive">

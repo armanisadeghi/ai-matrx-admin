@@ -34,9 +34,10 @@ export {
 
 export { useContextScope } from './hooks/useContextScope';
 export { useContextFilters } from './hooks/useContextFilters';
+export { useContextKeyboard } from './hooks/useContextKeyboard';
 
 // Components
-export { ContextStatusBadge } from './components/ContextStatusBadge';
+export { ContextStatusBadge, ContextStatusStepper } from './components/ContextStatusBadge';
 export { ContextValuePreview } from './components/ContextValuePreview';
 export { ContextScopeBar } from './components/ContextScopeBar';
 export { ContextEmptyState } from './components/ContextEmptyState';

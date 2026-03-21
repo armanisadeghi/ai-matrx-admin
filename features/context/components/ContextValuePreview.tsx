@@ -23,18 +23,31 @@ export function ContextValuePreview({ item, value, mode = 'card' }: ValuePreview
 
 function CardPreview({ item }: { item: ContextItemManifest }) {
   return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      {item.char_count != null && item.char_count > 0 && (
-        <span>~{item.char_count.toLocaleString()} chars</span>
-      )}
-      {item.data_point_count != null && item.data_point_count > 0 && (
-        <>
-          {item.char_count != null && item.char_count > 0 && <span className="text-border">|</span>}
-          <span>{item.data_point_count} data points</span>
-        </>
-      )}
-      {item.has_nested_objects && (
-        <Badge variant="outline" className="h-4 text-[10px] px-1">nested</Badge>
+    <div className="space-y-1">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+        {item.char_count != null && item.char_count > 0 && (
+          <span>~{item.char_count.toLocaleString()} chars</span>
+        )}
+        {item.data_point_count != null && item.data_point_count > 0 && (
+          <>
+            {item.char_count != null && item.char_count > 0 && <span className="text-border">|</span>}
+            <span>{item.data_point_count} data points</span>
+          </>
+        )}
+        {item.has_nested_objects && (
+          <Badge variant="outline" className="h-4 text-[10px] px-1">nested</Badge>
+        )}
+      </div>
+      {/* Show top-level JSON keys as chips for object type */}
+      {item.value_type === 'object' && item.data_point_count != null && item.data_point_count > 0 && item.json_keys && (
+        <div className="flex flex-wrap gap-1">
+          {item.json_keys.slice(0, 4).map(k => (
+            <Badge key={k} variant="outline" className="h-4 text-[9px] px-1 font-mono">{k}</Badge>
+          ))}
+          {item.json_keys.length > 4 && (
+            <Badge variant="outline" className="h-4 text-[9px] px-1">+{item.json_keys.length - 4} more</Badge>
+          )}
+        </div>
       )}
     </div>
   );

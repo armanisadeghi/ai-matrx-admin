@@ -203,19 +203,33 @@ export const contextService = {
     return Array.from(categoryMap.values()).sort((a, b) => b.total - a.total);
   },
 
-  // ─── Attention queue ──────────────────────────────────────────────
+  // ─── Attention queue (sorted by urgency: stale-overdue → needs_review → ai_enriched → needs_update → partial) ──
   async fetchAttentionQueue(scopeType: ContextScopeLevel, scopeId: string): Promise<ContextItemManifest[]> {
     let query = supabase
       .from('context_items_manifest')
       .select('*')
       .in('status', ATTENTION_STATUSES)
-      .order('updated_at' as never, { ascending: true })
       .limit(20);
 
     query = scopeFilter(query, scopeType, scopeId);
     const { data, error } = await query;
     if (error) throw error;
-    return data as ContextItemManifest[];
+
+    const priorityOrder: Record<string, number> = {
+      stale: 1,
+      needs_review: 2,
+      ai_enriched: 3,
+      needs_update: 4,
+      partial: 5,
+    };
+
+    return (data as ContextItemManifest[]).sort((a, b) => {
+      const pa = priorityOrder[a.status] ?? 99;
+      const pb = priorityOrder[b.status] ?? 99;
+      if (pa !== pb) return pa - pb;
+      // Within same priority, older items first
+      return (a.value_last_updated ?? '').localeCompare(b.value_last_updated ?? '');
+    });
   },
 
   // ─── Recent access log ────────────────────────────────────────────

@@ -146,9 +146,11 @@ function AttentionItem({ item, onStatusChange }: { item: ContextItemManifest; on
   const [isPending, startTransition] = useTransition();
   const config = STATUS_CONFIG[item.status];
 
-  const ctaLabel = item.status === 'needs_review' || item.status === 'ai_enriched' ? 'Review'
+  const ctaLabel = item.status === 'needs_review' ? 'Review'
+    : item.status === 'ai_enriched' ? 'Verify'
     : item.status === 'stale' ? 'Refresh'
     : item.status === 'needs_update' ? 'Update'
+    : item.status === 'partial' ? 'Continue'
     : 'View';
 
   return (
