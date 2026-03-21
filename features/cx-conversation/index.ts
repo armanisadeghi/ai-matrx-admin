@@ -1,18 +1,14 @@
 /**
- * Unified Conversation UI Components
+ * Unified Conversation UI — Public API
  *
- * All conversation-related components are here. Import from this barrel
- * instead of individual files to get all components in one import.
+ * Import the wrapper and hook from here. Internal components
+ * (ConversationShell, MessageList, AssistantMessage, etc.) are
+ * implementation details — import them directly from their files
+ * only if you genuinely need them outside this feature.
  *
  * Usage:
- *   // Full wrapper (recommended entry point for new routes):
- *   import { UnifiedChatWrapper } from '@/components/conversation';
- *
- *   // Hook-only (when you need custom layout):
- *   import { useConversationSession } from '@/components/conversation';
- *
- *   // Individual components:
- *   import { ConversationShell, MessageList, AssistantMessage } from '@/components/conversation';
+ *   import { UnifiedChatWrapper } from '@/features/cx-conversation';
+ *   import { useConversationSession } from '@/features/cx-conversation';
  */
 
 // ── Top-level wrapper ────────────────────────────────────────────────────────
@@ -23,25 +19,8 @@ export type { UnifiedChatWrapperProps } from './UnifiedChatWrapper';
 export { useConversationSession } from './hooks/useConversationSession';
 export type { ConversationSessionConfig, ConversationSessionReturn } from './hooks/useConversationSession';
 
-// ── Shell & Layout ───────────────────────────────────────────────────────────
-export { ConversationShell } from './ConversationShell';
+// ── Types only (no component imports) ────────────────────────────────────────
 export type { ConversationShellProps } from './ConversationShell';
-
-// ── Input ────────────────────────────────────────────────────────────────────
-export { ConversationInput } from './ConversationInput';
 export type { ConversationInputProps } from './ConversationInput';
-
-// ── Messages ─────────────────────────────────────────────────────────────────
-export { MessageList } from './MessageList';
-export { AssistantMessage } from './AssistantMessage';
 export type { AssistantMessageProps } from './AssistantMessage';
-export { UserMessage } from './UserMessage';
-export { MessageErrorBoundary } from './MessageErrorBoundary';
-export { StreamingContentBlocks } from './StreamingContentBlocks';
-
-// ── Tool visualization ───────────────────────────────────────────────────────
-export { default as ToolCallVisualization } from './ToolCallVisualization';
-
-// ── Menus ────────────────────────────────────────────────────────────────────
-export { default as MessageOptionsMenu } from './MessageOptionsMenu';
 export type { MessageOptionsMenuProps } from './MessageOptionsMenu';

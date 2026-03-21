@@ -36,9 +36,12 @@ import {
 
 // Unified conversation system
 import { useConversationSession } from "@/features/cx-conversation/hooks/useConversationSession";
-import { ConversationShell } from "@/features/cx-conversation/ConversationShell";
 import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
 import type { ApiMode } from "@/features/cx-conversation/redux/types";
+const ConversationShell = dynamic(
+  () => import("@/features/cx-conversation/ConversationShell").then((m) => ({ default: m.ConversationShell })),
+  { ssr: false }
+);
 
 // Header controls
 import ChatHeaderControls from "./ChatHeaderControls";
@@ -100,8 +103,17 @@ import { formatText } from "@/utils/text/text-case-converter";
 
 function ChatWorkspaceInner() {
   const dispatch = useAppDispatch();
-  const pathname = usePathname();
+  const nextPathname = usePathname();
   const searchParams = useSearchParams();
+
+  // usePathname() may not react to manual pushState — track it manually too
+  const [manualPathname, setManualPathname] = useState(() => window.location.pathname);
+  useEffect(() => {
+    const onPopState = () => setManualPathname(window.location.pathname);
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+  const pathname = manualPathname || nextPathname;
 
   // Active chat state from Redux (replaces useChatContext + useSsrAgent)
   const selectedAgent = useAppSelector(selectActiveChatAgent);
