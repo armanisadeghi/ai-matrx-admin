@@ -27,9 +27,14 @@ const nextConfig = {
     },
     
     // Moved from experimental (Next.js 15+)
+    // Exclude native binaries and build artifacts that aren't needed at runtime.
+    // @swc/helpers (pure JS) must NOT be excluded — it's required at runtime by
+    // packages that import it as a peer. Only exclude the platform-specific native
+    // binaries (@swc/core, @next/swc-*) and esbuild binaries.
     outputFileTracingExcludes: {
         '*': [
-            'node_modules/@swc/**/*',
+            'node_modules/@swc/core/**/*',
+            'node_modules/@next/swc-*/**/*',
             'node_modules/@esbuild/**/*',
             '.git/**/*',
             '**/*.map',
