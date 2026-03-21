@@ -7,8 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import dynamic from 'next/dynamic';
 import Papa from 'papaparse';
-import LabelGenerator from '@/lib/qr-labels/LabelGenerator';
+
+const LabelGenerator = dynamic(() => import('@/lib/qr-labels/LabelGenerator'), {
+  ssr: false,
+  loading: () => <div className="text-center p-4">Loading label generator...</div>,
+});
 
 interface PDFGeneratorProps {
   onGenerate: (pdfBlob: Blob) => void;
