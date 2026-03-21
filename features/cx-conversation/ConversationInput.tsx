@@ -504,7 +504,7 @@ export function ConversationInput({
             open={isResourcePickerOpen}
             onOpenChange={setIsResourcePickerOpen}
           >
-            <PopoverTrigger>
+            <PopoverTrigger asChild>
               <TapTargetButtonTransparent
                 ariaLabel="Add attachments"
                 icon={

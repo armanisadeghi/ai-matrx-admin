@@ -4,7 +4,6 @@ import Sidebar from "./_components/Sidebar";
 import Header from "./_components/Header";
 import MobileDock from "./_components/MobileDock";
 import MobileSideSheet from "./_components/MobileSideSheet";
-import ThemeScript from "./_components/ThemeScript";
 import SSRShellProviders from "./_components/SSRShellProviders";
 import DeferredShellData from "./_components/DeferredShellData";
 import DevPerfOverlayIsland from "./_components/DevPerfOverlayIsland";
@@ -36,8 +35,6 @@ export default async function SSRLayout({
 
   return (
     <>
-      <ThemeScript />
-
       {/* Provider wraps entire shell so all client islands can access the store */}
       <SSRShellProviders>
         {/* Fires after first paint — fetches user + shell data, hydrates store */}

@@ -296,7 +296,7 @@ function InputBottomControls({
             <div className="absolute bottom-0 left-0 flex items-center">
                 {/* Resource Picker Popover */}
                 <Popover open={isResourcePickerOpen} onOpenChange={setIsResourcePickerOpen}>
-                    <PopoverTrigger>
+                    <PopoverTrigger asChild>
                         <TapTargetButtonTransparent
                             disabled={disabled || isUploading}
                             ariaLabel="Add resources"

@@ -34,6 +34,14 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                 <meta name="password-manager-off" content="true" />
                 <meta name="format-detection" content="telephone=no" />
                 <meta name="google" content="notranslate" />
+                {/* Inline theme script — runs before first paint to prevent FOUC.
+                    Must live in <head>, not inside a React component body. */}
+                <script
+                    suppressHydrationWarning
+                    dangerouslySetInnerHTML={{
+                        __html: `(function(){try{var s=localStorage.getItem('theme');if(!s){var c=document.cookie.split(';');for(var i=0;i<c.length;i++){var t=c[i].trim();if(t.startsWith('theme=')){s=t.substring(6);break;}}}if(s==='light'){document.documentElement.classList.remove('dark');}else if(s==='dark'){document.documentElement.classList.add('dark');}else if(window.matchMedia('(prefers-color-scheme: light)').matches){document.documentElement.classList.remove('dark');}}catch(e){}})();`,
+                    }}
+                />
             </head>
             <body
                 className={cn(
