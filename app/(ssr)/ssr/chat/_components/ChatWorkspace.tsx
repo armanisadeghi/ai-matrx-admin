@@ -107,8 +107,10 @@ function ChatWorkspaceInner() {
   const searchParams = useSearchParams();
 
   // usePathname() may not react to manual pushState — track it manually too
-  const [manualPathname, setManualPathname] = useState(() => window.location.pathname);
+  // Initialize with '' (SSR-safe); sync to window.location.pathname after mount
+  const [manualPathname, setManualPathname] = useState('');
   useEffect(() => {
+    setManualPathname(window.location.pathname);
     const onPopState = () => setManualPathname(window.location.pathname);
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
