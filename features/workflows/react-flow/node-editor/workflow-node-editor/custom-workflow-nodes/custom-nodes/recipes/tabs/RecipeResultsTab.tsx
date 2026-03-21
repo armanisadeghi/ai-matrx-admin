@@ -11,7 +11,12 @@ import { NeededBroker, RecipeConfig } from "@/features/workflows/service/recipe-
 import { coreSelectors as brokerSelectors } from "@/lib/redux/brokerSlice/selectors/core";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { localMessage } from "@/features/chat/components/response/MessageItem";
-import AssistantMessage from "@/features/chat/components/response/assistant-message/AssistantMessage";
+import dynamic from "next/dynamic";
+
+const AssistantMessage = dynamic(
+    () => import("@/features/chat/components/response/assistant-message/AssistantMessage"),
+    { ssr: false }
+);
 
 interface RecipeResultsTabProps {
     nodeData: DbFunctionNode;
