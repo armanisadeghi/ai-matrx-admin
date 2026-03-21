@@ -140,6 +140,14 @@ export const primaryNavItems: ShellNavItem[] = [
     description: "Design and automate complex workflows",
     color: "purple",
   },
+  {
+    label: "Context",
+    href: "/ssr/context",
+    iconName: "BookOpen",
+    section: "primary",
+    description: "Manage AI context items, templates, and knowledge",
+    color: "cyan",
+  },
 ];
 
 // Admin navigation items
