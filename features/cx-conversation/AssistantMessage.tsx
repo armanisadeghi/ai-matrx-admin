@@ -29,8 +29,11 @@ import { StreamingContentBlocks } from "@/features/cx-conversation/StreamingCont
 import { useDomCapturePrint } from "@/features/conversation/hooks/useDomCapturePrint";
 import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";
 import { parseMarkdownToText } from "@/utils/markdown-processors/parse-markdown-for-speech";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
+import { selectMessageHasUnsavedChanges } from "@/features/cx-conversation/redux/selectors";
+import { editMessage } from "@/features/cx-conversation/redux/thunks/editMessage";
+import { buildContentBlocksForSave } from "@/features/cx-conversation/utils/buildContentBlocksForSave";
 import type { CartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
 import type { ConversationMessage } from "@/features/cx-conversation/redux/types";
 
@@ -101,9 +104,14 @@ export function AssistantMessage({
   const [isAppearing, setIsAppearing] = useState(true);
   const [isAudioLinkCopied, setIsAudioLinkCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const moreOptionsButtonRef = useRef<HTMLDivElement>(null);
 
+  const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
+  const hasUnsavedChanges = useAppSelector((state) =>
+    sessionId ? selectMessageHasUnsavedChanges(state, sessionId, message.id) : false
+  );
 
   // DOM-capture PDF (Tier 2 — captures all rendered blocks)
   const { captureRef, captureAsPDF } = useDomCapturePrint();
