@@ -15,7 +15,7 @@ export default function ChatMobileAgentName() {
     return (
         <button
             onClick={() => dispatch(activeChatActions.openAgentPicker())}
-            className="flex items-center justify-center gap-1 px-2 py-1 rounded-lg text-sm font-medium text-foreground/90 hover:text-foreground active:text-foreground transition-colors select-none min-w-0"
+            className="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full matrx-shell-glass text-sm font-medium text-foreground/90 transition-colors select-none min-w-0 active:scale-95"
             style={{ WebkitTapHighlightColor: 'transparent' }}
             aria-label="Change AI agent"
         >
