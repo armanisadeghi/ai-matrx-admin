@@ -171,14 +171,12 @@ export function convertCxContentToDisplay(
             }
 
             case 'tool_call': {
-                // DB stores tool_call blocks with varying field names:
-                //   Typed interface: { tool_call_id, name, arguments (string) }
-                //   Actual DB data:  { id, name, arguments (object) }
-                // Handle both shapes.
-                // phase is set later when the output is paired; default to 'complete'
-                // because DB-loaded tool calls are always finished.
+                // tool_call blocks use `call_id` (OpenAI) or `id` (Anthropic/Gemini) as the
+                // join key to cx_tool_call.call_id.
+                // OpenAI blocks have both: `id` is a block-level identifier (fc_... prefix)
+                // and `call_id` is the actual join key. Anthropic/Gemini only have `id`.
                 const raw = block as Record<string, unknown>;
-                const tcId = (raw.tool_call_id ?? raw.id ?? '') as string;
+                const tcId = (raw.call_id ?? raw.id ?? '') as string;
                 const tcName = (raw.name ?? '') as string;
                 const tcArgs = raw.arguments;
 
@@ -195,12 +193,9 @@ export function convertCxContentToDisplay(
             }
 
             case 'tool_result': {
-                // DB stores tool_result blocks with varying field names:
-                //   Typed interface: { tool_call_id, name, content (string), is_error }
-                //   Actual DB data:  { tool_use_id, name, content (object), is_error? }
-                // Handle both shapes.
+                // tool_result blocks: Anthropic uses `tool_use_id`, OpenAI uses `call_id`.
                 const raw = block as Record<string, unknown>;
-                const trId = (raw.tool_call_id ?? raw.tool_use_id ?? '') as string;
+                const trId = (raw.call_id ?? raw.tool_use_id ?? '') as string;
                 const isError = Boolean(raw.is_error);
                 const trContent = raw.content;
 
@@ -316,33 +311,17 @@ export function buildToolCallMap(toolCalls: CxToolCall[]): Map<string, CxToolCal
 }
 
 /**
- * Build a message_id → CxToolCall[] lookup map for tool-role message resolution.
- */
-function buildMessageToolCallMap(toolCalls: CxToolCall[]): Map<string, CxToolCall[]> {
-    const map = new Map<string, CxToolCall[]>();
-    for (const tc of toolCalls) {
-        if (tc.message_id) {
-            const existing = map.get(tc.message_id) || [];
-            existing.push(tc);
-            map.set(tc.message_id, existing);
-        }
-    }
-    return map;
-}
-
-/**
  * Process an array of CxMessage rows from the database into display-ready ChatMessages.
  *
  * Handles:
  * - Converting all content block types
- * - Merging `tool`-role messages into the preceding assistant message
- * - V2: tool-role messages with empty content — resolved via cx_tool_call records
+ * - Enriching assistant/output messages with tool call output from cx_tool_call records
+ * - Skipping `tool`-role messages (V2: always content: [], data is on the assistant message)
  * - Filtering out `summary` and `deleted` status messages
  * - Marking `condensed` messages
  *
  * @param dbMessages Messages ordered by position
  * @param toolCalls Optional array of CxToolCall records for the conversation.
- *   When provided, empty tool-role messages are resolved from these records.
  */
 export function processDbMessagesForDisplay(
     dbMessages: CxMessage[],
@@ -350,8 +329,6 @@ export function processDbMessagesForDisplay(
 ): ProcessedChatMessage[] {
     const result: ProcessedChatMessage[] = [];
 
-    // Build lookup maps for tool call resolution
-    const msgToolCallMap = toolCalls ? buildMessageToolCallMap(toolCalls) : null;
     const callIdToolCallMap = toolCalls ? buildToolCallMap(toolCalls) : null;
 
     for (const msg of dbMessages) {
@@ -363,29 +340,9 @@ export function processDbMessagesForDisplay(
         const isCondensed = msg.status === 'condensed';
 
         if (msg.role === 'tool') {
-            // V2: tool-role messages have content: [] — the actual tool output
-            // lives in cx_tool_call and has already been enriched onto the
-            // preceding assistant message (position 1) via callIdToolCallMap.
-            // Only process tool-role messages in legacy mode (when they have
-            // actual content blocks with tool_result data).
-            const hasContent = Array.isArray(msg.content) && msg.content.length > 0;
-
-            if (hasContent) {
-                // Legacy: content blocks exist (tool_result blocks)
-                const { toolUpdates } = convertCxContentToDisplay(msg.content);
-
-                if (toolUpdates.length > 0) {
-                    // Find the last assistant message to attach results to
-                    for (let i = result.length - 1; i >= 0; i--) {
-                        if (result[i].role === 'assistant') {
-                            result[i].toolUpdates = [...result[i].toolUpdates, ...toolUpdates];
-                            break;
-                        }
-                    }
-                }
-            }
-            // V2 (empty content): skip — tool data is already on the assistant
-            // message via the callIdToolCallMap enrichment below.
+            // V2: tool-role messages always have content: [] — the actual tool output
+            // lives in cx_tool_call and is enriched onto the preceding assistant message
+            // via callIdToolCallMap. Skip these rows entirely.
             continue;
         }
 
@@ -417,17 +374,6 @@ export function processDbMessagesForDisplay(
             // Replace with enriched set
             toolUpdates.length = 0;
             toolUpdates.push(...enrichedUpdates);
-        }
-
-        // Secondary path: for V2 tool-role messages that were skipped, their CxToolCall
-        // records are linked via message_id. Check the msgToolCallMap to find any tool calls
-        // that reference tool-placeholder messages following this message (by position).
-        // This handles edge cases where a tool_call content block id doesn't match a call_id
-        // directly but the association is tracked via message_id.
-        if (msgToolCallMap && rawToolCalls.length === 0 && (msg.role === 'assistant' || msg.role === 'output')) {
-            // Not strictly needed for normal V2 flow (callIdToolCallMap handles it), but acts
-            // as a safety net for any provider-specific id format mismatches.
-            // Left as a no-op stub — future enhancement if edge cases surface.
         }
 
         // Map DB role to display role — explicitly handle every known role.

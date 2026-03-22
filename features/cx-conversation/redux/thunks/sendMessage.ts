@@ -168,6 +168,10 @@ export const sendMessage = createAsyncThunk<
         let accumulatedContent = '';
         // blockEventsBuffer: all events when in block mode (used for tool extraction + display)
         const blockEventsBuffer: StreamEvent[] = [];
+        // toolEventsBuffer: all tool_event entries regardless of mode.
+        // Used in onStreamComplete for non-block mode to build toolUpdates,
+        // producing the same Redux message shape as DB-loaded messages.
+        const toolEventsBuffer: StreamEvent[] = [];
 
         // ── Streaming callbacks — all Redux dispatch logic lives here ──────────
 
@@ -229,6 +233,9 @@ export const sendMessage = createAsyncThunk<
                     break;
                 }
                 case 'tool_event': {
+                    // Always buffer tool events — used in onStreamComplete to build toolUpdates
+                    // regardless of mode, so the completed message matches DB-loaded structure.
+                    toolEventsBuffer.push(event);
                     if (blockMode) {
                         blockEventsBuffer.push(event);
                         dispatch(chatConversationsActions.updateMessage({
@@ -264,8 +271,12 @@ export const sendMessage = createAsyncThunk<
         };
 
         const onStreamComplete = (_requestId: string | null, _conversationId: string | null) => {
-            // Extract tool call blocks for DB persistence (block mode only)
-            const persistableBlocks = extractPersistableToolBlocks(blockEventsBuffer);
+            // Build toolUpdates from the appropriate buffer:
+            //   block mode   → blockEventsBuffer (has chunks + tool events → same canonical pipeline)
+            //   non-block mode → toolEventsBuffer (tool events only)
+            // Both paths produce identical ToolCallObject[] structure, matching DB-loaded messages.
+            const eventsForTools = blockMode ? blockEventsBuffer : toolEventsBuffer;
+            const persistableBlocks = extractPersistableToolBlocks(eventsForTools);
             const toolUpdates = persistableBlocks.flatMap(b => toolCallBlockToLegacy(b));
 
             dispatch(chatConversationsActions.updateMessage({
@@ -275,7 +286,10 @@ export const sendMessage = createAsyncThunk<
                     status: 'complete',
                     content: accumulatedContent,
                     ...(toolUpdates.length > 0 ? { toolUpdates } : {}),
-                    ...(blockMode && blockEventsBuffer.length > 0 ? { streamEvents: [...blockEventsBuffer] } : {}),
+                    // Block mode: keep streamEvents so StreamingContentBlocks renders interleaved order.
+                    // Non-block mode: clear streamEvents — rendered live during stream; now use
+                    // toolUpdates + content (same shape as DB-loaded messages).
+                    streamEvents: blockMode && blockEventsBuffer.length > 0 ? [...blockEventsBuffer] : undefined,
                 },
             }));
             dispatch(chatConversationsActions.setSessionStatus({ sessionId, status: 'ready' }));

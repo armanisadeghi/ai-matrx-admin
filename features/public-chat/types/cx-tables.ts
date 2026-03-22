@@ -128,31 +128,29 @@ export interface CxMediaContent {
 }
 
 /**
- * Tool call — AI requests a tool (assistant messages).
+ * Tool call — AI requests a tool (assistant/output messages).
  *
- * DB stores: { type: "tool_call", id: "gemini_...", name: "...", arguments: {...} }
- * The `id` field is the provider-assigned call ID that joins to cx_tool_call.call_id.
+ * All providers: { type: "tool_call", id: "<provider_id>", name: "...", arguments: {...} }
+ * OpenAI adds:   { ..., call_id: "call_..." } where `call_id` is the join key to cx_tool_call.call_id.
+ * Anthropic/Gemini: `id` is the join key to cx_tool_call.call_id.
  */
 export interface CxToolCallContent {
     type: 'tool_call';
-    id?: string;                                // Provider call ID (joins to cx_tool_call.call_id)
-    call_id?: string;                           // OpenAI call-level ID
+    id?: string;       // Block-level ID (OpenAI: fc_..., Anthropic/Gemini: the join key)
+    call_id?: string;  // OpenAI only — the actual join key to cx_tool_call.call_id
     name: string;
-    arguments: Record<string, unknown>;         // Parsed JSON object (DB stores jsonb, not string)
+    arguments: Record<string, unknown>;
 }
 
 /**
- * Tool result — response from a tool (tool-role messages).
- *
- * NOTE: In the V2 schema, role="tool" messages have content: [] (empty).
- * The actual tool output lives in cx_tool_call.output, joined via call_id.
- * This type is kept for backward compatibility with any legacy data.
+ * Tool result — response from a tool.
+ * In V2, role="tool" messages always have content: [] (empty).
+ * Tool output lives in cx_tool_call.output, joined via cx_tool_call.call_id.
  */
 export interface CxToolResultContent {
     type: 'tool_result';
-    tool_use_id?: string;
-    tool_call_id?: string;
-    call_id?: string;
+    call_id?: string;      // OpenAI
+    tool_use_id?: string;  // Anthropic
     name: string;
     content: unknown;
     is_error?: boolean;
