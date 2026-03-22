@@ -1,9 +1,18 @@
+---
+description: 
+alwaysApply: true
+---
+
 # CLAUDE.md — AI Matrx Admin
 
 Large-scale Next.js no-code AI app builder and admin dashboard. Desktop-first, mobile-responsive. Redux for state management, Supabase for database.
 
 > **Official Next.js/React/TypeScript best practices:** `~/.arman/rules/nextjs-best-practices/nextjs-guide.md`
 > That guide is the single source of truth for rendering, caching, performance, mobile, Tailwind, component contracts, API patterns, and more. This file covers project-specific conventions only.
+
+# Web Access For Testing
+- user: admin@admin.com
+- Password: Password1234#
 
 ---
 

@@ -1,15 +1,14 @@
 'use client';
 
-import { Building2, Users, Briefcase, FolderKanban, ListTodo, User } from 'lucide-react';
+import { Building2, Users, FolderKanban, ListTodo, User, ChevronRight } from 'lucide-react';
 import {
   Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink,
   BreadcrumbSeparator, BreadcrumbPage,
 } from '@/components/ui/breadcrumb';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useState } from 'react';
 import type { ContextScopeLevel } from '../types';
 import type { ScopeState } from '../hooks/useContextScope';
+import { useAncestors } from '../hooks/useHierarchy';
+import type { HierarchyNodeType } from '../service/hierarchyService';
 
 const SCOPE_ICONS: Record<ContextScopeLevel, React.ComponentType<{ className?: string }>> = {
   user: User,
@@ -19,21 +18,13 @@ const SCOPE_ICONS: Record<ContextScopeLevel, React.ComponentType<{ className?: s
   task: ListTodo,
 };
 
-const SCOPE_LABELS: Record<ContextScopeLevel, string> = {
-  user: 'Personal',
-  organization: 'Organization',
-  workspace: 'Workspace',
-  project: 'Project',
-  task: 'Task',
+const ACCENT: Record<ContextScopeLevel, string> = {
+  user: 'text-blue-500',
+  organization: 'text-violet-500',
+  workspace: 'text-emerald-500',
+  project: 'text-amber-500',
+  task: 'text-sky-500',
 };
-
-// Demo scopes for the scope picker
-const DEMO_SCOPES: ScopeState[] = [
-  { scopeType: 'user', scopeId: 'default', scopeName: 'My Context' },
-  { scopeType: 'organization', scopeId: 'org-1', scopeName: 'Acme Corp' },
-  { scopeType: 'workspace', scopeId: 'ws-1', scopeName: 'SEO Team' },
-  { scopeType: 'project', scopeId: 'proj-1', scopeName: 'Q1 Campaign' },
-];
 
 type Props = {
   scope: ScopeState;
@@ -41,55 +32,67 @@ type Props = {
 };
 
 export function ContextScopeBar({ scope, onScopeChange }: Props) {
-  const [open, setOpen] = useState(false);
-  const Icon = SCOPE_ICONS[scope.scopeType];
+  const { data: ancestors } = useAncestors(scope.scopeType as HierarchyNodeType, scope.scopeId === 'default' ? null : scope.scopeId);
+
+  // Build breadcrumb chain
+  const chain = ancestors && ancestors.length > 0
+    ? ancestors
+    : [{ type: scope.scopeType as HierarchyNodeType, id: scope.scopeId, name: scope.scopeName }];
 
   return (
-    <div className="flex items-center gap-2">
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs">
-            <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-muted-foreground">{SCOPE_LABELS[scope.scopeType]}:</span>
-            <span className="font-medium">{scope.scopeName}</span>
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-64 p-2" align="start">
-          <p className="text-xs font-medium text-muted-foreground px-2 mb-1.5">Switch scope</p>
-          {DEMO_SCOPES.map(s => {
-            const SIcon = SCOPE_ICONS[s.scopeType];
-            const isActive = s.scopeId === scope.scopeId && s.scopeType === scope.scopeType;
-            return (
-              <button
-                key={`${s.scopeType}-${s.scopeId}`}
-                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm text-left transition-colors ${isActive ? 'bg-accent text-accent-foreground' : 'hover:bg-muted'}`}
-                onClick={() => {
-                  onScopeChange(s);
-                  setOpen(false);
-                }}
-              >
-                <SIcon className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="min-w-0">
-                  <p className="font-medium truncate">{s.scopeName}</p>
-                  <p className="text-[10px] text-muted-foreground">{SCOPE_LABELS[s.scopeType]}</p>
-                </div>
-              </button>
-            );
-          })}
-        </PopoverContent>
-      </Popover>
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink
+            href="/ssr/context"
+            className="text-xs text-muted-foreground hover:text-foreground"
+            onClick={e => {
+              e.preventDefault();
+              onScopeChange({ scopeType: 'user', scopeId: 'default', scopeName: 'My Context' });
+            }}
+          >
+            Context
+          </BreadcrumbLink>
+        </BreadcrumbItem>
 
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/ssr/context" className="text-xs">Context</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage className="text-xs">{scope.scopeName}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-    </div>
+        {chain.map((crumb, idx) => {
+          const Icon = SCOPE_ICONS[crumb.type as ContextScopeLevel];
+          const accent = ACCENT[crumb.type as ContextScopeLevel];
+          const isLast = idx === chain.length - 1;
+
+          return (
+            <span key={`${crumb.type}-${crumb.id}`} className="contents">
+              <BreadcrumbSeparator>
+                <ChevronRight className="h-3 w-3" />
+              </BreadcrumbSeparator>
+              <BreadcrumbItem>
+                {isLast ? (
+                  <BreadcrumbPage className="text-xs flex items-center gap-1">
+                    <Icon className={`h-3 w-3 ${accent}`} />
+                    <span className="font-medium">{crumb.name}</span>
+                  </BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink
+                    href="#"
+                    className="text-xs flex items-center gap-1 text-muted-foreground hover:text-foreground"
+                    onClick={e => {
+                      e.preventDefault();
+                      onScopeChange({
+                        scopeType: crumb.type as ContextScopeLevel,
+                        scopeId: crumb.id,
+                        scopeName: crumb.name,
+                      });
+                    }}
+                  >
+                    <Icon className={`h-3 w-3 ${accent}`} />
+                    {crumb.name}
+                  </BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
+            </span>
+          );
+        })}
+      </BreadcrumbList>
+    </Breadcrumb>
   );
 }

@@ -1,5 +1,5 @@
 ---
-description: AI Matrx project-specific conventions. For Next.js/React/TypeScript best practices, see ~/.arman/rules/nextjs-best-practices/nextjs-guide.md
+description: 
 alwaysApply: true
 ---
 
@@ -9,6 +9,10 @@ alwaysApply: true
 
 **Stack:** React 19, Next.js 16, Tailwind CSS, TypeScript, Redux (@/lib/redux/store.ts), Supabase (@/utils/supabase/client.ts)
 **Lead Developer:** Arman (Expert in React 19, Next.js 15/16, Tailwind CSS, TypeScript, PostgreSQL and Python)
+
+# Web Access For Testing
+- user: admin@admin.com
+- Password: Password1234#
 
 <file_organization>
 **General directories** (small, reusable code):

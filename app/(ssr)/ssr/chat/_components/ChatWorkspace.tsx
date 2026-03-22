@@ -236,7 +236,7 @@ function ChatWorkspaceInner() {
         configFetched: false,
       }),
     );
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agentIdFromUrl]);
 
   // Keep ?agent= in the URL whenever the selected agent changes.
@@ -276,7 +276,7 @@ function ChatWorkspaceInner() {
     setIsInConversation(true);
     setActiveConversationId(conversationIdFromUrl);
     dispatch(activeChatActions.setActiveSessionId(conversationIdFromUrl));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationIdFromUrl]);
 
   // ========================================================================
@@ -615,8 +615,8 @@ function ChatWorkspaceInner() {
   // Never show a raw UUID as the agent name — show empty string while loading
   // so the UI renders a neutral placeholder until configFetched resolves.
   const isAgentLoading = !selectedAgent.configFetched && !selectedAgent.name;
-  const agentName = isAgentLoading ? "" : (selectedAgent.name || "Chat");
-  const headerLabel = isAgentLoading ? "" : (selectedAgent.name || "Chat");
+  const agentName = isAgentLoading ? "" : selectedAgent.name || "Chat";
+  const headerLabel = isAgentLoading ? "" : selectedAgent.name || "Chat";
 
   // ========================================================================
   // LOADING STATE

@@ -1,50 +1,80 @@
 'use client';
 
 import { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { useContextScope } from '@/features/context/hooks/useContextScope';
 import { ContextDashboard } from '@/features/context/components/ContextDashboard';
 import { ContextItemList } from '@/features/context/components/ContextItemList';
-import { useContextScope } from '@/features/context/hooks/useContextScope';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ContextTemplateBrowser } from '@/features/context/components/ContextTemplateBrowser';
+import { ContextVariablesPanel } from '@/features/context/components/ContextVariablesPanel';
+import { LayoutDashboard, Code2, FileText, LayoutTemplate, TreePine, ArrowRight } from 'lucide-react';
 
 export default function ContextPage() {
-  return (
-    <Suspense fallback={<Skeleton className="h-96" />}>
-      <ContextPageContent />
-    </Suspense>
-  );
-}
-
-function ContextPageContent() {
   const { scope } = useContextScope();
-  const searchParams = useSearchParams();
-  const tab = searchParams.get('tab') || 'dashboard';
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-base font-bold">Context Management</h1>
+      {/* Hierarchy Manager CTA */}
+      <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+        <TreePine className="h-5 w-5 text-primary shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium">Hierarchy Manager</p>
+          <p className="text-xs text-muted-foreground">Full tree view — navigate, create, and manage all your organizations, workspaces, projects, and tasks in one place.</p>
+        </div>
+        <Button size="sm" className="text-xs gap-1 shrink-0" asChild>
+          <Link href="/ssr/context/hierarchy">
+            Open <ArrowRight className="h-3 w-3" />
+          </Link>
+        </Button>
       </div>
 
-      <Tabs value={tab} className="space-y-4">
-        <TabsList className="h-8">
-          <TabsTrigger value="dashboard" className="text-xs h-7" asChild>
-            <a href="?tab=dashboard">Dashboard</a>
-          </TabsTrigger>
-          <TabsTrigger value="items" className="text-xs h-7" asChild>
-            <a href="?tab=items">Items</a>
-          </TabsTrigger>
-        </TabsList>
+    <Tabs defaultValue="overview" className="w-full">
+      <TabsList className="h-8">
+        <TabsTrigger value="overview" className="text-xs gap-1.5 h-7">
+          <LayoutDashboard className="h-3 w-3" />
+          Overview
+        </TabsTrigger>
+        <TabsTrigger value="variables" className="text-xs gap-1.5 h-7">
+          <Code2 className="h-3 w-3" />
+          Variables
+        </TabsTrigger>
+        <TabsTrigger value="items" className="text-xs gap-1.5 h-7">
+          <FileText className="h-3 w-3" />
+          Items
+        </TabsTrigger>
+        <TabsTrigger value="templates" className="text-xs gap-1.5 h-7">
+          <LayoutTemplate className="h-3 w-3" />
+          Templates
+        </TabsTrigger>
+      </TabsList>
 
-        <TabsContent value="dashboard">
+      <TabsContent value="overview" className="mt-4">
+        <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>
           <ContextDashboard scope={scope} />
-        </TabsContent>
+        </Suspense>
+      </TabsContent>
 
-        <TabsContent value="items">
+      <TabsContent value="variables" className="mt-4">
+        <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>
+          <ContextVariablesPanel scope={scope} />
+        </Suspense>
+      </TabsContent>
+
+      <TabsContent value="items" className="mt-4">
+        <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>
           <ContextItemList scope={scope} />
-        </TabsContent>
-      </Tabs>
+        </Suspense>
+      </TabsContent>
+
+      <TabsContent value="templates" className="mt-4">
+        <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>
+          <ContextTemplateBrowser scope={scope} />
+        </Suspense>
+      </TabsContent>
+    </Tabs>
     </div>
   );
 }

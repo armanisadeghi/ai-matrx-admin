@@ -1530,17 +1530,28 @@
   }
 
   /* Main content area — no grid on mobile, just flex.
-     Uses --visual-viewport-height (set by VisualViewportSync) so the content
-     area shrinks when the virtual keyboard opens. Falls back to 100dvh.
-     Subtract --shell-header-h because shell-main has margin-top that pulls
-     content up behind the transparent header — the content column starts at
-     the very top of the viewport and must account for the header row. */
+
+     Height derivation:
+       shell-root (position:fixed, inset:0) → height = layout viewport.
+       Grid rows: header-h | 1fr → main track = viewport − header-h.
+       shell-main has margin-top: -header-h.  Grid stretch (default
+       align-self) sizes the item to: track − margins = (viewport−header)
+       − (−header) = **full viewport**.  So shell-main's content box IS the
+       full viewport height.
+
+     Normal: height:100% fills the parent's full-viewport content box.
+
+     Keyboard open: VisualViewportSync writes --visual-viewport-height
+       (the visible area above the keyboard). shell-root stays fixed, so
+       100% won't shrink. We override with the visual-viewport value.
+       No header subtraction needed — content scrolls behind the glass
+       header just like it does normally. */
   .shell-panel-content {
     display: flex;
     flex-direction: column;
     overflow: hidden;
     min-width: 0;
-    height: calc(var(--visual-viewport-height, 100dvh) - var(--shell-header-h));
+    height: var(--visual-viewport-height, 100%);
     /* Prevents content from jumping when keyboard opens/closes */
     transition: height 0ms;
   }

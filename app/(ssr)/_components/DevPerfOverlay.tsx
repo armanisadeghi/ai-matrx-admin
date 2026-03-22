@@ -5,7 +5,8 @@
  * Shows Web Vitals, hydration timing, and navigation metrics in a draggable panel.
  * Only renders in development — completely tree-shaken in production.
  *
- * Toggle: Ctrl+Shift+P (or click the ⏱ button in the bottom-right)
+ * Toggle panel: Ctrl+Shift+P (or click the ⏱ button in the bottom-right)
+ * Hide/show everything: Ctrl+Shift+H
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -50,6 +51,7 @@ export default function DevPerfOverlay() {
 }
 
 function DevPerfOverlayInner() {
+    const [hidden, setHidden] = useState(false);
     const [visible, setVisible] = useState(false);
     const [metrics, setMetrics] = useState<MetricMap>({});
     const [hydrationMs, setHydrationMs] = useState<number | null>(null);
@@ -58,7 +60,10 @@ function DevPerfOverlayInner() {
 
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
-            if (e.ctrlKey && e.shiftKey && e.key === 'P') {
+            if (e.ctrlKey && e.shiftKey && e.key === 'H') {
+                e.preventDefault();
+                setHidden(h => !h);
+            } else if (e.ctrlKey && e.shiftKey && e.key === 'P') {
                 e.preventDefault();
                 setVisible(v => !v);
             }
@@ -100,6 +105,8 @@ function DevPerfOverlayInner() {
     }, []);
 
     const nav = navEntries[0];
+
+    if (hidden) return null;
 
     return (
         <>
@@ -187,7 +194,7 @@ function DevPerfOverlayInner() {
                     )}
 
                     <div style={{ fontSize: 10, color: '#555', marginTop: 8, textAlign: 'center' }}>
-                        Ctrl+Shift+P to toggle &middot; Check terminal for server timings
+                        Ctrl+Shift+P to toggle &middot; Ctrl+Shift+H to hide &middot; Check terminal for server timings
                     </div>
                 </div>
             )}
