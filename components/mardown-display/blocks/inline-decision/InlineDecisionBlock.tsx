@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { ChevronDown, Pencil, Loader2 } from "lucide-react";
+import { Pencil, Loader2 } from "lucide-react";
 import type { InlineDecision, InlineDecisionOption } from "./types";
 
 interface InlineDecisionBlockProps {
@@ -79,10 +79,11 @@ export default function InlineDecisionBlock({
                     : "border-border"
             } ${fadeOut ? "opacity-0 -translate-y-1 scale-[0.99] transition-all duration-[280ms]" : ""} bg-card`}
         >
-            {/* Collapsed trigger */}
-            <button
-                type="button"
-                className="w-full flex items-center justify-between gap-3 px-3.5 py-2.5 text-left hover:bg-muted/50 transition-colors duration-100"
+            {/* Header — click to toggle options */}
+            <div
+                role="button"
+                tabIndex={0}
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 cursor-pointer hover:bg-muted/50 transition-colors duration-100"
                 onClick={() => {
                     setExpanded(!expanded);
                     if (expanded) {
@@ -90,26 +91,17 @@ export default function InlineDecisionBlock({
                         setEditText("");
                     }
                 }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded(!expanded); } }}
             >
-                <div className="flex items-center gap-2.5 min-w-0">
-                    <span
-                        className={`w-2 h-2 rounded-full bg-primary flex-shrink-0 ${
-                            expanded ? "" : "animate-pulse"
-                        } shadow-[0_0_6px_hsl(var(--primary)/0.4)]`}
-                    />
-                    <span className="text-sm font-medium text-foreground truncate">
-                        {decision.prompt}
-                    </span>
-                </div>
-                <span className="flex items-center gap-1 text-[10.5px] text-muted-foreground whitespace-nowrap px-2 py-0.5 rounded border border-border bg-muted/30 flex-shrink-0">
-                    {expanded ? "collapse" : `${allOptions.length} options`}
-                    <ChevronDown
-                        className={`w-2.5 h-2.5 transition-transform duration-200 ${
-                            expanded ? "rotate-180" : ""
-                        }`}
-                    />
+                <span
+                    className={`w-2 h-2 rounded-full bg-primary flex-shrink-0 ${
+                        expanded ? "" : "animate-pulse"
+                    } shadow-[0_0_6px_hsl(var(--primary)/0.4)]`}
+                />
+                <span className="text-sm font-medium text-foreground truncate">
+                    {decision.prompt}
                 </span>
-            </button>
+            </div>
 
             {/* Expanded body */}
             {expanded && (
