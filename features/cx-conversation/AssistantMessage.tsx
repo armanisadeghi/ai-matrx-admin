@@ -21,6 +21,7 @@ import {
   Link as LinkIcon,
   Loader2,
   Save,
+  History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TapTargetButtonTransparent } from "@/app/(ssr)/_components/core/TapTargetButton";
@@ -31,7 +32,7 @@ import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewS
 import { parseMarkdownToText } from "@/utils/markdown-processors/parse-markdown-for-speech";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
-import { selectMessageHasUnsavedChanges } from "@/features/cx-conversation/redux/selectors";
+import { selectMessageHasUnsavedChanges, selectMessageHasHistory } from "@/features/cx-conversation/redux/selectors";
 import { editMessage } from "@/features/cx-conversation/redux/thunks/editMessage";
 import { buildContentBlocksForSave } from "@/features/cx-conversation/utils/buildContentBlocksForSave";
 import type { CartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
@@ -111,6 +112,9 @@ export function AssistantMessage({
   const user = useAppSelector(selectUser);
   const hasUnsavedChanges = useAppSelector((state) =>
     sessionId ? selectMessageHasUnsavedChanges(state, sessionId, message.id) : false
+  );
+  const hasHistory = useAppSelector((state) =>
+    sessionId ? selectMessageHasHistory(state, sessionId, message.id) : false
   );
 
   // DOM-capture PDF (Tier 2 — captures all rendered blocks)
@@ -494,6 +498,13 @@ export function AssistantMessage({
                           <Save className="w-4 h-4 text-primary" />
                         )
                       }
+                    />
+                  )}
+                  {hasHistory && (
+                    <TapTargetButtonTransparent
+                      onClick={() => setShowHistoryViewer(true)}
+                      ariaLabel="View edit history"
+                      icon={<History className="w-4 h-4 text-muted-foreground" />}
                     />
                   )}
                   <TapTargetButtonTransparent
