@@ -20,6 +20,7 @@ import type {
     CxTextContent,
     CxThinkingContent,
     CxMediaContent,
+    CxToolCallContent,
 } from '../types/cx-tables';
 import type { ToolCallObject } from '@/lib/api/tool-call.types';
 
@@ -171,21 +172,18 @@ export function convertCxContentToDisplay(
             }
 
             case 'tool_call': {
-                // tool_call blocks use `call_id` (OpenAI) or `id` (Anthropic/Gemini) as the
-                // join key to cx_tool_call.call_id.
-                // OpenAI blocks have both: `id` is a block-level identifier (fc_... prefix)
-                // and `call_id` is the actual join key. Anthropic/Gemini only have `id`.
-                const raw = block as Record<string, unknown>;
-                const tcId = (raw.call_id ?? raw.id ?? '') as string;
-                const tcName = (raw.name ?? '') as string;
-                const tcArgs = raw.arguments;
+                const raw = block as CxToolCallContent;
+                if (!raw.id) {
+                    console.error('[convertCxContentToDisplay] tool_call block missing id', block);
+                    break;
+                }
 
                 toolUpdates.push({
-                    id: tcId,
+                    id: raw.id,
                     type: 'mcp_input',
                     mcp_input: {
-                        name: tcName,
-                        arguments: toRecord(tcArgs),
+                        name: raw.name,
+                        arguments: raw.arguments,
                     },
                     phase: 'complete',
                 });
@@ -193,7 +191,8 @@ export function convertCxContentToDisplay(
             }
 
             case 'tool_result': {
-                // tool_result blocks: Anthropic uses `tool_use_id`, OpenAI uses `call_id`.
+                // `call_id` (OpenAI) or `tool_use_id` (Anthropic) is the join key.
+                // If neither is present, Python has a normalization bug.
                 const raw = block as Record<string, unknown>;
                 const trId = (raw.call_id ?? raw.tool_use_id ?? '') as string;
                 const isError = Boolean(raw.is_error);

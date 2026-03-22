@@ -2,7 +2,9 @@ import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '../../../lib/redux/store';
 import { EMPTY_MESSAGES, EMPTY_RESOURCES, EMPTY_VARIABLE_DEFAULTS, DEFAULT_UI_STATE, EMPTY_TOOL_CALLS_BY_ID, EMPTY_RAW_TOOL_CALLS } from './slice';
 import type { ConversationSession, SessionUIState } from './types';
-import type { CxToolCall } from '@/features/public-chat/types/cx-tables';
+import type { CxToolCall, CxContentHistoryEntry } from '@/features/public-chat/types/cx-tables';
+
+const EMPTY_CONTENT_HISTORY: CxContentHistoryEntry[] = [];
 
 // ============================================================================
 // BASE SELECTORS
@@ -148,3 +150,27 @@ export const selectAllToolCalls = createSelector(
         state.chatConversations.sessions[sessionId]?.toolCallsById ?? EMPTY_TOOL_CALLS_BY_ID,
     (byId): CxToolCall[] => Object.values(byId),
 );
+
+// ============================================================================
+// CONTENT HISTORY SELECTORS
+// ============================================================================
+
+/** Content history snapshots for a specific message. Empty array if none. */
+export const selectMessageContentHistory = (state: RootState, sessionId: string, messageId: string): CxContentHistoryEntry[] => {
+    const msg = state.chatConversations.sessions[sessionId]?.messages.find(m => m.id === messageId);
+    return (msg?.contentHistory as CxContentHistoryEntry[] | null | undefined) ?? EMPTY_CONTENT_HISTORY;
+};
+
+/** Whether a message has any content history (i.e. has been edited at least once). */
+export const selectMessageHasHistory = (state: RootState, sessionId: string, messageId: string): boolean => {
+    const msg = state.chatConversations.sessions[sessionId]?.messages.find(m => m.id === messageId);
+    const history = msg?.contentHistory as CxContentHistoryEntry[] | null | undefined;
+    return Array.isArray(history) && history.length > 0;
+};
+
+/** Number of history snapshots for a message (= number of times it has been edited). */
+export const selectMessageHistoryCount = (state: RootState, sessionId: string, messageId: string): number => {
+    const msg = state.chatConversations.sessions[sessionId]?.messages.find(m => m.id === messageId);
+    const history = msg?.contentHistory as CxContentHistoryEntry[] | null | undefined;
+    return Array.isArray(history) ? history.length : 0;
+};

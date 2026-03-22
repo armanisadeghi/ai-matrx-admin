@@ -64,6 +64,12 @@ export interface CxConversationUpdate {
 // cx_message - Individual messages within a conversation
 // ============================================================================
 
+/** One entry in cx_message.content_history — a snapshot of content before an edit */
+export interface CxContentHistoryEntry {
+    content: CxContentBlock[];
+    saved_at: string;  // ISO timestamptz
+}
+
 export interface CxMessage {
     id: string;                                 // uuid PK
     conversation_id: string;                    // uuid NOT NULL, FK to cx_conversation
@@ -73,8 +79,8 @@ export interface CxMessage {
     content: CxContentBlock[];                  // jsonb NOT NULL, default '[]' — array of content parts
     created_at: string;                         // timestamptz NOT NULL
     deleted_at: string | null;                  // timestamptz
-    metadata: Record<string, unknown>;          // jsonb NOT NULL, default '{}'
-    content_history: unknown | null;            // jsonb — previous content versions (reserved for future use)
+    metadata: Record<string, unknown>;          // jsonb NOT NULL, default '{}'  
+    content_history: CxContentHistoryEntry[] | null;  // jsonb — previous content versions, auto-managed by cx_message_edit RPC
 }
 
 /**
@@ -129,15 +135,11 @@ export interface CxMediaContent {
 
 /**
  * Tool call — AI requests a tool (assistant/output messages).
- *
- * All providers: { type: "tool_call", id: "<provider_id>", name: "...", arguments: {...} }
- * OpenAI adds:   { ..., call_id: "call_..." } where `call_id` is the join key to cx_tool_call.call_id.
- * Anthropic/Gemini: `id` is the join key to cx_tool_call.call_id.
+ * `id` is the join key to cx_tool_call.call_id for all providers.
  */
 export interface CxToolCallContent {
     type: 'tool_call';
-    id?: string;       // Block-level ID (OpenAI: fc_..., Anthropic/Gemini: the join key)
-    call_id?: string;  // OpenAI only — the actual join key to cx_tool_call.call_id
+    id: string;
     name: string;
     arguments: Record<string, unknown>;
 }

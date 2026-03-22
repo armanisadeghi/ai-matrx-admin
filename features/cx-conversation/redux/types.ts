@@ -13,7 +13,7 @@ import type { StreamEvent } from '@/types/python-generated/stream-events';
 import type { LLMParams } from '@/lib/api/types';
 import type { Resource } from '@/features/prompts/types/resources';
 import type { PromptVariable } from '@/features/prompts/types/core';
-import type { CxToolCall } from '@/features/public-chat/types/cx-tables';
+import type { CxToolCall, CxContentBlock, CxContentHistoryEntry } from '@/features/public-chat/types/cx-tables';
 
 // ============================================================================
 // MESSAGE TYPES
@@ -56,8 +56,8 @@ export interface ConversationMessage {
     position?: number;
     /** Raw metadata JSON from DB */
     dbMetadata?: Record<string, unknown>;
-    /** Content version history from DB (reserved for future use) */
-    contentHistory?: unknown | null;
+    /** Content version history — array of previous content snapshots, auto-managed by cx_message_edit RPC */
+    contentHistory?: CxContentHistoryEntry[] | null;
     /** ISO creation timestamp from DB */
     createdAt?: string;
     /** Soft-delete timestamp from DB, null if active */
@@ -307,4 +307,15 @@ export interface LoadConversationPayload {
     variableDefaults?: PromptVariable[];
     /** All CxToolCall records for the conversation, keyed by call_id */
     toolCallsById?: Record<string, CxToolCall>;
+}
+
+/** Payload for applying a historical content snapshot back to a message */
+export interface ApplyMessageHistoryPayload {
+    sessionId: string;
+    messageId: string;
+    /** The history entry to restore — becomes the new live content */
+    entry: CxContentHistoryEntry;
+    /** The full updated message returned by the cx_message_edit RPC after the restore */
+    updatedRawContent: CxContentBlock[];
+    updatedContentHistory: CxContentHistoryEntry[] | null;
 }

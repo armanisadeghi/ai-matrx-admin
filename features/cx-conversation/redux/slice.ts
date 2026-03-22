@@ -19,6 +19,7 @@ import type {
     UpdateUIStatePayload,
     StartSessionPayload,
     LoadConversationPayload,
+    ApplyMessageHistoryPayload,
 } from './types';
 import type { Resource } from '@/features/prompts/types/resources';
 import type { CxToolCall } from '@/features/public-chat/types/cx-tables';
@@ -292,6 +293,26 @@ const chatConversationsSlice = createSlice({
             const uiState = state.uiState[action.payload.sessionId];
             if (!uiState) return;
             uiState.modelOverride = action.payload.model;
+        },
+
+        /**
+         * Apply a historical content snapshot back to a message in Redux after
+         * the cx_message_edit RPC has persisted the change to the database.
+         * The previous live content will already be in contentHistory (the RPC appended it).
+         */
+        applyMessageHistory: (state, action: PayloadAction<ApplyMessageHistoryPayload>) => {
+            const { sessionId, messageId, updatedRawContent, updatedContentHistory } = action.payload;
+            const session = state.sessions[sessionId];
+            if (!session) return;
+
+            const msg = session.messages.find(m => m.id === messageId);
+            if (!msg) return;
+
+            // Re-run the content conversion for the restored blocks
+            msg.rawContent = updatedRawContent;
+            msg.contentHistory = updatedContentHistory;
+            // content (display string) is updated by the editMessage thunk after calling this
+            session.updatedAt = Date.now();
         },
     },
 });
