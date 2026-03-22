@@ -24,7 +24,7 @@ import {
   History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TapTargetButtonTransparent } from "@/app/(ssr)/_components/core/TapTargetButton";
+import { TapTargetButtonTransparent, TapTargetButtonForGroup, TapTargetButtonGroup } from "@/app/(ssr)/_components/core/TapTargetButton";
 import MarkdownStream from "@/components/MarkdownStream";
 import { StreamingContentBlocks } from "@/features/cx-conversation/StreamingContentBlocks";
 import { useDomCapturePrint } from "@/features/conversation/hooks/useDomCapturePrint";
@@ -434,93 +434,93 @@ export function AssistantMessage({
 
               {/* Action bar — hidden during stream and in overlay mode */}
               {!isStreamActive && !isOverlay && message.content && (
-                <div className={`flex items-center ${buttonMargin}`}>
-                  <TapTargetButtonTransparent
-                    onClick={() => {
-                      setIsLiked(!isLiked);
-                      if (isDisliked) setIsDisliked(false);
-                    }}
-                    ariaLabel="Like message"
-                    icon={
-                      <ThumbsUp
-                        className={`w-4 h-4 ${isLiked ? "text-green-500 dark:text-green-400" : "text-muted-foreground"}`}
-                      />
-                    }
-                  />
-                  <TapTargetButtonTransparent
-                    onClick={() => {
-                      setIsDisliked(!isDisliked);
-                      if (isLiked) setIsLiked(false);
-                    }}
-                    ariaLabel="Dislike message"
-                    icon={
-                      <ThumbsDown
-                        className={`w-4 h-4 ${isDisliked ? "text-red-500 dark:text-red-400" : "text-muted-foreground"}`}
-                      />
-                    }
-                  />
-                  <TapTargetButtonTransparent
-                    onClick={handleCopy}
-                    ariaLabel="Copy message"
-                    icon={
-                      isCopied ? (
-                        <Check className="w-4 h-4 text-blue-500 dark:text-blue-400" />
-                      ) : (
-                        <Copy className="w-4 h-4 text-muted-foreground" />
-                      )
-                    }
-                  />
-                  {audioControls && (
-                    <TapTargetButtonTransparent
-                      onClick={handleSpeakToggle}
-                      disabled={!isAudioReady}
-                      ariaLabel={isPlaying ? "Pause" : "Read aloud"}
+                <div className={buttonMargin}>
+                  <TapTargetButtonGroup>
+                    <TapTargetButtonForGroup
+                      onClick={() => {
+                        setIsLiked(!isLiked);
+                        if (isDisliked) setIsDisliked(false);
+                      }}
+                      ariaLabel="Like message"
                       icon={
-                        isPlaying ? (
-                          <Pause className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+                        <ThumbsUp
+                          className={`w-4 h-4 ${isLiked ? "text-green-500 dark:text-green-400" : "text-muted-foreground"}`}
+                        />
+                      }
+                    />
+                    <TapTargetButtonForGroup
+                      onClick={() => {
+                        setIsDisliked(!isDisliked);
+                        if (isLiked) setIsLiked(false);
+                      }}
+                      ariaLabel="Dislike message"
+                      icon={
+                        <ThumbsDown
+                          className={`w-4 h-4 ${isDisliked ? "text-red-500 dark:text-red-400" : "text-muted-foreground"}`}
+                        />
+                      }
+                    />
+                    <TapTargetButtonForGroup
+                      onClick={handleCopy}
+                      ariaLabel="Copy message"
+                      icon={
+                        isCopied ? (
+                          <Check className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                         ) : (
-                          <Volume2
-                            className={`w-4 h-4 ${isPaused ? "text-purple-500 dark:text-purple-400" : "text-muted-foreground"}`}
-                          />
+                          <Copy className="w-4 h-4 text-muted-foreground" />
                         )
                       }
                     />
-                  )}
-                  {hasUnsavedChanges && (
-                    <TapTargetButtonTransparent
-                      onClick={handleQuickSave}
-                      disabled={isSaving}
-                      ariaLabel="Save changes"
-                      icon={
-                        isSaving ? (
-                          <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                        ) : (
-                          <Save className="w-4 h-4 text-primary" />
-                        )
-                      }
+                    {audioControls && (
+                      <TapTargetButtonForGroup
+                        onClick={handleSpeakToggle}
+                        ariaLabel={isPlaying ? "Pause" : "Read aloud"}
+                        icon={
+                          isPlaying ? (
+                            <Pause className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+                          ) : (
+                            <Volume2
+                              className={`w-4 h-4 ${isPaused ? "text-purple-500 dark:text-purple-400" : "text-muted-foreground"}`}
+                            />
+                          )
+                        }
+                      />
+                    )}
+                    {hasUnsavedChanges && (
+                      <TapTargetButtonForGroup
+                        onClick={handleQuickSave}
+                        ariaLabel="Save changes"
+                        icon={
+                          isSaving ? (
+                            <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                          ) : (
+                            <Save className="w-4 h-4 text-primary" />
+                          )
+                        }
+                      />
+                    )}
+                    {hasHistory && (
+                      <TapTargetButtonForGroup
+                        onClick={() => setShowHistoryViewer(true)}
+                        ariaLabel="View edit history"
+                        icon={<History className="w-4 h-4 text-muted-foreground" />}
+                      />
+                    )}
+                    <TapTargetButtonForGroup
+                      onClick={handleEditClick}
+                      ariaLabel="Edit message"
+                      icon={<Edit className="w-4 h-4 text-muted-foreground" />}
                     />
-                  )}
-                  {hasHistory && (
-                    <TapTargetButtonTransparent
-                      onClick={() => setShowHistoryViewer(true)}
-                      ariaLabel="View edit history"
-                      icon={<History className="w-4 h-4 text-muted-foreground" />}
-                    />
-                  )}
-                  <TapTargetButtonTransparent
-                    onClick={handleEditClick}
-                    ariaLabel="Edit message"
-                    icon={<Edit className="w-4 h-4 text-muted-foreground" />}
-                  />
-                  <div ref={moreOptionsButtonRef}>
-                    <TapTargetButtonTransparent
-                      onClick={() => setShowOptionsMenu(true)}
-                      ariaLabel="More options"
-                      icon={
-                        <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-                      }
-                    />
-                  </div>
+                    <div ref={moreOptionsButtonRef}>
+                      <TapTargetButtonForGroup
+                        onClick={() => setShowOptionsMenu(true)}
+                        ariaLabel="More options"
+                        icon={
+                          <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+                        }
+                      />
+                    </div>
+                  </TapTargetButtonGroup>
 
                   {showOptionsMenu && (
                     <Suspense fallback={null}>

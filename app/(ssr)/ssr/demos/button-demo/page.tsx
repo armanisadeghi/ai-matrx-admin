@@ -1,54 +1,107 @@
-// app/(ssr)/ssr/dashboard/page.tsx — Server-rendered dashboard
-// 100% server component. No "use client" anywhere in this file.
-// Layout wrapper (PageHeader + content div) lives in layout.tsx.
+import { TapTargetButtonGroup } from "@/app/(ssr)/_components/core/TapTargetButton";
+import {
+  OpenAITapButton,
+  AnthropicTapButton,
+  GoogleTapButton,
+  GeminiTapButton,
+  MetaTapButton,
+  XaiTapButton,
+  CpuTapButton,
+  ClaudeTapButton,
+  LlamaTapButton,
+  DeepSeekTapButton,
+  FluxTapButton,
+  GrokTapButton,
+  PowerTapButton,
+  ImageGenerationTapButton,
+  VideoGenerationTapButton,
+  TranscriptionTapButton,
+  TranslationTapButton,
+} from "@/components/icons/ai-tap-buttons";
 
-import { createClient } from "@/utils/supabase/server";
-
-import QuickActions from "../../dashboard/components/QuickActions";
-import WelcomeCard from "../../dashboard/components/WelcomeCard";
-import RecentActivity from "../../dashboard/components/RecentActivity";
-import DashboardGrid from "../../dashboard/components/DashboardGrid";
-
-export default async function DashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let dashboardUser: {
-    name: string;
-    email?: string;
-    avatarUrl?: string;
-  } | null = null;
-  if (user) {
-    const meta = user.user_metadata ?? {};
-    dashboardUser = {
-      name:
-        meta.full_name ||
-        meta.name ||
-        meta.display_name ||
-        user.email?.split("@")[0] ||
-        "User",
-      email: user.email,
-      avatarUrl: meta.avatar_url || meta.picture || undefined,
-    };
-  }
-
+export default function ButtonDemoPage() {
   return (
-    <>
-      <section>
-        <QuickActions />
+    <div className="p-8 space-y-12">
+      <div>
+        <h1 className="text-3xl font-bold mb-2">AI Tap Buttons Demo</h1>
+        <p className="text-muted-foreground">
+          A showcase of the modular TapTargetButton system applied to AI providers and generic tools.
+        </p>
+      </div>
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Model Provider Selector (Brand Colors)</h2>
+        <p className="text-sm text-muted-foreground w-1/2">
+          Clicking a logo could expand secondary options for that specific
+          provider's sub-models. The brain acts as a universal "Other Providers" fallback.
+        </p>
+        <div className="flex gap-4">
+          <TapTargetButtonGroup>
+            <GoogleTapButton variant="group" colored />
+            <GeminiTapButton variant="group" colored />
+            <OpenAITapButton variant="group" colored />
+            <AnthropicTapButton variant="group" colored />
+            <ClaudeTapButton variant="group" colored />
+            <XaiTapButton variant="group" colored />
+            <GrokTapButton variant="group" colored />
+            <MetaTapButton variant="group" colored />
+            <LlamaTapButton variant="group" colored />
+            <DeepSeekTapButton variant="group" colored />
+            <FluxTapButton variant="group" colored />
+            <CpuTapButton variant="group" />
+          </TapTargetButtonGroup>
+        </div>
       </section>
 
-      <section>
-        <DashboardGrid />
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Model Provider Selector (Monochrome)</h2>
+        <p className="text-sm text-muted-foreground w-1/2">
+          The same group automatically styled to adapt to the surrounding text color for minimalist interfaces.
+        </p>
+        <div className="flex gap-4">
+          <TapTargetButtonGroup>
+            <GoogleTapButton variant="group" />
+            <GeminiTapButton variant="group" />
+            <OpenAITapButton variant="group" />
+            <AnthropicTapButton variant="group" />
+            <ClaudeTapButton variant="group" />
+            <XaiTapButton variant="group" />
+            <GrokTapButton variant="group" />
+            <MetaTapButton variant="group" />
+            <LlamaTapButton variant="group" />
+            <DeepSeekTapButton variant="group" />
+            <FluxTapButton variant="group" />
+            <CpuTapButton variant="group" />
+          </TapTargetButtonGroup>
+        </div>
       </section>
 
-      <section>
-        <RecentActivity />
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">AI Action Tools</h2>
+        <p className="text-sm text-muted-foreground w-1/2">
+          Common AI interface actions utilizing generic shapes, easily dropping into any action bar or input field. Note the use of the Power/Lightning bolt for intelligence text generation instead of classical sparkles.
+        </p>
+        <div className="flex gap-4">
+          <TapTargetButtonGroup>
+            <PowerTapButton variant="group" />
+            <ImageGenerationTapButton variant="group" />
+            <VideoGenerationTapButton variant="group" />
+            <TranscriptionTapButton variant="group" />
+            <TranslationTapButton variant="group" />
+          </TapTargetButtonGroup>
+        </div>
       </section>
 
-      <WelcomeCard user={dashboardUser} />
-    </>
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Standalone Submissions (Variant: Solid)</h2>
+        <p className="text-sm text-muted-foreground w-1/2">
+          Utilizing primary solid buttons for high-priority generation triggers outside of a group.
+        </p>
+        <div className="flex gap-4">
+          <PowerTapButton variant="solid" bgColor="bg-blue-600" />
+          <ImageGenerationTapButton variant="solid" bgColor="bg-emerald-600" />
+        </div>
+      </section>
+    </div>
   );
 }

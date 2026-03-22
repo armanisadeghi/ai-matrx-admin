@@ -6,27 +6,23 @@
 //
 // Server/client boundary philosophy:
 //   - layout.tsx renders pure server HTML: the <aside>, divs, and static shells
-//   - ChatPanelBackButton: standalone tiny client island (DOM checkbox ops only)
 //   - ChatPanelContent: the ONE client boundary for the panel body — owns
-//     searchQuery state, renders the search input + lists that consume it
+//     searchQuery state, renders the SidebarSearchGroup pill + lists
 //   - ChatDesktopHeader: client island for the desktop header strip —
-//     owns Redux agent state, collapse/new-chat handlers, and desktop search
-//
-// The mobile header row outer div and its height/margin styles live in
-// layout.tsx as pure server HTML. Only the interactive children are client.
+//     PanelLeft toggle + agent name selector
 
-import { useState, useCallback } from "react";
-import { Search, X, Plus } from "lucide-react";
-import { SidebarAgentHeader } from "@/features/public-chat/components/sidebar/SidebarAgentHeader";
+import { useState, useCallback, useRef } from "react";
+import { ChevronDown } from "lucide-react";
 import { SidebarActions } from "@/features/public-chat/components/sidebar/SidebarActions";
 import { SidebarAgents } from "@/features/public-chat/components/sidebar/SidebarAgents";
 import { SidebarChats } from "@/features/public-chat/components/sidebar/SidebarChats";
 import { SidebarUserFooter } from "@/features/public-chat/components/sidebar/SidebarUserFooter";
-import { TapTargetButtonTransparent } from "@/app/(ssr)/_components/core/TapTargetButton";
+import { ChevronLeftTapButton, PanelLeftTapButton, PlusTapButton } from "@/components/icons/tap-buttons";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   activeChatActions,
   selectActiveChatAgent,
+  selectActiveChatSessionId,
   type ActiveChatAgent,
 } from "@/lib/redux/slices/activeChatSlice";
 
@@ -34,8 +30,11 @@ import {
 // NAVIGATION HELPERS
 // ============================================================================
 
+/** Navigate while preserving the ?agent= URL param. */
 function navigate(path: string) {
-  window.history.pushState(null, "", path);
+  const agentId = new URLSearchParams(window.location.search).get("agent");
+  const url = agentId ? `${path}?agent=${agentId}` : path;
+  window.history.pushState(null, "", url);
   window.dispatchEvent(new PopStateEvent("popstate"));
 }
 
@@ -46,22 +45,98 @@ function togglePanel() {
   if (cb) cb.checked = !cb.checked;
 }
 
+/** Close the mobile panel drawer — safe no-op on desktop (checkbox never checked). */
+function closeMobilePanel() {
+  const cb = document.getElementById(
+    "shell-panel-mobile",
+  ) as HTMLInputElement | null;
+  if (cb) cb.checked = false;
+}
+
 // ============================================================================
 // CHAT PANEL CONTENT
 // Client island that owns searchQuery and renders mobile search input + lists.
 // The outer panel shell (aside, header row div) is server HTML in layout.tsx.
 // ============================================================================
 
-export function ChatPanelContent({
-  backButton,
+// ============================================================================
+// SIDEBAR SEARCH GROUP
+// Glass pill: [< back] [search input] [+ new chat]
+// Search input is always visible (expanded) — there's enough room in the
+// sidebar width. The input drives searchQuery state for filtering agents/chats.
+// ============================================================================
+
+function SidebarSearchGroup({
+  searchQuery,
+  onSearchChange,
+  leftButton,
+  onNewChat,
 }: {
-  backButton?: React.ReactNode;
+  searchQuery: string;
+  onSearchChange: (q: string) => void;
+  leftButton?: React.ReactNode;
+  onNewChat: () => void;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const hasLeft = !!leftButton;
+
+  return (
+    <div className="relative flex h-11 items-center mx-1">
+      <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-8 rounded-full matrx-glass-thin-border" />
+      <div className="relative flex items-center w-full">
+        {leftButton}
+        <div className={`flex-1 min-w-0 flex items-center gap-1.5 h-8 ${hasLeft ? "" : "pl-3"}`}>
+          <svg
+            className="flex-shrink-0 w-3.5 h-3.5 text-muted-foreground opacity-50"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+          <input
+            ref={inputRef}
+            type="search"
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="flex-1 min-w-0 bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground/70"
+            style={{ fontSize: "16px", lineHeight: 1 }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => {
+                onSearchChange("");
+                inputRef.current?.focus();
+              }}
+              className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Clear search"
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+        <PlusTapButton
+          variant="group"
+          onClick={onNewChat}
+          ariaLabel="New chat"
+        />
+      </div>
+    </div>
+  );
+}
+
+export function ChatPanelContent() {
   const dispatch = useAppDispatch();
   const [searchQuery, setSearchQuery] = useState("");
   const selectedAgent = useAppSelector(selectActiveChatAgent);
+  const activeConversationId = useAppSelector(selectActiveChatSessionId);
 
   const handleSelectChat = useCallback((id: string) => {
+    closeMobilePanel();
     navigate(`/ssr/chat/${id}`);
   }, []);
 
@@ -71,20 +146,30 @@ export function ChatPanelContent({
 
   const handleAgentSelect = useCallback(
     (agent: ActiveChatAgent) => {
+      closeMobilePanel();
       dispatch(activeChatActions.setSelectedAgent(agent));
       navigate("/ssr/chat");
     },
     [dispatch],
   );
 
+  const handleBack = useCallback(() => {
+    const panelCheckbox = document.getElementById(
+      "shell-panel-mobile",
+    ) as HTMLInputElement | null;
+    const menuCheckbox = document.getElementById(
+      "shell-mobile-menu",
+    ) as HTMLInputElement | null;
+    if (panelCheckbox) panelCheckbox.checked = false;
+    if (menuCheckbox) menuCheckbox.checked = true;
+  }, []);
+
   return (
     <>
       {/* ── Mobile header row ─────────────────────────────────────────────
           Direct child of <aside class="shell-panel">.
-          The panel has padding-top: var(--shell-header-h) from shell.css;
-          negative margin-top slides this row back into that reserved zone.
-          Layout: [< back]  [search flex-1]  [+]
-          No padding, no gap — TapTargetButton handles its own 44px spacing. */}
+          Negative margin slides it into the reserved header zone.
+          Layout: [< back] [search] [+ new chat] inside a glass pill group. */}
       <div
         className="lg:hidden flex items-center flex-shrink-0"
         style={{
@@ -92,42 +177,32 @@ export function ChatPanelContent({
           marginTop: "calc(-1 * var(--shell-header-h))",
         }}
       >
-        {/* Back button slot — passed from layout.tsx as server-rendered node */}
-        {backButton}
-
-        {/* Search input — flex-1 fills all available space */}
-        <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
-          <input
-            type="search"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-7 pr-7 py-1.5 text-xs rounded-full bg-muted/50 text-foreground placeholder:text-muted-foreground outline-none focus:bg-muted/80 transition-colors border-0"
-            style={{ fontSize: "16px" }}
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-muted-foreground hover:text-foreground"
-              aria-label="Clear search"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          )}
-        </div>
-
-        {/* New chat — no extra padding, tap-target handles its own sizing */}
-        <TapTargetButtonTransparent
-          onClick={handleNewChat}
-          ariaLabel="New chat"
-          icon={<Plus className="h-4 w-4 text-foreground" />}
+        <SidebarSearchGroup
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          leftButton={
+            <ChevronLeftTapButton
+              variant="group"
+              onClick={handleBack}
+              ariaLabel="Back to main navigation"
+            />
+          }
+          onNewChat={handleNewChat}
         />
       </div>
 
-      {/* ── Panel body — direct sibling of the header row ─────────────── */}
+      {/* ── Panel body ─────────────────────────────────────────────────── */}
       <div className="shell-panel-body">
         <div className="h-full flex flex-col overflow-hidden">
+          {/* Desktop search — no left button (PanelLeft lives in the header strip) */}
+          <div className="hidden lg:block flex-shrink-0">
+            <SidebarSearchGroup
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onNewChat={handleNewChat}
+            />
+          </div>
+
           <SidebarActions
             onNewChat={handleNewChat}
             searchQuery={searchQuery}
@@ -141,6 +216,7 @@ export function ChatPanelContent({
               onAgentSelect={handleAgentSelect}
             />
             <SidebarChats
+              activeRequestId={activeConversationId}
               onSelectChat={handleSelectChat}
               onNewChat={handleNewChat}
               searchQuery={searchQuery}
@@ -157,50 +233,35 @@ export function ChatPanelContent({
 // ============================================================================
 // CHAT DESKTOP HEADER
 // Client island for the desktop panel header strip (lg+).
-// Owns Redux agent state and desktop search — mutually exclusive with mobile.
-// Layout: [collapse] [agent name] [search flex-1] — via SidebarAgentHeader
+// Layout: [PanelLeft toggle] [Agent Name v]
+// Visible whether the panel is open or closed — when closed they float in
+// the header zone; when open they appear as part of the sidebar top.
 // ============================================================================
 
 export function ChatDesktopHeader() {
   const dispatch = useAppDispatch();
   const selectedAgent = useAppSelector(selectActiveChatAgent);
-  const [searchQuery, setSearchQuery] = useState("");
 
-  const handleNewChat = useCallback(() => {
-    navigate("/ssr/chat");
-  }, []);
+  const isAgentLoading = !selectedAgent?.configFetched && !selectedAgent?.name;
+  const displayName = isAgentLoading ? "" : (selectedAgent?.name || "General Chat");
 
   return (
-    <div className="flex items-center w-full min-w-0 pr-1">
-      {/* Collapse + new chat + agent name */}
-      <SidebarAgentHeader
-        onCollapse={togglePanel}
-        onNewChat={handleNewChat}
-        selectedAgent={selectedAgent}
-        onAgentSelect={() => dispatch(activeChatActions.openAgentPicker())}
+    <div className="flex items-center w-full min-w-0">
+      <PanelLeftTapButton
+        onClick={togglePanel}
+        ariaLabel="Toggle sidebar"
+        className="text-muted-foreground"
       />
-
-      {/* Desktop search — fills remaining header strip width */}
-      <div className="relative flex-1 min-w-0">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
-        <input
-          type="search"
-          placeholder="Search..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-7 pr-7 py-1 text-xs rounded-full bg-muted/50 text-foreground placeholder:text-muted-foreground outline-none focus:bg-muted/80 transition-colors border-0"
-          style={{ fontSize: "16px" }}
-        />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery("")}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-muted-foreground hover:text-foreground"
-          aria-label="Clear search"
-        >
-          <X className="h-3 w-3" />
-        </button>
-        )}
-      </div>
+      <button
+        onClick={() => dispatch(activeChatActions.openAgentPicker())}
+        className="flex items-center gap-1 min-w-0 px-1.5 py-1 rounded-md hover:bg-accent/50 transition-colors"
+        title={`Switch agent: ${displayName}`}
+      >
+        <span className="text-xs font-medium text-foreground truncate max-w-[140px]">
+          {displayName}
+        </span>
+        <ChevronDown className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+      </button>
     </div>
   );
 }

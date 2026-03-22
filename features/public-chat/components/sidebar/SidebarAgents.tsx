@@ -61,7 +61,7 @@ function AgentListItem({
             <TooltipTrigger asChild>
                 <button
                     onClick={handleClick}
-                    className={`flex items-center gap-2 w-full px-2 py-[3px] rounded-md text-left transition-colors ${
+                    className={`flex items-center gap-2 w-full px-2 py-[3px] rounded-md text-left transition-colors cursor-pointer ${
                         isSelected
                             ? 'bg-accent/60 text-foreground'
                             : 'text-foreground/70 hover:bg-accent/40 hover:text-foreground'

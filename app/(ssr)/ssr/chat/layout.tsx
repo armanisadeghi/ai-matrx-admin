@@ -10,21 +10,15 @@
 //   Server/client boundary:
 //     - Everything in this file is server HTML — renders on first paint with
 //       zero JS hydration cost.
-//     - ChatPanelBackButton: tiny client island (DOM checkbox ops only).
 //     - ChatPanelContent: client island that owns searchQuery state + renders
-//       the mobile search input and the agent/chat lists.
-//     - ChatDesktopHeader: client island for the desktop header strip (Redux
-//       agent state + desktop search input).
+//       the SidebarSearchGroup pill + agent/chat lists.
+//     - ChatDesktopHeader: client island for the desktop header strip —
+//       just the PanelLeft toggle button.
 //     - ChatWorkspace: large client island (the main chat UI).
-//
-//   Mobile panel header layout (server HTML shell):
-//     [< back]  [search input flex-1]  [+]
-//   The outer row div and its sizing are static; only the interactive
-//   children (back button + search + new chat) are client components.
+//   Agent selector lives in ChatHeaderControls (injected via PageHeaderPortal).
 
 import { AgentsProvider } from "@/features/public-chat/context/DEPRECATED-AgentsContext";
 import { ChatPanelContent, ChatDesktopHeader } from "./_components/ChatSidebarClient";
-import ChatPanelBackButton from "./_components/ChatPanelBackButton";
 import ChatWorkspace from "./_components/ChatWorkspace";
 import ChatMobileHeaderBar from "./_components/ChatMobileHeaderBar";
 
@@ -47,7 +41,7 @@ export default function ChatLayout({
             1. The mobile header row (lg:hidden) — back button + search + new chat
             2. The shell-panel-body — actions + lists + footer
             Both are direct children of aside, never nested inside each other. */}
-        <ChatPanelContent backButton={<ChatPanelBackButton />} />
+        <ChatPanelContent />
       </aside>
 
       {/* Backdrop for mobile panel drawer */}

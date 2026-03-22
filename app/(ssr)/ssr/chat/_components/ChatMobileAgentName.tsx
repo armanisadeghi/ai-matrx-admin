@@ -12,6 +12,10 @@ export default function ChatMobileAgentName() {
     const dispatch = useAppDispatch();
     const selectedAgent = useAppSelector(selectActiveChatAgent);
 
+    // Don't render until agent config is resolved — avoids showing a raw UUID
+    const isLoading = !selectedAgent?.configFetched && !selectedAgent?.name;
+    const displayName = isLoading ? '' : (selectedAgent?.name || 'General Chat');
+
     return (
         <button
             onClick={() => dispatch(activeChatActions.openAgentPicker())}
@@ -20,7 +24,7 @@ export default function ChatMobileAgentName() {
             aria-label="Change AI agent"
         >
             <span className="truncate max-w-[180px]">
-                {selectedAgent?.name || 'General Chat'}
+                {displayName}
             </span>
             <ChevronDown className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
         </button>

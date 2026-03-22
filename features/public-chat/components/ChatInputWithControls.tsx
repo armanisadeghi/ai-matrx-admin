@@ -300,7 +300,7 @@ function InputBottomControls({
                         <TapTargetButtonTransparent
                             disabled={disabled || isUploading}
                             ariaLabel="Add resources"
-                            icon={<Plus className={`w-5 h-5 ${hasResources ? 'text-primary' : 'text-muted-foreground'}`} />}
+                            icon={<Plus className={`w-4 h-4 ${hasResources ? 'text-primary' : 'text-muted-foreground'}`} />}
                         />
                     </PopoverTrigger>
                     <PopoverContent

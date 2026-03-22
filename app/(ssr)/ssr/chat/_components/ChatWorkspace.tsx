@@ -188,8 +188,67 @@ function ChatWorkspaceInner() {
   const agentIdFromUrl = searchParams.get("agent");
 
   // ========================================================================
+  // URL HELPERS — agent param is always kept in sync with Redux
+  // ========================================================================
+
+  /** Build a URL that preserves the ?agent= param alongside any path. */
+  const buildUrl = useCallback(
+    (path: string, agentId?: string): string => {
+      const id = agentId ?? selectedAgent.promptId;
+      return id ? `${path}?agent=${id}` : path;
+    },
+    [selectedAgent.promptId],
+  );
+
+  // ========================================================================
   // SYNC EFFECTS
   // ========================================================================
+
+  // On mount / URL change: if ?agent= is in the URL and Redux doesn't have it,
+  // hydrate the full agent from URL. Check DEFAULT_AGENTS first (free, sync),
+  // then let loadAgentConfig fetch from DB. Never use the raw UUID as a name.
+  useEffect(() => {
+    if (!agentIdFromUrl) return;
+    if (agentIdFromUrl === selectedAgent.promptId) return;
+    if (isInConversation) return;
+
+    // Fast path: agent is in the built-in list — dispatch immediately with full data
+    const builtIn = DEFAULT_AGENTS.find((a) => a.promptId === agentIdFromUrl);
+    if (builtIn) {
+      dispatch(
+        activeChatActions.setSelectedAgent({
+          promptId: builtIn.promptId,
+          name: builtIn.name,
+          description: builtIn.description,
+          variableDefaults: builtIn.variableDefaults,
+          configFetched: true,
+        }),
+      );
+      return;
+    }
+
+    // Unknown agent — dispatch with empty name so nothing renders until DB fetch
+    // completes. loadAgentConfig fires next render cycle because configFetched=false.
+    dispatch(
+      activeChatActions.setSelectedAgent({
+        promptId: agentIdFromUrl,
+        name: "",
+        configFetched: false,
+      }),
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agentIdFromUrl]);
+
+  // Keep ?agent= in the URL whenever the selected agent changes.
+  // Runs after mount; updates the URL without triggering a navigation.
+  useEffect(() => {
+    if (!selectedAgent.promptId) return;
+    const currentParams = new URLSearchParams(window.location.search);
+    if (currentParams.get("agent") === selectedAgent.promptId) return;
+    const base = window.location.pathname;
+    const newUrl = `${base}?agent=${selectedAgent.promptId}`;
+    window.history.replaceState(null, "", newUrl);
+  }, [selectedAgent.promptId]);
 
   // Focus on agent URL change
   useEffect(() => {
@@ -205,6 +264,7 @@ function ChatWorkspaceInner() {
       if (isInConversation) {
         setIsInConversation(false);
         setActiveConversationId(null);
+        dispatch(activeChatActions.setActiveSessionId(null));
       }
       return;
     }
@@ -215,6 +275,8 @@ function ChatWorkspaceInner() {
     // Load the conversation from the database and switch to conversation view
     setIsInConversation(true);
     setActiveConversationId(conversationIdFromUrl);
+    dispatch(activeChatActions.setActiveSessionId(conversationIdFromUrl));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationIdFromUrl]);
 
   // ========================================================================
@@ -226,8 +288,8 @@ function ChatWorkspaceInner() {
       if (!newConversationId) return;
       if (conversationIdFromUrl === newConversationId) return;
 
-      // Update URL
-      const url = `/ssr/chat/${newConversationId}`;
+      // Update URL — preserve agent param
+      const url = buildUrl(`/ssr/chat/${newConversationId}`);
       window.history.pushState(null, "", url);
 
       // Notify sidebar
@@ -238,8 +300,9 @@ function ChatWorkspaceInner() {
       );
 
       setActiveConversationId(newConversationId);
+      dispatch(activeChatActions.setActiveSessionId(newConversationId));
     },
-    [conversationIdFromUrl],
+    [conversationIdFromUrl, buildUrl, dispatch],
   );
 
   // ========================================================================
@@ -303,6 +366,25 @@ function ChatWorkspaceInner() {
   useEffect(() => {
     if (!selectedAgent.promptId || selectedAgent.configFetched) return;
 
+    // Fast path: agent is in the built-in list — no DB round-trip needed.
+    // This handles the case where a sidebar selection sets the agent without
+    // all fields (e.g. variableDefaults not populated on user prompt items).
+    const builtIn = DEFAULT_AGENTS.find(
+      (a) => a.promptId === selectedAgent.promptId,
+    );
+    if (builtIn && !selectedAgent.name) {
+      dispatch(
+        activeChatActions.setSelectedAgent({
+          promptId: builtIn.promptId,
+          name: builtIn.name,
+          description: builtIn.description,
+          variableDefaults: builtIn.variableDefaults,
+          configFetched: true,
+        }),
+      );
+      return;
+    }
+
     let cancelled = false;
 
     async function loadAgentConfig() {
@@ -320,7 +402,8 @@ function ChatWorkspaceInner() {
         if (cancelled) return;
 
         if (error) {
-          // PGRST116 = no rows found (agent not in prompts table) — not an error
+          // PGRST116 = no rows found (agent not in prompts table).
+          // Fall back to DEFAULT_AGENTS before giving up.
           if (error.code !== "PGRST116") {
             console.warn(
               "[loadAgentConfig] DB error for",
@@ -328,9 +411,16 @@ function ChatWorkspaceInner() {
               error,
             );
           }
+          const fallback = DEFAULT_AGENTS.find(
+            (a) => a.promptId === selectedAgent.promptId,
+          );
           dispatch(
             activeChatActions.setSelectedAgent({
               ...selectedAgent,
+              name: fallback?.name || selectedAgent.name || "Unknown Agent",
+              description: fallback?.description || selectedAgent.description,
+              variableDefaults:
+                fallback?.variableDefaults ?? selectedAgent.variableDefaults,
               configFetched: true,
             }),
           );
@@ -347,6 +437,7 @@ function ChatWorkspaceInner() {
           dispatch(
             activeChatActions.setSelectedAgent({
               ...selectedAgent,
+              name: data.name || selectedAgent.name || "Unknown Agent",
               description:
                 (data.description ?? selectedAgent.description) || undefined,
               variableDefaults:
@@ -360,25 +451,39 @@ function ChatWorkspaceInner() {
             }),
           );
         } else {
-          // Null data with no error — treat as not found
+          // Null data with no error — treat as not found, fall back to defaults
+          const fallback = DEFAULT_AGENTS.find(
+            (a) => a.promptId === selectedAgent.promptId,
+          );
           dispatch(
             activeChatActions.setSelectedAgent({
               ...selectedAgent,
+              name: fallback?.name || selectedAgent.name || "Unknown Agent",
+              description: fallback?.description || selectedAgent.description,
+              variableDefaults:
+                fallback?.variableDefaults ?? selectedAgent.variableDefaults,
               configFetched: true,
             }),
           );
         }
       } catch (err) {
-        // Network-level failure — log it so we can debug
+        // Network-level failure — fall back to DEFAULT_AGENTS if possible
         if (!cancelled) {
           console.warn(
             "[loadAgentConfig] Unexpected error for",
             selectedAgent.promptId,
             err,
           );
+          const fallback = DEFAULT_AGENTS.find(
+            (a) => a.promptId === selectedAgent.promptId,
+          );
           dispatch(
             activeChatActions.setSelectedAgent({
               ...selectedAgent,
+              name: fallback?.name || selectedAgent.name || "Unknown Agent",
+              description: fallback?.description || selectedAgent.description,
+              variableDefaults:
+                fallback?.variableDefaults ?? selectedAgent.variableDefaults,
               configFetched: true,
             }),
           );
@@ -399,14 +504,19 @@ function ChatWorkspaceInner() {
   const handleAgentSelect = useCallback(
     (agent: ActiveChatAgent) => {
       dispatch(activeChatActions.setSelectedAgent(agent));
+      dispatch(activeChatActions.setActiveSessionId(null));
       setIsInConversation(false);
       setActiveConversationId(null);
       setModelOverride(null);
       setModelSettings({});
       setIsSettingsOpen(false);
       setFocusKey((k) => k + 1);
+      // Navigate to fresh chat with new agent param
+      const url = buildUrl("/ssr/chat", agent.promptId);
+      window.history.pushState(null, "", url);
+      window.dispatchEvent(new PopStateEvent("popstate"));
     },
-    [dispatch],
+    [dispatch, buildUrl],
   );
 
   const handleModeSelect = useCallback(
@@ -440,10 +550,11 @@ function ChatWorkspaceInner() {
     setActiveConversationId(null);
     setModelOverride(null);
     setModelSettings({});
-    const url = "/ssr/chat";
+    dispatch(activeChatActions.setActiveSessionId(null));
+    const url = buildUrl("/ssr/chat");
     window.history.pushState(null, "", url);
     window.dispatchEvent(new PopStateEvent("popstate"));
-  }, []);
+  }, [buildUrl, dispatch]);
 
   // Handle first message submit from welcome screen → transition to conversation
   const handleFirstSubmit = useCallback(
@@ -501,8 +612,11 @@ function ChatWorkspaceInner() {
   // ========================================================================
 
   const hasVariables = activeVariables.length > 0;
-  const agentName = selectedAgent.name || "Chat";
-  const headerLabel = selectedAgent.name || "Chat";
+  // Never show a raw UUID as the agent name — show empty string while loading
+  // so the UI renders a neutral placeholder until configFetched resolves.
+  const isAgentLoading = !selectedAgent.configFetched && !selectedAgent.name;
+  const agentName = isAgentLoading ? "" : (selectedAgent.name || "Chat");
+  const headerLabel = isAgentLoading ? "" : (selectedAgent.name || "Chat");
 
   // ========================================================================
   // LOADING STATE
@@ -563,8 +677,9 @@ function ChatWorkspaceInner() {
             />
           )}
 
-          {/* Unified Conversation */}
+          {/* Unified Conversation — key forces remount when switching conversations */}
           <ConversationViewWithFirstMessage
+            key={activeConversationId ?? "new"}
             agentId={selectedAgent.promptId}
             apiMode="agent"
             conversationId={activeConversationId ?? undefined}

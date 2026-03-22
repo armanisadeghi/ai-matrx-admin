@@ -190,7 +190,9 @@ function ConversationItem({
 
     const handleSelect = (e: React.MouseEvent) => {
         if (e.metaKey || e.ctrlKey) {
-            window.open(`/ssr/chat/${item.id}`, '_blank');
+            const agentId = new URLSearchParams(window.location.search).get("agent");
+            const url = agentId ? `/ssr/chat/${item.id}?agent=${agentId}` : `/ssr/chat/${item.id}`;
+            window.open(url, '_blank');
             return;
         }
         onSelect();
@@ -202,7 +204,7 @@ function ConversationItem({
                 isActive ? 'bg-accent/70 dark:bg-accent/50' : 'hover:bg-accent/40 dark:hover:bg-accent/20'
             }`}>
                 <div className="flex items-center">
-                    <button onClick={handleSelect} className="flex-1 min-w-0 px-2.5 py-1 text-left">
+                    <button onClick={handleSelect} className="flex-1 min-w-0 px-2.5 py-1 text-left cursor-pointer">
                         <div className={`text-[11px] truncate leading-relaxed ${
                             isActive ? 'text-foreground font-medium' : 'text-foreground/70'
                         }`}>
@@ -273,7 +275,9 @@ function SharedConversationItem({
 
     const handleSelect = (e: React.MouseEvent) => {
         if (e.metaKey || e.ctrlKey) {
-            window.open(`/ssr/chat/${item.id}`, '_blank');
+            const agentId = new URLSearchParams(window.location.search).get("agent");
+            const url = agentId ? `/ssr/chat/${item.id}?agent=${agentId}` : `/ssr/chat/${item.id}`;
+            window.open(url, '_blank');
             return;
         }
         onSelect();
@@ -283,7 +287,7 @@ function SharedConversationItem({
         <div className={`relative group rounded-md transition-all duration-150 ${
             isActive ? 'bg-accent/70 dark:bg-accent/50' : 'hover:bg-accent/40 dark:hover:bg-accent/20'
         }`}>
-            <button onClick={handleSelect} className="w-full px-2.5 py-1 text-left">
+            <button onClick={handleSelect} className="w-full px-2.5 py-1 text-left cursor-pointer">
                 <div className={`text-[11px] truncate leading-relaxed ${
                     isActive ? 'text-foreground font-medium' : 'text-foreground/70'
                 }`}>

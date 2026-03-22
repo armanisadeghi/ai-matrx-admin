@@ -8,6 +8,10 @@
 // Features:
 //   - Admin-only: localhost toggle + block mode toggle
 //   - Share button when in a conversation
+//
+// NOTE: The agent selector lives in ChatDesktopHeader (panel header strip),
+// not here, because it needs to coexist with the PanelLeft toggle in the
+// same fixed strip that tracks the panel sidebar width.
 
 import { Share2, Blocks } from 'lucide-react';
 import PageHeaderPortal from '@/app/(ssr)/_components/PageHeaderPortal';

@@ -1,9 +1,10 @@
 import ButtonRow from "@/app/(ssr)/_components/core/ButtonRow";
 import AddFilterSearchRow from "@/app/(ssr)/_components/core/AddFilterSearchRow";
+import AllButtonsShowcase from "@/app/(ssr)/_components/core/AllButtonsShowcase";
 
 export const metadata = {
-  title: "Dashboard | AI Matrx",
-  description: "Your central hub for all activities and insights",
+  title: "Button Demo | AI Matrx",
+  description: "TapTargetButton showcase — all icons and variants",
 };
 
 export default function DashboardLayout({
@@ -13,19 +14,18 @@ export default function DashboardLayout({
 }) {
   return (
     <>
-      {/* <PageHeader>
-        <span className="shell-glass h-[1.875rem] px-3 rounded-full text-[0.6875rem] font-medium text-(--shell-nav-text-hover) flex items-center">
-          Dashboard
-        </span>
-      </PageHeader> */}
-
       <div className="flex justify-center">
         <AddFilterSearchRow />
       </div>
 
-      <div className="mt-16 px-2">
+      <div className="mt-16">
         <ButtonRow />
       </div>
+
+      <div className="mt-12">
+        <AllButtonsShowcase />
+      </div>
+
       <div className="flex flex-col pt-16">{children}</div>
     </>
   );

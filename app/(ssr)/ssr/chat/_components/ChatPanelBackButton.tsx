@@ -9,7 +9,7 @@
 // This gives users a seamless "go back to main navigation" gesture.
 // Both operations are pure DOM checkbox manipulation — zero React re-renders.
 
-import { TapTargetButtonTransparent } from "@/app/(ssr)/_components/core/TapTargetButton";
+import { ChevronLeftTapButton } from "@/components/icons/tap-buttons";
 
 export default function ChatPanelBackButton() {
   function handleBack() {
@@ -25,12 +25,10 @@ export default function ChatPanelBackButton() {
   }
 
   return (
-    <TapTargetButtonTransparent
+    <ChevronLeftTapButton
+      variant="transparent"
       onClick={handleBack}
       ariaLabel="Back to main navigation"
-      strokeWidth={1.75}
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
-    </TapTargetButtonTransparent>
+    />
   );
 }

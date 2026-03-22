@@ -399,7 +399,7 @@ export function ConversationInput({
 
   const containerClass = [
     "flex flex-col gap-1.5 w-full bg-background",
-    seamless ? "" : "border border-border rounded-3xl px-3 py-2",
+    seamless ? "" : "border border-border rounded-3xl py-2",
   ]
     .filter(Boolean)
     .join(" ");
@@ -409,7 +409,7 @@ export function ConversationInput({
     <div className={containerClass}>
       {/* ── Admin global debug toolbar ────────────────────────────────── */}
       {isAdmin && isGlobalDebugMode && (
-        <div className="flex items-center gap-2 px-1 py-1 bg-red-950/20 border-b border-red-800/40 rounded-t-2xl">
+        <div className="flex items-center gap-2 px-3 py-1 bg-red-950/20 border-b border-red-800/40 rounded-t-2xl">
           <span className="text-[10px] font-semibold text-red-400 uppercase tracking-wide">
             Debug
           </span>
@@ -433,7 +433,7 @@ export function ConversationInput({
         variableDefaults.map((varDef) => {
           const isExpanded = expandedVariable === varDef.name;
           return (
-            <div key={varDef.name} className="flex items-center gap-2 px-1">
+            <div key={varDef.name} className="flex items-center gap-2 px-3">
               <button
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 onClick={() =>
@@ -473,7 +473,7 @@ export function ConversationInput({
 
       {/* ── Resource chips ────────────────────────────────────────────── */}
       {resources.length > 0 && (
-        <div className="px-1">
+        <div className="px-3">
           <ResourceChips
             resources={resources}
             onRemove={(resource) => {
@@ -511,7 +511,7 @@ export function ConversationInput({
                   isUploading ? (
                     <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                   ) : (
-                    <Plus className="w-5 h-5 text-muted-foreground" />
+                    <Plus className="w-4 h-4 text-muted-foreground" />
                   )
                 }
               />
@@ -620,7 +620,7 @@ export function ConversationInput({
 
       {/* ── Model picker (inline, text-only for dynamic_model agents) ── */}
       {showModelPicker && (
-        <div className="relative px-1">
+        <div className="relative px-3">
           <button
             type="button"
             onClick={() => setIsModelPickerOpen(!isModelPickerOpen)}
@@ -652,7 +652,7 @@ export function ConversationInput({
 
       {/* ── Submit hint ───────────────────────────────────────────────── */}
       {showShiftEnterHint && (
-        <p className="text-[10px] text-muted-foreground/60 px-1">
+        <p className="text-[10px] text-muted-foreground/60 px-3">
           <kbd className="text-[9px]">⌘+Enter</kbd> to send,{" "}
           <kbd className="text-[9px]">Shift+Enter</kbd> for new line
         </p>
@@ -660,7 +660,7 @@ export function ConversationInput({
 
       {/* ── Submit-on-enter toggle ─────────────────────────────────────── */}
       {showSubmitOnEnterToggle && (
-        <div className="flex items-center gap-2 px-1">
+        <div className="flex items-center gap-2 px-3">
           <button
             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
             onClick={() => setSubmitOnEnter(!submitOnEnter)}
