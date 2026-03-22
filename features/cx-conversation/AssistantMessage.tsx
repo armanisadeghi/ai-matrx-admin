@@ -20,6 +20,7 @@ import {
   Download,
   Link as LinkIcon,
   Loader2,
+  Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TapTargetButtonTransparent } from "@/app/(ssr)/_components/core/TapTargetButton";
