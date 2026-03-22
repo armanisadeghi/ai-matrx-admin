@@ -521,7 +521,7 @@ function ChatWorkspaceInner() {
           onShare={() => setIsShareOpen(true)}
         />
         {agentPickerEl}
-        <div className="h-full flex flex-col items-center justify-center">
+        <div className="h-full flex flex-col items-center justify-center overflow-hidden">
           <MessageCircle className="h-8 w-8 text-primary animate-pulse mb-3" />
           <p className="text-sm text-muted-foreground">
             Loading conversation...
@@ -550,7 +550,7 @@ function ChatWorkspaceInner() {
           onShare={() => setIsShareOpen(true)}
         />
         {agentPickerEl}
-        <div className="h-full flex flex-col">
+        <div className="h-full flex flex-col overflow-hidden">
           {/* Share Modal */}
           {isShareOpen && shareConversationId && (
             <ShareModal
@@ -602,7 +602,9 @@ function ChatWorkspaceInner() {
     return qs ? `?${qs}` : pathname;
   })();
 
-  // Guided mode: pin input to bottom
+  // Guided mode: pin input to bottom.
+  // The content above (agent name) fills available scroll space.
+  // Input stays anchored at the visible bottom — safe with keyboard open.
   if (useGuidedVars && hasVariables) {
     return (
       <>
@@ -616,8 +618,9 @@ function ChatWorkspaceInner() {
           onShare={() => setIsShareOpen(true)}
         />
         {agentPickerEl}
-        <div className="h-full flex flex-col">
-          <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="h-full flex flex-col overflow-hidden">
+          {/* Scrollable header area above the pinned input */}
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
             <div className="flex flex-col items-center justify-end min-h-full px-3 md:px-8 pb-4">
               <div className="w-full max-w-3xl text-center">
                 <h1
@@ -634,12 +637,8 @@ function ChatWorkspaceInner() {
             </div>
           </div>
 
-          <div
-            className="flex-shrink-0 px-2 md:px-4 bg-transparent"
-            style={{
-              paddingBottom: "max(0.5rem, env(safe-area-inset-bottom, 0px))",
-            }}
-          >
+          {/* Pinned bottom input — stays visible when keyboard opens */}
+          <div className="flex-shrink-0 px-2 md:px-4 bg-transparent pb-safe">
             <div className="w-full max-w-3xl mx-auto">
               <GuidedVariableInputs
                 variableDefaults={activeVariables}
@@ -699,7 +698,15 @@ function ChatWorkspaceInner() {
     );
   }
 
-  // Classic mode (or no variables): centered layout
+  // Classic mode (or no variables): centered layout.
+  //
+  // Mobile layout strategy:
+  //   - Outer wrapper fills the panel content area (h-full from defined parent)
+  //   - Single overflow-y-auto scroll region so iOS doesn't double-scroll
+  //   - Content centered via min-h-full + justify-center — works because
+  //     parent now has a real height from --visual-viewport-height
+  //   - Input anchors to visible bottom when keyboard opens (parent shrinks)
+  //   - pb-safe handles iPhone home indicator / Android nav bar
   return (
     <>
       <ChatHeaderControls
@@ -712,10 +719,17 @@ function ChatWorkspaceInner() {
         onShare={() => setIsShareOpen(true)}
       />
       {agentPickerEl}
-      <div className="h-full flex flex-col">
-        <div className="flex-1 min-h-0 overflow-y-auto">
+      {/* h-full resolves against .shell-panel-content which has a defined height
+          via --visual-viewport-height. overflow-hidden prevents double scrollbars. */}
+      <div className="h-full flex flex-col overflow-hidden">
+        {/* Single scroll region — no nested scroll containers on mobile */}
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
           <div
-            className={`min-h-full flex flex-col items-center px-3 md:px-8 ${varCount > 2 ? "justify-start pt-8 md:pt-16 md:justify-center" : "justify-center"}`}
+            className={`min-h-full flex flex-col items-center px-3 md:px-8 ${
+              varCount > 2
+                ? "justify-start pt-8 md:pt-16 md:justify-center"
+                : "justify-center"
+            }`}
           >
             <div className="w-full max-w-3xl">
               <div
@@ -804,7 +818,7 @@ function ChatWorkspaceInner() {
                 />
               )}
 
-              <div className="flex items-center justify-between mt-3 md:mt-6 pb-4">
+              <div className="flex items-center justify-between mt-3 md:mt-6 pb-safe">
                 {hasVariables ? (
                   <BackToStartButton
                     onBack={handleBackToStart}

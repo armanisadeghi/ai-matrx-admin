@@ -114,7 +114,7 @@ export function ConversationShell({
       {/* ── Main content: messages + optional canvas ─────────────────── */}
       <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
           <div className="max-w-[800px] mx-auto w-full">
             <MessageList
               sessionId={sessionId}

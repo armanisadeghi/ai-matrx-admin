@@ -9,6 +9,7 @@ import DeferredShellData from "./_components/DeferredShellData";
 import DevPerfOverlayIsland from "./_components/DevPerfOverlayIsland";
 import GlassPortal from "./_components/GlassPortal";
 import NavActiveSync from "./_components/NavActiveSync";
+import VisualViewportSync from "./_components/VisualViewportSync";
 import AdminIndicatorIsland from "./_components/AdminIndicatorIsland";
 import AdminNavInjector from "./_components/AdminNavInjector";
 import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
@@ -80,6 +81,7 @@ export default async function SSRLayout({
         </GlassPortal>
 
         <NavActiveSync />
+        <VisualViewportSync />
         <DevPerfOverlayIsland />
         <AdminIndicatorIsland />
         <DebugIndicatorManager />

@@ -23,25 +23,27 @@ export default function ChatMobileHeaderBar() {
     // pr-11 reserves 44px on the right for the shell's UserMenuTrigger (avatar).
     // z-[41] matches the shell header elements — avatar is also z-41-ish.
     <div
-      className="lg:hidden fixed top-0 left-0 right-0 z-[41] flex items-center pr-11"
+      className="lg:hidden fixed top-0 left-0 right-0 z-[41] flex items-center pr-11 pointer-events-none"
       style={{ height: "var(--shell-header-h)" }}
     >
       {/* Hamburger — pure CSS label for #shell-panel-mobile checkbox.
                 Opens the panel sidebar drawer via shell.css :has() rule. Zero JS. */}
-      <TapTargetButton
-        as="label"
-        htmlFor="shell-panel-mobile"
-        ariaLabel="Open chat menu"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-        />
-      </TapTargetButton>
+      <span className="pointer-events-auto flex-shrink-0">
+        <TapTargetButton
+          as="label"
+          htmlFor="shell-panel-mobile"
+          ariaLabel="Open chat menu"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+          />
+        </TapTargetButton>
+      </span>
 
       {/* New chat — Link wrapper preserves native Cmd+click → new tab behaviour. */}
-      <Link href="/ssr/chat" aria-label="New chat" className="flex-shrink-0">
+      <Link href="/ssr/chat" aria-label="New chat" className="flex-shrink-0 pointer-events-auto">
         <TapTargetButton
           ariaLabel="New chat"
           icon={<SquarePen className="w-4 h-4 text-foreground" />}
@@ -51,12 +53,14 @@ export default function ChatMobileHeaderBar() {
       {/* Agent name — takes remaining center space.
                 ChatMobileAgentName (tiny client island) hydrates in-place.
                 Visual shape is identical before and after hydration → no layout shift. */}
-      <div className="flex-1 flex items-center justify-center min-w-0">
+      <div className="flex-1 flex items-center justify-center min-w-0 pointer-events-auto">
         <ChatMobileAgentName />
       </div>
 
       {/* Admin toggles — client island, renders nothing for non-admins. */}
-      <ChatMobileAdminToggles />
+      <span className="pointer-events-auto flex-shrink-0">
+        <ChatMobileAdminToggles />
+      </span>
     </div>
   );
 }
