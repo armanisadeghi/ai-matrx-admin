@@ -112,6 +112,10 @@ export function MessageList({
     onMessageContentChange?.(messageId, newContent);
   };
 
+  // Always provide content change handler — Redux state must stay in sync
+  // regardless of whether the parent also wants a callback.
+  const contentChangeHandler = handleContentChange;
+
   // Filter visible messages
   const visibleMessages = messages.filter((msg) => {
     if (msg.role === "system") return showSystemMessages;
@@ -163,9 +167,7 @@ export function MessageList({
                 <div className={contentClass}>
                   <UserMessage
                     message={message}
-                    onContentChange={
-                      onMessageContentChange ? handleContentChange : undefined
-                    }
+                    onContentChange={contentChangeHandler}
                     compact={compact}
                   />
                 </div>
@@ -189,9 +191,7 @@ export function MessageList({
                       isStreamActive={false}
                       compact={compact}
                       audioControls={audioControls}
-                      onContentChange={
-                        onMessageContentChange ? handleContentChange : undefined
-                      }
+                      onContentChange={contentChangeHandler}
                     />
                   )}
                 </div>

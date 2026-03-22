@@ -296,6 +296,19 @@ const chatConversationsSlice = createSlice({
         },
 
         /**
+         * Reset a message's display content back to its original snapshot.
+         * Only works when originalDisplayContent has been set (DB-loaded or post-stream).
+         */
+        resetMessageContent: (state, action: PayloadAction<{ sessionId: string; messageId: string }>) => {
+            const session = state.sessions[action.payload.sessionId];
+            if (!session) return;
+            const msg = session.messages.find(m => m.id === action.payload.messageId);
+            if (!msg || msg.originalDisplayContent === undefined) return;
+            msg.content = msg.originalDisplayContent;
+            session.updatedAt = Date.now();
+        },
+
+        /**
          * Apply a historical content snapshot back to a message in Redux after
          * the cx_message_edit RPC has persisted the change to the database.
          * The previous live content will already be in contentHistory (the RPC appended it).

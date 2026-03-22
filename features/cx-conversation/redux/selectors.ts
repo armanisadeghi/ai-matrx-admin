@@ -174,3 +174,29 @@ export const selectMessageHistoryCount = (state: RootState, sessionId: string, m
     const history = msg?.contentHistory as CxContentHistoryEntry[] | null | undefined;
     return Array.isArray(history) ? history.length : 0;
 };
+
+// ============================================================================
+// UNSAVED CHANGES SELECTORS
+// ============================================================================
+
+/** Whether a specific message has locally edited content that differs from the snapshot. */
+export const selectMessageHasUnsavedChanges = (state: RootState, sessionId: string, messageId: string): boolean => {
+    const msg = state.chatConversations.sessions[sessionId]?.messages.find(m => m.id === messageId);
+    if (!msg || msg.originalDisplayContent === undefined) return false;
+    return msg.content !== msg.originalDisplayContent;
+};
+
+/** Whether ANY message in the session has unsaved local edits. */
+export const selectSessionHasUnsavedChanges = (state: RootState, sessionId: string): boolean => {
+    const messages = state.chatConversations.sessions[sessionId]?.messages;
+    if (!messages) return false;
+    return messages.some(msg =>
+        msg.originalDisplayContent !== undefined && msg.content !== msg.originalDisplayContent
+    );
+};
+
+/** The original display content snapshot for a message (for reset). */
+export const selectMessageOriginalContent = (state: RootState, sessionId: string, messageId: string): string | undefined => {
+    const msg = state.chatConversations.sessions[sessionId]?.messages.find(m => m.id === messageId);
+    return msg?.originalDisplayContent;
+};

@@ -285,6 +285,8 @@ export const sendMessage = createAsyncThunk<
                 updates: {
                     status: 'complete',
                     content: accumulatedContent,
+                    rawContent: [{ type: 'text', text: accumulatedContent }],
+                    originalDisplayContent: accumulatedContent,
                     ...(toolUpdates.length > 0 ? { toolUpdates } : {}),
                     // Block mode: keep streamEvents so StreamingContentBlocks renders interleaved order.
                     // Non-block mode: clear streamEvents — rendered live during stream; now use

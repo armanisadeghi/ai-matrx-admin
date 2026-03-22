@@ -59,12 +59,13 @@ export const editMessage = createAsyncThunk<
             updatedContentHistory,
         }));
 
-        // Also update the display content and toolUpdates
+        // Update display content, toolUpdates, and reset the snapshot to the saved state
         dispatch(chatConversationsActions.updateMessage({
             sessionId,
             messageId,
             updates: {
                 content: displayContent,
+                originalDisplayContent: displayContent,
                 toolUpdates: toolUpdates.length > 0 ? toolUpdates : undefined,
             },
         }));

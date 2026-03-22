@@ -12,7 +12,7 @@ import type { RootState, AppDispatch } from '@/lib/redux/store';
 import { chatConversationsActions } from '../slice';
 import type { ConversationMessage } from '../types';
 import { processDbMessagesForDisplay } from '@/features/public-chat/utils/cx-content-converter';
-import type { CxConversationWithMessages, CxToolCall } from '@/features/public-chat/types/cx-tables';
+import type { CxConversationWithMessages, CxToolCall, CxContentHistoryEntry } from '@/features/public-chat/types/cx-tables';
 
 interface LoadConversationPayload {
     sessionId: string;
@@ -69,12 +69,13 @@ export const loadConversationHistory = createAsyncThunk<
                     : new Date(msg.timestamp).toISOString(),
                 // Preserve all raw DB data
                 rawContent: msg.rawContent,
+                originalDisplayContent: msg.content,
                 dbRole: msg.dbRole,
                 dbStatus: msg.dbStatus,
                 conversationId: msg.conversationId,
                 position: msg.position,
                 dbMetadata: msg.dbMetadata,
-                contentHistory: msg.contentHistory,
+                contentHistory: (Array.isArray(msg.contentHistory) ? msg.contentHistory : null) as CxContentHistoryEntry[] | null,
                 createdAt: msg.createdAt,
                 deletedAt: msg.deletedAt,
                 // Derived

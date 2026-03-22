@@ -8,6 +8,8 @@ import { MessageList } from "@/features/cx-conversation/MessageList";
 import { ConversationInput } from "@/features/cx-conversation/ConversationInput";
 import type { ConversationInputProps } from "@/features/cx-conversation/ConversationInput";
 import { useCartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
+import { UnsavedChangesIndicator } from "@/features/cx-conversation/UnsavedChangesIndicator";
+import { useUnsavedChangesGuard } from "@/features/cx-conversation/hooks/useUnsavedChangesGuard";
 
 const ResizableCanvas = dynamic(
   () => import("@/features/canvas/core/ResizableCanvas").then((m) => ({ default: m.ResizableCanvas })),
@@ -74,6 +76,9 @@ export function ConversationShell({
   // Single Cartesia connection shared across this conversation
   const audioControls = useCartesiaControls();
 
+  // Warn user on page leave if unsaved edits exist
+  useUnsavedChangesGuard(sessionId);
+
   return (
     <div
       className={`flex flex-col h-full overflow-hidden bg-textured w-full ${className ?? ""}`}
@@ -102,6 +107,9 @@ export function ConversationShell({
           )}
         </div>
       )}
+
+      {/* ── Unsaved changes indicator ──────────────────────────────── */}
+      <UnsavedChangesIndicator sessionId={sessionId} />
 
       {/* ── Main content: messages + optional canvas ─────────────────── */}
       <div className="flex flex-1 overflow-hidden min-h-0">

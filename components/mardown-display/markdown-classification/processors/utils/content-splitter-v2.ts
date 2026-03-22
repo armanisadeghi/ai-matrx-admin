@@ -52,6 +52,7 @@ export interface ContentBlock {
         | "research"
         | "diagram"
         | "math_problem"
+        | "decision"
         | string;
     content: string;
     language?: string;
@@ -246,6 +247,134 @@ const XML_TAG_BLOCKS = {
     resources: ['<resources>'],
     research: ['<research>']
 } as const;
+
+// ============================================================================
+// ATTRIBUTE-BEARING XML BLOCKS (tags with key="value" attributes)
+// ============================================================================
+
+const ATTRIBUTE_XML_BLOCKS = ['decision'] as const;
+type AttributeXmlBlockType = typeof ATTRIBUTE_XML_BLOCKS[number];
+
+/** Extracts key="value" pairs from an XML opening tag string. */
+export function parseXmlAttributes(openingTag: string): Record<string, string> {
+    const attrs: Record<string, string> = {};
+    const attrRegex = /(\w+)\s*=\s*"([^"]*)"/g;
+    let match: RegExpExecArray | null;
+    while ((match = attrRegex.exec(openingTag)) !== null) {
+        attrs[match[1]] = match[2];
+    }
+    return attrs;
+}
+
+interface AttributeXmlDetection {
+    type: AttributeXmlBlockType;
+    fullOpeningTag: string;
+    attributes: Record<string, string>;
+}
+
+function detectAttributeXmlBlock(line: string): AttributeXmlDetection | null {
+    const trimmed = line.trim();
+    for (const type of ATTRIBUTE_XML_BLOCKS) {
+        const prefix = `<${type}`;
+        if (trimmed.startsWith(prefix) && (trimmed[prefix.length] === ' ' || trimmed[prefix.length] === '>')) {
+            const closeBracket = trimmed.indexOf('>');
+            if (closeBracket === -1) return null;
+            const fullOpeningTag = trimmed.slice(0, closeBracket + 1);
+            const attributes = parseXmlAttributes(fullOpeningTag);
+            return { type, fullOpeningTag, attributes };
+        }
+    }
+    return null;
+}
+
+interface DecisionOption {
+    id: string;
+    label: string;
+    text: string;
+}
+
+interface DecisionData {
+    id: string;
+    prompt: string;
+    options: DecisionOption[];
+}
+
+function extractDecisionBlock(
+    detection: AttributeXmlDetection,
+    startIndex: number,
+    lines: string[]
+): ExtractionResult {
+    const closingTag = `</${detection.type}>`;
+    const rawLines: string[] = [];
+    let i = startIndex;
+    let foundClosingTag = false;
+
+    const firstLine = removeMatrxPattern(lines[i]).trim();
+    const afterOpening = firstLine.slice(firstLine.indexOf('>') + 1);
+
+    if (afterOpening.includes(closingTag)) {
+        const inner = afterOpening.slice(0, afterOpening.indexOf(closingTag)).trim();
+        if (inner) rawLines.push(inner);
+        foundClosingTag = true;
+        i++;
+    } else {
+        if (afterOpening.trim()) rawLines.push(afterOpening.trim());
+        i++;
+
+        while (i < lines.length) {
+            const current = removeMatrxPattern(lines[i]).trim();
+            const closingIdx = current.indexOf(closingTag);
+            if (closingIdx !== -1) {
+                const before = current.slice(0, closingIdx).trim();
+                if (before) rawLines.push(before);
+                foundClosingTag = true;
+                i++;
+                break;
+            }
+            if (current === closingTag) {
+                foundClosingTag = true;
+                i++;
+                break;
+            }
+            rawLines.push(lines[i]);
+            i++;
+        }
+    }
+
+    const innerContent = rawLines.join('\n');
+
+    const options: DecisionOption[] = [];
+    const optionRegex = /<option\s+label="([^"]*)">([\s\S]*?)<\/option>/g;
+    let optMatch: RegExpExecArray | null;
+    let optIndex = 0;
+    while ((optMatch = optionRegex.exec(innerContent)) !== null) {
+        options.push({
+            id: `opt-${optIndex++}`,
+            label: optMatch[1],
+            text: optMatch[2].trim(),
+        });
+    }
+
+    const prompt = detection.attributes.prompt || 'Make a selection';
+
+    const fullXml = lines.slice(startIndex, i).join('\n');
+
+    const decision: DecisionData = {
+        id: `decision-${startIndex}`,
+        prompt,
+        options,
+    };
+
+    return {
+        content: innerContent,
+        nextIndex: i,
+        metadata: {
+            isComplete: foundClosingTag,
+            decision,
+            rawXml: fullXml,
+        },
+    };
+}
 
 /** Returns { type, matchedTag } when line starts with a known XML block tag (allows content on same line). */
 function detectXmlBlockType(line: string): { type: keyof typeof XML_TAG_BLOCKS; matchedTag: string } | null {
@@ -856,7 +985,27 @@ export const splitContentIntoBlocksV2 = (mdContent: string): ContentBlock[] => {
             continue;
         }
         
-        // 3. Check for XML tag blocks
+        // 3a. Check for attribute-bearing XML blocks (e.g. <decision prompt="...">)
+        const attrXmlMatch = detectAttributeXmlBlock(processedLine);
+        if (attrXmlMatch) {
+            if (currentText.trim()) {
+                blocks.push({ type: "text", content: currentText.trimEnd() });
+                currentText = "";
+            }
+
+            const extraction = extractDecisionBlock(attrXmlMatch, i, lines);
+
+            blocks.push({
+                type: attrXmlMatch.type as any,
+                content: extraction.content,
+                metadata: extraction.metadata,
+            });
+
+            i = extraction.nextIndex;
+            continue;
+        }
+
+        // 3b. Check for simple XML tag blocks
         const xmlMatch = detectXmlBlockType(processedLine);
         if (xmlMatch) {
             if (currentText.trim()) {

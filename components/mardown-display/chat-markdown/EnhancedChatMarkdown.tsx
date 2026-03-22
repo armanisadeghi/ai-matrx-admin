@@ -153,9 +153,7 @@ const SafeBlockRenderer: React.FC<{
     messageId?: string;
     taskId?: string;
     isLastReasoningBlock?: boolean;
-    handleCodeChange: (newCode: string, originalCode: string) => void;
-    handleTableChange: (updatedTableMarkdown: string, originalBlockContent: string) => void;
-    handleMatrxBrokerChange: (updatedBrokerContent: string, originalBrokerContent: string) => void;
+    replaceBlockContent: (original: string, replacement: string) => void;
     handleOpenEditor: () => void;
 }> = (props) => {
     try {
@@ -331,44 +329,29 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
 
     // Note: Table parsing removed - StreamingTableRenderer handles it directly from block content
 
-    // Handler for code changes within CodeBlock components
-    const handleCodeChange = useCallback(
-        (newCode: string, originalCode: string) => {
+    /**
+     * Generic content replacement handler — used by ALL block types that modify
+     * the content string (code edits, table edits, broker updates, decision
+     * resolutions, quiz results, etc.). Blocks call this with the original
+     * substring and its replacement; the full content string is managed here.
+     */
+    const replaceBlockContent = useCallback(
+        (original: string, replacement: string) => {
             try {
-                const updatedContent = currentContent.replace(originalCode, newCode);
-                setEditedContent(updatedContent);
-                onContentChange?.(updatedContent);
-            } catch (error) {
-                console.error("[MarkdownStream] Error in handleCodeChange:", error);
-            }
-        },
-        [currentContent, onContentChange]
-    );
-
-    // Handler for table changes
-    const handleTableChange = useCallback(
-        (updatedTableMarkdown: string, originalBlockContent: string) => {
-            try {
-                if (onContentChange) {
-                    const updatedContent = currentContent.replace(originalBlockContent, updatedTableMarkdown);
-                    setEditedContent(updatedContent);
-                    onContentChange(updatedContent);
+                const idx = currentContent.indexOf(original);
+                if (idx === -1) {
+                    console.warn(
+                        "[MarkdownStream] replaceBlockContent: original substring not found in content.",
+                        { originalLen: original.length, contentLen: currentContent.length }
+                    );
+                    return;
                 }
-            } catch (error) {
-                console.error("[MarkdownStream] Error updating table content:", error);
-            }
-        },
-        [currentContent, onContentChange]
-    );
-
-    const handleMatrxBrokerChange = useCallback(
-        (updatedBrokerContent: string, originalBrokerContent: string) => {
-            try {
-                const updatedContent = currentContent.replace(originalBrokerContent, updatedBrokerContent);
+                const updatedContent =
+                    currentContent.slice(0, idx) + replacement + currentContent.slice(idx + original.length);
                 setEditedContent(updatedContent);
                 onContentChange?.(updatedContent);
             } catch (error) {
-                console.error("[MarkdownStream] Error in handleMatrxBrokerChange:", error);
+                console.error("[MarkdownStream] Error in replaceBlockContent:", error);
             }
         },
         [currentContent, onContentChange]
@@ -404,6 +387,16 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
         [onContentChange]
     );
 
+    // Stable key: type + content fingerprint. Prevents React from reusing a
+    // component instance when blocks shift (e.g. a decision block resolves and
+    // the array collapses). Index is appended only as a tiebreaker for identical
+    // blocks; the content prefix keeps identity stable across re-parses.
+    const blockKey = useCallback(
+        (block: ContentBlock, index: number) =>
+            `${block.type}-${block.content.slice(0, 100)}-${index}`,
+        []
+    );
+
     // Memoize the render block function to prevent unnecessary re-renders
     const renderBlock = useCallback(
         (block: ContentBlock, index: number) => {
@@ -415,7 +408,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
 
                 return (
                     <SafeBlockRenderer
-                        key={index}
+                        key={blockKey(block, index)}
                         block={block}
                         index={index}
                         isStreamActive={isStreamActive}
@@ -423,30 +416,27 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
                         messageId={messageId}
                         taskId={taskId}
                         isLastReasoningBlock={index === lastReasoningBlockIndex}
-                        handleCodeChange={handleCodeChange}
-                        handleTableChange={handleTableChange}
-                        handleMatrxBrokerChange={handleMatrxBrokerChange}
+                        replaceBlockContent={replaceBlockContent}
                         handleOpenEditor={handleOpenEditor}
                     />
                 );
             } catch (error) {
                 console.error("[MarkdownStream] Error in renderBlock at index:", index, error);
                 return (
-                    <div key={index} className="py-2 px-1 text-sm text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap break-words border-l-2 border-red-500 bg-red-50 dark:bg-red-950/20">
+                    <div key={blockKey(block, index)} className="py-2 px-1 text-sm text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap break-words border-l-2 border-red-500 bg-red-50 dark:bg-red-950/20">
                         {block?.content || "[Render error]"}
                     </div>
                 );
             }
         },
         [
+            blockKey,
             isStreamActive,
             onContentChange,
             messageId,
             taskId,
             lastReasoningBlockIndex,
-            handleCodeChange,
-            handleTableChange,
-            handleMatrxBrokerChange,
+            replaceBlockContent,
             handleOpenEditor,
         ]
     );

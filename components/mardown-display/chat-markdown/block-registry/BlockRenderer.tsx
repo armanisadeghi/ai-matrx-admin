@@ -32,12 +32,10 @@ interface BlockRendererProps {
     isStreamActive?: boolean;
     onContentChange?: (newContent: string) => void;
     messageId?: string;
-    taskId?: string; // Add taskId for canvas deduplication
-    isLastReasoningBlock?: boolean; // Whether this is the last reasoning block in the content
-    // Handlers
-    handleCodeChange: (newCode: string, originalCode: string) => void;
-    handleTableChange: (updatedTableMarkdown: string, originalBlockContent: string) => void;
-    handleMatrxBrokerChange: (updatedBrokerContent: string, originalBrokerContent: string) => void;
+    taskId?: string;
+    isLastReasoningBlock?: boolean;
+    /** Generic handler: replaces `original` substring with `replacement` in the full content string. */
+    replaceBlockContent: (original: string, replacement: string) => void;
     handleOpenEditor: () => void;
 }
 
@@ -66,9 +64,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     messageId,
     taskId,
     isLastReasoningBlock,
-    handleCodeChange,
-    handleTableChange,
-    handleMatrxBrokerChange,
+    replaceBlockContent,
     handleOpenEditor,
 }) => {
     const { strictServerData } = useBlockRenderingConfig();
@@ -169,7 +165,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                     language={block.language}
                     fontSize={16}
                     className="my-3"
-                    onCodeChange={isStreamActive ? undefined : (newCode) => handleCodeChange(newCode, block.content)}
+                    onCodeChange={isStreamActive ? undefined : (newCode) => replaceBlockContent(block.content, newCode)}
                     isStreamActive={isStreamActive}
                 />
             );
@@ -181,7 +177,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                     content={block.content}
                     metadata={block.metadata}
                     isStreamActive={isStreamActive}
-                    onContentChange={isStreamActive ? undefined : (updatedTable) => handleTableChange(updatedTable, block.content)}
+                    onContentChange={isStreamActive ? undefined : (updatedTable) => replaceBlockContent(block.content, updatedTable)}
                 />
             );
 
@@ -200,7 +196,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                     key={index}
                     content={block.content}
                     metadata={block.metadata}
-                    onUpdate={handleMatrxBrokerChange}
+                    onUpdate={(updatedContent, originalContent) => replaceBlockContent(originalContent, updatedContent)}
                 />
             );
 
@@ -546,6 +542,41 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                     className="my-3"
                 />
             );
+
+        case "decision": {
+            const decisionData = block.serverData
+                ? (block.serverData as any)
+                : block.metadata?.decision;
+
+            if (!decisionData || !decisionData.options?.length) {
+                return renderBasicMarkdown(block.content);
+            }
+
+            if (block.metadata?.isComplete === false) {
+                return (
+                    <div key={index} className="my-1.5 px-3.5 py-2.5 border border-border rounded-md bg-card">
+                        <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                            <span className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_6px_hsl(var(--primary)/0.4)]" />
+                            <span className="font-medium text-foreground">{decisionData.prompt || 'Decision loading...'}</span>
+                        </div>
+                    </div>
+                );
+            }
+
+            const rawXml = block.metadata?.rawXml ?? block.content;
+
+            return (
+                <BlockComponents.InlineDecisionBlock
+                    key={index}
+                    decision={decisionData}
+                    isStreamActive={isStreamActive}
+                    rawXml={rawXml}
+                    onResolve={(_decisionId: string, xml: string, chosenText: string) => {
+                        replaceBlockContent(xml, chosenText);
+                    }}
+                />
+            );
+        }
 
         case "text":
         case "info":

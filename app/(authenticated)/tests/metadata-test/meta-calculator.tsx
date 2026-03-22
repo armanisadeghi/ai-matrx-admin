@@ -1,102 +1,75 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, Smartphone, Monitor, ExternalLink, BarChart3, AlertTriangle } from "lucide-react";
+import { CheckCircle, XCircle, Smartphone, Monitor, ExternalLink, AlertTriangle, Search } from "lucide-react";
+
+const GoogleLogo = ({ size = 28 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24">
+    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+  </svg>
+);
+
+const StatusDot = ({ ok }: { ok: boolean }) => (
+  <span className={`inline-flex w-2 h-2 rounded-full ${ok ? "bg-[#34A853]" : "bg-[#EA4335]"}`} />
+);
 
 export default function Page() {
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [result, setResult] = useState({ 
-    titleWidth: 0, 
-    descriptionWidth: 0, 
-    titleCharCount: 0, 
-    descriptionCharCount: 0, 
-    html: "" 
+  const [result, setResult] = useState({
+    titleWidth: 0,
+    descriptionWidth: 0,
+    titleCharCount: 0,
+    descriptionCharCount: 0,
   });
 
   const calculatePixelWidths = useCallback(() => {
-    // Calculate character counts
     const titleCharCount = title.length;
     const descriptionCharCount = description.length;
 
     if (!title && !description) {
-      setResult(prev => ({ 
-        ...prev, 
-        titleWidth: 0, 
-        descriptionWidth: 0, 
-        titleCharCount: 0, 
-        descriptionCharCount: 0 
-      }));
+      setResult({ titleWidth: 0, descriptionWidth: 0, titleCharCount: 0, descriptionCharCount: 0 });
       return;
     }
 
-    // Create a canvas to measure text
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
-
     if (!context) return;
 
-    context.font = "400 20px 'Roboto', Arial, sans-serif";
+    context.font = "400 20px 'Google Sans', 'Roboto', Arial, sans-serif";
     const titleWidth = title ? context.measureText(title).width : 0;
 
-    context.font = "400 13px 'Roboto', Arial, sans-serif";
+    context.font = "400 13px 'Google Sans', 'Roboto', Arial, sans-serif";
     const descriptionWidth = description ? context.measureText(description).width : 0;
 
-    setResult(prev => ({ 
-      ...prev, 
-      titleWidth, 
-      descriptionWidth, 
-      titleCharCount, 
-      descriptionCharCount 
-    }));
+    setResult({ titleWidth, descriptionWidth, titleCharCount, descriptionCharCount });
   }, [title, description]);
 
-  // Real-time calculation with debounce
   useEffect(() => {
-    const timer = setTimeout(() => {
-      calculatePixelWidths();
-    }, 150);
-
+    const timer = setTimeout(calculatePixelWidths, 150);
     return () => clearTimeout(timer);
   }, [calculatePixelWidths]);
 
-  const getResultStatus = (width: number, desktopLimit: number, mobileLimit: number) => {
-    const isDesktopOk = width <= desktopLimit;
-    const isMobileOk = width <= mobileLimit;
-    return { isDesktopOk, isMobileOk };
-  };
+  const titleDesktopOk = result.titleWidth <= 580;
+  const titleMobileOk = result.titleWidth <= 920;
+  const titleCharOk = result.titleCharCount <= 60;
+  const descDesktopOk = result.descriptionWidth <= 920;
+  const descMobileOk = result.descriptionWidth <= 680;
+  const descCharOk = result.descriptionCharCount <= 160;
 
-  const getCharacterStatus = (charCount: number, limit: number) => {
-    return charCount <= limit;
-  };
-
-  // Updated limits based on 2024 research:
-  // Desktop: ~580px for titles, ~920px for descriptions
-  // Mobile: ~920px for titles (longer on mobile), ~680px for descriptions
-  const titleStatus = getResultStatus(result.titleWidth, 580, 920);
-  const descriptionStatus = getResultStatus(result.descriptionWidth, 920, 680);
-  
-  // Character limits for SEO best practices
-  const titleCharStatus = getCharacterStatus(result.titleCharCount, 60);
-  const descriptionCharStatus = getCharacterStatus(result.descriptionCharCount, 160);
-
-  const handleFetchData = () => {
-    console.log("Fetching data from URL:", url);
-    // TODO: Implement scraping utility
-  };
+  const hasData = result.titleWidth > 0 || result.descriptionWidth > 0 || result.titleCharCount > 0 || result.descriptionCharCount > 0;
 
   const getDisplayUrl = () => {
     if (!url) return "example.com";
     try {
-      const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
-      return urlObj.hostname;
+      return new URL(url.startsWith("http") ? url : `https://${url}`).hostname;
     } catch {
       return url;
     }
@@ -105,349 +78,451 @@ export default function Page() {
   const getUrlBreadcrumb = () => {
     if (!url) return " › category › page";
     try {
-      const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
-      const pathSegments = urlObj.pathname.split('/').filter(segment => segment);
-      
-      if (pathSegments.length === 0) {
-        return " › category › page";
-      }
-      
-      // Take the last 2-3 segments for a realistic breadcrumb
-      const relevantSegments = pathSegments.slice(-3);
-      return " › " + relevantSegments.join(" › ");
+      const segments = new URL(url.startsWith("http") ? url : `https://${url}`).pathname.split("/").filter(Boolean);
+      if (!segments.length) return " › category › page";
+      return " › " + segments.slice(-3).join(" › ");
     } catch {
       return " › category › page";
     }
   };
 
+  const titlePct = Math.min((result.titleWidth / 580) * 100, 100);
+  const descPct = Math.min((result.descriptionWidth / 920) * 100, 100);
+  const titleCharPct = Math.min((result.titleCharCount / 60) * 100, 100);
+  const descCharPct = Math.min((result.descriptionCharCount / 160) * 100, 100);
+
+  const barColor = (pct: number) =>
+    pct >= 100 ? "#EA4335" : pct >= 85 ? "#FBBC05" : "#34A853";
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="max-w-[1600px] mx-auto space-y-6">
-        {/* Header */}
-        <Card className="bg-textured border-border">
-          <CardHeader className="text-center py-6">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <svg width="32" height="32" viewBox="0 0 24 24" className="flex-shrink-0">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-              <CardTitle className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                Meta Pixel Width & Character Calculator
-              </CardTitle>
-            </div>
-            <p className="text-lg text-gray-600 dark:text-gray-400">
-              Calculate pixel widths and character counts for Google Search meta titles and descriptions with live preview
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
-              Updated for 2024 - using Google Sans font, current pixel limits (13px descriptions), and SEO character limits (60/160 chars)
-            </p>
-          </CardHeader>
-        </Card>
+    <div className="min-h-screen bg-[#f8f9fa] font-[system-ui,sans-serif]">
+      {/* Top nav strip — mimics Google header */}
+      <header className="bg-white border-b border-[#dfe1e5] px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <GoogleLogo size={28} />
+          <span className="text-[#202124] text-lg font-medium tracking-tight">
+            Meta Width Calculator
+          </span>
+        </div>
+        <span className="text-xs text-[#70757a] hidden sm:block">
+          Updated for 2024 · Google Sans font · 13px descriptions
+        </span>
+      </header>
 
-        {/* Main Content - Three Column Layout */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-          {/* Left Side - Input Form */}
-          <div className="xl:col-span-4 space-y-6">
-            <Card className="bg-textured border-border">
-              <CardHeader>
-                <CardTitle className="text-lg text-gray-900 dark:text-gray-100">Input Data</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="url" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Website URL
-                    </Label>
-                    <Button
-                      onClick={handleFetchData}
-                      disabled={!url}
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      Fetch Data
-                    </Button>
-                  </div>
-                  <Input
-                    id="url"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://example.com/category/page-name"
-                    className="w-full bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="metaTitle" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Meta Title
-                  </Label>
-                  <Input
-                    id="metaTitle"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Enter your meta title here..."
-                    className="bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="metaDescription" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Meta Description
-                  </Label>
-                  <Textarea
-                    id="metaDescription"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Enter your meta description here..."
-                    rows={4}
-                    className="bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Results */}
-            {(result.titleWidth > 0 || result.descriptionWidth > 0 || result.titleCharCount > 0 || result.descriptionCharCount > 0) && (
-              <Card className="bg-textured border-border">
-                <CardHeader>
-                  <CardTitle className="text-lg text-gray-900 dark:text-gray-100">Analysis</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Title Results */}
-                  {title && (
-                    <div className="space-y-3">
-                      <h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 flex-wrap">
-                        Meta Title
-                        <Badge variant="outline" className="text-xs">
-                          {result.titleWidth.toFixed(0)}px
-                        </Badge>
-                        <Badge variant={titleCharStatus ? "default" : "destructive"} className="text-xs">
-                          {result.titleCharCount}/60 chars
-                        </Badge>
-                      </h3>
-                      <div className="grid grid-cols-1 gap-3">
-                        <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
-                          <Monitor className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                          <div className="flex-1">
-                            <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Desktop</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">Limit: 580px</div>
-                          </div>
-                          {titleStatus.isDesktopOk ? (
-                            <CheckCircle className="w-5 h-5 text-green-500" />
-                          ) : (
-                            <XCircle className="w-5 h-5 text-red-500" />
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
-                          <Smartphone className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                          <div className="flex-1">
-                            <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Mobile</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">Limit: 920px</div>
-                          </div>
-                          {titleStatus.isMobileOk ? (
-                            <CheckCircle className="w-5 h-5 text-green-500" />
-                          ) : (
-                            <XCircle className="w-5 h-5 text-red-500" />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Description Results */}
-                  {description && (
-                    <div className="space-y-3">
-                      <h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 flex-wrap">
-                        Meta Description
-                        <Badge variant="outline" className="text-xs">
-                          {result.descriptionWidth.toFixed(0)}px
-                        </Badge>
-                        <Badge variant={descriptionCharStatus ? "default" : "destructive"} className="text-xs">
-                          {result.descriptionCharCount}/160 chars
-                        </Badge>
-                      </h3>
-                      <div className="grid grid-cols-1 gap-3">
-                        <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
-                          <Monitor className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                          <div className="flex-1">
-                            <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Desktop</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">Limit: 920px</div>
-                          </div>
-                          {descriptionStatus.isDesktopOk ? (
-                            <CheckCircle className="w-5 h-5 text-green-500" />
-                          ) : (
-                            <XCircle className="w-5 h-5 text-red-500" />
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
-                          <Smartphone className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                          <div className="flex-1">
-                            <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Mobile</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">Limit: 680px</div>
-                          </div>
-                          {descriptionStatus.isMobileOk ? (
-                            <CheckCircle className="w-5 h-5 text-green-500" />
-                          ) : (
-                            <XCircle className="w-5 h-5 text-red-500" />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+      {/* Google-style search bar hero */}
+      <div className="bg-white border-b border-[#dfe1e5] px-6 py-5">
+        <div className="max-w-[720px] mx-auto space-y-4">
+          {/* Fake search bar */}
+          <div className="flex items-center gap-3 bg-white border border-[#dfe1e5] rounded-full px-5 py-3 shadow-[0_1px_6px_rgba(32,33,36,.28)] hover:shadow-[0_1px_6px_rgba(32,33,36,.38)] transition-shadow">
+            <Search className="w-4 h-4 text-[#9aa0a6] flex-shrink-0" />
+            <span className="text-[#202124] text-base flex-1 truncate">
+              {title || "Paste your meta title to preview…"}
+            </span>
+            <GoogleLogo size={20} />
           </div>
-
-          {/* Right Side - Google Search Preview - Much Larger */}
-          <div className="xl:col-span-8 space-y-6">
-            <Card className="bg-textured border-border">
-              <CardHeader>
-                <CardTitle className="text-lg text-gray-900 dark:text-gray-100">Live Google Search Preview</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Google Search Bar Mockup */}
-                <div className="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="flex items-center gap-4 mb-6">
-                    <svg width="32" height="32" viewBox="0 0 24 24" className="flex-shrink-0">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    <div className="flex-1 bg-white dark:bg-gray-600 rounded-full px-6 py-3 text-base text-gray-600 dark:text-gray-300 max-w-2xl">
-                      {title || "Your search query"}
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-6 text-base border-b border-gray-300 dark:border-gray-600 pb-3 mb-6">
-                    <span className="text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-3">All</span>
-                    <span className="text-gray-600 dark:text-gray-400">Images</span>
-                    <span className="text-gray-600 dark:text-gray-400">Videos</span>
-                    <span className="text-gray-600 dark:text-gray-400">News</span>
-                    <span className="text-gray-600 dark:text-gray-400">Maps</span>
-                  </div>
-                  
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                    About 600,000,000 results (0.54 seconds)
-                  </div>
-                </div>
-
-                {/* Search Result Preview - Much Larger and More Realistic */}
-                <div className="space-y-6">
-                  <div className="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div className="space-y-3">
-                      {/* URL */}
-                      <div className="text-sm">
-                        <span className="text-green-700 dark:text-green-400">{getDisplayUrl()}</span>
-                        <span className="text-gray-500 dark:text-gray-400">{getUrlBreadcrumb()}</span>
-                      </div>
-                      
-                      {/* Title - Larger and more realistic */}
-                      <div className="text-blue-600 dark:text-blue-400 text-xl font-medium leading-relaxed hover:underline cursor-pointer max-w-3xl">
-                        {title || "Your Meta Title Will Appear Here - This Shows How It Looks in Google Search Results"}
-                      </div>
-                      
-                      {/* Description - More space for realistic wrapping */}
-                      <div className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed max-w-3xl">
-                        {description || "Your meta description will appear here. This is usually taken from the Meta Description tag if relevant. This preview shows you exactly how your content will appear in Google search results, with proper spacing and realistic text wrapping that matches Google's actual display."}
-                      </div>
-                      
-                      {/* Additional elements */}
-                      <div className="flex gap-6 text-xs text-gray-600 dark:text-gray-400 mt-3">
-                        <span>Rating: ★★★★☆</span>
-                        <span>$99 - $199</span>
-                        <span>In stock</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Visual indicators for length */}
-                  {(title || description) && (
-                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                      <div className="text-sm text-blue-800 dark:text-blue-200">
-                        <div className="font-medium mb-3 flex items-center gap-2">
-                          <BarChart3 className="w-4 h-4" />
-                          Pixel & Character Analysis
-                        </div>
-                        {title && (
-                          <div className="mb-2 flex items-center gap-2 flex-wrap">
-                            <span className="font-medium">Title:</span>
-                            <Badge variant="outline" className="text-xs">{result.titleWidth.toFixed(0)}px</Badge>
-                            <Badge variant={titleCharStatus ? "default" : "destructive"} className="text-xs">
-                              {result.titleCharCount}/60 chars
-                            </Badge>
-                            {!titleStatus.isDesktopOk && (
-                              <span className="text-red-600 dark:text-red-400 text-xs flex items-center gap-1">
-                                <AlertTriangle className="w-3 h-3" />
-                                may truncate on desktop
-                              </span>
-                            )}
-                            {!titleStatus.isMobileOk && (
-                              <span className="text-red-600 dark:text-red-400 text-xs flex items-center gap-1">
-                                <AlertTriangle className="w-3 h-3" />
-                                may truncate on mobile
-                              </span>
-                            )}
-                            {!titleCharStatus && (
-                              <span className="text-red-600 dark:text-red-400 text-xs flex items-center gap-1">
-                                <AlertTriangle className="w-3 h-3" />
-                                too long for SEO
-                              </span>
-                            )}
-                            {titleStatus.isDesktopOk && titleStatus.isMobileOk && titleCharStatus && (
-                              <span className="text-green-600 dark:text-green-400 text-xs flex items-center gap-1">
-                                <CheckCircle className="w-3 h-3" />
-                                optimal length
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        {description && (
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium">Description:</span>
-                            <Badge variant="outline" className="text-xs">{result.descriptionWidth.toFixed(0)}px</Badge>
-                            <Badge variant={descriptionCharStatus ? "default" : "destructive"} className="text-xs">
-                              {result.descriptionCharCount}/160 chars
-                            </Badge>
-                            {!descriptionStatus.isDesktopOk && (
-                              <span className="text-red-600 dark:text-red-400 text-xs flex items-center gap-1">
-                                <AlertTriangle className="w-3 h-3" />
-                                may truncate on desktop
-                              </span>
-                            )}
-                            {!descriptionStatus.isMobileOk && (
-                              <span className="text-red-600 dark:text-red-400 text-xs flex items-center gap-1">
-                                <AlertTriangle className="w-3 h-3" />
-                                may truncate on mobile
-                              </span>
-                            )}
-                            {!descriptionCharStatus && (
-                              <span className="text-red-600 dark:text-red-400 text-xs flex items-center gap-1">
-                                <AlertTriangle className="w-3 h-3" />
-                                too long for SEO
-                              </span>
-                            )}
-                            {descriptionStatus.isDesktopOk && descriptionStatus.isMobileOk && descriptionCharStatus && (
-                              <span className="text-green-600 dark:text-green-400 text-xs flex items-center gap-1">
-                                <CheckCircle className="w-3 h-3" />
-                                optimal length
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+          {/* Google tabs */}
+          <div className="flex gap-6 text-sm border-b border-[#dfe1e5] pb-0">
+            {["All", "Images", "Videos", "News", "Maps", "More"].map((tab, i) => (
+              <button
+                key={tab}
+                className={`pb-3 border-b-2 transition-colors ${
+                  i === 0
+                    ? "border-[#1a73e8] text-[#1a73e8] font-medium"
+                    : "border-transparent text-[#70757a] hover:text-[#202124]"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
+          <p className="text-xs text-[#70757a] pt-1">About 600,000,000 results (0.54 seconds)</p>
         </div>
       </div>
+
+      {/* Main body */}
+      <main className="max-w-[1400px] mx-auto px-4 py-6 xl:px-8">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+          {/* LEFT: Inputs + Analysis */}
+          <aside className="xl:col-span-4 space-y-4">
+
+            {/* Input card */}
+            <div className="bg-white rounded-2xl border border-[#dfe1e5] shadow-sm overflow-hidden">
+              <div className="px-5 py-4 border-b border-[#f1f3f4]">
+                <h2 className="text-sm font-semibold text-[#202124] uppercase tracking-wider">Input</h2>
+              </div>
+              <div className="px-5 py-5 space-y-5">
+                {/* URL */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[#5f6368] uppercase tracking-wide">
+                    Website URL
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      placeholder="https://example.com/category/page"
+                      className="flex-1 h-9 text-sm bg-[#f8f9fa] border-[#dfe1e5] text-[#202124] placeholder:text-[#9aa0a6] rounded-lg focus-visible:ring-[#1a73e8] focus-visible:border-[#1a73e8]"
+                    />
+                    <Button
+                      onClick={() => console.log("Fetching:", url)}
+                      disabled={!url}
+                      size="sm"
+                      className="h-9 px-3 bg-[#1a73e8] hover:bg-[#1765cc] text-white rounded-lg text-xs font-medium shrink-0 disabled:opacity-40"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Meta Title */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-[#5f6368] uppercase tracking-wide">
+                      Meta Title
+                    </label>
+                    {title && (
+                      <span className={`text-xs font-medium ${titleCharOk ? "text-[#34A853]" : "text-[#EA4335]"}`}>
+                        {result.titleCharCount}/60
+                      </span>
+                    )}
+                  </div>
+                  <Input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Enter your meta title…"
+                    className="h-9 text-sm bg-[#f8f9fa] border-[#dfe1e5] text-[#202124] placeholder:text-[#9aa0a6] rounded-lg focus-visible:ring-[#1a73e8] focus-visible:border-[#1a73e8]"
+                  />
+                </div>
+
+                {/* Meta Description */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-[#5f6368] uppercase tracking-wide">
+                      Meta Description
+                    </label>
+                    {description && (
+                      <span className={`text-xs font-medium ${descCharOk ? "text-[#34A853]" : "text-[#EA4335]"}`}>
+                        {result.descriptionCharCount}/160
+                      </span>
+                    )}
+                  </div>
+                  <Textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Enter your meta description…"
+                    rows={4}
+                    className="text-sm bg-[#f8f9fa] border-[#dfe1e5] text-[#202124] placeholder:text-[#9aa0a6] rounded-lg resize-none focus-visible:ring-[#1a73e8] focus-visible:border-[#1a73e8]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Analysis card */}
+            {hasData && (
+              <div className="bg-white rounded-2xl border border-[#dfe1e5] shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b border-[#f1f3f4]">
+                  <h2 className="text-sm font-semibold text-[#202124] uppercase tracking-wider">Analysis</h2>
+                </div>
+                <div className="px-5 py-5 space-y-6">
+
+                  {title && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-[#202124] uppercase tracking-wide">Meta Title</span>
+                        <span className="ml-auto text-xs text-[#70757a]">{result.titleWidth.toFixed(0)}px</span>
+                      </div>
+
+                      {/* Pixel bar */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[10px] text-[#70757a]">
+                          <span>Pixel width (desktop 580px)</span>
+                          <span style={{ color: barColor(titlePct) }}>{titlePct.toFixed(0)}%</span>
+                        </div>
+                        <div className="h-1.5 bg-[#f1f3f4] rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-300"
+                            style={{ width: `${titlePct}%`, backgroundColor: barColor(titlePct) }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Char bar */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[10px] text-[#70757a]">
+                          <span>Characters (60 limit)</span>
+                          <span style={{ color: barColor(titleCharPct) }}>{result.titleCharCount}/60</span>
+                        </div>
+                        <div className="h-1.5 bg-[#f1f3f4] rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-300"
+                            style={{ width: `${titleCharPct}%`, backgroundColor: barColor(titleCharPct) }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Device checks */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="flex items-center gap-2 px-3 py-2 bg-[#f8f9fa] rounded-lg">
+                          <Monitor className="w-3.5 h-3.5 text-[#70757a]" />
+                          <span className="text-xs text-[#5f6368]">Desktop</span>
+                          <span className="ml-auto">
+                            {titleDesktopOk
+                              ? <CheckCircle className="w-4 h-4 text-[#34A853]" />
+                              : <XCircle className="w-4 h-4 text-[#EA4335]" />}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 px-3 py-2 bg-[#f8f9fa] rounded-lg">
+                          <Smartphone className="w-3.5 h-3.5 text-[#70757a]" />
+                          <span className="text-xs text-[#5f6368]">Mobile</span>
+                          <span className="ml-auto">
+                            {titleMobileOk
+                              ? <CheckCircle className="w-4 h-4 text-[#34A853]" />
+                              : <XCircle className="w-4 h-4 text-[#EA4335]" />}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {description && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-[#202124] uppercase tracking-wide">Meta Description</span>
+                        <span className="ml-auto text-xs text-[#70757a]">{result.descriptionWidth.toFixed(0)}px</span>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[10px] text-[#70757a]">
+                          <span>Pixel width (desktop 920px)</span>
+                          <span style={{ color: barColor(descPct) }}>{descPct.toFixed(0)}%</span>
+                        </div>
+                        <div className="h-1.5 bg-[#f1f3f4] rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-300"
+                            style={{ width: `${descPct}%`, backgroundColor: barColor(descPct) }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[10px] text-[#70757a]">
+                          <span>Characters (160 limit)</span>
+                          <span style={{ color: barColor(descCharPct) }}>{result.descriptionCharCount}/160</span>
+                        </div>
+                        <div className="h-1.5 bg-[#f1f3f4] rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-300"
+                            style={{ width: `${descCharPct}%`, backgroundColor: barColor(descCharPct) }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="flex items-center gap-2 px-3 py-2 bg-[#f8f9fa] rounded-lg">
+                          <Monitor className="w-3.5 h-3.5 text-[#70757a]" />
+                          <span className="text-xs text-[#5f6368]">Desktop</span>
+                          <span className="ml-auto">
+                            {descDesktopOk
+                              ? <CheckCircle className="w-4 h-4 text-[#34A853]" />
+                              : <XCircle className="w-4 h-4 text-[#EA4335]" />}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 px-3 py-2 bg-[#f8f9fa] rounded-lg">
+                          <Smartphone className="w-3.5 h-3.5 text-[#70757a]" />
+                          <span className="text-xs text-[#5f6368]">Mobile</span>
+                          <span className="ml-auto">
+                            {descMobileOk
+                              ? <CheckCircle className="w-4 h-4 text-[#34A853]" />
+                              : <XCircle className="w-4 h-4 text-[#EA4335]" />}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </aside>
+
+          {/* RIGHT: Google SERP Preview */}
+          <section className="xl:col-span-8 space-y-4">
+
+            {/* Preview label */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-[#5f6368] uppercase tracking-wider">Live SERP Preview</h2>
+              <div className="flex items-center gap-4 text-xs text-[#70757a]">
+                <span className="flex items-center gap-1.5"><StatusDot ok={titleDesktopOk && titleMobileOk && titleCharOk} /> Title</span>
+                <span className="flex items-center gap-1.5"><StatusDot ok={descDesktopOk && descMobileOk && descCharOk} /> Description</span>
+              </div>
+            </div>
+
+            {/* Desktop preview */}
+            <div className="bg-white rounded-2xl border border-[#dfe1e5] shadow-sm overflow-hidden">
+              <div className="flex items-center gap-2 px-5 py-3 border-b border-[#f1f3f4] bg-[#f8f9fa]">
+                <Monitor className="w-3.5 h-3.5 text-[#70757a]" />
+                <span className="text-xs text-[#5f6368] font-medium">Desktop</span>
+                <span className="ml-auto text-[10px] text-[#9aa0a6]">Max 580px title · 920px description</span>
+              </div>
+              <div className="px-8 py-6" style={{ fontFamily: "'Google Sans', Roboto, Arial, sans-serif" }}>
+                {/* Favicon + domain row */}
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-7 h-7 bg-[#f1f3f4] rounded-full flex items-center justify-center text-xs text-[#70757a] font-bold">
+                    {getDisplayUrl().charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="text-sm text-[#202124] font-medium leading-tight">{getDisplayUrl()}</div>
+                    <div className="text-xs text-[#70757a] leading-tight">{getDisplayUrl()}{getUrlBreadcrumb()}</div>
+                  </div>
+                </div>
+
+                {/* Title */}
+                <div
+                  className="text-xl leading-[1.3] mb-1.5 hover:underline cursor-pointer"
+                  style={{
+                    color: "#1a0dab",
+                    maxWidth: "600px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {title || <span className="text-[#70757a] font-normal text-base">Your meta title will appear here…</span>}
+                </div>
+
+                {/* Description */}
+                <div
+                  className="text-sm leading-[1.58] text-[#4d5156]"
+                  style={{ maxWidth: "600px" }}
+                >
+                  {description || (
+                    <span className="text-[#9aa0a6]">
+                      Your meta description will appear here. This is usually taken from the Meta Description tag if relevant to the query.
+                    </span>
+                  )}
+                </div>
+
+                {/* Optional rich snippet row */}
+                <div className="flex gap-5 text-xs text-[#70757a] mt-2.5">
+                  <span className="text-[#FBBC05]">★★★★☆</span>
+                  <span>$99 – $199</span>
+                  <span>In stock</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile preview */}
+            <div className="bg-white rounded-2xl border border-[#dfe1e5] shadow-sm overflow-hidden">
+              <div className="flex items-center gap-2 px-5 py-3 border-b border-[#f1f3f4] bg-[#f8f9fa]">
+                <Smartphone className="w-3.5 h-3.5 text-[#70757a]" />
+                <span className="text-xs text-[#5f6368] font-medium">Mobile</span>
+                <span className="ml-auto text-[10px] text-[#9aa0a6]">Max 920px title · 680px description</span>
+              </div>
+              <div className="px-4 py-5 max-w-[380px]" style={{ fontFamily: "'Google Sans', Roboto, Arial, sans-serif" }}>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-6 h-6 bg-[#f1f3f4] rounded-full flex items-center justify-center text-[10px] text-[#70757a] font-bold">
+                    {getDisplayUrl().charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="text-xs text-[#202124] font-medium">{getDisplayUrl()}</div>
+                    <div className="text-[10px] text-[#70757a]">{getDisplayUrl()}{getUrlBreadcrumb()}</div>
+                  </div>
+                </div>
+
+                <div
+                  className="text-base leading-[1.3] mb-1 hover:underline cursor-pointer"
+                  style={{
+                    color: "#1a0dab",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {title || <span className="text-[#70757a] font-normal text-sm">Your meta title will appear here…</span>}
+                </div>
+
+                <div className="text-xs leading-[1.5] text-[#4d5156]">
+                  {description || (
+                    <span className="text-[#9aa0a6]">
+                      Your meta description will appear here with mobile-specific line wrapping applied.
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Warnings / recommendations strip */}
+            {hasData && (
+              <div className="bg-white rounded-2xl border border-[#dfe1e5] shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b border-[#f1f3f4]">
+                  <h2 className="text-xs font-semibold text-[#202124] uppercase tracking-wider">Recommendations</h2>
+                </div>
+                <div className="px-5 py-4 space-y-2.5">
+                  {title && (
+                    <>
+                      {!titleDesktopOk && (
+                        <div className="flex items-start gap-2.5 text-xs text-[#EA4335]">
+                          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                          <span>Title exceeds <strong>580px</strong> desktop limit ({result.titleWidth.toFixed(0)}px) — may be truncated.</span>
+                        </div>
+                      )}
+                      {!titleMobileOk && (
+                        <div className="flex items-start gap-2.5 text-xs text-[#EA4335]">
+                          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                          <span>Title exceeds <strong>920px</strong> mobile limit ({result.titleWidth.toFixed(0)}px) — may be truncated on mobile.</span>
+                        </div>
+                      )}
+                      {!titleCharOk && (
+                        <div className="flex items-start gap-2.5 text-xs text-[#FBBC05]">
+                          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                          <span>Title has <strong>{result.titleCharCount} characters</strong> — SEO best practice is ≤60 chars.</span>
+                        </div>
+                      )}
+                      {titleDesktopOk && titleMobileOk && titleCharOk && (
+                        <div className="flex items-start gap-2.5 text-xs text-[#34A853]">
+                          <CheckCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                          <span>Title looks great — within pixel and character limits on all devices.</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {description && (
+                    <>
+                      {!descDesktopOk && (
+                        <div className="flex items-start gap-2.5 text-xs text-[#EA4335]">
+                          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                          <span>Description exceeds <strong>920px</strong> desktop limit — may be truncated.</span>
+                        </div>
+                      )}
+                      {!descMobileOk && (
+                        <div className="flex items-start gap-2.5 text-xs text-[#EA4335]">
+                          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                          <span>Description exceeds <strong>680px</strong> mobile limit — may be truncated on mobile.</span>
+                        </div>
+                      )}
+                      {!descCharOk && (
+                        <div className="flex items-start gap-2.5 text-xs text-[#FBBC05]">
+                          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                          <span>Description has <strong>{result.descriptionCharCount} characters</strong> — SEO best practice is ≤160 chars.</span>
+                        </div>
+                      )}
+                      {descDesktopOk && descMobileOk && descCharOk && (
+                        <div className="flex items-start gap-2.5 text-xs text-[#34A853]">
+                          <CheckCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                          <span>Description looks great — within pixel and character limits on all devices.</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {!title && !description && (
+                    <p className="text-xs text-[#9aa0a6]">Enter a title or description above to see recommendations.</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
+      </main>
     </div>
   );
 }

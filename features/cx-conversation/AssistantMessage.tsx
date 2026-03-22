@@ -47,6 +47,12 @@ const ConversationMessageOptionsMenu = lazy(
 const ToolCallVisualization = lazy(
   () => import("@/features/cx-conversation/ToolCallVisualization"),
 );
+const ContentHistoryViewer = lazy(
+  () =>
+    import("@/features/cx-conversation/ContentHistoryViewer").then((m) => ({
+      default: m.ContentHistoryViewer,
+    })),
+);
 
 // ============================================================================
 // PROPS
@@ -87,6 +93,7 @@ export function AssistantMessage({
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showHtmlModal, setShowHtmlModal] = useState(false);
+  const [showHistoryViewer, setShowHistoryViewer] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
@@ -473,6 +480,8 @@ export function AssistantMessage({
                         onShowHtmlPreview={() => setShowHtmlModal(true)}
                         onEditContent={handleEditClick}
                         onFullPrint={handleFullPrint}
+                        onShowHistory={() => setShowHistoryViewer(true)}
+                        rawContent={message.rawContent as unknown[]}
                         anchorElement={moreOptionsButtonRef.current}
                       />
                     </Suspense>
@@ -505,6 +514,17 @@ export function AssistantMessage({
             htmlPreviewState={htmlPreviewState}
             title="HTML Preview & Publishing"
             description="Edit markdown, preview HTML, and publish your content"
+            messageId={message.id}
+          />
+        </Suspense>
+      )}
+
+      {showHistoryViewer && sessionId && (
+        <Suspense fallback={null}>
+          <ContentHistoryViewer
+            isOpen={showHistoryViewer}
+            onClose={() => setShowHistoryViewer(false)}
+            sessionId={sessionId}
             messageId={message.id}
           />
         </Suspense>

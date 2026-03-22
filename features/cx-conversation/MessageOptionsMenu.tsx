@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import {
     BookText, Briefcase, Copy, FileCode, FileText, Eye, Globe,
     Brain, Save, Volume2, Edit, CheckSquare, Mail, Database,
-    Printer, ScanLine,
+    Printer, ScanLine, RotateCcw, History, Upload,
 } from 'lucide-react';
 import { copyToClipboard } from '@/components/matrx/buttons/markdown-copy-utils';
 import { printMarkdownContent } from '@/features/conversation/utils/markdown-print';
@@ -16,9 +16,13 @@ import { QuickSaveModal } from '@/features/notes';
 import { NotesAPI } from '@/features/notes';
 import { useCartesiaWithPreferences } from '@/hooks/tts/simple/useCartesiaWithPreferences';
 import { toast } from 'sonner';
-import { useAppSelector } from '@/lib/redux/hooks';
+import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { selectUser } from '@/lib/redux/slices/userSlice';
 import { useQuickActions } from '@/features/quick-actions/hooks/useQuickActions';
+import { chatConversationsActions } from '@/features/cx-conversation/redux/slice';
+import { editMessage } from '@/features/cx-conversation/redux/thunks/editMessage';
+import { selectMessageHasUnsavedChanges, selectMessageHasHistory, selectMessageContentHistory } from '@/features/cx-conversation/redux/selectors';
+import { buildContentBlocksForSave } from '@/features/cx-conversation/utils/buildContentBlocksForSave';
 
 // Key for post-auth action resumption
 const PENDING_ACTION_KEY = 'matrx_pending_post_auth_action';
@@ -41,6 +45,10 @@ export interface MessageOptionsMenuProps {
     onEditContent?: () => void;
     /** Trigger full DOM-capture PDF export */
     onFullPrint?: () => void;
+    /** Open content history viewer */
+    onShowHistory?: () => void;
+    /** Raw content blocks from DB (for building save payloads) */
+    rawContent?: unknown[];
     anchorElement?: HTMLElement | null;
     metadata?: {
         taskId?: string;
@@ -73,6 +81,8 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({
     onShowHtmlPreview,
     onEditContent,
     onFullPrint,
+    onShowHistory,
+    rawContent,
     anchorElement,
     metadata,
 }) => {
@@ -84,8 +94,16 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({
     });
     const [isBrowserTtsPlaying, setIsBrowserTtsPlaying] = useState(false);
 
+    const dispatch = useAppDispatch();
     const user = useAppSelector(selectUser);
     const isAuthenticated = !!user?.email;
+
+    const hasUnsavedChanges = useAppSelector((state) =>
+        sessionId && messageId ? selectMessageHasUnsavedChanges(state, sessionId, messageId) : false
+    );
+    const hasHistory = useAppSelector((state) =>
+        sessionId && messageId ? selectMessageHasHistory(state, sessionId, messageId) : false
+    );
 
     // Cartesia TTS (authenticated users)
     const voicePreferences = useAppSelector((state) => state.userPreferences?.voice);
@@ -274,6 +292,25 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({
         setIsSaveModalOpen(true);
     };
 
+    // ── Reset / Save / History handlers ─────────────────────────────────────
+    const handleResetToOriginal = () => {
+        if (!sessionId || !messageId) return;
+        dispatch(chatConversationsActions.resetMessageContent({ sessionId, messageId }));
+        onClose();
+    };
+
+    const handleSaveEdits = async () => {
+        if (!sessionId || !messageId) return;
+        const contentBlocks = buildContentBlocksForSave(content, rawContent);
+        await dispatch(editMessage({ sessionId, messageId, newContent: contentBlocks })).unwrap();
+        onClose();
+    };
+
+    const handleViewHistory = () => {
+        onShowHistory?.();
+        onClose();
+    };
+
     // ── Build menu items (filtering hidden ones before passing to AdvancedMenu) ──
     const allItems: MenuItem[] = [
         {
@@ -281,6 +318,25 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({
             label: 'Edit content', action: handleEditContent,
             category: 'Edit', successMessage: 'Opening editor...', showToast: false,
         },
+        {
+            key: 'reset-original', icon: RotateCcw, iconColor: 'text-amber-500 dark:text-amber-400',
+            label: 'Reset to original', action: handleResetToOriginal,
+            category: 'Edit', successMessage: 'Content reset to original',
+            disabled: !hasUnsavedChanges,
+            hidden: !sessionId || !messageId,
+        },
+        {
+            key: 'save-edits', icon: Upload, iconColor: 'text-green-500 dark:text-green-400',
+            label: 'Save changes', action: handleSaveEdits,
+            category: 'Edit', successMessage: 'Changes saved', errorMessage: 'Failed to save changes',
+            disabled: !hasUnsavedChanges,
+            hidden: !sessionId || !messageId,
+        },
+        ...(hasHistory && onShowHistory ? [{
+            key: 'view-history', icon: History, iconColor: 'text-blue-500 dark:text-blue-400',
+            label: 'View edit history', action: handleViewHistory,
+            category: 'Edit', showToast: false,
+        } as MenuItem] : []),
         {
             key: 'add-to-tasks', icon: CheckSquare, iconColor: 'text-blue-500 dark:text-blue-400',
             label: 'Add to Tasks', action: handleAddToTasks,

@@ -58,6 +58,8 @@ export interface ConversationMessage {
     dbMetadata?: Record<string, unknown>;
     /** Content version history — array of previous content snapshots, auto-managed by cx_message_edit RPC */
     contentHistory?: CxContentHistoryEntry[] | null;
+    /** Display content snapshot — set once on stream completion or DB load. Used for local reset. */
+    originalDisplayContent?: string;
     /** ISO creation timestamp from DB */
     createdAt?: string;
     /** Soft-delete timestamp from DB, null if active */
