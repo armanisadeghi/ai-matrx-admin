@@ -178,6 +178,25 @@ export function AssistantMessage({
   };
   const handleCancelEdit = () => setIsEditorOpen(false);
 
+  // ── Quick save ───────────────────────────────────────────────────────────
+  const handleQuickSave = async () => {
+    if (!sessionId || isSaving) return;
+    setIsSaving(true);
+    try {
+      const contentBlocks = buildContentBlocksForSave(
+        message.content,
+        message.rawContent as unknown[] | undefined
+      );
+      await dispatch(
+        editMessage({ sessionId, messageId: message.id, newContent: contentBlocks })
+      ).unwrap();
+    } catch {
+      /* toast handled by thunk */
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // ── Audio download ────────────────────────────────────────────────────────
   const audioUrl = (message as ConversationMessage & { audioUrl?: string })
     .audioUrl;
@@ -459,6 +478,20 @@ export function AssistantMessage({
                           <Volume2
                             className={`w-4 h-4 ${isPaused ? "text-purple-500 dark:text-purple-400" : "text-muted-foreground"}`}
                           />
+                        )
+                      }
+                    />
+                  )}
+                  {hasUnsavedChanges && (
+                    <TapTargetButtonTransparent
+                      onClick={handleQuickSave}
+                      disabled={isSaving}
+                      ariaLabel="Save changes"
+                      icon={
+                        isSaving ? (
+                          <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                        ) : (
+                          <Save className="w-4 h-4 text-primary" />
                         )
                       }
                     />
