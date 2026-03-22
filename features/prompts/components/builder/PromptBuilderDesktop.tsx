@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Save, Maximize2, Settings, Sparkles, ChevronRight, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Maximize2, Settings, Sparkles, ChevronRight, Loader2, History } from "lucide-react";
 import { PromptHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { PromptBuilderRightPanel } from "./PromptBuilderRightPanel";
 import { PromptBuilderLeftPanel } from "./PromptBuilderLeftPanel";
@@ -11,11 +11,14 @@ import { PromptSettingsModal } from "@/features/prompts/components/PromptSetting
 import { SharedPromptBanner } from "./SharedPromptWarningModal";
 import { SystemPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/SystemPromptOptimizer";
 import { PromptBuilderSharedProps } from "./types";
+import { VersionBadge, VersionHistoryPanel } from "@/features/versioning";
 
 export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
     const {
         // Header props
         promptId,
+        promptVersion,
+        promptUpdatedAt,
         promptName,
         onPromptNameChange,
         isDirty,
@@ -125,6 +128,7 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
     } = props;
 
     const [isOptimizerOpen, setIsOptimizerOpen] = useState(false);
+    const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
 
     return (
         <>
@@ -174,6 +178,13 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
                                     {isDirty && (
                                         <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-orange-400" title="Unsaved changes" />
                                     )}
+                                    {promptVersion != null && (
+                                        <VersionBadge
+                                            version={promptVersion}
+                                            updatedAt={promptUpdatedAt ?? undefined}
+                                            onOpenHistory={() => setIsVersionHistoryOpen(true)}
+                                        />
+                                    )}
                                 </div>
 
                                 {/* Right: action buttons */}
@@ -191,6 +202,13 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
                                         title="Full Editor"
                                     >
                                         <Maximize2 className="h-3 w-3" />
+                                    </button>
+                                    <button
+                                        onClick={() => setIsVersionHistoryOpen(true)}
+                                        className="h-6 w-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                                        title="Version History"
+                                    >
+                                        <History className="h-3 w-3" />
                                     </button>
                                     <button
                                         onClick={() => setIsSettingsModalOpen(true)}
@@ -383,6 +401,15 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
                 onUpdate={handleSettingsUpdate}
                 onLocalStateUpdate={handleLocalStateUpdate}
             />
+
+            {promptId && (
+                <VersionHistoryPanel
+                    entityType="prompt"
+                    entityId={promptId}
+                    isOpen={isVersionHistoryOpen}
+                    onClose={() => setIsVersionHistoryOpen(false)}
+                />
+            )}
         </>
     );
 }

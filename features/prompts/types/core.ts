@@ -141,6 +141,7 @@ export interface PromptDb {
     id: string;
     created_at: string;
     updated_at: string | null;
+    version: number;
     name: string | null;
     messages: unknown | null;
     variable_defaults: PromptVariable[] | null;
@@ -161,6 +162,7 @@ export type PromptData = {
     id?: string;
     createdAt?: Date;
     updatedAt?: Date;
+    version?: number;
     name?: string;
     description?: string;
     userId?: string;

@@ -72,6 +72,7 @@ export interface PromptBuiltin {
   id: string
   created_at: string // timestamptz
   updated_at: string // timestamptz
+  version: number
   name: string
   description: string | null
   messages: PromptMessage[]

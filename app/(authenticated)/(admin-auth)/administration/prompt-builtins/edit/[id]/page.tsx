@@ -81,6 +81,8 @@ export default async function EditBuiltinPage({
     const initialData = {
         id: data.id,
         name: data.name,
+        version: data.version ?? undefined,
+        updatedAt: data.updated_at ?? undefined,
         description: data.description ?? undefined,
         messages: data.messages,
         variableDefaults: data.variable_defaults,

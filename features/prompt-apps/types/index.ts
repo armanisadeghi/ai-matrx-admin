@@ -79,6 +79,12 @@ export interface PromptApp {
   user_id: string;
   prompt_id: string;
   
+  // Versioning
+  version: number;
+  prompt_source_type?: 'prompt' | 'builtin';
+  prompt_version_id?: string;
+  pinned_version?: number;
+  
   // Public Identity
   slug: string;
   name: string;
@@ -331,6 +337,8 @@ export interface ExecuteAppResponse {
 
 export interface CreateAppInput {
   prompt_id: string;
+  prompt_version_id?: string;
+  prompt_source_type?: 'prompt' | 'builtin';
   slug: string;
   name: string;
   tagline?: string;

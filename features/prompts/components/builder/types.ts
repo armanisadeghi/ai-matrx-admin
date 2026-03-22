@@ -9,6 +9,8 @@ export type MessageItem = { type: 'system'; index: -1 } | { type: 'message'; ind
 export interface PromptBuilderSharedProps {
     // Header props
     promptId?: string; // For mode switcher
+    promptVersion?: number;
+    promptUpdatedAt?: string | null;
     promptName: string;
     onPromptNameChange: (value: string) => void;
     isDirty: boolean;

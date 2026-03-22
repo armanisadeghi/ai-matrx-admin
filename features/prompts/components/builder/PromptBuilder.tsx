@@ -34,6 +34,8 @@ interface PromptBuilderProps {
     initialData?: {
         id?: string;
         name?: string;
+        version?: number;
+        updatedAt?: string | null;
         messages?: PromptMessage[];
         variableDefaults?: PromptVariable[];
         settings?: Record<string, any>;
@@ -1028,6 +1030,8 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
     const sharedProps = {
         // Header
         promptId: initialData?.id,
+        promptVersion: initialData?.version,
+        promptUpdatedAt: initialData?.updatedAt,
         promptName,
         onPromptNameChange: (value: string) => {
             setPromptName(value);
