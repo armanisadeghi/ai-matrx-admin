@@ -156,11 +156,43 @@ export function useDeleteEntity() {
       switch (type) {
         case 'task': return hierarchyService.deleteTask(id);
         case 'project': return hierarchyService.deleteProject(id);
+        case 'workspace': return hierarchyService.deleteWorkspace(id);
+        case 'organization': return hierarchyService.deleteOrganization(id);
         default: throw new Error(`Delete not supported for: ${type}`);
       }
     },
     onSuccess: () => { invalidate(); toast.success('Deleted successfully'); },
     onError: (err: Error) => toast.error('Failed to delete', { description: err.message }),
+  });
+}
+
+export function useMoveProject() {
+  const invalidate = useInvalidateTree();
+  return useMutation({
+    mutationFn: (params: { projectId: string; target: { organization_id?: string | null; workspace_id?: string | null } }) =>
+      hierarchyService.moveProject(params.projectId, params.target),
+    onSuccess: () => { invalidate(); toast.success('Project moved'); },
+    onError: (err: Error) => toast.error('Failed to move project', { description: err.message }),
+  });
+}
+
+export function useMoveTask() {
+  const invalidate = useInvalidateTree();
+  return useMutation({
+    mutationFn: (params: { taskId: string; target: { project_id?: string | null; parent_task_id?: string | null } }) =>
+      hierarchyService.moveTask(params.taskId, params.target),
+    onSuccess: () => { invalidate(); toast.success('Task moved'); },
+    onError: (err: Error) => toast.error('Failed to move task', { description: err.message }),
+  });
+}
+
+export function useMoveWorkspace() {
+  const invalidate = useInvalidateTree();
+  return useMutation({
+    mutationFn: (params: { workspaceId: string; target: { organization_id?: string; parent_workspace_id?: string | null } }) =>
+      hierarchyService.moveWorkspace(params.workspaceId, params.target),
+    onSuccess: () => { invalidate(); toast.success('Workspace moved'); },
+    onError: (err: Error) => toast.error('Failed to move workspace', { description: err.message }),
   });
 }
 

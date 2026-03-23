@@ -1,6 +1,6 @@
 # Block Printer Guide
 
-How to add print support to any block. Covers both current (codebase) blocks and future (database) blocks.
+Step-by-step instructions for adding print support to any block. For system overview and roadmap see `README.md`.
 
 ---
 

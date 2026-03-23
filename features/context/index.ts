@@ -6,10 +6,12 @@ export * from './types';
 // Constants
 export * from './constants';
 
-// Service
+// Services
 export { contextService } from './service/contextService';
+export { hierarchyService } from './service/hierarchyService';
+export { contextVariableService } from './service/contextVariableService';
 
-// Hooks
+// Hooks — Context Items
 export {
   useContextManifest,
   useContextItem,
@@ -32,9 +34,44 @@ export {
   useApplyTemplate,
 } from './hooks/useContextItems';
 
+// Hooks — Scope
 export { useContextScope } from './hooks/useContextScope';
+export type { ScopeState } from './hooks/useContextScope';
+
+// Hooks — Filters, Keyboard
 export { useContextFilters } from './hooks/useContextFilters';
 export { useContextKeyboard } from './hooks/useContextKeyboard';
+
+// Hooks — Hierarchy
+export {
+  useHierarchyTree,
+  useUserOrganizations,
+  useOrgWorkspaces,
+  useWorkspaceProjects,
+  useOrgProjects,
+  useProjectTasks,
+  useAncestors,
+  useCreateOrganization,
+  useCreateWorkspace,
+  useCreateProject,
+  useCreateTask,
+  useUpdateEntity,
+  useDeleteEntity,
+  useMoveProject,
+  useMoveTask,
+  useMoveWorkspace,
+  filterHierarchyTree,
+  countDescendants,
+} from './hooks/useHierarchy';
+
+// Hooks — Context Variables
+export {
+  useScopeVariables,
+  useResolvedVariables,
+  useCreateContextVariable,
+  useUpdateContextVariable,
+  useDeleteContextVariable,
+} from './hooks/useContextVariables';
 
 // Components
 export { ContextStatusBadge, ContextStatusStepper } from './components/ContextStatusBadge';
@@ -51,3 +88,7 @@ export { ContextItemDetail } from './components/ContextItemDetail';
 export { ContextVersionHistory } from './components/ContextVersionHistory';
 export { ContextTemplateBrowser } from './components/ContextTemplateBrowser';
 export { ContextAnalytics } from './components/ContextAnalytics';
+export { ContextVariablesPanel } from './components/ContextVariablesPanel';
+export { HierarchyExplorer } from './components/HierarchyExplorer';
+export { HierarchyTreePage } from './components/HierarchyTreePage';
+export { HierarchyEntityModal } from './components/HierarchyEntityModal';
