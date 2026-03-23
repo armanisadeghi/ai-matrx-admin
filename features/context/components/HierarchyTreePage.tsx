@@ -102,6 +102,7 @@ export function HierarchyTreePage() {
     parentType?: HierarchyNodeType;
     orgId?: string;
   } | null>(null);
+  const [editModal, setEditModal] = useState<HierarchyNode | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: HierarchyNodeType; id: string; name: string } | null>(null);
 
   const deleteMutation = useDeleteEntity();
@@ -255,23 +256,43 @@ export function HierarchyTreePage() {
         </ScrollArea>
 
         {/* Bottom bar: quick actions */}
-        <div className="p-2 border-t border-border/50 flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-[11px] gap-1 flex-1"
-            onClick={() => setCreateModal({ type: 'organization' })}
-          >
-            <Building2 className="h-3 w-3" /> New Org
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-[11px] gap-1 flex-1"
-            onClick={() => setCreateModal({ type: 'project' })}
-          >
-            <FolderKanban className="h-3 w-3" /> New Project
-          </Button>
+        <div className="p-2 border-t border-border/50 space-y-1">
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-[11px] gap-1 flex-1"
+              onClick={() => setCreateModal({ type: 'organization' })}
+            >
+              <Building2 className="h-3 w-3" /> New Org
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-[11px] gap-1 flex-1"
+              onClick={() => setCreateModal({ type: 'workspace' })}
+            >
+              <Users className="h-3 w-3" /> New Workspace
+            </Button>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-[11px] gap-1 flex-1"
+              onClick={() => setCreateModal({ type: 'project' })}
+            >
+              <FolderKanban className="h-3 w-3" /> New Project
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-[11px] gap-1 flex-1"
+              onClick={() => setCreateModal({ type: 'task' })}
+            >
+              <ListTodo className="h-3 w-3" /> New Task
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -287,6 +308,7 @@ export function HierarchyTreePage() {
               orgId,
             })}
             onDelete={(type, id, name) => setDeleteConfirm({ type, id, name })}
+            onEdit={(node) => setEditModal(node)}
           />
         ) : (
           <EmptyDetail treeStats={tree ? computeStats(tree) : null} />
@@ -297,10 +319,20 @@ export function HierarchyTreePage() {
       {createModal && (
         <HierarchyEntityModal
           entityType={createModal.type}
+          mode="create"
           parentId={createModal.parentId}
           parentType={createModal.parentType}
           orgId={createModal.orgId}
           onClose={() => setCreateModal(null)}
+        />
+      )}
+
+      {editModal && (
+        <HierarchyEntityModal
+          entityType={editModal.type}
+          mode="edit"
+          existingNode={editModal}
+          onClose={() => setEditModal(null)}
         />
       )}
 
@@ -311,6 +343,8 @@ export function HierarchyTreePage() {
               <AlertDialogTitle className="text-sm">Delete {TYPE_LABEL[deleteConfirm.type]}?</AlertDialogTitle>
               <AlertDialogDescription className="text-xs">
                 Are you sure you want to delete <strong>{deleteConfirm.name}</strong>?
+                {deleteConfirm.type === 'organization' && ' This will delete all workspaces, projects, and tasks within this organization.'}
+                {deleteConfirm.type === 'workspace' && ' This will delete all nested workspaces and their projects.'}
                 {deleteConfirm.type === 'project' && ' All tasks in this project will also be deleted.'}
               </AlertDialogDescription>
             </AlertDialogHeader>
@@ -450,7 +484,7 @@ function TreeBranch({
                 <Plus className="h-3 w-3 text-muted-foreground" />
               </button>
             )}
-            {(node.type === 'task' || node.type === 'project') && (
+            {node.type !== 'user' && (
               <button
                 className="h-5 w-5 flex items-center justify-center rounded hover:bg-destructive/10 transition-colors"
                 onClick={e => { e.stopPropagation(); onDelete(node.type, node.id, node.name); }}
@@ -492,10 +526,12 @@ function DetailPanel({
   node,
   onCreateChild,
   onDelete,
+  onEdit,
 }: {
   node: HierarchyNode;
   onCreateChild: (type: HierarchyNodeType, orgId?: string) => void;
   onDelete: (type: HierarchyNodeType, id: string, name: string) => void;
+  onEdit: (node: HierarchyNode) => void;
 }) {
   const Icon = ICONS[node.type];
   const accent = ACCENT_BG[node.type];
@@ -580,18 +616,12 @@ function DetailPanel({
         </div>
         {!isVirtual && node.type !== 'user' && !isEditing && (
           <div className="flex items-center gap-1 shrink-0">
-            <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => {
-              setEditName(node.name);
-              setEditDescription(node.description ?? '');
-              setIsEditing(true);
-            }}>
+            <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => onEdit(node)}>
               <Pencil className="h-3 w-3" /> Edit
             </Button>
-            {(node.type === 'task' || node.type === 'project') && (
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1 text-destructive" onClick={() => onDelete(node.type, node.id, node.name)}>
-                <Trash2 className="h-3 w-3" /> Delete
-              </Button>
-            )}
+            <Button variant="outline" size="sm" className="h-7 text-xs gap-1 text-destructive" onClick={() => onDelete(node.type, node.id, node.name)}>
+              <Trash2 className="h-3 w-3" /> Delete
+            </Button>
           </div>
         )}
       </div>

@@ -498,7 +498,74 @@ export const hierarchyService = {
   },
 
   async deleteProject(id: string): Promise<void> {
+    // Deletes project and cascades to tasks via FK constraint
     const { error } = await supabase.from('projects').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  async deleteWorkspace(id: string): Promise<void> {
+    // Delete child workspaces first (nested), then this workspace
+    const { data: children } = await supabase
+      .from('workspaces')
+      .select('id')
+      .eq('parent_workspace_id', id);
+    for (const child of children ?? []) {
+      await this.deleteWorkspace(child.id);
+    }
+    const { error } = await supabase.from('workspaces').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  async deleteOrganization(id: string): Promise<void> {
+    // Delete workspaces first, then org members, then org
+    const { data: workspaces } = await supabase
+      .from('workspaces')
+      .select('id')
+      .eq('organization_id', id)
+      .is('parent_workspace_id', null);
+    for (const ws of workspaces ?? []) {
+      await this.deleteWorkspace(ws.id);
+    }
+    // Delete org projects (no workspace)
+    const { error: projErr } = await supabase
+      .from('projects')
+      .delete()
+      .eq('organization_id', id)
+      .is('workspace_id', null);
+    if (projErr) throw projErr;
+    // Delete members
+    const { error: memErr } = await supabase
+      .from('organization_members')
+      .delete()
+      .eq('organization_id', id);
+    if (memErr) throw memErr;
+    // Delete org
+    const { error } = await supabase.from('organizations').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  // ─── Move / reparent ──────────────────────────────────────────────
+  async moveProject(projectId: string, target: { organization_id?: string | null; workspace_id?: string | null }): Promise<void> {
+    const { error } = await supabase
+      .from('projects')
+      .update({ ...target, updated_at: new Date().toISOString() })
+      .eq('id', projectId);
+    if (error) throw error;
+  },
+
+  async moveTask(taskId: string, target: { project_id?: string | null; parent_task_id?: string | null }): Promise<void> {
+    const { error } = await supabase
+      .from('tasks')
+      .update({ ...target, updated_at: new Date().toISOString() })
+      .eq('id', taskId);
+    if (error) throw error;
+  },
+
+  async moveWorkspace(workspaceId: string, target: { organization_id?: string; parent_workspace_id?: string | null }): Promise<void> {
+    const { error } = await supabase
+      .from('workspaces')
+      .update({ ...target, updated_at: new Date().toISOString() })
+      .eq('id', workspaceId);
     if (error) throw error;
   },
 

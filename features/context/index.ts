@@ -57,6 +57,9 @@ export {
   useCreateTask,
   useUpdateEntity,
   useDeleteEntity,
+  useMoveProject,
+  useMoveTask,
+  useMoveWorkspace,
   filterHierarchyTree,
   countDescendants,
 } from './hooks/useHierarchy';
