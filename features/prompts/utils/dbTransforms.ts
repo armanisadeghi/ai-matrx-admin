@@ -10,7 +10,7 @@ import type { PromptData, PromptDb } from "../types/core";
 // ---------------------------------------------------------------------------
 
 /** Writable columns only — `id`, `created_at`, `updated_at`, `user_id` are managed by the DB. */
-export type PromptInsert = Omit<PromptDb, "id" | "created_at" | "updated_at" | "user_id">;
+export type PromptInsert = Omit<PromptDb, "id" | "created_at" | "updated_at" | "user_id" | "version">;
 
 /** Partial writable columns for PATCH operations. */
 export type PromptUpdate = Partial<PromptInsert>;
@@ -25,6 +25,7 @@ export function toFrontend(row: PromptDb): PromptData {
         id:               row.id,
         createdAt:        row.created_at ? new Date(row.created_at) : undefined,
         updatedAt:        row.updated_at ? new Date(row.updated_at) : undefined,
+        version:          row.version,
         name:             row.name        ?? undefined,
         description:      row.description ?? undefined,
         userId:           row.user_id     ?? undefined,

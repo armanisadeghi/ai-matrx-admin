@@ -94,10 +94,7 @@ export function ChatSidebar({
         <div className="h-full flex flex-col">
             {/* Section 0: Top controls — collapse, new chat, agent picker */}
             <SidebarAgentHeader
-                selectedAgent={selectedAgent}
-                onAgentSelect={onOpenAgentPicker ? () => onOpenAgentPicker() : onAgentSelect}
                 onCollapse={closeSidebar}
-                onNewChat={handleNewChat}
             />
 
             {/* Section 1: Actions — fixed at top */}

@@ -130,7 +130,7 @@ export function HierarchyExplorer({ scope, onScopeChange }: Props) {
         <div className="p-2 space-y-0.5">
           {/* Personal scope */}
           <TreeItem
-            node={{ id: 'personal', type: 'user', name: 'My Context', description: null, parentId: null, children: [] }}
+            node={{ id: 'personal', type: 'user', name: 'My Context', description: null, parentId: null, children: [], childCount: 0 }}
             depth={0}
             isSelected={scope.scopeType === 'user'}
             isExpanded={false}

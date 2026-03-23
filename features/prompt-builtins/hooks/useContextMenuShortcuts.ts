@@ -126,6 +126,7 @@ export function useContextMenuShortcuts(
             id: row.builtin_id,
             created_at: '',
             updated_at: '',
+            version: row.builtin_version ?? 1,
             name: row.builtin_name,
             description: row.builtin_description,
             messages: row.builtin_messages,

@@ -18,7 +18,7 @@ import type {
 } from '../types';
 import { ATTENTION_STATUSES } from '../constants';
 
-function scopeFilter(query: ReturnType<typeof supabase.from>, scopeType: ContextScopeLevel, scopeId: string) {
+function scopeFilter(query: any, scopeType: ContextScopeLevel, scopeId: string) {
   const column = scopeType === 'user' ? 'user_id'
     : scopeType === 'organization' ? 'organization_id'
     : scopeType === 'workspace' ? 'workspace_id'

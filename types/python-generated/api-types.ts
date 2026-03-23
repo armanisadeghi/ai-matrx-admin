@@ -185,8 +185,9 @@ export interface paths {
          * Warm Agent
          * @description Pre-load an agent definition into the PromptManager cache.
          *
-         *     Calling Agent.from_id() causes the PromptManager to cache the prompt
-         *     definition. Subsequent real requests for this agent skip the DB query.
+         *     Optional ``source`` in the request body tells the warm endpoint exactly
+         *     which table to query (e.g. "prompt_version", "builtin_version"). When
+         *     omitted the fallback chain (prompts -> builtins) is used.
          */
         post: operations["warm_agent_ai_agents__agent_id__warm_post"];
         delete?: never;
@@ -233,6 +234,29 @@ export interface paths {
          *     off the next real request.
          */
         post: operations["warm_conversation_ai_conversations__conversation_id__warm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/apps/{app_id}/warm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Warm Prompt App
+         * @description Pre-load the prompt app's pinned version into the agent cache.
+         *
+         *     Looks up the app's prompt_version_id and prompt_source_type, then
+         *     warms the corresponding version row so execution is a cache hit.
+         */
+        post: operations["warm_prompt_app_ai_apps__app_id__warm_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -509,6 +533,30 @@ export interface paths {
          *     Best for programmatic callers that don't need real-time progress.
          */
         post: operations["categorize_prompt_sync_ai_builtin_agents_categorize_sync_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/apps/{app_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Execute Prompt App
+         * @description Execute a prompt app using its pinned prompt version.
+         *
+         *     Resolves the pinned prompt_version_id from the app row, loads the
+         *     versioned agent config, applies variables/overrides, and streams
+         *     the LLM response.
+         */
+        post: operations["execute_prompt_app_ai_apps__app_id__post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1973,6 +2021,28 @@ export interface components {
             /** Agent Id */
             agent_id?: string | null;
         };
+        /** AppExecuteRequest */
+        AppExecuteRequest: {
+            /** User Input */
+            user_input?: string | {
+                [key: string]: unknown;
+            }[] | null;
+            /** Variables */
+            variables?: {
+                [key: string]: unknown;
+            } | null;
+            config_overrides?: components["schemas"]["LLMParams"] | null;
+            /**
+             * Stream
+             * @default true
+             */
+            stream: boolean;
+            /**
+             * Debug
+             * @default false
+             */
+            debug: boolean;
+        };
         /**
          * AudioStyle
          * @enum {string}
@@ -3211,6 +3281,11 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /** WarmRequest */
+        WarmRequest: {
+            /** Source */
+            source?: string | null;
+        };
     };
     responses: never;
     parameters: never;
@@ -3404,7 +3479,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WarmRequest"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -3435,7 +3514,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WarmRequest"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -3463,6 +3546,37 @@ export interface operations {
             header?: never;
             path: {
                 conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    warm_prompt_app_ai_apps__app_id__warm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                app_id: string;
             };
             cookie?: never;
         };
@@ -3855,6 +3969,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CategorizeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    execute_prompt_app_ai_apps__app_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                app_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppExecuteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

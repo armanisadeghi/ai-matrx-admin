@@ -201,7 +201,7 @@
           "AI"
         ],
         "summary": "Warm Agent",
-        "description": "Pre-load an agent definition into the PromptManager cache.\n\nCalling Agent.from_id() causes the PromptManager to cache the prompt\ndefinition. Subsequent real requests for this agent skip the DB query.",
+        "description": "Pre-load an agent definition into the PromptManager cache.\n\nOptional ``source`` in the request body tells the warm endpoint exactly\nwhich table to query (e.g. \"prompt_version\", \"builtin_version\"). When\nomitted the fallback chain (prompts -> builtins) is used.",
         "operationId": "warm_agent_ai_agents__agent_id__warm_post",
         "parameters": [
           {
@@ -214,6 +214,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/WarmRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Request"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -255,6 +272,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/WarmRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Request"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -293,6 +327,47 @@
             "schema": {
               "type": "string",
               "title": "Conversation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/apps/{app_id}/warm": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Warm Prompt App",
+        "description": "Pre-load the prompt app's pinned version into the agent cache.\n\nLooks up the app's prompt_version_id and prompt_source_type, then\nwarms the corresponding version row so execution is a cache hit.",
+        "operationId": "warm_prompt_app_ai_apps__app_id__warm_post",
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "App Id"
             }
           }
         ],
@@ -760,6 +835,57 @@
                 "schema": {
                   "$ref": "#/components/schemas/CategorizeResponse"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/apps/{app_id}": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Execute Prompt App",
+        "description": "Execute a prompt app using its pinned prompt version.\n\nResolves the pinned prompt_version_id from the app row, loads the\nversioned agent config, applies variables/overrides, and streams\nthe LLM response.",
+        "operationId": "execute_prompt_app_ai_apps__app_id__post",
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "App Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppExecuteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
@@ -4870,6 +4996,62 @@
         "type": "object",
         "title": "AnalyzeRequest"
       },
+      "AppExecuteRequest": {
+        "properties": {
+          "user_input": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Input"
+          },
+          "variables": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variables"
+          },
+          "config_overrides": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LLMParams"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stream": {
+            "type": "boolean",
+            "title": "Stream",
+            "default": true
+          },
+          "debug": {
+            "type": "boolean",
+            "title": "Debug",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "AppExecuteRequest"
+      },
       "AudioStyle": {
         "type": "string",
         "enum": [
@@ -7993,6 +8175,23 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "WarmRequest": {
+        "properties": {
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "title": "WarmRequest"
       }
     }
   }
