@@ -265,8 +265,14 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         setStatus('discovering');
         const result = await discoverMatrxLocal();
         if (result) {
-            setBaseUrl(result.url);
-            baseUrlRef.current = result.url;
+            // Only overwrite the URL if the user hasn't set a remote/tunnel address.
+            // A remote URL starts with https:// or has a non-localhost hostname.
+            const currentUrl = baseUrlRef.current;
+            const isLocalUrl = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?/.test(currentUrl);
+            if (isLocalUrl) {
+                setBaseUrl(result.url);
+                baseUrlRef.current = result.url;
+            }
             setStatus('disconnected');
             if (result.availableTools.length > 0) setAvailableTools(result.availableTools);
             if (result.version) setVersionInfo({ version: result.version });
