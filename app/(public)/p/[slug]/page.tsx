@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
 import { PromptAppPublicRendererFastAPI } from '@/features/prompt-apps/components/PromptAppPublicRendererFastAPI';
 import { getPromptAppIconsMetadata } from '@/features/prompt-apps/utils/favicon-metadata';
+import { BACKEND_URLS, ENDPOINTS } from '@/lib/api/endpoints';
 import type { Metadata } from 'next';
 
 export const revalidate = 3600; // Revalidate every hour
@@ -80,6 +81,10 @@ export default async function PromptAppPage({
     }
 
     const app = appData as any;
+
+    // Fire-and-forget: warm the app's pinned version on the Python backend (server → server)
+    const warmUrl = `${BACKEND_URLS.production}${ENDPOINTS.ai.appWarm(app.id)}`;
+    fetch(warmUrl, { method: 'POST' }).catch(() => {});
 
     return (
         <PromptAppPublicRendererFastAPI

@@ -935,11 +935,23 @@ export function callCancelRequest(requestId: string) {
 
 // ─── Warm-up: Pre-load agent into server cache ────────────────────────────────
 
-export function callWarmAgent(agentId: string) {
+/**
+ * Valid `source` values for warm endpoints.
+ * Tells the backend exactly which table to query:
+ * - `"prompt"` → `prompts` table
+ * - `"builtin"` → `prompt_builtins` table
+ * - `"prompt_version"` → `prompt_versions` table
+ * - `"builtin_version"` → `prompt_builtin_versions` table
+ * - `undefined` → fallback chain (prompts → builtins)
+ */
+export type WarmSource = 'prompt' | 'builtin' | 'prompt_version' | 'builtin_version';
+
+export function callWarmAgent(agentId: string, source?: WarmSource) {
     return callApi({
         path: '/ai/agents/{agent_id}/warm',
         method: 'POST',
         pathParams: { agent_id: agentId },
+        body: (source ? { source } : undefined) as any,
         stream: false,
     });
 }
@@ -949,6 +961,15 @@ export function callWarmConversation(conversationId: string) {
         path: '/ai/conversations/{conversation_id}/warm',
         method: 'POST',
         pathParams: { conversation_id: conversationId },
+        stream: false,
+    });
+}
+
+export function callWarmApp(appId: string) {
+    return callApi({
+        path: '/ai/apps/{app_id}/warm',
+        method: 'POST',
+        pathParams: { app_id: appId },
         stream: false,
     });
 }

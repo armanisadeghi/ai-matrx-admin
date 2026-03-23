@@ -56,6 +56,140 @@ export const selectLastAssistantMessageId = (state: RootState, sessionId: string
     return null;
 };
 
+// ============================================================================
+// GROUPED MESSAGES — merge consecutive assistant messages into one turn
+// ============================================================================
+//
+// The database stores each "cycle" of an assistant's multi-step response as a
+// separate cx_message row. For example, when the assistant does:
+//   thinking → tool call → text → tool call → text
+// the backend might store 3+ separate assistant rows.
+//
+// The streaming path naturally produces a single assistant message per user
+// message, so this merge is only needed for DB-loaded conversations. However,
+// applying it unconditionally is safe — if there's only one assistant message
+// in a run, merging is a no-op.
+//
+// The merge combines content (joined by double newlines), toolUpdates,
+// rawToolCalls, and streamEvents. The first message in the group is used as the
+// "primary" — its id, timestamp, and DB metadata are preserved.
+
+import type { ConversationMessage } from './types';
+
+function mergeConsecutiveAssistantMessages(messages: ConversationMessage[]): ConversationMessage[] {
+    if (messages.length <= 1) return messages;
+
+    const result: ConversationMessage[] = [];
+    let i = 0;
+
+    while (i < messages.length) {
+        const msg = messages[i];
+
+        // Non-assistant messages pass through unchanged
+        if (msg.role !== 'assistant') {
+            result.push(msg);
+            i++;
+            continue;
+        }
+
+        // Start of an assistant run — collect all consecutive assistant messages
+        const group: ConversationMessage[] = [msg];
+        let j = i + 1;
+        while (j < messages.length && messages[j].role === 'assistant') {
+            group.push(messages[j]);
+            j++;
+        }
+
+        if (group.length === 1) {
+            // Single assistant message — no merge needed
+            result.push(msg);
+        } else {
+            // Merge the group into a single message
+            // Use the first message as the base (preserves its id, timestamps, etc.)
+            const primary = group[0];
+
+            // Combine content — filter out empty strings to avoid ugly double newlines
+            const contentParts = group
+                .map(m => m.content)
+                .filter(c => c.length > 0);
+            const mergedContent = contentParts.join('\n\n');
+
+            // Combine tool updates
+            const mergedToolUpdates = group.flatMap(m =>
+                (m.toolUpdates as unknown[] | undefined) ?? []
+            );
+
+            // Combine raw tool calls
+            const mergedRawToolCalls = group.flatMap(m =>
+                (m.rawToolCalls as CxToolCall[] | undefined) ?? []
+            );
+
+            // Combine stream events
+            const mergedStreamEvents = group.flatMap(m =>
+                m.streamEvents ?? []
+            );
+
+            // Combine raw content blocks
+            const mergedRawContent = group.flatMap(m =>
+                (m.rawContent as unknown[] | undefined) ?? []
+            );
+
+            // Use the "worst" status: if any message errored, the group errors.
+            // If any is streaming, the group is streaming. Otherwise complete.
+            let mergedStatus = primary.status;
+            for (const m of group) {
+                if (m.status === 'error') { mergedStatus = 'error'; break; }
+                if (m.status === 'streaming') mergedStatus = 'streaming';
+                if (m.status === 'pending' && mergedStatus === 'complete') mergedStatus = 'pending';
+            }
+
+            // isCondensed: only if ALL messages in the group are condensed
+            const allCondensed = group.every(m => m.isCondensed);
+
+            // Build merged IDs list for reference (stored in metadata)
+            const mergedIds = group.map(m => m.id);
+
+            const merged: ConversationMessage = {
+                ...primary,
+                content: mergedContent,
+                status: mergedStatus,
+                toolUpdates: mergedToolUpdates.length > 0 ? mergedToolUpdates : undefined,
+                rawToolCalls: mergedRawToolCalls.length > 0 ? mergedRawToolCalls : undefined,
+                streamEvents: mergedStreamEvents.length > 0 ? mergedStreamEvents : undefined,
+                rawContent: mergedRawContent.length > 0 ? mergedRawContent : undefined,
+                isCondensed: allCondensed || undefined,
+                // Store the original display content from the merged result for edit/reset
+                originalDisplayContent: contentParts.join('\n\n') || primary.originalDisplayContent,
+                // Preserve merged source IDs in metadata for debugging/edit operations
+                metadata: {
+                    ...primary.metadata,
+                    mergedFromIds: mergedIds,
+                },
+            };
+
+            result.push(merged);
+        }
+
+        i = j;
+    }
+
+    return result;
+}
+
+/**
+ * Memoized selector that returns messages with consecutive assistant messages
+ * merged into single turns. The UI should use this instead of selectMessages
+ * for rendering the message list.
+ *
+ * Raw selectMessages is still available for operations that need per-DB-row
+ * access (e.g. edit/save operations).
+ */
+export const selectGroupedMessages = createSelector(
+    [(state: RootState, sessionId: string) =>
+        state.chatConversations.sessions[sessionId]?.messages ?? EMPTY_MESSAGES],
+    (messages): ConversationMessage[] => mergeConsecutiveAssistantMessages(messages),
+);
+
 export const selectIsStreaming = (state: RootState, sessionId: string): boolean => {
     const session = state.chatConversations.sessions[sessionId];
     return session?.status === 'streaming' || session?.status === 'executing';

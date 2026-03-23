@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import { MessageSquare } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
+  selectGroupedMessages,
   selectMessages,
   selectIsStreaming,
   selectUIState,
@@ -75,7 +76,10 @@ export function MessageList({
   onMessageContentChange,
 }: MessageListProps) {
   const dispatch = useAppDispatch();
-  const messages = useAppSelector((state) => selectMessages(state, sessionId));
+  // Grouped messages: consecutive assistant messages merged into single turns for display
+  const messages = useAppSelector((state) => selectGroupedMessages(state, sessionId));
+  // Raw messages: unmerged, needed for streaming detection (to find actual streaming message ID)
+  const rawMessages = useAppSelector((state) => selectMessages(state, sessionId));
   const isStreaming = useAppSelector((state) =>
     selectIsStreaming(state, sessionId),
   );
@@ -122,9 +126,9 @@ export function MessageList({
     return true;
   });
 
-  // Find last streaming assistant message
+  // Find last streaming assistant message (use raw messages — unmerged IDs)
   const lastStreamingId = isStreaming
-    ? [...messages]
+    ? [...rawMessages]
         .reverse()
         .find((m) => m.role === "assistant" && m.status === "streaming")?.id
     : null;

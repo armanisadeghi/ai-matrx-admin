@@ -64,6 +64,7 @@ import {
   BackToStartButton,
   DEFAULT_AGENTS,
 } from "@/features/public-chat/components/AgentSelector";
+import { ChatConversationSkeleton } from "./ChatConversationSkeleton";
 
 // Lazy imports — conditionally rendered
 const ShareModal = dynamic(
@@ -108,9 +109,13 @@ function ChatWorkspaceInner() {
   const nextPathname = usePathname();
   const searchParams = useSearchParams();
 
-  // usePathname() may not react to manual pushState — track it manually too
-  // Initialize with '' (SSR-safe); sync to window.location.pathname after mount
-  const [manualPathname, setManualPathname] = useState("");
+  // usePathname() may not react to manual pushState — track it manually too.
+  // Lazy initializer reads window.location.pathname synchronously on the
+  // first client render so that conversation URLs are detected instantly
+  // (no one-frame flash of the welcome screen).
+  const [manualPathname, setManualPathname] = useState(() =>
+    typeof window !== "undefined" ? window.location.pathname : "",
+  );
   useEffect(() => {
     setManualPathname(window.location.pathname);
     const onPopState = () => setManualPathname(window.location.pathname);
@@ -617,6 +622,16 @@ function ChatWorkspaceInner() {
   const isAgentLoading = !selectedAgent.configFetched && !selectedAgent.name;
   const agentName = isAgentLoading ? "" : selectedAgent.name || "Chat";
   const headerLabel = isAgentLoading ? "" : selectedAgent.name || "Chat";
+
+  // ========================================================================
+  // SKELETON GUARD — avoid welcome-screen flash on conversation URLs
+  // ========================================================================
+  // When the URL contains a conversation ID but we haven't entered
+  // conversation mode yet (effects haven't fired), show a skeleton
+  // instead of the welcome screen so the UI doesn't "jump".
+  if (conversationIdFromUrl && !isInConversation && !isLoadingConversation) {
+    return <ChatConversationSkeleton />;
+  }
 
   // ========================================================================
   // LOADING STATE

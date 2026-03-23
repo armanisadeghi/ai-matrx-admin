@@ -6,17 +6,23 @@ import {
   GeminiTapButton,
   MetaTapButton,
   XaiTapButton,
+  XTweetTapButton,
   CpuTapButton,
   ClaudeTapButton,
   LlamaTapButton,
   DeepSeekTapButton,
   FluxTapButton,
   GrokTapButton,
+  MistralTapButton,
+  PerplexityTapButton,
   PowerTapButton,
+  TextGenerationTapButton,
   ImageGenerationTapButton,
   VideoGenerationTapButton,
+  AudioLinesTapButton,
   TranscriptionTapButton,
   TranslationTapButton,
+  CodeGenerationTapButton,
 } from "@/components/icons/ai-tap-buttons";
 
 export default function ButtonDemoPage() {
@@ -33,7 +39,7 @@ export default function ButtonDemoPage() {
         <h2 className="text-xl font-semibold">Model Provider Selector (Brand Colors)</h2>
         <p className="text-sm text-muted-foreground w-1/2">
           Clicking a logo could expand secondary options for that specific
-          provider's sub-models. The brain acts as a universal "Other Providers" fallback.
+          provider&apos;s sub-models. All black-brand logos safely use currentColor.
         </p>
         <div className="flex gap-4">
           <TapTargetButtonGroup>
@@ -47,6 +53,8 @@ export default function ButtonDemoPage() {
             <MetaTapButton variant="group" colored />
             <LlamaTapButton variant="group" colored />
             <DeepSeekTapButton variant="group" colored />
+            <MistralTapButton variant="group" colored />
+            <PerplexityTapButton variant="group" colored />
             <FluxTapButton variant="group" colored />
             <CpuTapButton variant="group" />
           </TapTargetButtonGroup>
@@ -70,6 +78,8 @@ export default function ButtonDemoPage() {
             <MetaTapButton variant="group" />
             <LlamaTapButton variant="group" />
             <DeepSeekTapButton variant="group" />
+            <MistralTapButton variant="group" />
+            <PerplexityTapButton variant="group" />
             <FluxTapButton variant="group" />
             <CpuTapButton variant="group" />
           </TapTargetButtonGroup>
@@ -77,15 +87,19 @@ export default function ButtonDemoPage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold">AI Action Tools</h2>
+        <h2 className="text-xl font-semibold">AI Action Tools — Lightning Family</h2>
         <p className="text-sm text-muted-foreground w-1/2">
-          Common AI interface actions utilizing generic shapes, easily dropping into any action bar or input field. Note the use of the Power/Lightning bolt for intelligence text generation instead of classical sparkles.
+          A cohesive set of AI action icons built around the lightning bolt motif.
+          Each combines the bolt with domain-specific elements for instant recognition.
         </p>
         <div className="flex gap-4">
           <TapTargetButtonGroup>
             <PowerTapButton variant="group" />
+            <TextGenerationTapButton variant="group" />
             <ImageGenerationTapButton variant="group" />
             <VideoGenerationTapButton variant="group" />
+            <AudioLinesTapButton variant="group" />
+            <CodeGenerationTapButton variant="group" />
             <TranscriptionTapButton variant="group" />
             <TranslationTapButton variant="group" />
           </TapTargetButtonGroup>
@@ -99,7 +113,9 @@ export default function ButtonDemoPage() {
         </p>
         <div className="flex gap-4">
           <PowerTapButton variant="solid" bgColor="bg-blue-600" />
+          <TextGenerationTapButton variant="solid" bgColor="bg-violet-600" />
           <ImageGenerationTapButton variant="solid" bgColor="bg-emerald-600" />
+          <CodeGenerationTapButton variant="solid" bgColor="bg-amber-600" />
         </div>
       </section>
     </div>

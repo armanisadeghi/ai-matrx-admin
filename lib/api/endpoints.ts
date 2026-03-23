@@ -47,8 +47,9 @@ export const ENDPOINTS = {
         conversationWarm: (conversationId: string) => `/api/ai/conversations/${conversationId}/warm` as const,
 
         /**
-         * POST — Pre-warm an agent's server cache. No body. No auth. (public endpoint)
+         * POST — Pre-warm an agent's server cache. No auth. (public endpoint)
          * POST /api/ai/agents/{agentId}/warm
+         * Optional body: `{ source: "prompt" | "builtin" | "prompt_version" | "builtin_version" }`
          */
         agentWarm: (agentId: string) => `/api/ai/agents/${agentId}/warm` as const,
 
@@ -62,8 +63,23 @@ export const ENDPOINTS = {
         /**
          * POST — Pre-warm a block-streaming agent (Public)
          * POST /api/ai/agents-blocks/{agentId}/warm
+         * Optional body: `{ source: "prompt" | "builtin" | "prompt_version" | "builtin_version" }`
          */
         agentBlocksWarm: (agentId: string) => `/api/ai/agents-blocks/${agentId}/warm` as const,
+
+        /**
+         * POST — Execute a prompt app using its pinned prompt version (Guest OK)
+         * POST /api/ai/apps/{appId}
+         * The backend resolves the pinned prompt version — the client never sees prompt secrets.
+         */
+        appExecute: (appId: string) => `/api/ai/apps/${appId}` as const,
+
+        /**
+         * POST — Pre-warm a prompt app's pinned version into cache (Public, no auth)
+         * POST /api/ai/apps/{appId}/warm
+         * Fire when the prompt app page loads so execution is instant.
+         */
+        appWarm: (appId: string) => `/api/ai/apps/${appId}/warm` as const,
 
         /** POST — Cancel a running request by request_id (Authenticated) */
         cancel: (requestId: string) => `/api/ai/cancel/${requestId}` as const,

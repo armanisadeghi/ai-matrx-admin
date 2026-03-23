@@ -135,7 +135,7 @@ export function HierarchyExplorer({ scope, onScopeChange }: Props) {
             isSelected={scope.scopeType === 'user'}
             isExpanded={false}
             onSelect={handleSelect}
-            onToggle={() => {}}
+            onToggle={() => { }}
             hasChildren={false}
           />
 
@@ -226,9 +226,9 @@ function TreeBranch({
   // Determine what child type can be created
   const childType: HierarchyNodeType | null =
     node.type === 'organization' ? 'workspace' :
-    node.type === 'workspace' ? 'project' :
-    node.type === 'project' ? 'task' :
-    null;
+      node.type === 'workspace' ? 'project' :
+        node.type === 'project' ? 'task' :
+          null;
 
   // Find the org id for context
   const orgId = node.type === 'organization' ? node.id : (node.meta?.organization_id as string | undefined);
@@ -301,18 +301,16 @@ function TreeItem({
 
   return (
     <div
-      className={`group flex items-center gap-1.5 rounded-md cursor-pointer transition-all text-xs ${
-        isSelected
+      className={`group flex items-center gap-1.5 rounded-md cursor-pointer transition-all text-xs ${isSelected
           ? 'bg-primary/10 text-primary font-medium'
           : 'hover:bg-muted/50 text-foreground'
-      }`}
+        }`}
       style={{ paddingLeft: `${depth * 16 + 4}px`, paddingRight: '4px' }}
     >
       {/* Expand/collapse toggle */}
       <button
-        className={`h-5 w-5 flex items-center justify-center shrink-0 rounded hover:bg-muted transition-colors ${
-          hasChildren ? '' : 'invisible'
-        }`}
+        className={`h-5 w-5 flex items-center justify-center shrink-0 rounded hover:bg-muted transition-colors ${hasChildren ? '' : 'invisible'
+          }`}
         onClick={e => {
           e.stopPropagation();
           onToggle();
@@ -358,12 +356,11 @@ function TreeItem({
 
       {/* Task status indicator */}
       {node.type === 'task' && node.meta?.status && (
-        <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${
-          node.meta.status === 'completed' ? 'bg-green-400' :
-          node.meta.status === 'in_progress' ? 'bg-blue-400' :
-          node.meta.status === 'blocked' ? 'bg-red-400' :
-          'bg-gray-400'
-        }`} />
+        <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${node.meta.status === 'completed' ? 'bg-green-400' :
+            node.meta.status === 'in_progress' ? 'bg-blue-400' :
+              node.meta.status === 'blocked' ? 'bg-red-400' :
+                'bg-gray-400'
+          }`} />
       )}
     </div>
   );
