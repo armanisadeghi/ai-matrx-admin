@@ -7,7 +7,6 @@
  */
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { v4 as uuidv4 } from 'uuid';
 import type { RootState, AppDispatch } from '@/lib/redux/store';
 import { chatConversationsActions } from '../slice';
 import type { ConversationMessage } from '../types';
@@ -60,7 +59,7 @@ export const loadConversationHistory = createAsyncThunk<
 
             // Convert ProcessedChatMessage[] to ConversationMessage[]
             const messages: ConversationMessage[] = processedMessages.map(msg => ({
-                id: msg.id || uuidv4(),
+                id: msg.id,
                 role: msg.role,
                 content: msg.content,
                 status: 'complete' as const,

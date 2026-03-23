@@ -56,13 +56,6 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
         abortControllerRef.current = new AbortController();
 
         try {
-            const promptId = app.prompt_id;
-            if (!promptId) {
-                setError({ type: 'execution_error', message: 'Prompt configuration not available' });
-                setIsExecuting(false);
-                return;
-            }
-
             const authReady = await waitForAuth();
             if (!authReady) {
                 setError({ type: 'execution_error', message: 'Unable to verify access. Please refresh the page.' });
@@ -80,9 +73,11 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
             const agentRequest = existingConversationId
                 ? { user_input: userInput ?? '', stream: true, debug: false }
                 : { variables, user_input: userInput, stream: true, debug: false };
+            // First execution → use the new app execution endpoint (backend resolves pinned prompt version)
+            // Follow-up → continue via the existing conversation
             const executeUrl = existingConversationId
                 ? `${BACKEND_URL}${ENDPOINTS.ai.conversationContinue(existingConversationId)}`
-                : `${BACKEND_URL}${ENDPOINTS.ai.agentStart(promptId)}`;
+                : `${BACKEND_URL}${ENDPOINTS.ai.appExecute(app.id)}`;
 
             const fetchResponse = await fetch(executeUrl, {
                 method: 'POST',
@@ -123,7 +118,7 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
                     variables_provided: variables,
                     variables_used: variables,
                     fingerprint: fingerprintId,
-                    chat_config: { prompt_id: promptId, conversation_id: serverConversationId },
+                    chat_config: { app_id: app.id, conversation_id: serverConversationId },
                     metadata: {
                         timestamp: new Date().toISOString(),
                         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,

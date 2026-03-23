@@ -502,7 +502,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
 
         return (
           <h1
-            className={`text-2xl text-blue-500 font-bold mb-3 font-heading ${getDirectionClasses(headingDirection)}`}
+            className={`text-2xl text-blue-500 font-bold pt-2 mb-1 font-heading ${getDirectionClasses(headingDirection)}`}
             dir={headingDirection}
             {...props}
           >
@@ -521,7 +521,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
 
         return (
           <h2
-            className={`text-xl pt-2 text-blue-500 font-medium mb-2 font-heading ${getDirectionClasses(headingDirection)}`}
+            className={`text-xl text-blue-500 font-medium pt-1 mb-1 font-heading ${getDirectionClasses(headingDirection)}`}
             dir={headingDirection}
             {...props}
           >
@@ -540,7 +540,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
 
         return (
           <h3
-            className={`text-xl pt-2 text-blue-500 font-medium mb-2 mt-4 font-heading ${getDirectionClasses(headingDirection)}`}
+            className={`text-lg pt-2 text-blue-500 font-medium pt-1 mb-2 font-heading ${getDirectionClasses(headingDirection)}`}
             dir={headingDirection}
             {...props}
           >

@@ -262,6 +262,12 @@ export function ChatDesktopHeader() {
         </span>
         <ChevronDown className="h-3 w-3 text-muted-foreground flex-shrink-0" />
       </button>
+      <div className="ml-auto flex-shrink-0">
+        <PlusTapButton
+          onClick={() => navigate("/ssr/chat")}
+          ariaLabel="New chat"
+        />
+      </div>
     </div>
   );
 }

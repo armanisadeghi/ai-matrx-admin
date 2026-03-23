@@ -30,6 +30,21 @@ import {
     Download,
     Share2,
     Database,
+    // Technical documentation icons
+    FileCode2,
+    ScrollText,
+    Network,
+    ClipboardList,
+    BookMarked,
+    Bug,
+    TestTube2,
+    TableProperties,
+    PenTool,
+    // Matrx AI app-specific icons
+    MessageSquareText,
+    Sparkles,
+    Boxes,
+    Wrench,
     type LucideIcon,
 } from 'lucide-react';
 
@@ -258,6 +273,101 @@ export const FOLDER_CATEGORIES: FolderCategory[] = [
         icon: Folder,
         description: 'General purpose folder',
         color: 'text-blue-500 dark:text-blue-400'
+    },
+
+    // ── Technical Documentation ────────────────────────────────────────
+    {
+        id: 'api-docs',
+        label: 'API Docs',
+        icon: FileCode2,
+        description: 'API documentation and endpoint references',
+        color: 'text-cyan-600 dark:text-cyan-400'
+    },
+    {
+        id: 'specs',
+        label: 'Specs',
+        icon: ScrollText,
+        description: 'Technical specifications, PRDs, and requirements',
+        color: 'text-violet-600 dark:text-violet-400'
+    },
+    {
+        id: 'architecture',
+        label: 'Architecture',
+        icon: Network,
+        description: 'System architecture and design documents',
+        color: 'text-slate-600 dark:text-slate-400'
+    },
+    {
+        id: 'changelogs',
+        label: 'Changelogs',
+        icon: ClipboardList,
+        description: 'Release notes and change logs',
+        color: 'text-teal-600 dark:text-teal-400'
+    },
+    {
+        id: 'runbooks',
+        label: 'Runbooks',
+        icon: BookMarked,
+        description: 'Deployment guides and operations runbooks',
+        color: 'text-orange-600 dark:text-orange-400'
+    },
+    {
+        id: 'bug-reports',
+        label: 'Bug Reports',
+        icon: Bug,
+        description: 'Bug tracking and issue documentation',
+        color: 'text-red-600 dark:text-red-400'
+    },
+    {
+        id: 'test-cases',
+        label: 'Test Cases',
+        icon: TestTube2,
+        description: 'Test plans, cases, and QA notes',
+        color: 'text-lime-600 dark:text-lime-400'
+    },
+    {
+        id: 'schemas',
+        label: 'Schemas',
+        icon: TableProperties,
+        description: 'Database schemas and data model definitions',
+        color: 'text-blue-700 dark:text-blue-300'
+    },
+    {
+        id: 'wireframes',
+        label: 'Wireframes',
+        icon: PenTool,
+        description: 'UI/UX wireframes and mockup notes',
+        color: 'text-pink-600 dark:text-pink-400'
+    },
+
+    // ── Matrx AI App-Specific ──────────────────────────────────────────
+    {
+        id: 'chat-response',
+        label: 'Chat Response',
+        icon: MessageSquareText,
+        description: 'Saved AI chat responses and conversations',
+        color: 'text-emerald-600 dark:text-emerald-400'
+    },
+    {
+        id: 'prompt-idea',
+        label: 'Prompt Idea',
+        icon: Sparkles,
+        description: 'Prompt engineering ideas and templates',
+        color: 'text-amber-500 dark:text-amber-300'
+    },
+    {
+        id: 'block-idea',
+        label: 'Block Idea',
+        icon: Boxes,
+        description: 'Block and component design ideas',
+        color: 'text-purple-600 dark:text-purple-400'
+    },
+    {
+        id: 'tool-data',
+        label: 'Tool Data',
+        icon: Wrench,
+        description: 'Tool configurations and output data',
+        color: 'text-zinc-600 dark:text-zinc-300'
     },
 ];
 

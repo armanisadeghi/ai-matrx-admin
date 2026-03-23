@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { CircleDot, Save, Loader2 } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { selectSessionHasUnsavedChanges } from "@/features/cx-conversation/redux/selectors";
+import { selectSessionHasUnsavedChanges, selectDirtyMessages } from "@/features/cx-conversation/redux/selectors";
 import { editMessage } from "@/features/cx-conversation/redux/thunks/editMessage";
 import { buildContentBlocksForSave } from "@/features/cx-conversation/utils/buildContentBlocksForSave";
 
@@ -19,13 +19,9 @@ export function UnsavedChangesIndicator({ sessionId }: UnsavedChangesIndicatorPr
         selectSessionHasUnsavedChanges(state, sessionId)
     );
 
-    const dirtyMessages = useAppSelector((state) => {
-        const messages = state.chatConversations.sessions[sessionId]?.messages;
-        if (!messages) return [];
-        return messages.filter(
-            (m) => m.originalDisplayContent !== undefined && m.content !== m.originalDisplayContent
-        );
-    });
+    const dirtyMessages = useAppSelector((state) =>
+        selectDirtyMessages(state, sessionId)
+    );
 
     if (!hasUnsavedChanges) return null;
 

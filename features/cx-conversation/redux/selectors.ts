@@ -329,6 +329,16 @@ export const selectSessionHasUnsavedChanges = (state: RootState, sessionId: stri
     );
 };
 
+/** All messages in a session that have locally edited content differing from the snapshot. Memoized. */
+export const selectDirtyMessages = createSelector(
+    [(state: RootState, sessionId: string) =>
+        state.chatConversations.sessions[sessionId]?.messages ?? EMPTY_MESSAGES],
+    (messages): ConversationMessage[] =>
+        messages.filter(
+            (m) => m.originalDisplayContent !== undefined && m.content !== m.originalDisplayContent
+        ),
+);
+
 /** The original display content snapshot for a message (for reset). */
 export const selectMessageOriginalContent = (state: RootState, sessionId: string, messageId: string): string | undefined => {
     const msg = state.chatConversations.sessions[sessionId]?.messages.find(m => m.id === messageId);

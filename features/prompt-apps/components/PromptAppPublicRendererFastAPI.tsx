@@ -199,19 +199,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             }
             logTiming('✓ Guest limit check passed');
             
-            // STEP 3: Verify prompt ID exists
-            const promptId = app.prompt_id;
-            if (!promptId) {
-                setError({
-                    type: 'execution_error',
-                    message: 'Prompt configuration not available'
-                });
-                setIsExecuting(false);
-                return;
-            }
-            logTiming('✓ Prompt ID verified');
-            
-            // STEP 4: Wait for auth to be ready and get headers
+            // STEP 3: Wait for auth to be ready and get headers
             // waitForAuth always resolves (falls back to temp fingerprint), so we
             // never block execution — just warn if it somehow failed.
             await waitForAuth();
@@ -226,9 +214,11 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             const agentRequest = existingConversationId
                 ? { user_input: userInput ?? '', stream: true, debug: false }
                 : { variables: validVariables, user_input: userInput, stream: true, debug: false };
+            // First execution → use the new app execution endpoint (backend resolves pinned prompt version)
+            // Follow-up → continue via the existing conversation
             const executeUrl = existingConversationId
                 ? `${BACKEND_URL}${ENDPOINTS.ai.conversationContinue(existingConversationId)}`
-                : `${BACKEND_URL}${ENDPOINTS.ai.agentStart(promptId)}`;
+                : `${BACKEND_URL}${ENDPOINTS.ai.appExecute(app.id)}`;
 
             logTiming('Initiating Agent API request...');
             const fetchStartTime = performance.now();
@@ -277,7 +267,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                     variables_provided: variables,
                     variables_used: validVariables,
                     fingerprint: fingerprintId,
-                    chat_config: { prompt_id: promptId, conversation_id: serverConversationId },
+                    chat_config: { app_id: app.id, conversation_id: serverConversationId },
                     metadata: {
                         timestamp: new Date().toISOString(),
                         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,

@@ -31,6 +31,7 @@ import { extractPersistableToolBlocks, toolCallBlockToLegacy } from '@/lib/chat-
 import type { ChunkPayload, ErrorPayload, StreamEvent } from '@/types/python-generated/stream-events';
 import { chatConversationsActions } from '../slice';
 import { selectConversationId, selectUIState, selectMessages } from '../selectors';
+import { loadConversationHistory } from './loadConversationHistory';
 import { selectIsAdmin } from '@/lib/redux/slices/userSlice';
 import type { ConversationResource, ChatModeConfig, ConversationMessage } from '../types';
 
@@ -286,7 +287,12 @@ export const sendMessage = createAsyncThunk<
                     status: 'complete',
                     content: accumulatedContent,
                     rawContent: [{ type: 'text', text: accumulatedContent }],
-                    originalDisplayContent: accumulatedContent,
+                    // NOTE: originalDisplayContent is intentionally NOT set here.
+                    // Without it, the dirty-message detection won't trigger and the
+                    // save button won't appear — preventing edits against a message
+                    // that only has a client-generated UUID (which doesn't exist in
+                    // the DB). The DB reload below replaces these with real-ID
+                    // messages that DO have originalDisplayContent set.
                     ...(toolUpdates.length > 0 ? { toolUpdates } : {}),
                     // Block mode: keep streamEvents so StreamingContentBlocks renders interleaved order.
                     // Non-block mode: clear streamEvents — rendered live during stream; now use
@@ -295,6 +301,21 @@ export const sendMessage = createAsyncThunk<
                 },
             }));
             dispatch(chatConversationsActions.setSessionStatus({ sessionId, status: 'ready' }));
+
+            // ── Sync with DB: replace client-generated IDs with real DB IDs ──
+            // The backend commits cx_message rows before the stream end event,
+            // so the data is already available. This reload replaces the
+            // optimistic messages (which have fake UUIDs) with DB-authoritative
+            // versions that have real IDs, rawContent, originalDisplayContent,
+            // contentHistory, and tool call records — enabling safe editing.
+            const resolvedConversationId = _conversationId ?? selectConversationId(getState(), sessionId);
+            if (resolvedConversationId) {
+                dispatch(loadConversationHistory({
+                    sessionId,
+                    conversationId: resolvedConversationId,
+                    agentId,
+                }));
+            }
         };
 
         const onStreamError = (error: ApiCallError) => {

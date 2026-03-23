@@ -165,6 +165,12 @@ function ChatWorkspaceInner() {
     string | null
   >(null);
 
+  // Stable key for ConversationViewWithFirstMessage — prevents remount when
+  // the streaming conversation ID first arrives (key change = full remount).
+  // Only updated when *switching* to a different conversation (sidebar click),
+  // NOT when the current stream's conversation ID is first received.
+  const [conversationKey, setConversationKey] = useState<string>("new");
+
   // Redux state
   const user = useAppSelector(selectUser);
   const isAuthenticated = !!user?.id;
@@ -269,6 +275,7 @@ function ChatWorkspaceInner() {
       if (isInConversation) {
         setIsInConversation(false);
         setActiveConversationId(null);
+        setConversationKey("new");
         dispatch(activeChatActions.setActiveSessionId(null));
       }
       return;
@@ -277,9 +284,12 @@ function ChatWorkspaceInner() {
     // Already loaded?
     if (activeConversationId === conversationIdFromUrl) return;
 
-    // Load the conversation from the database and switch to conversation view
+    // Load the conversation from the database and switch to conversation view.
+    // Update the key so ConversationViewWithFirstMessage remounts for the new
+    // conversation — this is an intentional Switch, not a mid-stream ID arrival.
     setIsInConversation(true);
     setActiveConversationId(conversationIdFromUrl);
+    setConversationKey(conversationIdFromUrl);
     dispatch(activeChatActions.setActiveSessionId(conversationIdFromUrl));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationIdFromUrl]);
@@ -293,9 +303,13 @@ function ChatWorkspaceInner() {
       if (!newConversationId) return;
       if (conversationIdFromUrl === newConversationId) return;
 
-      // Update URL — preserve agent param
+      // Update URL — preserve agent param.
+      // Use replaceState instead of pushState so the popstate listener
+      // doesn't fire and cause manualPathname to update synchronously,
+      // which would change conversationIdFromUrl and trigger the URL
+      // loading effect (which sets conversationKey and causes a remount).
       const url = buildUrl(`/ssr/chat/${newConversationId}`);
-      window.history.pushState(null, "", url);
+      window.history.replaceState(null, "", url);
 
       // Notify sidebar
       window.dispatchEvent(
@@ -304,8 +318,13 @@ function ChatWorkspaceInner() {
         }),
       );
 
+      // Update the active conversation ID WITHOUT changing the key —
+      // the streaming session must stay alive.
       setActiveConversationId(newConversationId);
       dispatch(activeChatActions.setActiveSessionId(newConversationId));
+      // NOTE: We intentionally do NOT call setConversationKey here.
+      // The component is already mounted and streaming; changing the key
+      // would destroy the session mid-stream.
     },
     [conversationIdFromUrl, buildUrl, dispatch],
   );
@@ -692,9 +711,11 @@ function ChatWorkspaceInner() {
             />
           )}
 
-          {/* Unified Conversation — key forces remount when switching conversations */}
+          {/* Unified Conversation — key forces remount when switching conversations.
+              Uses stable conversationKey (not activeConversationId) to prevent
+              remount when the streaming conversation ID first arrives. */}
           <ConversationViewWithFirstMessage
-            key={activeConversationId ?? "new"}
+            key={conversationKey}
             agentId={selectedAgent.promptId}
             apiMode="agent"
             conversationId={activeConversationId ?? undefined}
