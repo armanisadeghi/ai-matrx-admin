@@ -18,32 +18,25 @@ const GoogleLogo = ({ size = 28 }: { size?: number }) => (
 
 export default function MetaCalculatorPage() {
   return (
-    <div className="h-full overflow-y-auto bg-[#f8f9fa] dark:bg-zinc-900">
-      {/* ── Tool header ──────────────────────────────────────────── */}
-      <header className="sticky top-0 z-10 bg-white dark:bg-zinc-800 border-b border-[#dfe1e5] dark:border-zinc-700 px-6 py-3 flex items-center justify-between">
+    <div className="h-full overflow-y-auto bg-zinc-50 dark:bg-zinc-900">
+      <header className="sticky top-0 z-10 bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <GoogleLogo size={26} />
           <div>
-            <h1 className="text-[#202124] dark:text-zinc-100 text-base font-semibold leading-tight tracking-tight">
+            <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-tight tracking-tight">
               Meta Width Calculator
             </h1>
-            <p className="text-[10px] text-[#70757a] dark:text-zinc-400 leading-tight">
+            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-tight">
               SEO Tools · Pixel &amp; character limits for Google Search
             </p>
           </div>
         </div>
-        <span className="text-xs text-[#70757a] dark:text-zinc-500 hidden sm:block">
+        <span className="text-xs text-zinc-400 dark:text-zinc-500 hidden sm:block">
           Updated 2024 · Google Sans · 13px descriptions
         </span>
       </header>
 
-      {/* ── Main content ─────────────────────────────────────────── */}
       <main className="max-w-[1400px] mx-auto px-4 py-6 xl:px-8 pb-12">
-        {/*
-          MetaInputWidget is the only client boundary on this page.
-          It owns all interactive state (url, title, description, metrics)
-          and renders both the input form and the live SERP previews.
-        */}
         <MetaInputWidget />
       </main>
     </div>

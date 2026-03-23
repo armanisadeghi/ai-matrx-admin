@@ -91,7 +91,8 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/canvas/shared') && // Shared canvases
     !request.nextUrl.pathname.startsWith('/canvas/discover') && // Canvas discovery gallery
     !request.nextUrl.pathname.startsWith('/education') &&     // Education pages
-    !request.nextUrl.pathname.startsWith('/appointment-reminder') // Public appointment pages
+    !request.nextUrl.pathname.startsWith('/appointment-reminder') && // Public appointment pages
+    !request.nextUrl.pathname.startsWith('/seo')                  // Public SEO tools
   ) {
     const url = request.nextUrl.clone()
     const fullPath = request.nextUrl.pathname + request.nextUrl.search

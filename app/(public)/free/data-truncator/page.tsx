@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   Copy, ChevronRight, ChevronDown, Scissors, RefreshCw,
-  AlertCircle, Check, FileJson, Trash2, Search, X, PackageX,
+  AlertCircle, Check, FileJson, Trash2, Search, X, PackageX, Zap,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -31,6 +31,9 @@ const DEFAULT_OPTS: TruncateOpts = {
   tailChars: 15,
   replacement: '...[TRUNCATED]...',
 };
+
+const AUTO_TRUNCATE_LS_KEY = 'data-truncator:auto-threshold';
+const DEFAULT_AUTO_THRESHOLD = 100;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -89,7 +92,6 @@ function makeStub(entry: FieldEntry, note: string): JsonValue {
       ? `array with ${entry.size} items — removed for brevity`
       : `object with ${entry.size} keys — removed for brevity`
   );
-  // Keep the same container type so JSON structure stays valid
   if (entry.type === 'array') return [`__removed__: ${base}`];
   return { __removed__: base };
 }
@@ -102,7 +104,6 @@ function applyTruncation(
 ): JsonValue {
   const pathStr = formatPath(path);
 
-  // Stub takes priority — entire value replaced
   if (stubs.has(pathStr)) {
     const entry: FieldEntry = {
       path, pathStr, keyName: getKeyName(path),
@@ -155,6 +156,37 @@ function SizeBar({ size, max }: { size: number; max: number }) {
   );
 }
 
+// ─── Value preview with cut-point indicator ───────────────────────────────────
+
+function ValuePreview({ value, opts }: { value: string; opts: TruncateOpts }) {
+  const { leadChars, tailChars } = opts;
+  const len = value.length;
+  const willTruncate = len > leadChars + tailChars;
+
+  if (!willTruncate) {
+    return (
+      <div className="w-full font-mono text-[10px] text-foreground bg-muted/40 rounded border border-border px-2 py-1.5 whitespace-pre-wrap break-all leading-relaxed">
+        <span className="text-success">{value}</span>
+        <span className="ml-2 text-[9px] text-success/70 normal-case font-sans">(short enough — no truncation)</span>
+      </div>
+    );
+  }
+
+  const leadText = value.slice(0, leadChars);
+  const tailText = value.slice(len - tailChars);
+  const removedCount = len - leadChars - tailChars;
+
+  return (
+    <div className="w-full font-mono text-[10px] bg-muted/40 rounded border border-border px-2 py-1.5 leading-relaxed break-all">
+      <span className="text-primary">{leadText}</span>
+      <span className="text-destructive/80 bg-destructive/10 px-0.5 rounded mx-0.5 text-[9px] font-sans not-italic">
+        ✂ {removedCount.toLocaleString()} chars removed
+      </span>
+      <span className="text-primary/60">{tailText}</span>
+    </div>
+  );
+}
+
 // ─── Field row ────────────────────────────────────────────────────────────────
 
 interface TruncateRowProps {
@@ -170,6 +202,7 @@ interface TruncateRowProps {
   onRemove: (pathStr: string) => void;
   onApplyStub: (pathStr: string, note: string) => void;
   onRemoveStub: (pathStr: string) => void;
+  onHighlight: (pathStr: string) => void;
 }
 
 function highlightMatch(text: string, query: string): React.ReactNode {
@@ -187,7 +220,7 @@ function highlightMatch(text: string, query: string): React.ReactNode {
 
 function TruncateRow({
   entry, maxSize, opts, stubNote, checked, onCheck, showCheckbox,
-  searchQuery, onApply, onRemove, onApplyStub, onRemoveStub,
+  searchQuery, onApply, onRemove, onApplyStub, onRemoveStub, onHighlight,
 }: TruncateRowProps) {
   const [expanded, setExpanded] = useState(false);
   const [local, setLocal] = useState<TruncateOpts>(opts ?? DEFAULT_OPTS);
@@ -208,6 +241,14 @@ function TruncateRow({
 
   const rowBg = stubbed ? 'bg-destructive/8' : active ? 'bg-accent/40' : checked ? 'bg-primary/8' : '';
 
+  const handleRowClick = () => {
+    if (canTruncate || canStub) {
+      setExpanded(e => !e);
+      // Highlight this field in the output whenever the row is clicked
+      onHighlight(entry.pathStr);
+    }
+  };
+
   return (
     <div className={`border-b border-border ${rowBg} group`}>
       <div className="flex items-center gap-1.5 px-2 py-1 hover:bg-accent/20 select-none text-xs">
@@ -223,7 +264,7 @@ function TruncateRow({
 
         <div
           className="flex items-center gap-1.5 flex-1 min-w-0 cursor-pointer"
-          onClick={() => (canTruncate || canStub) && setExpanded(e => !e)}
+          onClick={handleRowClick}
         >
           {(canTruncate || canStub) ? (
             expanded
@@ -305,86 +346,119 @@ function TruncateRow({
 
       {/* Expand panel — string truncation */}
       {expanded && canTruncate && (
-        <div className="px-6 py-2 bg-card border-t border-border flex items-end gap-3 flex-wrap">
-          <div className="flex flex-col gap-0.5">
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Lead chars</label>
-            <input
-              type="number" min={0} max={500} value={local.leadChars}
-              onChange={e => setLocal(l => ({ ...l, leadChars: parseInt(e.target.value) || 0 }))}
-              className="w-16 bg-input border border-border rounded px-1.5 py-0.5 text-xs text-foreground font-mono"
-            />
+        <div className="px-6 py-2 bg-card border-t border-border space-y-2">
+          {/* Value preview */}
+          <div className="space-y-0.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                Value preview
+                <span className="normal-case font-normal ml-1">
+                  — {entry.charCount.toLocaleString()} chars · key: <code className="text-primary">{entry.keyName}</code>
+                </span>
+              </span>
+              <span className="text-[10px] text-muted-foreground font-mono">
+                path: <span className="text-foreground">{entry.pathStr}</span>
+              </span>
+            </div>
+            <ValuePreview value={entry.value as string} opts={local} />
           </div>
-          <div className="flex flex-col gap-0.5">
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Tail chars</label>
-            <input
-              type="number" min={0} max={500} value={local.tailChars}
-              onChange={e => setLocal(l => ({ ...l, tailChars: parseInt(e.target.value) || 0 }))}
-              className="w-16 bg-input border border-border rounded px-1.5 py-0.5 text-xs text-foreground font-mono"
-            />
-          </div>
-          <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Replacement text</label>
-            <input
-              type="text" value={local.replacement}
-              onChange={e => setLocal(l => ({ ...l, replacement: e.target.value }))}
-              className="w-full bg-input border border-border rounded px-1.5 py-0.5 text-xs text-foreground font-mono"
-            />
-          </div>
-          <div className="flex gap-1.5 flex-shrink-0">
-            <button
-              onClick={() => onApply(entry.pathStr, local)}
-              className="px-2 py-1 bg-primary hover:bg-primary/80 text-primary-foreground rounded text-xs flex items-center gap-1"
-            >
-              <Scissors size={10} /> Apply
-            </button>
-            {active && (
+
+          {/* Controls */}
+          <div className="flex items-end gap-3 flex-wrap">
+            <div className="flex flex-col gap-0.5">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Lead chars</label>
+              <input
+                type="number" min={0} max={500} value={local.leadChars}
+                onChange={e => setLocal(l => ({ ...l, leadChars: parseInt(e.target.value) || 0 }))}
+                className="w-16 bg-input border border-border rounded px-1.5 py-0.5 text-xs text-foreground font-mono"
+              />
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Tail chars</label>
+              <input
+                type="number" min={0} max={500} value={local.tailChars}
+                onChange={e => setLocal(l => ({ ...l, tailChars: parseInt(e.target.value) || 0 }))}
+                className="w-16 bg-input border border-border rounded px-1.5 py-0.5 text-xs text-foreground font-mono"
+              />
+            </div>
+            <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Replacement text</label>
+              <input
+                type="text" value={local.replacement}
+                onChange={e => setLocal(l => ({ ...l, replacement: e.target.value }))}
+                className="w-full bg-input border border-border rounded px-1.5 py-0.5 text-xs text-foreground font-mono"
+              />
+            </div>
+            <div className="flex gap-1.5 flex-shrink-0">
               <button
-                onClick={() => onRemove(entry.pathStr)}
-                className="px-2 py-1 bg-muted hover:bg-accent text-muted-foreground rounded text-xs flex items-center gap-1"
+                onClick={() => onApply(entry.pathStr, local)}
+                className="px-2 py-1 bg-primary hover:bg-primary/80 text-primary-foreground rounded text-xs flex items-center gap-1"
               >
-                <Trash2 size={10} /> Remove
+                <Scissors size={10} /> Apply
               </button>
-            )}
+              {active && (
+                <button
+                  onClick={() => onRemove(entry.pathStr)}
+                  className="px-2 py-1 bg-muted hover:bg-accent text-muted-foreground rounded text-xs flex items-center gap-1"
+                >
+                  <Trash2 size={10} /> Remove
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
 
       {/* Expand panel — object/array stub */}
       {expanded && canStub && (
-        <div className="px-6 py-2 bg-card border-t border-border flex items-end gap-3 flex-wrap">
-          <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              Stub note <span className="normal-case font-normal">(leave blank for auto)</span>
-            </label>
-            <input
-              type="text"
-              value={localNote}
-              placeholder={
-                entry.type === 'array'
-                  ? `array with ${entry.size} items — removed for brevity`
-                  : `object with ${entry.size} keys — removed for brevity`
-              }
-              onChange={e => setLocalNote(e.target.value)}
-              className="w-full bg-input border border-border rounded px-1.5 py-0.5 text-xs text-foreground font-mono placeholder:text-muted-foreground/50"
-            />
+        <div className="px-6 py-2 bg-card border-t border-border space-y-2">
+          {/* Path context */}
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+            <span>
+              Key: <code className="text-primary">{entry.keyName}</code>
+              <span className="ml-2">·</span>
+              <span className="ml-2">{entry.type === 'array' ? `${entry.size} items` : `${entry.size} keys`}</span>
+              <span className="ml-2">·</span>
+              <span className="ml-2">{entry.charCount.toLocaleString()} chars</span>
+            </span>
+            <span>path: <span className="text-foreground font-mono">{entry.pathStr}</span></span>
           </div>
-          <div className="flex gap-1.5 flex-shrink-0">
-            <button
-              onClick={() => onApplyStub(entry.pathStr, localNote)}
-              className="px-2 py-1 bg-destructive/80 hover:bg-destructive text-destructive-foreground rounded text-xs flex items-center gap-1"
-            >
-              <PackageX size={10} /> Replace with stub
-            </button>
-            {stubbed && (
+
+          <div className="flex items-end gap-3 flex-wrap">
+            <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                Stub note <span className="normal-case font-normal">(leave blank for auto)</span>
+              </label>
+              <input
+                type="text"
+                value={localNote}
+                placeholder={
+                  entry.type === 'array'
+                    ? `array with ${entry.size} items — removed for brevity`
+                    : `object with ${entry.size} keys — removed for brevity`
+                }
+                onChange={e => setLocalNote(e.target.value)}
+                className="w-full bg-input border border-border rounded px-1.5 py-0.5 text-xs text-foreground font-mono placeholder:text-muted-foreground/50"
+              />
+            </div>
+            <div className="flex gap-1.5 flex-shrink-0">
               <button
-                onClick={() => onRemoveStub(entry.pathStr)}
-                className="px-2 py-1 bg-muted hover:bg-accent text-muted-foreground rounded text-xs flex items-center gap-1"
+                onClick={() => onApplyStub(entry.pathStr, localNote)}
+                className="px-2 py-1 bg-destructive/80 hover:bg-destructive text-destructive-foreground rounded text-xs flex items-center gap-1"
               >
-                <Trash2 size={10} /> Restore
+                <PackageX size={10} /> Replace with stub
               </button>
-            )}
+              {stubbed && (
+                <button
+                  onClick={() => onRemoveStub(entry.pathStr)}
+                  className="px-2 py-1 bg-muted hover:bg-accent text-muted-foreground rounded text-xs flex items-center gap-1"
+                >
+                  <Trash2 size={10} /> Restore
+                </button>
+              )}
+            </div>
           </div>
-          <p className="w-full text-[10px] text-muted-foreground mt-0.5">
+          <p className="w-full text-[10px] text-muted-foreground">
             Replaces the entire {entry.type} with a{' '}
             {entry.type === 'array' ? 'single-element array' : 'single-key object'}{' '}
             marker, preserving JSON structure validity.
@@ -451,9 +525,63 @@ function BulkApplyBar({ count, onApply, onClear }: BulkApplyBarProps) {
   );
 }
 
+// ─── Auto-truncate bar ────────────────────────────────────────────────────────
+
+interface AutoTruncateBarProps {
+  enabled: boolean;
+  threshold: number;
+  onToggle: () => void;
+  onThresholdChange: (v: number) => void;
+  matchCount: number;
+}
+
+function AutoTruncateBar({ enabled, threshold, onToggle, onThresholdChange, matchCount }: AutoTruncateBarProps) {
+  return (
+    <div className={`flex items-center gap-2 px-2 py-1.5 border-b border-border flex-shrink-0 transition-colors ${enabled ? 'bg-primary/8 border-primary/30' : 'bg-card'}`}>
+      <button
+        onClick={onToggle}
+        title={enabled ? 'Disable auto-truncate' : 'Enable auto-truncate'}
+        className={`flex items-center gap-1.5 text-[11px] font-medium transition-colors px-2 py-0.5 rounded ${enabled ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
+      >
+        <Zap size={11} />
+        Auto
+      </button>
+      <span className="text-[10px] text-muted-foreground">Truncate strings longer than</span>
+      <input
+        type="number"
+        min={1}
+        max={10000}
+        value={threshold}
+        onChange={e => onThresholdChange(Math.max(1, parseInt(e.target.value) || DEFAULT_AUTO_THRESHOLD))}
+        className="w-16 bg-input border border-border rounded px-1.5 py-0.5 text-[11px] text-foreground font-mono"
+      />
+      <span className="text-[10px] text-muted-foreground">chars</span>
+      {enabled && (
+        <span className="text-[10px] text-primary ml-1">
+          {matchCount > 0 ? `— ${matchCount} field${matchCount !== 1 ? 's' : ''} affected` : '— no matches'}
+        </span>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 type SortKey = 'size' | 'path' | 'type';
+
+// Find the character offset of a JSON path in pretty-printed JSON
+function findPathOffsetInOutput(output: string, pathStr: string): number {
+  if (pathStr === '(root)') return 0;
+  // Extract the leaf key name to search for
+  const parts = pathStr.match(/[^.\[\]]+|\[\d+\]/g) ?? [];
+  const last = parts[parts.length - 1];
+  if (!last) return -1;
+  // Search for `"key":` pattern in the output
+  const key = last.replace(/^\[(\d+)\]$/, '$1');
+  const pattern = new RegExp(`"${key}"\\s*:`);
+  const m = pattern.exec(output);
+  return m ? m.index : -1;
+}
 
 export default function DataTruncatorPage() {
   const [inputText, setInputText] = useState('');
@@ -461,7 +589,6 @@ export default function DataTruncatorPage() {
   const [parseError, setParseError] = useState<string | null>(null);
   const [fields, setFields] = useState<FieldEntry[]>([]);
   const [truncations, setTruncations] = useState<Map<string, TruncateOpts>>(new Map());
-  // stubs: pathStr → custom note (empty string = auto-generate)
   const [stubs, setStubs] = useState<Map<string, string>>(new Map());
   const [outputText, setOutputText] = useState('');
   const [copied, setCopied] = useState(false);
@@ -473,7 +600,45 @@ export default function DataTruncatorPage() {
   const [outputEdited, setOutputEdited] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [autoTruncateEnabled, setAutoTruncateEnabled] = useState(false);
+  const [autoThreshold, setAutoThreshold] = useState<number>(DEFAULT_AUTO_THRESHOLD);
+  const [highlightedOffset, setHighlightedOffset] = useState<number>(-1);
+
   const searchRef = useRef<HTMLInputElement>(null);
+  const outputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Load auto-threshold from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem(AUTO_TRUNCATE_LS_KEY);
+    if (stored) {
+      const v = parseInt(stored);
+      if (!isNaN(v) && v > 0) setAutoThreshold(v);
+    }
+  }, []);
+
+  // Persist threshold to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(AUTO_TRUNCATE_LS_KEY, String(autoThreshold));
+  }, [autoThreshold]);
+
+  // Compute auto-truncation rules whenever enabled/threshold/fields change
+  const autoTruncations = useMemo<Map<string, TruncateOpts>>(() => {
+    if (!autoTruncateEnabled) return new Map();
+    const map = new Map<string, TruncateOpts>();
+    for (const f of fields) {
+      if (f.type === 'string' && f.charCount >= autoThreshold) {
+        map.set(f.pathStr, DEFAULT_OPTS);
+      }
+    }
+    return map;
+  }, [autoTruncateEnabled, autoThreshold, fields]);
+
+  // Merged truncations: manual rules override auto rules
+  const effectiveTruncations = useMemo<Map<string, TruncateOpts>>(() => {
+    const merged = new Map(autoTruncations);
+    for (const [k, v] of truncations) merged.set(k, v);
+    return merged;
+  }, [autoTruncations, truncations]);
 
   const handleParse = useCallback((text: string) => {
     if (!text.trim()) {
@@ -499,8 +664,8 @@ export default function DataTruncatorPage() {
 
   useEffect(() => {
     if (!parsed || outputEdited) return;
-    setOutputText(JSON.stringify(applyTruncation(parsed, truncations, stubs), null, 2));
-  }, [truncations, stubs, parsed, outputEdited]);
+    setOutputText(JSON.stringify(applyTruncation(parsed, effectiveTruncations, stubs), null, 2));
+  }, [effectiveTruncations, stubs, parsed, outputEdited]);
 
   const applyRule = useCallback((pathStr: string, opts: TruncateOpts) => {
     setOutputEdited(false);
@@ -561,6 +726,22 @@ export default function DataTruncatorPage() {
     setSelected(new Set());
   }, [selected]);
 
+  // Scroll output pane to highlighted field
+  const handleHighlight = useCallback((pathStr: string) => {
+    const offset = findPathOffsetInOutput(outputText, pathStr);
+    if (offset < 0 || !outputRef.current) return;
+    setHighlightedOffset(offset);
+
+    const ta = outputRef.current;
+    // Scroll the textarea so the line containing offset is visible
+    const before = outputText.slice(0, offset);
+    const lineNumber = (before.match(/\n/g) ?? []).length;
+    const lineHeight = 16; // approximate px per line at text-[11px]
+    ta.scrollTop = Math.max(0, lineNumber * lineHeight - ta.clientHeight / 2);
+    ta.focus();
+    ta.setSelectionRange(offset, offset + Math.min(50, outputText.length - offset));
+  }, [outputText]);
+
   const displayFields = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     let list = fields.filter(f => {
@@ -595,6 +776,7 @@ export default function DataTruncatorPage() {
 
   const maxSize = fields.length > 0 ? Math.max(...fields.map(f => f.charCount)) : 1;
   const totalRules = truncations.size + stubs.size;
+  const autoMatchCount = autoTruncations.size;
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -613,7 +795,6 @@ export default function DataTruncatorPage() {
   const fb = (t: string) => `text-[10px] px-1.5 py-0.5 rounded ${filterType === t ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'}`;
 
   return (
-    // h-full: the parent <main> from PublicLayout is already flex-1 and height-constrained
     <div className="h-full flex flex-col bg-background text-foreground overflow-hidden">
 
       {/* Top bar */}
@@ -669,6 +850,15 @@ export default function DataTruncatorPage() {
 
         {/* CENTER: Field analyzer */}
         <div className="flex flex-col w-[38%] min-w-0 border-r border-border">
+
+          {/* Auto-truncate bar */}
+          <AutoTruncateBar
+            enabled={autoTruncateEnabled}
+            threshold={autoThreshold}
+            onToggle={() => setAutoTruncateEnabled(e => !e)}
+            onThresholdChange={v => { setAutoThreshold(v); setOutputEdited(false); }}
+            matchCount={autoMatchCount}
+          />
 
           {/* Search — prominent, full-width */}
           <div className="flex items-center gap-1.5 px-2 py-1.5 bg-card border-b border-border flex-shrink-0">
@@ -748,7 +938,7 @@ export default function DataTruncatorPage() {
                 key={entry.pathStr}
                 entry={entry}
                 maxSize={maxSize}
-                opts={truncations.get(entry.pathStr)}
+                opts={effectiveTruncations.get(entry.pathStr)}
                 stubNote={stubs.get(entry.pathStr)}
                 checked={selected.has(entry.pathStr)}
                 onCheck={handleCheck}
@@ -758,6 +948,7 @@ export default function DataTruncatorPage() {
                 onRemove={removeRule}
                 onApplyStub={applyStub}
                 onRemoveStub={removeStub}
+                onHighlight={handleHighlight}
               />
             ))}
           </div>
@@ -769,17 +960,20 @@ export default function DataTruncatorPage() {
               onApply={handleBulkApply}
               onClear={() => setSelected(new Set())}
             />
-          ) : totalRules > 0 ? (
+          ) : (truncations.size > 0 || stubs.size > 0 || autoTruncateEnabled) ? (
             <div className="px-2 py-1 border-t border-border bg-card flex items-center gap-2 flex-shrink-0">
               <span className="text-[10px] text-muted-foreground">
-                {truncations.size > 0 && `${truncations.size} truncated`}
+                {autoTruncateEnabled && autoMatchCount > 0 && (
+                  <span className="text-primary mr-1.5"><Zap size={9} className="inline mr-0.5" />{autoMatchCount} auto</span>
+                )}
+                {truncations.size > 0 && `${truncations.size} manual`}
                 {truncations.size > 0 && stubs.size > 0 && ' · '}
                 {stubs.size > 0 && `${stubs.size} stubbed`}
               </span>
               <div className="flex-1" />
               <button onClick={handleReset}
                 className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1">
-                <RefreshCw size={9} /> Reset all
+                <RefreshCw size={9} /> Reset manual
               </button>
             </div>
           ) : null}
@@ -797,6 +991,11 @@ export default function DataTruncatorPage() {
               </span>
             )}
             {outputEdited && <span className="text-[10px] text-warning">manually edited</span>}
+            {highlightedOffset >= 0 && (
+              <span className="text-[10px] text-primary flex items-center gap-0.5">
+                <Search size={9} /> jumped to field
+              </span>
+            )}
             <button
               onClick={handleCopy} disabled={!outputText}
               className="flex items-center gap-1 text-[10px] px-2 py-0.5 bg-muted hover:bg-accent rounded border border-border text-foreground disabled:opacity-40"
@@ -806,9 +1005,10 @@ export default function DataTruncatorPage() {
             </button>
           </div>
           <textarea
+            ref={outputRef}
             className="flex-1 resize-none bg-background text-foreground font-mono text-[11px] px-2 py-1.5 outline-none border-0 leading-relaxed placeholder:text-muted-foreground"
             value={outputText}
-            onChange={e => { setOutputText(e.target.value); setOutputEdited(true); }}
+            onChange={e => { setOutputText(e.target.value); setOutputEdited(true); setHighlightedOffset(-1); }}
             spellCheck={false}
             placeholder="Result will appear here…"
           />
