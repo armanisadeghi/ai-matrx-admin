@@ -8,9 +8,11 @@ import {
   X,
   ExternalLink,
   Printer,
+  Smartphone,
 } from "lucide-react";
 import ChatCollapsibleWrapper from "@/components/mardown-display/blocks/ChatCollapsibleWrapper";
 import FlashcardItem from "./FlashcardItem";
+import FlashcardMobileView from "./FlashcardMobileView";
 import { parseFlashcards } from "./flashcard-parser";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/styles/themes/utils";
@@ -79,6 +81,8 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
 }) => {
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("grid");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(false);
+  const [mobileStartIndex, setMobileStartIndex] = useState(0);
   const { open: openCanvas } = useCanvas();
 
   // Use server-parsed data when available; fall back to client-side parsing.
@@ -171,6 +175,17 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
       )}
     </div>
   );
+
+  // Mobile one-at-a-time swipe view
+  if (isMobileView && flashcards.length > 0) {
+    return (
+      <FlashcardMobileView
+        cards={flashcards.map((c) => ({ front: c.front ?? "", back: c.back ?? null }))}
+        initialIndex={mobileStartIndex}
+        onClose={() => setIsMobileView(false)}
+      />
+    );
+  }
 
   // Fullscreen overlay
   if (isFullscreen) {
@@ -286,6 +301,19 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
               className="h-7 w-7 p-0"
               onClick={(e) => {
                 e.stopPropagation();
+                setMobileStartIndex(0);
+                setIsMobileView(true);
+              }}
+              title="Mobile swipe mode"
+            >
+              <Smartphone className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              onClick={(e) => {
+                e.stopPropagation();
                 setIsFullscreen(true);
               }}
               title="Fullscreen mode"
@@ -340,6 +368,15 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
             >
               <ExternalLink className="h-3 w-3" />
               Side
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => { setMobileStartIndex(0); setIsMobileView(true); }}
+            >
+              <Smartphone className="h-3 w-3" />
+              Mobile
             </Button>
             <Button
               variant="ghost"

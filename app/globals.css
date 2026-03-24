@@ -196,6 +196,16 @@
     }
   }
 
+  @keyframes slide-in-from-right {
+    from { transform: translateX(60px); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+
+  @keyframes slide-in-from-left {
+    from { transform: translateX(-60px); opacity: 0; }
+    to   { transform: translateX(0);     opacity: 1; }
+  }
+
   @keyframes shimmer {
     from {
       background-position: 0 0;
@@ -516,6 +526,14 @@
   --animate-ssr-pulse: ssr-pulse 1s ease-in-out infinite;
   --animate-ssr-pulse-slow: ssr-pulse 0.8s ease-in-out infinite;
   --animate-ssr-shimmer-opacity: ssr-shimmer-opacity 1.5s ease-in-out infinite;
+}
+
+.animate-slide-in-from-right {
+  animation: slide-in-from-right 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.animate-slide-in-from-left {
+  animation: slide-in-from-left 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
 
 @layer base {
