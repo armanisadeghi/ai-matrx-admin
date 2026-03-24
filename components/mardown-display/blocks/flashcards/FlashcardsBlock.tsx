@@ -39,37 +39,55 @@ type LayoutMode = "grid" | "list";
 interface LayoutToggleProps {
   layoutMode: LayoutMode;
   onLayoutChange: (mode: LayoutMode) => void;
+  onMobileView: () => void;
+  size?: "sm" | "xs";
 }
 
 const LayoutToggle: React.FC<LayoutToggleProps> = ({
   layoutMode,
   onLayoutChange,
+  onMobileView,
+  size = "sm",
 }) => {
+  const btnClass = size === "xs" ? "h-7 w-7 p-0" : "h-7 w-7 p-0";
+  const iconClass = size === "xs" ? "h-3 w-3" : "h-3.5 w-3.5";
   return (
     <div className="flex gap-1">
       <Button
         variant="ghost"
         size="sm"
-        className={cn("h-7 w-7 p-0", layoutMode === "grid" && "bg-accent")}
+        className={cn(btnClass, layoutMode === "grid" && "bg-accent")}
         onClick={(e) => {
           e.stopPropagation();
           onLayoutChange("grid");
         }}
         title="Grid view (2 columns)"
       >
-        <Grid2x2 className="h-3.5 w-3.5" />
+        <Grid2x2 className={iconClass} />
       </Button>
       <Button
         variant="ghost"
         size="sm"
-        className={cn("h-7 w-7 p-0", layoutMode === "list" && "bg-accent")}
+        className={cn(btnClass, layoutMode === "list" && "bg-accent")}
         onClick={(e) => {
           e.stopPropagation();
           onLayoutChange("list");
         }}
         title="List view (1 per row)"
       >
-        <LayoutList className="h-3.5 w-3.5" />
+        <LayoutList className={iconClass} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className={btnClass}
+        onClick={(e) => {
+          e.stopPropagation();
+          onMobileView();
+        }}
+        title="Mobile swipe mode"
+      >
+        <Smartphone className={iconClass} />
       </Button>
     </div>
   );
@@ -234,6 +252,11 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
                 <LayoutToggle
                   layoutMode={layoutMode}
                   onLayoutChange={setLayoutMode}
+                  onMobileView={() => {
+                    setIsFullscreen(false);
+                    setMobileStartIndex(0);
+                    setIsMobileView(true);
+                  }}
                 />
                 <Button
                   variant="ghost"
@@ -267,19 +290,6 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
                   variant="ghost"
                   size="sm"
                   className="h-8 w-8 p-0"
-                  onClick={() => {
-                    setIsFullscreen(false);
-                    setMobileStartIndex(0);
-                    setIsMobileView(true);
-                  }}
-                  title="Mobile swipe mode"
-                >
-                  <Smartphone className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
                   onClick={() => setIsFullscreen(false)}
                   title="Exit fullscreen (ESC)"
                 >
@@ -304,6 +314,12 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
                 <LayoutToggle
                   layoutMode={layoutMode}
                   onLayoutChange={setLayoutMode}
+                  onMobileView={() => {
+                    setIsFullscreen(false);
+                    setMobileStartIndex(0);
+                    setIsMobileView(true);
+                  }}
+                  size="xs"
                 />
                 <div className="h-4 w-px bg-border" />
                 <Button
@@ -330,19 +346,6 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
                 >
                   <ExternalLink className="h-3 w-3" />
                   Side
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2 text-xs"
-                  onClick={() => {
-                    setIsFullscreen(false);
-                    setMobileStartIndex(0);
-                    setIsMobileView(true);
-                  }}
-                >
-                  <Smartphone className="h-3 w-3" />
-                  Mobile
                 </Button>
               </div>
             )}
@@ -415,6 +418,10 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
             <LayoutToggle
               layoutMode={layoutMode}
               onLayoutChange={setLayoutMode}
+              onMobileView={() => {
+                setMobileStartIndex(0);
+                setIsMobileView(true);
+              }}
             />
             <Button
               variant="ghost"
@@ -453,19 +460,6 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
               className="h-7 w-7 p-0"
               onClick={(e) => {
                 e.stopPropagation();
-                setMobileStartIndex(0);
-                setIsMobileView(true);
-              }}
-              title="Mobile swipe mode"
-            >
-              <Smartphone className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0"
-              onClick={(e) => {
-                e.stopPropagation();
                 setIsFullscreen(true);
               }}
               title="Fullscreen mode"
@@ -491,6 +485,11 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
               <LayoutToggle
                 layoutMode={layoutMode}
                 onLayoutChange={setLayoutMode}
+                onMobileView={() => {
+                  setMobileStartIndex(0);
+                  setIsMobileView(true);
+                }}
+                size="xs"
               />
             </div>
             <div className="h-4 w-px bg-border" />
@@ -520,18 +519,6 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
             >
               <ExternalLink className="h-3 w-3" />
               Side
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs"
-              onClick={() => {
-                setMobileStartIndex(0);
-                setIsMobileView(true);
-              }}
-            >
-              <Smartphone className="h-3 w-3" />
-              Mobile
             </Button>
             <Button
               variant="ghost"

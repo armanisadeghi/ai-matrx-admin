@@ -1,7 +1,13 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/styles/themes/utils";
+import { ConfigurableMarkdownContent } from "@/components/mardown-display/chat-markdown/ConfigurableMarkdownContent";
+import type { MarkdownStyleConfig } from "@/components/mardown-display/chat-markdown/ConfigurableMarkdownContent";
+
+const centeredParagraph = ({ node, children, ...props }: any) => (
+  <p className="text-center" {...props}>{children}</p>
+);
 
 interface FlashcardItemProps {
   front: string;
@@ -71,24 +77,78 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
     return "text-xs md:text-sm";
   };
 
-  const renderBackContent = () => {
-    if (back === null) {
-      return (
-        <div className="flex items-center gap-2 text-green-600/60 dark:text-green-400/60 animate-pulse">
-          <div className="w-3 h-3 rounded-full bg-current" />
-          <span className="text-xs">Loading...</span>
-        </div>
-      );
-    }
-    if (!isMultiLineBack) {
-      return back;
-    }
-    return back.split("\n").map((line, i) => (
-      <div key={i} className={line === "" ? "h-1.5" : undefined}>
-        {line}
-      </div>
-    ));
-  };
+  // Build a style config that preserves all existing visual properties
+  // but adds LaTeX/RTL/markdown rendering capabilities.
+  const makeCardStyle = (textSizeClass: string, centered: boolean): MarkdownStyleConfig => ({
+    typography: {
+      fontSizeLtr: textSizeClass,
+      fontSizeRtl: textSizeClass,
+      leading: centered ? "leading-relaxed" : "leading-snug",
+      tracking: "tracking-normal",
+    },
+    colors: {
+      // Keep theme-aware text — foreground for body, blue for accents
+      headingColor: "text-blue-600 dark:text-blue-400",
+      emColorLight: "text-blue-600",
+      emColorDark: "dark:text-blue-400",
+      codeBgLight: "bg-blue-100",
+      codeTextLight: "text-blue-800",
+      codeBgDark: "dark:bg-blue-900/30",
+      codeTextDark: "dark:text-blue-300",
+      blockquoteBgLight: "bg-blue-50",
+      blockquoteBgDark: "dark:bg-blue-950/20",
+      blockquoteBorderLight: "border-blue-200",
+      blockquoteBorderDark: "dark:border-blue-700",
+      blockquoteTextLight: "text-gray-700",
+      blockquoteTextDark: "dark:text-gray-300",
+      hrBorderLight: "border-gray-300",
+      hrBorderDark: "dark:border-gray-600",
+      checkboxBorderLight: "border-blue-400",
+      checkboxCheckedBgLight: "bg-blue-600",
+      editButtonColor: "text-transparent",
+      editButtonHoverColor: "hover:text-transparent",
+    },
+    spacing: {
+      wrapperMy: "my-0",
+      paragraphMb: "mb-1",
+      listMb: "mb-1",
+      listPl: "pl-6",
+      listItemMb: "mb-0.5",
+      blockquotePl: "pl-3",
+      blockquotePr: "pr-3",
+      blockquotePy: "py-2",
+      preMy: "my-1",
+      imgMy: "my-2",
+      hrMy: "my-1",
+      mathParagraphMb: "mb-2",
+      blankLineHeight: "h-[0.4em]",
+    },
+    headings: {
+      h1: "text-xl font-bold mb-1",
+      h2: "text-lg font-semibold mb-1",
+      h3: "text-base font-semibold mb-0.5",
+      h4: "text-sm font-semibold mb-0.5",
+    },
+    wrapperClassName: cn(
+      "font-medium text-gray-800 dark:text-gray-200 w-full",
+      centered ? "text-center" : "text-left",
+      textSizeClass,
+    ),
+  });
+
+  const frontStyleConfig = useMemo(
+    () => makeCardStyle(getTextSizeClass(front), true),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [front],
+  );
+
+  const backStyleConfig = useMemo(
+    () => makeCardStyle(getTextSizeClass(back ?? "", isMultiLineBack), !isMultiLineBack),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [back, isMultiLineBack],
+  );
+
+  const backContent = back === null ? "_Loading…_" : back;
 
   return (
     <div
@@ -123,15 +183,14 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
           style={{ backfaceVisibility: "hidden" }}
         >
           <CardContent className="flex flex-col items-center justify-center h-full !p-2 relative">
-            <div
-              className={cn(
-                "text-center font-medium text-gray-800 dark:text-gray-200 leading-relaxed",
-                "w-full h-full flex items-center justify-center",
-                "px-2",
-                getTextSizeClass(front),
-              )}
-            >
-              {front}
+            <div className="w-full h-full flex items-center justify-center px-2 overflow-y-auto scrollbar-none">
+              <ConfigurableMarkdownContent
+                content={front}
+                isStreamActive={false}
+                showCopyButton={false}
+                styleConfig={frontStyleConfig}
+                componentOverrides={{ p: centeredParagraph }}
+              />
             </div>
             {isHovered && (
               <div className="absolute bottom-1 right-2 text-[9px] text-blue-600/60 dark:text-blue-400/60 animate-in fade-in duration-200 whitespace-nowrap">
@@ -157,25 +216,27 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
           <CardContent
             className={cn(
               "flex flex-col h-full !p-2 !pb-0 relative",
-              isMultiLineBack
-                ? "items-start justify-start"
-                : "items-center justify-center",
+              isMultiLineBack ? "items-start justify-start" : "items-center justify-center",
             )}
           >
             <div className={cn("relative w-full", isMultiLineBack ? "h-full" : "")}>
               <div
                 ref={scrollRef}
                 className={cn(
-                  "font-medium text-foreground overflow-y-auto scrollbar-none",
-                  "px-1 w-full",
-                  isMultiLineBack ? "h-full text-left leading-snug pb-2" : "text-center leading-relaxed",
-                  getTextSizeClass(back ?? "", isMultiLineBack),
+                  "overflow-y-auto scrollbar-none px-1 w-full",
+                  isMultiLineBack ? "h-full pt-3 pb-2" : "",
                 )}
               >
-                {renderBackContent()}
+                <ConfigurableMarkdownContent
+                  content={backContent}
+                  isStreamActive={back === null}
+                  showCopyButton={false}
+                  styleConfig={backStyleConfig}
+                  componentOverrides={isMultiLineBack ? undefined : { p: centeredParagraph }}
+                />
               </div>
               {hasOverflow && !isScrolledToBottom && (
-                <div className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none bg-gradient-to-t from-emerald-950 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none bg-gradient-to-t from-emerald-50 dark:from-emerald-950 to-transparent" />
               )}
             </div>
             {isHovered && (

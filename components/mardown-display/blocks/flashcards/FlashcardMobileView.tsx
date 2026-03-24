@@ -20,6 +20,8 @@ import {
   Layers,
 } from "lucide-react";
 import { cn } from "@/styles/themes/utils";
+import { ConfigurableMarkdownContent } from "@/components/mardown-display/chat-markdown/ConfigurableMarkdownContent";
+import type { MarkdownStyleConfig } from "@/components/mardown-display/chat-markdown/ConfigurableMarkdownContent";
 
 const ANIM_MS = 320;
 const TEXT_FADE_OUT_MS = 120;
@@ -79,11 +81,75 @@ interface CardSlideProps {
   menuOpen?: boolean;
 }
 
+// p override that forces text-center — used for front & single-line back faces.
+const centeredParagraph = ({ node, children, ...props }: any) => (
+  <p className="text-center" {...props}>{children}</p>
+);
+
+// Shared style config factory for mobile flashcard faces.
+// We zero out all wrapper margins/padding so the card backgrounds
+// control the space, and we force white text so it reads on dark gradients.
+const makeMobileCardStyle = (textSizeClass: string, centered: boolean): MarkdownStyleConfig => ({
+  typography: {
+    fontSizeLtr: textSizeClass,
+    fontSizeRtl: textSizeClass,
+    leading: centered ? "leading-relaxed" : "leading-snug",
+    tracking: "tracking-normal",
+  },
+  colors: {
+    headingColor: "text-white",
+    emColorLight: "text-white/80",
+    emColorDark: "text-white/80",
+    codeBgLight: "bg-white/10",
+    codeTextLight: "text-white",
+    codeBgDark: "bg-white/10",
+    codeTextDark: "text-white",
+    blockquoteBgLight: "bg-white/5",
+    blockquoteBgDark: "bg-white/5",
+    blockquoteBorderLight: "border-white/30",
+    blockquoteBorderDark: "border-white/30",
+    blockquoteTextLight: "text-white/80",
+    blockquoteTextDark: "text-white/80",
+    hrBorderLight: "border-white/20",
+    hrBorderDark: "border-white/20",
+    checkboxBorderLight: "border-white/50",
+    checkboxCheckedBgLight: "bg-white/80",
+    editButtonColor: "text-transparent",
+    editButtonHoverColor: "hover:text-transparent",
+  },
+  spacing: {
+    wrapperMy: "my-0",
+    paragraphMb: "mb-1",
+    listMb: "mb-1",
+    listPl: "pl-6",
+    listItemMb: "mb-0.5",
+    blockquotePl: "pl-3",
+    blockquotePr: "pr-3",
+    blockquotePy: "py-2",
+    preMy: "my-2",
+    imgMy: "my-2",
+    hrMy: "my-2",
+    mathParagraphMb: "mb-2",
+    blankLineHeight: "h-[0.5em]",
+  },
+  headings: {
+    h1: "text-xl font-bold mb-1 text-white",
+    h2: "text-lg font-semibold mb-1 text-white",
+    h3: "text-base font-semibold mb-1 text-white",
+    h4: "text-sm font-semibold mb-0.5 text-white",
+  },
+  wrapperClassName: cn(
+    "text-white font-medium w-full",
+    centered ? "text-center" : "text-left",
+    textSizeClass,
+  ),
+});
+
 const CardSlide: React.FC<CardSlideProps> = ({
   card, isFlipped, style, showHints, canGoPrev, canGoNext,
   textVisible = true, menuOpen = false,
 }) => {
-  const isMultiLine = card.back != null && card.back.includes("\n");
+  const isMultiLine = card.back != null && (card.back.includes("\n") || card.back.length > 120);
 
   const getTextSize = (text: string, multiLine = false) => {
     const l = text.length;
@@ -94,22 +160,29 @@ const CardSlide: React.FC<CardSlideProps> = ({
       if (l < 500) return "text-base";
       return "text-sm";
     }
-    if (l < 20)  return "text-4xl md:text-5xl";
-    if (l < 40)  return "text-3xl md:text-4xl";
-    if (l < 80)  return "text-2xl md:text-3xl";
-    if (l < 140) return "text-xl md:text-2xl";
-    if (l < 220) return "text-lg md:text-xl";
-    if (l < 320) return "text-base md:text-lg";
-    return "text-sm md:text-base";
+    if (l < 20)  return "text-4xl";
+    if (l < 40)  return "text-3xl";
+    if (l < 80)  return "text-2xl";
+    if (l < 140) return "text-xl";
+    if (l < 220) return "text-lg";
+    if (l < 320) return "text-base";
+    return "text-sm";
   };
 
-  const renderBack = () => {
-    if (card.back === null) return <span className="text-lg opacity-60 animate-pulse">Loading...</span>;
-    if (!isMultiLine) return card.back;
-    return card.back.split("\n").map((line, i) => (
-      <div key={i} className={line === "" ? "h-2" : undefined}>{line}</div>
-    ));
-  };
+  const frontStyle = useMemo(
+    () => makeMobileCardStyle(getTextSize(card.front ?? ""), true),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [card.front],
+  );
+  const backStyle = useMemo(
+    () => makeMobileCardStyle(getTextSize(card.back ?? "", isMultiLine), !isMultiLine),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [card.back, isMultiLine],
+  );
+
+  const backContent = card.back === null
+    ? "_Loading…_"
+    : card.back;
 
   return (
     <div className="absolute inset-0" style={{ perspective: "1200px", ...style }}>
@@ -118,27 +191,47 @@ const CardSlide: React.FC<CardSlideProps> = ({
         style={{ transformStyle: "preserve-3d", transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)" }}
       >
         {/* Front */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 to-indigo-950" style={{ backfaceVisibility: "hidden" }}>
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 to-indigo-950 overflow-hidden"
+          style={{ backfaceVisibility: "hidden" }}
+        >
           <div
-            className={cn("text-center font-semibold text-white leading-snug w-full px-6", getTextSize(card.front ?? ""))}
+            className="w-full px-6 flex items-center justify-center h-full overflow-y-auto scrollbar-none"
             style={{ opacity: textVisible ? 1 : 0, transition: `opacity ${TEXT_FADE_OUT_MS}ms ease` }}
           >
-            {card.front}
+            <ConfigurableMarkdownContent
+              content={card.front ?? ""}
+              isStreamActive={false}
+              showCopyButton={false}
+              styleConfig={frontStyle}
+              componentOverrides={{ p: centeredParagraph }}
+            />
           </div>
           {showHints && <TapZoneHints canGoPrev={canGoPrev} canGoNext={canGoNext} menuOpen={menuOpen} flipColor="text-blue-300/40" />}
         </div>
 
         {/* Back */}
-        <div className="absolute inset-0 flex flex-col bg-gradient-to-br from-green-900 to-emerald-950 overflow-hidden" style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
+        <div
+          className={cn(
+            "absolute inset-0 flex flex-col bg-gradient-to-br from-green-900 to-emerald-950 overflow-hidden",
+            isMultiLine ? "items-start justify-start" : "items-center justify-center",
+          )}
+          style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+        >
           <div
             className={cn(
-              "font-medium text-white overflow-y-auto scrollbar-none w-full px-6 pt-6",
-              isMultiLine ? "text-left leading-snug h-full" : "text-center leading-relaxed m-auto",
-              getTextSize(card.back ?? "", isMultiLine),
+              "w-full px-6 overflow-y-auto scrollbar-none",
+              isMultiLine ? "h-full pt-8 pb-8" : "flex items-center justify-center",
             )}
             style={{ opacity: textVisible ? 1 : 0, transition: `opacity ${TEXT_FADE_OUT_MS}ms ease` }}
           >
-            {renderBack()}
+            <ConfigurableMarkdownContent
+              content={backContent}
+              isStreamActive={false}
+              showCopyButton={false}
+              styleConfig={backStyle}
+              componentOverrides={isMultiLine ? undefined : { p: centeredParagraph }}
+            />
           </div>
           {showHints && <TapZoneHints canGoPrev={canGoPrev} canGoNext={canGoNext} menuOpen={menuOpen} flipColor="text-green-300/40" />}
         </div>
