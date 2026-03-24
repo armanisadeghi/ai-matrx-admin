@@ -5,7 +5,7 @@ import { Providers } from "@/app/Providers";
 import { mapUserData } from "@/utils/userDataMapper";
 import { appSidebarLinks, adminSidebarLinks } from "@/constants/navigation-links";
 import { getUserSessionData } from "@/utils/supabase/userSessionData";
-import { generateClientGlobalCache, initializeSchemaSystem } from "@/utils/schema/schema-processing/processSchema";
+import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGlobalCache";
 import { InitialReduxState } from "@/types/reduxTypes";
 import NavigationLoader from "@/components/loaders/NavigationLoader";
 import { headers } from "next/headers";
@@ -22,8 +22,8 @@ import { DynamicAnnouncementProvider } from "@/app/(authenticated)/dynamic-impor
 import { DynamicMessagingInitializer, DynamicMessagingSideSheet } from "@/app/(authenticated)/dynamic-imports/DynamicMessaging";
 import { DynamicAppleKeyExpiryBanner } from "@/app/(authenticated)/dynamic-imports/DynamicAppleKeyExpiryBanner";
 
-const schemaSystem = initializeSchemaSystem();
-const clientGlobalCache = generateClientGlobalCache();
+const emptyGlobalCache = getEmptyGlobalCache();
+console.warn('[AuthLayout] Booting with empty entity shell — entity system will load on-demand via EntityPack');
 
 export default async function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
     const supabase = await createClient();
@@ -90,7 +90,7 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
         user: userData,
         testRoutes: testDirectories,
         userPreferences: userPreferences,
-        globalCache: clientGlobalCache,
+        globalCache: emptyGlobalCache,
     };
 
     return (

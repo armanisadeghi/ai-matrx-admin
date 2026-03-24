@@ -20,9 +20,7 @@ import { FileSystemProvider as OldFileSystemProvider } from "@/providers/FileSys
 import { ContextMenuProvider } from "@/providers/ContextMenuProvider";
 import { FileSystemProvider } from "@/lib/redux/fileSystem/Provider";
 import { FilePreviewProvider } from "@/components/file-system/preview";
-import { ChipMenuProvider } from "@/features/rich-text-editor/components/ChipContextMenu";
 import { PreferenceSyncProvider } from "@/providers/usePreferenceSync";
-import { EditorProvider } from "@/providers/rich-text-editor/Provider";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PersistentComponentProvider } from "@/providers/persistance/PersistentComponentProvider";
 import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMConnector";
@@ -80,47 +78,43 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
               <PersistentComponentProvider>
                 <EntityProvider>
                   <ContextMenuProvider>
-                    <ChipMenuProvider>
-                      <ToastProvider>
-                        <PreferenceSyncProvider>
-                          <RefProvider>
-                            <EditorProvider>
-                              <FileSystemProvider
-                                initialBucket="Audio"
-                                allowedBuckets={allowedBuckets}
-                              >
-                                <FilePreviewProvider>
-                                  <OldFileSystemProvider>
-                                    <TooltipProvider delayDuration={200}>
-                                      <AudioModalProvider>
-                                        <ModuleHeaderProvider>
-                                          <GoogleAPIProvider>
-                                            <UniformHeightProvider>
-                                              <SelectedImagesProvider>
-                                                <NotesProvider>
-                                                  <TaskProvider>
-                                                    <TranscriptsProvider>
-                                                      <PersistentDOMConnector />
-                                                      <ClientOverlayProvider />
-                                                      {children}
-                                                    </TranscriptsProvider>
-                                                  </TaskProvider>
-                                                </NotesProvider>
-                                              </SelectedImagesProvider>
-                                            </UniformHeightProvider>
-                                          </GoogleAPIProvider>
-                                        </ModuleHeaderProvider>
-                                        <Toaster />
-                                      </AudioModalProvider>
-                                    </TooltipProvider>
-                                  </OldFileSystemProvider>
-                                </FilePreviewProvider>
-                              </FileSystemProvider>
-                            </EditorProvider>
-                          </RefProvider>
-                        </PreferenceSyncProvider>
-                      </ToastProvider>
-                    </ChipMenuProvider>
+                    <ToastProvider>
+                      <PreferenceSyncProvider>
+                        <RefProvider>
+                          <FileSystemProvider
+                            initialBucket="Audio"
+                            allowedBuckets={allowedBuckets}
+                          >
+                            <FilePreviewProvider>
+                              <OldFileSystemProvider>
+                                <TooltipProvider delayDuration={200}>
+                                  <AudioModalProvider>
+                                    <ModuleHeaderProvider>
+                                      <GoogleAPIProvider>
+                                        <UniformHeightProvider>
+                                          <SelectedImagesProvider>
+                                            <NotesProvider>
+                                              <TaskProvider>
+                                                <TranscriptsProvider>
+                                                  <PersistentDOMConnector />
+                                                  <ClientOverlayProvider />
+                                                  {children}
+                                                </TranscriptsProvider>
+                                              </TaskProvider>
+                                            </NotesProvider>
+                                          </SelectedImagesProvider>
+                                        </UniformHeightProvider>
+                                      </GoogleAPIProvider>
+                                    </ModuleHeaderProvider>
+                                    <Toaster />
+                                  </AudioModalProvider>
+                                </TooltipProvider>
+                              </OldFileSystemProvider>
+                            </FilePreviewProvider>
+                          </FileSystemProvider>
+                        </RefProvider>
+                      </PreferenceSyncProvider>
+                    </ToastProvider>
                   </ContextMenuProvider>
                 </EntityProvider>
               </PersistentComponentProvider>

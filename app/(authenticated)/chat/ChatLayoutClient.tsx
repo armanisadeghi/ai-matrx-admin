@@ -7,6 +7,7 @@ import ResponseColumn from "@/features/chat/components/response/ResponseColumn";
 import { AdaptiveLayout } from "@/components/layout/adaptive-layout";
 import { ChatSidebarContent } from "@/features/chat/components/conversations/ChatSidebarContent";
 import { useSidebarContent } from "@/hooks/useSidebarContent";
+import { EntityPack } from "@/providers/packs/EntityPack";
 
 export default function ChatLayoutClient({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -18,7 +19,7 @@ export default function ChatLayoutClient({ children }: { children: React.ReactNo
     const isWelcomeScreen = pathname === '/chat' || pathname === '/chat/';
 
     return (
-        <>
+        <EntityPack>
             {SidebarContent}
             <div className="h-page flex flex-col overflow-hidden bg-textured">
                 {/* Render chat controls in main header */}
@@ -71,6 +72,6 @@ export default function ChatLayoutClient({ children }: { children: React.ReactNo
                     )}
                 </main>
             </div>
-        </>
+        </EntityPack>
     );
 }

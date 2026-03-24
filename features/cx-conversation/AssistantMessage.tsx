@@ -30,6 +30,7 @@ import { StreamingContentBlocks } from "@/features/cx-conversation/StreamingCont
 import { useDomCapturePrint } from "@/features/conversation/hooks/useDomCapturePrint";
 import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";
 import { parseMarkdownToText } from "@/utils/markdown-processors/parse-markdown-for-speech";
+import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { selectMessageHasUnsavedChanges, selectMessageHasHistory } from "@/features/cx-conversation/redux/selectors";
@@ -163,12 +164,16 @@ export function AssistantMessage({
     }
   };
 
-  // ── Copy ──────────────────────────────────────────────────────────────────
+  // ── Copy (strips thinking/reasoning by default) ───────────────────────────
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(message.content);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
+      await copyToClipboard(message.content, {
+        onSuccess: () => {
+          setIsCopied(true);
+          setTimeout(() => setIsCopied(false), 2000);
+        },
+        onError: (err) => console.error("Failed to copy:", err),
+      });
     } catch (err) {
       console.error("Failed to copy:", err);
     }

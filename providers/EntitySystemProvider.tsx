@@ -4,8 +4,10 @@
 // Triggers on-demand schema loading and entity slice injection on mount.
 // Shows a loading skeleton until the entity system is ready.
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useEntitySystem } from '@/lib/redux/entity/useEntitySystem';
+
+const LOUD_STYLE = 'color: red; font-size: 14px; font-weight: bold; background: #fff3f3; padding: 2px 6px; border: 2px solid red;';
 
 interface EntitySystemProviderProps {
     children: React.ReactNode;
@@ -28,10 +30,40 @@ export function EntitySystemProvider({
     fallback,
 }: EntitySystemProviderProps) {
     const { isInitialized, isLoading, error, initialize } = useEntitySystem();
+    const loadStartRef = useRef<number>(0);
 
     useEffect(() => {
+        loadStartRef.current = performance.now();
+        const route = typeof window !== 'undefined' ? window.location.pathname : 'server';
+        console.log(
+            '\n\n%c ============================================== ',
+            LOUD_STYLE
+        );
+        console.log(
+            '%c  [EntitySystemProvider] FULL ENTITY SYSTEM LOADING  ',
+            LOUD_STYLE
+        );
+        console.log(
+            `%c  Route: ${route}`,
+            LOUD_STYLE
+        );
+        console.log(
+            '%c ============================================== \n\n',
+            LOUD_STYLE
+        );
         initialize();
     }, [initialize]);
+
+    useEffect(() => {
+        if (isInitialized && loadStartRef.current > 0) {
+            const elapsed = (performance.now() - loadStartRef.current).toFixed(0);
+            const route = typeof window !== 'undefined' ? window.location.pathname : 'unknown';
+            console.log(
+                `%c [EntitySystemProvider] Entity system READY in ${elapsed}ms | Route: ${route}`,
+                LOUD_STYLE
+            );
+        }
+    }, [isInitialized]);
 
     if (error) {
         return (

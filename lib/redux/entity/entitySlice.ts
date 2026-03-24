@@ -57,6 +57,10 @@ export function initializeEntitySlices(automationEntities: AutomationEntities) {
 export function getEntitySlice(entityKey: EntityKeys) {
     const slice = entitySliceRegistry.get(entityKey);
     if (!slice) {
+        if (entitySliceRegistry.size === 0) {
+            console.warn(`[EntitySystem] getEntitySlice('${entityKey}') called before entity system is loaded — returning null`);
+            return null;
+        }
         throw new Error(`Entity slice not found for key: ${entityKey}`);
     }
     return slice;

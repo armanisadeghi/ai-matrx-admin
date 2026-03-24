@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import {
     BookText, Briefcase, Copy, FileCode, FileText, Eye, Globe,
     Brain, Save, Volume2, Edit, CheckSquare, Mail, Database,
-    Printer, ScanLine, RotateCcw, History, Upload,
+    Printer, ScanLine, RotateCcw, History, Upload, FileType,
 } from 'lucide-react';
 import { copyToClipboard } from '@/components/matrx/buttons/markdown-copy-utils';
 import { printMarkdownContent } from '@/features/conversation/utils/markdown-print';
@@ -214,6 +214,14 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({
         });
     };
 
+    const handleCopyForWord = async () => {
+        await copyToClipboard(content, {
+            isMarkdown: true, formatForGoogleDocs: true,
+            onSuccess: () => {},
+            onError: (error) => { throw new Error(getErrorMessage(error, 'Failed to copy for Word')); },
+        });
+    };
+
     const handleCopyWithThinking = async () => {
         await copyToClipboard(content, {
             isMarkdown: true, includeThinking: true,
@@ -355,12 +363,17 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({
         },
         {
             key: 'copy-docs', icon: FileText, iconColor: 'text-green-500 dark:text-green-400',
-            label: 'Copy for Docs', action: handleCopyGoogleDocs,
+            label: 'Copy for Google Docs', action: handleCopyGoogleDocs,
             category: 'Copy', successMessage: 'Formatted for Google Docs', errorMessage: 'Failed to copy',
         },
         {
+            key: 'copy-word', icon: FileType, iconColor: 'text-blue-600 dark:text-blue-400',
+            label: 'Copy for Word', action: handleCopyForWord,
+            category: 'Copy', successMessage: 'Formatted for Microsoft Word', errorMessage: 'Failed to copy',
+        },
+        {
             key: 'copy-thinking', icon: Brain, iconColor: 'text-purple-500 dark:text-purple-400',
-            label: 'With thinking', action: handleCopyWithThinking,
+            label: 'Copy with thinking', action: handleCopyWithThinking,
             category: 'Copy', successMessage: 'Copied with thinking', errorMessage: 'Failed to copy',
         },
         {

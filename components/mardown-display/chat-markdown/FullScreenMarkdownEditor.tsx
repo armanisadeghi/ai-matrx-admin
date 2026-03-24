@@ -14,6 +14,7 @@ import TuiEditorContent, { type TuiEditorContentRef } from "./tui/TuiEditorConte
 
 
 import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { LazyEntityGate } from "@/providers/packs/LazyEntityGate";
 const MarkdownAnalyzer = lazy(() => import("./analyzer/MarkdownAnalyzer"));
 
 
@@ -166,9 +167,11 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
             id: "analysis",
             label: "Analysis",
             content: (
-                <Suspense fallback={<SuspenseLoader />}>
-                    <MarkdownAnalyzer messageId={messageId} />
-                </Suspense>
+                <LazyEntityGate label="MarkdownAnalyzer/FullScreenEditor">
+                    <Suspense fallback={<SuspenseLoader />}>
+                        <MarkdownAnalyzer messageId={messageId} />
+                    </Suspense>
+                </LazyEntityGate>
             ),
             className: "p-4"
         });

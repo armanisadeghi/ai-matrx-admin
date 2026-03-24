@@ -1,5 +1,6 @@
 "use client";
 
+import { EntityPack } from "@/providers/packs/EntityPack";
 import { ReactFlowProvider } from "@xyflow/react";
 import { useCombinedFunctionsWithArgs } from "@/lib/redux/entity/hooks/functions-and-args";
 import { useEffect } from "react";
@@ -8,7 +9,7 @@ import { fetchFieldsThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThu
 import { useAppDispatch } from "@/lib/redux/hooks";
 import WorkflowLoading from "@/features/workflows-xyflow/common/workflow-loading";
 
-export default function WorkflowLayout({ children }: { children: React.ReactNode }) {
+function WorkflowLayoutInner({ children }: { children: React.ReactNode }) {
     const dispatch = useAppDispatch();
     const { combinedFunctions, isLoading, isError, fetchAll } = useCombinedFunctionsWithArgs();
 
@@ -16,7 +17,6 @@ export default function WorkflowLayout({ children }: { children: React.ReactNode
     const categoryHook = useNodeCategoryWithFetch();
     const registeredNodeHook = useRegisteredNodeWithFetch();
     const aiModelHook = useAiModelWithFetch();
-
 
     useEffect(() => {
         fetchAll();
@@ -27,7 +27,6 @@ export default function WorkflowLayout({ children }: { children: React.ReactNode
         aiModelHook.fetchAiModelAll();
     }, []);
 
-    // Show loading while data is being fetched
     if (isLoading || combinedFunctions.length === 0 || Object.keys(categoryHook.nodeCategoryRecordsById).length === 0 || Object.keys(registeredNodeHook.registeredNodeRecordsById).length === 0) {
         return (
             <WorkflowLoading
@@ -40,7 +39,6 @@ export default function WorkflowLayout({ children }: { children: React.ReactNode
         );
     }
 
-    // Show error state if needed
     if (isError) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -55,4 +53,12 @@ export default function WorkflowLayout({ children }: { children: React.ReactNode
     }
 
     return <ReactFlowProvider>{children}</ReactFlowProvider>;
+}
+
+export default function WorkflowLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <EntityPack>
+            <WorkflowLayoutInner>{children}</WorkflowLayoutInner>
+        </EntityPack>
+    );
 }

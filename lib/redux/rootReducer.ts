@@ -105,17 +105,29 @@ const moduleReducers = Object.keys(moduleSchemas).reduce((acc, moduleName) => {
 }, {} as Record<string, any>);
 
 export const createRootReducer = (initialState: InitialReduxState) => {
-    console.log("[WARNING REDUX STARTED WITH LARGE INITIAL STATE] --- WARNING... ENTITIES MUST BE LAZY LOADED");
+    const entityNames = initialState.globalCache?.entityNames ?? [];
+    const hasEntities = entityNames.length > 0;
+
+    if (hasEntities) {
+        console.log("[WARNING REDUX STARTED WITH LARGE INITIAL STATE] --- WARNING... ENTITIES MUST BE LAZY LOADED");
+    } else {
+        console.warn("[Redux] Booting with empty entity shell — entities will be hydrated on-demand");
+    }
+
     initializeEntitySlices(initialState.globalCache.schema);
     const entityReducers = Object.fromEntries(Array.from(entitySliceRegistry.entries()).map(([key, slice]) => [key, slice.reducer]));
 
     const globalCacheSlice = createGlobalCacheSlice(initialState.globalCache as UnifiedSchemaCache);
 
+    const entitiesReducer = Object.keys(entityReducers).length > 0
+        ? combineReducers(entityReducers)
+        : ((state: Record<string, unknown> = {}) => state) as Reducer;
+
     return combineReducers({
         ...featureReducers,
         ...moduleReducers,
         fileSystem: combineReducers(fileSystemReducers) as Reducer<FileSystemState>,
-        entities: combineReducers(entityReducers),
+        entities: entitiesReducer,
         entityFields: fieldReducer,
         layout: layoutReducer,
         theme: themeReducer,

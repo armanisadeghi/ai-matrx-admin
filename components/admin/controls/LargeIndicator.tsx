@@ -1,9 +1,11 @@
 // components/admin/LargeIndicator.tsx
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { ChevronRight, X, Server, Wifi, WifiOff, Shield, ShieldOff, AlertCircle } from "lucide-react";
 import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
-import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnalyzer";
 import PageDebugDisplay from "@/components/admin/debug/PageDebugDisplay";
+import { LazyEntityGate } from "@/providers/packs/LazyEntityGate";
+
+const EnhancedEntityAnalyzer = lazy(() => import("@/components/admin/redux/EnhancedEntityAnalyzer"));
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsDebugMode, selectDebugData } from "@/lib/redux/slices/adminDebugSlice";
 import {
@@ -159,7 +161,11 @@ const LargeIndicator: React.FC<LargeIndicatorProps> = ({ user, onSizeDown, onSiz
                         {debugData && Object.keys(debugData).length > 0 ? (
                             <PageDebugDisplay debugData={debugData} />
                         ) : (
-                            <EnhancedEntityAnalyzer defaultExpanded={false} selectedEntityKey="message" />
+                            <LazyEntityGate label="LargeIndicator/EnhancedEntityAnalyzer">
+                                <Suspense fallback={<div className="text-xs text-slate-400">Loading entity analyzer...</div>}>
+                                    <EnhancedEntityAnalyzer defaultExpanded={false} selectedEntityKey="message" />
+                                </Suspense>
+                            </LazyEntityGate>
                         )}
                     </div>
                 )}

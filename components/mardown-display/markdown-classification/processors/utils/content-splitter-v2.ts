@@ -287,6 +287,37 @@ function detectAttributeXmlBlock(line: string): AttributeXmlDetection | null {
     return null;
 }
 
+/**
+ * Detects a `<decision ...>` tag that appears mid-line (not at the very start
+ * of the trimmed line). Returns the byte offset of the `<` in the original
+ * line, or -1 if no mid-line tag was found.
+ *
+ * We only need to handle attribute-XML blocks (i.e. `decision`) for the
+ * mid-line case — simple XML tags like `<flashcards>` are never emitted
+ * mid-sentence by models.
+ */
+function detectMidLineAttributeXml(line: string): { tagStart: number; type: AttributeXmlBlockType; fullOpeningTag: string; attributes: Record<string, string> } | null {
+    for (const type of ATTRIBUTE_XML_BLOCKS) {
+        const prefix = `<${type}`;
+        const idx = line.indexOf(prefix);
+        if (idx === -1) continue;
+
+        // Must NOT be at the very start of the trimmed line (that's handled by detectAttributeXmlBlock)
+        if (line.trimStart().startsWith(prefix)) continue;
+
+        const afterPrefix = line[idx + prefix.length];
+        if (afterPrefix !== ' ' && afterPrefix !== '>') continue;
+
+        const closeBracket = line.indexOf('>', idx);
+        if (closeBracket === -1) continue;
+
+        const fullOpeningTag = line.slice(idx, closeBracket + 1);
+        const attributes = parseXmlAttributes(fullOpeningTag);
+        return { tagStart: idx, type, fullOpeningTag, attributes };
+    }
+    return null;
+}
+
 interface DecisionOption {
     id: string;
     label: string;
@@ -299,24 +330,40 @@ interface DecisionData {
     options: DecisionOption[];
 }
 
+/**
+ * Extracts a `<decision ...>...</decision>` block starting at `startIndex`.
+ *
+ * `rawXmlOverride` — when the opening tag was found mid-line, the caller
+ * passes the original (un-split) source lines so that rawXml matches the
+ * exact substring in the full content string (required for replaceBlockContent).
+ */
 function extractDecisionBlock(
     detection: AttributeXmlDetection,
     startIndex: number,
-    lines: string[]
+    lines: string[],
+    rawXmlOverride?: string
 ): ExtractionResult {
     const closingTag = `</${detection.type}>`;
     const rawLines: string[] = [];
+    // consumedLines tracks source lines for rawXml when no override is given.
+    const consumedLines: string[] = [];
     let i = startIndex;
     let foundClosingTag = false;
 
     const firstLine = removeMatrxPattern(lines[i]).trim();
+    consumedLines.push(lines[i]);
     const afterOpening = firstLine.slice(firstLine.indexOf('>') + 1);
 
     if (afterOpening.includes(closingTag)) {
-        const inner = afterOpening.slice(0, afterOpening.indexOf(closingTag)).trim();
+        const closingIdx = afterOpening.indexOf(closingTag);
+        const inner = afterOpening.slice(0, closingIdx).trim();
         if (inner) rawLines.push(inner);
+        const remainderAfterClose = afterOpening.slice(closingIdx + closingTag.length).trim();
         foundClosingTag = true;
         i++;
+        if (remainderAfterClose) {
+            lines.splice(i, 0, remainderAfterClose);
+        }
     } else {
         if (afterOpening.trim()) rawLines.push(afterOpening.trim());
         i++;
@@ -327,15 +374,31 @@ function extractDecisionBlock(
             if (closingIdx !== -1) {
                 const before = current.slice(0, closingIdx).trim();
                 if (before) rawLines.push(before);
+                // Capture only up to (and including) the closing tag — not the remainder.
+                const originalLine = lines[i];
+                const originalClosingIdx = originalLine.indexOf(closingTag);
+                consumedLines.push(
+                    originalClosingIdx !== -1
+                        ? originalLine.slice(0, originalClosingIdx + closingTag.length)
+                        : originalLine
+                );
+                const remainderAfterClose = current.slice(closingIdx + closingTag.length).trim();
                 foundClosingTag = true;
                 i++;
+                // Re-inject any content after the closing tag so the main loop
+                // can detect it as a new block (interstitial text or next opening tag).
+                if (remainderAfterClose) {
+                    lines.splice(i, 0, remainderAfterClose);
+                }
                 break;
             }
             if (current === closingTag) {
+                consumedLines.push(lines[i]);
                 foundClosingTag = true;
                 i++;
                 break;
             }
+            consumedLines.push(lines[i]);
             rawLines.push(lines[i]);
             i++;
         }
@@ -357,7 +420,11 @@ function extractDecisionBlock(
 
     const prompt = detection.attributes.prompt || 'Make a selection';
 
-    const fullXml = lines.slice(startIndex, i).join('\n');
+    // rawXml must exactly match the substring in the original content string so
+    // that replaceBlockContent(rawXml, chosenText) finds and replaces it correctly.
+    // For mid-line decisions an override is passed from the call site (step 5.5),
+    // because the synthetic lines in `lines` no longer match the original verbatim.
+    const fullXml = rawXmlOverride ?? consumedLines.join('\n');
 
     const decision: DecisionData = {
         id: `decision-${startIndex}`,
@@ -399,6 +466,10 @@ function extractXmlBlock(
     const content: string[] = [];
     let i = startIndex;
     let foundClosingTag = false;
+    // Collects any text that appears after the closing tag on the same line
+    // (e.g. a new opening tag). Inserted back into `lines` so the caller's
+    // loop can process it as a new block.
+    let remainderAfterClose = "";
 
     const tagName = matchedTag.slice(1, -1);
     const closingTag = `</${tagName}>`;
@@ -412,8 +483,12 @@ function extractXmlBlock(
         if (closingIdx !== -1) {
             const beforeClosing = afterTag.slice(0, closingIdx).trim();
             if (beforeClosing) content.push(beforeClosing);
+            remainderAfterClose = afterTag.slice(closingIdx + closingTag.length).trim();
             foundClosingTag = true;
             i++;
+            if (remainderAfterClose) {
+                lines.splice(i, 0, remainderAfterClose);
+            }
             const fullContent = content.join("\n");
             const result = validateStreamingXmlBlock(type, fullContent, foundClosingTag);
             return { content: result.content || fullContent, nextIndex: i, metadata: result.metadata };
@@ -432,13 +507,19 @@ function extractXmlBlock(
             break;
         }
 
-        // Closing tag inline: "content</reasoning>"
+        // Closing tag inline: "content</reasoning>" or "---</flashcards><flashcards>"
         const closingIdx = currentTrimmed.indexOf(closingTag);
         if (closingIdx !== -1) {
             const beforeClosing = currentTrimmed.slice(0, closingIdx).trim();
             if (beforeClosing) content.push(beforeClosing);
+            remainderAfterClose = currentTrimmed.slice(closingIdx + closingTag.length).trim();
             foundClosingTag = true;
             i++;
+            // Re-inject any text after the closing tag (e.g. a new opening tag)
+            // so the main loop can detect and parse it as a separate block.
+            if (remainderAfterClose) {
+                lines.splice(i, 0, remainderAfterClose);
+            }
             break;
         }
 
@@ -897,6 +978,9 @@ export const splitContentIntoBlocksV2 = (mdContent: string): ContentBlock[] => {
     
     let currentText = "";
     let i = 0;
+    // Keyed by the synthetic tagAndRest string that was spliced into `lines`.
+    // Consumed once by step 3a so extractDecisionBlock gets the correct rawXml.
+    const pendingRawXmlOverrides = new Map<string, string>();
     
     while (i < lines.length) {
         const line = lines[i];
@@ -993,7 +1077,14 @@ export const splitContentIntoBlocksV2 = (mdContent: string): ContentBlock[] => {
                 currentText = "";
             }
 
-            const extraction = extractDecisionBlock(attrXmlMatch, i, lines);
+            // If this line was produced by a mid-line split (step 5.5), consume
+            // the pre-computed rawXml override so replaceBlockContent works correctly.
+            const rawXmlOverride = pendingRawXmlOverrides.get(trimmedLine);
+            if (rawXmlOverride !== undefined) {
+                pendingRawXmlOverrides.delete(trimmedLine);
+            }
+
+            const extraction = extractDecisionBlock(attrXmlMatch, i, lines, rawXmlOverride);
 
             blocks.push({
                 type: attrXmlMatch.type as any,
@@ -1088,6 +1179,58 @@ export const splitContentIntoBlocksV2 = (mdContent: string): ContentBlock[] => {
             continue;
         }
         
+        // 5.5. Check for mid-line attribute XML (e.g. "Hello <decision prompt="...">")
+        // The tag is somewhere inside the line, not at the start. We:
+        //   1. Emit the text before the tag as a text block.
+        //   2. Replace the current line in `lines` with [textBefore?, tagAndRest]
+        //      so the normal attribute-XML path handles the decision on the next pass.
+        //   3. Pre-compute rawXmlOverride from the original source lines (before any
+        //      splice mutations) so replaceBlockContent can find the exact substring.
+        const midLineAttrXml = detectMidLineAttributeXml(processedLine);
+        if (midLineAttrXml) {
+            // Flush any accumulated text from prior lines
+            if (currentText.trim()) {
+                blocks.push({ type: "text", content: currentText.trimEnd() });
+                currentText = "";
+            }
+
+            const textBefore = processedLine.slice(0, midLineAttrXml.tagStart).trimEnd();
+            const tagAndRest = processedLine.slice(midLineAttrXml.tagStart);
+
+            // Build rawXmlOverride: scan forward from current line to find the matching
+            // </decision> and capture that exact substring from the source lines.
+            // This is done BEFORE any splice so the indices are still valid.
+            const closingTag = `</${midLineAttrXml.type}>`;
+            const rawXmlParts: string[] = [tagAndRest];
+            let foundClose = tagAndRest.includes(closingTag);
+            if (!foundClose) {
+                for (let j = i + 1; j < lines.length; j++) {
+                    const jLine = lines[j];
+                    const jIdx = jLine.indexOf(closingTag);
+                    if (jIdx !== -1) {
+                        rawXmlParts.push(jLine.slice(0, jIdx + closingTag.length));
+                        foundClose = true;
+                        break;
+                    }
+                    rawXmlParts.push(jLine);
+                }
+            }
+            const rawXmlOverride = rawXmlParts.join('\n');
+
+            // Splice current line into [textBefore?, tagAndRest] — do NOT push textBefore
+            // into the blocks here; let the next iteration handle it as a text line so
+            // normal text accumulation runs (preserving surrounding paragraph context).
+            const replacements: string[] = [];
+            if (textBefore) replacements.push(textBefore);
+            replacements.push(tagAndRest);
+            // Store the override keyed by the trimmed tag line so step 3a can
+            // look it up when it processes the synthetic tagAndRest line.
+            pendingRawXmlOverrides.set(tagAndRest.trim(), rawXmlOverride);
+            lines.splice(i, 1, ...replacements);
+            // Re-process from i (now the textBefore line, or the tagAndRest line).
+            continue;
+        }
+
         // 6. Accumulate as text - DO NOT GOBBLE UP BLANK LINES -- NEVER MODIFY THE CONTENT!!!!!!!!!!!!!!
         currentText += processedLine + (i < lines.length - 1 ? "\n" : "");
         i++;

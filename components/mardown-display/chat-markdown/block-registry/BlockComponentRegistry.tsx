@@ -3,6 +3,7 @@
 import React, { Suspense, lazy } from "react";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import BasicMarkdownContent from "../BasicMarkdownContent";
+import { LazyEntityGate } from "@/providers/packs/LazyEntityGate";
 
 // Lazy-load CodeBlock to avoid circular dependency with Redux store
 const CodeBlock = lazy(() => import("@/features/code-editor/components/code-block/CodeBlock"));
@@ -127,9 +128,11 @@ export const BlockComponents = {
         </LazyBlockWrapper>
     ),
     MatrxBrokerBlock: (props: any) => (
-        <LazyBlockWrapper>
-            <MatrxBrokerBlock {...props} />
-        </LazyBlockWrapper>
+        <LazyEntityGate label="MatrxBrokerBlock">
+            <LazyBlockWrapper>
+                <MatrxBrokerBlock {...props} />
+            </LazyBlockWrapper>
+        </LazyEntityGate>
     ),
     FlashcardsBlock: (props: any) => (
         <LazyBlockWrapper>
@@ -196,12 +199,18 @@ export const BlockComponents = {
             <MathProblemBlock {...props} />
         </LazyBlockWrapper>
     ),
+    // TODO(arman): QuestionnaireRenderer can be decoupled from the entity system.
+    // It uses getChatActionsWithThunks() only for updateModUserContext — this can
+    // be replaced with a direct Supabase call or a non-entity Redux action.
+    // Once decoupled, remove the LazyEntityGate wrapper here.
     QuestionnaireRenderer: (props: any) => (
-        <LazyBlockWrapper>
-            <QuestionnaireProvider>
-                <QuestionnaireRenderer {...props} />
-            </QuestionnaireProvider>
-        </LazyBlockWrapper>
+        <LazyEntityGate label="QuestionnaireRenderer">
+            <LazyBlockWrapper>
+                <QuestionnaireProvider>
+                    <QuestionnaireRenderer {...props} />
+                </QuestionnaireProvider>
+            </LazyBlockWrapper>
+        </LazyEntityGate>
     ),
     MarkdownTable: (props: any) => (
         <LazyBlockWrapper>

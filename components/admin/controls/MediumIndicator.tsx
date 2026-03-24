@@ -20,8 +20,6 @@ import { debugModules } from "@/components/admin/debug/debugModuleRegistry";
 import DebugModulePanel from "@/components/admin/debug/DebugModulePanel";
 import { getAvailableNamespaces } from "@/constants/socket-schema";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
-import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
 import { toggleDebugMode, selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { SocketConnectionManager } from "@/lib/redux/socket-io/connection/socketConnectionManager";
 import {
@@ -111,11 +109,6 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
     // Global debug mode from adminDebug slice
     const isDebugMode = useAppSelector(selectIsDebugMode);
     
-    // Chat selectors (kept for compatibility with chat-specific features)
-    const chatActions = getChatActionsWithThunks();
-    const chatSelectors = createChatSelectors();
-    const isChatDebugMode = useAppSelector(chatSelectors.isDebugMode);
-
     // Get connection health for primary connection
     const primaryHealth = useAppSelector((state) => selectConnectionHealth(state, primaryConnection?.connectionId || "primary"));
 
@@ -125,11 +118,7 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
     const predefinedConnections = SocketConnectionManager.getPredefinedConnections();
 
     const handleToggleDebugMode = () => {
-        // Toggle global debug mode
         dispatch(toggleDebugMode());
-        
-        // Also sync with chat debug mode for backward compatibility
-        dispatch(chatActions.setChatDebugMode({ isDebugMode: !isDebugMode }));
     };
 
     const handleToggleTestMode = () => {
