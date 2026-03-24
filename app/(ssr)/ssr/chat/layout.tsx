@@ -14,12 +14,11 @@
 //       the SidebarSearchGroup pill + agent/chat lists.
 //     - ChatDesktopHeader: client island for the desktop header strip —
 //       just the PanelLeft toggle button.
-//     - ChatWorkspace: large client island (the main chat UI).
+//     - {children}: the page content — welcome screen or conversation view.
 //   Agent selector lives in ChatHeaderControls (injected via PageHeaderPortal).
 
 import { AgentsProvider } from "@/features/public-chat/context/DEPRECATED-AgentsContext";
 import { ChatPanelContent, ChatDesktopHeader } from "./_components/ChatSidebarClient";
-import ChatWorkspace from "./_components/ChatWorkspace";
 import ChatMobileHeaderBar from "./_components/ChatMobileHeaderBar";
 
 export default function ChatLayout({
@@ -59,10 +58,9 @@ export default function ChatLayout({
       {/* Mobile header bar — hamburger + new chat + agent name */}
       <ChatMobileHeaderBar />
 
-      {/* Main workspace */}
+      {/* Main workspace — pages render their own content here */}
       <div className="shell-panel-content">
-        <ChatWorkspace />
-        <div style={{ display: "none" }}>{children}</div>
+        {children}
       </div>
     </AgentsProvider>
   );
