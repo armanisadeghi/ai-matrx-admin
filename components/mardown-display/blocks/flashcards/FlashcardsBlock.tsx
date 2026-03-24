@@ -180,7 +180,10 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
   if (isMobileView && flashcards.length > 0) {
     return (
       <FlashcardMobileView
-        cards={flashcards.map((c) => ({ front: c.front ?? "", back: c.back ?? null }))}
+        cards={flashcards.map((c) => ({
+          front: c.front ?? "",
+          back: c.back ?? null,
+        }))}
         initialIndex={mobileStartIndex}
         onClose={() => setIsMobileView(false)}
       />
@@ -197,7 +200,6 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
             <div className="flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-primary" />
               <span className="font-medium">
-                Flashcards
                 {isComplete && (
                   <span className="ml-2 text-xs text-muted-foreground">
                     ({completeCount} {completeCount === 1 ? "card" : "cards"})
@@ -253,11 +255,7 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
       <ChatCollapsibleWrapper
         className={className}
         icon={<BookOpen className="h-4 w-4 text-primary" />}
-        title={
-          <span>
-            {completeCount} {completeCount === 1 ? "Flashcard" : "Flashcards"}
-          </span>
-        }
+        title={<span>{completeCount}</span>}
         controls={
           <>
             <LayoutToggle
@@ -373,7 +371,10 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
               variant="ghost"
               size="sm"
               className="h-7 px-2 text-xs"
-              onClick={() => { setMobileStartIndex(0); setIsMobileView(true); }}
+              onClick={() => {
+                setMobileStartIndex(0);
+                setIsMobileView(true);
+              }}
             >
               <Smartphone className="h-3 w-3" />
               Mobile

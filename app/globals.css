@@ -536,6 +536,16 @@
   animation: slide-in-from-left 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
 
+@keyframes mobile-card-enter-right {
+  from { transform: translateX(100%); opacity: 0.4; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+@keyframes mobile-card-enter-left {
+  from { transform: translateX(-100%); opacity: 0.4; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
 @layer base {
   :root {
     /* Layout Header Heights - Unified: 2.5rem (h-10) for both mobile and desktop */
