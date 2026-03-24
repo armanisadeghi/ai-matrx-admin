@@ -79,10 +79,8 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
     const { isDirty, isSaving, lastSaved, updateWithAutoSave, forceSave } = useAutoSave({
         // Disable autosave for the phantom note (no real DB row yet)
         noteId: (note?.id && note.id !== '__phantom__') ? note.id : null,
-        currentUpdatedAt: note?.updated_at,
-        debounceMs: 3000, // Increased from 1000ms to 3000ms for less aggressive autosave
+        debounceMs: 2000,
         onSaveSuccess: () => {
-            // Notify parent with all updated fields + editor mode
             if (note) {
                 onUpdate?.(note.id, {
                     label: localLabel,
@@ -96,16 +94,8 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                 });
             }
         },
-        onConflict: () => {
-            // Save conflict: another session modified this note before our save landed.
-            // Show a toast so the user knows their changes were NOT saved.
-            toast.warning('Save conflict — your changes were not saved', {
-                duration: 15000,
-                action: {
-                    label: 'Refresh note',
-                    onClick: () => refreshNotes(),
-                },
-            });
+        onSaveError: (err) => {
+            toast.error(`Failed to save note: ${err.message}`);
         },
     });
 

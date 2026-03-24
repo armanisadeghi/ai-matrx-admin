@@ -7,50 +7,32 @@ import type { UpdateNoteInput } from '../types';
 
 interface UseAutoSaveOptions {
     noteId: string | null;
-    /** The current updated_at from the server for optimistic locking */
-    currentUpdatedAt?: string | null;
     debounceMs?: number;
     onSaveSuccess?: () => void;
     onSaveError?: (error: Error) => void;
-    onConflict?: () => void;
 }
 
 /**
- * Hook to handle auto-save with debouncing and dirty state tracking
+ * Hook to handle auto-save with debouncing and dirty state tracking.
+ *
+ * Optimistic locking (WHERE updated_at = ?) has been removed because the notes
+ * table has a BEFORE UPDATE trigger that auto-sets updated_at, which causes the
+ * WHERE clause to always match 0 rows. Concurrent-session conflict detection is
+ * handled by the Supabase Realtime subscription in NotesContext instead.
  */
 export function useAutoSave({
     noteId,
-    currentUpdatedAt,
     debounceMs = 1000,
     onSaveSuccess,
     onSaveError,
-    onConflict,
 }: UseAutoSaveOptions) {
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [lastSaved, setLastSaved] = useState<Date | null>(null);
-    
+
     const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const pendingUpdatesRef = useRef<UpdateNoteInput>({});
-    // Keep a stable ref to the current updated_at to use in async callbacks.
-    // This is set to the incoming server value when the editor is clean, and is
-    // updated after each successful save so the next save uses the latest timestamp.
-    const currentUpdatedAtRef = useRef<string | null | undefined>(currentUpdatedAt);
-    // Use a ref for isDirty so the sync effect below can read it synchronously
-    const isDirtyRef = useRef(false);
-
-    useEffect(() => {
-        isDirtyRef.current = isDirty;
-    }, [isDirty]);
-
-    // Sync ref when currentUpdatedAt changes — but only when the editor is clean.
-    // While the user has unsaved edits we must keep the pre-edit timestamp so the
-    // optimistic lock check on save uses the correct baseline.
-    useEffect(() => {
-        if (!isDirtyRef.current) {
-            currentUpdatedAtRef.current = currentUpdatedAt;
-        }
-    }, [currentUpdatedAt]);
+    const isSavingRef = useRef(false);
 
     /**
      * Mark the note as dirty (has unsaved changes)
@@ -63,7 +45,6 @@ export function useAutoSave({
      * Queue an update to be saved
      */
     const queueUpdate = useCallback((updates: UpdateNoteInput) => {
-        // Merge updates
         pendingUpdatesRef.current = {
             ...pendingUpdatesRef.current,
             ...updates,
@@ -72,61 +53,54 @@ export function useAutoSave({
     }, [markDirty]);
 
     /**
-     * Actually save the updates
+     * Actually save the pending updates
      */
     const saveNow = useCallback(async () => {
         if (!noteId || Object.keys(pendingUpdatesRef.current).length === 0) {
             return;
         }
 
+        // Don't stack concurrent saves — the next debounce will pick up any
+        // changes that arrive while this one is in-flight.
+        if (isSavingRef.current) return;
+
         const updatesSnapshot = { ...pendingUpdatesRef.current };
-        // Capture the expected timestamp for optimistic locking at the moment of save
-        const expectedAt = currentUpdatedAtRef.current ?? undefined;
+        // Clear pending immediately so edits that arrive during the async save
+        // are queued for the next save rather than dropped.
+        pendingUpdatesRef.current = {};
 
         try {
+            isSavingRef.current = true;
             setIsSaving(true);
-            const saved = await updateNote(noteId, updatesSnapshot, expectedAt);
-            // Advance the lock baseline to the timestamp returned by the server,
-            // so the next save doesn't re-use the pre-edit timestamp.
-            if (saved?.updated_at) {
-                currentUpdatedAtRef.current = saved.updated_at;
-            }
-            pendingUpdatesRef.current = {};
+            await updateNote(noteId, updatesSnapshot);
             setIsDirty(false);
             setLastSaved(new Date());
             onSaveSuccess?.();
         } catch (error) {
-            const err = error as Error;
-            if (err.message?.startsWith('CONFLICT:')) {
-                // Another session modified this note — surface the conflict
-                console.warn('Note save conflict detected for', noteId);
-                onConflict?.();
-            } else {
-                console.error('Error saving note:', err);
-                onSaveError?.(err);
-            }
+            // Restore pending updates so the next scheduled save retries them
+            pendingUpdatesRef.current = { ...updatesSnapshot, ...pendingUpdatesRef.current };
+            console.error('[useAutoSave] Error saving note:', error);
+            onSaveError?.(error as Error);
         } finally {
+            isSavingRef.current = false;
             setIsSaving(false);
         }
-    }, [noteId, onSaveSuccess, onSaveError, onConflict]);
+    }, [noteId, onSaveSuccess, onSaveError]);
 
     /**
      * Schedule a save with debouncing
      */
     const scheduleSave = useCallback(() => {
-        // Clear existing timeout
         if (saveTimeoutRef.current) {
             clearTimeout(saveTimeoutRef.current);
         }
-
-        // Schedule new save
         saveTimeoutRef.current = setTimeout(() => {
             saveNow();
         }, debounceMs);
     }, [saveNow, debounceMs]);
 
     /**
-     * Update the note with auto-save
+     * Queue an update and schedule a debounced save
      */
     const updateWithAutoSave = useCallback((updates: UpdateNoteInput) => {
         queueUpdate(updates);
@@ -134,7 +108,7 @@ export function useAutoSave({
     }, [queueUpdate, scheduleSave]);
 
     /**
-     * Force immediate save (useful for blur events, etc.)
+     * Cancel the debounce timer and save immediately
      */
     const forceSave = useCallback(() => {
         if (saveTimeoutRef.current) {
@@ -144,30 +118,24 @@ export function useAutoSave({
         saveNow();
     }, [saveNow]);
 
-    // Save immediately when noteId changes (tab switch) if there are pending updates
+    // On noteId change (tab switch / unmount): flush any pending updates immediately
     useEffect(() => {
         return () => {
-            // On cleanup (note changing or unmounting), save pending updates immediately
             const currentNoteId = noteId;
             const pendingUpdates = { ...pendingUpdatesRef.current };
-            
+
             if (currentNoteId && Object.keys(pendingUpdates).length > 0) {
-                // Clear timeout to prevent duplicate save
                 if (saveTimeoutRef.current) {
                     clearTimeout(saveTimeoutRef.current);
                     saveTimeoutRef.current = null;
                 }
-                
-                // Synchronous save - we don't await but trigger it immediately
-                updateNote(currentNoteId, pendingUpdates).catch(err => {
-                    console.error('Error saving note on unmount/switch:', err);
-                });
-                
-                // Clear pending updates
                 pendingUpdatesRef.current = {};
+                updateNote(currentNoteId, pendingUpdates).catch(err => {
+                    console.error('[useAutoSave] Error saving note on unmount/switch:', err);
+                });
             }
         };
-    }, [noteId]); // Runs when noteId changes
+    }, [noteId]);
 
     return {
         isDirty,
@@ -178,5 +146,3 @@ export function useAutoSave({
         markDirty,
     };
 }
-
-

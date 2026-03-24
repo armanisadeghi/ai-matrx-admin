@@ -14,12 +14,13 @@ export function useCanvasLike(canvasId: string) {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return false;
 
+            // Use maybeSingle() to avoid PGRST116 error when no like exists
             const { data } = await supabase
                 .from('canvas_likes')
                 .select('id')
                 .eq('canvas_id', canvasId)
                 .eq('user_id', user.id)
-                .single();
+                .maybeSingle();
 
             return !!data;
         },
@@ -45,29 +46,34 @@ export function useCanvasLike(canvasId: string) {
             if (error) throw error;
         },
         onMutate: async () => {
-            // Cancel outgoing refetches
+            // Cancel outgoing refetches — shared-canvas is keyed by shareToken not canvasId,
+            // so cancel all queries with the prefix
             await queryClient.cancelQueries({ queryKey: ['shared-canvas'] });
             await queryClient.cancelQueries({ queryKey: ['canvas-like', canvasId] });
 
             // Snapshot previous values
-            const previousCanvas = queryClient.getQueryData(['shared-canvas', canvasId]);
             const previousLiked = queryClient.getQueryData(['canvas-like', canvasId]);
+
+            // Find the shared-canvas cache entry (keyed by shareToken) and snapshot it
+            const sharedCanvasQueries = queryClient.getQueriesData<{ like_count: number; share_token: string }>({ queryKey: ['shared-canvas'] });
+            const previousCanvasEntries = sharedCanvasQueries;
 
             // Optimistically update
             queryClient.setQueryData(['canvas-like', canvasId], true);
-            queryClient.setQueryData(['shared-canvas'], (old: any) => {
-                if (old?.share_token) {
-                    return { ...old, like_count: (old.like_count || 0) + 1 };
+            sharedCanvasQueries.forEach(([queryKey, data]) => {
+                if (data?.share_token) {
+                    queryClient.setQueryData(queryKey, { ...data, like_count: (data.like_count || 0) + 1 });
                 }
-                return old;
             });
 
-            return { previousCanvas, previousLiked };
+            return { previousCanvasEntries, previousLiked };
         },
         onError: (err, variables, context) => {
             // Rollback on error
             if (context) {
-                queryClient.setQueryData(['shared-canvas'], context.previousCanvas);
+                context.previousCanvasEntries.forEach(([queryKey, data]) => {
+                    queryClient.setQueryData(queryKey, data);
+                });
                 queryClient.setQueryData(['canvas-like', canvasId], context.previousLiked);
             }
             toast({
@@ -102,22 +108,25 @@ export function useCanvasLike(canvasId: string) {
             await queryClient.cancelQueries({ queryKey: ['shared-canvas'] });
             await queryClient.cancelQueries({ queryKey: ['canvas-like', canvasId] });
 
-            const previousCanvas = queryClient.getQueryData(['shared-canvas', canvasId]);
             const previousLiked = queryClient.getQueryData(['canvas-like', canvasId]);
 
+            const sharedCanvasQueries = queryClient.getQueriesData<{ like_count: number; share_token: string }>({ queryKey: ['shared-canvas'] });
+            const previousCanvasEntries = sharedCanvasQueries;
+
             queryClient.setQueryData(['canvas-like', canvasId], false);
-            queryClient.setQueryData(['shared-canvas'], (old: any) => {
-                if (old?.share_token) {
-                    return { ...old, like_count: Math.max((old.like_count || 0) - 1, 0) };
+            sharedCanvasQueries.forEach(([queryKey, data]) => {
+                if (data?.share_token) {
+                    queryClient.setQueryData(queryKey, { ...data, like_count: Math.max((data.like_count || 0) - 1, 0) });
                 }
-                return old;
             });
 
-            return { previousCanvas, previousLiked };
+            return { previousCanvasEntries, previousLiked };
         },
         onError: (err, variables, context) => {
             if (context) {
-                queryClient.setQueryData(['shared-canvas'], context.previousCanvas);
+                context.previousCanvasEntries.forEach(([queryKey, data]) => {
+                    queryClient.setQueryData(queryKey, data);
+                });
                 queryClient.setQueryData(['canvas-like', canvasId], context.previousLiked);
             }
             toast({

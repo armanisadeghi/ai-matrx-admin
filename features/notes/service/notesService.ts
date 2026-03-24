@@ -119,34 +119,13 @@ export async function createNote(input: CreateNoteInput = {}): Promise<Note> {
 }
 
 /**
- * Update an existing note
+ * Update an existing note.
+ * Simple UPDATE by ID — no optimistic locking.
+ * The DB has an auto-update trigger on updated_at, so timestamp-based locking
+ * (WHERE updated_at = ?) always fails. Concurrent-session conflicts are handled
+ * via the Supabase Realtime subscription in NotesContext instead.
  */
-export async function updateNote(id: string, updates: UpdateNoteInput, expectedUpdatedAt?: string): Promise<Note> {
-    // If an expected timestamp is provided, use optimistic locking:
-    // Only update if the note hasn't been modified since we loaded it.
-    if (expectedUpdatedAt) {
-        const { data, error } = await supabase
-            .from('notes')
-            .update(updates)
-            .eq('id', id)
-            .eq('updated_at', expectedUpdatedAt) // Optimistic lock
-            .select()
-            .single();
-
-        if (error) {
-            console.error('Error updating note with optimistic lock:', error);
-            throw error;
-        }
-
-        if (!data) {
-            // The row exists but updated_at didn't match — concurrent modification detected
-            throw new Error('CONFLICT: Note was modified by another session. Please refresh to avoid data loss.');
-        }
-
-        return data;
-    }
-
-    // Standard update (no optimistic locking)
+export async function updateNote(id: string, updates: UpdateNoteInput): Promise<Note> {
     const { data, error } = await supabase
         .from('notes')
         .update(updates)
@@ -385,4 +364,3 @@ export async function deleteFolderNotes(folderName: string): Promise<number> {
 
     return count;
 }
-

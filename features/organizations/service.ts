@@ -147,9 +147,7 @@ export async function updateOrganization(
   updates: UpdateOrganizationOptions
 ): Promise<OrganizationResult> {
   try {
-    const updateData: any = {
-      updated_at: new Date().toISOString(),
-    };
+    const updateData: any = {};
 
     if (updates.name) {
       const validation = validateOrgName(updates.name);

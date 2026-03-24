@@ -338,21 +338,19 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         // Clear any shown conflict toast for this note (we're actively saving)
         shownConflictToastsRef.current.delete(id);
 
-        // Optimistic update
+        // Optimistic update for immediate UI feedback
         setNotes(prev =>
             prev.map(note =>
-                note.id === id ? { ...note, ...updates, updated_at: new Date().toISOString() } : note
+                note.id === id ? { ...note, ...updates } : note
             )
         );
-
-        // Update active note if it's the one being edited (use functional setState)
         setActiveNote(prev => prev?.id === id ? { ...prev, ...updates } : prev);
 
         try {
             // Persist to database
             const updated = await updateNoteService(id, updates);
-            
-            // Update with server response
+
+            // Sync with server response (picks up server-generated updated_at etc.)
             setNotes(prev => prev.map(n => n.id === updated.id ? updated : n));
             setActiveNote(prev => prev?.id === id ? updated : prev);
 
