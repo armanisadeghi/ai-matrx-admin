@@ -28,6 +28,46 @@ interface FlashcardMobileViewProps {
   onClose: () => void;
 }
 
+// Hint overlay — left 20% = prev, center = flip, right 20% = next
+const TapZoneHints: React.FC<{
+  canGoPrev: boolean;
+  canGoNext: boolean;
+  menuOpen: boolean;
+  flipColor: string;
+}> = ({ canGoPrev, canGoNext, menuOpen, flipColor }) => (
+  <div className="absolute inset-0 flex items-end pointer-events-none select-none">
+    {/* Left tap zone label */}
+    <div
+      className={cn(
+        "w-[20%] flex items-center justify-start pl-2 pb-3 transition-opacity duration-200",
+        canGoPrev ? "text-white/40" : "text-white/15",
+      )}
+    >
+      <ChevronLeft className="h-4 w-4" />
+      <span className="text-[9px] leading-none">tap</span>
+    </div>
+
+    {/* Center flip hint */}
+    <div className="flex-1 flex flex-col items-center justify-end pb-2 gap-0.5">
+      <div className={cn("text-[10px]", flipColor)}>tap to flip</div>
+      {!menuOpen && (
+        <div className="text-white/20 text-[9px]">↑ swipe up for more</div>
+      )}
+    </div>
+
+    {/* Right tap zone label */}
+    <div
+      className={cn(
+        "w-[20%] flex items-center justify-end pr-2 pb-3 transition-opacity duration-200",
+        canGoNext ? "text-white/40" : "text-white/15",
+      )}
+    >
+      <span className="text-[9px] leading-none">tap</span>
+      <ChevronRight className="h-4 w-4" />
+    </div>
+  </div>
+);
+
 interface CardSlideProps {
   card: Card;
   isFlipped: boolean;
@@ -112,36 +152,7 @@ const CardSlide: React.FC<CardSlideProps> = ({
             {card.front}
           </div>
 
-          {showHints && (
-            <div className="absolute inset-0 flex items-end pointer-events-none select-none">
-              <div
-                className={cn(
-                  "flex-1 flex items-center justify-start pl-3 pb-3",
-                  canGoPrev ? "text-white/50" : "text-white/30",
-                )}
-              >
-                <ChevronLeft className="h-4 w-4 mr-0.5" />
-                <span className="text-[10px]">prev</span>
-              </div>
-              <div className="flex-1 flex flex-col items-center justify-end pb-2 gap-0.5">
-                <div className="text-blue-300/40 text-[10px]">tap to flip</div>
-                {!menuOpen && (
-                  <div className="text-white/40 text-[9px]">
-                    ↑ swipe up for more
-                  </div>
-                )}
-              </div>
-              <div
-                className={cn(
-                  "flex-1 flex items-center justify-end pr-3 pb-3",
-                  canGoNext ? "text-white/50" : "text-white/30",
-                )}
-              >
-                <span className="text-[10px]">next</span>
-                <ChevronRight className="h-4 w-4 ml-0.5" />
-              </div>
-            </div>
-          )}
+          {showHints && <TapZoneHints canGoPrev={canGoPrev} canGoNext={canGoNext} menuOpen={menuOpen} flipColor="text-blue-300/40" />}
         </div>
 
         {/* Back face */}
@@ -165,36 +176,7 @@ const CardSlide: React.FC<CardSlideProps> = ({
             {renderBack()}
           </div>
 
-          {showHints && (
-            <div className="absolute inset-0 flex items-end pointer-events-none select-none">
-              <div
-                className={cn(
-                  "flex-1 flex items-center justify-start pl-3 pb-3",
-                  canGoPrev ? "text-white/50" : "text-white/30",
-                )}
-              >
-                <ChevronLeft className="h-4 w-4 mr-0.5" />
-                <span className="text-[10px]">prev</span>
-              </div>
-              <div className="flex-1 flex flex-col items-center justify-end pb-2 gap-0.5">
-                <div className="text-green-300/40 text-[10px]">tap to flip</div>
-                {!menuOpen && (
-                  <div className="text-white/40 text-[9px]">
-                    ↑ swipe up for more
-                  </div>
-                )}
-              </div>
-              <div
-                className={cn(
-                  "flex-1 flex items-center justify-end pr-3 pb-3",
-                  canGoNext ? "text-white/50" : "text-white/30",
-                )}
-              >
-                <span className="text-[10px]">next</span>
-                <ChevronRight className="h-4 w-4 ml-0.5" />
-              </div>
-            </div>
-          )}
+          {showHints && <TapZoneHints canGoPrev={canGoPrev} canGoNext={canGoNext} menuOpen={menuOpen} flipColor="text-green-300/40" />}
         </div>
       </div>
     </div>
@@ -402,12 +384,15 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
         {...cardHandlers}
         className="flex-1 relative overflow-visible select-none"
         style={cardAreaStyle}
-        onClick={() => {
-          if (menuOpen) {
-            setMenuOpen(false);
-            return;
-          }
-          if (!isAnimating) setIsFlipped((f) => !f);
+        onClick={(e) => {
+          if (menuOpen) { setMenuOpen(false); return; }
+          if (isAnimating) return;
+          const { clientX, currentTarget } = e;
+          const { left, width } = currentTarget.getBoundingClientRect();
+          const relX = (clientX - left) / width;
+          if (relX < 0.2) goPrev();
+          else if (relX > 0.8) goNext();
+          else setIsFlipped((f) => !f);
         }}
       >
         {transition && (
