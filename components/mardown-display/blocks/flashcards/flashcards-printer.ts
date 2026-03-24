@@ -16,7 +16,7 @@ import { buildPrintDocument, openPrintWindow, escapeHtml, type BlockPrinter } fr
 import type { Flashcard } from "./flashcard-parser";
 import type { FlashcardsBlockData } from "@/types/python-generated/content-blocks";
 
-export type FlashcardsVariant = "landscape-duplex" | "landscape-stacked" | "cut-cards" | "both-sides" | "study-sheet" | "front-only" | "back-only";
+export type FlashcardsVariant = "landscape-duplex" | "landscape-stacked" | "avery-5388" | "cut-cards" | "both-sides" | "study-sheet" | "front-only" | "back-only";
 
 type FlashcardsData =
     | { cards: Flashcard[] }
@@ -604,10 +604,10 @@ const LANDSCAPE_STYLES = `
   .quad.left   { padding-left: 0;  padding-right: 0.25in; }
   .quad.right  { padding-left: 0.25in; padding-right: 0; }
 
-  /* The actual card face — fills the quad minus its padding */
+  /* The actual card face — no border, no lines. Cuts are the separation. */
   .card-face {
     flex: 1;
-    border: 1.5px solid #000;
+    border: none;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -617,34 +617,35 @@ const LANDSCAPE_STYLES = `
     position: relative;
   }
 
-  /* Cut-line guides on the outer page (not on card borders) */
-  .cut-h {
+  /*
+   * Cut tick marks — 4 short marks at the exact center intersection.
+   * These sit on the .page element (outside all card faces).
+   * Each tick is a 0.18in line. Two ticks per axis: one on each side of center.
+   */
+
+  /* Horizontal axis ticks: sit at vertical midpoint, on the left and right edges */
+  .tick-h-left, .tick-h-right {
     position: absolute;
-    left: 0.25in;
-    right: 0.25in;
     top: 50%;
+    width: 0.18in;
     height: 0;
-    border-top: 1px dashed #bbb;
+    border-top: 0.6px solid #bbb;
     pointer-events: none;
   }
-  .cut-v {
+  .tick-h-left  { left: 0.1in; }
+  .tick-h-right { right: 0.1in; }
+
+  /* Vertical axis ticks: sit at horizontal midpoint, on the top and bottom edges */
+  .tick-v-top, .tick-v-bottom {
     position: absolute;
-    top: 0.25in;
-    bottom: 0.25in;
     left: 50%;
+    height: 0.18in;
     width: 0;
-    border-left: 1px dashed #bbb;
+    border-left: 0.6px solid #bbb;
     pointer-events: none;
   }
-  .cut-label {
-    position: absolute;
-    font-size: 6pt;
-    color: #bbb;
-    letter-spacing: 0.06em;
-    white-space: nowrap;
-  }
-  .cut-label.h { top: calc(50% - 8pt); left: 0.12in; }
-  .cut-label.v { left: calc(50% + 3pt); top: 0.12in; }
+  .tick-v-top    { top: 0.1in; }
+  .tick-v-bottom { bottom: 0.1in; }
 
   /* Card number badge */
   .card-num {
@@ -765,17 +766,16 @@ const QUAD_CLASSES = [
 
 function buildPage(
     cells: string[],   // exactly 4 strings (card HTML or empty string)
-    showCutGuides: boolean,
+    _showCutGuides: boolean,
 ): string {
-    const guides = showCutGuides
-        ? `<div class="cut-h"></div>
-  <div class="cut-v"></div>
-  <span class="cut-label h">✂ cut</span>
-  <span class="cut-label v">✂ cut</span>`
-        : "";
+    // Always show the 4 tick marks (tiny, dim) — no full crossing lines
+    const ticks = `<div class="tick-h-left"></div>
+  <div class="tick-h-right"></div>
+  <div class="tick-v-top"></div>
+  <div class="tick-v-bottom"></div>`;
 
     return `<div class="page">
-  ${guides}
+  ${ticks}
   ${cells.map((c, i) => `<div class="${QUAD_CLASSES[i]}">${c}</div>`).join("\n  ")}
 </div>`;
 }
@@ -870,6 +870,190 @@ ${FIT_TEXT_SCRIPT}
 }
 
 // ---------------------------------------------------------------------------
+// Variant: Avery 5388 — 3×5" index cards, 3 per page, portrait
+//
+// Geometry (portrait 8.5" × 11"):
+//   Card size: 5" wide × 3" tall
+//   3 cards stacked = 9" height
+//   Remaining vertical: 11" − 9" = 2" → 0.5" top + 0.5" gap × 2 + 0.5" bottom
+//   Side margins: (8.5" − 5") / 2 = 1.75" each side
+//
+//   Layout: page padding 0.5in top/bottom, 1.75in left/right
+//           between cards: 0.5in gap
+//
+// Each page = 3 card fronts. Next page = matching 3 card backs (same order).
+// No borders, no lines, no cut marks. Just text centered in each card zone.
+// ---------------------------------------------------------------------------
+
+const AVERY_5388_STYLES = `
+  @page { size: portrait; margin: 0; }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 8.5in;
+    background: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #000;
+  }
+
+  .avery-page {
+    width: 8.5in;
+    height: 11in;
+    padding: 0.5in 1.75in;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5in;
+    page-break-after: always;
+    break-after: page;
+    border-bottom: 1px solid #e2e8f0; /* screen only separator */
+  }
+  .avery-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+    border-bottom: none;
+  }
+
+  /* Each card zone: exactly 5" × 3" */
+  .avery-card {
+    width: 5in;
+    height: 3in;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2in 0.25in;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* Side label (tiny, top-left) */
+  .avery-side-label {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font-size: 6pt;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #aaa;
+  }
+
+  /* Card number (tiny, top-right) */
+  .avery-card-num {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 6pt;
+    color: #aaa;
+    font-weight: 600;
+  }
+
+  .avery-text {
+    font-size: 18pt;
+    font-weight: 600;
+    line-height: 1.35;
+    white-space: pre-wrap;
+    word-break: break-word;
+    text-align: center;
+    width: 100%;
+  }
+  .avery-text.multiline {
+    font-size: 13pt;
+    font-weight: 400;
+    text-align: left;
+  }
+
+  @media print {
+    html, body { width: 8.5in; height: auto; overflow: visible; }
+    .avery-page { border-bottom: none; }
+    .screen-only { display: none !important; }
+  }
+`;
+
+function buildAveryCard(
+    text: string,
+    cardNum: number,
+    isFront: boolean,
+): string {
+    const ml = !isFront && (text.includes("\n") || text.length > 120);
+    const cls = ml ? "avery-text multiline" : "avery-text";
+    const escaped = escapeHtml(text).replace(/\n/g, "<br>");
+    const sideLabel = isFront ? "Front" : "Back";
+    return `<div class="avery-card">
+  <span class="avery-side-label">${sideLabel}</span>
+  <span class="avery-card-num">#${cardNum}</span>
+  <div class="${cls}">${escaped}</div>
+</div>`;
+}
+
+function renderAvery5388(cards: Flashcard[], title: string): string {
+    const BATCH = 3;
+    const pages: string[] = [];
+
+    for (let p = 0; p < Math.ceil(cards.length / BATCH); p++) {
+        const batch = cards.slice(p * BATCH, (p + 1) * BATCH);
+
+        const frontCells = batch
+            .map((c, i) => buildAveryCard(c.front, p * BATCH + i + 1, true))
+            .join("\n");
+
+        const backCells = batch
+            .map((c, i) => buildAveryCard(c.back ?? "", p * BATCH + i + 1, false))
+            .join("\n");
+
+        // Pad pages with fewer than 3 cards — empty spacers keep layout correct
+        const padCount = BATCH - batch.length;
+        const padCells = Array(padCount)
+            .fill(`<div class="avery-card"></div>`)
+            .join("\n");
+
+        pages.push(`<div class="avery-page">${frontCells}${padCells}</div>`);
+        pages.push(`<div class="avery-page">${backCells}${padCells}</div>`);
+    }
+
+    return pages.join("\n");
+}
+
+function openAveryWindow(bodyHtml: string, title: string): void {
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${escapeHtml(title)} — Avery 5388</title>
+  <style>${AVERY_5388_STYLES}</style>
+</head>
+<body>
+<div class="screen-only" style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:flex;gap:10px;align-items:center;">
+  <button onclick="window.print()" style="padding:7px 18px;background:#111;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Print / Save PDF</button>
+  <button onclick="window.close()" style="padding:7px 14px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;cursor:pointer;">Close</button>
+  <span style="color:#64748b;font-size:11px;">Avery 5388 · 3×5" index cards · 3 per page · set printer to <strong>Portrait, no margins</strong></span>
+</div>
+${bodyHtml}
+${FIT_TEXT_SCRIPT.replace(/\.card-text-inner/g, ".avery-text")}
+</body>
+</html>`;
+
+    const win = window.open("", "_blank", "width=900,height=720,scrollbars=yes");
+    if (!win) {
+        const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${title.replace(/\s+/g, "-").toLowerCase()}-avery5388.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return;
+    }
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+}
+
+// ---------------------------------------------------------------------------
 // Helper: derive a title from the data if available
 // ---------------------------------------------------------------------------
 function deriveTitle(data: unknown): string {
@@ -895,6 +1079,11 @@ export const flashcardsPrinter: BlockPrinter = {
             id: "landscape-stacked",
             label: "Landscape cut sheet — all fronts then all backs",
             description: "4 cards per page, landscape. All front pages first, then all back pages — cut all sheets together for a matching deck",
+        },
+        {
+            id: "avery-5388",
+            label: "Avery 5388 — 3×5\" index cards (3 per page)",
+            description: "Prints to Avery 5388 card stock. 3 cards per page, portrait. Front page then back page per set of 3 — load the sheet twice to print both sides",
         },
         {
             id: "cut-cards",
@@ -942,6 +1131,10 @@ export const flashcardsPrinter: BlockPrinter = {
         }
         if (variantId === "landscape-stacked") {
             openLandscapeWindow(renderLandscape(cards, title, "stacked"), title);
+            return;
+        }
+        if (variantId === "avery-5388") {
+            openAveryWindow(renderAvery5388(cards, title), title);
             return;
         }
 
