@@ -87,6 +87,7 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/auth') &&
     !request.nextUrl.pathname.startsWith('/oauth') &&         // OAuth consent handles its own auth flow
     !request.nextUrl.pathname.startsWith('/p/') &&            // Public app/chat routes
+    !request.nextUrl.pathname.startsWith('/ssr/chat') &&     // SSR chat (guest-accessible)
     !request.nextUrl.pathname.startsWith('/demos') &&         // Demo pages
     !request.nextUrl.pathname.startsWith('/canvas/shared') && // Shared canvases
     !request.nextUrl.pathname.startsWith('/canvas/discover') && // Canvas discovery gallery

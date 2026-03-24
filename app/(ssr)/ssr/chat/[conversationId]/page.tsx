@@ -1,6 +1,13 @@
-// Null page stub for conversation routes.
-// The ChatWorkspace reads the conversation ID from the URL and handles loading.
+// Legacy route — redirects /ssr/chat/[id] to /ssr/chat/c/[id]
+// This ensures old bookmarks and links still work.
 
-export default function ConversationPage() {
-    return null;
+import { redirect } from 'next/navigation';
+
+export default async function LegacyConversationPage({
+    params,
+}: {
+    params: Promise<{ conversationId: string }>;
+}) {
+    const { conversationId } = await params;
+    redirect(`/ssr/chat/c/${conversationId}`);
 }

@@ -10,8 +10,11 @@
 //     searchQuery state, renders the SidebarSearchGroup pill + lists
 //   - ChatDesktopHeader: client island for the desktop header strip —
 //     PanelLeft toggle + agent name selector
+//
+// Navigation: Uses Next.js router.push() for proper App Router navigation.
 
 import { useState, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { SidebarActions } from "@/features/public-chat/components/sidebar/SidebarActions";
 import { SidebarAgents } from "@/features/public-chat/components/sidebar/SidebarAgents";
@@ -30,14 +33,6 @@ import {
 // NAVIGATION HELPERS
 // ============================================================================
 
-/** Navigate while preserving the ?agent= URL param. */
-function navigate(path: string) {
-  const agentId = new URLSearchParams(window.location.search).get("agent");
-  const url = agentId ? `${path}?agent=${agentId}` : path;
-  window.history.pushState(null, "", url);
-  window.dispatchEvent(new PopStateEvent("popstate"));
-}
-
 function togglePanel() {
   const cb = document.getElementById(
     "shell-panel-toggle",
@@ -54,16 +49,8 @@ function closeMobilePanel() {
 }
 
 // ============================================================================
-// CHAT PANEL CONTENT
-// Client island that owns searchQuery and renders mobile search input + lists.
-// The outer panel shell (aside, header row div) is server HTML in layout.tsx.
-// ============================================================================
-
-// ============================================================================
 // SIDEBAR SEARCH GROUP
 // Glass pill: [< back] [search input] [+ new chat]
-// Search input is always visible (expanded) — there's enough room in the
-// sidebar width. The input drives searchQuery state for filtering agents/chats.
 // ============================================================================
 
 function SidebarSearchGroup({
@@ -130,6 +117,7 @@ function SidebarSearchGroup({
 }
 
 export function ChatPanelContent() {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const [searchQuery, setSearchQuery] = useState("");
   const selectedAgent = useAppSelector(selectActiveChatAgent);
@@ -137,20 +125,23 @@ export function ChatPanelContent() {
 
   const handleSelectChat = useCallback((id: string) => {
     closeMobilePanel();
-    navigate(`/ssr/chat/${id}`);
-  }, []);
+    const agentId = selectedAgent?.promptId;
+    const url = agentId ? `/ssr/chat/c/${id}?agent=${agentId}` : `/ssr/chat/c/${id}`;
+    router.push(url);
+  }, [router, selectedAgent?.promptId]);
 
   const handleNewChat = useCallback(() => {
-    navigate("/ssr/chat");
-  }, []);
+    router.push("/ssr/chat");
+  }, [router]);
 
   const handleAgentSelect = useCallback(
     (agent: ActiveChatAgent) => {
       closeMobilePanel();
       dispatch(activeChatActions.setSelectedAgent(agent));
-      navigate("/ssr/chat");
+      dispatch(activeChatActions.setActiveSessionId(null));
+      router.push(`/ssr/chat/a/${agent.promptId}`);
     },
-    [dispatch],
+    [dispatch, router],
   );
 
   const handleBack = useCallback(() => {
@@ -166,10 +157,7 @@ export function ChatPanelContent() {
 
   return (
     <>
-      {/* ── Mobile header row ─────────────────────────────────────────────
-          Direct child of <aside class="shell-panel">.
-          Negative margin slides it into the reserved header zone.
-          Layout: [< back] [search] [+ new chat] inside a glass pill group. */}
+      {/* ── Mobile header row ────────────────────────────────────────── */}
       <div
         className="lg:hidden flex items-center flex-shrink-0"
         style={{
@@ -191,10 +179,10 @@ export function ChatPanelContent() {
         />
       </div>
 
-      {/* ── Panel body ─────────────────────────────────────────────────── */}
+      {/* ── Panel body ─────────────────────────────────────────────── */}
       <div className="shell-panel-body">
         <div className="h-full flex flex-col overflow-hidden">
-          {/* Desktop search — no left button (PanelLeft lives in the header strip) */}
+          {/* Desktop search */}
           <div className="hidden lg:block flex-shrink-0">
             <SidebarSearchGroup
               searchQuery={searchQuery}
@@ -232,13 +220,10 @@ export function ChatPanelContent() {
 
 // ============================================================================
 // CHAT DESKTOP HEADER
-// Client island for the desktop panel header strip (lg+).
-// Layout: [PanelLeft toggle] [Agent Name v]
-// Visible whether the panel is open or closed — when closed they float in
-// the header zone; when open they appear as part of the sidebar top.
 // ============================================================================
 
 export function ChatDesktopHeader() {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const selectedAgent = useAppSelector(selectActiveChatAgent);
 
@@ -264,7 +249,7 @@ export function ChatDesktopHeader() {
       </button>
       <div className="ml-auto flex-shrink-0">
         <PlusTapButton
-          onClick={() => navigate("/ssr/chat")}
+          onClick={() => router.push("/ssr/chat")}
           ariaLabel="New chat"
         />
       </div>

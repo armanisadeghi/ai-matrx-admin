@@ -8,10 +8,6 @@ import {adminCategories} from "@/app/(authenticated)/admin/constants/categories"
 import {useRouter} from "next/navigation";
 import ErrorBoundary from "@/app/(authenticated)/admin/components/shared/ErrorBoundary";
 import {ArrowLeftFromLine} from 'lucide-react';
-import {pages} from "@/app/(authenticated)/tests/forms/config";
-
-
-const filteredPages = pages.filter(page => page.path !== 'link-here');
 
 const MODULE_HOME = '/admin';
 const MODULE_NAME = 'Admin Home';
