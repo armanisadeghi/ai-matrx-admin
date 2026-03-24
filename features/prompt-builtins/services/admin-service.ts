@@ -414,9 +414,7 @@ export async function createPromptBuiltin(input: CreatePromptBuiltinInput): Prom
 
 export async function updatePromptBuiltin(input: UpdatePromptBuiltinInput): Promise<PromptBuiltin> {
   const supabase = getClient();
-  const updateData: any = {
-    updated_at: new Date().toISOString(),
-  };
+  const updateData: any = {};
 
   if (input.name !== undefined) updateData.name = input.name;
   if (input.description !== undefined) updateData.description = input.description;
@@ -678,9 +676,7 @@ export async function duplicatePromptShortcut(
 
 export async function updatePromptShortcut(input: UpdatePromptShortcutInput): Promise<PromptShortcut> {
   const supabase = getClient();
-  const updateData: any = {
-    updated_at: new Date().toISOString(),
-  };
+  const updateData: any = {};
 
   if (input.prompt_builtin_id !== undefined) updateData.prompt_builtin_id = input.prompt_builtin_id;
   if (input.category_id !== undefined) updateData.category_id = input.category_id;

@@ -49,7 +49,6 @@ export async function submitInvitationRequestStep1(
             email: data.email.toLowerCase().trim(),
             status: 'pending',
             step_completed: 1,
-            updated_at: new Date().toISOString(),
           })
           .eq('id', existing.id)
           .select('id')
@@ -137,7 +136,6 @@ export async function submitInvitationRequestStep2(
       .update({
         ...data,
         step_completed: 2,
-        updated_at: new Date().toISOString(),
       })
       .eq('id', requestId);
 

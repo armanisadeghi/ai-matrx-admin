@@ -79,7 +79,6 @@ export async function POST(request: Request) {
         .from('prompt_shortcuts')
         .update({ 
           prompt_builtin_id: builtin.id,
-          updated_at: new Date().toISOString()
         })
         .eq('id', shortcut_id);
 

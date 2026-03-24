@@ -106,7 +106,6 @@ export async function POST(request: Request) {
           settings: promptSettings,
           source_prompt_id: prompt_id,
           source_prompt_snapshot_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
           tags: promptTags,
           category: promptCategory,
           model_id: promptModelId,
@@ -164,7 +163,6 @@ export async function POST(request: Request) {
         .from('prompt_shortcuts')
         .update({ 
           prompt_builtin_id: finalBuiltinId,
-          updated_at: new Date().toISOString()
         })
         .eq('id', shortcut_id);
 

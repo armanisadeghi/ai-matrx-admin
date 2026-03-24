@@ -62,7 +62,7 @@ export async function updateCxConversation(
     const supabase = await createClient();
     const { data, error } = await supabase
         .from('cx_conversation')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .update(updates)
         .eq('id', conversationId)
         .select()
         .single();

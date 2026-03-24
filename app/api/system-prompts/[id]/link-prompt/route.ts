@@ -186,8 +186,7 @@ export async function POST(
                 version: oldVersion + 1, // Increment version
                 update_notes: body.update_notes || (wasPlaceholder ? 'Initial prompt linked' : 'Prompt updated'),
                 last_updated_by: user.id,
-                last_updated_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
+                last_updated_at: new Date().toISOString()
             })
             .eq('id', id)
             .select()

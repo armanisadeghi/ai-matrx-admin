@@ -419,8 +419,6 @@ export function TaskProvider({ children }: TaskProviderProps) {
       priority: null,
       assignee_id: null,
       user_id: '', // Will be set by server
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
       authenticated_read: false,
     };
     

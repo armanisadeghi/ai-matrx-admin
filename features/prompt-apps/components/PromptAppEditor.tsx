@@ -221,7 +221,6 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
           rate_limit_per_ip: parseInt(editRateLimitPerIp),
           rate_limit_window_hours: parseInt(editRateLimitWindowHours),
           rate_limit_authenticated: parseInt(editRateLimitAuthenticated),
-          updated_at: new Date().toISOString(),
         })
         .eq("id", app.id);
 

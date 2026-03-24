@@ -16,7 +16,6 @@ export function usePreferenceSync() {
             supabase.from('user_preferences').upsert({
                 user_id: userId,
                 preferences,
-                updated_at: new Date().toISOString(),
             });
         };
     }, []);

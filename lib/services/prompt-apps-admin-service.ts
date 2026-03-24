@@ -486,9 +486,7 @@ export async function fetchAppsAdmin(filters?: {
 
 export async function updateAppAdmin(input: UpdateAppAdminInput): Promise<PromptAppAdminView> {
     const supabase = getClient();
-    const updateData: any = {
-        updated_at: new Date().toISOString()
-    };
+    const updateData: any = {};
 
     if (input.status !== undefined) updateData.status = input.status;
     if (input.is_verified !== undefined) updateData.is_verified = input.is_verified;

@@ -94,7 +94,6 @@ export const completeExecutionThunk = createAsyncThunk<
             .from('ai_runs')
             .update({
               messages: [...instance.messages, assistantMessage],
-              updated_at: new Date().toISOString(), // DB updated_at is set here
             })
             .eq('id', runId);
 

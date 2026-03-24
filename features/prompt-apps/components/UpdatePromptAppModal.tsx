@@ -283,7 +283,6 @@ export function UpdatePromptAppModal({
 
       const updatePayload: Record<string, any> = {
         variable_schema: updatedSchema,
-        updated_at: new Date().toISOString(),
       };
 
       if (markAsDraft && targetApp.status === 'published') {

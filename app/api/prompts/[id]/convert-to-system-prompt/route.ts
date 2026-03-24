@@ -212,8 +212,6 @@ export async function POST(
                 },
                 published_by: user.id,
                 published_at: new Date().toISOString(),
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
             })
             .select()
             .single();

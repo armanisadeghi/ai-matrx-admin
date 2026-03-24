@@ -462,7 +462,7 @@ export const hierarchyService = {
   async updateOrganization(id: string, data: { name?: string; description?: string }): Promise<void> {
     const { error } = await supabase
       .from('organizations')
-      .update({ ...data, updated_at: new Date().toISOString() })
+      .update(data)
       .eq('id', id);
     if (error) throw error;
   },
@@ -470,7 +470,7 @@ export const hierarchyService = {
   async updateWorkspace(id: string, data: { name?: string; description?: string; parent_workspace_id?: string | null }): Promise<void> {
     const { error } = await supabase
       .from('workspaces')
-      .update({ ...data, updated_at: new Date().toISOString() })
+      .update(data)
       .eq('id', id);
     if (error) throw error;
   },
@@ -478,7 +478,7 @@ export const hierarchyService = {
   async updateProject(id: string, data: { name?: string; description?: string; organization_id?: string | null; workspace_id?: string | null }): Promise<void> {
     const { error } = await supabase
       .from('projects')
-      .update({ ...data, updated_at: new Date().toISOString() })
+      .update(data)
       .eq('id', id);
     if (error) throw error;
   },
@@ -486,7 +486,7 @@ export const hierarchyService = {
   async updateTask(id: string, data: { title?: string; description?: string; status?: string; priority?: string; due_date?: string | null; project_id?: string | null }): Promise<void> {
     const { error } = await supabase
       .from('tasks')
-      .update({ ...data, updated_at: new Date().toISOString() })
+      .update(data)
       .eq('id', id);
     if (error) throw error;
   },
@@ -548,7 +548,7 @@ export const hierarchyService = {
   async moveProject(projectId: string, target: { organization_id?: string | null; workspace_id?: string | null }): Promise<void> {
     const { error } = await supabase
       .from('projects')
-      .update({ ...target, updated_at: new Date().toISOString() })
+      .update(target)
       .eq('id', projectId);
     if (error) throw error;
   },
@@ -556,7 +556,7 @@ export const hierarchyService = {
   async moveTask(taskId: string, target: { project_id?: string | null; parent_task_id?: string | null }): Promise<void> {
     const { error } = await supabase
       .from('tasks')
-      .update({ ...target, updated_at: new Date().toISOString() })
+      .update(target)
       .eq('id', taskId);
     if (error) throw error;
   },
@@ -564,7 +564,7 @@ export const hierarchyService = {
   async moveWorkspace(workspaceId: string, target: { organization_id?: string; parent_workspace_id?: string | null }): Promise<void> {
     const { error } = await supabase
       .from('workspaces')
-      .update({ ...target, updated_at: new Date().toISOString() })
+      .update(target)
       .eq('id', workspaceId);
     if (error) throw error;
   },

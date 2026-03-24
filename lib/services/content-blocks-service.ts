@@ -172,8 +172,6 @@ export async function fetchCategoryConfigs() {
         color: sc.color,
         sort_order: sc.sort_order,
         is_active: sc.is_active,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
     })) as CategoryConfigDB[];
 }
 
@@ -206,8 +204,6 @@ export async function fetchSubcategoryConfigs(categoryId?: string) {
         icon_name: sc.icon_name,
         sort_order: sc.sort_order,
         is_active: sc.is_active,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
     })) as SubcategoryConfigDB[];
 }
 

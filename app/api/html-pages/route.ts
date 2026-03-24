@@ -119,7 +119,6 @@ export async function POST(request: NextRequest) {
                         og_image: metaFields.ogImage || null,
                         canonical_url: metaFields.canonicalUrl || null,
                         is_indexable: metaFields.isIndexable !== undefined ? metaFields.isIndexable : false,
-                        updated_at: new Date().toISOString(),
                     })
                     .eq('id', pageId)
                     .eq('user_id', user.id)

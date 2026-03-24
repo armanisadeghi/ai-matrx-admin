@@ -116,7 +116,7 @@ export async function updateProject(
   updates: UpdateProjectOptions
 ): Promise<ProjectResult> {
   try {
-    const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    const updateData: Record<string, unknown> = {};
 
     if (updates.name !== undefined) {
       const validation = validateProjectName(updates.name);

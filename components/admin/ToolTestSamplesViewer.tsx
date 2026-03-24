@@ -593,7 +593,7 @@ export function ToolTestSamplesViewer({ toolName, toolId }: ToolTestSamplesViewe
     const handleUpdate = useCallback(async (id: string, patch: Partial<ToolTestSample>) => {
         const { error } = await supabase
             .from("tool_test_samples")
-            .update({ ...patch, updated_at: new Date().toISOString() })
+            .update(patch)
             .eq("id", id);
 
         if (error) {

@@ -537,7 +537,6 @@ export const savePreferencesToDatabase = createAsyncThunk(
                 .upsert({
                     user_id: user.id,
                     preferences: preferences,
-                    updated_at: new Date().toISOString()
                 });
 
             if (error) {
@@ -578,7 +577,6 @@ export const saveModulePreferencesToDatabase = createAsyncThunk(
                 .upsert({
                     user_id: user.id,
                     preferences: updatedPreferences,
-                    updated_at: new Date().toISOString()
                 });
 
             if (error) {

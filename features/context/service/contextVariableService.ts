@@ -129,7 +129,7 @@ export const contextVariableService = {
   async updateVariable(id: string, updates: Partial<ContextVariableFormData>): Promise<ContextVariable> {
     const { data, error } = await supabase
       .from('context_variables')
-      .update({ ...updates, updated_at: new Date().toISOString() })
+      .update(updates)
       .eq('id', id)
       .select()
       .single();

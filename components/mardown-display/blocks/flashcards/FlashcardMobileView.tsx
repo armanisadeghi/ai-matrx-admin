@@ -153,14 +153,24 @@ const CardSlide: React.FC<CardSlideProps> = ({
 const FilmstripScrubber: React.FC<{
   cards: Card[];
   activeIndex: number;
+  isOpen: boolean;
   onSelect: (i: number) => void;
   onClose: () => void;
-}> = ({ cards, activeIndex, onSelect, onClose }) => {
+}> = ({ cards, activeIndex, isOpen, onSelect, onClose }) => {
   const total = cards.length;
   const viewportRef = useRef<HTMLDivElement>(null);
   // offsetX = how many px the strip has scrolled (card 0 is at center when offsetX=0)
   const [offsetX, setOffsetX] = useState(() => activeIndex * THUMB_STEP);
   const [snapping, setSnapping] = useState(false);
+
+  // Sync to current card whenever the scrubber opens
+  useEffect(() => {
+    if (isOpen) {
+      setSnapping(true);
+      setOffsetX(activeIndex * THUMB_STEP);
+      setTimeout(() => setSnapping(false), 250);
+    }
+  }, [isOpen, activeIndex]);
   const dragStartX = useRef(0);
   const dragStartOffset = useRef(0);
   const velocityRef = useRef(0);
@@ -390,8 +400,14 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
   const cardHandlers = useSwipeable({
     onSwipedLeft:  () => { if (!menuOpen && !scrubOpen) goNext(); },
     onSwipedRight: () => { if (!menuOpen && !scrubOpen) goPrev(); },
-    onSwipedUp:    () => { if (!scrubOpen) { setScrubOpen(false); setMenuOpen(true);  } },
-    onSwipedDown:  () => { if (!menuOpen)  { setMenuOpen(false);  setScrubOpen(true); } },
+    onSwipedUp:    () => {
+      if (scrubOpen)  { setScrubOpen(false); return; }  // close filmstrip
+      if (!menuOpen)  { setMenuOpen(true); }             // open drawer
+    },
+    onSwipedDown:  () => {
+      if (menuOpen)   { setMenuOpen(false); return; }    // close drawer
+      if (!scrubOpen) { setScrubOpen(true); }            // open filmstrip
+    },
     trackMouse: false,
     trackTouch: true,
     delta: 40,
@@ -543,6 +559,7 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
         <FilmstripScrubber
           cards={cards}
           activeIndex={index}
+          isOpen={scrubOpen}
           onSelect={handleScrubSelect}
           onClose={() => setScrubOpen(false)}
         />

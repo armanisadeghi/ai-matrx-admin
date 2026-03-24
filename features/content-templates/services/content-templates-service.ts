@@ -143,9 +143,7 @@ export async function createTemplate(input: CreateContentTemplateInput): Promise
 export async function updateTemplate(input: UpdateContentTemplateInput): Promise<ContentTemplateDB> {
     const supabase = getClient();
     
-    const updateData: any = {
-        updated_at: new Date().toISOString()
-    };
+    const updateData: any = {};
 
     if (input.label !== undefined) updateData.label = input.label;
     if (input.content !== undefined) updateData.content = input.content;

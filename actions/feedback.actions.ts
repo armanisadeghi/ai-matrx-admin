@@ -126,7 +126,6 @@ export async function updateUserOwnFeedback(
             .from('user_feedback')
             .update({
                 ...updates,
-                updated_at: new Date().toISOString(),
             })
             .eq('id', feedbackId)
             .eq('user_id', user.id)
@@ -512,10 +511,7 @@ export async function updateFeedback(
             return { success: false, error: 'User not authenticated' };
         }
 
-        const updateData: Record<string, unknown> = {
-            ...updates,
-            updated_at: new Date().toISOString(),
-        };
+        const updateData: Record<string, unknown> = { ...updates };
 
         // If marking as resolved or closed, set resolved_at and resolved_by
         if (updates.status === 'resolved' || updates.status === 'closed') {
@@ -818,7 +814,6 @@ export async function updateAnnouncement(
             .from('system_announcements')
             .update({
                 ...updates,
-                updated_at: new Date().toISOString(),
             })
             .eq('id', announcementId)
             .select()
