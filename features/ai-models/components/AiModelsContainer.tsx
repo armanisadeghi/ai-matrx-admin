@@ -179,9 +179,9 @@ export default function AiModelsContainer() {
                         />
                     </div>
 
-                    {/* Detail panel — sticky, independently scrollable */}
+                    {/* Detail panel — sticky, fills full height */}
                     {panelOpen && (
-                        <div className="w-1/2 border-l shrink-0 overflow-y-auto">
+                        <div className="w-1/2 border-l shrink-0 flex flex-col overflow-hidden">
                             <AiModelDetailPanel
                                 model={selectedModel}
                                 isNew={isNewModel}

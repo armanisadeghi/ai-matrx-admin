@@ -25,6 +25,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         <html
             lang="en"
             data-theme={theme}
+            data-scroll-behavior="smooth"
             className={cn("dark", inter.variable, montserrat.variable, openSans.variable, roboto.variable)}
             suppressHydrationWarning
         >
