@@ -253,7 +253,7 @@ export default function ChatWelcomeClient({
             router.push(`/ssr/chat/c/new?agent=${agent.promptId}`);
             return true;
         },
-        [activeVariables, variableValues, agent.promptId, modelOverride, modelSettings, router],
+        [activeVariables, variableValues, agent.promptId, modelOverride, modelSettings, agentDefaultSettings, router],
     );
 
     // Handle agent select from picker

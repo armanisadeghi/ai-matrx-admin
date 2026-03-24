@@ -261,18 +261,21 @@ function ConversationViewWithFirstMessage({
         }
     }, [session.sessionId, modelSettings, dispatch]);
 
-    // Send first message after session initializes
+    // Send first message after session initializes.
+    // firstMessage is set asynchronously (sessionStorage read in parent effect),
+    // so we must watch it as a dependency — it's null on first render.
     const sentRef = useRef(false);
     useEffect(() => {
         if (firstMessage && session.sessionId && !sentRef.current) {
             sentRef.current = true;
+            // Small delay ensures Redux session is fully initialized
             const timer = setTimeout(() => {
                 session.send(firstMessage.content, { variables: firstMessage.variables });
                 onFirstMessageSent();
             }, 50);
             return () => clearTimeout(timer);
         }
-    }, [session.sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [firstMessage, session.sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // URL sync: when conversation ID is created, update URL
     const lastSyncedId = useRef<string | null>(conversationId ?? null);
