@@ -1,5 +1,11 @@
 "use client";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import { useSwipeable } from "react-swipeable";
 import {
   X,
@@ -11,11 +17,17 @@ import {
   Shuffle,
   LogOut,
   GripHorizontal,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/styles/themes/utils";
 
 const ANIM_MS = 320;
 const TEXT_FADE_OUT_MS = 120;
+// Filmstrip thumbnail dimensions
+const THUMB_W = 88;
+const THUMB_H = 118;
+const THUMB_GAP = 10;
+const THUMB_STEP = THUMB_W + THUMB_GAP;
 
 interface Card {
   front: string;
@@ -28,7 +40,9 @@ interface FlashcardMobileViewProps {
   onClose: () => void;
 }
 
-// Hint overlay — left 20% = prev, center = flip, right 20% = next
+// ─────────────────────────────────────────────
+// TapZoneHints
+// ─────────────────────────────────────────────
 const TapZoneHints: React.FC<{
   canGoPrev: boolean;
   canGoNext: boolean;
@@ -36,38 +50,24 @@ const TapZoneHints: React.FC<{
   flipColor: string;
 }> = ({ canGoPrev, canGoNext, menuOpen, flipColor }) => (
   <div className="absolute inset-0 flex items-end pointer-events-none select-none">
-    {/* Left tap zone label */}
-    <div
-      className={cn(
-        "w-[20%] flex items-center justify-start pl-2 pb-3 transition-opacity duration-200",
-        canGoPrev ? "text-white/40" : "text-white/15",
-      )}
-    >
+    <div className={cn("w-[20%] flex items-center justify-start pl-2 pb-3", canGoPrev ? "text-white/40" : "text-white/15")}>
       <ChevronLeft className="h-4 w-4" />
       <span className="text-[9px] leading-none">tap</span>
     </div>
-
-    {/* Center flip hint */}
     <div className="flex-1 flex flex-col items-center justify-end pb-2 gap-0.5">
       <div className={cn("text-[10px]", flipColor)}>tap to flip</div>
-      {!menuOpen && (
-        <div className="text-white/20 text-[9px]">↑ swipe up for more</div>
-      )}
+      {!menuOpen && <div className="text-white/20 text-[9px]">↑ up for more · ↓ jump to card</div>}
     </div>
-
-    {/* Right tap zone label */}
-    <div
-      className={cn(
-        "w-[20%] flex items-center justify-end pr-2 pb-3 transition-opacity duration-200",
-        canGoNext ? "text-white/40" : "text-white/15",
-      )}
-    >
+    <div className={cn("w-[20%] flex items-center justify-end pr-2 pb-3", canGoNext ? "text-white/40" : "text-white/15")}>
       <span className="text-[9px] leading-none">tap</span>
       <ChevronRight className="h-4 w-4" />
     </div>
   </div>
 );
 
+// ─────────────────────────────────────────────
+// CardSlide
+// ─────────────────────────────────────────────
 interface CardSlideProps {
   card: Card;
   isFlipped: boolean;
@@ -80,14 +80,8 @@ interface CardSlideProps {
 }
 
 const CardSlide: React.FC<CardSlideProps> = ({
-  card,
-  isFlipped,
-  style,
-  showHints,
-  canGoPrev,
-  canGoNext,
-  textVisible = true,
-  menuOpen = false,
+  card, isFlipped, style, showHints, canGoPrev, canGoNext,
+  textVisible = true, menuOpen = false,
 }) => {
   const isMultiLine = card.back != null && card.back.includes("\n");
 
@@ -100,9 +94,9 @@ const CardSlide: React.FC<CardSlideProps> = ({
       if (l < 500) return "text-base";
       return "text-sm";
     }
-    if (l < 20) return "text-4xl md:text-5xl";
-    if (l < 40) return "text-3xl md:text-4xl";
-    if (l < 80) return "text-2xl md:text-3xl";
+    if (l < 20)  return "text-4xl md:text-5xl";
+    if (l < 40)  return "text-3xl md:text-4xl";
+    if (l < 80)  return "text-2xl md:text-3xl";
     if (l < 140) return "text-xl md:text-2xl";
     if (l < 220) return "text-lg md:text-xl";
     if (l < 320) return "text-base md:text-lg";
@@ -110,72 +104,42 @@ const CardSlide: React.FC<CardSlideProps> = ({
   };
 
   const renderBack = () => {
-    if (card.back === null)
-      return (
-        <span className="text-lg opacity-60 animate-pulse">Loading...</span>
-      );
+    if (card.back === null) return <span className="text-lg opacity-60 animate-pulse">Loading...</span>;
     if (!isMultiLine) return card.back;
     return card.back.split("\n").map((line, i) => (
-      <div key={i} className={line === "" ? "h-2" : undefined}>
-        {line}
-      </div>
+      <div key={i} className={line === "" ? "h-2" : undefined}>{line}</div>
     ));
   };
 
   return (
-    <div
-      className="absolute inset-0"
-      style={{ perspective: "1200px", ...style }}
-    >
+    <div className="absolute inset-0" style={{ perspective: "1200px", ...style }}>
       <div
         className="absolute inset-0 transition-transform duration-500"
-        style={{
-          transformStyle: "preserve-3d",
-          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-        }}
+        style={{ transformStyle: "preserve-3d", transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)" }}
       >
-        {/* Front face */}
-        <div
-          className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 to-indigo-950"
-          style={{ backfaceVisibility: "hidden" }}
-        >
+        {/* Front */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 to-indigo-950" style={{ backfaceVisibility: "hidden" }}>
           <div
-            className={cn(
-              "text-center font-semibold text-white leading-snug w-full px-6",
-              getTextSize(card.front ?? ""),
-            )}
-            style={{
-              opacity: textVisible ? 1 : 0,
-              transition: `opacity ${TEXT_FADE_OUT_MS}ms ease`,
-            }}
+            className={cn("text-center font-semibold text-white leading-snug w-full px-6", getTextSize(card.front ?? ""))}
+            style={{ opacity: textVisible ? 1 : 0, transition: `opacity ${TEXT_FADE_OUT_MS}ms ease` }}
           >
             {card.front}
           </div>
-
           {showHints && <TapZoneHints canGoPrev={canGoPrev} canGoNext={canGoNext} menuOpen={menuOpen} flipColor="text-blue-300/40" />}
         </div>
 
-        {/* Back face */}
-        <div
-          className="absolute inset-0 flex flex-col bg-gradient-to-br from-green-900 to-emerald-950 overflow-hidden"
-          style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
-        >
+        {/* Back */}
+        <div className="absolute inset-0 flex flex-col bg-gradient-to-br from-green-900 to-emerald-950 overflow-hidden" style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
           <div
             className={cn(
               "font-medium text-white overflow-y-auto scrollbar-none w-full px-6 pt-6",
-              isMultiLine
-                ? "text-left leading-snug h-full"
-                : "text-center leading-relaxed m-auto",
+              isMultiLine ? "text-left leading-snug h-full" : "text-center leading-relaxed m-auto",
               getTextSize(card.back ?? "", isMultiLine),
             )}
-            style={{
-              opacity: textVisible ? 1 : 0,
-              transition: `opacity ${TEXT_FADE_OUT_MS}ms ease`,
-            }}
+            style={{ opacity: textVisible ? 1 : 0, transition: `opacity ${TEXT_FADE_OUT_MS}ms ease` }}
           >
             {renderBack()}
           </div>
-
           {showHints && <TapZoneHints canGoPrev={canGoPrev} canGoNext={canGoNext} menuOpen={menuOpen} flipColor="text-green-300/40" />}
         </div>
       </div>
@@ -183,6 +147,193 @@ const CardSlide: React.FC<CardSlideProps> = ({
   );
 };
 
+// ─────────────────────────────────────────────
+// FilmstripScrubber
+// ─────────────────────────────────────────────
+const FilmstripScrubber: React.FC<{
+  cards: Card[];
+  activeIndex: number;
+  onSelect: (i: number) => void;
+  onClose: () => void;
+}> = ({ cards, activeIndex, onSelect, onClose }) => {
+  const total = cards.length;
+  const viewportRef = useRef<HTMLDivElement>(null);
+  // offsetX = how many px the strip has scrolled (card 0 is at center when offsetX=0)
+  const [offsetX, setOffsetX] = useState(() => activeIndex * THUMB_STEP);
+  const [snapping, setSnapping] = useState(false);
+  const dragStartX = useRef(0);
+  const dragStartOffset = useRef(0);
+  const velocityRef = useRef(0);
+  const lastX = useRef(0);
+  const lastTime = useRef(0);
+
+  const clamp = useCallback(
+    (v: number) => Math.max(0, Math.min((total - 1) * THUMB_STEP, v)),
+    [total],
+  );
+
+  // centeredIndex = whichever card slot is closest to center right now
+  const centeredIndex = Math.round(clamp(offsetX) / THUMB_STEP);
+
+  const snapTo = useCallback((targetIndex: number) => {
+    setSnapping(true);
+    setOffsetX(targetIndex * THUMB_STEP);
+    setTimeout(() => setSnapping(false), 250);
+  }, []);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setSnapping(false);
+    const x = e.touches[0].clientX;
+    dragStartX.current = x;
+    dragStartOffset.current = offsetX;
+    lastX.current = x;
+    lastTime.current = Date.now();
+    velocityRef.current = 0;
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    const x = e.touches[0].clientX;
+    const now = Date.now();
+    const dt = Math.max(now - lastTime.current, 1);
+    velocityRef.current = (lastX.current - x) / dt; // px/ms, positive = dragging left
+    lastX.current = x;
+    lastTime.current = now;
+    setOffsetX(clamp(dragStartOffset.current + (dragStartX.current - x)));
+  };
+
+  const onTouchEnd = () => {
+    // project with momentum then snap
+    const projected = clamp(offsetX + velocityRef.current * 120);
+    snapTo(Math.round(projected / THUMB_STEP));
+  };
+
+  return (
+    <div className="flex flex-col items-center pt-safe pt-2 pb-3 bg-zinc-950 border-b border-white/10 select-none">
+      <div className="text-white/60 text-[11px] mb-2 tracking-wide uppercase font-medium">
+        Card {centeredIndex + 1} of {total}
+      </div>
+
+      {/* Filmstrip viewport — overflow hidden, full width */}
+      <div
+        ref={viewportRef}
+        className="relative overflow-hidden w-full"
+        style={{ height: THUMB_H + 16 }}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {/* Highlight ring — always dead center */}
+        <div
+          className="absolute z-10 pointer-events-none rounded-xl border-2 border-blue-400"
+          style={{
+            top: "50%",
+            left: "50%",
+            width: THUMB_W + 6,
+            height: THUMB_H + 6,
+            transform: "translate(-50%, -50%)",
+          }}
+        />
+
+        <div
+          className="absolute flex items-center touch-none"
+          style={{
+            top: "50%",
+            // Card 0 center at viewport center: left = 50% - THUMB_W/2
+            left: `calc(50% - ${THUMB_W / 2}px)`,
+            transform: `translateX(-${offsetX}px) translateY(-50%)`,
+            gap: THUMB_GAP,
+            transition: snapping ? "transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94)" : "none",
+            willChange: "transform",
+          }}
+        >
+          {cards.map((c, i) => {
+            const dist = Math.abs(i - centeredIndex);
+            const scale = dist === 0 ? 1 : dist === 1 ? 0.82 : 0.66;
+            const opacity = dist === 0 ? 1 : dist === 1 ? 0.70 : 0.40;
+            const isCentered = i === centeredIndex;
+            return (
+              <div
+                key={i}
+                style={{
+                  width: THUMB_W,
+                  height: THUMB_H,
+                  flexShrink: 0,
+                  transform: `scale(${scale})`,
+                  opacity,
+                  transition: "transform 0.12s ease, opacity 0.12s ease",
+                  transformOrigin: "center center",
+                }}
+                className={cn(
+                  "rounded-xl overflow-hidden flex flex-col items-center justify-center cursor-pointer border",
+                  isCentered
+                    ? "bg-blue-700 border-blue-500"
+                    : "bg-zinc-700 border-zinc-500",
+                )}
+                onClick={() => {
+                  if (isCentered) onSelect(i);
+                  else snapTo(i);
+                }}
+              >
+                <span className="text-white text-[9px] font-medium text-center px-1.5 leading-tight line-clamp-5">
+                  {c.front.length > 60 ? c.front.slice(0, 58) + "…" : c.front}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Compact action row — keeps total scrubber height tight */}
+      <div className="flex items-center justify-center gap-3 mt-2.5">
+        <button
+          onClick={() => onSelect(centeredIndex)}
+          className="px-5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors"
+        >
+          Go to #{centeredIndex + 1}
+        </button>
+        <button
+          onClick={() => {
+            const random = Math.floor(Math.random() * total);
+            onSelect(random);
+          }}
+          className="px-4 py-1.5 rounded-full bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold transition-colors"
+        >
+          Surprise me
+        </button>
+        <button
+          onClick={onClose}
+          className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white text-xs transition-colors"
+        >
+          cancel
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────
+// ActionButton
+// ─────────────────────────────────────────────
+interface ActionButtonProps {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}
+const ActionButton: React.FC<ActionButtonProps> = ({ icon, label, onClick, disabled }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className="flex flex-col items-center justify-center gap-1 py-4 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-25 transition-colors"
+  >
+    <span className="text-white/70">{icon}</span>
+    <span className="text-[10px] text-white/50">{label}</span>
+  </button>
+);
+
+// ─────────────────────────────────────────────
+// Main component
+// ─────────────────────────────────────────────
 const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
   cards,
   initialIndex = 0,
@@ -190,12 +341,10 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
 }) => {
   const [index, setIndex] = useState(initialIndex);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [transition, setTransition] = useState<{
-    outgoingIndex: number;
-    dir: "left" | "right";
-  } | null>(null);
+  const [transition, setTransition] = useState<{ outgoingIndex: number; dir: "left" | "right" } | null>(null);
   const [textVisible, setTextVisible] = useState(true);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);   // swipe-up action drawer
+  const [scrubOpen, setScrubOpen] = useState(false); // swipe-down filmstrip
   const animTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const textTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -221,23 +370,10 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
     [isAnimating, index],
   );
 
-  const goNext = useCallback(() => {
-    if (index < total - 1) goTo(index + 1, "left");
-  }, [index, total, goTo]);
-
-  const goPrev = useCallback(() => {
-    if (index > 0) goTo(index - 1, "right");
-  }, [index, goTo]);
-
-  const goFirst = useCallback(() => {
-    if (index !== 0) goTo(0, "right");
-    setMenuOpen(false);
-  }, [index, goTo]);
-
-  const goLast = useCallback(() => {
-    if (index !== total - 1) goTo(total - 1, "left");
-    setMenuOpen(false);
-  }, [index, total, goTo]);
+  const goNext  = useCallback(() => { if (index < total - 1) goTo(index + 1, "left");  }, [index, total, goTo]);
+  const goPrev  = useCallback(() => { if (index > 0)         goTo(index - 1, "right"); }, [index, goTo]);
+  const goFirst = useCallback(() => { if (index !== 0)        goTo(0, "right");         setMenuOpen(false); }, [index, goTo]);
+  const goLast  = useCallback(() => { if (index !== total - 1) goTo(total - 1, "left"); setMenuOpen(false); }, [index, total, goTo]);
 
   const shuffle = useCallback(() => {
     const next = Math.floor(Math.random() * total);
@@ -245,17 +381,17 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
     setMenuOpen(false);
   }, [index, total, goTo]);
 
-  // Card swipe handlers (only active when menu is closed)
+  const handleScrubSelect = useCallback((i: number) => {
+    setScrubOpen(false);
+    if (i !== index) goTo(i, i > index ? "left" : "right");
+  }, [index, goTo]);
+
+  // Swipe handlers on the card area
   const cardHandlers = useSwipeable({
-    onSwipedLeft: () => {
-      if (!menuOpen) goNext();
-    },
-    onSwipedRight: () => {
-      if (!menuOpen) goPrev();
-    },
-    onSwipedUp: () => {
-      if (!menuOpen) setMenuOpen(true);
-    },
+    onSwipedLeft:  () => { if (!menuOpen && !scrubOpen) goNext(); },
+    onSwipedRight: () => { if (!menuOpen && !scrubOpen) goPrev(); },
+    onSwipedUp:    () => { if (!scrubOpen) { setScrubOpen(false); setMenuOpen(true);  } },
+    onSwipedDown:  () => { if (!menuOpen)  { setMenuOpen(false);  setScrubOpen(true); } },
     trackMouse: false,
     trackTouch: true,
     delta: 40,
@@ -290,9 +426,10 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        if (menuOpen) setMenuOpen(false);
-        else onClose();
-      } else if (!menuOpen) {
+        if (menuOpen)  { setMenuOpen(false);  return; }
+        if (scrubOpen) { setScrubOpen(false); return; }
+        onClose();
+      } else if (!menuOpen && !scrubOpen) {
         if (e.key === "ArrowRight") goNext();
         else if (e.key === "ArrowLeft") goPrev();
         else if (e.key === " " || e.key === "Enter") setIsFlipped((f) => !f);
@@ -300,7 +437,7 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [goNext, goPrev, onClose, menuOpen]);
+  }, [goNext, goPrev, onClose, menuOpen, scrubOpen]);
 
   useEffect(() => {
     return () => {
@@ -309,83 +446,61 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
     };
   }, []);
 
-  const outgoingExit =
-    transition?.dir === "left"
-      ? {
-          transform: "translateX(-100%)",
-          opacity: 0,
-          transition: `transform ${ANIM_MS}ms cubic-bezier(0.4,0,0.2,1), opacity ${ANIM_MS}ms ease`,
-        }
-      : {
-          transform: "translateX(100%)",
-          opacity: 0,
-          transition: `transform ${ANIM_MS}ms cubic-bezier(0.4,0,0.2,1), opacity ${ANIM_MS}ms ease`,
-        };
+  const outgoingExit = transition?.dir === "left"
+    ? { transform: "translateX(-100%)", opacity: 0, transition: `transform ${ANIM_MS}ms cubic-bezier(0.4,0,0.2,1), opacity ${ANIM_MS}ms ease` }
+    : { transform: "translateX(100%)",  opacity: 0, transition: `transform ${ANIM_MS}ms cubic-bezier(0.4,0,0.2,1), opacity ${ANIM_MS}ms ease` };
 
-  const incomingEnter =
-    transition?.dir === "left"
-      ? {
-          animation: `mobile-card-enter-right ${ANIM_MS}ms cubic-bezier(0.4,0,0.2,1) both`,
-        }
-      : {
-          animation: `mobile-card-enter-left ${ANIM_MS}ms cubic-bezier(0.4,0,0.2,1) both`,
-        };
+  const incomingEnter = transition?.dir === "left"
+    ? { animation: `mobile-card-enter-right ${ANIM_MS}ms cubic-bezier(0.4,0,0.2,1) both` }
+    : { animation: `mobile-card-enter-left  ${ANIM_MS}ms cubic-bezier(0.4,0,0.2,1) both` };
 
-  // Card slides up 25% when menu open
+  // Card slides up for action drawer, down for filmstrip
   const cardAreaStyle: React.CSSProperties = {
-    transform: menuOpen ? "translateY(-28%)" : "translateY(0)",
+    transform: menuOpen ? "translateY(-28%)" : scrubOpen ? "translateY(28%)" : "translateY(0)",
     transition: "transform 0.35s cubic-bezier(0.4,0,0.2,1)",
   };
+
+  const anyPanelOpen = menuOpen || scrubOpen;
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-black overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 pt-3 pb-1 select-none shrink-0">
-        <button
-          onClick={goPrev}
-          disabled={index === 0}
-          className="p-1.5 rounded-full text-white/60 hover:text-white disabled:opacity-20 transition-opacity"
-        >
+        <button onClick={goPrev} disabled={index === 0} className="p-1.5 rounded-full text-white/60 hover:text-white disabled:opacity-20 transition-opacity">
           <ChevronLeft className="h-5 w-5" />
         </button>
 
         <div className="flex flex-col items-center gap-0.5">
-          <span className="text-white/70 text-xs font-medium">
-            {index + 1} / {total}
-          </span>
+          <span className="text-white/70 text-xs font-medium">{index + 1} / {total}</span>
           <div className="flex gap-1">
             {Array.from({ length: Math.min(total, 11) }).map((_, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "rounded-full transition-all duration-200",
-                  i === index % 11
-                    ? "w-4 h-1.5 bg-white"
-                    : "w-1.5 h-1.5 bg-white/25",
-                )}
-              />
+              <div key={i} className={cn("rounded-full transition-all duration-200", i === index % 11 ? "w-4 h-1.5 bg-white" : "w-1.5 h-1.5 bg-white/25")} />
             ))}
-            {total > 11 && (
-              <div className="w-1.5 h-1.5 rounded-full bg-white/25" />
-            )}
+            {total > 11 && <div className="w-1.5 h-1.5 rounded-full bg-white/25" />}
           </div>
         </div>
 
-        <button
-          onClick={onClose}
-          className="p-1.5 rounded-full text-white/60 hover:text-white transition-opacity"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => { setMenuOpen(false); setScrubOpen((s) => !s); }}
+            className="p-1.5 rounded-full text-white/40 hover:text-white transition-opacity"
+            title="Jump to card"
+          >
+            <Layers className="h-4 w-4" />
+          </button>
+          <button onClick={onClose} className="p-1.5 rounded-full text-white/60 hover:text-white transition-opacity">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
-      {/* Card area — slides up when menu open */}
+      {/* Card area */}
       <div
         {...cardHandlers}
         className="flex-1 relative overflow-visible select-none"
         style={cardAreaStyle}
         onClick={(e) => {
-          if (menuOpen) { setMenuOpen(false); return; }
+          if (anyPanelOpen) { setMenuOpen(false); setScrubOpen(false); return; }
           if (isAnimating) return;
           const { clientX, currentTarget } = e;
           const { left, width } = currentTarget.getBoundingClientRect();
@@ -402,7 +517,7 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
             style={outgoingExit}
             canGoPrev={transition.outgoingIndex > 0}
             canGoNext={transition.outgoingIndex < total - 1}
-            menuOpen={menuOpen}
+            menuOpen={anyPanelOpen}
           />
         )}
         <CardSlide
@@ -413,11 +528,29 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
           canGoPrev={index > 0}
           canGoNext={index < total - 1}
           textVisible={textVisible}
-          menuOpen={menuOpen}
+          menuOpen={anyPanelOpen}
         />
       </div>
 
-      {/* Bottom action drawer */}
+      {/* ── Filmstrip scrubber (swipe down) — slides in from top ── */}
+      <div
+        className="absolute top-0 left-0 right-0 z-10 flex flex-col"
+        style={{
+          transform: scrubOpen ? "translateY(0)" : "translateY(-100%)",
+          transition: "transform 0.35s cubic-bezier(0.4,0,0.2,1)",
+        }}
+      >
+        <FilmstripScrubber
+          cards={cards}
+          activeIndex={index}
+          onSelect={handleScrubSelect}
+          onClose={() => setScrubOpen(false)}
+        />
+        {/* Scrim below the scrubber — tap to close */}
+        <div className="h-8 cursor-pointer" onClick={() => setScrubOpen(false)} />
+      </div>
+
+      {/* ── Action drawer (swipe up) ── */}
       <div
         {...drawerHandlers}
         className="absolute bottom-0 left-0 right-0 z-10"
@@ -426,14 +559,9 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
           transition: "transform 0.35s cubic-bezier(0.4,0,0.2,1)",
         }}
       >
-        {/* Scrim tap-to-close strip above drawer */}
-        <div
-          className="h-8 cursor-pointer"
-          onClick={() => setMenuOpen(false)}
-        />
+        <div className="h-8 cursor-pointer" onClick={() => setMenuOpen(false)} />
 
         <div className="bg-zinc-900 border-t border-white/10 rounded-t-3xl pb-safe">
-          {/* Drag handle */}
           <div className="flex justify-center pt-2 pb-1">
             <GripHorizontal className="h-5 w-5 text-white/40" />
           </div>
@@ -446,65 +574,32 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
               <span>{total} total</span>
             </div>
             <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-blue-500 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
+              <div className="h-full bg-blue-500 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
             </div>
           </div>
 
           {/* Action grid */}
           <div className="grid grid-cols-3 gap-px bg-white/5 border-t border-white/5">
-            <ActionButton
-              icon={<SkipBack className="h-5 w-5" />}
-              label="First Card"
-              onClick={goFirst}
-              disabled={index === 0}
-            />
-            <ActionButton
-              icon={<RotateCcw className="h-5 w-5" />}
-              label="Flip Back"
-              onClick={() => {
-                setIsFlipped(false);
-                setMenuOpen(false);
-              }}
-              disabled={!isFlipped}
-            />
-            <ActionButton
-              icon={<SkipForward className="h-5 w-5" />}
-              label="Last Card"
-              onClick={goLast}
-              disabled={index === total - 1}
-            />
-            <ActionButton
-              icon={<ChevronLeft className="h-5 w-5" />}
-              label="Previous"
-              onClick={() => {
-                goPrev();
-                setMenuOpen(false);
-              }}
-              disabled={index === 0}
-            />
-            <ActionButton
-              icon={<Shuffle className="h-5 w-5" />}
-              label="Random"
-              onClick={shuffle}
-            />
-            <ActionButton
-              icon={<ChevronRight className="h-5 w-5" />}
-              label="Next"
-              onClick={() => {
-                goNext();
-                setMenuOpen(false);
-              }}
-              disabled={index === total - 1}
-            />
+            <ActionButton icon={<SkipBack className="h-5 w-5" />}     label="First Card" onClick={goFirst}  disabled={index === 0} />
+            <ActionButton icon={<RotateCcw className="h-5 w-5" />}    label="Flip Back"  onClick={() => { setIsFlipped(false); setMenuOpen(false); }} disabled={!isFlipped} />
+            <ActionButton icon={<SkipForward className="h-5 w-5" />}  label="Last Card"  onClick={goLast}   disabled={index === total - 1} />
+            <ActionButton icon={<ChevronLeft className="h-5 w-5" />}  label="Previous"   onClick={() => { goPrev(); setMenuOpen(false); }} disabled={index === 0} />
+            <ActionButton icon={<Shuffle className="h-5 w-5" />}      label="Random"     onClick={shuffle} />
+            <ActionButton icon={<ChevronRight className="h-5 w-5" />} label="Next"       onClick={() => { goNext(); setMenuOpen(false); }} disabled={index === total - 1} />
           </div>
 
-          {/* Exit row */}
+          {/* Jump to card shortcut */}
+          <button
+            onClick={() => { setMenuOpen(false); setScrubOpen(true); }}
+            className="w-full flex items-center justify-center gap-2 py-3 text-blue-400/70 hover:text-blue-400 transition-colors border-t border-white/5"
+          >
+            <Layers className="h-4 w-4" />
+            <span className="text-sm">Jump to Card</span>
+          </button>
+
           <button
             onClick={onClose}
-            className="w-full flex items-center justify-center gap-2 py-4 text-red-400/70 hover:text-red-400 transition-colors border-t border-white/5"
+            className="w-full flex items-center justify-center gap-2 py-3 text-red-400/70 hover:text-red-400 transition-colors border-t border-white/5"
           >
             <LogOut className="h-4 w-4" />
             <span className="text-sm">Exit Flash Mode</span>
@@ -514,28 +609,5 @@ const FlashcardMobileView: React.FC<FlashcardMobileViewProps> = ({
     </div>
   );
 };
-
-interface ActionButtonProps {
-  icon: React.ReactNode;
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-}
-
-const ActionButton: React.FC<ActionButtonProps> = ({
-  icon,
-  label,
-  onClick,
-  disabled,
-}) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className="flex flex-col items-center justify-center gap-1 py-4 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-25 transition-colors"
-  >
-    <span className="text-white/70">{icon}</span>
-    <span className="text-[10px] text-white/50">{label}</span>
-  </button>
-);
 
 export default FlashcardMobileView;

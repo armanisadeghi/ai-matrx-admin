@@ -40,10 +40,11 @@ function PrintOptionsContent({
     };
 
     return (
-        <div className="space-y-4 py-2">
+        <div className="flex flex-col min-h-0 flex-1">
+            {/* Scrollable variant list */}
             {printer.variants.length > 0 && (
-                <div className="space-y-2">
-                    <p className="text-sm font-medium text-foreground">Print format</p>
+                <div className="flex-1 overflow-y-auto min-h-0 py-2">
+                    <p className="text-sm font-medium text-foreground mb-2 px-1">Print format</p>
                     <div className="space-y-1.5">
                         {printer.variants.map((variant) => (
                             <button
@@ -67,7 +68,8 @@ function PrintOptionsContent({
                 </div>
             )}
 
-            <div className="flex flex-col gap-2 pt-1">
+            {/* Action buttons — always pinned at the bottom */}
+            <div className="flex flex-col gap-2 pt-3 pb-1 border-t border-border mt-2 shrink-0">
                 <Button
                     onClick={() => handlePrint(selectedVariant || undefined)}
                     disabled={isPrinting}
@@ -105,8 +107,8 @@ export function PrintOptionsDialog({ printer, data, open, onOpenChange }: PrintO
     if (isMobile) {
         return (
             <Drawer open={open} onOpenChange={onOpenChange}>
-                <DrawerContent>
-                    <DrawerHeader className="flex items-center justify-between pb-2">
+                <DrawerContent className="flex flex-col max-h-[85dvh]">
+                    <DrawerHeader className="flex items-center justify-between pb-2 shrink-0">
                         <DrawerTitle className="flex items-center gap-2">
                             <Printer className="w-4 h-4" />
                             {printer.label}
@@ -115,10 +117,9 @@ export function PrintOptionsDialog({ printer, data, open, onOpenChange }: PrintO
                             <X className="w-4 h-4" />
                         </Button>
                     </DrawerHeader>
-                    <div className="px-4 pb-2">
+                    <div className="flex flex-col min-h-0 flex-1 overflow-hidden px-4 pb-4">
                         <PrintOptionsContent printer={printer} data={data} onClose={handleClose} />
                     </div>
-                    <DrawerFooter />
                 </DrawerContent>
             </Drawer>
         );
@@ -126,15 +127,16 @@ export function PrintOptionsDialog({ printer, data, open, onOpenChange }: PrintO
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-sm">
-                <DialogHeader>
+            <DialogContent className="sm:max-w-sm flex flex-col max-h-[85dvh]">
+                <DialogHeader className="shrink-0">
                     <DialogTitle className="flex items-center gap-2">
                         <Printer className="w-4 h-4" />
                         {printer.label}
                     </DialogTitle>
                 </DialogHeader>
-                <PrintOptionsContent printer={printer} data={data} onClose={handleClose} />
-                <DialogFooter />
+                <div className="flex flex-col min-h-0 flex-1 overflow-hidden">
+                    <PrintOptionsContent printer={printer} data={data} onClose={handleClose} />
+                </div>
             </DialogContent>
         </Dialog>
     );

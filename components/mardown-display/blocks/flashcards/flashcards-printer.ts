@@ -557,11 +557,10 @@ const LANDSCAPE_STYLES = `
 
   html, body {
     width: 11in;
-    height: 8.5in;
-    overflow: hidden;
     background: #fff;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     color: #000;
+    /* Screen: scroll to see all pages. Print: locked to one page height per .page. */
   }
 
   /* The page wrapper takes the full physical page */
@@ -570,13 +569,27 @@ const LANDSCAPE_STYLES = `
     height: 8.5in;
     position: relative;
     page-break-after: always;
+    break-after: page;
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: 0;
     padding: 0.5in;
+    /* Thin separator visible on screen between pages */
+    border-bottom: 2px solid #e2e8f0;
   }
-  .page:last-child { page-break-after: auto; }
+  .page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+    border-bottom: none;
+  }
+
+  @media print {
+    /* Do NOT constrain html/body height — that clips pages 2+.
+       Page sizing is handled by @page + .page { height: 8.5in } + break-after: page. */
+    html, body { width: 11in; height: auto; overflow: visible; }
+    .page { border-bottom: none; }
+  }
 
   /* Each quadrant cell — full 5.5" × 4.25" including its half-gutter */
   .quad {
@@ -681,10 +694,8 @@ const LANDSCAPE_STYLES = `
     font-weight: 400;
   }
 
-  /* Print-only: hide the browser action bar, show cut labels */
-  .screen-only { }
+  /* Print-only: hide the browser action bar */
   @media print {
-    html, body { width: 11in; height: 8.5in; overflow: hidden; }
     .screen-only { display: none !important; }
   }
 `;
