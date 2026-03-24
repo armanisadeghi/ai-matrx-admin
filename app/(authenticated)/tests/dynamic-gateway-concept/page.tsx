@@ -1,14 +1,12 @@
-// page.tsx
+import { join } from "path";
+import { RouteIndexPage } from "@/components/ssr/RouteIndexPage";
 
-import { NextNavCardFull } from "@/components/matrx/navigation";
-import { filteredPages } from './config';
-
-
-export default function Page() {
-
-    return (
-        <div className="container mx-auto py-6">
-            <NextNavCardFull items={filteredPages} />
-        </div>
-    );
+export default async function DynamicGatewayConceptPage() {
+  return (
+    <RouteIndexPage
+      directory={join(process.cwd(), "app", "(authenticated)", "tests", "dynamic-gateway-concept")}
+      basePath="/tests/dynamic-gateway-concept"
+      title="Dynamic Gateway Concept"
+    />
+  );
 }

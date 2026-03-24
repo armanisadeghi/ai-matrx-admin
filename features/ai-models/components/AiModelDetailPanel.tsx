@@ -1,16 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { X } from 'lucide-react';
+import { X, CheckCircle2 } from 'lucide-react';
 import AiModelForm from './AiModelForm';
 import JsonFieldEditor from './JsonFieldEditor';
 import ControlsEditor from './ControlsEditor';
 import ModelUsageAudit from './ModelUsageAudit';
 import { aiModelService } from '../service';
-import type { AiModelRow, AiModelFormData, AiProvider, ControlsSchema } from '../types';
+import ModelPricingEditor from '@/features/ai-models/components/ModelPricingEditor';
+import type { AiModelRow, AiModelFormData, AiProvider, ControlsSchema, PricingTier } from '../types';
 
 interface AiModelDetailPanelProps {
     model: AiModelRow | null;
@@ -35,6 +36,7 @@ function rowToFormData(row: AiModelRow): AiModelFormData {
         is_deprecated: row.is_deprecated ?? false,
         is_primary: row.is_primary ?? false,
         is_premium: row.is_premium ?? false,
+        pricing: row.pricing ?? [],
     };
 }
 
@@ -50,6 +52,7 @@ const EMPTY_FORM: AiModelFormData = {
     is_deprecated: false,
     is_primary: false,
     is_premium: false,
+    pricing: [],
 };
 
 export default function AiModelDetailPanel({
@@ -64,17 +67,30 @@ export default function AiModelDetailPanel({
     const [formData, setFormData] = useState<AiModelFormData>(
         isNew ? EMPTY_FORM : model ? rowToFormData(model) : EMPTY_FORM
     );
+    // Baseline is what was last saved/loaded — used to compute dirty state
+    const [baseline, setBaseline] = useState<AiModelFormData>(
+        isNew ? EMPTY_FORM : model ? rowToFormData(model) : EMPTY_FORM
+    );
     const [saving, setSaving] = useState(false);
+    const [savedFlash, setSavedFlash] = useState(false);
+    const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [activeTab, setActiveTab] = useState('details');
 
+    // Key-stable dirty check — JSON.stringify is order-sensitive, so compare field-by-field
+    const isDirty = (Object.keys({ ...formData, ...baseline }) as Array<keyof AiModelFormData>).some(
+        (k) => JSON.stringify(formData[k]) !== JSON.stringify(baseline[k])
+    );
+
     useEffect(() => {
-        if (isNew) {
-            setFormData(EMPTY_FORM);
-        } else if (model) {
-            setFormData(rowToFormData(model));
-        }
+        const base = isNew ? EMPTY_FORM : model ? rowToFormData(model) : EMPTY_FORM;
+        setFormData(base);
+        setBaseline(base);
+        setSavedFlash(false);
         setActiveTab('details');
     }, [model?.id, isNew]);
+
+    // Clean up flash timer on unmount
+    useEffect(() => () => { if (savedTimerRef.current) clearTimeout(savedTimerRef.current); }, []);
 
     const displayName = isNew
         ? 'New Model'
@@ -95,6 +111,7 @@ export default function AiModelDetailPanel({
                 is_deprecated: formData.is_deprecated,
                 is_primary: formData.is_primary,
                 is_premium: formData.is_premium,
+                pricing: formData.pricing.length > 0 ? formData.pricing : null,
                 endpoints: model?.endpoints ?? null,
                 capabilities: model?.capabilities ?? null,
                 controls: model?.controls ?? null,
@@ -108,6 +125,13 @@ export default function AiModelDetailPanel({
             } else {
                 return;
             }
+            // Update baseline so dirty clears, show brief "Saved" flash
+            const newBase = rowToFormData(saved);
+            setBaseline(newBase);
+            setFormData(newBase);
+            setSavedFlash(true);
+            if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+            savedTimerRef.current = setTimeout(() => setSavedFlash(false), 2500);
             onSaved(saved);
         } catch (err) {
             console.error('Save failed', err);
@@ -159,6 +183,17 @@ export default function AiModelDetailPanel({
                             Primary
                         </Badge>
                     )}
+                    {/* Dirty indicator */}
+                    {isDirty && !saving && (
+                        <span className="w-2 h-2 rounded-full bg-orange-400 shrink-0" title="Unsaved changes" />
+                    )}
+                    {/* Saved flash */}
+                    {savedFlash && !isDirty && (
+                        <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 shrink-0">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Saved
+                        </span>
+                    )}
                 </div>
                 <Button
                     variant="ghost"
@@ -177,6 +212,7 @@ export default function AiModelDetailPanel({
                         providers={providers}
                         isNew
                         saving={saving}
+                        isDirty={isDirty}
                         onChange={setFormData}
                         onSave={handleSave}
                         onCancel={onClose}
@@ -195,6 +231,9 @@ export default function AiModelDetailPanel({
                                 className="h-9 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-xs px-3"
                             >
                                 Details
+                                {isDirty && (
+                                    <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-orange-400 inline-block" />
+                                )}
                             </TabsTrigger>
                             <TabsTrigger
                                 value="json"
@@ -211,6 +250,20 @@ export default function AiModelDetailPanel({
                                     <Badge variant="outline" className="ml-1.5 text-xs h-4 px-1">
                                         {Object.keys(model.controls as object).length}
                                     </Badge>
+                                )}
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="pricing"
+                                className="h-9 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-xs px-3"
+                            >
+                                Pricing
+                                {formData.pricing.length > 0 && (
+                                    <Badge variant="outline" className="ml-1.5 text-xs h-4 px-1">
+                                        {formData.pricing.length}
+                                    </Badge>
+                                )}
+                                {isDirty && activeTab === 'pricing' && (
+                                    <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-orange-400 inline-block" />
                                 )}
                             </TabsTrigger>
                             <TabsTrigger
@@ -231,6 +284,7 @@ export default function AiModelDetailPanel({
                             providers={providers}
                             isNew={false}
                             saving={saving}
+                            isDirty={isDirty}
                             onChange={setFormData}
                             onSave={handleSave}
                             onCancel={onClose}
@@ -258,6 +312,26 @@ export default function AiModelDetailPanel({
                         <ControlsEditor
                             controls={model?.controls as ControlsSchema ?? null}
                             onSave={handleControlsSave}
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="pricing" className="flex-1 m-0 overflow-auto p-3">
+                        <ModelPricingEditor
+                            tiers={formData.pricing}
+                            onChange={(tiers: PricingTier[]) => setFormData({ ...formData, pricing: tiers })}
+                            onSave={async (tiers: PricingTier[]) => {
+                                if (!model) return;
+                                const updated = await aiModelService.update(model.id, {
+                                    pricing: tiers.length > 0 ? tiers : null,
+                                });
+                                const newBase = rowToFormData(updated);
+                                setBaseline(newBase);
+                                setFormData(newBase);
+                                setSavedFlash(true);
+                                if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+                                savedTimerRef.current = setTimeout(() => setSavedFlash(false), 2500);
+                                onSaved(updated);
+                            }}
                         />
                     </TabsContent>
 

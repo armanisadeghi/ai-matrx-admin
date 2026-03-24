@@ -4,10 +4,14 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import AiModelTable from './AiModelTable';
 import AiModelTabBar from './AiModelTabBar';
 import AiModelDetailPanel from './AiModelDetailPanel';
+import DeprecatedModelsAudit from './DeprecatedModelsAudit';
 import { useTabUrlState } from '../hooks/useTabUrlState';
 import { aiModelService } from '../service';
 import type { AiModelRow, AiProvider } from '../types';
 import { applyFiltersForCount } from '@/features/ai-models/utils/filterUtils';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { AlertTriangle } from 'lucide-react';
 
 export default function AiModelsContainer() {
     const [models, setModels] = useState<AiModelRow[]>([]);
@@ -16,6 +20,7 @@ export default function AiModelsContainer() {
     const [selectedModel, setSelectedModel] = useState<AiModelRow | null>(null);
     const [isNewModel, setIsNewModel] = useState(false);
     const [panelOpen, setPanelOpen] = useState(false);
+    const [auditOpen, setAuditOpen] = useState(false);
 
     const { tabIds, activeTabId, tabStates, activeTab, setActiveTab, openTab, closeTab, renameTab, updateTabState } =
         useTabUrlState();
@@ -48,6 +53,11 @@ export default function AiModelsContainer() {
         }
         return counts;
     }, [models, tabStates]);
+
+    const deprecatedCount = useMemo(
+        () => models.filter((m) => m.is_deprecated).length,
+        [models],
+    );
 
     const openModel = (model: AiModelRow) => {
         setSelectedModel(model);
@@ -104,52 +114,87 @@ export default function AiModelsContainer() {
 
     return (
         <div className="flex flex-col h-full min-h-0">
-            {/* Tab bar */}
-            <AiModelTabBar
-                tabs={tabStates}
-                activeTabId={activeTabId}
-                counts={tabCounts}
-                onSelectTab={setActiveTab}
-                onCloseTab={closeTab}
-                onRenameTab={renameTab}
-                onAddTab={() => openTab()}
-            />
-
-            {/* Main content: table + optional detail panel */}
-            <div className="flex flex-1 min-h-0 overflow-hidden">
-                {/* Table panel */}
-                <div className={`${panelOpen ? 'w-1/2' : 'w-full'} min-w-0 flex flex-col transition-all duration-200 overflow-hidden`}>
-                    <AiModelTable
-                        models={models}
-                        providers={providers}
-                        isLoading={isLoading}
-                        selectedId={selectedModel?.id ?? null}
-                        tabState={activeTab}
-                        onUpdateTabState={(patch) => updateTabState(activeTabId, patch)}
-                        onSelect={openModel}
-                        onEdit={openModel}
-                        onDelete={(model) => handleDeleted(model.id)}
-                        onDuplicate={handleDuplicate}
-                        onCreate={openNew}
-                        onRefresh={loadData}
+            {/* Tab bar + audit button */}
+            <div className="flex items-center shrink-0 bg-card">
+                <div className="flex-1 min-w-0">
+                    <AiModelTabBar
+                        tabs={tabStates}
+                        activeTabId={activeTabId}
+                        counts={tabCounts}
+                        onSelectTab={setActiveTab}
+                        onCloseTab={closeTab}
+                        onRenameTab={renameTab}
+                        onAddTab={() => openTab()}
                     />
                 </div>
-
-                {/* Detail panel — sticky, independently scrollable */}
-                {panelOpen && (
-                    <div className="w-1/2 border-l shrink-0 overflow-y-auto">
-                        <AiModelDetailPanel
-                            model={selectedModel}
-                            isNew={isNewModel}
-                            providers={providers}
-                            allModels={models}
-                            onClose={closePanel}
-                            onSaved={handleSaved}
-                            onDeleted={handleDeleted}
-                        />
+                {deprecatedCount > 0 && (
+                    <div className="shrink-0 px-2 border-l">
+                        <Button
+                            variant={auditOpen ? 'secondary' : 'ghost'}
+                            size="sm"
+                            className="h-7 px-2 text-xs gap-1.5"
+                            onClick={() => setAuditOpen((v) => !v)}
+                            title="View and fix deprecated model references"
+                        >
+                            <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                            Deprecated Audit
+                            <Badge
+                                variant="outline"
+                                className="h-4 px-1 text-[10px] bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300"
+                            >
+                                {deprecatedCount}
+                            </Badge>
+                        </Button>
                     </div>
                 )}
             </div>
+
+            {/* Deprecated audit panel (full-width, replaces table when open) */}
+            {auditOpen ? (
+                <div className="flex-1 min-h-0 overflow-hidden">
+                    <DeprecatedModelsAudit
+                        allModels={models}
+                        onClose={() => setAuditOpen(false)}
+                        onModelsChanged={loadData}
+                    />
+                </div>
+            ) : (
+                /* Main content: table + optional detail panel */
+                <div className="flex flex-1 min-h-0 overflow-hidden">
+                    {/* Table panel */}
+                    <div className={`${panelOpen ? 'w-1/2' : 'w-full'} min-w-0 flex flex-col transition-all duration-200 overflow-hidden`}>
+                        <AiModelTable
+                            models={models}
+                            providers={providers}
+                            isLoading={isLoading}
+                            selectedId={selectedModel?.id ?? null}
+                            tabState={activeTab}
+                            onUpdateTabState={(patch) => updateTabState(activeTabId, patch)}
+                            onSelect={openModel}
+                            onEdit={openModel}
+                            onDelete={(model) => handleDeleted(model.id)}
+                            onDuplicate={handleDuplicate}
+                            onCreate={openNew}
+                            onRefresh={loadData}
+                        />
+                    </div>
+
+                    {/* Detail panel — sticky, independently scrollable */}
+                    {panelOpen && (
+                        <div className="w-1/2 border-l shrink-0 overflow-y-auto">
+                            <AiModelDetailPanel
+                                model={selectedModel}
+                                isNew={isNewModel}
+                                providers={providers}
+                                allModels={models}
+                                onClose={closePanel}
+                                onSaved={handleSaved}
+                                onDeleted={handleDeleted}
+                            />
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

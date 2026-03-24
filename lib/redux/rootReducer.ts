@@ -109,9 +109,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     const hasEntities = entityNames.length > 0;
 
     if (hasEntities) {
-        console.log("[WARNING REDUX STARTED WITH LARGE INITIAL STATE] --- WARNING... ENTITIES MUST BE LAZY LOADED");
-    } else {
-        console.warn("[Redux] Booting with empty entity shell — entities will be hydrated on-demand");
+        console.warn("[WARNING REDUX STARTED WITH LARGE INITIAL STATE] --- WARNING... ENTITIES MUST BE LAZY LOADED");
     }
 
     initializeEntitySlices(initialState.globalCache.schema);

@@ -1,481 +1,529 @@
 import {
-    IconAccessible,
-    IconMicrophone,
-    IconAdjustmentsBolt,
-    IconAlertOctagon,
-    IconApi,
-    IconBox,
-    IconBrandCloudflare,
-    IconBug,
-    IconCalendar,
-    IconChartBar,
-    IconChartLine,
-    IconClipboard,
-    IconCloud,
-    IconCloudShare,
-    IconCode,
-    IconDashboard,
-    IconDatabase,
-    IconDownload,
-    IconFile,
-    IconFishHook,
-    IconFlag,
-    IconFolder,
-    IconGitBranch,
-    IconHistory,
-    IconImageInPicture,
-    IconLock,
-    IconLogs,
-    IconMagnet,
-    IconMaximize,
-    IconMinimize,
-    IconPencil,
-    IconRefresh,
-    IconRestore,
-    IconRobot,
-    IconServer,
-    IconSettings,
-    IconShield,
-    IconShieldLock,
-    IconSquareToggle,
-    IconTestPipe,
-    IconUpload,
-    IconUsers,
+  IconAccessible,
+  IconMicrophone,
+  IconAdjustmentsBolt,
+  IconAlertOctagon,
+  IconApi,
+  IconBox,
+  IconBrandCloudflare,
+  IconBug,
+  IconCalendar,
+  IconChartBar,
+  IconChartLine,
+  IconClipboard,
+  IconCloud,
+  IconCloudShare,
+  IconCode,
+  IconDashboard,
+  IconDatabase,
+  IconDownload,
+  IconFile,
+  IconFishHook,
+  IconFlag,
+  IconFolder,
+  IconGitBranch,
+  IconHistory,
+  IconImageInPicture,
+  IconLock,
+  IconLogs,
+  IconMagnet,
+  IconMaximize,
+  IconMinimize,
+  IconPencil,
+  IconRefresh,
+  IconRestore,
+  IconRobot,
+  IconServer,
+  IconSettings,
+  IconShield,
+  IconShieldLock,
+  IconSquareToggle,
+  IconTestPipe,
+  IconUpload,
+  IconUsers,
 } from "@tabler/icons-react";
 import React from "react";
-import { Container, Database, DatabaseBackup, DatabaseZap, MessageSquare, Megaphone, Layout, Brain, Beaker, Search, BarChart3, Send, AlertCircle, DollarSign } from "lucide-react";
+import {
+  Container,
+  Database,
+  DatabaseBackup,
+  DatabaseZap,
+  MessageSquare,
+  Megaphone,
+  Layout,
+  Brain,
+  Beaker,
+  Search,
+  BarChart3,
+  Send,
+  AlertCircle,
+  AlertTriangle,
+  DollarSign,
+} from "lucide-react";
 
 export const adminCategories = [
-    {
-        name: "CX Conversations",
-        icon: <MessageSquare className="w-6 h-6" />,
-        iconColor: "text-cyan-600",
-        features: [
-            {
-                title: "CX Dashboard",
-                description: "Overview with KPIs, cost trends, model usage, and aggregate metrics for the CX conversation system.",
-                icon: <BarChart3 />,
-                link: "/administration/cx-dashboard",
-                isNew: true,
-            },
-            {
-                title: "Conversations",
-                description: "Browse all conversations with filtering, search, message drill-down, and sub-agent chain tracking.",
-                icon: <MessageSquare />,
-                link: "/administration/cx-dashboard/conversations",
-                isNew: true,
-            },
-            {
-                title: "User Requests",
-                description: "Track every user request with token usage, cost, iterations, tool calls, and performance metrics.",
-                icon: <Send />,
-                link: "/administration/cx-dashboard/requests",
-                isNew: true,
-            },
-            {
-                title: "Usage & Cost Analytics",
-                description: "Cost analytics by model, provider, and day with charts and detailed breakdowns.",
-                icon: <DollarSign />,
-                link: "/administration/cx-dashboard/usage",
-                isNew: true,
-            },
-            {
-                title: "Errors & Issues",
-                description: "Track pending requests, max_tokens hits, tool call errors, and system failures.",
-                icon: <AlertCircle />,
-                link: "/administration/cx-dashboard/errors",
-                isNew: true,
-            },
-        ],
-    },
-    {
-        name: "Experimental",
-        icon: <Beaker className="w-6 h-6" />,
-        iconColor: "text-fuchsia-600",
-        features: [
-            {
-                title: "Experimental Routes",
-                description: "Access all experimental, demo, and test routes organized by feature area for easy testing and development",
-                icon: <Beaker />,
-                link: "/administration/experimental-routes",
-                isNew: true,
-            },
-        ],
-    },
-    {
-        name: "Sandbox & DevOps",
-        icon: <Container className="w-6 h-6" />,
-        iconColor: "text-orange-600",
-        features: [
-            {
-                title: "Sandbox Management",
-                description: "Monitor all sandbox instances, manage containers, and access running sandboxes via SSH",
-                icon: <IconServer />,
-                link: "/administration/sandbox",
-                isNew: true,
-            },
-        ],
-    },
-    {
-        name: "Research System",
-        icon: <Search className="w-6 h-6" />,
-        iconColor: "text-emerald-600",
-        features: [
-            {
-                title: "Research Admin",
-                description:
-                    "Manage research templates, agent wiring, system constants, and monitor active research projects",
-                icon: <Search />,
-                link: "/administration/research-system",
-                isNew: true,
-            },
-        ],
-    },
-    {
-        name: "Internal AI",
-        icon: <Brain className="w-6 h-6" />,
-        iconColor: "text-violet-600",
-        features: [
-            {
-                title: "AI Models",
-                description:
-                    "Manage the AI model registry — edit parameters, JSON controls, capabilities, endpoints, and deprecation. Audit and replace model references across prompts and builtins.",
-                icon: <Brain />,
-                link: "/administration/ai-models",
-                isNew: true,
-            },
-            {
-                title: "Prompt Shortcuts",
-                description:
-                    "Manage AI prompt shortcuts with keyboard bindings, scope mappings, and prompt connections for context menus, buttons, and cards",
-                icon: <IconRobot />,
-                link: "/administration/prompt-builtins",
-                isNew: true,
-            },
-            {
-                title: "Shortcut Categories",
-                description:
-                    "Manage prompt shortcut categories with placement types, hierarchy, icons, and colors for organizing AI actions",
-                icon: <IconAdjustmentsBolt />,
-                link: "/administration/shortcut-categories",
-                isNew: true,
-            },
-        ],
-    },
-    {
-        name: "Podcasts",
-        icon: <IconMicrophone className="w-6 h-6" />,
-        iconColor: "text-sky-600",
-        features: [
-            {
-                title: "Podcast Manager",
-                description: "Manage podcast shows and episodes — create, edit, upload assets, and publish audio content with custom metadata and video backgrounds.",
-                icon: <IconMicrophone />,
-                link: "/administration/podcasts/shows",
-                isNew: true,
-            },
-        ],
-    },
-    {
-        name: "Prompt Apps",
-        icon: <IconRobot className="w-6 h-6" />,
-        iconColor: "text-red-600",
-        features: [
-            {
-                title: "Apps Manager",
-                description: "Manage prompt app categories, view errors, monitor analytics, moderate apps, and manage rate limits.",
-                icon: <IconRobot />,
-                link: "/administration/prompt-apps",
-                isNew: true,
-            },
-        ],
-    },
-    {
-        name: "Content & Configuration",
-        icon: <IconPencil className="w-6 h-6" />,
-        iconColor: "text-purple-600",
-        features: [
-            {
-                title: "Content Blocks",
-                description: "Manage content blocks, templates, and context menu items used throughout the application",
-                icon: <IconClipboard />,
-                link: "/administration/content-blocks",
-            },
-            {
-                title: "Content Templates",
-                description: "Manage message templates for prompts including system, user, assistant, and tool messages",
-                icon: <MessageSquare />,
-                link: "/administration/content-templates",
-            },
-            {
-                title: "Markdown Content Tester",
-                description:
-                    "Test and debug MarkdownStream rendering with live split-screen preview. Perfect for testing diagrams, quizzes, tables, and other content formats.",
-                icon: <IconCode />,
-                link: "/administration/markdown-tester",
-            },
+  {
+    name: "CX Conversations",
+    icon: <MessageSquare className="w-6 h-6" />,
+    iconColor: "text-cyan-600",
+    features: [
+      {
+        title: "CX Dashboard",
+        description:
+          "Overview with KPIs, cost trends, model usage, and aggregate metrics for the CX conversation system.",
+        icon: <BarChart3 />,
+        link: "/administration/cx-dashboard",
+        isNew: true,
+      },
+      {
+        title: "Conversations",
+        description:
+          "Browse all conversations with filtering, search, message drill-down, and sub-agent chain tracking.",
+        icon: <MessageSquare />,
+        link: "/administration/cx-dashboard/conversations",
+        isNew: true,
+      },
+      {
+        title: "User Requests",
+        description:
+          "Track every user request with token usage, cost, iterations, tool calls, and performance metrics.",
+        icon: <Send />,
+        link: "/administration/cx-dashboard/requests",
+        isNew: true,
+      },
+      {
+        title: "Usage & Cost Analytics",
+        description:
+          "Cost analytics by model, provider, and day with charts and detailed breakdowns.",
+        icon: <DollarSign />,
+        link: "/administration/cx-dashboard/usage",
+        isNew: true,
+      },
+      {
+        title: "Errors & Issues",
+        description:
+          "Track pending requests, max_tokens hits, tool call errors, and system failures.",
+        icon: <AlertCircle />,
+        link: "/administration/cx-dashboard/errors",
+        isNew: true,
+      },
+    ],
+  },
+  {
+    name: "Experimental",
+    icon: <Beaker className="w-6 h-6" />,
+    iconColor: "text-fuchsia-600",
+    features: [
+      {
+        title: "Experimental Routes",
+        description:
+          "Access all experimental, demo, and test routes organized by feature area for easy testing and development",
+        icon: <Beaker />,
+        link: "/administration/experimental-routes",
+        isNew: true,
+      },
+    ],
+  },
+  {
+    name: "Sandbox & DevOps",
+    icon: <Container className="w-6 h-6" />,
+    iconColor: "text-orange-600",
+    features: [
+      {
+        title: "Sandbox Management",
+        description:
+          "Monitor all sandbox instances, manage containers, and access running sandboxes via SSH",
+        icon: <IconServer />,
+        link: "/administration/sandbox",
+        isNew: true,
+      },
+    ],
+  },
+  {
+    name: "Research System",
+    icon: <Search className="w-6 h-6" />,
+    iconColor: "text-emerald-600",
+    features: [
+      {
+        title: "Research Admin",
+        description:
+          "Manage research templates, agent wiring, system constants, and monitor active research projects",
+        icon: <Search />,
+        link: "/administration/research-system",
+        isNew: true,
+      },
+    ],
+  },
+  {
+    name: "Internal AI",
+    icon: <Brain className="w-6 h-6" />,
+    iconColor: "text-violet-600",
+    features: [
+      {
+        title: "AI Models",
+        description:
+          "Manage the AI model registry — edit parameters, JSON controls, capabilities, endpoints, and deprecation. Audit and replace model references across prompts and builtins.",
+        icon: <Brain />,
+        link: "/administration/ai-models",
+        isNew: true,
+      },
+      {
+        title: "Deprecated Models Audit",
+        description:
+          "Find all deprecated models with active references across prompts and builtins. Replace them individually with full settings review, or bulk-replace all at once.",
+        icon: <AlertTriangle />,
+        link: "/administration/ai-models/deprecated-audit",
+        isNew: true,
+      },
+      {
+        title: "Prompt Shortcuts",
+        description:
+          "Manage AI prompt shortcuts with keyboard bindings, scope mappings, and prompt connections for context menus, buttons, and cards",
+        icon: <IconRobot />,
+        link: "/administration/prompt-builtins",
+        isNew: true,
+      },
+      {
+        title: "Shortcut Categories",
+        description:
+          "Manage prompt shortcut categories with placement types, hierarchy, icons, and colors for organizing AI actions",
+        icon: <IconAdjustmentsBolt />,
+        link: "/administration/shortcut-categories",
+        isNew: true,
+      },
+    ],
+  },
+  {
+    name: "Podcasts",
+    icon: <IconMicrophone className="w-6 h-6" />,
+    iconColor: "text-sky-600",
+    features: [
+      {
+        title: "Podcast Manager",
+        description:
+          "Manage podcast shows and episodes — create, edit, upload assets, and publish audio content with custom metadata and video backgrounds.",
+        icon: <IconMicrophone />,
+        link: "/administration/podcasts/shows",
+        isNew: true,
+      },
+    ],
+  },
+  {
+    name: "Prompt Apps",
+    icon: <IconRobot className="w-6 h-6" />,
+    iconColor: "text-red-600",
+    features: [
+      {
+        title: "Apps Manager",
+        description:
+          "Manage prompt app categories, view errors, monitor analytics, moderate apps, and manage rate limits.",
+        icon: <IconRobot />,
+        link: "/administration/prompt-apps",
+        isNew: true,
+      },
+    ],
+  },
+  {
+    name: "Content & Configuration",
+    icon: <IconPencil className="w-6 h-6" />,
+    iconColor: "text-purple-600",
+    features: [
+      {
+        title: "Content Blocks",
+        description:
+          "Manage content blocks, templates, and context menu items used throughout the application",
+        icon: <IconClipboard />,
+        link: "/administration/content-blocks",
+      },
+      {
+        title: "Content Templates",
+        description:
+          "Manage message templates for prompts including system, user, assistant, and tool messages",
+        icon: <MessageSquare />,
+        link: "/administration/content-templates",
+      },
+      {
+        title: "Markdown Content Tester",
+        description:
+          "Test and debug MarkdownStream rendering with live split-screen preview. Perfect for testing diagrams, quizzes, tables, and other content formats.",
+        icon: <IconCode />,
+        link: "/administration/markdown-tester",
+      },
+    ],
+  },
+  {
+    name: "MCP Tools",
+    icon: <IconTestPipe className="w-6 h-6" />,
+    iconColor: "text-pink-600",
+    features: [
+      {
+        title: "MCP Tools",
+        description: "Manage MCP tools",
+        icon: <IconTestPipe />,
+        link: "/administration/mcp-tools",
+        isNew: true,
+      },
+    ],
+  },
+  {
+    name: "Server Cache",
+    icon: <IconServer className="w-6 h-6" />,
+    iconColor: "text-green-600",
+    features: [
+      {
+        title: "Server Cache",
+        description:
+          "Refresh and manage server-side caches including AI models and other cached data",
+        icon: <IconRefresh />,
+        link: "/administration/server-cache",
+      },
+    ],
+  },
 
-        ],
-    },
-    {
-        name: "MCP Tools",
-        icon: <IconTestPipe className="w-6 h-6" />,
-        iconColor: "text-pink-600",
-        features: [
-            {
-                title: "MCP Tools",
-                description: "Manage MCP tools",
-                icon: <IconTestPipe />,
-                link: "/administration/mcp-tools",
-                isNew: true,
-            },
-        ],
-    },
-    {
-        name: "Server Cache",
-        icon: <IconServer className="w-6 h-6" />,
-        iconColor: "text-green-600",
-        features: [
-            {
-                title: "Server Cache",
-                description: "Refresh and manage server-side caches including AI models and other cached data",
-                icon: <IconRefresh />,
-                link: "/administration/server-cache",
-            },
-        ],
-    },
+  {
+    name: "User Feedback & Announcements",
+    icon: <MessageSquare className="w-6 h-6" />,
+    iconColor: "text-orange-600",
+    features: [
+      {
+        title: "Feedback Management",
+        description:
+          "View and manage user feedback, bug reports, and feature requests. Create and manage system announcements.",
+        icon: <MessageSquare />,
+        link: "/administration/feedback",
+        isNew: true,
+      },
+      {
+        title: "Invitation Requests",
+        description:
+          "Review and manage access requests. Approve or reject applicants and send invitation codes via email.",
+        icon: <IconUsers />,
+        link: "/administration/invitation-requests",
+        isNew: true,
+      },
+      {
+        title: "Email Users",
+        description:
+          "Send emails to users directly from the admin portal using custom or template-based messages.",
+        icon: <Send />,
+        link: "/administration/email",
+      },
+    ],
+  },
 
-    {
-        name: "User Feedback & Announcements",
-        icon: <MessageSquare className="w-6 h-6" />,
-        iconColor: "text-orange-600",
-        features: [
-            {
-                title: "Feedback Management",
-                description: "View and manage user feedback, bug reports, and feature requests. Create and manage system announcements.",
-                icon: <MessageSquare />,
-                link: "/administration/feedback",
-                isNew: true,
-            },
-            {
-                title: "Invitation Requests",
-                description: "Review and manage access requests. Approve or reject applicants and send invitation codes via email.",
-                icon: <IconUsers />,
-                link: "/administration/invitation-requests",
-                isNew: true,
-            },
-            {
-                title: "Email Users",
-                description: "Send emails to users directly from the admin portal using custom or template-based messages.",
-                icon: <Send />,
-                link: "/administration/email",
-            },
-        ],
-    },
-
-    {
-        name: "Component Demos",
-        icon: <Layout className="w-6 h-6" />,
-        iconColor: "text-teal-600",
-        features: [
-            {
-                title: "Official Components",
-                description: "Browse and test all official UI components with live demos, code examples, and documentation.",
-                icon: <Layout />,
-                link: "/administration/official-components",
-                isNew: true,
-            },
-        ],
-    },
-    {
-        name: "Files",
-        icon: <IconFolder className="w-6 h-6" />,
-        iconColor: "text-amber-600",
-        features: [
-            {
-                title: "System Files",
-                description:
-                    "Upload and manage public files for app-wide use including voice samples, documentation, images, and sample files. Easily copy URLs for use in code.",
-                icon: <IconUpload />,
-                link: "/administration/system-files",
-                isNew: true,
-            },
-            {
-                title: "Access Local Files",
-                description: "Directly access and browse files stored on the local filesystem, enabling quick file management.",
-                icon: <IconFolder />,
-                link: "/administration/file-explorer",
-            },
-            {
-                title: "Local Storage Admin",
-                description: "Inspect, edit, and manage browser localStorage and cookies with import/export support.",
-                icon: <IconDatabase />,
-                link: "/administration/local-storage",
-            },
-        ],
-    },
-    {
-        name: "Database",
-        icon: <Database className="w-6 h-6" />,
-        iconColor: "text-blue-600",
-        features: [
-            {
-                title: "Database Admin Dashboard",
-                description: "See functions, security policies, and more",
-                icon: <DatabaseBackup />,
-                link: "/administration/database-admin",
-            },
-            {
-                title: "SQL Query Executor",
-                description: "Execute SQL queries directly against the database",
-                icon: <DatabaseZap />,
-                link: "/administration/database",
-            },
-            {
-                title: "SQL Functions",
-                description: "Browse, search, and manage SQL functions",
-                icon: <IconCode />,
-                link: "/administration/database/sql-functions",
-            },
-        ],
-    },
-    {
-        name: "Schema",
-        icon: <IconDatabase className="w-6 h-6" />,
-        iconColor: "text-cyan-600",
-        features: [
-            {
-                title: "Schema Visualizer",
-                description: "Visualize the full database schema with interactive diagrams",
-                icon: <IconFlag />,
-                link: "/administration/schema-visualizer",
-            },
-            {
-                title: "Enhanced Schema Visualizer",
-                description: "Advanced schema visualization with enhanced features and filtering",
-                icon: <IconAdjustmentsBolt />,
-                link: "/administration/schema-visualizer-enhanced",
-            },
-        ],
-    },
-    {
-        name: "TypeScript",
-        icon: <IconCode className="w-6 h-6" />,
-        iconColor: "text-indigo-600",
-        features: [
-            {
-                title: "TypeScript Error Analyzer",
-                description: "View, filter, and analyze TypeScript compilation errors across the project",
-                icon: <IconCode />,
-                link: "/administration/typescript-errors",
-            },
-        ],
-    },
-    {
-        name: "Developer Tools",
-        icon: <IconCode className="w-6 h-6" />,
-        iconColor: "text-slate-600",
-        features: [
-            {
-                title: "Official Components",
-                description: "Browse and test all official UI components with live demos, code examples, and documentation.",
-                icon: <Layout />,
-                link: "/administration/official-components",
-                isNew: true,
-            },
-            {
-                title: "Schema Manager",
-                description: "Manage and interact with the database schema, run queries, and inspect type solutions.",
-                icon: <IconDatabase />,
-                link: "/administration/schema-manager",
-            },
-            {
-                title: "AI Tasks",
-                description: "Monitor AI task runs, view statuses, response text, and track task execution over time.",
-                icon: <IconRobot />,
-                link: "/administration/ai-tasks",
-            },
-            {
-                title: "Text Cleaner",
-                description: "Clean, transform, and process text with configurable pattern-based utilities.",
-                icon: <IconClipboard />,
-                link: "/administration/utils/text-cleaner",
-            },
-        ],
-    },
-    // {
-    //     name: "*** DevOps & Deployment",
-    //     icon: <IconGitBranch className="w-6 h-6" />,
-    //     features: [],
-    // },
-    // {
-    //     name: "*** Quality & Testing",
-    //     icon: <IconTestPipe className="w-6 h-6" />,
-    //     features: [],
-    // },
-    // {
-    //     name: "*** System Health",
-    //     icon: <IconChartLine className="w-6 h-6" />,
-    //     features: [],
-    // },
-    // {
-    //     name: "*** Database & Data",
-    //     icon: <IconDatabase className="w-6 h-6" />,
-    //     features: [],
-    // },
-    // {
-    //     name: "*** Feature Management",
-    //     icon: <IconFlag className="w-6 h-6" />,
-    //     features: [],
-    // },
-    // {
-    //     name: "*** Security & Access",
-    //     icon: <IconLock className="w-6 h-6" />,
-    //     features: [],
-    // },
-    // {
-    //     name: "*** Content & Config",
-    //     icon: <IconPencil className="w-6 h-6" />,
-    //     features: [],
-    // },
-    // {
-    //     name: "*** Automation & Tasks",
-    //     icon: <IconRobot className="w-6 h-6" />,
-    //     features: [],
-    // },
-    // {
-    //     name: "*** Environment-Specific Storage Management",
-    //     icon: <IconCloud className="w-6 h-6" />,
-    //     features: [],
-    // },
-    // {
-    //     name: "*** File Versioning & History Management",
-    //     icon: <IconHistory className="w-6 h-6" />,
-    //     features: [],
-    // },
-    // {
-    //     name: "*** Asset Optimization & CDN Management",
-    //     icon: <IconMaximize className="w-6 h-6" />,
-    //     features: [],
-    // },
-    // {
-    //     name: "*** Storage Quota & Usage Monitoring",
-    //     icon: <IconDatabase className="w-6 h-6" />,
-    //     features: [],
-    // },
-    // {
-    //     name: "*** Advanced File Permissions & Access Control",
-    //     icon: <IconShield className="w-6 h-6" />,
-    //     features: [],
-    // },
-    // {
-    //     name: "*** File Backup & Restore",
-    //     icon: <CiFloppyDisk className="w-6 h-6" />,
-    //     features: [],
-    // },
-    // {
-    //     name: "*** Developer Tools & Integrations",
-    //     icon: <IconCode className="w-6 h-6" />,
-    //     features: [],
-    // },
+  {
+    name: "Component Demos",
+    icon: <Layout className="w-6 h-6" />,
+    iconColor: "text-teal-600",
+    features: [
+      {
+        title: "Official Components",
+        description:
+          "Browse and test all official UI components with live demos, code examples, and documentation.",
+        icon: <Layout />,
+        link: "/administration/official-components",
+        isNew: true,
+      },
+    ],
+  },
+  {
+    name: "Files",
+    icon: <IconFolder className="w-6 h-6" />,
+    iconColor: "text-amber-600",
+    features: [
+      {
+        title: "System Files",
+        description:
+          "Upload and manage public files for app-wide use including voice samples, documentation, images, and sample files. Easily copy URLs for use in code.",
+        icon: <IconUpload />,
+        link: "/administration/system-files",
+        isNew: true,
+      },
+      {
+        title: "Access Local Files",
+        description:
+          "Directly access and browse files stored on the local filesystem, enabling quick file management.",
+        icon: <IconFolder />,
+        link: "/administration/file-explorer",
+      },
+      {
+        title: "Local Storage Admin",
+        description:
+          "Inspect, edit, and manage browser localStorage and cookies with import/export support.",
+        icon: <IconDatabase />,
+        link: "/administration/local-storage",
+      },
+    ],
+  },
+  {
+    name: "Database",
+    icon: <Database className="w-6 h-6" />,
+    iconColor: "text-blue-600",
+    features: [
+      {
+        title: "Database Admin Dashboard",
+        description: "See functions, security policies, and more",
+        icon: <DatabaseBackup />,
+        link: "/administration/database-admin",
+      },
+      {
+        title: "SQL Query Executor",
+        description: "Execute SQL queries directly against the database",
+        icon: <DatabaseZap />,
+        link: "/administration/database",
+      },
+      {
+        title: "SQL Functions",
+        description: "Browse, search, and manage SQL functions",
+        icon: <IconCode />,
+        link: "/administration/database/sql-functions",
+      },
+    ],
+  },
+  {
+    name: "Schema",
+    icon: <IconDatabase className="w-6 h-6" />,
+    iconColor: "text-cyan-600",
+    features: [
+      {
+        title: "Schema Visualizer",
+        description:
+          "Visualize the full database schema with interactive diagrams",
+        icon: <IconFlag />,
+        link: "/administration/schema-visualizer",
+      },
+      {
+        title: "Enhanced Schema Visualizer",
+        description:
+          "Advanced schema visualization with enhanced features and filtering",
+        icon: <IconAdjustmentsBolt />,
+        link: "/administration/schema-visualizer-enhanced",
+      },
+    ],
+  },
+  {
+    name: "TypeScript",
+    icon: <IconCode className="w-6 h-6" />,
+    iconColor: "text-indigo-600",
+    features: [
+      {
+        title: "TypeScript Error Analyzer",
+        description:
+          "View, filter, and analyze TypeScript compilation errors across the project",
+        icon: <IconCode />,
+        link: "/administration/typescript-errors",
+      },
+    ],
+  },
+  {
+    name: "Developer Tools",
+    icon: <IconCode className="w-6 h-6" />,
+    iconColor: "text-slate-600",
+    features: [
+      {
+        title: "Official Components",
+        description:
+          "Browse and test all official UI components with live demos, code examples, and documentation.",
+        icon: <Layout />,
+        link: "/administration/official-components",
+        isNew: true,
+      },
+      {
+        title: "Schema Manager",
+        description:
+          "Manage and interact with the database schema, run queries, and inspect type solutions.",
+        icon: <IconDatabase />,
+        link: "/administration/schema-manager",
+      },
+      {
+        title: "AI Tasks",
+        description:
+          "Monitor AI task runs, view statuses, response text, and track task execution over time.",
+        icon: <IconRobot />,
+        link: "/administration/ai-tasks",
+      },
+      {
+        title: "Text Cleaner",
+        description:
+          "Clean, transform, and process text with configurable pattern-based utilities.",
+        icon: <IconClipboard />,
+        link: "/administration/utils/text-cleaner",
+      },
+    ],
+  },
+  // {
+  //     name: "*** DevOps & Deployment",
+  //     icon: <IconGitBranch className="w-6 h-6" />,
+  //     features: [],
+  // },
+  // {
+  //     name: "*** Quality & Testing",
+  //     icon: <IconTestPipe className="w-6 h-6" />,
+  //     features: [],
+  // },
+  // {
+  //     name: "*** System Health",
+  //     icon: <IconChartLine className="w-6 h-6" />,
+  //     features: [],
+  // },
+  // {
+  //     name: "*** Database & Data",
+  //     icon: <IconDatabase className="w-6 h-6" />,
+  //     features: [],
+  // },
+  // {
+  //     name: "*** Feature Management",
+  //     icon: <IconFlag className="w-6 h-6" />,
+  //     features: [],
+  // },
+  // {
+  //     name: "*** Security & Access",
+  //     icon: <IconLock className="w-6 h-6" />,
+  //     features: [],
+  // },
+  // {
+  //     name: "*** Content & Config",
+  //     icon: <IconPencil className="w-6 h-6" />,
+  //     features: [],
+  // },
+  // {
+  //     name: "*** Automation & Tasks",
+  //     icon: <IconRobot className="w-6 h-6" />,
+  //     features: [],
+  // },
+  // {
+  //     name: "*** Environment-Specific Storage Management",
+  //     icon: <IconCloud className="w-6 h-6" />,
+  //     features: [],
+  // },
+  // {
+  //     name: "*** File Versioning & History Management",
+  //     icon: <IconHistory className="w-6 h-6" />,
+  //     features: [],
+  // },
+  // {
+  //     name: "*** Asset Optimization & CDN Management",
+  //     icon: <IconMaximize className="w-6 h-6" />,
+  //     features: [],
+  // },
+  // {
+  //     name: "*** Storage Quota & Usage Monitoring",
+  //     icon: <IconDatabase className="w-6 h-6" />,
+  //     features: [],
+  // },
+  // {
+  //     name: "*** Advanced File Permissions & Access Control",
+  //     icon: <IconShield className="w-6 h-6" />,
+  //     features: [],
+  // },
+  // {
+  //     name: "*** File Backup & Restore",
+  //     icon: <CiFloppyDisk className="w-6 h-6" />,
+  //     features: [],
+  // },
+  // {
+  //     name: "*** Developer Tools & Integrations",
+  //     icon: <IconCode className="w-6 h-6" />,
+  //     features: [],
+  // },
 ];

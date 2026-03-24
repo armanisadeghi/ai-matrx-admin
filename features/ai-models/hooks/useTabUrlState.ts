@@ -9,6 +9,11 @@ export type AiModelFilters = {
     is_primary?: boolean;
     is_premium?: boolean;
     api_class?: string;
+    model_class?: string;
+    context_window_min?: number;
+    context_window_max?: number;
+    max_tokens_min?: number;
+    max_tokens_max?: number;
 };
 
 export type TabState = {
@@ -53,6 +58,11 @@ function serializeTabState(params: URLSearchParams, tab: TabState) {
     if (tab.filters.is_primary !== undefined) params.set(`${p}.is_primary`, String(tab.filters.is_primary)); else params.delete(`${p}.is_primary`);
     if (tab.filters.is_premium !== undefined) params.set(`${p}.is_premium`, String(tab.filters.is_premium)); else params.delete(`${p}.is_premium`);
     if (tab.filters.api_class) params.set(`${p}.api_class`, tab.filters.api_class); else params.delete(`${p}.api_class`);
+    if (tab.filters.model_class) params.set(`${p}.model_class`, tab.filters.model_class); else params.delete(`${p}.model_class`);
+    if (tab.filters.context_window_min !== undefined) params.set(`${p}.cw_min`, String(tab.filters.context_window_min)); else params.delete(`${p}.cw_min`);
+    if (tab.filters.context_window_max !== undefined) params.set(`${p}.cw_max`, String(tab.filters.context_window_max)); else params.delete(`${p}.cw_max`);
+    if (tab.filters.max_tokens_min !== undefined) params.set(`${p}.mt_min`, String(tab.filters.max_tokens_min)); else params.delete(`${p}.mt_min`);
+    if (tab.filters.max_tokens_max !== undefined) params.set(`${p}.mt_max`, String(tab.filters.max_tokens_max)); else params.delete(`${p}.mt_max`);
 }
 
 function deserializeTabState(params: URLSearchParams, id: string): TabState {
@@ -71,6 +81,11 @@ function deserializeTabState(params: URLSearchParams, id: string): TabState {
             is_primary: parseBoolean(params.get(`${p}.is_primary`)),
             is_premium: parseBoolean(params.get(`${p}.is_premium`)),
             api_class: params.get(`${p}.api_class`) ?? undefined,
+            model_class: params.get(`${p}.model_class`) ?? undefined,
+            context_window_min: params.get(`${p}.cw_min`) ? parseInt(params.get(`${p}.cw_min`)!, 10) : undefined,
+            context_window_max: params.get(`${p}.cw_max`) ? parseInt(params.get(`${p}.cw_max`)!, 10) : undefined,
+            max_tokens_min: params.get(`${p}.mt_min`) ? parseInt(params.get(`${p}.mt_min`)!, 10) : undefined,
+            max_tokens_max: params.get(`${p}.mt_max`) ? parseInt(params.get(`${p}.mt_max`)!, 10) : undefined,
         },
     };
 }
@@ -143,6 +158,11 @@ export function useTabUrlState() {
                 if (initialFilters?.is_primary !== undefined) params.set(`${newId}.is_primary`, String(initialFilters.is_primary));
                 if (initialFilters?.is_premium !== undefined) params.set(`${newId}.is_premium`, String(initialFilters.is_premium));
                 if (initialFilters?.api_class) params.set(`${newId}.api_class`, initialFilters.api_class);
+                if (initialFilters?.model_class) params.set(`${newId}.model_class`, initialFilters.model_class);
+                if (initialFilters?.context_window_min !== undefined) params.set(`${newId}.cw_min`, String(initialFilters.context_window_min));
+                if (initialFilters?.context_window_max !== undefined) params.set(`${newId}.cw_max`, String(initialFilters.context_window_max));
+                if (initialFilters?.max_tokens_min !== undefined) params.set(`${newId}.mt_min`, String(initialFilters.max_tokens_min));
+                if (initialFilters?.max_tokens_max !== undefined) params.set(`${newId}.mt_max`, String(initialFilters.max_tokens_max));
             });
         },
         [push, tabIds]

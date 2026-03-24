@@ -2,6 +2,7 @@
 
 import { supabase } from '@/utils/supabase/client';
 import type { AiModelRow, AiProvider, ModelUsageResult } from './types';
+import type { PromptSettings } from '@/features/prompts/types/core';
 
 export const aiModelService = {
     async fetchAll(): Promise<AiModelRow[]> {
@@ -56,11 +57,11 @@ export const aiModelService = {
             supabase
                 .from('prompts')
                 .select('id, name, model_id')
-                .eq('model_id', modelId),
+                .or(`model_id.eq.${modelId},settings->>model_id.eq.${modelId}`),
             supabase
                 .from('prompt_builtins')
                 .select('id, name, source_prompt_id, settings')
-                .filter('settings->>model_id', 'eq', modelId),
+                .or(`model_id.eq.${modelId},settings->>model_id.eq.${modelId}`),
         ]);
 
         if (promptsResult.error) throw promptsResult.error;
@@ -82,32 +83,57 @@ export const aiModelService = {
         return { prompts, promptBuiltins };
     },
 
-    async replaceModelInPrompts(oldId: string, newId: string): Promise<number> {
-        const { data, error } = await supabase
-            .from('prompts')
-            .update({ model_id: newId })
-            .eq('model_id', oldId)
-            .select('id');
-        if (error) throw error;
-        return data?.length ?? 0;
-    },
-
-    async replaceModelInBuiltins(oldId: string, newId: string): Promise<number> {
+    async replaceModelInPrompts(oldId: string, newId: string, newSettings?: PromptSettings): Promise<number> {
+        // Fetch all rows where either the column or settings->model_id matches
         const { data: rows, error: fetchErr } = await supabase
-            .from('prompt_builtins')
-            .select('id, settings')
-            .filter('settings->>model_id', 'eq', oldId);
+            .from('prompts')
+            .select('id, model_id, settings')
+            .or(`model_id.eq.${oldId},settings->>model_id.eq.${oldId}`);
         if (fetchErr) throw fetchErr;
         if (!rows || rows.length === 0) return 0;
 
         const updates = rows.map((row) => {
-            const settings = typeof row.settings === 'object' && row.settings !== null
-                ? { ...(row.settings as Record<string, unknown>), model_id: newId }
-                : { model_id: newId };
-            return supabase
-                .from('prompt_builtins')
-                .update({ settings })
-                .eq('id', row.id);
+            const hasColumn = row.model_id === oldId;
+            // When newSettings provided, replace entire settings object (strip old model's stale keys).
+            // Otherwise patch only model_id into existing settings.
+            const settings = newSettings
+                ? { ...newSettings, model_id: newId }
+                : typeof row.settings === 'object' && row.settings !== null
+                    ? { ...(row.settings as Record<string, unknown>), model_id: newId }
+                    : { model_id: newId };
+            const payload: Record<string, unknown> = { settings };
+            if (hasColumn) payload.model_id = newId;
+            return supabase.from('prompts').update(payload).eq('id', row.id);
+        });
+
+        const results = await Promise.all(updates);
+        const firstError = results.find((r) => r.error);
+        if (firstError?.error) throw firstError.error;
+
+        return rows.length;
+    },
+
+    async replaceModelInBuiltins(oldId: string, newId: string, newSettings?: PromptSettings): Promise<number> {
+        // Fetch all rows where either the column or settings->model_id matches
+        const { data: rows, error: fetchErr } = await supabase
+            .from('prompt_builtins')
+            .select('id, model_id, settings')
+            .or(`model_id.eq.${oldId},settings->>model_id.eq.${oldId}`);
+        if (fetchErr) throw fetchErr;
+        if (!rows || rows.length === 0) return 0;
+
+        const updates = rows.map((row) => {
+            const hasColumn = row.model_id === oldId;
+            // When newSettings provided, replace entire settings object (strip old model's stale keys).
+            // Otherwise patch only model_id into existing settings.
+            const settings = newSettings
+                ? { ...newSettings, model_id: newId }
+                : typeof row.settings === 'object' && row.settings !== null
+                    ? { ...(row.settings as Record<string, unknown>), model_id: newId }
+                    : { model_id: newId };
+            const payload: Record<string, unknown> = { settings };
+            if (hasColumn) payload.model_id = newId;
+            return supabase.from('prompt_builtins').update(payload).eq('id', row.id);
         });
 
         const results = await Promise.all(updates);

@@ -15,6 +15,7 @@ interface AiModelFormProps {
     providers: AiProvider[];
     isNew: boolean;
     saving: boolean;
+    isDirty?: boolean;
     onChange: (data: AiModelFormData) => void;
     onSave: () => Promise<void>;
     onCancel: () => void;
@@ -49,6 +50,7 @@ export default function AiModelForm({
     providers,
     isNew,
     saving,
+    isDirty = true,
     onChange,
     onSave,
     onCancel,
@@ -233,16 +235,20 @@ export default function AiModelForm({
                         onClick={onCancel}
                     >
                         <X className="h-3.5 w-3.5" />
-                        Cancel
+                        {!isNew && isDirty ? 'Discard' : 'Close'}
                     </Button>
                     <Button
                         size="sm"
-                        className="h-8 px-3 text-xs gap-1"
+                        className={`h-8 px-3 text-xs gap-1 transition-all ${
+                            isDirty && !saving
+                                ? 'bg-primary hover:bg-primary/90'
+                                : ''
+                        }`}
                         onClick={onSave}
-                        disabled={saving || !data.name.trim() || !data.model_class.trim()}
+                        disabled={saving || !data.name.trim() || !data.model_class.trim() || (!isNew && !isDirty)}
                     >
                         <Save className="h-3.5 w-3.5" />
-                        {saving ? 'Saving...' : isNew ? 'Create Model' : 'Save Changes'}
+                        {saving ? 'Saving…' : isNew ? 'Create Model' : 'Save Changes'}
                     </Button>
                 </div>
             </div>

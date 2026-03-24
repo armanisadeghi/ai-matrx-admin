@@ -12,6 +12,7 @@ export function applyFiltersForCount(
         const lq = q.toLowerCase();
         result = result.filter(
             (m) =>
+                m.id.toLowerCase().includes(lq) ||
                 (m.name ?? '').toLowerCase().includes(lq) ||
                 (m.common_name ?? '').toLowerCase().includes(lq) ||
                 (m.provider ?? '').toLowerCase().includes(lq) ||
@@ -35,6 +36,21 @@ export function applyFiltersForCount(
     if (filters.api_class) {
         const lc = filters.api_class.toLowerCase();
         result = result.filter((m) => (m.api_class ?? '').toLowerCase().includes(lc));
+    }
+    if (filters.model_class) {
+        result = result.filter((m) => m.model_class === filters.model_class);
+    }
+    if (filters.context_window_min !== undefined) {
+        result = result.filter((m) => (m.context_window ?? 0) >= filters.context_window_min!);
+    }
+    if (filters.context_window_max !== undefined) {
+        result = result.filter((m) => (m.context_window ?? Infinity) <= filters.context_window_max!);
+    }
+    if (filters.max_tokens_min !== undefined) {
+        result = result.filter((m) => (m.max_tokens ?? 0) >= filters.max_tokens_min!);
+    }
+    if (filters.max_tokens_max !== undefined) {
+        result = result.filter((m) => (m.max_tokens ?? Infinity) <= filters.max_tokens_max!);
     }
 
     return result.length;

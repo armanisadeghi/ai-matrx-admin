@@ -1,3 +1,10 @@
+export type PricingTier = {
+    max_tokens: number | null;
+    input_price: number;
+    output_price: number;
+    cached_input_price: number;
+};
+
 export type AiModelRow = {
     id: string;
     name: string;
@@ -14,6 +21,7 @@ export type AiModelRow = {
     is_primary: boolean | null;
     is_premium: boolean | null;
     api_class: string | null;
+    pricing: PricingTier[] | null;
 };
 
 export type AiProvider = {
@@ -36,6 +44,7 @@ export type AiModelFormData = {
     is_deprecated: boolean;
     is_primary: boolean;
     is_premium: boolean;
+    pricing: PricingTier[];
 };
 
 export type ControlParamType = 'boolean' | 'number' | 'integer' | 'string' | 'array' | 'object';

@@ -180,11 +180,13 @@ function UuidCell({ value }: { value: string }) {
 // ─── Column definitions ───────────────────────────────────────────────────────
 
 const SORT_FIELDS = [
+  "id",
   "common_name",
   "name",
   "provider",
   "model_class",
   "api_class",
+  "model_provider",
   "context_window",
   "max_tokens",
   "is_deprecated",
@@ -209,7 +211,7 @@ const COLUMNS: ColDef[] = [
     key: "id",
     header: "ID",
     width: "w-[120px] min-w-[120px]",
-    sortable: false,
+    sortable: true,
     render: (item) => <UuidCell value={item.id} />,
   },
   {
@@ -286,7 +288,7 @@ const COLUMNS: ColDef[] = [
     key: "model_provider",
     header: "Provider FK",
     width: "w-[120px] min-w-[100px]",
-    sortable: false,
+    sortable: true,
     render: (item, providerMap) => (
       <span className="text-xs text-muted-foreground font-mono">
         {item.model_provider
@@ -382,6 +384,28 @@ const COLUMNS: ColDef[] = [
       />
     ),
   },
+  {
+    key: "pricing",
+    header: "Pricing",
+    width: "w-[130px] min-w-[110px]",
+    sortable: false,
+    render: (item) => {
+      if (!item.pricing || item.pricing.length === 0) {
+        return <span className="text-xs text-muted-foreground/40">—</span>;
+      }
+      const tier = item.pricing[item.pricing.length - 1];
+      return (
+        <div className="text-xs font-mono leading-tight">
+          <span className="text-foreground">${tier.input_price.toFixed(tier.input_price < 0.1 ? 3 : 2)}</span>
+          <span className="text-muted-foreground mx-0.5">/</span>
+          <span className="text-foreground">${tier.output_price.toFixed(tier.output_price < 0.1 ? 3 : 2)}</span>
+          {item.pricing.length > 1 && (
+            <span className="ml-1 text-muted-foreground/60">({item.pricing.length}T)</span>
+          )}
+        </div>
+      );
+    },
+  },
 ];
 
 // ─── Filtering & Sorting helpers ─────────────────────────────────────────────
@@ -397,6 +421,7 @@ function applyFilters(
     const lq = q.toLowerCase();
     result = result.filter(
       (m) =>
+        m.id.toLowerCase().includes(lq) ||
         (m.name ?? "").toLowerCase().includes(lq) ||
         (m.common_name ?? "").toLowerCase().includes(lq) ||
         (m.provider ?? "").toLowerCase().includes(lq) ||
@@ -428,6 +453,21 @@ function applyFilters(
     result = result.filter((m) =>
       (m.api_class ?? "").toLowerCase().includes(lc),
     );
+  }
+  if (filters.model_class) {
+    result = result.filter((m) => m.model_class === filters.model_class);
+  }
+  if (filters.context_window_min !== undefined) {
+    result = result.filter((m) => (m.context_window ?? 0) >= filters.context_window_min!);
+  }
+  if (filters.context_window_max !== undefined) {
+    result = result.filter((m) => (m.context_window ?? Infinity) <= filters.context_window_max!);
+  }
+  if (filters.max_tokens_min !== undefined) {
+    result = result.filter((m) => (m.max_tokens ?? 0) >= filters.max_tokens_min!);
+  }
+  if (filters.max_tokens_max !== undefined) {
+    result = result.filter((m) => (m.max_tokens ?? Infinity) <= filters.max_tokens_max!);
   }
 
   return result;
@@ -649,6 +689,7 @@ export default function AiModelTable({
         tabState={tabState}
         totalCount={models.length}
         filteredCount={filteredModels.length}
+        models={models}
         onUpdateQ={handleUpdateQ}
         onUpdateFilters={handleUpdateFilters}
         onClearAll={handleClearAll}

@@ -188,30 +188,28 @@ function KnownControlField({
     };
 
     return (
-        <div className={`grid grid-cols-[1fr_auto] gap-x-3 items-start py-2 px-3 rounded-md transition-colors ${
-            enabled ? 'bg-muted/30' : 'opacity-50 hover:opacity-75'
+        <div className={`flex items-center gap-3 py-1.5 px-3 transition-colors ${
+            enabled ? '' : 'opacity-40 hover:opacity-60'
         }`}>
-            {/* Left: label + description + value inputs */}
-            <div className="min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-mono font-semibold text-foreground">{controlKey}</span>
-                    <span className="text-xs text-muted-foreground truncate">{meta.label !== controlKey ? `— ${meta.label}` : ''}</span>
-                </div>
-                <p className="text-xs text-muted-foreground mb-2">{meta.description}</p>
+            {/* Toggle */}
+            <Switch
+                checked={enabled}
+                onCheckedChange={(v) => v ? onEnable(controlKey) : onDisable(controlKey)}
+                id={`known-${controlKey}`}
+                className="shrink-0"
+            />
 
+            {/* Key + description — fixed width so inputs align */}
+            <div className="w-52 shrink-0 min-w-0">
+                <div className="text-xs font-mono font-medium text-foreground leading-tight">{controlKey}</div>
+                <div className="text-[10px] text-muted-foreground leading-tight truncate">{meta.description}</div>
+            </div>
+
+            {/* Value inputs — only when enabled */}
+            <div className="flex-1 min-w-0">
                 {enabled && param && (
                     <ControlParamInputs controlKey={controlKey} param={param} meta={meta} onUpdate={update} />
                 )}
-            </div>
-
-            {/* Right: enable toggle */}
-            <div className="flex flex-col items-center gap-1 pt-0.5">
-                <Switch
-                    checked={enabled}
-                    onCheckedChange={(v) => v ? onEnable(controlKey) : onDisable(controlKey)}
-                    id={`known-${controlKey}`}
-                />
-                <span className="text-[10px] text-muted-foreground">{enabled ? 'On' : 'Off'}</span>
             </div>
         </div>
     );
@@ -234,143 +232,142 @@ function ControlParamInputs({
         case 'integer_dim': {
             const isInt = meta.kind !== 'number_range';
             return (
-                <div className="flex items-center gap-2 flex-wrap">
-                    <Field label="Min">
+                <div className="flex items-center gap-2">
+                    <Chip label="min">
                         <Input
                             type="number"
                             value={param.min ?? ''}
                             onChange={(e) => onUpdate({ min: e.target.value !== '' ? Number(e.target.value) : undefined })}
-                            className="h-7 text-xs w-20"
+                            className="h-6 text-xs w-16 px-1.5"
                             step={isInt ? 1 : 0.01}
                         />
-                    </Field>
-                    <Field label="Max">
+                    </Chip>
+                    <Chip label="max">
                         <Input
                             type="number"
                             value={param.max ?? ''}
                             onChange={(e) => onUpdate({ max: e.target.value !== '' ? Number(e.target.value) : undefined })}
-                            className="h-7 text-xs w-20"
+                            className="h-6 text-xs w-16 px-1.5"
                             step={isInt ? 1 : 0.01}
                         />
-                    </Field>
-                    <Field label="Default">
+                    </Chip>
+                    <Chip label="default">
                         <Input
                             type="number"
                             value={param.default !== undefined ? String(param.default) : ''}
                             onChange={(e) => onUpdate({ default: e.target.value !== '' ? Number(e.target.value) : undefined })}
-                            className="h-7 text-xs w-24"
+                            className="h-6 text-xs w-16 px-1.5"
                             step={isInt ? 1 : 0.01}
                         />
-                    </Field>
-                    <Field label="Required">
+                    </Chip>
+                    <Chip label="req">
                         <Switch
                             checked={param.required ?? false}
                             onCheckedChange={(v) => onUpdate({ required: v || undefined })}
+                            className="scale-75"
                         />
-                    </Field>
+                    </Chip>
                 </div>
             );
         }
 
         case 'boolean': {
             return (
-                <div className="flex items-center gap-4 flex-wrap">
-                    <Field label="Default">
+                <div className="flex items-center gap-2">
+                    <Chip label="default">
                         <Select
                             value={param.default !== undefined ? String(param.default) : '__none__'}
                             onValueChange={(v) => onUpdate({ default: v === '__none__' ? undefined : v === 'true' })}
                         >
-                            <SelectTrigger className="h-7 text-xs w-24">
+                            <SelectTrigger className="h-6 text-xs w-20 px-1.5">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="__none__">(none)</SelectItem>
+                                <SelectItem value="__none__">—</SelectItem>
                                 <SelectItem value="true">true</SelectItem>
                                 <SelectItem value="false">false</SelectItem>
                             </SelectContent>
                         </Select>
-                    </Field>
+                    </Chip>
                 </div>
             );
         }
 
         case 'feature_flag': {
             return (
-                <div className="flex items-center gap-4 flex-wrap">
-                    <Field label="Allowed">
+                <div className="flex items-center gap-2">
+                    <Chip label="allowed">
                         <Switch
                             checked={param.allowed ?? true}
                             onCheckedChange={(v) => onUpdate({ allowed: v })}
+                            className="scale-75"
                         />
-                    </Field>
-                    <Field label="Default">
+                    </Chip>
+                    <Chip label="default">
                         <Select
                             value={param.default !== undefined ? String(param.default) : '__none__'}
                             onValueChange={(v) => onUpdate({ default: v === '__none__' ? undefined : v === 'true' })}
                         >
-                            <SelectTrigger className="h-7 text-xs w-24">
-                                <SelectValue placeholder="(none)" />
+                            <SelectTrigger className="h-6 text-xs w-20 px-1.5">
+                                <SelectValue placeholder="—" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="__none__">(none)</SelectItem>
+                                <SelectItem value="__none__">—</SelectItem>
                                 <SelectItem value="true">true</SelectItem>
                                 <SelectItem value="false">false</SelectItem>
                             </SelectContent>
                         </Select>
-                    </Field>
+                    </Chip>
                 </div>
             );
         }
 
         case 'enum': {
-            // Flatten enum options — stored values may be objects like { type: "json_object" }
             const rawOptions = param.enum ?? meta.enumOptions ?? [];
             const enumOptions = flattenEnumOptions(rawOptions);
             return (
-                <div className="space-y-2">
-                    <div className="flex items-center gap-3 flex-wrap">
-                        <Field label="Default">
-                            <Select
-                                value={param.default !== undefined ? String(param.default) : '__none__'}
-                                onValueChange={(v) => onUpdate({ default: v === '__none__' ? undefined : v })}
-                            >
-                                <SelectTrigger className="h-7 text-xs w-32">
-                                    <SelectValue placeholder="(none)" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="__none__">(none)</SelectItem>
-                                    {enumOptions.map((o) => (
-                                        <SelectItem key={o} value={o}>{o}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </Field>
-                    </div>
-                    <Field label="Enum options (comma-separated)">
+                <div className="flex items-center gap-2 flex-wrap">
+                    <Chip label="default">
+                        <Select
+                            value={param.default !== undefined ? String(param.default) : '__none__'}
+                            onValueChange={(v) => onUpdate({ default: v === '__none__' ? undefined : v })}
+                        >
+                            <SelectTrigger className="h-6 text-xs w-28 px-1.5">
+                                <SelectValue placeholder="—" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="__none__">—</SelectItem>
+                                {enumOptions.map((o) => (
+                                    <SelectItem key={o} value={o}>{o}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </Chip>
+                    <Chip label="options">
                         <Input
                             value={enumOptions.join(', ')}
                             onChange={(e) => {
                                 const vals = e.target.value.split(',').map((s) => s.trim()).filter(Boolean);
                                 onUpdate({ enum: vals.length > 0 ? vals : undefined });
                             }}
-                            className="h-7 text-xs font-mono w-72"
+                            className="h-6 text-xs font-mono w-52 px-1.5"
                         />
-                    </Field>
+                    </Chip>
                 </div>
             );
         }
 
         case 'array': {
             return (
-                <div className="flex items-center gap-3 flex-wrap">
-                    <Field label="Max Items">
+                <div className="flex items-center gap-2">
+                    <Chip label="maxItems">
                         <Input
                             type="number"
                             value={param.maxItems ?? ''}
                             onChange={(e) => onUpdate({ maxItems: e.target.value !== '' ? Number(e.target.value) : undefined })}
-                            className="h-7 text-xs w-20"
+                            className="h-6 text-xs w-16 px-1.5"
                         />
-                    </Field>
+                    </Chip>
                 </div>
             );
         }
@@ -380,10 +377,11 @@ function ControlParamInputs({
     }
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+/** Compact inline label + input chip */
+function Chip({ label, children }: { label: string; children: React.ReactNode }) {
     return (
-        <div className="flex items-center gap-1.5">
-            <span className="text-xs text-muted-foreground whitespace-nowrap">{label}</span>
+        <div className="flex items-center gap-1">
+            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide whitespace-nowrap">{label}</span>
             {children}
         </div>
     );

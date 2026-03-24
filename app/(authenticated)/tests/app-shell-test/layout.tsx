@@ -1,25 +1,14 @@
-// /app/(authenticated)/tests/app-shell-test/layout.tsx
-import React from "react";
-import ModuleHeaderWithProvider from '@/components/matrx/navigation/module-header/ModuleHeader';
-import {filteredPages, MODULE_HOME, MODULE_NAME} from './config';
+import { join } from "path";
+import { RouteHeaderData } from "@/components/ssr/RouteHeaderData";
 
-export default function Layout(
-    {
-        children,
-    }: {
-        children: React.ReactNode;
-    }) {
-
-    return (
-        <div className="flex flex-col h-full">
-            <ModuleHeaderWithProvider
-                pages={filteredPages}
-                moduleHome={MODULE_HOME}
-                moduleName={MODULE_NAME}
-            />
-            <main className="flex-1">
-                {children}
-            </main>
-        </div>
-    );
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <RouteHeaderData
+      directory={join(process.cwd(), "app", "(authenticated)", "tests", "app-shell-test")}
+      moduleHome="/tests/app-shell-test"
+      moduleName="App Shell Test"
+    >
+      {children}
+    </RouteHeaderData>
+  );
 }

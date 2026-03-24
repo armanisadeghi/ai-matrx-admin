@@ -1,14 +1,12 @@
-// page.tsx
+import { join } from "path";
+import { RouteIndexPage } from "@/components/ssr/RouteIndexPage";
 
-import { NextNavCardFull } from "@/components/matrx/navigation";
-import { filteredPages } from './config';
-
-
-export default function Page() {
-
+export default async function AppletTestsPage() {
     return (
-        <div className="container mx-auto py-6">
-            <NextNavCardFull items={filteredPages} />
-        </div>
+        <RouteIndexPage
+            directory={join(process.cwd(), "app", "(authenticated)", "tests", "applet-tests")}
+            basePath="/tests/applet-tests"
+            title="Applet Tests"
+        />
     );
 }

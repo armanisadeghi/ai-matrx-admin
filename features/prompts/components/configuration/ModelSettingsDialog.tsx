@@ -29,6 +29,11 @@ interface ModelSettingsDialogProps {
    * Defaults to a generic fine-tuning warning.
    */
   confirmationMessage?: string;
+  /**
+   * Custom footer content rendered inside the settings panel footer.
+   * When provided, replaces the default "Close" button with this content.
+   */
+  footer?: React.ReactNode;
 }
 
 const DEFAULT_CONFIRMATION_MESSAGE =
@@ -47,6 +52,7 @@ export function ModelSettingsDialog({
   onModelChange,
   requireConfirmation = false,
   confirmationMessage = DEFAULT_CONFIRMATION_MESSAGE,
+  footer,
 }: ModelSettingsDialogProps) {
   const [confirmed, setConfirmed] = useState(false);
 
@@ -149,14 +155,16 @@ export function ModelSettingsDialog({
             </div>
 
             <div className="flex items-center justify-end gap-2 px-4 py-2.5 border-t border-border bg-gray-50 dark:bg-gray-900/50">
-              <Button
-                variant="ghost"
-                onClick={handleClose}
-                size="sm"
-                className="h-7 text-xs"
-              >
-                Close
-              </Button>
+              {footer ?? (
+                <Button
+                  variant="ghost"
+                  onClick={handleClose}
+                  size="sm"
+                  className="h-7 text-xs"
+                >
+                  Close
+                </Button>
+              )}
             </div>
           </>
         )}

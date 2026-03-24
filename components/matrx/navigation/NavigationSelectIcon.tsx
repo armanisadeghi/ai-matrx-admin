@@ -5,7 +5,7 @@ import IconSelect from "@/components/official/IconSelect";
 const NavigationSelectIcon = ({ currentPage, pages, getFullPath, handleNavigation }) => {
   // Convert pages to the format expected by IconSelect
   const navigationItems = pages.map((page, index) => ({
-    id: page.path || String(index),
+    id: `${getFullPath(page)}-${index}`,
     label: page.title,
     value: getFullPath(page)
   }));

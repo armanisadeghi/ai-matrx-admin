@@ -1,16 +1,12 @@
-'use client';
+import { join } from "path";
+import { RouteIndexPage } from "@/components/ssr/RouteIndexPage";
 
-// page.tsx
-
-import { NextNavCardFull } from "@/components/matrx/navigation";
-import { filteredPages } from './config';
-
-
-export default function Page() {
-
-    return (
-        <div className="container mx-auto py-6">
-            <NextNavCardFull items={filteredPages} />
-        </div>
-    );
+export default async function DemoPage() {
+  return (
+    <RouteIndexPage
+      directory={join(process.cwd(), "app", "(authenticated)", "demo")}
+      basePath="/demo"
+      title="Demo"
+    />
+  );
 }

@@ -1,4 +1,5 @@
 export { default as AiModelsContainer } from './components/AiModelsContainer';
+export { default as DeprecatedModelsAuditPage } from './components/DeprecatedModelsAuditPage';
 export { default as AiModelTable } from './components/AiModelTable';
 export { default as AiModelDetailPanel } from './components/AiModelDetailPanel';
 export { default as AiModelForm } from './components/AiModelForm';

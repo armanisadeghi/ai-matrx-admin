@@ -1,14 +1,12 @@
-// page.tsx
+import { join } from "path";
+import { RouteIndexPage } from "@/components/ssr/RouteIndexPage";
 
-import { NextNavCardFull } from "@/components/matrx/navigation";
-import { filteredPages } from './config';
-
-
-export default function Page() {
-
+export default async function ChatTestsPage() {
     return (
-        <div className="container mx-auto py-6">
-            <NextNavCardFull items={filteredPages} />
-        </div>
+        <RouteIndexPage
+            directory={join(process.cwd(), "app", "(authenticated)", "tests", "chat-tests")}
+            basePath="/tests/chat-tests"
+            title="Chat Tests"
+        />
     );
 }

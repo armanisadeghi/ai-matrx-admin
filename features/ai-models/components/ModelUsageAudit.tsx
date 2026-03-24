@@ -14,10 +14,12 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { RefreshCcw, ArrowRightLeft, AlertTriangle, ExternalLink } from 'lucide-react';
+import { RefreshCcw, ArrowRightLeft, AlertTriangle, ExternalLink, Settings, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { aiModelService } from '../service';
 import type { AiModelRow, ModelUsageResult } from '../types';
+import { ModelSettingsDialog } from '@/features/prompts/components/configuration/ModelSettingsDialog';
+import type { PromptSettings } from '@/features/prompts/types/core';
 
 interface ModelUsageAuditProps {
     model: AiModelRow;
@@ -25,11 +27,14 @@ interface ModelUsageAuditProps {
     onReplaceDone: () => void;
 }
 
+type ReplaceStep = 'idle' | 'pick-model' | 'review-settings';
+
 export default function ModelUsageAudit({ model, allModels, onReplaceDone }: ModelUsageAuditProps) {
     const [usage, setUsage] = useState<ModelUsageResult | null>(null);
     const [loading, setLoading] = useState(false);
+    const [step, setStep] = useState<ReplaceStep>('idle');
     const [replacementId, setReplacementId] = useState('');
-    const [replaceDialogOpen, setReplaceDialogOpen] = useState(false);
+    const [pendingSettings, setPendingSettings] = useState<PromptSettings>({});
     const [replacing, setReplacing] = useState(false);
     const [replaceError, setReplaceError] = useState<string | null>(null);
 
@@ -51,7 +56,25 @@ export default function ModelUsageAudit({ model, allModels, onReplaceDone }: Mod
 
     const totalUsage = (usage?.prompts.length ?? 0) + (usage?.promptBuiltins.length ?? 0);
 
-    const handleReplace = async () => {
+    const replacementOptions = allModels.filter((m) => m.id !== model.id && !m.is_deprecated);
+    const selectedReplacement = allModels.find((m) => m.id === replacementId);
+
+    const handleOpenReplace = () => {
+        setReplacementId('');
+        setPendingSettings({});
+        setReplaceError(null);
+        setStep('pick-model');
+    };
+
+    const handleProceedToSettings = () => {
+        if (!replacementId) return;
+        // Seed settings with empty object — ModelSettings will show the new model's controls
+        // with their defaults. User can adjust before applying.
+        setPendingSettings({});
+        setStep('review-settings');
+    };
+
+    const handleQuickReplace = async () => {
         if (!replacementId) return;
         setReplacing(true);
         setReplaceError(null);
@@ -60,7 +83,7 @@ export default function ModelUsageAudit({ model, allModels, onReplaceDone }: Mod
                 aiModelService.replaceModelInPrompts(model.id, replacementId),
                 aiModelService.replaceModelInBuiltins(model.id, replacementId),
             ]);
-            setReplaceDialogOpen(false);
+            setStep('idle');
             await load();
             onReplaceDone();
         } catch (err) {
@@ -70,12 +93,35 @@ export default function ModelUsageAudit({ model, allModels, onReplaceDone }: Mod
         }
     };
 
-    const replacementOptions = allModels.filter((m) => m.id !== model.id && !m.is_deprecated);
+    const handleApplyWithSettings = async () => {
+        if (!replacementId) return;
+        setReplacing(true);
+        setReplaceError(null);
+        try {
+            await Promise.all([
+                aiModelService.replaceModelInPrompts(model.id, replacementId, pendingSettings),
+                aiModelService.replaceModelInBuiltins(model.id, replacementId, pendingSettings),
+            ]);
+            setStep('idle');
+            await load();
+            onReplaceDone();
+        } catch (err) {
+            setReplaceError(err instanceof Error ? err.message : 'Replace failed');
+        } finally {
+            setReplacing(false);
+        }
+    };
 
-    const selectedReplacement = allModels.find((m) => m.id === replacementId);
+    const handleCancel = () => {
+        setStep('idle');
+        setReplacementId('');
+        setPendingSettings({});
+        setReplaceError(null);
+    };
 
     return (
         <div className="h-full flex flex-col overflow-hidden">
+            {/* Header */}
             <div className="flex items-center justify-between px-3 py-2 border-b shrink-0">
                 <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">Usage Audit</span>
@@ -93,12 +139,12 @@ export default function ModelUsageAudit({ model, allModels, onReplaceDone }: Mod
                     )}
                 </div>
                 <div className="flex items-center gap-2">
-                    {totalUsage > 0 && (
+                    {totalUsage > 0 && step === 'idle' && (
                         <Button
                             variant="outline"
                             size="sm"
                             className="h-7 px-2 text-xs gap-1"
-                            onClick={() => setReplaceDialogOpen(true)}
+                            onClick={handleOpenReplace}
                         >
                             <ArrowRightLeft className="h-3.5 w-3.5" />
                             Replace Model
@@ -117,6 +163,74 @@ export default function ModelUsageAudit({ model, allModels, onReplaceDone }: Mod
                 </div>
             </div>
 
+            {/* Step 1: Pick replacement model */}
+            {step === 'pick-model' && (
+                <div className="border-b shrink-0 px-3 py-3 bg-muted/30 space-y-3">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px]">1</span>
+                        Select replacement model
+                        <ChevronRight className="h-3 w-3" />
+                        <span className="opacity-40">2 Review settings</span>
+                    </div>
+                    <Select value={replacementId} onValueChange={setReplacementId}>
+                        <SelectTrigger className="h-8 text-xs">
+                            <SelectValue placeholder="Select replacement model..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {replacementOptions.map((m) => (
+                                <SelectItem key={m.id} value={m.id} className="text-xs">
+                                    {m.common_name || m.name}
+                                    {m.is_primary && (
+                                        <span className="ml-1 text-green-600">(primary)</span>
+                                    )}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {replaceError && (
+                        <p className="text-destructive text-xs">{replaceError}</p>
+                    )}
+                    {selectedReplacement && (
+                        <p className="text-xs text-muted-foreground">
+                            Replacing {totalUsage} reference{totalUsage !== 1 ? 's' : ''} to{' '}
+                            <strong>{model.common_name || model.name}</strong> →{' '}
+                            <strong>{selectedReplacement.common_name || selectedReplacement.name}</strong>
+                        </p>
+                    )}
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={handleCancel}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs gap-1"
+                            disabled={!replacementId || replacing}
+                            onClick={handleQuickReplace}
+                        >
+                            {replacing ? <RefreshCcw className="h-3 w-3 animate-spin" /> : <ArrowRightLeft className="h-3 w-3" />}
+                            Quick Replace
+                        </Button>
+                        <Button
+                            size="sm"
+                            className="h-7 text-xs gap-1 ml-auto"
+                            disabled={!replacementId}
+                            onClick={handleProceedToSettings}
+                        >
+                            <Settings className="h-3 w-3" />
+                            Review Settings
+                            <ChevronRight className="h-3 w-3" />
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {/* Main content */}
             {loading ? (
                 <div className="flex-1 flex items-center justify-center">
                     <div className="flex items-center gap-2 text-muted-foreground text-sm">
@@ -156,56 +270,49 @@ export default function ModelUsageAudit({ model, allModels, onReplaceDone }: Mod
                 </div>
             )}
 
-            <AlertDialog open={replaceDialogOpen} onOpenChange={setReplaceDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Replace Model References</AlertDialogTitle>
-                        <AlertDialogDescription asChild>
-                            <div className="space-y-3">
-                                <p>
-                                    Replace all {totalUsage} reference{totalUsage !== 1 ? 's' : ''} to{' '}
-                                    <strong>{model.common_name || model.name}</strong> with:
-                                </p>
-                                <Select value={replacementId} onValueChange={setReplacementId}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select replacement model..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {replacementOptions.map((m) => (
-                                            <SelectItem key={m.id} value={m.id}>
-                                                {m.common_name || m.name}
-                                                {m.is_primary && (
-                                                    <span className="ml-1 text-xs text-green-600">(primary)</span>
-                                                )}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+            {/* Step 2: Settings review dialog */}
+            {step === 'review-settings' && replacementId && (
+                <ModelSettingsDialog
+                    isOpen
+                    onClose={handleCancel}
+                    modelId={replacementId}
+                    models={allModels}
+                    settings={pendingSettings}
+                    onSettingsChange={setPendingSettings}
+                    showModelSelector={false}
+                    requireConfirmation={false}
+                    confirmationMessage=""
+                    footer={
+                        <div className="flex items-center justify-between gap-2 w-full">
+                            <div className="flex flex-col gap-0.5">
+                                <span className="text-xs font-medium">
+                                    Replacing {totalUsage} reference{totalUsage !== 1 ? 's' : ''}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                    {model.common_name || model.name} →{' '}
+                                    {selectedReplacement?.common_name || selectedReplacement?.name}
+                                </span>
                                 {replaceError && (
-                                    <p className="text-destructive text-sm">{replaceError}</p>
-                                )}
-                                {selectedReplacement && (
-                                    <p className="text-xs text-muted-foreground">
-                                        This will update {usage?.prompts.length ?? 0} prompt(s) and{' '}
-                                        {usage?.promptBuiltins.length ?? 0} prompt builtin(s).
-                                        This action cannot be undone.
-                                    </p>
+                                    <span className="text-xs text-destructive">{replaceError}</span>
                                 )}
                             </div>
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={handleReplace}
-                            disabled={!replacementId || replacing}
-                            className="bg-primary hover:bg-primary/90"
-                        >
-                            {replacing ? 'Replacing...' : 'Replace All References'}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                            <Button
+                                size="sm"
+                                className="h-7 text-xs gap-1 shrink-0"
+                                disabled={replacing}
+                                onClick={handleApplyWithSettings}
+                            >
+                                {replacing ? (
+                                    <RefreshCcw className="h-3 w-3 animate-spin" />
+                                ) : (
+                                    <ArrowRightLeft className="h-3 w-3" />
+                                )}
+                                Apply Replacement
+                            </Button>
+                        </div>
+                    }
+                />
+            )}
         </div>
     );
 }
@@ -273,7 +380,7 @@ function UsageSection({
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="inline-flex items-center opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
-                                                title={`Open in editor`}
+                                                title="Open in editor"
                                             >
                                                 <ExternalLink className="h-3 w-3" />
                                             </Link>
