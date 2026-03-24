@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   BookOpen,
   Grid2x2,
@@ -9,6 +9,7 @@ import {
   ExternalLink,
   Printer,
   Smartphone,
+  Zap,
 } from "lucide-react";
 import ChatCollapsibleWrapper from "@/components/mardown-display/blocks/ChatCollapsibleWrapper";
 import FlashcardItem from "./FlashcardItem";
@@ -23,6 +24,7 @@ import {
   PrintOptionsDialog,
   usePrintOptions,
 } from "@/features/chat/components/print/PrintOptionsDialog";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FlashcardsBlockProps {
   content?: string;
@@ -83,7 +85,11 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [mobileStartIndex, setMobileStartIndex] = useState(0);
+  const [showMobilePrompt, setShowMobilePrompt] = useState(false);
   const { open: openCanvas } = useCanvas();
+  const isMobile = useIsMobile();
+  const stabilityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const promptedRef = useRef(false);
 
   // Use server-parsed data when available; fall back to client-side parsing.
   const { flashcards, isComplete } = useMemo(() => {
@@ -112,6 +118,22 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
     setOpen: setPrintOpen,
     triggerPrint,
   } = usePrintOptions(flashcardsPrinter, printData);
+
+  // Mobile "Flash Mode" prompt — fires once when stable (no count change for 1s) and not streaming
+  useEffect(() => {
+    if (!isMobile || promptedRef.current || flashcards.length === 0) return;
+    if (stabilityTimer.current) clearTimeout(stabilityTimer.current);
+    stabilityTimer.current = setTimeout(() => {
+      // Double-check still stable and complete enough (isComplete OR at least 3 cards settled)
+      if (!promptedRef.current && flashcards.length >= 1) {
+        promptedRef.current = true;
+        setShowMobilePrompt(true);
+        // Auto-dismiss after 8s if ignored
+        setTimeout(() => setShowMobilePrompt(false), 8000);
+      }
+    }, 1000);
+    return () => { if (stabilityTimer.current) clearTimeout(stabilityTimer.current); };
+  }, [isMobile, flashcards.length, isComplete]);
 
   // Handle ESC key to exit fullscreen
   useEffect(() => {
@@ -193,59 +215,191 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
   // Fullscreen overlay
   if (isFullscreen) {
     return (
-      <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm animate-in fade-in duration-300">
-        <div className="h-full flex flex-col">
-          {/* Fullscreen header */}
-          <div className="flex items-center justify-between p-3 border-b border-border bg-background/50">
-            <div className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" />
-              <span className="font-medium">
-                {isComplete && (
-                  <span className="ml-2 text-xs text-muted-foreground">
-                    ({completeCount} {completeCount === 1 ? "card" : "cards"})
-                  </span>
-                )}
-              </span>
+      <>
+        <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="h-full flex flex-col">
+            {/* Fullscreen header */}
+            <div className="flex items-center justify-between p-3 border-b border-border bg-background/50">
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-primary" />
+                <span className="font-medium">
+                  {isComplete && (
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      ({completeCount} {completeCount === 1 ? "card" : "cards"})
+                    </span>
+                  )}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <LayoutToggle
+                  layoutMode={layoutMode}
+                  onLayoutChange={setLayoutMode}
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                  onClick={() => triggerPrint()}
+                  title="Print flashcards"
+                >
+                  <Printer className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 text-white"
+                  onClick={() => {
+                    setIsFullscreen(false);
+                    openCanvas({
+                      type: "flashcards",
+                      data: content,
+                      metadata: {
+                        title: "Flashcards",
+                        sourceTaskId: taskId,
+                      },
+                    });
+                  }}
+                  title="Open in side panel"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => {
+                    setIsFullscreen(false);
+                    setMobileStartIndex(0);
+                    setIsMobileView(true);
+                  }}
+                  title="Mobile swipe mode"
+                >
+                  <Smartphone className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => setIsFullscreen(false)}
+                  title="Exit fullscreen (ESC)"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <LayoutToggle
-                layoutMode={layoutMode}
-                onLayoutChange={setLayoutMode}
-              />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={() => setIsFullscreen(false)}
-                title="Exit fullscreen (ESC)"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
 
-          {/* Fullscreen content */}
-          <div className="flex-1 overflow-y-auto">
-            {renderFlashcards()}
-            {flashcards.length === 0 && (
-              <div className="text-center text-gray-500 dark:text-gray-400 p-8">
-                No flashcards available yet...
+            {/* Fullscreen content */}
+            <div className="flex-1 overflow-y-auto">
+              {renderFlashcards()}
+              {flashcards.length === 0 && (
+                <div className="text-center text-gray-500 dark:text-gray-400 p-8">
+                  No flashcards available yet...
+                </div>
+              )}
+            </div>
+
+            {/* Fullscreen footer */}
+            {flashcards.length > 0 && (
+              <div className="flex justify-center items-center gap-3 p-3 border-t border-border bg-background/50">
+                <LayoutToggle
+                  layoutMode={layoutMode}
+                  onLayoutChange={setLayoutMode}
+                />
+                <div className="h-4 w-px bg-border" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs text-muted-foreground"
+                  onClick={triggerPrint}
+                >
+                  <Printer className="h-3 w-3" />
+                  Print
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 text-white"
+                  onClick={() => {
+                    setIsFullscreen(false);
+                    openCanvas({
+                      type: "flashcards",
+                      data: content,
+                      metadata: { title: "Flashcards", sourceTaskId: taskId },
+                    });
+                  }}
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Side
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => {
+                    setIsFullscreen(false);
+                    setMobileStartIndex(0);
+                    setIsMobileView(true);
+                  }}
+                >
+                  <Smartphone className="h-3 w-3" />
+                  Mobile
+                </Button>
               </div>
             )}
           </div>
-
-          {/* Fullscreen footer */}
-          {flashcards.length > 0 && (
-            <div className="flex justify-center items-center gap-2 p-3 border-t border-border bg-background/50">
-              <span className="text-xs text-muted-foreground">Layout:</span>
-              <LayoutToggle
-                layoutMode={layoutMode}
-                onLayoutChange={setLayoutMode}
-              />
-            </div>
-          )}
         </div>
-      </div>
+
+        <PrintOptionsDialog
+          printer={flashcardsPrinter}
+          data={printData}
+          open={printOpen}
+          onOpenChange={setPrintOpen}
+        />
+
+        {/* Mobile Flash Mode prompt banner */}
+        {showMobilePrompt && (
+          <div className="fixed bottom-0 left-0 right-0 z-[60] pb-safe animate-in slide-in-from-bottom duration-300">
+            <div className="mx-3 mb-3 rounded-2xl bg-gradient-to-r from-blue-900 to-indigo-900 border border-blue-700/50 shadow-2xl p-4">
+              <button
+                onClick={() => setShowMobilePrompt(false)}
+                className="absolute top-3 right-3 p-1 text-white/40 hover:text-white/80"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              <div className="flex items-start gap-3 pr-6">
+                <div className="mt-0.5 p-2 rounded-xl bg-blue-800/60">
+                  <Zap className="h-5 w-5 text-blue-300" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold text-sm">Flash Mode</p>
+                  <p className="text-blue-200/70 text-xs mt-0.5 leading-relaxed">
+                    Study one card at a time — tap to flip, swipe to navigate.
+                  </p>
+                  <div className="flex gap-2 mt-3">
+                    <button
+                      onClick={() => {
+                        setShowMobilePrompt(false);
+                        setIsFullscreen(false);
+                        setMobileStartIndex(0);
+                        setIsMobileView(true);
+                      }}
+                      className="flex-1 py-2 rounded-xl bg-blue-500 hover:bg-blue-400 text-white text-sm font-semibold transition-colors"
+                    >
+                      Enter Flash Mode
+                    </button>
+                    <button
+                      onClick={() => setShowMobilePrompt(false)}
+                      className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/70 text-sm transition-colors"
+                    >
+                      Not now
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 
@@ -398,6 +552,49 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
         open={printOpen}
         onOpenChange={setPrintOpen}
       />
+
+      {/* Mobile Flash Mode prompt banner */}
+      {showMobilePrompt && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 pb-safe animate-in slide-in-from-bottom duration-300">
+          <div className="mx-3 mb-3 rounded-2xl bg-gradient-to-r from-blue-900 to-indigo-900 border border-blue-700/50 shadow-2xl p-4">
+            <button
+              onClick={() => setShowMobilePrompt(false)}
+              className="absolute top-3 right-3 p-1 text-white/40 hover:text-white/80"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div className="flex items-start gap-3 pr-6">
+              <div className="mt-0.5 p-2 rounded-xl bg-blue-800/60">
+                <Zap className="h-5 w-5 text-blue-300" />
+              </div>
+              <div className="flex-1">
+                <p className="text-white font-semibold text-sm">Flash Mode</p>
+                <p className="text-blue-200/70 text-xs mt-0.5 leading-relaxed">
+                  Study one card at a time — tap to flip, swipe to navigate.
+                </p>
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={() => {
+                      setShowMobilePrompt(false);
+                      setMobileStartIndex(0);
+                      setIsMobileView(true);
+                    }}
+                    className="flex-1 py-2 rounded-xl bg-blue-500 hover:bg-blue-400 text-white text-sm font-semibold transition-colors"
+                  >
+                    Enter Flash Mode
+                  </button>
+                  <button
+                    onClick={() => setShowMobilePrompt(false)}
+                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/70 text-sm transition-colors"
+                  >
+                    Not now
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
