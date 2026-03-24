@@ -22,13 +22,14 @@ export function computeSettingsOverrides(
     agentDefaults: PromptSettings | undefined,
     userSettings: PromptSettings,
 ): PromptSettings | null {
-    const defaults = agentDefaults ?? {};
-    const overrides: PromptSettings = {};
+    const defaults = (agentDefaults ?? {}) as Record<string, unknown>;
+    const user = userSettings as Record<string, unknown>;
+    const overrides: Record<string, unknown> = {};
     let hasOverrides = false;
 
     // Check for changed or added keys
-    for (const key of Object.keys(userSettings)) {
-        const userVal = userSettings[key];
+    for (const key of Object.keys(user)) {
+        const userVal = user[key];
         const defaultVal = defaults[key];
 
         // Deep equality check for objects/arrays
@@ -41,14 +42,14 @@ export function computeSettingsOverrides(
     // Check for removed keys (present in defaults but not in user settings)
     // Only flag as removed if the user explicitly cleared it
     for (const key of Object.keys(defaults)) {
-        if (!(key in userSettings) && defaults[key] !== undefined && defaults[key] !== null) {
+        if (!(key in user) && defaults[key] !== undefined && defaults[key] !== null) {
             // Key was in defaults but user removed it — send null to clear
             overrides[key] = null;
             hasOverrides = true;
         }
     }
 
-    return hasOverrides ? overrides : null;
+    return hasOverrides ? (overrides as PromptSettings) : null;
 }
 
 /**

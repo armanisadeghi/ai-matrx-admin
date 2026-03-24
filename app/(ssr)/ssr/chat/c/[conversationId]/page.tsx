@@ -10,20 +10,11 @@
 // The client picks up the first message from sessionStorage.
 
 import { Suspense } from 'react';
-import dynamic from 'next/dynamic';
 import ChatHeaderControls from '../../_components/ChatHeaderControls';
+import ChatConversationClient from '../../_components/ChatConversationClient';
 import { getChatAuth } from '../../_lib/auth';
 import { ChatConversationSkeleton } from '../../_components/ChatConversationSkeleton';
 import { BACKEND_URLS, ENDPOINTS } from '@/lib/api/endpoints';
-
-// Dynamic import — conversation UI is never needed at initial SSR paint
-const ChatConversationClient = dynamic(
-    () => import('../../_components/ChatConversationClient'),
-    {
-        ssr: false,
-        loading: () => <ChatConversationSkeleton />,
-    },
-);
 
 export default async function ConversationPage({
     params,

@@ -51,13 +51,6 @@ const PublicVariableInputs = dynamic(
         ),
     { ssr: false },
 );
-const GuidedVariableInputs = dynamic(
-    () =>
-        import('@/features/public-chat/components/GuidedVariableInputs').then(
-            m => ({ default: m.GuidedVariableInputs }),
-        ),
-    { ssr: false },
-);
 const ModelSettingsDialog = dynamic(
     () =>
         import(
