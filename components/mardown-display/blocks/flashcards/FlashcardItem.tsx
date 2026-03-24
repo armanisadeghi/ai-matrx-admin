@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/styles/themes/utils";
 
@@ -18,8 +18,25 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
+  const [hasOverflow, setHasOverflow] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const isMultiLineBack = back != null && back.includes("\n");
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const checkOverflow = () => {
+      setHasOverflow(el.scrollHeight > el.clientHeight + 2);
+      setIsScrolledToBottom(el.scrollTop + el.clientHeight >= el.scrollHeight - 4);
+    };
+    checkOverflow();
+    el.addEventListener("scroll", checkOverflow);
+    const ro = new ResizeObserver(checkOverflow);
+    ro.observe(el);
+    return () => { el.removeEventListener("scroll", checkOverflow); ro.disconnect(); };
+  }, [back, isFlipped]);
 
   const handleClick = () => {
     setIsFlipped(!isFlipped);
@@ -36,26 +53,22 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
     const length = text.length;
 
     if (isMultiLine) {
-      if (layoutMode === "list") {
-        if (length < 120) return "text-sm md:text-base";
-        return "text-xs md:text-sm";
-      }
-      if (length < 150) return "text-lg";
-      if (length < 250) return "text-base md:text-lg";
-      return "text-sm md:text-base";
+      // multiline back: list items, numbered steps, etc.
+      if (length < 120) return "text-xl";
+      if (length < 200) return "text-lg";
+      if (length < 320) return "text-base";
+      if (length < 500) return "text-sm";
+      return "text-xs";
     }
 
-    if (layoutMode === "list") {
-      if (length < 80) return "text-xl md:text-2xl";
-      if (length < 150) return "text-lg md:text-xl";
-      if (length < 250) return "text-base md:text-lg";
-      return "text-sm md:text-base";
-    } else {
-      if (length < 50) return "text-lg md:text-xl";
-      if (length < 100) return "text-base md:text-lg";
-      if (length < 200) return "text-sm md:text-base";
-      return "text-xs md:text-sm";
-    }
+    // single-line front or back
+    if (length < 20)  return "text-3xl md:text-4xl";
+    if (length < 40)  return "text-2xl md:text-3xl";
+    if (length < 80)  return "text-xl md:text-2xl";
+    if (length < 140) return "text-lg md:text-xl";
+    if (length < 220) return "text-base md:text-lg";
+    if (length < 320) return "text-sm md:text-base";
+    return "text-xs md:text-sm";
   };
 
   const renderBackContent = () => {
@@ -109,7 +122,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
           )}
           style={{ backfaceVisibility: "hidden" }}
         >
-          <CardContent className="flex flex-col items-center justify-center h-full p-4 relative">
+          <CardContent className="flex flex-col items-center justify-center h-full !p-2 relative">
             <div
               className={cn(
                 "text-center font-medium text-gray-800 dark:text-gray-200 leading-relaxed",
@@ -143,24 +156,27 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
         >
           <CardContent
             className={cn(
-              "flex flex-col h-full p-4 relative",
+              "flex flex-col h-full !p-2 !pb-0 relative",
               isMultiLineBack
                 ? "items-start justify-start"
                 : "items-center justify-center",
             )}
           >
-            <div
-              className={cn(
-                "font-medium text-foreground",
-                "max-h-full overflow-y-auto scrollbar-thin scrollbar-thumb-green-300 dark:scrollbar-thumb-green-700",
-                "px-1 w-full h-full",
-                isMultiLineBack
-                  ? "text-left leading-snug"
-                  : "text-center leading-relaxed",
-                getTextSizeClass(back ?? "", isMultiLineBack),
+            <div className={cn("relative w-full", isMultiLineBack ? "h-full" : "")}>
+              <div
+                ref={scrollRef}
+                className={cn(
+                  "font-medium text-foreground overflow-y-auto scrollbar-none",
+                  "px-1 w-full",
+                  isMultiLineBack ? "h-full text-left leading-snug pb-2" : "text-center leading-relaxed",
+                  getTextSizeClass(back ?? "", isMultiLineBack),
+                )}
+              >
+                {renderBackContent()}
+              </div>
+              {hasOverflow && !isScrolledToBottom && (
+                <div className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none bg-gradient-to-t from-emerald-950 to-transparent" />
               )}
-            >
-              {renderBackContent()}
             </div>
             {isHovered && (
               <div className="absolute bottom-1 right-2 text-[9px] text-green-600/60 dark:text-green-400/60 animate-in fade-in duration-200 whitespace-nowrap">
