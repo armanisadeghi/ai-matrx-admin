@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { Printer, X, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { BlockPrinter, PrintSettings, PrintSetting } from "@/features/chat/utils/block-print-utils";
@@ -235,6 +235,9 @@ export function PrintOptionsDialog({ printer, data, open, onOpenChange }: PrintO
                         <Printer className="w-4 h-4" />
                         {printer.label}
                     </DialogTitle>
+                    <DialogDescription className="sr-only">
+                        Choose a print format and options for this content.
+                    </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col min-h-0 flex-1 overflow-hidden">
                     <PrintOptionsContent printer={printer} data={data} onClose={handleClose} />

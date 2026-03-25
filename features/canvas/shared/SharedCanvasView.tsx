@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useSharedCanvas } from '@/hooks/canvas/useSharedCanvas';
 import { CanvasSocialActions } from '../social/CanvasSocialActions';
 import { PublicCanvasRenderer } from './PublicCanvasRenderer';
@@ -27,30 +27,8 @@ export function SharedCanvasView({ shareToken }: SharedCanvasViewProps) {
     const { data: canvas, isLoading, error } = useSharedCanvas(shareToken);
     const [showDetails, setShowDetails] = useState(false);
 
-    // Update page title and meta tags
-    useEffect(() => {
-        if (canvas) {
-            document.title = `${canvas.title} - AI Matrix Canvas`;
-            
-            // Add Open Graph meta tags for social sharing
-            const addMetaTag = (property: string, content: string) => {
-                let meta = document.querySelector(`meta[property="${property}"]`) as HTMLMetaElement;
-                if (!meta) {
-                    meta = document.createElement('meta');
-                    meta.setAttribute('property', property);
-                    document.head.appendChild(meta);
-                }
-                meta.content = content;
-            };
-
-            addMetaTag('og:title', canvas.title);
-            if (canvas.description) {
-                addMetaTag('og:description', canvas.description);
-            }
-            addMetaTag('og:type', 'website');
-            addMetaTag('og:url', window.location.href);
-        }
-    }, [canvas]);
+    // Page title + OG tags are handled server-side via generateMetadata in page.tsx.
+    // No client-side document manipulation needed.
 
     if (isLoading) {
         return (
