@@ -103,7 +103,12 @@ export default function ChatWelcomeClient({
         }
     }, [availableModels.length, dispatch]);
 
-    // Variable state
+    // Variable state — use Redux (updated after DB fetch) with server-prop fallback
+    const reduxVariables = (selectedAgent.configFetched
+        ? selectedAgent.variableDefaults
+        : agent.variableDefaults) ?? [];
+    const activeVariables = reduxVariables as PromptVariable[];
+
     const [variableValues, setVariableValues] = useState<Record<string, string>>(() => {
         const initial: Record<string, string> = {};
         agent.variableDefaults?.forEach(v => {
@@ -111,7 +116,20 @@ export default function ChatWelcomeClient({
         });
         return initial;
     });
-    const activeVariables = (agent.variableDefaults ?? []) as PromptVariable[];
+
+    // Sync variable values when Redux variables change (after DB fetch)
+    useEffect(() => {
+        if (!selectedAgent.configFetched) return;
+        const vars = selectedAgent.variableDefaults ?? [];
+        if (vars.length === 0) return;
+        setVariableValues(prev => {
+            const next: Record<string, string> = {};
+            vars.forEach(v => {
+                next[v.name] = prev[v.name] ?? v.defaultValue ?? '';
+            });
+            return next;
+        });
+    }, [selectedAgent.configFetched, selectedAgent.variableDefaults]);
 
     // Model override + settings
     const [modelOverride, setModelOverride] = useState<string | null>(null);

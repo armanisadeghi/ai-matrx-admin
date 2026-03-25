@@ -8,9 +8,48 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 
+/**
+ * Skeleton shown while ConversationShell dynamic import loads.
+ * Mimics the ConversationShell layout (messages + input bar).
+ */
+export function ConversationShellSkeleton() {
+  return (
+    <div className="flex flex-col h-full overflow-hidden bg-textured w-full">
+      <div className="flex flex-1 overflow-hidden min-h-0">
+        <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
+          <div className="max-w-[800px] mx-auto w-full px-4 pt-6 space-y-6">
+            <div className="flex justify-end">
+              <Skeleton className="h-4 w-48" />
+            </div>
+            <div className="flex justify-start">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-64" />
+                <Skeleton className="h-4 w-40" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="flex-shrink-0 p-2 pb-safe">
+        <div className="max-w-[800px] mx-auto">
+          <div className="flex items-center gap-0 border border-border rounded-3xl py-2 bg-background">
+            <div className="flex-1 py-[9px] px-3">
+              <Skeleton className="h-[18px] w-32" />
+            </div>
+            <div className="w-8 h-8 rounded-full bg-blue-600/40 mr-1" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Full-page skeleton shown by Suspense fallback on conversation route.
+ */
 export function ChatConversationSkeleton() {
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
       {/* ── Message area ─────────────────────────────────────────────── */}
       <div className="flex-1 overflow-hidden min-h-0">
         <div className="max-w-[800px] mx-auto w-full px-4 pt-6 space-y-6">

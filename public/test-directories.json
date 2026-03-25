@@ -72,10 +72,6 @@
     "name": "glass-effect"
   },
   {
-    "path": "/tests/glass-test",
-    "name": "glass-test"
-  },
-  {
     "path": "/tests/google-apis",
     "name": "google-apis"
   },
