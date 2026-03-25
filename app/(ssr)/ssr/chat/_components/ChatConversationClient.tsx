@@ -24,13 +24,17 @@ import { chatConversationsActions } from '@/features/cx-conversation/redux/slice
 import type { PromptVariable, PromptSettings } from '@/features/prompts/types/core';
 import type { ApiMode } from '@/features/cx-conversation/redux/types';
 import { DEFAULT_AGENTS } from '@/features/public-chat/components/AgentSelector';
+import { ConversationShellSkeleton } from './ChatConversationSkeleton';
 
 const ConversationShell = dynamic(
     () =>
         import('@/features/cx-conversation/ConversationShell').then(m => ({
             default: m.ConversationShell,
         })),
-    { ssr: false },
+    {
+        ssr: false,
+        loading: () => <ConversationShellSkeleton />,
+    },
 );
 const AgentPickerSheet = dynamic(
     () =>
@@ -194,7 +198,7 @@ export default function ChatConversationClient({
                 onSelect={agent => handleAgentSelect(agent as ActiveChatAgent)}
             />
 
-            <div className="h-full flex flex-col overflow-hidden">
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
                 <ConversationViewWithFirstMessage
                     agentId={effectiveAgentId}
                     apiMode="agent"
