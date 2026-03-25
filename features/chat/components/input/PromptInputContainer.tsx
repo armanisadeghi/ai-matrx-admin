@@ -12,6 +12,12 @@ import { useFileManagement } from "@/hooks/ai/chat/useFileManagement";
 import { ResourceChips } from "@/features/prompts/components/resource-display/ResourceChips";
 import type { Resource } from "@/features/prompts/types/resources";
 import { formatResourcesToXml } from "@/features/prompts/utils/resource-formatting";
+import {
+  saveDraft,
+  clearDraft,
+  getDraft,
+  cleanupStaleDrafts,
+} from "@/features/chat/utils/messageDraftSafety";
 
 interface PromptInputContainerProps {
   onMessageSent?: () => void;
@@ -56,6 +62,25 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
   const [resources, setResources] = useState<Resource[]>([]);
 
   const activeMessageRecord = useAppSelector(chatSelectors.activeMessage);
+
+  // --- Draft Safety: restore any unsent draft on mount ---
+  const draftRestoredRef = useRef(false);
+  useEffect(() => {
+    if (draftRestoredRef.current) return;
+    draftRestoredRef.current = true;
+
+    cleanupStaleDrafts();
+
+    const draft = getDraft(conversationId);
+    if (draft && draft.content.trim()) {
+      setContent(draft.content);
+      if (draft.resources && Array.isArray(draft.resources) && draft.resources.length > 0) {
+        setResources(draft.resources as Resource[]);
+      }
+      // Clear the draft now that it's restored into the input
+      clearDraft(conversationId);
+    }
+  }, [conversationId]);
 
   const handleContentChange = useCallback(
     (newContent: string) => {
@@ -143,6 +168,11 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
       }
     }
 
+    // Save the draft to sessionStorage BEFORE clearing the input.
+    // This is the safety net: if anything crashes between here and success
+    // confirmation, the draft will be restored on next mount.
+    saveDraft(conversationId, finalContent, resources);
+
     dispatch(chatActions.updateMessageContent({ value: finalContent }));
     dispatch(chatActions.updateMessageStatus({ status: "submitted" }));
     setContent("");
@@ -151,6 +181,8 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
       const success = await onSubmit();
 
       if (success) {
+        // Message is confirmed in the pipeline — safe to discard the draft
+        clearDraft(conversationId);
         fileManager.clearFiles();
         setResources([]);
 
@@ -159,9 +191,17 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
         }
         textInputRef.current?.focus();
       } else {
-        setContent(activeMessageRecord.content);
+        // Submission failed — restore from the safety draft so the user
+        // doesn't lose their work
+        clearDraft(conversationId);
+        setContent(finalContent);
         console.error("Failed to send message (handled by parent)");
       }
+    } catch (error) {
+      // Unexpected error — restore the content from what we captured
+      clearDraft(conversationId);
+      setContent(finalContent);
+      console.error("Unexpected error during message submission:", error);
     } finally {
       setLocalDisabled(false);
     }
@@ -175,6 +215,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
     dispatch,
     activeMessageRecord,
     messageId,
+    conversationId,
   ]);
 
   return (
