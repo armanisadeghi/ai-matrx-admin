@@ -15,8 +15,28 @@ export interface PrintVariant {
 }
 
 /**
+ * A single user-configurable setting shown in the print dialog.
+ * Currently supports boolean toggles. Extend discriminated union for
+ * future types (select, number, etc.) without breaking existing printers.
+ */
+export type PrintSetting =
+    | {
+          type: "boolean";
+          id: string;
+          label: string;
+          description?: string;
+          /** Default value shown when the dialog first opens */
+          defaultValue: boolean;
+          /** Which variant IDs this setting applies to. Omit = applies to all. */
+          appliesTo?: string[];
+      };
+
+/** A resolved map of setting id → current value, passed to print(). */
+export type PrintSettings = Record<string, boolean | string | number>;
+
+/**
  * The self-contained print capability that each block can export.
- * Host code only ever calls print(data, variantId) — it never inspects internals.
+ * Host code only ever calls print(data, variantId, settings) — it never inspects internals.
  */
 export interface BlockPrinter {
     /** Tooltip / aria-label for the print button in the block header */
@@ -29,11 +49,18 @@ export interface BlockPrinter {
     variants: PrintVariant[];
 
     /**
-     * Execute the print.
-     * data     — the block's structured data (serverData or parsed content)
-     * variantId — which variant was chosen (undefined = default / no variants)
+     * Optional user-configurable settings shown below the variant picker.
+     * Omit entirely if the block has no configurable settings.
      */
-    print: (data: unknown, variantId?: string) => void | Promise<void>;
+    settings?: PrintSetting[];
+
+    /**
+     * Execute the print.
+     * data      — the block's structured data (serverData or parsed content)
+     * variantId — which variant was chosen (undefined = default / no variants)
+     * settings  — resolved setting values chosen by the user
+     */
+    print: (data: unknown, variantId?: string, settings?: PrintSettings) => void | Promise<void>;
 }
 
 // ─── Shared Utilities ─────────────────────────────────────────────────────────

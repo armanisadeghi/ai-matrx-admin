@@ -3,6 +3,7 @@ import React, { useState, useRef, useCallback } from "react";
 import { Edit, MoreHorizontal, Copy, Check, Volume2, Download, Loader2, Link } from "lucide-react";
 import { useDomCapturePrint } from "@/features/chat/hooks/useDomCapturePrint";
 import MarkdownStream from "@/components/MarkdownStream";
+import { escapeEmbeddedCodeFences } from "@/features/prompts/utils/escape-code-fences";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
 import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
 import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";
@@ -203,7 +204,7 @@ export function PromptAssistantMessage({
                     ) : (
                         <div ref={captureRef}>
                             <MarkdownStream
-                                content={content}
+                                content={escapeEmbeddedCodeFences(content)}
                                 taskId={taskId}
                                 type="message"
                                 role="assistant"

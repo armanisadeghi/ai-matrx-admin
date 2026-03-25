@@ -18,6 +18,7 @@ import { mapIcon } from "@/utils/icons/icon-mapper";
 import { PromptMessage, PromptVariable, VariableCustomComponent, PromptSettings } from "@/features/prompts/types/core";
 import { HighlightedText } from "./HighlightedText";
 import MarkdownStream from "@/components/MarkdownStream";
+import { escapeEmbeddedCodeFences } from "@/features/prompts/utils/escape-code-fences";
 import CodeBlock from "@/features/code-editor/components/code-block/CodeBlock";
 
 type MessageItem =
@@ -680,7 +681,7 @@ export function FullScreenEditor({
                                             <div className="w-full h-full bg-textured border border-border rounded-lg p-4 overflow-y-auto">
                                                 {getCurrentContent() ? (
                                                     <MarkdownStream
-                                                        content={getCurrentContent()}
+                                                        content={escapeEmbeddedCodeFences(getCurrentContent())}
                                                         hideCopyButton={false}
                                                         allowFullScreenEditor={false}
                                                     />

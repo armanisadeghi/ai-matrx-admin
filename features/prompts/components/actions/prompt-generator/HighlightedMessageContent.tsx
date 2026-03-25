@@ -8,6 +8,7 @@
 
 import React from 'react';
 import MarkdownStream from '@/components/MarkdownStream';
+import { escapeEmbeddedCodeFences } from '@/features/prompts/utils/escape-code-fences';
 
 interface HighlightedMessageContentProps {
   content: string;
@@ -54,11 +55,11 @@ export function HighlightedMessageContent({
     });
   }
 
-  // If no variables found, render as plain markdown
+  // If no variables found, render as plain markdown (with fences escaped)
   if (parts.length === 0 || (parts.length === 1 && parts[0].type === 'text')) {
     return (
       <MarkdownStream
-        content={content}
+        content={escapeEmbeddedCodeFences(content)}
         isStreamActive={isStreamActive}
         hideCopyButton={true}
       />
@@ -96,14 +97,20 @@ export function HighlightedMessageContent({
 
 /**
  * Alternative rendering that converts variables to markdown code blocks
- * and then renders the whole thing as markdown
+ * and then renders the whole thing as markdown.
+ *
+ * Prompt message content can contain triple-backtick code fences as part
+ * of the prompt's own instructions (e.g. output format examples). These
+ * fences would be misinterpreted by the markdown renderer, corrupting the
+ * display. We escape them so they render as visible literal text instead.
  */
 export function HighlightedMessageContentMarkdown({
   content,
   isStreamActive = false,
 }: HighlightedMessageContentProps) {
-  // Replace variables with highlighted markdown
-  const highlightedContent = content.replace(
+  const safeContent = escapeEmbeddedCodeFences(content);
+
+  const highlightedContent = safeContent.replace(
     /\{\{([^}]+)\}\}/g,
     '`{{$1}}`'
   );

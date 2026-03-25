@@ -12,9 +12,46 @@
  *   back-only     — answers/definitions only
  */
 
-import { buildPrintDocument, openPrintWindow, escapeHtml, type BlockPrinter } from "@/features/chat/utils/block-print-utils";
+import { buildPrintDocument, openPrintWindow, escapeHtml, type BlockPrinter, type PrintSettings } from "@/features/chat/utils/block-print-utils";
 import type { Flashcard } from "./flashcard-parser";
 import type { FlashcardsBlockData } from "@/types/python-generated/content-blocks";
+
+// ---------------------------------------------------------------------------
+// Settings helpers
+// ---------------------------------------------------------------------------
+
+/** Resolved settings with all defaults filled in — safe to use without null checks */
+interface CardPrintSettings {
+    showSideLabel: boolean;   // "Front" / "Back" label
+    showCardNumber: boolean;  // "#1", "#2" … badge
+    showTickMarks: boolean;   // 4 small tick marks at cut intersection
+    showCutLines: boolean;    // full dashed crossing lines
+    lightBackText: boolean;   // print back text in dark gray (~#555) to reduce show-through
+    mirrorBack: boolean;      // horizontally flip back page text so bleed-through is unreadable
+}
+
+const SETTING_DEFAULTS: CardPrintSettings = {
+    showSideLabel: false,
+    showCardNumber: false,
+    showTickMarks: true,
+    showCutLines: false,
+    lightBackText: false,
+    mirrorBack: false,
+};
+
+function resolveSettings(raw?: PrintSettings): CardPrintSettings {
+    if (!raw) return { ...SETTING_DEFAULTS };
+    const b = (key: keyof CardPrintSettings) =>
+        raw[key] !== undefined ? Boolean(raw[key]) : SETTING_DEFAULTS[key];
+    return {
+        showSideLabel:  b("showSideLabel"),
+        showCardNumber: b("showCardNumber"),
+        showTickMarks:  b("showTickMarks"),
+        showCutLines:   b("showCutLines"),
+        lightBackText:  b("lightBackText"),
+        mirrorBack:     b("mirrorBack"),
+    };
+}
 
 export type FlashcardsVariant = "landscape-duplex" | "landscape-stacked" | "avery-5388" | "cut-cards" | "both-sides" | "study-sheet" | "front-only" | "back-only";
 
@@ -647,6 +684,26 @@ const LANDSCAPE_STYLES = `
   .tick-v-top    { top: 0.1in; }
   .tick-v-bottom { bottom: 0.1in; }
 
+  /* Full dashed cut lines (optional — only rendered when showCutLines = true) */
+  .cut-line-h {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 0;
+    border-top: 0.6px dashed #bbb;
+    pointer-events: none;
+  }
+  .cut-line-v {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    border-left: 0.6px dashed #bbb;
+    pointer-events: none;
+  }
+
   /* Card number badge */
   .card-num {
     position: absolute;
@@ -680,19 +737,41 @@ const LANDSCAPE_STYLES = `
   }
 
   .card-text-inner {
-    font-size: 18pt;   /* JS will shrink this if needed */
+    font-size: 22pt;   /* fitText JS shrinks this to fit — start bigger for short fronts */
     font-weight: 600;
-    line-height: 1.35;
+    line-height: 1.3;
     white-space: pre-wrap;
     word-break: break-word;
     text-align: center;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
-  /* For multiline back content: left-align */
+  /* Multiline prose back: left-align, slightly smaller start */
   .card-text-inner.multiline {
     text-align: left;
-    font-size: 14pt;
+    font-size: 15pt;
     font-weight: 400;
+    line-height: 1.45;
+  }
+
+  /* Bullet list back */
+  ul.card-text-inner.card-list {
+    text-align: left;
+    font-size: 15pt;
+    font-weight: 400;
+    line-height: 1.5;
+    padding-left: 1.1em;
+    margin: 0;
+    list-style-type: disc;
+    white-space: normal;
+    width: 100%;
+  }
+  ul.card-text-inner.card-list li {
+    margin-bottom: 0.25em;
+  }
+  ul.card-text-inner.card-list li:last-child {
+    margin-bottom: 0;
   }
 
   /* Print-only: hide the browser action bar */
@@ -708,51 +787,116 @@ const LANDSCAPE_STYLES = `
 const FIT_TEXT_SCRIPT = `
 <script>
 (function() {
-  function fitText(el) {
-    var container = el.parentElement;
+  function fitText(el, container) {
+    // container is the bounding box we must fit inside
     var maxW = container.clientWidth;
     var maxH = container.clientHeight;
     var size = parseFloat(window.getComputedStyle(el).fontSize);
     var minSize = 6;
-    while (size > minSize && (el.scrollWidth > maxW + 2 || el.scrollHeight > maxH + 2)) {
+    // Give the element a chance to reflow at current size before measuring
+    el.style.fontSize = size + "pt";
+    while (size > minSize && (el.scrollWidth > maxW + 1 || el.scrollHeight > maxH + 1)) {
       size -= 0.5;
       el.style.fontSize = size + "pt";
     }
   }
   function runAll() {
-    var els = document.querySelectorAll(".card-text-inner");
-    for (var i = 0; i < els.length; i++) { fitText(els[i]); }
+    // Landscape card text: container is .card-text (the flex centering wrapper)
+    var cardEls = document.querySelectorAll(".card-text .card-text-inner");
+    for (var i = 0; i < cardEls.length; i++) {
+      fitText(cardEls[i], cardEls[i].parentElement);
+    }
+    // Avery card text: container is .avery-text-wrap (the absolute centering wrapper)
+    var averyEls = document.querySelectorAll(".avery-text-wrap .avery-text");
+    for (var i = 0; i < averyEls.length; i++) {
+      fitText(averyEls[i], averyEls[i].parentElement);
+    }
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", runAll);
   } else {
-    runAll();
+    // document.write pages may already be loaded
+    setTimeout(runAll, 0);
   }
 })();
 </script>`;
+
+/** Returns true if the majority of non-empty lines look like bullet items */
+function isBulletContent(text: string): boolean {
+    const lines = text.split("\n").filter((l) => l.trim().length > 0);
+    if (lines.length < 2) return false;
+    const bulletLines = lines.filter((l) => /^\s*[-•*]\s/.test(l));
+    return bulletLines.length >= lines.length * 0.6; // 60%+ bullet lines = treat as list
+}
 
 function isMultiline(text: string): boolean {
     return text.includes("\n") || text.length > 120;
 }
 
-function cardTextInner(text: string, isFront: boolean): string {
-    const ml = !isFront && isMultiline(text);
+/**
+ * Render card back text as either:
+ *   - A bullet list (<ul><li>…</li></ul>) when content is bullet-style — left-aligned
+ *   - Plain centered text for normal prose
+ *   - Front text is always plain centered
+ */
+function renderCardText(text: string, isFront: boolean, extraStyle = ""): { html: string; isList: boolean } {
+    if (isFront) {
+        const styleAttr = extraStyle ? ` style="${extraStyle}"` : "";
+        return {
+            html: `<div class="card-text-inner"${styleAttr}>${escapeHtml(text).replace(/\n/g, "<br>")}</div>`,
+            isList: false,
+        };
+    }
+
+    const bullet = isBulletContent(text);
+
+    if (bullet) {
+        const lines = text.split("\n");
+        const items = lines
+            .map((l) => l.trim())
+            .filter((l) => l.length > 0)
+            .map((l) => l.replace(/^[-•*]\s*/, "")) // strip leading dash/bullet
+            .map((l) => `<li>${escapeHtml(l)}</li>`)
+            .join("");
+        const styleAttr = extraStyle ? ` style="${extraStyle}"` : "";
+        return {
+            html: `<ul class="card-text-inner card-list"${styleAttr}>${items}</ul>`,
+            isList: true,
+        };
+    }
+
+    // Plain multiline or single-line prose
+    const ml = isMultiline(text);
     const cls = ml ? "card-text-inner multiline" : "card-text-inner";
-    const escaped = escapeHtml(text).replace(/\n/g, "<br>");
-    return `<div class="${cls}">${escaped}</div>`;
+    const styleAttr = extraStyle ? ` style="${extraStyle}"` : "";
+    return {
+        html: `<div class="${cls}"${styleAttr}>${escapeHtml(text).replace(/\n/g, "<br>")}</div>`,
+        isList: false,
+    };
 }
 
 function buildCardFace(
     text: string,
     cardNum: number,
     isFront: boolean,
+    s: CardPrintSettings,
 ): string {
-    const sideLabel = isFront ? "Front" : "Back";
+    const numBadge  = s.showCardNumber ? `<span class="card-num">#${cardNum}</span>` : "";
+    const sideLabel = s.showSideLabel  ? `<span class="side-label">${isFront ? "Front" : "Back"}</span>` : "";
+
+    const textColor   = (!isFront && s.lightBackText) ? "color:#777;" : "";
+    const mirrorXform = (!isFront && s.mirrorBack)    ? "transform:scaleX(-1);display:block;" : "";
+    const innerStyle  = textColor + mirrorXform;
+
+    const { html, isList } = renderCardText(text, isFront, innerStyle);
+    // Lists align to the start so bullets sit at top-left; prose/front stays centered
+    const cardTextStyle = isList ? ' style="align-items:flex-start;"' : "";
+
     return `<div class="card-face">
-  <span class="card-num">#${cardNum}</span>
-  <span class="side-label">${sideLabel}</span>
-  <div class="card-text">
-    ${cardTextInner(text, isFront)}
+  ${numBadge}
+  ${sideLabel}
+  <div class="card-text"${cardTextStyle}>
+    ${html}
   </div>
 </div>`;
 }
@@ -765,17 +909,24 @@ const QUAD_CLASSES = [
 ] as const;
 
 function buildPage(
-    cells: string[],   // exactly 4 strings (card HTML or empty string)
-    _showCutGuides: boolean,
+    cells: string[],
+    s: CardPrintSettings,
 ): string {
-    // Always show the 4 tick marks (tiny, dim) — no full crossing lines
-    const ticks = `<div class="tick-h-left"></div>
+    const ticks = s.showTickMarks
+        ? `<div class="tick-h-left"></div>
   <div class="tick-h-right"></div>
   <div class="tick-v-top"></div>
-  <div class="tick-v-bottom"></div>`;
+  <div class="tick-v-bottom"></div>`
+        : "";
+
+    const lines = s.showCutLines
+        ? `<div class="cut-line-h"></div>
+  <div class="cut-line-v"></div>`
+        : "";
 
     return `<div class="page">
   ${ticks}
+  ${lines}
   ${cells.map((c, i) => `<div class="${QUAD_CLASSES[i]}">${c}</div>`).join("\n  ")}
 </div>`;
 }
@@ -791,37 +942,30 @@ function renderLandscape(
     cards: Flashcard[],
     title: string,
     mode: "duplex" | "stacked",
+    s: CardPrintSettings,
 ): string {
     const BATCH = 4;
     const pages: string[] = [];
-    const empty = `<div class="card-face" style="border-color:#ddd;"></div>`;
+    const empty = `<div class="card-face"></div>`;
 
     for (let p = 0; p < Math.ceil(cards.length / BATCH); p++) {
         const batch = cards.slice(p * BATCH, (p + 1) * BATCH);
-        // Pad to exactly 4
         while (batch.length < BATCH) batch.push({ front: "", back: "" });
 
         const fronts = batch.map((c, i) =>
-            c.front
-                ? buildCardFace(c.front, p * BATCH + i + 1, true)
-                : empty,
+            c.front ? buildCardFace(c.front, p * BATCH + i + 1, true, s) : empty,
         );
-
         const backs = batch.map((c, i) =>
-            c.back
-                ? buildCardFace(c.back ?? "", p * BATCH + i + 1, false)
-                : empty,
+            c.back ? buildCardFace(c.back ?? "", p * BATCH + i + 1, false, s) : empty,
         );
 
         if (mode === "duplex") {
-            // Flip on long (left/right) edge: swap columns → [1,0,3,2] index order for backs
             const backsFlipped = [backs[1], backs[0], backs[3], backs[2]];
-            pages.push(buildPage(fronts, true));
-            pages.push(buildPage(backsFlipped, false));
+            pages.push(buildPage(fronts, s));
+            pages.push(buildPage(backsFlipped, s));
         } else {
-            // stacked: all fronts page then all backs page
-            pages.push(buildPage(fronts, true));
-            pages.push(buildPage(backs, false));
+            pages.push(buildPage(fronts, s));
+            pages.push(buildPage(backs, s));
         }
     }
 
@@ -914,25 +1058,30 @@ const AVERY_5388_STYLES = `
     border-bottom: none;
   }
 
-  /* Each card zone: exactly 5" × 3" */
+  /* Each card zone: exactly 5" × 3" — position:relative so the inner text can be absolutely centered */
   .avery-card {
     width: 5in;
     height: 3in;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  /* Text centering wrapper — fills the card and centers content in both axes */
+  .avery-text-wrap {
+    position: absolute;
+    inset: 0.2in 0.3in;   /* inner padding — 0.2in top/bottom, 0.3in left/right */
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 0.2in 0.25in;
     overflow: hidden;
-    position: relative;
-    flex-shrink: 0;
   }
 
   /* Side label (tiny, top-left) */
   .avery-side-label {
     position: absolute;
-    top: 8px;
-    left: 10px;
+    top: 6px;
+    left: 8px;
     font-size: 6pt;
     font-weight: 700;
     letter-spacing: 0.1em;
@@ -943,26 +1092,52 @@ const AVERY_5388_STYLES = `
   /* Card number (tiny, top-right) */
   .avery-card-num {
     position: absolute;
-    top: 8px;
-    right: 10px;
+    top: 6px;
+    right: 8px;
     font-size: 6pt;
     color: #aaa;
     font-weight: 600;
   }
 
+  /* The text itself — starts large, fitText JS shrinks it to fit the wrap container */
   .avery-text {
-    font-size: 18pt;
+    font-size: 22pt;
     font-weight: 600;
-    line-height: 1.35;
+    line-height: 1.3;
     white-space: pre-wrap;
     word-break: break-word;
     text-align: center;
-    width: 100%;
+    max-width: 100%;
   }
   .avery-text.multiline {
-    font-size: 13pt;
+    font-size: 15pt;
     font-weight: 400;
     text-align: left;
+    line-height: 1.45;
+  }
+
+  /* Bullet list back */
+  ul.avery-text.card-list {
+    text-align: left;
+    font-size: 15pt;
+    font-weight: 400;
+    line-height: 1.5;
+    padding-left: 1.1em;
+    margin: 0;
+    list-style-type: disc;
+    white-space: normal;
+    width: 100%;
+  }
+  ul.avery-text.card-list li {
+    margin-bottom: 0.3em;
+  }
+  ul.avery-text.card-list li:last-child {
+    margin-bottom: 0;
+  }
+
+  @media print {
+    /* Ensure gray text isn't converted to black by color management */
+    .avery-text { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 
   @media print {
@@ -976,19 +1151,48 @@ function buildAveryCard(
     text: string,
     cardNum: number,
     isFront: boolean,
+    s: CardPrintSettings,
 ): string {
-    const ml = !isFront && (text.includes("\n") || text.length > 120);
-    const cls = ml ? "avery-text multiline" : "avery-text";
-    const escaped = escapeHtml(text).replace(/\n/g, "<br>");
-    const sideLabel = isFront ? "Front" : "Back";
+    const numBadge  = s.showCardNumber ? `<span class="avery-card-num">#${cardNum}</span>` : "";
+    const sideLabel = s.showSideLabel  ? `<span class="avery-side-label">${isFront ? "Front" : "Back"}</span>` : "";
+
+    const textColor   = (!isFront && s.lightBackText) ? "color:#777;" : "";
+    const mirrorXform = (!isFront && s.mirrorBack)    ? "transform:scaleX(-1);" : "";
+    const innerStyle  = textColor + mirrorXform;
+
+    // Render with shared logic — detects bullets, builds <ul> if needed
+    const isBullet = !isFront && isBulletContent(text);
+    const isML     = !isFront && isMultiline(text);
+    const cls      = isBullet ? "avery-text card-list" : isML ? "avery-text multiline" : "avery-text";
+    const styleAttr = innerStyle ? ` style="${innerStyle}"` : "";
+
+    let innerHtml: string;
+    if (isBullet) {
+        const items = text.split("\n")
+            .map((l) => l.trim())
+            .filter((l) => l.length > 0)
+            .map((l) => l.replace(/^[-•*]\s*/, ""))
+            .map((l) => `<li>${escapeHtml(l)}</li>`)
+            .join("");
+        innerHtml = `<ul class="${cls}"${styleAttr}>${items}</ul>`;
+    } else {
+        const escaped = escapeHtml(text).replace(/\n/g, "<br>");
+        innerHtml = `<div class="${cls}"${styleAttr}>${escaped}</div>`;
+    }
+
+    // List content: wrap aligns to start; prose/front: centered
+    const wrapExtra = isBullet ? ' style="align-items:flex-start;"' : "";
+
     return `<div class="avery-card">
-  <span class="avery-side-label">${sideLabel}</span>
-  <span class="avery-card-num">#${cardNum}</span>
-  <div class="${cls}">${escaped}</div>
+  ${numBadge}
+  ${sideLabel}
+  <div class="avery-text-wrap"${wrapExtra}>
+    ${innerHtml}
+  </div>
 </div>`;
 }
 
-function renderAvery5388(cards: Flashcard[], title: string): string {
+function renderAvery5388(cards: Flashcard[], title: string, s: CardPrintSettings): string {
     const BATCH = 3;
     const pages: string[] = [];
 
@@ -996,18 +1200,14 @@ function renderAvery5388(cards: Flashcard[], title: string): string {
         const batch = cards.slice(p * BATCH, (p + 1) * BATCH);
 
         const frontCells = batch
-            .map((c, i) => buildAveryCard(c.front, p * BATCH + i + 1, true))
+            .map((c, i) => buildAveryCard(c.front, p * BATCH + i + 1, true, s))
             .join("\n");
-
         const backCells = batch
-            .map((c, i) => buildAveryCard(c.back ?? "", p * BATCH + i + 1, false))
+            .map((c, i) => buildAveryCard(c.back ?? "", p * BATCH + i + 1, false, s))
             .join("\n");
 
-        // Pad pages with fewer than 3 cards — empty spacers keep layout correct
         const padCount = BATCH - batch.length;
-        const padCells = Array(padCount)
-            .fill(`<div class="avery-card"></div>`)
-            .join("\n");
+        const padCells = Array(padCount).fill(`<div class="avery-card"></div>`).join("\n");
 
         pages.push(`<div class="avery-page">${frontCells}${padCells}</div>`);
         pages.push(`<div class="avery-page">${backCells}${padCells}</div>`);
@@ -1031,7 +1231,7 @@ function openAveryWindow(bodyHtml: string, title: string): void {
   <span style="color:#64748b;font-size:11px;">Avery 5388 · 3×5" index cards · 3 per page · set printer to <strong>Portrait, no margins</strong></span>
 </div>
 ${bodyHtml}
-${FIT_TEXT_SCRIPT.replace(/\.card-text-inner/g, ".avery-text")}
+${FIT_TEXT_SCRIPT}
 </body>
 </html>`;
 
@@ -1112,9 +1312,61 @@ export const flashcardsPrinter: BlockPrinter = {
         },
     ],
 
-    print(data: unknown, variantId: string = "landscape-duplex") {
+    settings: [
+        {
+            type: "boolean" as const,
+            id: "showSideLabel",
+            label: "Show side label",
+            description: 'Prints "Front" or "Back" in the corner of each card',
+            defaultValue: false,
+            appliesTo: ["landscape-duplex", "landscape-stacked", "avery-5388"],
+        },
+        {
+            type: "boolean" as const,
+            id: "showCardNumber",
+            label: "Show card number",
+            description: "Prints #1, #2 … in the corner of each card",
+            defaultValue: false,
+            appliesTo: ["landscape-duplex", "landscape-stacked", "avery-5388"],
+        },
+        {
+            type: "boolean" as const,
+            id: "showTickMarks",
+            label: "Show cut tick marks",
+            description: "Four small marks at the center intersection — where to make each cut",
+            defaultValue: true,
+            appliesTo: ["landscape-duplex", "landscape-stacked"],
+        },
+        {
+            type: "boolean" as const,
+            id: "showCutLines",
+            label: "Show full cut lines",
+            description: "Dashed lines all the way across the page — helps if you don't have a ruler",
+            defaultValue: false,
+            appliesTo: ["landscape-duplex", "landscape-stacked"],
+        },
+        {
+            type: "boolean" as const,
+            id: "lightBackText",
+            label: "Light back text (reduce show-through)",
+            description: "Prints the back side in dark gray instead of black — ink is lighter and less visible through the paper",
+            defaultValue: false,
+            appliesTo: ["landscape-duplex", "landscape-stacked", "avery-5388"],
+        },
+        {
+            type: "boolean" as const,
+            id: "mirrorBack",
+            label: "Mirror back text (best show-through prevention)",
+            description: "Flips back text horizontally — any ink that bleeds through reads backwards and is unrecognizable from the front",
+            defaultValue: false,
+            appliesTo: ["landscape-duplex", "landscape-stacked", "avery-5388"],
+        },
+    ],
+
+    print(data: unknown, variantId: string = "landscape-duplex", rawSettings?: PrintSettings) {
         const cards = extractCards(data);
         const title = deriveTitle(data);
+        const s = resolveSettings(rawSettings);
 
         if (cards.length === 0) {
             openPrintWindow(
@@ -1124,17 +1376,17 @@ export const flashcardsPrinter: BlockPrinter = {
             return;
         }
 
-        // Landscape variants use a fully custom document (precise page geometry)
+        // Landscape and Avery variants use fully custom documents (precise page geometry)
         if (variantId === "landscape-duplex") {
-            openLandscapeWindow(renderLandscape(cards, title, "duplex"), title);
+            openLandscapeWindow(renderLandscape(cards, title, "duplex", s), title);
             return;
         }
         if (variantId === "landscape-stacked") {
-            openLandscapeWindow(renderLandscape(cards, title, "stacked"), title);
+            openLandscapeWindow(renderLandscape(cards, title, "stacked", s), title);
             return;
         }
         if (variantId === "avery-5388") {
-            openAveryWindow(renderAvery5388(cards, title), title);
+            openAveryWindow(renderAvery5388(cards, title, s), title);
             return;
         }
 
