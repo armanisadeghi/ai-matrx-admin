@@ -2,15 +2,17 @@
 //
 // Redux slice for the active chat page state.
 //
-// Replaces SsrAgentContext (selected agent) and the useBlockMode flag from
-// the deprecated ChatContext. This is the source of truth for all components
-// in the SSR chat route that need to coordinate without being in the same
-// part of the React tree (workspace, sidebar, header, mobile bar).
+// Single source of truth for all components in the SSR chat route that need
+// to coordinate without being in the same part of the React tree
+// (workspace, sidebar, header, mobile bar).
 //
-// useBlockMode survives navigation: if an admin turns on block mode they
-// expect it to persist across new conversations. The session's own
-// uiState.useBlockMode must be kept in sync — see updateUIState dispatch
-// pattern in ChatHeaderControls and ChatWorkspace.
+// State managed here:
+//   - selectedAgent     → agent config (id, name, variables, settings, etc.)
+//   - firstMessage      → queued message from welcome screen → conversation transition
+//   - modelOverride     → user-selected model (only sent if dirty vs agent default)
+//   - modelSettings     → user-modified settings (only sent if dirty vs agent default)
+//   - agentDefaultSettings → baseline for dirty detection
+//   - useBlockMode      → admin toggle, persists across conversations
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { PromptVariable, PromptSettings } from '@/features/prompts/types/core';
@@ -19,19 +21,11 @@ import type { PromptVariable, PromptSettings } from '@/features/prompts/types/co
 // TYPES
 // ============================================================================
 
-/**
- * Shape-compatible with AgentConfig from DEPRECATED-ChatContext.
- * Use this type going forward.
- */
 export interface ActiveChatAgent {
     promptId: string;
     name: string;
     description?: string;
     variableDefaults?: PromptVariable[];
-    /** Populated after DB fetch — settings.model_id (no messages ever fetched) */
-    modelOverride?: string | null;
-    /** Populated after DB fetch — settings sans model_id (no messages ever fetched) */
-    modelSettings?: PromptSettings;
     /** Populated after DB fetch — tools list */
     tools?: string[];
     /** True once the DB config has been loaded for this promptId */
@@ -39,9 +33,13 @@ export interface ActiveChatAgent {
     /**
      * When true, the inline model picker is shown so the user can change models.
      * Driven by the `dynamic_model` column on the prompts table.
-     * Defaults to false (hidden) until DB fetch confirms otherwise.
      */
     dynamicModel?: boolean;
+}
+
+export interface FirstMessage {
+    content: string;
+    variables: Record<string, unknown>;
 }
 
 interface ActiveChatState {
@@ -51,12 +49,16 @@ interface ActiveChatState {
     selectedAgent: ActiveChatAgent;
     /** Controls the AgentPickerSheet visibility */
     isAgentPickerOpen: boolean;
-    /**
-     * Admin-only block mode toggle.
-     * When true, sendMessage routes to the agents-blocks endpoint.
-     * Also synced into session.uiState.useBlockMode when a session is active.
-     */
+    /** Admin-only block mode toggle — persists across conversations */
     useBlockMode: boolean;
+    /** Queued first message for welcome → conversation transition */
+    firstMessage: FirstMessage | null;
+    /** User-selected model override (null = use agent default) */
+    modelOverride: string | null;
+    /** User-modified settings (empty = use agent defaults) */
+    modelSettings: PromptSettings;
+    /** Agent's default settings — baseline for dirty detection */
+    agentDefaultSettings: PromptSettings;
 }
 
 // ============================================================================
@@ -64,9 +66,9 @@ interface ActiveChatState {
 // ============================================================================
 
 export const DEFAULT_ACTIVE_AGENT: ActiveChatAgent = {
-    promptId: '6b6b4e45-4699-4860-8dea-d8a60e07d69a',
-    name: 'General Chat',
-    description: 'Helpful general assistant.',
+    promptId: 'ce7c5e71-cbdc-4ed1-8dd9-a7eac930b6b8',
+    name: 'Matrx Chat',
+    description: 'Fully customizable agent.',
     variableDefaults: [],
 };
 
@@ -75,6 +77,10 @@ const initialState: ActiveChatState = {
     selectedAgent: DEFAULT_ACTIVE_AGENT,
     isAgentPickerOpen: false,
     useBlockMode: false,
+    firstMessage: null,
+    modelOverride: null,
+    modelSettings: {},
+    agentDefaultSettings: {},
 };
 
 // ============================================================================
@@ -100,9 +106,34 @@ const activeChatSlice = createSlice({
         setUseBlockMode(state, action: PayloadAction<boolean>) {
             state.useBlockMode = action.payload;
         },
-        /** Reset on unmount / route change — keeps agent but clears session */
+        /** Queue a first message for the welcome → conversation transition */
+        setFirstMessage(state, action: PayloadAction<FirstMessage | null>) {
+            state.firstMessage = action.payload;
+        },
+        /** Clear the first message after it has been consumed */
+        clearFirstMessage(state) {
+            state.firstMessage = null;
+        },
+        setModelOverride(state, action: PayloadAction<string | null>) {
+            state.modelOverride = action.payload;
+        },
+        setModelSettings(state, action: PayloadAction<PromptSettings>) {
+            state.modelSettings = action.payload;
+        },
+        /** Store agent's default settings so we can detect dirty overrides */
+        setAgentDefaultSettings(state, action: PayloadAction<PromptSettings>) {
+            state.agentDefaultSettings = action.payload;
+        },
+        /** Reset model/settings when switching agents */
+        resetModelState(state) {
+            state.modelOverride = null;
+            state.modelSettings = {};
+            state.agentDefaultSettings = {};
+        },
+        /** Reset on unmount / route change — keeps agent but clears session + first message */
         clearActiveSession(state) {
             state.sessionId = null;
+            state.firstMessage = null;
         },
     },
 });
@@ -133,3 +164,15 @@ export const selectIsAgentPickerOpen = (s: StateWithActiveChat): boolean =>
 
 export const selectActiveChatUseBlockMode = (s: StateWithActiveChat): boolean =>
     s.activeChat.useBlockMode;
+
+export const selectFirstMessage = (s: StateWithActiveChat): FirstMessage | null =>
+    s.activeChat.firstMessage;
+
+export const selectModelOverride = (s: StateWithActiveChat): string | null =>
+    s.activeChat.modelOverride;
+
+export const selectModelSettings = (s: StateWithActiveChat): PromptSettings =>
+    s.activeChat.modelSettings;
+
+export const selectAgentDefaultSettings = (s: StateWithActiveChat): PromptSettings =>
+    s.activeChat.agentDefaultSettings;

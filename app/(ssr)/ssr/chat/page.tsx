@@ -1,25 +1,12 @@
 // app/(ssr)/ssr/chat/page.tsx
 //
-// Server component — renders the welcome screen with General Chat pre-selected.
-// No database calls. Hardcoded agent data for instant SSR.
-// The client island (ChatWelcomeClient) hydrates interactivity after paint.
+// Root chat route — immediately redirects to the default agent.
+// The user never sees this page; it exists solely to resolve
+// /ssr/chat → /ssr/chat/a/{defaultAgentId} on the server.
 
-import ChatWelcomeServer from './_components/ChatWelcomeServer';
-import ChatHeaderControls from './_components/ChatHeaderControls';
-import { GENERAL_CHAT_AGENT } from './_lib/agents';
-import { getChatAuth } from './_lib/auth';
+import { redirect } from 'next/navigation';
+import { DEFAULT_AGENT_ID } from './_lib/agents';
 
-export default async function ChatPage() {
-    const auth = await getChatAuth();
-
-    return (
-        <>
-            <ChatHeaderControls />
-            <ChatWelcomeServer
-                agent={GENERAL_CHAT_AGENT}
-                isAuthenticated={auth.isAuthenticated}
-                isAdmin={auth.isAdmin}
-            />
-        </>
-    );
+export default function ChatPage() {
+    redirect(`/ssr/chat/a/${DEFAULT_AGENT_ID}`);
 }

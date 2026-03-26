@@ -16,8 +16,9 @@
 //       just the PanelLeft toggle button.
 //     - {children}: the page content — welcome screen or conversation view.
 //   Agent selector lives in ChatHeaderControls (injected via PageHeaderPortal).
+//
+//   All shared state flows through Redux (activeChatSlice) — no context providers.
 
-import { AgentsProvider } from "@/features/public-chat/context/DEPRECATED-AgentsContext";
 import { ChatPanelContent, ChatDesktopHeader } from "./_components/ChatSidebarClient";
 import ChatMobileHeaderBar from "./_components/ChatMobileHeaderBar";
 
@@ -27,7 +28,7 @@ export default function ChatLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AgentsProvider>
+    <>
       {/* Hide mobile dock — chat owns the bottom chrome */}
       <span className="shell-hide-dock" aria-hidden="true" />
 
@@ -36,10 +37,6 @@ export default function ChatLayout({
           The <aside> and all structural divs are pure server HTML.
           Only the interactive children are client islands. */}
       <aside className="shell-panel">
-        {/* ChatPanelContent renders two things at the aside level:
-            1. The mobile header row (lg:hidden) — back button + search + new chat
-            2. The shell-panel-body — actions + lists + footer
-            Both are direct children of aside, never nested inside each other. */}
         <ChatPanelContent />
       </aside>
 
@@ -62,6 +59,6 @@ export default function ChatLayout({
       <div className="shell-panel-content">
         {children}
       </div>
-    </AgentsProvider>
+    </>
   );
 }

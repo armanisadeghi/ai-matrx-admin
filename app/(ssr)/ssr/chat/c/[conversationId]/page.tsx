@@ -1,13 +1,17 @@
 // app/(ssr)/ssr/chat/c/[conversationId]/page.tsx
 //
-// Conversation-direct route — /ssr/chat/c/[conversationId]
+// Conversation route — /ssr/chat/c/[conversationId]
 // Server component that:
-//   1. Fires a server-side warm call to the Python backend
-//   2. Renders the conversation skeleton (server HTML)
-//   3. The ChatConversationClient island loads the actual conversation
+//   1. Reads conversationId and searchParams (agent, new)
+//   2. Fires a warm call for existing conversations (skips for new)
+//   3. Renders the conversation client island inside Suspense
 //
-// Supports conversationId="new" for first-message transitions from welcome.
-// The client picks up the first message from sessionStorage.
+// ?new=true — conversation was just submitted from the welcome screen.
+//   The client reads firstMessage from Redux and starts streaming immediately
+//   without fetching from DB.
+//
+// ?agent=xxx — keeps the agent ID in the URL for header/sidebar display
+//   and for "new conversation" actions with the same agent.
 
 import { Suspense } from 'react';
 import ChatHeaderControls from '../../_components/ChatHeaderControls';
@@ -21,7 +25,7 @@ export default async function ConversationPage({
     searchParams,
 }: {
     params: Promise<{ conversationId: string }>;
-    searchParams: Promise<{ agent?: string }>;
+    searchParams: Promise<{ agent?: string; new?: string }>;
 }) {
     const [{ conversationId }, resolvedSearchParams, auth] = await Promise.all([
         params,
@@ -30,12 +34,13 @@ export default async function ConversationPage({
     ]);
 
     const agentId = resolvedSearchParams.agent;
-    const isNew = conversationId === 'new';
+    const isNew = resolvedSearchParams.new === 'true';
 
-    // Fire-and-forget: warm the conversation on the Python backend (skip for "new")
-    if (!isNew) {
-        const warmUrl = `${BACKEND_URLS.production}${ENDPOINTS.ai.conversationWarm(conversationId)}`;
-        fetch(warmUrl, { method: 'POST' }).catch(() => {});
+    // Warm the conversation on the Python backend (skip for new conversations)
+    if (!isNew && conversationId !== 'new') {
+        fetch(`${BACKEND_URLS.production}${ENDPOINTS.ai.conversationWarm(conversationId)}`, {
+            method: 'POST',
+        }).catch(() => {});
     }
 
     return (
@@ -45,6 +50,7 @@ export default async function ConversationPage({
                 <ChatConversationClient
                     conversationId={conversationId}
                     agentId={agentId}
+                    isNew={isNew}
                     isAuthenticated={auth.isAuthenticated}
                     isAdmin={auth.isAdmin}
                 />

@@ -13,12 +13,12 @@
 //
 // Navigation: Uses Next.js router.push() for proper App Router navigation.
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from 'react';
 import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { SidebarActions } from "@/features/public-chat/components/sidebar/SidebarActions";
-import { SidebarAgents } from "@/features/public-chat/components/sidebar/SidebarAgents";
-import { SidebarChats } from "@/features/public-chat/components/sidebar/SidebarChats";
+import { SsrSidebarAgents } from "./SsrSidebarAgents";
+import { SsrSidebarChats } from "./SsrSidebarChats";
 import { SidebarUserFooter } from "@/features/public-chat/components/sidebar/SidebarUserFooter";
 import { ChevronLeftTapButton, PanelLeftTapButton, PlusTapButton } from "@/components/icons/tap-buttons";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
@@ -131,14 +131,17 @@ export function ChatPanelContent() {
   }, [router, selectedAgent?.promptId]);
 
   const handleNewChat = useCallback(() => {
-    router.push("/ssr/chat");
-  }, [router]);
+    closeMobilePanel();
+    const agentId = selectedAgent?.promptId;
+    router.push(agentId ? `/ssr/chat/a/${agentId}` : '/ssr/chat');
+  }, [router, selectedAgent?.promptId]);
 
   const handleAgentSelect = useCallback(
     (agent: ActiveChatAgent) => {
       closeMobilePanel();
       dispatch(activeChatActions.setSelectedAgent(agent));
       dispatch(activeChatActions.setActiveSessionId(null));
+      dispatch(activeChatActions.resetModelState());
       router.push(`/ssr/chat/a/${agent.promptId}`);
     },
     [dispatch, router],
@@ -198,12 +201,12 @@ export function ChatPanelContent() {
           />
 
           <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none">
-            <SidebarAgents
+            <SsrSidebarAgents
               searchQuery={searchQuery}
               selectedAgent={selectedAgent}
               onAgentSelect={handleAgentSelect}
             />
-            <SidebarChats
+            <SsrSidebarChats
               activeRequestId={activeConversationId}
               onSelectChat={handleSelectChat}
               onNewChat={handleNewChat}
@@ -228,7 +231,12 @@ export function ChatDesktopHeader() {
   const selectedAgent = useAppSelector(selectActiveChatAgent);
 
   const isAgentLoading = !selectedAgent?.configFetched && !selectedAgent?.name;
-  const displayName = isAgentLoading ? "" : (selectedAgent?.name || "General Chat");
+  const displayName = isAgentLoading ? "" : (selectedAgent?.name || "Matrx Chat");
+
+  const handleNewChat = useCallback(() => {
+    const agentId = selectedAgent?.promptId;
+    router.push(agentId ? `/ssr/chat/a/${agentId}` : '/ssr/chat');
+  }, [router, selectedAgent?.promptId]);
 
   return (
     <div className="flex items-center w-full min-w-0">
@@ -249,7 +257,7 @@ export function ChatDesktopHeader() {
       </button>
       <div className="ml-auto flex-shrink-0">
         <PlusTapButton
-          onClick={() => router.push("/ssr/chat")}
+          onClick={handleNewChat}
           ariaLabel="New chat"
         />
       </div>

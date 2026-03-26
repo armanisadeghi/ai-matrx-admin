@@ -14,7 +14,7 @@ export default function ChatMobileAgentName() {
 
     // Don't render until agent config is resolved — avoids showing a raw UUID
     const isLoading = !selectedAgent?.configFetched && !selectedAgent?.name;
-    const displayName = isLoading ? '' : (selectedAgent?.name || 'General Chat');
+    const displayName = isLoading ? '' : (selectedAgent?.name || 'Matrx Chat');
 
     return (
         <button

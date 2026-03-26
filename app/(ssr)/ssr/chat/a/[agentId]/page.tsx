@@ -2,12 +2,12 @@
 //
 // Agent-direct route — /ssr/chat/a/[agentId]
 // Server component that:
-//   1. Resolves the agent from hardcoded data (instant SSR)
+//   1. Resolves the agent from hardcoded data (instant SSR, no DB call)
 //   2. Fires a server-side warm call to the Python backend
 //   3. Renders the welcome screen with the agent pre-selected
 //
 // The client island handles input interactivity and fetches
-// full agent config from the database after paint.
+// full agent config from the database after paint (only for non-builtin agents).
 
 import ChatWelcomeServer from '../../_components/ChatWelcomeServer';
 import ChatHeaderControls from '../../_components/ChatHeaderControls';
@@ -26,9 +26,9 @@ export default async function AgentPage({
         Promise.resolve(resolveAgentForSSR(agentId)),
     ]);
 
-    // Fire-and-forget: warm the agent on the Python backend (server → server)
-    const warmUrl = `${BACKEND_URLS.production}${ENDPOINTS.ai.agentWarm(agentId)}`;
-    fetch(warmUrl, { method: 'POST' }).catch(() => {});
+    fetch(`${BACKEND_URLS.production}${ENDPOINTS.ai.agentWarm(agentId)}`, {
+        method: 'POST',
+    }).catch(() => {});
 
     return (
         <>

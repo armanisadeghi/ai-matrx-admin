@@ -5,5 +5,8 @@
  */
 
 export { useTextToSpeech } from './useTextToSpeech';
+export { useCartesiaSpeaker } from './useCartesiaSpeaker';
+
 export type { UseTextToSpeechProps } from './useTextToSpeech';
+export type { SpeakerPhase, UseCartesiaSpeakerOptions } from './useCartesiaSpeaker';
 

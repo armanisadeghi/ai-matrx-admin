@@ -283,6 +283,8 @@ export function parseMarkdownToText(markdown: string): string {
       .replace(/↓/g, 'down arrow')
       // Remove HTML tags, keep content
       .replace(/<\/?[^>]+(>|$)/g, '')
+      // Add period before newlines that follow text without terminal punctuation (ensures TTS pause)
+      .replace(/([^\s.!?,;:\-])(\n)/g, '$1.\n')
       // Clean up multiple spaces
       .replace(/\s+/g, ' ')
       // Trim whitespace
