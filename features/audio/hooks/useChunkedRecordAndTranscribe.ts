@@ -367,25 +367,30 @@ export function useChunkedRecordAndTranscribe({
 
   const pauseRecording = useCallback(() => {
     if (!mediaRecorderRef.current || mediaRecorderRef.current.state !== 'recording') return;
-    mediaRecorderRef.current.pause();
-    pausedAtRef.current = Date.now();
 
     if (rotationTimerRef.current) { clearInterval(rotationTimerRef.current); rotationTimerRef.current = null; }
     if (durationTimerRef.current) { clearInterval(durationTimerRef.current); durationTimerRef.current = null; }
     if (rafRef.current)           { cancelAnimationFrame(rafRef.current);    rafRef.current = null; }
+
+    mediaRecorderRef.current.stop();
+    mediaRecorderRef.current = null;
+
+    pausedAtRef.current = Date.now();
     setAudioLevel(0);
     setIsPaused(true);
   }, []);
 
   const resumeRecording = useCallback(() => {
-    if (!mediaRecorderRef.current || mediaRecorderRef.current.state !== 'paused') return;
+    if (!streamRef.current) return;
     pausedDurationRef.current += Date.now() - pausedAtRef.current;
-    mediaRecorderRef.current.resume();
+
+    mediaRecorderRef.current = createRecorder(streamRef.current);
+
     startAudioAnalysis();
     startDurationTimer();
     rotationTimerRef.current = setInterval(rotateChunk, chunkDurationMs);
     setIsPaused(false);
-  }, [startAudioAnalysis, startDurationTimer, rotateChunk, chunkDurationMs]);
+  }, [createRecorder, startAudioAnalysis, startDurationTimer, rotateChunk, chunkDurationMs]);
 
   const reset = useCallback(() => {
     cleanup();

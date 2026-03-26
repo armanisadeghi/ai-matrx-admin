@@ -13,7 +13,7 @@
 'use client';
 
 import React, { useEffect, useRef, useCallback, useState } from 'react';
-import { Mic, Loader2 } from 'lucide-react';
+import { Mic } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useChunkedRecordAndTranscribe } from '@/features/audio/hooks';
 import { TranscriptionResult } from '@/features/audio/types';
@@ -200,26 +200,10 @@ export default function MicrophoneIconButtonCore({
   // breathe past the glass edge without being clipped.
   // ══════════════════════════════════════════════════════════════════════════
   if (variant === 'icon-only') {
-    const glassIdle = [
-      'bg-white/10 dark:bg-white/5',
-      'backdrop-blur-md',
-      'shadow-sm',
-    ].join(' ');
-
-    const glassRecording = [
-      'bg-primary/15 dark:bg-primary/10',
-      'backdrop-blur-md',
-      'shadow-md',
-    ].join(' ');
-
-    const glassProcessing = [
-      'bg-blue-500/10 dark:bg-blue-500/5',
-      'backdrop-blur-md',
-    ].join(' ');
+    const isActive = isRecording || isTranscribing;
 
     return (
       <>
-        {/* OUTER — transparent 48 × 48 tap target */}
         <button
           type="button"
           onClick={handleClick}
@@ -234,43 +218,40 @@ export default function MicrophoneIconButtonCore({
             'h-12 w-12 rounded-full',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
             disabled && 'cursor-not-allowed opacity-50',
-            isTranscribing && !isRecording && 'cursor-wait',
+            isActive && 'cursor-pointer',
+            !isActive && !disabled && 'cursor-pointer',
             className,
           )}
         >
-          {/* Audio-reactive breathing ring — lives between outer and middle */}
           {isRecording && (
             <span
-              className="absolute inset-0 rounded-full bg-primary/20 transition-transform duration-75"
+              className="absolute inset-0 rounded-full bg-primary/15 transition-transform duration-75"
               style={{ transform: `scale(${1 + (audioLevel ?? 0) / 110})` }}
             />
           )}
           {isRecording && (
-            <span className="absolute inset-0 rounded-full bg-primary/25 animate-ping" />
+            <span
+              className="absolute inset-0 rounded-full bg-primary/20 animate-ping"
+              style={{ animationDuration: '1.5s' }}
+            />
           )}
 
-          {/* MIDDLE — glass pill */}
           <span
             className={cn(
               'relative z-10 inline-flex items-center justify-center rounded-full',
               'h-8 w-8 transition-all duration-200',
-              isRecording && !isTranscribing && glassRecording,
-              isTranscribing && glassProcessing,
-              !isRecording && !isTranscribing && glassIdle,
+              isActive
+                ? 'bg-primary/15 dark:bg-primary/10 backdrop-blur-md shadow-md hover:bg-primary/25'
+                : 'bg-white/10 dark:bg-white/5 backdrop-blur-md shadow-sm hover:bg-accent',
               'hover:scale-105 active:scale-95',
             )}
           >
-            {/* INNER — icon */}
-            {isTranscribing ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500 dark:text-blue-400" />
-            ) : (
-              <Mic
-                className={cn(
-                  'h-3.5 w-3.5',
-                  isRecording ? 'text-primary' : 'text-foreground/70',
-                )}
-              />
-            )}
+            <Mic
+              className={cn(
+                'h-3.5 w-3.5',
+                isActive ? 'text-primary' : 'text-foreground/70',
+              )}
+            />
           </span>
         </button>
 
@@ -366,7 +347,7 @@ export default function MicrophoneIconButtonCore({
   // VARIANT: modal-controls
   // Fixed footprint. All interaction happens inside the modal.
   // ══════════════════════════════════════════════════════════════════════════
-  const ModalIcon = isTranscribing ? Loader2 : Mic;
+  const modalActive = isRecording || isTranscribing;
 
   return (
     <>
@@ -378,27 +359,28 @@ export default function MicrophoneIconButtonCore({
         className={cn(
           baseBtn,
           'relative overflow-visible',
-          isRecording && 'text-primary',
-          isTranscribing && 'cursor-wait text-blue-600 dark:text-blue-400',
-          !isRecording && !isTranscribing && 'hover:bg-accent text-muted-foreground',
+          modalActive && 'text-primary',
+          !modalActive && 'hover:bg-accent text-muted-foreground',
           className,
         )}
       >
-        {/* Audio-reactive ring — same as icon-only */}
         {isRecording && (
           <span
-            className="absolute inset-0 rounded-full bg-primary/25 transition-transform duration-75"
+            className="absolute inset-0 rounded-full bg-primary/20 transition-transform duration-75"
             style={{ transform: `scale(${1 + (audioLevel ?? 0) / 120})` }}
           />
         )}
         {isRecording && (
-          <span className="absolute inset-0 rounded-full bg-primary/30 animate-ping" />
+          <span
+            className="absolute inset-0 rounded-full bg-primary/25 animate-ping"
+            style={{ animationDuration: '1.5s' }}
+          />
         )}
-        <ModalIcon
+        <Mic
           className={cn(
             iconSizeMap[size],
             'relative',
-            isTranscribing && 'animate-spin text-blue-600 dark:text-blue-400',
+            modalActive ? 'text-primary' : '',
           )}
         />
       </button>

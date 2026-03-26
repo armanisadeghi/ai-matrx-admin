@@ -326,16 +326,15 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
           </button>
         </div>
 
-        {/* Recording Indicator with live transcript preview */}
         {isRecording && (
-          <div className="absolute left-2 bottom-2 right-12 flex items-center gap-1.5 px-2 py-1 bg-red-100 dark:bg-red-900/30 rounded-md">
+          <div className="absolute left-2 bottom-2 right-12 flex items-center gap-1.5 px-2 py-1 bg-primary/10 dark:bg-primary/15 rounded-md">
             <motion.div
-              animate={{ scale: [1, 1.2, 1] }}
+              animate={{ scale: [1, 1.3, 1] }}
               transition={{ repeat: Infinity, duration: 1.5 }}
-              className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"
+              className="w-2 h-2 bg-primary rounded-full flex-shrink-0"
             />
-            <span className="text-xs text-red-600 dark:text-red-400 font-medium truncate">
-              {liveTranscript ? liveTranscript.slice(-60) : 'Recording...'}
+            <span className="text-xs text-primary font-medium truncate">
+              {liveTranscript ? liveTranscript.slice(-60) : 'Listening...'}
             </span>
           </div>
         )}
