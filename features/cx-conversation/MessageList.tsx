@@ -13,7 +13,6 @@ import { chatConversationsActions } from "@/features/cx-conversation/redux/slice
 import dynamic from "next/dynamic";
 import { MessageErrorBoundary } from "@/features/cx-conversation/MessageErrorBoundary";
 import { UserMessage } from "@/features/cx-conversation/UserMessage";
-import type { CartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
 
 const AssistantMessage = dynamic(
   () => import("@/features/cx-conversation/AssistantMessage").then((m) => m.AssistantMessage),
@@ -24,7 +23,6 @@ interface MessageListProps {
   sessionId: string;
   showSystemMessages?: boolean;
   compact?: boolean;
-  audioControls?: CartesiaControls;
   onMessageContentChange?: (messageId: string, newContent: string) => void;
 }
 
@@ -37,14 +35,12 @@ interface StreamingAssistantMessageProps {
   sessionId: string;
   messageId: string;
   compact?: boolean;
-  audioControls?: CartesiaControls;
 }
 
 function StreamingAssistantMessage({
   sessionId,
   messageId,
   compact,
-  audioControls,
 }: StreamingAssistantMessageProps) {
   const message = useAppSelector((state) => {
     const messages = state.chatConversations.sessions[sessionId]?.messages;
@@ -59,7 +55,6 @@ function StreamingAssistantMessage({
       sessionId={sessionId}
       isStreamActive={true}
       compact={compact}
-      audioControls={audioControls}
     />
   );
 }
@@ -72,7 +67,6 @@ export function MessageList({
   sessionId,
   showSystemMessages = false,
   compact = false,
-  audioControls,
   onMessageContentChange,
 }: MessageListProps) {
   const dispatch = useAppDispatch();
@@ -186,7 +180,6 @@ export function MessageList({
                       sessionId={sessionId}
                       messageId={message.id}
                       compact={compact}
-                      audioControls={audioControls}
                     />
                   ) : (
                     <AssistantMessage
@@ -194,7 +187,6 @@ export function MessageList({
                       sessionId={sessionId}
                       isStreamActive={false}
                       compact={compact}
-                      audioControls={audioControls}
                       onContentChange={contentChangeHandler}
                     />
                   )}

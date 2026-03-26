@@ -2,12 +2,24 @@ export function parseMarkdownToText(markdown: string): string {
     if (!markdown || typeof markdown !== 'string') return '';
 
     const numberToWords = (num: string): string => {
-      const numbers = [
-        'Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
-        'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'
+      const ones = [
+        'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+        'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'
       ];
+      const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
       const numInt = parseInt(num, 10);
-      return numInt < 20 ? numbers[numInt] : `Number ${num}`;
+      if (numInt < 20) return ones[numInt];
+      if (numInt < 100) {
+        const t = Math.floor(numInt / 10);
+        const o = numInt % 10;
+        return o === 0 ? tens[t] : `${tens[t]}-${ones[o]}`;
+      }
+      if (numInt < 1000) {
+        const h = Math.floor(numInt / 100);
+        const remainder = numInt % 100;
+        return remainder === 0 ? `${ones[h]} hundred` : `${ones[h]} hundred ${numberToWords(String(remainder))}`;
+      }
+      return String(numInt);
     };
 
     const emojiMap: { [key: string]: string } = {
@@ -179,6 +191,8 @@ export function parseMarkdownToText(markdown: string): string {
       .replace(/^\|.*\|[ \t]*$/gm, '')
       // Replace inline code
       .replace(/`([^`]+)`/g, '$1')
+      // Replace numeric ranges (e.g. 0-2, 10-20) with "X to Y" before any dash stripping
+      .replace(/\b(\d+)\s*[-–—]\s*(\d+)\b/g, (_match, a, b) => `${numberToWords(a)} to ${numberToWords(b)}`)
       // Replace headers
       .replace(/^#{1,6}\s+(.+)$/gm, 'Section: $1')
       // Remove comment markers but keep content

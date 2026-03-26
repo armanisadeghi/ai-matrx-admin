@@ -1,8 +1,8 @@
 /**
- * SpeakerButtonCore — Variant 1: Single play/pause toggle
+ * SpeakerButtonCore — Single play/pause toggle (dynamically imported)
  *
- * Dynamically imported by SpeakerButton.
  * Uses Volume2TapButton / PauseTapButton from the tap-buttons system.
+ * Forwards variant prop so it works in any context (standalone, group, etc).
  * Shape never changes — one button, always.
  */
 
@@ -12,10 +12,13 @@ import React, { useEffect, useRef, useCallback } from 'react';
 import { Volume2TapButton, PauseTapButton } from '@/components/icons/tap-buttons';
 import { useCartesiaSpeaker } from '../hooks/useCartesiaSpeaker';
 
+type Variant = 'glass' | 'transparent' | 'solid' | 'group';
+
 export interface SpeakerButtonCoreProps {
   text: string;
   processMarkdown?: boolean;
   autoStart?: boolean;
+  variant?: Variant;
   className?: string;
   disabled?: boolean;
 }
@@ -24,6 +27,7 @@ export default function SpeakerButtonCore({
   text,
   processMarkdown = true,
   autoStart = false,
+  variant,
   className,
   disabled = false,
 }: SpeakerButtonCoreProps) {
@@ -49,6 +53,7 @@ export default function SpeakerButtonCore({
   if (isPlaying) {
     return (
       <PauseTapButton
+        variant={variant}
         onClick={handleClick}
         disabled={disabled}
         ariaLabel="Pause"
@@ -59,6 +64,7 @@ export default function SpeakerButtonCore({
 
   return (
     <Volume2TapButton
+      variant={variant}
       onClick={handleClick}
       disabled={disabled || isLoading}
       ariaLabel={isLoading ? 'Connecting…' : isPaused ? 'Resume' : 'Play audio'}

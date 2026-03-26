@@ -29,6 +29,7 @@ import {
   Waves,
   Cpu,
 } from 'lucide-react';
+import { SpeakerGroup } from '@/features/tts/components/SpeakerGroup';
 
 interface MarkdownTesterProps {
   className?: string;
@@ -382,6 +383,12 @@ Right-click for content block templates!"
                     </TabsContent>
 
                     <TabsContent value="speech-text" className="flex-1 overflow-auto m-0 p-3 mt-0">
+                      <div className="flex items-center gap-2 mb-3">
+                        <SpeakerGroup text={renderedContent} />
+                        <Badge variant="secondary" className="text-xs">
+                          {parseMarkdownToText(renderedContent).length} speech chars
+                        </Badge>
+                      </div>
                       <div className="font-mono text-sm whitespace-pre-wrap break-words bg-textured text-gray-900 dark:text-gray-100">
                         {parseMarkdownToText(renderedContent)}
                       </div>

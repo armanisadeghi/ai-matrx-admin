@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { MessageList } from "@/features/cx-conversation/MessageList";
 import { ConversationInput } from "@/features/cx-conversation/ConversationInput";
 import type { ConversationInputProps } from "@/features/cx-conversation/ConversationInput";
-import { useCartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
 import { UnsavedChangesIndicator } from "@/features/cx-conversation/UnsavedChangesIndicator";
 import { useUnsavedChangesGuard } from "@/features/cx-conversation/hooks/useUnsavedChangesGuard";
 
@@ -73,9 +72,6 @@ export function ConversationShell({
   inputProps = {},
   headerSlot,
 }: ConversationShellProps) {
-  // Single Cartesia connection shared across this conversation
-  const audioControls = useCartesiaControls();
-
   // Warn user on page leave if unsaved edits exist
   useUnsavedChangesGuard(sessionId);
 
@@ -120,7 +116,6 @@ export function ConversationShell({
               sessionId={sessionId}
               showSystemMessages={showSystemMessages}
               compact={compact}
-              audioControls={audioControls}
               onMessageContentChange={onMessageContentChange}
             />
           </div>

@@ -3,40 +3,28 @@
 import React, {
   useState,
   useEffect,
-  useRef,
   useCallback,
   lazy,
   Suspense,
 } from "react";
 import {
-  ThumbsUp,
-  ThumbsDown,
-  Copy,
-  Check,
-  Edit,
-  MoreHorizontal,
   Volume2,
-  Pause,
   Download,
   Link as LinkIcon,
   Loader2,
-  Save,
-  History,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TapTargetButtonTransparent, TapTargetButtonForGroup, TapTargetButtonGroup } from "@/app/(ssr)/_components/core/TapTargetButton";
 import MarkdownStream from "@/components/MarkdownStream";
 import { StreamingContentBlocks } from "@/features/cx-conversation/StreamingContentBlocks";
 import { useDomCapturePrint } from "@/features/conversation/hooks/useDomCapturePrint";
 import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";
-import { parseMarkdownToText } from "@/utils/markdown-processors/parse-markdown-for-speech";
-import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { selectMessageHasUnsavedChanges, selectMessageHasHistory } from "@/features/cx-conversation/redux/selectors";
 import { editMessage } from "@/features/cx-conversation/redux/thunks/editMessage";
 import { buildContentBlocksForSave } from "@/features/cx-conversation/utils/buildContentBlocksForSave";
-import type { CartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
+import { AssistantActionBar } from "@/features/cx-conversation/AssistantActionBar";
 import type { ConversationMessage } from "@/features/cx-conversation/redux/types";
 
 // ── Lazy-load heavy deps (only when needed) ───────────────────────────────────
@@ -46,9 +34,6 @@ const FullScreenMarkdownEditor = lazy(
 );
 const HtmlPreviewFullScreenEditor = lazy(
   () => import("@/features/html-pages/components/HtmlPreviewFullScreenEditor"),
-);
-const ConversationMessageOptionsMenu = lazy(
-  () => import("@/features/cx-conversation/MessageOptionsMenu"),
 );
 const ToolCallVisualization = lazy(
   () => import("@/features/cx-conversation/ToolCallVisualization"),
@@ -74,8 +59,6 @@ export interface AssistantMessageProps {
   compact?: boolean;
   /** Overlay mode: hides action bar (used in ToolUpdatesOverlay) */
   isOverlay?: boolean;
-  /** Cartesia TTS controls — passed from parent holding the single connection */
-  audioControls?: CartesiaControls;
   /** Whether this message expects a TTS (audio) response */
   isTtsRequest?: boolean;
   /** Callback when content is edited */
@@ -92,22 +75,16 @@ export function AssistantMessage({
   isStreamActive = false,
   compact = false,
   isOverlay = false,
-  audioControls,
   isTtsRequest = false,
   onContentChange,
 }: AssistantMessageProps) {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showHtmlModal, setShowHtmlModal] = useState(false);
   const [showHistoryViewer, setShowHistoryViewer] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
-  const [isDisliked, setIsDisliked] = useState(false);
   const [isAppearing, setIsAppearing] = useState(true);
   const [isAudioLinkCopied, setIsAudioLinkCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const moreOptionsButtonRef = useRef<HTMLDivElement>(null);
 
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
@@ -136,48 +113,6 @@ export function AssistantMessage({
     const t = setTimeout(() => setIsAppearing(false), 50);
     return () => clearTimeout(t);
   }, []);
-
-  // ── Cartesia TTS controls ─────────────────────────────────────────────────
-  const {
-    connectionState,
-    playerState,
-    speak,
-    pause,
-    resume,
-    handleScriptChange,
-  } = audioControls ?? {};
-
-  const isPlaying = playerState === "playing";
-  const isPaused = playerState === "paused";
-  const isAudioReady = connectionState === "ready";
-
-  const handleSpeakToggle = () => {
-    if (!audioControls) return;
-    if (isPlaying) {
-      pause?.();
-    } else if (isPaused) {
-      resume?.();
-    } else {
-      const cleanContent = parseMarkdownToText(message.content);
-      handleScriptChange?.(cleanContent);
-      speak?.(cleanContent);
-    }
-  };
-
-  // ── Copy (strips thinking/reasoning by default) ───────────────────────────
-  const handleCopy = async () => {
-    try {
-      await copyToClipboard(message.content, {
-        onSuccess: () => {
-          setIsCopied(true);
-          setTimeout(() => setIsCopied(false), 2000);
-        },
-        onError: (err) => console.error("Failed to copy:", err),
-      });
-    } catch (err) {
-      console.error("Failed to copy:", err);
-    }
-  };
 
   // ── Edit ──────────────────────────────────────────────────────────────────
   const handleEditClick = () => setIsEditorOpen(true);
@@ -440,110 +375,20 @@ export function AssistantMessage({
               {/* Action bar — hidden during stream and in overlay mode */}
               {!isStreamActive && !isOverlay && message.content && (
                 <div className={buttonMargin}>
-                  <TapTargetButtonGroup>
-                    <TapTargetButtonForGroup
-                      onClick={() => {
-                        setIsLiked(!isLiked);
-                        if (isDisliked) setIsDisliked(false);
-                      }}
-                      ariaLabel="Like message"
-                      icon={
-                        <ThumbsUp
-                          className={`w-4 h-4 ${isLiked ? "text-green-500 dark:text-green-400" : "text-muted-foreground"}`}
-                        />
-                      }
-                    />
-                    <TapTargetButtonForGroup
-                      onClick={() => {
-                        setIsDisliked(!isDisliked);
-                        if (isLiked) setIsLiked(false);
-                      }}
-                      ariaLabel="Dislike message"
-                      icon={
-                        <ThumbsDown
-                          className={`w-4 h-4 ${isDisliked ? "text-red-500 dark:text-red-400" : "text-muted-foreground"}`}
-                        />
-                      }
-                    />
-                    <TapTargetButtonForGroup
-                      onClick={handleCopy}
-                      ariaLabel="Copy message"
-                      icon={
-                        isCopied ? (
-                          <Check className="w-4 h-4 text-blue-500 dark:text-blue-400" />
-                        ) : (
-                          <Copy className="w-4 h-4 text-muted-foreground" />
-                        )
-                      }
-                    />
-                    {audioControls && (
-                      <TapTargetButtonForGroup
-                        onClick={handleSpeakToggle}
-                        ariaLabel={isPlaying ? "Pause" : "Read aloud"}
-                        icon={
-                          isPlaying ? (
-                            <Pause className="w-4 h-4 text-purple-500 dark:text-purple-400" />
-                          ) : (
-                            <Volume2
-                              className={`w-4 h-4 ${isPaused ? "text-purple-500 dark:text-purple-400" : "text-muted-foreground"}`}
-                            />
-                          )
-                        }
-                      />
-                    )}
-                    {hasUnsavedChanges && (
-                      <TapTargetButtonForGroup
-                        onClick={handleQuickSave}
-                        ariaLabel="Save changes"
-                        icon={
-                          isSaving ? (
-                            <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                          ) : (
-                            <Save className="w-4 h-4 text-primary" />
-                          )
-                        }
-                      />
-                    )}
-                    {hasHistory && (
-                      <TapTargetButtonForGroup
-                        onClick={() => setShowHistoryViewer(true)}
-                        ariaLabel="View edit history"
-                        icon={<History className="w-4 h-4 text-muted-foreground" />}
-                      />
-                    )}
-                    <TapTargetButtonForGroup
-                      onClick={handleEditClick}
-                      ariaLabel="Edit message"
-                      icon={<Edit className="w-4 h-4 text-muted-foreground" />}
-                    />
-                    <div ref={moreOptionsButtonRef}>
-                      <TapTargetButtonForGroup
-                        onClick={() => setShowOptionsMenu(true)}
-                        ariaLabel="More options"
-                        icon={
-                          <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-                        }
-                      />
-                    </div>
-                  </TapTargetButtonGroup>
-
-                  {showOptionsMenu && (
-                    <Suspense fallback={null}>
-                      <ConversationMessageOptionsMenu
-                        isOpen={showOptionsMenu}
-                        content={message.content}
-                        messageId={message.id}
-                        sessionId={sessionId}
-                        onClose={() => setShowOptionsMenu(false)}
-                        onShowHtmlPreview={() => setShowHtmlModal(true)}
-                        onEditContent={handleEditClick}
-                        onFullPrint={handleFullPrint}
-                        onShowHistory={() => setShowHistoryViewer(true)}
-                        rawContent={message.rawContent as unknown[]}
-                        anchorElement={moreOptionsButtonRef.current}
-                      />
-                    </Suspense>
-                  )}
+                  <AssistantActionBar
+                    content={message.content}
+                    messageId={message.id}
+                    sessionId={sessionId}
+                    hasUnsavedChanges={hasUnsavedChanges}
+                    hasHistory={hasHistory}
+                    isSaving={isSaving}
+                    rawContent={message.rawContent as unknown[]}
+                    onEdit={handleEditClick}
+                    onQuickSave={handleQuickSave}
+                    onShowHistory={() => setShowHistoryViewer(true)}
+                    onShowHtmlPreview={() => setShowHtmlModal(true)}
+                    onFullPrint={handleFullPrint}
+                  />
                 </div>
               )}
             </>
