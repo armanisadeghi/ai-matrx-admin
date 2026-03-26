@@ -1,36 +1,17 @@
-// features/transcripts/constants/recording.ts
-
 /**
- * Recording limits based on Whisper API constraints and best practices
+ * Recording constants for the transcripts feature.
+ * Re-exports from the centralized audio constants.
  */
+
+import { AUDIO_LIMITS, RECORDING_ERROR_CODES } from '@/features/audio/constants';
+export type { RecordingStatus } from '@/features/audio/constants';
+
 export const RECORDING_LIMITS = {
-    MAX_DURATION_SECONDS: 600, // 10 minutes
-    MAX_FILE_SIZE_BYTES: 25 * 1024 * 1024, // 25MB (Whisper limit)
-    WARN_DURATION_SECONDS: 480, // Warn at 8 minutes
-    WARN_SIZE_BYTES: 20 * 1024 * 1024, // Warn at 20MB
-    ESTIMATED_BYTES_PER_SECOND: 16000, // ~128kbps for webm/opus
+    MAX_DURATION_SECONDS: AUDIO_LIMITS.MAX_DURATION_SECONDS,
+    MAX_FILE_SIZE_BYTES: AUDIO_LIMITS.MAX_FILE_SIZE_BYTES,
+    WARN_DURATION_SECONDS: AUDIO_LIMITS.WARN_DURATION_SECONDS,
+    WARN_SIZE_BYTES: AUDIO_LIMITS.MAX_FILE_SIZE_BYTES * 0.8,
+    ESTIMATED_BYTES_PER_SECOND: AUDIO_LIMITS.ESTIMATED_BYTES_PER_SECOND,
 } as const;
 
-/**
- * Recording states
- */
-export type RecordingStatus = 
-    | 'idle' 
-    | 'requesting-permission' 
-    | 'recording' 
-    | 'paused' 
-    | 'stopped' 
-    | 'error';
-
-/**
- * Error codes for recording
- */
-export const RECORDING_ERRORS = {
-    PERMISSION_DENIED: 'PERMISSION_DENIED',
-    NO_MICROPHONE: 'NO_MICROPHONE',
-    DURATION_EXCEEDED: 'DURATION_EXCEEDED',
-    SIZE_EXCEEDED: 'SIZE_EXCEEDED',
-    BROWSER_NOT_SUPPORTED: 'BROWSER_NOT_SUPPORTED',
-    UNKNOWN: 'UNKNOWN',
-} as const;
-
+export const RECORDING_ERRORS = RECORDING_ERROR_CODES;

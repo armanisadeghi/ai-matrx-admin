@@ -5,6 +5,7 @@ import { Search, SlidersHorizontal, Plus, X, Mic, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRecordAndTranscribe } from "@/features/audio/hooks";
 import { TranscriptionResult } from "@/features/audio/types";
+import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileActionBarProps } from "./types";
 import { motion } from "motion/react";
@@ -87,7 +88,10 @@ export function MobileActionBar({
         stopRecording,
     } = useRecordAndTranscribe({
         onTranscriptionComplete: handleTranscriptionComplete,
-        onError: (error) => console.error('Voice input error:', error),
+        onError: (error) => {
+            console.error('Voice input error:', error);
+            toast.error('Voice input failed', { description: error, duration: 8000 });
+        },
         autoTranscribe: true,
     });
 
@@ -220,7 +224,7 @@ export function MobileActionBar({
                             <button
                                 type="button"
                                 onClick={handleMicClick}
-                                disabled={isTranscribing}
+                                disabled={isTranscribing && !isRecording}
                                 className={cn(
                                     "flex-shrink-0 p-1.5 rounded-full transition-colors",
                                     isRecording 
@@ -230,7 +234,7 @@ export function MobileActionBar({
                                         : "hover:bg-muted/30"
                                 )}
                             >
-                                {isTranscribing ? (
+                                {isTranscribing && !isRecording ? (
                                     <Loader2 className="h-4 w-4 animate-spin text-blue-600 dark:text-blue-400" />
                                 ) : (
                                     <Mic 

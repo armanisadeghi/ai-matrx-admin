@@ -1,264 +1,189 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { MicrophoneIconButton, MicVariant } from '@/features/audio/components/MicrophoneIconButton';
+import { VoiceTextarea } from '@/components/official/VoiceTextarea';
+import { VoiceInputButton } from '@/components/official/VoiceInputButton';
+import { useRecordAndTranscribe } from '@/features/audio/hooks';
+import { toast } from 'sonner';
 
-// ── Variant descriptions ──────────────────────────────────────────────────────
-const VARIANTS: Array<{
-  id: MicVariant;
-  label: string;
-  badge: string;
-  description: string;
-  detail: string;
-}> = [
-  {
-    id: 'icon-only',
-    label: 'Icon Only',
-    badge: 'Fixed footprint',
-    description:
-      'Renders as a single icon at all times. State is communicated entirely through icon glyph, color, and animation — the button never changes size or shifts surrounding layout.',
-    detail:
-      'Ideal for toolbars, table cells, tight layouts, or anywhere that needs a zero-impact mic trigger.',
-  },
-  {
-    id: 'inline-expand',
-    label: 'Inline Expand',
-    badge: 'Expands on recording',
-    description:
-      'Starts as a mic icon. While recording it expands inline to show a real-time audio level indicator, duration timer, and a Stop button. Returns to icon size after transcription.',
-    detail:
-      'Ideal for input areas, search bars, or chat interfaces where visual recording feedback helps the user.',
-  },
-  {
-    id: 'modal-controls',
-    label: 'Modal Controls',
-    badge: 'Fixed footprint + modal',
-    description:
-      'Always renders as a single icon. Clicking opens a centered modal that hosts the entire recording experience — recording controls, audio levels, and post-transcription review.',
-    detail:
-      'Ideal when you want rich recording UI without any impact on the triggering layout, or when text review before acceptance is important.',
-  },
-];
-
-// ── Per-variant result card ───────────────────────────────────────────────────
-interface HistoryEntry {
-  id: number;
-  text: string;
-  time: string;
-}
-
-function VariantTestCard({
-  id,
-  label,
-  badge,
-  description,
-  detail,
-}: (typeof VARIANTS)[number]) {
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
-  const [liveText, setLiveText] = useState('');
-  const [error, setError] = useState<string | null>(null);
-
-  const handleTranscription = useCallback((t: string) => {
-    setHistory(prev => [
-      { id: Date.now(), text: t, time: new Date().toLocaleTimeString() },
-      ...prev,
-    ]);
-    setLiveText('');
-    setError(null);
-  }, []);
-
-  const handleError = useCallback((e: string) => {
-    setError(e);
-    setLiveText('');
-  }, []);
-
-  // For inline-expand we need a freely-growing row, not a fixed box
-  const TriggerArea = id === 'inline-expand' ? (
-    <div className="flex items-center gap-3 min-w-0 w-full rounded-lg border border-border bg-muted/30 px-3 py-2">
-      <span className="text-xs text-muted-foreground shrink-0">Search or speak…</span>
-      <div className="flex-1" />
-      {/* Component can expand freely to the right */}
-      <MicrophoneIconButton
-        variant={id}
-        onTranscriptionComplete={handleTranscription}
-        onError={handleError}
-        size="md"
-      />
-    </div>
-  ) : (
-    <div className="flex items-center gap-4">
-      {/* Fixed-size container proves icon footprint never changes */}
-      <div className="relative flex items-center justify-center w-12 h-12 rounded-full border border-dashed border-border overflow-visible">
-        <MicrophoneIconButton
-          variant={id}
-          onTranscriptionComplete={handleTranscription}
-          onError={handleError}
-          size="md"
-        />
-      </div>
-      <p className="text-xs text-muted-foreground">
-        {id === 'icon-only'
-          ? 'The dashed box is always 40 × 40 px — the icon footprint never changes.'
-          : 'The dashed box stays 40 × 40 px. All recording interaction happens in the modal.'}
-      </p>
-    </div>
-  );
-
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3 px-5 py-4 border-b border-border bg-muted/30">
-        <div className="space-y-0.5 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h2 className="text-base font-semibold">{label}</h2>
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-              {badge}
-            </span>
-          </div>
-          <p className="text-sm text-muted-foreground">{description}</p>
-          <p className="text-xs text-muted-foreground/60 italic">{detail}</p>
-        </div>
+      <div className="px-5 py-3 border-b border-border bg-muted/30">
+        <h2 className="text-sm font-semibold">{title}</h2>
       </div>
+      <div className="px-5 py-4 space-y-3">{children}</div>
+    </div>
+  );
+}
 
-      {/* Interactive area */}
-      <div className="px-5 py-5 flex flex-col gap-4">
-        {TriggerArea}
+function ResultLog({ items }: { items: string[] }) {
+  if (items.length === 0) return <p className="text-xs text-muted-foreground/50 italic">No results yet</p>;
+  return (
+    <div className="space-y-1.5 max-h-40 overflow-y-auto">
+      {items.map((text, i) => (
+        <div key={i} className="text-xs bg-muted/40 rounded px-2.5 py-1.5 leading-relaxed">{text}</div>
+      ))}
+    </div>
+  );
+}
 
-        <hr className="border-border" />
+function MicIconVariants() {
+  const [results, setResults] = useState<Record<MicVariant, string[]>>({
+    'icon-only': [], 'inline-expand': [], 'modal-controls': [],
+  });
 
-        {/* History / result */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Transcription History
-            </p>
-            {history.length > 0 && (
-              <button
-                onClick={() => setHistory([])}
-                className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
-              >
-                Clear
+  const append = (variant: MicVariant, text: string) =>
+    setResults(prev => ({ ...prev, [variant]: [text, ...prev[variant]] }));
+
+  return (
+    <Section title="MicrophoneIconButton — 3 variants">
+      <div className="grid gap-5">
+        {(['icon-only', 'inline-expand', 'modal-controls'] as const).map(v => (
+          <div key={v} className="space-y-2">
+            <div className="flex items-center gap-3">
+              <p className="text-xs font-medium text-muted-foreground w-28 shrink-0">{v}</p>
+              <MicrophoneIconButton
+                variant={v}
+                onTranscriptionComplete={(t) => append(v, t)}
+                size="md"
+              />
+            </div>
+            <ResultLog items={results[v]} />
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+function VoiceTextareaDemo() {
+  const [value, setValue] = useState('');
+  return (
+    <Section title="VoiceTextarea — streaming live transcript in textarea">
+      <VoiceTextarea
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Click the mic icon to start speaking..."
+        rows={3}
+        onTranscriptionComplete={(text) => toast.success(`Transcription: ${text.slice(0, 60)}...`)}
+      />
+    </Section>
+  );
+}
+
+function VoiceInputButtonDemo() {
+  const [results, setResults] = useState<string[]>([]);
+  return (
+    <Section title="VoiceInputButton — inline and button variants">
+      <div className="flex items-center gap-4">
+        <VoiceInputButton
+          variant="inline"
+          onTranscriptionComplete={(t) => setResults(prev => [t, ...prev])}
+        />
+        <VoiceInputButton
+          variant="button"
+          buttonText="Speak"
+          size="sm"
+          onTranscriptionComplete={(t) => setResults(prev => [t, ...prev])}
+        />
+      </div>
+      <ResultLog items={results} />
+    </Section>
+  );
+}
+
+function RawHookDemo() {
+  const [results, setResults] = useState<string[]>([]);
+
+  const {
+    isRecording, isTranscribing, isPaused, duration, audioLevel,
+    liveTranscript, failedChunkCount,
+    startRecording, stopRecording, pauseRecording, resumeRecording, reset,
+  } = useRecordAndTranscribe({
+    onTranscriptionComplete: (result) => {
+      if (result.success && result.text) setResults(prev => [result.text, ...prev]);
+    },
+    onError: (err) => toast.error('Hook error', { description: err }),
+    streaming: true,
+  });
+
+  const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+  return (
+    <Section title="useRecordAndTranscribe — raw hook, all controls exposed">
+      <div className="flex items-center gap-2 flex-wrap">
+        {!isRecording ? (
+          <button onClick={startRecording} disabled={isTranscribing}
+            className="px-3 py-1.5 text-xs rounded-md bg-primary text-primary-foreground disabled:opacity-50">
+            Start
+          </button>
+        ) : (
+          <>
+            <button onClick={stopRecording}
+              className="px-3 py-1.5 text-xs rounded-md bg-destructive text-destructive-foreground">
+              Stop
+            </button>
+            {!isPaused ? (
+              <button onClick={pauseRecording}
+                className="px-3 py-1.5 text-xs rounded-md bg-muted text-foreground">
+                Pause
+              </button>
+            ) : (
+              <button onClick={resumeRecording}
+                className="px-3 py-1.5 text-xs rounded-md bg-muted text-foreground">
+                Resume
               </button>
             )}
-          </div>
+          </>
+        )}
+        <button onClick={reset} className="px-3 py-1.5 text-xs rounded-md bg-muted text-muted-foreground">
+          Reset
+        </button>
+      </div>
 
-          {error && (
-            <div className="mb-2 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/20 px-3 py-2">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-            </div>
-          )}
-
-          {/* Live preview — chunked results appear here before final callback */}
-          {liveText && (
-            <div className="mb-2 rounded-lg border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/20 px-3 py-2">
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
-                <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Live transcript</p>
-              </div>
-              <p className="text-sm leading-relaxed text-blue-900 dark:text-blue-200">{liveText}</p>
-            </div>
-          )}
-
-          {history.length === 0 && !error && !liveText && (
-            <p className="text-sm text-muted-foreground/50 italic">
-              Each recording will be appended as a new entry here.
-            </p>
-          )}
-
-          <div className="flex flex-col gap-2">
-            {history.map((entry) => (
-              <div
-                key={entry.id}
-                className="rounded-lg border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/20 px-3 py-2 flex gap-3"
-              >
-                <span className="text-xs text-muted-foreground/50 tabular-nums shrink-0 mt-0.5">
-                  {entry.time}
-                </span>
-                <p className="text-sm leading-relaxed text-green-800 dark:text-green-300">{entry.text}</p>
-              </div>
-            ))}
-          </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+        <div className="bg-muted/40 rounded px-2.5 py-1.5">
+          <span className="text-muted-foreground">State:</span>{' '}
+          {isRecording ? (isPaused ? 'Paused' : 'Recording') : isTranscribing ? 'Transcribing' : 'Idle'}
+        </div>
+        <div className="bg-muted/40 rounded px-2.5 py-1.5">
+          <span className="text-muted-foreground">Duration:</span> {formatTime(duration)}
+        </div>
+        <div className="bg-muted/40 rounded px-2.5 py-1.5">
+          <span className="text-muted-foreground">Level:</span> {Math.round(audioLevel)}%
+        </div>
+        <div className="bg-muted/40 rounded px-2.5 py-1.5">
+          <span className="text-muted-foreground">Failed:</span> {failedChunkCount}
         </div>
       </div>
-    </div>
+
+      {liveTranscript && (
+        <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded px-2.5 py-1.5">
+          <p className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">{liveTranscript}</p>
+        </div>
+      )}
+
+      <ResultLog items={results} />
+    </Section>
   );
 }
 
-// ── Bundle verification note ──────────────────────────────────────────────────
-function BundleNote() {
-  return (
-    <div className="rounded-lg border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/20 px-4 py-3 text-sm">
-      <p className="font-medium text-blue-800 dark:text-blue-300 mb-1">
-        Verifying zero initial overhead
-      </p>
-      <ul className="space-y-1 text-blue-700 dark:text-blue-400 text-xs list-disc list-inside">
-        <li>
-          Open DevTools → Network → reload and filter by JS. You should see{' '}
-          <strong>no audio-related chunk</strong> loaded until a mic icon is clicked.
-        </li>
-        <li>
-          Open DevTools → Sources. Search for{' '}
-          <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">useChunkedRecordAndTranscribe</code>.
-          It should not be in the initial bundle.
-        </li>
-        <li>
-          Click any mic icon. Only then will a new JS chunk load — the{' '}
-          <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">MicrophoneIconButtonCore</code>{' '}
-          chunk. The browser permission prompt fires only after that chunk executes.
-        </li>
-      </ul>
-    </div>
-  );
-}
-
-// ── Page ──────────────────────────────────────────────────────────────────────
-export default function MicrophoneIconButtonTestPage() {
+export default function AudioTranscriptionDemoPage() {
   return (
     <div className="h-full overflow-y-auto bg-textured">
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-        {/* Page header */}
+      <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
         <div>
-          <h1 className="text-2xl font-bold">MicrophoneIconButton</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            A self-contained mic trigger with three layout variants. All state management,
-            error handling, and permission logic live inside — callers only receive
-            the final transcribed text string.
+          <h1 className="text-xl font-bold">Audio Transcription</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            All components use real-time streaming (2s chunks). Requires authentication.
           </p>
         </div>
-
-        <BundleNote />
-
-        {/* One card per variant */}
-        {VARIANTS.map((v) => (
-          <VariantTestCard key={v.id} {...v} />
-        ))}
-
-        {/* Usage snippet */}
-        <div className="rounded-xl border border-border bg-card overflow-hidden">
-          <div className="px-5 py-3 border-b border-border bg-muted/30">
-            <p className="text-sm font-medium">Minimal usage</p>
-          </div>
-          <pre className="px-5 py-4 text-xs overflow-x-auto text-muted-foreground leading-relaxed">
-{`import { MicrophoneIconButton } from '@/features/audio/components';
-
-// icon-only (default) — fits anywhere, zero layout impact
-<MicrophoneIconButton
-  onTranscriptionComplete={(text) => setValue(text)}
-/>
-
-// inline-expand — shows recording feedback inline
-<MicrophoneIconButton
-  variant="inline-expand"
-  onTranscriptionComplete={(text) => setValue(text)}
-/>
-
-// modal-controls — full recording UI in a centered modal
-<MicrophoneIconButton
-  variant="modal-controls"
-  onTranscriptionComplete={(text) => setValue(text)}
-/>`}
-          </pre>
-        </div>
+        <VoiceTextareaDemo />
+        <VoiceInputButtonDemo />
+        <MicIconVariants />
+        <RawHookDemo />
       </div>
     </div>
   );

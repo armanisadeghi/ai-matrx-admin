@@ -21,6 +21,10 @@ export { VoiceDiagnosticsDisplay } from './VoiceDiagnosticsDisplay';
 export { VoiceTextarea, type VoiceTextareaProps } from '@/components/official/VoiceTextarea';
 export { VoiceInputButton, type VoiceInputButtonProps } from '@/components/official/VoiceInputButton';
 
+// Recovery components
+export { AudioRecoveryToast } from './AudioRecoveryToast';
+export { AudioRecoveryModal, type AudioRecoveryModalProps } from './AudioRecoveryModal';
+
 // Helper component types
 export type { MicrophoneButtonProps } from './MicrophoneButton';
 export type { TranscriptionLoaderProps } from './TranscriptionLoader';

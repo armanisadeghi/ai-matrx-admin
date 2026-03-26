@@ -74,18 +74,19 @@ export function VoiceInputButton({
     setIsExpanded(false);
   }, [onError]);
 
-  // Recording and transcription hook
   const {
     isRecording,
     isTranscribing,
     duration,
     audioLevel,
+    liveTranscript,
     startRecording,
     stopRecording,
   } = useRecordAndTranscribe({
     onTranscriptionComplete: handleTranscriptionComplete,
     onError: handleError,
     autoTranscribe: true,
+    streaming: true,
   });
 
   // Handle button click
@@ -103,25 +104,32 @@ export function VoiceInputButton({
     return (
       <>
         <div className={cn('flex items-center', className)}>
-          {isTranscribing ? (
+          {isTranscribing && !isRecording ? (
             <TranscriptionLoader duration={duration} size={size} />
           ) : isRecording ? (
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <RecordingIndicator 
-                duration={duration} 
-                audioLevel={audioLevel}
-                size={size}
-                color="blue"
-              />
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={stopRecording}
-                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 h-7 px-2 text-xs"
-              >
-                Stop
-              </Button>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <RecordingIndicator 
+                  duration={duration} 
+                  audioLevel={audioLevel}
+                  size={size}
+                  color="blue"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={stopRecording}
+                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 h-7 px-2 text-xs"
+                >
+                  Stop
+                </Button>
+              </div>
+              {liveTranscript && (
+                <p className="text-xs text-muted-foreground leading-relaxed truncate max-w-[200px]">
+                  {liveTranscript.slice(-80)}
+                </p>
+              )}
             </div>
           ) : (
             <MicrophoneButton
@@ -148,29 +156,36 @@ export function VoiceInputButton({
   return (
     <>
       <div className={cn('flex items-center', className)}>
-        {isTranscribing ? (
+        {isTranscribing && !isRecording ? (
           <div className="flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
             <TranscriptionLoader duration={duration} size={size} />
           </div>
         ) : isRecording || isExpanded ? (
-          <div className="flex items-center gap-1.5 sm:gap-3 px-2 py-1 sm:px-4 sm:py-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
-            <RecordingIndicator 
-              duration={duration} 
-              audioLevel={audioLevel}
-              size={size} 
-              showPulse={isRecording}
-              color="blue"
-            />
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={stopRecording}
-              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 h-7 px-2 text-xs"
-            >
-              <span className="sm:hidden">Stop</span>
-              <span className="hidden sm:inline">Stop Recording</span>
-            </Button>
+          <div className="px-2 py-1 sm:px-4 sm:py-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center gap-1.5 sm:gap-3">
+              <RecordingIndicator 
+                duration={duration} 
+                audioLevel={audioLevel}
+                size={size} 
+                showPulse={isRecording}
+                color="blue"
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={stopRecording}
+                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 h-7 px-2 text-xs"
+              >
+                <span className="sm:hidden">Stop</span>
+                <span className="hidden sm:inline">Stop Recording</span>
+              </Button>
+            </div>
+            {liveTranscript && (
+              <p className="text-xs text-muted-foreground leading-relaxed mt-1 truncate">
+                {liveTranscript.slice(-100)}
+              </p>
+            )}
           </div>
         ) : (
           <Button

@@ -208,8 +208,8 @@ export async function downloadAudioBlob(filePath: string): Promise<Blob> {
 }
 
 /**
- * Save audio to sessionStorage as backup (for recovery)
- * Note: This only works for smaller files due to sessionStorage limits (~5-10MB)
+ * @deprecated Use IndexedDB via `audioSafetyStore` from `features/audio/services/audioSafetyStore` instead.
+ * This sessionStorage approach is limited to ~5 MB and unreliable.
  */
 export function backupAudioToSession(audioBlob: Blob, key: string = 'transcript_recording_backup'): void {
     try {
@@ -231,7 +231,7 @@ export function backupAudioToSession(audioBlob: Blob, key: string = 'transcript_
 }
 
 /**
- * Recover audio from sessionStorage backup
+ * @deprecated Use IndexedDB via `audioSafetyStore` from `features/audio/services/audioSafetyStore` instead.
  */
 export async function recoverAudioFromSession(key: string = 'transcript_recording_backup'): Promise<Blob | null> {
     try {
@@ -254,7 +254,7 @@ export async function recoverAudioFromSession(key: string = 'transcript_recordin
 }
 
 /**
- * Clear audio backup from sessionStorage
+ * @deprecated Use IndexedDB via `audioSafetyStore` from `features/audio/services/audioSafetyStore` instead.
  */
 export function clearAudioBackup(key: string = 'transcript_recording_backup'): void {
     try {

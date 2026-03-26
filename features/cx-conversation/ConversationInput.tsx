@@ -243,7 +243,6 @@ export function ConversationInput({
     isTranscribing,
     startRecording,
     stopRecording,
-    error: recordError,
   } = useRecordAndTranscribe({
     onTranscriptionComplete: (result) => {
       if (!result.success || !result.text) return;
@@ -261,12 +260,6 @@ export function ConversationInput({
     },
     onError: (err) => toast.error("Transcription failed", { description: err }),
   });
-
-  useEffect(() => {
-    if (recordError) {
-      toast.error("Microphone error", { description: recordError });
-    }
-  }, [recordError]);
 
   // ── Auto-resize textarea ───────────────────────────────────────────────────
   useEffect(() => {
@@ -589,7 +582,7 @@ export function ConversationInput({
             onClick={handleVoiceMicToggle}
             ariaLabel={isRecording ? "Stop recording" : "Start recording"}
             icon={
-              isTranscribing ? (
+              isTranscribing && !isRecording ? (
                 <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
               ) : isRecording ? (
                 <MicOff className="w-4 h-4 text-red-500" />

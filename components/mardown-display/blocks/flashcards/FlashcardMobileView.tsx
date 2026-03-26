@@ -145,44 +145,98 @@ const makeMobileCardStyle = (textSizeClass: string, centered: boolean): Markdown
   ),
 });
 
+// Count meaningful lines (non-empty after trimming) in a back-card string.
+const countLines = (text: string): number =>
+  text.split("\n").filter((l) => l.trim().length > 0).length;
+
 const CardSlide: React.FC<CardSlideProps> = ({
   card, isFlipped, style, showHints, canGoPrev, canGoNext,
   textVisible = true, menuOpen = false,
 }) => {
   const isMultiLine = card.back != null && (card.back.includes("\n") || card.back.length > 120);
 
-  const getTextSize = (text: string, multiLine = false) => {
+  // Front: pure character-length sizing — single concept, no wrapping penalty.
+  const getFrontTextSize = (text: string) => {
     const l = text.length;
-    if (multiLine) {
-      if (l < 120) return "text-2xl";
-      if (l < 200) return "text-xl";
-      if (l < 320) return "text-lg";
-      if (l < 500) return "text-base";
-      return "text-sm";
-    }
-    if (l < 20)  return "text-4xl";
-    if (l < 40)  return "text-3xl";
-    if (l < 80)  return "text-2xl";
-    if (l < 140) return "text-xl";
-    if (l < 220) return "text-lg";
-    if (l < 320) return "text-base";
+    if (l < 20)  return "text-5xl";
+    if (l < 35)  return "text-4xl";
+    if (l < 60)  return "text-3xl";
+    if (l < 100) return "text-2xl";
+    if (l < 160) return "text-xl";
+    if (l < 240) return "text-lg";
+    if (l < 360) return "text-base";
     return "text-sm";
   };
 
+  // Back multiline: driven primarily by LINE COUNT, secondarily by total length.
+  // Portrait mobile has ~70vh of card height — we want text to fill it proudly.
+  const getBackMultilineTextSize = (text: string) => {
+    const lines = countLines(text);
+    const l = text.length;
+
+    if (lines <= 2) {
+      // Very few items — treat almost like a single card, just slightly smaller
+      if (l < 80)  return "text-3xl";
+      if (l < 160) return "text-2xl";
+      return "text-xl";
+    }
+    if (lines <= 4) {
+      if (l < 160) return "text-2xl";
+      if (l < 280) return "text-xl";
+      return "text-lg";
+    }
+    if (lines <= 6) {
+      if (l < 280) return "text-xl";
+      if (l < 420) return "text-lg";
+      return "text-base";
+    }
+    if (lines <= 9) {
+      if (l < 420) return "text-lg";
+      if (l < 600) return "text-base";
+      return "text-sm";
+    }
+    // 10+ lines
+    if (l < 600) return "text-base";
+    return "text-sm";
+  };
+
+  // Back single-line (long paragraph, no newlines).
+  const getBackSingleTextSize = (text: string) => {
+    const l = text.length;
+    if (l < 40)  return "text-4xl";
+    if (l < 80)  return "text-3xl";
+    if (l < 140) return "text-2xl";
+    if (l < 220) return "text-xl";
+    if (l < 360) return "text-lg";
+    if (l < 500) return "text-base";
+    return "text-sm";
+  };
+
+  // Short lists (≤3 lines) should be vertically centered, not top-aligned.
+  const backLineCount = card.back ? countLines(card.back) : 0;
+  const isShortList = isMultiLine && backLineCount <= 3;
+
   const frontStyle = useMemo(
-    () => makeMobileCardStyle(getTextSize(card.front ?? ""), true),
+    () => makeMobileCardStyle(getFrontTextSize(card.front ?? ""), true),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [card.front],
   );
   const backStyle = useMemo(
-    () => makeMobileCardStyle(getTextSize(card.back ?? "", isMultiLine), !isMultiLine),
+    () => {
+      const sizeClass = isMultiLine
+        ? getBackMultilineTextSize(card.back ?? "")
+        : getBackSingleTextSize(card.back ?? "");
+      // Short lists center like single-line; long lists left-align
+      return makeMobileCardStyle(sizeClass, !isMultiLine || isShortList);
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [card.back, isMultiLine],
+    [card.back, isMultiLine, isShortList],
   );
 
-  const backContent = card.back === null
-    ? "_Loading…_"
-    : card.back;
+  const backContent = card.back === null ? "_Loading…_" : card.back;
+
+  // Vertical alignment: center everything except long multiline lists
+  const backNeedsTopAlign = isMultiLine && !isShortList;
 
   return (
     <div className="absolute inset-0" style={{ perspective: "1200px", ...style }}>
@@ -214,14 +268,14 @@ const CardSlide: React.FC<CardSlideProps> = ({
         <div
           className={cn(
             "absolute inset-0 flex flex-col bg-gradient-to-br from-green-900 to-emerald-950 overflow-hidden",
-            isMultiLine ? "items-start justify-start" : "items-center justify-center",
+            backNeedsTopAlign ? "items-start justify-start" : "items-center justify-center",
           )}
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
           <div
             className={cn(
               "w-full px-6 overflow-y-auto scrollbar-none",
-              isMultiLine ? "h-full pt-8 pb-8" : "flex items-center justify-center",
+              backNeedsTopAlign ? "h-full pt-8 pb-8" : "flex items-center justify-center",
             )}
             style={{ opacity: textVisible ? 1 : 0, transition: `opacity ${TEXT_FADE_OUT_MS}ms ease` }}
           >
@@ -230,7 +284,7 @@ const CardSlide: React.FC<CardSlideProps> = ({
               isStreamActive={false}
               showCopyButton={false}
               styleConfig={backStyle}
-              componentOverrides={isMultiLine ? undefined : { p: centeredParagraph }}
+              componentOverrides={backNeedsTopAlign ? undefined : { p: centeredParagraph }}
             />
           </div>
           {showHints && <TapZoneHints canGoPrev={canGoPrev} canGoNext={canGoNext} menuOpen={menuOpen} flipColor="text-green-300/40" />}

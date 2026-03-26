@@ -535,7 +535,7 @@ export function SmartPromptInput({
       <div className="flex items-center justify-between px-2 pb-1.5">
         <div className="flex items-center gap-1">
           {/* Voice Input - Show transcription loader when processing */}
-          {isTranscribing ? (
+          {isTranscribing && !isRecording ? (
             <div className="px-2">
               <TranscriptionLoader message="Transcribing" duration={duration} size="sm" />
             </div>

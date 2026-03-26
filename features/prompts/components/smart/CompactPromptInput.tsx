@@ -232,7 +232,7 @@ export function CompactPromptInput({
         )}
 
         {/* Voice Input - Show transcription loader when processing */}
-        {isTranscribing ? (
+        {isTranscribing && !isRecording ? (
           <div className="px-1 py-0.5 mb-2">
             <TranscriptionLoader message="Transcribing" duration={duration} size="sm" />
           </div>

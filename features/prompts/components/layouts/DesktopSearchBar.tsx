@@ -7,6 +7,7 @@ import { useRecordAndTranscribe } from "@/features/audio/hooks";
 import { TranscriptionResult } from "@/features/audio/types";
 import { RecordingOverlay } from "@/features/audio/components/RecordingOverlay";
 import { TranscriptionLoader } from "@/features/audio/components/TranscriptionLoader";
+import { toast } from "sonner";
 
 interface DesktopSearchBarProps {
     searchValue: string;
@@ -49,7 +50,10 @@ export function DesktopSearchBar({
         reset,
     } = useRecordAndTranscribe({
         onTranscriptionComplete: handleTranscriptionComplete,
-        onError: (error) => console.error('Voice input error:', error),
+        onError: (error) => {
+            console.error('Voice input error:', error);
+            toast.error('Voice input failed', { description: error, duration: 8000 });
+        },
         autoTranscribe: true,
     });
 

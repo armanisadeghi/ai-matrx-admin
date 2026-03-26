@@ -1,11 +1,9 @@
 /**
- * Audio Transcription API Route
+ * URL-based Audio Transcription API Route
  *
- * Authenticated server-side proxy for Groq Whisper transcription.
- * Accepts direct file uploads up to 4.5 MB (Vercel body limit).
- * For larger files, use /api/audio/transcribe-url with a Supabase signed URL.
- *
- * Includes retry with exponential backoff and structured error logging.
+ * For audio files > 4.5 MB that cannot be POSTed directly through Vercel.
+ * Client uploads the file to Supabase Storage, then passes the signed URL here.
+ * Groq Developer Plan supports up to 100 MB via URL parameter.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -14,14 +12,13 @@ import { createClient } from '@/utils/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { logTranscriptionError } from '@/features/audio/services/audioErrorLogger';
 
-
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!.trim();
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
 const supabaseAnonKey = (
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
@@ -33,7 +30,7 @@ async function resolveUser(request: NextRequest) {
 
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.slice(7);
-    const client = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
+    const client = createSupabaseClient(SUPABASE_URL, supabaseAnonKey, {
       global: { headers: { Authorization: `Bearer ${token}` } },
       auth: { persistSession: false, autoRefreshToken: false },
     });
@@ -45,14 +42,6 @@ async function resolveUser(request: NextRequest) {
   const { data: { user }, error } = await supabase.auth.getUser();
   return { user: error ? null : user };
 }
-
-const MAX_BODY_SIZE = 4.5 * 1024 * 1024;
-
-const ALLOWED_TYPES = [
-  'audio/flac', 'audio/mp3', 'audio/mp4', 'audio/mpeg',
-  'audio/mpga', 'audio/m4a', 'audio/ogg', 'audio/wav', 'audio/webm',
-];
-
 const MAX_RETRIES = 3;
 const RETRYABLE_CODES = new Set([429, 500, 502, 503, 504]);
 
@@ -64,10 +53,9 @@ async function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function transcribeWithRetry(
+async function transcribeUrlWithRetry(
   options: Record<string, unknown>,
   userId: string,
-  fileSize: number,
 ): Promise<{ data: unknown; attempts: number }> {
   let lastError: Error | null = null;
 
@@ -85,9 +73,9 @@ async function transcribeWithRetry(
         userId,
         errorCode: status ? `HTTP_${status}` : 'SDK_ERROR',
         errorMessage: lastError.message,
-        fileSizeBytes: fileSize,
+        fileSizeBytes: 0,
         attemptNumber: attempt,
-        apiRoute: '/api/audio/transcribe',
+        apiRoute: '/api/audio/transcribe-url',
         metadata: { retryAfter, willRetry: attempt < MAX_RETRIES && (status ? isRetryable(status) : true) },
       });
 
@@ -102,7 +90,7 @@ async function transcribeWithRetry(
     }
   }
 
-  throw lastError ?? new Error('Transcription failed after retries');
+  throw lastError ?? new Error('URL transcription failed after retries');
 }
 
 export async function POST(request: NextRequest) {
@@ -119,31 +107,22 @@ export async function POST(request: NextRequest) {
     }
     userId = user.id;
 
-    const formData = await request.formData();
-    const audioFile = formData.get('file') as File | null;
-    const language = formData.get('language') as string | null;
-    const prompt = formData.get('prompt') as string | null;
+    const body = await request.json();
+    const { url, language, prompt } = body as { url?: string; language?: string; prompt?: string };
 
-    if (!audioFile) {
-      return NextResponse.json({ error: 'No audio file provided' }, { status: 400 });
+    if (!url || typeof url !== 'string') {
+      return NextResponse.json({ error: 'Missing or invalid "url" parameter' }, { status: 400 });
     }
 
-    if (audioFile.size > MAX_BODY_SIZE) {
+    if (!url.startsWith(SUPABASE_URL)) {
       return NextResponse.json(
-        { error: `File size (${(audioFile.size / 1024 / 1024).toFixed(1)}MB) exceeds the 4.5MB direct upload limit. Use /api/audio/transcribe-url for larger files.` },
-        { status: 400 },
-      );
-    }
-
-    if (!ALLOWED_TYPES.some(type => audioFile.type.includes(type.split('/')[1]))) {
-      return NextResponse.json(
-        { error: 'Invalid audio file type. Supported: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, webm' },
+        { error: 'URL must point to our Supabase Storage domain' },
         { status: 400 },
       );
     }
 
     const transcriptionOptions: Record<string, unknown> = {
-      file: audioFile,
+      url,
       model: 'whisper-large-v3-turbo',
       response_format: 'verbose_json',
       temperature: 0.0,
@@ -152,10 +131,9 @@ export async function POST(request: NextRequest) {
     if (language) transcriptionOptions.language = language;
     if (prompt) transcriptionOptions.prompt = prompt;
 
-    const { data: transcription, attempts } = await transcribeWithRetry(
+    const { data: transcription, attempts } = await transcribeUrlWithRetry(
       transcriptionOptions,
       userId,
-      audioFile.size,
     );
 
     const response = transcription as Record<string, unknown>;
@@ -173,32 +151,18 @@ export async function POST(request: NextRequest) {
     const err = error instanceof Error ? error : new Error(String(error));
     const status = (error as { status?: number })?.status;
 
-    console.error('[/api/audio/transcribe] Final failure:', err.message);
-
-    if (status === 401) {
-      return NextResponse.json({ error: 'Groq API authentication failed' }, { status: 500 });
-    }
+    console.error('[/api/audio/transcribe-url] Final failure:', err.message);
 
     if (status === 429) {
       return NextResponse.json(
-        { error: 'Rate limit exceeded. Please try again in a few seconds.', code: 'RATE_LIMIT' },
+        { error: 'Rate limit exceeded. Please try again later.', code: 'RATE_LIMIT' },
         { status: 429 },
       );
     }
 
     return NextResponse.json(
-      { error: 'Transcription failed', details: err.message, code: 'TRANSCRIPTION_ERROR' },
+      { error: 'URL transcription failed', details: err.message, code: 'TRANSCRIPTION_ERROR' },
       { status: 500 },
     );
   }
-}
-
-export async function GET() {
-  return NextResponse.json({
-    status: 'ready',
-    service: 'audio-transcription',
-    model: 'whisper-large-v3-turbo',
-    maxBodySize: '4.5MB',
-    maxDuration: `${maxDuration}s`,
-  });
 }

@@ -5,6 +5,7 @@ import { Search, SlidersHorizontal, Plus, X, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRecordAndTranscribe } from "@/features/audio/hooks";
 import { TranscriptionResult } from "@/features/audio/types";
+import { toast } from "sonner";
 import { RecordingOverlay } from "@/features/audio/components/RecordingOverlay";
 import { TranscriptionLoader } from "@/features/audio/components/TranscriptionLoader";
 import { BaseListItem, UnifiedListLayoutConfig } from "./types";
@@ -89,6 +90,7 @@ export function UnifiedActionBar<T extends BaseListItem>({
         onTranscriptionComplete: handleTranscriptionComplete,
         onError: (error) => {
             console.error("Voice input error:", error);
+            toast.error("Voice input failed", { description: error, duration: 8000 });
             if (config.voice?.onError) {
                 const err = typeof error === 'string' ? new Error(error) : error;
                 config.voice.onError(err);

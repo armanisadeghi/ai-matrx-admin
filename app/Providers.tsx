@@ -33,6 +33,8 @@ import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { NotesProvider } from "@/features/notes/context/NotesContext";
 import { TaskProvider } from "@/features/tasks/context/TaskContext";
 import { TranscriptsProvider } from "@/features/transcripts/context/TranscriptsContext";
+import { AudioRecoveryProvider } from "@/features/audio/providers/AudioRecoveryProvider";
+import { AudioRecoveryToast } from "@/features/audio/components/AudioRecoveryToast";
 
 const allowedBuckets = [
   "userContent",
@@ -96,9 +98,12 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                             <NotesProvider>
                                               <TaskProvider>
                                                 <TranscriptsProvider>
-                                                  <PersistentDOMConnector />
-                                                  <ClientOverlayProvider />
-                                                  {children}
+                                                  <AudioRecoveryProvider>
+                                                    <PersistentDOMConnector />
+                                                    <ClientOverlayProvider />
+                                                    <AudioRecoveryToast />
+                                                    {children}
+                                                  </AudioRecoveryProvider>
                                                 </TranscriptsProvider>
                                               </TaskProvider>
                                             </NotesProvider>

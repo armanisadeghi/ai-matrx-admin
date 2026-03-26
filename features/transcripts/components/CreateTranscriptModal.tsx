@@ -9,14 +9,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, FileAudio, CheckCircle2, AlertTriangle, Upload, Mic } from 'lucide-react';
 import { useTranscriptsContext } from '../context/TranscriptsContext';
-import { useAudioTranscription } from '@/features/audio/hooks/useAudioTranscription';
+import { useAudioTranscription } from '@/features/audio/hooks';
 import { useToastManager } from '@/hooks/useToastManager';
 import { FileUploadWithStorage, UploadedFileResult } from '@/components/ui/file-upload/FileUploadWithStorage';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/utils/supabase/client';
 import { RecordingInterface } from './RecordingInterface';
 import { RecordingPreview } from './RecordingPreview';
-import { saveAudioToStorage, backupAudioToSession, clearAudioBackup } from '../service/audioStorageService';
+import { saveAudioToStorage } from '../service/audioStorageService';
 import { saveDraftTranscript } from '../service/transcriptsService';
 import { TranscriptSegment } from '../types';
 
@@ -87,7 +87,7 @@ export function CreateTranscriptModal({
                 setIsSaving(false);
                 setUploadProgress({ percent: 0, status: '' });
                 resetTranscription();
-                clearAudioBackup(); // Clear session backup
+                // Session backup replaced by IndexedDB safety store
             }, 300);
             return () => clearTimeout(timer);
         }
@@ -124,8 +124,6 @@ export function CreateTranscriptModal({
             // Store recording in state and backup to session
             setRecordedAudioBlob(audioBlob);
             setRecordedDuration(duration);
-            backupAudioToSession(audioBlob);
-
             // Generate default title
             const now = new Date();
             setTitle(`Recording - ${now.toLocaleString()}`);
@@ -205,7 +203,7 @@ export function CreateTranscriptModal({
             });
 
             setDraftTranscriptId(draft.id);
-            clearAudioBackup(); // Clear backup since we have it in DB
+            // Audio safety handled by IndexedDB store
 
             // Refresh to show the new draft in the sidebar
             await refreshTranscripts();

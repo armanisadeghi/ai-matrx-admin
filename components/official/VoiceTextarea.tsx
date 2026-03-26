@@ -73,6 +73,7 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
     const internalRef = useRef<HTMLTextAreaElement>(null);
     const textareaRef = (ref as React.RefObject<HTMLTextAreaElement>) || internalRef;
     const closeRequestedRef = useRef(false);
+    const preRecordingValueRef = useRef('');
 
     // Check if audio is available
     useEffect(() => {
@@ -107,29 +108,29 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
       textarea.style.height = `${newHeight}px`;
     }, [value, autoGrow, minHeight, maxHeight]);
 
-    // Handle transcription
+    const pushToTextarea = useCallback((newValue: string) => {
+      if (!textareaRef.current) return;
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLTextAreaElement.prototype,
+        'value'
+      )?.set;
+      if (nativeInputValueSetter) {
+        nativeInputValueSetter.call(textareaRef.current, newValue);
+        const event = new Event('input', { bubbles: true });
+        textareaRef.current.dispatchEvent(event);
+      }
+    }, []);
+
     const handleTranscriptionComplete = useCallback((result: TranscriptionResult) => {
-      if (result.success && result.text && textareaRef.current) {
-        const currentValue = textareaRef.current.value;
-        const newValue = appendTranscript && currentValue
-          ? `${currentValue}\n${result.text}`
+      if (result.success && result.text) {
+        const base = preRecordingValueRef.current;
+        const newValue = appendTranscript && base
+          ? `${base}\n${result.text}`
           : result.text;
-
-        // Create synthetic event to trigger onChange
-        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-          window.HTMLTextAreaElement.prototype,
-          'value'
-        )?.set;
-        
-        if (nativeInputValueSetter) {
-          nativeInputValueSetter.call(textareaRef.current, newValue);
-          const event = new Event('input', { bubbles: true });
-          textareaRef.current.dispatchEvent(event);
-        }
-
+        pushToTextarea(newValue);
         onTranscriptionComplete?.(result.text);
       }
-    }, [appendTranscript, onTranscriptionComplete]);
+    }, [appendTranscript, onTranscriptionComplete, pushToTextarea]);
 
     // Handle transcription error
     const handleTranscriptionError = useCallback((error: string, errorCode?: string) => {
@@ -151,18 +152,31 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
       onTranscriptionError?.(error);
     }, [onTranscriptionError]);
 
-    // Recording and transcription hook
+    // Recording and transcription hook (streaming: real-time text while speaking)
     const {
       isRecording,
       isTranscribing,
       audioLevel,
+      liveTranscript,
       startRecording,
       stopRecording,
     } = useRecordAndTranscribe({
       onTranscriptionComplete: handleTranscriptionComplete,
       onError: handleTranscriptionError,
       autoTranscribe: true,
+      streaming: true,
     });
+
+    // Stream liveTranscript into the textarea as chunks arrive
+    useEffect(() => {
+      if (!isRecording && !isTranscribing) return;
+      if (!liveTranscript) return;
+      const base = preRecordingValueRef.current;
+      const newValue = appendTranscript && base
+        ? `${base}\n${liveTranscript}`
+        : liveTranscript;
+      pushToTextarea(newValue);
+    }, [liveTranscript, isRecording, isTranscribing, appendTranscript, pushToTextarea]);
 
     // Handle close request - check if recording or transcribing and show warning if needed
     const handleCloseRequest = useCallback(() => {
@@ -201,17 +215,17 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
       }
     };
 
-    // Handle voice click
     const handleVoiceClick = useCallback(async () => {
       if (isRecording) {
         stopRecording();
       } else if (!isTranscribing) {
+        preRecordingValueRef.current = textareaRef.current?.value || '';
         await startRecording();
       }
     }, [isRecording, isTranscribing, startRecording, stopRecording]);
 
-    const showControls = (isFocused || isHovered) && !disabled;
-    const isVoiceDisabled = !isAudioAvailable || disabled || isTranscribing;
+    const showControls = (isFocused || isHovered || isRecording || isTranscribing) && !disabled;
+    const isVoiceDisabled = !isAudioAvailable || disabled || (isTranscribing && !isRecording);
 
     return (
       <div 
@@ -247,40 +261,44 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
             showControls ? "opacity-100" : "opacity-0 pointer-events-none"
           )}
         >
-          {/* Voice Button */}
           {isAudioAvailable && (
             <button
               type="button"
               onClick={handleVoiceClick}
               disabled={isVoiceDisabled}
               className={cn(
-                "p-1.5 rounded-md transition-colors",
-                isRecording 
-                  ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400" 
-                  : isTranscribing
+                "relative p-1.5 rounded-full transition-all duration-200",
+                isRecording
+                  ? "bg-primary/10 dark:bg-primary/15 hover:bg-primary/20 dark:hover:bg-primary/25 cursor-pointer"
+                  : isTranscribing && !isRecording
                   ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                  : "hover:bg-muted",
+                  : "hover:bg-muted cursor-pointer",
                 isVoiceDisabled && "opacity-50 cursor-not-allowed"
               )}
               aria-label={isRecording ? "Stop recording" : "Start voice input"}
             >
-              {isTranscribing ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+              {isRecording && (
+                <span
+                  className="absolute inset-0 rounded-full bg-primary/20 animate-ping"
+                  style={{ animationDuration: '1.5s' }}
+                />
+              )}
+              {isRecording && (
+                <span
+                  className="absolute inset-0 rounded-full bg-primary/15 transition-transform duration-75"
+                  style={{ transform: `scale(${1 + audioLevel / 200})` }}
+                />
+              )}
+              {isTranscribing && !isRecording ? (
+                <Loader2 className="h-4 w-4 animate-spin relative" />
               ) : (
-                <Mic 
+                <Mic
                   className={cn(
-                    "h-4 w-4",
-                    isRecording 
-                      ? "text-red-600 dark:text-red-400" 
+                    "h-4 w-4 relative",
+                    isRecording
+                      ? "text-primary"
                       : "text-muted-foreground hover:text-foreground"
                   )}
-                  style={
-                    isRecording
-                      ? {
-                          filter: `drop-shadow(0 0 ${Math.min(audioLevel / 10, 8)}px currentColor)`,
-                        }
-                      : undefined
-                  }
                 />
               )}
             </button>
@@ -308,26 +326,26 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
           </button>
         </div>
 
-        {/* Recording Indicator */}
+        {/* Recording Indicator with live transcript preview */}
         {isRecording && (
-          <div className="absolute left-2 bottom-2 flex items-center gap-1.5 px-2 py-1 bg-red-100 dark:bg-red-900/30 rounded-md">
+          <div className="absolute left-2 bottom-2 right-12 flex items-center gap-1.5 px-2 py-1 bg-red-100 dark:bg-red-900/30 rounded-md">
             <motion.div
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ repeat: Infinity, duration: 1.5 }}
-              className="w-2 h-2 bg-red-500 rounded-full"
+              className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"
             />
-            <span className="text-xs text-red-600 dark:text-red-400 font-medium">
-              Recording...
+            <span className="text-xs text-red-600 dark:text-red-400 font-medium truncate">
+              {liveTranscript ? liveTranscript.slice(-60) : 'Recording...'}
             </span>
           </div>
         )}
 
-        {/* Transcribing Indicator */}
+        {/* Transcribing Indicator (finalizing after recording stops) */}
         {isTranscribing && !isRecording && (
           <div className="absolute left-2 bottom-2 flex items-center gap-1.5 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 rounded-md">
             <Loader2 className="w-3 h-3 animate-spin text-blue-600 dark:text-blue-400" />
             <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-              Transcribing...
+              Finalizing...
             </span>
           </div>
         )}

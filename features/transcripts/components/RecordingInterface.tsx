@@ -4,12 +4,11 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Mic, Square, Loader2, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Mic, Square, AlertTriangle, CheckCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { RECORDING_LIMITS } from '../constants/recording';
-import { useRecordAndTranscribe } from '@/features/audio/hooks';
-import { TranscriptionResult } from '@/features/audio/types';
+import { useSimpleRecorder } from '@/features/audio/hooks';
 
 interface RecordingInterfaceProps {
     onRecordingComplete: (audioBlob: Blob, duration: number) => void;
@@ -32,32 +31,32 @@ export function RecordingInterface({
     const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const startTimeRef = useRef<number>(0);
 
-    // Use the proven recording hook from the existing system
+    const handleRecordingComplete = useCallback((blob: Blob) => {
+        if (!hasCompleted) {
+            setHasCompleted(true);
+            onRecordingComplete(blob, duration);
+        }
+    }, [hasCompleted, duration, onRecordingComplete]);
+
     const {
         isRecording,
-        isTranscribing,
+        audioBlob,
         audioLevel,
         startRecording: startRec,
         stopRecording: stopRec,
-        recordedBlob,
-    } = useRecordAndTranscribe({
-        onTranscriptionComplete: () => {
-            // We don't need transcription here, we'll do it after saving
-        },
+    } = useSimpleRecorder({
+        onRecordingComplete: handleRecordingComplete,
         onError: (error: string, errorCode?: string) => {
             onError(error, errorCode || 'UNKNOWN');
         },
-        autoTranscribe: false, // We'll transcribe later after saving to storage
     });
 
-    // Format time MM:SS
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
-    // Format file size
     const formatSize = (bytes: number) => {
         if (bytes < 1024 * 1024) {
             return `${(bytes / 1024).toFixed(1)} KB`;
@@ -65,12 +64,10 @@ export function RecordingInterface({
         return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     };
 
-    // Calculate estimated size based on duration
     const calculateEstimatedSize = useCallback((durationSeconds: number) => {
         return durationSeconds * RECORDING_LIMITS.ESTIMATED_BYTES_PER_SECOND;
     }, []);
 
-    // Start recording with duration tracking
     const startRecording = useCallback(async () => {
         setDuration(0);
         setEstimatedSize(0);
@@ -78,51 +75,31 @@ export function RecordingInterface({
         setHasCompleted(false);
         
         startTimeRef.current = Date.now();
-        
-        // Start the actual recording using the proven hook
         await startRec();
 
-        // Start duration timer
         timerRef.current = setInterval(() => {
             const elapsed = (Date.now() - startTimeRef.current) / 1000;
             setDuration(elapsed);
             setEstimatedSize(calculateEstimatedSize(elapsed));
 
-            // Show warning at 80% of limits
             if (elapsed >= RECORDING_LIMITS.WARN_DURATION_SECONDS) {
                 setShowWarning(true);
             }
 
-            // Auto-stop at max duration
             if (elapsed >= maxDuration) {
                 stopRecording();
             }
         }, 100);
     }, [startRec, maxDuration, calculateEstimatedSize]);
 
-    // Stop recording
     const stopRecording = useCallback(() => {
         stopRec();
-        
-        // Clean up timer
         if (timerRef.current) {
             clearInterval(timerRef.current);
             timerRef.current = undefined;
         }
     }, [stopRec]);
 
-    // Handle when recording completes and we have the blob
-    useEffect(() => {
-        if (recordedBlob && !isRecording && !hasCompleted) {
-            setHasCompleted(true);
-            const finalDuration = duration;
-            
-            // Call the parent callback with the blob and duration
-            onRecordingComplete(recordedBlob, finalDuration);
-        }
-    }, [recordedBlob, isRecording, hasCompleted, duration, onRecordingComplete]);
-
-    // Cleanup on unmount
     useEffect(() => {
         return () => {
             if (timerRef.current) {
@@ -136,7 +113,7 @@ export function RecordingInterface({
 
     return (
         <div className="flex flex-col items-center justify-center py-8 space-y-6">
-            {!isRecording && !recordedBlob && (
+            {!isRecording && !audioBlob && (
                 <div className="text-center space-y-4 max-w-md">
                     <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
                         <Mic className="h-10 w-10 text-primary" />
@@ -154,9 +131,8 @@ export function RecordingInterface({
                 </div>
             )}
 
-            {(isRecording || recordedBlob) && (
+            {(isRecording || audioBlob) && (
                 <div className="w-full max-w-md space-y-6">
-                    {/* Recording Indicator */}
                     <div className="flex flex-col items-center space-y-4">
                         <motion.div
                             className={cn(
@@ -197,7 +173,6 @@ export function RecordingInterface({
                         </div>
                     </div>
 
-                    {/* Progress Bars */}
                     <div className="space-y-3">
                         <div>
                             <div className="flex justify-between text-xs text-muted-foreground mb-1">
@@ -228,7 +203,6 @@ export function RecordingInterface({
                         </div>
                     </div>
 
-                    {/* Warning */}
                     {showWarning && isRecording && (
                         <Alert className="bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">
                             <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
@@ -238,7 +212,6 @@ export function RecordingInterface({
                         </Alert>
                     )}
 
-                    {/* Controls */}
                     {isRecording && (
                         <div className="flex justify-center">
                             <Button

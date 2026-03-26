@@ -1,36 +1,36 @@
 /**
  * useChunkedRecordAndTranscribe
  *
- * Solves the data-loss problem with long recordings.
+ * Production-grade streaming transcription hook.
  *
- * How it works:
- *   - Every `chunkDurationMs` (default 10 s) the MediaRecorder is rotated: the
- *     current recording is snapped off as a complete audio blob, a fresh
- *     MediaRecorder starts on the same live stream, and the blob is sent to the
- *     transcription API in the background.
- *   - Each chunk is ≤ ~20 KB (webm/opus 16 kHz) — nowhere near the 4 MB Next.js
- *     body limit or the 25 MB Groq limit.
- *   - Results are accumulated in order into `liveTranscript`, which re-renders on
- *     every chunk so the UI always shows progress.
- *   - When the user stops, the last partial chunk is transcribed, all pending
- *     requests drain, and `onTranscriptionComplete` fires exactly once with the
- *     full accumulated text.
- *
- * Replaces useRecordAndTranscribe for any component where long recordings matter.
+ * Architecture:
+ *   - Every `chunkDurationMs` (default 10 s) the MediaRecorder rotates: the
+ *     current recording snaps off as a complete audio blob, a fresh recorder
+ *     starts on the same live stream, and the blob is sent to the API.
+ *   - Each chunk is ~160 KB (webm/opus 16 kHz) — well under Vercel's 4.5 MB limit.
+ *   - Results accumulate in order into `liveTranscript`, re-rendering on every
+ *     chunk so the UI shows text as the user speaks.
+ *   - All audio chunks + text are persisted to IndexedDB via audioSafetyStore.
+ *   - Failed chunks are tracked; on stop, if any failed, the full audio blob is
+ *     uploaded to Supabase Storage and transcribed via the URL-based fallback.
+ *   - On clean completion, the IndexedDB entry is marked 'complete'.
+ *   - On crash, the AudioRecoveryProvider detects orphaned entries on next load.
  */
 
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { TranscriptionOptions, TranscriptionResult } from '../types';
+import { AUDIO_LIMITS, AUDIO_API_ROUTES } from '../constants';
 import { getErrorSolution } from '../utils/microphone-diagnostics';
+import { audioSafetyStore } from '../services/audioSafetyStore';
+import { uploadAndTranscribeFull, logClientError } from '../services/audioFallbackUpload';
 
 export interface UseChunkedRecordAndTranscribeProps {
   onTranscriptionComplete?: (result: TranscriptionResult) => void;
-  /** Called after each individual chunk is transcribed, with the new snippet and full accumulated text. */
   onChunkTranscribed?: (chunkText: string, accumulatedText: string) => void;
+  onChunkError?: (chunkIndex: number, error: string) => void;
   onError?: (error: string, errorCode?: string) => void;
-  /** How many ms of audio to transcribe per background chunk. Default 10 000 ms (10 s). */
   chunkDurationMs?: number;
   transcriptionOptions?: TranscriptionOptions;
 }
@@ -38,44 +38,50 @@ export interface UseChunkedRecordAndTranscribeProps {
 export function useChunkedRecordAndTranscribe({
   onTranscriptionComplete,
   onChunkTranscribed,
+  onChunkError,
   onError,
-  chunkDurationMs = 10_000,
+  chunkDurationMs = AUDIO_LIMITS.CHUNK_DURATION_MS,
   transcriptionOptions,
 }: UseChunkedRecordAndTranscribeProps = {}) {
-  const [isRecording, setIsRecording]     = useState(false);
+  const [isRecording, setIsRecording]       = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const [isPaused, setIsPaused]           = useState(false);
-  const [duration, setDuration]           = useState(0);
-  const [audioLevel, setAudioLevel]       = useState(0);
+  const [isPaused, setIsPaused]             = useState(false);
+  const [duration, setDuration]             = useState(0);
+  const [audioLevel, setAudioLevel]         = useState(0);
   const [liveTranscript, setLiveTranscript] = useState('');
+  const [failedChunkCount, setFailedChunkCount] = useState(0);
 
-  // ── refs (stable across renders) ────────────────────────────────────────
   const streamRef          = useRef<MediaStream | null>(null);
   const mediaRecorderRef   = useRef<MediaRecorder | null>(null);
   const accumulatedRef     = useRef('');
-  const pendingRef         = useRef(0);            // in-flight transcription count
+  const pendingRef         = useRef(0);
   const isStoppingRef      = useRef(false);
   const mimeTypeRef        = useRef('audio/webm');
   const rotationTimerRef   = useRef<ReturnType<typeof setInterval> | null>(null);
   const durationTimerRef   = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef       = useRef(0);
-  const pausedAtRef        = useRef(0);            // wall-clock timestamp when last paused
-  const pausedDurationRef  = useRef(0);            // total ms spent paused
+  const pausedAtRef        = useRef(0);
+  const pausedDurationRef  = useRef(0);
   const audioCtxRef        = useRef<AudioContext | null>(null);
   const analyserRef        = useRef<AnalyserNode | null>(null);
   const rafRef             = useRef<number | null>(null);
+  const safetyIdRef        = useRef<string>('');
+  const chunkIndexRef      = useRef(0);
+  const failedIndicesRef   = useRef<number[]>([]);
+  const allChunkBlobsRef   = useRef<Blob[]>([]);
+  const userIdRef          = useRef<string>('');
 
-  // ── stable callback refs so closures don't go stale ─────────────────────
   const onTranscriptionCompleteRef = useRef(onTranscriptionComplete);
   const onChunkTranscribedRef      = useRef(onChunkTranscribed);
+  const onChunkErrorRef            = useRef(onChunkError);
   const onErrorRef                 = useRef(onError);
   const transcriptionOptionsRef    = useRef(transcriptionOptions);
   useEffect(() => { onTranscriptionCompleteRef.current = onTranscriptionComplete; }, [onTranscriptionComplete]);
   useEffect(() => { onChunkTranscribedRef.current = onChunkTranscribed; }, [onChunkTranscribed]);
+  useEffect(() => { onChunkErrorRef.current = onChunkError; }, [onChunkError]);
   useEffect(() => { onErrorRef.current = onError; }, [onError]);
   useEffect(() => { transcriptionOptionsRef.current = transcriptionOptions; }, [transcriptionOptions]);
 
-  // ── full cleanup ─────────────────────────────────────────────────────────
   const cleanup = useCallback(() => {
     if (rotationTimerRef.current)  { clearInterval(rotationTimerRef.current);  rotationTimerRef.current  = null; }
     if (durationTimerRef.current)  { clearInterval(durationTimerRef.current);  durationTimerRef.current  = null; }
@@ -97,26 +103,72 @@ export function useChunkedRecordAndTranscribe({
     setIsPaused(false);
     pausedAtRef.current       = 0;
     pausedDurationRef.current = 0;
-    isStoppingRef.current = false;
+    isStoppingRef.current     = false;
   }, []);
 
   useEffect(() => () => { cleanup(); }, [cleanup]);
 
-  // ── fire final callback when all pending transcriptions are done ─────────
-  const maybeFireFinal = useCallback(() => {
-    if (isStoppingRef.current && pendingRef.current === 0) {
-      setIsTranscribing(false);
-      const text = accumulatedRef.current.trim();
-      onTranscriptionCompleteRef.current?.({ success: true, text });
+  const persistText = useCallback(async (text: string) => {
+    if (safetyIdRef.current) {
+      try { await audioSafetyStore.saveText(safetyIdRef.current, text); } catch {}
     }
   }, []);
 
-  // ── transcribe a single blob chunk ───────────────────────────────────────
-  const transcribeBlob = useCallback(async (blob: Blob) => {
-    // Skip blobs that are too tiny to contain real audio (< 1 KB)
-    if (blob.size < 1024) {
+  const runFallbackTranscription = useCallback(async (): Promise<TranscriptionResult | null> => {
+    if (allChunkBlobsRef.current.length === 0) return null;
+
+    const fullBlob = new Blob(allChunkBlobsRef.current, { type: mimeTypeRef.current });
+    if (fullBlob.size < AUDIO_LIMITS.MIN_CHUNK_BYTES) return null;
+
+    try {
+      const result = await uploadAndTranscribeFull(
+        fullBlob,
+        userIdRef.current || 'anonymous',
+        transcriptionOptionsRef.current,
+      );
+      return result;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Fallback transcription failed';
+      console.error('[chunked-transcription] Fallback failed:', msg);
+      return { success: false, text: '', error: msg };
+    }
+  }, []);
+
+  const maybeFireFinal = useCallback(async () => {
+    if (!isStoppingRef.current || pendingRef.current > 0) return;
+
+    const hasFailures = failedIndicesRef.current.length > 0;
+    let finalText = accumulatedRef.current.trim();
+
+    if (hasFailures && allChunkBlobsRef.current.length > 0) {
+      const fallbackResult = await runFallbackTranscription();
+      if (fallbackResult?.success && fallbackResult.text.trim()) {
+        finalText = fallbackResult.text.trim();
+        accumulatedRef.current = finalText;
+        setLiveTranscript(finalText);
+        await persistText(finalText);
+      }
+    }
+
+    setIsTranscribing(false);
+
+    if (safetyIdRef.current) {
+      try { await audioSafetyStore.markComplete(safetyIdRef.current); } catch {}
+    }
+
+    onTranscriptionCompleteRef.current?.({ success: true, text: finalText });
+  }, [runFallbackTranscription, persistText]);
+
+  const transcribeBlob = useCallback(async (blob: Blob, idx: number) => {
+    if (blob.size < AUDIO_LIMITS.MIN_CHUNK_BYTES) {
       maybeFireFinal();
       return;
+    }
+
+    allChunkBlobsRef.current.push(blob);
+
+    if (safetyIdRef.current) {
+      try { await audioSafetyStore.saveChunk(safetyIdRef.current, blob); } catch {}
     }
 
     pendingRef.current += 1;
@@ -130,56 +182,72 @@ export function useChunkedRecordAndTranscribe({
       if (opts?.language) form.append('language', opts.language);
       if (opts?.prompt)   form.append('prompt',   opts.prompt);
 
-      const res  = await fetch('/api/audio/transcribe', { method: 'POST', body: form });
+      const res  = await fetch(AUDIO_API_ROUTES.TRANSCRIBE, { method: 'POST', body: form });
       const data = await res.json();
 
-      if (res.ok && data.success && data.text?.trim()) {
+      if (!res.ok) {
+        throw new Error(data.error || data.details || `HTTP ${res.status}`);
+      }
+
+      if (data.success && data.text?.trim()) {
         const snippet = (data.text as string).trim();
         const sep     = accumulatedRef.current.length > 0 ? ' ' : '';
         accumulatedRef.current += sep + snippet;
         const full = accumulatedRef.current;
         setLiveTranscript(full);
+        await persistText(full);
         onChunkTranscribedRef.current?.(snippet, full);
       }
     } catch (err) {
-      console.error('[chunked-transcription] chunk failed:', err);
-      // Don't surface individual chunk errors — the live transcript just won't
-      // include this segment. A retry strategy can be added here if needed.
+      const msg = err instanceof Error ? err.message : 'Chunk transcription failed';
+      console.error(`[chunked-transcription] chunk ${idx} failed:`, msg);
+
+      failedIndicesRef.current.push(idx);
+      setFailedChunkCount(failedIndicesRef.current.length);
+
+      if (safetyIdRef.current) {
+        try { await audioSafetyStore.addFailedChunk(safetyIdRef.current, idx); } catch {}
+      }
+
+      await logClientError({
+        errorCode: 'CHUNK_FAILED',
+        errorMessage: msg,
+        fileSizeBytes: blob.size,
+        chunkIndex: idx,
+        apiRoute: AUDIO_API_ROUTES.TRANSCRIBE,
+      });
+
+      onChunkErrorRef.current?.(idx, msg);
     } finally {
       pendingRef.current -= 1;
       maybeFireFinal();
     }
-  }, [maybeFireFinal]);
+  }, [maybeFireFinal, persistText]);
 
-  // ── create a fresh MediaRecorder on the existing stream ──────────────────
-  // Each instance has its own chunk array (closure) to avoid shared-ref races.
   const createRecorder = useCallback((stream: MediaStream): MediaRecorder => {
     const mime   = mimeTypeRef.current;
     const chunks: Blob[] = [];
-    const mr     = new MediaRecorder(stream, { mimeType: mime });
+    const idx = chunkIndexRef.current++;
+    const mr  = new MediaRecorder(stream, { mimeType: mime });
 
     mr.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
     mr.onstop          = ()  => {
       const blob = new Blob(chunks, { type: mime });
-      transcribeBlob(blob);
+      transcribeBlob(blob, idx);
     };
 
-    mr.start(100); // emit data every 100 ms for smooth chunk collection
+    mr.start(100);
     return mr;
   }, [transcribeBlob]);
 
-  // ── rotate: snap current recording, immediately start fresh ─────────────
   const rotateChunk = useCallback(() => {
     if (!streamRef.current || !mediaRecorderRef.current) return;
     if (mediaRecorderRef.current.state !== 'recording')  return;
 
-    // Stop current recorder (triggers onstop → transcribeBlob)
     mediaRecorderRef.current.stop();
-    // Start a new one immediately — seamless continuation
     mediaRecorderRef.current = createRecorder(streamRef.current);
   }, [createRecorder]);
 
-  // ── start audio level analysis (reusable for resume) ────────────────────
   const startAudioAnalysis = useCallback(() => {
     if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
     const tick = () => {
@@ -193,7 +261,6 @@ export function useChunkedRecordAndTranscribe({
     tick();
   }, []);
 
-  // ── start duration timer (reusable for resume) ───────────────────────────
   const startDurationTimer = useCallback(() => {
     if (durationTimerRef.current) { clearInterval(durationTimerRef.current); durationTimerRef.current = null; }
     durationTimerRef.current = setInterval(() => {
@@ -201,13 +268,16 @@ export function useChunkedRecordAndTranscribe({
     }, 100);
   }, []);
 
-  // ── start ────────────────────────────────────────────────────────────────
   const startRecording = useCallback(async () => {
     try {
       isStoppingRef.current  = false;
       accumulatedRef.current = '';
       pendingRef.current     = 0;
+      chunkIndexRef.current  = 0;
+      failedIndicesRef.current = [];
+      allChunkBlobsRef.current = [];
       setLiveTranscript('');
+      setFailedChunkCount(0);
 
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -219,7 +289,6 @@ export function useChunkedRecordAndTranscribe({
       });
       streamRef.current = stream;
 
-      // Audio level analysis for visual feedback
       audioCtxRef.current  = new AudioContext();
       analyserRef.current  = audioCtxRef.current.createAnalyser();
       analyserRef.current.fftSize               = 256;
@@ -232,6 +301,17 @@ export function useChunkedRecordAndTranscribe({
         ? 'audio/webm;codecs=opus'
         : 'audio/webm';
 
+      const sessionId = `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const safetyId  = `rec_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      safetyIdRef.current = safetyId;
+
+      try {
+        await audioSafetyStore.createEntry(safetyId, sessionId, mimeTypeRef.current);
+      } catch (err) {
+        console.warn('[chunked-transcription] IndexedDB init failed, continuing without persistence:', err);
+        safetyIdRef.current = '';
+      }
+
       mediaRecorderRef.current = createRecorder(stream);
 
       setIsRecording(true);
@@ -240,9 +320,7 @@ export function useChunkedRecordAndTranscribe({
 
       startDurationTimer();
 
-      // Chunk rotation — each interval produces one transcription request
       rotationTimerRef.current = setInterval(rotateChunk, chunkDurationMs);
-
     } catch (err) {
       const sol = getErrorSolution(err);
       onErrorRef.current?.(sol.message, sol.code);
@@ -250,7 +328,6 @@ export function useChunkedRecordAndTranscribe({
     }
   }, [cleanup, startAudioAnalysis, startDurationTimer, createRecorder, rotateChunk, chunkDurationMs]);
 
-  // ── stop ─────────────────────────────────────────────────────────────────
   const stopRecording = useCallback(() => {
     isStoppingRef.current = true;
 
@@ -272,24 +349,22 @@ export function useChunkedRecordAndTranscribe({
     setAudioLevel(0);
     pausedDurationRef.current = 0;
 
+    if (safetyIdRef.current) {
+      audioSafetyStore.setStatus(safetyIdRef.current, 'transcribing').catch(() => {});
+    }
+
     if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') {
-      // Recorder already stopped or never started — fire final immediately
       mediaRecorderRef.current = null;
       if (pendingRef.current === 0) {
-        setIsTranscribing(false);
-        const text = accumulatedRef.current.trim();
-        onTranscriptionCompleteRef.current?.({ success: true, text });
+        maybeFireFinal();
       }
       return;
     }
 
-    // Stop the active recorder — its onstop will call transcribeBlob, which
-    // calls maybeFireFinal when pendingRef reaches 0.
     mediaRecorderRef.current.stop();
     mediaRecorderRef.current = null;
-  }, []);
+  }, [maybeFireFinal]);
 
-  // ── pause ────────────────────────────────────────────────────────────────
   const pauseRecording = useCallback(() => {
     if (!mediaRecorderRef.current || mediaRecorderRef.current.state !== 'recording') return;
     mediaRecorderRef.current.pause();
@@ -302,7 +377,6 @@ export function useChunkedRecordAndTranscribe({
     setIsPaused(true);
   }, []);
 
-  // ── resume ───────────────────────────────────────────────────────────────
   const resumeRecording = useCallback(() => {
     if (!mediaRecorderRef.current || mediaRecorderRef.current.state !== 'paused') return;
     pausedDurationRef.current += Date.now() - pausedAtRef.current;
@@ -313,7 +387,6 @@ export function useChunkedRecordAndTranscribe({
     setIsPaused(false);
   }, [startAudioAnalysis, startDurationTimer, rotateChunk, chunkDurationMs]);
 
-  // ── reset ────────────────────────────────────────────────────────────────
   const reset = useCallback(() => {
     cleanup();
     setIsRecording(false);
@@ -321,8 +394,12 @@ export function useChunkedRecordAndTranscribe({
     setDuration(0);
     setAudioLevel(0);
     setLiveTranscript('');
-    accumulatedRef.current = '';
-    pendingRef.current     = 0;
+    setFailedChunkCount(0);
+    accumulatedRef.current   = '';
+    pendingRef.current       = 0;
+    chunkIndexRef.current    = 0;
+    failedIndicesRef.current = [];
+    allChunkBlobsRef.current = [];
   }, [cleanup]);
 
   return {
@@ -331,8 +408,8 @@ export function useChunkedRecordAndTranscribe({
     isPaused,
     duration,
     audioLevel,
-    /** Updates in real-time as each 10-second chunk comes back from the API. */
     liveTranscript,
+    failedChunkCount,
     startRecording,
     stopRecording,
     pauseRecording,

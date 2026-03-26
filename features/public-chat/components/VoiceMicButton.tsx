@@ -188,10 +188,10 @@ export function VoiceMicButton({ disabled = false, onTranscription }: VoiceMicBu
                 {/* Mic button */}
                 <TapTargetButtonTransparent
                     onClick={handleClick}
-                    disabled={disabled || isTranscribing}
+                    disabled={disabled || (isTranscribing && !isRecording)}
                     ariaLabel={isRecording ? 'Stop recording' : isTranscribing ? 'Transcribing...' : 'Voice input'}
                     icon={
-                        isTranscribing ? (
+                        isTranscribing && !isRecording ? (
                             <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
                         ) : isRecording ? (
                             <FaMicrophoneLines

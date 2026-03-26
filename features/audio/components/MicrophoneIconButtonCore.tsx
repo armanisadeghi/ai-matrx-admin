@@ -130,7 +130,8 @@ export default function MicrophoneIconButtonCore({
 
   // ── Primary click handler (for idle icon button) ─────────────────────────
   const handleClick = useCallback(async () => {
-    if (disabled || isTranscribing) return;
+    if (disabled) return;
+    if (isTranscribing && !isRecording) return;
 
     if (variant === 'modal-controls') {
       setModalOpen(true);
@@ -222,7 +223,7 @@ export default function MicrophoneIconButtonCore({
         <button
           type="button"
           onClick={handleClick}
-          disabled={disabled || isTranscribing}
+          disabled={disabled || (isTranscribing && !isRecording)}
           title={
             isRecording ? 'Tap to stop recording'
             : isTranscribing ? 'Processing…'
@@ -233,7 +234,7 @@ export default function MicrophoneIconButtonCore({
             'h-12 w-12 rounded-full',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
             disabled && 'cursor-not-allowed opacity-50',
-            isTranscribing && 'cursor-wait',
+            isTranscribing && !isRecording && 'cursor-wait',
             className,
           )}
         >
@@ -288,7 +289,7 @@ export default function MicrophoneIconButtonCore({
   // Expands to show recording indicator + stop button while active.
   // ══════════════════════════════════════════════════════════════════════════
   if (variant === 'inline-expand') {
-    if (isTranscribing) {
+    if (isTranscribing && !isRecording) {
       return (
         <>
           <TranscriptionLoader duration={duration} size={size} />
@@ -305,22 +306,29 @@ export default function MicrophoneIconButtonCore({
     if (isRecording) {
       return (
         <>
-          <div className={cn('flex items-center gap-1.5 flex-wrap', className)}>
-            <RecordingIndicator
-              duration={duration}
-              audioLevel={audioLevel}
-              size={size}
-              color="blue"
-            />
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={stopRecording}
-              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 h-7 px-2 text-xs"
-            >
-              Stop
-            </Button>
+          <div className={cn('flex flex-col gap-1', className)}>
+            <div className="flex items-center gap-1.5">
+              <RecordingIndicator
+                duration={duration}
+                audioLevel={audioLevel}
+                size={size}
+                color="blue"
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={stopRecording}
+                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 h-7 px-2 text-xs"
+              >
+                Stop
+              </Button>
+            </div>
+            {liveTranscript && (
+              <p className="text-xs text-muted-foreground leading-relaxed truncate max-w-[200px]">
+                {liveTranscript.slice(-80)}
+              </p>
+            )}
           </div>
           <VoiceTroubleshootingModal
             isOpen={showTroubleshooting}
