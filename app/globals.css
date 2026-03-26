@@ -1999,3 +1999,49 @@
   .shell-active-pill .shell-nav-icon { color: var(--shell-pill-text); }
   .shell-active-pill .shell-nav-label { color: var(--shell-pill-text); font-weight: 600; }
 }
+
+/* ---------------------------------------------------------------------------
+   Matrx Glass Design Tokens
+   Portable subset from shell.css — enables TapTargetButton / glass components
+   outside the (ssr) route group. When the SSR shell wraps the full site,
+   shell.css will override these (identical values, so no conflict).
+   --------------------------------------------------------------------------- */
+
+:root {
+  --matrx-glass-bg:           rgba(210, 225, 255, 0.14);
+  --matrx-glass-bg-hover:     rgba(210, 225, 255, 0.22);
+  --matrx-glass-bg-active:    rgba(210, 225, 255, 0.32);
+  --matrx-glass-border-color: rgba(180, 205, 255, 0.70);
+  --matrx-glass-border-width: 1.5px;
+  --matrx-glass-blur:         4px;
+  --matrx-glass-shadow:       0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --matrx-glass-shadow-lg:    0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.dark {
+  --matrx-glass-bg:           rgba(180, 200, 255, 0.05);
+  --matrx-glass-bg-hover:     rgba(180, 200, 255, 0.09);
+  --matrx-glass-bg-active:    rgba(180, 200, 255, 0.13);
+  --matrx-glass-border-color: rgba(255, 255, 255, 0.07);
+  --matrx-glass-shadow:       0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
+  --matrx-glass-shadow-lg:    0 4px 16px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.matrx-glass-thin-border {
+  background: var(--matrx-glass-bg);
+  backdrop-filter: blur(var(--matrx-glass-blur)) saturate(1.8);
+  border: 1.5px solid var(--matrx-glass-border-color);
+  box-shadow: var(--matrx-glass-shadow);
+}
+
+.matrx-glass-interactive:hover  { background: var(--matrx-glass-bg-hover); }
+.matrx-glass-interactive:active { background: var(--matrx-glass-bg-active); }
+
+.matrx-shell-glass {
+  background: var(--matrx-glass-bg);
+  backdrop-filter: blur(var(--matrx-glass-blur)) saturate(1.8);
+  border: var(--matrx-glass-border-width) solid var(--matrx-glass-border-color);
+  box-shadow: var(--matrx-glass-shadow);
+}
+.matrx-shell-glass:hover  { background: var(--matrx-glass-bg-hover); }
+.matrx-shell-glass:active { background: var(--matrx-glass-bg-active); }

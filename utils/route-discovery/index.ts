@@ -15,7 +15,7 @@ export async function scanRoutes(
     const entries = await readdir(dir, { withFileTypes: true });
 
     for (const entry of entries) {
-      if (entry.name.startsWith("_")) continue;
+      if (entry.name.startsWith("_") || entry.name.startsWith("[")) continue;
 
       const fullPath = join(dir, entry.name);
       const routePath = baseRoute ? `${baseRoute}/${entry.name}` : entry.name;
@@ -41,7 +41,7 @@ export async function scanRoutesShallow(dir: string): Promise<string[]> {
     const entries = await readdir(dir, { withFileTypes: true });
 
     for (const entry of entries) {
-      if (!entry.isDirectory() || entry.name.startsWith("_")) continue;
+      if (!entry.isDirectory() || entry.name.startsWith("_") || entry.name.startsWith("[")) continue;
 
       const subDir = join(dir, entry.name);
       try {

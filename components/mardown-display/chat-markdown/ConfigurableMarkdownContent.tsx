@@ -211,7 +211,7 @@ const DEFAULT_HEADINGS: Required<MarkdownHeadingConfig> = {
   h1: "text-2xl font-bold pt-2 mb-1 font-heading",
   h2: "text-xl font-medium pt-1 mb-1 font-heading",
   h3: "text-lg font-medium pt-1 mb-2 font-heading",
-  h4: "text-lg font-medium mb-1 mt-3 font-heading",
+  h4: "text-lg pt-2 font-medium mb-1 mt-3 font-heading",
 };
 
 // ---------------------------------------------------------------------------
