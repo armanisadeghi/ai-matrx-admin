@@ -754,22 +754,95 @@ function detectCodeBlock(line: string): { isCodeBlock: boolean; language?: strin
     return { isCodeBlock: true, language };
 }
 
+/**
+ * Checks whether a triple-backtick sequence at `backtickPos` in `line` is
+ * inside a JSON string literal, given the cumulative string-context state
+ * (`inString`, `escaped`) carried over from previous lines.
+ *
+ * Returns { isInsideString, inString, escaped } so the caller can thread the
+ * state across lines.
+ */
+function isBacktickInsideJsonString(
+    line: string,
+    backtickPos: number,
+    inString: boolean,
+    escaped: boolean
+): { isInsideString: boolean; inString: boolean; escaped: boolean } {
+    for (let idx = 0; idx < backtickPos; idx++) {
+        const ch = line[idx];
+        if (escaped) {
+            escaped = false;
+            continue;
+        }
+        if (ch === '\\' && inString) {
+            escaped = true;
+            continue;
+        }
+        if (ch === '"') {
+            inString = !inString;
+        }
+    }
+    return { isInsideString: inString, inString, escaped };
+}
+
 function extractCodeBlock(language: string | undefined, startIndex: number, lines: string[]): ExtractionResult {
     const content: string[] = [];
     let i = startIndex;
-    
+    // Track JSON string context across lines so we don't mistake ``` inside a
+    // string value for the closing fence.
+    const isJson = language === 'json';
+    let jsonInString = false;
+    let jsonEscaped = false;
+
     while (i < lines.length) {
         const line = lines[i];
         const trimmedLine = line.trim();
         
         // Check if closing backticks are at the start of the line (normal case)
         if (trimmedLine.startsWith("```")) {
+            if (isJson) {
+                const { isInsideString, inString, escaped } = isBacktickInsideJsonString(line, line.indexOf("```"), jsonInString, jsonEscaped);
+                if (isInsideString) {
+                    // This ``` is inside a JSON string — treat it as content and
+                    // continue advancing the string-context state for the full line.
+                    content.push(line);
+                    i++;
+                    jsonInString = inString;
+                    jsonEscaped = escaped;
+                    // Advance state past the backtick sequence itself
+                    const backtickIdx = line.indexOf("```");
+                    for (let idx = backtickIdx; idx < line.length; idx++) {
+                        const ch = line[idx];
+                        if (jsonEscaped) { jsonEscaped = false; continue; }
+                        if (ch === '\\' && jsonInString) { jsonEscaped = true; continue; }
+                        if (ch === '"') jsonInString = !jsonInString;
+                    }
+                    continue;
+                }
+            }
             break;
         }
         
         // Check if closing backticks appear anywhere in the line (inline case: }```)
         const backtickIndex = line.indexOf("```");
         if (backtickIndex !== -1) {
+            if (isJson) {
+                const { isInsideString, inString, escaped } = isBacktickInsideJsonString(line, backtickIndex, jsonInString, jsonEscaped);
+                if (isInsideString) {
+                    content.push(line);
+                    i++;
+                    jsonInString = inString;
+                    jsonEscaped = escaped;
+                    // Advance state past the backtick sequence
+                    for (let idx = backtickIndex; idx < line.length; idx++) {
+                        const ch = line[idx];
+                        if (jsonEscaped) { jsonEscaped = false; continue; }
+                        if (ch === '\\' && jsonInString) { jsonEscaped = true; continue; }
+                        if (ch === '"') jsonInString = !jsonInString;
+                    }
+                    continue;
+                }
+            }
             // Include content before the backticks
             const contentBeforeBackticks = line.substring(0, backtickIndex);
             if (contentBeforeBackticks.trim()) {
@@ -780,6 +853,16 @@ function extractCodeBlock(language: string | undefined, startIndex: number, line
         
         content.push(line);
         i++;
+
+        // Advance JSON string-context state for this line (no backticks in it)
+        if (isJson) {
+            for (let idx = 0; idx < line.length; idx++) {
+                const ch = line[idx];
+                if (jsonEscaped) { jsonEscaped = false; continue; }
+                if (ch === '\\' && jsonInString) { jsonEscaped = true; continue; }
+                if (ch === '"') jsonInString = !jsonInString;
+            }
+        }
     }
     
     return {
