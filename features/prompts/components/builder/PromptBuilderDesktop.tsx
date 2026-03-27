@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft, Save, Maximize2, Settings, Sparkles, ChevronRight, Loader2, History } from "lucide-react";
 import { PromptHeader } from "@/components/layout/new-layout/PageSpecificHeader";
@@ -7,11 +7,16 @@ import { PromptBuilderLeftPanel } from "./PromptBuilderLeftPanel";
 import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayout";
 import { ModelSettingsDialog } from "@/features/prompts/components/configuration/ModelSettingsDialog";
 import { FullScreenEditor } from "@/features/prompts/components/FullScreenEditor";
-import { PromptSettingsModal } from "@/features/prompts/components/PromptSettingsModal";
 import { SharedPromptBanner } from "./SharedPromptWarningModal";
 import { SystemPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/SystemPromptOptimizer";
 import { PromptBuilderSharedProps } from "./types";
 import { VersionBadge, VersionHistoryPanel } from "@/features/versioning";
+
+const PromptSettingsModal = lazy(() =>
+    import("@/features/prompts/components/PromptSettingsModal").then((m) => ({
+        default: m.PromptSettingsModal,
+    }))
+);
 
 export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
     const {
@@ -380,27 +385,31 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
                 modelSupportsTools={modelSupportsTools}
             />
 
-            <PromptSettingsModal
-                isOpen={isSettingsModalOpen}
-                onClose={() => setIsSettingsModalOpen(false)}
-                promptId={initialData?.id}
-                promptName={promptName}
-                promptDescription={promptDescription}
-                variableDefaults={variableDefaults}
-                messages={[{ role: "system", content: developerMessage }, ...messages]}
-                settings={{ model_id: model, ...modelConfig }}
-                models={models}
-                availableTools={availableTools}
-                tags={initialData?.tags}
-                category={initialData?.category}
-                isFavorite={initialData?.isFavorite}
-                isArchived={initialData?.isArchived}
-                modelId={initialData?.modelId}
-                outputFormat={initialData?.outputFormat}
-                outputSchema={initialData?.outputSchema}
-                onUpdate={handleSettingsUpdate}
-                onLocalStateUpdate={handleLocalStateUpdate}
-            />
+            {isSettingsModalOpen && (
+                <Suspense fallback={null}>
+                    <PromptSettingsModal
+                        isOpen={isSettingsModalOpen}
+                        onClose={() => setIsSettingsModalOpen(false)}
+                        promptId={initialData?.id}
+                        promptName={promptName}
+                        promptDescription={promptDescription}
+                        variableDefaults={variableDefaults}
+                        messages={[{ role: "system", content: developerMessage }, ...messages]}
+                        settings={{ model_id: model, ...modelConfig }}
+                        models={models}
+                        availableTools={availableTools}
+                        tags={initialData?.tags}
+                        category={initialData?.category}
+                        isFavorite={initialData?.isFavorite}
+                        isArchived={initialData?.isArchived}
+                        modelId={initialData?.modelId}
+                        outputFormat={initialData?.outputFormat}
+                        outputSchema={initialData?.outputSchema}
+                        onUpdate={handleSettingsUpdate}
+                        onLocalStateUpdate={handleLocalStateUpdate}
+                    />
+                </Suspense>
+            )}
 
             {promptId && (
                 <VersionHistoryPanel

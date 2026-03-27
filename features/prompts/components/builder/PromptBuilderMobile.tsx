@@ -1,12 +1,17 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { PromptHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { PromptBuilderRightPanel } from "./PromptBuilderRightPanel";
 import { PromptBuilderLeftPanel } from "./PromptBuilderLeftPanel";
 import { ModelSettingsDialog } from "@/features/prompts/components/configuration/ModelSettingsDialog";
 import { FullScreenEditor } from "@/features/prompts/components/FullScreenEditor";
-import { PromptSettingsModal } from "@/features/prompts/components/PromptSettingsModal";
 import { SharedPromptBanner } from "./SharedPromptWarningModal";
 import { PromptBuilderSharedProps } from "./types";
+
+const PromptSettingsModal = lazy(() =>
+    import("@/features/prompts/components/PromptSettingsModal").then((m) => ({
+        default: m.PromptSettingsModal,
+    }))
+);
 
 interface PromptBuilderMobileProps extends PromptBuilderSharedProps {
     mobileActiveTab: 'edit' | 'test';
@@ -269,27 +274,31 @@ export function PromptBuilderMobile(props: PromptBuilderMobileProps) {
                 modelSupportsTools={modelSupportsTools}
             />
 
-            <PromptSettingsModal
-                isOpen={isSettingsModalOpen}
-                onClose={() => setIsSettingsModalOpen(false)}
-                promptId={initialData?.id}
-                promptName={promptName}
-                promptDescription={promptDescription}
-                variableDefaults={variableDefaults}
-                messages={[{ role: "system", content: developerMessage }, ...messages]}
-                settings={{ model_id: model, ...modelConfig }}
-                models={models}
-                availableTools={availableTools}
-                tags={initialData?.tags}
-                category={initialData?.category}
-                isFavorite={initialData?.isFavorite}
-                isArchived={initialData?.isArchived}
-                modelId={initialData?.modelId}
-                outputFormat={initialData?.outputFormat}
-                outputSchema={initialData?.outputSchema}
-                onUpdate={handleSettingsUpdate}
-                onLocalStateUpdate={handleLocalStateUpdate}
-            />
+            {isSettingsModalOpen && (
+                <Suspense fallback={null}>
+                    <PromptSettingsModal
+                        isOpen={isSettingsModalOpen}
+                        onClose={() => setIsSettingsModalOpen(false)}
+                        promptId={initialData?.id}
+                        promptName={promptName}
+                        promptDescription={promptDescription}
+                        variableDefaults={variableDefaults}
+                        messages={[{ role: "system", content: developerMessage }, ...messages]}
+                        settings={{ model_id: model, ...modelConfig }}
+                        models={models}
+                        availableTools={availableTools}
+                        tags={initialData?.tags}
+                        category={initialData?.category}
+                        isFavorite={initialData?.isFavorite}
+                        isArchived={initialData?.isArchived}
+                        modelId={initialData?.modelId}
+                        outputFormat={initialData?.outputFormat}
+                        outputSchema={initialData?.outputSchema}
+                        onUpdate={handleSettingsUpdate}
+                        onLocalStateUpdate={handleLocalStateUpdate}
+                    />
+                </Suspense>
+            )}
         </>
     );
 }

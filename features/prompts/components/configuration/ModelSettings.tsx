@@ -127,9 +127,6 @@ export function ModelSettings({
     });
 
     // CRITICAL: Sync enabledSettings when settings change from outside
-    // This ensures checkboxes accurately reflect what's in settings and prevents
-    // sending disabled settings to the API. Without this, settings could have values
-    // but appear unchecked, leading to silent inclusion of "disabled" settings.
     useEffect(() => {
         const enabled = new Set<string>();
         Object.entries(settings).forEach(([key, value]) => {

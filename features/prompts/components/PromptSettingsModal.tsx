@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -36,6 +37,7 @@ import {
 import {
   PromptVariable,
   PromptMessage,
+  PromptSettings,
   VariableCustomComponent,
 } from "@/features/prompts/types/core";
 import { VariableEditor } from "./configuration/VariableEditor";
@@ -48,6 +50,52 @@ import { usePromptCategorizer } from "@/features/prompts/hooks/usePromptCategori
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAllUserPrompts } from "@/lib/redux/slices/promptCacheSlice";
+
+class ModalErrorBoundary extends React.Component<
+  { children: React.ReactNode; onClose: () => void },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode; onClose: () => void }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: Error) {
+    console.error("[PromptSettingsModal] Crash caught:", error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center gap-4 p-8 text-center h-full">
+          <AlertCircle className="h-10 w-10 text-destructive" />
+          <div>
+            <p className="text-sm font-semibold text-foreground mb-1">
+              Settings failed to load
+            </p>
+            <p className="text-xs text-muted-foreground max-w-sm">
+              {this.state.error?.message ?? "An unexpected error occurred."}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => this.setState({ hasError: false, error: null })}
+            >
+              Retry
+            </Button>
+            <Button size="sm" onClick={this.props.onClose}>
+              Close
+            </Button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 interface PromptSettingsModalProps {
   isOpen: boolean;
@@ -155,6 +203,8 @@ export function PromptSettingsModal({
     null,
   );
 
+  const prevIsOpenRef = useRef(isOpen);
+
   const allPrompts = useAppSelector(selectAllUserPrompts);
   const {
     categorize,
@@ -192,46 +242,36 @@ export function PromptSettingsModal({
   // Full prompt optimizer state
   const [isFullOptimizerOpen, setIsFullOptimizerOpen] = useState(false);
 
-  // Reset local state when modal opens or props change
+  // Snapshot props into local state only when the modal opens (false → true).
+  // Previous implementation included all props in the dep array, which caused an
+  // infinite loop: parent passes new object refs on every render → effect fires →
+  // local state changes → re-render → effect fires again.
   useEffect(() => {
-    if (isOpen) {
-      setLocalName(promptName);
-      setLocalDescription(promptDescription);
-      // Deep clone to preserve customComponent structure
-      setLocalVariables(JSON.parse(JSON.stringify(variableDefaults)));
-      setLocalMessages([...messages]);
-      setLocalSettings({ ...settings });
-      // Reset metadata
-      setLocalTags([...tags]);
-      setLocalCategory(category);
-      setLocalIsFavorite(isFavorite);
-      setLocalIsArchived(isArchived);
-      setLocalModelId(modelId ?? "");
-      setLocalOutputFormat(outputFormat ?? "");
-      setLocalOutputSchema(
-        outputSchema ? JSON.stringify(outputSchema, null, 2) : "",
-      );
-      setOutputSchemaError(null);
-      setTagInput("");
-      // Reset variable selection
-      setSelectedVariableIndex(null);
-      setIsAddingVariable(false);
-    }
-  }, [
-    isOpen,
-    promptName,
-    promptDescription,
-    variableDefaults,
-    messages,
-    settings,
-    tags,
-    category,
-    isFavorite,
-    isArchived,
-    modelId,
-    outputFormat,
-    outputSchema,
-  ]);
+    const justOpened = isOpen && !prevIsOpenRef.current;
+    prevIsOpenRef.current = isOpen;
+
+    if (!justOpened) return;
+
+    setLocalName(promptName);
+    setLocalDescription(promptDescription);
+    setLocalVariables(JSON.parse(JSON.stringify(variableDefaults)));
+    setLocalMessages([...messages]);
+    setLocalSettings({ ...settings });
+    setLocalTags([...tags]);
+    setLocalCategory(category);
+    setLocalIsFavorite(isFavorite);
+    setLocalIsArchived(isArchived);
+    setLocalModelId(modelId ?? "");
+    setLocalOutputFormat(outputFormat ?? "");
+    setLocalOutputSchema(
+      outputSchema ? JSON.stringify(outputSchema, null, 2) : "",
+    );
+    setOutputSchemaError(null);
+    setTagInput("");
+    setSelectedVariableIndex(null);
+    setIsAddingVariable(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   // Sync editing state when selecting a variable
   useEffect(() => {
@@ -507,8 +547,12 @@ export function PromptSettingsModal({
           <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Prompt Settings
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Configure prompt metadata, variables, tools, messages, and model settings.
+          </DialogDescription>
         </DialogHeader>
 
+        <ModalErrorBoundary onClose={onClose}>
         <Tabs defaultValue="overview" className="flex-1 flex flex-col min-h-0">
           <TabsList>
             <TabsTrigger value="overview" className="text-xs sm:text-sm">
@@ -1215,26 +1259,7 @@ export function PromptSettingsModal({
                 <ModelSettings
                   modelId={localSettings?.model_id || ""}
                   models={models}
-                  settings={{
-                    temperature: localSettings?.temperature,
-                    // @ts-ignore - max_tokens may not exist in PromptSettings type but is used in runtime
-                    max_tokens: localSettings?.max_tokens,
-                    top_p: localSettings?.top_p,
-                    top_k: localSettings?.top_k,
-                    tools: localSettings?.tools,
-                    stream: localSettings?.stream,
-                    store: localSettings?.store,
-                    tool_choice: localSettings?.tool_choice,
-                    parallel_tool_calls: localSettings?.parallel_tool_calls,
-                    response_format: localSettings?.response_format,
-                    image_urls: localSettings?.image_urls,
-                    file_urls: localSettings?.file_urls,
-                    internal_web_search: localSettings?.internal_web_search,
-                    youtube_videos: localSettings?.youtube_videos,
-                    reasoning_effort: localSettings?.reasoning_effort,
-                    verbosity: localSettings?.verbosity,
-                    reasoning_summary: localSettings?.reasoning_summary,
-                  }}
+                  settings={localSettings as PromptSettings}
                   onSettingsChange={(newSettings) => {
                     setLocalSettings((prev) => ({
                       ...prev,
@@ -1342,6 +1367,7 @@ export function PromptSettingsModal({
             {isSaving ? "Saving..." : "Save Settings"}
           </Button>
         </div>
+        </ModalErrorBoundary>
       </DialogContent>
 
       {/* Full Prompt Optimizer */}

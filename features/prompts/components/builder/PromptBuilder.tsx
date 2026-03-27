@@ -28,6 +28,8 @@ import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
 import { ModelChangeConflictModal } from "./ModelChangeConflictModal";
 import type { ModelChangeConflictData } from "./ModelChangeConflictModal";
 import { useModelChangeConflict } from "@/features/prompts/hooks/useModelChangeConflict";
+import { PromptBuilderErrorBoundary } from "./PromptBuilderErrorBoundary";
+import { usePromptAutoSave } from "../../hooks/usePromptAutoSave";
 
 interface PromptBuilderProps {
     models: any[];
@@ -68,7 +70,15 @@ interface PromptBuilderProps {
 
 
 
-export function PromptBuilder({ models, initialData, availableTools, accessInfo, onCustomSave, contextLabel, backHref, backLabel }: PromptBuilderProps) {
+export function PromptBuilder(props: PromptBuilderProps) {
+    return (
+        <PromptBuilderErrorBoundary promptId={props.initialData?.id}>
+            <PromptBuilderInner {...props} />
+        </PromptBuilderErrorBoundary>
+    );
+}
+
+function PromptBuilderInner({ models, initialData, availableTools, accessInfo, onCustomSave, contextLabel, backHref, backLabel }: PromptBuilderProps) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -279,6 +289,18 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo,
     const [variablePopoverOpen, setVariablePopoverOpen] = useState<number | null>(null);
     const [systemMessageVariablePopoverOpen, setSystemMessageVariablePopoverOpen] = useState(false);
     const [cursorPositions, setCursorPositions] = useState<Record<number, number>>({});
+
+    // Auto-save to localStorage for crash recovery
+    usePromptAutoSave({
+        promptId: initialData?.id,
+        promptName,
+        developerMessage,
+        messages,
+        variableDefaults,
+        modelConfig,
+        model,
+        isDirty,
+    });
 
     // Refs for textarea elements (including system message at index -1)
     const textareaRefs = useRef<Record<number, HTMLTextAreaElement | null>>({});
