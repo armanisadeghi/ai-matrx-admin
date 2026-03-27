@@ -2131,6 +2131,10 @@ export interface components {
             include_thoughts?: boolean | null;
             /** Thinking Budget */
             thinking_budget?: number | null;
+            /** Clear Thinking */
+            clear_thinking?: boolean | null;
+            /** Disable Reasoning */
+            disable_reasoning?: boolean | null;
             /** Response Format */
             response_format?: {
                 [key: string]: unknown;
@@ -2488,6 +2492,10 @@ export interface components {
             include_thoughts?: boolean | null;
             /** Thinking Budget */
             thinking_budget?: number | null;
+            /** Clear Thinking */
+            clear_thinking?: boolean | null;
+            /** Disable Reasoning */
+            disable_reasoning?: boolean | null;
             /** Response Format */
             response_format?: {
                 [key: string]: unknown;

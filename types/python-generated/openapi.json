@@ -5361,6 +5361,28 @@
             ],
             "title": "Thinking Budget"
           },
+          "clear_thinking": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clear Thinking"
+          },
+          "disable_reasoning": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disable Reasoning"
+          },
           "response_format": {
             "anyOf": [
               {
@@ -6466,6 +6488,28 @@
               }
             ],
             "title": "Thinking Budget"
+          },
+          "clear_thinking": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clear Thinking"
+          },
+          "disable_reasoning": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disable Reasoning"
           },
           "response_format": {
             "anyOf": [

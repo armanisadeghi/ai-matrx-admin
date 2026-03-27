@@ -13,6 +13,9 @@
 //   - modelSettings     → user-modified settings (only sent if dirty vs agent default)
 //   - agentDefaultSettings → baseline for dirty detection
 //   - useBlockMode      → admin toggle, persists across conversations
+//   - messageContext     → deferred context objects sent with the next message
+//                          (questionnaire responses, IDE state, user data, etc.)
+//                          Backend handles injection tiers — we just populate the dict.
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { PromptVariable, PromptSettings } from '@/features/prompts/types/core';
@@ -59,6 +62,14 @@ interface ActiveChatState {
     modelSettings: PromptSettings;
     /** Agent's default settings — baseline for dirty detection */
     agentDefaultSettings: PromptSettings;
+    /**
+     * Deferred context objects to include with the next message.
+     * Key→content pairs sent as the `context` field in AgentStartRequest.
+     * The backend handles tiered injection (system prompt awareness +
+     * user message manifest + ctx_get tool). Components like the
+     * QuestionnaireRenderer write here; the sendMessage thunk reads it.
+     */
+    messageContext: Record<string, unknown>;
 }
 
 // ============================================================================
@@ -81,6 +92,7 @@ const initialState: ActiveChatState = {
     modelOverride: null,
     modelSettings: {},
     agentDefaultSettings: {},
+    messageContext: {},
 };
 
 // ============================================================================
@@ -124,16 +136,36 @@ const activeChatSlice = createSlice({
         setAgentDefaultSettings(state, action: PayloadAction<PromptSettings>) {
             state.agentDefaultSettings = action.payload;
         },
-        /** Reset model/settings when switching agents */
+        /** Reset model/settings/context when switching agents */
         resetModelState(state) {
             state.modelOverride = null;
             state.modelSettings = {};
             state.agentDefaultSettings = {};
+            state.messageContext = {};
         },
         /** Reset on unmount / route change — keeps agent but clears session + first message */
         clearActiveSession(state) {
             state.sessionId = null;
             state.firstMessage = null;
+        },
+
+        // ── Message context actions ──────────────────────────────────────
+
+        /** Set or replace a single context entry (e.g. questionnaire responses) */
+        setContextEntry(state, action: PayloadAction<{ key: string; value: unknown }>) {
+            state.messageContext[action.payload.key] = action.payload.value;
+        },
+        /** Merge multiple entries at once */
+        mergeContext(state, action: PayloadAction<Record<string, unknown>>) {
+            Object.assign(state.messageContext, action.payload);
+        },
+        /** Remove a single context key */
+        removeContextEntry(state, action: PayloadAction<string>) {
+            delete state.messageContext[action.payload];
+        },
+        /** Clear all context (e.g. after send, or on agent switch) */
+        clearMessageContext(state) {
+            state.messageContext = {};
         },
     },
 });
@@ -176,3 +208,6 @@ export const selectModelSettings = (s: StateWithActiveChat): PromptSettings =>
 
 export const selectAgentDefaultSettings = (s: StateWithActiveChat): PromptSettings =>
     s.activeChat.agentDefaultSettings;
+
+export const selectMessageContext = (s: StateWithActiveChat): Record<string, unknown> =>
+    s.activeChat.messageContext;

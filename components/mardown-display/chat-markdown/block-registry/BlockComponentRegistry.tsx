@@ -199,18 +199,12 @@ export const BlockComponents = {
             <MathProblemBlock {...props} />
         </LazyBlockWrapper>
     ),
-    // TODO(arman): QuestionnaireRenderer can be decoupled from the entity system.
-    // It uses getChatActionsWithThunks() only for updateModUserContext — this can
-    // be replaced with a direct Supabase call or a non-entity Redux action.
-    // Once decoupled, remove the LazyEntityGate wrapper here.
     QuestionnaireRenderer: (props: any) => (
-        <LazyEntityGate label="QuestionnaireRenderer">
-            <LazyBlockWrapper>
-                <QuestionnaireProvider>
-                    <QuestionnaireRenderer {...props} />
-                </QuestionnaireProvider>
-            </LazyBlockWrapper>
-        </LazyEntityGate>
+        <LazyBlockWrapper>
+            <QuestionnaireProvider>
+                <QuestionnaireRenderer {...props} />
+            </QuestionnaireProvider>
+        </LazyBlockWrapper>
     ),
     MarkdownTable: (props: any) => (
         <LazyBlockWrapper>

@@ -172,6 +172,30 @@
       "default": null,
       "title": "Thinking Budget"
     },
+    "clear_thinking": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Clear Thinking"
+    },
+    "disable_reasoning": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Disable Reasoning"
+    },
     "response_format": {
       "anyOf": [
         {

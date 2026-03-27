@@ -10,10 +10,9 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Bug } from "lucide-react";
 import { THEMES } from "../../themes";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { useQuestionnaireContext } from "./QuestionnaireContext";
-import { selectFirstPrimaryResponseDataByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
+import { activeChatActions } from "@/lib/redux/slices/activeChatSlice";
 // Helper function to check if an option is an "Other" option
 const isOtherOption = (option) => {
     if (!option || typeof option !== "object") return false;
@@ -624,50 +623,42 @@ const extractSliderRange = (intro) => {
     return { min: 0, max: 100 };
 };
 
-const QuestionnaireRenderer = ({ data, theme = "default", taskId = null, questionnaireId = null }) => {
-    const responseData = useAppSelector((state) => (taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null));
+const QuestionnaireRenderer = ({ data, theme = "default", questionnaireId = null }) => {
     const dispatch = useAppDispatch();
 
     // Generate a unique ID for this questionnaire if not provided
     const uniqueId = questionnaireId || `questionnaire-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     const { getFormState, updateFormData, initializeQuestions } = useQuestionnaireContext();
-    const chatActions = getChatActionsWithThunks();
     const [questionData, setQuestionData] = useState({});
     const [debugMode, setDebugMode] = useState(false);
     const themeColors = THEMES[theme];
     
-    // Get current form state from context
     const formState = getFormState(uniqueId);
     
-    // Track last dispatch to avoid redundant dispatches
     const lastDispatchRef = useRef<string>('');
 
-    // Debounced dispatch to Redux to store form responses
     useEffect(() => {
-        // Skip if form state is empty (no user interaction yet)
         if (!formState || Object.keys(formState).length === 0) {
             return;
         }
 
         const stateString = JSON.stringify(formState);
         
-        // Skip if state hasn't actually changed
         if (stateString === lastDispatchRef.current) {
             return;
         }
 
-        // Debounce the dispatch to avoid excessive updates during rapid typing
         const timeoutId = setTimeout(() => {
-            dispatch(chatActions.updateModUserContext({
+            dispatch(activeChatActions.setContextEntry({
+                key: `questionnaire_${uniqueId}`,
                 value: formState,
             }));
             lastDispatchRef.current = stateString;
-        }, 500); // 500ms delay - balances responsiveness with performance
+        }, 500);
 
-        // Cleanup timeout on every formState change
         return () => clearTimeout(timeoutId);
-    }, [formState, dispatch, chatActions]);
+    }, [formState, dispatch, uniqueId]);
 
     useEffect(() => {
         if (data?.sections) {

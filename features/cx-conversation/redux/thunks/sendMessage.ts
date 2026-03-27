@@ -142,6 +142,11 @@ export const sendMessage = createAsyncThunk<
             }
         }
 
+        // ── Message context: deferred context objects (questionnaire responses, etc.)
+        // Read from activeChatSlice — components write here, thunk reads and ships.
+        const messageContext: Record<string, unknown> = state.activeChat?.messageContext ?? {};
+        const hasContext = Object.keys(messageContext).length > 0;
+
         // ── Optimistic message creation: add both messages to Redux before the call
         // so the UI renders instantly without waiting for the first token. ─────────
         const userMessageId = uuidv4();
@@ -347,9 +352,11 @@ export const sendMessage = createAsyncThunk<
             //
             let result;
 
+            // Shared context payload — included in all non-chat endpoints
+            const contextPayload = hasContext ? messageContext : {};
+
             if (apiMode === 'chat') {
                 if (!chatModeConfig) throw new Error('Chat mode requires chatModeConfig on the session');
-                // Read history BEFORE our pending messages (filter by known IDs)
                 const history = selectMessages(getState(), sessionId).filter(
                     m => m.id !== userMessageId && m.id !== assistantMessageId,
                 );
@@ -368,19 +375,18 @@ export const sendMessage = createAsyncThunk<
                     method: 'POST',
                     pathParams: { conversation_id: existingConversationId },
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    body: { user_input: content, resources: resources.length > 0 ? resources : undefined, stream: true, debug: true, client_tools: [], context: {} } as any,
+                    body: { user_input: content, resources: resources.length > 0 ? resources : undefined, stream: true, debug: true, client_tools: [], context: contextPayload } as any,
                     ...streamCallbacks,
                 }));
 
             } else {
-                // agent mode — smart-route: existing conversation → continue; new → start
                 if (existingConversationId) {
                     result = await dispatch(callApi({
                         path: '/ai/conversations/{conversation_id}',
                         method: 'POST',
                         pathParams: { conversation_id: existingConversationId },
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        body: { user_input: content, resources: resources.length > 0 ? resources : undefined, stream: true, debug: true, client_tools: [], context: {} } as any,
+                        body: { user_input: content, resources: resources.length > 0 ? resources : undefined, stream: true, debug: true, client_tools: [], context: contextPayload } as any,
                         ...streamCallbacks,
                     }));
                 } else if (blockMode) {
@@ -395,6 +401,7 @@ export const sendMessage = createAsyncThunk<
                             resources: resources.length > 0 ? resources : undefined,
                             stream: true,
                             debug: true,
+                            context: contextPayload,
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         } as any,
                         ...streamCallbacks,
@@ -412,7 +419,7 @@ export const sendMessage = createAsyncThunk<
                             stream: true,
                             debug: true,
                             client_tools: [],
-                            context: {},
+                            context: contextPayload,
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         } as any,
                         ...streamCallbacks,
