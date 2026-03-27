@@ -21,24 +21,33 @@ export function useCartesiaControls() {
     const [modelId, setModelId] = useState("sonic-3");
 
     const connect = useCallback(async () => {
-        setConnectionState("fetching-token");
-        const res = await fetch("/api/cartesia");
-        const data = await res.json();
-        setConnectionState("connecting");
-        const cartesia = new CartesiaClient();
-        websocketRef.current = cartesia.tts.websocket({
-            container: "raw",
-            encoding: "pcm_f32le",
-            sampleRate: 44100,
-        });
-        const ctx = await websocketRef.current?.connect({
-            accessToken: data.token,
-        });
-        setConnectionState("ready");
-        ctx.on("close", () => {
+        try {
+            setConnectionState("fetching-token");
+            const res = await fetch("/api/cartesia");
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}));
+                throw new Error(body.error || `Token fetch failed: ${res.status}`);
+            }
+            const data = await res.json();
+            setConnectionState("connecting");
+            const cartesia = new CartesiaClient();
+            websocketRef.current = cartesia.tts.websocket({
+                container: "raw",
+                encoding: "pcm_f32le",
+                sampleRate: 44100,
+            });
+            const ctx = await websocketRef.current?.connect({
+                accessToken: data.token,
+            });
+            setConnectionState("ready");
+            ctx.on("close", () => {
+                setConnectionState("disconnected");
+                websocketRef.current = null;
+            });
+        } catch (error) {
+            console.error("[useCartesiaControls] Connection failed:", error);
             setConnectionState("disconnected");
-            websocketRef.current = null;
-        });
+        }
     }, []);
 
     useEffect(() => {

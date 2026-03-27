@@ -304,13 +304,17 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                 
                 {(showSaveButton || showCancelButton || additionalButtons || footerContent) && (
                     <DialogFooter className={cn(
-                        "border-t flex justify-end flex-shrink-0",
+                        "border-t flex items-center justify-end flex-shrink-0",
                         isMobile ? "p-2 pb-safe gap-2 flex-col sm:flex-row" : "p-1 pr-3"
                     )}>
-                        {additionalButtons}
+                        {additionalButtons && (
+                            <div className={cn("flex items-center gap-2", isMobile ? "w-full" : "mr-1")}>
+                                {additionalButtons}
+                            </div>
+                        )}
                         {footerContent}
                         <div className={cn(
-                            "flex gap-2",
+                            "flex items-center gap-2",
                             isMobile ? "w-full" : ""
                         )}>
                             {showCancelButton && (

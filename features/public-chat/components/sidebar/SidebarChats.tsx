@@ -467,7 +467,7 @@ export function SidebarChats({
                 {
                     event: '*', // Listen to INSERT, UPDATE, DELETE
                     schema: 'public',
-                    table: 'cx_conversations',
+                    table: 'cx_conversation',
                 },
                 (payload) => {
                     // Only refresh if it's a change to the current user's conversations

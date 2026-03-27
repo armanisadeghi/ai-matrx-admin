@@ -25,6 +25,8 @@ export default function UserMenuTrigger() {
             width={32}
             height={32}
             className="w-full h-full object-cover"
+            loading="eager"
+            priority
           />
         ) : isLoggedIn && name ? (
           <span className="text-xs font-semibold text-foreground leading-none">

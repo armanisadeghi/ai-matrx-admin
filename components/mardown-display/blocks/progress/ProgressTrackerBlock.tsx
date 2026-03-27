@@ -49,12 +49,19 @@ interface ProgressTrackerBlockProps {
 const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const blockContentRef = useRef<HTMLDivElement>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
   const handlePrint = useCallback(async () => {
-    if (blockContentRef.current) {
+    if (!blockContentRef.current || isPrinting) return;
+    setIsPrinting(true);
+    try {
       const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
-      captureBlockElement(blockContentRef.current, tracker.title.replace(/\s+/g, '-').toLowerCase() || 'progress');
+      await captureBlockElement(blockContentRef.current, tracker.title.replace(/\s+/g, '-').toLowerCase() || 'progress', 'portrait');
+    } catch (err) {
+      console.error('[ProgressTrackerBlock] Print failed:', err);
+    } finally {
+      setIsPrinting(false);
     }
-  }, [tracker.title]);
+  }, [tracker.title, isPrinting]);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const { open: openCanvas } = useCanvas();
   

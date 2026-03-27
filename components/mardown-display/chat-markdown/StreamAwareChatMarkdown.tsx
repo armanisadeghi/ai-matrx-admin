@@ -1,11 +1,15 @@
 "use client";
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { EnhancedChatMarkdownInternal, ChatMarkdownDisplayProps } from "./EnhancedChatMarkdown";
+import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
+import { EnhancedChatMarkdownInternal, ChatMarkdownDisplayProps, MarkdownErrorBoundary } from "./EnhancedChatMarkdown";
 import { StreamEvent } from "./types";
 import { buildCanonicalBlocks, toolCallBlockToLegacy } from "@/lib/chat-protocol";
-import type { ToolCallBlock } from "@/lib/chat-protocol";
+import type { ToolCallBlock, CanonicalBlock, TextBlock } from "@/lib/chat-protocol";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import type { ContentBlockPayload } from "@/types/python-generated/content-blocks";
+
+const ToolCallVisualization = lazy(
+  () => import("@/features/cx-conversation/ToolCallVisualization"),
+);
 
 // ---------------------------------------------------------------------------
 // Server-processed block state — used when backend sends content_block events
@@ -56,12 +60,15 @@ export interface StreamAwareChatMarkdownProps extends Omit<ChatMarkdownDisplayPr
 
 /**
  * Stream-aware wrapper for EnhancedChatMarkdown
- * 
- * This component can work in two modes:
- * 1. Legacy mode: Pass content directly (works with existing Redux/Socket.io)
- * 2. Event mode: Pass stream events array (new unified API)
- * 
- * It normalizes both into a common format for the core component.
+ *
+ * Supports two modes:
+ * 1. Legacy mode: Pass `content` directly (works with existing Redux/Socket.io)
+ * 2. Event mode: Pass `events` array (new unified API)
+ *
+ * In event mode, text and tool_call blocks are rendered in arrival order using
+ * buildCanonicalBlocks. This ensures tool calls appear inline at the exact
+ * position they were emitted relative to surrounding text — not pinned to the
+ * top of the message.
  */
 export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = ({
   content,
@@ -72,8 +79,10 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
   ...restProps
 }) => {
   const [processedContent, setProcessedContent] = useState<string>(content || '');
-  const [toolUpdatesInternal, setToolUpdatesInternal] = useState<any[]>([]);
   const [hasStreamError, setHasStreamError] = useState(false);
+
+  // Ordered canonical blocks derived from events (text + tool_call interleaved)
+  const [canonicalBlocks, setCanonicalBlocks] = useState<CanonicalBlock[]>([]);
 
   // Server-processed blocks state (new content_block protocol)
   const [serverBlocks, setServerBlocks] = useState<ProcessedBlockState[]>([]);
@@ -89,22 +98,22 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
 
   // Accumulate text content in a ref to avoid reprocessing all chunks
   const accumulatedContentRef = React.useRef('');
-  // Track whether tool events changed since last RAF flush
-  const toolEventsChangedRef = React.useRef(false);
+  // Track whether tool events or blocks changed since last RAF flush
+  const canonicalBlocksChangedRef = React.useRef(false);
   // Always point to the latest events array so RAF callback can access most-current state
   const eventsRef = React.useRef<StreamEvent[] | undefined>(events);
 
   // Throttle state updates using RAF to batch rapid chunks
   const rafIdRef = React.useRef<number | null>(null);
   const pendingContentUpdateRef = React.useRef(false);
-  const pendingToolsUpdateRef = React.useRef(false);
+  const pendingCanonicalUpdateRef = React.useRef(false);
   const pendingBlocksUpdateRef = React.useRef(false);
-  
+
   useEffect(() => {
     onErrorRef.current = onError;
     onStatusUpdateRef.current = onStatusUpdate;
   }, [onError, onStatusUpdate]);
-  
+
   // Cleanup RAF on unmount
   useEffect(() => {
     return () => {
@@ -127,7 +136,7 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
         setProcessedContent(content);
         accumulatedContentRef.current = content;
         lastProcessedIndexRef.current = -1;
-        toolEventsChangedRef.current = false;
+        canonicalBlocksChangedRef.current = false;
       }
       return;
     }
@@ -136,32 +145,35 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
     if (events.length <= lastProcessedIndexRef.current) {
       lastProcessedIndexRef.current = -1;
       accumulatedContentRef.current = '';
-      toolEventsChangedRef.current = false;
+      canonicalBlocksChangedRef.current = false;
     }
 
     // Process only the delta (new events since last render)
     const startIndex = lastProcessedIndexRef.current + 1;
     if (startIndex >= events.length) return;
-    
+
     let hasNewContent = false;
-    let hasNewTools = false;
+    let hasNewCanonical = false;
     let hasNewBlocks = false;
-    
+
     for (let i = startIndex; i < events.length; i++) {
       const event = events[i];
-      
+
       switch (event.event) {
         case 'chunk': {
           const chunkData = event.data as unknown as { text: string };
           accumulatedContentRef.current += chunkData.text;
           hasNewContent = true;
+          // Text chunks also change canonical blocks (the text block grows)
+          canonicalBlocksChangedRef.current = true;
+          hasNewCanonical = true;
           break;
         }
 
         case 'tool_event': {
-          // Mark that tool events changed — recompute canonical blocks in RAF
-          toolEventsChangedRef.current = true;
-          hasNewTools = true;
+          // Tool events change canonical blocks (new/updated tool_call block)
+          canonicalBlocksChangedRef.current = true;
+          hasNewCanonical = true;
           break;
         }
 
@@ -227,11 +239,11 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
     lastProcessedIndexRef.current = events.length - 1;
 
     if (hasNewContent) pendingContentUpdateRef.current = true;
-    if (hasNewTools) pendingToolsUpdateRef.current = true;
+    if (hasNewCanonical) pendingCanonicalUpdateRef.current = true;
     if (hasNewBlocks) pendingBlocksUpdateRef.current = true;
 
     // Batch state updates using RAF — only schedule if not already scheduled
-    if ((hasNewContent || hasNewTools || hasNewBlocks) && rafIdRef.current === null) {
+    if ((hasNewContent || hasNewCanonical || hasNewBlocks) && rafIdRef.current === null) {
       rafIdRef.current = requestAnimationFrame(() => {
         rafIdRef.current = null;
 
@@ -239,17 +251,14 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
           setProcessedContent(accumulatedContentRef.current);
           pendingContentUpdateRef.current = false;
         }
-        if (pendingToolsUpdateRef.current && toolEventsChangedRef.current) {
-          // Use eventsRef to get the most current events at flush time
+        if (pendingCanonicalUpdateRef.current && canonicalBlocksChangedRef.current) {
+          // Build ordered canonical blocks from the full event set at flush time
           const currentEvents = eventsRef.current;
           if (currentEvents) {
-            const blocks = buildCanonicalBlocks(currentEvents as any);
-            const toolBlocks = blocks.filter((b): b is ToolCallBlock => b.type === 'tool_call');
-            const legacyUpdates = toolBlocks.flatMap(b => toolCallBlockToLegacy(b));
-            setToolUpdatesInternal(legacyUpdates);
+            setCanonicalBlocks(buildCanonicalBlocks(currentEvents as any));
           }
-          toolEventsChangedRef.current = false;
-          pendingToolsUpdateRef.current = false;
+          canonicalBlocksChangedRef.current = false;
+          pendingCanonicalUpdateRef.current = false;
         }
         if (pendingBlocksUpdateRef.current) {
           // Convert map to sorted array for rendering
@@ -265,16 +274,70 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
   // Determine if we're using events or legacy mode
   const isEventMode = events && events.length > 0;
 
+  // In event mode: check whether any tool_call blocks are in the canonical list.
+  // If not, we can take the fast path (single EnhancedChatMarkdownInternal).
+  const hasToolBlocks = isEventMode && canonicalBlocks.some(b => b.type === 'tool_call');
+
   // Merge server blocks from prop and from events
   const effectiveServerBlocks = serverBlocksProp ?? (isNewProtocolRef.current ? serverBlocks : undefined);
 
+  // ── Event mode with tool calls: render interleaved segments in arrival order ──
+  if (isEventMode && hasToolBlocks) {
+    return (
+      <>
+        {canonicalBlocks.map((block, index) => {
+          const isLastBlock = index === canonicalBlocks.length - 1;
+
+          if (block.type === 'text') {
+            const textBlock = block as TextBlock;
+            return (
+              <EnhancedChatMarkdownInternal
+                key={`text-${index}`}
+                {...restProps}
+                content={textBlock.content}
+                isStreamActive={isLastBlock ? restProps.isStreamActive : false}
+                serverProcessedBlocks={isLastBlock ? effectiveServerBlocks : undefined}
+              />
+            );
+          }
+
+          if (block.type === 'tool_call') {
+            const toolBlock = block as ToolCallBlock;
+            const hasContentAfter = canonicalBlocks
+              .slice(index + 1)
+              .some(b => b.type === 'text' && (b as TextBlock).content.trim());
+            const toolUpdates = toolCallBlockToLegacy(toolBlock);
+
+            return (
+              <MarkdownErrorBoundary
+                key={`tool-${toolBlock.callId}`}
+                fallback={null}
+                onError={(error) =>
+                  console.error('[MarkdownStream] ToolCallVisualization error:', error)
+                }
+              >
+                <Suspense fallback={null}>
+                  <ToolCallVisualization
+                    toolUpdates={toolUpdates}
+                    hasContent={hasContentAfter}
+                    className="mb-2"
+                  />
+                </Suspense>
+              </MarkdownErrorBoundary>
+            );
+          }
+
+          return null;
+        })}
+      </>
+    );
+  }
+
+  // ── Legacy mode or event mode with no tool calls: single renderer ──
   return (
     <EnhancedChatMarkdownInternal
       {...restProps}
       content={processedContent}
-      // In event mode, pass tool updates directly; in legacy mode, let Redux handle it
-      toolUpdates={isEventMode ? toolUpdatesInternal : undefined}
-      // Pass server-processed blocks when using the new content_block protocol
       serverProcessedBlocks={effectiveServerBlocks}
     />
   );

@@ -11,3 +11,19 @@ export * from './types';
 export * from './selectors';
 export { sendMessage } from './thunks/sendMessage';
 export { loadConversationHistory } from './thunks/loadConversationHistory';
+
+export {
+  messageActionsReducer,
+  messageActionsActions,
+  selectMessageActionInstance,
+  selectOpenOverlays,
+  selectOverlaysForInstance,
+  selectIsMessageActionOverlayOpen,
+  selectMessageActionOverlayData,
+} from './messageActionsSlice';
+export type {
+  MessageActionOverlayType,
+  MessageActionInstance,
+  MessageActionOverlay,
+  MessageActionsState,
+} from './messageActionsSlice';

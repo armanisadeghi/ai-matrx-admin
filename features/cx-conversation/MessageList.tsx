@@ -23,7 +23,6 @@ interface MessageListProps {
   sessionId: string;
   showSystemMessages?: boolean;
   compact?: boolean;
-  onMessageContentChange?: (messageId: string, newContent: string) => void;
 }
 
 // ============================================================================
@@ -67,7 +66,6 @@ export function MessageList({
   sessionId,
   showSystemMessages = false,
   compact = false,
-  onMessageContentChange,
 }: MessageListProps) {
   const dispatch = useAppDispatch();
   // Grouped messages: consecutive assistant messages merged into single turns for display
@@ -99,7 +97,7 @@ export function MessageList({
     }
   }, [isStreaming]);
 
-  const handleContentChange = (messageId: string, newContent: string) => {
+  const handleUserContentChange = (messageId: string, newContent: string) => {
     dispatch(
       chatConversationsActions.updateMessage({
         sessionId,
@@ -107,12 +105,7 @@ export function MessageList({
         updates: { content: newContent },
       }),
     );
-    onMessageContentChange?.(messageId, newContent);
   };
-
-  // Always provide content change handler — Redux state must stay in sync
-  // regardless of whether the parent also wants a callback.
-  const contentChangeHandler = handleContentChange;
 
   // Filter visible messages
   const visibleMessages = messages.filter((msg) => {
@@ -165,7 +158,7 @@ export function MessageList({
                 <div className={contentClass}>
                   <UserMessage
                     message={message}
-                    onContentChange={contentChangeHandler}
+                    onContentChange={handleUserContentChange}
                     compact={compact}
                   />
                 </div>
@@ -187,7 +180,6 @@ export function MessageList({
                       sessionId={sessionId}
                       isStreamActive={false}
                       compact={compact}
-                      onContentChange={contentChangeHandler}
                     />
                   )}
                 </div>

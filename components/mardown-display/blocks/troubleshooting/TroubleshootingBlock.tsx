@@ -54,12 +54,19 @@ interface TroubleshootingBlockProps {
 const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshooting, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const blockContentRef = useRef<HTMLDivElement>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
   const handlePrint = useCallback(async () => {
-    if (blockContentRef.current) {
+    if (!blockContentRef.current || isPrinting) return;
+    setIsPrinting(true);
+    try {
       const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
-      captureBlockElement(blockContentRef.current, troubleshooting.title.replace(/\s+/g, '-').toLowerCase() || 'troubleshooting');
+      await captureBlockElement(blockContentRef.current, troubleshooting.title.replace(/\s+/g, '-').toLowerCase() || 'troubleshooting', 'portrait');
+    } catch (err) {
+      console.error('[TroubleshootingBlock] Print failed:', err);
+    } finally {
+      setIsPrinting(false);
     }
-  }, [troubleshooting.title]);
+  }, [troubleshooting.title, isPrinting]);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [expandedIssues, setExpandedIssues] = useState<Set<string>>(new Set(['issue-0'])); // First issue expanded by default
   const [expandedSolutions, setExpandedSolutions] = useState<Set<string>>(new Set());

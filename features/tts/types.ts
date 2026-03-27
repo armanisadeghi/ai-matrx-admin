@@ -35,25 +35,10 @@ export const ENGLISH_VOICES = [
 export interface TTSOptions {
   voice?: EnglishVoice;
   model?: 'playai-tts' | 'playai-tts-arabic';
-  processMarkdown?: boolean; // Default: true
+  processMarkdown?: boolean;
 }
 
-export interface TTSState {
-  isGenerating: boolean;
-  isPlaying: boolean;
-  isPaused: boolean;
-  error: string | null;
-  audioUrl: string | null;
-  duration: number;
-  currentTime: number;
-}
-
-export interface UseTTSProps {
-  onPlaybackStart?: () => void;
-  onPlaybackEnd?: () => void;
-  onError?: (error: string) => void;
-  autoPlay?: boolean;
-}
+export type SpeakerVariant = 'glass' | 'transparent' | 'solid' | 'group';
 
 // Voice metadata for UI display
 export interface VoiceInfo {

@@ -65,6 +65,7 @@ import actionCacheReducer from "./prompt-execution/actionCacheSlice";
 import promptEditorReducer from "./slices/promptEditorSlice";
 import modelRegistryReducer from "./slices/modelRegistrySlice";
 import { chatConversationsReducer } from "../../features/cx-conversation/redux";
+import { messageActionsReducer } from "../../features/cx-conversation/redux/messageActionsSlice";
 
 
 
@@ -204,6 +205,9 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
         // Unified chat conversation UI slice (replaces ChatContext + prompt-execution for display)
         chatConversations: chatConversationsReducer,
+
+        // Instance-based message action overlays (Save to Notes, Email, Auth Gate, etc.)
+        messageActions: messageActionsReducer,
 
         // Entity system load status (on-demand schema + slices)
         entitySystem: entitySystemReducer,

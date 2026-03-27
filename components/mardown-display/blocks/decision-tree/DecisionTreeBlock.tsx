@@ -42,12 +42,19 @@ interface NavigationStep {
 const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const blockContentRef = useRef<HTMLDivElement>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
   const handlePrint = useCallback(async () => {
-    if (blockContentRef.current) {
+    if (!blockContentRef.current || isPrinting) return;
+    setIsPrinting(true);
+    try {
       const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
-      captureBlockElement(blockContentRef.current, decisionTree.title.replace(/\s+/g, '-').toLowerCase() || 'decision-tree');
+      await captureBlockElement(blockContentRef.current, decisionTree.title.replace(/\s+/g, '-').toLowerCase() || 'decision-tree');
+    } catch (err) {
+      console.error('[DecisionTreeBlock] Print failed:', err);
+    } finally {
+      setIsPrinting(false);
     }
-  }, [decisionTree.title]);
+  }, [decisionTree.title, isPrinting]);
   const [currentNode, setCurrentNode] = useState<DecisionNode>(decisionTree.root);
   const [navigationHistory, setNavigationHistory] = useState<NavigationStep[]>([]);
   const [completedPaths, setCompletedPaths] = useState<Set<string>>(new Set());
@@ -319,19 +326,29 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree, tas
                 <GitBranch className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                 <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Decision Tree</h3>
               </div>
-              <button
-                onClick={() => setIsFullScreen(false)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
-              >
-                <Minimize2 className="h-4 w-4" />
-                <span>Exit</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePrint}
+                  disabled={isPrinting}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-medium transition-all shadow-sm hover:bg-slate-600 dark:hover:bg-slate-700 disabled:opacity-50"
+                >
+                  <Printer className="h-4 w-4" />
+                  <span>{isPrinting ? 'Saving…' : 'Print'}</span>
+                </button>
+                <button
+                  onClick={() => setIsFullScreen(false)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
+                >
+                  <Minimize2 className="h-4 w-4" />
+                  <span>Exit</span>
+                </button>
+              </div>
             </div>
           )}
 
           {/* Scrollable Content */}
           <div className={isFullScreen ? 'flex-1 overflow-y-auto' : ''}>
-            <div className="p-6 space-y-6">
+            <div ref={blockContentRef} className="p-6 space-y-6">
 
               {/* Header Section */}
               <div className="bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 dark:from-indigo-950/40 dark:via-purple-950/30 dark:to-pink-950/40 rounded-2xl p-6 shadow-lg border-2 border-indigo-200 dark:border-indigo-800/50">
@@ -357,10 +374,11 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree, tas
                       <>
                         <button
                           onClick={handlePrint}
-                          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                          disabled={isPrinting}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-lg transform hover:scale-105 transition-all disabled:opacity-50"
                         >
                           <Printer className="h-4 w-4" />
-                          <span>Print</span>
+                          <span>{isPrinting ? 'Saving…' : 'Print'}</span>
                         </button>
                         <button
                           onClick={() => openCanvas({
@@ -435,7 +453,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree, tas
                 </div>
 
                 {/* Progress Stats */}
-                <div ref={blockContentRef} className="grid md:grid-cols-4 gap-4">
+                <div className="grid md:grid-cols-4 gap-4">
                   <div className="bg-textured/50 rounded-lg p-3 border border-indigo-200 dark:border-indigo-800/50">
                     <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 mb-1">
                       <GitBranch className="h-4 w-4" />

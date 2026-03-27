@@ -59,25 +59,41 @@ export function useCartesiaSpeaker({ processMarkdown = true }: UseCartesiaSpeake
     if (websocketRef.current) return;
 
     if (mountedRef.current) setPhase('fetching-token');
-    const res = await fetch('/api/cartesia');
-    if (!res.ok) throw new Error(`Token fetch failed: ${res.status}`);
-    const data = await res.json();
+
+    let data: { token: string };
+    try {
+      const res = await fetch('/api/cartesia');
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `Token fetch failed: ${res.status}`);
+      }
+      data = await res.json();
+    } catch (err) {
+      if (mountedRef.current) setPhase('error');
+      throw err;
+    }
 
     if (mountedRef.current) setPhase('connecting');
-    const client = new CartesiaClient();
-    const ws = client.tts.websocket({
-      container: 'raw',
-      encoding: 'pcm_f32le',
-      sampleRate: 44100,
-    });
 
-    const ctx = await ws.connect({ accessToken: data.token });
-    ctx.on('close', () => {
-      websocketRef.current = null;
-      if (mountedRef.current) setPhase('idle');
-    });
+    try {
+      const client = new CartesiaClient();
+      const ws = client.tts.websocket({
+        container: 'raw',
+        encoding: 'pcm_f32le',
+        sampleRate: 44100,
+      });
 
-    websocketRef.current = ws;
+      const ctx = await ws.connect({ accessToken: data.token });
+      ctx.on('close', () => {
+        websocketRef.current = null;
+        if (mountedRef.current) setPhase('idle');
+      });
+
+      websocketRef.current = ws;
+    } catch (err) {
+      if (mountedRef.current) setPhase('error');
+      throw err;
+    }
   }, []);
 
   const speak = useCallback(async (inputText: string) => {
@@ -125,8 +141,11 @@ export function useCartesiaSpeaker({ processMarkdown = true }: UseCartesiaSpeake
     if (playerRef.current && phase === 'playing') {
       try {
         await playerRef.current.pause();
-        setPhase('paused');
-      } catch {}
+        if (mountedRef.current) setPhase('paused');
+      } catch (err) {
+        console.error('[useCartesiaSpeaker] pause failed:', err);
+        if (mountedRef.current) setPhase('idle');
+      }
     }
   }, [phase]);
 
@@ -134,16 +153,23 @@ export function useCartesiaSpeaker({ processMarkdown = true }: UseCartesiaSpeake
     if (playerRef.current && phase === 'paused') {
       try {
         await playerRef.current.resume();
-        setPhase('playing');
-      } catch {}
+        if (mountedRef.current) setPhase('playing');
+      } catch (err) {
+        console.error('[useCartesiaSpeaker] resume failed:', err);
+        if (mountedRef.current) setPhase('idle');
+      }
     }
   }, [phase]);
 
   const stop = useCallback(async () => {
     if (playerRef.current && hasPlayedRef.current) {
-      try { await playerRef.current.stop(); } catch {}
+      try {
+        await playerRef.current.stop();
+      } catch (err) {
+        console.error('[useCartesiaSpeaker] stop failed:', err);
+      }
     }
-    setPhase('idle');
+    if (mountedRef.current) setPhase('idle');
   }, []);
 
   const isLoading = phase === 'fetching-token' || phase === 'connecting' || phase === 'sending';

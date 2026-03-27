@@ -1,3 +1,8 @@
+/**
+ * @deprecated Use the Redux-driven MessageOptionsMenu from
+ * `features/cx-conversation/MessageOptionsMenu` instead. This legacy variant
+ * manages its own local state for sub-modals and will be removed after migration.
+ */
 'use client';
 
 import React, { useState, useEffect } from "react";

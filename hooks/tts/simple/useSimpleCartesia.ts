@@ -17,24 +17,33 @@ export function useSimpleCartesia() {
     const [modelId, setModelId] = useState("sonic-2-2025-03-07");
 
     const connect = useCallback(async () => {
-        setConnectionState("fetching-token");
-        const res = await fetch("/api/cartesia");
-        const data = await res.json();
-        setConnectionState("connecting");
-        const cartesia = new CartesiaClient();
-        websocketRef.current = cartesia.tts.websocket({
-            container: "raw",
-            encoding: "pcm_f32le",
-            sampleRate: 44100,
-        });
-        const ctx = await websocketRef.current?.connect({
-            accessToken: data.token,
-        });
-        setConnectionState("ready");
-        ctx.on("close", () => {
+        try {
+            setConnectionState("fetching-token");
+            const res = await fetch("/api/cartesia");
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}));
+                throw new Error(body.error || `Token fetch failed: ${res.status}`);
+            }
+            const data = await res.json();
+            setConnectionState("connecting");
+            const cartesia = new CartesiaClient();
+            websocketRef.current = cartesia.tts.websocket({
+                container: "raw",
+                encoding: "pcm_f32le",
+                sampleRate: 44100,
+            });
+            const ctx = await websocketRef.current?.connect({
+                accessToken: data.token,
+            });
+            setConnectionState("ready");
+            ctx.on("close", () => {
+                setConnectionState("disconnected");
+                websocketRef.current = null;
+            });
+        } catch (error) {
+            console.error("[useSimpleCartesia] Connection failed:", error);
             setConnectionState("disconnected");
-            websocketRef.current = null;
-        });
+        }
     }, []);
 
     useEffect(() => {
@@ -48,23 +57,28 @@ export function useSimpleCartesia() {
             return;
         }
 
-        const resp = await ctx.send({
-            modelId: modelId,
-            voice: {
-                mode: "id",
-                id: voiceId,
-                experimentalControls: {
-                    speed: speed, // Now using numerical value directly
-                    emotion: emotions.length > 0 ? emotions : [],
+        try {
+            const resp = await ctx.send({
+                modelId: modelId,
+                voice: {
+                    mode: "id",
+                    id: voiceId,
+                    experimentalControls: {
+                        speed: speed,
+                        emotion: emotions.length > 0 ? emotions : [],
+                    },
                 },
-            },
-            language: language,
-            transcript: script,
-        });
-        const player = new WebPlayer({ bufferDuration: 600 });
-        setPlayerState("playing");
-        await player.play(resp.source);
-        setPlayerState("idle");
+                language: language,
+                transcript: script,
+            });
+            const player = new WebPlayer({ bufferDuration: 600 });
+            setPlayerState("playing");
+            await player.play(resp.source);
+            setPlayerState("idle");
+        } catch (error) {
+            console.error("[useSimpleCartesia] Speech failed:", error);
+            setPlayerState("idle");
+        }
     }, [script, voiceId, emotions, language, speed, modelId]);
 
     const handleScriptChange = (newScript: string) => {

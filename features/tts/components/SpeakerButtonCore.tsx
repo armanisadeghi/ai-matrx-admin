@@ -11,14 +11,13 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import { Volume2TapButton, PauseTapButton } from '@/components/icons/tap-buttons';
 import { useCartesiaSpeaker } from '../hooks/useCartesiaSpeaker';
-
-type Variant = 'glass' | 'transparent' | 'solid' | 'group';
+import type { SpeakerVariant } from '../types';
 
 export interface SpeakerButtonCoreProps {
   text: string;
   processMarkdown?: boolean;
   autoStart?: boolean;
-  variant?: Variant;
+  variant?: SpeakerVariant;
   className?: string;
   disabled?: boolean;
 }

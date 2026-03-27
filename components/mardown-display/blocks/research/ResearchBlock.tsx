@@ -119,12 +119,19 @@ interface ResearchBlockProps {
 const ResearchBlock: React.FC<ResearchBlockProps> = ({ research, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const blockContentRef = useRef<HTMLDivElement>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
   const handlePrint = useCallback(async () => {
-    if (blockContentRef.current) {
+    if (!blockContentRef.current || isPrinting) return;
+    setIsPrinting(true);
+    try {
       const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
-      captureBlockElement(blockContentRef.current, research.title.replace(/\s+/g, '-').toLowerCase() || 'research');
+      await captureBlockElement(blockContentRef.current, research.title.replace(/\s+/g, '-').toLowerCase() || 'research', 'portrait');
+    } catch (err) {
+      console.error('[ResearchBlock] Print failed:', err);
+    } finally {
+      setIsPrinting(false);
     }
-  }, [research.title]);
+  }, [research.title, isPrinting]);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [expandedFindings, setExpandedFindings] = useState<Set<string>>(new Set());
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'HIGH' | 'MEDIUM' | 'LOW'>('all');

@@ -1,6 +1,6 @@
 # Block Printer Guide
 
-Step-by-step instructions for adding print support to any block. For system overview and roadmap see `README.md`.
+Step-by-step for adding print support to any block. For system overview, block inventory, and roadmap see `README.md`.
 
 ---
 
@@ -9,33 +9,38 @@ Step-by-step instructions for adding print support to any block. For system over
 Every block printer is a single exported object conforming to `BlockPrinter`:
 
 ```typescript
-import { buildPrintDocument, openPrintWindow, escapeHtml, type BlockPrinter } from "@/features/chat/utils/block-print-utils";
+import {
+    buildPrintDocument,
+    openPrintWindow,
+    escapeHtml,
+    type BlockPrinter,
+    type PrintSettings,
+} from "@/features/chat/utils/block-print-utils";
 
 export const myBlockPrinter: BlockPrinter = {
     label: "Print my block",        // tooltip text on the print button
     variants: [],                   // [] = print immediately; non-empty = show dialog first
-    print(data: unknown, variantId?: string) {
+    settings: [],                   // optional user-configurable toggles (omit if none)
+    print(data: unknown, variantId?: string, settings?: PrintSettings) {
         // open a print window
     },
 };
 ```
 
-`BlockPrinter` lives in `features/chat/utils/block-print-utils.ts`. Never import it from anywhere else.
+`BlockPrinter` lives in `features/chat/utils/block-print-utils.ts`. **Never import it from anywhere else.**
 
 ---
 
-## Choosing a Print Strategy
+## Choosing a Strategy
 
-| Block type | Strategy | When to use |
-|---|---|---|
-| Structured data (cards, questions, steps) | **HTML template** | You can serialize all meaningful data to clean HTML |
-| Visual / interactive (diagram, timeline, chart) | **DOM capture** | The rendered DOM is the source of truth; data alone doesn't convey it |
+| Block type | Strategy |
+|---|---|
+| Structured data (cards, questions, steps, recipes) | **HTML template** — serialize data to clean HTML |
+| Visual / interactive (diagram, timeline, chart, table) | **DOM capture** — screenshot the rendered DOM |
 
 ---
 
 ## Strategy A — HTML Template Printer
-
-Use when the block's data can be serialized to readable HTML (flashcards, quizzes, math, recipes, etc.).
 
 ### 1. Create `my-block-printer.ts` alongside the component
 
@@ -46,112 +51,97 @@ import {
     openPrintWindow,
     escapeHtml,
     type BlockPrinter,
+    type PrintSettings,
 } from "@/features/chat/utils/block-print-utils";
 
-// Define your variant IDs as a union type for safety
-export type MyBlockVariant = "default" | "compact";
+type MyBlockData = { title: string; items: { text: string }[] };
 
-// Block-specific CSS — only what the print document needs
+// Block-specific CSS
 const STYLES = `
   .my-item { border: 1px solid #e2e8f0; padding: 12px; margin-bottom: 8px; }
-  @media print { .my-item { page-break-inside: avoid; } }
+  @media print {
+    .my-item { page-break-inside: avoid; }
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 `;
 
-// One render function per variant (or just one if no variants)
 function renderDefault(data: MyBlockData): string {
     return data.items
-        .map((item) => `<div class="my-item">${escapeHtml(item.text)}</div>`)
+        .map(item => `<div class="my-item">${escapeHtml(item.text)}</div>`)
         .join("\n");
 }
 
 export const myBlockPrinter: BlockPrinter = {
     label: "Print my block",
-
-    // Non-empty → PrintOptionsDialog shown before printing
-    // Empty     → prints immediately on button click
     variants: [
         { id: "default", label: "Full version", description: "All content" },
         { id: "compact", label: "Compact", description: "Titles only" },
     ],
-
-    print(data: unknown, variantId: string = "default") {
+    // Optional settings:
+    settings: [
+        { type: "boolean", id: "showNumbers", label: "Show item numbers", defaultValue: true },
+    ],
+    print(data: unknown, variantId: string = "default", settings?: PrintSettings) {
         const typed = data as MyBlockData;
+        // Guard against empty data
         if (!typed?.items?.length) {
-            openPrintWindow(
-                buildPrintDocument("<p>No data available.</p>", "My Block", STYLES),
-                "my-block"
-            );
+            openPrintWindow(buildPrintDocument("<p>No data available.</p>", "My Block", STYLES), "my-block");
             return;
         }
-
-        const body = variantId === "compact"
-            ? renderCompact(typed)
-            : renderDefault(typed);
-
-        openPrintWindow(
-            buildPrintDocument(body, typed.title ?? "My Block", STYLES),
-            "my-block"
-        );
+        const body = variantId === "compact" ? renderCompact(typed) : renderDefault(typed);
+        openPrintWindow(buildPrintDocument(body, typed.title ?? "My Block", STYLES), "my-block");
     },
 };
 ```
 
 **Rules:**
 - Always guard against empty/missing data before rendering
-- Use `escapeHtml()` on every string from user data — never skip it
-- Add `page-break-inside: avoid` on card-like elements in your `STYLES`
-- Add `@media print { -webkit-print-color-adjust: exact; print-color-adjust: exact; }` on any colored element
-- Default `variantId` in the function signature — never let it be truly undefined in logic
+- Call `escapeHtml()` on every string from user data — never skip it
+- Add `page-break-inside: avoid` for repeating elements
+- Add `print-color-adjust: exact` for any colored backgrounds
+- Default `variantId` in the function signature — don't leave it truly `undefined` in logic
+- `settings` parameter is a `Record<string, boolean | string | number>` — read with `settings?.showNumbers ?? defaultValue`
 
 ### 2. Wire into the component
 
-**For `ChatCollapsibleWrapper` blocks (e.g. FlashcardsBlock):**
+**`ChatCollapsibleWrapper` blocks (FlashcardsBlock pattern):**
 
 ```typescript
 import { myBlockPrinter } from "./my-block-printer";
 import { PrintOptionsDialog, usePrintOptions } from "@/features/chat/components/print/PrintOptionsDialog";
 import { Printer } from "lucide-react";
 
-// Inside component:
 const { open: printOpen, setOpen: setPrintOpen, triggerPrint } = usePrintOptions(
     myBlockPrinter,
-    blockData   // the data object passed to printer.print()
+    blockData    // the value passed to printer.print() as first arg
 );
 
 // In the controls prop:
 controls={
-    <>
-        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={triggerPrint}>
-            <Printer className="h-3.5 w-3.5" />
-        </Button>
-        {/* existing controls */}
-    </>
+    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={triggerPrint}>
+        <Printer className="h-3.5 w-3.5" />
+    </Button>
 }
 
-// After the wrapper, at the bottom of the return:
-<PrintOptionsDialog
-    printer={myBlockPrinter}
-    data={blockData}
-    open={printOpen}
-    onOpenChange={setPrintOpen}
-/>
+// After the wrapper, at the bottom of the JSX return (not inside the wrapper):
+<PrintOptionsDialog printer={myBlockPrinter} data={blockData} open={printOpen} onOpenChange={setPrintOpen} />
 ```
 
-**For `ContentBlockWrapper` blocks (e.g. MathProblemBlock):**
+If you add `PrintOptionsDialog` as a sibling to the wrapper, wrap both in a fragment: `<>...</>`.
+
+**`ContentBlockWrapper` blocks (MathProblemBlock pattern):**
 
 ```typescript
-// Add to customActions array:
 const customActions = [
     {
         icon: Printer,
         tooltip: "Print",
         onClick: triggerPrint,
-        className: "bg-slate-500 dark:bg-slate-600 text-white ..."
+        className: "bg-slate-500 dark:bg-slate-600 text-white ...",
     },
-    // existing actions...
 ];
 
-// Wrap return in <> ... </> and add dialog at bottom:
 return (
     <>
         <ContentBlockWrapper customActions={customActions} ...>
@@ -162,96 +152,162 @@ return (
 );
 ```
 
----
-
-## Strategy B — DOM Capture Printer
-
-Use for visual/interactive blocks where the rendered DOM is what matters.
-
-### 1. Add the ref and handler to the component
-
-```typescript
-import { useRef, useCallback } from "react";
-import { captureBlockElement } from "@/features/chat/utils/dom-capture-block-printer";
-import { Printer } from "lucide-react";
-
-// Inside component:
-const blockContentRef = useRef<HTMLDivElement>(null);
-const handlePrint = useCallback(() => {
-    if (blockContentRef.current) {
-        captureBlockElement(blockContentRef.current, "my-block-filename");
-    }
-}, []);
-```
-
-### 2. Attach the ref to the content element you want captured
-
-```tsx
-<div ref={blockContentRef} className="...">
-    {/* the content to capture */}
-</div>
-```
-
-### 3. Add the print button to the existing toolbar
-
-```tsx
-<button onClick={handlePrint} className="... bg-slate--500 text-white ...">
-    <Printer className="h-4 w-4" />
-    <span>Print</span>
-</button>
-```
-
-**No printer file, no `PrintOptionsDialog`, no `usePrintOptions` needed** — DOM capture blocks are imperative, not data-driven.
-
-**Rules:**
-- Attach `ref` to the element you want in the PDF, not the whole page
-- For landscape content (timelines, diagrams), `captureBlockElement` already defaults to `orientation: "landscape"`
-- Do NOT call `captureBlockElement` inside the fullscreen overlay (the overlay is a portal, not in the ref's subtree)
-
----
-
-## Variant Design Rules
-
-- Every printer should have at least a `"default"` mental model, even if not listed as a variant
-- List the most useful variant first — `PrintOptionsDialog` selects it automatically
-- Use `description` for variants that might confuse users (e.g. "Back side only — answers/definitions without terms")
-- "Print with defaults" always works as a one-click escape hatch — the first variant is the default
-
----
-
-## `usePrintOptions` — what it does
+### 3. `usePrintOptions` behaviour
 
 ```typescript
 const { open, setOpen, triggerPrint } = usePrintOptions(printer, data);
 ```
 
-- `triggerPrint()` — if `printer.variants.length === 0`, calls `printer.print(data)` immediately. Otherwise sets `open = true`.
-- `open` / `setOpen` — controls `PrintOptionsDialog`.
-- Memoize `data` with `useMemo` if it's computed from props to avoid stale closures.
+- If `printer.variants.length === 0` AND `(printer.settings?.length ?? 0) === 0` → calls `printer.print(data)` immediately
+- Otherwise → opens `PrintOptionsDialog` which manages variant + setting state and calls `printer.print(data, variantId, settingValues)`
 
 ---
 
-## File naming conventions
+## Strategy B — DOM Capture Printer
+
+### 1. Add ref, loading state, and handler
+
+```typescript
+import { useState, useRef, useCallback } from "react";
+import { Printer } from "lucide-react";
+
+const blockContentRef = useRef<HTMLDivElement>(null);
+const [isPrinting, setIsPrinting] = useState(false);
+
+const handlePrint = useCallback(async () => {
+    if (!blockContentRef.current || isPrinting) return;
+    setIsPrinting(true);
+    try {
+        const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
+        // Use "portrait" for tall/list content; "landscape" is the default
+        await captureBlockElement(blockContentRef.current, 'my-block-filename', 'landscape');
+    } catch (err) {
+        console.error('[MyBlock] Print failed:', err);
+    } finally {
+        setIsPrinting(false);
+    }
+}, [isPrinting]);
+```
+
+**Always `await` `captureBlockElement`** — without it, errors are silent unhandled rejections.
+
+### 2. Attach the ref to the correct element
+
+```tsx
+<div ref={blockContentRef} className="...">
+    {/* the content to capture — not the whole block, not the header, just the content */}
+</div>
+```
+
+Attach to the meaningful content container, not `document.body` or the block's outer shell.
+
+### 3. Add the print button
+
+```tsx
+<button
+    onClick={handlePrint}
+    disabled={isPrinting}
+    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md disabled:opacity-50"
+>
+    <Printer className="h-4 w-4" />
+    <span>{isPrinting ? 'Saving…' : 'Print'}</span>
+</button>
+```
+
+### 4. Add print button to fullscreen header
+
+If your block has a fullscreen mode, the regular toolbar is typically hidden. Always add a print button to the fullscreen header/footer so users can still print from there.
+
+```tsx
+{isFullScreen && (
+    <div className="flex-shrink-0 px-6 py-4 border-b border-border flex items-center justify-between ...">
+        <div className="...">...title...</div>
+        <div className="flex items-center gap-2">
+            <button onClick={handlePrint} disabled={isPrinting} className="... bg-slate-500 text-white ...">
+                <Printer className="h-4 w-4" />
+                <span>{isPrinting ? 'Saving…' : 'Print'}</span>
+            </button>
+            <button onClick={() => setIsFullScreen(false)} className="...">
+                <Minimize2 className="h-4 w-4" />
+                <span>Exit</span>
+            </button>
+        </div>
+    </div>
+)}
+```
+
+**No printer file, no `PrintOptionsDialog`, no `usePrintOptions` needed** for DOM capture.
+
+---
+
+## Adding User-Configurable Settings (HTML Template only)
+
+Settings appear as toggle switches in `PrintOptionsDialog` below the variant picker.
+
+```typescript
+settings: [
+    {
+        type: "boolean" as const,
+        id: "showNumbers",
+        label: "Show card numbers",
+        description: "Prints #1, #2 … on each card",
+        defaultValue: false,
+        appliesTo: ["default", "compact"],   // omit to apply to all variants
+    },
+],
+```
+
+In `print()`, read settings safely:
+
+```typescript
+print(data: unknown, variantId = "default", settings?: PrintSettings) {
+    const showNumbers = (settings?.showNumbers ?? false) as boolean;
+    // use showNumbers in your HTML
+}
+```
+
+---
+
+## Variant Design Rules
+
+- List the most useful variant first — `PrintOptionsDialog` auto-selects it
+- Add `description` to variants that might confuse users
+- "Print with defaults" always works — the first variant + default settings is the one-click path
+- Keep variant IDs as stable strings — they travel through URLs and logs
+
+---
+
+## File naming
 
 | File | Location |
 |---|---|
 | Printer object | `components/mardown-display/blocks/<block-name>/<block-name>-printer.ts` |
-| Component | `components/mardown-display/blocks/<block-name>/<BlockName>Block.tsx` |
+| Block component | `components/mardown-display/blocks/<block-name>/<BlockName>Block.tsx` |
 
-Both files live in the same folder. The printer is a plain `.ts` file (no JSX, no React import needed).
+Both live in the same folder. The printer is a plain `.ts` file — no JSX, no React import.
 
 ---
 
 ## Quick checklist
 
-- [ ] `printer.ts` file created, exports a `const` named `<blockName>Printer`
-- [ ] Imports `BlockPrinter`, `buildPrintDocument`, `openPrintWindow`, `escapeHtml` from `block-print-utils`
-- [ ] All user strings passed through `escapeHtml()`
+**HTML template printer:**
+- [ ] `<block-name>-printer.ts` exports a `const` named `<blockName>Printer`
+- [ ] Imports from `@/features/chat/utils/block-print-utils` only
+- [ ] All user strings through `escapeHtml()`
 - [ ] Empty-data guard at the top of `print()`
-- [ ] `STYLES` string includes `page-break-inside: avoid` for repeating elements
-- [ ] `STYLES` includes `print-color-adjust: exact` for any colored backgrounds
-- [ ] Printer imported into block component
+- [ ] `STYLES` has `page-break-inside: avoid` for repeating elements
+- [ ] `STYLES` has `print-color-adjust: exact` for colored backgrounds
+- [ ] `settings` parameter destructured safely with `?? defaultValue` fallbacks
 - [ ] `usePrintOptions(printer, data)` called in component
 - [ ] `<Printer>` button wired to `triggerPrint`
-- [ ] `<PrintOptionsDialog>` rendered at the bottom of the component return
-- [ ] No `React.memo` / `useMemo` / `useCallback` added manually (React Compiler handles it)
+- [ ] `<PrintOptionsDialog>` rendered outside (not inside) the block wrapper
+
+**DOM capture block:**
+- [ ] `useState(false)` for `isPrinting`
+- [ ] `handlePrint` has `if (!ref.current || isPrinting) return` guard
+- [ ] `captureBlockElement` is `await`-ed inside try/catch
+- [ ] `finally` block sets `setIsPrinting(false)`
+- [ ] `ref` attached to content container (not the whole block)
+- [ ] Print button has `disabled={isPrinting}` and shows "Saving…" label
+- [ ] Print button also present in fullscreen header if block has fullscreen mode
+- [ ] Correct orientation passed (`"portrait"` for tall content, `"landscape"` default)

@@ -8,8 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
-import { createClient } from '@/utils/supabase/server';
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { resolveUser } from '@/utils/supabase/resolveUser';
 import { logTranscriptionError } from '@/features/audio/services/audioErrorLogger';
 
 export const maxDuration = 300;
@@ -19,29 +18,6 @@ const groq = new Groq({
 });
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-const supabaseAnonKey = (
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  ''
-).trim();
-
-async function resolveUser(request: NextRequest) {
-  const authHeader = request.headers.get('Authorization');
-
-  if (authHeader?.startsWith('Bearer ')) {
-    const token = authHeader.slice(7);
-    const client = createSupabaseClient(SUPABASE_URL, supabaseAnonKey, {
-      global: { headers: { Authorization: `Bearer ${token}` } },
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-    const { data: { user }, error } = await client.auth.getUser(token);
-    return { user: error ? null : user };
-  }
-
-  const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  return { user: error ? null : user };
-}
 const MAX_RETRIES = 3;
 const RETRYABLE_CODES = new Set([429, 500, 502, 503, 504]);
 

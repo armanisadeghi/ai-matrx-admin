@@ -40,12 +40,19 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe, taskId }) => {
   const [servingMultiplier, setServingMultiplier] = useState(1);
   const { open: openCanvas } = useCanvas();
   const blockContentRef = useRef<HTMLDivElement>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
   const handlePrint = useCallback(async () => {
-    if (blockContentRef.current) {
+    if (!blockContentRef.current || isPrinting) return;
+    setIsPrinting(true);
+    try {
       const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
-      captureBlockElement(blockContentRef.current, recipe.title.replace(/\s+/g, '-').toLowerCase() || 'recipe');
+      await captureBlockElement(blockContentRef.current, recipe.title.replace(/\s+/g, '-').toLowerCase() || 'recipe', 'portrait');
+    } catch (err) {
+      console.error('[RecipeViewer] Print failed:', err);
+    } finally {
+      setIsPrinting(false);
     }
-  }, [recipe.title]);
+  }, [recipe.title, isPrinting]);
 
   // Calculate progress
   const ingredientProgress = useMemo(() => 

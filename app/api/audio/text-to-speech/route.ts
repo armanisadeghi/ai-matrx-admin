@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
+import { resolveUser } from '@/utils/supabase/resolveUser';
 
 // Initialize Groq client with API key from environment
 const groq = new Groq({
@@ -40,6 +41,15 @@ export type EnglishVoice = typeof ENGLISH_VOICES[number];
 
 export async function POST(request: NextRequest) {
   try {
+    const { user } = await resolveUser(request);
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentication required. Provide a session cookie or Bearer token.' },
+        { status: 401 },
+      );
+    }
+
     const body = await request.json();
     const { text, voice = 'Cheyenne-PlayAI', model = 'playai-tts' } = body;
 

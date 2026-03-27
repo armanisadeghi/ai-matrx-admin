@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, lazy, Suspense } from 'react';
+import React, { useState, useRef, useEffect, useId, lazy, Suspense } from 'react';
 import {
   ThumbsUp,
   ThumbsDown,
@@ -18,6 +18,8 @@ import {
 } from '@/app/(ssr)/_components/core/TapTargetButton';
 import { SpeakerButton } from '@/features/tts/components/SpeakerButton';
 import { copyToClipboard } from '@/components/matrx/buttons/markdown-copy-utils';
+import { useAppDispatch } from '@/lib/redux/hooks';
+import { messageActionsActions } from '@/features/cx-conversation/redux/messageActionsSlice';
 
 const ConversationMessageOptionsMenu = lazy(
   () => import('@/features/cx-conversation/MessageOptionsMenu'),
@@ -27,36 +29,72 @@ export interface AssistantActionBarProps {
   content: string;
   messageId: string;
   sessionId?: string;
+  conversationId?: string;
   hasUnsavedChanges?: boolean;
   hasHistory?: boolean;
   isSaving?: boolean;
   rawContent?: unknown[];
-  onEdit: () => void;
   onQuickSave?: () => void;
-  onShowHistory?: () => void;
-  onShowHtmlPreview?: () => void;
   onFullPrint?: () => void;
+  isCapturing?: boolean;
 }
 
 export function AssistantActionBar({
   content,
   messageId,
   sessionId,
+  conversationId,
   hasUnsavedChanges = false,
   hasHistory = false,
   isSaving = false,
   rawContent,
-  onEdit,
   onQuickSave,
-  onShowHistory,
-  onShowHtmlPreview,
   onFullPrint,
+  isCapturing,
 }: AssistantActionBarProps) {
+  const dispatch = useAppDispatch();
+  const reactId = useId();
+  const instanceId = useRef(`msg-action-${reactId}`).current;
+
   const [isCopied, setIsCopied] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const moreOptionsButtonRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    dispatch(
+      messageActionsActions.registerInstance({
+        id: instanceId,
+        context: {
+          content,
+          messageId,
+          sessionId: sessionId ?? '',
+          conversationId: conversationId ?? null,
+          rawContent: rawContent ?? null,
+          metadata: null,
+        },
+      }),
+    );
+    return () => {
+      dispatch(messageActionsActions.unregisterInstance(instanceId));
+    };
+  }, [instanceId, dispatch]);
+
+  useEffect(() => {
+    dispatch(
+      messageActionsActions.updateInstanceContext({
+        id: instanceId,
+        updates: {
+          content,
+          messageId,
+          sessionId: sessionId ?? '',
+          conversationId: conversationId ?? null,
+          rawContent: rawContent ?? null,
+        },
+      }),
+    );
+  }, [content, messageId, sessionId, conversationId, rawContent, instanceId, dispatch]);
 
   const handleCopy = async () => {
     try {
@@ -72,10 +110,17 @@ export function AssistantActionBar({
     }
   };
 
+  const handleEdit = () => {
+    dispatch(messageActionsActions.openOverlay({ instanceId, overlay: 'fullScreenEditor' }));
+  };
+
+  const handleShowHistory = () => {
+    dispatch(messageActionsActions.openOverlay({ instanceId, overlay: 'contentHistory' }));
+  };
+
   return (
     <>
       <TapTargetButtonGroup>
-        {/* Like */}
         <TapTargetButtonForGroup
           onClick={() => {
             setIsLiked(!isLiked);
@@ -89,7 +134,6 @@ export function AssistantActionBar({
           }
         />
 
-        {/* Dislike */}
         <TapTargetButtonForGroup
           onClick={() => {
             setIsDisliked(!isDisliked);
@@ -103,7 +147,6 @@ export function AssistantActionBar({
           }
         />
 
-        {/* Copy */}
         <TapTargetButtonForGroup
           onClick={handleCopy}
           ariaLabel="Copy message"
@@ -116,10 +159,8 @@ export function AssistantActionBar({
           }
         />
 
-        {/* Speaker — self-contained Cartesia TTS */}
         <SpeakerButton text={content} variant="group" />
 
-        {/* Save (conditional) */}
         {hasUnsavedChanges && (
           <TapTargetButtonForGroup
             onClick={onQuickSave}
@@ -134,23 +175,20 @@ export function AssistantActionBar({
           />
         )}
 
-        {/* History (conditional) */}
         {hasHistory && (
           <TapTargetButtonForGroup
-            onClick={onShowHistory}
+            onClick={handleShowHistory}
             ariaLabel="View edit history"
             icon={<History className="w-4 h-4 text-muted-foreground" />}
           />
         )}
 
-        {/* Edit */}
         <TapTargetButtonForGroup
-          onClick={onEdit}
+          onClick={handleEdit}
           ariaLabel="Edit message"
           icon={<Edit className="w-4 h-4 text-muted-foreground" />}
         />
 
-        {/* More options */}
         <div ref={moreOptionsButtonRef}>
           <TapTargetButtonForGroup
             onClick={() => setShowOptionsMenu(true)}
@@ -164,16 +202,12 @@ export function AssistantActionBar({
         <Suspense fallback={null}>
           <ConversationMessageOptionsMenu
             isOpen={showOptionsMenu}
-            content={content}
-            messageId={messageId}
-            sessionId={sessionId}
+            instanceId={instanceId}
             onClose={() => setShowOptionsMenu(false)}
-            onShowHtmlPreview={onShowHtmlPreview ? () => { setShowOptionsMenu(false); onShowHtmlPreview(); } : undefined}
-            onEditContent={() => { setShowOptionsMenu(false); onEdit(); }}
-            onFullPrint={onFullPrint ? () => { setShowOptionsMenu(false); onFullPrint(); } : undefined}
-            onShowHistory={onShowHistory ? () => { setShowOptionsMenu(false); onShowHistory(); } : undefined}
-            rawContent={rawContent}
             anchorElement={moreOptionsButtonRef.current}
+            showFullPrint={!!onFullPrint}
+            onFullPrint={onFullPrint}
+            isCapturing={isCapturing}
           />
         </Suspense>
       )}

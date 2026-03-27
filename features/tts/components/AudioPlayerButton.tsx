@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTextToSpeech } from '../hooks';
 import { useAppSelector } from '@/lib/redux/hooks';
-import type { EnglishVoice, TTSOptions } from '../types';
+import type { EnglishVoice } from '../types';
 import { toast } from 'sonner';
 
 export interface AudioPlayerButtonProps {

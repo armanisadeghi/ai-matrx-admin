@@ -33,15 +33,20 @@ export function createDomCapturePrinter(blockLabel: string): BlockPrinter {
 /**
  * Capture a DOM element as PDF.
  * Called directly by block components when their print button is clicked.
+ *
+ * @param element  - The DOM element to capture
+ * @param filename - Output filename (without extension)
+ * @param orientation - "landscape" (default) for wide visual blocks; "portrait" for tall/list content
  */
 export async function captureBlockElement(
     element: HTMLElement,
     filename: string,
+    orientation: "landscape" | "portrait" = "landscape",
 ): Promise<void> {
     const { captureToPDF } = await import("./dom-capture-print-utils");
     await captureToPDF(element, {
         filename,
         scale: 2,
-        orientation: "landscape",
+        orientation,
     });
 }

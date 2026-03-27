@@ -1,12 +1,14 @@
 // components/admin/controls/LargeIndicator.tsx
-import React, { Suspense, lazy } from "react";
-import { ChevronRight, X, Server, Activity, RefreshCw, AlertCircle, Check } from "lucide-react";
+import React, { Suspense, lazy, useState, useCallback } from "react";
+import { ChevronRight, X, Server, Activity, RefreshCw, AlertCircle, Check, Copy, ClipboardCheck, Terminal } from "lucide-react";
 import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
 import PageDebugDisplay from "@/components/admin/debug/PageDebugDisplay";
+import { buildAgentContext } from "@/components/admin/debug/buildAgentContext";
 import { LazyEntityGate } from "@/providers/packs/LazyEntityGate";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { selectIsDebugMode, selectDebugData } from "@/lib/redux/slices/adminDebugSlice";
+import { selectIsDebugMode, selectDebugData, selectRouteContext, selectConsoleErrors } from "@/lib/redux/slices/adminDebugSlice";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectUser } from "@/lib/redux/slices/userSlice";
 import {
     selectActiveServer,
     selectResolvedBaseUrl,
@@ -50,8 +52,11 @@ const statusBg: Record<string, string> = {
 
 const LargeIndicator: React.FC<LargeIndicatorProps> = ({ user, onSizeDown, onSizeSmall }) => {
     const dispatch = useAppDispatch();
+    const [copied, setCopied] = useState(false);
+    const [showErrors, setShowErrors] = useState(false);
 
     const isAdmin = useAppSelector(selectIsAdmin);
+    const reduxUser = useAppSelector(selectUser);
     const activeServer = useAppSelector(selectActiveServer);
     const resolvedUrl = useAppSelector(selectResolvedBaseUrl);
     const activeHealth = useAppSelector(selectActiveServerHealth);
@@ -59,6 +64,37 @@ const LargeIndicator: React.FC<LargeIndicatorProps> = ({ user, onSizeDown, onSiz
     const recentCalls = useAppSelector(selectRecentApiCalls);
     const isDebugMode = useAppSelector(selectIsDebugMode);
     const debugData = useAppSelector(selectDebugData);
+    const routeContext = useAppSelector(selectRouteContext);
+    const consoleErrors = useAppSelector(selectConsoleErrors);
+
+    const handleCopyContext = useCallback(async () => {
+        const context = buildAgentContext({
+            routeContext,
+            debugData,
+            consoleErrors,
+            activeServer,
+            resolvedUrl,
+            serverHealthStatus: activeHealth.status,
+            serverLatencyMs: activeHealth.latencyMs,
+            recentApiCalls: recentCalls,
+            userEmail: reduxUser?.email,
+        });
+        try {
+            await navigator.clipboard.writeText(context);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2500);
+        } catch {
+            // Fallback for browsers without clipboard API
+            const el = document.createElement('textarea');
+            el.value = context;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2500);
+        }
+    }, [routeContext, debugData, consoleErrors, activeServer, resolvedUrl, activeHealth, recentCalls, reduxUser]);
 
     const lastCheckedLabel = activeHealth.lastCheckedAt
         ? `${Math.round((Date.now() - activeHealth.lastCheckedAt) / 1000)}s ago`
@@ -205,6 +241,91 @@ const LargeIndicator: React.FC<LargeIndicatorProps> = ({ user, onSizeDown, onSiz
                             ))
                         )}
                     </div>
+                </div>
+
+                {/* Copy Full Context — always available, the key AI-agent feature */}
+                <div className="bg-slate-700 p-3 rounded">
+                    <div className="flex items-center justify-between gap-2">
+                        <div>
+                            <div className="text-xs font-semibold text-slate-200">Copy Full Context</div>
+                            <div className="text-[10px] text-slate-400 mt-0.5">
+                                Route · debug data · API calls · console errors → paste into AI agent
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleCopyContext}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-colors ${
+                                copied
+                                    ? "bg-green-600 text-white"
+                                    : "bg-blue-600 hover:bg-blue-500 text-white"
+                            }`}
+                        >
+                            {copied ? (
+                                <>
+                                    <ClipboardCheck size={13} />
+                                    Copied!
+                                </>
+                            ) : (
+                                <>
+                                    <Copy size={13} />
+                                    Copy
+                                </>
+                            )}
+                        </button>
+                    </div>
+                    {routeContext && (
+                        <div className="mt-2 text-[10px] text-slate-500 font-mono">
+                            {routeContext.pathname}
+                            {Object.keys(routeContext.searchParams).length > 0 && (
+                                <span className="text-slate-600">
+                                    {' '}({Object.entries(routeContext.searchParams).map(([k,v]) => `${k}=${v}`).join(', ')})
+                                </span>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Console Errors */}
+                <div className="bg-slate-700 p-3 rounded">
+                    <div
+                        className="flex items-center gap-2 cursor-pointer"
+                        onClick={() => setShowErrors(!showErrors)}
+                    >
+                        <Terminal size={12} className={consoleErrors.length > 0 ? "text-red-400" : "text-slate-400"} />
+                        <span className="text-xs text-slate-400 flex-1">
+                            Console Errors
+                        </span>
+                        {consoleErrors.length > 0 && (
+                            <span className="text-[10px] font-semibold text-red-400 bg-red-400/10 px-1.5 py-0.5 rounded-full">
+                                {consoleErrors.length}
+                            </span>
+                        )}
+                        <ChevronRight size={12} className={`text-slate-500 transition-transform ${showErrors ? "rotate-90" : ""}`} />
+                    </div>
+                    {showErrors && (
+                        <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
+                            {consoleErrors.length === 0 ? (
+                                <div className="text-[10px] text-slate-500">No errors captured</div>
+                            ) : (
+                                consoleErrors.slice(0, 10).map(err => (
+                                    <div key={err.id} className="bg-slate-800 rounded p-2">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="text-[10px] text-red-400 font-semibold">{err.source}</span>
+                                            <span className="text-[10px] text-slate-500">
+                                                {new Date(err.capturedAt).toLocaleTimeString()}
+                                            </span>
+                                        </div>
+                                        <div className="text-[10px] font-mono text-slate-300 break-all">{err.message}</div>
+                                        {err.stack && (
+                                            <div className="text-[9px] font-mono text-slate-500 mt-1 break-all">
+                                                {err.stack.split('\n').slice(1, 4).join('\n')}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Debug Section */}

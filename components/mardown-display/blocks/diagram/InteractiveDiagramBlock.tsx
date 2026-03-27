@@ -555,12 +555,19 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
   const [backgroundVariant, setBackgroundVariant] = useState<BackgroundVariant>(BackgroundVariant.Dots);
   const { open: openCanvas } = useCanvas();
   const diagramContainerRef = useRef<HTMLDivElement>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
   const handlePrint = useCallback(async () => {
-    if (diagramContainerRef.current) {
+    if (!diagramContainerRef.current || isPrinting) return;
+    setIsPrinting(true);
+    try {
       const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
-      captureBlockElement(diagramContainerRef.current, diagram.title.replace(/\s+/g, '-').toLowerCase() || 'diagram');
+      await captureBlockElement(diagramContainerRef.current, diagram.title.replace(/\s+/g, '-').toLowerCase() || 'diagram');
+    } catch (err) {
+      console.error('[InteractiveDiagramBlock] Print failed:', err);
+    } finally {
+      setIsPrinting(false);
     }
-  }, [diagram.title]);
+  }, [diagram.title, isPrinting]);
 
   const exportDiagramJSON = () => {
     const exportData = {
@@ -676,7 +683,8 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                     <>
                       <button
                         onClick={handlePrint}
-                        className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                        disabled={isPrinting}
+                        className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-lg transform hover:scale-105 transition-all disabled:opacity-50"
                         title="Print / Save as PDF"
                       >
                         <Printer className="h-4 w-4" />
@@ -705,13 +713,23 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                     </>
                   )}
                   {isFullScreen && (
-                    <button
-                      onClick={() => setIsFullScreen(false)}
-                      className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm border-border"
-                      title="Exit Fullscreen"
-                    >
-                      <Minimize2 className="h-4 w-4" />
-                    </button>
+                    <>
+                      <button
+                        onClick={handlePrint}
+                        disabled={isPrinting}
+                        className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-medium transition-all shadow-sm hover:bg-slate-600 dark:hover:bg-slate-700 disabled:opacity-50"
+                        title="Print / Save as PDF"
+                      >
+                        <Printer className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setIsFullScreen(false)}
+                        className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm border-border"
+                        title="Exit Fullscreen"
+                      >
+                        <Minimize2 className="h-4 w-4" />
+                      </button>
+                    </>
                   )}
                   <button
                     onClick={exportDiagramJSON}

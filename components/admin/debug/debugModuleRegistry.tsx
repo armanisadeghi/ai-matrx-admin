@@ -1,7 +1,8 @@
 // components/admin/debug/debugModuleRegistry.tsx
 
-import { LucideIcon, ShieldCheck, Database, Wifi, Cog, Activity, Lock } from 'lucide-react';
+import { LucideIcon, ShieldCheck, MessageSquare } from 'lucide-react';
 import TokenStatusDebug from './TokenStatusDebug';
+import ChatDebug from './ChatDebug';
 import { ComponentType } from 'react';
 
 /**
@@ -43,23 +44,14 @@ export const debugModules: DebugModule[] = [
     description: 'Monitor token refresh status and session expiry',
     color: 'text-green-500',
   },
-  // Add more debug modules here as you create them:
-  // {
-  //   id: 'database',
-  //   name: 'Database',
-  //   icon: Database,
-  //   component: DatabaseDebug,
-  //   description: 'Monitor database queries and performance',
-  //   color: 'text-blue-500',
-  // },
-  // {
-  //   id: 'websocket',
-  //   name: 'WebSocket',
-  //   icon: Wifi,
-  //   component: WebSocketDebug,
-  //   description: 'Monitor WebSocket connections and messages',
-  //   color: 'text-purple-500',
-  // },
+  {
+    id: 'chat',
+    name: 'Chat Session',
+    icon: MessageSquare,
+    component: ChatDebug,
+    description: 'Live state of the active chat session, agent config, and recent API calls',
+    color: 'text-blue-400',
+  },
 ];
 
 /**

@@ -177,11 +177,13 @@ export function TapTargetButtonForGroup({
 
 export function TapTargetButtonGroup({
   children,
+  className,
 }: {
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="relative inline-flex h-9 items-center">
+    <div className={className ? `relative inline-flex h-9 items-center ${className}` : "relative inline-flex h-9 items-center"}>
       <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-8 rounded-full matrx-glass-thin-border" />
       <div className="relative flex items-center">{children}</div>
     </div>

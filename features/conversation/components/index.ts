@@ -27,8 +27,6 @@ export { AssistantMessage } from '@/features/cx-conversation/AssistantMessage';
 export type { AssistantMessageProps } from '@/features/cx-conversation/AssistantMessage';
 export { UserMessage } from '@/features/cx-conversation/UserMessage';
 export { MessageErrorBoundary } from '@/features/cx-conversation/MessageErrorBoundary';
-export { StreamingContentBlocks } from '@/features/cx-conversation/StreamingContentBlocks';
-
 // ── Tool visualization ───────────────────────────────────────────────────────
 export { default as ToolCallVisualization } from '@/features/cx-conversation/ToolCallVisualization';
 

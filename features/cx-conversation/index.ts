@@ -24,3 +24,22 @@ export type { ConversationShellProps } from './ConversationShell';
 export type { ConversationInputProps } from './ConversationInput';
 export type { AssistantMessageProps } from './AssistantMessage';
 export type { MessageOptionsMenuProps } from './MessageOptionsMenu';
+
+// ── Message actions (Redux-driven overlays) ─────────────────────────────────
+export {
+  messageActionsActions,
+  messageActionsReducer,
+  selectMessageActionInstance,
+  selectOpenOverlays,
+  selectOverlaysForInstance,
+  selectIsMessageActionOverlayOpen,
+  selectMessageActionOverlayData,
+} from './redux/messageActionsSlice';
+export type {
+  MessageActionOverlayType,
+  MessageActionInstance,
+  MessageActionOverlay,
+  MessageActionsState,
+} from './redux/messageActionsSlice';
+export { getMessageActions, resumePendingAuthAction } from './actions/messageActionRegistry';
+export type { MessageActionContext } from './actions/messageActionRegistry';

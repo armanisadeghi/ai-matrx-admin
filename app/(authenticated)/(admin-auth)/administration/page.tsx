@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { IconChevronRight } from "@tabler/icons-react";
+import { IconChevronRight, IconList } from "@tabler/icons-react";
 import FeatureSectionLinkComponent from "@/components/animated/my-custom-demos/feature-section-link-component";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { adminCategories } from "@/app/(authenticated)/(admin-auth)/administration/categories";
 
 // IMPORTANT: All features and routes are defined in: app\(authenticated)\(admin-auth)\administration\categories.tsx
@@ -102,7 +103,16 @@ const AdminPage = () => {
         <div className="h-full w-full overflow-y-auto">
             <div className="py-4 bg-neutral-100 dark:bg-neutral-900 w-full">
                 <div className="w-full px-4">
-                    <h1 className="text-xl font-bold text-center mb-4">Admin Dashboard Home</h1>
+                    <div className="flex items-center justify-between mb-4">
+                        <h1 className="text-xl font-bold">Admin Dashboard Home</h1>
+                        <Link
+                            href="/administration/all-routes"
+                            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+                        >
+                            <IconList className="w-4 h-4" />
+                            <span>All Routes</span>
+                        </Link>
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         {adminCategories.map((category, index) => (
                             <div

@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import MarkdownStream from '@/components/MarkdownStream';
+import MarkdownStream, { type MarkdownStreamProps } from '@/components/MarkdownStream';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Eye, PenLine } from 'lucide-react';
 
 export interface MatrxSplitProps {
     /** The markdown content to edit and preview */
@@ -28,6 +30,14 @@ export interface MatrxSplitProps {
     emptyPreviewMessage?: string;
     /** Enable proportional scroll sync between editor and preview. Defaults to true */
     syncScroll?: boolean;
+    /** `type` on MarkdownStream in the preview pane. Defaults to `"text"`. */
+    streamType?: MarkdownStreamProps['type'];
+    /** Passed to MarkdownStream preview (e.g. structured blocks in message context) */
+    analysisData?: MarkdownStreamProps['analysisData'];
+    messageId?: string;
+    allowFullScreenEditor?: boolean;
+    /** Extra className on the MarkdownStream in the preview pane */
+    previewMarkdownClassName?: string;
 }
 
 /**
@@ -65,12 +75,19 @@ export function MatrxSplit({
     hideCopyButton = true,
     emptyPreviewMessage = 'Nothing to preview',
     syncScroll = true,
+    streamType = 'text',
+    analysisData,
+    messageId,
+    allowFullScreenEditor,
+    previewMarkdownClassName,
 }: MatrxSplitProps) {
+    const isMobile = useIsMobile();
+    const [mobileView, setMobileView] = useState<'edit' | 'preview'>('edit');
+
     const internalTextareaRef = useRef<HTMLTextAreaElement | null>(null);
     const previewRef = useRef<HTMLDivElement | null>(null);
     const isSyncing = useRef(false);
 
-    // Merge external textareaRef with our internal one
     const mergedTextareaRef = useCallback(
         (node: HTMLTextAreaElement | null) => {
             internalTextareaRef.current = node;
@@ -113,6 +130,83 @@ export function MatrxSplit({
         requestAnimationFrame(() => { isSyncing.current = false; });
     }, [syncScroll]);
 
+    if (isMobile) {
+        return (
+            <div className={cn('flex flex-col h-full w-full overflow-hidden', className)}>
+                {/* Mode toggle bar */}
+                <div className="flex-shrink-0 flex items-center border-b border-border bg-card">
+                    <button
+                        type="button"
+                        onClick={() => setMobileView('edit')}
+                        className={cn(
+                            'flex flex-1 items-center justify-center gap-2 py-2.5 text-sm font-medium transition-colors',
+                            mobileView === 'edit'
+                                ? 'text-primary border-b-2 border-primary bg-primary/5'
+                                : 'text-muted-foreground hover:text-foreground'
+                        )}
+                    >
+                        <PenLine className="h-4 w-4" />
+                        Edit
+                    </button>
+                    <div className="w-px h-6 bg-border" />
+                    <button
+                        type="button"
+                        onClick={() => setMobileView('preview')}
+                        className={cn(
+                            'flex flex-1 items-center justify-center gap-2 py-2.5 text-sm font-medium transition-colors',
+                            mobileView === 'preview'
+                                ? 'text-primary border-b-2 border-primary bg-primary/5'
+                                : 'text-muted-foreground hover:text-foreground'
+                        )}
+                    >
+                        <Eye className="h-4 w-4" />
+                        Preview
+                    </button>
+                </div>
+
+                {/* Content area — single scroll region, no nesting */}
+                <div className="flex-1 overflow-hidden relative">
+                    {mobileView === 'edit' ? (
+                        <textarea
+                            ref={mergedTextareaRef}
+                            value={value}
+                            onChange={(e) => onChange(e.target.value)}
+                            placeholder={placeholder}
+                            aria-label="Markdown editor"
+                            className={cn(
+                                'h-full w-full resize-none border-none bg-transparent p-4 leading-[1.7] font-[inherit] text-foreground outline-none placeholder:text-muted-foreground overflow-y-auto scrollbar-thin-auto',
+                                textareaClassName
+                            )}
+                            style={{ fontSize: '16px' }}
+                        />
+                    ) : (
+                        <div
+                            ref={previewRef}
+                            className={cn('h-full overflow-y-auto py-2 px-4 pb-safe scrollbar-thin-auto', previewClassName)}
+                        >
+                            {value.trim() ? (
+                                <MarkdownStream
+                                    content={value}
+                                    type={streamType}
+                                    role="assistant"
+                                    hideCopyButton={hideCopyButton}
+                                    analysisData={analysisData}
+                                    messageId={messageId}
+                                    allowFullScreenEditor={allowFullScreenEditor}
+                                    className={previewMarkdownClassName}
+                                />
+                            ) : (
+                                <p className="py-2 text-sm italic text-muted-foreground">
+                                    {emptyPreviewMessage}
+                                </p>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <ResizablePanelGroup
             orientation="horizontal"
@@ -144,9 +238,13 @@ export function MatrxSplit({
                     {value.trim() ? (
                         <MarkdownStream
                             content={value}
-                            type="text"
+                            type={streamType}
                             role="assistant"
                             hideCopyButton={hideCopyButton}
+                            analysisData={analysisData}
+                            messageId={messageId}
+                            allowFullScreenEditor={allowFullScreenEditor}
+                            className={previewMarkdownClassName}
                         />
                     ) : (
                         <p className="py-2 text-sm italic text-muted-foreground">

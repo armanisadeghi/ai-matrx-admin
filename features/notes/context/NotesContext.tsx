@@ -160,20 +160,17 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         refreshNotes();
     }, []);
 
-    // Real-time subscription to prevent data loss from concurrent edits
+    // Real-time subscription to prevent data loss from concurrent edits.
+    // Requires: `notes` table added to the `supabase_realtime` publication AND
+    // the `realtime` schema must have all migrations applied (including `list_changes` function).
+    // See README "Supabase Realtime Setup" section.
     useEffect(() => {
-        // Get the current user ID synchronously from the session cache
-        // We use getSession() (not getUser()) to avoid a network round-trip on every mount.
-        // RLS on the notes table already ensures we only receive events for our own notes.
         let channel: ReturnType<typeof supabase.channel> | null = null;
 
         supabase.auth.getSession().then(({ data: { session } }) => {
             const userId = session?.user?.id;
             if (!userId) return;
 
-            // Single postgres_changes binding (event: '*') avoids supabase-js CHANNEL_ERROR:
-            // "mismatch between server and client bindings for postgres changes" when multiple
-            // .on('postgres_changes', …) listeners target the same table on one channel.
             channel = supabase
                 .channel(`notes-realtime:${userId}`)
                 .on(
@@ -182,13 +179,13 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
                         event: '*',
                         schema: 'public',
                         table: 'notes',
+                        filter: `user_id=eq.${userId}`,
                     },
                     (payload) => {
                         if (payload.eventType === 'UPDATE') {
                             const updatedNote = payload.new as Note;
                             if (!updatedNote?.id) return;
 
-                            if (updatedNote.user_id && updatedNote.user_id !== userId) return;
                             if (savingNoteIdsRef.current.has(updatedNote.id)) return;
 
                             const currentNote = notesRef.current.find(n => n.id === updatedNote.id);
@@ -228,7 +225,6 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
                         if (payload.eventType === 'INSERT') {
                             const newNote = payload.new as Note;
                             if (!newNote?.id || newNote.is_deleted) return;
-                            if (newNote.user_id && newNote.user_id !== userId) return;
 
                             setNotes(prev => {
                                 if (prev.some(n => n.id === newNote.id)) return prev;
@@ -256,11 +252,14 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
                     if (status === 'SUBSCRIBED') {
                         console.log('[Notes Realtime] Subscribed to notes changes for user', userId);
                     } else if (status === 'CHANNEL_ERROR') {
-                        // CHANNEL_ERROR is often transient (Supabase infra hiccup or brief auth delay).
-                        // Notes still load via the initial fetchNotes — this only affects live sync.
-                        console.warn('[Notes Realtime] Channel error — live sync unavailable, notes still load normally.', err ?? '');
+                        console.warn(
+                            '[Notes Realtime] Channel error — live sync unavailable, notes still load normally.',
+                            'Error:', err ?? 'unknown',
+                            '| Check: (1) `notes` is in supabase_realtime publication,',
+                            '(2) realtime schema migrations are healthy in Supabase Dashboard > Logs > Realtime.'
+                        );
                     } else if (status === 'TIMED_OUT') {
-                        console.warn('[Notes Realtime] Subscription timed out.');
+                        console.warn('[Notes Realtime] Subscription timed out — will auto-retry.');
                     }
                 });
         });
@@ -270,7 +269,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
                 supabase.removeChannel(channel);
             }
         };
-    }, []); // Stable - no deps needed
+    }, []);
 
     // Find or create an empty "New Note" - prevents duplicates
     const findOrCreateEmptyNote = useCallback(async (folderName: string = 'Draft'): Promise<Note> => {

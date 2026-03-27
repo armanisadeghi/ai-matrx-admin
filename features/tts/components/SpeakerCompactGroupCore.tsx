@@ -25,6 +25,7 @@ export default function SpeakerCompactGroupCore({
   text,
   processMarkdown = true,
   autoStart = false,
+  className,
   disabled = false,
 }: Props) {
   const { isLoading, isPlaying, isPaused, speak, pause, resume, stop } =
@@ -51,7 +52,7 @@ export default function SpeakerCompactGroupCore({
   const ToggleButton = isPlaying ? PauseTapButton : PlayTapButton;
 
   return (
-    <TapTargetButtonGroup>
+    <TapTargetButtonGroup className={className}>
       <ToggleButton
         variant="group"
         onClick={handleToggle}

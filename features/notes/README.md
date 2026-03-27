@@ -520,5 +520,149 @@ Table: `notes`
 - **API**: Public programmatic interface
 - **Utilities**: Drop-in buttons for common workflows
 
-That's it. Simple, clean, works everywhere.
+## Supabase Realtime Setup
+
+The notes feature uses Supabase Realtime `postgres_changes` for live sync across tabs/devices. Three prerequisites must be met on the Supabase side for this to work.
+
+### Prerequisite 1: Table in Publication
+
+The `notes` table must be added to the `supabase_realtime` publication. Without this, the WAL replication slot won't capture changes for notes.
+
+```sql
+-- Check current tables in the publication
+SELECT schemaname, tablename
+FROM pg_publication_tables
+WHERE pubname = 'supabase_realtime'
+ORDER BY tablename;
+
+-- Add notes if missing (idempotent — errors if already present)
+ALTER PUBLICATION supabase_realtime ADD TABLE notes;
+```
+
+### Prerequisite 2: Realtime Schema Migrations
+
+The Supabase Realtime service maintains a `realtime` schema in the database with ~68 internal migrations (functions like `list_changes`, `apply_rls`, types like `realtime.action`, and the `subscription` table). If these migrations are stuck or broken, **ALL** `postgres_changes` subscriptions across the entire project will fail with `CHANNEL_ERROR`.
+
+**Diagnosis**: Open `Supabase Dashboard > Logs > Realtime` and look for:
+- `MigrationsFailedToRun` — the schema is in a broken state
+- `PoolingReplicationError: function realtime.list_changes(...) does not exist` — a critical function was never created
+
+**Known Issue — Table Name Collision**: Migration #8 creates `realtime.action` ENUM using `IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'action')`. This check is **not schema-qualified** — if ANY table named `action` exists in ANY schema (including `public.action`), the check passes and `realtime.action` is never created. All subsequent migrations that reference `realtime.action` then fail with `type "realtime.action" does not exist`.
+
+**Fix for name collision** (the `public.action` table scenario):
+1. Temporarily rename the conflicting table: `ALTER TABLE public.action RENAME TO _action_backup;`
+2. Clear stuck migration tracking: `TRUNCATE realtime.schema_migrations;` then re-insert the 7 original 2021 migrations (or let the service re-run all — migrations 1-7 are idempotent for tables/types)
+3. Trigger a client connection (subscribe to any channel) — the service auto-retries migrations
+4. Verify all 68 migrations applied: `SELECT COUNT(*) FROM realtime.schema_migrations;`
+5. Rename the table back: `ALTER TABLE public._action_backup RENAME TO action;`
+
+**Verify current health**:
+```sql
+SELECT COUNT(*) as migrations_applied FROM realtime.schema_migrations;
+-- Should be 68
+SELECT EXISTS(SELECT 1 FROM pg_proc WHERE proname = 'list_changes' AND pronamespace = 'realtime'::regnamespace);
+-- Should be true
+```
+
+### Prerequisite 3: Replica Identity
+
+The `notes` table uses `default` replica identity (primary key only). This means:
+- **INSERT/UPDATE**: `payload.new` contains the full row — works correctly.
+- **DELETE**: `payload.old` contains only `{ id }` — the subscription handler only needs the ID, so this is fine.
+
+If you need the full old row on DELETE (e.g., for undo), set replica identity to `full`:
+```sql
+ALTER TABLE notes REPLICA IDENTITY FULL;
+```
+
+### How the Subscription Works
+
+The realtime subscription in `NotesContext.tsx` uses a single `event: '*'` binding with a `user_id` server-side filter:
+
+```typescript
+supabase
+  .channel(`notes-realtime:${userId}`)
+  .on('postgres_changes', {
+    event: '*',
+    schema: 'public',
+    table: 'notes',
+    filter: `user_id=eq.${userId}`,
+  }, handler)
+  .subscribe();
+```
+
+Key design decisions:
+- **Single `event: '*'` binding** — multiple `.on('postgres_changes', ...)` calls targeting the same table on one channel cause `CHANNEL_ERROR: "mismatch between server and client bindings"` in supabase-js. Always use one binding with `event: '*'` and branch on `payload.eventType` inside the handler.
+- **Server-side `filter`** — reduces traffic; only events for the current user's notes are sent over the WebSocket.
+- **Save echo suppression** — `savingNoteIdsRef` tracks in-flight saves for 2 seconds to ignore the realtime echo from the user's own writes.
+- **Conflict detection** — compares `updated_at` timestamps; shows a toast with a "Refresh" action when the active note is modified externally.
+- **Dirty flag** — `activeNoteIsDirtyRef` prevents `refreshNotes()` from overwriting unsaved editor content.
+
+### Troubleshooting
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `CHANNEL_ERROR: mismatch between server and client bindings` | Broken `realtime` schema (missing migrations). Often caused by a `public.action` table blocking `realtime.action` ENUM creation | See "Known Issue — Table Name Collision" above |
+| No events received, no errors | Table not in `supabase_realtime` publication | `ALTER PUBLICATION supabase_realtime ADD TABLE notes;` |
+| Events received for all users | Missing `filter` parameter or broken RLS | Add `filter: 'user_id=eq.${userId}'` to the subscription |
+| `TIMED_OUT` on subscribe | Network/auth delay | supabase-js auto-retries; check auth session |
+| DELETE payload missing fields | Replica identity is `default` (PK only) | Expected — handler only needs `payload.old.id` |
+
+## Realtime Best Practices (Project-Wide)
+
+These rules apply to ALL Supabase Realtime `postgres_changes` subscriptions in the project.
+
+### 1. Publication Membership
+
+Every table you subscribe to MUST be in the `supabase_realtime` publication. Without it, no WAL events are emitted for that table. Currently registered:
+
+`broker_value`, `conversations`, `cx_conversation`, `dm_conversation_participants`, `dm_messages`, `messages`, `note_folders`, `note_shares`, `notes`, `projects`, `tasks`, `transcripts`, `html_extractions` (api schema)
+
+To add a new table:
+```sql
+ALTER PUBLICATION supabase_realtime ADD TABLE your_table_name;
+```
+
+### 2. One Binding Per Table Per Channel
+
+Never do this:
+```typescript
+// BAD — causes CHANNEL_ERROR
+channel
+  .on('postgres_changes', { event: 'INSERT', table: 'notes' }, handler1)
+  .on('postgres_changes', { event: 'UPDATE', table: 'notes' }, handler2)
+```
+
+Always do this:
+```typescript
+// GOOD — single binding, branch inside handler
+channel
+  .on('postgres_changes', { event: '*', table: 'notes' }, (payload) => {
+    if (payload.eventType === 'INSERT') { /* ... */ }
+    if (payload.eventType === 'UPDATE') { /* ... */ }
+    if (payload.eventType === 'DELETE') { /* ... */ }
+  })
+```
+
+Exception: multiple tables on one channel is fine — each `.on()` targets a different table.
+
+### 3. Unique Channel Names
+
+Channel names must be unique across the app. Use the pattern `feature-realtime:${userId}` or `feature-realtime:${entityId}`. If two components create a channel with the same name, supabase-js returns the existing channel, potentially adding duplicate handlers.
+
+### 4. Always Clean Up
+
+Every subscription MUST have a cleanup in the useEffect return:
+```typescript
+return () => { supabase.removeChannel(channel); };
+```
+
+### 5. Table Name Accuracy
+
+The `table` parameter must match the exact PostgreSQL table name. Check with:
+```sql
+SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;
+```
+
+Common mistake: using plural form (e.g., `cx_conversations`) when the table is singular (`cx_conversation`).
 

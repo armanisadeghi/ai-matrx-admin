@@ -33,7 +33,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ size = 20, className = "", show
             }}
         >
             {profilePhoto ? (
-                <Image src={profilePhoto} className="rounded-full" width={size} height={size} alt={`${displayName}'s profile`} />
+                <Image src={profilePhoto} className="rounded-full" width={size} height={size} alt={`${displayName}'s profile`} loading="eager" priority />
             ) : (
                 <div className="flex items-center justify-center h-full w-full">
                     <span className="font-medium text-gray-800 dark:text-gray-200" style={{ fontSize: `${textSize}px` }}>

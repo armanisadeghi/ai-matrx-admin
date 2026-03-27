@@ -25,6 +25,7 @@ export default function SpeakerGroupCore({
   text,
   processMarkdown = true,
   autoStart = false,
+  className,
   disabled = false,
 }: Props) {
   const { isLoading, isPlaying, isPaused, speak, pause, resume, stop } =
@@ -49,7 +50,7 @@ export default function SpeakerGroupCore({
   };
 
   return (
-    <TapTargetButtonGroup>
+    <TapTargetButtonGroup className={className}>
       <PlayTapButton
         variant="group"
         onClick={handlePlay}

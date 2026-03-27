@@ -43,12 +43,19 @@ interface ResourceCollectionBlockProps {
 const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ collection, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const blockContentRef = useRef<HTMLDivElement>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
   const handlePrint = useCallback(async () => {
-    if (blockContentRef.current) {
+    if (!blockContentRef.current || isPrinting) return;
+    setIsPrinting(true);
+    try {
       const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
-      captureBlockElement(blockContentRef.current, collection.title.replace(/\s+/g, '-').toLowerCase() || 'resources');
+      await captureBlockElement(blockContentRef.current, collection.title.replace(/\s+/g, '-').toLowerCase() || 'resources', 'portrait');
+    } catch (err) {
+      console.error('[ResourceCollectionBlock] Print failed:', err);
+    } finally {
+      setIsPrinting(false);
     }
-  }, [collection.title]);
+  }, [collection.title, isPrinting]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');

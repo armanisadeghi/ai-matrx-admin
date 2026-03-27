@@ -180,12 +180,17 @@ export function useTextToSpeech({
     }
   }, [isPlaying]);
 
-  // Resume playback
   const resume = useCallback(async () => {
     if (audioRef.current && isPaused) {
-      await audioRef.current.play();
+      try {
+        await audioRef.current.play();
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : 'Resume failed';
+        setError(errorMsg);
+        onError?.(errorMsg);
+      }
     }
-  }, [isPaused]);
+  }, [isPaused, onError]);
 
   // Stop and cleanup
   const stop = useCallback(() => {

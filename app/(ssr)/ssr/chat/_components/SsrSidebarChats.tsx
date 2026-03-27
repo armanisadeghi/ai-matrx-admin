@@ -387,7 +387,7 @@ export function SsrSidebarChats({
             .channel('cx_conversations_realtime')
             .on(
                 'postgres_changes',
-                { event: '*', schema: 'public', table: 'cx_conversations' },
+                { event: '*', schema: 'public', table: 'cx_conversation' },
                 (payload) => {
                     if (payload.eventType === 'INSERT') {
                         fetchHistory();

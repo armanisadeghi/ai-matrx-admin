@@ -44,7 +44,3 @@ export const LazyMessageOptionsMenu = lazy(() =>
 export const LazyToolCallVisualization = lazy(() =>
     import('@/features/cx-conversation/ToolCallVisualization')
 );
-
-export const LazyStreamingContentBlocks = lazy(() =>
-    import('@/features/cx-conversation/StreamingContentBlocks').then(m => ({ default: m.StreamingContentBlocks }))
-);

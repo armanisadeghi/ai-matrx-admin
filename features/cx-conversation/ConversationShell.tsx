@@ -34,7 +34,6 @@ export interface ConversationShellProps {
   // ── Message list options ───────────────────────────────────────────────────
   showSystemMessages?: boolean;
   compact?: boolean;
-  onMessageContentChange?: (messageId: string, newContent: string) => void;
 
   // ── Canvas ─────────────────────────────────────────────────────────────────
   /** Enable inline side-by-side canvas (canvas always on right) */
@@ -66,7 +65,6 @@ export function ConversationShell({
   className,
   showSystemMessages = false,
   compact = false,
-  onMessageContentChange,
   enableInlineCanvas = false,
   enableCanvas = false,
   inputProps = {},
@@ -116,7 +114,6 @@ export function ConversationShell({
               sessionId={sessionId}
               showSystemMessages={showSystemMessages}
               compact={compact}
-              onMessageContentChange={onMessageContentChange}
             />
           </div>
         </div>

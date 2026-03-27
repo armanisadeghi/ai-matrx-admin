@@ -249,6 +249,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                             onShowHtmlPreview={handleShowHtmlPreview}
                             onEditContent={handleEditClick}
                             onFullPrint={handleFullPrint}
+                            isCapturing={isCapturing}
                             anchorElement={moreOptionsButtonRef.current}
                             metadata={{
                                 taskId: taskId,

@@ -33,12 +33,19 @@ type SortDirection = 'asc' | 'desc' | null;
 const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const blockContentRef = useRef<HTMLDivElement>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
   const handlePrint = useCallback(async () => {
-    if (blockContentRef.current) {
+    if (!blockContentRef.current || isPrinting) return;
+    setIsPrinting(true);
+    try {
       const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
-      captureBlockElement(blockContentRef.current, comparison.title.replace(/\s+/g, '-').toLowerCase() || 'comparison');
+      await captureBlockElement(blockContentRef.current, comparison.title.replace(/\s+/g, '-').toLowerCase() || 'comparison');
+    } catch (err) {
+      console.error('[ComparisonTableBlock] Print failed:', err);
+    } finally {
+      setIsPrinting(false);
     }
-  }, [comparison.title]);
+  }, [comparison.title, isPrinting]);
   const [sortBy, setSortBy] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
@@ -315,13 +322,23 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                 <Table className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                 <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Comparison Table</h3>
               </div>
-              <button
-                onClick={() => setIsFullScreen(false)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
-              >
-                <Minimize2 className="h-4 w-4" />
-                <span>Exit</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePrint}
+                  disabled={isPrinting}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-medium transition-all shadow-sm hover:bg-slate-600 dark:hover:bg-slate-700 disabled:opacity-50"
+                >
+                  <Printer className="h-4 w-4" />
+                  <span>{isPrinting ? 'Saving…' : 'Print'}</span>
+                </button>
+                <button
+                  onClick={() => setIsFullScreen(false)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
+                >
+                  <Minimize2 className="h-4 w-4" />
+                  <span>Exit</span>
+                </button>
+              </div>
             </div>
           )}
 
@@ -367,10 +384,11 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                         </button>
                         <button
                           onClick={handlePrint}
-                          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                          disabled={isPrinting}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-lg transform hover:scale-105 transition-all disabled:opacity-50"
                         >
                           <Printer className="h-4 w-4" />
-                          <span>Print</span>
+                          <span>{isPrinting ? 'Saving…' : 'Print'}</span>
                         </button>
                         <button
                           onClick={() => setIsFullScreen(true)}

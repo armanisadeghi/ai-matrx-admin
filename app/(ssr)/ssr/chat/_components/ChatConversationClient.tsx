@@ -30,6 +30,8 @@ import {
     selectAgentDefaultSettings,
     type ActiveChatAgent,
 } from '@/lib/redux/slices/activeChatSlice';
+import { useDebugContext } from '@/hooks/useDebugContext';
+import { selectActiveServer, selectResolvedBaseUrl, selectActiveServerHealth } from '@/lib/redux/slices/apiConfigSlice';
 import { useAgentConfig } from '../_lib/useAgentConfig';
 import { computeSettingsOverrides } from '../_lib/settings-diff';
 import { useConversationSession } from '@/features/cx-conversation/hooks/useConversationSession';
@@ -114,6 +116,11 @@ export default function ChatConversationClient({
     const effectiveConversationId = startedAsNew.current ? undefined : conversationId;
     const effectiveAgentId = agentId || selectedAgent.promptId;
 
+    const { publish: publishDebug, isActive: isDebugActive } = useDebugContext('Chat');
+    const activeServer = useAppSelector(selectActiveServer);
+    const resolvedUrl = useAppSelector(selectResolvedBaseUrl);
+    const serverHealth = useAppSelector(selectActiveServerHealth);
+
     const settingsOverrides = computeSettingsOverrides(agentDefaultSettings, modelSettings);
 
     const session = useConversationSession({
@@ -140,6 +147,44 @@ export default function ChatConversationClient({
             }));
         }
     }, [session.sessionId, modelOverride, settingsOverrides, dispatch]);
+
+    // Publish debug context for the admin indicator
+    // useDebugContext handles the isAdmin + isDebugMode guard and cleanup on unmount
+    useEffect(() => {
+        publishDebug({
+            'Route': 'ssr/chat',
+            'Conversation ID': session.conversationId ?? effectiveConversationId ?? 'pending',
+            'Session ID': session.sessionId ?? '—',
+            'Session Status': session.status ?? '—',
+            'Agent ID': effectiveAgentId,
+            'Agent Name': selectedAgent.name || '—',
+            'Agent Config Fetched': selectedAgent.configFetched ?? false,
+            'Is New Conversation': startedAsNew.current,
+            'Message Count': session.messages?.length ?? 0,
+            'Model Override': modelOverride ?? 'none',
+            'Is Authenticated': serverAuth,
+            'Is Admin': isAdmin,
+            'Active Server': activeServer,
+            'Backend URL': resolvedUrl ?? 'not configured',
+            'Server Health': serverHealth.status,
+            'Server Latency': serverHealth.latencyMs != null ? `${serverHealth.latencyMs}ms` : '—',
+        });
+    }, [
+        isDebugActive,
+        session.conversationId,
+        session.sessionId,
+        session.status,
+        session.messages?.length,
+        effectiveAgentId,
+        selectedAgent.name,
+        selectedAgent.configFetched,
+        modelOverride,
+        activeServer,
+        resolvedUrl,
+        serverHealth.status,
+        serverHealth.latencyMs,
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    ]);
 
     // Set active session in Redux
     useEffect(() => {

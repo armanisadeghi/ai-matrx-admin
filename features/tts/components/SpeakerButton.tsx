@@ -12,13 +12,12 @@
 
 import React, { useState, useCallback, lazy, Suspense } from 'react';
 import { Volume2TapButton } from '@/components/icons/tap-buttons';
-
-type Variant = 'glass' | 'transparent' | 'solid' | 'group';
+import type { SpeakerVariant } from '../types';
 
 export interface SpeakerButtonProps {
   text: string;
   processMarkdown?: boolean;
-  variant?: Variant;
+  variant?: SpeakerVariant;
   className?: string;
   disabled?: boolean;
 }

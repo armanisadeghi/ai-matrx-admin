@@ -1,3 +1,8 @@
+/**
+ * @deprecated Use the Redux-driven MessageOptionsMenu from
+ * `features/cx-conversation/MessageOptionsMenu` instead. This legacy variant
+ * manages its own local state for sub-modals and will be removed after migration.
+ */
 import React, { useState } from "react";
 import { BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain, Save, Volume2, Edit, CheckSquare, Mail, Printer, ScanLine } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
@@ -18,6 +23,8 @@ interface MessageOptionsMenuProps {
   onEditContent?: () => void;
   /** Trigger full DOM-capture PDF export of the entire rendered message */
   onFullPrint?: () => void;
+  /** True while a DOM-capture export is in progress — disables the menu item */
+  isCapturing?: boolean;
   isOpen: boolean;
   anchorElement?: HTMLElement | null;
   metadata?: {
@@ -28,7 +35,7 @@ interface MessageOptionsMenuProps {
   };
 }
 
-const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClose, onShowHtmlPreview, onEditContent, onFullPrint, isOpen, anchorElement, metadata }) => {
+const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClose, onShowHtmlPreview, onEditContent, onFullPrint, isCapturing, isOpen, anchorElement, metadata }) => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const { openQuickTasks } = useQuickActions();
   
@@ -360,13 +367,14 @@ ${cssContent}
       key: 'full-print',
       icon: ScanLine,
       iconColor: "text-slate-600 dark:text-slate-300",
-      label: "Full Print (all blocks)",
+      label: isCapturing ? "Generating PDF…" : "Full Print (all blocks)",
       action: handleFullPrint,
       category: "Export",
       successMessage: "Generating PDF...",
       errorMessage: "Failed to generate PDF",
       showToast: false,
       hidden: !onFullPrint,
+      disabled: isCapturing,
     },
     // Action Options
     { 

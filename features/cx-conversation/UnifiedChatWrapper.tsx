@@ -137,8 +137,6 @@ export interface UnifiedChatWrapperProps {
   onConversationIdChange?: (conversationId: string) => void;
   /** Called with the session ref so parent can access send/cancel imperatively */
   onSessionReady?: (session: ConversationSessionReturn) => void;
-  /** Called when a message's content changes (e.g. inline edit) */
-  onMessageContentChange?: (messageId: string, newContent: string) => void;
 
   // ── Session Override ─────────────────────────────────────────────────────
   /** Provide a specific session ID (e.g. from URL) instead of auto-generating */
@@ -197,7 +195,6 @@ export function UnifiedChatWrapper({
   onSend,
   onConversationIdChange,
   onSessionReady,
-  onMessageContentChange,
 
   // Session Override
   sessionId: sessionIdProp,
@@ -298,7 +295,6 @@ export function UnifiedChatWrapper({
           compact={compact}
           showSystemMessages={showSystemMessages}
           enableCanvas={enableCanvas}
-          onMessageContentChange={onMessageContentChange}
           inputProps={inputProps}
           headerSlot={headerSlot}
         />

@@ -40,12 +40,19 @@ interface TimelineBlockProps {
 const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline: initialTimeline, taskId }) => {
   const [timeline, setTimeline] = useState<TimelineData>(initialTimeline);
   const blockContentRef = useRef<HTMLDivElement>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
   const handlePrint = useCallback(async () => {
-    if (blockContentRef.current) {
+    if (!blockContentRef.current || isPrinting) return;
+    setIsPrinting(true);
+    try {
       const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
-      captureBlockElement(blockContentRef.current, timeline.title.replace(/\s+/g, '-').toLowerCase() || 'timeline');
+      await captureBlockElement(blockContentRef.current, timeline.title.replace(/\s+/g, '-').toLowerCase() || 'timeline');
+    } catch (err) {
+      console.error('[TimelineBlock] Print failed:', err);
+    } finally {
+      setIsPrinting(false);
     }
-  }, [timeline.title]);
+  }, [timeline.title, isPrinting]);
   const [completedEvents, setCompletedEvents] = useState<Set<string>>(new Set());
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');

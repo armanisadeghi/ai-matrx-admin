@@ -1,7 +1,5 @@
 # Block-Aware Print / PDF System
 
-## What this is
-
 A three-tier print system for AI response messages. Every block type can provide its own print logic. The system degrades gracefully — if a block doesn't declare a printer, Tier 2 DOM capture handles it automatically.
 
 ---
@@ -21,136 +19,208 @@ Tier 2 — Full Message Print (everything)
   MessageOptionsMenu → "Full Print (all blocks)"
   useDomCapturePrint() → html2canvas → jsPDF
   Captures the actual rendered DOM of the entire message
-  Cost: heavier (screenshot pipeline)
+  Shows loading state in the menu while capturing
+  Cost: heavier (screenshot pipeline, dynamic imports)
 
 Tier 3 — Per-Block Print (best quality)
-  Print button in each block's own header
+  Print button in each block's own header/toolbar
   Block controls its own HTML, its own variants, its own CSS
-  PrintOptionsDialog lets users choose variant or accept defaults
+  PrintOptionsDialog lets users choose variant + settings, or print with defaults
   Falls back to Tier 2 DOM capture if no printer declared
 ```
 
 ### The BlockPrinter contract
 
-Each block that wants its own print logic exports a single `BlockPrinter` object alongside its component. This is the entire API surface the host system touches:
+Each block that wants its own print logic exports a single `BlockPrinter` object. This is the entire API surface the host system touches:
 
 ```typescript
+import type { BlockPrinter, PrintVariant, PrintSetting, PrintSettings } from "@/features/chat/utils/block-print-utils";
+
 export interface BlockPrinter {
-    label: string;               // button tooltip
-    variants: PrintVariant[];    // [] = no dialog, print immediately
-    print: (data: unknown, variantId?: string) => void | Promise<void>;
+    label: string;                 // button tooltip
+    variants: PrintVariant[];      // [] = print immediately (no dialog); non-empty = show dialog
+    settings?: PrintSetting[];     // optional user-configurable toggles shown in the dialog
+    print: (data: unknown, variantId?: string, settings?: PrintSettings) => void | Promise<void>;
 }
+
+export interface PrintVariant {
+    id: string;
+    label: string;
+    description?: string;
+}
+
+// Currently only "boolean" type; discriminated union for future "select" / "number"
+export type PrintSetting = {
+    type: "boolean";
+    id: string;
+    label: string;
+    description?: string;
+    defaultValue: boolean;
+    appliesTo?: string[];   // which variantIds this setting applies to; omit = applies to all
+};
+
+export type PrintSettings = Record<string, boolean | string | number>;
 ```
 
-The host never inspects what's inside `print()`. This is what makes the system future-proof — when blocks migrate to the database, the printer travels with the block code and the host requires zero changes.
+The host never inspects inside `print()`. This is what makes the system future-proof — when blocks migrate to the database, the printer travels with the block code and the host requires zero changes.
 
 ### File locations
 
 ```
 features/chat/utils/
-  block-print-utils.ts          BlockPrinter interface + buildPrintDocument() + openPrintWindow() + escapeHtml()
-  dom-capture-print-utils.ts    captureToPDF() using html2canvas + jsPDF
-  dom-capture-block-printer.ts  captureBlockElement() helper for DOM-capture blocks
+  block-print-utils.ts          BlockPrinter interface, buildPrintDocument(), openPrintWindow(), escapeHtml()
+  dom-capture-print-utils.ts    captureToPDF() using html2canvas + jsPDF; captureToClipboardImage()
+  dom-capture-block-printer.ts  captureBlockElement(el, filename, orientation?) helper
   markdown-print-utils.ts       Tier 1 regex-based markdown → HTML (prose only)
 
 features/chat/hooks/
-  useDomCapturePrint.ts         Tier 2 hook: captureRef + captureAsPDF() for message-level capture
+  useDomCapturePrint.ts         Tier 2 hook: { captureRef, isCapturing, progress, captureAsPDF, error }
 
 features/chat/components/print/
-  PrintOptionsDialog.tsx         Shared variant-picker UI (Dialog desktop / Drawer mobile)
-  BLOCK-PRINTER-GUIDE.md        Step-by-step instructions for adding a printer to any block
+  PrintOptionsDialog.tsx         Shared variant-picker + settings UI (Dialog desktop / Drawer mobile)
+  BLOCK-PRINTER-GUIDE.md        Step-by-step for adding a printer to any block
   README.md                     This file
 ```
 
-### Which blocks have printers today
+---
 
-| Block | Strategy | Variants |
+## Block inventory
+
+### HTML Template printers (custom per-block HTML)
+
+| Block | Printer file | Variants | Settings |
+|---|---|---|---|
+| FlashcardsBlock | `flashcards/flashcards-printer.ts` | landscape-duplex, landscape-stacked, avery-5388, cut-cards, both-sides, study-sheet, front-only, back-only | showSideLabel, showCardNumber, showTickMarks, showCutLines, lightBackText, mirrorBack |
+| MultipleChoiceQuiz | `quiz/quiz-printer.ts` | blank (student), with-answers, answer-key | — |
+| MathProblemBlock | `math/math-printer.ts` | problem-only, with-solution | — |
+
+### DOM Capture printers (screenshot of rendered DOM)
+
+Default orientation is landscape. Portrait is used for tall/list content.
+
+| Block | Ref targets | Orientation |
 |---|---|---|
-| FlashcardsBlock | HTML template | Both sides, front only, back only, study sheet |
-| MultipleChoiceQuiz | HTML template | Student blank, with answers, answer key |
-| MathProblemBlock | HTML template | Problem only, with solution |
-| TimelineBlock | DOM capture | — |
-| ComparisonTableBlock | DOM capture | — |
-| DecisionTreeBlock | DOM capture | — |
-| InteractiveDiagramBlock | DOM capture | — |
-| cookingRecipeDisplay | DOM capture | — |
-| ProgressTrackerBlock | DOM capture | — |
-| TroubleshootingBlock | DOM capture | — |
-| ResearchBlock | DOM capture | — |
-| ResourceCollectionBlock | DOM capture | — |
-| Slideshow / Presentation | Existing export menu | — (already handled) |
+| TimelineBlock | `<div className="space-y-6">` — periods + events content | landscape |
+| ComparisonTableBlock | `<div className="bg-textured rounded-xl ...">` — table card | landscape |
+| DecisionTreeBlock | `<div className="p-6 space-y-6">` — full content area (header + tree) | landscape |
+| InteractiveDiagramBlock | `<div ref={diagramContainerRef}>` — ReactFlow container | landscape |
+| cookingRecipeDisplay | `<div className="grid lg:grid-cols-2 ...">` — ingredient/instruction grid | portrait |
+| ProgressTrackerBlock | `<div className="space-y-4">` — tracker items | portrait |
+| TroubleshootingBlock | `<div className="space-y-4">` — issues list | portrait |
+| ResearchBlock | `<div ref={blockContentRef}>` — research content | portrait |
+| ResourceCollectionBlock | `<div className="space-y-6">` — resource cards | portrait |
+
+### No print support yet
+
+| Block | Notes |
+|---|---|
+| StructuredPlanBlock | High priority — long-form checklist content |
+| CandidateProfileBlock | Useful for recruiting workflows |
+| TasksBlock / TaskChecklist | Natural print target |
+| TranscriptBlock | Long-form document candidate |
+| StreamingTableRenderer | Data tables — Tier 2 works as fallback |
+| QuestionnaireRenderer | Printable form candidate |
+| Slideshow / Presentation | Has its own export menu — separate system |
 
 ---
 
-## Roadmap — what to build next
+## How `usePrintOptions` works
 
-### Near-term improvements
+```typescript
+const { open, setOpen, triggerPrint } = usePrintOptions(printer, data);
+```
 
-**1. Loading state on Full Print button**
-`useDomCapturePrint` already exposes `isCapturing` and `progress`. `MessageOptionsMenu` should show a spinner and progress % while the PDF is being generated. Currently the button just fires and goes silent.
+- If `printer.variants.length === 0` AND `(printer.settings?.length ?? 0) === 0` → calls `printer.print(data)` immediately, dialog never opens
+- Otherwise → sets `open = true`, `PrintOptionsDialog` renders
+- `PrintOptionsDialog` manages variant selection and setting toggles, then calls `printer.print(data, variantId, settingValues)`
+- "Print with defaults" button calls `printer.print(data, undefined, buildDefaultSettings(settings))`
 
-**2. DOM-capture blocks should also export a proper `BlockPrinter`**
-Right now DOM-capture blocks (Timeline, Diagram, etc.) use `captureBlockElement()` imperatively and have no `BlockPrinter` object. This means they can't participate in a future unified "print all blocks" orchestration. Fix: each should export a `BlockPrinter` with `variants: []` whose `print()` calls `captureBlockElement`. The host would then be able to iterate all blocks and call their printers in sequence.
+---
 
-**3. Toast / error feedback after print**
-If `captureAsPDF()` throws (e.g. CORS on an image), the user gets no feedback. Add an error toast using the existing toast system.
+## How `captureBlockElement` works
 
-**4. Print button in fullscreen mode**
-Most blocks hide their toolbar when in fullscreen. The print button disappears. Fullscreen views should include a print button since that's often when users want to print.
+```typescript
+// Signature (dom-capture-block-printer.ts):
+captureBlockElement(element: HTMLElement, filename: string, orientation?: "landscape" | "portrait"): Promise<void>
+```
 
-**5. Flashcard study-sheet variant — column layout bug**
-The study-sheet print layout uses `grid-template-columns: 1fr 2fr`. This breaks on A4 narrow margin. Add a `@media print` override with `display: block` fallback.
+- Defaults to `"landscape"` — correct for wide visual blocks (Timeline, Diagram)
+- Pass `"portrait"` for tall/list content (Recipe, Troubleshooting, etc.)
+- Always `await` the call and wrap in try/catch — unhandled rejections are invisible to the user
+
+**Required pattern (all DOM-capture blocks):**
+
+```typescript
+const [isPrinting, setIsPrinting] = useState(false);
+const handlePrint = useCallback(async () => {
+    if (!blockContentRef.current || isPrinting) return;
+    setIsPrinting(true);
+    try {
+        const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
+        await captureBlockElement(blockContentRef.current, 'filename', 'landscape');
+    } catch (err) {
+        console.error('[BlockName] Print failed:', err);
+    } finally {
+        setIsPrinting(false);
+    }
+}, [isPrinting]);
+```
+
+---
+
+## Roadmap
+
+### Near-term
+
+**1. Toast on print error**
+`captureAsPDF()` and `captureBlockElement()` both catch errors but only log them. Users should see a toast via the existing toast system when print fails.
+
+**2. Expose Tier 2 progress**
+`useDomCapturePrint` exposes `progress` (0–100). Wire it into the menu item label so users see "Generating PDF (47%)…" instead of just a label change.
+
+**3. HTML-template printers for high-value blocks**
+`StructuredPlanBlock`, `TasksBlock`, and `TranscriptBlock` are the best candidates for custom printers — they contain structured data that serializes cleanly to HTML.
+
+**4. Settings for quiz and math printers**
+`quizPrinter` and `mathPrinter` have no settings today. Candidates: include answer explanations toggle, font size option.
+
+**5. Study-sheet variant — column layout on A4**
+`FlashcardsBlock` study-sheet variant uses `grid-template-columns: 1fr 2fr`. This can overflow on A4 with narrow margins. Add `@media print { display: block; }` fallback.
 
 ### Medium-term
 
-**6. CSS `@media print` polish pass across all HTML-template printers**
-Currently each printer sets its own print media queries. A shared print stylesheet in `block-print-utils.ts` (injected into every `buildPrintDocument` call) would eliminate duplication and ensure consistent margins, font sizes, and header handling across all blocks.
+**6. Unified print button (auto Tier 1 vs Tier 2)**
+Today users see "Print / Save PDF" (Tier 1) and "Full Print (all blocks)" (Tier 2) as separate items. Better: one "Print" button that detects whether any custom blocks are present and routes automatically.
 
-**7. Merge Tier 1 and Tier 2 under one "Print" menu option**
-Today users see "Print / Save PDF" (Tier 1) and "Full Print (all blocks)" (Tier 2) as separate options. This is confusing. Better: one "Print" button that detects whether any custom blocks are present in the content. If not → Tier 1. If yes → Tier 2. Per-block buttons remain as Tier 3.
+**7. Page headers/footers in `captureToPDF`**
+`captureToPDF()` slices the canvas into pages but adds no headers or page numbers. `jsPDF` supports text overlays before `addImage()`. This should be a `DomCaptureOptions` config field.
 
-**8. Page number and header injection for multi-page PDFs**
-`captureToPDF()` slices the canvas into pages but adds no headers, footers, or page numbers. jsPDF supports text overlays before `addImage()`. Should be a config option in `DomCaptureOptions`.
+**8. Shared print stylesheet**
+Each HTML-template printer defines its own CSS. Extract a shared base print stylesheet from `block-print-utils.ts` injected into every `buildPrintDocument` call to eliminate duplication.
 
 ### Architecture — database-dynamic blocks
 
-The current system is fully static: `BlockComponentRegistry.tsx` (lazy imports) → `BlockRenderer.tsx` (switch statement) → component. Adding a new block type means editing three files in the codebase.
-
 When blocks move to the database, the following pieces are needed:
-
-**What to build:**
 
 | Piece | Notes |
 |---|---|
-| `features/block-runtime/` shared utility | Extract Babel + `new Function()` eval from `features/prompt-apps/` (it already exists there). This becomes the shared eval pipeline for all dynamic blocks. |
-| `DynamicBlockRegistry` | A client-side `Map<string, { component: React.ComponentType, printer?: BlockPrinter }>`. ~50 lines. Provides `register(type, component, printer?)` and `get(type)`. |
+| `features/block-runtime/` shared utility | Extract Babel + `new Function()` eval from `features/prompt-apps/`. Becomes the shared eval pipeline for all dynamic blocks. |
+| `DynamicBlockRegistry` | Client-side `Map<string, { component: React.ComponentType, printer?: BlockPrinter }>`. ~50 lines. `register(type, component, printer?)` + `get(type)`. |
 | `BlockRenderer` patch | After the existing `switch`, fall through to `DynamicBlockRegistry.get(block.type)`. ~10 lines. |
 | API route for block definitions | Returns `{ type, render_code, printer_code }[]`. Cached at startup, invalidated on block publish. |
-| DB schema | Block record needs `render_code: text`, `printer_code: text | null`, `loading_code: text | null`. |
+| DB schema | Block record needs `render_code: text`, `printer_code: text | null`. |
 
-**What does NOT change:**
+**What does NOT change when this happens:**
 - `BlockPrinter` interface — already serialization-safe
 - `PrintOptionsDialog` — works with any `BlockPrinter`, origin irrelevant
-- All existing block printers — they stay where they are; static blocks register on import, dynamic blocks register on eval
-
-**The eval pattern (from prompt-apps):**
-```typescript
-// printer_code stored in DB:
-const kanbanPrinter = { label: "Print kanban", variants: [], print(data) { ... } };
-
-// host eval:
-const module = evalBlockCode(printerCode, { buildPrintDocument, openPrintWindow, escapeHtml });
-dynamicBlockRegistry.register(blockType, component, module.printer);
-```
-
-The database is the right place to start this conversation. The shared eval utility is the prerequisite for everything else.
+- All existing block printers — they stay where they are
 
 ---
 
 ## For new contributors
 
-- Read `BLOCK-PRINTER-GUIDE.md` — it has the complete step-by-step for adding a printer to any block
-- The `BlockPrinter` interface is in `features/chat/utils/block-print-utils.ts` — that's the only file you import from
-- Look at `flashcards-printer.ts` for a full HTML-template example with variants
-- Look at `TimelineBlock.tsx` for a full DOM-capture example
-- Never add `useMemo` / `useCallback` / `React.memo` — React Compiler handles memoization
+- Read `BLOCK-PRINTER-GUIDE.md` — complete step-by-step for adding a printer to any block
+- The `BlockPrinter` interface is in `features/chat/utils/block-print-utils.ts` — the only file to import from
+- `flashcards-printer.ts` is the reference for a full HTML-template printer with variants and settings
+- `TimelineBlock.tsx` is the reference for a correct DOM-capture implementation
+- React Compiler is enabled — never add `useMemo` / `useCallback` / `React.memo` manually
