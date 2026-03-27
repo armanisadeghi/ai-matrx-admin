@@ -40,7 +40,8 @@ export type ResourceType =
   | 'user_files'
   | 'prompt_actions'
   | 'flashcard_data'
-  | 'flashcard_sets';
+  | 'flashcard_sets'
+  | 'tasks';
 
 /**
  * Permission levels in hierarchical order: viewer < editor < admin
@@ -298,6 +299,7 @@ export function getResourceTypeLabel(type: ResourceType): string {
     prompt_actions: 'Action',
     flashcard_data: 'Flashcard',
     flashcard_sets: 'Flashcard Set',
+    tasks: 'Task',
   };
   return labels[type] || type;
 }

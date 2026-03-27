@@ -69,6 +69,7 @@ export function ShareModal({
       workflow: `/workflows/${resourceId}`,
       note: `/notes/${resourceId}`,
       task: `/tasks/${resourceId}`,
+      tasks: `/tasks/${resourceId}`,
       // New types
       cx_conversation: `/chat/${resourceId}`,
       canvas_items: `/canvas/${resourceId}`,

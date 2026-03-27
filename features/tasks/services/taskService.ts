@@ -299,6 +299,34 @@ export async function deleteSubtask(subtaskId: string): Promise<boolean> {
 }
 
 /**
+ * Get tasks shared directly with the current user (via permissions table, not via project membership)
+ */
+export async function getSharedWithMeTasks(): Promise<DatabaseTask[]> {
+  try {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) return [];
+
+    const userId = userData.user.id;
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .neq('user_id', userId)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching shared tasks:', error.message);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Exception fetching shared tasks:', error);
+    return [];
+  }
+}
+
+/**
  * Get comments for a task
  */
 export async function getTaskComments(taskId: string): Promise<any[]> {

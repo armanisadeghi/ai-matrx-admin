@@ -15,6 +15,8 @@ export interface Task {
   parentTaskId?: string | null;
   subtasks?: Task[];
   updatedAt?: string | null;
+  userId?: string | null;
+  isPublic?: boolean;
 }
 
 export interface Project {
@@ -32,6 +34,7 @@ export type TaskFilterType = 'all' | 'incomplete' | 'overdue';
 
 export interface TaskContextType {
   projects: Project[];
+  sharedTasks: import('./database').DatabaseTask[];
   loading: boolean;
   // Operation states for loading feedback
   isCreatingProject: boolean;

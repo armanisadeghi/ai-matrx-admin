@@ -19,13 +19,16 @@ export interface DatabaseTask {
   title: string;
   description: string | null;
   project_id: string | null;
-  parent_task_id: string | null; // For subtask support
+  parent_task_id: string | null;
   status: string; // 'incomplete' | 'completed'
-  priority: 'low' | 'medium' | 'high' | null; // Task priority
-  assignee_id: string | null; // Assigned user ID
+  priority: 'low' | 'medium' | 'high' | null;
+  assignee_id: string | null;
   due_date: string | null;
-  user_id: string | null; // Creator/owner
+  user_id: string | null;
   authenticated_read: boolean | null;
+  is_public: boolean | null;
+  organization_id: string | null;
+  workspace_id: string | null;
   created_at: string | null;
   updated_at: string | null;
 }

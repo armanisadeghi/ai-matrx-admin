@@ -36,8 +36,9 @@ export default function ModelDetailSheet({ modelId, allModels, onClose, onSaved 
             <SheetContent
                 side="right"
                 className="w-[600px] sm:max-w-[600px] p-0 flex flex-col overflow-hidden"
-                // Prevent the detail panel's own click-outside handler from firing on Sheet overlay clicks
+                // Prevent portaled children (Select, Popover, etc.) from triggering sheet close
                 onPointerDownOutside={(e) => e.preventDefault()}
+                onInteractOutside={(e) => e.preventDefault()}
             >
                 {loadingProviders ? (
                     <div className="flex-1 flex items-center justify-center gap-2 text-muted-foreground text-sm">

@@ -27,6 +27,7 @@ export function TaskProvider({ children }: TaskProviderProps) {
   
   // Database state
   const [dbProjectsWithTasks, setDbProjectsWithTasks] = useState<ProjectWithTasks[]>([]);
+  const [sharedTasks, setSharedTasks] = useState<DatabaseTask[]>([]);
   const [loading, setLoading] = useState(true); // Start as true, will be set false after initial load
   
   // Operation states for feedback
@@ -67,6 +68,8 @@ export function TaskProvider({ children }: TaskProviderProps) {
         parentTaskId: dbTask.parent_task_id || null,
         subtasks: [],
         updatedAt: dbTask.updated_at || null,
+        userId: dbTask.user_id || null,
+        isPublic: dbTask.is_public || false,
       };
       taskMap.set(dbTask.id, task);
     });
@@ -98,8 +101,12 @@ export function TaskProvider({ children }: TaskProviderProps) {
         setLoading(true);
       }
       
-      const data = await projectService.getProjectsWithTasks();
+      const [data, sharedData] = await Promise.all([
+        projectService.getProjectsWithTasks(),
+        taskService.getSharedWithMeTasks(),
+      ]);
       setDbProjectsWithTasks(data);
+      setSharedTasks(sharedData);
       
       // Auto-expand and select first project if none selected (use functional update to avoid dependency)
       if (data.length > 0) {
@@ -993,6 +1000,7 @@ export function TaskProvider({ children }: TaskProviderProps) {
 
   const value: TaskContextType = {
     projects,
+    sharedTasks,
     loading,
     isCreatingProject,
     isCreatingTask,

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, Calendar, Flag, User, Paperclip, MessageSquare, 
-  CheckSquare, Loader2, Plus, Send, Save, X as XIcon, ChevronLeft, Trash2, Check, MoreVertical
+  CheckSquare, Loader2, Plus, Send, Save, X as XIcon, ChevronLeft, Trash2, Check, MoreVertical, Share2
 } from 'lucide-react';
 import { useTaskContext } from '@/features/tasks/context/TaskContext';
 import { useAppSelector } from '@/lib/redux/hooks';
@@ -21,6 +21,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { ShareButton } from '@/features/sharing/components/ShareButton';
+import { ShareModal } from '@/features/sharing/components/ShareModal';
 
 interface TaskDetailsPanelProps {
   task: any;
@@ -60,6 +62,7 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
   const [isAddingComment, setIsAddingComment] = useState(false);
   const { id: currentUserId } = useAppSelector(selectUser);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   // Update local state when task changes from context
   useEffect(() => {
@@ -309,7 +312,16 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
                 )}
               </Button>
             )}
-            
+
+            <ShareButton
+              resourceType="tasks"
+              resourceId={task.id}
+              resourceName={task.title}
+              isOwner={task.userId === currentUserId}
+              size="icon"
+              variant="ghost"
+            />
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -328,6 +340,15 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
                   <Check size={14} />
                   {task.completed ? 'Mark Incomplete' : 'Mark Complete'}
                 </DropdownMenuItem>
+                {task.userId === currentUserId && (
+                  <DropdownMenuItem
+                    onClick={() => setIsShareModalOpen(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <Share2 size={14} />
+                    Share Task
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={handleDelete}
@@ -575,6 +596,15 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
           </div>
         </div>
       </div>
+
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        resourceType="tasks"
+        resourceId={task.id}
+        resourceName={task.title}
+        isOwner={task.userId === currentUserId}
+      />
     </div>
   );
 }
