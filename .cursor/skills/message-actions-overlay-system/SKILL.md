@@ -1,6 +1,6 @@
 ---
 name: message-actions-overlay-system
-description: Instance-based Redux overlay system for message action sub-modals (Save to Notes, Email, Auth Gate, Editor, History, HTML Preview). Use when adding new message actions, modifying the MessageOptionsMenu, working with AssistantActionBar or AssistantMessage components, fixing overlay stacking or z-index issues in chat UIs, or extending the message action registry with new items.
+description: Instance-based Redux overlay system for message action sub-modals (Save to Notes, Email, Auth Gate, Editor, History, HTML Preview, Submit Feedback, Announcements, User Preferences). Use when adding new message actions, modifying the MessageOptionsMenu, working with AssistantActionBar or AssistantMessage components, fixing overlay stacking or z-index issues in chat UIs, or extending the message action registry with new items.
 ---
 
 # Message Actions Overlay System
@@ -30,6 +30,7 @@ ClientOverlayProvider (app root)
         └── reads openOverlays → renders corresponding components
               QuickSaveModal | EmailInputDialog | AuthGateDialog
               FullScreenMarkdownEditor | ContentHistoryViewer | HtmlPreviewBridge
+              FeedbackDialog | AnnouncementsViewer | VSCodePreferencesModal
 ```
 
 **Critical design constraint:** There is never a single "active" message. Multiple chat instances (main chat, floating assistant, sheets, inline dialogs) coexist on a page. Everything is keyed by a caller-generated `instanceId`, never singleton.
@@ -48,8 +49,10 @@ ClientOverlayProvider (app root)
 | `features/cx-conversation/AssistantActionBar.tsx` | Registers instance on mount, renders action buttons + menu |
 | `features/cx-conversation/AssistantMessage.tsx` | Renders message content + action bar |
 | `components/overlays/ClientOverlayProvider.tsx` | Mounts both OverlayController and MessageActionsController |
-| `features/cx-conversation/redux/__tests__/messageActionsSlice.test.ts` | 19 reducer+selector tests |
-| `features/cx-conversation/redux/__tests__/messageActionRegistry.test.ts` | 17 registry output tests |
+| `components/user-preferences/VSCodePreferencesModal.tsx` | VSCode-style preferences modal with left sidebar nav |
+| `components/layout/AnnouncementsViewer.tsx` | Dialog listing active system announcements |
+| `features/cx-conversation/redux/__tests__/messageActionsSlice.test.ts` | 20 reducer+selector tests |
+| `features/cx-conversation/redux/__tests__/messageActionRegistry.test.ts` | 22 registry output tests |
 
 ---
 
@@ -78,7 +81,8 @@ interface MessageActionOverlay {
 
 type MessageActionOverlayType =
   | 'saveToNotes' | 'emailDialog' | 'authGate'
-  | 'fullScreenEditor' | 'contentHistory' | 'htmlPreview';
+  | 'fullScreenEditor' | 'contentHistory' | 'htmlPreview'
+  | 'submitFeedback' | 'announcements' | 'userPreferences';
 ```
 
 **Selectors** (all take `(state, ...)` — never assume RootState):
@@ -100,6 +104,7 @@ In `messageActionsSlice.ts`, extend `MessageActionOverlayType`:
 export type MessageActionOverlayType =
   | 'saveToNotes' | 'emailDialog' | 'authGate'
   | 'fullScreenEditor' | 'contentHistory' | 'htmlPreview'
+  | 'submitFeedback' | 'announcements' | 'userPreferences'
   | 'yourNewOverlay';  // ← add here
 ```
 
@@ -230,7 +235,7 @@ No manual z-index is needed. The system works because:
 | System | Slice | Controller | For what |
 |--------|-------|------------|----------|
 | **General** | `lib/redux/slices/overlaySlice.ts` | `OverlayController.tsx` | App-wide overlays: Quick Notes/Tasks/Chat, Prompt Runner modals, toasts |
-| **Message Actions** | `messageActionsSlice.ts` | `MessageActionsController.tsx` | Message-specific: Save to Notes, Email, Auth Gate, Editor, History, HTML Preview |
+| **Message Actions** | `messageActionsSlice.ts` | `MessageActionsController.tsx` | Message-specific: Save to Notes, Email, Auth Gate, Editor, History, HTML Preview, Feedback, Announcements, Preferences |
 
 The "Add to Tasks" action bridges both: it dispatches to the **general** `overlaySlice` (`openOverlay({ overlayId: 'quickTasks', data: ... })`) because QuickTasks is rendered by `OverlayController`.
 
@@ -267,7 +272,7 @@ Active consumers of legacy variants:
 npx jest --config jest.config.js.ts features/cx-conversation/redux/__tests__/ --no-cache
 ```
 
-Outputs: 36 tests (19 slice + 17 registry), all passing.
+Outputs: 42 tests (20 slice + 22 registry), all passing.
 
 ---
 

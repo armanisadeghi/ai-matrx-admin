@@ -21,6 +21,7 @@ import {
   LayoutGrid,
   FolderOpen,
   Sparkles,
+  Megaphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
@@ -83,6 +84,16 @@ export default function UserMenuPanel() {
 
   const openQuickAIResults = useCallback(() => {
     dispatch(openOverlay({ overlayId: "quickAIResults" }));
+    closeMenu();
+  }, [dispatch]);
+
+  const openPreferences = useCallback(() => {
+    dispatch(openOverlay({ overlayId: "userPreferences" }));
+    closeMenu();
+  }, [dispatch]);
+
+  const openAnnouncements = useCallback(() => {
+    dispatch(openOverlay({ overlayId: "announcements" }));
     closeMenu();
   }, [dispatch]);
 
@@ -196,6 +207,9 @@ export default function UserMenuPanel() {
       <button className={itemClass} onClick={closeMenu}>
         <Bell /> Notifications
       </button>
+      <button className={itemClass} onClick={openAnnouncements}>
+        <Megaphone /> Announcements
+      </button>
       <button
         className={itemClass}
         onClick={() => {
@@ -240,9 +254,9 @@ export default function UserMenuPanel() {
         {isDark ? "Light Mode" : "Dark Mode"}
       </button>
 
-      <Link href="/ssr/settings" className={itemClass} onClick={closeMenu}>
+      <button className={itemClass} onClick={openPreferences}>
         <Settings /> Preferences
-      </Link>
+      </button>
 
       <div className="h-px my-1 mx-2 bg-[var(--shell-glass-border)]" />
 

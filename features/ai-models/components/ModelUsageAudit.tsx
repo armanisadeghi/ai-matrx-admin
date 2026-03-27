@@ -172,7 +172,7 @@ export default function ModelUsageAudit({ model, allModels, onReplaceDone }: Mod
                         <ChevronRight className="h-3 w-3" />
                         <span className="opacity-40">2 Review settings</span>
                     </div>
-                    <Select value={replacementId} onValueChange={setReplacementId}>
+                    <Select value={replacementId || undefined} onValueChange={setReplacementId}>
                         <SelectTrigger className="h-8 text-xs">
                             <SelectValue placeholder="Select replacement model..." />
                         </SelectTrigger>

@@ -11,7 +11,8 @@ import type { AiModelRow, AiProvider } from '../types';
 import { applyFiltersForCount } from '@/features/ai-models/utils/filterUtils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, BookOpen } from 'lucide-react';
+import ProviderReferenceModal from './ProviderReferenceModal';
 
 export default function AiModelsContainer() {
     const [models, setModels] = useState<AiModelRow[]>([]);
@@ -21,6 +22,7 @@ export default function AiModelsContainer() {
     const [isNewModel, setIsNewModel] = useState(false);
     const [panelOpen, setPanelOpen] = useState(false);
     const [auditOpen, setAuditOpen] = useState(false);
+    const [referenceOpen, setReferenceOpen] = useState(false);
 
     const { tabIds, activeTabId, tabStates, activeTab, setActiveTab, openTab, closeTab, renameTab, updateTabState } =
         useTabUrlState();
@@ -127,8 +129,18 @@ export default function AiModelsContainer() {
                         onAddTab={() => openTab()}
                     />
                 </div>
-                {deprecatedCount > 0 && (
-                    <div className="shrink-0 px-2 border-l">
+                <div className="shrink-0 px-2 border-l flex items-center gap-1">
+                    <Button
+                        variant={referenceOpen ? 'secondary' : 'ghost'}
+                        size="sm"
+                        className="h-7 px-2 text-xs gap-1.5"
+                        onClick={() => setReferenceOpen((v) => !v)}
+                        title="Open floating provider reference panel"
+                    >
+                        <BookOpen className="h-3.5 w-3.5" />
+                        Provider Ref
+                    </Button>
+                    {deprecatedCount > 0 && (
                         <Button
                             variant={auditOpen ? 'secondary' : 'ghost'}
                             size="sm"
@@ -145,8 +157,8 @@ export default function AiModelsContainer() {
                                 {deprecatedCount}
                             </Badge>
                         </Button>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
             {/* Deprecated audit panel (full-width, replaces table when open) */}
@@ -194,6 +206,13 @@ export default function AiModelsContainer() {
                         </div>
                     )}
                 </div>
+            )}
+
+            {referenceOpen && providers.length > 0 && (
+                <ProviderReferenceModal
+                    providers={providers}
+                    onClose={() => setReferenceOpen(false)}
+                />
             )}
         </div>
     );

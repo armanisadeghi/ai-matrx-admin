@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { SqlFunction } from '@/types/sql-functions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, Save, X } from 'lucide-react';
@@ -22,8 +21,7 @@ export default function SqlFunctionForm({
   onCancel,
 }: SqlFunctionFormProps) {
   const isEdit = !!functionData;
-  
-  // Initialize form state
+
   const [name, setName] = useState(functionData?.name || '');
   const [schema, setSchema] = useState(functionData?.schema || 'public');
   const [returnType, setReturnType] = useState(functionData?.returns || 'void');
@@ -36,26 +34,15 @@ export default function SqlFunctionForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  
-  // Generate the complete SQL function definition
+
   const generateFunctionDefinition = () => {
-    if (!name) {
-      setError('Function name is required');
-      return null;
-    }
-    
-    if (!returnType) {
-      setError('Return type is required');
-      return null;
-    }
-    
-    // If it's an edit, we want to include DROP FUNCTION IF EXISTS first
+    if (!name) { setError('Function name is required'); return null; }
+    if (!returnType) { setError('Return type is required'); return null; }
+
     let sql = '';
     if (isEdit) {
       sql += `DROP FUNCTION IF EXISTS ${schema}.${name}(${functionData?.arguments});\n\n`;
     }
-    
-    // Create the function definition
     sql += `CREATE OR REPLACE FUNCTION ${schema}.${name}(${arguments_})\n`;
     sql += `RETURNS ${returnType}\n`;
     sql += `LANGUAGE ${language}\n`;
@@ -63,29 +50,20 @@ export default function SqlFunctionForm({
     sql += `AS $function$\n`;
     sql += `${definition}\n`;
     sql += `$function$;\n`;
-    
     return sql;
   };
-  
-  // Handle form submission
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    
     const sql = generateFunctionDefinition();
-    if (!sql) {
-      setLoading(false);
-      return;
-    }
-    
+    if (!sql) { setLoading(false); return; }
     try {
       const success = await onSubmit(sql);
       if (success) {
         setShowSuccessMessage(true);
-        setTimeout(() => {
-          setShowSuccessMessage(false);
-        }, 3000);
+        setTimeout(() => setShowSuccessMessage(false), 3000);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred while saving the SQL function');
@@ -93,91 +71,95 @@ export default function SqlFunctionForm({
       setLoading(false);
     }
   };
-  
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <Alert variant="destructive" className="bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      
-      {showSuccessMessage && (
-        <Alert className="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Success</AlertTitle>
-          <AlertDescription>
-            {isEdit ? 'Function updated successfully' : 'Function created successfully'}
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="name" className="text-slate-700 dark:text-slate-300">
-              Function Name *
-            </Label>
+    <form onSubmit={handleSubmit} className="flex flex-col h-full">
+      {/* Fields area */}
+      <div className="shrink-0 px-4 pt-3 pb-2 space-y-1.5 border-b border-slate-200 dark:border-slate-700">
+        {error && (
+          <Alert variant="destructive" className="py-2 bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800 mb-2">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle className="text-sm">Error</AlertTitle>
+            <AlertDescription className="text-xs">{error}</AlertDescription>
+          </Alert>
+        )}
+        {showSuccessMessage && (
+          <Alert className="py-2 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800 mb-2">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle className="text-sm">Success</AlertTitle>
+            <AlertDescription className="text-xs">
+              {isEdit ? 'Function updated successfully' : 'Function created successfully'}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Inline field rows */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
+          {/* Name */}
+          <div className="flex items-center gap-3">
+            <label htmlFor="name" className="text-xs font-medium text-slate-600 dark:text-slate-400 w-24 shrink-0 text-right">
+              Name <span className="text-red-500">*</span>
+            </label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="my_function"
               required
-              className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700"
+              className="h-7 text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700"
             />
           </div>
-          
-          <div>
-            <Label htmlFor="schema" className="text-slate-700 dark:text-slate-300">
+
+          {/* Schema */}
+          <div className="flex items-center gap-3">
+            <label htmlFor="schema" className="text-xs font-medium text-slate-600 dark:text-slate-400 w-24 shrink-0 text-right">
               Schema
-            </Label>
+            </label>
             <Input
               id="schema"
               value={schema}
               onChange={(e) => setSchema(e.target.value)}
               placeholder="public"
-              className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700"
+              className="h-7 text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700"
             />
           </div>
-          
-          <div>
-            <Label htmlFor="returnType" className="text-slate-700 dark:text-slate-300">
-              Return Type *
-            </Label>
+
+          {/* Return Type */}
+          <div className="flex items-center gap-3">
+            <label htmlFor="returnType" className="text-xs font-medium text-slate-600 dark:text-slate-400 w-24 shrink-0 text-right">
+              Return Type <span className="text-red-500">*</span>
+            </label>
             <Input
               id="returnType"
               value={returnType}
               onChange={(e) => setReturnType(e.target.value)}
-              placeholder="void, integer, text, json, etc."
+              placeholder="void, integer, text, json…"
               required
-              className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700"
+              className="h-7 text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700"
             />
           </div>
-          
-          <div>
-            <Label htmlFor="arguments" className="text-slate-700 dark:text-slate-300">
+
+          {/* Arguments */}
+          <div className="flex items-center gap-3">
+            <label htmlFor="arguments" className="text-xs font-medium text-slate-600 dark:text-slate-400 w-24 shrink-0 text-right">
               Arguments
-            </Label>
+            </label>
             <Input
               id="arguments"
               value={arguments_}
               onChange={(e) => setArguments(e.target.value)}
-              placeholder="arg1 type1, arg2 type2, ..."
-              className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700"
+              placeholder="arg1 type1, arg2 type2, …"
+              className="h-7 text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700"
             />
           </div>
-        </div>
-        
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="language" className="text-slate-700 dark:text-slate-300">
+
+          {/* Language */}
+          <div className="flex items-center gap-3">
+            <label htmlFor="language" className="text-xs font-medium text-slate-600 dark:text-slate-400 w-24 shrink-0 text-right">
               Language
-            </Label>
-            <Select value={language} onValueChange={(value) => setLanguage(value)}>
-              <SelectTrigger className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700">
+            </label>
+            <Select value={language} onValueChange={setLanguage}>
+              <SelectTrigger className="h-7 text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700">
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
               <SelectContent>
@@ -188,17 +170,15 @@ export default function SqlFunctionForm({
               </SelectContent>
             </Select>
           </div>
-          
-          <div>
-            <Label htmlFor="securityType" className="text-slate-700 dark:text-slate-300">
-              Security Type
-            </Label>
-            <Select 
-              value={securityType} 
-              onValueChange={(value) => setSecurityType(value as 'SECURITY DEFINER' | 'SECURITY INVOKER')}
-            >
-              <SelectTrigger className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700">
-                <SelectValue placeholder="Select security type" />
+
+          {/* Security Type */}
+          <div className="flex items-center gap-3">
+            <label htmlFor="securityType" className="text-xs font-medium text-slate-600 dark:text-slate-400 w-24 shrink-0 text-right">
+              Security
+            </label>
+            <Select value={securityType} onValueChange={(v) => setSecurityType(v as 'SECURITY DEFINER' | 'SECURITY INVOKER')}>
+              <SelectTrigger className="h-7 text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700">
+                <SelectValue placeholder="Security type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="SECURITY INVOKER">Security Invoker</SelectItem>
@@ -208,43 +188,43 @@ export default function SqlFunctionForm({
           </div>
         </div>
       </div>
-      
-      <div>
-        <Label htmlFor="definition" className="text-slate-700 dark:text-slate-300">
-          Function Definition *
-        </Label>
-        <div className="border border-slate-300 dark:border-slate-700 rounded-md overflow-hidden">
-          <Textarea
-            id="definition"
-            value={definition}
-            onChange={(e) => setDefinition(e.target.value)}
-            placeholder={`BEGIN\n  -- Your function code here\n  RETURN;\nEND;`}
-            required
-            className="font-mono h-80 bg-slate-950 text-slate-100 border-0 resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
-          />
+
+      {/* Definition editor — fills remaining height */}
+      <div className="flex flex-col flex-1 min-h-0">
+        <div className="flex items-center justify-between px-4 py-1.5 bg-slate-800 dark:bg-slate-950 border-b border-slate-700 shrink-0">
+          <span className="text-xs text-slate-400 font-medium">Function Definition <span className="text-red-400">*</span></span>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onCancel}
+              disabled={loading}
+              className="h-6 text-xs text-slate-400 hover:text-slate-200 hover:bg-slate-700 px-2"
+            >
+              <X className="h-3 w-3 mr-1" />
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={loading}
+              size="sm"
+              className="h-6 text-xs bg-slate-600 hover:bg-slate-500 text-white px-3"
+            >
+              <Save className="h-3 w-3 mr-1" />
+              {isEdit ? 'Update Function' : 'Create Function'}
+            </Button>
+          </div>
         </div>
-      </div>
-      
-      <div className="flex justify-end space-x-3">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={onCancel}
-          disabled={loading}
-          className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
-        >
-          <X className="h-4 w-4 mr-2" />
-          Cancel
-        </Button>
-        <Button 
-          type="submit" 
-          disabled={loading}
-          className="bg-slate-700 hover:bg-slate-600 text-white dark:bg-slate-700 dark:hover:bg-slate-600"
-        >
-          <Save className="h-4 w-4 mr-2" />
-          {isEdit ? 'Update Function' : 'Create Function'}
-        </Button>
+        <Textarea
+          id="definition"
+          value={definition}
+          onChange={(e) => setDefinition(e.target.value)}
+          placeholder={`BEGIN\n  -- Your function code here\n  RETURN;\nEND;`}
+          required
+          className="flex-1 font-mono text-sm bg-slate-950 text-slate-100 border-0 rounded-none resize-none focus-visible:ring-0 focus-visible:ring-offset-0 min-h-0"
+        />
       </div>
     </form>
   );
-} 
+}

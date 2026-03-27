@@ -559,7 +559,7 @@ export default function DeprecatedModelsAudit({ allModels, onClose, onModelsChan
                                                 <span className="text-muted-foreground italic text-xs">No active usage</span>
                                             ) : (
                                                 <Select
-                                                    value={entry.replacementId}
+                                                    value={entry.replacementId || undefined}
                                                     onValueChange={(v) => updateEntry(model.id, { replacementId: v })}
                                                     disabled={entry.replacing}
                                                 >

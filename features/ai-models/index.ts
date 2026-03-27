@@ -9,6 +9,8 @@ export { default as ControlsEditor } from './components/ControlsEditor';
 export { default as JsonFieldEditor } from './components/JsonFieldEditor';
 export { default as ModelUsageAudit } from './components/ModelUsageAudit';
 export { default as ModelAuditDashboard } from './audit/ModelAuditDashboard';
+export { default as ProviderReferenceModal } from './components/ProviderReferenceModal';
+export { default as ProviderSyncDashboard } from './components/ProviderSyncDashboard';
 export { useTabUrlState } from './hooks/useTabUrlState';
 export { aiModelService } from './service';
 export { applyFiltersForCount } from './utils/filterUtils';
@@ -22,6 +24,8 @@ export type {
     ControlParamType,
     ModelUsageResult,
     ModelUsageItem,
+    ProviderModelEntry,
+    ProviderModelsCache,
 } from './types';
 export type {
     AuditRuleConfig,

@@ -24,12 +24,30 @@ export type AiModelRow = {
     pricing: PricingTier[] | null;
 };
 
+export type ProviderModelEntry = {
+    id: string;
+    display_name?: string;
+    created_at?: string;
+    type?: string;
+    max_input_tokens?: number | null;
+    max_tokens?: number | null;
+    capabilities?: Record<string, unknown> | null;
+    [key: string]: unknown;
+};
+
+export type ProviderModelsCache = {
+    fetched_at: string;
+    models: ProviderModelEntry[];
+    raw?: unknown;
+};
+
 export type AiProvider = {
     id: string;
     name: string | null;
     company_description: string | null;
     documentation_link: string | null;
     models_link: string | null;
+    provider_models_cache: ProviderModelsCache | null;
 };
 
 export type AiModelFormData = {

@@ -58,6 +58,7 @@ import entitySystemReducer from "./slices/entitySystemSlice";
 
 // Prompt system
 import promptCacheReducer from "./slices/promptCacheSlice";
+import promptConsumersReducer from "./slices/promptConsumersSlice";
 import contextMenuCacheReducer from "./slices/contextMenuCacheSlice";
 import promptRunnerReducer from "./slices/promptRunnerSlice";
 import promptExecutionReducer from "./prompt-execution/slice";
@@ -166,6 +167,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         overlays: overlaySlice,
         contextMenuCache: contextMenuCacheReducer,
         promptCache: promptCacheReducer,
+        promptConsumers: promptConsumersReducer,
         promptRunner: promptRunnerReducer,
         promptExecution: promptExecutionReducer,
         actionCache: actionCacheReducer,

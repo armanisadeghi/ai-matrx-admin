@@ -106,6 +106,20 @@ const FloatingSheet = dynamic(
   { ssr: false }
 );
 
+const VSCodePreferencesModal = dynamic(
+  () => import("@/components/user-preferences/VSCodePreferencesModal").then(
+    (m) => ({ default: m.VSCodePreferencesModal }),
+  ),
+  { ssr: false }
+);
+
+const AnnouncementsViewer = dynamic(
+  () => import("@/components/layout/AnnouncementsViewer").then(
+    (m) => ({ default: m.AnnouncementsViewer }),
+  ),
+  { ssr: false }
+);
+
 // Prompt Runner Modal (modal-full)
 const PromptRunnerModal = dynamic(
   () => import("@/features/prompts/components/results-display/PromptRunnerModal").then(mod => ({ default: mod.PromptRunnerModal })),
@@ -168,6 +182,9 @@ export const OverlayController: React.FC = () => {
   const isQuickFilesOpen = useAppSelector((state) => selectIsOverlayOpen(state, "quickFiles"));
   const isQuickUtilitiesOpen = useAppSelector((state) => selectIsOverlayOpen(state, "quickUtilities"));
   const isQuickAIResultsOpen = useAppSelector((state) => selectIsOverlayOpen(state, "quickAIResults"));
+  const isPreferencesOpen = useAppSelector((state) => selectIsOverlayOpen(state, "userPreferences"));
+  const preferencesData = useAppSelector((state) => selectOverlayData(state, "userPreferences"));
+  const isAnnouncementsOpen = useAppSelector((state) => selectIsOverlayOpen(state, "announcements"));
   
   // Prompt Runner Modals
   const isPromptModalOpen = useAppSelector(selectIsPromptModalOpen);
@@ -269,6 +286,14 @@ export const OverlayController: React.FC = () => {
 
   const handleCloseQuickAIResults = () => {
     dispatch(closeOverlay({ overlayId: "quickAIResults" }));
+  };
+
+  const handleClosePreferences = () => {
+    dispatch(closeOverlay({ overlayId: "userPreferences" }));
+  };
+
+  const handleCloseAnnouncements = () => {
+    dispatch(closeOverlay({ overlayId: "announcements" }));
   };
 
   
@@ -448,6 +473,23 @@ export const OverlayController: React.FC = () => {
         >
           <QuickAIResultsSheet />
         </FloatingSheet>
+      )}
+
+      {/* User Preferences Modal */}
+      {isPreferencesOpen && (
+        <VSCodePreferencesModal
+          isOpen={true}
+          onClose={handleClosePreferences}
+          initialTab={preferencesData?.initialTab}
+        />
+      )}
+
+      {/* Announcements Viewer */}
+      {isAnnouncementsOpen && (
+        <AnnouncementsViewer
+          isOpen={true}
+          onClose={handleCloseAnnouncements}
+        />
       )}
 
       {/* ========== PROMPT RESULT DISPLAYS ========== */}

@@ -250,4 +250,85 @@ describe('getMessageActions', () => {
             expect(item.category).toBeTruthy();
         }
     });
+
+    // ── New overlay actions: feedback, announcements, preferences ────
+
+    it('includes submit-feedback, announcements, and user-preferences items', () => {
+        const items = getMessageActions(makeContext());
+        const keys = items.map((i) => i.key);
+        expect(keys).toContain('submit-feedback');
+        expect(keys).toContain('announcements');
+        expect(keys).toContain('user-preferences');
+    });
+
+    it('submit-feedback dispatches openOverlay for submitFeedback', () => {
+        const dispatch = jest.fn();
+        const onClose = jest.fn();
+        const items = getMessageActions(makeContext({ dispatch: dispatch as any, onClose }));
+        const feedbackItem = items.find((i) => i.key === 'submit-feedback');
+
+        feedbackItem!.action();
+
+        expect(dispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'messageActions/openOverlay',
+                payload: expect.objectContaining({
+                    instanceId: 'test-instance',
+                    overlay: 'submitFeedback',
+                }),
+            }),
+        );
+        expect(onClose).toHaveBeenCalled();
+    });
+
+    it('announcements dispatches openOverlay for announcements', () => {
+        const dispatch = jest.fn();
+        const onClose = jest.fn();
+        const items = getMessageActions(makeContext({ dispatch: dispatch as any, onClose }));
+        const announcementItem = items.find((i) => i.key === 'announcements');
+
+        announcementItem!.action();
+
+        expect(dispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'messageActions/openOverlay',
+                payload: expect.objectContaining({
+                    instanceId: 'test-instance',
+                    overlay: 'announcements',
+                }),
+            }),
+        );
+        expect(onClose).toHaveBeenCalled();
+    });
+
+    it('user-preferences dispatches openOverlay for userPreferences', () => {
+        const dispatch = jest.fn();
+        const onClose = jest.fn();
+        const items = getMessageActions(makeContext({ dispatch: dispatch as any, onClose }));
+        const prefsItem = items.find((i) => i.key === 'user-preferences');
+
+        prefsItem!.action();
+
+        expect(dispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'messageActions/openOverlay',
+                payload: expect.objectContaining({
+                    instanceId: 'test-instance',
+                    overlay: 'userPreferences',
+                }),
+            }),
+        );
+        expect(onClose).toHaveBeenCalled();
+    });
+
+    it('new App category items all have category "App"', () => {
+        const items = getMessageActions(makeContext());
+        const appItems = items.filter((i) =>
+            ['submit-feedback', 'announcements', 'user-preferences'].includes(i.key),
+        );
+        expect(appItems).toHaveLength(3);
+        for (const item of appItems) {
+            expect(item.category).toBe('App');
+        }
+    });
 });

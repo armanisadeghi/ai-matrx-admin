@@ -75,6 +75,8 @@ export interface PromptCacheState {
   allPrompts: PromptData[];
   listStatus: ListStatus;
   listError: string | null;
+  /** Unix timestamp (ms) of the last successful fetchAllUserPrompts. Used for TTL-based staleness. */
+  lastFetchedAt: number | null;
 
   // Prompts shared with the current user by others
   sharedPrompts: SharedPromptRecord[];
@@ -88,6 +90,7 @@ const initialState: PromptCacheState = {
   allPrompts: [],
   listStatus: 'idle',
   listError: null,
+  lastFetchedAt: null,
   sharedPrompts: [],
   sharedListStatus: 'idle',
   sharedListError: null,
@@ -144,6 +147,7 @@ const promptCacheSlice = createSlice({
       state.allPrompts = action.payload;
       state.listStatus = 'success';
       state.listError = null;
+      state.lastFetchedAt = Date.now();
     },
 
     /** Set the list-level fetch status and optional error message. */
@@ -248,6 +252,9 @@ export const selectPromptsListError = (state: RootState): string | null =>
 
 export const selectPromptsListIsLoading = (state: RootState): boolean =>
   state.promptCache?.listStatus === 'loading';
+
+export const selectPromptsLastFetchedAt = (state: RootState): number | null =>
+  state.promptCache?.lastFetchedAt ?? null;
 
 // ── Selectors: shared prompts ──────────────────────────────────────────────
 export const selectSharedPrompts = (state: RootState): SharedPromptRecord[] =>

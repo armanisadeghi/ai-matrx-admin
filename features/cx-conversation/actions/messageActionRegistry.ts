@@ -10,6 +10,7 @@ import {
     BookText, Briefcase, Copy, FileCode, FileText, Eye, Globe,
     Brain, Save, Volume2, Edit, CheckSquare, Mail,
     Printer, ScanLine, RotateCcw, History, Upload, FileType,
+    Bug, Megaphone, Settings,
 } from 'lucide-react';
 import { copyToClipboard } from '@/components/matrx/buttons/markdown-copy-utils';
 import { printMarkdownContent } from '@/features/conversation/utils/markdown-print';
@@ -431,6 +432,44 @@ export function getMessageActions(ctx: MessageActionContext): MenuItem[] {
             label: 'Add to docs',
             action: () => { toast.info('Coming soon', { description: 'Add to docs will be available shortly.' }); onClose(); },
             category: 'Actions',
+            showToast: false,
+        },
+
+        // ── App ─────────────────────────────────────────────────────
+        {
+            key: 'submit-feedback',
+            icon: Bug,
+            iconColor: 'text-orange-500 dark:text-orange-400',
+            label: 'Submit feedback',
+            action: () => {
+                dispatch(messageActionsActions.openOverlay({ instanceId, overlay: 'submitFeedback' }));
+                onClose();
+            },
+            category: 'App',
+            showToast: false,
+        },
+        {
+            key: 'announcements',
+            icon: Megaphone,
+            iconColor: 'text-purple-500 dark:text-purple-400',
+            label: 'Announcements',
+            action: () => {
+                dispatch(messageActionsActions.openOverlay({ instanceId, overlay: 'announcements' }));
+                onClose();
+            },
+            category: 'App',
+            showToast: false,
+        },
+        {
+            key: 'user-preferences',
+            icon: Settings,
+            iconColor: 'text-slate-500 dark:text-slate-400',
+            label: 'Preferences',
+            action: () => {
+                dispatch(messageActionsActions.openOverlay({ instanceId, overlay: 'userPreferences' }));
+                onClose();
+            },
+            category: 'App',
             showToast: false,
         },
     ];

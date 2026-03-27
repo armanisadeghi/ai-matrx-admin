@@ -1,7 +1,7 @@
 'use client';
 
 import { supabase } from '@/utils/supabase/client';
-import type { AiModelRow, AiProvider, ModelUsageResult } from './types';
+import type { AiModelRow, AiProvider, ModelUsageResult, ProviderModelsCache } from './types';
 import type { PromptSettings } from '@/features/prompts/types/core';
 
 export const aiModelService = {
@@ -17,10 +17,28 @@ export const aiModelService = {
     async fetchProviders(): Promise<AiProvider[]> {
         const { data, error } = await supabase
             .from('ai_provider')
-            .select('id, name, company_description, documentation_link, models_link')
+            .select('id, name, company_description, documentation_link, models_link, provider_models_cache')
             .order('name', { ascending: true });
         if (error) throw error;
         return data as AiProvider[];
+    },
+
+    async updateProviderCache(providerId: string, cache: ProviderModelsCache): Promise<void> {
+        const { error } = await supabase
+            .from('ai_provider')
+            .update({ provider_models_cache: cache })
+            .eq('id', providerId);
+        if (error) throw error;
+    },
+
+    async fetchProviderWithCache(providerId: string): Promise<AiProvider | null> {
+        const { data, error } = await supabase
+            .from('ai_provider')
+            .select('id, name, company_description, documentation_link, models_link, provider_models_cache')
+            .eq('id', providerId)
+            .single();
+        if (error) throw error;
+        return data as AiProvider;
     },
 
     async create(payload: Omit<AiModelRow, 'id'>): Promise<AiModelRow> {

@@ -183,6 +183,14 @@ export const adminCategories = [
         link: "/administration/ai-models/deprecated-audit",
         isNew: true,
       },
+      {
+        title: "Provider Model Sync",
+        description:
+          "Fetch live model lists from Anthropic, OpenAI, Groq, and other providers. Compare against your database to find missing or extra models and keep everything in sync.",
+        icon: <IconRefresh />,
+        link: "/administration/ai-models/provider-sync",
+        isNew: true,
+      },
     ],
   },
   {

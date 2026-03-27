@@ -53,8 +53,8 @@ const AdminPage = () => {
     };
 
     const getPreviewFeatures = (features: any[]) => {
-        if (features.length <= 3) return features;
-        return features.slice(0, 3);
+        if (features.length <= 8) return features;
+        return features.slice(0, 8);
     };
 
     const getCategoryBgClass = (iconColor?: string) => {
@@ -126,8 +126,8 @@ const AdminPage = () => {
                                     </div>
                                     <h3 className="text-xl font-semibold">{category.name}</h3>
                                 </div>
-                                <div className="h-32 flex flex-col justify-between">
-                                    <div className="space-y-2">
+                                <div className="h-auto flex flex-col justify-between">
+                                    <div className={`grid gap-x-3 gap-y-1 ${getPreviewFeatures(category.features).length >= 5 ? "grid-cols-2" : "grid-cols-1"}`}>
                                         {getPreviewFeatures(category.features).map((feature) => (
                                             <div
                                                 key={feature.title}
@@ -137,10 +137,10 @@ const AdminPage = () => {
                                                 }}
                                                 className={`flex items-center h-6 ${feature.isNew ? "text-amber-600 dark:text-amber-400 font-semibold" : "text-gray-600 dark:text-gray-300"} hover:text-blue-700 dark:hover:text-blue-500 cursor-pointer transition-colors duration-200`}
                                             >
-                                                <div className="flex items-center min-w-[28px]">
-                                                    <div className="w-4 h-4">{feature.icon}</div>
+                                                <div className="shrink-0 w-3.5 h-3.5 mr-1.5 [&>svg]:w-3.5 [&>svg]:h-3.5 [&>svg]:max-w-none opacity-80">
+                                                    {feature.icon}
                                                 </div>
-                                                <span className="text-sm font-medium">
+                                                <span className="text-sm font-medium truncate">
                                                     {feature.title}
                                                     {feature.isNew && (
                                                         <span className="ml-2 text-xs px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded-full text-amber-600 dark:text-amber-400">
@@ -151,7 +151,7 @@ const AdminPage = () => {
                                             </div>
                                         ))}
                                     </div>
-                                    {category.features.length > 3 && (
+                                    {category.features.length > 8 && (
                                         <div
                                             onClick={(e) => {
                                                 e.stopPropagation();

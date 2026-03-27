@@ -102,7 +102,10 @@ export default async function SSRLayout({
         <input type="checkbox" id="shell-panel-mobile" aria-hidden="true" />
 
         <Sidebar pathname={pathname} />
-        <Header />
+        <Header
+          avatarUrl={userData.userMetadata.avatarUrl ?? undefined}
+          name={userData.userMetadata.name ?? userData.email ?? undefined}
+        />
 
         <main className="shell-main">{children}</main>
 

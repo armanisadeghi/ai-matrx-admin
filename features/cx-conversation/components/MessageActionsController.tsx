@@ -54,6 +54,27 @@ const HtmlPreviewBridge = dynamic(
     { ssr: false },
 );
 
+const FeedbackDialog = dynamic(
+    () => import("@/app/(ssr)/_components/FeedbackDialog"),
+    { ssr: false },
+);
+
+const AnnouncementsViewer = dynamic(
+    () =>
+        import("@/components/layout/AnnouncementsViewer").then(
+            (m) => ({ default: m.AnnouncementsViewer }),
+        ),
+    { ssr: false },
+);
+
+const VSCodePreferencesModal = dynamic(
+    () =>
+        import("@/components/user-preferences/VSCodePreferencesModal").then(
+            (m) => ({ default: m.VSCodePreferencesModal }),
+        ),
+    { ssr: false },
+);
+
 function OverlayRenderer({ entry }: { entry: MessageActionOverlay }) {
     const dispatch = useAppDispatch();
     const instance = useAppSelector((state) =>
@@ -175,6 +196,28 @@ function OverlayRenderer({ entry }: { entry: MessageActionOverlay }) {
                     content={instance.content}
                     messageId={instance.messageId}
                     onClose={close}
+                />
+            );
+
+        case "submitFeedback":
+            return <FeedbackDialog onClose={close} />;
+
+        case "announcements":
+            return (
+                <AnnouncementsViewer isOpen={true} onClose={close} />
+            );
+
+        case "userPreferences":
+            return (
+                <VSCodePreferencesModal
+                    isOpen={true}
+                    onClose={close}
+                    initialTab={
+                        (entry.data?.initialTab as string | undefined) as
+                            | "display"
+                            | "prompts"
+                            | undefined
+                    }
                 />
             );
 

@@ -491,20 +491,35 @@ export const deleteSharedPrompt = createAsyncThunk<
 );
 
 // ── INITIALIZE (idempotent bootstrap) ─────────────────────────────────────────
+
+const PROMPT_LIST_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
+/**
+ * Returns true when the owned-prompt list is fresh enough to skip re-fetching.
+ * "Fresh" means status is success/loading AND the last fetch was within the TTL.
+ */
+function isOwnedListFresh(state: RootState): boolean {
+    const status        = state.promptCache?.listStatus ?? 'idle';
+    const lastFetchedAt = state.promptCache?.lastFetchedAt ?? null;
+    if (status === 'loading') return true; // already in-flight
+    if (status !== 'success') return false;
+    if (lastFetchedAt === null) return false;
+    return Date.now() - lastFetchedAt < PROMPT_LIST_TTL_MS;
+}
+
 /**
  * Fetch owned prompts AND shared prompts in parallel — but only if they haven't
- * been loaded yet.
+ * been loaded recently (TTL: 15 minutes for owned, session-long for shared).
  *
  * Rules:
- *   - If BOTH lists are `success` or `loading`  → return immediately (no-op)
- *   - If either list is `idle` or `error`        → fetch it
+ *   - Owned list: fresh if status is success/loading AND last fetch < 15 min ago
+ *   - Shared list: fresh if status is success or loading (session-long)
  *   - Both fetches run in parallel for speed
  *
- * Designed to be dispatched from any component on mount without needing to
- * manually guard against duplicate fetches. Safe to call multiple times.
+ * Safe to call from any component on mount without worrying about duplicate
+ * fetches — idempotent by design.
  *
  * @example
- * // In any component or page:
  * useEffect(() => { dispatch(initializeUserPrompts()); }, [dispatch]);
  */
 export const initializeUserPrompts = createAsyncThunk<
@@ -514,23 +529,40 @@ export const initializeUserPrompts = createAsyncThunk<
 >(
     'promptCrud/initialize',
     async (_, { dispatch, getState }) => {
-        const state       = getState();
-        const listStatus  = state.promptCache?.listStatus   ?? 'idle';
+        const state        = getState();
         const sharedStatus = state.promptCache?.sharedListStatus ?? 'idle';
 
-        const ownedDone  = listStatus   === 'success' || listStatus   === 'loading';
+        const ownedDone  = isOwnedListFresh(state);
         const sharedDone = sharedStatus === 'success' || sharedStatus === 'loading';
 
-        // Both already loaded (or in-flight) — nothing to do
         if (ownedDone && sharedDone) return;
 
-        // Kick off whichever fetches are still needed, in parallel
         const tasks: Promise<unknown>[] = [];
-
         if (!ownedDone)  tasks.push(dispatch(fetchAllUserPrompts()).unwrap());
         if (!sharedDone) tasks.push(dispatch(fetchSharedPrompts()).unwrap());
 
         await Promise.all(tasks);
+    }
+);
+
+/**
+ * Force a full refetch of owned and shared prompts, bypassing the TTL.
+ * Use for explicit "Refresh" actions triggered by the user.
+ *
+ * @example
+ * dispatch(refreshUserPrompts());
+ */
+export const refreshUserPrompts = createAsyncThunk<
+    void,
+    void,
+    { dispatch: AppDispatch; state: RootState }
+>(
+    'promptCrud/refresh',
+    async (_, { dispatch }) => {
+        await Promise.all([
+            dispatch(fetchAllUserPrompts()).unwrap(),
+            dispatch(fetchSharedPrompts()).unwrap(),
+        ]);
     }
 );
 
@@ -541,6 +573,7 @@ export const initializeUserPrompts = createAsyncThunk<
 export default {
     // Bootstrap
     initializeUserPrompts,
+    refreshUserPrompts,
     // Owned prompts
     fetchAllUserPrompts,
     fetchUserPrompt,

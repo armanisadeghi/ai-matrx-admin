@@ -24,7 +24,10 @@ export type MessageActionOverlayType =
     | 'authGate'
     | 'fullScreenEditor'
     | 'contentHistory'
-    | 'htmlPreview';
+    | 'htmlPreview'
+    | 'submitFeedback'
+    | 'announcements'
+    | 'userPreferences';
 
 export interface MessageActionInstance {
     content: string;

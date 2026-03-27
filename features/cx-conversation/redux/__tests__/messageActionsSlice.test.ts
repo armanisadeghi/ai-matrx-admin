@@ -191,6 +191,24 @@ describe('messageActionsSlice', () => {
         ]);
     });
 
+    it('openOverlay works with new overlay types (submitFeedback, announcements, userPreferences)', () => {
+        let state = messageActionsReducer(
+            initial,
+            registerInstance({ id: 'a', context: makeInstance() }),
+        );
+        state = messageActionsReducer(state, openOverlay({ instanceId: 'a', overlay: 'submitFeedback' }));
+        state = messageActionsReducer(state, openOverlay({ instanceId: 'a', overlay: 'announcements' }));
+        state = messageActionsReducer(state, openOverlay({ instanceId: 'a', overlay: 'userPreferences', data: { initialTab: 'prompts' } }));
+
+        expect(state.openOverlays).toHaveLength(3);
+        expect(state.openOverlays.map((o) => o.overlay)).toEqual([
+            'submitFeedback',
+            'announcements',
+            'userPreferences',
+        ]);
+        expect(state.openOverlays[2].data).toEqual({ initialTab: 'prompts' });
+    });
+
     // ── closeOverlay ─────────────────────────────────────────────────
 
     it('closeOverlay removes the specific overlay', () => {

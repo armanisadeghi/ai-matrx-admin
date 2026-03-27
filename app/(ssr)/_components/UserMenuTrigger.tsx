@@ -4,12 +4,19 @@ import Image from "next/image";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
 
-export default function UserMenuTrigger() {
+interface UserMenuTriggerProps {
+  /** SSR-provided values so the avatar renders in the initial HTML with a preload hint */
+  initialAvatarUrl?: string;
+  initialName?: string;
+}
+
+export default function UserMenuTrigger({ initialAvatarUrl, initialName }: UserMenuTriggerProps) {
   const reduxUser = useAppSelector(selectUser);
 
-  const name = reduxUser?.userMetadata?.name || reduxUser?.email?.split("@")[0];
-  const avatarUrl = reduxUser?.userMetadata?.avatarUrl;
-  const isLoggedIn = !!reduxUser?.id;
+  // Redux values take over after hydration; SSR props seed the initial render
+  const name = reduxUser?.userMetadata?.name || reduxUser?.email?.split("@")[0] || initialName;
+  const avatarUrl = reduxUser?.userMetadata?.avatarUrl || initialAvatarUrl;
+  const isLoggedIn = !!reduxUser?.id || !!initialAvatarUrl || !!initialName;
 
   return (
     <label

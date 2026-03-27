@@ -14,14 +14,14 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { X, CheckCircle2, Save, LogOut } from 'lucide-react';
+import { X, CheckCircle2, Save, LogOut, Copy, Check, ChevronDown, ChevronRight } from 'lucide-react';
 import AiModelForm from './AiModelForm';
 import JsonFieldEditor from './JsonFieldEditor';
 import ControlsEditor from './ControlsEditor';
 import ModelUsageAudit from './ModelUsageAudit';
 import { aiModelService } from '../service';
 import ModelPricingEditor from '@/features/ai-models/components/ModelPricingEditor';
-import type { AiModelRow, AiModelFormData, AiProvider, ControlsSchema, PricingTier } from '../types';
+import type { AiModelRow, AiModelFormData, AiProvider, ControlsSchema, PricingTier, ProviderModelEntry } from '../types';
 
 interface AiModelDetailPanelProps {
     model: AiModelRow | null;
@@ -64,6 +64,228 @@ const EMPTY_FORM: AiModelFormData = {
     is_premium: false,
     pricing: [],
 };
+
+// ─── Provider Data tab components ─────────────────────────────────────────
+
+function CapNode({ label, value, depth = 0 }: { label: string; value: unknown; depth?: number }) {
+    const [open, setOpen] = React.useState(depth < 1);
+    if (value === null || value === undefined) return null;
+
+    if (typeof value === 'object' && !Array.isArray(value)) {
+        const entries = Object.entries(value as Record<string, unknown>);
+        const isSingleSupported = entries.length === 1 && entries[0][0] === 'supported';
+        if (isSingleSupported) {
+            const supported = entries[0][1] as boolean;
+            return (
+                <div className="flex items-center gap-2 py-0.5">
+                    <span className="text-xs text-muted-foreground w-40 shrink-0 truncate" title={label}>{label}</span>
+                    <Badge variant="outline" className={`text-[10px] h-4 px-1 ${supported ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-300' : 'bg-muted text-muted-foreground'}`}>
+                        {supported ? 'supported' : 'no'}
+                    </Badge>
+                </div>
+            );
+        }
+        return (
+            <div className="py-0.5">
+                <button
+                    type="button"
+                    onClick={() => setOpen((v) => !v)}
+                    className="flex items-center gap-1 text-xs hover:text-foreground text-foreground/80 font-medium"
+                >
+                    {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                    {label}
+                    <span className="text-[10px] text-muted-foreground font-normal ml-1">({entries.length} fields)</span>
+                </button>
+                {open && (
+                    <div className="ml-4 pl-2 border-l border-border mt-0.5">
+                        {entries.map(([k, v]) => (
+                            <CapNode key={k} label={k} value={v} depth={depth + 1} />
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex items-center gap-2 py-0.5">
+            <span className="text-xs text-muted-foreground w-40 shrink-0 truncate" title={label}>{label}</span>
+            <span className="text-xs font-mono">{String(value)}</span>
+        </div>
+    );
+}
+
+function InlineCopyButton({ text }: { text: string }) {
+    const [copied, setCopied] = React.useState(false);
+    return (
+        <button
+            type="button"
+            onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+            className="h-6 w-6 flex items-center justify-center rounded hover:bg-accent text-muted-foreground hover:text-foreground"
+            title="Copy JSON"
+        >
+            {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+        </button>
+    );
+}
+
+function ProviderDataTab({ model, providers }: { model: AiModelRow; providers: AiProvider[] }) {
+    const [viewMode, setViewMode] = React.useState<'structured' | 'json'>('structured');
+
+    // Find the provider and the matching entry in its cache
+    const matchedProvider = providers.find(
+        (p) => p.id === model.model_provider || (model.provider && p.name?.toLowerCase() === model.provider.toLowerCase()),
+    );
+    const providerEntry: ProviderModelEntry | undefined = matchedProvider?.provider_models_cache?.models.find(
+        (m) => m.id === model.name,
+    );
+
+    if (!matchedProvider) {
+        return (
+            <div className="flex flex-col items-center justify-center gap-2 py-12 text-center text-sm text-muted-foreground">
+                <p>No provider linked to this model.</p>
+                <p className="text-xs">Set the Provider field in the Details tab.</p>
+            </div>
+        );
+    }
+
+    if (!matchedProvider.provider_models_cache) {
+        return (
+            <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+                <p className="text-sm text-muted-foreground">No cached data for <strong>{matchedProvider.name}</strong>.</p>
+                <p className="text-xs text-muted-foreground">Go to Provider Sync to fetch their model list.</p>
+            </div>
+        );
+    }
+
+    if (!providerEntry) {
+        return (
+            <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+                <p className="text-sm text-muted-foreground">
+                    Model <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded">{model.name}</code> was not found in {matchedProvider.name}&apos;s cached model list.
+                </p>
+                <p className="text-xs text-muted-foreground">The model may have been renamed, deprecated, or not yet synced.</p>
+            </div>
+        );
+    }
+
+    const jsonStr = JSON.stringify(providerEntry, null, 2);
+    const formatNum = (n?: number | null) => n == null ? '—' : n.toLocaleString();
+    const formatDate = (d?: string) => {
+        if (!d) return '—';
+        try { return new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); }
+        catch { return d; }
+    };
+
+    return (
+        <div className="h-full flex flex-col overflow-hidden">
+            {/* Sub-header */}
+            <div className="shrink-0 flex items-center justify-between px-1 pb-2 border-b mb-3">
+                <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                        {matchedProvider.name} · synced {new Date(matchedProvider.provider_models_cache.fetched_at).toLocaleDateString()}
+                    </span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant={viewMode === 'structured' ? 'secondary' : 'ghost'}
+                        className="h-6 px-2 text-[10px]"
+                        onClick={() => setViewMode('structured')}
+                    >
+                        Structured
+                    </Button>
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant={viewMode === 'json' ? 'secondary' : 'ghost'}
+                        className="h-6 px-2 text-[10px]"
+                        onClick={() => setViewMode('json')}
+                    >
+                        Raw JSON
+                    </Button>
+                    <InlineCopyButton text={jsonStr} />
+                </div>
+            </div>
+
+            {viewMode === 'json' ? (
+                <div className="flex-1 overflow-auto">
+                    <pre className="text-[11px] font-mono text-foreground whitespace-pre-wrap break-all leading-relaxed">
+                        {jsonStr}
+                    </pre>
+                </div>
+            ) : (
+                <div className="flex-1 overflow-auto space-y-4">
+                    {/* Core fields */}
+                    <section>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Core Fields</p>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                            <div>
+                                <p className="text-[10px] text-muted-foreground">Display Name</p>
+                                <p className="text-xs font-medium">{providerEntry.display_name ?? '—'}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-muted-foreground">Type</p>
+                                <p className="text-xs font-mono">{String(providerEntry.type ?? '—')}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-muted-foreground">Context Window</p>
+                                <p className="text-xs font-mono">{formatNum(providerEntry.max_input_tokens)}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-muted-foreground">Max Output Tokens</p>
+                                <p className="text-xs font-mono">{formatNum(providerEntry.max_tokens)}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-muted-foreground">Released</p>
+                                <p className="text-xs">{formatDate(providerEntry.created_at)}</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Capabilities */}
+                    {providerEntry.capabilities && typeof providerEntry.capabilities === 'object' && (
+                        <section>
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                                Capabilities (from {matchedProvider.name})
+                            </p>
+                            <div className="border rounded-md p-3 bg-muted/20">
+                                {Object.entries(providerEntry.capabilities as Record<string, unknown>).map(([k, v]) => (
+                                    <CapNode key={k} label={k} value={v} depth={0} />
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Additional fields */}
+                    {(() => {
+                        const known = new Set(['id', 'display_name', 'created_at', 'type', 'max_input_tokens', 'max_tokens', 'capabilities']);
+                        const extra = Object.entries(providerEntry).filter(([k]) => !known.has(k));
+                        if (!extra.length) return null;
+                        return (
+                            <section>
+                                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Additional Fields</p>
+                                <div className="space-y-1.5">
+                                    {extra.map(([k, v]) => (
+                                        <div key={k} className="flex items-start gap-3">
+                                            <span className="text-xs text-muted-foreground w-32 shrink-0">{k}</span>
+                                            <span className="text-xs font-mono break-all">
+                                                {typeof v === 'object' ? JSON.stringify(v, null, 2) : String(v)}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        );
+                    })()}
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ──────────────────────────────────────────────────────────────────────────
 
 export default function AiModelDetailPanel({
     model,
@@ -316,6 +538,15 @@ export default function AiModelDetailPanel({
                                         <span className="ml-1 w-2 h-2 rounded-full bg-amber-500 inline-block" />
                                     )}
                                 </TabsTrigger>
+                                <TabsTrigger
+                                    value="provider"
+                                    className="h-9 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-xs px-3"
+                                >
+                                    Provider Data
+                                    {providers.find((p) => p.id === model?.model_provider || (model?.provider && p.name?.toLowerCase() === model?.provider?.toLowerCase()))?.provider_models_cache && (
+                                        <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
+                                    )}
+                                </TabsTrigger>
                             </TabsList>
                         </div>
 
@@ -382,6 +613,12 @@ export default function AiModelDetailPanel({
                                     allModels={allModels}
                                     onReplaceDone={() => {}}
                                 />
+                            )}
+                        </TabsContent>
+
+                        <TabsContent value="provider" className="flex-1 m-0 overflow-auto p-3 min-h-0">
+                            {model && (
+                                <ProviderDataTab model={model} providers={providers} />
                             )}
                         </TabsContent>
                     </Tabs>

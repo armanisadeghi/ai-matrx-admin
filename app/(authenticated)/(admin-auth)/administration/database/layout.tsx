@@ -43,7 +43,7 @@ export default function DatabaseAdminLayout({
       </div>
 
       {/* Main content area */}
-      <div className="flex-1">
+      <div className="flex-1 min-h-0 overflow-hidden">
         {children}
       </div>
     </div>
