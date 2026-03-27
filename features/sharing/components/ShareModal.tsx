@@ -11,7 +11,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Users, Building2, Globe, Mail, Loader2, CheckCircle } from 'lucide-react';
-import { useSharing, useIsOwner } from '@/utils/permissions';
+import { useSharing, useIsOwner, useSharingStatus } from '@/utils/permissions';
 import type { ResourceType } from '@/utils/permissions';
 import { PermissionsList } from './PermissionsList';
 import { ShareWithUserTab } from './tabs/ShareWithUserTab';
@@ -140,6 +140,8 @@ export function ShareModal({
     refresh,
   } = useSharing(resourceType, resourceId, isOpen);
 
+  const { isPublic: resourceIsPublic } = useSharingStatus(resourceType, resourceId);
+
   // Filter permissions by type for each tab
   const userPermissions = permissions.filter((p) => p.grantedToUserId);
   const orgPermissions = permissions.filter((p) => p.grantedToOrganizationId);
@@ -267,15 +269,11 @@ export function ShareModal({
 
             <TabsContent value="public" className="mt-0">
               <PublicAccessTab
+                isPublic={resourceIsPublic}
                 publicPermission={publicPermission}
                 isOwner={isOwner}
                 onMakePublic={makePublic}
-                onRevokePublic={() =>
-                  revokeAccess({ isPublic: true }).then(refresh)
-                }
-                onUpdateLevel={(newLevel) =>
-                  updateLevel({ isPublic: true }, newLevel).then(refresh)
-                }
+                onRevokePublic={() => revokeAccess({ isPublic: true })}
                 resourceType={resourceType}
                 resourceName={resourceName}
               />

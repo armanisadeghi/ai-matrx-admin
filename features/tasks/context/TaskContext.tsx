@@ -426,7 +426,11 @@ export function TaskProvider({ children }: TaskProviderProps) {
       priority: null,
       assignee_id: null,
       user_id: '', // Will be set by server
-      authenticated_read: false,
+      is_public: false,
+      organization_id: null,
+      workspace_id: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
     
     // OPTIMISTIC UPDATE: Add to UI immediately

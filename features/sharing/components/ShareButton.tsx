@@ -8,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Share2, Users, Globe, Lock } from 'lucide-react';
+import { Share2, Globe, Lock } from 'lucide-react';
 import { useSharingStatus } from '@/utils/permissions';
 import type { ResourceType } from '@/utils/permissions';
 import { ShareModal } from './ShareModal';
@@ -47,35 +47,15 @@ export function ShareButton({
   showStatus = true,
 }: ShareButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { isShared, isPublic, loading } = useSharingStatus(resourceType, resourceId);
+  const { isPublic, loading } = useSharingStatus(resourceType, resourceId);
 
-  // Determine icon and label based on sharing status
+  // Only is_public is checked here — single cheap resource-row query.
+  // Showing "Shared with N users" on list buttons would require the expensive
+  // get_resource_permissions RPC per card. Full detail is inside the modal.
   const getButtonContent = () => {
-    if (loading) {
-      return {
-        icon: Share2,
-        label: 'Share',
-      };
-    }
-
-    if (isPublic) {
-      return {
-        icon: Globe,
-        label: showStatus ? 'Public' : 'Share',
-      };
-    }
-
-    if (isShared) {
-      return {
-        icon: Users,
-        label: showStatus ? 'Shared' : 'Share',
-      };
-    }
-
-    return {
-      icon: Lock,
-      label: showStatus ? 'Private' : 'Share',
-    };
+    if (loading) return { icon: Share2, label: 'Share' };
+    if (isPublic) return { icon: Globe, label: showStatus ? 'Public' : 'Share' };
+    return { icon: Lock, label: showStatus ? 'Private' : 'Share' };
   };
 
   const { icon: Icon, label } = getButtonContent();

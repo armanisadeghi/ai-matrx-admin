@@ -112,22 +112,18 @@ export function ShareWithUserTab({
     setStatus({ type: 'loading', message: 'Looking up user...' });
 
     try {
-      const supabase = createClient();
-
-      // If we already have the user_id from a selected contact, skip lookup
+      // Resolve userId — use selected contact to skip the lookup RPC when possible
       let targetUserId: string | null = null;
 
       if (selectedContact && selectedContact.email === trimmedEmail) {
         targetUserId = selectedContact.user_id;
       } else {
-        const { data: lookupData, error: lookupError } = await supabase
+        const client = createClient();
+        const { data: lookupData, error: lookupError } = await client
           .rpc('lookup_user_by_email', { lookup_email: trimmedEmail });
 
         if (lookupError) {
-          setStatus({
-            type: 'error',
-            message: `Lookup failed: ${lookupError.message}`
-          });
+          setStatus({ type: 'error', message: `Lookup failed: ${lookupError.message}` });
           return;
         }
 
@@ -136,7 +132,7 @@ export function ShareWithUserTab({
         if (!userData || !userData.user_id) {
           setStatus({
             type: 'error',
-            message: `No user found with email "${trimmedEmail}". They may need to create an account first.`
+            message: `No user found with email "${trimmedEmail}". They may need to create an account first.`,
           });
           return;
         }
@@ -146,26 +142,14 @@ export function ShareWithUserTab({
 
       setStatus({ type: 'loading', message: 'Sharing with user...' });
 
-      const { data: shareData, error: shareError } = await supabase.rpc('share_resource_with_user', {
-        p_resource_type: resourceType,
-        p_resource_id: resourceId,
-        p_target_user_id: targetUserId,
-        p_permission_level: permissionLevel,
-      });
+      // Delegate to the onShare prop — this calls shareWithUser() in the service,
+      // which validates ownership via the share_resource_with_user RPC and sends
+      // the notification email. Never call the RPC directly from the UI layer.
+      const result = await onShare(targetUserId, permissionLevel);
+      const errorMsg = result?.error;
 
-      if (shareError) {
-        setStatus({
-          type: 'error',
-          message: `Share failed: ${shareError.message}`
-        });
-        return;
-      }
-
-      if (shareData && shareData.success === true) {
-        setStatus({
-          type: 'success',
-          message: `Successfully shared with ${trimmedEmail}`
-        });
+      if (!errorMsg) {
+        setStatus({ type: 'success', message: `Successfully shared with ${trimmedEmail}` });
         setEmail('');
         setSelectedContact(null);
         setPermissionLevel('viewer');
@@ -180,19 +164,11 @@ export function ShareWithUserTab({
           onSuccess();
         }, 1500);
       } else {
-        const errorMsg = shareData?.error || 'Unknown error occurred';
-        setStatus({
-          type: 'error',
-          message: errorMsg
-        });
+        setStatus({ type: 'error', message: errorMsg });
       }
-
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Something went wrong';
-      setStatus({
-        type: 'error',
-        message: `Unexpected error: ${message}`
-      });
+      setStatus({ type: 'error', message: `Unexpected error: ${message}` });
     }
   };
 

@@ -1,19 +1,30 @@
 -- =============================================================================
 -- AI MATRX — PHASE 2: Per-Table Gold Standard Activation
 -- =============================================================================
--- Run ONE section at a time. Each section is independent.
--- Coordinate each section with its corresponding React code update.
+-- INFRASTRUCTURE STATUS (all live on database):
 --
--- For each table, the pattern is:
---   1. Drop old policies
---   2. Create new gold-standard policies using check_resource_access()
---   3. Handle sub-tables if any
+--   check_resource_access()  — v2, single CTE query, resolves full hierarchy
+--   has_permission()         — v2, single query, no is_public check
+--   share_resource_with_user()  — existing, validates ownership
+--   share_resource_with_org()   — NEW, validates ownership + org membership
+--   update_permission_level()   — NEW, validates ownership
+--   revoke_resource_access()    — existing
+--   make_resource_public()      — existing, works on any table
+--   make_resource_private()     — existing, works on any table
+--   set_authenticated_read()    — existing, works on any table
 --
--- The check_resource_access() function resolves the FULL hierarchy:
---   Owner > Assignee > Direct Permission > Project > Workspace (nested) > Org
+-- COLUMNS on all tables: is_public, authenticated_read, organization_id,
+--   workspace_id, project_id (where applicable)
+-- AUTO-FILL TRIGGERS: active on 17 tables
+-- INDEXES: deployed on permissions, membership, and key tables
 --
--- You already have: is_public, authenticated_read, organization_id, workspace_id
--- columns on all tables (added in Phase 1). Auto-fill triggers are active.
+-- HOW TO USE THIS FILE:
+--   1. Copy ONE section (e.g., "TABLE: tasks")
+--   2. Review the "REACT CODE TO UPDATE" notes
+--   3. Update your React code
+--   4. Run the SQL section
+--   5. Test
+--   6. Move to the next table
 -- =============================================================================
 
 
@@ -21,14 +32,14 @@
 -- TABLE: tasks
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- BREAKING CHANGES:
---   - task_assignments gets RLS enabled (was open)
---   - task_attachments gets RLS enabled (was open)
---   - Tasks visible to project/workspace/org members (was owner+assignee only)
+--   1. task_assignments: RLS enabled (was open — queries will now be filtered)
+--   2. task_attachments: RLS enabled (was open — queries will now be filtered)
+--   3. Tasks visible to project/workspace/org members (was owner+assignee only)
 -- 
 -- REACT CODE TO UPDATE BEFORE RUNNING:
---   - Any "my tasks" list: add .eq('user_id', userId) filter
---   - Any direct task_assignments queries: will now be filtered
---   - Any direct task_attachments queries: will now be filtered
+--   - "My tasks" lists: add .eq('user_id', userId) to keep them personal
+--   - task_assignments queries: will now be filtered by access
+--   - task_attachments queries: will now be filtered by access
 -- ═══════════════════════════════════════════════════════════════════════════════
 
 -- Drop old policies
@@ -37,7 +48,7 @@ DROP POLICY IF EXISTS "Users can delete their own tasks" ON public.tasks;
 DROP POLICY IF EXISTS "Users can update their own tasks and assigned tasks" ON public.tasks;
 DROP POLICY IF EXISTS "Users can view their own tasks and assigned tasks" ON public.tasks;
 
--- New gold standard policies
+-- New gold standard
 CREATE POLICY "tasks_public_read" ON public.tasks
   FOR SELECT TO anon, authenticated
   USING (is_public = true);
@@ -63,7 +74,7 @@ CREATE POLICY "tasks_delete" ON public.tasks
   FOR DELETE TO authenticated
   USING (user_id = auth.uid() OR check_resource_access('tasks', id, 'admin', user_id, NULL, project_id, workspace_id, organization_id));
 
--- Sub-table: task_comments (already has RLS enabled)
+-- task_comments
 DROP POLICY IF EXISTS "Users can create comments on their tasks" ON public.task_comments;
 DROP POLICY IF EXISTS "Users can delete their own comments" ON public.task_comments;
 DROP POLICY IF EXISTS "Users can update their own comments" ON public.task_comments;
@@ -98,7 +109,7 @@ CREATE POLICY "task_comments_delete" ON public.task_comments
   FOR DELETE TO authenticated
   USING (user_id = auth.uid());
 
--- Sub-table: task_assignments (currently NO RLS — enabling it)
+-- task_assignments (ENABLING RLS)
 ALTER TABLE public.task_assignments ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "task_assignments_select" ON public.task_assignments
@@ -128,7 +139,7 @@ CREATE POLICY "task_assignments_delete" ON public.task_assignments
     )
   );
 
--- Sub-table: task_attachments (currently NO RLS — enabling it)
+-- task_attachments (ENABLING RLS)
 ALTER TABLE public.task_attachments ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "task_attachments_select" ON public.task_attachments
@@ -167,15 +178,14 @@ CREATE POLICY "task_attachments_delete" ON public.task_attachments
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- TABLE: prompts
+-- TABLE: prompts (+ prompt_versions)
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- BREAKING CHANGES:
---   - Prompts visible to project/workspace/org members (was owner + shared only)
---   - Public read now available (is_public flag)
+--   - Prompts visible to project/workspace/org members
+--   - Public read now available via is_public
 --
 -- REACT CODE TO UPDATE:
---   - Prompt lists may return more results than before
---   - prompt_versions inherits from parent prompt
+--   - Prompt lists may return more results; filter with .eq('user_id', userId) for "my prompts"
 -- ═══════════════════════════════════════════════════════════════════════════════
 
 DROP POLICY IF EXISTS "prompts_delete_policy" ON public.prompts;
@@ -184,20 +194,17 @@ DROP POLICY IF EXISTS "prompts_select_policy" ON public.prompts;
 DROP POLICY IF EXISTS "prompts_update_policy" ON public.prompts;
 
 CREATE POLICY "prompts_public_read" ON public.prompts
-  FOR SELECT TO anon, authenticated
-  USING (is_public = true);
+  FOR SELECT TO anon, authenticated USING (is_public = true);
 
 CREATE POLICY "prompts_authenticated_read" ON public.prompts
-  FOR SELECT TO authenticated
-  USING (authenticated_read = true);
+  FOR SELECT TO authenticated USING (authenticated_read = true);
 
 CREATE POLICY "prompts_select" ON public.prompts
   FOR SELECT TO authenticated
   USING (check_resource_access('prompts', id, 'viewer', user_id, NULL, project_id, workspace_id, organization_id));
 
 CREATE POLICY "prompts_insert" ON public.prompts
-  FOR INSERT TO authenticated
-  WITH CHECK (user_id = auth.uid());
+  FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "prompts_update" ON public.prompts
   FOR UPDATE TO authenticated
@@ -208,7 +215,7 @@ CREATE POLICY "prompts_delete" ON public.prompts
   FOR DELETE TO authenticated
   USING (user_id = auth.uid() OR check_resource_access('prompts', id, 'admin', user_id, NULL, project_id, workspace_id, organization_id));
 
--- prompt_versions inherits from parent prompt
+-- prompt_versions
 DROP POLICY IF EXISTS "prompt_versions_select_owner" ON public.prompt_versions;
 
 CREATE POLICY "prompt_versions_select" ON public.prompt_versions
@@ -224,15 +231,7 @@ CREATE POLICY "prompt_versions_public_read" ON public.prompt_versions
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- TABLE: notes
--- ═══════════════════════════════════════════════════════════════════════════════
--- BREAKING CHANGES:
---   - Notes visible to project/workspace/org members
---   - Has duplicate old policies that need cleanup
---
--- REACT CODE TO UPDATE:
---   - Note lists may show shared notes
---   - note_versions inherits from parent note
+-- TABLE: notes (+ note_versions)
 -- ═══════════════════════════════════════════════════════════════════════════════
 
 DROP POLICY IF EXISTS "Users can manage their own notes" ON public.notes;
@@ -242,20 +241,17 @@ DROP POLICY IF EXISTS "notes_select_policy" ON public.notes;
 DROP POLICY IF EXISTS "notes_update_policy" ON public.notes;
 
 CREATE POLICY "notes_public_read" ON public.notes
-  FOR SELECT TO anon, authenticated
-  USING (is_public = true);
+  FOR SELECT TO anon, authenticated USING (is_public = true);
 
 CREATE POLICY "notes_authenticated_read" ON public.notes
-  FOR SELECT TO authenticated
-  USING (authenticated_read = true);
+  FOR SELECT TO authenticated USING (authenticated_read = true);
 
 CREATE POLICY "notes_select" ON public.notes
   FOR SELECT TO authenticated
   USING (check_resource_access('notes', id, 'viewer', user_id, NULL, project_id, workspace_id, organization_id));
 
 CREATE POLICY "notes_insert" ON public.notes
-  FOR INSERT TO authenticated
-  WITH CHECK (user_id = auth.uid());
+  FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "notes_update" ON public.notes
   FOR UPDATE TO authenticated
@@ -266,7 +262,7 @@ CREATE POLICY "notes_delete" ON public.notes
   FOR DELETE TO authenticated
   USING (user_id = auth.uid() OR check_resource_access('notes', id, 'admin', user_id, NULL, project_id, workspace_id, organization_id));
 
--- note_versions: update to use hierarchy
+-- note_versions
 DROP POLICY IF EXISTS "Users can manage their own note versions" ON public.note_versions;
 DROP POLICY IF EXISTS "note_versions_delete" ON public.note_versions;
 DROP POLICY IF EXISTS "note_versions_insert" ON public.note_versions;
@@ -298,42 +294,26 @@ CREATE POLICY "note_versions_delete" ON public.note_versions
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- TABLE: cx_conversation (and cx_message, cx_request, cx_tool_call, cx_media)
+-- TEMPLATE: Any other table (copy + find/replace {TABLE})
 -- ═══════════════════════════════════════════════════════════════════════════════
--- Copy this pattern for conversations. Sub-tables inherit via conversation_id.
--- Similar structure to tasks — drop old, create new with check_resource_access.
--- ═══════════════════════════════════════════════════════════════════════════════
-
--- [Follow the same drop+create pattern as tasks above]
--- cx_conversation, cx_message, cx_request, cx_tool_call, cx_media
--- Each sub-table does EXISTS on cx_conversation with check_resource_access
-
-
--- ═══════════════════════════════════════════════════════════════════════════════
--- TEMPLATE: For any other table
--- ═══════════════════════════════════════════════════════════════════════════════
--- Replace {TABLE} with your table name.
--- Remove assignee_id parameter if the table doesn't have one.
--- ═══════════════════════════════════════════════════════════════════════════════
+-- For tables WITH an assignee column, pass it as the 5th arg.
+-- For tables WITHOUT one, pass NULL.
 
 /*
-DROP POLICY IF EXISTS "{TABLE}_old_policy_name" ON public.{TABLE};
+DROP POLICY IF EXISTS "old_policy_name" ON public.{TABLE};
 
 CREATE POLICY "{TABLE}_public_read" ON public.{TABLE}
-  FOR SELECT TO anon, authenticated
-  USING (is_public = true);
+  FOR SELECT TO anon, authenticated USING (is_public = true);
 
 CREATE POLICY "{TABLE}_authenticated_read" ON public.{TABLE}
-  FOR SELECT TO authenticated
-  USING (authenticated_read = true);
+  FOR SELECT TO authenticated USING (authenticated_read = true);
 
 CREATE POLICY "{TABLE}_select" ON public.{TABLE}
   FOR SELECT TO authenticated
   USING (check_resource_access('{TABLE}', id, 'viewer', user_id, NULL, project_id, workspace_id, organization_id));
 
 CREATE POLICY "{TABLE}_insert" ON public.{TABLE}
-  FOR INSERT TO authenticated
-  WITH CHECK (user_id = auth.uid());
+  FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "{TABLE}_update" ON public.{TABLE}
   FOR UPDATE TO authenticated
@@ -344,3 +324,32 @@ CREATE POLICY "{TABLE}_delete" ON public.{TABLE}
   FOR DELETE TO authenticated
   USING (user_id = auth.uid() OR check_resource_access('{TABLE}', id, 'admin', user_id, NULL, project_id, workspace_id, organization_id));
 */
+
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- RPC CHEAT SHEET (for React frontend)
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 
+-- Share with user:
+--   supabase.rpc('share_resource_with_user', { p_resource_type: 'tasks', p_resource_id: taskId, p_target_user_id: userId, p_permission_level: 'editor' })
+--
+-- Share with org:
+--   supabase.rpc('share_resource_with_org', { p_resource_type: 'tasks', p_resource_id: taskId, p_target_org_id: orgId, p_permission_level: 'viewer' })
+--
+-- Update permission level:
+--   supabase.rpc('update_permission_level', { p_resource_type: 'tasks', p_resource_id: taskId, p_target_user_id: userId, p_new_level: 'editor' })
+--
+-- Revoke access:
+--   supabase.rpc('revoke_resource_access', { p_resource_type: 'tasks', p_resource_id: taskId, p_target_user_id: userId })
+--
+-- Make public:
+--   supabase.rpc('make_resource_public', { p_resource_type: 'tasks', p_resource_id: taskId })
+--
+-- Make private:
+--   supabase.rpc('make_resource_private', { p_resource_type: 'tasks', p_resource_id: taskId })
+--
+-- Toggle authenticated read:
+--   supabase.rpc('set_authenticated_read', { p_resource_type: 'tasks', p_resource_id: taskId, p_enabled: true })
+--
+-- Get permissions for a resource (owner only):
+--   supabase.rpc('get_resource_permissions', { p_resource_type: 'tasks', p_resource_id: taskId })

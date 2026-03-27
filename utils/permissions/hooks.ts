@@ -23,8 +23,11 @@ import {
   shareWithOrg,
   makePublic,
   revokeAccess,
+  revokeOrgAccess,
   updatePermissionLevel,
   getSharedWithMe,
+  getResourceVisibility,
+  type ResourceVisibility,
 } from './service';
 
 // ============================================================================
@@ -327,26 +330,12 @@ export function useSharing(resourceType: ResourceType, resourceId: string, enabl
   );
 
   const handleRevokeAccess = useCallback(
-    async (options: {
-      userId?: string;
-      organizationId?: string;
-      isPublic?: boolean;
-    }) => {
+    async (options: { userId?: string; organizationId?: string; isPublic?: boolean }) => {
       setLoading(true);
       setError(null);
-
       try {
-        const result = await revokeAccess({
-          resourceType,
-          resourceId,
-          ...options,
-        });
-
-        if (!result.success) {
-          setError(result.error || 'Failed to revoke access');
-          return result;
-        }
-
+        const result = await revokeAccess({ resourceType, resourceId, ...options });
+        if (!result.success) { setError(result.error || 'Failed to revoke access'); return result; }
         await refresh();
         return result;
       } catch (err: any) {
@@ -360,31 +349,36 @@ export function useSharing(resourceType: ResourceType, resourceId: string, enabl
     [resourceType, resourceId, refresh]
   );
 
+  const handleRevokeOrgAccess = useCallback(
+    async (organizationId: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await revokeOrgAccess(resourceType, resourceId, organizationId);
+        if (!result.success) { setError(result.error || 'Failed to revoke org access'); return result; }
+        await refresh();
+        return result;
+      } catch (err: any) {
+        const errorMessage = err.message || 'Failed to revoke org access';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [resourceType, resourceId, refresh]
+  );
+
   const handleUpdateLevel = useCallback(
     async (
-      options: {
-        userId?: string;
-        organizationId?: string;
-        isPublic?: boolean;
-      },
+      options: { userId?: string; organizationId?: string },
       newLevel: PermissionLevel
     ) => {
       setLoading(true);
       setError(null);
-
       try {
-        const result = await updatePermissionLevel({
-          resourceType,
-          resourceId,
-          ...options,
-          newLevel,
-        });
-
-        if (!result.success) {
-          setError(result.error || 'Failed to update permission');
-          return result;
-        }
-
+        const result = await updatePermissionLevel({ resourceType, resourceId, ...options, newLevel });
+        if (!result.success) { setError(result.error || 'Failed to update permission'); return result; }
         await refresh();
         return result;
       } catch (err: any) {
@@ -406,6 +400,7 @@ export function useSharing(resourceType: ResourceType, resourceId: string, enabl
     shareWithOrg: handleShareWithOrg,
     makePublic: handleMakePublic,
     revokeAccess: handleRevokeAccess,
+    revokeOrgAccess: handleRevokeOrgAccess,
     updateLevel: handleUpdateLevel,
     refresh,
   };
@@ -457,24 +452,28 @@ export function useSharedWithMe(resourceType?: ResourceType) {
 // ============================================================================
 
 /**
- * Hook to get sharing status summary for a resource
- * @param resourceType Resource type
- * @param resourceId Resource ID
- * @returns Sharing status summary
+ * Hook to get sharing status summary for a resource.
+ *
+ * Intentionally lightweight — only fetches is_public from the resource row.
+ * Safe to call from list-item components like ShareButton (single cheap query).
+ *
+ * Does NOT call get_resource_permissions (the expensive SECURITY DEFINER RPC).
+ * Full permission details are loaded inside useSharing() when the modal opens.
  */
 export function useSharingStatus(resourceType: ResourceType, resourceId: string) {
-  const { permissions, loading } = usePermissions(resourceType, resourceId);
+  const [visibility, setVisibility] = useState<ResourceVisibility>({ isPublic: false });
+  const [loading, setLoading] = useState(true);
 
-  const status = {
-    isShared: permissions.length > 0,
-    isPublic: permissions.some((p) => p.isPublic),
-    userCount: permissions.filter((p) => p.grantedToUserId).length,
-    orgCount: permissions.filter((p) => p.grantedToOrganizationId).length,
-    totalShares: permissions.length,
-  };
+  useEffect(() => {
+    if (!resourceType || !resourceId) return;
+    setLoading(true);
+    getResourceVisibility(resourceType, resourceId)
+      .then(setVisibility)
+      .finally(() => setLoading(false));
+  }, [resourceType, resourceId]);
 
   return {
-    ...status,
+    isPublic: visibility.isPublic,
     loading,
   };
 }

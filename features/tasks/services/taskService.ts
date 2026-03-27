@@ -1,5 +1,7 @@
 // Task service for database operations
 import { supabase } from '@/utils/supabase/client';
+import { requireUserId } from '@/utils/auth/getUserId';
+import { getSharedWithMe } from '@/utils/permissions/service';
 import type { DatabaseTask } from '../types';
 
 export interface CreateTaskInput {
@@ -12,7 +14,6 @@ export interface CreateTaskInput {
   assignee_id?: string | null;
   status?: 'incomplete' | 'completed';
   user_id?: string | null;
-  authenticated_read?: boolean | null;
 }
 
 export interface UpdateTaskInput {
@@ -25,7 +26,6 @@ export interface UpdateTaskInput {
   assignee_id?: string | null;
   status?: 'incomplete' | 'completed';
   user_id?: string | null;
-  authenticated_read?: boolean | null;
 }
 
 export interface CreateTaskOptions {
@@ -52,7 +52,6 @@ export async function createTask(input: CreateTaskInput): Promise<DatabaseTask |
         assignee_id: input.assignee_id || null,
         status: input.status || 'incomplete',
         user_id: userId,
-        authenticated_read: input.authenticated_read ?? false,
       })
       .select()
       .single();
@@ -299,19 +298,28 @@ export async function deleteSubtask(subtaskId: string): Promise<boolean> {
 }
 
 /**
- * Get tasks shared directly with the current user (via permissions table, not via project membership)
+ * Get tasks explicitly shared with the current user via direct permission grants.
+ * Does not include tasks accessible via project/workspace/org hierarchy —
+ * those appear automatically in the normal task queries via RLS.
+ *
+ * Uses the shared permissions service to get grant IDs, then fetches full rows.
+ * RLS on tasks ensures only currently-accessible rows are returned.
  */
 export async function getSharedWithMeTasks(): Promise<DatabaseTask[]> {
   try {
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData?.user) return [];
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) return [];
 
-    const userId = userData.user.id;
+    const grants = await getSharedWithMe('tasks');
+    if (grants.length === 0) return [];
+
+    const taskIds = grants.map((g) => g.resourceId);
 
     const { data, error } = await supabase
       .from('tasks')
       .select('*')
-      .neq('user_id', userId)
+      .in('id', taskIds)
+      .neq('user_id', user.id)
       .order('updated_at', { ascending: false });
 
     if (error) {
@@ -324,6 +332,92 @@ export async function getSharedWithMeTasks(): Promise<DatabaseTask[]> {
     console.error('Exception fetching shared tasks:', error);
     return [];
   }
+}
+
+// ============================================================================
+// Task-specific Sharing Helpers (wrap the universal Phase 1 RPCs)
+// ============================================================================
+
+export interface TaskShareResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
+/**
+ * Share a task with a specific user.
+ * Wraps share_resource_with_user() — ownership validated server-side.
+ */
+export async function shareTask(
+  taskId: string,
+  targetUserId: string,
+  level: 'viewer' | 'editor' | 'admin' = 'viewer'
+): Promise<TaskShareResult> {
+  const { data, error } = await supabase.rpc('share_resource_with_user', {
+    p_resource_type: 'tasks',
+    p_resource_id: taskId,
+    p_target_user_id: targetUserId,
+    p_permission_level: level,
+  });
+  if (error) return { success: false, error: error.message };
+  return { success: data?.success ?? false, message: data?.message, error: data?.error };
+}
+
+/**
+ * Make a task publicly accessible (sets is_public = true on the task row).
+ */
+export async function makeTaskPublic(taskId: string): Promise<TaskShareResult> {
+  const { data, error } = await supabase.rpc('make_resource_public', {
+    p_resource_type: 'tasks',
+    p_resource_id: taskId,
+  });
+  if (error) return { success: false, error: error.message };
+  return { success: data?.success ?? false, message: data?.message, error: data?.error };
+}
+
+/**
+ * Make a task private (sets is_public = false on the task row).
+ */
+export async function makeTaskPrivate(taskId: string): Promise<TaskShareResult> {
+  const { data, error } = await supabase.rpc('make_resource_private', {
+    p_resource_type: 'tasks',
+    p_resource_id: taskId,
+  });
+  if (error) return { success: false, error: error.message };
+  return { success: data?.success ?? false, message: data?.message, error: data?.error };
+}
+
+/**
+ * Revoke a user's access to a task.
+ * Wraps revoke_resource_access() — ownership validated server-side.
+ */
+export async function revokeTaskAccess(
+  taskId: string,
+  targetUserId: string
+): Promise<TaskShareResult> {
+  const { data, error } = await supabase.rpc('revoke_resource_access', {
+    p_resource_type: 'tasks',
+    p_resource_id: taskId,
+    p_target_user_id: targetUserId,
+  });
+  if (error) return { success: false, error: error.message };
+  return { success: data?.success ?? false, message: data?.message, error: data?.error };
+}
+
+/**
+ * Get all permissions for a task (owner-only).
+ * Uses get_resource_permissions() SECURITY DEFINER RPC.
+ */
+export async function getTaskPermissions(taskId: string) {
+  const { data, error } = await supabase.rpc('get_resource_permissions', {
+    p_resource_type: 'tasks',
+    p_resource_id: taskId,
+  });
+  if (error) {
+    console.error('Error fetching task permissions:', error.message);
+    return [];
+  }
+  return data || [];
 }
 
 /**

@@ -25,7 +25,6 @@ export interface DatabaseTask {
   assignee_id: string | null;
   due_date: string | null;
   user_id: string | null;
-  authenticated_read: boolean | null;
   is_public: boolean | null;
   organization_id: string | null;
   workspace_id: string | null;
@@ -77,7 +76,6 @@ export interface CreateTaskInput {
   assignee_id?: string | null;
   status?: string;
   user_id?: string | null;
-  authenticated_read?: boolean | null;
 }
 
 // Full task creation with all options
