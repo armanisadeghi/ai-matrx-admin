@@ -142,4 +142,23 @@ export const aiModelService = {
 
         return rows.length;
     },
+
+    /** Bulk-patch a single field on multiple models in parallel */
+    async bulkPatchField(
+        patches: Array<{ id: string; field: keyof Omit<AiModelRow, 'id'>; value: AiModelRow[keyof AiModelRow] }>,
+    ): Promise<void> {
+        const results = await Promise.all(
+            patches.map(({ id, field, value }) =>
+                supabase.from('ai_model').update({ [field]: value }).eq('id', id),
+            ),
+        );
+        const firstError = results.find((r) => r.error);
+        if (firstError?.error) throw firstError.error;
+    },
+
+    /** Patch a single field on a single model (convenience for inline audit fixes) */
+    async patchField(id: string, field: keyof Omit<AiModelRow, 'id'>, value: AiModelRow[keyof AiModelRow]): Promise<void> {
+        const { error } = await supabase.from('ai_model').update({ [field]: value }).eq('id', id);
+        if (error) throw error;
+    },
 };

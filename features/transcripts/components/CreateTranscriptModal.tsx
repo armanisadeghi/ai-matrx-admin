@@ -132,14 +132,11 @@ export function CreateTranscriptModal({
             setStep('saving-audio');
 
             // CRITICAL STEP 1: Save audio to storage FIRST (NEVER skip this)
-            const { data: userData } = await supabase.auth.getUser();
-            if (!userData?.user?.id) {
-                throw new Error('User not authenticated');
-            }
+            const userId = requireUserId();
 
             const uploadResult = await saveAudioToStorage(
                 audioBlob,
-                userData.user.id,
+                userId,
                 (percent, status) => {
                     setUploadProgress({ percent, status });
                 }

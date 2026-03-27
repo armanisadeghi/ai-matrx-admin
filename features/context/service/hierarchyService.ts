@@ -1,6 +1,7 @@
 'use client';
 
 import { supabase } from '@/utils/supabase/client';
+import { requireUserId, getUserEmail } from '@/utils/auth/getUserId';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -75,26 +76,25 @@ export const hierarchyService = {
 
   // ─── Current user info ──────────────────────────────────────────
   async fetchCurrentUser(): Promise<{ id: string; email: string; name: string | null } | null> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+    const userId = requireUserId();
+    const userEmail = getUserEmail() ?? '';
 
     const { data: profile } = await supabase
       .from('profiles')
       .select('display_name, full_name')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single();
 
     return {
-      id: user.id,
-      email: user.email ?? '',
-      name: (profile as any)?.display_name ?? (profile as any)?.full_name ?? user.email ?? 'Me',
+      id: userId,
+      email: userEmail,
+      name: (profile as any)?.display_name ?? (profile as any)?.full_name ?? userEmail ?? 'Me',
     };
   },
 
   // ─── Organizations the current user belongs to ──────────────────
   async fetchUserOrganizations(): Promise<HierarchyOrg[]> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return [];
+    const userId = requireUserId();
 
     const { data, error } = await supabase
       .from('organization_members')
@@ -104,7 +104,7 @@ export const hierarchyService = {
           id, name, slug, description, logo_url, is_personal, settings, created_at
         )
       `)
-      .eq('user_id', user.id);
+      .eq('user_id', userId);
 
     if (error) throw error;
     if (!data) return [];
@@ -147,13 +147,12 @@ export const hierarchyService = {
 
   // Fetch all projects for current user (including unassigned)
   async fetchAllUserProjects(): Promise<HierarchyProject[]> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return [];
+    const userId = requireUserId();
 
     const { data, error } = await supabase
       .from('projects')
       .select('id, name, slug, description, organization_id, workspace_id, is_personal, settings, created_at, created_by')
-      .eq('created_by', user.id)
+      .eq('created_by', userId)
       .order('name');
 
     if (error) throw error;
@@ -174,14 +173,13 @@ export const hierarchyService = {
 
   // Fetch tasks not linked to any project
   async fetchOrphanTasks(): Promise<HierarchyTask[]> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return [];
+    const userId = requireUserId();
 
     const { data, error } = await supabase
       .from('tasks')
       .select('id, title, description, project_id, parent_task_id, status, priority, due_date, assignee_id, settings, created_at, user_id')
       .is('project_id', null)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -220,7 +218,6 @@ export const hierarchyService = {
   // ─── Full tree from user root ───────────────────────────────────
   async fetchFullTree(): Promise<HierarchyNode[]> {
     const user = await this.fetchCurrentUser();
-    if (!user) return [];
 
     const orgs = await this.fetchUserOrganizations();
     const allProjects = await this.fetchAllUserProjects();
@@ -378,19 +375,18 @@ export const hierarchyService = {
 
   // ─── Create entity ──────────────────────────────────────────────
   async createOrganization(data: { name: string; slug: string; description?: string }): Promise<HierarchyOrg> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
+    const userId = requireUserId();
 
     const { data: org, error } = await supabase
       .from('organizations')
-      .insert({ ...data, created_by: user.id })
+      .insert({ ...data, created_by: userId })
       .select()
       .single();
     if (error) throw error;
 
     await supabase.from('organization_members').insert({
       organization_id: org.id,
-      user_id: user.id,
+      user_id: userId,
       role: 'owner',
     });
 
@@ -403,12 +399,11 @@ export const hierarchyService = {
     parent_workspace_id?: string;
     description?: string;
   }): Promise<HierarchyWorkspace> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
+    const userId = requireUserId();
 
     const { data: ws, error } = await supabase
       .from('workspaces')
-      .insert({ ...data, created_by: user.id })
+      .insert({ ...data, created_by: userId })
       .select()
       .single();
     if (error) throw error;
@@ -421,12 +416,11 @@ export const hierarchyService = {
     workspace_id?: string;
     description?: string;
   }): Promise<HierarchyProject> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
+    const userId = requireUserId();
 
     const { data: proj, error } = await supabase
       .from('projects')
-      .insert({ ...data, created_by: user.id })
+      .insert({ ...data, created_by: userId })
       .select()
       .single();
     if (error) throw error;
@@ -441,15 +435,14 @@ export const hierarchyService = {
     status?: string;
     priority?: string;
   }): Promise<HierarchyTask> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
+    const userId = requireUserId();
 
     const { data: task, error } = await supabase
       .from('tasks')
       .insert({
         ...data,
         status: data.status ?? 'not_started',
-        user_id: user.id,
+        user_id: userId,
         settings: {},
       })
       .select()

@@ -53,9 +53,9 @@ export function useGuestLimit() {
     // Get current user on mount
     useEffect(() => {
         
-        // Get initial user
-        supabase.auth.getUser().then(({ data }) => {
-            setUser(data.user);
+        // Get initial user — use getSession() to avoid a network roundtrip
+        supabase.auth.getSession().then(({ data }) => {
+            setUser(data.session?.user ?? null);
             setAuthLoading(false);
         });
 

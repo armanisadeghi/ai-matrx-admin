@@ -1,5 +1,6 @@
 import { isSlugInUse } from "@/config/applets/apps/constants";
 import { AppletContainer, AppletLayoutOption, AppletSourceConfig, BrokerMapping, CustomAppletConfig } from "@/types/customAppTypes";
+import { requireUserId } from '@/utils/auth/getUserId';
 import { supabase } from "@/utils/supabase/client";
 import { RuntimeCompiledRecipe } from "../../app-runner/types";
 import { RecipeInfo } from "@/features/recipes/types";
@@ -66,12 +67,7 @@ export const normalizeCustomAppletConfig = (config: Partial<CustomAppletConfig>)
 export const appletConfigToDBFormat = async (
     config: CustomAppletConfig
 ): Promise<Omit<CustomAppletConfigDB, "created_at" | "updated_at">> => {
-    const { data } = await supabase.auth.getUser();
-    const userId = data.user?.id;
-
-    if (!userId) {
-        throw new Error("User not authenticated");
-    }
+    const userId = requireUserId();
 
     return {
         id: config.id || null,
@@ -131,12 +127,7 @@ export const dbToAppletConfig = (dbRecord: CustomAppletConfigDB): CustomAppletCo
  * Fetches all custom applet configs for the current user
  */
 export const getAllCustomAppletConfigs = async (): Promise<CustomAppletConfig[]> => {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData.user?.id;
-
-    if (!userId) {
-        throw new Error("User not authenticated");
-    }
+    const userId = requireUserId();
 
     const { data, error } = await supabase.from("custom_applet_configs").select("*").eq("user_id", userId);
     if (error) {
@@ -306,12 +297,7 @@ export const getCustomAppletConfigsByCompiledRecipe = async (compiledRecipeId: s
  * Fetches all recipes for the current user
  */
 export const getUserRecipes = async (): Promise<RecipeInfo[]> => {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData.user?.id;
-
-    if (!userId) {
-        throw new Error("User not authenticated");
-    }
+    const userId = requireUserId();
 
     const { data, error } = await supabase
         .from("recipe")
@@ -559,12 +545,7 @@ export const getAppletById = async (id: string): Promise<CustomAppletConfig | nu
  */
 export const getAllApplets = async (): Promise<CustomAppletConfig[]> => {
     try {
-        const { data: userData } = await supabase.auth.getUser();
-        const userId = userData.user?.id;
-
-        if (!userId) {
-            throw new Error("User not authenticated");
-        }
+        const userId = requireUserId();
 
         const { data, error } = await supabase.from("custom_applet_configs").select("*").eq("user_id", userId);
 

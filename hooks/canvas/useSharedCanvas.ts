@@ -31,7 +31,7 @@ export function useSharedCanvas(shareToken: string | null) {
 async function trackView(shareToken: string) {
     try {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const userId = requireUserId();
         
         // Get or create session ID
         let sessionId = sessionStorage.getItem('canvas_session_id');

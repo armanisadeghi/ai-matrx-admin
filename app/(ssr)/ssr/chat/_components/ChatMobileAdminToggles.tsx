@@ -7,7 +7,7 @@
 import { Blocks } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { selectIsAdmin } from '@/lib/redux/slices/userSlice';
-import { selectIsUsingLocalhost, setServerOverride } from '@/lib/redux/slices/adminPreferencesSlice';
+import { selectActiveServer, switchServer } from '@/lib/redux/slices/apiConfigSlice';
 import {
     activeChatActions,
     selectActiveChatUseBlockMode,
@@ -18,14 +18,15 @@ import { chatConversationsActions } from '@/features/cx-conversation/redux/slice
 export default function ChatMobileAdminToggles() {
     const dispatch = useAppDispatch();
     const isAdmin = useAppSelector(selectIsAdmin);
-    const isUsingLocalhost = useAppSelector(selectIsUsingLocalhost);
+    const activeServer = useAppSelector(selectActiveServer);
+    const isUsingLocalhost = activeServer === 'localhost';
     const useBlockMode = useAppSelector(selectActiveChatUseBlockMode);
     const sessionId = useAppSelector(selectActiveChatSessionId);
 
     if (!isAdmin) return null;
 
     const handleToggleLocalhost = () => {
-        dispatch(setServerOverride(isUsingLocalhost ? null : 'localhost'));
+        dispatch(switchServer({ env: isUsingLocalhost ? 'production' : 'localhost' }));
     };
 
     const handleToggleBlockMode = () => {

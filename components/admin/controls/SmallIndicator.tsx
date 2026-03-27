@@ -1,10 +1,13 @@
-// components/admin/SmallIndicator.tsx
+// components/admin/controls/SmallIndicator.tsx
 import React from "react";
-import { TbBrandSocketIo } from "react-icons/tb";
-import { Server, ChevronRight, Shield, ShieldOff, AlertCircle } from "lucide-react";
+import { ChevronRight, AlertCircle, Loader } from "lucide-react";
 import StateViewerButton from "@/components/admin/state-analyzer/components/StateViewerButton";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectPrimaryConnection, selectConnectionHealth } from "@/lib/redux/socket-io/selectors/socket-connection-selectors";
+import {
+    selectResolvedBaseUrl,
+    selectActiveServerHealth,
+    selectActiveServer,
+} from "@/lib/redux/slices/apiConfigSlice";
 
 interface SmallIndicatorProps {
     onDragStart: (e: React.MouseEvent) => void;
@@ -12,86 +15,73 @@ interface SmallIndicatorProps {
 }
 
 const SmallIndicator: React.FC<SmallIndicatorProps> = ({ onDragStart, onSizeChange }) => {
-    // Redux selectors
-    const primaryConnection = useAppSelector(selectPrimaryConnection);
-    const primaryHealth = useAppSelector((state) => selectConnectionHealth(state, primaryConnection?.connectionId || "primary"));
+    const activeServer = useAppSelector(selectActiveServer);
+    const resolvedUrl = useAppSelector(selectResolvedBaseUrl);
+    const health = useAppSelector(selectActiveServerHealth);
 
-    // Derived values for accurate connection status
-    const isConnected = primaryConnection?.connectionStatus === "connected";
-    const isAuthenticated = primaryConnection?.isAuthenticated || false;
-    const hasError = !!primaryHealth.error;
-    const isReconnecting = primaryHealth.isReconnecting;
+    const isLocalhost = resolvedUrl?.includes("localhost") || resolvedUrl?.includes("127.0.0.1");
+    const isChecking = health.status === "checking";
+    const isHealthy = health.status === "healthy";
+    const isUnhealthy = health.status === "unhealthy";
 
-    // Server detection
-    const currentServer = primaryConnection?.url || "Not connected";
-    const isLocalhost = currentServer.includes("localhost") || currentServer.includes("127.0.0.1") || currentServer.includes("::1");
-    const isRemote = !isLocalhost && currentServer !== "Not connected";
+    const getServerDotColor = () => {
+        if (isChecking) return "bg-yellow-400 animate-pulse";
+        if (isHealthy && isLocalhost) return "bg-green-400";
+        if (isHealthy) return "bg-blue-400";
+        if (isUnhealthy) return "bg-red-500";
+        return "bg-gray-500";
+    };
 
-    // Determine the actual connection state
-    const isReallyConnected = isConnected && isAuthenticated && !hasError;
+    const getHealthDotColor = () => {
+        if (isChecking) return "bg-yellow-400 animate-pulse";
+        if (isHealthy) return "bg-green-500";
+        if (isUnhealthy) return "bg-red-500";
+        return "bg-gray-500";
+    };
 
-    // Handle mousedown without starting a drag on button elements
     const handleElementMouseDown = (e: React.MouseEvent) => {
-        // Don't start drag if clicking a button
-        let target = e.target as HTMLElement;
-        let currentElement = target;
-
-        // Check if we clicked on or within a button
+        let currentElement = e.target as HTMLElement;
         while (currentElement) {
-            if (currentElement.tagName === "BUTTON") {
-                return; // Do nothing if button was clicked
-            }
-            currentElement = currentElement.parentElement;
+            if (currentElement.tagName === "BUTTON") return;
+            currentElement = currentElement.parentElement as HTMLElement;
         }
-
-        // Otherwise, initiate drag
         onDragStart(e);
     };
 
-    // Determine server indicator color
-    const getServerIndicatorColor = () => {
-        if (!isConnected || hasError) return "bg-red-500";
-        if (isReconnecting) return "bg-yellow-500 animate-pulse";
-        if (isLocalhost) return "bg-green-400";
-        if (isRemote) return "bg-blue-400";
-        return "bg-gray-500";
-    };
-
-    // Determine socket indicator color
-    const getSocketIndicatorColor = () => {
-        if (!isConnected) return "bg-red-500";
-        if (isReconnecting) return "bg-yellow-500 animate-pulse";
-        if (isReallyConnected) return "bg-green-500";
-        if (isConnected && !isAuthenticated) return "bg-orange-500";
-        return "bg-gray-500";
-    };
+    const tooltipText = resolvedUrl
+        ? `${activeServer} → ${resolvedUrl} (${health.status}${health.latencyMs != null ? ` ${health.latencyMs}ms` : ""})`
+        : `${activeServer} — not configured`;
 
     return (
         <div
             className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-800 text-white shadow-lg cursor-move"
             onMouseDown={handleElementMouseDown}
-            title={`${isReallyConnected ? "Connected" : "Disconnected"} - ${currentServer}`}
+            title={tooltipText}
         >
-            {/* Socket.IO Connection Status */}
-            <div className="flex items-center gap-1" title={`Socket: ${isConnected ? "Connected" : "Disconnected"}`}>
-                <div className={`w-2 h-2 rounded-full ${getSocketIndicatorColor()}`} />
+            {/* Server environment dot */}
+            <div
+                className="flex items-center gap-1"
+                title={`Server: ${activeServer} — ${resolvedUrl ?? "not configured"}`}
+            >
+                <div className={`w-2 h-2 rounded-full ${getServerDotColor()}`} />
             </div>
 
-            {/* Server Status */}
-            <div className="flex items-center gap-1" title={`Server: ${currentServer}`}>
-                <div className={`w-2 h-2 rounded-full ${getServerIndicatorColor()}`} />
+            {/* Health dot */}
+            <div
+                className="flex items-center gap-1"
+                title={`Health: ${health.status}${health.latencyMs != null ? ` (${health.latencyMs}ms)` : ""}`}
+            >
+                <div className={`w-2 h-2 rounded-full ${getHealthDotColor()}`} />
             </div>
 
-            {/* Authentication Status - only show if connected but not authenticated */}
-            {isConnected && !isAuthenticated && (
-                <div title="Not authenticated">
-                    <ShieldOff size={14} className="text-orange-400" />
-                </div>
+            {/* Checking spinner */}
+            {isChecking && (
+                <Loader size={12} className="text-yellow-400 animate-spin" />
             )}
 
-            {/* Error Indicator */}
-            {hasError && (
-                <div title={primaryHealth.error || "Connection error"}>
+            {/* Error indicator */}
+            {isUnhealthy && health.error && (
+                <div title={health.error}>
                     <AlertCircle size={14} className="text-red-400" />
                 </div>
             )}
@@ -100,7 +90,7 @@ const SmallIndicator: React.FC<SmallIndicatorProps> = ({ onDragStart, onSizeChan
 
             <button
                 onClick={(e) => {
-                    e.stopPropagation(); // Prevent event from bubbling up
+                    e.stopPropagation();
                     onSizeChange();
                 }}
                 className="p-0 rounded hover:bg-slate-700"

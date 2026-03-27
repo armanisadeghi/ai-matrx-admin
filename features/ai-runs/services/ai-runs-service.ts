@@ -23,13 +23,12 @@ export const aiRunsService = {
   async create(input: CreateAiRunInput): Promise<AiRun> {
     const supabase = createClient();
     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("User not authenticated");
+    const userId = requireUserId();
 
     const { data, error } = await supabase
       .from("ai_runs")
       .insert({
-        user_id: user.id,
+        user_id: userId,
         source_type: input.source_type,
         source_id: input.source_id,
         name: input.name,

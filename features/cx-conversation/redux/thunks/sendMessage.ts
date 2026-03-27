@@ -12,7 +12,7 @@
  *   - modelSettings      → uiState.modelSettings  (temperature, max_tokens, etc.)
  *   - blockMode          → isAdmin && uiState.useBlockMode
  *   - auth headers       → callApi (userSlice)
- *   - backend URL        → callApi (adminPreferencesSlice — all 6 environments)
+ *   - backend URL        → callApi (apiConfigSlice — selectResolvedBaseUrl, all 6 environments)
  *
  * Routing logic (agent mode):
  *   - no conversationId  → POST /ai/agents/{agentId}  or /ai/agents-blocks/{agentId}

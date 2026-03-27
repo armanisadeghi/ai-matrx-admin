@@ -92,11 +92,11 @@ export const fetchAllUserPrompts = createAsyncThunk<
     { dispatch: AppDispatch; state: RootState }
 >(
     'promptCrud/fetchAll',
-    async (_, { dispatch }) => {
+    async (_, { dispatch, getState }) => {
         dispatch(setListStatus({ status: 'loading' }));
 
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError || !user) {
+        const userId = (getState() as RootState).user.id;
+        if (!userId) {
             dispatch(setListStatus({ status: 'error', error: 'Not authenticated' }));
             throw new Error('Not authenticated');
         }
@@ -104,7 +104,7 @@ export const fetchAllUserPrompts = createAsyncThunk<
         const { data: rows, error } = await supabase
             .from('prompts')
             .select<'*', PromptDb>('*')
-            .eq('user_id', user.id)
+            .eq('user_id', userId)
             .order('updated_at', { ascending: false });
 
         if (error) {
@@ -168,13 +168,13 @@ export const createUserPrompt = createAsyncThunk<
     { dispatch: AppDispatch; state: RootState }
 >(
     'promptCrud/create',
-    async (data, { dispatch }) => {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError || !user) throw new Error('Not authenticated');
+    async (data, { dispatch, getState }) => {
+        const userId = (getState() as RootState).user.id;
+        if (!userId) throw new Error('Not authenticated');
 
         const { data: row, error } = await supabase
             .from('prompts')
-            .insert({ ...toDbInsert(data), user_id: user.id })
+            .insert({ ...toDbInsert(data), user_id: userId })
             .select()
             .single<PromptDb>();
 
@@ -245,14 +245,14 @@ export const upsertUserPrompt = createAsyncThunk<
     { dispatch: AppDispatch; state: RootState }
 >(
     'promptCrud/upsert',
-    async (data, { dispatch }) => {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError || !user) throw new Error('Not authenticated');
+    async (data, { dispatch, getState }) => {
+        const userId = (getState() as RootState).user.id;
+        if (!userId) throw new Error('Not authenticated');
 
         const payload: Partial<PromptDb> = {
             ...(data.id ? { id: data.id } : {}),
             ...toDbInsert(data),
-            user_id: user.id,
+            user_id: userId,
         };
 
         if (data.id) dispatch(markPromptStale(data.id));

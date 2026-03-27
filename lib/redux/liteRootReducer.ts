@@ -17,6 +17,9 @@ import userPreferencesReducer from "./slices/userPreferencesSlice";
 import adminPreferencesReducer from "./slices/adminPreferencesSlice";
 import adminDebugReducer from "./slices/adminDebugSlice";
 
+// API config — single source of truth for active server, health, and call log
+import apiConfigReducer from "./slices/apiConfigSlice";
+
 // Canvas
 import canvasReducer from "../../features/canvas/redux/canvasSlice";
 
@@ -126,6 +129,9 @@ export const createLiteRootReducer = () => {
         // User
         user: userReducer,
         userPreferences: userPreferencesReducer,
+
+        // API config — single source of truth for active server, health, and call log
+        apiConfig: apiConfigReducer,
 
         // Admin
         adminPreferences: adminPreferencesReducer,

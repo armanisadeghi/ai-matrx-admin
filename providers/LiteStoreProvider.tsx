@@ -4,7 +4,7 @@
 'use client';
 
 import { LiteAppStore, makeLiteStore } from '@/lib/redux/liteStore';
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { Provider } from 'react-redux';
 import { LiteInitialReduxState } from '@/types/reduxTypes';
 
@@ -31,19 +31,12 @@ export default function LiteStoreProvider({ children, initialState }: LiteStoreP
     const storeRef = useRef<LiteAppStore | null>(null);
 
     if (!storeRef.current) {
-        const t0 = performance.now();
         storeRef.current = makeLiteStore(initialState);
-        const t1 = performance.now();
-        console.debug(`⚡LiteStoreProvider store created in ${(t1 - t0).toFixed(3)}ms`);
     }
 
     if (!storeRef.current) {
         throw new Error('Lite Redux store failed to initialize');
     }
-
-    useEffect(() => {
-        console.debug(`⚡LiteStoreProvider mounted at ${performance.now().toFixed(2)}ms since page start`);
-    }, []);
 
     return <Provider store={storeRef.current}>{children}</Provider>;
 }

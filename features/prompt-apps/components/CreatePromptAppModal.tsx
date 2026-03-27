@@ -45,13 +45,12 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt: prompt
     setError(null);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const userId = requireUserId();
 
       const { data: promptsData, error: promptsError } = await supabase
         .from('prompts')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('updated_at', { ascending: false });
 
       if (promptsError) throw promptsError;

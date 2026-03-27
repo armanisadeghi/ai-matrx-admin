@@ -21,13 +21,12 @@ export const aiTasksService = {
   async create(input: CreateAiTaskInput): Promise<AiTask> {
     const supabase = createClient();
     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("User not authenticated");
+    const userId = requireUserId();
 
     const { data, error } = await supabase
       .from("ai_tasks")
       .insert({
-        user_id: user.id,
+        user_id: userId,
         run_id: input.run_id,
         task_id: input.task_id, // Must match socket.io taskId
         service: input.service,
@@ -112,8 +111,7 @@ export const aiTasksService = {
   }): Promise<{ tasks: AiTask[]; total: number; hasMore: boolean }> {
     const supabase = createClient();
     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("User not authenticated");
+    const userId = requireUserId();
 
     const limit = filters?.limit || 20;
     const offset = filters?.offset || 0;
@@ -123,7 +121,7 @@ export const aiTasksService = {
     let query = supabase
       .from("ai_tasks")
       .select("*", { count: 'exact' })
-      .eq("user_id", user.id);
+      .eq("user_id", userId);
 
     if (filters?.run_id) {
       query = query.eq("run_id", filters.run_id);

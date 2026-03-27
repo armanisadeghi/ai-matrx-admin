@@ -2,6 +2,8 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectUser } from '@/lib/redux/slices/userSlice';
 import { contextVariableService } from '../service/contextVariableService';
 import type { ContextVariableFormData } from '../service/contextVariableService';
 import type { ContextScopeLevel } from '../types';
@@ -34,30 +36,22 @@ export function useResolvedVariables(
     taskId?: string | null;
   }
 ) {
+  const { id: reduxUserId } = useAppSelector(selectUser);
+  const resolvedUserId = scopeIds?.userId ?? reduxUserId;
+
   return useQuery({
     queryKey: KEYS.resolved(scopeType, scopeId),
     queryFn: async () => {
-      if (!scopeIds?.userId) {
-        const { supabase } = await import('@/utils/supabase/client');
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Not authenticated');
-        return contextVariableService.resolveVariables({
-          userId: user.id,
-          organizationId: scopeIds?.organizationId,
-          workspaceId: scopeIds?.workspaceId,
-          projectId: scopeIds?.projectId,
-          taskId: scopeIds?.taskId,
-        });
-      }
+      if (!resolvedUserId) throw new Error('Not authenticated');
       return contextVariableService.resolveVariables({
-        userId: scopeIds.userId,
-        organizationId: scopeIds.organizationId,
-        workspaceId: scopeIds.workspaceId,
-        projectId: scopeIds.projectId,
-        taskId: scopeIds.taskId,
+        userId: resolvedUserId,
+        organizationId: scopeIds?.organizationId,
+        workspaceId: scopeIds?.workspaceId,
+        projectId: scopeIds?.projectId,
+        taskId: scopeIds?.taskId,
       });
     },
-    enabled: !!scopeId && scopeId !== 'default',
+    enabled: !!scopeId && scopeId !== 'default' && !!resolvedUserId,
   });
 }
 

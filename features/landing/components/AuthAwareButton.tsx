@@ -24,9 +24,9 @@ export function AuthAwareButton() {
 
     const id = safeRequestIdleCallback(() => {
       const supabase = createClient();
-      supabase.auth.getUser().then(({ data }) => {
+      supabase.auth.getSession().then(({ data }) => {
         if (!cancelled) {
-          setUser(data.user);
+          setUser(data.session?.user ?? null);
           setChecked(true);
         }
       });

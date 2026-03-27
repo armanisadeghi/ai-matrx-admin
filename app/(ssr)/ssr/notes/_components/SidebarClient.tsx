@@ -24,6 +24,8 @@ import {
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/slices/userSlice";
 import type { NoteSummary } from "../layout";
 import NotesSidebarToolbar from "./NotesSidebarToolbar";
 import NewNoteButton from "./NewNoteButton";
@@ -66,44 +68,44 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
   const [serverNotes, setServerNotes] = useState<NoteSummary[]>(initialNotes);
   const [folderCounts, setFolderCounts] = useState<Record<string, number>>(initialFolderCounts);
   const [allTags, setAllTags] = useState<string[]>(initialAllTags);
+  const { id: userId } = useAppSelector(selectUser);
   const userIdRef = useRef<string | null>(null);
 
-  // Fetch notes after mount — directly from Supabase, no server roundtrip
+  // Fetch notes after mount — use userId from Redux (set by DeferredShellData), no redundant getUser() call
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return;
-      userIdRef.current = user.id;
-      supabase
-        .from('notes')
-        .select('id, label, folder_name, tags, updated_at, position')
-        .eq('user_id', user.id)
-        .eq('is_deleted', false)
-        .order('updated_at', { ascending: false })
-        .then(({ data }) => {
-          if (!data) return;
-          const fetched: NoteSummary[] = data.map(n => ({
-            id: n.id,
-            label: n.label ?? 'Untitled',
-            folder_name: n.folder_name ?? 'Draft',
-            tags: n.tags ?? [],
-            updated_at: n.updated_at ?? '',
-            position: n.position ?? 0,
-          }));
-          setServerNotes(fetched);
-          const counts: Record<string, number> = {};
-          for (const note of fetched) {
-            counts[note.folder_name] = (counts[note.folder_name] ?? 0) + 1;
-          }
-          setFolderCounts(counts);
-          setAllTags(Array.from(new Set(fetched.flatMap(n => n.tags))).sort());
-        });
-    });
-  }, []);
+    if (!userId) return;
+    userIdRef.current = userId;
+    supabase
+      .from('notes')
+      .select('id, label, folder_name, tags, updated_at, position')
+      .eq('user_id', userId)
+      .eq('is_deleted', false)
+      .order('updated_at', { ascending: false })
+      .then(({ data }) => {
+        if (!data) return;
+        const fetched: NoteSummary[] = data.map(n => ({
+          id: n.id,
+          label: n.label ?? 'Untitled',
+          folder_name: n.folder_name ?? 'Draft',
+          tags: n.tags ?? [],
+          updated_at: n.updated_at ?? '',
+          position: n.position ?? 0,
+        }));
+        setServerNotes(fetched);
+        const counts: Record<string, number> = {};
+        for (const note of fetched) {
+          counts[note.folder_name] = (counts[note.folder_name] ?? 0) + 1;
+        }
+        setFolderCounts(counts);
+        setAllTags(Array.from(new Set(fetched.flatMap(n => n.tags))).sort());
+      });
+  }, [userId]);
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   // ── Local state overlays for live sync with workspace ─────────────────
   const [labelOverrides, setLabelOverrides] = useState<Record<string, string>>({});
+  const [folderOverrides, setFolderOverrides] = useState<Record<string, string>>({});
   const [localNotes, setLocalNotes] = useState<NoteSummary[]>([]);
   const [deletedIds, setDeletedIds] = useState<Set<string>>(() => new Set());
 
@@ -115,11 +117,20 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
     for (const note of merged) {
       if (seen.has(note.id) || deletedIds.has(note.id)) continue;
       seen.add(note.id);
-      const override = labelOverrides[note.id];
-      result.push(override ? { ...note, label: override } : note);
+      const labelOv = labelOverrides[note.id];
+      const folderOv = folderOverrides[note.id];
+      if (labelOv || folderOv) {
+        result.push({
+          ...note,
+          ...(labelOv && { label: labelOv }),
+          ...(folderOv && { folder_name: folderOv }),
+        });
+      } else {
+        result.push(note);
+      }
     }
     return result;
-  }, [serverNotes, localNotes, labelOverrides, deletedIds]);
+  }, [serverNotes, localNotes, labelOverrides, folderOverrides, deletedIds]);
 
   // ── Listen for workspace events ───────────────────────────────────────
 
@@ -138,10 +149,7 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
     };
     const onNoteMoved = (e: Event) => {
       const { noteId, folder } = (e as CustomEvent).detail;
-      // Update both local and server note folder
-      setLocalNotes((prev) =>
-        prev.map((n) => (n.id === noteId ? { ...n, folder_name: folder } : n)),
-      );
+      setFolderOverrides((prev) => ({ ...prev, [noteId]: folder }));
     };
 
     window.addEventListener("notes:labelChange", onLabelChange);
@@ -178,14 +186,22 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
   const [showCreateFolder, setShowCreateFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
 
+  // Read filter state from URL
+  const searchQuery = searchParams.get("q") ?? "";
+  const sortField = (searchParams.get("sort") as SortField) ?? "updated_at";
+  const sortOrder = (searchParams.get("order") as "asc" | "desc") ?? "desc";
+  const mobileFolder = searchParams.get("folder") ?? "";
+
+  // Active note from URL path
+  const activeNoteId = pathname.startsWith("/ssr/notes/")
+    ? pathname.split("/ssr/notes/")[1]?.split("/")[0] ?? ""
+    : "";
+
   // ── Folder expand/collapse state ──────────────────────────────────────
   const activeNoteFolder = useMemo(() => {
-    const activeId = pathname.startsWith("/ssr/notes/")
-      ? pathname.split("/ssr/notes/")[1]?.split("/")[0] ?? ""
-      : "";
-    if (!activeId) return null;
-    return serverNotes.find((n) => n.id === activeId)?.folder_name ?? null;
-  }, [pathname, serverNotes]);
+    if (!activeNoteId) return null;
+    return notes.find((n) => n.id === activeNoteId)?.folder_name ?? null;
+  }, [activeNoteId, notes]);
 
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
     () => activeNoteFolder ? new Set([activeNoteFolder]) : new Set(),
@@ -200,16 +216,25 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
     });
   }, []);
 
-  // Read filter state from URL
-  const searchQuery = searchParams.get("q") ?? "";
-  const sortField = (searchParams.get("sort") as SortField) ?? "updated_at";
-  const sortOrder = (searchParams.get("order") as "asc" | "desc") ?? "desc";
-  const mobileFolder = searchParams.get("folder") ?? "";
+  const treeRef = useRef<HTMLDivElement>(null);
+  const prevActiveRef = useRef(activeNoteId);
 
-  // Active note from URL path
-  const activeNoteId = pathname.startsWith("/ssr/notes/")
-    ? pathname.split("/ssr/notes/")[1]?.split("/")[0] ?? ""
-    : "";
+  useEffect(() => {
+    if (!activeNoteId || activeNoteId === prevActiveRef.current) {
+      prevActiveRef.current = activeNoteId;
+      return;
+    }
+    prevActiveRef.current = activeNoteId;
+
+    if (activeNoteFolder && !expandedFolders.has(activeNoteFolder)) {
+      setExpandedFolders((prev) => new Set(prev).add(activeNoteFolder));
+    }
+
+    requestAnimationFrame(() => {
+      const el = treeRef.current?.querySelector(`[data-note-id="${activeNoteId}"]`);
+      el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    });
+  }, [activeNoteId, activeNoteFolder, expandedFolders]);
 
   // ── pushState URL helpers ─────────────────────────────────────────────
 
@@ -330,13 +355,12 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
 
   const createNoteInFolder = useCallback(
     async (folder: string) => {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData?.user?.id) return;
+      if (!userId) return;
 
       const { data: note, error } = await supabase
         .from("notes")
         .insert({
-          user_id: userData.user.id,
+          user_id: userId,
           label: "New Note",
           content: "",
           folder_name: folder,
@@ -364,7 +388,7 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
 
       navigateToNote(note.id);
     },
-    [navigateToNote],
+    [navigateToNote, userId],
   );
 
   const renameFolder = useCallback(
@@ -469,6 +493,7 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
 
       {/* ── VSCode-style Tree ──────────────────────────────────────────── */}
       <div
+        ref={treeRef}
         className="flex-1 overflow-y-auto scrollbar-thin-auto"
         onClick={contextMenu ? closeContextMenu : undefined}
       >
@@ -521,6 +546,7 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
                       return (
                         <button
                           key={note.id}
+                          data-note-id={note.id}
                           className={cn(
                             "flex items-center gap-1.5 w-full text-left px-2 py-[3px] rounded-sm cursor-pointer transition-colors group/item",
                             isActive

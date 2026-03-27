@@ -1,45 +1,32 @@
 /**
- * Unified Backend API Hook
- * 
- * Single source of truth for:
- * - Backend URL (respects admin localhost override)
- * - API headers (auth + content-type)
- * - Ready-to-use fetch helper
- * 
+ * useBackendApi — Thin React hook wrapper for backend API calls.
+ *
+ * Reads the active backend URL from apiConfigSlice (single source of truth).
+ * Supports all server environments: production, development, staging,
+ * localhost, gpu, and custom.
+ *
+ * Prefer dispatching callApi() thunks directly for most cases — this hook
+ * is for components in public routes that make direct fetch calls.
+ *
  * Usage:
  * ```typescript
  * const api = useBackendApi();
- * const response = await api.post('/api/ai/agents/{conversationId}/execute', requestBody);
+ * const response = await api.post('/api/ai/agents/{id}', body);
  * ```
  */
 
 import { useCallback, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/lib/redux/hooks';
 import { useApiAuth } from './useApiAuth';
-import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
-import { selectIsAdmin } from '@/lib/redux/slices/userSlice';
-import { BACKEND_URLS } from '@/lib/api/endpoints';
+import { selectResolvedBaseUrl } from '@/lib/redux/slices/apiConfigSlice';
 
 export function useBackendApi() {
     const { getHeaders, waitForAuth } = useApiAuth();
-    const useLocalhost = useSelector(selectIsUsingLocalhost);
-    const isAdmin = useSelector(selectIsAdmin);
+    const backendUrl = useAppSelector(selectResolvedBaseUrl);
 
-    // Backend URL - determined by Redux state
-    const backendUrl = useMemo(() => {
-        const url = (isAdmin && useLocalhost)
-            ? BACKEND_URLS.localhost
-            : BACKEND_URLS.production;
-        console.log('[useBackendApi] isAdmin:', isAdmin, '| useLocalhost:', useLocalhost, '| backendUrl:', url);
-        return url;
-    }, [isAdmin, useLocalhost]);
-
-    // Ready-to-use headers
     const getApiHeaders = useCallback((includeContentType = true) => {
         const authHeaders = getHeaders();
         if (!includeContentType) {
-            // Remove Content-Type so the browser sets it automatically with the correct
-            // multipart/form-data boundary for FormData uploads.
             const { 'Content-Type': _removed, ...rest } = authHeaders;
             return rest;
         }
@@ -49,11 +36,10 @@ export function useBackendApi() {
         };
     }, [getHeaders]);
 
-    // Unified POST helper
-    const post = useCallback(async (endpoint: string, body: any, signal?: AbortSignal) => {
+    const post = useCallback(async (endpoint: string, body: unknown, signal?: AbortSignal) => {
         await waitForAuth();
-        console.log('[useBackendApi] POST', `${backendUrl}${endpoint}`);
-        const response = await fetch(`${backendUrl}${endpoint}`, {
+        const url = `${backendUrl}${endpoint}`;
+        const response = await fetch(url, {
             method: 'POST',
             headers: getApiHeaders(),
             body: JSON.stringify(body),
@@ -68,11 +54,10 @@ export function useBackendApi() {
         return response;
     }, [backendUrl, getApiHeaders, waitForAuth]);
 
-    // Unified GET helper
     const get = useCallback(async (endpoint: string, signal?: AbortSignal) => {
         await waitForAuth();
-        console.log('[useBackendApi] GET', `${backendUrl}${endpoint}`);
-        const response = await fetch(`${backendUrl}${endpoint}`, {
+        const url = `${backendUrl}${endpoint}`;
+        const response = await fetch(url, {
             method: 'GET',
             headers: getApiHeaders(),
             signal,
@@ -86,13 +71,11 @@ export function useBackendApi() {
         return response;
     }, [backendUrl, getApiHeaders, waitForAuth]);
 
-    // Upload helper (FormData - no Content-Type)
     const upload = useCallback(async (endpoint: string, formData: FormData, signal?: AbortSignal) => {
         await waitForAuth();
-        
         const response = await fetch(`${backendUrl}${endpoint}`, {
             method: 'POST',
-            headers: getApiHeaders(false), // No Content-Type for FormData
+            headers: getApiHeaders(false),
             body: formData,
             signal,
         });

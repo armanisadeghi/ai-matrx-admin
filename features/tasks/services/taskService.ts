@@ -39,12 +39,7 @@ export interface CreateTaskOptions {
  */
 export async function createTask(input: CreateTaskInput): Promise<DatabaseTask | null> {
   try {
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData?.user) {
-      console.error('User not authenticated:', userError?.message);
-      return null;
-    }
-
+    const userId = requireUserId();
     const { data, error } = await supabase
       .from('tasks')
       .insert({
@@ -56,7 +51,7 @@ export async function createTask(input: CreateTaskInput): Promise<DatabaseTask |
         priority: input.priority || null,
         assignee_id: input.assignee_id || null,
         status: input.status || 'incomplete',
-        user_id: userData.user.id,
+        user_id: userId,
         authenticated_read: input.authenticated_read ?? false,
       })
       .select()
@@ -96,15 +91,11 @@ export async function quickCreateTask(
  */
 export async function getUserTasks(): Promise<DatabaseTask[]> {
   try {
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData?.user) {
-      return [];
-    }
-
+    const userId = requireUserId();
     const { data, error } = await supabase
       .from('tasks')
       .select('*')
-      .eq('user_id', userData.user.id)
+      .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -344,17 +335,12 @@ export async function createTaskComment(
   content: string
 ): Promise<any | null> {
   try {
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData?.user) {
-      console.error('User not authenticated:', userError?.message);
-      return null;
-    }
-
+    const userId = requireUserId();
     const { data, error } = await supabase
       .from('task_comments')
       .insert({
         task_id: taskId,
-        user_id: userData.user.id,
+        user_id: userId,
         content,
       })
       .select(`

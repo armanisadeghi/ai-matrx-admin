@@ -55,14 +55,7 @@ export async function createProject(options: CreateProjectOptions): Promise<Proj
       return { success: false, error: `A project with that slug already exists ${scope}` };
     }
 
-    const {
-      data: { user: currentUser },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !currentUser) {
-      return { success: false, error: 'User not authenticated' };
-    }
+    const currentUserId = requireUserId();
 
     const { data: project, error: projectError } = await supabase
       .from('projects')
@@ -71,7 +64,7 @@ export async function createProject(options: CreateProjectOptions): Promise<Proj
         slug,
         organization_id: organizationId ?? null,
         description: description ?? null,
-        created_by: currentUser.id,
+        created_by: currentUserId,
         is_personal: !organizationId,
         settings: settings ?? {},
       })
@@ -90,7 +83,7 @@ export async function createProject(options: CreateProjectOptions): Promise<Proj
     // Add creator as owner
     const { error: memberError } = await supabase.from('project_members').insert({
       project_id: project.id,
-      user_id: currentUser.id,
+      user_id: currentUserId,
       role: 'owner',
     });
 
@@ -195,17 +188,14 @@ export async function getProjectBySlug(
 
 export async function getPersonalProjectBySlug(slug: string): Promise<Project | null> {
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return null;
+    const userId = requireUserId();
 
     const { data, error } = await supabase
       .from('projects')
       .select('*')
       .eq('slug', slug)
       .is('organization_id', null)
-      .eq('created_by', user.id)
+      .eq('created_by', userId)
       .single();
     if (error) throw error;
     return transformProjectFromDb(data);
@@ -217,17 +207,13 @@ export async function getPersonalProjectBySlug(slug: string): Promise<Project | 
 
 export async function getOrgProjects(organizationId: string): Promise<ProjectWithRole[]> {
   try {
-    const {
-      data: { user: currentUser },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const currentUserId = requireUserId();
 
-    if (userError || !currentUser) return [];
 
     const { data, error } = await supabase
       .from('project_members')
       .select(`role, projects(*)`)
-      .eq('user_id', currentUser.id)
+      .eq('user_id', currentUserId)
       .not('projects.organization_id', 'is', null);
 
     if (error) {
@@ -266,17 +252,13 @@ export async function getOrgProjects(organizationId: string): Promise<ProjectWit
 
 export async function getUserProjects(): Promise<ProjectWithRole[]> {
   try {
-    const {
-      data: { user: currentUser },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const currentUserId = requireUserId();
 
-    if (userError || !currentUser) return [];
 
     const { data, error } = await supabase
       .from('project_members')
       .select(`role, projects(*)`)
-      .eq('user_id', currentUser.id);
+      .eq('user_id', currentUserId);
 
     if (error) {
       console.error('Error fetching user projects:', error.message);
@@ -311,9 +293,8 @@ export async function isProjectSlugAvailable(
       query = query.eq('organization_id', organizationId);
     } else {
       // Personal project: scope uniqueness to the current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return true;
-      query = query.is('organization_id', null).eq('created_by', user.id);
+      const userId = requireUserId();
+      query = query.is('organization_id', null).eq('created_by', userId);
     }
     const { data } = await query.single();
     return !data;
@@ -324,17 +305,13 @@ export async function isProjectSlugAvailable(
 
 export async function getPersonalProjects(): Promise<ProjectWithRole[]> {
   try {
-    const {
-      data: { user: currentUser },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const currentUserId = requireUserId();
 
-    if (userError || !currentUser) return [];
 
     const { data, error } = await supabase
       .from('project_members')
       .select(`role, projects(*)`)
-      .eq('user_id', currentUser.id);
+      .eq('user_id', currentUserId);
 
     if (error) {
       console.error('Error fetching personal projects:', error.message);
@@ -500,14 +477,10 @@ export async function removeProjectMember(
 
 export async function leaveProject(projectId: string): Promise<OperationResult> {
   try {
-    const {
-      data: { user: currentUser },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const currentUserId = requireUserId();
 
-    if (userError || !currentUser) return { success: false, error: 'User not authenticated' };
 
-    return await removeProjectMember(projectId, currentUser.id);
+    return await removeProjectMember(projectId, currentUserId);
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Failed to leave project';
     console.error('Error leaving project:', error);
@@ -517,18 +490,14 @@ export async function leaveProject(projectId: string): Promise<OperationResult> 
 
 export async function getProjectUserRole(projectId: string): Promise<ProjectRole | null> {
   try {
-    const {
-      data: { user: currentUser },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const currentUserId = requireUserId();
 
-    if (userError || !currentUser) return null;
 
     const { data } = await supabase
       .from('project_members')
       .select('role')
       .eq('project_id', projectId)
-      .eq('user_id', currentUser.id)
+      .eq('user_id', currentUserId)
       .single();
 
     return (data?.role as ProjectRole) ?? null;
@@ -634,20 +603,13 @@ export async function resendProjectInvitation(invitationId: string): Promise<Ope
 
 export async function acceptProjectInvitation(token: string): Promise<ProjectResult> {
   try {
-    const {
-      data: { user: currentUser },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !currentUser) {
-      return { success: false, error: 'User not authenticated' };
-    }
+    const currentUserId = requireUserId();
 
     const { data: invitation, error: inviteError } = await supabase
       .from('project_invitations')
       .select('*, projects(*)')
       .eq('token', token)
-      .eq('email', currentUser.email)
+      .eq('email', { id: currentUserId }.email)
       .gt('expires_at', new Date().toISOString())
       .single();
 
@@ -657,7 +619,7 @@ export async function acceptProjectInvitation(token: string): Promise<ProjectRes
 
     const { error: memberError } = await supabase.from('project_members').insert({
       project_id: invitation.project_id,
-      user_id: currentUser.id,
+      user_id: currentUserId,
       role: invitation.role,
       invited_by: invitation.invited_by,
     });
@@ -685,17 +647,13 @@ export async function acceptProjectInvitation(token: string): Promise<ProjectRes
 
 export async function getUserProjectInvitations(): Promise<ProjectInvitationWithProject[]> {
   try {
-    const {
-      data: { user: currentUser },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const currentUserId = requireUserId();
 
-    if (userError || !currentUser) return [];
 
     const { data, error } = await supabase
       .from('project_invitations')
       .select('*, projects(*)')
-      .eq('email', currentUser.email)
+      .eq('email', { id: currentUserId }.email)
       .gt('expires_at', new Date().toISOString())
       .order('invited_at', { ascending: false });
 

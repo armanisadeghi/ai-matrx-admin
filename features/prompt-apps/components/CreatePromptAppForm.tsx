@@ -165,15 +165,12 @@ export function CreatePromptAppForm({ prompts, categories, preselectedPromptId, 
     startTransition(async () => {
       try {
         // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          throw new Error('You must be logged in to create an app');
-        }
+        const userId = requireUserId();
 
         const { data, error: insertError } = await supabase
           .from('prompt_apps')
           .insert({
-            user_id: user.id, // REQUIRED for RLS policy
+            user_id: userId, // REQUIRED for RLS policy
             prompt_id: promptId,
             slug,
             name,

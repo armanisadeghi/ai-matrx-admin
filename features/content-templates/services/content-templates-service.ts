@@ -117,8 +117,7 @@ export async function getTemplateById(id: string): Promise<ContentTemplateDB | n
 export async function createTemplate(input: CreateContentTemplateInput): Promise<ContentTemplateDB> {
     const supabase = getClient();
     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
+    const userId = requireUserId();
 
     const { data, error } = await supabase
         .from('content_template')
@@ -129,7 +128,7 @@ export async function createTemplate(input: CreateContentTemplateInput): Promise
             metadata: input.metadata || null,
             is_public: input.is_public || false,
             tags: input.tags || null,
-            user_id: user.id
+            user_id: userId
         }])
         .select()
         .single();

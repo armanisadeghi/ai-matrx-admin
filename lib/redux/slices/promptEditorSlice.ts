@@ -92,10 +92,10 @@ export const savePrompt = createAsyncThunk(
         try {
             const state = getState() as RootState;
             const { id, name, description, messages, variableDefaults, settings } = state.promptEditor;
+            const userId = state.user.id;
+            if (!userId) throw new Error('User not authenticated');
 
             const supabase = createClient();
-            const user = await supabase.auth.getUser();
-            if (!user.data.user) throw new Error('User not authenticated');
 
             const payload = {
                 name,
@@ -124,7 +124,7 @@ export const savePrompt = createAsyncThunk(
                     .from('prompts')
                     .insert({
                         ...payload,
-                        user_id: user.data.user.id,
+                        user_id: userId,
                     })
                     .select()
                     .single();

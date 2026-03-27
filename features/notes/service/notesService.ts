@@ -1,6 +1,7 @@
 // features/notes/service/notesService.ts
 
 import { supabase } from '@/utils/supabase/client';
+import { requireUserId } from '@/utils/auth/getUserId';
 import type { Note, CreateNoteInput, UpdateNoteInput } from '../types';
 import { generateLabelFromContent } from '../hooks/useAutoLabel';
 import { findEmptyNewNote } from '../utils/noteUtils';
@@ -48,11 +49,7 @@ export async function fetchNoteById(id: string): Promise<Note | null> {
  * IMPORTANT: Checks for existing empty notes and reuses them to prevent duplicates
  */
 export async function createNote(input: CreateNoteInput = {}): Promise<Note> {
-    const { data: userData } = await supabase.auth.getUser();
-    
-    if (!userData?.user?.id) {
-        throw new Error('User not authenticated');
-    }
+    const userId = requireUserId();
 
     const content = input.content || '';
     const targetFolder = input.folder_name || 'Draft';
@@ -98,7 +95,7 @@ export async function createNote(input: CreateNoteInput = {}): Promise<Note> {
     const { data, error } = await supabase
         .from('notes')
         .insert({
-            user_id: userData.user.id,
+            user_id: userId,
             label: finalLabel,
             content: content,
             folder_name: targetFolder,

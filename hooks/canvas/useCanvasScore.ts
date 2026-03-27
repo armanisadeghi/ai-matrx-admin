@@ -10,14 +10,13 @@ export function useCanvasScore(canvasId: string) {
     const { data: bestScore } = useQuery({
         queryKey: ['canvas-best-score', canvasId],
         queryFn: async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return null;
-
+            const userId = requireUserId();
+    
             const { data } = await supabase
                 .from('canvas_scores')
                 .select('*')
                 .eq('canvas_id', canvasId)
-                .eq('user_id', user.id)
+                .eq('user_id', userId)
                 .order('score', { ascending: false })
                 .limit(1)
                 .single();
@@ -30,7 +29,7 @@ export function useCanvasScore(canvasId: string) {
     // Submit score mutation
     const submitScoreMutation = useMutation({
         mutationFn: async (request: Omit<SubmitScoreRequest, 'canvas_id'>) => {
-            const { data: { user } } = await supabase.auth.getUser();
+            const userId = requireUserId();
 
             // Get attempt number
             let attemptNumber = 1;
@@ -39,7 +38,7 @@ export function useCanvasScore(canvasId: string) {
                     .from('canvas_scores')
                     .select('*', { count: 'exact', head: true })
                     .eq('canvas_id', canvasId)
-                    .eq('user_id', user.id);
+                    .eq('user_id', userId);
                 
                 attemptNumber = (count || 0) + 1;
             }

@@ -524,18 +524,15 @@ export default userPreferencesSlice.reducer;
 // Async thunks for Supabase operations
 export const savePreferencesToDatabase = createAsyncThunk(
     'userPreferences/saveToDatabase',
-    async (preferences: UserPreferences, { rejectWithValue }) => {
+    async (preferences: UserPreferences, { getState, rejectWithValue }) => {
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            
-            if (!user) {
-                throw new Error('User not authenticated');
-            }
+            const userId = (getState() as { user: { id: string | null } }).user.id;
+            if (!userId) throw new Error('User not authenticated');
 
             const { error } = await supabase
                 .from('user_preferences')
                 .upsert({
-                    user_id: user.id,
+                    user_id: userId,
                     preferences: preferences,
                 });
 
@@ -566,16 +563,13 @@ export const saveModulePreferencesToDatabase = createAsyncThunk(
                 [module]: { ...currentPreferences[module], ...preferences }
             };
 
-            const { data: { user } } = await supabase.auth.getUser();
-            
-            if (!user) {
-                throw new Error('User not authenticated');
-            }
+            const userId = (state as { user: { id: string | null } } & typeof state).user.id;
+            if (!userId) throw new Error('User not authenticated');
 
             const { error } = await supabase
                 .from('user_preferences')
                 .upsert({
-                    user_id: user.id,
+                    user_id: userId,
                     preferences: updatedPreferences,
                 });
 
@@ -592,18 +586,15 @@ export const saveModulePreferencesToDatabase = createAsyncThunk(
 
 export const loadPreferencesFromDatabase = createAsyncThunk(
     'userPreferences/loadFromDatabase',
-    async (_, { rejectWithValue }) => {
+    async (_, { getState, rejectWithValue }) => {
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            
-            if (!user) {
-                throw new Error('User not authenticated');
-            }
+            const userId = (getState() as { user: { id: string | null } }).user.id;
+            if (!userId) throw new Error('User not authenticated');
 
             const { data, error } = await supabase
                 .from('user_preferences')
                 .select('preferences')
-                .eq('user_id', user.id)
+                .eq('user_id', userId)
                 .single();
 
             if (error) {

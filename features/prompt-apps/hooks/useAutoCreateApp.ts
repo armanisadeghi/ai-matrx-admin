@@ -237,15 +237,12 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
       // Save to database
       setProgress('Saving app to database...');
       
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
+      const userId = requireUserId();
 
       const { data: appData, error: insertError } = await supabase
         .from('prompt_apps')
         .insert({
-          user_id: user.id,
+          user_id: userId,
           prompt_id: data.prompt.id,
           slug: selectedSlug,
           name: metadata.name,

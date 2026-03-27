@@ -17,7 +17,7 @@ import PageHeaderPortal from '@/app/(ssr)/_components/PageHeaderPortal';
 import IconButton from '@/app/(ssr)/_components/IconButton';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { selectUser, selectIsAdmin } from '@/lib/redux/slices/userSlice';
-import { selectIsUsingLocalhost, setServerOverride } from '@/lib/redux/slices/adminPreferencesSlice';
+import { selectActiveServer, switchServer } from '@/lib/redux/slices/apiConfigSlice';
 import { activeChatActions, selectActiveChatUseBlockMode, selectActiveChatSessionId } from '@/lib/redux/slices/activeChatSlice';
 import { chatConversationsActions } from '@/features/cx-conversation/redux/slice';
 
@@ -30,7 +30,8 @@ export default function ChatHeaderControls() {
     const dispatch = useAppDispatch();
     const user = useAppSelector(selectUser);
     const isAdmin = useAppSelector(selectIsAdmin);
-    const isUsingLocalhost = useAppSelector(selectIsUsingLocalhost);
+    const activeServer = useAppSelector(selectActiveServer);
+    const isUsingLocalhost = activeServer === 'localhost';
     const useBlockMode = useAppSelector(selectActiveChatUseBlockMode);
     const sessionId = useAppSelector(selectActiveChatSessionId);
 
@@ -49,7 +50,7 @@ export default function ChatHeaderControls() {
                     {showAdminToggles && (
                         <>
                             <button
-                                onClick={() => dispatch(setServerOverride(isUsingLocalhost ? null : 'localhost'))}
+                                onClick={() => dispatch(switchServer({ env: isUsingLocalhost ? 'production' : 'localhost' }))}
                                 title={isUsingLocalhost ? 'Using localhost — click to switch to production' : 'Using production — click to switch to localhost'}
                                 className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold transition-colors ${
                                     isUsingLocalhost

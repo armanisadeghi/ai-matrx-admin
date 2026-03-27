@@ -1,163 +1,215 @@
-// components/admin/LargeIndicator.tsx
+// components/admin/controls/LargeIndicator.tsx
 import React, { Suspense, lazy } from "react";
-import { ChevronRight, X, Server, Wifi, WifiOff, Shield, ShieldOff, AlertCircle } from "lucide-react";
+import { ChevronRight, X, Server, Activity, RefreshCw, AlertCircle, Check } from "lucide-react";
 import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
 import PageDebugDisplay from "@/components/admin/debug/PageDebugDisplay";
 import { LazyEntityGate } from "@/providers/packs/LazyEntityGate";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { selectIsDebugMode, selectDebugData } from "@/lib/redux/slices/adminDebugSlice";
+import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import {
+    selectActiveServer,
+    selectResolvedBaseUrl,
+    selectActiveServerHealth,
+    selectAllServerHealth,
+    selectRecentApiCalls,
+    checkServerHealth,
+    switchServer,
+    type ServerEnvironment,
+} from "@/lib/redux/slices/apiConfigSlice";
 
 const EnhancedEntityAnalyzer = lazy(() => import("@/components/admin/redux/EnhancedEntityAnalyzer"));
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsDebugMode, selectDebugData } from "@/lib/redux/slices/adminDebugSlice";
-import {
-    selectPrimaryConnection,
-    selectIsAdmin,
-    selectAllConnectionsHealth,
-} from "@/lib/redux/socket-io/selectors/socket-connection-selectors";
 
-interface User {
+interface UserForIndicator {
     id: string;
     email?: string;
     name?: string;
-    userMetadata?: {
-        fullName: string;
-    };
-    [key: string]: any;
+    userMetadata?: { fullName: string };
+    [key: string]: unknown;
 }
 
 interface LargeIndicatorProps {
-    user: User;
+    user: UserForIndicator;
     onSizeDown: () => void;
     onSizeSmall: () => void;
 }
 
+const statusColors: Record<string, string> = {
+    healthy: "text-green-400",
+    unhealthy: "text-red-400",
+    checking: "text-yellow-400",
+    unknown: "text-slate-400",
+};
+
+const statusBg: Record<string, string> = {
+    healthy: "bg-green-500",
+    unhealthy: "bg-red-500",
+    checking: "bg-yellow-400 animate-pulse",
+    unknown: "bg-gray-500",
+};
+
 const LargeIndicator: React.FC<LargeIndicatorProps> = ({ user, onSizeDown, onSizeSmall }) => {
-    // Redux selectors - minimal set for display
-    const primaryConnection = useAppSelector(selectPrimaryConnection);
+    const dispatch = useAppDispatch();
+
     const isAdmin = useAppSelector(selectIsAdmin);
-    const allConnectionsHealth = useAppSelector(selectAllConnectionsHealth);
+    const activeServer = useAppSelector(selectActiveServer);
+    const resolvedUrl = useAppSelector(selectResolvedBaseUrl);
+    const activeHealth = useAppSelector(selectActiveServerHealth);
+    const allServerHealth = useAppSelector(selectAllServerHealth);
+    const recentCalls = useAppSelector(selectRecentApiCalls);
     const isDebugMode = useAppSelector(selectIsDebugMode);
     const debugData = useAppSelector(selectDebugData);
 
-    // Derived values
-    const isConnected = primaryConnection?.connectionStatus === "connected";
-    const isAuthenticated = primaryConnection?.isAuthenticated || false;
-    const currentServer = primaryConnection?.url || "Not connected";
-    const currentNamespace = primaryConnection?.namespace || "/UserSession";
-    const activeConnectionsCount = allConnectionsHealth.filter((c) => c.isHealthy).length;
-    const totalConnectionsCount = allConnectionsHealth.length;
+    const lastCheckedLabel = activeHealth.lastCheckedAt
+        ? `${Math.round((Date.now() - activeHealth.lastCheckedAt) / 1000)}s ago`
+        : "never";
 
-    // Check if there are any connection errors
-    const hasConnectionError = allConnectionsHealth.some((c) => c.error);
-    const primaryConnectionError = allConnectionsHealth.find((c) => c.connectionId === primaryConnection?.connectionId)?.error;
-
-    // The main content for the large panel
     const LargeControls = () => (
         <div className="bg-slate-800 text-white">
+            {/* Header */}
             <div className="flex justify-between items-center px-4 py-3 bg-slate-900">
                 <div className="font-semibold">Admin Dashboard</div>
                 <div className="flex items-center gap-1">
                     <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onSizeDown();
-                        }}
+                        onClick={(e) => { e.stopPropagation(); onSizeDown(); }}
                         className="p-1 rounded hover:bg-slate-700"
                     >
                         <ChevronRight size={16} className="rotate-180" />
                     </button>
                     <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onSizeSmall();
-                        }}
+                        onClick={(e) => { e.stopPropagation(); onSizeSmall(); }}
                         className="p-1 rounded hover:bg-slate-700"
                     >
                         <X size={16} />
                     </button>
                 </div>
             </div>
-            <div className="p-4">
-                <div className="grid grid-cols-2 gap-3 mb-4">
+
+            <div className="p-4 space-y-4">
+                {/* User + Active Server */}
+                <div className="grid grid-cols-2 gap-3">
                     <div className="bg-slate-700 p-3 rounded">
-                        <div className="text-xs text-slate-400">Admin Name</div>
+                        <div className="text-xs text-slate-400">Admin</div>
                         <div className="text-sm font-semibold text-blue-400 truncate" title={user.id}>
                             {user.userMetadata?.fullName || user.name || user.email || user.id}
                             {isAdmin && <span className="text-green-400 text-xs ml-1">(Admin)</span>}
                         </div>
                     </div>
                     <div className="bg-slate-700 p-3 rounded">
-                        <div className="text-xs text-slate-400">Socket Status</div>
-                        <div className="flex items-center gap-2">
-                            <div className={`text-lg font-semibold ${isConnected ? "text-green-400" : "text-red-400"}`}>
-                                {isConnected ? "Online" : "Offline"}
-                            </div>
-                            <div className="flex items-center gap-1">
-                                {isConnected ? (
-                                    <Wifi size={14} className="text-green-400" />
-                                ) : (
-                                    <WifiOff size={14} className="text-red-400" />
-                                )}
-                                {isAuthenticated ? (
-                                    <Shield size={14} className="text-green-400" />
-                                ) : (
-                                    <ShieldOff size={14} className="text-red-400" />
-                                )}{" "}
-                                {hasConnectionError && (
-                                    <span title="Connection errors detected">
-                                        <AlertCircle size={14} className="text-yellow-400" />
-                                    </span>
-                                )}
-                            </div>
+                        <div className="text-xs text-slate-400">Active Server</div>
+                        <div className={`text-lg font-semibold ${statusColors[activeHealth.status] ?? statusColors.unknown}`}>
+                            {activeServer}
+                        </div>
+                        <div className="text-xs text-slate-400 mt-0.5">
+                            {activeHealth.latencyMs != null ? `${activeHealth.latencyMs}ms` : "—"}
+                            {" · "}
+                            {lastCheckedLabel}
                         </div>
                     </div>
-                    <div className="bg-slate-700 p-3 rounded col-span-2">
-                        <div className="text-xs text-slate-400 flex items-center gap-2">
-                            <Server size={12} />
-                            Server URL
-                        </div>
-                        <div
-                            className={`text-sm font-semibold ${
-                                !isConnected || primaryConnectionError
-                                    ? "text-red-400"
-                                    : currentServer?.includes("localhost")
-                                    ? "text-yellow-400"
-                                    : "text-blue-400"
-                            }`}
-                            title={currentServer}
+                </div>
+
+                {/* Active URL */}
+                <div className="bg-slate-700 p-3 rounded">
+                    <div className="text-xs text-slate-400 flex items-center gap-2 mb-1">
+                        <Server size={12} />
+                        Active Endpoint
+                        <button
+                            onClick={() => dispatch(checkServerHealth({ force: true }))}
+                            className="ml-auto p-0.5 rounded hover:bg-slate-600"
+                            title="Re-check health"
                         >
-                            {currentServer}
-                        </div>
-                        {primaryConnectionError && <div className="text-xs text-red-400 mt-1">Error: {primaryConnectionError}</div>}
-                        <div className="text-xs text-slate-400 mt-2">
-                            Namespace: <span className="text-blue-400">{currentNamespace}</span>
-                        </div>
+                            <RefreshCw size={12} />
+                        </button>
                     </div>
-                    <div className="bg-slate-700 p-3 rounded col-span-2">
-                        <div className="text-xs text-slate-400">Connection Health</div>
-                        <div className="flex items-center justify-between mt-1">
-                            <span className="text-sm">
-                                Active Connections:{" "}
-                                <span className={activeConnectionsCount > 0 ? "text-green-400" : "text-red-400"}>
-                                    {activeConnectionsCount}
+                    <div
+                        className={`text-sm font-mono font-semibold break-all ${statusColors[activeHealth.status] ?? statusColors.unknown}`}
+                        title={resolvedUrl}
+                    >
+                        {resolvedUrl ?? `${activeServer} — not configured`}
+                    </div>
+                    {activeHealth.error && activeHealth.status === "unhealthy" && (
+                        <div className="flex items-center gap-1 text-xs text-red-400 mt-1">
+                            <AlertCircle size={12} />
+                            {activeHealth.error}
+                        </div>
+                    )}
+                </div>
+
+                {/* All Environments Health Grid */}
+                <div className="bg-slate-700 p-3 rounded">
+                    <div className="text-xs text-slate-400 mb-2">All Environments</div>
+                    <div className="space-y-1.5">
+                        {allServerHealth.map(({ env, resolvedUrl: envUrl, isConfigured, health, isActive }) => (
+                            <div
+                                key={env}
+                                className={`flex items-center gap-2 text-xs cursor-pointer rounded px-1 py-0.5 hover:bg-slate-600/50 transition-colors ${
+                                    isActive ? "bg-slate-600/40" : ""
+                                }`}
+                                onClick={() => (isConfigured || env === "custom") && dispatch(switchServer({ env: env as ServerEnvironment }))}
+                                title={isConfigured ? envUrl ?? env : `${env} — env var not set`}
+                            >
+                                <span
+                                    className={`inline-block w-2 h-2 rounded-full shrink-0 ${
+                                        isConfigured ? (statusBg[health.status] ?? statusBg.unknown) : "bg-slate-600"
+                                    }`}
+                                />
+                                <span className={`w-24 shrink-0 ${isActive ? "text-green-400 font-semibold" : "text-white"}`}>
+                                    {env}
                                 </span>
-                                /{totalConnectionsCount}
-                            </span>
-                            {!isConnected && <span className="text-xs text-yellow-400">Click socket icon in admin panel to reconnect</span>}
-                        </div>
+                                {isActive && <Check size={10} className="text-green-400 shrink-0" />}
+                                <span className={`truncate ${isConfigured ? "text-slate-300" : "text-slate-600"}`}>
+                                    {isConfigured ? envUrl : "not configured"}
+                                </span>
+                                {isConfigured && health.latencyMs != null && (
+                                    <span className="text-slate-500 shrink-0 ml-auto">{health.latencyMs}ms</span>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </div>
-                <div className="flex gap-2">
-                    <button className="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded text-sm" onClick={(e) => e.stopPropagation()}>
-                        View Logs
-                    </button>
-                    <button className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 rounded text-sm" onClick={(e) => e.stopPropagation()}>
-                        User Management
-                    </button>
+
+                {/* Recent API Calls */}
+                <div className="bg-slate-700 p-3 rounded">
+                    <div className="text-xs text-slate-400 flex items-center gap-2 mb-2">
+                        <Activity size={12} />
+                        Recent API Calls
+                        <span className="ml-auto text-slate-500">{recentCalls.length} / 50</span>
+                    </div>
+                    <div className="space-y-1 max-h-48 overflow-y-auto">
+                        {recentCalls.length === 0 ? (
+                            <div className="text-slate-500 text-xs">No calls recorded yet</div>
+                        ) : (
+                            recentCalls.map((call) => (
+                                <div
+                                    key={call.id}
+                                    className="flex items-center gap-2 text-[10px] font-mono py-0.5 border-b border-slate-600/50"
+                                    title={`${call.method} ${call.baseUrl}${call.path}${call.httpStatus ? ` → ${call.httpStatus}` : ""}`}
+                                >
+                                    <span className={
+                                        call.status === "success" ? "text-green-400 w-8 shrink-0" :
+                                        call.status === "error" ? "text-red-400 w-8 shrink-0" :
+                                        "text-yellow-400 w-8 shrink-0"
+                                    }>
+                                        {call.method}
+                                    </span>
+                                    <span className="text-slate-300 truncate flex-1">{call.path}</span>
+                                    {call.httpStatus != null && (
+                                        <span className={`shrink-0 ${call.httpStatus < 400 ? "text-green-400" : "text-red-400"}`}>
+                                            {call.httpStatus}
+                                        </span>
+                                    )}
+                                    {call.durationMs != null && (
+                                        <span className="text-slate-500 shrink-0">{call.durationMs}ms</span>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
-                
+
                 {/* Debug Section */}
                 {isDebugMode && (
-                    <div className="mt-4">
+                    <div className="mt-2">
                         {debugData && Object.keys(debugData).length > 0 ? (
                             <PageDebugDisplay debugData={debugData} />
                         ) : (
@@ -177,9 +229,7 @@ const LargeIndicator: React.FC<LargeIndicatorProps> = ({ user, onSizeDown, onSiz
         <MatrxDynamicPanel
             initialPosition="left"
             defaultExpanded={true}
-            expandButtonProps={{
-                label: "",
-            }}
+            expandButtonProps={{ label: "" }}
         >
             <LargeControls />
         </MatrxDynamicPanel>

@@ -26,7 +26,8 @@ import {
 import { ContentTemplatesPageHeader } from "./ContentTemplatesPageHeader";
 import { TemplateCard } from "./TemplateCard";
 import { TemplateActionDrawer } from "./TemplateActionDrawer";
-import { createClient } from "@/utils/supabase/client";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/slices/userSlice";
 
 type ActiveTab = "my" | "public";
 type SortOption = "updated-desc" | "updated-asc" | "created-desc" | "label-asc" | "label-desc";
@@ -165,7 +166,7 @@ export function UserContentTemplateManager() {
 
     const [templates, setTemplates] = useState<ContentTemplateDB[]>([]);
     const [loading, setLoading] = useState(true);
-    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const { id: currentUserId } = useAppSelector(selectUser);
 
     // Filter & sort state
     const [searchTerm, setSearchTerm] = useState("");
@@ -184,13 +185,6 @@ export function UserContentTemplateManager() {
     const [isActionOpen, setIsActionOpen] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<ContentTemplateDB | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
-
-    useEffect(() => {
-        const supabase = createClient();
-        supabase.auth.getUser().then(({ data: { user } }) => {
-            if (user) setCurrentUserId(user.id);
-        });
-    }, []);
 
     const loadData = useCallback(async () => {
         try {

@@ -47,7 +47,7 @@ import {
 
 import { brokerActions } from '../../brokerSlice/slice';
 import { selectAccessToken, selectIsAdmin } from '../../slices/userSlice';
-import { selectIsUsingLocalhost } from '../../slices/adminPreferencesSlice';
+import { selectResolvedBaseUrl } from '../../slices/apiConfigSlice';
 
 interface ExecuteMessageFastAPIPayload {
   chatConfig: {
@@ -77,16 +77,8 @@ export const executeMessageFastAPI = createAsyncThunk<
     const conversationId = providedConversationId || uuidv4();
     const state = getState();
     const accessToken = selectAccessToken(state);
-    const isLocalhost = selectIsUsingLocalhost(state);
     const isAdmin = selectIsAdmin(state);
-
-    const BACKEND_URL = (isAdmin && isLocalhost)
-      ? BACKEND_URLS.localhost
-      : BACKEND_URLS.production;
-
-    console.log(
-      `[executeMessageFastAPI] isAdmin=${isAdmin}, isLocalhost=${isLocalhost}, BACKEND_URL=${BACKEND_URL}`,
-    );
+    const BACKEND_URL = selectResolvedBaseUrl(state as any) ?? BACKEND_URLS.production;
 
     const listenerId = taskId;
 

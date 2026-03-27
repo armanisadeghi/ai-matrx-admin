@@ -79,11 +79,8 @@ function generateMetadata(segments: TranscriptSegment[]) {
  * Create a new transcript
  */
 export async function createTranscript(input: CreateTranscriptInput): Promise<Transcript> {
-    const { data: userData } = await supabase.auth.getUser();
+    const userId = requireUserId();
 
-    if (!userData?.user?.id) {
-        throw new Error('User not authenticated');
-    }
 
     // Generate metadata from segments
     const autoMetadata = generateMetadata(input.segments);
@@ -95,7 +92,7 @@ export async function createTranscript(input: CreateTranscriptInput): Promise<Tr
     const { data, error } = await supabase
         .from('transcripts')
         .insert({
-            user_id: userData.user.id,
+            user_id: userId,
             title: input.title || 'New Transcript',
             description: input.description || '',
             segments: input.segments,
@@ -228,11 +225,8 @@ export async function permanentlyDeleteTranscript(id: string): Promise<void> {
  * Save transcript as draft (immediately after transcription)
  */
 export async function saveDraftTranscript(input: CreateTranscriptInput): Promise<Transcript> {
-    const { data: userData } = await supabase.auth.getUser();
+    const userId = requireUserId();
 
-    if (!userData?.user?.id) {
-        throw new Error('User not authenticated');
-    }
 
     // Generate metadata from segments
     const autoMetadata = generateMetadata(input.segments);
@@ -244,7 +238,7 @@ export async function saveDraftTranscript(input: CreateTranscriptInput): Promise
     const { data, error } = await supabase
         .from('transcripts')
         .insert({
-            user_id: userData.user.id,
+            user_id: userId,
             title: input.title || 'New Recording',
             description: input.description || '',
             segments: input.segments,
@@ -335,16 +329,13 @@ export async function copyTranscript(id: string): Promise<Transcript> {
         throw new Error('Original transcript not found');
     }
 
-    const { data: userData } = await supabase.auth.getUser();
+    const userId = requireUserId();
 
-    if (!userData?.user?.id) {
-        throw new Error('User not authenticated');
-    }
 
     const { data, error } = await supabase
         .from('transcripts')
         .insert({
-            user_id: userData.user.id,
+            user_id: userId,
             title: `${original.title} (Copy)`,
             description: original.description,
             segments: original.segments,

@@ -229,14 +229,13 @@ export function PromptGenerator({
     try {
       
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const userId = requireUserId();
 
       // Create new prompt using the same DB field pattern as importPrompt
       const promptId = uuidv4();
       const dbPromptData = {
         id: promptId,
-        user_id: user.id,
+        user_id: userId,
         name: promptName.trim(),
         description: extractedJson.description || null,
         messages: extractedJson.messages || [],

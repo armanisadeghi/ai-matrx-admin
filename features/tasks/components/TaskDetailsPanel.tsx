@@ -6,7 +6,8 @@ import {
   CheckSquare, Loader2, Plus, Send, Save, X as XIcon, ChevronLeft, Trash2, Check, MoreVertical
 } from 'lucide-react';
 import { useTaskContext } from '@/features/tasks/context/TaskContext';
-import { supabase } from '@/utils/supabase/client';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectUser } from '@/lib/redux/slices/userSlice';
 import * as taskService from '@/features/tasks/services/taskService';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -57,7 +58,7 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
   const [isAddingComment, setIsAddingComment] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { id: currentUserId } = useAppSelector(selectUser);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Update local state when task changes from context
@@ -69,17 +70,6 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
     setPriority(task.priority || null);
     setIsDirty(false); // Reset dirty state when task updates
   }, [task.id, task.title, task.description, task.dueDate, task.projectId, task.priority]);
-
-  // Get current user
-  useEffect(() => {
-    const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setCurrentUserId(user.id);
-      }
-    };
-    getCurrentUser();
-  }, []);
 
   // Load comments when task changes
   useEffect(() => {

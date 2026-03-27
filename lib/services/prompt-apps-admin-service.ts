@@ -273,15 +273,14 @@ export async function fetchErrors(filters?: {
 
 export async function resolveError(input: ResolveErrorInput): Promise<PromptAppError> {
     const supabase = getClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
+    const userId = requireUserId();
 
     const { data, error } = await supabase
         .from('prompt_app_errors')
         .update({
             resolved: true,
             resolved_at: new Date().toISOString(),
-            resolved_by: user.id,
+            resolved_by: userId,
             resolution_notes: input.resolution_notes || null
         })
         .eq('id', input.id)
@@ -472,7 +471,7 @@ export async function fetchAppsAdmin(filters?: {
             .rpc('get_user_emails_by_ids', { user_ids: userIds });
 
         if (users && users.length > 0) {
-            const userMap = new Map((users as { id: string; email: string }[]).map((user) => [user.id, user]));
+            const userMap = new Map((users as { id: string; email: string }[]).map((user) => [userId, user]));
 
             return data.map(item => ({
                 ...item,

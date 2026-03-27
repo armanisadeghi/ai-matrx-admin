@@ -52,6 +52,7 @@ import messagingReducer from "../../features/messaging/redux/messagingSlice";
 import smsReducer from "../../features/sms/redux/smsSlice";
 import adminPreferencesReducer from "./slices/adminPreferencesSlice";
 import appContextReducer from "./slices/appContextSlice";
+import apiConfigReducer from "./slices/apiConfigSlice";
 import activeChatReducer from "./slices/activeChatSlice";
 import entitySystemReducer from "./slices/entitySystemSlice";
 
@@ -189,7 +190,10 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         // SMS integration
         sms: smsReducer,
 
-        // Admin preferences (server override, etc.)
+        // API config — single source of truth for active server, health, and call log
+        apiConfig: apiConfigReducer,
+
+        // Admin preferences (legacy server fields migrated to apiConfig — kept for UI-only prefs)
         adminPreferences: adminPreferencesReducer,
 
         // App context — unified "where are you working" hierarchy (org → workspace → project → task → conversation)

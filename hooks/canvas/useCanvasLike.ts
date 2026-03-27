@@ -11,15 +11,14 @@ export function useCanvasLike(canvasId: string) {
     const { data: hasLiked = false } = useQuery({
         queryKey: ['canvas-like', canvasId],
         queryFn: async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return false;
-
+            const userId = requireUserId();
+    
             // Use maybeSingle() to avoid PGRST116 error when no like exists
             const { data } = await supabase
                 .from('canvas_likes')
                 .select('id')
                 .eq('canvas_id', canvasId)
-                .eq('user_id', user.id)
+                .eq('user_id', userId)
                 .maybeSingle();
 
             return !!data;
@@ -30,17 +29,14 @@ export function useCanvasLike(canvasId: string) {
     // Like mutation
     const likeMutation = useMutation({
         mutationFn: async () => {
-            const { data: { user } } = await supabase.auth.getUser();
+            const userId = requireUserId();
             
-            if (!user) {
-                throw new Error('Must be logged in to like');
-            }
 
             const { error } = await supabase
                 .from('canvas_likes')
                 .insert({
                     canvas_id: canvasId,
-                    user_id: user.id
+                    user_id: userId
                 });
 
             if (error) throw error;
@@ -90,17 +86,14 @@ export function useCanvasLike(canvasId: string) {
     // Unlike mutation
     const unlikeMutation = useMutation({
         mutationFn: async () => {
-            const { data: { user } } = await supabase.auth.getUser();
+            const userId = requireUserId();
             
-            if (!user) {
-                throw new Error('Must be logged in to unlike');
-            }
 
             const { error } = await supabase
                 .from('canvas_likes')
                 .delete()
                 .eq('canvas_id', canvasId)
-                .eq('user_id', user.id);
+                .eq('user_id', userId);
 
             if (error) throw error;
         },
@@ -141,16 +134,8 @@ export function useCanvasLike(canvasId: string) {
     });
 
     const toggleLike = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
+        const userId = requireUserId();
         
-        if (!user) {
-            toast({
-                title: 'Sign in required',
-                description: 'Please sign in to like content',
-            });
-            return;
-        }
-
         if (hasLiked) {
             unlikeMutation.mutate();
         } else {

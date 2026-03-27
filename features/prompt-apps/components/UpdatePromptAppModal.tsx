@@ -181,14 +181,13 @@ export function UpdatePromptAppModal({
     try {
       const vars = await fetchPromptVariables();
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const userId = requireUserId();
 
       const { data: apps, error: queryError } = await supabase
         .from('prompt_apps')
         .select('*')
         .eq('prompt_id', promptId)
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('updated_at', { ascending: false });
 
       if (queryError) throw queryError;

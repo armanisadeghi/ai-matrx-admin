@@ -91,18 +91,14 @@ export const canvasItemsService = {
    */
   async save(input: CreateCanvasItemInput): Promise<{ data: CanvasItemRow | null; isDuplicate: boolean; error: any }> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        return { data: null, isDuplicate: false, error: { message: 'Not authenticated' } };
-      }
-
+      const userId = requireUserId();
       const contentHash = await generateContentHash(input.content);
       
       // Check for existing item with same hash
       const { data: existing } = await supabase
         .from('canvas_items')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .eq('content_hash', contentHash)
         .single();
 
@@ -122,7 +118,7 @@ export const canvasItemsService = {
       const { data, error } = await supabase
         .from('canvas_items')
         .insert({
-          user_id: user.id,
+          user_id: userId,
           type: input.content.type,
           content: input.content as any,
           content_hash: contentHash,
@@ -147,11 +143,7 @@ export const canvasItemsService = {
    */
   async update(id: string, input: UpdateCanvasItemInput): Promise<{ data: CanvasItemRow | null; error: any }> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        return { data: null, error: { message: 'Not authenticated' } };
-      }
-
+      const userId = requireUserId();
       const updateData: any = {
         ...input,
       };
@@ -165,7 +157,7 @@ export const canvasItemsService = {
         .from('canvas_items')
         .update(updateData)
         .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .select()
         .single();
 
@@ -180,15 +172,11 @@ export const canvasItemsService = {
    */
   async list(filters?: CanvasItemFilters): Promise<{ data: CanvasItemRow[] | null; error: any }> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        return { data: null, error: { message: 'Not authenticated' } };
-      }
-
+      const userId = requireUserId();
       let query = supabase
         .from('canvas_items')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       // Apply filters
       if (filters?.type) {
@@ -225,16 +213,12 @@ export const canvasItemsService = {
    */
   async getById(id: string): Promise<{ data: CanvasItemRow | null; error: any }> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        return { data: null, error: { message: 'Not authenticated' } };
-      }
-
+      const userId = requireUserId();
       const { data, error } = await supabase
         .from('canvas_items')
         .select('*')
         .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single();
 
       // Update last_accessed_at
@@ -256,15 +240,11 @@ export const canvasItemsService = {
    */
   async getByTaskId(taskId: string): Promise<{ data: CanvasItemRow | null; error: any }> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        return { data: null, error: { message: 'Not authenticated' } };
-      }
-
+      const userId = requireUserId();
       const { data, error } = await supabase
         .from('canvas_items')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .eq('task_id', taskId)
         .single();
 
@@ -279,16 +259,12 @@ export const canvasItemsService = {
    */
   async delete(id: string): Promise<{ error: any }> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        return { error: { message: 'Not authenticated' } };
-      }
-
+      const userId = requireUserId();
       const { error } = await supabase
         .from('canvas_items')
         .delete()
         .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       return { error };
     } catch (error) {
@@ -315,11 +291,7 @@ export const canvasItemsService = {
    */
   async share(id: string): Promise<{ shareUrl: string | null; error: any }> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        return { shareUrl: null, error: { message: 'Not authenticated' } };
-      }
-
+      const userId = requireUserId();
       // Generate unique share token
       const shareToken = `share-${crypto.randomUUID().split('-')[0]}-${Date.now().toString(36)}`;
 
@@ -330,7 +302,7 @@ export const canvasItemsService = {
           share_token: shareToken,
         })
         .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .select()
         .single();
 
@@ -350,11 +322,7 @@ export const canvasItemsService = {
    */
   async unshare(id: string): Promise<{ error: any }> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        return { error: { message: 'Not authenticated' } };
-      }
-
+      const userId = requireUserId();
       const { error } = await supabase
         .from('canvas_items')
         .update({
@@ -362,7 +330,7 @@ export const canvasItemsService = {
           share_token: null,
         })
         .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       return { error };
     } catch (error) {
@@ -393,16 +361,12 @@ export const canvasItemsService = {
    */
   async batchDelete(ids: string[]): Promise<{ error: any }> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        return { error: { message: 'Not authenticated' } };
-      }
-
+      const userId = requireUserId();
       const { error } = await supabase
         .from('canvas_items')
         .delete()
         .in('id', ids)
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       return { error };
     } catch (error) {
@@ -415,16 +379,12 @@ export const canvasItemsService = {
    */
   async batchArchive(ids: string[], isArchived: boolean): Promise<{ error: any }> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        return { error: { message: 'Not authenticated' } };
-      }
-
+      const userId = requireUserId();
       const { error } = await supabase
         .from('canvas_items')
         .update({ is_archived: isArchived })
         .in('id', ids)
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       return { error };
     } catch (error) {
@@ -443,15 +403,11 @@ export const canvasItemsService = {
     error: any;
   }> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        return { total: 0, byType: {}, favorited: 0, archived: 0, error: { message: 'Not authenticated' } };
-      }
-
+      const userId = requireUserId();
       const { data, error } = await supabase
         .from('canvas_items')
         .select('type, is_favorited, is_archived')
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       if (error || !data) {
         return { total: 0, byType: {}, favorited: 0, archived: 0, error };

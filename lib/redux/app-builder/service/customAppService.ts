@@ -1,3 +1,4 @@
+import { requireUserId } from '@/utils/auth/getUserId';
 import { supabase } from "@/utils/supabase/client";
 import { AppLayoutOptions, CustomAppConfig } from "@/types/customAppTypes";
 import { isSlugInUse } from "@/config/applets/apps/constants";
@@ -58,12 +59,7 @@ export const normalizeCustomAppConfig = (config: Partial<CustomAppConfig>): Cust
  */
 export const customAppConfigToDBFormat = async (config: CustomAppConfig): Promise<Omit<CustomAppConfigDB, 'id' | 'created_at' | 'updated_at'>> => {
   // Get the current user ID from the session
-  const { data } = await supabase.auth.getUser();
-  const userId = data.user?.id;
-  
-  if (!userId) {
-    throw new Error('User not authenticated');
-  }
+  const userId = requireUserId();
   
   return {
     name: config.name,
@@ -117,12 +113,7 @@ export const dbToCustomAppConfig = (dbRecord: CustomAppConfigDB): CustomAppConfi
  */
 export const getAllCustomAppConfigs = async (): Promise<CustomAppConfig[]> => {
   // Get the current user ID
-  const { data: userData } = await supabase.auth.getUser();
-  const userId = userData.user?.id;
-  
-  if (!userId) {
-    throw new Error('User not authenticated');
-  }
+  const userId = requireUserId();
   
   const { data, error } = await supabase
     .from('custom_app_configs')
@@ -141,12 +132,7 @@ export const getAllCustomAppConfigs = async (): Promise<CustomAppConfig[]> => {
  */
 export const getAllCustomAppConfigsWithApplets = async (): Promise<(CustomAppConfig & { appletIds: string[] })[]> => {
   // Get the current user ID
-  const { data: userData } = await supabase.auth.getUser();
-  const userId = userData.user?.id;
-  
-  if (!userId) {
-    throw new Error('User not authenticated');
-  }
+  const userId = requireUserId();
   
   // First, get all apps for the current user
   const { data: appsData, error: appsError } = await supabase

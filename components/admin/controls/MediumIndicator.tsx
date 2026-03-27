@@ -1,4 +1,4 @@
-// components/admin/MediumIndicator.tsx
+// components/admin/controls/MediumIndicator.tsx
 import React, { useState, useEffect, useRef } from "react";
 import {
     ChevronRight,
@@ -6,80 +6,63 @@ import {
     Move,
     User,
     Server,
-    Wifi,
-    WifiOff,
-    Shield,
-    ShieldOff,
     RefreshCw,
     AlertCircle,
     Loader2,
+    Check,
+    Circle,
+    Activity,
 } from "lucide-react";
 import { PiPathFill } from "react-icons/pi";
 import { usePathname } from "next/navigation";
 import { debugModules } from "@/components/admin/debug/debugModuleRegistry";
 import DebugModulePanel from "@/components/admin/debug/DebugModulePanel";
-import { getAvailableNamespaces } from "@/constants/socket-schema";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { toggleDebugMode, selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
-import { SocketConnectionManager } from "@/lib/redux/socket-io/connection/socketConnectionManager";
+import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import {
-    setConnection,
-    setPrimaryConnection,
-    setConnectionStatus,
-    disconnectConnection,
-    reconnectConnection,
-    setConnectionError,
-    setReconnecting,
-    toggleTestMode,
-    changeConnectionUrl,
-    changeNamespace,
-} from "@/lib/redux/socket-io/slices/socketConnectionsSlice";
-import { setServerOverride } from "@/lib/redux/slices/adminPreferencesSlice";
-import {
-    selectPrimaryConnection,
-    selectAllConnectionsHealth,
-    selectIsAdmin,
-    selectAuthToken,
-    selectConnectionTestMode,
-    selectConnectionHealth,
-    selectAnyConnectionReconnecting,
-} from "@/lib/redux/socket-io/selectors/socket-connection-selectors";
+    selectActiveServer,
+    selectResolvedBaseUrl,
+    selectAllServerHealth,
+    selectActiveServerHealth,
+    selectRecentApiCalls,
+    switchServer,
+    checkServerHealth,
+    setCustomUrl,
+    type ServerEnvironment,
+} from "@/lib/redux/slices/apiConfigSlice";
+import { BACKEND_URLS } from "@/lib/api/endpoints";
 
-// Status Indicator Component
-interface StatusIndicatorProps {
-    isActive: boolean;
-    icon: {
-        active: React.ReactNode;
-        inactive: React.ReactNode;
-    };
-    tooltip: string;
-    onClick?: () => void;
+interface StatusDotProps {
+    status: "healthy" | "unhealthy" | "checking" | "unknown";
+    size?: number;
 }
 
-const StatusIndicator: React.FC<StatusIndicatorProps> = ({ isActive, icon, tooltip, onClick }) => (
-    <div
-        className={`flex items-center justify-center w-6 h-6 rounded ${isActive ? "text-green-500" : "text-red-500"} ${
-            onClick ? "cursor-pointer hover:bg-slate-700" : ""
-        }`}
-        title={tooltip}
-        onClick={onClick}
-    >
-        {isActive ? icon.active : icon.inactive}
-    </div>
-);
+const StatusDot: React.FC<StatusDotProps> = ({ status, size = 8 }) => {
+    const colors: Record<string, string> = {
+        healthy: "bg-green-500",
+        unhealthy: "bg-red-500",
+        checking: "bg-yellow-400 animate-pulse",
+        unknown: "bg-gray-500",
+    };
+    return (
+        <span
+            className={`inline-block rounded-full ${colors[status] ?? colors.unknown}`}
+            style={{ width: size, height: size, flexShrink: 0 }}
+        />
+    );
+};
 
-interface User {
+interface UserForIndicator {
     id: string;
     email?: string;
     name?: string;
-    userMetadata?: {
-        fullName: string;
-    };
-    [key: string]: any;
+    userMetadata?: { fullName: string };
+    [key: string]: unknown;
 }
 
 interface MediumIndicatorProps {
-    user: User;
+    user: UserForIndicator;
     onDragStart: (e: React.MouseEvent) => void;
     onSizeUp: () => void;
     onSizeDown: () => void;
@@ -88,226 +71,54 @@ interface MediumIndicatorProps {
 const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, onSizeUp, onSizeDown }) => {
     const currentPath = usePathname();
     const [showServerDropdown, setShowServerDropdown] = useState(false);
-    const [showNamespaceDropdown, setShowNamespaceDropdown] = useState(false);
-    const [showConnectionDetails, setShowConnectionDetails] = useState(false);
+    const [showRecentCalls, setShowRecentCalls] = useState(false);
+    const [customUrlInput, setCustomUrlInput] = useState("");
+    const [showCustomInput, setShowCustomInput] = useState(false);
     const [activeDebugModule, setActiveDebugModule] = useState<string | null>(null);
     const serverButtonRef = useRef<HTMLDivElement>(null);
     const serverDropdownRef = useRef<HTMLDivElement>(null);
-    const namespaceButtonRef = useRef<HTMLDivElement>(null);
-    const namespaceDropdownRef = useRef<HTMLDivElement>(null);
 
     const dispatch = useAppDispatch();
 
-    // Redux selectors
-    const primaryConnection = useAppSelector(selectPrimaryConnection);
-    const allConnectionsHealth = useAppSelector(selectAllConnectionsHealth);
+    // ── Selectors (all from Redux — no local state for these) ──
     const isAdmin = useAppSelector(selectIsAdmin);
-    const authToken = useAppSelector(selectAuthToken);
-    const testMode = useAppSelector(selectConnectionTestMode);
-    const anyReconnecting = useAppSelector(selectAnyConnectionReconnecting);
-
-    // Global debug mode from adminDebug slice
+    const activeServer = useAppSelector(selectActiveServer);
+    const resolvedUrl = useAppSelector(selectResolvedBaseUrl);
+    const activeHealth = useAppSelector(selectActiveServerHealth);
+    const allServerHealth = useAppSelector(selectAllServerHealth);
+    const recentCalls = useAppSelector(selectRecentApiCalls);
     const isDebugMode = useAppSelector(selectIsDebugMode);
-    
-    // Get connection health for primary connection
-    const primaryHealth = useAppSelector((state) => selectConnectionHealth(state, primaryConnection?.connectionId || "primary"));
 
-    const socketManager = SocketConnectionManager.getInstance();
-
-    // Predefined connections
-    const predefinedConnections = SocketConnectionManager.getPredefinedConnections();
-
-    const handleToggleDebugMode = () => {
-        dispatch(toggleDebugMode());
-    };
-
-    const handleToggleTestMode = () => {
-        dispatch(toggleTestMode());
-    };
+    const handleToggleDebugMode = () => dispatch(toggleDebugMode());
 
     const handleContainerMouseDown = (e: React.MouseEvent) => {
-        if (e.currentTarget === e.target) {
-            onDragStart(e);
-        }
+        if (e.currentTarget === e.target) onDragStart(e);
     };
 
-    // Handle reconnection
-    const handleReconnect = async () => {
-        if (!primaryConnection) return;
-
-        dispatch(setReconnecting({ connectionId: primaryConnection.connectionId, isReconnecting: true }));
-        dispatch(reconnectConnection(primaryConnection.connectionId));
-
-        try {
-            const socket = await socketManager.reconnect(primaryConnection.connectionId);
-
-            if (socket) {
-                dispatch(
-                    setConnection({
-                        ...primaryConnection,
-                        socket,
-                        connectionStatus: "connected",
-                        isAuthenticated: true,
-                    })
-                );
-            } else {
-                dispatch(
-                    setConnectionError({
-                        connectionId: primaryConnection.connectionId,
-                        error: "Failed to reconnect",
-                    })
-                );
-            }
-        } catch (error) {
-            dispatch(
-                setConnectionError({
-                    connectionId: primaryConnection.connectionId,
-                    error: error instanceof Error ? error.message : "Reconnection failed",
-                })
-            );
-        } finally {
-            dispatch(setReconnecting({ connectionId: primaryConnection.connectionId, isReconnecting: false }));
-        }
-    };
-
-    // Handle server change — updates BOTH socket.io connection AND FastAPI backend URL
-    const handleServerChange = async (url: string) => {
-        if (!primaryConnection) return;
-
-        // If it's the same URL, just close dropdown
-        if (url === primaryConnection.url) {
+    const handleServerSelect = (env: ServerEnvironment) => {
+        if (env === "custom") {
+            setShowCustomInput(true);
             setShowServerDropdown(false);
             return;
         }
-
-        // Sync adminPreferences so FastAPI thunks also use the correct server
-        const isLocalhostUrl = url.includes('localhost') || url.includes('127.0.0.1');
-        dispatch(setServerOverride(isLocalhostUrl ? 'localhost' : null));
-
-        // Disconnect current connection
-        socketManager.disconnect(primaryConnection.connectionId);
-        dispatch(disconnectConnection(primaryConnection.connectionId));
-
-        // Update the URL
-        dispatch(changeConnectionUrl({ connectionId: primaryConnection.connectionId, url }));
-
-        // Reconnect with new URL
-        try {
-            const socket = await socketManager.getSocket(primaryConnection.connectionId, url, primaryConnection.namespace);
-
-            if (socket) {
-                dispatch(
-                    setConnection({
-                        ...primaryConnection,
-                        url,
-                        socket,
-                        connectionStatus: "connected",
-                        isAuthenticated: true,
-                    })
-                );
-            }
-        } catch (error) {
-            dispatch(
-                setConnectionError({
-                    connectionId: primaryConnection.connectionId,
-                    error: `Failed to connect to ${url}`,
-                })
-            );
-        }
-
+        dispatch(switchServer({ env }));
         setShowServerDropdown(false);
     };
 
-    // Handle namespace change
-    const handleNamespaceChange = async (namespace: string) => {
-        if (!primaryConnection) return;
-
-        // If it's the same namespace, just close dropdown
-        if (namespace === primaryConnection.namespace) {
-            setShowNamespaceDropdown(false);
-            return;
-        }
-
-        // Disconnect current connection
-        socketManager.disconnect(primaryConnection.connectionId);
-        dispatch(disconnectConnection(primaryConnection.connectionId));
-
-        // Update the namespace
-        dispatch(changeNamespace({ connectionId: primaryConnection.connectionId, namespace }));
-
-        // Reconnect with new namespace
-        try {
-            const socket = await socketManager.getSocket(primaryConnection.connectionId, primaryConnection.url, namespace);
-
-            if (socket) {
-                dispatch(
-                    setConnection({
-                        ...primaryConnection,
-                        namespace,
-                        socket,
-                        connectionStatus: "connected",
-                        isAuthenticated: true,
-                    })
-                );
-            }
-        } catch (error) {
-            dispatch(
-                setConnectionError({
-                    connectionId: primaryConnection.connectionId,
-                    error: `Failed to connect to namespace ${namespace}`,
-                })
-            );
-        }
-
-        setShowNamespaceDropdown(false);
+    const handleCustomUrlSubmit = () => {
+        const trimmed = customUrlInput.trim();
+        if (!trimmed) return;
+        dispatch(setCustomUrl(trimmed));
+        dispatch(checkServerHealth({ env: "custom", force: true }));
+        setShowCustomInput(false);
+        setCustomUrlInput("");
     };
 
-    // Handle reset to default
-    const handleResetToDefault = async () => {
-        if (!primaryConnection) return;
-
-        // Always reset to production — no localhost auto-detection to avoid
-        // triggering the browser's local network permission prompt.
-        const defaultUrl = SocketConnectionManager.DEFAULT_URL;
-        const defaultNamespace = SocketConnectionManager.DEFAULT_NAMESPACE;
-
-        // Reset FastAPI backend URL to production
-        dispatch(setServerOverride(null));
-
-        if (primaryConnection.url === defaultUrl && primaryConnection.namespace === defaultNamespace) {
-            return; // Already at defaults
-        }
-
-        // Disconnect and reconnect with defaults
-        socketManager.disconnect(primaryConnection.connectionId);
-        dispatch(disconnectConnection(primaryConnection.connectionId));
-
-        try {
-            const socket = await socketManager.getSocket(primaryConnection.connectionId, defaultUrl, defaultNamespace);
-
-            if (socket) {
-                dispatch(
-                    setConnection({
-                        connectionId: primaryConnection.connectionId,
-                        url: defaultUrl,
-                        namespace: defaultNamespace,
-                        socket,
-                        connectionStatus: "connected",
-                        isAuthenticated: true,
-                    })
-                );
-            }
-        } catch (error) {
-            dispatch(
-                setConnectionError({
-                    connectionId: primaryConnection.connectionId,
-                    error: "Failed to reset to defaults",
-                })
-            );
-        }
+    const handleForceHealthCheck = () => {
+        dispatch(checkServerHealth({ force: true }));
     };
 
-    // Handle click outside to close dropdowns
+    // Close dropdown on outside click
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
@@ -319,61 +130,23 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
             ) {
                 setShowServerDropdown(false);
             }
-
-            if (
-                showNamespaceDropdown &&
-                namespaceDropdownRef.current &&
-                namespaceButtonRef.current &&
-                !namespaceDropdownRef.current.contains(event.target as Node) &&
-                !namespaceButtonRef.current.contains(event.target as Node)
-            ) {
-                setShowNamespaceDropdown(false);
-            }
         };
-
         document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [showServerDropdown, showNamespaceDropdown]);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [showServerDropdown]);
 
-    // Position dropdowns correctly
+    // Position dropdown below the button
     useEffect(() => {
         if (showServerDropdown && serverButtonRef.current && serverDropdownRef.current) {
-            const buttonRect = serverButtonRef.current.getBoundingClientRect();
-            serverDropdownRef.current.style.left = `${buttonRect.left}px`;
-            serverDropdownRef.current.style.top = `${buttonRect.bottom + 5}px`;
-
-            setTimeout(() => {
-                if (serverDropdownRef.current) {
-                    const contentWidth = serverDropdownRef.current.scrollWidth + 10;
-                    const availableWidth = window.innerWidth - buttonRect.left - 20;
-                    const finalWidth = Math.min(contentWidth, availableWidth);
-                    serverDropdownRef.current.style.width = `${finalWidth}px`;
-                }
-            }, 0);
+            const rect = serverButtonRef.current.getBoundingClientRect();
+            serverDropdownRef.current.style.left = `${rect.left}px`;
+            serverDropdownRef.current.style.top = `${rect.bottom + 5}px`;
         }
+    }, [showServerDropdown]);
 
-        if (showNamespaceDropdown && namespaceButtonRef.current && namespaceDropdownRef.current) {
-            const buttonRect = namespaceButtonRef.current.getBoundingClientRect();
-            namespaceDropdownRef.current.style.left = `${buttonRect.left}px`;
-            namespaceDropdownRef.current.style.top = `${buttonRect.bottom + 5}px`;
-
-            setTimeout(() => {
-                if (namespaceDropdownRef.current) {
-                    const contentWidth = namespaceDropdownRef.current.scrollWidth + 10;
-                    const availableWidth = window.innerWidth - buttonRect.left - 20;
-                    const finalWidth = Math.min(contentWidth, availableWidth);
-                    namespaceDropdownRef.current.style.width = `${finalWidth}px`;
-                }
-            }, 0);
-        }
-    }, [showServerDropdown, showNamespaceDropdown]);
-
-    // Get current server display
-    const currentServer = primaryConnection?.url || "Not connected";
-    const isConnected = primaryConnection?.connectionStatus === "connected";
-    const isAuthenticated = primaryConnection?.isAuthenticated || false;
+    const lastCheckedLabel = activeHealth.lastCheckedAt
+        ? `${Math.round((Date.now() - activeHealth.lastCheckedAt) / 1000)}s ago`
+        : "never";
 
     return (
         <div
@@ -388,19 +161,13 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
                         <Move size={14} />
                     </div>
                     <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onSizeDown();
-                        }}
+                        onClick={(e) => { e.stopPropagation(); onSizeDown(); }}
                         className="p-1 rounded hover:bg-slate-700"
                     >
                         <ChevronRight size={14} className="rotate-180" />
                     </button>
                     <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onSizeUp();
-                        }}
+                        onClick={(e) => { e.stopPropagation(); onSizeUp(); }}
                         className="p-1 rounded hover:bg-slate-700"
                     >
                         <ChevronDown size={14} />
@@ -408,38 +175,17 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
                 </div>
             </div>
 
-            {/* Status Indicators Row */}
+            {/* Status Row */}
             <div className="flex items-center justify-between px-2 py-1 bg-slate-900/50">
-                <div className="flex items-center space-x-1">
-                    <StatusIndicator
-                        isActive={isConnected}
-                        icon={{
-                            active: <Wifi size={14} />,
-                            inactive: <WifiOff size={14} />,
-                        }}
-                        tooltip={isConnected ? "Connected" : "Disconnected"}
-                        onClick={!isConnected ? handleReconnect : undefined}
-                    />
-                    <StatusIndicator
-                        isActive={isAuthenticated}
-                        icon={{
-                            active: <Shield size={14} />,
-                            inactive: <ShieldOff size={14} />,
-                        }}
-                        tooltip={isAuthenticated ? "Authenticated" : "Not Authenticated"}
-                    />
-                    {primaryHealth.error && (
-                        <div className="text-red-400 flex items-center" title={primaryHealth.error}>
-                            <AlertCircle size={14} />
-                        </div>
-                    )}
-                    {anyReconnecting && (
-                        <div className="text-yellow-400 flex items-center" title="Reconnecting...">
-                            <Loader2 size={14} className="animate-spin" />
-                        </div>
-                    )}
+                <div className="flex items-center gap-2">
+                    <StatusDot status={activeHealth.status} size={10} />
+                    <span className="text-xs text-slate-400">
+                        {activeHealth.status}
+                        {activeHealth.latencyMs != null && ` · ${activeHealth.latencyMs}ms`}
+                        {` · ${lastCheckedLabel}`}
+                    </span>
                 </div>
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center gap-1">
                     <button
                         onClick={handleToggleDebugMode}
                         className={`px-2 py-0.5 text-xs rounded ${isDebugMode ? "bg-green-600 text-white" : "bg-slate-600 text-slate-300"}`}
@@ -448,14 +194,14 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
                         Debug
                     </button>
                     <button
-                        onClick={handleToggleTestMode}
-                        className={`px-2 py-0.5 text-xs rounded ${testMode ? "bg-yellow-600 text-white" : "bg-slate-600 text-slate-300"}`}
-                        title="Toggle Test Mode"
+                        onClick={handleForceHealthCheck}
+                        className="p-1 rounded hover:bg-slate-700"
+                        title="Re-check server health"
                     >
-                        Test
-                    </button>
-                    <button onClick={handleResetToDefault} className="p-1 rounded hover:bg-slate-700" title="Reset to Default">
-                        <RefreshCw size={14} />
+                        {activeHealth.status === "checking"
+                            ? <Loader2 size={14} className="animate-spin text-yellow-400" />
+                            : <RefreshCw size={14} />
+                        }
                     </button>
                 </div>
             </div>
@@ -471,8 +217,8 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
                                 key={module.id}
                                 onClick={() => setActiveDebugModule(module.id)}
                                 className={`p-1 rounded hover:bg-slate-700 transition-colors ${
-                                    activeDebugModule === module.id ? 'bg-slate-700' : ''
-                                } ${module.color || 'text-slate-300'}`}
+                                    activeDebugModule === module.id ? "bg-slate-700" : ""
+                                } ${module.color || "text-slate-300"}`}
                                 title={`${module.name}: ${module.description}`}
                             >
                                 <Icon size={12} />
@@ -486,7 +232,7 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
             <div className="px-2 py-1 text-xs space-y-1">
                 {/* User Info */}
                 <div className="flex items-center justify-between gap-2">
-                    <User size={16} />
+                    <User size={16} className="shrink-0" />
                     <span className="text-blue-400 truncate flex-1 text-right">
                         {user.email || user.id}
                         {isAdmin && <span className="text-green-400 ml-1">(Admin)</span>}
@@ -498,85 +244,111 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
                     <div
                         ref={serverButtonRef}
                         className="flex items-center justify-between gap-2 cursor-pointer hover:bg-slate-700/50 p-1 rounded"
-                        onClick={() => {
-                            setShowServerDropdown(!showServerDropdown);
-                            setShowNamespaceDropdown(false);
-                        }}
+                        onClick={() => setShowServerDropdown(!showServerDropdown)}
                     >
-                        <Server size={16} />
-                        <span
-                            className={
-                                !isConnected || primaryHealth.error
-                                    ? "text-red-400"
-                                    : currentServer?.includes("localhost")
-                                    ? "text-green-400"
-                                    : "text-blue-400"
-                            }
-                            title={currentServer}
-                        >
-                            {currentServer}
-                        </span>
-                    </div>
-                </div>
-
-                {/* Namespace Selection */}
-                <div className="relative">
-                    <div
-                        ref={namespaceButtonRef}
-                        className="flex items-center justify-between gap-2 cursor-pointer hover:bg-slate-700/50 p-1 rounded"
-                        onClick={() => {
-                            setShowNamespaceDropdown(!showNamespaceDropdown);
-                            setShowServerDropdown(false);
-                        }}
-                    >
-                        <PiPathFill size={16} />
-                        <span className="text-blue-400 truncate text-right" title={primaryConnection?.namespace || ""}>
-                            {primaryConnection?.namespace || "/UserSession"}
-                        </span>
-                    </div>
-                </div>
-
-                {/* Connection Stats */}
-                <div
-                    className="flex items-center justify-between gap-2 cursor-pointer hover:bg-slate-700/50 p-1 rounded text-slate-400"
-                    onClick={() => setShowConnectionDetails(!showConnectionDetails)}
-                >
-                    <span className="text-xs">Connection Stats</span>
-                    <ChevronRight size={12} className={showConnectionDetails ? "rotate-90" : ""} />
-                </div>
-
-                {showConnectionDetails && (
-                    <div className="pl-4 space-y-1 text-xs text-slate-400">
-                        <div className="flex justify-between">
-                            <span>Attempts:</span>
-                            <span>{primaryHealth.attempts}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span>Active Connections:</span>
-                            <span>
-                                {allConnectionsHealth.filter((c) => c.isHealthy).length}/{allConnectionsHealth.length}
+                        <Server size={16} className="shrink-0" />
+                        <div className="flex items-center gap-1.5 flex-1 justify-end min-w-0">
+                            <StatusDot status={activeHealth.status} size={7} />
+                            <span
+                                className={`truncate ${
+                                    activeHealth.status === "unhealthy"
+                                        ? "text-red-400"
+                                        : resolvedUrl?.includes("localhost")
+                                        ? "text-green-400"
+                                        : "text-blue-400"
+                                }`}
+                                title={resolvedUrl ?? "not configured"}
+                            >
+                                {resolvedUrl ?? `${activeServer} — not configured`}
                             </span>
                         </div>
-                        {authToken && (
-                            <div className="flex justify-between">
-                                <span>Auth Token:</span>
-                                <span className="text-green-400">Present</span>
-                            </div>
+                    </div>
+                </div>
+
+                {/* Custom URL Input */}
+                {showCustomInput && (
+                    <div className="flex gap-1">
+                        <input
+                            type="text"
+                            value={customUrlInput}
+                            onChange={(e) => setCustomUrlInput(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleCustomUrlSubmit()}
+                            placeholder="https://your-server.com"
+                            className="flex-1 bg-slate-700 text-white text-xs px-2 py-1 rounded border border-slate-600 focus:outline-none focus:border-blue-500"
+                            autoFocus
+                        />
+                        <button
+                            onClick={handleCustomUrlSubmit}
+                            className="px-2 py-1 bg-blue-600 hover:bg-blue-500 rounded text-xs"
+                        >
+                            Set
+                        </button>
+                        <button
+                            onClick={() => { setShowCustomInput(false); setCustomUrlInput(""); }}
+                            className="px-2 py-1 bg-slate-600 hover:bg-slate-500 rounded text-xs"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                )}
+
+                {/* Error display */}
+                {activeHealth.error && activeHealth.status === "unhealthy" && (
+                    <div className="flex items-center gap-1 text-red-400 px-1">
+                        <AlertCircle size={12} />
+                        <span className="truncate">{activeHealth.error}</span>
+                    </div>
+                )}
+
+                {/* Recent API Calls */}
+                <div
+                    className="flex items-center justify-between gap-2 cursor-pointer hover:bg-slate-700/50 p-1 rounded text-slate-400"
+                    onClick={() => setShowRecentCalls(!showRecentCalls)}
+                >
+                    <Activity size={14} />
+                    <span className="flex-1 text-right">
+                        Recent Calls {recentCalls.length > 0 && `(${recentCalls.length})`}
+                    </span>
+                    <ChevronRight size={12} className={showRecentCalls ? "rotate-90" : ""} />
+                </div>
+
+                {showRecentCalls && (
+                    <div className="pl-2 space-y-1 max-h-40 overflow-y-auto">
+                        {recentCalls.length === 0 ? (
+                            <div className="text-slate-500 text-[10px] px-1">No calls yet</div>
+                        ) : (
+                            recentCalls.slice(0, 20).map((call) => (
+                                <div
+                                    key={call.id}
+                                    className="flex items-center gap-1.5 text-[10px] font-mono"
+                                    title={`${call.method} ${call.baseUrl}${call.path}`}
+                                >
+                                    <span className={
+                                        call.status === "success" ? "text-green-400" :
+                                        call.status === "error" ? "text-red-400" :
+                                        "text-yellow-400"
+                                    }>
+                                        {call.method}
+                                    </span>
+                                    <span className="text-slate-400 truncate">{call.path}</span>
+                                    {call.durationMs != null && (
+                                        <span className="text-slate-500 shrink-0">{call.durationMs}ms</span>
+                                    )}
+                                </div>
+                            ))
                         )}
                     </div>
                 )}
 
                 {/* Current Path */}
                 <div className="flex items-start justify-between gap-2">
-                    <PiPathFill size={16} className="text-slate-400" />
+                    <PiPathFill size={16} className="text-slate-400 shrink-0" />
                     <div className="text-xs font-semibold text-slate-400 flex flex-col items-end" title={currentPath}>
                         {currentPath
                             .split("/")
                             .filter((part) => part)
                             .map((part, index) => (
-                                <span key={index} className="text-slate-400">
-                                    {part}
-                                </span>
+                                <span key={index}>{part}</span>
                             ))}
                     </div>
                 </div>
@@ -586,53 +358,39 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
             {showServerDropdown && (
                 <div
                     ref={serverDropdownRef}
-                    className="fixed bg-slate-900 rounded-md shadow-lg z-50 py-1 max-h-60 overflow-y-auto"
-                    style={{
-                        minWidth: "180px",
-                        maxWidth: "500px",
-                        width: "auto",
-                    }}
+                    className="fixed bg-slate-900 rounded-md shadow-lg z-50 py-1 min-w-[240px] max-w-[480px] max-h-72 overflow-y-auto"
                 >
                     <div className="text-xs font-semibold px-2 py-1 text-slate-400 sticky top-0 bg-slate-900 border-b border-slate-700">
                         Select Server
                     </div>
-                    {predefinedConnections.map((conn, index) => (
+                    {allServerHealth.map(({ env, resolvedUrl: envUrl, isConfigured, health, isActive }) => (
                         <div
-                            key={`${conn.url}-${index}`}
-                            className={`px-2 py-1 text-xs cursor-pointer hover:bg-slate-700 text-left whitespace-nowrap ${
-                                conn.url === currentServer ? "text-green-400" : "text-white"
+                            key={env}
+                            className={`flex items-center gap-2 px-2 py-1.5 text-xs cursor-pointer hover:bg-slate-700 ${
+                                !isConfigured ? "opacity-50" : ""
                             }`}
-                            onClick={() => handleServerChange(conn.url)}
+                            onClick={() => isConfigured || env === "custom" ? handleServerSelect(env) : undefined}
+                            title={
+                                !isConfigured && env !== "custom"
+                                    ? `${env} — env var not set`
+                                    : envUrl ?? env
+                            }
                         >
-                            {conn.name} - {conn.url}
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {/* Namespace Dropdown */}
-            {showNamespaceDropdown && (
-                <div
-                    ref={namespaceDropdownRef}
-                    className="fixed bg-slate-900 rounded-md shadow-lg z-50 py-1 max-h-60 overflow-y-auto"
-                    style={{
-                        minWidth: "180px",
-                        maxWidth: "300px",
-                        width: "auto",
-                    }}
-                >
-                    <div className="text-xs font-semibold px-2 py-1 text-slate-400 sticky top-0 bg-slate-900 border-b border-slate-700">
-                        Select Namespace
-                    </div>
-                    {getAvailableNamespaces().map(({ value, label }, index) => (
-                        <div
-                            key={`${value}-${index}`}
-                            className={`px-2 py-1 text-xs cursor-pointer hover:bg-slate-700 text-left whitespace-nowrap ${
-                                value === primaryConnection?.namespace ? "text-green-400" : "text-white"
-                            }`}
-                            onClick={() => handleNamespaceChange(value)}
-                        >
-                            {label}
+                            <StatusDot status={isConfigured ? health.status : "unknown"} size={7} />
+                            <span className={isActive ? "text-green-400 font-semibold" : "text-white"}>
+                                {env}
+                            </span>
+                            {isActive && <Check size={10} className="text-green-400 shrink-0" />}
+                            <span className="text-slate-400 truncate ml-auto">
+                                {env === "custom"
+                                    ? "enter URL →"
+                                    : isConfigured
+                                    ? envUrl
+                                    : "not configured"}
+                            </span>
+                            {isConfigured && health.latencyMs != null && (
+                                <span className="text-slate-500 shrink-0">{health.latencyMs}ms</span>
+                            )}
                         </div>
                     ))}
                 </div>

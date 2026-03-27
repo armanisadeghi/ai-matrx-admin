@@ -21,7 +21,7 @@ export function useCanvasShare() {
             console.log('📝 Canvas Type:', request.canvas_type);
             console.log('📦 Canvas Data Type:', typeof request.canvas_data);
             
-            const { data: { user } } = await supabase.auth.getUser();
+            const userId = requireUserId();
             console.log('👤 User:', user?.id || 'Anonymous');
             
             const shareToken = generateShareToken();

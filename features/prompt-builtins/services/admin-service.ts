@@ -372,8 +372,7 @@ export async function getPromptBuiltinById(id: string): Promise<PromptBuiltin | 
 
 export async function createPromptBuiltin(input: CreatePromptBuiltinInput): Promise<PromptBuiltin> {
   const supabase = getClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('User not authenticated');
+  const userId = requireUserId();
 
   const insertData: any = {
     name: input.name,
@@ -383,7 +382,7 @@ export async function createPromptBuiltin(input: CreatePromptBuiltinInput): Prom
     tools: input.tools ?? null,
     settings: input.settings ?? {},
     is_active: input.is_active ?? true,
-    created_by_user_id: user.id,
+    created_by_user_id: userId,
     tags: input.tags ?? null,
     category: input.category ?? null,
     model_id: input.model_id ?? null,
@@ -592,7 +591,7 @@ export async function getPromptShortcutById(id: string): Promise<PromptShortcut 
 
 export async function createPromptShortcut(input: CreatePromptShortcutInput): Promise<PromptShortcut> {
   const supabase = getClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const userId = requireUserId();
 
   const insertData: any = {
     prompt_builtin_id: input.prompt_builtin_id ?? null,
@@ -611,7 +610,7 @@ export async function createPromptShortcut(input: CreatePromptShortcutInput): Pr
     show_variables: input.show_variables ?? false,
     apply_variables: input.apply_variables ?? true,
     is_active: input.is_active ?? true,
-    created_by_user_id: user?.id ?? null,
+    created_by_user_id: userId ?? null,
   };
 
   // Only add ID if provided

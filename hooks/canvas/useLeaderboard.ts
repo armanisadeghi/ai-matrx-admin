@@ -8,7 +8,7 @@ export function useLeaderboard(canvasId: string, limit: number = 10) {
     return useQuery({
         queryKey: ['canvas-leaderboard', canvasId, limit],
         queryFn: async () => {
-            const { data: { user } } = await supabase.auth.getUser();
+            const userId = requireUserId();
 
             // Get top scores
             const { data: scores, error } = await supabase
@@ -30,7 +30,7 @@ export function useLeaderboard(canvasId: string, limit: number = 10) {
                 score: score.score,
                 time_taken: score.time_taken,
                 created_at: score.created_at,
-                is_current_user: user ? score.user_id === user.id : false
+                is_current_user: user ? score.user_id === userId : false
             }));
 
             // Get current user's rank if not in top N
@@ -43,7 +43,7 @@ export function useLeaderboard(canvasId: string, limit: number = 10) {
                         .from('canvas_scores')
                         .select('score')
                         .eq('canvas_id', canvasId)
-                        .eq('user_id', user.id)
+                        .eq('user_id', userId)
                         .order('score', { ascending: false })
                         .limit(1)
                         .single();

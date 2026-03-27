@@ -25,7 +25,11 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectUser, selectIsAdmin } from "@/lib/redux/slices/userSlice";
-import { selectIsOverlayOpen, toggleOverlay, openOverlay } from "@/lib/redux/slices/overlaySlice";
+import {
+  selectIsOverlayOpen,
+  toggleOverlay,
+  openOverlay,
+} from "@/lib/redux/slices/overlaySlice";
 
 const FeedbackDialog = dynamic(() => import("./FeedbackDialog"), {
   ssr: false,
@@ -33,7 +37,9 @@ const FeedbackDialog = dynamic(() => import("./FeedbackDialog"), {
 });
 
 function closeMenu() {
-  const cb = document.getElementById("shell-user-menu") as HTMLInputElement | null;
+  const cb = document.getElementById(
+    "shell-user-menu",
+  ) as HTMLInputElement | null;
   if (cb) cb.checked = false;
 }
 
@@ -41,7 +47,9 @@ export default function UserMenuPanel() {
   const dispatch = useAppDispatch();
   const reduxUser = useAppSelector(selectUser);
   const isAdmin = useAppSelector(selectIsAdmin) ?? false;
-  const isAdminIndicatorOpen = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
+  const isAdminIndicatorOpen = useAppSelector((state) =>
+    selectIsOverlayOpen(state, "adminIndicator"),
+  );
 
   const openQuickNotes = useCallback(() => {
     dispatch(openOverlay({ overlayId: "quickNotes" }));
@@ -78,11 +86,16 @@ export default function UserMenuPanel() {
     closeMenu();
   }, [dispatch]);
 
-  const user = reduxUser?.id ? {
-    name: reduxUser.userMetadata?.name || reduxUser.email?.split("@")[0] || "User",
-    email: reduxUser.email ?? undefined,
-    avatarUrl: reduxUser.userMetadata?.avatarUrl ?? undefined,
-  } : null;
+  const user = reduxUser?.id
+    ? {
+        name:
+          reduxUser.userMetadata?.name ||
+          reduxUser.email?.split("@")[0] ||
+          "User",
+        email: reduxUser.email ?? undefined,
+        avatarUrl: reduxUser.userMetadata?.avatarUrl ?? undefined,
+      }
+    : null;
 
   const [isDark, setIsDark] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -120,9 +133,7 @@ export default function UserMenuPanel() {
   }
 
   return (
-    <div
-      className="matrx-glass-core w-60 max-lg:w-auto p-1.5 rounded-xl max-lg:rounded-2xl max-lg:p-2 shadow-2xl"
-    >
+    <div className="matrx-glass-core w-60 max-lg:w-auto p-1.5 rounded-xl max-lg:rounded-2xl max-lg:p-2 shadow-2xl">
       <Link
         href="/ssr/settings"
         className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[var(--shell-glass-bg-hover)] transition-colors"
@@ -179,7 +190,7 @@ export default function UserMenuPanel() {
 
       <div className="h-px my-1 mx-2 bg-[var(--shell-glass-border)]" />
 
-      <Link href="/ssr/messages" className={itemClass} onClick={closeMenu}>
+      <Link href="/messages" className={itemClass} onClick={closeMenu}>
         <MessageSquare /> Direct Messages
       </Link>
       <button className={itemClass} onClick={closeMenu}>
@@ -203,7 +214,7 @@ export default function UserMenuPanel() {
         <>
           <div className="h-px my-1 mx-2 bg-[var(--shell-glass-border)]" />
           <Link
-            href="/ssr/admin"
+            href="/administration"
             className={cn(itemClass, "[&_svg]:text-amber-500")}
             onClick={closeMenu}
           >

@@ -10,6 +10,7 @@ interface User {
   userMetadata?: {
     fullName: string;
   };
+  [key: string]: unknown;
 }
 
 interface AdminIndicatorProps {
@@ -24,7 +25,6 @@ interface Position {
 }
 
 const AdminIndicator: React.FC<AdminIndicatorProps> = ({ user }) => {
-
   const [size, setSize] = useState<IndicatorSize>("small");
   const [position, setPosition] = useState<Position>({ x: 50, y: 5 });
   const [isDragging, setIsDragging] = useState(false);
@@ -102,7 +102,7 @@ const AdminIndicator: React.FC<AdminIndicatorProps> = ({ user }) => {
               filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25))",
             }}
           >
-            <MediumIndicator 
+            <MediumIndicator
               user={user}
               onDragStart={handleMouseDown}
               onSizeUp={() => cycleSize("up")}
@@ -112,7 +112,7 @@ const AdminIndicator: React.FC<AdminIndicatorProps> = ({ user }) => {
         );
       case "large":
         return (
-          <LargeIndicator 
+          <LargeIndicator
             user={user}
             onSizeDown={() => setSize("medium")}
             onSizeSmall={() => setSize("small")}
@@ -133,7 +133,7 @@ const AdminIndicator: React.FC<AdminIndicatorProps> = ({ user }) => {
               filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25))",
             }}
           >
-            <SmallIndicator 
+            <SmallIndicator
               onDragStart={handleMouseDown}
               onSizeChange={() => cycleSize("up")}
             />

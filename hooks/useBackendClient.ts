@@ -1,15 +1,16 @@
 // hooks/useBackendClient.ts
-// Main React hook for the backend API client.
-// Wires together auth (Redux), scope (URL), and admin override.
+// React hook for the backend API client.
+// Wires together auth (Redux userSlice), scope (URL params), and active server
+// URL (Redux apiConfigSlice — single source of truth).
 'use client';
 
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { selectAccessToken, selectFingerprintId, selectAuthReady } from '@/lib/redux/slices/userSlice';
+import { selectAccessToken, selectFingerprintId, selectAuthReady, selectIsAdmin } from '@/lib/redux/slices/userSlice';
+import { selectResolvedBaseUrl } from '@/lib/redux/slices/apiConfigSlice';
 import { BackendClient } from '@/lib/api/backend-client';
 import type { AuthCredentials, ContextScope } from '@/lib/api/types';
 import { useContextScope } from './useContextScope';
-import { useAdminOverride } from './useAdminOverride';
 
 // ============================================================================
 // MAIN HOOK
@@ -20,7 +21,7 @@ interface UseBackendClientOptions {
     scopeOverride?: ContextScope;
     /** Override auth token (for admin testing with different tokens) */
     tokenOverride?: string;
-    /** Override base URL directly (bypasses admin override) */
+    /** Override base URL directly (bypasses Redux — use sparingly) */
     urlOverride?: string;
 }
 
@@ -28,34 +29,23 @@ interface UseBackendClientOptions {
  * React hook that creates a ready-to-use BackendClient.
  *
  * Automatically wires:
- * - Auth: JWT token or fingerprint from Redux
+ * - Auth: JWT token or fingerprint from Redux userSlice
  * - Scope: org/project/task from URL search params
- * - URL: production or localhost from admin override
+ * - URL: active server from Redux apiConfigSlice (all environments supported)
  *
  * Usage:
  * ```tsx
- * const { client, isReady, backendUrl, scope } = useBackendClient();
- *
- * // Warm an agent (no body — agent_id in URL)
- * await client.post(ENDPOINTS.ai.agentWarm(promptId));
- *
- * // Streaming request — pass conversation_id in body to continue an existing conversation
- * for await (const event of client.stream(ENDPOINTS.ai.agentStart(agentId), body)) {
- *   // handle events
- * }
+ * const { client, isReady, backendUrl } = useBackendClient();
+ * await client.postJson(ENDPOINTS.ai.agentWarm(promptId));
  * ```
  */
 export function useBackendClient(options: UseBackendClientOptions = {}) {
     const accessToken = useSelector(selectAccessToken);
     const fingerprintId = useSelector(selectFingerprintId);
     const authReady = useSelector(selectAuthReady);
+    const isAdmin = useSelector(selectIsAdmin);
+    const resolvedUrl = useSelector(selectResolvedBaseUrl);
     const { scope: urlScope } = useContextScope();
-    const {
-        backendUrl: adminUrl,
-        isLocalhost,
-        isChecking: isCheckingLocalhost,
-        isAdmin,
-    } = useAdminOverride();
 
     // Resolve auth credentials
     const auth: AuthCredentials = useMemo(() => {
@@ -74,8 +64,8 @@ export function useBackendClient(options: UseBackendClientOptions = {}) {
     // Resolve scope
     const scope: ContextScope = options.scopeOverride || urlScope;
 
-    // Resolve URL
-    const baseUrl = options.urlOverride || adminUrl;
+    // URL: explicit override wins, then Redux apiConfigSlice
+    const baseUrl = options.urlOverride || resolvedUrl || '';
 
     // Create memoized client instance
     const client = useMemo(
@@ -83,7 +73,6 @@ export function useBackendClient(options: UseBackendClientOptions = {}) {
         [baseUrl, auth, scope],
     );
 
-    // Auth is ready when we have either token or fingerprint
     const isReady = authReady && auth.type !== 'anonymous';
 
     return {
@@ -93,10 +82,6 @@ export function useBackendClient(options: UseBackendClientOptions = {}) {
         backendUrl: baseUrl,
         /** Whether auth is resolved (has token or fingerprint) */
         isReady,
-        /** Whether admin localhost override is active */
-        isLocalhost,
-        /** Whether localhost health check is in progress */
-        isCheckingLocalhost,
         /** Whether current user is admin */
         isAdmin,
         /** Current org/project/task scope */
@@ -107,24 +92,26 @@ export function useBackendClient(options: UseBackendClientOptions = {}) {
 }
 
 // ============================================================================
-// LIGHTWEIGHT VARIANT — No scope, no admin override
+// LIGHTWEIGHT VARIANT — No scope
 // ============================================================================
 
 /**
  * Minimal backend client hook for simple use cases.
- * Uses auth from Redux but skips scope and admin override.
- * Lighter weight — doesn't read URL params or trigger admin detection.
+ * Uses auth and URL from Redux but skips scope.
  */
-export function useSimpleBackendClient(baseUrl?: string) {
+export function useSimpleBackendClient(baseUrlOverride?: string) {
     const accessToken = useSelector(selectAccessToken);
     const fingerprintId = useSelector(selectFingerprintId);
     const authReady = useSelector(selectAuthReady);
+    const resolvedUrl = useSelector(selectResolvedBaseUrl);
 
     const auth: AuthCredentials = useMemo(() => {
         if (accessToken) return { type: 'token', token: accessToken };
         if (fingerprintId) return { type: 'fingerprint', fingerprintId };
         return { type: 'anonymous' };
     }, [accessToken, fingerprintId]);
+
+    const baseUrl = baseUrlOverride || resolvedUrl || '';
 
     const client = useMemo(
         () => new BackendClient({ baseUrl, auth }),

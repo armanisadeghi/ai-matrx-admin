@@ -71,12 +71,7 @@ export async function createPromptFromBuilder(
         const supabase = createClient();
         
         // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            toast.error('Not authenticated');
-            return { success: false, error: 'User not authenticated' };
-        }
-
+        const userId = requireUserId();
         // Generate prompt ID
         const promptId = uuidv4();
 
@@ -101,7 +96,7 @@ export async function createPromptFromBuilder(
         // Create prompt data
         const dbPromptData = {
             id: promptId,
-            user_id: user.id,
+            user_id: userId,
             name: config.name.trim(),
             description: config.description?.trim() || null,
             messages,

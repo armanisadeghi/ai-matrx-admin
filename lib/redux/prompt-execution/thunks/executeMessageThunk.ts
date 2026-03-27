@@ -47,15 +47,15 @@ async function saveRunToDBAsync(
   sourceType: string,
   sourceId: string,
   settings: Record<string, any>,
+  userId: string | null,
   dynamicContexts?: Record<string, any>
 ) {
   try {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
 
     const insertData: Record<string, any> = {
       id: runId,
-      user_id: user?.id,
+      user_id: userId,
       source_type: sourceType,
       source_id: sourceId,
       name: runName,
@@ -240,6 +240,7 @@ export const executeMessage = createAsyncThunk<
         runName = runName || 'New Conversation';
 
         // Fire and forget - use runTracking values for correct source_type and source_id
+        const userId = (getState() as RootState).user.id;
         saveRunToDBAsync(
           runId,
           runName,
@@ -248,6 +249,7 @@ export const executeMessage = createAsyncThunk<
           instance.runTracking.sourceType,
           instance.runTracking.sourceId,
           instance.settings,
+          userId,
           contextsToSave
         ).then(() => {
           dispatch(setRunId({ runId, runName, savedToDatabase: true }));

@@ -1,3 +1,4 @@
+import { requireUserId } from '@/utils/auth/getUserId';
 // @ts-nocheck
 /**
  * System Prompts Service
@@ -159,11 +160,7 @@ export async function fetchButtonPrompts() {
 export async function createSystemPrompt(input: CreateSystemPromptInput) {
   const supabase = createClient();
   
-  const { data: user } = await supabase.auth.getUser();
-  if (!user?.user) {
-    throw new Error('User not authenticated');
-  }
-  
+  const userId = requireUserId();
   const { data, error } = await supabase
     .from('system_prompts')
     .insert({
@@ -185,7 +182,7 @@ export async function createSystemPrompt(input: CreateSystemPromptInput) {
       is_featured: input.is_featured || false,
       status: input.status || 'published',
       metadata: input.metadata || {},
-      published_by: user.user.id
+      published_by: user.userId
     })
     .select()
     .single();
@@ -204,14 +201,10 @@ export async function createSystemPrompt(input: CreateSystemPromptInput) {
 export async function updateSystemPrompt(id: string, input: UpdateSystemPromptInput) {
   const supabase = createClient();
   
-  const { data: user } = await supabase.auth.getUser();
-  if (!user?.user) {
-    throw new Error('User not authenticated');
-  }
-  
+  const userId = requireUserId();
   // Build update object (only include defined fields)
   const updateData: any = {
-    last_updated_by: user.user.id,
+    last_updated_by: user.userId,
     last_updated_at: new Date().toISOString()
   };
   
@@ -256,17 +249,13 @@ export async function publishSystemPromptUpdate(
 ) {
   const supabase = createClient();
   
-  const { data: user } = await supabase.auth.getUser();
-  if (!user?.user) {
-    throw new Error('User not authenticated');
-  }
-  
+  const userId = requireUserId();
   const { data, error } = await supabase
     .from('system_prompts')
     .update({
       prompt_snapshot: input.prompt_snapshot,
       update_notes: input.update_notes,
-      last_updated_by: user.user.id,
+      last_updated_by: user.userId,
       last_updated_at: new Date().toISOString()
       // version will be auto-incremented by trigger
     })
@@ -314,13 +303,13 @@ export async function trackSystemPromptExecution(
 ) {
   const supabase = createClient();
   
-  const { data: user } = await supabase.auth.getUser();
+  const userId = requireUserId();
   
   const { error } = await supabase
     .from('system_prompt_executions')
     .insert({
       system_prompt_id: systemPromptId,
-      user_id: user?.user?.id || null,
+      user_id: user?.userId || null,
       trigger_type: triggerType,
       variables_used: variablesUsed,
       success,

@@ -68,9 +68,8 @@ import {
     selectIsAdmin,
 } from '@/lib/redux/slices/userSlice';
 import {
-    selectEffectiveServer,
-    selectCustomServerUrl,
-} from '@/lib/redux/slices/adminPreferencesSlice';
+    selectResolvedBaseUrl,
+} from '@/lib/redux/slices/apiConfigSlice';
 import {
     selectOrganizationId,
     selectWorkspaceId,
@@ -78,7 +77,7 @@ import {
     selectTaskId,
     selectConversationId,
 } from '@/lib/redux/slices/appContextSlice';
-import { BACKEND_URLS } from '@/lib/api/endpoints';
+// BACKEND_URLS no longer needed here — URL resolution is owned by apiConfigSlice
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
 
 // ─── Auto-generated types (source of truth for all request/response shapes) ──
@@ -429,10 +428,10 @@ async function waitForAuthReady(
  *
  * Logic:
  *   1. testOverrides.forceBaseUrl always wins (testing/demo bypass)
- *   2. Admin users can pick any environment via adminPreferencesSlice
- *   3. Non-admin users always hit production
+ *   2. Read selectResolvedBaseUrl from apiConfigSlice — single source of truth
+ *      for all users. The active server is whatever Redux says it is.
  *
- * If the resolved environment URL is missing from BACKEND_URLS (env var not set),
+ * If the resolved URL is undefined (env var not set for the selected environment),
  * an error is thrown so the misconfiguration is immediately obvious.
  */
 function resolveBaseUrl(state: RootState, testOverrides?: TestOverrides): string {
@@ -440,25 +439,15 @@ function resolveBaseUrl(state: RootState, testOverrides?: TestOverrides): string
         return testOverrides.forceBaseUrl;
     }
 
-    const isAdmin = selectIsAdmin(state);
-
-    if (!isAdmin) {
-        const url = BACKEND_URLS['production'];
-        if (!url) throw new Error('[callApi] NEXT_PUBLIC_BACKEND_URL_PROD is not set.');
-        return url;
+    const url = selectResolvedBaseUrl(state as any);
+    if (!url) {
+        const env = (state as any)?.apiConfig?.activeServer ?? 'production';
+        throw new Error(
+            `[callApi] No URL configured for server environment "${env}". ` +
+            `Set the corresponding NEXT_PUBLIC_BACKEND_URL_* env variable, ` +
+            `or enter a custom URL via the admin indicator.`
+        );
     }
-
-    const env = selectEffectiveServer(state);
-
-    // 'custom' resolves to the admin-entered free-form URL
-    if (env === 'custom') {
-        const custom = selectCustomServerUrl(state);
-        if (!custom) throw new Error('[callApi] Admin server is set to "custom" but no URL has been entered.');
-        return custom;
-    }
-
-    const url = BACKEND_URLS[env];
-    if (!url) throw new Error(`[callApi] No URL configured for server environment "${env}". Set the corresponding NEXT_PUBLIC_BACKEND_URL_* env variable.`);
     return url;
 }
 

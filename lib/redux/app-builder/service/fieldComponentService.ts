@@ -1,3 +1,4 @@
+import { requireUserId } from '@/utils/auth/getUserId';
 import { supabase } from "@/utils/supabase/client";
 import { normalizeFieldDefinition } from '@/features/applet/utils/field-normalization';
 import { FieldBuilder } from "../types";
@@ -32,12 +33,7 @@ export type FieldComponentDB = {
 export const fieldDefinitionToDBFormat = async (
     field: FieldBuilder
 ): Promise<Omit<FieldComponentDB, "created_at" | "updated_at">> => {
-    const { data } = await supabase.auth.getUser();
-    const userId = data.user?.id;
-
-    if (!userId) {
-        throw new Error("User not authenticated");
-    }
+    const userId = requireUserId();
     return {
         id: field.id || null,
         label: field.label || "",
@@ -92,12 +88,7 @@ export const dbToFieldDefinition = (dbRecord: FieldComponentDB): FieldBuilder =>
  * Fetches all field components for the current user
  */
 export const getAllFieldComponents = async (): Promise<FieldBuilder[]> => {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData.user?.id;
-
-    if (!userId) {
-        throw new Error("User not authenticated");
-    }
+    const userId = requireUserId();
 
     const { data, error } = await supabase.from("field_components").select("*").eq("user_id", userId);
 

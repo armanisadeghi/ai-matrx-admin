@@ -1,3 +1,4 @@
+import { requireUserId } from '@/utils/auth/getUserId';
 import { supabase } from "@/utils/supabase/client";
 
 import { dbToFieldDefinition, FieldComponentDB } from "./fieldComponentService";
@@ -24,12 +25,7 @@ export type ComponentGroupDB = {
  * Converts a ContainerBuilder to the database format
  */
 export const componentGroupToDBFormat = async (group: ContainerBuilder): Promise<Omit<ComponentGroupDB, "created_at" | "updated_at">> => {
-    const { data } = await supabase.auth.getUser();
-    const userId = data.user?.id;
-
-    if (!userId) {
-        throw new Error("User not authenticated");
-    }
+    const userId = requireUserId();
 
     return {
         id: group.id || null,
@@ -80,12 +76,7 @@ export const dbToComponentGroup = (dbRecord: ComponentGroupDB): ContainerBuilder
  * Fetches all component groups for the current user
  */
 export const getAllComponentGroups = async (): Promise<ContainerBuilder[]> => {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData.user?.id;
-
-    if (!userId) {
-        throw new Error("User not authenticated");
-    }
+    const userId = requireUserId();
 
     const { data, error } = await supabase.from("component_groups").select("*").eq("user_id", userId);
 

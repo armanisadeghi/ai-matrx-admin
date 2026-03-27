@@ -20,7 +20,6 @@ export default function StoreProvider(
 
     if (!storeRef.current) {
         storeRef.current = makeStore(initialState);
-        // EntityRelationshipManager.getInstance(initialState?.globalCache);
     }
 
     useEffect(() => {

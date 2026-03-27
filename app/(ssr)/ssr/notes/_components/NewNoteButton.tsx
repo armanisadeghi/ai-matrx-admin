@@ -9,26 +9,26 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { Plus } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/slices/userSlice";
 import IconButton from "@/app/(ssr)/_components/IconButton";
 
 export default function NewNoteButton() {
   const searchParams = useSearchParams();
   const [creating, setCreating] = useState(false);
+  const { id: userId } = useAppSelector(selectUser);
 
   const createNote = useCallback(async () => {
-    if (creating) return;
+    if (creating || !userId) return;
     setCreating(true);
 
     try {
       const folder = searchParams.get("folder") || "Draft";
 
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData?.user?.id) return;
-
       const { data: note, error } = await supabase
         .from("notes")
         .insert({
-          user_id: userData.user.id,
+          user_id: userId,
           label: "New Note",
           content: "",
           folder_name: folder,
@@ -56,7 +56,7 @@ export default function NewNoteButton() {
     } finally {
       setCreating(false);
     }
-  }, [searchParams, creating]);
+  }, [searchParams, creating, userId]);
 
   return (
     <IconButton

@@ -43,6 +43,8 @@ import {
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/slices/userSlice";
 import type { NoteSummary } from "../layout";
 import type { MarkdownStreamProps } from "@/components/MarkdownStream";
 import { MatrxSplit } from "@/components/matrx/MatrxSplit";
@@ -92,6 +94,80 @@ interface CachedNote {
 }
 
 const DEFAULT_FOLDERS = ["Draft", "Personal", "Business", "Prompts", "Scratch"];
+
+// ─── Portaled folder dropdown ────────────────────────────────────────────────
+
+function FolderDropdown({
+  triggerRef,
+  folders,
+  currentFolder,
+  onSelect,
+  onClose,
+  anchor = "below",
+}: {
+  triggerRef: React.RefObject<HTMLElement | null>;
+  folders: string[];
+  currentFolder: string | undefined;
+  onSelect: (folder: string) => void;
+  onClose: () => void;
+  anchor?: "below" | "above";
+}) {
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  useEffect(() => {
+    const el = triggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (anchor === "above") {
+      setPos({ top: rect.top, left: rect.left });
+    } else {
+      setPos({ top: rect.bottom + 4, left: rect.right - 160 });
+    }
+  }, [triggerRef, anchor]);
+
+  if (!pos) return null;
+
+  const style: React.CSSProperties =
+    anchor === "above"
+      ? { position: "fixed", bottom: window.innerHeight - pos.top + 4, left: pos.left, zIndex: 9999 }
+      : { position: "fixed", top: pos.top, left: Math.max(8, pos.left), zIndex: 9999 };
+
+  return createPortal(
+    <>
+      <div className="fixed inset-0 z-[9998]" onClick={onClose} />
+      <div
+        className="min-w-[160px] p-1 bg-card/95 backdrop-blur-2xl saturate-150 border border-border rounded-lg shadow-lg"
+        style={style}
+      >
+        {folders.map((f) => {
+          const isCurrent = currentFolder === f;
+          return (
+            <button
+              key={f}
+              className={cn(
+                "flex items-center gap-2 w-full px-2.5 py-1 text-xs rounded-md cursor-pointer transition-colors [&_svg]:w-3.5 [&_svg]:h-3.5",
+                isCurrent
+                  ? "text-amber-600 dark:text-amber-400 bg-amber-500/5"
+                  : "text-foreground hover:bg-accent",
+              )}
+              onClick={() => onSelect(f)}
+              disabled={isCurrent}
+            >
+              <FolderInput />
+              {f}
+              {isCurrent && (
+                <span className="ml-auto text-[0.625rem] opacity-50">
+                  current
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </>,
+    document.body,
+  );
+}
 
 // ─── Auto-label generation ──────────────────────────────────────────────────
 
@@ -153,6 +229,7 @@ export default function NotesWorkspace({
   notes: initialNotes = [],
 }: NotesWorkspaceProps) {
   const [notes, setNotes] = useState<NoteSummary[]>(initialNotes);
+  const { id: userId } = useAppSelector(selectUser);
 
   useEffect(() => {
     console.debug(
@@ -160,35 +237,33 @@ export default function NotesWorkspace({
     );
   }, []);
 
-  // Fetch notes after mount — directly from Supabase, no server roundtrip
+  // Fetch notes after mount — use userId from Redux (set by DeferredShellData), no redundant getUser() call
   useEffect(() => {
+    if (!userId) return;
     const t0 = performance.now();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return;
-      supabase
-        .from("notes")
-        .select("id, label, folder_name, tags, updated_at, position")
-        .eq("user_id", user.id)
-        .eq("is_deleted", false)
-        .order("updated_at", { ascending: false })
-        .then(({ data }) => {
-          console.debug(
-            `⚡NotesWorkspace notes fetched in ${(performance.now() - t0).toFixed(2)}ms`,
-          );
-          if (!data) return;
-          setNotes(
-            data.map((n) => ({
-              id: n.id,
-              label: n.label ?? "Untitled",
-              folder_name: n.folder_name ?? "Draft",
-              tags: n.tags ?? [],
-              updated_at: n.updated_at ?? "",
-              position: n.position ?? 0,
-            })),
-          );
-        });
-    });
-  }, []);
+    supabase
+      .from("notes")
+      .select("id, label, folder_name, tags, updated_at, position")
+      .eq("user_id", userId)
+      .eq("is_deleted", false)
+      .order("updated_at", { ascending: false })
+      .then(({ data }) => {
+        console.debug(
+          `⚡NotesWorkspace notes fetched in ${(performance.now() - t0).toFixed(2)}ms`,
+        );
+        if (!data) return;
+        setNotes(
+          data.map((n) => ({
+            id: n.id,
+            label: n.label ?? "Untitled",
+            folder_name: n.folder_name ?? "Draft",
+            tags: n.tags ?? [],
+            updated_at: n.updated_at ?? "",
+            position: n.position ?? 0,
+          })),
+        );
+      });
+  }, [userId]);
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -606,10 +681,7 @@ export default function NotesWorkspace({
   const duplicateNote = useCallback(
     async (noteId: string) => {
       const cached = noteCache.get(noteId);
-      if (!cached) return;
-
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData?.user?.id) return;
+      if (!cached || !userId) return;
 
       const n = cached.localEdits
         ? { ...cached.data, ...cached.localEdits }
@@ -618,7 +690,7 @@ export default function NotesWorkspace({
       const { data: newNote, error } = await supabase
         .from("notes")
         .insert({
-          user_id: userData.user.id,
+          user_id: userId,
           label: `${n.label} (Copy)`,
           content: n.content,
           folder_name: n.folder_name,
@@ -647,7 +719,7 @@ export default function NotesWorkspace({
 
       switchTab(newNote.id);
     },
-    [noteCache, switchTab],
+    [noteCache, userId, switchTab],
   );
 
   const exportNote = useCallback(
@@ -690,15 +762,14 @@ export default function NotesWorkspace({
   );
 
   const createNoteInActiveFolder = useCallback(async () => {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData?.user?.id) return;
+    if (!userId) return;
 
     const folder = (activeNoteId ? noteCache.get(activeNoteId)?.data.folder_name : null) ?? "Draft";
 
     const { data: note, error } = await supabase
       .from("notes")
       .insert({
-        user_id: userData.user.id,
+        user_id: userId,
         label: "New Note",
         content: "",
         folder_name: folder,
@@ -725,7 +796,7 @@ export default function NotesWorkspace({
     );
 
     switchTab(note.id);
-  }, [activeNoteId, noteCache, switchTab]);
+  }, [activeNoteId, noteCache, userId, switchTab]);
 
   const moveNote = useCallback(async (noteId: string, folder: string) => {
     await supabase
@@ -756,6 +827,10 @@ export default function NotesWorkspace({
 
   // Auto-label tracking — prevents re-generating after user edits title
   const autoLabeledRef = useRef<Set<string>>(new Set());
+
+  // Refs for folder dropdown trigger buttons (portaled to escape overflow clipping)
+  const tabFolderBtnRef = useRef<HTMLButtonElement | null>(null);
+  const bottomFolderBtnRef = useRef<HTMLButtonElement | null>(null);
 
   // Share dialog state
   const [shareDialogNoteId, setShareDialogNoteId] = useState<string | null>(
@@ -1090,57 +1165,31 @@ export default function NotesWorkspace({
                       >
                         <Share2 />
                       </button>
-                      <div className="relative">
-                        <button
-                          className={actionBtnClass}
-                          onClick={() =>
-                            setShowTabFolderDrop(
-                              showTabFolderDrop === id ? null : id,
-                            )
-                          }
-                          title="Move to folder"
-                        >
-                          <Folder />
-                        </button>
-                        {showTabFolderDrop === id && (
-                          <>
-                            <div
-                              className="fixed inset-0 z-40"
-                              onClick={() => setShowTabFolderDrop(null)}
-                            />
-                            <div className="absolute top-full right-0 mt-1 z-50 min-w-[160px] p-1 bg-card/95 backdrop-blur-2xl saturate-150 border border-border rounded-lg shadow-lg">
-                              {allFolders.map((f) => {
-                                const isCurrent =
-                                  activeCached?.data.folder_name === f;
-                                return (
-                                  <button
-                                    key={f}
-                                    className={cn(
-                                      "flex items-center gap-2 w-full px-2.5 py-1 text-xs rounded-md cursor-pointer transition-colors [&_svg]:w-3.5 [&_svg]:h-3.5",
-                                      isCurrent
-                                        ? "text-amber-600 dark:text-amber-400 bg-amber-500/5"
-                                        : "text-foreground hover:bg-accent",
-                                    )}
-                                    onClick={() => {
-                                      moveNote(id, f);
-                                      setShowTabFolderDrop(null);
-                                    }}
-                                    disabled={isCurrent}
-                                  >
-                                    <FolderInput />
-                                    {f}
-                                    {isCurrent && (
-                                      <span className="ml-auto text-[0.625rem] opacity-50">
-                                        current
-                                      </span>
-                                    )}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </>
-                        )}
-                      </div>
+                      <button
+                        ref={showTabFolderDrop === id ? tabFolderBtnRef : undefined}
+                        className={actionBtnClass}
+                        onClick={() =>
+                          setShowTabFolderDrop(
+                            showTabFolderDrop === id ? null : id,
+                          )
+                        }
+                        title="Move to folder"
+                      >
+                        <Folder />
+                      </button>
+                      {showTabFolderDrop === id && (
+                        <FolderDropdown
+                          triggerRef={tabFolderBtnRef}
+                          folders={allFolders}
+                          currentFolder={activeCached?.data.folder_name}
+                          onSelect={(f) => {
+                            moveNote(id, f);
+                            setShowTabFolderDrop(null);
+                          }}
+                          onClose={() => setShowTabFolderDrop(null)}
+                          anchor="below"
+                        />
+                      )}
                       <button
                         className={cn(actionBtnClass, "hover:text-destructive")}
                         onClick={() => deleteNote(id)}
@@ -1330,8 +1379,9 @@ export default function NotesWorkspace({
           {/* ── Tags & Folder Bar (deep hydration — renders shell immediately) */}
           <div className="flex items-center gap-2 py-1 px-4 border-t border-border/20 shrink-0 overflow-hidden min-h-[1.625rem]">
             {/* Folder selector — button that opens inline dropdown */}
-            <div className="relative shrink-0">
+            <div className="shrink-0">
               <button
+                ref={bottomFolderBtnRef}
                 className="flex items-center gap-1 text-[0.625rem] text-muted-foreground hover:text-foreground cursor-pointer transition-colors [&_svg]:w-3 [&_svg]:h-3"
                 onClick={() => setShowFolderSelect((v) => !v)}
               >
@@ -1341,41 +1391,17 @@ export default function NotesWorkspace({
                 </span>
               </button>
               {showFolderSelect && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setShowFolderSelect(false)}
-                  />
-                  <div className="absolute bottom-full left-0 mb-1 z-50 min-w-[160px] p-1 bg-card/95 backdrop-blur-2xl saturate-150 border border-border rounded-lg shadow-lg">
-                    {allFolders.map((f) => {
-                      const isCurrent = activeCached.data.folder_name === f;
-                      return (
-                        <button
-                          key={f}
-                          className={cn(
-                            "flex items-center gap-2 w-full px-2.5 py-1 text-xs rounded-md cursor-pointer transition-colors [&_svg]:w-3.5 [&_svg]:h-3.5",
-                            isCurrent
-                              ? "text-amber-600 dark:text-amber-400 bg-amber-500/5"
-                              : "text-foreground hover:bg-accent",
-                          )}
-                          onClick={() => {
-                            moveNote(activeNoteId, f);
-                            setShowFolderSelect(false);
-                          }}
-                          disabled={isCurrent}
-                        >
-                          <FolderInput />
-                          {f}
-                          {isCurrent && (
-                            <span className="ml-auto text-[0.625rem] opacity-50">
-                              current
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </>
+                <FolderDropdown
+                  triggerRef={bottomFolderBtnRef}
+                  folders={allFolders}
+                  currentFolder={activeCached.data.folder_name}
+                  onSelect={(f) => {
+                    moveNote(activeNoteId, f);
+                    setShowFolderSelect(false);
+                  }}
+                  onClose={() => setShowFolderSelect(false)}
+                  anchor="above"
+                />
               )}
             </div>
 

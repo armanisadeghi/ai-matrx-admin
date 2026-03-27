@@ -11,6 +11,7 @@
  */
 
 import { supabase } from '@/utils/supabase/client';
+import { requireUserId, getUserEmail } from '@/utils/auth/getUserId';
 import {
   Organization,
   OrganizationWithRole,
@@ -64,14 +65,7 @@ export async function createOrganization(
     }
 
     // Get current user
-    const {
-      data: { user: currentUser },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !currentUser) {
-      return { success: false, error: 'User not authenticated' };
-    }
+    const currentUserId = requireUserId();
 
     // Create organization
     const { data: org, error: orgError } = await supabase
@@ -82,7 +76,7 @@ export async function createOrganization(
         description,
         logo_url: logoUrl,
         website,
-        created_by: currentUser.id,
+        created_by: currentUserId,
         is_personal: false,
         settings: settings || {},
       })
@@ -110,7 +104,7 @@ export async function createOrganization(
       .from('organization_members')
       .insert({
         organization_id: org.id,
-        user_id: currentUser.id,
+        user_id: currentUserId,
         role: 'owner',
       });
 
@@ -271,14 +265,7 @@ export async function getOrganizationBySlug(slug: string): Promise<Organization 
  */
 export async function getUserOrganizations(): Promise<OrganizationWithRole[]> {
   try {
-    const {
-      data: { user: currentUser },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !currentUser) {
-      return [];
-    }
+    const currentUserId = requireUserId();
 
     const { data, error } = await supabase
       .from('organization_members')
@@ -290,7 +277,7 @@ export async function getUserOrganizations(): Promise<OrganizationWithRole[]> {
         )
       `
       )
-      .eq('user_id', currentUser.id);
+      .eq('user_id', currentUserId);
 
     if (error) {
       console.error('Error fetching user organizations:', error.message);
@@ -543,16 +530,9 @@ export async function removeMember(
  */
 export async function leaveOrganization(orgId: string): Promise<OperationResult> {
   try {
-    const {
-      data: { user: currentUser },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const currentUserId = requireUserId();
 
-    if (userError || !currentUser) {
-      return { success: false, error: 'User not authenticated' };
-    }
-
-    return await removeMember(orgId, currentUser.id);
+    return await removeMember(orgId, currentUserId);
   } catch (error: any) {
     console.error('Error leaving organization:', error);
     return {
@@ -569,20 +549,13 @@ export async function leaveOrganization(orgId: string): Promise<OperationResult>
  */
 export async function getUserRole(orgId: string): Promise<OrgRole | null> {
   try {
-    const {
-      data: { user: currentUser },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !currentUser) {
-      return null;
-    }
+    const currentUserId = requireUserId();
 
     const { data } = await supabase
       .from('organization_members')
       .select('role')
       .eq('organization_id', orgId)
-      .eq('user_id', currentUser.id)
+      .eq('user_id', currentUserId)
       .single();
 
     return (data?.role as OrgRole) || null;
@@ -751,21 +724,14 @@ export async function resendInvitation(invitationId: string): Promise<OperationR
  */
 export async function acceptInvitation(token: string): Promise<OrganizationResult> {
   try {
-    const {
-      data: { user: currentUser },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !currentUser) {
-      return { success: false, error: 'User not authenticated' };
-    }
+    const currentUserId = requireUserId();
 
     // Find valid invitation
     const { data: invitation, error: inviteError } = await supabase
       .from('organization_invitations')
       .select('*, organizations(*)')
       .eq('token', token)
-      .eq('email', currentUser.email)
+      .eq('email', getUserEmail())
       .gt('expires_at', new Date().toISOString())
       .single();
 
@@ -778,7 +744,7 @@ export async function acceptInvitation(token: string): Promise<OrganizationResul
       .from('organization_members')
       .insert({
         organization_id: invitation.organization_id,
-        user_id: currentUser.id,
+        user_id: currentUserId,
         role: invitation.role,
         invited_by: invitation.invited_by,
       });
@@ -819,19 +785,12 @@ export async function acceptInvitation(token: string): Promise<OrganizationResul
  */
 export async function getUserInvitations(): Promise<OrganizationInvitationWithOrg[]> {
   try {
-    const {
-      data: { user: currentUser },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !currentUser) {
-      return [];
-    }
+    const currentUserId = requireUserId();
 
     const { data, error } = await supabase
       .from('organization_invitations')
       .select('*, organizations(*)')
-      .eq('email', currentUser.email)
+      .eq('email', getUserEmail())
       .gt('expires_at', new Date().toISOString())
       .order('invited_at', { ascending: false });
 

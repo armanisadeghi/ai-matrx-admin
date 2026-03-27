@@ -155,30 +155,45 @@ export const adminCategories = [
     ],
   },
   {
-    name: "Internal AI",
+    name: "AI Models",
     icon: <Brain className="w-6 h-6" />,
     iconColor: "text-violet-600",
     features: [
       {
-        title: "AI Models",
+        title: "AI Model Registry",
         description:
-          "Manage the AI model registry — edit parameters, JSON controls, capabilities, endpoints, and deprecation. Audit and replace model references across prompts and builtins.",
+          "Manage the full AI model registry — edit parameters, JSON controls, endpoints, deprecation flags, and pricing tiers.",
         icon: <Brain />,
         link: "/administration/ai-models",
         isNew: true,
       },
       {
-        title: "Deprecated Models Audit",
+        title: "Data Audit",
         description:
-          "Find all deprecated models with active references across prompts and builtins. Replace them individually with full settings review, or bulk-replace all at once.",
+          "Audit all models for missing or invalid data across pricing, API class, capabilities, and core fields. Fix issues inline with live pass/fail scoring.",
+        icon: <AlertCircle />,
+        link: "/administration/ai-models/audit",
+        isNew: true,
+      },
+      {
+        title: "Deprecated Models",
+        description:
+          "Find deprecated models with active prompt/builtin references. Replace them individually with full settings review, or bulk-replace all at once.",
         icon: <AlertTriangle />,
         link: "/administration/ai-models/deprecated-audit",
         isNew: true,
       },
+    ],
+  },
+  {
+    name: "Prompt Shortcuts",
+    icon: <IconRobot className="w-6 h-6" />,
+    iconColor: "text-indigo-600",
+    features: [
       {
         title: "Prompt Shortcuts",
         description:
-          "Manage AI prompt shortcuts with keyboard bindings, scope mappings, and prompt connections for context menus, buttons, and cards",
+          "Manage AI prompt shortcuts with keyboard bindings, scope mappings, and prompt connections for context menus, buttons, and cards.",
         icon: <IconRobot />,
         link: "/administration/prompt-builtins",
         isNew: true,
@@ -186,7 +201,7 @@ export const adminCategories = [
       {
         title: "Shortcut Categories",
         description:
-          "Manage prompt shortcut categories with placement types, hierarchy, icons, and colors for organizing AI actions",
+          "Manage prompt shortcut categories with placement types, hierarchy, icons, and colors for organizing AI actions.",
         icon: <IconAdjustmentsBolt />,
         link: "/administration/shortcut-categories",
         isNew: true,

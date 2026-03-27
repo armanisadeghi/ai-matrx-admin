@@ -77,16 +77,7 @@ export async function importPrompt(promptData: PromptData): Promise<PromptImport
     }
 
     // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return {
-        success: false,
-        promptId: '',
-        promptName: promptData.name || '',
-        error: 'User not authenticated'
-      };
-    }
-
+    const userId = requireUserId();
     // Generate ID if not provided
     const promptId = promptData.id || uuidv4();
 
@@ -112,7 +103,7 @@ export async function importPrompt(promptData: PromptData): Promise<PromptImport
     // Prepare prompt data for database (use snake_case for DB fields)
     const dbPromptData = {
       id: promptId,
-      user_id: user.id,
+      user_id: userId,
       name: promptData.name,
       description: promptData.description || null,
       messages: normalizedMessages, // Use normalized messages
