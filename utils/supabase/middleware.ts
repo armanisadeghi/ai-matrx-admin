@@ -78,25 +78,17 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // Handle unauthenticated users trying to access protected routes
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/sign-up') &&
-    request.nextUrl.pathname !== '/' &&
-    !request.nextUrl.pathname.startsWith('/auth') &&
-    !request.nextUrl.pathname.startsWith('/oauth') &&         // OAuth consent handles its own auth flow
-    !request.nextUrl.pathname.startsWith('/p/') &&            // Public app/chat routes
-    !request.nextUrl.pathname.startsWith('/ssr/chat') &&     // SSR chat (guest-accessible)
-    !request.nextUrl.pathname.startsWith('/demos') &&         // Demo pages
-    !request.nextUrl.pathname.startsWith('/canvas/shared') && // Shared canvases
-    !request.nextUrl.pathname.startsWith('/canvas/discover') && // Canvas discovery gallery
-    !request.nextUrl.pathname.startsWith('/education') &&     // Education pages
-    !request.nextUrl.pathname.startsWith('/appointment-reminder') && // Public appointment pages
-    !request.nextUrl.pathname.startsWith('/seo')                  // Public SEO tools
-  ) {
+  // Handle unauthenticated users trying to access routes that require a valid session.
+  // Most routes allow guests — they render with limited functionality.
+  // Only hard-block routes where unauthenticated access is genuinely harmful.
+  const pathname = request.nextUrl.pathname;
+  const requiresAuth =
+    pathname.startsWith('/administration') ||    // Admin-only tools
+    pathname.startsWith('/api/admin');            // Admin API routes
+
+  if (!user && requiresAuth) {
     const url = request.nextUrl.clone()
-    const fullPath = request.nextUrl.pathname + request.nextUrl.search
+    const fullPath = pathname + request.nextUrl.search
     url.pathname = '/login'
     url.searchParams.set('redirectTo', fullPath)
     return NextResponse.redirect(url)

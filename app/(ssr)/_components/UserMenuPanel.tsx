@@ -30,6 +30,8 @@ import {
   selectIsOverlayOpen,
   toggleOverlay,
   openOverlay,
+  openUserPreferences,
+  openAnnouncements,
 } from "@/lib/redux/slices/overlaySlice";
 
 const FeedbackDialog = dynamic(() => import("./FeedbackDialog"), {
@@ -87,13 +89,13 @@ export default function UserMenuPanel() {
     closeMenu();
   }, [dispatch]);
 
-  const openPreferences = useCallback(() => {
-    dispatch(openOverlay({ overlayId: "userPreferences" }));
+  const handleOpenPreferences = useCallback(() => {
+    dispatch(openUserPreferences());
     closeMenu();
   }, [dispatch]);
 
-  const openAnnouncements = useCallback(() => {
-    dispatch(openOverlay({ overlayId: "announcements" }));
+  const handleOpenAnnouncements = useCallback(() => {
+    dispatch(openAnnouncements());
     closeMenu();
   }, [dispatch]);
 
@@ -207,7 +209,7 @@ export default function UserMenuPanel() {
       <button className={itemClass} onClick={closeMenu}>
         <Bell /> Notifications
       </button>
-      <button className={itemClass} onClick={openAnnouncements}>
+      <button className={itemClass} onClick={handleOpenAnnouncements}>
         <Megaphone /> Announcements
       </button>
       <button
@@ -254,7 +256,7 @@ export default function UserMenuPanel() {
         {isDark ? "Light Mode" : "Dark Mode"}
       </button>
 
-      <button className={itemClass} onClick={openPreferences}>
+      <button className={itemClass} onClick={handleOpenPreferences}>
         <Settings /> Preferences
       </button>
 

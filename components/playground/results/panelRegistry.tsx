@@ -89,7 +89,7 @@ const EventComponentPanel = createDynamicPanelWrapper(
 const QuestionnaireRendererPanel = createDynamicPanelWrapper(
     ({ content: data, taskId }: { content: any; taskId?: string }) => (
         <QuestionnaireProvider>
-            <QuestionnaireRenderer data={data} theme="professional" taskId={taskId} />
+            <QuestionnaireRenderer data={data} theme="professional" questionnaireId={taskId} />
         </QuestionnaireProvider>
     ),
     "separated"

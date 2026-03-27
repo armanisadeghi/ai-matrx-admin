@@ -3,14 +3,11 @@ import React, { useState, useRef } from "react";
 import { Edit, MoreHorizontal, Copy, Check } from "lucide-react";
 import MarkdownStream from "@/components/MarkdownStream";
 import { escapeEmbeddedCodeFences } from "@/features/prompts/utils/escape-code-fences";
-import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
-import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
-import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";
+import { openFullScreenEditor, openHtmlPreview } from "@/lib/redux/slices/overlaySlice";
 import MessageOptionsMenu from "@/features/chat/components/response/assistant-message/MessageOptionsMenu";
 import { PromptErrorMessage } from "../PromptErrorMessage";
 import { Button } from "@/components/ui/button";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectUser } from "@/lib/redux/selectors/userSelectors";
+import { useAppDispatch } from "@/lib/redux/hooks";
 
 interface PromptSystemMessageProps {
     content: string;
@@ -36,19 +33,10 @@ export function PromptSystemMessage({
     metadata,
     compact = false
 }: PromptSystemMessageProps) {
-    const [isEditorOpen, setIsEditorOpen] = useState(false);
+    const dispatch = useAppDispatch();
     const [showOptionsMenu, setShowOptionsMenu] = useState(false);
-    const [showHtmlModal, setShowHtmlModal] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
-    const user = useAppSelector(selectUser);
-
-    // HTML Preview state using the proper hook
-    const htmlPreviewState = useHtmlPreviewState({
-        markdownContent: content,
-        user: user,
-        isOpen: showHtmlModal,
-    });
 
     const handleContentChange = (newContent: string) => {
         if (onContentChange) {
@@ -57,19 +45,15 @@ export function PromptSystemMessage({
     };
 
     const handleEditClick = () => {
-        // Always open editor - save functionality will be optional
-        setIsEditorOpen(true);
-    };
-
-    const handleSaveEdit = (newContent: string) => {
-        if (onContentChange) {
-            onContentChange(messageIndex, newContent);
-        }
-        setIsEditorOpen(false);
-    };
-
-    const handleCancelEdit = () => {
-        setIsEditorOpen(false);
+        dispatch(openFullScreenEditor({
+            content,
+            onSave: onContentChange
+                ? (newContent: string) => onContentChange(messageIndex, newContent)
+                : undefined,
+            tabs: ["write", "markdown", "wysiwyg", "preview"],
+            initialTab: "write",
+            showSaveButton: !!onContentChange,
+        }));
     };
 
     const handleCopy = async () => {
@@ -87,11 +71,7 @@ export function PromptSystemMessage({
     };
 
     const handleShowHtmlPreview = () => {
-        setShowHtmlModal(true);
-    };
-
-    const handleCloseHtmlModal = () => {
-        setShowHtmlModal(false);
+        dispatch(openHtmlPreview({ content }));
     };
 
     // Check if this is an error message
@@ -168,21 +148,6 @@ export function PromptSystemMessage({
                     )}
                 </>
             )}
-            <FullScreenMarkdownEditor
-                isOpen={isEditorOpen}
-                initialContent={content}
-                onSave={handleSaveEdit}
-                onCancel={handleCancelEdit}
-                tabs={["write", "markdown", "wysiwyg", "preview"]}
-                initialTab="write"
-            />
-            <HtmlPreviewFullScreenEditor
-                isOpen={showHtmlModal}
-                onClose={handleCloseHtmlModal}
-                htmlPreviewState={htmlPreviewState}
-                title="HTML Preview & Publishing"
-                description="Edit markdown, preview HTML, and publish your content"
-            />
         </div>
     );
 }

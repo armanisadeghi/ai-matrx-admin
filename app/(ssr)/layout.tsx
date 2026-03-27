@@ -1,5 +1,4 @@
 import "./shell.css";
-import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { Providers } from "@/app/Providers";
@@ -44,47 +43,60 @@ export default async function SSRLayout({
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "/ssr";
 
+  // getUser() validates the JWT — no redirect for guests, they get limited UI
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) {
-    return redirect("/login");
-  }
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const accessToken = session?.access_token;
+  let initialReduxState: InitialReduxState;
+  let avatarUrl: string | undefined;
+  let displayName: string | undefined;
 
-  const sessionData = await getUserSessionData(supabase, user.id);
-  const isAdmin = sessionData.isAdmin;
-  const userData = mapUserData(user, accessToken, isAdmin);
+  if (user) {
+    // Authenticated: get session token and preferences in parallel
+    const [{ data: { session } }, sessionData] = await Promise.all([
+      supabase.auth.getSession(),
+      getUserSessionData(supabase, user.id),
+    ]);
 
-  setGlobalUserIdAndToken(userData.id, accessToken, isAdmin);
+    const accessToken = session?.access_token;
+    const isAdmin = sessionData.isAdmin;
+    const userData = mapUserData(user, accessToken, isAdmin);
 
-  let userPreferences;
-  if (!sessionData.preferencesExist) {
-    await supabase.from("user_preferences").insert({
-      user_id: userData.id,
-      preferences: defaultUserPreferences,
-    });
-    userPreferences = initializeUserPreferencesState(
-      defaultUserPreferences,
-      true,
-    );
+    setGlobalUserIdAndToken(userData.id, accessToken, isAdmin);
+
+    let userPreferences;
+    if (!sessionData.preferencesExist) {
+      await supabase.from("user_preferences").insert({
+        user_id: userData.id,
+        preferences: defaultUserPreferences,
+      });
+      userPreferences = initializeUserPreferencesState(defaultUserPreferences, true);
+    } else {
+      userPreferences = initializeUserPreferencesState(sessionData.preferences || {}, true);
+    }
+
+    initialReduxState = {
+      user: userData,
+      testRoutes: [],
+      userPreferences,
+      globalCache: emptyGlobalCache,
+    };
+
+    avatarUrl = userData.userMetadata.avatarUrl ?? undefined;
+    displayName = userData.userMetadata.name ?? userData.email ?? undefined;
   } else {
-    userPreferences = initializeUserPreferencesState(
-      sessionData.preferences || {},
-      true,
-    );
-  }
+    // Guest: seed Redux with empty user state, skip all DB calls
+    const guestUserData = mapUserData(null, undefined, false);
+    const userPreferences = initializeUserPreferencesState(defaultUserPreferences, true);
 
-  const initialReduxState: InitialReduxState = {
-    user: userData,
-    testRoutes: [],
-    userPreferences,
-    globalCache: emptyGlobalCache,
-  };
+    initialReduxState = {
+      user: guestUserData,
+      testRoutes: [],
+      userPreferences,
+      globalCache: emptyGlobalCache,
+    };
+  }
 
   return (
     <Providers initialReduxState={initialReduxState}>
@@ -103,8 +115,8 @@ export default async function SSRLayout({
 
         <Sidebar pathname={pathname} />
         <Header
-          avatarUrl={userData.userMetadata.avatarUrl ?? undefined}
-          name={userData.userMetadata.name ?? userData.email ?? undefined}
+          avatarUrl={avatarUrl}
+          name={displayName}
         />
 
         <main className="shell-main">{children}</main>

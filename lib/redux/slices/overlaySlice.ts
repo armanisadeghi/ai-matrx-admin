@@ -27,6 +27,8 @@ const initialState: OverlayState = {
     quickFiles: { isOpen: false, data: null },
     quickUtilities: { isOpen: false, data: null },
     quickAIResults: { isOpen: false, data: null },
+    fullScreenEditor: { isOpen: false, data: null },
+    htmlPreview: { isOpen: false, data: null },
     userPreferences: { isOpen: false, data: null },
     announcements: { isOpen: false, data: null },
     // ... other overlays
@@ -84,4 +86,75 @@ export const selectOverlayData = (state: StateWithOverlays, overlayId: string) =
 
 export const { openOverlay, closeOverlay, closeAllOverlays, toggleOverlay } = overlaySlice.actions;
 export default overlaySlice.reducer;
+
+// ============================================================================
+// TYPED OVERLAY ACTION CREATORS
+// ============================================================================
+// Convenience dispatchers that apply defaults and enforce the correct data
+// shape for specific overlays. Usage: dispatch(openFullScreenEditor({ ... }))
+
+type EditorTabId = "write" | "matrx_split" | "markdown" | "wysiwyg" | "preview";
+
+interface FullScreenEditorPayload {
+  content: string;
+  onSave?: (newContent: string) => void;
+  tabs?: EditorTabId[];
+  initialTab?: EditorTabId;
+  analysisData?: Record<string, unknown>;
+  messageId?: string;
+  title?: string;
+  showSaveButton?: boolean;
+  showCopyButton?: boolean;
+}
+
+export const openFullScreenEditor = (options: FullScreenEditorPayload) =>
+  openOverlay({
+    overlayId: "fullScreenEditor",
+    data: {
+      content: options.content,
+      onSave: options.onSave,
+      tabs: options.tabs ?? ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
+      initialTab: options.initialTab ?? "matrx_split",
+      analysisData: options.analysisData,
+      messageId: options.messageId,
+      title: options.title,
+      showSaveButton: options.showSaveButton ?? true,
+      showCopyButton: options.showCopyButton ?? true,
+    },
+  });
+
+interface PreferencesPayload {
+  initialTab?: string;
+}
+
+export const openUserPreferences = (options?: PreferencesPayload) =>
+  openOverlay({
+    overlayId: "userPreferences",
+    data: options ?? null,
+  });
+
+interface HtmlPreviewPayload {
+  content: string;
+  messageId?: string;
+  title?: string;
+  description?: string;
+  onSave?: (markdownContent: string) => void;
+  showSaveButton?: boolean;
+}
+
+export const openHtmlPreview = (options: HtmlPreviewPayload) =>
+  openOverlay({
+    overlayId: "htmlPreview",
+    data: {
+      content: options.content,
+      messageId: options.messageId,
+      title: options.title ?? "HTML Preview & Publishing",
+      description: options.description ?? "Edit markdown, preview HTML, and publish your content",
+      onSave: options.onSave,
+      showSaveButton: options.showSaveButton ?? false,
+    },
+  });
+
+export const openAnnouncements = () =>
+  openOverlay({ overlayId: "announcements" });
 

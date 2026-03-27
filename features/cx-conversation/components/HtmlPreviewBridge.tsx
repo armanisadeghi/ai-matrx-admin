@@ -8,14 +8,22 @@ import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPr
 
 interface HtmlPreviewBridgeProps {
     content: string;
-    messageId: string;
+    messageId?: string;
     onClose: () => void;
+    title?: string;
+    description?: string;
+    onSave?: (markdownContent: string) => void;
+    showSaveButton?: boolean;
 }
 
 export function HtmlPreviewBridge({
     content,
     messageId,
     onClose,
+    title = "HTML Preview & Publishing",
+    description = "Edit markdown, preview HTML, and publish your content",
+    onSave,
+    showSaveButton,
 }: HtmlPreviewBridgeProps) {
     const user = useAppSelector(selectUser);
     const htmlPreviewState = useHtmlPreviewState({
@@ -29,9 +37,11 @@ export function HtmlPreviewBridge({
             isOpen={true}
             onClose={onClose}
             htmlPreviewState={htmlPreviewState}
-            title="HTML Preview & Publishing"
-            description="Edit markdown, preview HTML, and publish your content"
+            title={title}
+            description={description}
             messageId={messageId}
+            onSave={onSave}
+            showSaveButton={showSaveButton}
         />
     );
 }

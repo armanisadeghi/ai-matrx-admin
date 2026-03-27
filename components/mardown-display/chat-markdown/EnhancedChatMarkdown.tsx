@@ -662,6 +662,8 @@ export const EnhancedChatMarkdownInternal: React.FC<
               onCancel={handleCancelEdit}
               analysisData={analysisData}
               messageId={messageId}
+              tabs={["write", "matrx_split", "markdown", "wysiwyg", "preview"]}
+              initialTab="matrx_split"
             />
           </MarkdownErrorBoundary>
         )}

@@ -106,6 +106,18 @@ const FloatingSheet = dynamic(
   { ssr: false }
 );
 
+const FullScreenMarkdownEditorChat = dynamic(
+  () => import("@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor"),
+  { ssr: false }
+);
+
+const HtmlPreviewBridge = dynamic(
+  () => import("@/features/cx-conversation/components/HtmlPreviewBridge").then(
+    (m) => ({ default: m.HtmlPreviewBridge }),
+  ),
+  { ssr: false }
+);
+
 const VSCodePreferencesModal = dynamic(
   () => import("@/components/user-preferences/VSCodePreferencesModal").then(
     (m) => ({ default: m.VSCodePreferencesModal }),
@@ -182,6 +194,10 @@ export const OverlayController: React.FC = () => {
   const isQuickFilesOpen = useAppSelector((state) => selectIsOverlayOpen(state, "quickFiles"));
   const isQuickUtilitiesOpen = useAppSelector((state) => selectIsOverlayOpen(state, "quickUtilities"));
   const isQuickAIResultsOpen = useAppSelector((state) => selectIsOverlayOpen(state, "quickAIResults"));
+  const isHtmlPreviewOpen = useAppSelector((state) => selectIsOverlayOpen(state, "htmlPreview"));
+  const htmlPreviewData = useAppSelector((state) => selectOverlayData(state, "htmlPreview"));
+  const isFullScreenEditorOpen = useAppSelector((state) => selectIsOverlayOpen(state, "fullScreenEditor"));
+  const fullScreenEditorData = useAppSelector((state) => selectOverlayData(state, "fullScreenEditor"));
   const isPreferencesOpen = useAppSelector((state) => selectIsOverlayOpen(state, "userPreferences"));
   const preferencesData = useAppSelector((state) => selectOverlayData(state, "userPreferences"));
   const isAnnouncementsOpen = useAppSelector((state) => selectIsOverlayOpen(state, "announcements"));
@@ -286,6 +302,14 @@ export const OverlayController: React.FC = () => {
 
   const handleCloseQuickAIResults = () => {
     dispatch(closeOverlay({ overlayId: "quickAIResults" }));
+  };
+
+  const handleCloseHtmlPreview = () => {
+    dispatch(closeOverlay({ overlayId: "htmlPreview" }));
+  };
+
+  const handleCloseFullScreenEditor = () => {
+    dispatch(closeOverlay({ overlayId: "fullScreenEditor" }));
   };
 
   const handleClosePreferences = () => {
@@ -473,6 +497,39 @@ export const OverlayController: React.FC = () => {
         >
           <QuickAIResultsSheet />
         </FloatingSheet>
+      )}
+
+      {/* HTML Preview (general overlay — for any component) */}
+      {isHtmlPreviewOpen && htmlPreviewData && (
+        <HtmlPreviewBridge
+          content={htmlPreviewData.content ?? ""}
+          messageId={htmlPreviewData.messageId}
+          onClose={handleCloseHtmlPreview}
+          title={htmlPreviewData.title}
+          description={htmlPreviewData.description}
+          onSave={htmlPreviewData.onSave}
+          showSaveButton={htmlPreviewData.showSaveButton}
+        />
+      )}
+
+      {/* Full Screen Markdown Editor (general overlay — for any component) */}
+      {isFullScreenEditorOpen && fullScreenEditorData && (
+        <FullScreenMarkdownEditorChat
+          isOpen={true}
+          initialContent={fullScreenEditorData.content ?? ""}
+          onSave={(newContent: string) => {
+            fullScreenEditorData.onSave?.(newContent);
+            handleCloseFullScreenEditor();
+          }}
+          onCancel={handleCloseFullScreenEditor}
+          tabs={fullScreenEditorData.tabs}
+          initialTab={fullScreenEditorData.initialTab}
+          analysisData={fullScreenEditorData.analysisData}
+          messageId={fullScreenEditorData.messageId}
+          title={fullScreenEditorData.title}
+          showSaveButton={fullScreenEditorData.showSaveButton}
+          showCopyButton={fullScreenEditorData.showCopyButton}
+        />
       )}
 
       {/* User Preferences Modal */}

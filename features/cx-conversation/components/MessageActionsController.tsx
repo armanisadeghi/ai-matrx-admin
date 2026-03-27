@@ -156,7 +156,12 @@ function OverlayRenderer({ entry }: { entry: MessageActionOverlay }) {
                 />
             );
 
-        case "fullScreenEditor":
+        case "fullScreenEditor": {
+            type TabId = "write" | "matrx_split" | "markdown" | "wysiwyg" | "preview";
+            const editorTabs = (entry.data?.tabs as TabId[] | undefined) ?? [
+                "write", "matrx_split", "markdown", "wysiwyg", "preview",
+            ] satisfies TabId[];
+            const editorInitialTab = (entry.data?.initialTab as TabId | undefined) ?? "matrx_split";
             return (
                 <FullScreenMarkdownEditor
                     isOpen={true}
@@ -174,10 +179,13 @@ function OverlayRenderer({ entry }: { entry: MessageActionOverlay }) {
                         close();
                     }}
                     onCancel={close}
-                    tabs={["write", "markdown", "wysiwyg", "preview"]}
-                    initialTab="write"
+                    tabs={editorTabs}
+                    initialTab={editorInitialTab}
+                    analysisData={(entry.data?.analysisData ?? instance.metadata) as Record<string, unknown> | undefined}
+                    messageId={instance.messageId || undefined}
                 />
             );
+        }
 
         case "contentHistory":
             if (!instance.sessionId) return null;

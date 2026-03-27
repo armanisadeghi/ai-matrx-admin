@@ -12,14 +12,11 @@ import {
 } from "lucide-react";
 import { useDomCapturePrint } from "@/features/chat/hooks/useDomCapturePrint";
 import MarkdownStream from "@/components/MarkdownStream";
-import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
-import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
-import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";
 import MessageOptionsMenu from "@/features/chat/components/response/assistant-message/MessageOptionsMenu";
 import { PromptErrorMessage } from "../PromptErrorMessage";
 import { Button } from "@/components/ui/button";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectUser } from "@/lib/redux/selectors/userSelectors";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { openFullScreenEditor, openHtmlPreview } from "@/lib/redux/slices/overlaySlice";
 
 interface PromptAssistantMessageProps {
   content: string;
@@ -52,9 +49,8 @@ export function PromptAssistantMessage({
   isTtsRequest = false,
   compact = false,
 }: PromptAssistantMessageProps) {
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const dispatch = useAppDispatch();
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
-  const [showHtmlModal, setShowHtmlModal] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [isAudioLinkCopied, setIsAudioLinkCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -65,14 +61,6 @@ export function PromptAssistantMessage({
   const handleFullPrint = useCallback(() => {
     captureAsPDF({ filename: `ai-response-${messageIndex}` });
   }, [captureAsPDF, messageIndex]);
-  const user = useAppSelector(selectUser);
-
-  // HTML Preview state using the proper hook
-  const htmlPreviewState = useHtmlPreviewState({
-    markdownContent: content,
-    user: user,
-    isOpen: showHtmlModal,
-  });
 
   const handleContentChange = (newContent: string) => {
     if (onContentChange) {
@@ -81,19 +69,15 @@ export function PromptAssistantMessage({
   };
 
   const handleEditClick = () => {
-    // Always open editor - save functionality will be optional
-    setIsEditorOpen(true);
-  };
-
-  const handleSaveEdit = (newContent: string) => {
-    if (onContentChange) {
-      onContentChange(messageIndex, newContent);
-    }
-    setIsEditorOpen(false);
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditorOpen(false);
+    dispatch(openFullScreenEditor({
+      content,
+      onSave: onContentChange
+        ? (newContent: string) => onContentChange(messageIndex, newContent)
+        : undefined,
+      tabs: ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
+      initialTab: "matrx_split",
+      showSaveButton: !!onContentChange,
+    }));
   };
 
   const handleDownloadAudio = async () => {
@@ -134,11 +118,7 @@ export function PromptAssistantMessage({
   };
 
   const handleShowHtmlPreview = () => {
-    setShowHtmlModal(true);
-  };
-
-  const handleCloseHtmlModal = () => {
-    setShowHtmlModal(false);
+    dispatch(openHtmlPreview({ content }));
   };
 
   // Check if this is an error message
@@ -288,21 +268,6 @@ export function PromptAssistantMessage({
           )}
         </>
       )}
-      <FullScreenMarkdownEditor
-        isOpen={isEditorOpen}
-        initialContent={content}
-        onSave={handleSaveEdit}
-        onCancel={handleCancelEdit}
-        tabs={["write", "matrx_split", "markdown", "wysiwyg", "preview"]}
-        initialTab="matrx_split"
-      />
-      <HtmlPreviewFullScreenEditor
-        isOpen={showHtmlModal}
-        onClose={handleCloseHtmlModal}
-        htmlPreviewState={htmlPreviewState}
-        title="HTML Preview & Publishing"
-        description="Edit markdown, preview HTML, and publish your content"
-      />
     </div>
   );
 }
