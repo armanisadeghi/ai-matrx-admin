@@ -1,7 +1,7 @@
 // PageHeader — Server Component shell for injecting content into the header center slot.
 //
 // Usage:
-//   import { PageHeader } from "@/app/(ssr)/_components/PageHeader";
+//   import { PageHeader } from "@/features/ssr-trials/components/PageHeader";
 //
 //   // All breakpoints — same content on mobile and desktop:
 //   <PageHeader>
@@ -36,7 +36,11 @@ interface PageHeaderProps {
   mobile?: React.ReactNode;
 }
 
-export default function PageHeader({ children, desktop, mobile }: PageHeaderProps) {
+export default function PageHeader({
+  children,
+  desktop,
+  mobile,
+}: PageHeaderProps) {
   return (
     <PageHeaderPortal desktop={desktop} mobile={mobile}>
       {children}

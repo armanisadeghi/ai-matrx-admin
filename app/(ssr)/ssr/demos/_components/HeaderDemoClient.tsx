@@ -305,14 +305,14 @@ export default function HeaderDemoClient() {
             Components
           </p>
           <code className="block text-[0.6875rem] text-foreground font-mono leading-relaxed whitespace-pre-wrap break-all">
-            {`import { HeaderStructured, HeaderToggle,\n  HeaderIconTitle, HeaderPills, HeaderTabs }\nfrom "@/app/(ssr)/_components/header-variants";`}
+            {`import { HeaderStructured, HeaderToggle,\n  HeaderIconTitle, HeaderPills, HeaderTabs }\nfrom "@/features/ssr-trials/components/header-variants";`}
           </code>
 
           <p className="text-[0.625rem] font-semibold text-muted-foreground uppercase tracking-wider mt-3 mb-1.5">
             CSS — import once in your route layout.tsx
           </p>
           <code className="block text-[0.6875rem] text-foreground font-mono leading-relaxed whitespace-pre-wrap break-all">
-            {`import "@/app/(ssr)/_components/header-variants/header-variants.css";`}
+            {`import "@/features/ssr-trials/components/header-variants/header-variants.css";`}
           </code>
         </div>
       </div>

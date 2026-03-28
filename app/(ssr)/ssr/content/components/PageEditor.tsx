@@ -351,53 +351,50 @@ export default function PageEditor({
             </div>
 
             {/* ── Tab content ──────────────────────────────────────────── */}
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 min-h-0 overflow-hidden">
                 {/* HTML */}
                 {activeTab === 'html' && (
-                    <div className="h-full flex flex-col">
+                    <div className="relative h-full">
                         <Textarea
                             value={htmlContent}
                             onChange={(e) => setHtmlContent(e.target.value)}
                             placeholder="<div>\n  <h1>Your page content here…</h1>\n</div>"
-                            className="flex-1 rounded-none border-0 resize-none font-mono text-sm leading-relaxed focus-visible:ring-0"
-                            style={{ minHeight: '100%' }}
+                            className="absolute inset-0 rounded-none border-0 resize-none font-mono text-sm leading-relaxed focus-visible:ring-0"
                         />
                     </div>
                 )}
 
                 {/* CSS */}
                 {activeTab === 'css' && (
-                    <div className="h-full flex flex-col">
+                    <div className="relative h-full">
                         <Textarea
                             value={cssContent}
                             onChange={(e) => setCssContent(e.target.value)}
                             placeholder="/* Page-specific styles */\n\nh1 {\n  color: #333;\n}"
-                            className="flex-1 rounded-none border-0 resize-none font-mono text-sm leading-relaxed focus-visible:ring-0"
-                            style={{ minHeight: '100%' }}
+                            className="absolute inset-0 rounded-none border-0 resize-none font-mono text-sm leading-relaxed focus-visible:ring-0"
                         />
                     </div>
                 )}
 
                 {/* JS */}
                 {activeTab === 'js' && (
-                    <div className="h-full flex flex-col">
+                    <div className="relative h-full">
                         <Textarea
                             value={jsContent}
                             onChange={(e) => setJsContent(e.target.value)}
                             placeholder="// Page-specific JavaScript\n\nconsole.log('Page loaded');"
-                            className="flex-1 rounded-none border-0 resize-none font-mono text-sm leading-relaxed focus-visible:ring-0"
-                            style={{ minHeight: '100%' }}
+                            className="absolute inset-0 rounded-none border-0 resize-none font-mono text-sm leading-relaxed focus-visible:ring-0"
                         />
                     </div>
                 )}
 
                 {/* Preview */}
                 {activeTab === 'preview' && (
-                    <div className="h-full bg-white">
+                    <div className="relative h-full bg-white">
                         <iframe
                             srcDoc={previewHtml}
                             title="Page Preview"
-                            className="w-full h-full border-0"
+                            className="absolute inset-0 w-full h-full border-0"
                             sandbox="allow-scripts"
                         />
                     </div>
@@ -405,6 +402,7 @@ export default function PageEditor({
 
                 {/* SEO */}
                 {activeTab === 'seo' && (
+                  <div className="h-full overflow-auto">
                     <div className="p-6 max-w-2xl mx-auto space-y-5">
                         <div>
                             <label className="text-sm font-medium text-foreground block mb-1.5">
@@ -477,10 +475,12 @@ export default function PageEditor({
                             </p>
                         </div>
                     </div>
+                  </div>
                 )}
 
                 {/* Settings */}
                 {activeTab === 'settings' && (
+                  <div className="h-full overflow-auto">
                     <div className="p-6 max-w-2xl mx-auto space-y-5">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -558,10 +558,12 @@ export default function PageEditor({
                             </label>
                         </div>
                     </div>
+                  </div>
                 )}
 
                 {/* Versions */}
                 {activeTab === 'versions' && page && (
+                  <div className="h-full overflow-auto">
                     <div className="p-6 max-w-2xl mx-auto space-y-4">
                         <h3 className="text-sm font-semibold text-foreground">Version History</h3>
                         {versions.isLoading ? (
@@ -619,6 +621,7 @@ export default function PageEditor({
                             </div>
                         )}
                     </div>
+                  </div>
                 )}
             </div>
         </div>

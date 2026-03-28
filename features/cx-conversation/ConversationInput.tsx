@@ -46,8 +46,6 @@ import {
   ArrowUpTapButton,
   MicTapButton,
   MicOffTapButton,
-  BugTapButton,
-  Settings2TapButton,
 } from "@/components/icons/tap-buttons";
 import {
   Popover,
@@ -521,8 +519,8 @@ export function ConversationInput({
   const inputBoxClass = seamless
     ? "flex flex-col w-full bg-background"
     : singleLine
-      ? "flex flex-col w-full bg-background border border-red-500 rounded-b-2xl rounded-t-none border-t-0 py-1"
-      : "flex flex-col w-full bg-background border border-red-500 rounded-3xl py-2";
+      ? "flex flex-col w-full bg-background border border-border rounded-b-2xl rounded-t-none border-t-0 py-1"
+      : "flex flex-col w-full bg-background border border-border rounded-3xl py-2";
 
   return (
     // Outer wrapper: no border, no background — just stacks children vertically
@@ -639,6 +637,13 @@ export function ConversationInput({
                       supportsAudio: true,
                     }
                   }
+                  onSettingsClick={
+                    showSettings ? () => setIsSettingsOpen(true) : undefined
+                  }
+                  onDebugClick={
+                    isAdmin ? () => setIsDebugModalOpen(true) : undefined
+                  }
+                  showDebugActive={showDebugInfo}
                 />
               </PopoverContent>
             </Popover>
@@ -669,21 +674,6 @@ export function ConversationInput({
             style={{ fontSize: "16px" }}
             rows={1}
           />
-
-          {showSettings && (
-            <Settings2TapButton
-              variant="transparent"
-              onClick={() => setIsSettingsOpen(true)}
-            />
-          )}
-
-          {isAdmin && (
-            <BugTapButton
-              variant="transparent"
-              onClick={() => setIsDebugModalOpen(true)}
-              className={showDebugInfo ? "text-red-500" : undefined}
-            />
-          )}
 
           {showVoice &&
             (isTranscribing && !isRecording ? (
