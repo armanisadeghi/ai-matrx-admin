@@ -1,6 +1,6 @@
 // lib/redux/slices/overlaySlice.ts
 
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 // Define interface for overlay state
 export interface OverlayState {
@@ -31,19 +31,25 @@ const initialState: OverlayState = {
     htmlPreview: { isOpen: false, data: null },
     userPreferences: { isOpen: false, data: null },
     announcements: { isOpen: false, data: null },
-    // ... other overlays
+    // Message action overlays (available in all routes)
+    saveToNotes: { isOpen: false, data: null },
+    emailDialog: { isOpen: false, data: null },
+    authGate: { isOpen: false, data: null },
+    contentHistory: { isOpen: false, data: null },
+    feedbackDialog: { isOpen: false, data: null },
+    shareModal: { isOpen: false, data: null },
   },
 };
 
 const overlaySlice = createSlice({
-  name: 'overlays',
+  name: "overlays",
   initialState,
   reducers: {
     openOverlay: (state, action) => {
       const { overlayId, data } = action.payload;
-      state.overlays[overlayId] = { 
-        isOpen: true, 
-        data: data || null 
+      state.overlays[overlayId] = {
+        isOpen: true,
+        data: data || null,
       };
     },
     closeOverlay: (state, action) => {
@@ -54,7 +60,7 @@ const overlaySlice = createSlice({
       }
     },
     closeAllOverlays: (state) => {
-      Object.keys(state.overlays).forEach(key => {
+      Object.keys(state.overlays).forEach((key) => {
         state.overlays[key].isOpen = false;
         state.overlays[key].data = null;
       });
@@ -65,9 +71,11 @@ const overlaySlice = createSlice({
         state.overlays[overlayId] = { isOpen: true, data: data || null };
       } else {
         state.overlays[overlayId].isOpen = !state.overlays[overlayId].isOpen;
-        state.overlays[overlayId].data = state.overlays[overlayId].isOpen ? (data || state.overlays[overlayId].data) : null;
+        state.overlays[overlayId].data = state.overlays[overlayId].isOpen
+          ? data || state.overlays[overlayId].data
+          : null;
       }
-    }
+    },
   },
 });
 
@@ -75,16 +83,21 @@ const overlaySlice = createSlice({
 // which would pull in the entire store.ts and its dependencies
 type StateWithOverlays = { overlays: OverlayState };
 
-export const selectOverlay = (state: StateWithOverlays, overlayId: string) => 
+export const selectOverlay = (state: StateWithOverlays, overlayId: string) =>
   state.overlays.overlays[overlayId] || { isOpen: false, data: null };
 
-export const selectIsOverlayOpen = (state: StateWithOverlays, overlayId: string) => 
-  selectOverlay(state, overlayId).isOpen;
+export const selectIsOverlayOpen = (
+  state: StateWithOverlays,
+  overlayId: string,
+) => selectOverlay(state, overlayId).isOpen;
 
-export const selectOverlayData = (state: StateWithOverlays, overlayId: string) =>
-  selectOverlay(state, overlayId).data;
+export const selectOverlayData = (
+  state: StateWithOverlays,
+  overlayId: string,
+) => selectOverlay(state, overlayId).data;
 
-export const { openOverlay, closeOverlay, closeAllOverlays, toggleOverlay } = overlaySlice.actions;
+export const { openOverlay, closeOverlay, closeAllOverlays, toggleOverlay } =
+  overlaySlice.actions;
 export default overlaySlice.reducer;
 
 // ============================================================================
@@ -113,7 +126,13 @@ export const openFullScreenEditor = (options: FullScreenEditorPayload) =>
     data: {
       content: options.content,
       onSave: options.onSave,
-      tabs: options.tabs ?? ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
+      tabs: options.tabs ?? [
+        "write",
+        "matrx_split",
+        "markdown",
+        "wysiwyg",
+        "preview",
+      ],
       initialTab: options.initialTab ?? "matrx_split",
       analysisData: options.analysisData,
       messageId: options.messageId,
@@ -136,6 +155,7 @@ export const openUserPreferences = (options?: PreferencesPayload) =>
 interface HtmlPreviewPayload {
   content: string;
   messageId?: string;
+  conversationId?: string;
   title?: string;
   description?: string;
   onSave?: (markdownContent: string) => void;
@@ -148,8 +168,11 @@ export const openHtmlPreview = (options: HtmlPreviewPayload) =>
     data: {
       content: options.content,
       messageId: options.messageId,
+      conversationId: options.conversationId,
       title: options.title ?? "HTML Preview & Publishing",
-      description: options.description ?? "Edit markdown, preview HTML, and publish your content",
+      description:
+        options.description ??
+        "Edit markdown, preview HTML, and publish your content",
       onSave: options.onSave,
       showSaveButton: options.showSaveButton ?? false,
     },
@@ -158,3 +181,76 @@ export const openHtmlPreview = (options: HtmlPreviewPayload) =>
 export const openAnnouncements = () =>
   openOverlay({ overlayId: "announcements" });
 
+interface SaveToNotesPayload {
+  content: string;
+  defaultFolder?: string;
+}
+
+export const openSaveToNotes = (options: SaveToNotesPayload) =>
+  openOverlay({
+    overlayId: "saveToNotes",
+    data: {
+      content: options.content,
+      defaultFolder: options.defaultFolder,
+    },
+  });
+
+interface EmailDialogPayload {
+  content: string;
+  metadata?: Record<string, unknown> | null;
+}
+
+export const openEmailDialog = (options: EmailDialogPayload) =>
+  openOverlay({
+    overlayId: "emailDialog",
+    data: {
+      content: options.content,
+      metadata: options.metadata ?? null,
+    },
+  });
+
+interface AuthGatePayload {
+  featureName?: string;
+  featureDescription?: string;
+}
+
+export const openAuthGate = (options?: AuthGatePayload) =>
+  openOverlay({
+    overlayId: "authGate",
+    data: options ?? null,
+  });
+
+interface ContentHistoryPayload {
+  sessionId: string;
+  messageId: string;
+}
+
+export const openContentHistory = (options: ContentHistoryPayload) =>
+  openOverlay({
+    overlayId: "contentHistory",
+    data: {
+      sessionId: options.sessionId,
+      messageId: options.messageId,
+    },
+  });
+
+export const openFeedbackDialog = () =>
+  openOverlay({ overlayId: "feedbackDialog", data: null });
+
+interface ShareModalPayload {
+  resourceType: string;
+  resourceId: string;
+  resourceName: string;
+  isOwner: boolean;
+}
+
+export const openShareModal = (options: ShareModalPayload) =>
+  openOverlay({
+    overlayId: "shareModal",
+    data: {
+      resourceType: options.resourceType,
+      resourceId: options.resourceId,
+      resourceName: options.resourceName,
+      isOwner: options.isOwner,
+    },
+  });

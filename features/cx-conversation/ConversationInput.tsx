@@ -1,20 +1,48 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
+import dynamic from "next/dynamic";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
   ArrowUp,
   CornerDownLeft,
   Mic,
-  ChevronRight,
   ChevronDown,
   MicOff,
   Loader2,
-  X,
   Plus,
   Settings2,
   Bug,
   Database,
+  List,
+  Layers,
 } from "lucide-react";
+import {
+  ResponseModeButtons,
+  BackToStartButton,
+} from "@/features/public-chat/components/AgentSelector";
+
+const GuidedVariableInputs = dynamic(
+  () =>
+    import("@/features/public-chat/components/GuidedVariableInputs").then(
+      (m) => ({ default: m.GuidedVariableInputs }),
+    ),
+  { ssr: false },
+);
+
+const PublicVariableInputs = dynamic(
+  () =>
+    import("@/features/public-chat/components/PublicVariableInputs").then(
+      (m) => ({ default: m.PublicVariableInputs }),
+    ),
+  { ssr: false },
+);
 import {
   TapTargetButtonTransparent,
   TapTargetButtonSolid,
@@ -43,6 +71,7 @@ import {
   fetchAvailableModels,
 } from "@/lib/redux/slices/modelRegistrySlice";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectActiveChatAgent } from "@/lib/redux/slices/activeChatSlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { ResourceChips } from "@/features/prompts/components/resource-display";
 import { ResourcePickerMenu } from "@/features/prompts/components/resource-picker/ResourcePickerMenu";
@@ -81,6 +110,12 @@ export interface ConversationInputProps {
   placeholder?: string;
   compact?: boolean;
   showShiftEnterHint?: boolean;
+  /**
+   * When true, renders a single-line input with flat top corners — designed to
+   * attach seamlessly below a variable inputs component. The input still grows
+   * but starts as one line instead of the tall welcome-screen textarea.
+   */
+  singleLine?: boolean;
 
   /** Attachment capabilities derived from model settings — gates resource types */
   attachmentCapabilities?: {
@@ -92,6 +127,31 @@ export interface ConversationInputProps {
 
   // ── Callbacks ──────────────────────────────────────────────────────────────
   onSend?: () => void;
+  /**
+   * When provided, intercepts submit instead of dispatching sendMessage.
+   * Receives the current input content and resources from Redux.
+   * Return true to clear the input after submit, false to keep it.
+   * Used by the welcome screen to queue the firstMessage and navigate to /c/.
+   */
+  onSubmitOverride?: (
+    content: string,
+    resources: Resource[],
+  ) => Promise<boolean>;
+
+  // ── Footer row ─────────────────────────────────────────────────────────────
+  /**
+   * When true, renders a footer row below the input:
+   *   - BackToStartButton when variables are present
+   *   - ResponseModeButtons when no variables
+   *   - Layout toggle (guided ↔ classic) when variables are present
+   */
+  showFooter?: boolean;
+  /** Label shown in BackToStartButton */
+  agentName?: string;
+  /** Called when BackToStartButton is clicked */
+  onBackToStart?: () => void;
+  /** Called when a ResponseModeButton is clicked */
+  onAgentModeSelect?: (modeId: string, agentId: string | null) => void;
 }
 
 // ============================================================================
@@ -116,8 +176,14 @@ export function ConversationInput({
   placeholder = "Ask anything",
   compact = false,
   showShiftEnterHint = false,
+  singleLine = false,
   attachmentCapabilities,
   onSend,
+  onSubmitOverride,
+  showFooter = false,
+  agentName,
+  onBackToStart,
+  onAgentModeSelect,
 }: ConversationInputProps) {
   const dispatch = useAppDispatch();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -156,11 +222,54 @@ export function ConversationInput({
   const agentId = session?.agentId ?? "";
   const conversationId = session?.conversationId ?? null;
 
+  // ── Agent (for footer ResponseModeButtons) ────────────────────────────────
+  const selectedAgent = useAppSelector(selectActiveChatAgent);
+
   // ── Admin / debug ──────────────────────────────────────────────────────────
   const isAdmin = useAppSelector(selectIsAdmin);
   const isGlobalDebugMode = useAppSelector(selectIsDebugMode);
   const showDebugInfo = useAppSelector((s) =>
     selectShowDebugInfo(s, sessionId),
+  );
+
+  // ── URL params (for variable layout toggle) ───────────────────────────────
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const useGuidedVars = searchParams.get("vars") !== "classic";
+
+  const toggleUrl = useMemo(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (useGuidedVars) {
+      params.set("vars", "classic");
+    } else {
+      params.delete("vars");
+    }
+    const qs = params.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
+  }, [useGuidedVars, searchParams, pathname]);
+
+  // Flat values map from variableDefaults — for variable input components
+  const variableValues = useMemo(
+    () =>
+      Object.fromEntries(
+        variableDefaults.map((v) => [v.name, v.defaultValue ?? ""]),
+      ),
+    [variableDefaults],
+  );
+
+  const handleVariableChange = useCallback(
+    (name: string, value: string) => {
+      dispatch(
+        chatConversationsActions.updateVariable({
+          sessionId,
+          variableName: name,
+          value,
+        }),
+      );
+    },
+    [dispatch, sessionId],
   );
 
   // ── Model registry ─────────────────────────────────────────────────────────
@@ -238,28 +347,25 @@ export function ConversationInput({
   });
 
   // ── Voice / transcribe ─────────────────────────────────────────────────────
-  const {
-    isRecording,
-    isTranscribing,
-    startRecording,
-    stopRecording,
-  } = useRecordAndTranscribe({
-    onTranscriptionComplete: (result) => {
-      if (!result.success || !result.text) return;
-      const newContent = content ? `${content} ${result.text}` : result.text;
-      dispatch(
-        chatConversationsActions.setCurrentInput({
-          sessionId,
-          input: newContent,
-        }),
-      );
-      if (pendingVoiceSubmitRef.current) {
-        pendingVoiceSubmitRef.current = false;
-        handleSubmit(newContent);
-      }
-    },
-    onError: (err) => toast.error("Transcription failed", { description: err }),
-  });
+  const { isRecording, isTranscribing, startRecording, stopRecording } =
+    useRecordAndTranscribe({
+      onTranscriptionComplete: (result) => {
+        if (!result.success || !result.text) return;
+        const newContent = content ? `${content} ${result.text}` : result.text;
+        dispatch(
+          chatConversationsActions.setCurrentInput({
+            sessionId,
+            input: newContent,
+          }),
+        );
+        if (pendingVoiceSubmitRef.current) {
+          pendingVoiceSubmitRef.current = false;
+          handleSubmit(newContent);
+        }
+      },
+      onError: (err) =>
+        toast.error("Transcription failed", { description: err }),
+    });
 
   // ── Auto-resize textarea ───────────────────────────────────────────────────
   useEffect(() => {
@@ -273,9 +379,24 @@ export function ConversationInput({
 
   // ── Submit ─────────────────────────────────────────────────────────────────
   const handleSubmit = useCallback(
-    (overrideContent?: string) => {
+    async (overrideContent?: string) => {
       const finalContent = (overrideContent ?? content).trim();
-      if (!finalContent || isExecuting || !agentId) return;
+      if (!finalContent || isExecuting) return;
+
+      // Welcome screen override — intercepts submit before sendMessage
+      if (onSubmitOverride) {
+        const shouldClear = await onSubmitOverride(finalContent, resources);
+        if (shouldClear) {
+          dispatch(
+            chatConversationsActions.setCurrentInput({ sessionId, input: "" }),
+          );
+          dispatch(chatConversationsActions.clearResources(sessionId));
+        }
+        onSend?.();
+        return;
+      }
+
+      if (!agentId) return;
 
       // Build variables from variableDefaults
       const variables: Record<string, string> = {};
@@ -318,6 +439,7 @@ export function ConversationInput({
       resources,
       dispatch,
       onSend,
+      onSubmitOverride,
     ],
   );
 
@@ -386,17 +508,20 @@ export function ConversationInput({
     [dispatch, sessionId],
   );
 
-  const hasVariables = showVariables && variableDefaults.length > 0;
+  const hasVariables = variableDefaults.length > 0;
   const hasContent = content.trim().length > 0;
-  const isDisabled = isExecuting || !agentId;
+  const isDisabled = isExecuting || (!agentId && !onSubmitOverride);
 
   const containerClass = [
     "flex flex-col gap-1.5 w-full bg-background",
-    seamless ? "" : "border border-border rounded-3xl py-2",
+    seamless
+      ? ""
+      : singleLine
+        ? "border border-border rounded-b-2xl rounded-t-none border-t-0 py-1"
+        : "border border-border rounded-3xl py-2",
   ]
     .filter(Boolean)
     .join(" ");
-
 
   return (
     <div className={containerClass}>
@@ -420,49 +545,31 @@ export function ConversationInput({
         </div>
       )}
 
-      {/* ── Variable inputs (guided mode — inline above textarea) ─────── */}
-      {hasVariables &&
-        variableMode === "guided" &&
-        variableDefaults.map((varDef) => {
-          const isExpanded = expandedVariable === varDef.name;
-          return (
-            <div key={varDef.name} className="flex items-center gap-2 px-3">
-              <button
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                onClick={() =>
-                  dispatch(
-                    chatConversationsActions.setExpandedVariable({
-                      sessionId,
-                      variableName: isExpanded ? null : varDef.name,
-                    }),
-                  )
-                }
-              >
-                <ChevronRight
-                  className={`w-3 h-3 transition-transform ${isExpanded ? "rotate-90" : ""}`}
-                />
-                <span>{varDef.name}</span>
-              </button>
-              {isExpanded && (
-                <input
-                  className="flex-1 text-xs bg-muted rounded px-2 py-1 text-foreground focus:outline-none"
-                  value={varDef.defaultValue ?? ""}
-                  placeholder={varDef.helpText ?? `Enter ${varDef.name}...`}
-                  style={{ fontSize: "16px" }}
-                  onChange={(e) =>
-                    dispatch(
-                      chatConversationsActions.updateVariable({
-                        sessionId,
-                        variableName: varDef.name,
-                        value: e.target.value,
-                      }),
-                    )
-                  }
-                />
-              )}
-            </div>
-          );
-        })}
+      {/* ── Variable inputs ────────────────────────────────────────────── */}
+      {hasVariables && useGuidedVars && (
+        <GuidedVariableInputs
+          variableDefaults={variableDefaults}
+          values={variableValues}
+          onChange={handleVariableChange}
+          disabled={isExecuting}
+          submitOnEnter
+          onSubmit={onSubmitOverride}
+          seamless
+        />
+      )}
+      {hasVariables && !useGuidedVars && (
+        <div className="max-h-[30vh] md:max-h-[45vh] overflow-y-auto overscroll-contain rounded-xl">
+          <PublicVariableInputs
+            variableDefaults={variableDefaults}
+            values={variableValues}
+            onChange={handleVariableChange}
+            disabled={isExecuting}
+            minimal
+            onSubmit={onSubmitOverride}
+            submitOnEnter
+          />
+        </div>
+      )}
 
       {/* ── Resource chips ────────────────────────────────────────────── */}
       {resources.length > 0 && (
@@ -547,7 +654,10 @@ export function ConversationInput({
           disabled={isDisabled || isRecording}
           className={[
             "flex-1 resize-none bg-transparent text-foreground placeholder:text-muted-foreground",
-            "focus:outline-none py-[9px] min-h-[36px] max-h-[200px] overflow-y-auto leading-[18px]",
+            "focus:outline-none overflow-y-auto leading-[18px]",
+            singleLine
+              ? "py-[7px] min-h-[34px] max-h-[34px]"
+              : "py-[9px] min-h-[36px] max-h-[200px]",
             compact ? "text-xs" : "text-sm",
           ].join(" ")}
           style={{ fontSize: "16px" }} // iOS zoom prevention
@@ -599,8 +709,14 @@ export function ConversationInput({
           disabled={!hasContent || isDisabled || isUploading}
           ariaLabel="Send message"
           bgColor={sendButtonVariant === "gray" ? "bg-muted" : "bg-blue-600"}
-          hoverBgColor={sendButtonVariant === "gray" ? "hover:bg-muted/80" : "hover:bg-blue-700"}
-          iconColor={sendButtonVariant === "gray" ? "text-foreground" : "text-white"}
+          hoverBgColor={
+            sendButtonVariant === "gray"
+              ? "hover:bg-muted/80"
+              : "hover:bg-blue-700"
+          }
+          iconColor={
+            sendButtonVariant === "gray" ? "text-foreground" : "text-white"
+          }
           icon={
             isExecuting ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -690,6 +806,42 @@ export function ConversationInput({
           isOpen={isDebugModalOpen}
           onClose={() => setIsDebugModalOpen(false)}
         />
+      )}
+
+      {/* ── Footer row (back button / response modes / layout toggle) ─── */}
+      {showFooter && (
+        <div className="flex items-center justify-between mt-2 pb-1">
+          {hasVariables ? (
+            <BackToStartButton
+              onBack={onBackToStart ?? (() => {})}
+              agentName={agentName}
+            />
+          ) : (
+            <ResponseModeButtons
+              disabled={isExecuting}
+              selectedAgentId={selectedAgent.promptId}
+              onModeSelect={onAgentModeSelect ?? (() => {})}
+            />
+          )}
+          {hasVariables && (
+            <button
+              type="button"
+              onClick={() => router.replace(toggleUrl)}
+              className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex-shrink-0"
+              title={
+                useGuidedVars
+                  ? "Switch to classic variable view"
+                  : "Switch to guided variable view"
+              }
+            >
+              {useGuidedVars ? (
+                <List className="w-4 h-4" />
+              ) : (
+                <Layers className="w-4 h-4" />
+              )}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

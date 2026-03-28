@@ -62,8 +62,6 @@ The Python backend rejects requests that send default values as overrides. The `
 
 ## Deprecated Files (DO NOT USE)
 
-- `_components/ChatWorkspace.tsx` — old monolithic SPA component
-- `_components/DEPRECATED-SsrAgentContext.tsx` — old context provider
-- `_components/DEPRECATED-ChatShellProviders.tsx` — old provider wrapper
+- `_components/ChatWorkspace.tsx` — old monolithic SPA component (not mounted by current routes)
 
-These files are kept for reference but are not imported by any active code.
+Kept for reference only; do not extend or re-wire without an explicit migration plan.

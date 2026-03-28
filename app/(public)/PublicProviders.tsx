@@ -1,15 +1,16 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { ReactQueryProvider } from '@/providers/ReactQueryProvider';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import LiteStoreProvider from '@/providers/LiteStoreProvider';
-import { LiteInitialReduxState } from '@/types/reduxTypes';
-import { PublicAuthSync } from './PublicAuthSync';
+import React from "react";
+import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import LiteStoreProvider from "@/providers/LiteStoreProvider";
+import { LiteInitialReduxState } from "@/types/reduxTypes";
+import { PublicAuthSync } from "./PublicAuthSync";
+import OverlayController from "@/components/overlays/OverlayController";
 
 interface PublicProvidersProps {
-    children: React.ReactNode;
-    initialState?: LiteInitialReduxState;
+  children: React.ReactNode;
+  initialState?: LiteInitialReduxState;
 }
 
 /**
@@ -22,15 +23,19 @@ interface PublicProvidersProps {
  * Auth sync runs after a 100ms delay inside PublicAuthSync so it never
  * blocks the initial paint.
  */
-export function PublicProviders({ children, initialState }: PublicProvidersProps) {
-    return (
-        <ReactQueryProvider>
-            <LiteStoreProvider initialState={initialState}>
-                <TooltipProvider delayDuration={200}>
-                    <PublicAuthSync />
-                    {children}
-                </TooltipProvider>
-            </LiteStoreProvider>
-        </ReactQueryProvider>
-    );
+export function PublicProviders({
+  children,
+  initialState,
+}: PublicProvidersProps) {
+  return (
+    <ReactQueryProvider>
+      <LiteStoreProvider initialState={initialState}>
+        <TooltipProvider delayDuration={200}>
+          <PublicAuthSync />
+          <OverlayController />
+          {children}
+        </TooltipProvider>
+      </LiteStoreProvider>
+    </ReactQueryProvider>
+  );
 }

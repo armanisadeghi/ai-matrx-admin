@@ -28,7 +28,7 @@ import GoogleAPIProvider from "@/providers/google-provider/GoogleApiProvider";
 import { SelectedImagesProvider } from "@/components/image/context/SelectedImagesProvider";
 import { UniformHeightProvider } from "@/features/applet/runner/layouts/core/UniformHeightWrapper";
 import { GlobalBrokersInitializer } from "@/components/broker/UserBrokerInitializer";
-import ClientOverlayProvider from "@/components/overlays/ClientOverlayProvider";
+import OverlayController from "@/components/overlays/OverlayController";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { NotesProvider } from "@/features/notes/context/NotesContext";
 import { TaskProvider } from "@/features/tasks/context/TaskContext";
@@ -100,7 +100,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                                 <TranscriptsProvider>
                                                   <AudioRecoveryProvider>
                                                     <PersistentDOMConnector />
-                                                    <ClientOverlayProvider />
+                                                    <OverlayController />
                                                     <AudioRecoveryToast />
                                                     {children}
                                                   </AudioRecoveryProvider>

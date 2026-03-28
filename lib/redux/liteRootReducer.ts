@@ -8,6 +8,14 @@ import { combineReducers } from "@reduxjs/toolkit";
 import layoutReducer from "./slices/layoutSlice";
 import themeReducer from "@/styles/themes/themeSlice";
 import overlaySlice from "./slices/overlaySlice";
+import overlayDataReducer from "./slices/overlayDataSlice";
+
+// Message actions instance tracking (registers per-message context for overlay dispatch)
+import { messageActionsReducer } from "../../features/cx-conversation/redux/messageActionsSlice";
+
+// Artifact registry + HTML page sessions (used by HtmlPreviewBridge in OverlayController)
+import artifactsReducer from "./slices/artifactsSlice";
+import htmlPagesReducer from "./slices/htmlPagesSlice";
 
 // User
 import userReducer from "./slices/userSlice";
@@ -120,81 +128,91 @@ import appContextReducer from "./slices/appContextSlice";
  * Keys match the full root reducer so selectors and hooks are portable.
  */
 export const createLiteRootReducer = () => {
-    return combineReducers({
-        // Core UI
-        layout: layoutReducer,
-        theme: themeReducer,
-        overlays: overlaySlice,
+  return combineReducers({
+    // Core UI
+    layout: layoutReducer,
+    theme: themeReducer,
+    overlays: overlaySlice,
+    overlayData: overlayDataReducer,
 
-        // User
-        user: userReducer,
-        userPreferences: userPreferencesReducer,
+    // Message action instance tracking (content + sessionId per message bar)
+    messageActions: messageActionsReducer,
 
-        // API config — single source of truth for active server, health, and call log
-        apiConfig: apiConfigReducer,
+    // Artifact registry + HTML page sessions (required by HtmlPreviewBridge, available in all routes)
+    artifacts: artifactsReducer,
+    htmlPages: htmlPagesReducer,
 
-        // Admin
-        adminPreferences: adminPreferencesReducer,
-        adminDebug: adminDebugReducer,
+    // User
+    user: userReducer,
+    userPreferences: userPreferencesReducer,
 
-        // Canvas
-        canvas: canvasReducer,
+    // API config — single source of truth for active server, health, and call log
+    apiConfig: apiConfigReducer,
 
-        // Prompt system
-        promptCache: promptCacheReducer,
-        promptRunner: promptRunnerReducer,
-        promptExecution: promptExecutionReducer,
-        actionCache: actionCacheReducer,
-        modelRegistry: modelRegistryReducer,
+    // Admin
+    adminPreferences: adminPreferencesReducer,
+    adminDebug: adminDebugReducer,
 
-        // Socket.IO connection (starts disconnected, connects on-demand)
-        socketConnections: socketConnectionReducer,
+    // Canvas
+    canvas: canvasReducer,
 
-        // Execution infrastructure (all start empty, populated during AI tasks)
-        socketResponse: socketResponseReducer,
-        socketTasks: socketTasksReducer,
-        broker: brokerReducer,
+    // Prompt system
+    promptCache: promptCacheReducer,
+    promptRunner: promptRunnerReducer,
+    promptExecution: promptExecutionReducer,
+    actionCache: actionCacheReducer,
+    modelRegistry: modelRegistryReducer,
 
-        // Messaging (starts empty, initialized when messaging panel opens)
-        messaging: messagingReducer,
+    // Socket.IO connection (starts disconnected, connects on-demand)
+    socketConnections: socketConnectionReducer,
 
-        // SMS
-        sms: smsReducer,
+    // Execution infrastructure (all start empty, populated during AI tasks)
+    socketResponse: socketResponseReducer,
+    socketTasks: socketTasksReducer,
+    broker: brokerReducer,
 
-        // Unified conversation system (starts empty, initialized per session)
-        chatConversations: chatConversationsReducer,
+    // Messaging (starts empty, initialized when messaging panel opens)
+    messaging: messagingReducer,
 
-        // Chat system (all start empty, populated when chat pages load)
-        conversation: conversationReducer,
-        messages: messagesReducer,
-        newMessage: newMessageReducer,
-        chatDisplay: chatDisplayReducer,
-        aiChat: aiChatReducer,
-        flashcardChat: flashcardChatReducer,
+    // SMS
+    sms: smsReducer,
 
-        // Text editing
-        textDiff: textDiffReducer,
-        noteVersions: noteVersionsReducer,
-        promptEditor: promptEditorReducer,
+    // Unified conversation system (starts empty, initialized per session)
+    chatConversations: chatConversationsReducer,
 
-        // UI state
-        ui: uiReducer,
-        form: formReducer,
-        testRoutes: testRoutesReducer,
+    // Chat system (all start empty, populated when chat pages load)
+    conversation: conversationReducer,
+    messages: messagesReducer,
+    newMessage: newMessageReducer,
+    chatDisplay: chatDisplayReducer,
+    aiChat: aiChatReducer,
+    flashcardChat: flashcardChatReducer,
 
-        // Entity system status (tracks on-demand loading)
-        entitySystem: entitySystemReducer,
+    // Text editing
+    textDiff: textDiffReducer,
+    noteVersions: noteVersionsReducer,
+    promptEditor: promptEditorReducer,
 
-        // Context menu cache (SSR pre-populated, no client fetch)
-        contextMenuCache: contextMenuCacheReducer,
+    // UI state
+    ui: uiReducer,
+    form: formReducer,
+    testRoutes: testRoutesReducer,
 
-        // Active chat page state (selected agent, block mode, agent picker)
-        activeChat: activeChatReducer,
+    // Entity system status (tracks on-demand loading)
+    entitySystem: entitySystemReducer,
 
-        // App context scope — required by callApi.resolveScope() for org/workspace/project/task/conversation
-        appContext: appContextReducer,
-    });
+    // Context menu cache (SSR pre-populated, no client fetch)
+    contextMenuCache: contextMenuCacheReducer,
+
+    // Active chat page state (selected agent, block mode, agent picker)
+    activeChat: activeChatReducer,
+
+    // App context scope — required by callApi.resolveScope() for org/workspace/project/task/conversation
+    appContext: appContextReducer,
+  });
 };
 
 // Type for the lite root state
-export type LiteRootState = ReturnType<ReturnType<typeof createLiteRootReducer>>;
+export type LiteRootState = ReturnType<
+  ReturnType<typeof createLiteRootReducer>
+>;

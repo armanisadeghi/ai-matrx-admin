@@ -1,6 +1,13 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect, useId, lazy, Suspense } from 'react';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useId,
+  lazy,
+  Suspense,
+} from "react";
 import {
   ThumbsUp,
   ThumbsDown,
@@ -11,18 +18,24 @@ import {
   Loader2,
   Save,
   History,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   TapTargetButtonForGroup,
   TapTargetButtonGroup,
-} from '@/app/(ssr)/_components/core/TapTargetButton';
-import { SpeakerButton } from '@/features/tts/components/SpeakerButton';
-import { copyToClipboard } from '@/components/matrx/buttons/markdown-copy-utils';
-import { useAppDispatch } from '@/lib/redux/hooks';
-import { messageActionsActions } from '@/features/cx-conversation/redux/messageActionsSlice';
+} from "@/app/(ssr)/_components/core/TapTargetButton";
+import { SpeakerButton } from "@/features/tts/components/SpeakerButton";
+import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { messageActionsActions } from "@/features/cx-conversation/redux/messageActionsSlice";
+import {
+  openFullScreenEditor,
+  openContentHistory,
+  closeOverlay,
+} from "@/lib/redux/slices/overlaySlice";
+import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
 
 const ConversationMessageOptionsMenu = lazy(
-  () => import('@/features/cx-conversation/MessageOptionsMenu'),
+  () => import("@/features/cx-conversation/MessageOptionsMenu"),
 );
 
 export interface AssistantActionBarProps {
@@ -69,7 +82,7 @@ export function AssistantActionBar({
         context: {
           content,
           messageId,
-          sessionId: sessionId ?? '',
+          sessionId: sessionId ?? "",
           conversationId: conversationId ?? null,
           rawContent: rawContent ?? null,
           metadata: null,
@@ -88,13 +101,21 @@ export function AssistantActionBar({
         updates: {
           content,
           messageId,
-          sessionId: sessionId ?? '',
+          sessionId: sessionId ?? "",
           conversationId: conversationId ?? null,
           rawContent: rawContent ?? null,
         },
       }),
     );
-  }, [content, messageId, sessionId, conversationId, rawContent, instanceId, dispatch]);
+  }, [
+    content,
+    messageId,
+    sessionId,
+    conversationId,
+    rawContent,
+    instanceId,
+    dispatch,
+  ]);
 
   const handleCopy = async () => {
     try {
@@ -103,19 +124,37 @@ export function AssistantActionBar({
           setIsCopied(true);
           setTimeout(() => setIsCopied(false), 2000);
         },
-        onError: (err) => console.error('Failed to copy:', err),
+        onError: (err) => console.error("Failed to copy:", err),
       });
     } catch (err) {
-      console.error('Failed to copy:', err);
+      console.error("Failed to copy:", err);
     }
   };
 
   const handleEdit = () => {
-    dispatch(messageActionsActions.openOverlay({ instanceId, overlay: 'fullScreenEditor' }));
+    dispatch(
+      openFullScreenEditor({
+        content,
+        onSave: (newContent: string) => {
+          if (sessionId && messageId) {
+            dispatch(
+              chatConversationsActions.updateMessage({
+                sessionId,
+                messageId,
+                updates: { content: newContent },
+              }),
+            );
+          }
+          dispatch(closeOverlay({ overlayId: "fullScreenEditor" }));
+        },
+        messageId,
+      }),
+    );
   };
 
   const handleShowHistory = () => {
-    dispatch(messageActionsActions.openOverlay({ instanceId, overlay: 'contentHistory' }));
+    if (!sessionId || !messageId) return;
+    dispatch(openContentHistory({ sessionId, messageId }));
   };
 
   return (
@@ -129,7 +168,7 @@ export function AssistantActionBar({
           ariaLabel="Like message"
           icon={
             <ThumbsUp
-              className={`w-4 h-4 ${isLiked ? 'text-green-500 dark:text-green-400' : 'text-muted-foreground'}`}
+              className={`w-4 h-4 ${isLiked ? "text-green-500 dark:text-green-400" : "text-muted-foreground"}`}
             />
           }
         />
@@ -142,7 +181,7 @@ export function AssistantActionBar({
           ariaLabel="Dislike message"
           icon={
             <ThumbsDown
-              className={`w-4 h-4 ${isDisliked ? 'text-red-500 dark:text-red-400' : 'text-muted-foreground'}`}
+              className={`w-4 h-4 ${isDisliked ? "text-red-500 dark:text-red-400" : "text-muted-foreground"}`}
             />
           }
         />

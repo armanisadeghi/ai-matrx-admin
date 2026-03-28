@@ -17,7 +17,10 @@ import themeReducer from "@/styles/themes/themeSlice";
 import { InitialReduxState } from "@/types/reduxTypes";
 import { createGlobalCacheSlice } from "@/lib/redux/schema/globalCacheSlice";
 import uiReducer from "./ui/uiSlice";
-import { entitySliceRegistry, initializeEntitySlices } from "./entity/entitySlice";
+import {
+  entitySliceRegistry,
+  initializeEntitySlices,
+} from "./entity/entitySlice";
 import { fieldReducer } from "@/lib/redux/concepts/fields/fieldSlice";
 import { storageReducer } from "./storage";
 import { createFileSystemSlice } from "./fileSystem/slice";
@@ -42,6 +45,7 @@ import customAppletRuntimeSlice from "./app-runner/slices/customAppletRuntimeSli
 // import brokersSlice from "./app-runner/slices/brokerSlice";
 import brokerSlice from "./brokerSlice/slice";
 import overlaySlice from "./slices/overlaySlice";
+import overlayDataReducer from "./slices/overlayDataSlice";
 import dbFunctionNodeSlice from "./workflows/db-function-node/dbFunctionNodeSlice";
 import workflowSlice from "./workflow/slice";
 import workflowNodeSlice from "./workflow-nodes/slice";
@@ -56,6 +60,9 @@ import apiConfigReducer from "./slices/apiConfigSlice";
 import activeChatReducer from "./slices/activeChatSlice";
 import entitySystemReducer from "./slices/entitySystemSlice";
 
+// Agent cache — unified slim/core/operational store for user prompts + builtins + shared
+import agentCacheReducer from "./slices/agentCacheSlice";
+
 // Prompt system
 import promptCacheReducer from "./slices/promptCacheSlice";
 import promptConsumersReducer from "./slices/promptConsumersSlice";
@@ -67,155 +74,187 @@ import promptEditorReducer from "./slices/promptEditorSlice";
 import modelRegistryReducer from "./slices/modelRegistrySlice";
 import { chatConversationsReducer } from "../../features/cx-conversation/redux";
 import { messageActionsReducer } from "../../features/cx-conversation/redux/messageActionsSlice";
-
-
+import artifactsReducer from "./slices/artifactsSlice";
+import htmlPagesReducer from "./slices/htmlPagesSlice";
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
 
 export const availableBuckets = [
-    "userContent",
-    "Audio",
-    "Images",
-    "Documents",
-    "Videos",
-    "Code",
-    "any-file",
-    "userContent",
-    "code-editor",
-    "Notes",
-    "Spreadsheets",
-    "audio-recordings",
-    "app-assets",
+  "userContent",
+  "Audio",
+  "Images",
+  "Documents",
+  "Videos",
+  "Code",
+  "any-file",
+  "userContent",
+  "code-editor",
+  "Notes",
+  "Spreadsheets",
+  "audio-recordings",
+  "app-assets",
 ] as const;
 
-const fileSystemReducers = availableBuckets.reduce<{ [K in AvailableBuckets]: Reducer<FileManagement> }>((acc, bucket) => {
+const fileSystemReducers = availableBuckets.reduce<{
+  [K in AvailableBuckets]: Reducer<FileManagement>;
+}>(
+  (acc, bucket) => {
     acc[bucket] = createFileSystemSlice(bucket).reducer;
     return acc;
-}, {} as { [K in AvailableBuckets]: Reducer<FileManagement> });
+  },
+  {} as { [K in AvailableBuckets]: Reducer<FileManagement> },
+);
 
-const featureReducers = Object.keys(featureSchemas).reduce((acc, featureName) => {
-    const featureSchema = featureSchemas[featureName as keyof typeof featureSchemas];
+const featureReducers = Object.keys(featureSchemas).reduce(
+  (acc, featureName) => {
+    const featureSchema =
+      featureSchemas[featureName as keyof typeof featureSchemas];
     const featureSlice = createFeatureSlice(featureName as any, featureSchema);
     acc[featureName] = featureSlice.reducer;
     return acc;
-}, {} as Record<string, any>);
+  },
+  {} as Record<string, any>,
+);
 
-const moduleReducers = Object.keys(moduleSchemas).reduce((acc, moduleName) => {
-    const moduleSchema = moduleSchemas[moduleName as keyof typeof moduleSchemas];
-    const moduleSlice = createModuleSlice(moduleName as ModuleName, moduleSchema);
+const moduleReducers = Object.keys(moduleSchemas).reduce(
+  (acc, moduleName) => {
+    const moduleSchema =
+      moduleSchemas[moduleName as keyof typeof moduleSchemas];
+    const moduleSlice = createModuleSlice(
+      moduleName as ModuleName,
+      moduleSchema,
+    );
     acc[moduleName] = moduleSlice.reducer;
     return acc;
-}, {} as Record<string, any>);
+  },
+  {} as Record<string, any>,
+);
 
 export const createRootReducer = (initialState: InitialReduxState) => {
-    const entityNames = initialState.globalCache?.entityNames ?? [];
-    const hasEntities = entityNames.length > 0;
+  const entityNames = initialState.globalCache?.entityNames ?? [];
+  const hasEntities = entityNames.length > 0;
 
-    if (hasEntities) {
-        console.warn("[WARNING REDUX STARTED WITH LARGE INITIAL STATE] --- WARNING... ENTITIES MUST BE LAZY LOADED");
-    }
+  if (hasEntities) {
+    console.warn(
+      "[WARNING REDUX STARTED WITH LARGE INITIAL STATE] --- WARNING... ENTITIES MUST BE LAZY LOADED",
+    );
+  }
 
-    initializeEntitySlices(initialState.globalCache.schema);
-    const entityReducers = Object.fromEntries(Array.from(entitySliceRegistry.entries()).map(([key, slice]) => [key, slice.reducer]));
+  initializeEntitySlices(initialState.globalCache.schema);
+  const entityReducers = Object.fromEntries(
+    Array.from(entitySliceRegistry.entries()).map(([key, slice]) => [
+      key,
+      slice.reducer,
+    ]),
+  );
 
-    const globalCacheSlice = createGlobalCacheSlice(initialState.globalCache as UnifiedSchemaCache);
+  const globalCacheSlice = createGlobalCacheSlice(
+    initialState.globalCache as UnifiedSchemaCache,
+  );
 
-    const entitiesReducer = Object.keys(entityReducers).length > 0
-        ? combineReducers(entityReducers)
-        : ((state: Record<string, unknown> = {}) => state) as Reducer;
+  const entitiesReducer =
+    Object.keys(entityReducers).length > 0
+      ? combineReducers(entityReducers)
+      : (((state: Record<string, unknown> = {}) => state) as Reducer);
 
-    return combineReducers({
-        ...featureReducers,
-        ...moduleReducers,
-        fileSystem: combineReducers(fileSystemReducers) as Reducer<FileSystemState>,
-        entities: entitiesReducer,
-        entityFields: fieldReducer,
-        layout: layoutReducer,
-        theme: themeReducer,
-        form: formReducer,
-        user: userReducer,
-        userPreferences: userPreferencesReducer,
-        testRoutes: testRoutesReducer,
-        flashcardChat: flashcardChatReducer,
-        aiChat: aiChatReducer,
-        adminDebug: adminDebugReducer,
-        globalCache: globalCacheSlice.reducer,
-        ui: uiReducer,
-        storage: storageReducer,
-        conversation: conversationReducer,
-        messages: messagesReducer,
-        newMessage: newMessageReducer,
-        chatDisplay: chatDisplayReducer,
+  return combineReducers({
+    ...featureReducers,
+    ...moduleReducers,
+    fileSystem: combineReducers(fileSystemReducers) as Reducer<FileSystemState>,
+    entities: entitiesReducer,
+    entityFields: fieldReducer,
+    layout: layoutReducer,
+    theme: themeReducer,
+    form: formReducer,
+    user: userReducer,
+    userPreferences: userPreferencesReducer,
+    testRoutes: testRoutesReducer,
+    flashcardChat: flashcardChatReducer,
+    aiChat: aiChatReducer,
+    adminDebug: adminDebugReducer,
+    globalCache: globalCacheSlice.reducer,
+    ui: uiReducer,
+    storage: storageReducer,
+    conversation: conversationReducer,
+    messages: messagesReducer,
+    newMessage: newMessageReducer,
+    chatDisplay: chatDisplayReducer,
 
-        socketConnections: socketConnectionReducer,
-        socketResponse: socketResponseReducer,
-        socketTasks: socketTasksReducer,
+    socketConnections: socketConnectionReducer,
+    socketResponse: socketResponseReducer,
+    socketTasks: socketTasksReducer,
 
-        componentDefinitions: componentDefinitionsSlice.reducer,
+    componentDefinitions: componentDefinitionsSlice.reducer,
 
-        appBuilder: appBuilderSlice.reducer,
-        appletBuilder: appletBuilderSlice.reducer,
-        containerBuilder: containerBuilderSlice.reducer,
-        fieldBuilder: fieldBuilderSlice.reducer,
+    appBuilder: appBuilderSlice.reducer,
+    appletBuilder: appletBuilderSlice.reducer,
+    containerBuilder: containerBuilderSlice.reducer,
+    fieldBuilder: fieldBuilderSlice.reducer,
 
-        customAppRuntime: customAppRuntimeSlice,
-        customAppletRuntime: customAppletRuntimeSlice,
+    customAppRuntime: customAppRuntimeSlice,
+    customAppletRuntime: customAppletRuntimeSlice,
 
+    broker: brokerSlice, // Concept broker implementation
 
-        broker: brokerSlice, // Concept broker implementation
+    overlays: overlaySlice,
+    overlayData: overlayDataReducer,
+    contextMenuCache: contextMenuCacheReducer,
+    agentCache: agentCacheReducer,
+    promptCache: promptCacheReducer,
+    promptConsumers: promptConsumersReducer,
+    promptRunner: promptRunnerReducer,
+    promptExecution: promptExecutionReducer,
+    actionCache: actionCacheReducer,
 
-        overlays: overlaySlice,
-        contextMenuCache: contextMenuCacheReducer,
-        promptCache: promptCacheReducer,
-        promptConsumers: promptConsumersReducer,
-        promptRunner: promptRunnerReducer,
-        promptExecution: promptExecutionReducer,
-        actionCache: actionCacheReducer,
+    dbFunctionNode: dbFunctionNodeSlice,
 
-        dbFunctionNode: dbFunctionNodeSlice,
+    workflows: workflowSlice,
+    workflowNodes: workflowNodeSlice,
 
-        workflows: workflowSlice,
-        workflowNodes: workflowNodeSlice,
+    canvas: canvasReducer,
 
-        canvas: canvasReducer,
+    // Text diff system
+    textDiff: textDiffReducer,
+    noteVersions: noteVersionsReducer,
 
-        // Text diff system
-        textDiff: textDiffReducer,
-        noteVersions: noteVersionsReducer,
+    // Prompt Editor (Redux)
+    promptEditor: promptEditorReducer,
+    modelRegistry: modelRegistryReducer,
 
-        // Prompt Editor (Redux)
-        promptEditor: promptEditorReducer,
-        modelRegistry: modelRegistryReducer,
+    // Messaging system
+    messaging: messagingReducer,
 
-        // Messaging system
-        messaging: messagingReducer,
+    // SMS integration
+    sms: smsReducer,
 
-        // SMS integration
-        sms: smsReducer,
+    // API config — single source of truth for active server, health, and call log
+    apiConfig: apiConfigReducer,
 
-        // API config — single source of truth for active server, health, and call log
-        apiConfig: apiConfigReducer,
+    // Admin preferences (legacy server fields migrated to apiConfig — kept for UI-only prefs)
+    adminPreferences: adminPreferencesReducer,
 
-        // Admin preferences (legacy server fields migrated to apiConfig — kept for UI-only prefs)
-        adminPreferences: adminPreferencesReducer,
+    // App context — unified "where are you working" hierarchy (org → workspace → project → task → conversation)
+    appContext: appContextReducer,
 
-        // App context — unified "where are you working" hierarchy (org → workspace → project → task → conversation)
-        appContext: appContextReducer,
+    // Active chat page state (selected agent, block mode, agent picker)
+    activeChat: activeChatReducer,
 
-        // Active chat page state (selected agent, block mode, agent picker)
-        activeChat: activeChatReducer,
+    // Unified chat conversation UI slice (replaces ChatContext + prompt-execution for display)
+    chatConversations: chatConversationsReducer,
 
-        // Unified chat conversation UI slice (replaces ChatContext + prompt-execution for display)
-        chatConversations: chatConversationsReducer,
+    // Instance-based message action overlays (Save to Notes, Email, Auth Gate, etc.)
+    messageActions: messageActionsReducer,
 
-        // Instance-based message action overlays (Save to Notes, Email, Auth Gate, etc.)
-        messageActions: messageActionsReducer,
+    // Entity system load status (on-demand schema + slices)
+    entitySystem: entitySystemReducer,
 
-        // Entity system load status (on-demand schema + slices)
-        entitySystem: entitySystemReducer,
-    });
+    // Artifact tracking — universal registry for all AI-generated content
+    artifacts: artifactsReducer,
+
+    // HTML pages — editor session state + page catalog
+    htmlPages: htmlPagesReducer,
+  });
 };
-
 
 // buttonBuilder: buttonBuilderSlice.reducer,
 // brokerMapping: brokerMappingSlice.reducer,

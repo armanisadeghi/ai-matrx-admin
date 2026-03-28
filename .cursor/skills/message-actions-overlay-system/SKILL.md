@@ -1,291 +1,206 @@
----
-name: message-actions-overlay-system
-description: Instance-based Redux overlay system for message action sub-modals (Save to Notes, Email, Auth Gate, Editor, History, HTML Preview, Submit Feedback, Announcements, User Preferences). Use when adding new message actions, modifying the MessageOptionsMenu, working with AssistantActionBar or AssistantMessage components, fixing overlay stacking or z-index issues in chat UIs, or extending the message action registry with new items.
----
-
 # Message Actions Overlay System
 
-## Problem this solves
+## Overview
 
-Message action sub-modals (QuickSaveModal, EmailInputDialog, etc.) used to render **inside** `MessageOptionsMenu`. When the `AdvancedMenu` closed (`closeOnAction`), the entire subtree unmounted — killing any open sub-modal. This system decouples sub-modal rendering from the menu lifecycle by moving overlays to an app-root controller driven by Redux state.
+This skill describes the consolidated overlay architecture for AI Matrx Admin. All overlays — whether triggered from a message action menu, a sidebar, the app header, an SSR route, or a public route — dispatch to a single Redux slice (`overlaySlice`) and render through a single controller (`OverlayController`).
 
 ---
 
-## Architecture — three layers
+## Architecture
 
 ```
-AssistantActionBar (any instance on page)
-  ├── registers/unregisters instance in Redux on mount/unmount
-  └── MessageOptionsMenu
-        └── calls getMessageActions(context) → MenuItem[]
-              └── overlay actions dispatch messageActionsActions.openOverlay()
+All Route Providers (authenticated + public + SSR)
+  └── ClientOverlayProvider
+        └── OverlayController
+              ├── reads overlaySlice (open/close + data)
+              └── dynamically renders all overlay components
 
-Redux: messageActionsSlice
-  ├── instances: Record<string, MessageActionInstance>
-  └── openOverlays: MessageActionOverlay[]  (stack-ordered)
+Any component anywhere in the app:
+  dispatch(openShareModal({ ... }))    →  overlaySlice  →  OverlayController  →  ShareModal
+  dispatch(openHtmlPreview({ ... }))   →  overlaySlice  →  OverlayController  →  HtmlPreviewBridge
+  dispatch(openSaveToNotes({ ... }))   →  overlaySlice  →  OverlayController  →  QuickSaveModal
+  dispatch(openFeedbackDialog())        →  overlaySlice  →  OverlayController  →  FeedbackDialog
+  ... etc
 
-ClientOverlayProvider (app root)
-  ├── OverlayController (general app overlays)
-  └── MessageActionsController
-        └── reads openOverlays → renders corresponding components
-              QuickSaveModal | EmailInputDialog | AuthGateDialog
-              FullScreenMarkdownEditor | ContentHistoryViewer | HtmlPreviewBridge
-              FeedbackDialog | AnnouncementsViewer | VSCodePreferencesModal
+messageActionsSlice: instance tracking only (NO overlay state)
+  - registerInstance / unregisterInstance / updateInstanceContext
+  - AssistantActionBar registers its message context (content, sessionId, messageId) on mount
 ```
 
-**Critical design constraint:** There is never a single "active" message. Multiple chat instances (main chat, floating assistant, sheets, inline dialogs) coexist on a page. Everything is keyed by a caller-generated `instanceId`, never singleton.
+---
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `lib/redux/slices/overlaySlice.ts` | Open/close state + typed action creators for all overlays |
+| `lib/redux/slices/overlayDataSlice.ts` | Dynamic key-value store for complex overlay state (e.g. htmlPreview data) |
+| `components/overlays/OverlayController.tsx` | Single renderer — dynamic imports + conditional rendering for all overlays |
+| `components/overlays/ClientOverlayProvider.tsx` | Thin wrapper that mounts OverlayController |
+| `features/cx-conversation/redux/messageActionsSlice.ts` | Instance tracking ONLY (no overlay open/close) |
+| `features/cx-conversation/actions/messageActionRegistry.ts` | Menu item registry — all dispatches via overlaySlice typed creators |
+| `features/cx-conversation/AssistantActionBar.tsx` | Registers message instances + dispatches overlay opens via overlaySlice |
 
 ---
 
-## File map
+## overlaySlice — Typed Action Creators
 
-| File | Role |
-|------|------|
-| `features/cx-conversation/redux/messageActionsSlice.ts` | Redux slice — state, actions, selectors |
-| `features/cx-conversation/actions/messageActionRegistry.ts` | Pure function returning `MenuItem[]` for a context |
-| `features/cx-conversation/components/MessageActionsController.tsx` | App-root renderer for open overlays |
-| `features/cx-conversation/components/HtmlPreviewBridge.tsx` | Adapter wiring `useHtmlPreviewState` to the controller |
-| `features/cx-conversation/MessageOptionsMenu.tsx` | Thin bridge: reads Redux instance, calls registry, renders AdvancedMenu |
-| `features/cx-conversation/AssistantActionBar.tsx` | Registers instance on mount, renders action buttons + menu |
-| `features/cx-conversation/AssistantMessage.tsx` | Renders message content + action bar |
-| `components/overlays/ClientOverlayProvider.tsx` | Mounts both OverlayController and MessageActionsController |
-| `components/user-preferences/VSCodePreferencesModal.tsx` | VSCode-style preferences modal with left sidebar nav |
-| `components/layout/AnnouncementsViewer.tsx` | Dialog listing active system announcements |
-| `features/cx-conversation/redux/__tests__/messageActionsSlice.test.ts` | 20 reducer+selector tests |
-| `features/cx-conversation/redux/__tests__/messageActionRegistry.test.ts` | 22 registry output tests |
-
----
-
-## Redux state shape
+All overlay opens are dispatched via typed creators exported from `overlaySlice`:
 
 ```typescript
-interface MessageActionsState {
-  instances: Record<string, MessageActionInstance>;
-  openOverlays: MessageActionOverlay[];  // stack-ordered, newest last
-}
-
-interface MessageActionInstance {
-  content: string;
-  messageId: string;
-  sessionId: string;
-  conversationId: string | null;
-  rawContent: unknown[] | null;
-  metadata: Record<string, unknown> | null;
-}
-
-interface MessageActionOverlay {
-  instanceId: string;
-  overlay: MessageActionOverlayType;
-  data?: Record<string, unknown>;
-}
-
-type MessageActionOverlayType =
-  | 'saveToNotes' | 'emailDialog' | 'authGate'
-  | 'fullScreenEditor' | 'contentHistory' | 'htmlPreview'
-  | 'submitFeedback' | 'announcements' | 'userPreferences';
+import {
+  openFullScreenEditor,    // fullScreenEditor overlay
+  openHtmlPreview,         // htmlPreview overlay
+  openSaveToNotes,         // saveToNotes overlay
+  openEmailDialog,         // emailDialog overlay
+  openAuthGate,            // authGate overlay
+  openContentHistory,      // contentHistory overlay
+  openFeedbackDialog,      // feedbackDialog overlay
+  openShareModal,          // shareModal overlay
+  openAnnouncements,       // announcements overlay
+  openUserPreferences,     // userPreferences overlay
+  openQuickNotes,          // quickNotes overlay
+  openQuickTasks,          // quickTasks overlay
+  closeOverlay,            // close any overlay by id
+} from '@/lib/redux/slices/overlaySlice';
 ```
 
-**Selectors** (all take `(state, ...)` — never assume RootState):
-- `selectMessageActionInstance(state, id)` → instance or undefined
-- `selectOpenOverlays(state)` → full stack
-- `selectOverlaysForInstance(state, instanceId)` → filtered
-- `selectIsMessageActionOverlayOpen(state, instanceId, overlay)` → boolean
-- `selectMessageActionOverlayData(state, instanceId, overlay)` → data payload
+### Example: Trigger share from any component
+
+```typescript
+import { useAppDispatch } from '@/lib/redux/hooks';
+import { openShareModal } from '@/lib/redux/slices/overlaySlice';
+
+function MyComponent() {
+  const dispatch = useAppDispatch();
+
+  return (
+    <button onClick={() => dispatch(openShareModal({
+      resourceType: 'cx_conversation',
+      resourceId: conversationId,
+      resourceName: title,
+      isOwner: true,
+    }))}>
+      Share
+    </button>
+  );
+}
+```
+
+### Example: HTML preview from a public message component
+
+```typescript
+dispatch(openHtmlPreview({ content: message.content }));
+```
+
+### Example: Auth gate for unauthenticated feature access
+
+```typescript
+dispatch(openAuthGate({ featureName: 'Save to Notes', featureDescription: 'Sign in to save notes.' }));
+```
 
 ---
 
-## How to add a new overlay type
+## overlayDataSlice — Complex Overlay State
 
-### Step 1: Add the type
-
-In `messageActionsSlice.ts`, extend `MessageActionOverlayType`:
+For overlays that need mutable, structured state (beyond a one-time `data` blob in `overlaySlice`), use `overlayDataSlice`:
 
 ```typescript
-export type MessageActionOverlayType =
-  | 'saveToNotes' | 'emailDialog' | 'authGate'
-  | 'fullScreenEditor' | 'contentHistory' | 'htmlPreview'
-  | 'submitFeedback' | 'announcements' | 'userPreferences'
-  | 'yourNewOverlay';  // ← add here
+import { setOverlayData, selectTypedOverlayData } from '@/lib/redux/slices/overlayDataSlice';
+
+// Store typed data
+dispatch(setOverlayData({ overlayId: 'htmlPreview', type: 'htmlPreview', data: { markdown, css } }));
+
+// Read with type guard
+const data = useAppSelector(state => selectTypedOverlayData<HtmlPreviewData>(state, 'htmlPreview', 'htmlPreview'));
 ```
 
-### Step 2: Add the renderer
+---
 
-In `MessageActionsController.tsx`, add a dynamic import and a case to `OverlayRenderer`:
+## Adding a New Overlay
+
+1. **Add overlay ID to `overlaySlice` initialState:**
 
 ```typescript
-const YourNewComponent = dynamic(
-  () => import('@/path/to/YourNewComponent'),
-  { ssr: false },
+myNewOverlay: { isOpen: false, data: null },
+```
+
+2. **Add typed creator in `overlaySlice`:**
+
+```typescript
+export const openMyNewOverlay = (options: MyPayload) =>
+  openOverlay({ overlayId: 'myNewOverlay', data: options });
+```
+
+3. **Add dynamic import + renderer to `OverlayController`:**
+
+```typescript
+const MyNewOverlayComponent = dynamic(
+  () => import('@/features/my-feature/MyNewOverlay').then(m => ({ default: m.MyNewOverlay })),
+  { ssr: false }
 );
 
-// Inside the switch:
-case 'yourNewOverlay':
-  return (
-    <YourNewComponent
-      isOpen={true}
-      onClose={close}
-      content={instance.content}
-      /* any data from entry.data */
-    />
-  );
+// In the component body:
+const isMyNewOverlayOpen = useAppSelector(state => selectIsOverlayOpen(state, 'myNewOverlay'));
+const myNewOverlayData = useAppSelector(state => selectOverlayData(state, 'myNewOverlay'));
+
+// In JSX:
+{isMyNewOverlayOpen && myNewOverlayData && (
+  <MyNewOverlayComponent
+    isOpen={true}
+    onClose={() => dispatch(closeOverlay({ overlayId: 'myNewOverlay' }))}
+    {...myNewOverlayData as MyPayload}
+  />
+)}
 ```
 
-### Step 3: Add the menu item
-
-In `messageActionRegistry.ts`, add a `MenuItem` entry in the `getMessageActions` function:
+4. **Dispatch from anywhere:**
 
 ```typescript
-{
-  key: 'your-new-action',
-  icon: SomeIcon,
-  iconColor: 'text-blue-500 dark:text-blue-400',
-  label: 'Your Action',
-  action: () => {
-    dispatch(messageActionsActions.openOverlay({
-      instanceId,
-      overlay: 'yourNewOverlay',
-      data: { /* optional data */ },
-    }));
-    onClose();
-  },
-  category: 'Actions',
-  showToast: false,
-},
+dispatch(openMyNewOverlay({ ...options }));
 ```
 
-### Step 4: Add tests
-
-In `__tests__/messageActionsSlice.test.ts`, the existing tests cover the generic open/close behavior — no changes needed unless the new overlay has special lifecycle requirements.
-
-In `__tests__/messageActionRegistry.test.ts`, add a test verifying the new item appears and dispatches correctly.
+No prop drilling. No duplicate renders. No conditional availability per route.
 
 ---
 
-## How to add a new action button to AssistantActionBar
+## Route Availability
 
-Direct action buttons (like, dislike, copy, speaker) live in `AssistantActionBar.tsx`. If the action needs a sub-modal, dispatch to Redux. If it's stateless, handle locally.
+`ClientOverlayProvider` is mounted in **every route provider**:
+
+| Route type | Provider file |
+|-----------|--------------|
+| Authenticated routes | `app/Providers.tsx` |
+| Public routes (`/p/...`) | `app/(public)/PublicProviders.tsx` |
+| SSR routes (`/ssr/...`) | `app/(ssr)/layout.tsx` (via `app/Providers.tsx`) |
+
+---
+
+## messageActionsSlice — Instance Tracking Only
+
+`messageActionsSlice` is now a pure instance registry. It no longer has any overlay-related state.
 
 ```typescript
-// For a Redux-driven overlay:
-const handleNewAction = () => {
-  dispatch(messageActionsActions.openOverlay({
-    instanceId,
-    overlay: 'yourNewOverlay',
-  }));
-};
+// Register on mount
+dispatch(messageActionsActions.registerInstance({ id: instanceId, context: { content, messageId, sessionId, ... } }));
 
-// For a stateless action:
-const handleCopy = async () => { /* clipboard logic */ };
+// Update on content change
+dispatch(messageActionsActions.updateInstanceContext({ id: instanceId, updates: { content } }));
+
+// Unregister on unmount
+dispatch(messageActionsActions.unregisterInstance(instanceId));
 ```
 
----
-
-## How AssistantActionBar registers instances
-
-```typescript
-// On mount — single registration
-useEffect(() => {
-  dispatch(messageActionsActions.registerInstance({
-    id: instanceId,
-    context: { content, messageId, sessionId, ... },
-  }));
-  return () => {
-    dispatch(messageActionsActions.unregisterInstance(instanceId));
-  };
-}, [instanceId, dispatch]);
-
-// On prop changes — context stays current
-useEffect(() => {
-  dispatch(messageActionsActions.updateInstanceContext({
-    id: instanceId,
-    updates: { content, messageId, sessionId, ... },
-  }));
-}, [content, messageId, sessionId, ...]);
-```
-
-The `instanceId` is generated via `useId()` + `useRef` — stable across re-renders, unique per component instance.
+The reason for maintaining this: the message action registry (`getMessageActions`) receives `content`, `sessionId`, and `messageId` directly from the `AssistantActionBar` props — not from Redux. The slice is a lightweight registry in case any overlay needs to look up which message context belongs to which bar, but overlay rendering itself always goes through `overlaySlice`.
 
 ---
 
-## Auth gating pattern
+## What Was Eliminated
 
-The registry's `requireAuth` helper:
-1. Checks `ctx.isAuthenticated`
-2. If false: stores the action key + content in `sessionStorage` (`matrx_pending_post_auth_action`)
-3. Opens the `authGate` overlay with feature name/description
-4. Returns `false` (caller returns early)
-
-After login redirect, `resumePendingAuthAction` checks sessionStorage and re-triggers the action.
-
----
-
-## Z-index and stacking
-
-No manual z-index is needed. The system works because:
-- `MessageActionsController` renders **after** `OverlayController` in the DOM
-- All overlay components (Radix Dialog/Sheet) portal to `document.body`
-- DOM order determines stacking — later = higher
-- The `openOverlays` array is stack-ordered (push on open, filter on close)
-- `AdvancedMenu` at z-9999 closes **before** sub-modals render (the action dispatches to Redux, then menu closes)
-
----
-
-## Two overlay systems (don't confuse them)
-
-| System | Slice | Controller | For what |
-|--------|-------|------------|----------|
-| **General** | `lib/redux/slices/overlaySlice.ts` | `OverlayController.tsx` | App-wide overlays: Quick Notes/Tasks/Chat, Prompt Runner modals, toasts |
-| **Message Actions** | `messageActionsSlice.ts` | `MessageActionsController.tsx` | Message-specific: Save to Notes, Email, Auth Gate, Editor, History, HTML Preview, Feedback, Announcements, Preferences |
-
-The "Add to Tasks" action bridges both: it dispatches to the **general** `overlaySlice` (`openOverlay({ overlayId: 'quickTasks', data: ... })`) because QuickTasks is rendered by `OverlayController`.
-
----
-
-## Legacy variants (not yet migrated)
-
-These files still use the old local-state pattern. They have `@deprecated` comments:
-- `features/chat/components/response/assistant-message/MessageOptionsMenu.tsx`
-- `features/public-chat/components/PublicMessageOptionsMenu.tsx`
-
-Active consumers of legacy variants:
-- `features/prompts/components/builder/PromptAssistantMessage.tsx` → imports from `features/chat/`
-- `features/prompts/components/builder/PromptSystemMessage.tsx` → imports from `features/chat/`
-- `features/prompt-apps/components/PromptAppPublicRendererFastAPI.tsx` → imports `PublicMessageOptionsMenu`
-
-**Do not delete** legacy files until these consumers are migrated.
-
----
-
-## Known gaps (as of March 2026)
-
-1. **`copy-word` is identical to `copy-docs`** in the registry — no Word-specific formatting applied
-2. **`resumePendingAuthAction` has no test coverage** in the registry test file
-3. **`data: any` in `overlaySlice`** — type safety gap at the general overlay boundary
-4. **Stub actions** `convert-broker` and `add-docs` show "Coming soon" toasts
-5. **`onContentChange` on `AssistantMessage`** is declared but never passed by any caller — vestigial prop
-
----
-
-## Running tests
-
-```bash
-npx jest --config jest.config.js.ts features/cx-conversation/redux/__tests__/ --no-cache
-```
-
-Outputs: 42 tests (20 slice + 22 registry), all passing.
-
----
-
-## Checklist for changes
-
-Before merging any change to this system:
-
-- [ ] New overlay type added to `MessageActionOverlayType` union?
-- [ ] Dynamic import added to `MessageActionsController`?
-- [ ] Case added to `OverlayRenderer` switch?
-- [ ] Menu item added to `getMessageActions` in registry?
-- [ ] Tests updated for new state transitions or menu items?
-- [ ] No manual z-index added to any overlay component?
-- [ ] `instanceId` used (never global "active message" singleton)?
-- [ ] `onClose` called in the action callback (menu must close before overlay opens)?
-- [ ] Legacy variants left untouched (unless migrating their consumers)?
+- ❌ `MessageActionsController.tsx` — deleted; it was a parallel overlay renderer that duplicated `OverlayController`
+- ❌ `openOverlay` / `closeOverlay` / `openOverlays` actions from `messageActionsSlice`
+- ❌ Inline `<HtmlPreviewModal>` in `features/public-chat/components/MessageDisplay.tsx`
+- ❌ Inline `<ShareModal>` in `features/public-chat/components/ChatContainer.tsx`
+- ❌ Inline `<ShareModal>` in `features/public-chat/components/sidebar/SidebarChats.tsx`
+- ❌ `isShareOpen` and similar local `useState` flags for overlay control
+- ❌ Overlay components missing from public routes due to provider gaps

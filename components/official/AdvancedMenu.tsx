@@ -5,6 +5,7 @@ import { LucideIcon, Check, Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 
 export type MenuItemAction = () => void | Promise<void>;
 
@@ -35,37 +36,155 @@ export interface AdvancedMenuProps {
   isOpen: boolean;
   onClose: () => void;
   items: MenuItem[];
-  
+
   // Header
   title?: string;
   description?: string;
   showHeader?: boolean; // Default true
-  
+
   // Positioning
-  position?: "bottom-left" | "bottom-right" | "top-left" | "top-right" | "center";
+  position?:
+    | "bottom-left"
+    | "bottom-right"
+    | "top-left"
+    | "top-right"
+    | "center";
   anchorElement?: HTMLElement | null;
-  
+
   // Styling
   className?: string;
   width?: string; // Default "280px"
   maxWidth?: string; // Default "320px"
-  
+
   // Behavior
   closeOnAction?: boolean; // Default true
   showBackdrop?: boolean; // Default true
   backdropBlur?: boolean; // Default true
   categorizeItems?: boolean; // Default true if items have categories
-  
+
   // Mobile
-  forceMobileCenter?: boolean; // Force center positioning on mobile
-  
+  forceMobileCenter?: boolean; // Force center positioning on mobile (legacy, ignored — always Drawer on mobile)
+
   // Callbacks
   onActionStart?: (key: string) => void;
   onActionSuccess?: (key: string) => void;
-  onActionError?: (key: string, error: any) => void;
+  onActionError?: (key: string, error: unknown) => void;
 }
 
 type ActionState = "idle" | "loading" | "success" | "error";
+
+// ─── Shared item renderer ─────────────────────────────────────────────────────
+
+interface MenuItemsContentProps {
+  groupedItems: Record<string, MenuItem[]>;
+  categorizeItems: boolean;
+  actionStates: Record<string, ActionState>;
+  onAction: (item: MenuItem) => void;
+  getActionState: (key: string) => ActionState;
+}
+
+const MenuItemsContent: React.FC<MenuItemsContentProps> = ({
+  groupedItems,
+  categorizeItems,
+  onAction,
+  getActionState,
+}) => (
+  <>
+    {Object.entries(groupedItems).map(([category, categoryItems], catIndex) => (
+      <div key={category}>
+        {categorizeItems && category && catIndex > 0 && (
+          <div className="px-2.5 pt-2 pb-0.5">
+            <h4 className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              {category}
+            </h4>
+          </div>
+        )}
+
+        <div className="px-1.5 py-0.5">
+          {categoryItems.map((item) => {
+            const state = getActionState(item.key);
+            const Icon = item.icon;
+            const isLoading = state === "loading";
+            const isSuccess = state === "success";
+            const isError = state === "error";
+            const isDisabled = item.disabled || isLoading;
+
+            return (
+              <button
+                key={item.key}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isDisabled) onAction(item);
+                }}
+                disabled={isDisabled}
+                className={cn(
+                  "w-full flex items-center gap-2.5 px-2 py-0 rounded-md min-h-[32px]",
+                  "text-left transition-all duration-150",
+                  isDisabled
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-zinc-100 dark:hover:bg-zinc-800/70 active:scale-[0.98] cursor-pointer",
+                  isSuccess && "bg-green-50 dark:bg-green-900/20",
+                  isError && "bg-red-50 dark:bg-red-900/20",
+                  "group",
+                )}
+              >
+                {/* Icon */}
+                <div
+                  className={cn(
+                    "flex-shrink-0 transition-transform duration-150",
+                    !isDisabled && "group-hover:scale-110",
+                  )}
+                >
+                  {isLoading ? (
+                    <Loader2
+                      size={15}
+                      className="animate-spin text-gray-400 dark:text-gray-500"
+                    />
+                  ) : isSuccess ? (
+                    <Check
+                      size={15}
+                      className="text-green-500 dark:text-green-400"
+                    />
+                  ) : (
+                    <Icon
+                      size={15}
+                      className={
+                        item.iconColor || "text-gray-600 dark:text-gray-400"
+                      }
+                    />
+                  )}
+                </div>
+
+                {/* Label */}
+                <div className="flex-1 flex items-center gap-2 min-w-0">
+                  <span
+                    className={cn(
+                      "text-[13px] font-medium",
+                      isSuccess && "text-green-700 dark:text-green-300",
+                      isError && "text-red-700 dark:text-red-300",
+                      !isSuccess &&
+                        !isError &&
+                        "text-gray-900 dark:text-gray-100",
+                    )}
+                  >
+                    {item.label}
+                  </span>
+                  {item.disabled && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-gray-600 dark:text-gray-400 font-medium">
+                      SOON
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    ))}
+  </>
+);
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
   isOpen,
@@ -83,108 +202,106 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
   showBackdrop = true,
   backdropBlur = true,
   categorizeItems = true,
-  forceMobileCenter = true,
   onActionStart,
   onActionSuccess,
   onActionError,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
-  const [actionStates, setActionStates] = useState<Record<string, ActionState>>({});
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [actionStates, setActionStates] = useState<Record<string, ActionState>>(
+    {},
+  );
   const isMobile = useIsMobile();
   const [mounted, setMounted] = useState(false);
-  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+  const [hasScrollBelow, setHasScrollBelow] = useState(false);
 
-  // Track if component is mounted for portal rendering
   useEffect(() => {
     setMounted(true);
     return () => setMounted(false);
   }, []);
 
-  // Calculate menu position with intelligent viewport-aware positioning
+  // Calculate desktop menu position with viewport-aware clamping
   useEffect(() => {
-    if (!isOpen || !anchorElement) {
+    if (!isOpen || !anchorElement || isMobile) {
       setMenuPosition(null);
       return;
     }
 
-    // Double-RAF ensures the menu is fully laid out before measuring height
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
+    const compute = () => {
       if (!menuRef.current) return;
 
       const rect = anchorElement.getBoundingClientRect();
       const menuWidth = parseInt(width) || 280;
-      const menuHeight = menuRef.current.scrollHeight || menuRef.current.offsetHeight || 200;
-      const gap = 8; // Gap from trigger
-      const edgePadding = 12; // Padding from viewport edges
+      const gap = 8;
+      const edgePadding = 12;
 
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
 
+      // Max height the menu can ever be: viewport minus padding on both sides
+      const maxAllowedHeight = viewportHeight - edgePadding * 2;
+
+      // Actual rendered height, capped at max
+      const renderedHeight = Math.min(
+        menuRef.current.scrollHeight || menuRef.current.offsetHeight || 200,
+        maxAllowedHeight,
+      );
+
       let top = 0;
       let left = 0;
 
-      // Handle center positioning
-      if (position === "center" || (isMobile && forceMobileCenter)) {
-        top = Math.max(edgePadding, (viewportHeight - menuHeight) / 2);
+      if (position === "center") {
+        top = Math.max(edgePadding, (viewportHeight - renderedHeight) / 2);
         left = Math.max(edgePadding, (viewportWidth - menuWidth) / 2);
         setMenuPosition({ top, left });
         return;
       }
 
-      // Determine preferred vertical position
       const preferBottom = position.includes("bottom");
       const spaceBelow = viewportHeight - rect.bottom - gap - edgePadding;
       const spaceAbove = rect.top - gap - edgePadding;
 
-      // Choose vertical position based on available space
-      if (preferBottom && spaceBelow >= menuHeight) {
-        // Enough space below, use bottom position
+      if (preferBottom && spaceBelow >= renderedHeight) {
         top = rect.bottom + gap;
-      } else if (!preferBottom && spaceAbove >= menuHeight) {
-        // Enough space above, use top position
-        top = rect.top - menuHeight - gap;
+      } else if (!preferBottom && spaceAbove >= renderedHeight) {
+        top = rect.top - renderedHeight - gap;
       } else if (spaceBelow > spaceAbove) {
-        // More space below, even if not ideal
+        // Open below — menu will scroll internally if too tall
         top = rect.bottom + gap;
       } else {
-        // More space above
-        top = rect.top - menuHeight - gap;
+        // Open above
+        top = rect.top - renderedHeight - gap;
       }
 
-      // Ensure menu doesn't go off top or bottom
-      if (top < edgePadding) {
-        top = edgePadding;
-      } else if (top + menuHeight > viewportHeight - edgePadding) {
-        top = viewportHeight - menuHeight - edgePadding;
-      }
+      // Clamp vertically so menu always stays within viewport
+      top = Math.max(
+        edgePadding,
+        Math.min(top, viewportHeight - renderedHeight - edgePadding),
+      );
 
-      // Determine horizontal position
       const preferRight = position.includes("right");
-      
-      if (preferRight) {
-        // Try to align right edge
-        left = rect.right - menuWidth;
-      } else {
-        // Try to align left edge
-        left = rect.left;
-      }
+      left = preferRight ? rect.right - menuWidth : rect.left;
 
-      // Ensure menu doesn't go off left or right
-      if (left < edgePadding) {
-        left = edgePadding;
-      } else if (left + menuWidth > viewportWidth - edgePadding) {
-        left = viewportWidth - menuWidth - edgePadding;
-      }
+      // Clamp horizontally
+      left = Math.max(
+        edgePadding,
+        Math.min(left, viewportWidth - menuWidth - edgePadding),
+      );
 
       setMenuPosition({ top, left });
-      });
-    });
-  }, [isOpen, anchorElement, position, width, isMobile, forceMobileCenter, items]);
+    };
 
-  // Close on outside click
+    // Double-RAF ensures menu is laid out before measuring
+    requestAnimationFrame(() => requestAnimationFrame(compute));
+  }, [isOpen, anchorElement, position, width, isMobile, items]);
+
+  // Close on outside click (desktop only — Drawer handles its own backdrop)
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || isMobile) return;
 
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -194,21 +311,41 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isMobile]);
 
-  // Close on escape key
+  // Close on Escape
   useEffect(() => {
     if (!isOpen) return;
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
+      if (event.key === "Escape") onClose();
     };
 
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
+
+  // Track whether there is hidden content below the scroll area
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const check = () => {
+      setHasScrollBelow(el.scrollHeight - el.scrollTop - el.clientHeight > 4);
+    };
+
+    check();
+    el.addEventListener("scroll", check, { passive: true });
+
+    // Re-check when content changes (resize observer)
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+
+    return () => {
+      el.removeEventListener("scroll", check);
+      ro.disconnect();
+    };
+  }, [isOpen, mounted]);
 
   // Action state management
   const setActionState = (key: string, state: ActionState) => {
@@ -220,11 +357,9 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
     }
   };
 
-  const getActionState = (key: string): ActionState => {
-    return actionStates[key] || "idle";
-  };
+  const getActionState = (key: string): ActionState =>
+    actionStates[key] || "idle";
 
-  // Handle action execution
   const handleAction = async (item: MenuItem) => {
     if (item.disabled) return;
 
@@ -236,11 +371,7 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
       onActionStart?.(item.key);
 
       const result = item.action();
-      
-      // Check if action is async
-      if (result instanceof Promise) {
-        await result;
-      }
+      if (result instanceof Promise) await result;
 
       setActionState(item.key, "success");
       onActionSuccess?.(item.key);
@@ -252,7 +383,6 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
         });
       }
 
-      // Close menu after action completes (respects closeOnAction)
       if (closeOnAction) {
         setTimeout(() => onClose(), 500);
       }
@@ -270,189 +400,151 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
     }
   };
 
-  // Categorize items (drop hidden entries)
   const groupedItems = React.useMemo(() => {
     const visible = items.filter((item) => !item.hidden);
-    if (!categorizeItems) {
-      return { "": visible };
-    }
+    if (!categorizeItems) return { "": visible };
 
-    return visible.reduce((acc, item) => {
-      const category = item.category || "Actions";
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(item);
-      return acc;
-    }, {} as Record<string, MenuItem[]>);
+    return visible.reduce(
+      (acc, item) => {
+        const category = item.category || "Actions";
+        if (!acc[category]) acc[category] = [];
+        acc[category].push(item);
+        return acc;
+      },
+      {} as Record<string, MenuItem[]>,
+    );
   }, [items, categorizeItems]);
 
-  // Position styles - always use calculated position when available
-  const getPositionStyles = () => {
-    if (!menuPosition) return {};
-    
-    return {
-      top: `${menuPosition.top}px`,
-      left: `${menuPosition.left}px`
-    };
+  const sharedItemProps: MenuItemsContentProps = {
+    groupedItems,
+    categorizeItems,
+    actionStates,
+    onAction: handleAction,
+    getActionState,
   };
 
-  if (!isOpen || !mounted) return null;
+  if (!mounted) return null;
 
-  // Calculate max height to prevent overflow - more conservative to ensure it fits
-  const maxMenuHeight = isMobile 
-    ? "calc(100dvh - 24px)" 
-    : "calc(100vh - 24px)";
+  // ── Mobile: iOS-style bottom sheet ────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <Drawer
+        open={isOpen}
+        onOpenChange={(open) => {
+          if (!open) onClose();
+        }}
+      >
+        <DrawerContent className="max-h-[85dvh] flex flex-col">
+          {/* Drag handle is rendered by DrawerContent automatically */}
+
+          {/* Header — DrawerTitle always rendered for a11y; visually hidden when showHeader is false */}
+          {showHeader && title ? (
+            <div className="px-4 pt-1 pb-3 border-b border-zinc-200/60 dark:border-zinc-700/60 flex-shrink-0">
+              <DrawerTitle className="text-[15px] font-semibold text-gray-900 dark:text-gray-100 text-center">
+                {title}
+              </DrawerTitle>
+              {description && (
+                <p className="text-[13px] text-gray-500 dark:text-gray-400 text-center mt-1">
+                  {description}
+                </p>
+              )}
+            </div>
+          ) : (
+            <DrawerTitle className="sr-only">{title || "Options"}</DrawerTitle>
+          )}
+
+          {/* Scrollable content — single scroll area, no nesting */}
+          <div className="flex-1 overflow-y-auto overscroll-contain py-2 pb-safe">
+            <MenuItemsContent {...sharedItemProps} />
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
+  // ── Desktop: positioned popup with scroll ─────────────────────────────────
+  if (!isOpen) return null;
+
+  // Viewport-relative max height so items are always reachable via scroll
+  const desktopMaxHeight = "min(calc(100dvh - 24px), 600px)";
 
   const menuContent = (
-    <div 
-      style={{ 
-        position: 'fixed',
+    <div
+      style={{
+        position: "fixed",
         inset: 0,
-        pointerEvents: 'none',
-        zIndex: 9999
+        pointerEvents: "none",
+        zIndex: 9999,
       }}
     >
-      {/* Backdrop Overlay */}
+      {/* Backdrop */}
       {showBackdrop && (
         <div
-          style={{ pointerEvents: 'auto', zIndex: 1 }}
+          style={{ pointerEvents: "auto", zIndex: 1 }}
           className={cn(
             "fixed inset-0 bg-black/20 dark:bg-black/40",
-            backdropBlur && "backdrop-blur-[2px]"
+            backdropBlur && "backdrop-blur-[2px]",
           )}
           onClick={onClose}
         />
       )}
 
-      {/* Menu */}
+      {/* Menu panel */}
       <div
         ref={menuRef}
-        style={{ 
-          minWidth: width, 
+        style={{
+          minWidth: width,
           maxWidth,
-          maxHeight: maxMenuHeight,
+          maxHeight: desktopMaxHeight,
           zIndex: 2,
-          pointerEvents: 'auto',
-          position: 'fixed',
-          visibility: menuPosition ? 'visible' : 'hidden',
-          ...getPositionStyles()
+          pointerEvents: "auto",
+          position: "fixed",
+          visibility: menuPosition ? "visible" : "hidden",
+          top: menuPosition ? `${menuPosition.top}px` : undefined,
+          left: menuPosition ? `${menuPosition.left}px` : undefined,
         }}
         className={cn(
           "bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl",
           "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)]",
           "rounded-lg border border-zinc-300 dark:border-zinc-600",
+          "flex flex-col",
           "overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200",
-          className
+          className,
         )}
       >
-        {/* Header - Minimal */}
+        {/* Header */}
         {showHeader && title && (
-          <div className="px-2.5 py-1.5 border-b border-zinc-200/60 dark:border-zinc-700/60">
+          <div className="px-2.5 py-1.5 border-b border-zinc-200/60 dark:border-zinc-700/60 flex-shrink-0">
             <h3 className="text-[11px] font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
               {title}
             </h3>
           </div>
         )}
 
-        {/* Menu Content - iOS-Style Minimal */}
-        <div className="overflow-y-auto scrollbar-thin">
-          {Object.entries(groupedItems).map(([category, categoryItems], catIndex) => (
-            <div key={category}>
-              {/* Category Header - Minimal */}
-              {categorizeItems && category && catIndex > 0 && (
-                <div className="px-2.5 pt-2 pb-1">
-                  <h4 className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                    {category}
-                  </h4>
-                </div>
-              )}
+        {/* Scrollable items — relative wrapper so the fade overlay is contained */}
+        <div className="flex-1 relative overflow-hidden">
+          <div
+            ref={scrollRef}
+            className="h-full overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-600 scrollbar-track-transparent py-0.5"
+          >
+            <MenuItemsContent {...sharedItemProps} />
+          </div>
 
-              {/* Category Items - iOS Style: Icon + Label Only */}
-              <div className="px-1.5 py-0.5">
-                {categoryItems.map((item) => {
-                  const state = getActionState(item.key);
-                  const Icon = item.icon;
-                  const isLoading = state === "loading";
-                  const isSuccess = state === "success";
-                  const isError = state === "error";
-                  const isDisabled = item.disabled || isLoading;
-
-                  return (
-                    <button
-                      key={item.key}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (!isDisabled) handleAction(item);
-                      }}
-                      disabled={isDisabled}
-                      style={{ pointerEvents: 'auto' }}
-                      className={cn(
-                        "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md",
-                        "text-left transition-all duration-150",
-                        isDisabled
-                          ? "opacity-50 cursor-not-allowed"
-                          : "hover:bg-zinc-100 dark:hover:bg-zinc-800/70 active:scale-[0.98] cursor-pointer",
-                        isSuccess && "bg-green-50 dark:bg-green-900/20",
-                        isError && "bg-red-50 dark:bg-red-900/20",
-                        "group"
-                      )}
-                    >
-                      {/* Icon */}
-                      <div
-                        className={cn(
-                          "flex-shrink-0 transition-transform duration-150",
-                          !isDisabled && "group-hover:scale-110"
-                        )}
-                      >
-                        {isLoading ? (
-                          <Loader2
-                            size={15}
-                            className="animate-spin text-gray-400 dark:text-gray-500"
-                          />
-                        ) : isSuccess ? (
-                          <Check
-                            size={15}
-                            className="text-green-500 dark:text-green-400"
-                          />
-                        ) : (
-                          <Icon
-                            size={15}
-                            className={item.iconColor || "text-gray-600 dark:text-gray-400"}
-                          />
-                        )}
-                      </div>
-
-                      {/* Label Only - iOS Style */}
-                      <div className="flex-1 flex items-center gap-2 min-w-0">
-                        <span
-                          className={cn(
-                            "text-[13px] font-medium",
-                            isSuccess && "text-green-700 dark:text-green-300",
-                            isError && "text-red-700 dark:text-red-300",
-                            !isSuccess && !isError && "text-gray-900 dark:text-gray-100"
-                          )}
-                        >
-                          {item.label}
-                        </span>
-                        {item.disabled && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-gray-600 dark:text-gray-400 font-medium">
-                            SOON
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+          {/* Scroll-more fade — only visible when content is cut off below */}
+          <div
+            aria-hidden
+            className={cn(
+              "pointer-events-none absolute bottom-0 inset-x-0 h-8",
+              "bg-gradient-to-t from-white/95 dark:from-zinc-900/95 to-transparent",
+              "transition-opacity duration-200",
+              hasScrollBelow ? "opacity-100" : "opacity-0",
+            )}
+          />
         </div>
       </div>
     </div>
   );
 
-  // Render menu in a portal to avoid overflow-hidden issues
   return createPortal(menuContent, document.body);
 };
 

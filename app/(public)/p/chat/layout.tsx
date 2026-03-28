@@ -1,24 +1,21 @@
-import type { Metadata } from 'next';
-import { Suspense } from 'react';
-import { AgentsProvider } from '@/features/public-chat/context/DEPRECATED-AgentsContext';
-import ChatLayoutShell from './ChatLayoutShell';
-import ChatLoading from './loading';
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import ChatLayoutShell from "./ChatLayoutShell";
+import ChatLoading from "./loading";
 
 export const metadata: Metadata = {
-    title: 'Chat | AI Matrx',
-    description: 'Chat with AI assistants powered by Matrx Superpowers. Experience intelligent conversations with various specialized agents.',
-    openGraph: {
-        title: 'Chat | AI Matrx',
-        description: 'Chat with AI assistants powered by Matrx Superpowers',
-    },
+  title: "Chat | AI Matrx",
+  description: "AI-powered chat interface",
 };
 
-export default function PublicChatLayout({ children }: { children: React.ReactNode }) {
-    return (
-        <AgentsProvider>
-            <Suspense fallback={<ChatLoading />}>
-                <ChatLayoutShell>{children}</ChatLayoutShell>
-            </Suspense>
-        </AgentsProvider>
-    );
+export default function PublicChatLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense fallback={<ChatLoading />}>
+      <ChatLayoutShell>{children}</ChatLayoutShell>
+    </Suspense>
+  );
 }

@@ -148,6 +148,14 @@ export const primaryNavItems: ShellNavItem[] = [
     description: "Manage AI context items, templates, and knowledge",
     color: "cyan",
   },
+  {
+    label: "Content",
+    href: "/ssr/content",
+    iconName: "PanelTop",
+    section: "primary",
+    description: "Manage websites, pages, and published content",
+    color: "rose",
+  },
 ];
 
 // Admin navigation items

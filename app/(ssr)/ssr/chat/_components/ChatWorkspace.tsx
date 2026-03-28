@@ -468,8 +468,6 @@ function ChatWorkspaceInner() {
                 data.variable_defaults ??
                 selectedAgent.variableDefaults ??
                 undefined,
-              modelOverride: resolvedModelId,
-              modelSettings: restSettings as PromptSettings,
               dynamicModel: data.dynamic_model === true,
               configFetched: true,
             }),
@@ -659,15 +657,7 @@ function ChatWorkspaceInner() {
   if (isLoadingConversation) {
     return (
       <>
-        <ChatHeaderControls
-          agentName={agentName}
-          headerLabel={headerLabel}
-          isConversation={true}
-          isAuthenticated={isAuthenticated}
-          dbConversationId={null}
-          onNewChat={handleNewChat}
-          onShare={() => setIsShareOpen(true)}
-        />
+        <ChatHeaderControls />
         {agentPickerEl}
         <div className="h-full flex flex-col items-center justify-center overflow-hidden">
           <MessageCircle className="h-8 w-8 text-primary animate-pulse mb-3" />
@@ -688,15 +678,7 @@ function ChatWorkspaceInner() {
 
     return (
       <>
-        <ChatHeaderControls
-          agentName={agentName}
-          headerLabel={headerLabel}
-          isConversation={true}
-          isAuthenticated={isAuthenticated}
-          dbConversationId={activeConversationId}
-          onNewChat={handleNewChat}
-          onShare={() => setIsShareOpen(true)}
-        />
+        <ChatHeaderControls />
         {agentPickerEl}
         <div className="h-full flex flex-col overflow-hidden">
           {/* Share Modal */}
@@ -759,15 +741,7 @@ function ChatWorkspaceInner() {
   if (useGuidedVars && hasVariables) {
     return (
       <>
-        <ChatHeaderControls
-          agentName={agentName}
-          headerLabel={headerLabel}
-          isConversation={false}
-          isAuthenticated={isAuthenticated}
-          dbConversationId={null}
-          onNewChat={handleNewChat}
-          onShare={() => setIsShareOpen(true)}
-        />
+        <ChatHeaderControls />
         {agentPickerEl}
         <div className="h-full flex flex-col overflow-hidden">
           {/* Scrollable header area above the pinned input */}
@@ -860,15 +834,7 @@ function ChatWorkspaceInner() {
   //   - pb-safe handles iPhone home indicator / Android nav bar
   return (
     <>
-      <ChatHeaderControls
-        agentName={agentName}
-        headerLabel={headerLabel}
-        isConversation={false}
-        isAuthenticated={isAuthenticated}
-        dbConversationId={null}
-        onNewChat={handleNewChat}
-        onShare={() => setIsShareOpen(true)}
-      />
+      <ChatHeaderControls />
       {agentPickerEl}
       {/* h-full resolves against .shell-panel-content which has a defined height
           via --visual-viewport-height. overflow-hidden prevents double scrollbars. */}

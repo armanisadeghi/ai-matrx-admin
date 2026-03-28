@@ -1,10 +1,67 @@
 # components/icons
 
-Pre-composed TapTargetButton components, CSS-only SearchToolbar, and SearchGroup.
+Pre-composed TapTargetButton components, AI brand buttons, CSS-only SearchToolbar, and SearchGroup.
+
+---
+
+## Critical: No External Spacing — Ever
+
+> **This is the single most important rule for this system.**
+
+Every TapButton carries an invisible **44×44px tap target** wrapper with its own internal spacing. The visible "pill" is 32×32px. **Never add padding, margin, or gap around these buttons in consuming layouts.**
+
+```tsx
+// WRONG — adding gap pushes outer edges and makes the layout look broken
+<div className="flex gap-4">
+  <PlusTapButton />
+  <SearchTapButton />
+</div>
+
+// CORRECT — zero gap; the tap targets handle all spacing
+<div className="flex">
+  <PlusTapButton />
+  <SearchTapButton />
+</div>
+```
+
+Adding `gap`, `p-*`, or `m-*` around tap buttons results in double-spacing: the invisible outer ring already reserves space, and your added space stacks on top of it, making everything look bloated and misaligned.
+
+For groups (`TapTargetButtonGroup`, `SearchGroup`, `SearchToolbar`): the glass pill goes edge-to-edge. The group component already has correct internal geometry. Do not wrap groups in containers with padding.
+
+---
+
+## Architecture
+
+### Core primitive — `TapTargetButton.tsx`
+
+Location: `app/(ssr)/_components/core/TapTargetButton.tsx`
+
+> **Note:** Despite living in the `(ssr)` directory, this is a **global shared primitive**. It is imported by `components/icons/`, `features/cx-conversation/`, and others. Do not move or copy it.
+
+Exports:
+- `TapTargetButton` — glass variant (default)
+- `TapTargetButtonTransparent` — hover-only background
+- `TapTargetButtonSolid` — solid filled background, accepts `bgColor`, `iconColor`, `hoverBgColor`
+- `TapTargetButtonForGroup` — slimmer variant (36×36 outer, 24×24 icon) used inside groups
+- `TapTargetButtonGroup` — glass pill container for grouped buttons
+
+You should almost never import these primitives directly. Use the pre-composed buttons below instead.
+
+### SVG rules
+
+All custom icons use:
+- `viewBox="0 0 24 24"`
+- `strokeLinecap="round"`, `strokeLinejoin="round"`
+- Open strokes only — no filled shapes, no `<rect>` that closes a path, no `Z` paths
+- `stroke="currentColor"` (inherits from theme)
+
+AI brand icons are filled SVGs — they use `fill` instead of `stroke` and inherit `currentColor` for monochrome mode or their brand hex when `colored={true}`.
+
+---
 
 ## TapButtons — `tap-buttons.tsx`
 
-One import, one tag. SVG path, wrapper variant, and aria label are baked in.
+General-purpose icon buttons. One import, one tag. SVG path, wrapper variant, and aria label are baked in.
 
 ```tsx
 import { PlusTapButton, SearchTapButton } from "@/components/icons/tap-buttons";
@@ -15,21 +72,67 @@ import { PlusTapButton, SearchTapButton } from "@/components/icons/tap-buttons";
 <PlusTapButton variant="solid" />          // solid bg
 ```
 
-Pass-through props: `onClick`, `as`, `htmlFor`, `ariaLabel`, `disabled`, `className`, `strokeWidth`.
+Pass-through props: `onClick`, `as`, `htmlFor`, `ariaLabel`, `disabled`, `className`, `strokeWidth`
 
 **Available:**
-`MenuTapButton` `PlusTapButton` `SearchTapButton` `SettingsTapButton` `MaximizeTapButton` `ArrowDownUpTapButton` `BellTapButton` `UploadTapButton` `UndoTapButton` `RedoTapButton` `CopyTapButton` `TrashTapButton` `ChevronLeftTapButton` `PanelLeftTapButton` `PanelRightTapButton` `SquarePenTapButton` `XTapButton` `FilterTapButton`
+`MenuTapButton` `PlusTapButton` `SearchTapButton` `SettingsTapButton` `MaximizeTapButton` `ArrowDownUpTapButton` `BellTapButton` `UploadTapButton` `UndoTapButton` `RedoTapButton` `CopyTapButton` `TrashTapButton` `ChevronLeftTapButton` `PanelLeftTapButton` `PanelRightTapButton` `SquarePenTapButton` `XTapButton` `FilterTapButton` `PlayTapButton` `PauseTapButton` `StopTapButton` `Volume2TapButton`
 
-### Spacing rules
+---
 
-- **Individual buttons:** NEVER add padding, gap, or margin around them. They have invisible built-in tap targets (h-11 w-11 outer, h-8 w-8 visible) that handle spacing.
-- **Groups** (TapTargetButtonGroup, SearchGroup): The glass pill goes edge-to-edge, so the group component itself includes small outer margin. Add no extra padding.
+## AI Tap Buttons — `ai-tap-buttons.tsx`
+
+AI provider brand logos and AI action icons. Same variant system as TapButtons, plus a `colored` prop for brand colors.
+
+```tsx
+import { OpenAITapButton, PowerTapButton } from "@/components/icons/ai-tap-buttons";
+
+<OpenAITapButton />                         // monochrome (currentColor)
+<OpenAITapButton colored />                 // brand color (#000 stays currentColor in dark mode)
+<OpenAITapButton variant="group" colored /> // inside TapTargetButtonGroup
+<PowerTapButton variant="solid" bgColor="bg-blue-600" />
+```
+
+Additional props: `colored` (boolean), `bgColor`, `iconColor`, `hoverBgColor`
+
+**AI provider brands (filled SVGs):**
+`OpenAITapButton` `AnthropicTapButton` `ClaudeTapButton` `GoogleTapButton` `GeminiTapButton` `MetaTapButton` `XTweetTapButton` `XaiTapButton` `MistralTapButton` `PerplexityTapButton` `LlamaTapButton` `DeepSeekTapButton` `FluxTapButton` `GrokTapButton` `HuggingFaceTapButton` `ElevenLabsTapButton` `ReplicateTapButton`
+
+**AI action icons (stroke SVGs):**
+`PowerTapButton` `TextGenerationTapButton` `ImageGenerationTapButton` `VideoGenerationTapButton` `AudioLinesTapButton` `TranscriptionTapButton` `TranslationTapButton` `CodeGenerationTapButton` `WandSparklesTapButton` `CpuTapButton`
+
+### `colored` prop behavior
+
+- `colored={false}` (default): all icons use `currentColor` — adapts to light/dark theme
+- `colored={true}`: brand icons render in their official brand color; icons with black brands (`#000`, `#191919`) still use `currentColor` so they remain visible in dark mode
+
+### Do not mix with other icon libraries
+
+These buttons are **self-contained SVG components**. Do not pass Lucide icons or any external icon component as children. If you need a new icon, add it to `tap-buttons.tsx` or `ai-tap-buttons.tsx` using the `Wrap` helper and a raw SVG path. Adding new icons takes less than 10 lines.
+
+---
+
+## Adding new buttons
+
+1. Add a named export to `tap-buttons.tsx` (or `ai-tap-buttons.tsx` for AI/brand) using the `Wrap` helper.
+2. SVG paths: `viewBox="0 0 24 24"`, `strokeLinecap="round"`, `strokeLinejoin="round"`, open strokes only.
+3. Set a sensible `ariaLabel` default. Name: `{DescriptiveName}TapButton`.
+4. No state, no hooks, no `'use client'`.
+
+```tsx
+export function MyNewTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="My Action" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+    </Wrap>
+  );
+}
+```
 
 ---
 
 ## SearchToolbar — `SearchToolbar.tsx`
 
-CSS-only expandable search input alongside TapButtons. Hidden checkbox drives state — zero JS for toggle.
+CSS-only expandable search input alongside TapButtons. A hidden checkbox drives expand/collapse state — zero JS for toggle.
 
 ```tsx
 import { SearchToolbar } from "@/components/icons/SearchToolbar";
@@ -118,18 +221,26 @@ import { FilterSearchGroup, ToolsSearchGroup } from "@/components/icons/search-t
 
 ---
 
-## Adding new buttons
+## Live demos
 
-1. Add a named export to `tap-buttons.tsx` using the `Wrap` helper.
-2. SVG paths: `viewBox="0 0 24 24"`, `strokeLinecap="round"`, `strokeLinejoin="round"`, open strokes only — no filled shapes, no `<rect>`, no closed `Z` paths.
-3. Set a sensible `ariaLabel` default. Name: `{LucideName}TapButton`.
-4. No state, no hooks, no `'use client'`.
+- **General buttons + SearchToolbar/Group:** `app/(ssr)/ssr/demos/` — `AllButtonsShowcase` component
+- **AI provider + action buttons:** `app/(ssr)/ssr/demos/button-demo/page.tsx`
+
+---
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `tap-buttons.tsx` | Pre-composed icon buttons |
+| `tap-buttons.tsx` | General-purpose pre-composed icon buttons |
+| `ai-tap-buttons.tsx` | AI provider brand logos + AI action icon buttons |
 | `SearchToolbar.tsx` | SearchToolbar + SearchGroup + SearchGroupTrigger |
 | `search-toolbar.css` | Scoped CSS (`.stb-` prefix) for search expand/collapse |
 | `search-toolbar-presets.tsx` | Ready-to-use toolbar and group presets |
+
+| Supporting file | Purpose |
+|---|---|
+| `app/(ssr)/_components/core/TapTargetButton.tsx` | Core primitive (global shared — do not relocate) |
+| `app/(ssr)/_components/core/AllButtonsShowcase.tsx` | Full showcase of all general buttons and toolbars |
+| `app/(ssr)/_components/core/AddFilterSearchRow.tsx` | Usage example: filter + search row |
+| `app/(ssr)/_components/core/ButtonRow.tsx` | Usage example: mixed standalone + grouped row |
