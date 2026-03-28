@@ -23,7 +23,7 @@ import {
   type ChangeEvent,
 } from "react";
 import { createPortal } from "react-dom";
-import PageHeader from "@/features/cx-chat/components/PageHeader";
+import PageHeader from "@/features/ssr-trials/components/PageHeader";
 import {
   X,
   NotebookPen,

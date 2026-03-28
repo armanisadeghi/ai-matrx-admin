@@ -1,7 +1,7 @@
 // RecentActivity.tsx — Server component for recent platform updates/features
 // Static content showcasing what's new on the platform
 
-import ShellIcon from "../../../../../features/cx-chat/components/ShellIcon";
+import ShellIcon from "@/features/ssr-trials/components/ShellIcon";
 
 const recentItems = [
   {

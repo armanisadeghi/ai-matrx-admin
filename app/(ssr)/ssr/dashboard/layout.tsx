@@ -1,5 +1,3 @@
-import ButtonRow from "@/features/cx-chat/components/button-demo/ButtonRow";
-
 export const metadata = {
   title: "Dashboard | AI Matrx",
   description: "Your central hub for all activities and insights",

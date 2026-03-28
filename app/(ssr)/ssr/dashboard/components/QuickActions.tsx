@@ -1,7 +1,7 @@
 // QuickActions.tsx — Server component for quick action cards
 // Three horizontal cards for key workflows
 
-import ShellIcon from "../../../../../features/cx-chat/components/ShellIcon";
+import ShellIcon from "@/features/ssr-trials/components/ShellIcon";
 
 const actions = [
   {

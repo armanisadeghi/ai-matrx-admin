@@ -1,6 +1,6 @@
-import ButtonRow from "@/features/cx-chat/components/button-demo/ButtonRow";
-import AddFilterSearchRow from "@/features/cx-chat/components/button-demo/AddFilterSearchRow";
-import AllButtonsShowcase from "@/features/cx-chat/components/button-demo/AllButtonsShowcase";
+import ButtonRow from "@/features/ssr-trials/components/button-demo/ButtonRow";
+import AddFilterSearchRow from "@/features/ssr-trials/components/button-demo/AddFilterSearchRow";
+import AllButtonsShowcase from "@/features/ssr-trials/components/button-demo/AllButtonsShowcase";
 
 export const metadata = {
   title: "Button Demo | AI Matrx",

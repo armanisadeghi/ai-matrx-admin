@@ -521,8 +521,8 @@ export function ConversationInput({
   const inputBoxClass = seamless
     ? "flex flex-col w-full bg-background"
     : singleLine
-      ? "flex flex-col w-full bg-background border border-border rounded-b-2xl rounded-t-none border-t-0 py-1"
-      : "flex flex-col w-full bg-background border border-border rounded-3xl py-2";
+      ? "flex flex-col w-full bg-background border border-red-500 rounded-b-2xl rounded-t-none border-t-0 py-1"
+      : "flex flex-col w-full bg-background border border-red-500 rounded-3xl py-2";
 
   return (
     // Outer wrapper: no border, no background — just stacks children vertically

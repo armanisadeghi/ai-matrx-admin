@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import IconButton from "@/features/cx-chat/components/IconButton";
+import IconButton from "@/features/ssr-trials/components/IconButton";
 
 type SortField = "updated_at" | "label" | "created_at";
 

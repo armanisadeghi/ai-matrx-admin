@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import PageHeader from "@/features/cx-chat/components/PageHeader";
+import PageHeader from "@/features/ssr-trials/components/PageHeader";
 import {
   HeaderStructured,
   HeaderToggle,
@@ -15,7 +15,7 @@ import {
   type HeaderAction,
   type HeaderOption,
   type HeaderDropdownOption,
-} from "@/features/cx-chat/components/header-variants";
+} from "@/features/ssr-trials/components/header-variants";
 
 // ─── Typed demo data ─────────────────────────────────────────────────────────
 
