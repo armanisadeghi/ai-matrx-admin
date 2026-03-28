@@ -1,16 +1,12 @@
 /**
- * CMS Versions API Route
+ * CMS Versions API Route — v2 (ownership-secured)
  *
- * Read-only access to client_page_versions.
- * Versions are created automatically by the DB trigger on publish.
- *
- * POST body: { action, ...params }
- *   action: 'list' | 'get'
+ * Verifies page→site→owner chain before returning version data.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createMainSupabaseClient } from '@/utils/supabase/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const HTML_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_HTML_URL!;
 const HTML_SUPABASE_SERVICE_KEY =
@@ -25,6 +21,23 @@ function getCmsClient() {
     return createClient(HTML_SUPABASE_URL, HTML_SUPABASE_SERVICE_KEY, {
         auth: { persistSession: false },
     });
+}
+
+async function verifyPageOwnership(db: SupabaseClient, pageId: string, userId: string): Promise<boolean> {
+    const { data: page } = await db
+        .from('client_pages')
+        .select('client_id')
+        .eq('id', pageId)
+        .single();
+    if (!page) return false;
+
+    const { data: site } = await db
+        .from('client_sites')
+        .select('id')
+        .eq('id', page.client_id)
+        .eq('owner_user_id', userId)
+        .single();
+    return !!site;
 }
 
 export async function POST(request: NextRequest) {
@@ -50,9 +63,13 @@ export async function POST(request: NextRequest) {
                     return NextResponse.json({ error: 'pageId is required' }, { status: 400 });
                 }
 
+                if (!(await verifyPageOwnership(db, pageId, user.id))) {
+                    return NextResponse.json({ error: 'Page not found or access denied' }, { status: 403 });
+                }
+
                 const { data, error } = await db
                     .from('client_page_versions')
-                    .select('id, page_id, version_number, version_label, published_by, published_at, change_summary, created_at')
+                    .select('*')
                     .eq('page_id', pageId)
                     .order('version_number', { ascending: false });
 
@@ -70,18 +87,23 @@ export async function POST(request: NextRequest) {
                     return NextResponse.json({ error: 'versionId is required' }, { status: 400 });
                 }
 
-                const { data, error } = await db
+                // Get the version first to find its page
+                const { data: version, error } = await db
                     .from('client_page_versions')
                     .select('*')
                     .eq('id', versionId)
                     .single();
 
-                if (error) {
-                    console.error('[cms/versions] get error:', error);
-                    return NextResponse.json({ error: error.message }, { status: 500 });
+                if (error || !version) {
+                    return NextResponse.json({ error: 'Version not found' }, { status: 404 });
                 }
 
-                return NextResponse.json({ version: data });
+                // Verify ownership chain
+                if (!(await verifyPageOwnership(db, version.page_id, user.id))) {
+                    return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+                }
+
+                return NextResponse.json({ version });
             }
 
             default:

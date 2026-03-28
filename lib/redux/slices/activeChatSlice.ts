@@ -22,6 +22,7 @@ import type {
   PromptVariable,
   PromptSettings,
 } from "@/features/prompts/types/core";
+import { getDefaultAgent } from "@/features/cx-chat/lib/agents";
 
 /**
  * Stable session ID used by the welcome screen.
@@ -87,16 +88,9 @@ interface ActiveChatState {
 // DEFAULTS
 // ============================================================================
 
-export const DEFAULT_ACTIVE_AGENT: ActiveChatAgent = {
-  promptId: "ce7c5e71-cbdc-4ed1-8dd9-a7eac930b6b8",
-  name: "Matrx Chat",
-  description: "Fully customizable agent.",
-  variableDefaults: [],
-};
-
 const initialState: ActiveChatState = {
   sessionId: null,
-  selectedAgent: DEFAULT_ACTIVE_AGENT,
+  selectedAgent: getDefaultAgent(),
   isAgentPickerOpen: false,
   useBlockMode: false,
   firstMessage: null,

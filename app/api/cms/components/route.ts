@@ -1,16 +1,12 @@
 /**
- * CMS Components API Route
+ * CMS Components API Route — v2 (ownership-secured)
  *
- * CRUD for client_components (reusable headers, footers, etc.)
- * Auth: verifies caller via main-app session, writes via service role key.
- *
- * POST body: { action, ...params }
- *   action: 'list' | 'get' | 'create' | 'update' | 'delete'
+ * All actions verify the component's site is owned by the authenticated user.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createMainSupabaseClient } from '@/utils/supabase/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const HTML_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_HTML_URL!;
 const HTML_SUPABASE_SERVICE_KEY =
@@ -25,6 +21,16 @@ function getCmsClient() {
     return createClient(HTML_SUPABASE_URL, HTML_SUPABASE_SERVICE_KEY, {
         auth: { persistSession: false },
     });
+}
+
+async function verifySiteOwnership(db: SupabaseClient, siteId: string, userId: string): Promise<boolean> {
+    const { data } = await db
+        .from('client_sites')
+        .select('id')
+        .eq('id', siteId)
+        .eq('owner_user_id', userId)
+        .single();
+    return !!data;
 }
 
 export async function POST(request: NextRequest) {
@@ -46,16 +52,20 @@ export async function POST(request: NextRequest) {
         switch (action) {
             case 'list': {
                 const { siteId } = params;
-
-                let query = db
-                    .from('client_components')
-                    .select('id, client_id, component_type, name, is_active, has_draft, last_published_at, created_at, updated_at');
-
-                if (siteId) {
-                    query = query.eq('client_id', siteId);
+                if (!siteId) {
+                    return NextResponse.json({ error: 'siteId is required' }, { status: 400 });
                 }
 
-                const { data, error } = await query.order('component_type').order('name');
+                if (!(await verifySiteOwnership(db, siteId, user.id))) {
+                    return NextResponse.json({ error: 'Site not found or access denied' }, { status: 403 });
+                }
+
+                const { data, error } = await db
+                    .from('client_components')
+                    .select('*')
+                    .eq('client_id', siteId)
+                    .order('component_type')
+                    .order('name');
 
                 if (error) {
                     console.error('[cms/components] list error:', error);
@@ -71,28 +81,34 @@ export async function POST(request: NextRequest) {
                     return NextResponse.json({ error: 'componentId is required' }, { status: 400 });
                 }
 
-                const { data, error } = await db
+                const { data: comp, error } = await db
                     .from('client_components')
                     .select('*')
                     .eq('id', componentId)
                     .single();
 
-                if (error) {
-                    console.error('[cms/components] get error:', error);
-                    return NextResponse.json({ error: error.message }, { status: 500 });
+                if (error || !comp) {
+                    return NextResponse.json({ error: 'Component not found' }, { status: 404 });
                 }
 
-                return NextResponse.json({ component: data });
+                if (!(await verifySiteOwnership(db, comp.client_id, user.id))) {
+                    return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+                }
+
+                return NextResponse.json({ component: comp });
             }
 
             case 'create': {
                 const { siteId, componentType, name, htmlContent, cssContent } = params;
-
-                if (!siteId || !componentType || !name || !htmlContent) {
+                if (!siteId || !componentType || !name) {
                     return NextResponse.json(
-                        { error: 'siteId, componentType, name, and htmlContent are required' },
+                        { error: 'siteId, componentType, and name are required' },
                         { status: 400 },
                     );
+                }
+
+                if (!(await verifySiteOwnership(db, siteId, user.id))) {
+                    return NextResponse.json({ error: 'Site not found or access denied' }, { status: 403 });
                 }
 
                 const { data, error } = await db
@@ -101,7 +117,7 @@ export async function POST(request: NextRequest) {
                         client_id: siteId,
                         component_type: componentType,
                         name,
-                        html_content: htmlContent,
+                        html_content: htmlContent || '',
                         css_content: cssContent || null,
                     })
                     .select()
@@ -119,6 +135,20 @@ export async function POST(request: NextRequest) {
                 const { componentId, ...updateFields } = params;
                 if (!componentId) {
                     return NextResponse.json({ error: 'componentId is required' }, { status: 400 });
+                }
+
+                const { data: comp } = await db
+                    .from('client_components')
+                    .select('client_id')
+                    .eq('id', componentId)
+                    .single();
+
+                if (!comp) {
+                    return NextResponse.json({ error: 'Component not found' }, { status: 404 });
+                }
+
+                if (!(await verifySiteOwnership(db, comp.client_id, user.id))) {
+                    return NextResponse.json({ error: 'Access denied' }, { status: 403 });
                 }
 
                 const fieldMap: Record<string, string> = {
@@ -152,25 +182,6 @@ export async function POST(request: NextRequest) {
                 }
 
                 return NextResponse.json({ success: true, component: data });
-            }
-
-            case 'delete': {
-                const { componentId } = params;
-                if (!componentId) {
-                    return NextResponse.json({ error: 'componentId is required' }, { status: 400 });
-                }
-
-                const { error } = await db
-                    .from('client_components')
-                    .delete()
-                    .eq('id', componentId);
-
-                if (error) {
-                    console.error('[cms/components] delete error:', error);
-                    return NextResponse.json({ error: error.message }, { status: 500 });
-                }
-
-                return NextResponse.json({ success: true });
             }
 
             default:

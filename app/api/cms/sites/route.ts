@@ -1,11 +1,9 @@
 /**
- * CMS Sites API Route
+ * CMS Sites API Route — v2 (ownership-secured)
  *
- * Proxies CRUD operations for client_sites to the My Matrx Supabase project.
- * Auth: verifies caller via main-app session, writes via service role key.
- *
- * POST body: { action, ...params }
- *   action: 'list' | 'get' | 'create' | 'update'
+ * All queries filter by owner_user_id = authenticated user.
+ * "First-claim": if a site has null owner_user_id, the first authenticated
+ * user who lists/gets it claims ownership automatically.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -45,9 +43,17 @@ export async function POST(request: NextRequest) {
 
         switch (action) {
             case 'list': {
+                // First-claim: auto-assign any unclaimed sites to this user
+                await db
+                    .from('client_sites')
+                    .update({ owner_user_id: user.id })
+                    .is('owner_user_id', null);
+
+                // Only return sites owned by this user
                 const { data, error } = await db
                     .from('client_sites')
                     .select('id, slug, name, domain, is_active, owner_user_id, favicon, created_at, updated_at')
+                    .eq('owner_user_id', user.id)
                     .order('name');
 
                 if (error) {
@@ -68,11 +74,13 @@ export async function POST(request: NextRequest) {
                     .from('client_sites')
                     .select('*')
                     .eq('id', siteId)
+                    .eq('owner_user_id', user.id)
                     .single();
 
                 if (error) {
                     console.error('[cms/sites] get error:', error);
-                    return NextResponse.json({ error: error.message }, { status: 500 });
+                    const status = error.code === 'PGRST116' ? 404 : 500;
+                    return NextResponse.json({ error: 'Site not found or access denied' }, { status });
                 }
 
                 return NextResponse.json({ site: data });
@@ -91,7 +99,7 @@ export async function POST(request: NextRequest) {
                         name,
                         slug,
                         domain: domain || null,
-                        owner_user_id: user.id,
+                        owner_user_id: user.id, // Always set to authenticated user
                         theme_config: themeConfig || {},
                         navigation: navigation || [],
                         footer_config: footerConfig || {},
@@ -119,8 +127,18 @@ export async function POST(request: NextRequest) {
                     return NextResponse.json({ error: 'siteId is required' }, { status: 400 });
                 }
 
-                // Map camelCase params to snake_case DB columns
-                const updateData: Record<string, unknown> = {};
+                // Verify ownership before updating
+                const { data: existing } = await db
+                    .from('client_sites')
+                    .select('id')
+                    .eq('id', siteId)
+                    .eq('owner_user_id', user.id)
+                    .single();
+
+                if (!existing) {
+                    return NextResponse.json({ error: 'Site not found or access denied' }, { status: 403 });
+                }
+
                 const fieldMap: Record<string, string> = {
                     name: 'name',
                     slug: 'slug',
@@ -137,6 +155,7 @@ export async function POST(request: NextRequest) {
                     favicon: 'favicon',
                 };
 
+                const updateData: Record<string, unknown> = {};
                 for (const [camel, snake] of Object.entries(fieldMap)) {
                     if (updateFields[camel] !== undefined) {
                         updateData[snake] = updateFields[camel];
@@ -147,6 +166,7 @@ export async function POST(request: NextRequest) {
                     .from('client_sites')
                     .update(updateData)
                     .eq('id', siteId)
+                    .eq('owner_user_id', user.id)
                     .select()
                     .single();
 

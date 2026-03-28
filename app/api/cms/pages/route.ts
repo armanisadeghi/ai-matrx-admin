@@ -1,17 +1,13 @@
 /**
- * CMS Pages API Route
+ * CMS Pages API Route — v2 (ownership-secured)
  *
- * Full CRUD + draft/publish/rollback for client_pages.
- * Auth: verifies caller via main-app session, writes via service role key.
- *
- * POST body: { action, ...params }
- *   action: 'list' | 'get' | 'create' | 'update' | 'delete'
- *         | 'save-draft' | 'publish' | 'discard-draft' | 'rollback'
+ * All actions verify the page's site is owned by the authenticated user
+ * via a site ownership check before proceeding.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createMainSupabaseClient } from '@/utils/supabase/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const HTML_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_HTML_URL!;
 const HTML_SUPABASE_SERVICE_KEY =
@@ -26,6 +22,28 @@ function getCmsClient() {
     return createClient(HTML_SUPABASE_URL, HTML_SUPABASE_SERVICE_KEY, {
         auth: { persistSession: false },
     });
+}
+
+/** Verify the user owns the given site. Returns true if authorized. */
+async function verifySiteOwnership(db: SupabaseClient, siteId: string, userId: string): Promise<boolean> {
+    const { data } = await db
+        .from('client_sites')
+        .select('id')
+        .eq('id', siteId)
+        .eq('owner_user_id', userId)
+        .single();
+    return !!data;
+}
+
+/** Verify the user owns the site that a page belongs to. Returns true if authorized. */
+async function verifyPageOwnership(db: SupabaseClient, pageId: string, userId: string): Promise<boolean> {
+    const { data: page } = await db
+        .from('client_pages')
+        .select('client_id')
+        .eq('id', pageId)
+        .single();
+    if (!page) return false;
+    return verifySiteOwnership(db, page.client_id, userId);
 }
 
 /** Summary columns for list view (no HTML content blobs) */
@@ -56,21 +74,21 @@ export async function POST(request: NextRequest) {
         switch (action) {
             // ── List pages (compact) ──────────────────────────────────────
             case 'list': {
-                const { siteId, category, includeUnpublished } = params;
+                const { siteId, category } = params;
 
-                let query = db.from('client_pages').select(LIST_COLUMNS);
-
-                if (siteId) {
-                    query = query.eq('client_id', siteId);
+                if (!siteId) {
+                    return NextResponse.json({ error: 'siteId is required' }, { status: 400 });
                 }
+
+                // Verify site ownership
+                if (!(await verifySiteOwnership(db, siteId, user.id))) {
+                    return NextResponse.json({ error: 'Site not found or access denied' }, { status: 403 });
+                }
+
+                let query = db.from('client_pages').select(LIST_COLUMNS).eq('client_id', siteId);
                 if (category) {
                     query = query.eq('category', category);
                 }
-                if (!includeUnpublished) {
-                    // By default show all for CMS — the admin should see everything
-                    // This filter is for public-facing use
-                }
-
                 query = query.order('sort_order').order('created_at', { ascending: false });
 
                 const { data, error } = await query;
@@ -88,6 +106,10 @@ export async function POST(request: NextRequest) {
                 const { pageId } = params;
                 if (!pageId) {
                     return NextResponse.json({ error: 'pageId is required' }, { status: 400 });
+                }
+
+                if (!(await verifyPageOwnership(db, pageId, user.id))) {
+                    return NextResponse.json({ error: 'Page not found or access denied' }, { status: 403 });
                 }
 
                 const { data, error } = await db
@@ -119,6 +141,11 @@ export async function POST(request: NextRequest) {
                         { error: 'siteId, slug, and title are required' },
                         { status: 400 },
                     );
+                }
+
+                // Verify site ownership
+                if (!(await verifySiteOwnership(db, siteId, user.id))) {
+                    return NextResponse.json({ error: 'Site not found or access denied' }, { status: 403 });
                 }
 
                 const row: Record<string, unknown> = {
@@ -163,38 +190,26 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json({ success: true, page: data });
             }
 
-            // ── Update page (live columns — NOT draft) ───────────────────
+            // ── Update page ──────────────────────────────────────────────
             case 'update': {
                 const { pageId, ...updateFields } = params;
                 if (!pageId) {
                     return NextResponse.json({ error: 'pageId is required' }, { status: 400 });
                 }
 
+                if (!(await verifyPageOwnership(db, pageId, user.id))) {
+                    return NextResponse.json({ error: 'Page not found or access denied' }, { status: 403 });
+                }
+
                 const fieldMap: Record<string, string> = {
-                    slug: 'slug',
-                    title: 'title',
-                    htmlContent: 'html_content',
-                    cssContent: 'css_content',
-                    jsContent: 'js_content',
-                    layoutType: 'layout_type',
-                    useClientHeader: 'use_client_header',
-                    useClientFooter: 'use_client_footer',
-                    metaTitle: 'meta_title',
-                    metaDescription: 'meta_description',
-                    metaKeywords: 'meta_keywords',
-                    ogImage: 'og_image',
-                    canonicalUrl: 'canonical_url',
-                    isPublished: 'is_published',
-                    showInNav: 'show_in_nav',
-                    sortOrder: 'sort_order',
-                    isHomePage: 'is_home_page',
-                    category: 'category',
-                    parentId: 'parent_id',
-                    pageType: 'page_type',
-                    excerpt: 'excerpt',
-                    featuredImage: 'featured_image',
-                    author: 'author',
-                    tags: 'tags',
+                    slug: 'slug', title: 'title',
+                    htmlContent: 'html_content', cssContent: 'css_content', jsContent: 'js_content',
+                    layoutType: 'layout_type', useClientHeader: 'use_client_header', useClientFooter: 'use_client_footer',
+                    metaTitle: 'meta_title', metaDescription: 'meta_description', metaKeywords: 'meta_keywords',
+                    ogImage: 'og_image', canonicalUrl: 'canonical_url',
+                    isPublished: 'is_published', showInNav: 'show_in_nav', sortOrder: 'sort_order',
+                    isHomePage: 'is_home_page', category: 'category', parentId: 'parent_id', pageType: 'page_type',
+                    excerpt: 'excerpt', featuredImage: 'featured_image', author: 'author', tags: 'tags',
                 };
 
                 const updateData: Record<string, unknown> = {};
@@ -230,6 +245,10 @@ export async function POST(request: NextRequest) {
                     return NextResponse.json({ error: 'pageId is required' }, { status: 400 });
                 }
 
+                if (!(await verifyPageOwnership(db, pageId, user.id))) {
+                    return NextResponse.json({ error: 'Page not found or access denied' }, { status: 403 });
+                }
+
                 const draftData: Record<string, unknown> = { has_draft: true };
                 if (htmlContent !== undefined) draftData.html_content_draft = htmlContent;
                 if (cssContent !== undefined) draftData.css_content_draft = cssContent;
@@ -262,6 +281,10 @@ export async function POST(request: NextRequest) {
                     return NextResponse.json({ error: 'pageId is required' }, { status: 400 });
                 }
 
+                if (!(await verifyPageOwnership(db, pageId, user.id))) {
+                    return NextResponse.json({ error: 'Page not found or access denied' }, { status: 403 });
+                }
+
                 const { data, error } = await db.rpc('publish_page_draft', {
                     page_uuid: pageId,
                     publisher_id: user.id,
@@ -272,16 +295,11 @@ export async function POST(request: NextRequest) {
                     return NextResponse.json({ error: error.message }, { status: 500 });
                 }
 
-                // Fetch the updated page to return
-                const { data: page, error: fetchErr } = await db
+                const { data: page } = await db
                     .from('client_pages')
                     .select('*')
                     .eq('id', pageId)
                     .single();
-
-                if (fetchErr) {
-                    return NextResponse.json({ error: fetchErr.message }, { status: 500 });
-                }
 
                 return NextResponse.json({ success: true, published: data, page });
             }
@@ -293,9 +311,11 @@ export async function POST(request: NextRequest) {
                     return NextResponse.json({ error: 'pageId is required' }, { status: 400 });
                 }
 
-                const { data, error } = await db.rpc('discard_page_draft', {
-                    page_uuid: pageId,
-                });
+                if (!(await verifyPageOwnership(db, pageId, user.id))) {
+                    return NextResponse.json({ error: 'Page not found or access denied' }, { status: 403 });
+                }
+
+                const { data, error } = await db.rpc('discard_page_draft', { page_uuid: pageId });
 
                 if (error) {
                     console.error('[cms/pages] discard-draft error:', error);
@@ -315,6 +335,10 @@ export async function POST(request: NextRequest) {
                     );
                 }
 
+                if (!(await verifyPageOwnership(db, pageId, user.id))) {
+                    return NextResponse.json({ error: 'Page not found or access denied' }, { status: 403 });
+                }
+
                 const { data, error } = await db.rpc('rollback_to_version', {
                     page_uuid: pageId,
                     version_num: versionNumber,
@@ -325,16 +349,11 @@ export async function POST(request: NextRequest) {
                     return NextResponse.json({ error: error.message }, { status: 500 });
                 }
 
-                // Fetch the rolled-back page
-                const { data: page, error: fetchErr } = await db
+                const { data: page } = await db
                     .from('client_pages')
                     .select('*')
                     .eq('id', pageId)
                     .single();
-
-                if (fetchErr) {
-                    return NextResponse.json({ error: fetchErr.message }, { status: 500 });
-                }
 
                 return NextResponse.json({ success: true, rolledBack: data, page });
             }
@@ -344,6 +363,10 @@ export async function POST(request: NextRequest) {
                 const { pageId } = params;
                 if (!pageId) {
                     return NextResponse.json({ error: 'pageId is required' }, { status: 400 });
+                }
+
+                if (!(await verifyPageOwnership(db, pageId, user.id))) {
+                    return NextResponse.json({ error: 'Page not found or access denied' }, { status: 403 });
                 }
 
                 const { error } = await db
