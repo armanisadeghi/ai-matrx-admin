@@ -9,35 +9,29 @@
 // The client island handles input interactivity and fetches
 // full agent config from the database after paint (only for non-builtin agents).
 
-import ChatWelcomeServer from '../../_components/ChatWelcomeServer';
-import ChatHeaderControls from '../../_components/ChatHeaderControls';
-import { resolveAgentForSSR } from '../../_lib/agents';
-import { getChatAuth } from '../../_lib/auth';
-import { BACKEND_URLS, ENDPOINTS } from '@/lib/api/endpoints';
+import ChatWelcomeServer from "@/features/cx-chat/components/ChatWelcomeServer";
+import ChatHeaderControls from "@/features/cx-chat/components/ChatHeaderControls";
+import { resolveAgentForSSR } from "@/features/cx-chat/lib/agents";
+import { BACKEND_URLS, ENDPOINTS } from "@/lib/api/endpoints";
 
 export default async function AgentPage({
-    params,
+  params,
 }: {
-    params: Promise<{ agentId: string }>;
+  params: Promise<{ agentId: string }>;
 }) {
-    const { agentId } = await params;
-    const [auth, agent] = await Promise.all([
-        getChatAuth(),
-        Promise.resolve(resolveAgentForSSR(agentId)),
-    ]);
+  const { agentId } = await params;
+  const [agent] = await Promise.all([
+    Promise.resolve(resolveAgentForSSR(agentId)),
+  ]);
 
-    fetch(`${BACKEND_URLS.production}${ENDPOINTS.ai.agentWarm(agentId)}`, {
-        method: 'POST',
-    }).catch(() => {});
+  fetch(`${BACKEND_URLS.production}${ENDPOINTS.ai.agentWarm(agentId)}`, {
+    method: "POST",
+  }).catch(() => {});
 
-    return (
-        <>
-            <ChatHeaderControls />
-            <ChatWelcomeServer
-                agent={agent}
-                isAuthenticated={auth.isAuthenticated}
-                isAdmin={auth.isAdmin}
-            />
-        </>
-    );
+  return (
+    <>
+      <ChatHeaderControls />
+      <ChatWelcomeServer agent={agent} />
+    </>
+  );
 }

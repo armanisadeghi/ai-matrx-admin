@@ -19,8 +19,11 @@
 //
 //   All shared state flows through Redux (activeChatSlice) — no context providers.
 
-import { ChatPanelContent, ChatDesktopHeader } from "./_components/ChatSidebarClient";
-import ChatMobileHeaderBar from "./_components/ChatMobileHeaderBar";
+import {
+  ChatPanelContent,
+  ChatDesktopHeader,
+} from "@/features/cx-chat/components/ChatSidebarClient";
+import ChatMobileHeaderBar from "@/features/cx-chat/components/ChatMobileHeaderBar";
 
 export default function ChatLayout({
   children,
@@ -56,9 +59,7 @@ export default function ChatLayout({
       <ChatMobileHeaderBar />
 
       {/* Main workspace — pages render their own content here */}
-      <div className="shell-panel-content">
-        {children}
-      </div>
+      <div className="shell-panel-content">{children}</div>
     </>
   );
 }

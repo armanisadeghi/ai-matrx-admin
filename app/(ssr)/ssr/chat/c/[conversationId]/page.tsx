@@ -13,48 +13,47 @@
 // ?agent=xxx — keeps the agent ID in the URL for header/sidebar display
 //   and for "new conversation" actions with the same agent.
 
-import { Suspense } from 'react';
-import ChatHeaderControls from '../../_components/ChatHeaderControls';
-import ChatConversationClient from '../../_components/ChatConversationClient';
-import { getChatAuth } from '../../_lib/auth';
-import { ChatConversationSkeleton } from '../../_components/ChatConversationSkeleton';
-import { BACKEND_URLS, ENDPOINTS } from '@/lib/api/endpoints';
+import { Suspense } from "react";
+import ChatHeaderControls from "@/features/cx-chat/components/ChatHeaderControls";
+import ChatConversationClient from "@/features/cx-chat/components/ChatConversationClient";
+import { ChatConversationSkeleton } from "@/features/cx-chat/components/ChatConversationSkeleton";
+import { BACKEND_URLS, ENDPOINTS } from "@/lib/api/endpoints";
 
 export default async function ConversationPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ conversationId: string }>;
+  searchParams: Promise<{ agent?: string; new?: string }>;
+}) {
+  const [{ conversationId }, resolvedSearchParams] = await Promise.all([
     params,
     searchParams,
-}: {
-    params: Promise<{ conversationId: string }>;
-    searchParams: Promise<{ agent?: string; new?: string }>;
-}) {
-    const [{ conversationId }, resolvedSearchParams, auth] = await Promise.all([
-        params,
-        searchParams,
-        getChatAuth(),
-    ]);
+  ]);
 
-    const agentId = resolvedSearchParams.agent;
-    const isNew = resolvedSearchParams.new === 'true';
+  const agentId = resolvedSearchParams.agent;
+  const isNew = resolvedSearchParams.new === "true";
 
-    // Warm the conversation on the Python backend (skip for new conversations)
-    if (!isNew && conversationId !== 'new') {
-        fetch(`${BACKEND_URLS.production}${ENDPOINTS.ai.conversationWarm(conversationId)}`, {
-            method: 'POST',
-        }).catch(() => {});
-    }
+  // Warm the conversation on the Python backend (skip for new conversations)
+  if (!isNew && conversationId !== "new") {
+    fetch(
+      `${BACKEND_URLS.production}${ENDPOINTS.ai.conversationWarm(conversationId)}`,
+      {
+        method: "POST",
+      },
+    ).catch(() => {});
+  }
 
-    return (
-        <>
-            <ChatHeaderControls />
-            <Suspense fallback={<ChatConversationSkeleton />}>
-                <ChatConversationClient
-                    conversationId={conversationId}
-                    agentId={agentId}
-                    isNew={isNew}
-                    isAuthenticated={auth.isAuthenticated}
-                    isAdmin={auth.isAdmin}
-                />
-            </Suspense>
-        </>
-    );
+  return (
+    <>
+      <ChatHeaderControls />
+      <Suspense fallback={<ChatConversationSkeleton />}>
+        <ChatConversationClient
+          conversationId={conversationId}
+          agentId={agentId}
+          isNew={isNew}
+        />
+      </Suspense>
+    </>
+  );
 }

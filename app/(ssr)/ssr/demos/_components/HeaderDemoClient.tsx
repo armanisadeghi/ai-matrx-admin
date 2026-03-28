@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import PageHeader from "@/app/(ssr)/_components/PageHeader";
+import PageHeader from "@/features/cx-chat/components/PageHeader";
 import {
   HeaderStructured,
   HeaderToggle,
@@ -15,30 +15,30 @@ import {
   type HeaderAction,
   type HeaderOption,
   type HeaderDropdownOption,
-} from "@/app/(ssr)/_components/header-variants";
+} from "@/features/cx-chat/components/header-variants";
 
 // ─── Typed demo data ─────────────────────────────────────────────────────────
 
-type ViewValue   = "grid" | "list" | "kanban";
+type ViewValue = "grid" | "list" | "kanban";
 type ToggleValue = "notes" | "folders";
-type PillValue   = "all" | "msgs" | "tasks" | "files";
-type TabValue    = "recent" | "starred" | "archive";
+type PillValue = "all" | "msgs" | "tasks" | "files";
+type TabValue = "recent" | "starred" | "archive";
 
 const ACTIONS: HeaderAction[] = [
-  { icon: "Plus",              label: "New Item", onPress: () => {} },
-  { icon: "SlidersHorizontal", label: "Filter",   onPress: () => {} },
-  { icon: "Trash2",            label: "Delete",   onPress: () => {}, destructive: true },
+  { icon: "Plus", label: "New Item", onPress: () => {} },
+  { icon: "SlidersHorizontal", label: "Filter", onPress: () => {} },
+  { icon: "Trash2", label: "Delete", onPress: () => {}, destructive: true },
 ];
 
 const VIEW_OPTIONS: HeaderDropdownOption<ViewValue>[] = [
-  { label: "Grid",   value: "grid",   icon: "LayoutGrid" },
-  { label: "List",   value: "list",   icon: "List" },
+  { label: "Grid", value: "grid", icon: "LayoutGrid" },
+  { label: "List", value: "list", icon: "List" },
   { label: "Kanban", value: "kanban", icon: "Columns3" },
 ];
 
 const TOGGLE_OPTIONS: [HeaderOption<ToggleValue>, HeaderOption<ToggleValue>] = [
-  { icon: "StickyNote", label: "Notes",   value: "notes" },
-  { icon: "Folder",     label: "Folders", value: "folders" },
+  { icon: "StickyNote", label: "Notes", value: "notes" },
+  { icon: "Folder", label: "Folders", value: "folders" },
 ];
 
 const PILL_OPTIONS: [
@@ -47,10 +47,10 @@ const PILL_OPTIONS: [
   HeaderOption<PillValue>,
   HeaderOption<PillValue>,
 ] = [
-  { icon: "Layers",        label: "All",   value: "all",   badge: 12 },
-  { icon: "MessageCircle", label: "Msgs",  value: "msgs" },
-  { icon: "SquareCheck",   label: "Tasks", value: "tasks", badge: 3 },
-  { icon: "File",          label: "Files", value: "files" },
+  { icon: "Layers", label: "All", value: "all", badge: 12 },
+  { icon: "MessageCircle", label: "Msgs", value: "msgs" },
+  { icon: "SquareCheck", label: "Tasks", value: "tasks", badge: 3 },
+  { icon: "File", label: "Files", value: "files" },
 ];
 
 const TAB_OPTIONS: [
@@ -58,7 +58,7 @@ const TAB_OPTIONS: [
   HeaderOption<TabValue>,
   HeaderOption<TabValue>,
 ] = [
-  { label: "Recent",  value: "recent",  badge: 5 },
+  { label: "Recent", value: "recent", badge: 5 },
   { label: "Starred", value: "starred" },
   { label: "Archive", value: "archive" },
 ];
@@ -85,27 +85,31 @@ const VARIANTS: {
     id: "v2",
     num: 2,
     title: "Structured",
-    description: "Optional back · centered title · right-side action icons that auto-collapse to a bottom sheet on mobile.",
+    description:
+      "Optional back · centered title · right-side action icons that auto-collapse to a bottom sheet on mobile.",
   },
   {
     id: "v2d",
     num: "2b",
     title: "Structured + Dropdown",
-    description: "Same as V2 but the title is a tappable glass dropdown for switching views.",
+    description:
+      "Same as V2 but the title is a tappable glass dropdown for switching views.",
     note: "Good for list/grid/kanban toggles.",
   },
   {
     id: "v3",
     num: 3,
     title: "Two-Way Toggle",
-    description: "Apple Notes-style segmented toggle in the center. Exactly 2 options.",
+    description:
+      "Apple Notes-style segmented toggle in the center. Exactly 2 options.",
     note: "Use for primary view switching within a route.",
   },
   {
     id: "v4",
     num: 4,
     title: "Icon & Title",
-    description: "Branded icon + title lockup in a glass pill. Clean and centered.",
+    description:
+      "Branded icon + title lockup in a glass pill. Clean and centered.",
     note: "Best for named pages: Dashboard, Settings, Profile.",
   },
   {
@@ -119,7 +123,8 @@ const VARIANTS: {
     id: "v6",
     num: 6,
     title: "Three Tabs",
-    description: "Three compact underline-style tabs spanning the full center zone.",
+    description:
+      "Three compact underline-style tabs spanning the full center zone.",
     note: "No back/actions — tabs own the full zone.",
   },
 ];
@@ -130,10 +135,10 @@ export default function HeaderDemoClient() {
   const [active, setActive] = useState<VariantId>("v4");
 
   // Per-variant interactive state
-  const [view,   setView]   = useState<ViewValue>("grid");
+  const [view, setView] = useState<ViewValue>("grid");
   const [toggle, setToggle] = useState<ToggleValue>("notes");
-  const [pill,   setPill]   = useState<PillValue>("all");
-  const [tab,    setTab]    = useState<TabValue>("recent");
+  const [pill, setPill] = useState<PillValue>("all");
+  const [tab, setTab] = useState<TabValue>("recent");
 
   return (
     <>
@@ -156,7 +161,11 @@ export default function HeaderDemoClient() {
       {active === "v2d" && (
         <PageHeader>
           <HeaderStructured<ViewValue>
-            dropdown={{ options: VIEW_OPTIONS, selected: view, onSelect: (v) => setView(v) }}
+            dropdown={{
+              options: VIEW_OPTIONS,
+              selected: view,
+              onSelect: (v) => setView(v),
+            }}
             actions={ACTIONS}
           />
         </PageHeader>
@@ -182,29 +191,49 @@ export default function HeaderDemoClient() {
 
       {active === "v5" && (
         <PageHeader>
-          <HeaderPills<PillValue> options={PILL_OPTIONS} active={pill} onChange={(v) => setPill(v)} />
+          <HeaderPills<PillValue>
+            options={PILL_OPTIONS}
+            active={pill}
+            onChange={(v) => setPill(v)}
+          />
         </PageHeader>
       )}
 
       {active === "v6" && (
         <PageHeader>
-          <HeaderTabs<TabValue> options={TAB_OPTIONS} active={tab} onChange={(v) => setTab(v)} />
+          <HeaderTabs<TabValue>
+            options={TAB_OPTIONS}
+            active={tab}
+            onChange={(v) => setTab(v)}
+          />
         </PageHeader>
       )}
 
       {/* ── Page body ─────────────────────────────────────────────── */}
       <div className="flex flex-col gap-3 px-4 py-4 max-w-2xl mx-auto">
-
         {/* Instruction banner */}
         <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/10">
-          <svg className="w-4 h-4 shrink-0 text-primary mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg
+            className="w-4 h-4 shrink-0 text-primary mt-0.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
           <div>
-            <p className="text-sm font-medium text-foreground">Select a variant to preview it in the header above</p>
+            <p className="text-sm font-medium text-foreground">
+              Select a variant to preview it in the header above
+            </p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              The active variant is injected into the real transparent header center zone. All interactions — dropdowns, toggles, bottom sheets — work live.
+              The active variant is injected into the real transparent header
+              center zone. All interactions — dropdowns, toggles, bottom sheets
+              — work live.
             </p>
           </div>
         </div>
@@ -227,20 +256,24 @@ export default function HeaderDemoClient() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 min-w-0">
                   {/* Variant number badge */}
-                  <span className={cn(
-                    "shrink-0 flex items-center justify-center w-6 h-6 rounded-full text-[0.625rem] font-bold mt-0.5 tabular-nums",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground",
-                  )}>
+                  <span
+                    className={cn(
+                      "shrink-0 flex items-center justify-center w-6 h-6 rounded-full text-[0.625rem] font-bold mt-0.5 tabular-nums",
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground",
+                    )}
+                  >
                     {v.num}
                   </span>
 
                   <div className="min-w-0">
-                    <p className={cn(
-                      "text-sm font-semibold leading-tight",
-                      isActive ? "text-primary" : "text-foreground",
-                    )}>
+                    <p
+                      className={cn(
+                        "text-sm font-semibold leading-tight",
+                        isActive ? "text-primary" : "text-foreground",
+                      )}
+                    >
                       {v.title}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
@@ -255,10 +288,12 @@ export default function HeaderDemoClient() {
                 </div>
 
                 {/* Active dot */}
-                <span className={cn(
-                  "shrink-0 w-2 h-2 rounded-full mt-2 transition-all duration-150",
-                  isActive ? "bg-primary scale-125" : "bg-border",
-                )} />
+                <span
+                  className={cn(
+                    "shrink-0 w-2 h-2 rounded-full mt-2 transition-all duration-150",
+                    isActive ? "bg-primary scale-125" : "bg-border",
+                  )}
+                />
               </div>
             </button>
           );
@@ -280,7 +315,6 @@ export default function HeaderDemoClient() {
             {`import "@/app/(ssr)/_components/header-variants/header-variants.css";`}
           </code>
         </div>
-
       </div>
     </>
   );

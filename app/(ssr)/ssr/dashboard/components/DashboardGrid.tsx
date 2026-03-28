@@ -3,7 +3,7 @@
 // Desktop: larger icons via CSS breakpoint in shell.css
 
 import Link from "next/link";
-import ShellIcon from "../../../_components/ShellIcon";
+import ShellIcon from "../../../../../features/cx-chat/components/ShellIcon";
 import { primaryNavItems, iconColorMap } from "../../../nav-data";
 
 export default function DashboardGrid() {

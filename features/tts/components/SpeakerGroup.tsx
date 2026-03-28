@@ -6,11 +6,15 @@
  * Shape never changes.
  */
 
-'use client';
+"use client";
 
-import React, { useState, useCallback, lazy, Suspense } from 'react';
-import { PlayTapButton, PauseTapButton, StopTapButton } from '@/components/icons/tap-buttons';
-import { TapTargetButtonGroup } from '@/app/(ssr)/_components/core/TapTargetButton';
+import React, { useState, useCallback, lazy, Suspense } from "react";
+import {
+  PlayTapButton,
+  PauseTapButton,
+  StopTapButton,
+} from "@/components/icons/tap-buttons";
+import { TapTargetButtonGroup } from "@/components/icons/TapTargetButton";
 
 export interface SpeakerGroupProps {
   text: string;
@@ -19,12 +23,22 @@ export interface SpeakerGroupProps {
   disabled?: boolean;
 }
 
-const SpeakerGroupCore = lazy(() => import('./SpeakerGroupCore'));
+const SpeakerGroupCore = lazy(() => import("./SpeakerGroupCore"));
 
-function StaticShell({ onClick, clickable }: { onClick?: () => void; clickable: boolean }) {
+function StaticShell({
+  onClick,
+  clickable,
+}: {
+  onClick?: () => void;
+  clickable: boolean;
+}) {
   return (
     <TapTargetButtonGroup>
-      <PlayTapButton variant="group" onClick={clickable ? onClick : undefined} disabled={!clickable} />
+      <PlayTapButton
+        variant="group"
+        onClick={clickable ? onClick : undefined}
+        disabled={!clickable}
+      />
       <PauseTapButton variant="group" disabled />
       <StopTapButton variant="group" disabled />
     </TapTargetButtonGroup>
@@ -44,7 +58,12 @@ export function SpeakerGroup({
   }, [disabled, text]);
 
   if (!engaged) {
-    return <StaticShell onClick={handleClick} clickable={!disabled && !!text.trim()} />;
+    return (
+      <StaticShell
+        onClick={handleClick}
+        clickable={!disabled && !!text.trim()}
+      />
+    );
   }
 
   return (

@@ -7,7 +7,7 @@
 // This component has zero knowledge of routing.
 
 import ShellIcon from "./ShellIcon";
-import { primaryNavItems, settingsItem } from "../nav-data";
+import { primaryNavItems, settingsItem } from "../../../app/(ssr)/nav-data";
 import MobileSheetNavLink from "./MobileSheetNavLink";
 
 export default function MobileSideSheet() {

@@ -4,7 +4,7 @@
 // This avoids any DB call for the initial render. The client will
 // hydrate the full agent config from the database after mount.
 
-import type { WelcomeAgent } from "../_components/ChatWelcomeServer";
+import type { WelcomeAgent } from "@/features/cx-chat/components/ChatWelcomeServer";
 
 export const DEFAULT_AGENT_ID = "ce7c5e71-cbdc-4ed1-8dd9-a7eac930b6b8";
 
@@ -143,4 +143,8 @@ export function resolveAgentForSSR(agentId: string): WelcomeAgent {
     description: undefined,
     variableDefaults: [],
   };
+}
+
+export function getDefaultAgent(): WelcomeAgent {
+  return BUILTIN_AGENTS[DEFAULT_AGENT_ID];
 }

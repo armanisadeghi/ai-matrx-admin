@@ -2,7 +2,7 @@
 // Shows personalized greeting with user info
 
 import Image from "next/image";
-import ShellIcon from "../../../_components/ShellIcon";
+import ShellIcon from "../../../../../features/cx-chat/components/ShellIcon";
 
 interface WelcomeCardProps {
   user: {
@@ -37,7 +37,12 @@ export default function WelcomeCard({ user }: WelcomeCardProps) {
             className="rounded-full"
           />
         ) : (
-          <ShellIcon name="User" size={24} strokeWidth={1.5} style={{ color: "var(--shell-nav-icon-hover)" }} />
+          <ShellIcon
+            name="User"
+            size={24}
+            strokeWidth={1.5}
+            style={{ color: "var(--shell-nav-icon-hover)" }}
+          />
         )}
       </div>
       <div className="min-w-0">

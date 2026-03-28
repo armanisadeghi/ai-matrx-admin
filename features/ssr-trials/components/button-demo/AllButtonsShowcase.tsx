@@ -1,4 +1,4 @@
-import { TapTargetButtonGroup } from "./TapTargetButton";
+import { TapTargetButtonGroup } from "@/components/icons/TapTargetButton";
 import {
   MenuTapButton,
   PlusTapButton,
@@ -418,7 +418,11 @@ export default function AllButtonsShowcase() {
           <div className="flex items-center w-full">
             <ChevronLeftTapButton />
             <div className="flex-1 flex justify-center">
-              <SearchGroup id="demo-no-expand" expand={false} placeholder="Search...">
+              <SearchGroup
+                id="demo-no-expand"
+                expand={false}
+                placeholder="Search..."
+              >
                 <FilterTapButton variant="group" />
                 <ArrowDownUpTapButton variant="group" />
                 <SearchGroupTrigger id="demo-no-expand" />

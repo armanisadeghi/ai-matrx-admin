@@ -779,7 +779,7 @@ function ChatWorkspaceInner() {
                 <ChatInputWithControls
                   onSubmit={handleFirstSubmit}
                   disabled={false}
-                  placeholder="Additional instructions (optional)..."
+                  placeholder="Additional instructions (optional) …"
                   conversationId={null}
                   isAuthenticated={isAuthenticated}
                   enableResourcePicker={isAuthenticated}
@@ -889,7 +889,7 @@ function ChatWorkspaceInner() {
                   disabled={false}
                   placeholder={
                     hasVariables
-                      ? "Additional instructions (optional)..."
+                      ? "Additional Instructions (Optional) …"
                       : "What do you want to know?"
                   }
                   conversationId={null}

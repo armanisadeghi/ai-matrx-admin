@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import IconButton from "@/app/(ssr)/_components/IconButton";
+import IconButton from "@/features/cx-chat/components/IconButton";
 
 type SortField = "updated_at" | "label" | "created_at";
 
@@ -57,7 +57,11 @@ export default function NotesSidebarToolbar({
   newNoteSlot,
 }: NotesSidebarToolbarProps) {
   const sortLabel =
-    sortField === "updated_at" ? "date" : sortField === "label" ? "name" : "created";
+    sortField === "updated_at"
+      ? "date"
+      : sortField === "label"
+        ? "name"
+        : "created";
   const sortActive = sortField !== "updated_at";
   const orderActive = sortOrder === "asc";
 
@@ -84,7 +88,10 @@ export default function NotesSidebarToolbar({
   useEffect(() => {
     if (!overflowOpen) return;
     const handler = (e: MouseEvent) => {
-      if (overflowRef.current && !overflowRef.current.contains(e.target as Node)) {
+      if (
+        overflowRef.current &&
+        !overflowRef.current.contains(e.target as Node)
+      ) {
         setOverflowOpen(false);
       }
     };
@@ -96,31 +103,35 @@ export default function NotesSidebarToolbar({
   // Only fires when searchOpen was triggered by a click (narrow/Tier 2 toolbar).
   // In Tier 1 (wide toolbar) the CSS forces the open state — React state is false
   // so this does nothing harmful there.
-  const handleInputBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-    if (!searchOpen) return; // Tier 1: not user-opened, nothing to close
-    const relatedTarget = e.relatedTarget as Node | null;
-    if (relatedTarget && overflowRef.current?.contains(relatedTarget)) return;
-    setTimeout(() => {
-      if (document.activeElement !== inputRef.current) {
-        setSearchOpen(false);
-        setOverflowOpen(false);
-      }
-    }, 150);
-  }, [searchOpen]);
+  const handleInputBlur = useCallback(
+    (e: React.FocusEvent<HTMLInputElement>) => {
+      if (!searchOpen) return; // Tier 1: not user-opened, nothing to close
+      const relatedTarget = e.relatedTarget as Node | null;
+      if (relatedTarget && overflowRef.current?.contains(relatedTarget)) return;
+      setTimeout(() => {
+        if (document.activeElement !== inputRef.current) {
+          setSearchOpen(false);
+          setOverflowOpen(false);
+        }
+      }, 150);
+    },
+    [searchOpen],
+  );
 
   return (
     <div className="notes-toolbar" role="toolbar" aria-label="Notes toolbar">
-
       {/* ── LEFT: New note — fixed, no wrapper ───────────────────────────── */}
       {newNoteSlot}
 
       {/* ── CENTER: flex:1 fills all space between + and search, centers content */}
       <div className="notes-toolbar-center">
-
         {/* ">>" overflow trigger — shown when search is open */}
         <div
           ref={overflowRef}
-          className={cn("notes-toolbar-overflow-wrap", searchOpen && "notes-toolbar-overflow-wrap--visible")}
+          className={cn(
+            "notes-toolbar-overflow-wrap",
+            searchOpen && "notes-toolbar-overflow-wrap--visible",
+          )}
         >
           <div className="notes-toolbar-overflow-trigger">
             <IconButton
@@ -139,38 +150,64 @@ export default function NotesSidebarToolbar({
             role="menu"
           >
             <button
-              className={cn("notes-toolbar-overflow-item", sortActive && "notes-toolbar-overflow-item--active")}
-              onClick={() => { onCycleSortField(); setOverflowOpen(false); }}
+              className={cn(
+                "notes-toolbar-overflow-item",
+                sortActive && "notes-toolbar-overflow-item--active",
+              )}
+              onClick={() => {
+                onCycleSortField();
+                setOverflowOpen(false);
+              }}
               role="menuitem"
             >
               <ArrowUpDown className="w-3.5 h-3.5 shrink-0" />
               <span>Sort by {sortLabel}</span>
             </button>
             <button
-              className={cn("notes-toolbar-overflow-item", orderActive && "notes-toolbar-overflow-item--active")}
-              onClick={() => { onToggleSortOrder(); setOverflowOpen(false); }}
+              className={cn(
+                "notes-toolbar-overflow-item",
+                orderActive && "notes-toolbar-overflow-item--active",
+              )}
+              onClick={() => {
+                onToggleSortOrder();
+                setOverflowOpen(false);
+              }}
               role="menuitem"
             >
-              {sortOrder === "desc"
-                ? <ChevronDown className="w-3.5 h-3.5 shrink-0" />
-                : <ChevronUp className="w-3.5 h-3.5 shrink-0" />}
-              <span>{sortOrder === "desc" ? "Newest first" : "Oldest first"}</span>
+              {sortOrder === "desc" ? (
+                <ChevronDown className="w-3.5 h-3.5 shrink-0" />
+              ) : (
+                <ChevronUp className="w-3.5 h-3.5 shrink-0" />
+              )}
+              <span>
+                {sortOrder === "desc" ? "Newest first" : "Oldest first"}
+              </span>
             </button>
             <button
               className="notes-toolbar-overflow-item"
-              onClick={() => { onToggleAll(); setOverflowOpen(false); }}
+              onClick={() => {
+                onToggleAll();
+                setOverflowOpen(false);
+              }}
               role="menuitem"
             >
-              {allExpanded
-                ? <ChevronsDownUp className="w-3.5 h-3.5 shrink-0" />
-                : <ChevronsUpDown className="w-3.5 h-3.5 shrink-0" />}
+              {allExpanded ? (
+                <ChevronsDownUp className="w-3.5 h-3.5 shrink-0" />
+              ) : (
+                <ChevronsUpDown className="w-3.5 h-3.5 shrink-0" />
+              )}
               <span>{allExpanded ? "Collapse all" : "Expand all"}</span>
             </button>
           </div>
         </div>
 
         {/* Inline buttons — shown when search is closed */}
-        <div className={cn("notes-toolbar-inline-controls", searchOpen && "notes-toolbar-inline-controls--hidden")}>
+        <div
+          className={cn(
+            "notes-toolbar-inline-controls",
+            searchOpen && "notes-toolbar-inline-controls--hidden",
+          )}
+        >
           <IconButton
             icon={<ArrowUpDown strokeWidth={1.75} />}
             onClick={onCycleSortField}
@@ -178,13 +215,25 @@ export default function NotesSidebarToolbar({
             active={sortActive}
           />
           <IconButton
-            icon={sortOrder === "desc" ? <ChevronDown strokeWidth={1.75} /> : <ChevronUp strokeWidth={1.75} />}
+            icon={
+              sortOrder === "desc" ? (
+                <ChevronDown strokeWidth={1.75} />
+              ) : (
+                <ChevronUp strokeWidth={1.75} />
+              )
+            }
             onClick={onToggleSortOrder}
             label={sortOrder === "desc" ? "Oldest first" : "Newest first"}
             active={orderActive}
           />
           <IconButton
-            icon={allExpanded ? <ChevronsDownUp strokeWidth={1.75} /> : <ChevronsUpDown strokeWidth={1.75} />}
+            icon={
+              allExpanded ? (
+                <ChevronsDownUp strokeWidth={1.75} />
+              ) : (
+                <ChevronsUpDown strokeWidth={1.75} />
+              )
+            }
             onClick={onToggleAll}
             label={allExpanded ? "Collapse all folders" : "Expand all folders"}
           />
@@ -193,7 +242,10 @@ export default function NotesSidebarToolbar({
 
       {/* ── RIGHT: Search — fixed size, center absorbs all slack ─────────── */}
       <div
-        className={cn("notes-toolbar-search", searchOpen && "notes-toolbar-search--open")}
+        className={cn(
+          "notes-toolbar-search",
+          searchOpen && "notes-toolbar-search--open",
+        )}
         onClick={!searchOpen ? openSearch : undefined}
         role="search"
         aria-label="Search notes"
@@ -206,7 +258,9 @@ export default function NotesSidebarToolbar({
           placeholder="Search notes..."
           defaultValue={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          onFocus={() => { if (!searchOpen) setSearchOpen(true); }}
+          onFocus={() => {
+            if (!searchOpen) setSearchOpen(true);
+          }}
           onBlur={handleInputBlur}
           onKeyDown={(e) => e.key === "Escape" && closeSearch()}
           aria-label="Search notes"
@@ -219,7 +273,10 @@ export default function NotesSidebarToolbar({
         {searchOpen && (
           <button
             className="notes-toolbar-search-dismiss"
-            onClick={(e) => { e.stopPropagation(); closeSearch(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              closeSearch();
+            }}
             aria-label="Close search"
             tabIndex={0}
           >
@@ -227,7 +284,6 @@ export default function NotesSidebarToolbar({
           </button>
         )}
       </div>
-
     </div>
   );
 }

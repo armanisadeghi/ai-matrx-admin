@@ -6,12 +6,16 @@
  * Shape never changes. Unavailable actions are disabled.
  */
 
-'use client';
+"use client";
 
-import React, { useEffect, useRef } from 'react';
-import { PlayTapButton, PauseTapButton, StopTapButton } from '@/components/icons/tap-buttons';
-import { TapTargetButtonGroup } from '@/app/(ssr)/_components/core/TapTargetButton';
-import { useCartesiaSpeaker } from '../hooks/useCartesiaSpeaker';
+import React, { useEffect, useRef } from "react";
+import {
+  PlayTapButton,
+  PauseTapButton,
+  StopTapButton,
+} from "@/components/icons/tap-buttons";
+import { TapTargetButtonGroup } from "@/components/icons/TapTargetButton";
+import { useCartesiaSpeaker } from "../hooks/useCartesiaSpeaker";
 
 interface Props {
   text: string;
@@ -37,7 +41,7 @@ export default function SpeakerGroupCore({
     if (!autoStart || autoStartFired.current) return;
     autoStartFired.current = true;
     speak(text);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const canPlay = !disabled && !isLoading && !isPlaying;
@@ -55,7 +59,7 @@ export default function SpeakerGroupCore({
         variant="group"
         onClick={handlePlay}
         disabled={!canPlay}
-        ariaLabel={isPaused ? 'Resume' : 'Play'}
+        ariaLabel={isPaused ? "Resume" : "Play"}
       />
       <PauseTapButton
         variant="group"

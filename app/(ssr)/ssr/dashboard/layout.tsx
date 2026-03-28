@@ -1,4 +1,4 @@
-import ButtonRow from "@/app/(ssr)/_components/core/ButtonRow";
+import ButtonRow from "@/features/cx-chat/components/button-demo/ButtonRow";
 
 export const metadata = {
   title: "Dashboard | AI Matrx",

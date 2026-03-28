@@ -1,4 +1,4 @@
-import { TapTargetButtonGroup } from "@/app/(ssr)/_components/core/TapTargetButton";
+import { TapTargetButtonGroup } from "@/components/icons/TapTargetButton";
 import {
   OpenAITapButton,
   AnthropicTapButton,
@@ -31,15 +31,19 @@ export default function ButtonDemoPage() {
       <div>
         <h1 className="text-3xl font-bold mb-2">AI Tap Buttons Demo</h1>
         <p className="text-muted-foreground">
-          A showcase of the modular TapTargetButton system applied to AI providers and generic tools.
+          A showcase of the modular TapTargetButton system applied to AI
+          providers and generic tools.
         </p>
       </div>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Model Provider Selector (Brand Colors)</h2>
+        <h2 className="text-xl font-semibold">
+          Model Provider Selector (Brand Colors)
+        </h2>
         <p className="text-sm text-muted-foreground w-1/2">
           Clicking a logo could expand secondary options for that specific
-          provider&apos;s sub-models. All black-brand logos safely use currentColor.
+          provider&apos;s sub-models. All black-brand logos safely use
+          currentColor.
         </p>
         <div className="flex gap-4">
           <TapTargetButtonGroup>
@@ -62,9 +66,12 @@ export default function ButtonDemoPage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Model Provider Selector (Monochrome)</h2>
+        <h2 className="text-xl font-semibold">
+          Model Provider Selector (Monochrome)
+        </h2>
         <p className="text-sm text-muted-foreground w-1/2">
-          The same group automatically styled to adapt to the surrounding text color for minimalist interfaces.
+          The same group automatically styled to adapt to the surrounding text
+          color for minimalist interfaces.
         </p>
         <div className="flex gap-4">
           <TapTargetButtonGroup>
@@ -87,10 +94,13 @@ export default function ButtonDemoPage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold">AI Action Tools — Lightning Family</h2>
+        <h2 className="text-xl font-semibold">
+          AI Action Tools — Lightning Family
+        </h2>
         <p className="text-sm text-muted-foreground w-1/2">
-          A cohesive set of AI action icons built around the lightning bolt motif.
-          Each combines the bolt with domain-specific elements for instant recognition.
+          A cohesive set of AI action icons built around the lightning bolt
+          motif. Each combines the bolt with domain-specific elements for
+          instant recognition.
         </p>
         <div className="flex gap-4">
           <TapTargetButtonGroup>
@@ -107,9 +117,12 @@ export default function ButtonDemoPage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Standalone Submissions (Variant: Solid)</h2>
+        <h2 className="text-xl font-semibold">
+          Standalone Submissions (Variant: Solid)
+        </h2>
         <p className="text-sm text-muted-foreground w-1/2">
-          Utilizing primary solid buttons for high-priority generation triggers outside of a group.
+          Utilizing primary solid buttons for high-priority generation triggers
+          outside of a group.
         </p>
         <div className="flex gap-4">
           <PowerTapButton variant="solid" bgColor="bg-blue-600" />

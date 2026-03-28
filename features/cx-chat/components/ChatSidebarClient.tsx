@@ -13,14 +13,18 @@
 //
 // Navigation: Uses Next.js router.push() for proper App Router navigation.
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { SidebarActions } from "@/features/public-chat/components/sidebar/SidebarActions";
 import { SsrSidebarAgents } from "./SsrSidebarAgents";
 import { SsrSidebarChats } from "./SsrSidebarChats";
 import { SidebarUserFooter } from "@/features/public-chat/components/sidebar/SidebarUserFooter";
-import { ChevronLeftTapButton, PanelLeftTapButton, PlusTapButton } from "@/components/icons/tap-buttons";
+import {
+  ChevronLeftTapButton,
+  PanelLeftTapButton,
+  PlusTapButton,
+} from "@/components/icons/tap-buttons";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   activeChatActions,
@@ -68,11 +72,13 @@ function SidebarSearchGroup({
   const hasLeft = !!leftButton;
 
   return (
-    <div className="relative flex h-11 items-center mx-1">
+    <div className="relative inline-flex h-9 items-center w-full">
       <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-8 rounded-full matrx-glass-thin-border" />
       <div className="relative flex items-center w-full">
         {leftButton}
-        <div className={`flex-1 min-w-0 flex items-center gap-1.5 h-8 ${hasLeft ? "" : "pl-3"}`}>
+        <div
+          className={`flex-1 min-w-0 flex items-center gap-1.5 h-8 ${hasLeft ? "" : "pl-3"}`}
+        >
           <svg
             className="flex-shrink-0 w-3.5 h-3.5 text-muted-foreground opacity-50"
             fill="none"
@@ -80,7 +86,11 @@ function SidebarSearchGroup({
             stroke="currentColor"
             strokeWidth={2}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+            />
           </svg>
           <input
             ref={inputRef}
@@ -100,8 +110,18 @@ function SidebarSearchGroup({
               className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Clear search"
             >
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-3 h-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           )}
@@ -123,17 +143,22 @@ export function ChatPanelContent() {
   const selectedAgent = useAppSelector(selectActiveChatAgent);
   const activeConversationId = useAppSelector(selectActiveChatSessionId);
 
-  const handleSelectChat = useCallback((id: string) => {
-    closeMobilePanel();
-    const agentId = selectedAgent?.promptId;
-    const url = agentId ? `/ssr/chat/c/${id}?agent=${agentId}` : `/ssr/chat/c/${id}`;
-    router.push(url);
-  }, [router, selectedAgent?.promptId]);
+  const handleSelectChat = useCallback(
+    (id: string) => {
+      closeMobilePanel();
+      const agentId = selectedAgent?.promptId;
+      const url = agentId
+        ? `/ssr/chat/c/${id}?agent=${agentId}`
+        : `/ssr/chat/c/${id}`;
+      router.push(url);
+    },
+    [router, selectedAgent?.promptId],
+  );
 
   const handleNewChat = useCallback(() => {
     closeMobilePanel();
     const agentId = selectedAgent?.promptId;
-    router.push(agentId ? `/ssr/chat/a/${agentId}` : '/ssr/chat');
+    router.push(agentId ? `/ssr/chat/a/${agentId}` : "/ssr/chat");
   }, [router, selectedAgent?.promptId]);
 
   const handleAgentSelect = useCallback(
@@ -231,11 +256,11 @@ export function ChatDesktopHeader() {
   const selectedAgent = useAppSelector(selectActiveChatAgent);
 
   const isAgentLoading = !selectedAgent?.configFetched && !selectedAgent?.name;
-  const displayName = isAgentLoading ? "" : (selectedAgent?.name || "Matrx Chat");
+  const displayName = isAgentLoading ? "" : selectedAgent?.name || "Matrx Chat";
 
   const handleNewChat = useCallback(() => {
     const agentId = selectedAgent?.promptId;
-    router.push(agentId ? `/ssr/chat/a/${agentId}` : '/ssr/chat');
+    router.push(agentId ? `/ssr/chat/a/${agentId}` : "/ssr/chat");
   }, [router, selectedAgent?.promptId]);
 
   return (
@@ -255,12 +280,8 @@ export function ChatDesktopHeader() {
         </span>
         <ChevronDown className="h-3 w-3 text-muted-foreground flex-shrink-0" />
       </button>
-      <div className="ml-auto flex-shrink-0">
-        <PlusTapButton
-          onClick={handleNewChat}
-          ariaLabel="New chat"
-        />
-      </div>
+      <span className="ml-auto" />
+      <PlusTapButton onClick={handleNewChat} ariaLabel="New chat" />
     </div>
   );
 }

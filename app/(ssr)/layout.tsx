@@ -9,22 +9,22 @@ import { InitialReduxState } from "@/types/reduxTypes";
 import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
 import { initializeUserPreferencesState } from "@/lib/redux/slices/userPreferencesSlice";
 import { setGlobalUserIdAndToken } from "@/lib/globalState";
-import Sidebar from "./_components/Sidebar";
-import Header from "./_components/Header";
-import MobileDock from "./_components/MobileDock";
-import MobileSideSheet from "./_components/MobileSideSheet";
-import DevPerfOverlayIsland from "./_components/DevPerfOverlayIsland";
-import GlassPortal from "./_components/GlassPortal";
-import NavActiveSync from "./_components/NavActiveSync";
-import VisualViewportSync from "./_components/VisualViewportSync";
-import AdminIndicatorIsland from "./_components/AdminIndicatorIsland";
-import AdminNavInjector from "./_components/AdminNavInjector";
+import Sidebar from "@/features/ssr-trials/components/Sidebar";
+import Header from "@/features/ssr-trials/components/Header";
+import MobileDock from "@/features/ssr-trials/components/MobileDock";
+import MobileSideSheet from "@/features/ssr-trials/components/MobileSideSheet";
+import DevPerfOverlayIsland from "@/features/ssr-trials/components/DevPerfOverlayIsland";
+import GlassPortal from "@/features/ssr-trials/components/GlassPortal";
+import NavActiveSync from "@/features/ssr-trials/components/NavActiveSync";
+import VisualViewportSync from "@/features/ssr-trials/components/VisualViewportSync";
+import AdminIndicatorIsland from "@/features/ssr-trials/components/AdminIndicatorIsland";
+import AdminNavInjector from "@/features/ssr-trials/components/AdminNavInjector";
 import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
 import AppleKeyExpiryBanner from "@/components/admin/AppleKeyExpiryBanner";
 import { DebugIndicatorManager } from "@/components/debug/DebugIndicatorManager";
 import { CanvasSideSheet } from "@/features/canvas/core/CanvasSideSheet";
 import LazySocketInitializer from "@/lib/redux/socket-io/connection/LazySocketInitializer";
-import LazyMessagingIsland from "./_components/LazyMessagingIsland";
+import LazyMessagingIsland from "@/features/ssr-trials/components/LazyMessagingIsland";
 import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
 
 const emptyGlobalCache = getEmptyGlobalCache();
@@ -54,7 +54,12 @@ export default async function SSRLayout({
 
   if (user) {
     // Authenticated: get session token and preferences in parallel
-    const [{ data: { session } }, sessionData] = await Promise.all([
+    const [
+      {
+        data: { session },
+      },
+      sessionData,
+    ] = await Promise.all([
       supabase.auth.getSession(),
       getUserSessionData(supabase, user.id),
     ]);
@@ -71,9 +76,15 @@ export default async function SSRLayout({
         user_id: userData.id,
         preferences: defaultUserPreferences,
       });
-      userPreferences = initializeUserPreferencesState(defaultUserPreferences, true);
+      userPreferences = initializeUserPreferencesState(
+        defaultUserPreferences,
+        true,
+      );
     } else {
-      userPreferences = initializeUserPreferencesState(sessionData.preferences || {}, true);
+      userPreferences = initializeUserPreferencesState(
+        sessionData.preferences || {},
+        true,
+      );
     }
 
     initialReduxState = {
@@ -88,7 +99,10 @@ export default async function SSRLayout({
   } else {
     // Guest: seed Redux with empty user state, skip all DB calls
     const guestUserData = mapUserData(null, undefined, false);
-    const userPreferences = initializeUserPreferencesState(defaultUserPreferences, true);
+    const userPreferences = initializeUserPreferencesState(
+      defaultUserPreferences,
+      true,
+    );
 
     initialReduxState = {
       user: guestUserData,
@@ -114,10 +128,7 @@ export default async function SSRLayout({
         <input type="checkbox" id="shell-panel-mobile" aria-hidden="true" />
 
         <Sidebar pathname={pathname} />
-        <Header
-          avatarUrl={avatarUrl}
-          name={displayName}
-        />
+        <Header avatarUrl={avatarUrl} name={displayName} />
 
         <main className="shell-main">{children}</main>
 

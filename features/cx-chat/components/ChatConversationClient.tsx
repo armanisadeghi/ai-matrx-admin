@@ -19,7 +19,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { selectUser } from "@/lib/redux/slices/userSlice";
+import { selectUserContext } from "@/lib/redux/slices/userSlice";
 import {
   activeChatActions,
   selectActiveChatAgent,
@@ -36,13 +36,11 @@ import {
   selectResolvedBaseUrl,
   selectActiveServerHealth,
 } from "@/lib/redux/slices/apiConfigSlice";
-import { useAgentConfig } from "../_lib/useAgentConfig";
-import { computeSettingsOverrides } from "../_lib/settings-diff";
+import { computeSettingsOverrides } from "@/features/cx-chat/lib/settings-diff";
 import { useConversationSession } from "@/features/cx-conversation/hooks/useConversationSession";
 import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
 import { DEFAULT_AGENTS } from "@/features/public-chat/components/AgentSelector";
 import { ConversationShellSkeleton } from "./ChatConversationSkeleton";
-import type { PromptSettings } from "@/features/prompts/types/core";
 
 const ConversationShell = dynamic(
   () =>
@@ -66,21 +64,16 @@ interface ChatConversationClientProps {
   conversationId: string;
   agentId?: string;
   isNew: boolean;
-  isAuthenticated: boolean;
-  isAdmin: boolean;
 }
 
 export default function ChatConversationClient({
   conversationId,
   agentId,
   isNew,
-  isAuthenticated: serverAuth,
-  isAdmin,
 }: ChatConversationClientProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const user = useAppSelector(selectUser);
-  const isAuthenticated = serverAuth || !!user?.id;
+  const { user, isAuthenticated, isAdmin } = useAppSelector(selectUserContext);
   const selectedAgent = useAppSelector(selectActiveChatAgent);
   const isAgentPickerOpen = useAppSelector(selectIsAgentPickerOpen);
   const firstMessage = useAppSelector(selectFirstMessage);
@@ -91,8 +84,6 @@ export default function ChatConversationClient({
   // Latch: once we start as "new", stay new for this component lifetime
   // so that router.replace (which strips ?new) doesn't cause a re-fetch.
   const startedAsNew = useRef(isNew);
-
-  useAgentConfig();
 
   // Hydrate agent from URL param if Redux doesn't have it
   useEffect(() => {
@@ -179,7 +170,7 @@ export default function ChatConversationClient({
       "Is New Conversation": startedAsNew.current,
       "Message Count": session.messages?.length ?? 0,
       "Model Override": modelOverride ?? "none",
-      "Is Authenticated": serverAuth,
+      "Is Authenticated": isAuthenticated,
       "Is Admin": isAdmin,
       "Active Server": activeServer,
       "Backend URL": resolvedUrl ?? "not configured",

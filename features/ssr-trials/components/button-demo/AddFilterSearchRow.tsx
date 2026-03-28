@@ -1,4 +1,4 @@
-import { TapTargetButtonGroup } from "./TapTargetButton";
+import { TapTargetButtonGroup } from "@/components/icons/TapTargetButton";
 import {
   PlusTapButton,
   ArrowDownUpTapButton,

@@ -8,7 +8,7 @@ import {
   primaryNavItems,
   settingsItem,
   type ShellNavItem,
-} from "../nav-data";
+} from "../../../app/(ssr)/nav-data";
 
 interface SidebarProps {
   pathname: string;

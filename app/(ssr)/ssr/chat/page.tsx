@@ -3,17 +3,14 @@
 // Root chat route — renders the default agent welcome screen directly.
 // Avoids a redirect round-trip so the layout renders without an error flash.
 
-import ChatWelcomeServer from "./_components/ChatWelcomeServer";
-import ChatHeaderControls from "./_components/ChatHeaderControls";
-import { MATRX_CHAT_AGENT } from "./_lib/agents";
-import { getChatAuth } from "./_lib/auth";
+import ChatWelcomeServer from "@/features/cx-chat/components/ChatWelcomeServer";
+import ChatHeaderControls from "@/features/cx-chat/components/ChatHeaderControls";
+import { getDefaultAgent } from "@/features/cx-chat/lib/agents";
 import { BACKEND_URLS, ENDPOINTS } from "@/lib/api/endpoints";
 
 export default async function ChatPage() {
-  const auth = await getChatAuth();
-
   fetch(
-    `${BACKEND_URLS.production}${ENDPOINTS.ai.agentWarm(MATRX_CHAT_AGENT.promptId)}`,
+    `${BACKEND_URLS.production}${ENDPOINTS.ai.agentWarm(getDefaultAgent().promptId)}`,
     {
       method: "POST",
     },
@@ -22,11 +19,7 @@ export default async function ChatPage() {
   return (
     <>
       <ChatHeaderControls />
-      <ChatWelcomeServer
-        agent={MATRX_CHAT_AGENT}
-        isAuthenticated={auth.isAuthenticated}
-        isAdmin={auth.isAdmin}
-      />
+      <ChatWelcomeServer agent={getDefaultAgent()} />
     </>
   );
 }

@@ -1,19 +1,21 @@
 // RecentActivity.tsx — Server component for recent platform updates/features
 // Static content showcasing what's new on the platform
 
-import ShellIcon from "../../../_components/ShellIcon";
+import ShellIcon from "../../../../../features/cx-chat/components/ShellIcon";
 
 const recentItems = [
   {
     title: "New Research Mode",
-    description: "Deep-dive research with AI-powered topic analysis and synthesis",
+    description:
+      "Deep-dive research with AI-powered topic analysis and synthesis",
     iconName: "FlaskConical",
     time: "New",
     color: "text-purple-500 dark:text-purple-400",
   },
   {
     title: "Prompt Apps",
-    description: "Transform prompts into shareable AI-powered mini-applications",
+    description:
+      "Transform prompts into shareable AI-powered mini-applications",
     iconName: "LayoutGrid",
     time: "New",
     color: "text-emerald-500 dark:text-emerald-400",

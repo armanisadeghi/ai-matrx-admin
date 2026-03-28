@@ -140,9 +140,7 @@ function saveDraft(
   }
 }
 
-function loadDraft(
-  toolName: string,
-): {
+function loadDraft(toolName: string): {
   component: GeneratedComponent;
   rawResponse: string;
   savedAt: number;
@@ -1343,7 +1341,7 @@ export function ToolUiComponentGenerator({
               {/* Instructions */}
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">
-                  Additional Instructions (Optional)
+                  Additional Instructions (Optional) …
                 </Label>
                 <Textarea
                   value={userInstructions}

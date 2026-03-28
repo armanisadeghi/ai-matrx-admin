@@ -11,7 +11,7 @@ import overlaySlice from "./slices/overlaySlice";
 import overlayDataReducer from "./slices/overlayDataSlice";
 
 // Message actions instance tracking (registers per-message context for overlay dispatch)
-import { messageActionsReducer } from "../../features/cx-conversation/redux/messageActionsSlice";
+import { messageActionsReducer } from "@/features/cx-conversation/redux/messageActionsSlice";
 
 // Artifact registry + HTML page sessions (used by HtmlPreviewBridge in OverlayController)
 import artifactsReducer from "./slices/artifactsSlice";
@@ -29,7 +29,7 @@ import adminDebugReducer from "./slices/adminDebugSlice";
 import apiConfigReducer from "./slices/apiConfigSlice";
 
 // Canvas
-import canvasReducer from "../../features/canvas/redux/canvasSlice";
+import canvasReducer from "@/features/canvas/redux/canvasSlice";
 
 // Prompt system (all start empty, hydrate on demand)
 import promptCacheReducer from "./slices/promptCacheSlice";
@@ -47,13 +47,13 @@ import socketTasksReducer from "./socket-io/slices/socketTasksSlice";
 import brokerReducer from "./brokerSlice/slice";
 
 // Messaging (empty until messaging panel opens, hydrated by LazyMessagingInitializer)
-import messagingReducer from "../../features/messaging/redux/messagingSlice";
+import messagingReducer from "@/features/messaging/redux/messagingSlice";
 
 // SMS
-import smsReducer from "../../features/sms/redux/smsSlice";
+import smsReducer from "@/features/sms/redux/smsSlice";
 
 // Unified conversation system (empty until chat session starts)
-import { chatConversationsReducer } from "../../features/cx-conversation/redux";
+import { chatConversationsReducer } from "@/features/cx-conversation/redux";
 
 // Chat system (empty until chat page loads)
 import { conversationReducer } from "./features/aiChats/conversationSlice";

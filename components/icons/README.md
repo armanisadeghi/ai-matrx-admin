@@ -34,9 +34,7 @@ For groups (`TapTargetButtonGroup`, `SearchGroup`, `SearchToolbar`): the glass p
 
 ### Core primitive — `TapTargetButton.tsx`
 
-Location: `app/(ssr)/_components/core/TapTargetButton.tsx`
-
-> **Note:** Despite living in the `(ssr)` directory, this is a **global shared primitive**. It is imported by `components/icons/`, `features/cx-conversation/`, and others. Do not move or copy it.
+Location: `components/icons/TapTargetButton.tsx`
 
 Exports:
 - `TapTargetButton` — glass variant (default)
@@ -240,7 +238,7 @@ import { FilterSearchGroup, ToolsSearchGroup } from "@/components/icons/search-t
 
 | Supporting file | Purpose |
 |---|---|
-| `app/(ssr)/_components/core/TapTargetButton.tsx` | Core primitive (global shared — do not relocate) |
-| `app/(ssr)/_components/core/AllButtonsShowcase.tsx` | Full showcase of all general buttons and toolbars |
-| `app/(ssr)/_components/core/AddFilterSearchRow.tsx` | Usage example: filter + search row |
-| `app/(ssr)/_components/core/ButtonRow.tsx` | Usage example: mixed standalone + grouped row |
+| `components/icons/TapTargetButton.tsx` | Core primitive — all variants and group container |
+| `app/(ssr)/_components/button-demo/AllButtonsShowcase.tsx` | Full showcase of all general buttons and toolbars |
+| `app/(ssr)/_components/button-demo/AddFilterSearchRow.tsx` | Usage example: filter + search row |
+| `app/(ssr)/_components/button-demo/ButtonRow.tsx` | Usage example: mixed standalone + grouped row |

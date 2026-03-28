@@ -8,8 +8,8 @@
 
 import Link from "next/link";
 import ShellIcon from "./ShellIcon";
-import { dockItems } from "../nav-data";
-import type { ShellNavItem } from "../nav-data";
+import { dockItems } from "../../../app/(ssr)/nav-data";
+import type { ShellNavItem } from "../../../app/(ssr)/nav-data";
 
 /** Single dock link — reusable by custom route docks. */
 export function MobileDockItem({ item }: { item: ShellNavItem }) {

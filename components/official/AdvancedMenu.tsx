@@ -521,11 +521,11 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
           </div>
         )}
 
-        {/* Scrollable items — relative wrapper so the fade overlay is contained */}
-        <div className="flex-1 relative overflow-hidden">
+        {/* Scrollable items — relative so the fade overlay sits inside */}
+        <div className="flex-1 flex flex-col min-h-0 relative">
           <div
             ref={scrollRef}
-            className="h-full overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-600 scrollbar-track-transparent py-0.5"
+            className="flex-1 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-600 scrollbar-track-transparent py-0.5"
           >
             <MenuItemsContent {...sharedItemProps} />
           </div>

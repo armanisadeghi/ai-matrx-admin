@@ -214,7 +214,7 @@ const ContentHistoryViewer = dynamic(
 );
 
 const FeedbackDialog = dynamic(
-  () => import("@/app/(ssr)/_components/FeedbackDialog"),
+  () => import("@/features/ssr-trials/components/FeedbackDialog"),
   { ssr: false },
 );
 

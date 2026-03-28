@@ -8,7 +8,7 @@ import { useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { selectUser } from "@/lib/redux/slices/userSlice";
+import { selectIsAuthenticated } from "@/lib/redux/slices/userSlice";
 import {
   activeChatActions,
   selectActiveChatAgent,
@@ -18,10 +18,9 @@ import {
 } from "@/lib/redux/slices/activeChatSlice";
 import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
 import { selectVariableDefaults } from "@/features/cx-conversation/redux/selectors";
-import { useAgentConfig } from "../_lib/useAgentConfig";
 import { ConversationInput } from "@/features/cx-conversation/ConversationInput";
 import { DEFAULT_AGENTS } from "@/features/public-chat/components/AgentSelector";
-import { DEFAULT_AGENT_ID } from "../_lib/agents";
+import { DEFAULT_AGENT_ID } from "@/features/cx-chat/lib/agents";
 import type { WelcomeAgent } from "./ChatWelcomeServer";
 import type { Resource } from "@/features/prompts/types/resources";
 
@@ -35,21 +34,15 @@ const AgentPickerSheet = dynamic(
 
 interface ChatWelcomeClientProps {
   agent: WelcomeAgent;
-  isAuthenticated: boolean;
-  isAdmin: boolean;
 }
 
 const CUSTOM_CHAT_PROMPT_ID = "3ca61863-43cf-49cd-8da5-7e0a4b192867";
 
-export default function ChatWelcomeClient({
-  agent,
-  isAuthenticated: serverAuth,
-}: ChatWelcomeClientProps) {
+export default function ChatWelcomeClient({ agent }: ChatWelcomeClientProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
 
-  const user = useAppSelector(selectUser);
-  const isAuthenticated = serverAuth || !!user?.id;
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
   const selectedAgent = useAppSelector(selectActiveChatAgent);
   const isAgentPickerOpen = useAppSelector(selectIsAgentPickerOpen);
@@ -57,8 +50,6 @@ export default function ChatWelcomeClient({
   const sessionVariables = useAppSelector((state) =>
     selectVariableDefaults(state, WELCOME_SESSION_ID),
   );
-
-  useAgentConfig();
 
   // Bootstrap a real Redux session so ConversationInput reads/writes the same
   // slice whether we're on the welcome screen or in an active conversation.
@@ -248,7 +239,7 @@ export default function ChatWelcomeClient({
             <ConversationInput
               {...sharedInputProps}
               singleLine
-              placeholder="Additional instructions (optional)..."
+              placeholder="Additional instructions (optional) …"
             />
           </div>
         </div>

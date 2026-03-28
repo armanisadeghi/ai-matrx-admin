@@ -10,15 +10,9 @@ import React, {
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
-  ArrowUp,
   CornerDownLeft,
-  Mic,
   ChevronDown,
-  MicOff,
   Loader2,
-  Plus,
-  Settings2,
-  Bug,
   Database,
   List,
   Layers,
@@ -46,7 +40,15 @@ const PublicVariableInputs = dynamic(
 import {
   TapTargetButtonTransparent,
   TapTargetButtonSolid,
-} from "@/app/(ssr)/_components/core/TapTargetButton";
+} from "@/components/icons/TapTargetButton";
+import {
+  PlusTapButton,
+  ArrowUpTapButton,
+  MicTapButton,
+  MicOffTapButton,
+  BugTapButton,
+  Settings2TapButton,
+} from "@/components/icons/tap-buttons";
 import {
   Popover,
   PopoverContent,
@@ -512,40 +514,20 @@ export function ConversationInput({
   const hasContent = content.trim().length > 0;
   const isDisabled = isExecuting || (!agentId && !onSubmitOverride);
 
-  const containerClass = [
-    "flex flex-col gap-1.5 w-full bg-background",
-    seamless
-      ? ""
-      : singleLine
-        ? "border border-border rounded-b-2xl rounded-t-none border-t-0 py-1"
-        : "border border-border rounded-3xl py-2",
-  ]
-    .filter(Boolean)
-    .join(" ");
+  // The bordered input box — its shape changes based on mode:
+  //   default  : rounded pill (welcome screen, big input)
+  //   singleLine: flat top, joined to variables above
+  //   seamless : no border (embedded layouts)
+  const inputBoxClass = seamless
+    ? "flex flex-col w-full bg-background"
+    : singleLine
+      ? "flex flex-col w-full bg-background border border-border rounded-b-2xl rounded-t-none border-t-0 py-1"
+      : "flex flex-col w-full bg-background border border-border rounded-3xl py-2";
 
   return (
-    <div className={containerClass}>
-      {/* ── Admin global debug toolbar ────────────────────────────────── */}
-      {isAdmin && isGlobalDebugMode && (
-        <div className="flex items-center gap-2 px-3 py-1 bg-red-950/20 border-b border-red-800/40 rounded-t-2xl">
-          <span className="text-[10px] font-semibold text-red-400 uppercase tracking-wide">
-            Debug
-          </span>
-          <button
-            onClick={() => setIsDebugModalOpen(true)}
-            className="flex items-center gap-1 px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-medium rounded transition-colors"
-            title="Open debug modal"
-          >
-            <Database className="w-2.5 h-2.5" />
-            <span>Session State</span>
-          </button>
-          <span className="text-[9px] text-red-400/70 font-mono truncate">
-            {sessionId.slice(0, 8)}…
-          </span>
-        </div>
-      )}
-
-      {/* ── Variable inputs ────────────────────────────────────────────── */}
+    // Outer wrapper: no border, no background — just stacks children vertically
+    <div className="flex flex-col w-full">
+      {/* ── Variables (above the bordered input box) ──────────────────── */}
       {hasVariables && useGuidedVars && (
         <GuidedVariableInputs
           variableDefaults={variableDefaults}
@@ -558,7 +540,7 @@ export function ConversationInput({
         />
       )}
       {hasVariables && !useGuidedVars && (
-        <div className="max-h-[30vh] md:max-h-[45vh] overflow-y-auto overscroll-contain rounded-xl">
+        <div className="max-h-[30vh] md:max-h-[45vh] overflow-y-auto overscroll-contain rounded-xl mb-1">
           <PublicVariableInputs
             variableDefaults={variableDefaults}
             values={variableValues}
@@ -571,244 +553,279 @@ export function ConversationInput({
         </div>
       )}
 
-      {/* ── Resource chips ────────────────────────────────────────────── */}
-      {resources.length > 0 && (
-        <div className="px-3">
-          <ResourceChips
-            resources={resources}
-            onRemove={(resource) => {
-              const r = resource as unknown as { id: string };
-              dispatch(
-                chatConversationsActions.removeResource({
-                  sessionId,
-                  resourceId: r.id ?? "",
-                }),
-              );
-            }}
-            onPreview={(resource) => {
-              setPreviewResource(resource);
-              setPreviewSheetOpen(true);
-            }}
-          />
-        </div>
-      )}
-
-      {/* ── Transcribing loader ───────────────────────────────────────── */}
-      {isTranscribing && <TranscriptionLoader />}
-
-      {/* ── Textarea row ──────────────────────────────────────────────── */}
-      <div className="flex items-center gap-0">
-        {/* + Resource picker button with popover */}
-        {showResourcePicker && (
-          <Popover
-            open={isResourcePickerOpen}
-            onOpenChange={setIsResourcePickerOpen}
-          >
-            <PopoverTrigger asChild>
-              <TapTargetButtonTransparent
-                ariaLabel="Add attachments"
-                icon={
-                  isUploading ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                  ) : (
-                    <Plus className="w-4 h-4 text-muted-foreground" />
-                  )
-                }
-              />
-            </PopoverTrigger>
-            <PopoverContent
-              side="top"
-              align="start"
-              className="w-56 p-0"
-              onOpenAutoFocus={(e) => e.preventDefault()}
+      {/* ── Bordered input box ────────────────────────────────────────── */}
+      <div className={inputBoxClass}>
+        {/* Admin global debug toolbar */}
+        {isAdmin && isGlobalDebugMode && (
+          <div className="flex items-center gap-2 px-3 py-1 bg-red-950/20 border-b border-red-800/40 rounded-t-2xl">
+            <span className="text-[10px] font-semibold text-red-400 uppercase tracking-wide">
+              Debug
+            </span>
+            <button
+              onClick={() => setIsDebugModalOpen(true)}
+              className="flex items-center gap-1 px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-medium rounded transition-colors"
+              title="Open debug modal"
             >
-              <ResourcePickerMenu
-                onResourceSelected={handleResourceSelected}
-                onClose={() => setIsResourcePickerOpen(false)}
-                attachmentCapabilities={
-                  attachmentCapabilities ?? {
-                    supportsImageUrls: true,
-                    supportsFileUrls: true,
-                    supportsYoutubeVideos: true,
-                    supportsAudio: true,
+              <Database className="w-2.5 h-2.5" />
+              <span>Session State</span>
+            </button>
+            <span className="text-[9px] text-red-400/70 font-mono truncate">
+              {sessionId.slice(0, 8)}…
+            </span>
+          </div>
+        )}
+
+        {/* Resource chips */}
+        {resources.length > 0 && (
+          <div className="px-3">
+            <ResourceChips
+              resources={resources}
+              onRemove={(resource) => {
+                const r = resource as unknown as { id: string };
+                dispatch(
+                  chatConversationsActions.removeResource({
+                    sessionId,
+                    resourceId: r.id ?? "",
+                  }),
+                );
+              }}
+              onPreview={(resource) => {
+                setPreviewResource(resource);
+                setPreviewSheetOpen(true);
+              }}
+            />
+          </div>
+        )}
+
+        {/* Transcribing loader */}
+        {isTranscribing && <TranscriptionLoader />}
+
+        {/* Textarea row — + button, textarea, icons, send */}
+        <div className="flex items-center">
+          {showResourcePicker && (
+            <Popover
+              open={isResourcePickerOpen}
+              onOpenChange={setIsResourcePickerOpen}
+            >
+              <PopoverTrigger asChild>
+                {isUploading ? (
+                  <TapTargetButtonTransparent
+                    ariaLabel="Uploading..."
+                    icon={
+                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                    }
+                  />
+                ) : (
+                  <PlusTapButton
+                    variant="transparent"
+                    ariaLabel="Add attachments"
+                  />
+                )}
+              </PopoverTrigger>
+              <PopoverContent
+                side="top"
+                align="start"
+                className="w-56 p-0"
+                onOpenAutoFocus={(e) => e.preventDefault()}
+              >
+                <ResourcePickerMenu
+                  onResourceSelected={handleResourceSelected}
+                  onClose={() => setIsResourcePickerOpen(false)}
+                  attachmentCapabilities={
+                    attachmentCapabilities ?? {
+                      supportsImageUrls: true,
+                      supportsFileUrls: true,
+                      supportsYoutubeVideos: true,
+                      supportsAudio: true,
+                    }
                   }
-                }
-              />
-            </PopoverContent>
-          </Popover>
-        )}
+                />
+              </PopoverContent>
+            </Popover>
+          )}
 
-        <textarea
-          ref={textareaRef}
-          value={content}
-          onChange={(e) =>
-            dispatch(
-              chatConversationsActions.setCurrentInput({
-                sessionId,
-                input: e.target.value,
-              }),
-            )
-          }
-          onKeyDown={handleKeyDown}
-          placeholder={isRecording ? "Recording..." : placeholder}
-          disabled={isDisabled || isRecording}
-          className={[
-            "flex-1 resize-none bg-transparent text-foreground placeholder:text-muted-foreground",
-            "focus:outline-none overflow-y-auto leading-[18px]",
-            singleLine
-              ? "py-[7px] min-h-[34px] max-h-[34px]"
-              : "py-[9px] min-h-[36px] max-h-[200px]",
-            compact ? "text-xs" : "text-sm",
-          ].join(" ")}
-          style={{ fontSize: "16px" }} // iOS zoom prevention
-          rows={1}
-        />
-
-        {/* Settings button */}
-        {showSettings && (
-          <TapTargetButtonTransparent
-            onClick={() => setIsSettingsOpen(true)}
-            ariaLabel="Settings"
-            icon={<Settings2 className="w-4 h-4 text-muted-foreground" />}
-          />
-        )}
-
-        {/* Admin bug button — only shown for admins */}
-        {isAdmin && (
-          <TapTargetButtonTransparent
-            onClick={() => setIsDebugModalOpen(true)}
-            ariaLabel="Admin debug options"
-            icon={
-              <Bug
-                className={`w-4 h-4 ${showDebugInfo ? "text-red-500" : "text-muted-foreground"}`}
-              />
-            }
-          />
-        )}
-
-        {/* Voice button */}
-        {showVoice && (
-          <TapTargetButtonTransparent
-            onClick={handleVoiceMicToggle}
-            ariaLabel={isRecording ? "Stop recording" : "Start recording"}
-            icon={
-              isTranscribing && !isRecording ? (
-                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-              ) : isRecording ? (
-                <MicOff className="w-4 h-4 text-red-500" />
-              ) : (
-                <Mic className="w-4 h-4 text-muted-foreground" />
+          <textarea
+            ref={textareaRef}
+            value={content}
+            onChange={(e) =>
+              dispatch(
+                chatConversationsActions.setCurrentInput({
+                  sessionId,
+                  input: e.target.value,
+                }),
               )
             }
+            onKeyDown={handleKeyDown}
+            placeholder={isRecording ? "Recording..." : placeholder}
+            disabled={isDisabled || isRecording}
+            className={[
+              "flex-1 resize-none bg-transparent text-foreground placeholder:text-muted-foreground",
+              "focus:outline-none overflow-y-auto leading-[18px]",
+              singleLine
+                ? "py-[7px] min-h-[34px] max-h-[34px]"
+                : "py-[9px] min-h-[36px] max-h-[200px]",
+              compact ? "text-xs" : "text-sm",
+            ].join(" ")}
+            style={{ fontSize: "16px" }}
+            rows={1}
+          />
+
+          {showSettings && (
+            <Settings2TapButton
+              variant="transparent"
+              onClick={() => setIsSettingsOpen(true)}
+            />
+          )}
+
+          {isAdmin && (
+            <BugTapButton
+              variant="transparent"
+              onClick={() => setIsDebugModalOpen(true)}
+              className={showDebugInfo ? "text-red-500" : undefined}
+            />
+          )}
+
+          {showVoice &&
+            (isTranscribing && !isRecording ? (
+              <TapTargetButtonTransparent
+                ariaLabel="Transcribing..."
+                icon={
+                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                }
+              />
+            ) : isRecording ? (
+              <MicOffTapButton
+                variant="transparent"
+                onClick={handleVoiceMicToggle}
+                className="text-red-500"
+              />
+            ) : (
+              <MicTapButton
+                variant="transparent"
+                onClick={handleVoiceMicToggle}
+              />
+            ))}
+
+          {isExecuting ? (
+            <TapTargetButtonSolid
+              ariaLabel="Sending..."
+              bgColor={
+                sendButtonVariant === "gray" ? "bg-muted" : "bg-blue-600"
+              }
+              hoverBgColor={
+                sendButtonVariant === "gray"
+                  ? "hover:bg-muted/80"
+                  : "hover:bg-blue-700"
+              }
+              iconColor={
+                sendButtonVariant === "gray" ? "text-foreground" : "text-white"
+              }
+              icon={<Loader2 className="w-4 h-4 animate-spin" />}
+            />
+          ) : (
+            <ArrowUpTapButton
+              variant="solid"
+              onClick={() => handleSubmit()}
+              disabled={!hasContent || isDisabled || isUploading}
+              ariaLabel="Send message"
+              bgColor={
+                sendButtonVariant === "gray" ? "bg-muted" : "bg-blue-600"
+              }
+              hoverBgColor={
+                sendButtonVariant === "gray"
+                  ? "hover:bg-muted/80"
+                  : "hover:bg-blue-700"
+              }
+              iconColor={
+                sendButtonVariant === "gray" ? "text-foreground" : "text-white"
+              }
+            />
+          )}
+        </div>
+
+        {/* Model picker */}
+        {showModelPicker && (
+          <div className="relative px-3">
+            <button
+              type="button"
+              onClick={() => setIsModelPickerOpen(!isModelPickerOpen)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <span>{currentModelName || "Select model"}</span>
+              <ChevronDown className="w-3 h-3" />
+            </button>
+            {isModelPickerOpen && (
+              <div className="absolute bottom-full left-0 mb-1 w-64 max-h-60 overflow-y-auto rounded-xl border border-border bg-background shadow-lg z-50">
+                {modelOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => handleModelSelect(opt.value)}
+                    className={[
+                      "w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors",
+                      currentModelId === opt.value
+                        ? "text-primary font-medium"
+                        : "text-foreground",
+                    ].join(" ")}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Submit hint */}
+        {showShiftEnterHint && (
+          <p className="text-[10px] text-muted-foreground/60 px-3">
+            <kbd className="text-[9px]">⌘+Enter</kbd> to send,{" "}
+            <kbd className="text-[9px]">Shift+Enter</kbd> for new line
+          </p>
+        )}
+
+        {/* Submit-on-enter toggle */}
+        {showSubmitOnEnterToggle && (
+          <div className="flex items-center gap-2 px-3">
+            <button
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => setSubmitOnEnter(!submitOnEnter)}
+            >
+              <div
+                className={`w-6 h-3.5 rounded-full transition-colors ${submitOnEnter ? "bg-blue-500" : "bg-muted"} relative`}
+              >
+                <div
+                  className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white transition-transform ${submitOnEnter ? "translate-x-[13px]" : "translate-x-0.5"}`}
+                />
+              </div>
+              <CornerDownLeft className="w-3 h-3" />
+              <span>Enter to send</span>
+            </button>
+          </div>
+        )}
+
+        {/* Settings dialog */}
+        {showSettings && (
+          <ModelSettingsDialog
+            isOpen={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+            modelId={uiState?.modelOverride ?? ""}
+            models={availableModels}
+            settings={settingsForDialog}
+            onSettingsChange={handleSettingsChange}
           />
         )}
 
-        {/* Send button */}
-        <TapTargetButtonSolid
-          onClick={() => handleSubmit()}
-          disabled={!hasContent || isDisabled || isUploading}
-          ariaLabel="Send message"
-          bgColor={sendButtonVariant === "gray" ? "bg-muted" : "bg-blue-600"}
-          hoverBgColor={
-            sendButtonVariant === "gray"
-              ? "hover:bg-muted/80"
-              : "hover:bg-blue-700"
-          }
-          iconColor={
-            sendButtonVariant === "gray" ? "text-foreground" : "text-white"
-          }
-          icon={
-            isExecuting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <ArrowUp className="w-4 h-4" />
-            )
-          }
-        />
+        {/* Admin debug modal */}
+        {isAdmin && (
+          <ChatDebugModal
+            sessionId={sessionId}
+            isOpen={isDebugModalOpen}
+            onClose={() => setIsDebugModalOpen(false)}
+          />
+        )}
       </div>
 
-      {/* ── Model picker (inline, text-only for dynamic_model agents) ── */}
-      {showModelPicker && (
-        <div className="relative px-3">
-          <button
-            type="button"
-            onClick={() => setIsModelPickerOpen(!isModelPickerOpen)}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <span>{currentModelName || "Select model"}</span>
-            <ChevronDown className="w-3 h-3" />
-          </button>
-          {isModelPickerOpen && (
-            <div className="absolute bottom-full left-0 mb-1 w-64 max-h-60 overflow-y-auto rounded-xl border border-border bg-background shadow-lg z-50">
-              {modelOptions.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => handleModelSelect(opt.value)}
-                  className={[
-                    "w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors",
-                    currentModelId === opt.value
-                      ? "text-primary font-medium"
-                      : "text-foreground",
-                  ].join(" ")}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Submit hint ───────────────────────────────────────────────── */}
-      {showShiftEnterHint && (
-        <p className="text-[10px] text-muted-foreground/60 px-3">
-          <kbd className="text-[9px]">⌘+Enter</kbd> to send,{" "}
-          <kbd className="text-[9px]">Shift+Enter</kbd> for new line
-        </p>
-      )}
-
-      {/* ── Submit-on-enter toggle ─────────────────────────────────────── */}
-      {showSubmitOnEnterToggle && (
-        <div className="flex items-center gap-2 px-3">
-          <button
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-            onClick={() => setSubmitOnEnter(!submitOnEnter)}
-          >
-            <div
-              className={`w-6 h-3.5 rounded-full transition-colors ${submitOnEnter ? "bg-blue-500" : "bg-muted"} relative`}
-            >
-              <div
-                className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white transition-transform ${submitOnEnter ? "translate-x-[13px]" : "translate-x-0.5"}`}
-              />
-            </div>
-            <CornerDownLeft className="w-3 h-3" />
-            <span>Enter to send</span>
-          </button>
-        </div>
-      )}
-
-      {/* ── Settings dialog (ModelSettingsDialog) ─────────────────────── */}
-      {showSettings && (
-        <ModelSettingsDialog
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-          modelId={uiState?.modelOverride ?? ""}
-          models={availableModels}
-          settings={settingsForDialog}
-          onSettingsChange={handleSettingsChange}
-        />
-      )}
-
-      {/* ── Admin debug modal ──────────────────────────────────────────── */}
-      {isAdmin && (
-        <ChatDebugModal
-          sessionId={sessionId}
-          isOpen={isDebugModalOpen}
-          onClose={() => setIsDebugModalOpen(false)}
-        />
-      )}
-
-      {/* ── Footer row (back button / response modes / layout toggle) ─── */}
+      {/* ── Footer row (outside the bordered box, below it) ───────────── */}
       {showFooter && (
         <div className="flex items-center justify-between mt-2 pb-1">
           {hasVariables ? (
