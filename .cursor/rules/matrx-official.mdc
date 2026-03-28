@@ -8,7 +8,6 @@ alwaysApply: true
 > **Official guide:** `~/.arman/rules/nextjs-best-practices/nextjs-guide.md` — rendering, caching, performance, mobile, Tailwind, APIs, components. This file covers project-specific conventions only.
 
 **Stack:** React 19, Next.js 16, Tailwind CSS, TypeScript, Redux (@/lib/redux/store.ts), Supabase (@/utils/supabase/client.ts)
-**Lead Developer:** Arman (Expert in React 19, Next.js 15/16, Tailwind CSS, TypeScript, PostgreSQL and Python)
 
 # Web Access For Testing
 - user: admin@admin.com
