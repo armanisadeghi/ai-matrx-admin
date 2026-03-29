@@ -16,7 +16,6 @@ interface UserTable {
     created_at: string;
     updated_at: string;
     is_public: boolean;
-    authenticated_read: boolean;
 }
 
 interface TableField {

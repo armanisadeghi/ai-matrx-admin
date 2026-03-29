@@ -11,7 +11,6 @@ interface UserList {
     description: string | null;
     user_id: string;
     is_public: boolean | null;
-    authenticated_read: boolean;
     public_read: boolean;
     created_at: string;
     updated_at: string;
@@ -104,7 +103,7 @@ function getVisibilityInfo(list: UserList): { label: string; icon: React.ReactNo
     if (list.is_public || list.public_read) {
         return { label: "Public", icon: <Globe className="w-3 h-3" />, color: "text-success" };
     }
-    if (list.authenticated_read) {
+    if (!list.is_public && !list.public_read) {
         return { label: "Users", icon: <Users className="w-3 h-3" />, color: "text-info" };
     }
     return { label: "Private", icon: <Lock className="w-3 h-3" />, color: "text-muted-foreground" };

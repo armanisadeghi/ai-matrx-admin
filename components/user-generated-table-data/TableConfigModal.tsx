@@ -44,7 +44,6 @@ interface TableField {
   field_order: number;
   is_required: boolean;
   is_public: boolean;
-  authenticated_read: boolean;
   default_value?: any;
   validation_rules?: any;
 }
@@ -54,7 +53,6 @@ interface TableInfo {
   table_name: string;
   description: string;
   is_public: boolean;
-  authenticated_read: boolean;
   version: number;
 }
 
@@ -195,7 +193,6 @@ export default function TableConfigModal({
         table_name: tableInfo.table_name !== initialTableInfo.table_name ? tableInfo.table_name : undefined,
         description: tableInfo.description !== initialTableInfo.description ? tableInfo.description : undefined,
         is_public: tableInfo.is_public !== initialTableInfo.is_public ? tableInfo.is_public : undefined,
-        authenticated_read: tableInfo.authenticated_read !== initialTableInfo.authenticated_read ? tableInfo.authenticated_read : undefined,
       };
 
       // Remove undefined values
@@ -232,7 +229,6 @@ export default function TableConfigModal({
         if (field.field_order !== originalField.field_order) updates.field_order = field.field_order;
         if (field.is_required !== originalField.is_required) updates.is_required = field.is_required;
         if (field.is_public !== originalField.is_public) updates.is_public = field.is_public;
-        if (field.authenticated_read !== originalField.authenticated_read) updates.authenticated_read = field.authenticated_read;
 
         // Only return if there are actual changes
         return Object.keys(updates).length > 1 ? updates : null;
@@ -392,14 +388,6 @@ export default function TableConfigModal({
                         />
                         <Label htmlFor={`public-${field.id}`} className="text-xs">Public</Label>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`auth-read-${field.id}`}
-                          checked={field.authenticated_read}
-                          onCheckedChange={(checked) => handleFieldChange(field.id, 'authenticated_read', checked)}
-                        />
-                        <Label htmlFor={`auth-read-${field.id}`} className="text-xs">Auth Read</Label>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -455,25 +443,6 @@ export default function TableConfigModal({
                     />
                   </div>
                   
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      {tableInfo.authenticated_read ? (
-                        <Eye className="h-4 w-4 text-blue-600" />
-                      ) : (
-                        <EyeOff className="h-4 w-4 text-gray-400" />
-                      )}
-                      <div>
-                        <div className="font-medium text-sm">Authenticated Read</div>
-                        <div className="text-xs text-muted-foreground">
-                          Logged-in users can view this table
-                        </div>
-                      </div>
-                    </div>
-                    <Checkbox
-                      checked={tableInfo.authenticated_read}
-                      onCheckedChange={(checked) => handleTableInfoChange('authenticated_read', checked)}
-                    />
-                  </div>
                 </div>
               </div>
             </div>

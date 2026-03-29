@@ -15,8 +15,6 @@ import {
     Copy,
     Check,
     Shield,
-    Eye,
-    EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +27,6 @@ interface UserList {
     description: string | null;
     user_id: string;
     is_public: boolean | null;
-    authenticated_read: boolean;
     public_read: boolean;
     created_at: string;
     updated_at: string;
@@ -119,7 +116,7 @@ function getVisibility(list: UserList): { label: string; icon: React.ReactNode; 
     if (list.is_public || list.public_read) {
         return { label: "Public", icon: <Globe className="w-3 h-3" />, variant: "default" };
     }
-    if (list.authenticated_read) {
+    if (!list.is_public && !list.public_read) {
         return { label: "Users Only", icon: <Users className="w-3 h-3" />, variant: "secondary" };
     }
     return { label: "Private", icon: <Lock className="w-3 h-3" />, variant: "outline" };
@@ -154,8 +151,8 @@ export const UserListsOverlay: React.FC<ToolRendererProps> = ({ toolUpdates }) =
         if (visFilter !== "all") {
             items = items.filter((l) => {
                 if (visFilter === "public") return l.is_public || l.public_read;
-                if (visFilter === "users") return !l.is_public && !l.public_read && l.authenticated_read;
-                if (visFilter === "private") return !l.is_public && !l.public_read && !l.authenticated_read;
+                if (visFilter === "users") return !l.is_public && !l.public_read;
+                if (visFilter === "private") return false;
                 return true;
             });
         }
@@ -215,8 +212,8 @@ export const UserListsOverlay: React.FC<ToolRendererProps> = ({ toolUpdates }) =
 
     // Compute stat counts
     const publicCount = data.lists.filter((l) => l.is_public || l.public_read).length;
-    const usersCount = data.lists.filter((l) => !l.is_public && !l.public_read && l.authenticated_read).length;
-    const privateCount = data.lists.filter((l) => !l.is_public && !l.public_read && !l.authenticated_read).length;
+    const usersCount = data.lists.filter((l) => !l.is_public && !l.public_read).length;
+    const privateCount = 0;
     const totalItems = data.lists.reduce((sum, l) => sum + l.item_count, 0);
 
     return (
@@ -375,14 +372,6 @@ export const UserListsOverlay: React.FC<ToolRendererProps> = ({ toolUpdates }) =
                                     <span>
                                         {list.is_public != null ? (list.is_public ? "Public" : "Not public") : "Visibility unset"}
                                     </span>
-                                </span>
-                                <span className="flex items-center gap-1">
-                                    {list.authenticated_read ? (
-                                        <Eye className="w-3 h-3 text-success" />
-                                    ) : (
-                                        <EyeOff className="w-3 h-3" />
-                                    )}
-                                    <span>{list.authenticated_read ? "Auth read enabled" : "Auth read disabled"}</span>
                                 </span>
                                 <span className="flex items-center gap-1">
                                     {list.public_read ? (

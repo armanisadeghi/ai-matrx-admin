@@ -38,7 +38,6 @@ interface UserTable {
   field_count: number;
   updated_at: string;
   is_public: boolean;
-  authenticated_read: boolean;
   user_id: string;
 }
 
@@ -377,12 +376,7 @@ export default function TableCards() {
                     Public
                   </span>
                 )}
-                {table.authenticated_read && !table.is_public && (
-                  <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
-                    Authenticated
-                  </span>
-                )}
-                {!table.is_public && !table.authenticated_read && (
+                {!table.is_public && (
                   <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                     Private
                   </span>
@@ -671,7 +665,6 @@ export default function TableCards() {
             table_name: tableToEdit.table_name,
             description: tableToEdit.description,
             is_public: tableToEdit.is_public,
-            authenticated_read: tableToEdit.authenticated_read
           }}
         />
       )}

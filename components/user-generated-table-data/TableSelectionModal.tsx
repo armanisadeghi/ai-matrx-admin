@@ -34,7 +34,6 @@ interface UserTable {
   field_count: number;
   updated_at: string;
   is_public: boolean;
-  authenticated_read: boolean;
 }
 
 interface TableField {
@@ -271,12 +270,7 @@ export default function TableSelectionModal({
                                 Public
                               </Badge>
                             )}
-                            {table.authenticated_read && (
-                              <Badge variant="outline" className="text-xs">
-                                Auth Read
-                              </Badge>
-                            )}
-                            {!table.is_public && !table.authenticated_read && (
+                            {!table.is_public && (
                               <Badge variant="outline" className="text-xs">
                                 Private
                               </Badge>

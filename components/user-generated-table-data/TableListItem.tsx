@@ -21,7 +21,6 @@ interface TableListItemProps {
   field_count: number;
   updated_at: string;
   is_public: boolean;
-  authenticated_read: boolean;
   isOwned: boolean;
   onNavigate: (id: string, e?: React.MouseEvent) => void;
   onEdit?: (id: string) => void;
@@ -38,7 +37,6 @@ export function TableListItem({
   field_count,
   updated_at,
   is_public,
-  authenticated_read,
   isOwned,
   onNavigate,
   onEdit,
@@ -141,11 +139,6 @@ export function TableListItem({
         {is_public && (
           <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
             Public
-          </span>
-        )}
-        {authenticated_read && !is_public && (
-          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
-            Auth
           </span>
         )}
       </div>
