@@ -27,23 +27,16 @@ const GuidedVariableInputs = dynamic(
   { ssr: false },
 );
 
-const PublicVariableInputs = dynamic(
+const StackedVariableInputs = dynamic(
   () =>
-    import("@/features/cx-chat/components/user-input/PublicVariableInputs").then(
-      (m) => ({ default: m.PublicVariableInputs }),
+    import("@/features/cx-chat/components/user-input/StackedVariableInputs").then(
+      (m) => ({ default: m.StackedVariableInputs }),
     ),
   { ssr: false },
 );
-import {
-  TapTargetButtonTransparent,
-  TapTargetButtonSolid,
-} from "@/components/icons/TapTargetButton";
-import {
-  PlusTapButton,
-  ArrowUpTapButton,
-  MicTapButton,
-  MicOffTapButton,
-} from "@/components/icons/tap-buttons";
+import { TapTargetButtonTransparent } from "@/components/icons/TapTargetButton";
+import { PlusTapButton } from "@/components/icons/tap-buttons";
+import { InputActionButtons } from "./InputActionButtons";
 import {
   Popover,
   PopoverContent,
@@ -57,10 +50,13 @@ import {
   selectResources,
   selectVariableDefaults,
   selectIsExecuting,
-  selectExpandedVariable,
-  selectShowVariables,
   selectUIState,
   selectShowDebugInfo,
+  selectHasVariables,
+  selectAgentId,
+  selectEffectiveModelId,
+  selectEffectiveModelLabel,
+  selectEffectiveSettings,
 } from "@/features/cx-conversation/redux/selectors";
 import {
   selectAvailableModels,
@@ -68,13 +64,15 @@ import {
   fetchAvailableModels,
 } from "@/lib/redux/slices/modelRegistrySlice";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
-import { selectActiveChatAgent } from "@/lib/redux/slices/activeChatSlice";
+import {
+  selectActiveChatAgent,
+  selectAgentDefaultSettings,
+} from "@/lib/redux/slices/activeChatSlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { ResourceChips } from "@/features/prompts/components/resource-display";
 import { ResourcePickerMenu } from "@/features/prompts/components/resource-picker/ResourcePickerMenu";
 import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
-import { useRecordAndTranscribe, TranscriptionLoader } from "@/features/audio";
 import { ModelSettingsDialog } from "@/features/prompts/components/configuration/ModelSettingsDialog";
 import { ChatDebugModal } from "../../admin/ChatDebugModal";
 import { toast } from "sonner";
@@ -184,7 +182,6 @@ export function ConversationInput({
 }: ConversationInputProps) {
   const dispatch = useAppDispatch();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const pendingVoiceSubmitRef = useRef(false);
   const [submitOnEnter, setSubmitOnEnter] = useState(false);
   const [previewSheetOpen, setPreviewSheetOpen] = useState(false);
   const [previewResource, setPreviewResource] = useState<Resource | null>(null);
@@ -205,19 +202,11 @@ export function ConversationInput({
   const isExecuting = useAppSelector((state) =>
     selectIsExecuting(state, sessionId),
   );
-  const expandedVariable = useAppSelector((state) =>
-    selectExpandedVariable(state, sessionId),
-  );
-  const showVarsInState = useAppSelector((state) =>
-    selectShowVariables(state, sessionId),
+  const hasVariables = useAppSelector((state) =>
+    selectHasVariables(state, sessionId),
   );
   const uiState = useAppSelector((state) => selectUIState(state, sessionId));
-
-  const session = useAppSelector(
-    (state) => state.chatConversations.sessions[sessionId],
-  );
-  const agentId = session?.agentId ?? "";
-  const conversationId = session?.conversationId ?? null;
+  const agentId = useAppSelector((state) => selectAgentId(state, sessionId));
 
   // ── Agent (for footer ResponseModeButtons) ────────────────────────────────
   const selectedAgent = useAppSelector(selectActiveChatAgent);
@@ -247,31 +236,16 @@ export function ConversationInput({
     return qs ? `${pathname}?${qs}` : pathname;
   }, [useGuidedVars, searchParams, pathname]);
 
-  // Flat values map from variableDefaults — for variable input components
-  const variableValues = useMemo(
-    () =>
-      Object.fromEntries(
-        variableDefaults.map((v) => [v.name, v.defaultValue ?? ""]),
-      ),
-    [variableDefaults],
-  );
-
-  const handleVariableChange = useCallback(
-    (name: string, value: string) => {
-      dispatch(
-        chatConversationsActions.updateVariable({
-          sessionId,
-          variableName: name,
-          value,
-        }),
-      );
-    },
-    [dispatch, sessionId],
-  );
-
   // ── Model registry ─────────────────────────────────────────────────────────
   const modelOptions = useAppSelector(selectModelOptions);
   const availableModels = useAppSelector(selectAvailableModels);
+
+  const currentModelId = useAppSelector((state) =>
+    selectEffectiveModelId(state, sessionId),
+  );
+  const currentModelName = useAppSelector((state) =>
+    selectEffectiveModelLabel(state, sessionId),
+  );
 
   // Ensure models are loaded when model picker or settings are shown
   useEffect(() => {
@@ -279,12 +253,6 @@ export function ConversationInput({
       dispatch(fetchAvailableModels());
     }
   }, [showModelPicker, showSettings, availableModels.length, dispatch]);
-
-  const currentModelId = uiState?.modelOverride || null;
-  const currentModelName = currentModelId
-    ? (modelOptions.find((m) => m.value === currentModelId)?.label ??
-      currentModelId)
-    : null;
 
   // ── Resource picker state ──────────────────────────────────────────────────
   const [isResourcePickerOpen, setIsResourcePickerOpen] = useState(false);
@@ -344,25 +312,19 @@ export function ConversationInput({
   });
 
   // ── Voice / transcribe ─────────────────────────────────────────────────────
-  const { isRecording, isTranscribing, startRecording, stopRecording } =
-    useRecordAndTranscribe({
-      onTranscriptionComplete: (result) => {
-        if (!result.success || !result.text) return;
-        const newContent = content ? `${content} ${result.text}` : result.text;
-        dispatch(
-          chatConversationsActions.setCurrentInput({
-            sessionId,
-            input: newContent,
-          }),
-        );
-        if (pendingVoiceSubmitRef.current) {
-          pendingVoiceSubmitRef.current = false;
-          handleSubmit(newContent);
-        }
-      },
-      onError: (err) =>
-        toast.error("Transcription failed", { description: err }),
-    });
+  const handleTranscriptionComplete = useCallback(
+    (text: string) => {
+      if (!text) return;
+      const newContent = content ? `${content} ${text}` : text;
+      dispatch(
+        chatConversationsActions.setCurrentInput({
+          sessionId,
+          input: newContent,
+        }),
+      );
+    },
+    [content, dispatch, sessionId],
+  );
 
   // ── Auto-resize textarea ───────────────────────────────────────────────────
   useEffect(() => {
@@ -454,21 +416,13 @@ export function ConversationInput({
     }
   };
 
-  const handleVoiceMicToggle = () => {
-    if (isRecording) {
-      stopRecording();
-    } else {
-      startRecording();
-    }
-  };
-
   // ── Model override ─────────────────────────────────────────────────────────
   const handleModelSelect = useCallback(
     (modelId: string) => {
       dispatch(
-        chatConversationsActions.updateUIState({
+        chatConversationsActions.setModelOverride({
           sessionId,
-          updates: { modelOverride: modelId },
+          model: modelId,
         }),
       );
       setIsModelPickerOpen(false);
@@ -477,35 +431,43 @@ export function ConversationInput({
   );
 
   // ── Settings dialog ────────────────────────────────────────────────────────
-  // Build PromptSettings from current uiState for the dialog
-  const settingsForDialog: PromptSettings = {
-    model_id: uiState?.modelOverride ?? undefined,
-    ...((uiState?.modelSettings as Record<string, unknown>) ?? {}),
-  };
+  // Show the full effective settings (agent defaults + user overrides merged)
+  const settingsForDialog = useAppSelector((state) =>
+    selectEffectiveSettings(state, sessionId),
+  );
+  // Agent defaults — used to compute the diff on save (only store true overrides)
+  const agentDefaultSettings = useAppSelector(selectAgentDefaultSettings);
 
   const handleSettingsChange = useCallback(
     (newSettings: PromptSettings) => {
-      const { model_id, ...restSettings } = newSettings;
-      if (model_id) {
-        dispatch(
-          chatConversationsActions.updateUIState({
-            sessionId,
-            updates: { modelOverride: model_id },
-          }),
-        );
+      const { model_id, ...changedSettings } = newSettings;
+
+      // Only store keys where the value genuinely differs from the agent default.
+      // Sending the default value back as an "override" is a no-op at best and
+      // an error at worst (server rejects redundant default overrides).
+      const trueOverrides: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(changedSettings)) {
+        const defaultVal = (agentDefaultSettings as Record<string, unknown>)[
+          key
+        ];
+        if (JSON.stringify(value) !== JSON.stringify(defaultVal)) {
+          trueOverrides[key] = value;
+        }
       }
-      // Store full model settings (temperature, max_tokens, etc.)
+
       dispatch(
         chatConversationsActions.updateUIState({
           sessionId,
-          updates: { modelSettings: restSettings },
+          updates: {
+            ...(model_id ? { modelOverride: model_id } : {}),
+            modelSettings: trueOverrides,
+          },
         }),
       );
     },
-    [dispatch, sessionId],
+    [dispatch, sessionId, agentDefaultSettings],
   );
 
-  const hasVariables = variableDefaults.length > 0;
   const isDisabled = isExecuting || (!agentId && !onSubmitOverride);
 
   // The bordered input box — its shape changes based on mode:
@@ -524,25 +486,17 @@ export function ConversationInput({
       {/* ── Variables (above the bordered input box) ──────────────────── */}
       {hasVariables && useGuidedVars && (
         <GuidedVariableInputs
-          variableDefaults={variableDefaults}
-          values={variableValues}
-          onChange={handleVariableChange}
+          sessionId={sessionId}
           disabled={isExecuting}
-          submitOnEnter
-          onSubmit={onSubmitOverride}
           seamless
         />
       )}
       {hasVariables && !useGuidedVars && (
         <div className="max-h-[30vh] md:max-h-[45vh] overflow-y-auto overscroll-contain rounded-xl mb-1">
-          <PublicVariableInputs
-            variableDefaults={variableDefaults}
-            values={variableValues}
-            onChange={handleVariableChange}
+          <StackedVariableInputs
+            sessionId={sessionId}
             disabled={isExecuting}
             minimal
-            onSubmit={onSubmitOverride}
-            submitOnEnter
           />
         </div>
       )}
@@ -590,9 +544,6 @@ export function ConversationInput({
             />
           </div>
         )}
-
-        {/* Transcribing loader */}
-        {isTranscribing && <TranscriptionLoader />}
 
         {/* Textarea row — + button, textarea, icons, send */}
         <div className="flex items-center">
@@ -657,76 +608,27 @@ export function ConversationInput({
               )
             }
             onKeyDown={handleKeyDown}
-            placeholder={isRecording ? "Recording..." : placeholder}
-            disabled={isDisabled || isRecording}
+            placeholder={placeholder}
+            disabled={isDisabled}
             className={[
-              "flex-1 resize-none bg-transparent text-foreground placeholder:text-muted-foreground",
+              "flex-1 resize-none bg-transparent text-[16px] text-foreground placeholder:text-muted-foreground/70",
               "focus:outline-none overflow-y-auto leading-[18px]",
               singleLine
                 ? "py-[7px] min-h-[34px] max-h-[34px]"
                 : "py-[9px] min-h-[36px] max-h-[200px]",
-              compact ? "text-xs" : "text-sm",
             ].join(" ")}
-            style={{ fontSize: "16px" }}
             rows={1}
           />
 
-          {showVoice &&
-            (isTranscribing && !isRecording ? (
-              <TapTargetButtonTransparent
-                ariaLabel="Transcribing..."
-                icon={
-                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                }
-              />
-            ) : isRecording ? (
-              <MicOffTapButton
-                variant="transparent"
-                onClick={handleVoiceMicToggle}
-                className="text-red-500"
-              />
-            ) : (
-              <MicTapButton
-                variant="transparent"
-                onClick={handleVoiceMicToggle}
-              />
-            ))}
-
-          {isExecuting ? (
-            <TapTargetButtonSolid
-              ariaLabel="Sending..."
-              bgColor={
-                sendButtonVariant === "gray" ? "bg-muted" : "bg-blue-600"
-              }
-              hoverBgColor={
-                sendButtonVariant === "gray"
-                  ? "hover:bg-muted/80"
-                  : "hover:bg-blue-700"
-              }
-              iconColor={
-                sendButtonVariant === "gray" ? "text-foreground" : "text-white"
-              }
-              icon={<Loader2 className="w-4 h-4 animate-spin" />}
-            />
-          ) : (
-            <ArrowUpTapButton
-              variant="solid"
-              onClick={() => handleSubmit()}
-              disabled={isDisabled || isUploading}
-              ariaLabel="Send message"
-              bgColor={
-                sendButtonVariant === "gray" ? "bg-muted" : "bg-blue-600"
-              }
-              hoverBgColor={
-                sendButtonVariant === "gray"
-                  ? "hover:bg-muted/80"
-                  : "hover:bg-blue-700"
-              }
-              iconColor={
-                sendButtonVariant === "gray" ? "text-foreground" : "text-white"
-              }
-            />
-          )}
+          <InputActionButtons
+            showVoice={showVoice}
+            onTranscriptionComplete={handleTranscriptionComplete}
+            isExecuting={isExecuting}
+            isDisabled={isDisabled}
+            isUploading={isUploading}
+            sendButtonVariant={sendButtonVariant}
+            onSubmit={() => handleSubmit()}
+          />
         </div>
 
         {/* Model picker */}
@@ -794,10 +696,12 @@ export function ConversationInput({
           <ModelSettingsDialog
             isOpen={isSettingsOpen}
             onClose={() => setIsSettingsOpen(false)}
-            modelId={uiState?.modelOverride ?? ""}
+            modelId={currentModelId ?? ""}
             models={availableModels}
             settings={settingsForDialog}
             onSettingsChange={handleSettingsChange}
+            showModelSelector
+            onModelChange={handleModelSelect}
           />
         )}
 

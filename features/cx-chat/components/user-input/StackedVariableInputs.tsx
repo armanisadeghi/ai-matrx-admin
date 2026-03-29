@@ -10,26 +10,23 @@ import {
 } from "@/components/ui/popover";
 import { formatText } from "@/utils/text/text-case-converter";
 import { VariableInputComponent } from "@/features/prompts/components/variable-inputs";
-import type { PromptVariable } from "@/features/prompts/types/core";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
+import {
+  selectVariableDefaults,
+  selectVariableValues,
+} from "@/features/cx-conversation/redux/selectors";
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
-interface PublicVariableInputsProps {
-  variableDefaults: PromptVariable[];
-  values: Record<string, string>;
-  onChange: (name: string, value: string) => void;
+interface StackedVariableInputsProps {
+  sessionId: string;
   disabled?: boolean;
   compact?: boolean;
   /** Hide the outer wrapper (for embedding in custom layouts) */
   minimal?: boolean;
-  /** Called when Enter is pressed on the last variable (if submitOnEnter) */
-  onSubmit?: (content: string, resources?: any[]) => Promise<boolean>;
-  /** Whether Enter on the last variable should trigger submit */
-  submitOnEnter?: boolean;
-  /** Ref to the text input/textarea to focus after the last variable (if not submitting) */
-  textInputRef?: React.RefObject<HTMLTextAreaElement | HTMLInputElement | null>;
 }
 
 // ============================================================================
@@ -37,33 +34,35 @@ interface PublicVariableInputsProps {
 // ============================================================================
 
 /**
- * PublicVariableInputs - Reusable variable input component for public chat
- *
- * Features:
- * - Uses PromptVariable[] structure matching database schema
- * - Reuses VariableInputComponent for all input types
- * - Clean, compact UI similar to SmartPromptInput
- * - Expandable popovers for complex inputs
- * - No Redux dependency (Context API compatible)
+ * StackedVariableInputs - Variable input component that self-manages via Redux
  */
-export function PublicVariableInputs({
-  variableDefaults,
-  values,
-  onChange,
+export function StackedVariableInputs({
+  sessionId,
   disabled = false,
   compact = false,
   minimal = false,
-  onSubmit,
-  submitOnEnter = false,
-  textInputRef,
-}: PublicVariableInputsProps) {
+}: StackedVariableInputsProps) {
+  const dispatch = useAppDispatch();
+  const variableDefaults = useAppSelector((state) =>
+    selectVariableDefaults(state, sessionId),
+  );
+  const values = useAppSelector((state) =>
+    selectVariableValues(state, sessionId),
+  );
+
   const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
 
   const handleVariableChange = useCallback(
     (variableName: string, value: string) => {
-      onChange(variableName, value);
+      dispatch(
+        chatConversationsActions.updateVariable({
+          sessionId,
+          variableName,
+          value,
+        }),
+      );
     },
-    [onChange],
+    [dispatch, sessionId],
   );
 
   const handleExpandedVariableChange = useCallback(
@@ -73,13 +72,12 @@ export function PublicVariableInputs({
     [],
   );
 
-  // Handle Enter key on collapsed variable inputs: cycle to next, then submit or focus text input
+  // Handle Enter key on collapsed variable inputs: cycle to next input
   const handleVariableKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         const isLast = index === variableDefaults.length - 1;
-
         if (!isLast) {
           const container = (e.currentTarget as HTMLElement).closest(
             "[data-variable-inputs]",
@@ -89,19 +87,11 @@ export function PublicVariableInputs({
           );
           if (nextInput) {
             nextInput.focus();
-            return;
           }
-        }
-
-        // Last variable: submit if submitOnEnter, else focus text input
-        if (submitOnEnter && onSubmit) {
-          onSubmit("", undefined);
-        } else if (textInputRef?.current) {
-          textInputRef.current.focus();
         }
       }
     },
-    [variableDefaults.length, submitOnEnter, onSubmit, textInputRef],
+    [variableDefaults.length],
   );
 
   if (variableDefaults.length === 0) {
@@ -227,4 +217,4 @@ export function PublicVariableInputs({
   );
 }
 
-export default PublicVariableInputs;
+export default StackedVariableInputs;

@@ -8,19 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
 import { formatText } from "@/utils/text/text-case-converter";
 import type { PromptVariable } from "@/features/prompts/types/core";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
+import {
+  selectVariableDefaults,
+  selectVariableValues,
+} from "@/features/cx-conversation/redux/selectors";
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
 interface GuidedVariableInputsProps {
-  variableDefaults: PromptVariable[];
-  values: Record<string, string>;
-  onChange: (name: string, value: string) => void;
+  sessionId: string;
   disabled?: boolean;
-  onSubmit?: (content: string, resources?: any[]) => Promise<boolean>;
-  submitOnEnter?: boolean;
-  textInputRef?: React.RefObject<HTMLTextAreaElement | HTMLInputElement | null>;
   /** When true, renders with flat bottom (no bottom border-radius) for seamless join with chat input */
   seamless?: boolean;
 }
@@ -565,15 +566,18 @@ function GuidedVariableContent({
 // ============================================================================
 
 export function GuidedVariableInputs({
-  variableDefaults,
-  values,
-  onChange,
+  sessionId,
   disabled = false,
-  onSubmit,
-  submitOnEnter = false,
-  textInputRef,
   seamless = false,
 }: GuidedVariableInputsProps) {
+  const dispatch = useAppDispatch();
+  const variableDefaults = useAppSelector((state) =>
+    selectVariableDefaults(state, sessionId),
+  );
+  const values = useAppSelector((state) =>
+    selectVariableValues(state, sessionId),
+  );
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isScrollable, setIsScrollable] = useState(false);
@@ -616,8 +620,7 @@ export function GuidedVariableInputs({
 
   const handleSkipAll = useCallback(() => {
     setIsCollapsed(true);
-    textInputRef?.current?.focus();
-  }, [textInputRef]);
+  }, []);
 
   const handleToggleCollapse = useCallback(() => {
     setIsCollapsed((c) => !c);
@@ -625,9 +628,15 @@ export function GuidedVariableInputs({
 
   const handleChange = useCallback(
     (v: string) => {
-      onChange(variable.name, v);
+      dispatch(
+        chatConversationsActions.updateVariable({
+          sessionId,
+          variableName: variable.name,
+          value: v,
+        }),
+      );
     },
-    [onChange, variable.name],
+    [dispatch, sessionId, variable.name],
   );
 
   const handleKeyDown = useCallback(
@@ -638,23 +647,11 @@ export function GuidedVariableInputs({
           e.preventDefault();
           if (activeIndex < total - 1) {
             goNext();
-          } else if (submitOnEnter && onSubmit) {
-            onSubmit("", undefined);
-          } else {
-            textInputRef?.current?.focus();
           }
         }
       }
     },
-    [
-      variable,
-      activeIndex,
-      total,
-      goNext,
-      submitOnEnter,
-      onSubmit,
-      textInputRef,
-    ],
+    [variable, activeIndex, total, goNext],
   );
 
   // Border radius: seamless mode removes bottom rounding to merge with chat input

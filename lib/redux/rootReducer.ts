@@ -76,6 +76,7 @@ import { chatConversationsReducer } from "@/features/cx-conversation/redux";
 import { messageActionsReducer } from "@/features/cx-conversation/redux/messageActionsSlice";
 import artifactsReducer from "./slices/artifactsSlice";
 import htmlPagesReducer from "./slices/htmlPagesSlice";
+import { agentSettingsReducer } from "./slices/agent-settings";
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
 
@@ -253,6 +254,10 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
     // HTML pages — editor session state + page catalog
     htmlPages: htmlPagesReducer,
+
+    // Agent Settings — unified settings management for all agent/prompt contexts
+    // (builder, chat session overrides, multi-agent testing)
+    agentSettings: agentSettingsReducer,
   });
 };
 

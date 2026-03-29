@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { X, AlertTriangle, ShieldAlert, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModelSettings } from "./ModelSettings";
@@ -65,7 +66,7 @@ export function ModelSettingsDialog({
     onClose();
   };
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center"
       onClick={handleClose}
@@ -169,6 +170,7 @@ export function ModelSettingsDialog({
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
