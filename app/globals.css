@@ -596,8 +596,8 @@
 
     /* Muted - Zinc-200 for subtle backgrounds */
     --muted: 240 5% 92%;
-    --muted-foreground: 240 4% 46%;
-    --glass-foreground: 240 4% 33%;
+    --muted-foreground: 240 5% 35%;
+    --glass-foreground: 240 5% 26%;
 
     /* Accent - More visible for hover states and UI elements */
     --accent: 240 5% 94%; /* zinc-150 - subtle for hover states */
@@ -770,8 +770,8 @@
 
     /* Muted - Zinc-750 for subtle backgrounds */
     --muted: 240 4% 24%;
-    --muted-foreground: 240 5% 68%;
-    --glass-foreground: 240 5% 76%;
+    --muted-foreground: 240 5% 80%;
+    --glass-foreground: 240 5% 86%;
 
     /* Accent - More visible for hover states and UI elements */
     --accent: 240 4% 24%; /* zinc-775 - subtle for hover states in dark mode */

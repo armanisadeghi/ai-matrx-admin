@@ -1,100 +1,209 @@
 // lib/redux/slices/overlaySlice.ts
+//
+// Instanced overlay state management.
+//
+// Every overlay supports two modes:
+//   Singleton (default): dispatch(openHtmlPreview({ content }))
+//     → uses instanceId 'default', one shared instance, existing behavior unchanged
+//   Instanced: dispatch(openHtmlPreview({ content, instanceId: 'my-uuid' }))
+//     → isolated instance, independent open/close/data, multiple can coexist
+//
+// State shape:
+//   overlays: Record<overlayId, Record<instanceId, { isOpen: boolean; data: any }>>
+//
+// All existing callers that omit instanceId continue to work with zero changes.
 
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createSelector } from "@reduxjs/toolkit";
 
-// Define interface for overlay state
-export interface OverlayState {
-  overlays: {
-    [key: string]: {
-      isOpen: boolean;
-      data: any;
-    };
-  };
+export const DEFAULT_INSTANCE_ID = "default";
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
+export interface OverlayInstance {
+  isOpen: boolean;
+  data: any;
 }
+
+export interface OverlayState {
+  overlays: Record<string, Record<string, OverlayInstance>>;
+}
+
+// ============================================================================
+// HELPERS
+// ============================================================================
+
+function makeDefaultInstance(): Record<string, OverlayInstance> {
+  return { [DEFAULT_INSTANCE_ID]: { isOpen: false, data: null } };
+}
+
+// ============================================================================
+// INITIAL STATE
+// ============================================================================
 
 const initialState: OverlayState = {
   overlays: {
-    brokerState: { isOpen: false, data: null },
-    markdownEditor: { isOpen: false, data: null },
-    socketAccordion: { isOpen: false, data: null },
-    adminStateAnalyzer: { isOpen: false, data: null },
-    adminIndicator: { isOpen: false, data: null },
+    brokerState: makeDefaultInstance(),
+    markdownEditor: makeDefaultInstance(),
+    socketAccordion: makeDefaultInstance(),
+    adminStateAnalyzer: makeDefaultInstance(),
+    adminIndicator: makeDefaultInstance(),
     // Quick Action Overlays
-    quickNotes: { isOpen: false, data: null },
-    quickTasks: { isOpen: false, data: null },
-    quickChat: { isOpen: false, data: null },
-    quickData: { isOpen: false, data: null },
-    quickFiles: { isOpen: false, data: null },
-    quickUtilities: { isOpen: false, data: null },
-    quickAIResults: { isOpen: false, data: null },
-    fullScreenEditor: { isOpen: false, data: null },
-    htmlPreview: { isOpen: false, data: null },
-    userPreferences: { isOpen: false, data: null },
-    announcements: { isOpen: false, data: null },
+    quickNotes: makeDefaultInstance(),
+    quickTasks: makeDefaultInstance(),
+    quickChat: makeDefaultInstance(),
+    quickData: makeDefaultInstance(),
+    quickFiles: makeDefaultInstance(),
+    quickUtilities: makeDefaultInstance(),
+    quickAIResults: makeDefaultInstance(),
+    fullScreenEditor: makeDefaultInstance(),
+    htmlPreview: makeDefaultInstance(),
+    userPreferences: makeDefaultInstance(),
+    announcements: makeDefaultInstance(),
     // Message action overlays (available in all routes)
-    saveToNotes: { isOpen: false, data: null },
-    emailDialog: { isOpen: false, data: null },
-    authGate: { isOpen: false, data: null },
-    contentHistory: { isOpen: false, data: null },
-    feedbackDialog: { isOpen: false, data: null },
-    shareModal: { isOpen: false, data: null },
+    saveToNotes: makeDefaultInstance(),
+    emailDialog: makeDefaultInstance(),
+    authGate: makeDefaultInstance(),
+    contentHistory: makeDefaultInstance(),
+    feedbackDialog: makeDefaultInstance(),
+    shareModal: makeDefaultInstance(),
   },
 };
+
+// ============================================================================
+// SLICE
+// ============================================================================
 
 const overlaySlice = createSlice({
   name: "overlays",
   initialState,
   reducers: {
     openOverlay: (state, action) => {
-      const { overlayId, data } = action.payload;
-      state.overlays[overlayId] = {
+      const {
+        overlayId,
+        instanceId = DEFAULT_INSTANCE_ID,
+        data,
+      } = action.payload;
+      if (!state.overlays[overlayId]) {
+        state.overlays[overlayId] = {};
+      }
+      state.overlays[overlayId][instanceId] = {
         isOpen: true,
-        data: data || null,
+        data: data ?? null,
       };
     },
+
     closeOverlay: (state, action) => {
-      const { overlayId } = action.payload;
-      if (state.overlays[overlayId]) {
-        state.overlays[overlayId].isOpen = false;
-        state.overlays[overlayId].data = null;
+      const { overlayId, instanceId = DEFAULT_INSTANCE_ID } = action.payload;
+      const instance = state.overlays[overlayId]?.[instanceId];
+      if (instance) {
+        instance.isOpen = false;
+        instance.data = null;
       }
     },
+
     closeAllOverlays: (state) => {
-      Object.keys(state.overlays).forEach((key) => {
-        state.overlays[key].isOpen = false;
-        state.overlays[key].data = null;
+      Object.values(state.overlays).forEach((instances) => {
+        Object.values(instances).forEach((instance) => {
+          instance.isOpen = false;
+          instance.data = null;
+        });
       });
     },
+
     toggleOverlay: (state, action) => {
-      const { overlayId, data } = action.payload;
+      const {
+        overlayId,
+        instanceId = DEFAULT_INSTANCE_ID,
+        data,
+      } = action.payload;
       if (!state.overlays[overlayId]) {
-        state.overlays[overlayId] = { isOpen: true, data: data || null };
+        state.overlays[overlayId] = {};
+      }
+      const existing = state.overlays[overlayId][instanceId];
+      if (!existing) {
+        state.overlays[overlayId][instanceId] = {
+          isOpen: true,
+          data: data ?? null,
+        };
       } else {
-        state.overlays[overlayId].isOpen = !state.overlays[overlayId].isOpen;
-        state.overlays[overlayId].data = state.overlays[overlayId].isOpen
-          ? data || state.overlays[overlayId].data
-          : null;
+        existing.isOpen = !existing.isOpen;
+        existing.data = existing.isOpen ? (data ?? existing.data) : null;
       }
     },
   },
 });
 
-// Selectors - use generic state type to avoid importing full RootState
-// which would pull in the entire store.ts and its dependencies
+// ============================================================================
+// SELECTORS
+// ============================================================================
+
 type StateWithOverlays = { overlays: OverlayState };
 
-export const selectOverlay = (state: StateWithOverlays, overlayId: string) =>
-  state.overlays.overlays[overlayId] || { isOpen: false, data: null };
+/** Returns the instance record for a given overlay + instanceId. Falls back to closed/null. */
+export const selectOverlay = (
+  state: StateWithOverlays,
+  overlayId: string,
+  instanceId: string = DEFAULT_INSTANCE_ID,
+): OverlayInstance =>
+  state.overlays.overlays[overlayId]?.[instanceId] ?? {
+    isOpen: false,
+    data: null,
+  };
 
+/** True when the given overlay instance is open. */
 export const selectIsOverlayOpen = (
   state: StateWithOverlays,
   overlayId: string,
-) => selectOverlay(state, overlayId).isOpen;
+  instanceId: string = DEFAULT_INSTANCE_ID,
+): boolean => selectOverlay(state, overlayId, instanceId).isOpen;
 
+/** Data payload for the given overlay instance. */
 export const selectOverlayData = (
   state: StateWithOverlays,
   overlayId: string,
-) => selectOverlay(state, overlayId).data;
+  instanceId: string = DEFAULT_INSTANCE_ID,
+): any => selectOverlay(state, overlayId, instanceId).data;
+
+/**
+ * Returns all currently-open instances for a given overlayId.
+ * Used by OverlayController to render instanced overlays via .map().
+ *
+ * Memoized per overlayId so the returned array reference is stable when
+ * the open-instances set has not changed, preventing unnecessary re-renders.
+ */
+const _openInstancesCache = new Map<
+  string,
+  (state: StateWithOverlays) => Array<{ instanceId: string; data: any }>
+>();
+
+export const selectOpenInstances = (
+  state: StateWithOverlays,
+  overlayId: string,
+): Array<{ instanceId: string; data: any }> => {
+  if (!_openInstancesCache.has(overlayId)) {
+    _openInstancesCache.set(
+      overlayId,
+      createSelector(
+        (s: StateWithOverlays) => s.overlays.overlays[overlayId],
+        (instances) => {
+          if (!instances) return EMPTY_INSTANCES;
+          const result: Array<{ instanceId: string; data: any }> = [];
+          for (const [instanceId, inst] of Object.entries(instances)) {
+            if (inst.isOpen) result.push({ instanceId, data: inst.data });
+          }
+          return result.length === 0 ? EMPTY_INSTANCES : result;
+        },
+      ),
+    );
+  }
+  return _openInstancesCache.get(overlayId)!(state);
+};
+
+// Stable empty array — returned when there are no open instances so callers
+// that do `instances.length === 0` checks don't get a new reference each render.
+const EMPTY_INSTANCES: Array<{ instanceId: string; data: any }> = [];
 
 export const { openOverlay, closeOverlay, closeAllOverlays, toggleOverlay } =
   overlaySlice.actions;
@@ -104,7 +213,13 @@ export default overlaySlice.reducer;
 // TYPED OVERLAY ACTION CREATORS
 // ============================================================================
 // Convenience dispatchers that apply defaults and enforce the correct data
-// shape for specific overlays. Usage: dispatch(openFullScreenEditor({ ... }))
+// shape for specific overlays. All accept optional instanceId for instanced use.
+//
+// Usage (singleton — unchanged from before):
+//   dispatch(openFullScreenEditor({ content: '...' }))
+//
+// Usage (instanced — new):
+//   dispatch(openFullScreenEditor({ content: '...', instanceId: myUuid }))
 
 type EditorTabId = "write" | "matrx_split" | "markdown" | "wysiwyg" | "preview";
 
@@ -118,11 +233,13 @@ interface FullScreenEditorPayload {
   title?: string;
   showSaveButton?: boolean;
   showCopyButton?: boolean;
+  instanceId?: string;
 }
 
 export const openFullScreenEditor = (options: FullScreenEditorPayload) =>
   openOverlay({
     overlayId: "fullScreenEditor",
+    instanceId: options.instanceId,
     data: {
       content: options.content,
       onSave: options.onSave,
@@ -144,12 +261,14 @@ export const openFullScreenEditor = (options: FullScreenEditorPayload) =>
 
 interface PreferencesPayload {
   initialTab?: string;
+  instanceId?: string;
 }
 
 export const openUserPreferences = (options?: PreferencesPayload) =>
   openOverlay({
     overlayId: "userPreferences",
-    data: options ?? null,
+    instanceId: options?.instanceId,
+    data: options ? { initialTab: options.initialTab } : null,
   });
 
 interface HtmlPreviewPayload {
@@ -160,11 +279,13 @@ interface HtmlPreviewPayload {
   description?: string;
   onSave?: (markdownContent: string) => void;
   showSaveButton?: boolean;
+  instanceId?: string;
 }
 
 export const openHtmlPreview = (options: HtmlPreviewPayload) =>
   openOverlay({
     overlayId: "htmlPreview",
+    instanceId: options.instanceId,
     data: {
       content: options.content,
       messageId: options.messageId,
@@ -184,11 +305,13 @@ export const openAnnouncements = () =>
 interface SaveToNotesPayload {
   content: string;
   defaultFolder?: string;
+  instanceId?: string;
 }
 
 export const openSaveToNotes = (options: SaveToNotesPayload) =>
   openOverlay({
     overlayId: "saveToNotes",
+    instanceId: options.instanceId,
     data: {
       content: options.content,
       defaultFolder: options.defaultFolder,
@@ -198,11 +321,13 @@ export const openSaveToNotes = (options: SaveToNotesPayload) =>
 interface EmailDialogPayload {
   content: string;
   metadata?: Record<string, unknown> | null;
+  instanceId?: string;
 }
 
 export const openEmailDialog = (options: EmailDialogPayload) =>
   openOverlay({
     overlayId: "emailDialog",
+    instanceId: options.instanceId,
     data: {
       content: options.content,
       metadata: options.metadata ?? null,
@@ -212,22 +337,31 @@ export const openEmailDialog = (options: EmailDialogPayload) =>
 interface AuthGatePayload {
   featureName?: string;
   featureDescription?: string;
+  instanceId?: string;
 }
 
 export const openAuthGate = (options?: AuthGatePayload) =>
   openOverlay({
     overlayId: "authGate",
-    data: options ?? null,
+    instanceId: options?.instanceId,
+    data: options
+      ? {
+          featureName: options.featureName,
+          featureDescription: options.featureDescription,
+        }
+      : null,
   });
 
 interface ContentHistoryPayload {
   sessionId: string;
   messageId: string;
+  instanceId?: string;
 }
 
 export const openContentHistory = (options: ContentHistoryPayload) =>
   openOverlay({
     overlayId: "contentHistory",
+    instanceId: options.instanceId,
     data: {
       sessionId: options.sessionId,
       messageId: options.messageId,
@@ -242,11 +376,13 @@ interface ShareModalPayload {
   resourceId: string;
   resourceName: string;
   isOwner: boolean;
+  instanceId?: string;
 }
 
 export const openShareModal = (options: ShareModalPayload) =>
   openOverlay({
     overlayId: "shareModal",
+    instanceId: options.instanceId,
     data: {
       resourceType: options.resourceType,
       resourceId: options.resourceId,

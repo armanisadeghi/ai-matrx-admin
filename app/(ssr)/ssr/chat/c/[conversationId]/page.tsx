@@ -15,7 +15,7 @@
 
 import { Suspense } from "react";
 import ChatHeaderControls from "@/features/cx-chat/components/ChatHeaderControls";
-import ChatConversationClient from "@/features/cx-chat/components/ChatConversationClient";
+import ChatConversationClient from "@/features/cx-chat/components/core/ChatConversationClient";
 import { ChatConversationSkeleton } from "@/features/cx-chat/components/ChatConversationSkeleton";
 import { BACKEND_URLS, ENDPOINTS } from "@/lib/api/endpoints";
 

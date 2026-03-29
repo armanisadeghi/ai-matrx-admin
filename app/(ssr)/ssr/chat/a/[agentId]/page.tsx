@@ -11,7 +11,7 @@
 
 import ChatWelcomeServer from "@/features/cx-chat/components/ChatWelcomeServer";
 import ChatHeaderControls from "@/features/cx-chat/components/ChatHeaderControls";
-import { resolveAgentForSSR } from "@/features/cx-chat/lib/agents";
+import { resolveAgentForSSR } from "@/features/cx-chat/components/agent/agents";
 import { BACKEND_URLS, ENDPOINTS } from "@/lib/api/endpoints";
 
 export default async function AgentPage({

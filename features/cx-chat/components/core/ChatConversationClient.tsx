@@ -36,17 +36,19 @@ import {
   selectResolvedBaseUrl,
   selectActiveServerHealth,
 } from "@/lib/redux/slices/apiConfigSlice";
-import { computeSettingsOverrides } from "@/features/cx-chat/lib/settings-diff";
-import { useConversationSession } from "@/features/cx-conversation/hooks/useConversationSession";
+import { computeSettingsOverrides } from "@/features/cx-chat/utils/settings-diff";
+import { useConversationSession } from "@/features/cx-chat/hooks/useConversationSession";
 import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
-import { DEFAULT_AGENTS } from "@/features/public-chat/components/AgentSelector";
-import { ConversationShellSkeleton } from "./ChatConversationSkeleton";
+import { DEFAULT_AGENTS } from "@/features/cx-chat/components/agent/local-agents";
+import { ConversationShellSkeleton } from "../ChatConversationSkeleton";
 
 const ConversationShell = dynamic(
   () =>
-    import("@/features/cx-conversation/ConversationShell").then((m) => ({
-      default: m.ConversationShell,
-    })),
+    import("@/features/cx-chat/components/core/ConversationShell").then(
+      (m) => ({
+        default: m.ConversationShell,
+      }),
+    ),
   {
     ssr: false,
     loading: () => <ConversationShellSkeleton />,
@@ -54,9 +56,11 @@ const ConversationShell = dynamic(
 );
 const AgentPickerSheet = dynamic(
   () =>
-    import("@/features/public-chat/components/AgentPickerSheet").then((m) => ({
-      default: m.AgentPickerSheet,
-    })),
+    import("@/features/cx-chat/components/agent/AgentPickerSheet").then(
+      (m) => ({
+        default: m.AgentPickerSheet,
+      }),
+    ),
   { ssr: false },
 );
 

@@ -525,7 +525,14 @@ export default function NotesWorkspace({
               const next = new Map(prev);
               const c = next.get(noteId);
               if (!c) return prev;
-              next.set(noteId, { ...c, localEdits: null, saveState: "saved" });
+              const editsStillMatch =
+                c.localEdits?.content === content &&
+                c.localEdits?.label === label;
+              next.set(noteId, {
+                ...c,
+                localEdits: editsStillMatch ? null : c.localEdits,
+                saveState: editsStillMatch ? "saved" : c.saveState,
+              });
               return next;
             });
             return;
@@ -550,7 +557,6 @@ export default function NotesWorkspace({
             return;
           }
 
-          // Dispatch label change event for sidebar sync
           if (updates.label) {
             window.dispatchEvent(
               new CustomEvent("notes:labelChange", {
@@ -563,14 +569,19 @@ export default function NotesWorkspace({
             const next = new Map(prev);
             const c = next.get(noteId);
             if (!c) return prev;
+            // Only clear localEdits if the user hasn't typed more since the save started.
+            // If localEdits have changed, a new save is already scheduled — preserve them.
+            const editsStillMatch =
+              c.localEdits?.content === content &&
+              c.localEdits?.label === label;
             next.set(noteId, {
               data: {
                 ...c.data,
                 ...updates,
                 updated_at: data?.updated_at ?? c.data.updated_at,
               },
-              localEdits: null,
-              saveState: "saved",
+              localEdits: editsStillMatch ? null : c.localEdits,
+              saveState: editsStillMatch ? "saved" : c.saveState,
               fetchedAt: Date.now(),
             });
             return next;
@@ -632,7 +643,6 @@ export default function NotesWorkspace({
         return;
       }
 
-      // Dispatch label change for sidebar sync
       if (label !== cached.data.label) {
         window.dispatchEvent(
           new CustomEvent("notes:labelChange", {
@@ -645,6 +655,8 @@ export default function NotesWorkspace({
         const next = new Map(prev);
         const c = next.get(noteId);
         if (!c) return prev;
+        const editsStillMatch =
+          c.localEdits?.content === content && c.localEdits?.label === label;
         next.set(noteId, {
           data: {
             ...c.data,
@@ -652,8 +664,8 @@ export default function NotesWorkspace({
             content,
             updated_at: data?.updated_at ?? c.data.updated_at,
           },
-          localEdits: null,
-          saveState: "saved",
+          localEdits: editsStillMatch ? null : c.localEdits,
+          saveState: editsStillMatch ? "saved" : c.saveState,
           fetchedAt: Date.now(),
         });
         return next;

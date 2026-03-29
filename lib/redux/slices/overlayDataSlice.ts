@@ -1,20 +1,39 @@
 // lib/redux/slices/overlayDataSlice.ts
 //
-// Dynamic key-value store for overlay-specific state.
+// Dynamic key-value store for overlay-specific structured state.
 //
-// Purpose: Some overlays need more than the simple open/close + small data blob
-// that overlaySlice provides. This slice stores structured, mutable state objects
-// keyed by overlayId. Each entry includes a type discriminator so that components
-// can verify they are reading the correct shape before rendering.
+// Purpose: Overlays that need richer, mutable state beyond the simple open/close
+// + small data blob in overlaySlice can store that state here. Entries are keyed
+// by a composite key: "overlayId:instanceId". The default instanceId is 'default',
+// preserving full backwards-compatibility for all existing callers.
 //
-// Usage:
+// Key helper:
+//   overlayDataKey('htmlPreview')              → 'htmlPreview:default'
+//   overlayDataKey('htmlPreview', 'my-uuid')   → 'htmlPreview:my-uuid'
+//
+// Usage (singleton — unchanged):
 //   dispatch(setOverlayData({ overlayId: 'htmlPreview', type: 'htmlPreview', data: { ... } }));
 //   const entry = useAppSelector(state => selectOverlayData(state, 'htmlPreview'));
+//
+// Usage (instanced — new):
+//   dispatch(setOverlayData({ overlayId: 'htmlPreview', instanceId: 'uuid', type: 'htmlPreview', data: { ... } }));
+//   const entry = useAppSelector(state => selectOverlayData(state, 'htmlPreview', 'uuid'));
 //
 // This slice is registered in both rootReducer and liteRootReducer so it is
 // available in all routes (authenticated, SSR shell, and public).
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { DEFAULT_INSTANCE_ID } from "./overlaySlice";
+
+// ============================================================================
+// KEY HELPER
+// ============================================================================
+
+/** Composite key used as the map key in this slice's entries. */
+export const overlayDataKey = (
+  overlayId: string,
+  instanceId: string = DEFAULT_INSTANCE_ID,
+): string => `${overlayId}:${instanceId}`;
 
 // ============================================================================
 // TYPES
@@ -32,17 +51,20 @@ export interface OverlayDataState {
 
 interface SetOverlayDataPayload<T = unknown> {
   overlayId: string;
+  instanceId?: string;
   type: string;
   data: T;
 }
 
 interface UpdateOverlayDataPayload {
   overlayId: string;
+  instanceId?: string;
   updates: Record<string, unknown>;
 }
 
 interface ClearOverlayDataPayload {
   overlayId: string;
+  instanceId?: string;
 }
 
 // ============================================================================
@@ -65,8 +87,9 @@ const overlayDataSlice = createSlice({
       state: OverlayDataState,
       action: PayloadAction<SetOverlayDataPayload<T>>,
     ) {
-      const { overlayId, type, data } = action.payload;
-      state.entries[overlayId] = {
+      const { overlayId, instanceId, type, data } = action.payload;
+      const key = overlayDataKey(overlayId, instanceId);
+      state.entries[key] = {
         type,
         data,
         updatedAt: Date.now(),
@@ -77,8 +100,9 @@ const overlayDataSlice = createSlice({
       state: OverlayDataState,
       action: PayloadAction<UpdateOverlayDataPayload>,
     ) {
-      const { overlayId, updates } = action.payload;
-      const entry = state.entries[overlayId];
+      const { overlayId, instanceId, updates } = action.payload;
+      const key = overlayDataKey(overlayId, instanceId);
+      const entry = state.entries[key];
       if (!entry) return;
       Object.assign(entry.data as Record<string, unknown>, updates);
       entry.updatedAt = Date.now();
@@ -88,7 +112,9 @@ const overlayDataSlice = createSlice({
       state: OverlayDataState,
       action: PayloadAction<ClearOverlayDataPayload>,
     ) {
-      delete state.entries[action.payload.overlayId];
+      const { overlayId, instanceId } = action.payload;
+      const key = overlayDataKey(overlayId, instanceId);
+      delete state.entries[key];
     },
   },
 });
@@ -109,12 +135,14 @@ export default overlayDataSlice.reducer;
 type StateWithOverlayData = { overlayData: OverlayDataState };
 
 /**
- * Returns the raw entry for an overlayId, or undefined if not set.
+ * Returns the raw entry for overlayId + instanceId (defaults to 'default').
  */
 export const selectOverlayData = (
   state: StateWithOverlayData,
   overlayId: string,
-): OverlayDataEntry | undefined => state.overlayData.entries[overlayId];
+  instanceId?: string,
+): OverlayDataEntry | undefined =>
+  state.overlayData.entries[overlayDataKey(overlayId, instanceId)];
 
 /**
  * Type-safe selector. Returns `data as T` only when the stored type discriminator
@@ -124,8 +152,10 @@ export function selectTypedOverlayData<T>(
   state: StateWithOverlayData,
   overlayId: string,
   type: string,
+  instanceId?: string,
 ): T | null {
-  const entry = state.overlayData.entries[overlayId];
+  const entry =
+    state.overlayData.entries[overlayDataKey(overlayId, instanceId)];
   if (!entry || entry.type !== type) return null;
   return entry.data as T;
 }

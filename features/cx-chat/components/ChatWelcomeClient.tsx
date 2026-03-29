@@ -18,17 +18,19 @@ import {
 } from "@/lib/redux/slices/activeChatSlice";
 import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
 import { selectVariableDefaults } from "@/features/cx-conversation/redux/selectors";
-import { ConversationInput } from "@/features/cx-conversation/ConversationInput";
-import { DEFAULT_AGENTS } from "@/features/public-chat/components/AgentSelector";
-import { DEFAULT_AGENT_ID } from "@/features/cx-chat/lib/agents";
+import { ConversationInput } from "@/features/cx-chat/components/user-input/ConversationInput";
+import { DEFAULT_AGENTS } from "@/features/cx-chat/components/agent/local-agents";
+import { DEFAULT_AGENT_ID } from "@/features/cx-chat/components/agent/agents";
 import type { WelcomeAgent } from "./ChatWelcomeServer";
 import type { Resource } from "@/features/prompts/types/resources";
 
 const AgentPickerSheet = dynamic(
   () =>
-    import("@/features/public-chat/components/AgentPickerSheet").then((m) => ({
-      default: m.AgentPickerSheet,
-    })),
+    import("@/features/cx-chat/components/agent/AgentPickerSheet").then(
+      (m) => ({
+        default: m.AgentPickerSheet,
+      }),
+    ),
   { ssr: false },
 );
 

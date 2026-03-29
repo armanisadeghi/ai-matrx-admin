@@ -5,8 +5,8 @@ import {
   closeOverlay,
   selectIsOverlayOpen,
   selectOverlayData,
+  selectOpenInstances,
 } from "@/lib/redux/slices/overlaySlice";
-import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
 import {
   closePromptModal,
   selectIsPromptModalOpen,
@@ -40,8 +40,13 @@ import {
 } from "@/lib/redux/slices/promptRunnerSlice";
 import { selectPrimaryResponseTextByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import dynamic from "next/dynamic";
+import type { ResourceType } from "@/utils/permissions";
+import { updateOverlayData } from "@/lib/redux/slices/overlayDataSlice";
 
-// Dynamically import the components with ssr: false to prevent them from loading on the server
+// ============================================================================
+// DYNAMIC IMPORTS — all lazy, no SSR
+// ============================================================================
+
 const FullscreenMarkdownEditor = dynamic(
   () =>
     import("@/components/mardown-display/markdown-classification/FullscreenMarkdownEditor"),
@@ -58,10 +63,7 @@ const FullscreenBrokerState = dynamic(
   { ssr: false },
 );
 
-// Quick Action Sheets
-// QuickNotesSheet requires NotesProvider — wrap it here so it works in both
-// the authenticated layout (which has NotesProvider globally) and the SSR layout (which doesn't).
-// NotesProvider is lazy and starts empty, so there's no performance cost until the sheet opens.
+// QuickNotesSheet requires NotesProvider — wrap it so it works outside the notes page
 const QuickNotesSheet = dynamic(
   () =>
     Promise.all([
@@ -167,8 +169,6 @@ const AnnouncementsViewer = dynamic(
   { ssr: false },
 );
 
-// ── New consolidated overlays ────────────────────────────────────────────────
-
 // QuickSaveModal — wraps in NotesProvider so it works outside the notes page
 const QuickSaveModalWithProvider = dynamic(
   () =>
@@ -226,7 +226,6 @@ const ShareModal = dynamic(
   { ssr: false },
 );
 
-// Prompt Runner Modal (modal-full)
 const PromptRunnerModal = dynamic(
   () =>
     import("@/features/prompts/components/results-display/PromptRunnerModal").then(
@@ -235,41 +234,35 @@ const PromptRunnerModal = dynamic(
   { ssr: false },
 );
 
-// Prompt Compact Modal (modal-compact)
 const PromptCompactModal = dynamic(
   () =>
     import("@/features/prompts/components/results-display/PromptCompactModal"),
   { ssr: false },
 );
 
-// Prompt Inline Overlay (inline)
 const PromptInlineOverlay = dynamic(
   () =>
     import("@/features/prompts/components/results-display/PromptInlineOverlay"),
   { ssr: false },
 );
 
-// Prompt Sidebar Runner (sidebar)
 const PromptSidebarRunner = dynamic(
   () =>
     import("@/features/prompts/components/results-display/PromptSidebarRunner"),
   { ssr: false },
 );
 
-// Prompt Flexible Panel (flexible-panel)
 const PromptFlexiblePanel = dynamic(
   () =>
     import("@/features/prompts/components/results-display/PromptFlexiblePanel"),
   { ssr: false },
 );
 
-// Prompt Toast (toast)
 const PromptToast = dynamic(
   () => import("@/features/prompts/components/toast/PromptToast"),
   { ssr: false },
 );
 
-// Pre-Execution Input Modal (NEW)
 const PreExecutionInputModalContainer = dynamic(
   () =>
     import("@/features/prompts/components/modals/PreExecutionInputModalContainer").then(
@@ -278,322 +271,184 @@ const PreExecutionInputModalContainer = dynamic(
   { ssr: false },
 );
 
-/**
- * OverlayController component renders different overlays based on redux state
- */
+// ============================================================================
+// OVERLAY CONTROLLER
+// ============================================================================
+
 export const OverlayController: React.FC = () => {
   const dispatch = useAppDispatch();
   const [isMounted, setIsMounted] = useState(false);
 
-  // Check if each overlay is open
-  const isMarkdownEditorOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "markdownEditor"),
+  // ── Singleton overlay selectors (never instanced) ────────────────────────
+  const isMarkdownEditorOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "markdownEditor"),
   );
-  const isSocketAccordionOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "socketAccordion"),
+  const markdownEditorData = useAppSelector((s) =>
+    selectOverlayData(s, "markdownEditor"),
   );
-  const isBrokerStateOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "brokerState"),
+  const isSocketAccordionOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "socketAccordion"),
   );
-
-  // Quick Action overlays
-  const isQuickNotesOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "quickNotes"),
+  const socketAccordionData = useAppSelector((s) =>
+    selectOverlayData(s, "socketAccordion"),
   );
-  const isQuickTasksOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "quickTasks"),
+  const isBrokerStateOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "brokerState"),
   );
-  const isQuickChatOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "quickChat"),
+  const isQuickNotesOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "quickNotes"),
   );
-  const isQuickDataOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "quickData"),
+  const isQuickTasksOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "quickTasks"),
   );
-  const isQuickFilesOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "quickFiles"),
+  const isQuickChatOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "quickChat"),
   );
-  const isQuickUtilitiesOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "quickUtilities"),
+  const isQuickDataOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "quickData"),
   );
-  const isQuickAIResultsOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "quickAIResults"),
+  const isQuickFilesOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "quickFiles"),
   );
-  const isHtmlPreviewOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "htmlPreview"),
+  const isQuickUtilitiesOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "quickUtilities"),
   );
-  const htmlPreviewData = useAppSelector((state) =>
-    selectOverlayData(state, "htmlPreview"),
+  const isQuickAIResultsOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "quickAIResults"),
   );
-  const isFullScreenEditorOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "fullScreenEditor"),
+  const isPreferencesOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "userPreferences"),
   );
-  const fullScreenEditorData = useAppSelector((state) =>
-    selectOverlayData(state, "fullScreenEditor"),
+  const preferencesData = useAppSelector((s) =>
+    selectOverlayData(s, "userPreferences"),
   );
-  const isPreferencesOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "userPreferences"),
+  const isAnnouncementsOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "announcements"),
   );
-  const preferencesData = useAppSelector((state) =>
-    selectOverlayData(state, "userPreferences"),
+  const isAuthGateOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "authGate"),
   );
-  const isAnnouncementsOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "announcements"),
-  );
-
-  // New consolidated overlay selectors
-  const isSaveToNotesOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "saveToNotes"),
-  );
-  const saveToNotesData = useAppSelector((state) =>
-    selectOverlayData(state, "saveToNotes"),
-  );
-  const isEmailDialogOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "emailDialog"),
-  );
-  const emailDialogData = useAppSelector((state) =>
-    selectOverlayData(state, "emailDialog"),
-  );
-  const isAuthGateOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "authGate"),
-  );
-  const authGateData = useAppSelector((state) =>
-    selectOverlayData(state, "authGate"),
-  );
-  const isContentHistoryOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "contentHistory"),
-  );
-  const contentHistoryData = useAppSelector((state) =>
-    selectOverlayData(state, "contentHistory"),
-  );
-  const isFeedbackDialogOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "feedbackDialog"),
-  );
-  const isShareModalOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "shareModal"),
-  );
-  const shareModalData = useAppSelector((state) =>
-    selectOverlayData(state, "shareModal"),
+  const authGateData = useAppSelector((s) => selectOverlayData(s, "authGate"));
+  const isFeedbackDialogOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "feedbackDialog"),
   );
 
-  // Prompt Runner Modals
+  // ── Instanced overlay selectors — returns all open instances ────────────
+  const htmlPreviewInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "htmlPreview"),
+  );
+  // Singleton fullScreenEditor — kept mounted once opened so internal state survives close/reopen
+  const isFullScreenEditorSingletonOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "fullScreenEditor", "default"),
+  );
+  const fullScreenEditorSingletonData = useAppSelector((s) =>
+    selectOverlayData(s, "fullScreenEditor", "default"),
+  );
+  // Non-default instances — rendered via .map(), persist via onSave → Redux
+  const fullScreenEditorInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "fullScreenEditor"),
+  );
+  const saveToNotesInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "saveToNotes"),
+  );
+  const emailDialogInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "emailDialog"),
+  );
+  const contentHistoryInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "contentHistory"),
+  );
+  const shareModalInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "shareModal"),
+  );
+
+  // ── Prompt Runner selectors ───────────────────────────────────────────────
   const isPromptModalOpen = useAppSelector(selectIsPromptModalOpen);
   const promptModalConfig = useAppSelector(selectPromptModalConfig);
   const promptModalRunId = useAppSelector(selectPromptModalRunId);
-
   const isCompactModalOpen = useAppSelector(selectIsCompactModalOpen);
   const compactModalConfig = useAppSelector(selectCompactModalConfig);
   const compactModalRunId = useAppSelector(selectCompactModalRunId);
   const compactModalTaskId = useAppSelector(selectCompactModalTaskId);
-
   const isInlineOverlayOpen = useAppSelector(selectIsInlineOverlayOpen);
   const inlineOverlayData = useAppSelector(selectInlineOverlayData);
   const inlineOverlayRunId = useAppSelector(selectInlineOverlayRunId);
-
   const isSidebarResultOpen = useAppSelector(selectIsSidebarResultOpen);
   const sidebarResultConfig = useAppSelector(selectSidebarResultConfig);
   const sidebarResultRunId = useAppSelector(selectSidebarResultRunId);
   const sidebarPosition = useAppSelector(selectSidebarPosition);
   const sidebarSize = useAppSelector(selectSidebarSize);
-
   const isFlexiblePanelOpen = useAppSelector(selectIsFlexiblePanelOpen);
   const flexiblePanelConfig = useAppSelector(selectFlexiblePanelConfig);
   const flexiblePanelRunId = useAppSelector(selectFlexiblePanelRunId);
   const flexiblePanelPosition = useAppSelector(selectFlexiblePanelPosition);
-
   const toastQueue = useAppSelector(selectToastQueue);
 
-  // Get taskIds for saving response text on close
   const promptModalTaskId = useAppSelector(selectPromptModalTaskId);
   const sidebarTaskId = useAppSelector(selectSidebarTaskId);
   const flexiblePanelTaskId = useAppSelector(selectFlexiblePanelTaskId);
 
-  // Get data for each overlay
-  const markdownEditorData = useAppSelector((state) =>
-    selectOverlayData(state, "markdownEditor"),
-  );
-  const socketAccordionData = useAppSelector((state) =>
-    selectOverlayData(state, "socketAccordion"),
-  );
-
-  // Get response texts from Redux (for saving on close)
-  const promptModalResponseText = useAppSelector((state) =>
+  const promptModalResponseText = useAppSelector((s) =>
     promptModalTaskId
-      ? selectPrimaryResponseTextByTaskId(promptModalTaskId)(state)
+      ? selectPrimaryResponseTextByTaskId(promptModalTaskId)(s)
       : "",
   );
-  const compactModalResponseText = useAppSelector((state) =>
+  const compactModalResponseText = useAppSelector((s) =>
     compactModalTaskId
-      ? selectPrimaryResponseTextByTaskId(compactModalTaskId)(state)
+      ? selectPrimaryResponseTextByTaskId(compactModalTaskId)(s)
       : "",
   );
-  const sidebarResponseText = useAppSelector((state) =>
-    sidebarTaskId
-      ? selectPrimaryResponseTextByTaskId(sidebarTaskId)(state)
-      : "",
+  const sidebarResponseText = useAppSelector((s) =>
+    sidebarTaskId ? selectPrimaryResponseTextByTaskId(sidebarTaskId)(s) : "",
   );
-  const flexiblePanelResponseText = useAppSelector((state) =>
+  const flexiblePanelResponseText = useAppSelector((s) =>
     flexiblePanelTaskId
-      ? selectPrimaryResponseTextByTaskId(flexiblePanelTaskId)(state)
+      ? selectPrimaryResponseTextByTaskId(flexiblePanelTaskId)(s)
       : "",
   );
 
-  // Only render after component has mounted on the client
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Don't render anything on the server or during hydration
-  if (!isMounted) {
-    return null;
-  }
+  if (!isMounted) return null;
 
-  // Handlers for closing each overlay
-  const handleCloseMarkdownEditor = () => {
-    dispatch(closeOverlay({ overlayId: "markdownEditor" }));
-  };
-
-  const handleCloseSocketAccordion = () => {
-    dispatch(closeOverlay({ overlayId: "socketAccordion" }));
-  };
-
-  const handleCloseBrokerState = () => {
-    dispatch(closeOverlay({ overlayId: "brokerState" }));
-  };
-
-  // Quick Action handlers
-  const handleCloseQuickNotes = () => {
-    dispatch(closeOverlay({ overlayId: "quickNotes" }));
-  };
-
-  const handleCloseQuickTasks = () => {
-    dispatch(closeOverlay({ overlayId: "quickTasks" }));
-  };
-
-  const handleCloseQuickChat = () => {
-    dispatch(closeOverlay({ overlayId: "quickChat" }));
-  };
-
-  const handleCloseQuickData = () => {
-    dispatch(closeOverlay({ overlayId: "quickData" }));
-  };
-
-  const handleCloseQuickFiles = () => {
-    dispatch(closeOverlay({ overlayId: "quickFiles" }));
-  };
-
-  const handleCloseQuickUtilities = () => {
-    dispatch(closeOverlay({ overlayId: "quickUtilities" }));
-  };
-
-  const handleCloseQuickAIResults = () => {
-    dispatch(closeOverlay({ overlayId: "quickAIResults" }));
-  };
-
-  const handleCloseHtmlPreview = () => {
-    dispatch(closeOverlay({ overlayId: "htmlPreview" }));
-  };
-
-  const handleCloseFullScreenEditor = () => {
-    dispatch(closeOverlay({ overlayId: "fullScreenEditor" }));
-  };
-
-  const handleClosePreferences = () => {
-    dispatch(closeOverlay({ overlayId: "userPreferences" }));
-  };
-
-  const handleCloseAnnouncements = () => {
-    dispatch(closeOverlay({ overlayId: "announcements" }));
-  };
-
-  // New consolidated overlay close handlers
-  const handleCloseSaveToNotes = () => {
-    dispatch(closeOverlay({ overlayId: "saveToNotes" }));
-  };
-
-  const handleCloseEmailDialog = () => {
-    dispatch(closeOverlay({ overlayId: "emailDialog" }));
-  };
-
-  const handleCloseAuthGate = () => {
-    dispatch(closeOverlay({ overlayId: "authGate" }));
-  };
-
-  const handleCloseContentHistory = () => {
-    dispatch(closeOverlay({ overlayId: "contentHistory" }));
-  };
-
-  const handleCloseFeedbackDialog = () => {
-    dispatch(closeOverlay({ overlayId: "feedbackDialog" }));
-  };
-
-  const handleCloseShareModal = () => {
-    dispatch(closeOverlay({ overlayId: "shareModal" }));
-  };
-
-  // Prompt Runner handlers
-  const handleClosePromptModal = () => {
-    // Save response text to sessionStorage before closing
-    dispatch(closePromptModal({ responseText: promptModalResponseText }));
-  };
-
-  const handleCloseCompactModal = () => {
-    // Save response text to sessionStorage before closing
-    dispatch(closeCompactModal({ responseText: compactModalResponseText }));
-  };
-
-  const handleCloseInlineOverlay = () => {
-    dispatch(closeInlineOverlay());
-  };
-
-  const handleCloseSidebarResult = () => {
-    // Save response text to sessionStorage before closing
-    dispatch(closeSidebarResult({ responseText: sidebarResponseText }));
-  };
-
-  const handleCloseFlexiblePanel = () => {
-    // Save response text to sessionStorage before closing
-    dispatch(closeFlexiblePanel({ responseText: flexiblePanelResponseText }));
-  };
-
-  const handleDismissToast = (toastId: string) => {
-    dispatch(removeToast(toastId));
-  };
+  // ── Singleton close handlers ──────────────────────────────────────────────
+  const close = (overlayId: string, instanceId?: string) =>
+    dispatch(closeOverlay({ overlayId, instanceId }));
 
   return (
     <>
-      {/* Markdown Editor Overlay */}
+      {/* ── Singleton overlays (always 0 or 1 instance) ────────────────── */}
+
       {isMarkdownEditorOpen && (
         <FullscreenMarkdownEditor
           initialMarkdown={markdownEditorData?.initialMarkdown || ""}
           showSampleSelector={markdownEditorData?.showSampleSelector ?? true}
           showConfigSelector={markdownEditorData?.showConfigSelector ?? true}
-          onClose={handleCloseMarkdownEditor}
-          isOpen={isMarkdownEditorOpen}
+          onClose={() => close("markdownEditor")}
+          isOpen={true}
         />
       )}
 
-      {/* Socket Accordion Overlay */}
       {isSocketAccordionOpen && (
         <FullscreenSocketAccordion
           taskId={socketAccordionData?.taskId}
-          onClose={handleCloseSocketAccordion}
-          isOpen={isSocketAccordionOpen}
+          onClose={() => close("socketAccordion")}
+          isOpen={true}
         />
       )}
 
-      {/* Broker State Overlay */}
       {isBrokerStateOpen && (
         <FullscreenBrokerState
-          onClose={handleCloseBrokerState}
-          isOpen={isBrokerStateOpen}
+          onClose={() => close("brokerState")}
+          isOpen={true}
         />
       )}
 
-      {/* Quick Notes Overlay */}
       {isQuickNotesOpen && (
         <FloatingSheet
           isOpen={true}
-          onClose={handleCloseQuickNotes}
+          onClose={() => close("quickNotes")}
           title="Quick Notes"
           position="right"
           width="2xl"
@@ -603,15 +458,14 @@ export const OverlayController: React.FC = () => {
           showCloseButton={true}
           lockScroll={false}
         >
-          <QuickNotesSheet onClose={handleCloseQuickNotes} />
+          <QuickNotesSheet onClose={() => close("quickNotes")} />
         </FloatingSheet>
       )}
 
-      {/* Quick Tasks Overlay */}
       {isQuickTasksOpen && (
         <FloatingSheet
           isOpen={true}
-          onClose={handleCloseQuickTasks}
+          onClose={() => close("quickTasks")}
           title="Quick Tasks"
           position="right"
           width="2xl"
@@ -621,15 +475,14 @@ export const OverlayController: React.FC = () => {
           showCloseButton={true}
           lockScroll={false}
         >
-          <QuickTasksSheet onClose={handleCloseQuickTasks} />
+          <QuickTasksSheet onClose={() => close("quickTasks")} />
         </FloatingSheet>
       )}
 
-      {/* Quick Chat Overlay */}
       {isQuickChatOpen && (
         <FloatingSheet
           isOpen={true}
-          onClose={handleCloseQuickChat}
+          onClose={() => close("quickChat")}
           title=""
           position="right"
           width="2xl"
@@ -640,15 +493,14 @@ export const OverlayController: React.FC = () => {
           contentClassName="p-0"
           lockScroll={false}
         >
-          <QuickChatSheet onClose={handleCloseQuickChat} />
+          <QuickChatSheet onClose={() => close("quickChat")} />
         </FloatingSheet>
       )}
 
-      {/* Quick Data Overlay */}
       {isQuickDataOpen && (
         <FloatingSheet
           isOpen={true}
-          onClose={handleCloseQuickData}
+          onClose={() => close("quickData")}
           title="Data Tables"
           position="right"
           width="2xl"
@@ -658,15 +510,14 @@ export const OverlayController: React.FC = () => {
           showCloseButton={true}
           lockScroll={false}
         >
-          <QuickDataSheet onClose={handleCloseQuickData} />
+          <QuickDataSheet onClose={() => close("quickData")} />
         </FloatingSheet>
       )}
 
-      {/* Quick Files Overlay */}
       {isQuickFilesOpen && (
         <FloatingSheet
           isOpen={true}
-          onClose={handleCloseQuickFiles}
+          onClose={() => close("quickFiles")}
           title=""
           position="right"
           width="2xl"
@@ -677,20 +528,21 @@ export const OverlayController: React.FC = () => {
           contentClassName="p-0"
           lockScroll={false}
         >
-          <QuickFilesSheet onClose={handleCloseQuickFiles} />
+          <QuickFilesSheet onClose={() => close("quickFiles")} />
         </FloatingSheet>
       )}
 
-      {/* Utilities Hub Overlay */}
       {isQuickUtilitiesOpen && (
-        <UtilitiesOverlay isOpen={true} onClose={handleCloseQuickUtilities} />
+        <UtilitiesOverlay
+          isOpen={true}
+          onClose={() => close("quickUtilities")}
+        />
       )}
 
-      {/* Quick AI Results Overlay */}
       {isQuickAIResultsOpen && (
         <FloatingSheet
           isOpen={true}
-          onClose={handleCloseQuickAIResults}
+          onClose={() => close("quickAIResults")}
           title=""
           position="right"
           width="2xl"
@@ -705,113 +557,25 @@ export const OverlayController: React.FC = () => {
         </FloatingSheet>
       )}
 
-      {/* HTML Preview (general overlay — for any component) */}
-      {isHtmlPreviewOpen && htmlPreviewData && (
-        <HtmlPreviewBridge
-          content={htmlPreviewData.content ?? ""}
-          messageId={htmlPreviewData.messageId}
-          conversationId={htmlPreviewData.conversationId}
-          onClose={handleCloseHtmlPreview}
-          title={htmlPreviewData.title}
-          description={htmlPreviewData.description}
-          onSave={htmlPreviewData.onSave}
-          showSaveButton={htmlPreviewData.showSaveButton}
-        />
-      )}
-
-      {/* Full Screen Markdown Editor (general overlay — for any component) */}
-      {isFullScreenEditorOpen && fullScreenEditorData && (
-        <FullScreenMarkdownEditorChat
-          isOpen={true}
-          initialContent={fullScreenEditorData.content ?? ""}
-          onSave={(newContent: string) => {
-            fullScreenEditorData.onSave?.(newContent);
-            handleCloseFullScreenEditor();
-          }}
-          onCancel={handleCloseFullScreenEditor}
-          tabs={fullScreenEditorData.tabs}
-          initialTab={fullScreenEditorData.initialTab}
-          analysisData={fullScreenEditorData.analysisData}
-          messageId={fullScreenEditorData.messageId}
-          title={fullScreenEditorData.title}
-          showSaveButton={fullScreenEditorData.showSaveButton}
-          showCopyButton={fullScreenEditorData.showCopyButton}
-        />
-      )}
-
-      {/* User Preferences Modal */}
       {isPreferencesOpen && (
         <VSCodePreferencesModal
           isOpen={true}
-          onClose={handleClosePreferences}
+          onClose={() => close("userPreferences")}
           initialTab={preferencesData?.initialTab}
         />
       )}
 
-      {/* Announcements Viewer */}
       {isAnnouncementsOpen && (
-        <AnnouncementsViewer isOpen={true} onClose={handleCloseAnnouncements} />
-      )}
-
-      {/* ========== CONSOLIDATED MESSAGE ACTION OVERLAYS ========== */}
-
-      {/* Save to Notes — wraps QuickSaveModal in NotesProvider */}
-      {isSaveToNotesOpen && saveToNotesData && (
-        <QuickSaveModalWithProvider
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) handleCloseSaveToNotes();
-          }}
-          initialContent={
-            (saveToNotesData as { content: string; defaultFolder?: string })
-              .content
-          }
-          defaultFolder={
-            (saveToNotesData as { content: string; defaultFolder?: string })
-              .defaultFolder ?? "Scratch"
-          }
-          onSaved={handleCloseSaveToNotes}
-        />
-      )}
-
-      {/* Email Dialog — fetch logic lives here, reads content from overlay data */}
-      {isEmailDialogOpen && emailDialogData && (
-        <EmailInputDialog
+        <AnnouncementsViewer
           isOpen={true}
-          onClose={handleCloseEmailDialog}
-          onSubmit={async (email: string) => {
-            const data = emailDialogData as {
-              content: string;
-              metadata?: Record<string, unknown> | null;
-            };
-            const response = await fetch("/api/chat/email-response", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email,
-                content: data.content,
-                metadata: {
-                  ...(data.metadata ?? {}),
-                  timestamp: new Date().toLocaleString(),
-                },
-              }),
-            });
-            const result = (await response.json()) as {
-              success?: boolean;
-              msg?: string;
-            };
-            if (!result.success)
-              throw new Error(result.msg || "Failed to send email");
-            handleCloseEmailDialog();
-          }}
+          onClose={() => close("announcements")}
         />
       )}
 
-      {/* Auth Gate — handles Dialog/Drawer split internally via useIsMobile() */}
       {isAuthGateOpen && (
         <AuthGateDialog
           isOpen={true}
-          onClose={handleCloseAuthGate}
+          onClose={() => close("authGate")}
           featureName={
             (
               authGateData as {
@@ -831,117 +595,245 @@ export const OverlayController: React.FC = () => {
         />
       )}
 
-      {/* Content History — reads history from Redux internally */}
-      {isContentHistoryOpen &&
-        (
-          contentHistoryData as {
-            sessionId?: string;
-            messageId?: string;
-          } | null
-        )?.sessionId &&
-        (
-          contentHistoryData as {
-            sessionId?: string;
-            messageId?: string;
-          } | null
-        )?.messageId && (
-          <ContentHistoryViewer
-            isOpen={true}
-            onClose={handleCloseContentHistory}
-            sessionId={
-              (contentHistoryData as { sessionId: string; messageId: string })
-                .sessionId
-            }
-            messageId={
-              (contentHistoryData as { sessionId: string; messageId: string })
-                .messageId
-            }
-          />
-        )}
-
-      {/* Feedback Dialog — renders its own fixed overlay, zero Redux dependency */}
       {isFeedbackDialogOpen && (
-        <FeedbackDialog onClose={handleCloseFeedbackDialog} />
+        <FeedbackDialog onClose={() => close("feedbackDialog")} />
       )}
 
-      {/* Share Modal — passes resource data from overlay state, keeps useSharing internally */}
-      {isShareModalOpen && shareModalData && (
-        <ShareModal
-          isOpen={true}
-          onClose={handleCloseShareModal}
-          resourceType={
-            (
-              shareModalData as {
-                resourceType: string;
-                resourceId: string;
-                resourceName: string;
-                isOwner: boolean;
-              }
-            ).resourceType as import("@/utils/permissions").ResourceType
-          }
-          resourceId={
-            (
-              shareModalData as {
-                resourceType: string;
-                resourceId: string;
-                resourceName: string;
-                isOwner: boolean;
-              }
-            ).resourceId
-          }
-          resourceName={
-            (
-              shareModalData as {
-                resourceType: string;
-                resourceId: string;
-                resourceName: string;
-                isOwner: boolean;
-              }
-            ).resourceName
-          }
-          isOwner={
-            (
-              shareModalData as {
-                resourceType: string;
-                resourceId: string;
-                resourceName: string;
-                isOwner: boolean;
-              }
-            ).isOwner
-          }
+      {/* ── Instanced overlays — .map() renders each open instance ─────── */}
+      {/* Each instance gets a stable key so React correctly reconciles them. */}
+
+      {/* HTML Preview — can have multiple simultaneous independent instances */}
+      {htmlPreviewInstances.map(({ instanceId, data }) => (
+        <HtmlPreviewBridge
+          key={instanceId}
+          content={data?.content ?? ""}
+          messageId={data?.messageId}
+          conversationId={data?.conversationId}
+          onClose={() => close("htmlPreview", instanceId)}
+          title={data?.title}
+          description={data?.description}
+          showSaveButton={data?.showSaveButton}
+          onSave={(markdownContent: string) => {
+            // Persist the saved content back to overlayDataSlice so this instance
+            // restores to the last-saved state if it is reopened in the same session.
+            dispatch(
+              updateOverlayData({
+                overlayId: "htmlPreview",
+                instanceId,
+                updates: { content: markdownContent },
+              }),
+            );
+            // Fire the caller's optional onSave if one was provided at open-time.
+            data?.onSave?.(markdownContent);
+          }}
+        />
+      ))}
+
+      {/*
+       * Full Screen Markdown Editor — two rendering strategies:
+       *
+       * 1. Singleton (instanceId = 'default'):
+       *    Rendered unconditionally once it has ever been opened. isOpen is passed
+       *    as a controlled prop so the component stays MOUNTED through close/reopen
+       *    cycles — all internal useState (cursor position, undo history, etc.)
+       *    survives. We never reset initialContent after first mount.
+       *
+       * 2. Non-default instances (UUID instanceIds):
+       *    Rendered via .map() — they mount on open and unmount on close. Content
+       *    is persisted through the onSave → overlayDataSlice → initialContent
+       *    pipeline, so reopening the same UUID restores the last-saved state.
+       */}
+
+      {/*
+       * Singleton — stays in React tree once ever opened.
+       * ShadCN Dialog still unmounts DialogContent when closed, but onChange
+       * syncs every keystroke into overlayDataSlice. When reopened, initialContent
+       * comes from Redux (already up-to-date), so the editor restores exactly
+       * where the user left off. showSaveButton is always false — auto-persists.
+       */}
+      {fullScreenEditorSingletonData !== undefined && (
+        <FullScreenMarkdownEditorChat
+          key="default"
+          isOpen={isFullScreenEditorSingletonOpen}
+          initialContent={fullScreenEditorSingletonData?.content ?? ""}
+          onChange={(newContent: string) => {
+            dispatch(
+              updateOverlayData({
+                overlayId: "fullScreenEditor",
+                instanceId: "default",
+                updates: { content: newContent },
+              }),
+            );
+          }}
+          onCancel={() => close("fullScreenEditor", "default")}
+          tabs={fullScreenEditorSingletonData?.tabs}
+          initialTab={fullScreenEditorSingletonData?.initialTab}
+          analysisData={fullScreenEditorSingletonData?.analysisData}
+          messageId={fullScreenEditorSingletonData?.messageId}
+          title={fullScreenEditorSingletonData?.title}
+          showSaveButton={false}
+          showCopyButton={fullScreenEditorSingletonData?.showCopyButton}
         />
       )}
 
-      {/* ========== PROMPT RESULT DISPLAYS ========== */}
+      {/* Non-default instances — mount/unmount per open/close, restored via onSave */}
+      {fullScreenEditorInstances
+        .filter(({ instanceId }) => instanceId !== "default")
+        .map(({ instanceId, data }) => (
+          <FullScreenMarkdownEditorChat
+            key={instanceId}
+            isOpen={true}
+            initialContent={data?.content ?? ""}
+            onSave={(newContent: string) => {
+              dispatch(
+                updateOverlayData({
+                  overlayId: "fullScreenEditor",
+                  instanceId,
+                  updates: { content: newContent },
+                }),
+              );
+              dispatch(
+                closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
+              );
+              data?.onSave?.(newContent);
+            }}
+            onCancel={() => close("fullScreenEditor", instanceId)}
+            tabs={data?.tabs}
+            initialTab={data?.initialTab}
+            analysisData={data?.analysisData}
+            messageId={data?.messageId}
+            title={data?.title}
+            showSaveButton={data?.showSaveButton}
+            showCopyButton={data?.showCopyButton}
+          />
+        ))}
 
-      {/* Pre-Execution Input Modal - Collects variables before execution */}
+      {/* Save to Notes — instanced so multiple saves can be open at once */}
+      {saveToNotesInstances.map(({ instanceId, data }) => {
+        const d = data as { content: string; defaultFolder?: string } | null;
+        if (!d) return null;
+        return (
+          <QuickSaveModalWithProvider
+            key={instanceId}
+            open={true}
+            onOpenChange={(open: boolean) => {
+              if (!open) close("saveToNotes", instanceId);
+            }}
+            initialContent={d.content}
+            defaultFolder={d.defaultFolder ?? "Scratch"}
+            onSaved={() => close("saveToNotes", instanceId)}
+          />
+        );
+      })}
+
+      {/* Email Dialog — instanced for independent email compositions */}
+      {emailDialogInstances.map(({ instanceId, data }) => {
+        const d = data as {
+          content: string;
+          metadata?: Record<string, unknown> | null;
+        } | null;
+        if (!d) return null;
+        return (
+          <EmailInputDialog
+            key={instanceId}
+            isOpen={true}
+            onClose={() => close("emailDialog", instanceId)}
+            onSubmit={async (email: string) => {
+              const response = await fetch("/api/chat/email-response", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  email,
+                  content: d.content,
+                  metadata: {
+                    ...(d.metadata ?? {}),
+                    timestamp: new Date().toLocaleString(),
+                  },
+                }),
+              });
+              const result = (await response.json()) as {
+                success?: boolean;
+                msg?: string;
+              };
+              if (!result.success)
+                throw new Error(result.msg || "Failed to send email");
+              close("emailDialog", instanceId);
+            }}
+          />
+        );
+      })}
+
+      {/* Content History — instanced so multiple message histories can be open */}
+      {contentHistoryInstances.map(({ instanceId, data }) => {
+        const d = data as { sessionId?: string; messageId?: string } | null;
+        if (!d?.sessionId || !d?.messageId) return null;
+        return (
+          <ContentHistoryViewer
+            key={instanceId}
+            isOpen={true}
+            onClose={() => close("contentHistory", instanceId)}
+            sessionId={d.sessionId}
+            messageId={d.messageId}
+          />
+        );
+      })}
+
+      {/* Share Modal — instanced for independent resource sharing dialogs */}
+      {shareModalInstances.map(({ instanceId, data }) => {
+        const d = data as {
+          resourceType: string;
+          resourceId: string;
+          resourceName: string;
+          isOwner: boolean;
+        } | null;
+        if (!d) return null;
+        return (
+          <ShareModal
+            key={instanceId}
+            isOpen={true}
+            onClose={() => close("shareModal", instanceId)}
+            resourceType={d.resourceType as ResourceType}
+            resourceId={d.resourceId}
+            resourceName={d.resourceName}
+            isOwner={d.isOwner}
+          />
+        );
+      })}
+
+      {/* ── Prompt Result Displays ──────────────────────────────────────── */}
+
       <PreExecutionInputModalContainer />
 
-      {/* Modal Full - Requires runId to be initialized in Redux */}
       {isPromptModalOpen && promptModalConfig?.runId && (
         <PromptRunnerModal
           isOpen={true}
-          onClose={handleClosePromptModal}
+          onClose={() =>
+            dispatch(
+              closePromptModal({ responseText: promptModalResponseText }),
+            )
+          }
           runId={promptModalConfig.runId}
           title={promptModalConfig.title}
           onExecutionComplete={promptModalConfig.onExecutionComplete}
         />
       )}
 
-      {/* Modal Compact - Gold Standard: Only runId needed */}
       {isCompactModalOpen && compactModalRunId && (
         <PromptCompactModal
           isOpen={true}
-          onClose={handleCloseCompactModal}
+          onClose={() =>
+            dispatch(
+              closeCompactModal({ responseText: compactModalResponseText }),
+            )
+          }
           runId={compactModalRunId}
         />
       )}
 
-      {/* Inline Overlay */}
       {isInlineOverlayOpen && inlineOverlayData && (
         <PromptInlineOverlay
           isOpen={true}
-          onClose={handleCloseInlineOverlay}
+          onClose={() => dispatch(closeInlineOverlay())}
           result={inlineOverlayData.result || ""}
           originalText={inlineOverlayData.originalText || ""}
           promptName={inlineOverlayData.promptName || ""}
@@ -954,12 +846,15 @@ export const OverlayController: React.FC = () => {
         />
       )}
 
-      {/* Sidebar Result - Requires runId to be initialized in Redux */}
       {isSidebarResultOpen &&
         (sidebarResultRunId || sidebarResultConfig?.runId) && (
           <PromptSidebarRunner
             isOpen={true}
-            onClose={handleCloseSidebarResult}
+            onClose={() =>
+              dispatch(
+                closeSidebarResult({ responseText: sidebarResponseText }),
+              )
+            }
             runId={sidebarResultRunId || sidebarResultConfig?.runId || ""}
             position={sidebarPosition}
             size={sidebarSize}
@@ -967,27 +862,30 @@ export const OverlayController: React.FC = () => {
           />
         )}
 
-      {/* Flexible Panel - Requires runId to be initialized in Redux */}
       {isFlexiblePanelOpen &&
         (flexiblePanelRunId || flexiblePanelConfig?.runId) && (
           <PromptFlexiblePanel
             isOpen={true}
-            onClose={handleCloseFlexiblePanel}
+            onClose={() =>
+              dispatch(
+                closeFlexiblePanel({ responseText: flexiblePanelResponseText }),
+              )
+            }
             runId={flexiblePanelRunId || flexiblePanelConfig?.runId || ""}
             position={flexiblePanelPosition}
             title={flexiblePanelConfig?.title}
           />
         )}
 
-      {/* Toast Queue */}
+      {/* Toast queue — stacked, not instanced (managed by promptRunnerSlice) */}
       {toastQueue.map((toast, index) => (
         <div
           key={toast.id}
           style={{
             position: "fixed",
-            bottom: `${16 + index * 100}px`, // Stack toasts 100px apart
+            bottom: `${16 + index * 100}px`,
             right: "16px",
-            zIndex: 200 + index, // Higher z-index for newer toasts
+            zIndex: 200 + index,
           }}
         >
           <PromptToast
@@ -999,7 +897,7 @@ export const OverlayController: React.FC = () => {
             runId={toast.runId}
             taskId={toast.taskId}
             isStreaming={toast.isStreaming}
-            onDismiss={handleDismissToast}
+            onDismiss={(id: string) => dispatch(removeToast(id))}
           />
         </div>
       ))}

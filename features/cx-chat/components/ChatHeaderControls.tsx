@@ -16,7 +16,10 @@ import dynamic from "next/dynamic";
 import PageHeaderPortal from "@/features/ssr-trials/components/PageHeaderPortal";
 import IconButton from "@/features/ssr-trials/components/IconButton";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { selectUserContext } from "@/lib/redux/slices/userSlice";
+import {
+  selectIsAuthenticated,
+  selectIsAdmin,
+} from "@/lib/redux/slices/userSlice";
 import {
   selectActiveServer,
   switchServer,
@@ -35,9 +38,9 @@ const ShareModal = dynamic(
 
 export default function ChatHeaderControls() {
   const dispatch = useAppDispatch();
-  const { isAuthenticated, isAdmin } = useAppSelector(selectUserContext);
-  const activeServer = useAppSelector(selectActiveServer);
-  const isUsingLocalhost = activeServer === "localhost";
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isAdmin = useAppSelector(selectIsAdmin);
+
   const useBlockMode = useAppSelector(selectActiveChatUseBlockMode);
   const sessionId = useAppSelector(selectActiveChatSessionId);
 
@@ -52,27 +55,6 @@ export default function ChatHeaderControls() {
         <div className="hidden lg:flex items-center justify-end w-full gap-1">
           {isAdmin && (
             <>
-              <button
-                onClick={() =>
-                  dispatch(
-                    switchServer({
-                      env: isUsingLocalhost ? "production" : "localhost",
-                    }),
-                  )
-                }
-                title={
-                  isUsingLocalhost
-                    ? "Using localhost — click to switch to production"
-                    : "Using production — click to switch to localhost"
-                }
-                className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold transition-colors ${
-                  isUsingLocalhost
-                    ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40"
-                    : "text-muted-foreground/50 hover:text-muted-foreground border border-transparent hover:border-border"
-                }`}
-              >
-                local
-              </button>
               <button
                 onClick={() => {
                   const newVal = !useBlockMode;

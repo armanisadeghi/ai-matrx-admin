@@ -22,7 +22,7 @@ import type {
   PromptVariable,
   PromptSettings,
 } from "@/features/prompts/types/core";
-import { getDefaultAgent } from "@/features/cx-chat/lib/agents";
+import { getDefaultAgent } from "@/features/cx-chat/components/agent/agents";
 
 /**
  * Stable session ID used by the welcome screen.

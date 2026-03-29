@@ -6,10 +6,10 @@
 //   slim        — id + name only. Used for sidebar and picker initial render.
 //   core        — adds display/filter fields (description, tags, category, etc.)
 //                 Used when the agent picker is open or user is browsing.
-//   operational — adds variable_defaults + dynamic_model.
-//                 Fetched only when a user actually selects an agent to chat with.
+//   operational — full agent config: variable_defaults, dynamic_model, settings (model_id,
+//                 temperature, tools, etc.). Fetched when a user selects an agent to chat with.
 //
-// Fields NEVER stored here: messages, settings, model_id.
+// Fields NEVER stored here: messages
 //
 // Sources:
 //   prompts  — the current user's own prompts
@@ -52,8 +52,15 @@ export interface AgentRecord {
   // operational fields — present only when depth === 'operational'
   variableDefaults?: unknown[];
   dynamicModel?: boolean;
+  /**
+   * Full settings jsonb from the DB.
+   * Contains model_id, temperature, tools, thinking_budget, include_thoughts, etc.
+   * Use the per-field selectors (selectAgentModelId, selectAgentTools,
+   * selectAgentRuntimeSettings) rather than reading this directly.
+   */
+  settings?: Record<string, unknown>;
 
-  // NEVER stored: messages, settings, model_id
+  // NEVER stored: messages
 }
 
 interface PerSourceStatus {
@@ -212,6 +219,7 @@ const agentCacheSlice = createSlice({
         ...(existing ?? agent),
         variableDefaults: agent.variableDefaults,
         dynamicModel: agent.dynamicModel,
+        settings: agent.settings,
         depth: "operational",
       };
     },
@@ -379,6 +387,58 @@ export const selectIsAgentCacheInitialized = (state: RootState): boolean => {
     status.shared !== "idle"
   );
 };
+
+// ── Operational settings selectors ────────────────────────────────────────────
+//
+// All four selectors take (state, agentId) and are safe to call even when the
+// agent hasn't reached operational depth yet — they return undefined / [] / {}
+// in that case. Use these instead of reading agent.settings directly.
+
+const EMPTY_SETTINGS: Record<string, unknown> = {};
+const EMPTY_TOOLS: string[] = [];
+
+/** 1. All settings — the full jsonb blob as stored. */
+export const selectAgentSettings = (
+  state: RootState,
+  agentId: string,
+): Record<string, unknown> | undefined =>
+  state.agentCache?.byId[agentId]?.settings;
+
+/** 2. model_id — the agent's default model UUID. */
+export const selectAgentModelId = (
+  state: RootState,
+  agentId: string,
+): string | undefined => {
+  const s = state.agentCache?.byId[agentId]?.settings;
+  return typeof s?.model_id === "string" ? s.model_id : undefined;
+};
+
+/** 3. tools — the tools array from settings (empty array when none configured). */
+export const selectAgentTools = (
+  state: RootState,
+  agentId: string,
+): string[] => {
+  const raw = state.agentCache?.byId[agentId]?.settings?.tools;
+  if (!Array.isArray(raw)) return EMPTY_TOOLS;
+  const filtered = raw.filter((t): t is string => typeof t === "string");
+  return filtered.length > 0 ? filtered : EMPTY_TOOLS;
+};
+
+/**
+ * 4. Runtime settings — settings minus model_id and tools.
+ * This is what gets sent to the LLM API alongside the chosen model.
+ * Returns a stable empty object when there are no remaining keys.
+ */
+export const selectAgentRuntimeSettings = createSelector(
+  (state: RootState, agentId: string) =>
+    state.agentCache?.byId[agentId]?.settings,
+  (settings): Record<string, unknown> => {
+    if (!settings) return EMPTY_SETTINGS;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { model_id, tools, ...rest } = settings;
+    return Object.keys(rest).length > 0 ? rest : EMPTY_SETTINGS;
+  },
+);
 
 // ── Exports ───────────────────────────────────────────────────────────────────
 

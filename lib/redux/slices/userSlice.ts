@@ -1,5 +1,5 @@
 // File: lib/redux/slices/userSlice.ts
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createSelector, PayloadAction } from "@reduxjs/toolkit";
 
 interface Identity {
   provider: string | null;
@@ -152,11 +152,11 @@ export const selectShellDataLoaded = (state: any) => {
   return state.user.shellDataLoaded || false;
 };
 
-export const selectUserContext = (state: any) => {
-  const user = state.user;
-  return {
+export const selectUserContext = createSelector(
+  (state: any) => state.user,
+  (user) => ({
     user,
     isAuthenticated: !!user.id,
     isAdmin: user.isAdmin || false,
-  };
-};
+  }),
+);

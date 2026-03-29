@@ -119,6 +119,9 @@ interface FullScreenMarkdownEditorProps {
   initialContent: string;
   onSave?: (newContent: string) => void;
   onCancel?: () => void;
+  /** Called on every content change. Use this to sync edits to an external
+   *  store (e.g. Redux overlayDataSlice) so content survives close/reopen. */
+  onChange?: (newContent: string) => void;
   analysisData?: Record<string, unknown>;
   messageId?: string;
   title?: string;
@@ -323,7 +326,16 @@ function buildCrashReport(opts: {
   errorInfo?: ErrorInfo | null;
   includeMarkdown: boolean;
 }): string {
-  const { type, tabId, tabLabel, reason, context, error, errorInfo, includeMarkdown } = opts;
+  const {
+    type,
+    tabId,
+    tabLabel,
+    reason,
+    context,
+    error,
+    errorInfo,
+    includeMarkdown,
+  } = opts;
   const lines: string[] = [];
   const isMarkdownOnly = MARKDOWN_ONLY_TABS.has(tabId as TabId);
   const noAnalysisData = !context.analysisData;
@@ -332,35 +344,65 @@ function buildCrashReport(opts: {
 
   lines.push("# AGENT — FullScreenMarkdownEditor Diagnostic Report");
   lines.push("");
-  lines.push("> This report was generated automatically. Paste it into a new conversation.");
-  lines.push("> The agent receiving this does not need extra context — everything needed is below.");
+  lines.push(
+    "> This report was generated automatically. Paste it into a new conversation.",
+  );
+  lines.push(
+    "> The agent receiving this does not need extra context — everything needed is below.",
+  );
   lines.push("");
 
   // ── Severity banner ──────────────────────────────────────────────────────
   if (type === "crash" && isMarkdownOnly) {
     lines.push("## ⚠ Severity: BUG — must fix");
-    lines.push(`This tab (\`${tabId}\`) is **markdown-only** — it works purely from text content`);
-    lines.push("and has no dependency on analysisData. A crash here is always a code defect.");
+    lines.push(
+      `This tab (\`${tabId}\`) is **markdown-only** — it works purely from text content`,
+    );
+    lines.push(
+      "and has no dependency on analysisData. A crash here is always a code defect.",
+    );
     lines.push("It should never show an error under any circumstances.");
   } else if (type === "crash" && !isMarkdownOnly) {
     lines.push("## ⚠ Severity: BUG — likely fix needed");
-    lines.push(`This tab (\`${tabId}\`) is **data-dependent**. It crashed (threw a React error)`);
-    lines.push("rather than gracefully showing the 'no data' fallback. The crash itself is the bug —");
-    lines.push("even with bad/missing data, the tab should degrade gracefully, not throw.");
+    lines.push(
+      `This tab (\`${tabId}\`) is **data-dependent**. It crashed (threw a React error)`,
+    );
+    lines.push(
+      "rather than gracefully showing the 'no data' fallback. The crash itself is the bug —",
+    );
+    lines.push(
+      "even with bad/missing data, the tab should degrade gracefully, not throw.",
+    );
   } else if (isExpectedNoData) {
     lines.push("## ℹ Severity: Expected behaviour — no code bug");
-    lines.push(`This tab (\`${tabId}\`) is **data-dependent** and no \`analysisData\` prop was passed.`);
-    lines.push("This is normal when the component is opened from a context that does not supply");
-    lines.push("analysisData (e.g. a plain prompt editor). The tab correctly shows 'no data'.");
+    lines.push(
+      `This tab (\`${tabId}\`) is **data-dependent** and no \`analysisData\` prop was passed.`,
+    );
+    lines.push(
+      "This is normal when the component is opened from a context that does not supply",
+    );
+    lines.push(
+      "analysisData (e.g. a plain prompt editor). The tab correctly shows 'no data'.",
+    );
     lines.push("");
-    lines.push("**If this was opened via the Admin Dev Tabs dropdown:** that is intentional —");
-    lines.push("you were force-testing a tab that has no data in this context. No fix needed.");
+    lines.push(
+      "**If this was opened via the Admin Dev Tabs dropdown:** that is intentional —",
+    );
+    lines.push(
+      "you were force-testing a tab that has no data in this context. No fix needed.",
+    );
     lines.push("");
-    lines.push("**If you expected this tab to have data:** trace who renders `FullScreenMarkdownEditor`");
-    lines.push(`at route \`${context.route}\` and check whether it passes the \`analysisData\` prop.`);
+    lines.push(
+      "**If you expected this tab to have data:** trace who renders `FullScreenMarkdownEditor`",
+    );
+    lines.push(
+      `at route \`${context.route}\` and check whether it passes the \`analysisData\` prop.`,
+    );
   } else {
     lines.push("## ⚠ Severity: Data missing — investigation needed");
-    lines.push(`This tab (\`${tabId}\`) is **data-dependent** and \`analysisData\` was provided`);
+    lines.push(
+      `This tab (\`${tabId}\`) is **data-dependent** and \`analysisData\` was provided`,
+    );
     lines.push("but the required field was absent or had the wrong shape.");
   }
   lines.push("");
@@ -368,10 +410,16 @@ function buildCrashReport(opts: {
   // ── What Happened ─────────────────────────────────────────────────────────
   lines.push("## What Happened");
   if (type === "crash") {
-    lines.push(`The tab **"${tabLabel}"** (id: \`${tabId}\`) threw an unhandled React render error`);
-    lines.push("and was caught by its error boundary in `FullScreenMarkdownEditor`.");
+    lines.push(
+      `The tab **"${tabLabel}"** (id: \`${tabId}\`) threw an unhandled React render error`,
+    );
+    lines.push(
+      "and was caught by its error boundary in `FullScreenMarkdownEditor`.",
+    );
   } else {
-    lines.push(`The tab **"${tabLabel}"** (id: \`${tabId}\`) could not render because`);
+    lines.push(
+      `The tab **"${tabLabel}"** (id: \`${tabId}\`) could not render because`,
+    );
     lines.push("the required data was missing or had the wrong shape.");
     if (reason) lines.push(`**Reason:** ${reason}`);
   }
@@ -380,10 +428,14 @@ function buildCrashReport(opts: {
   // ── Location ──────────────────────────────────────────────────────────────
   lines.push("## Location");
   lines.push("- **Component:** `FullScreenMarkdownEditor`");
-  lines.push("- **File:** `components/mardown-display/chat-markdown/FullScreenMarkdownEditor.tsx`");
+  lines.push(
+    "- **File:** `components/mardown-display/chat-markdown/FullScreenMarkdownEditor.tsx`",
+  );
   lines.push(`- **Tab ID:** \`${tabId}\``);
   lines.push(`- **Tab Label:** ${tabLabel}`);
-  lines.push(`- **Tab Type:** ${isMarkdownOnly ? "markdown-only (no data dependency)" : "data-dependent (requires analysisData)"}`);
+  lines.push(
+    `- **Tab Type:** ${isMarkdownOnly ? "markdown-only (no data dependency)" : "data-dependent (requires analysisData)"}`,
+  );
   lines.push(`- **Route (window.location):** \`${context.route}\``);
   lines.push(`- **Message ID:** \`${context.messageId ?? "not provided"}\``);
   lines.push(`- **Captured At:** ${context.capturedAt}`);
@@ -403,7 +455,9 @@ function buildCrashReport(opts: {
 
     if (errorInfo?.componentStack) {
       lines.push("## React Component Stack");
-      lines.push("This is the React render tree at the point of failure — use this to find which component threw.");
+      lines.push(
+        "This is the React render tree at the point of failure — use this to find which component threw.",
+      );
       lines.push(`\`\`\`\n${errorInfo.componentStack.trim()}\n\`\`\``);
       lines.push("");
     }
@@ -428,23 +482,33 @@ function buildCrashReport(opts: {
       if (relevantKey in context.analysisData) {
         const value = context.analysisData[relevantKey];
         lines.push(`## analysisData.${relevantKey} (what this tab reads)`);
-        lines.push(`Type: \`${Array.isArray(value) ? `array[${(value as unknown[]).length}]` : typeof value}\``);
+        lines.push(
+          `Type: \`${Array.isArray(value) ? `array[${(value as unknown[]).length}]` : typeof value}\``,
+        );
         lines.push(`\`\`\`json\n${safeSerialise(value, 2000)}\n\`\`\``);
         lines.push("");
       } else {
         lines.push(`## analysisData.${relevantKey} (what this tab reads)`);
-        lines.push(`**This key is NOT present on the analysisData object.** That is the root cause.`);
+        lines.push(
+          `**This key is NOT present on the analysisData object.** That is the root cause.`,
+        );
         lines.push("");
       }
     }
 
     lines.push("## Full analysisData Snapshot");
-    lines.push(`\`\`\`json\n${safeSerialise(context.analysisData, 3000)}\n\`\`\``);
+    lines.push(
+      `\`\`\`json\n${safeSerialise(context.analysisData, 3000)}\n\`\`\``,
+    );
     lines.push("");
   } else {
     lines.push("## analysisData");
-    lines.push("**Not provided** — the `analysisData` prop was not passed to `FullScreenMarkdownEditor` at this call site.");
-    lines.push(`Check the component usage at route \`${context.route}\` to confirm.`);
+    lines.push(
+      "**Not provided** — the `analysisData` prop was not passed to `FullScreenMarkdownEditor` at this call site.",
+    );
+    lines.push(
+      `Check the component usage at route \`${context.route}\` to confirm.`,
+    );
     lines.push("");
   }
 
@@ -458,29 +522,59 @@ function buildCrashReport(opts: {
   // ── What To Do ────────────────────────────────────────────────────────────
   lines.push("## What To Do");
   if (type === "crash" && isMarkdownOnly) {
-    lines.push("This is a real bug. Markdown-only tabs have no data dependency and must never crash.");
-    lines.push("1. Read the React Component Stack to identify which child component threw.");
+    lines.push(
+      "This is a real bug. Markdown-only tabs have no data dependency and must never crash.",
+    );
+    lines.push(
+      "1. Read the React Component Stack to identify which child component threw.",
+    );
     lines.push("2. Check the JS Stack Trace for the exact line number.");
-    lines.push("3. Fix the crash in the identified component. Do not add a data guard — the data is not the issue.");
+    lines.push(
+      "3. Fix the crash in the identified component. Do not add a data guard — the data is not the issue.",
+    );
   } else if (type === "crash") {
-    lines.push("This tab crashed instead of gracefully degrading. The crash itself is the bug.");
-    lines.push("1. Read the React Component Stack to find the throwing component.");
+    lines.push(
+      "This tab crashed instead of gracefully degrading. The crash itself is the bug.",
+    );
+    lines.push(
+      "1. Read the React Component Stack to find the throwing component.",
+    );
     lines.push("2. Check the JS Stack Trace for the exact line.");
-    lines.push("3. Add null/type guards inside the identified component so it degrades gracefully");
+    lines.push(
+      "3. Add null/type guards inside the identified component so it degrades gracefully",
+    );
     lines.push("   when its expected data is absent, rather than throwing.");
-    lines.push("4. If the data shape is wrong, also trace the data producer and fix it.");
+    lines.push(
+      "4. If the data shape is wrong, also trace the data producer and fix it.",
+    );
   } else if (isExpectedNoData) {
     lines.push("No code fix is required for this specific case.");
-    lines.push("- If you want this tab to show data in this context, find the `FullScreenMarkdownEditor`");
-    lines.push(`  usage at \`${context.route}\` and pass the \`analysisData\` prop.`);
-    lines.push("- If you only want to expose this tab when data is available, restrict the `tabs` prop");
-    lines.push("  to exclude data-dependent tabs when analysisData is not provided.");
+    lines.push(
+      "- If you want this tab to show data in this context, find the `FullScreenMarkdownEditor`",
+    );
+    lines.push(
+      `  usage at \`${context.route}\` and pass the \`analysisData\` prop.`,
+    );
+    lines.push(
+      "- If you only want to expose this tab when data is available, restrict the `tabs` prop",
+    );
+    lines.push(
+      "  to exclude data-dependent tabs when analysisData is not provided.",
+    );
   } else {
-    lines.push("analysisData was provided but the required field was missing or malformed.");
-    lines.push("1. Check the analysisData snapshot above — confirm whether the key exists and its type.");
-    lines.push("2. Trace where analysisData is produced (the server-side markdown analyser) and why");
+    lines.push(
+      "analysisData was provided but the required field was missing or malformed.",
+    );
+    lines.push(
+      "1. Check the analysisData snapshot above — confirm whether the key exists and its type.",
+    );
+    lines.push(
+      "2. Trace where analysisData is produced (the server-side markdown analyser) and why",
+    );
     lines.push("   the expected field is absent or has the wrong shape.");
-    lines.push("3. Fix the data producer, or add a transform/fallback in `FullScreenMarkdownEditor`.");
+    lines.push(
+      "3. Fix the data producer, or add a transform/fallback in `FullScreenMarkdownEditor`.",
+    );
   }
 
   return lines.join("\n");
@@ -572,7 +666,8 @@ function TabErrorFallback({
               <ShieldAlert className="h-5 w-5 text-primary flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-sm font-bold text-primary leading-tight">
-                  Admin Debug Panel — <span className="font-normal">Only you can see this</span>
+                  Admin Debug Panel —{" "}
+                  <span className="font-normal">Only you can see this</span>
                 </p>
                 <p className="text-xs text-primary/70 leading-tight">
                   {MARKDOWN_ONLY_TABS.has(tabId as TabId)
@@ -804,7 +899,7 @@ function AdminTabOpener({ activeTabIds, onOpenTab }: AdminTabOpenerProps) {
         <Button
           variant="outline"
           size="sm"
-                    className="h-7 rounded-full px-3 text-xs gap-1.5 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+          className="h-7 rounded-full px-3 text-xs gap-1.5 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
         >
           <FlaskConical className="h-3.5 w-3.5" />
           Dev Tabs
@@ -818,24 +913,54 @@ function AdminTabOpener({ activeTabIds, onOpenTab }: AdminTabOpenerProps) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <div className="px-2 py-1 text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Markdown-only</div>
+          <div className="px-2 py-1 text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+            Markdown-only
+          </div>
           {ALL_TAB_IDS.filter((id) => MARKDOWN_ONLY_TABS.has(id)).map((id) => {
             const isActive = activeTabIds.has(id);
             return (
-              <DropdownMenuItem key={id} onClick={() => onOpenTab(id)} className={cn("text-xs cursor-pointer", isActive && "text-muted-foreground")}>
-                <span className={cn("flex-1", isActive && "opacity-60")}>{TAB_LABELS[id]}</span>
-                {isActive && <span className="ml-2 text-[10px] rounded-full bg-muted px-1.5 py-0.5 text-muted-foreground">active</span>}
+              <DropdownMenuItem
+                key={id}
+                onClick={() => onOpenTab(id)}
+                className={cn(
+                  "text-xs cursor-pointer",
+                  isActive && "text-muted-foreground",
+                )}
+              >
+                <span className={cn("flex-1", isActive && "opacity-60")}>
+                  {TAB_LABELS[id]}
+                </span>
+                {isActive && (
+                  <span className="ml-2 text-[10px] rounded-full bg-muted px-1.5 py-0.5 text-muted-foreground">
+                    active
+                  </span>
+                )}
               </DropdownMenuItem>
             );
           })}
           <DropdownMenuSeparator />
-          <div className="px-2 py-1 text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Needs analysisData</div>
+          <div className="px-2 py-1 text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+            Needs analysisData
+          </div>
           {ALL_TAB_IDS.filter((id) => !MARKDOWN_ONLY_TABS.has(id)).map((id) => {
             const isActive = activeTabIds.has(id);
             return (
-              <DropdownMenuItem key={id} onClick={() => onOpenTab(id)} className={cn("text-xs cursor-pointer", isActive && "text-muted-foreground")}>
-                <span className={cn("flex-1", isActive && "opacity-60")}>{TAB_LABELS[id]}</span>
-                {isActive && <span className="ml-2 text-[10px] rounded-full bg-muted px-1.5 py-0.5 text-muted-foreground">active</span>}
+              <DropdownMenuItem
+                key={id}
+                onClick={() => onOpenTab(id)}
+                className={cn(
+                  "text-xs cursor-pointer",
+                  isActive && "text-muted-foreground",
+                )}
+              >
+                <span className={cn("flex-1", isActive && "opacity-60")}>
+                  {TAB_LABELS[id]}
+                </span>
+                {isActive && (
+                  <span className="ml-2 text-[10px] rounded-full bg-muted px-1.5 py-0.5 text-muted-foreground">
+                    active
+                  </span>
+                )}
               </DropdownMenuItem>
             );
           })}
@@ -852,6 +977,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
   initialContent,
   onSave,
   onCancel,
+  onChange,
   analysisData,
   messageId,
   title = "Edit Content",
@@ -867,6 +993,8 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
   const [forcedTabs, setForcedTabs] = useState<TabId[]>([]);
   const [capturedAt] = useState(() => new Date().toISOString());
   const tuiEditorRef = useRef<TuiEditorContentRef>(null);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
   const { mode } = useTheme();
   const isAdmin = useAppSelector(selectIsAdmin);
   const route =
@@ -890,9 +1018,17 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
     setActiveTab(newTab);
   };
 
+  // Central content setter — always fires the optional onChange so external
+  // stores (e.g. overlayDataSlice) can track in-progress edits without waiting
+  // for an explicit save.
+  const handleContentChange = useCallback((newContent: string) => {
+    setEditedContent(newContent);
+    onChangeRef.current?.(newContent);
+  }, []);
+
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (activeTab === "write") {
-      setEditedContent(e.target.value);
+      handleContentChange(e.target.value);
     }
   };
 
@@ -962,7 +1098,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
         "matrx_split",
         <MatrxSplit
           value={editedContent}
-          onChange={setEditedContent}
+          onChange={handleContentChange}
           className="h-full bg-textured"
           placeholder="Start writing markdown..."
           textareaClassName="bg-textured text-base font-mono"
@@ -987,7 +1123,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
         <TuiEditorContent
           ref={tuiEditorRef}
           content={editedContent}
-          onChange={setEditedContent}
+          onChange={handleContentChange}
           isActive={activeTab === "markdown"}
           editMode="markdown"
         />,
@@ -1005,7 +1141,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
         <TuiEditorContent
           ref={tuiEditorRef}
           content={editedContent}
-          onChange={setEditedContent}
+          onChange={handleContentChange}
           isActive={activeTab === "wysiwyg"}
           editMode="wysiwyg"
         />,
@@ -1400,7 +1536,8 @@ function UnavailableDataNotice({
           <p className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{tabLabel}</span>{" "}
             requires pre-processed data that is not available for this message.
-            This is normal for messages that haven&apos;t been through the analysis pipeline.
+            This is normal for messages that haven&apos;t been through the
+            analysis pipeline.
           </p>
         </div>
       </div>
@@ -1413,7 +1550,8 @@ function UnavailableDataNotice({
               <ShieldAlert className="h-5 w-5 text-primary flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-sm font-bold text-primary leading-tight">
-                  Admin Debug Panel — <span className="font-normal">Only you can see this</span>
+                  Admin Debug Panel —{" "}
+                  <span className="font-normal">Only you can see this</span>
                 </p>
                 <p className="text-xs text-primary/70 leading-tight">
                   {context.analysisData

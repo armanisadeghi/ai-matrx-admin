@@ -16,11 +16,11 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
-import { useAgentConsumer } from "@/features/prompts/hooks/useAgentConsumer";
+import { useAgentConsumer } from "@/features/cx-chat/hooks/useAgentConsumer";
 import type {
   AgentRecord,
   AgentSource,
-} from "@/features/prompts/hooks/useAgentConsumer";
+} from "@/features/cx-chat/hooks/useAgentConsumer";
 import type { ActiveChatAgent } from "@/lib/redux/slices/activeChatSlice";
 
 interface SsrSidebarAgentsProps {

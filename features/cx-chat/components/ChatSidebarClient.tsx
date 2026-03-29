@@ -15,11 +15,12 @@
 
 import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useAgentBootstrap } from "@/features/cx-chat/hooks/useAgentBootstrap";
 import { ChevronDown } from "lucide-react";
-import { SidebarActions } from "@/features/public-chat/components/sidebar/SidebarActions";
+import { SidebarActions } from "@/features/cx-chat/components/sidebar/SidebarActions";
 import { SsrSidebarAgents } from "./SsrSidebarAgents";
 import { SsrSidebarChats } from "./SsrSidebarChats";
-import { SidebarUserFooter } from "@/features/public-chat/components/sidebar/SidebarUserFooter";
+import { SidebarUserFooter } from "@/features/cx-chat/components/sidebar/SidebarUserFooter";
 import {
   ChevronLeftTapButton,
   PanelLeftTapButton,
@@ -142,6 +143,11 @@ export function ChatPanelContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const selectedAgent = useAppSelector(selectActiveChatAgent);
   const activeConversationId = useAppSelector(selectActiveChatSessionId);
+
+  // Single entry point for all agent data fetching within the ssr/chat layout.
+  // Tier 1 (slim list) fires on mount; Tier 3 (operational) fires on agent URL changes.
+  // Tier 2 (core) is triggered by AgentPickerSheet when it opens.
+  useAgentBootstrap();
 
   const handleSelectChat = useCallback(
     (id: string) => {

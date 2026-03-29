@@ -49,79 +49,85 @@
 // COMPONENTS (primary exports)
 // ============================================================================
 
-export { UnifiedChatWrapper } from '@/features/cx-conversation/UnifiedChatWrapper';
-export { ConversationShell } from '@/features/cx-conversation/ConversationShell';
-export { ConversationInput } from '@/features/cx-conversation/ConversationInput';
-export { MessageList } from '@/features/cx-conversation/MessageList';
-export { AssistantMessage } from '@/features/cx-conversation/AssistantMessage';
-export { UserMessage } from '@/features/cx-conversation/UserMessage';
-export { MessageErrorBoundary } from '@/features/cx-conversation/MessageErrorBoundary';
-export { default as ToolCallVisualization } from '@/features/cx-conversation/ToolCallVisualization';
-export { default as MessageOptionsMenu } from '@/features/cx-conversation/MessageOptionsMenu';
+export { UnifiedChatWrapper } from "@/features/cx-conversation/UnifiedChatWrapper";
+export { ConversationShell } from "@/features/cx-conversation/ConversationShell";
+export { ConversationInput } from "@/features/cx-conversation/ConversationInput";
+export { MessageList } from "@/features/cx-conversation/MessageList";
+export { AssistantMessage } from "@/features/cx-conversation/AssistantMessage";
+export { UserMessage } from "@/features/cx-conversation/UserMessage";
+export { MessageErrorBoundary } from "@/features/cx-conversation/MessageErrorBoundary";
+export { default as ToolCallVisualization } from "@/features/cx-conversation/ToolCallVisualization";
+export { default as MessageOptionsMenu } from "@/features/cx-conversation/MessageOptionsMenu";
 
 // ============================================================================
 // HOOKS
 // ============================================================================
 
-export { useConversationSession } from '@/features/cx-conversation/hooks/useConversationSession';
-export { useDomCapturePrint } from './hooks/useDomCapturePrint';
-export { usePublicChatProps } from './hooks/usePublicChatProps';
-export { useAuthenticatedChatProps } from './hooks/useAuthenticatedChatProps';
+export { useConversationSession } from "@/features/cx-conversation/hooks/useConversationSession";
+export { useDomCapturePrint } from "./hooks/useDomCapturePrint";
+export { usePublicChatProps } from "./hooks/usePublicChatProps";
+export { useAuthenticatedChatProps } from "./hooks/useAuthenticatedChatProps";
 
 // ============================================================================
 // STATE (actions, selectors, thunks)
 // ============================================================================
 
-export { chatConversationsActions } from '@/features/cx-conversation/redux/slice';
-export { sendMessage } from '@/features/cx-conversation/redux/thunks/sendMessage';
-export { loadConversationHistory } from '@/features/cx-conversation/redux/thunks/loadConversationHistory';
+export { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
+export { sendMessage } from "@/features/cx-conversation/redux/thunks/sendMessage";
+export { loadConversationHistory } from "@/features/cx-conversation/redux/thunks/loadConversationHistory";
 export {
-    selectMessages,
-    selectIsStreaming,
-    selectIsExecuting,
-    selectSessionStatus,
-    selectSessionError,
-    selectConversationId,
-    selectCurrentInput,
-    selectResources,
-    selectVariableDefaults,
-    selectUIState,
-    selectApiMode,
-    selectChatModeConfig,
-} from '@/features/cx-conversation/redux/selectors';
+  selectMessages,
+  selectIsStreaming,
+  selectIsExecuting,
+  selectSessionStatus,
+  selectSessionError,
+  selectConversationId,
+  selectCurrentInput,
+  selectResources,
+  selectVariableDefaults,
+  selectUIState,
+  selectApiMode,
+  selectChatModeConfig,
+} from "@/features/cx-conversation/redux/selectors";
 
 // ============================================================================
 // UTILS (internalized)
 // ============================================================================
 
 export {
-    parseResourcesFromMessage,
-    messageContainsResources,
-    extractMessageWithoutResources,
-} from './utils/resource-parsing';
+  parseResourcesFromMessage,
+  messageContainsResources,
+  extractMessageWithoutResources,
+} from "./utils/resource-parsing";
 
-export { printMarkdownContent } from './utils/markdown-print';
+export { printMarkdownContent } from "./utils/markdown-print";
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
-export type { UnifiedChatWrapperProps } from '@/features/cx-conversation/UnifiedChatWrapper';
-export type { ConversationShellProps } from '@/features/cx-conversation/ConversationShell';
-export type { ConversationInputProps } from '@/features/cx-conversation/ConversationInput';
-export type { AssistantMessageProps } from '@/features/cx-conversation/AssistantMessage';
-export type { MessageOptionsMenuProps } from '@/features/cx-conversation/MessageOptionsMenu';
-export type { ConversationSessionConfig, ConversationSessionReturn } from '@/features/cx-conversation/hooks/useConversationSession';
-export type { UseDomCapturePrintReturn, DomCaptureOptions } from './hooks/useDomCapturePrint';
-export type { PublicChatPropsConfig } from './hooks/usePublicChatProps';
-export type { AuthenticatedChatPropsConfig } from './hooks/useAuthenticatedChatProps';
-export type { ParsedResource } from './utils/resource-parsing';
+export type { UnifiedChatWrapperProps } from "@/features/cx-conversation/UnifiedChatWrapper";
+export type { ConversationShellProps } from "@/features/cx-conversation/ConversationShell";
+export type { ConversationInputProps } from "@/features/cx-conversation/ConversationInput";
+export type { AssistantMessageProps } from "@/features/cx-conversation/AssistantMessage";
+export type { MessageOptionsMenuProps } from "@/features/cx-conversation/MessageOptionsMenu";
 export type {
-    ConversationMessage,
-    ConversationResource,
-    ConversationSession,
-    SessionStatus,
-    SessionUIState,
-    ApiMode,
-    ChatModeConfig,
-} from '@/features/cx-conversation/redux/types';
+  ConversationSessionConfig,
+  ConversationSessionReturn,
+} from "@/features/cx-conversation/hooks/useConversationSession";
+export type {
+  UseDomCapturePrintReturn,
+  DomCaptureOptions,
+} from "./hooks/useDomCapturePrint";
+export type { PublicChatPropsConfig } from "./hooks/usePublicChatProps";
+export type { AuthenticatedChatPropsConfig } from "./hooks/useAuthenticatedChatProps";
+export type { ParsedResource } from "./utils/resource-parsing";
+export type {
+  ConversationMessage,
+  ConversationResource,
+  ConversationSession,
+  SessionStatus,
+  SessionUIState,
+  ApiMode,
+  ChatModeConfig,
+} from "@/features/cx-conversation/redux/types";

@@ -120,6 +120,8 @@ interface OperationalRow {
   source: string;
   variable_defaults: unknown;
   dynamic_model: boolean;
+  /** Full settings jsonb (model_id, temperature, tools, thinking_budget, etc.) */
+  settings: Record<string, unknown> | null;
 }
 
 function mapSlimRow(row: SlimRow): AgentRecord {
@@ -162,15 +164,17 @@ function mapCoreRow(row: CoreRow): AgentRecord {
 }
 
 function mapOperationalRow(row: OperationalRow): AgentRecord {
+  const settings = row.settings ?? {};
   return {
     id: row.id,
     source: row.source as AgentSource,
     depth: "operational",
-    name: "", // will be merged with existing slim/core data
+    name: "", // merged with existing slim/core data by upsertAgentOperational
     variableDefaults: Array.isArray(row.variable_defaults)
       ? row.variable_defaults
       : [],
     dynamicModel: row.dynamic_model ?? false,
+    settings: Object.keys(settings).length > 0 ? settings : undefined,
   };
 }
 
@@ -307,7 +311,13 @@ export const fetchAgentCoreBatch = createAsyncThunk<
 /**
  * Fetch operational data (Layer 3) for a single agent.
  * Called only when the user actually selects an agent to chat with.
- * Skips the fetch if the agent is already at operational depth.
+ *
+ * Fetches: variable_defaults, dynamic_model, settings (model_id, temperature,
+ * tools, thinking_budget, include_thoughts, etc.) via get_agent_operational RPC.
+ *
+ * Idempotent: skips the fetch if the agent is already at operational depth
+ * AND has a settings field (guards against stale cache from before settings
+ * were added to the RPC).
  */
 export const fetchAgentOperational = createAsyncThunk<
   AgentRecord | null,
@@ -319,7 +329,11 @@ export const fetchAgentOperational = createAsyncThunk<
     const state = getState();
     const existing = state.agentCache?.byId[id];
 
-    if (existing?.depth === "operational") return existing;
+    // Skip only if we already have the full operational record including settings.
+    // Re-fetch if settings is missing (cache pre-dates the settings column addition).
+    if (existing?.depth === "operational" && existing.settings !== undefined) {
+      return existing;
+    }
 
     const { data, error } = await supabase.rpc("get_agent_operational", {
       p_id: id,
@@ -364,11 +378,27 @@ export const initializeAgents = createAsyncThunk<
 
   if (ownedFresh && builtinsFresh && sharedFresh) return;
 
+  // owned + builtins come from the same RPC call; shared is separate
   const tasks: Promise<unknown>[] = [];
 
-  // owned + builtins come from the same RPC call
   if (!ownedFresh || !builtinsFresh) {
-    tasks.push(dispatch(fetchAgentSlimList({ source: "owned" })));
+    // First page — then drain remaining owned pages sequentially
+    await dispatch(fetchAgentSlimList({ source: "owned", cursor: null }));
+
+    // Drain all remaining pages of owned agents
+    let keepGoing = true;
+    while (keepGoing) {
+      const s = getState();
+      const hasMore = s.agentCache?.ownedHasMore ?? false;
+      const cursor = s.agentCache?.ownedCursor ?? null;
+      if (!hasMore || !cursor) break;
+
+      await dispatch(fetchAgentSlimList({ source: "owned", cursor }));
+
+      // Safety: if the fetch didn't advance the cursor, stop
+      const nextCursor = getState().agentCache?.ownedCursor ?? null;
+      if (nextCursor === cursor) keepGoing = false;
+    }
   }
 
   if (!sharedFresh) {
