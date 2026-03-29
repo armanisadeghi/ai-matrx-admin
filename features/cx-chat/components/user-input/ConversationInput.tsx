@@ -378,7 +378,7 @@ export function ConversationInput({
   const handleSubmit = useCallback(
     async (overrideContent?: string) => {
       const finalContent = (overrideContent ?? content).trim();
-      if (!finalContent || isExecuting) return;
+      if (isExecuting) return;
 
       // Welcome screen override — intercepts submit before sendMessage
       if (onSubmitOverride) {
@@ -506,7 +506,6 @@ export function ConversationInput({
   );
 
   const hasVariables = variableDefaults.length > 0;
-  const hasContent = content.trim().length > 0;
   const isDisabled = isExecuting || (!agentId && !onSubmitOverride);
 
   // The bordered input box — its shape changes based on mode:
@@ -713,7 +712,7 @@ export function ConversationInput({
             <ArrowUpTapButton
               variant="solid"
               onClick={() => handleSubmit()}
-              disabled={!hasContent || isDisabled || isUploading}
+              disabled={isDisabled || isUploading}
               ariaLabel="Send message"
               bgColor={
                 sendButtonVariant === "gray" ? "bg-muted" : "bg-blue-600"

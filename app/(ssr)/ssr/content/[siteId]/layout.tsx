@@ -113,7 +113,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
                 <div className="flex flex-col items-center gap-3 text-destructive">
                     <AlertCircle className="h-8 w-8" />
                     <p className="text-sm font-medium">
-                        {error?.includes('403') ? 'You don't have access to this site' : 'Failed to load site'}
+                        {error?.includes('403') ? "You don't have access to this site" : 'Failed to load site'}
                     </p>
                     <p className="text-xs text-muted-foreground">{error}</p>
                     <div className="flex gap-2">

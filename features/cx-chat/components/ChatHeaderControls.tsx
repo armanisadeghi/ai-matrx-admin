@@ -21,10 +21,6 @@ import {
   selectIsAdmin,
 } from "@/lib/redux/slices/userSlice";
 import {
-  selectActiveServer,
-  switchServer,
-} from "@/lib/redux/slices/apiConfigSlice";
-import {
   activeChatActions,
   selectActiveChatUseBlockMode,
   selectActiveChatSessionId,
