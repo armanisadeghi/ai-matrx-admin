@@ -31,6 +31,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { openHtmlPreview } from "@/lib/redux/slices/overlaySlice";
+import { LucideIcon } from "lucide-react";
 
 const STATUS_VARIANT: Record<
   ArtifactStatus,
@@ -43,7 +44,7 @@ const STATUS_VARIANT: Record<
 };
 
 interface MetaRowProps {
-  icon: React.ElementType;
+  icon: LucideIcon;
   label: string;
   value: string | null | undefined;
 }

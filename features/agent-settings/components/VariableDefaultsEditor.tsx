@@ -144,7 +144,7 @@ export function VariableDefaultsEditor({
                     {isUnused && (
                       <AlertCircle
                         className="w-3 h-3 text-amber-500 shrink-0"
-                        title="Variable is not used in any message"
+                        aria-label="Variable is not used in any message"
                       />
                     )}
                   </div>

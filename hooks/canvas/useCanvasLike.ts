@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/utils/supabase/client';
+import { requireUserId } from '@/utils/auth/getUserId';
 import { useToast } from '@/components/ui/use-toast';
 
 export function useCanvasLike(canvasId: string) {

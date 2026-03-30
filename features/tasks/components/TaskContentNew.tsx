@@ -1,18 +1,35 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { PlusCircle, Loader2, Folder, FolderPlus, Search, X } from 'lucide-react';
-import { useTaskContext } from '@/features/tasks/context/TaskContext';
-import CompactTaskItem from './CompactTaskItem';
-import TaskDetailsPanel from './TaskDetailsPanel';
-import AllTasksView from './AllTasksView';
-import TaskSortControl from './TaskSortControl';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  PlusCircle,
+  Loader2,
+  Folder,
+  FolderPlus,
+  Search,
+  X,
+} from "lucide-react";
+import { useTaskContext } from "@/features/tasks/context/TaskContext";
+import CompactTaskItem from "./CompactTaskItem";
+import TaskDetailsPanel from "./TaskDetailsPanel";
+import AllTasksView from "./AllTasksView";
+import TaskSortControl from "./TaskSortControl";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function TaskContentNew() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const {
     activeProject,
     showAllProjects,
@@ -34,10 +51,15 @@ export default function TaskContentNew() {
     setSortBy,
   } = useTaskContext();
 
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [selectedProjectForTask, setSelectedProjectForTask] = useState<string | null>(null);
+  // Initialise from ?task= URL param so the panel survives a page refresh
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(() =>
+    searchParams.get("task"),
+  );
+  const [selectedProjectForTask, setSelectedProjectForTask] = useState<
+    string | null
+  >(null);
   const [showQuickAddDescription, setShowQuickAddDescription] = useState(false);
-  const [quickAddDescription, setQuickAddDescription] = useState('');
+  const [quickAddDescription, setQuickAddDescription] = useState("");
 
   // Update selected project when activeProject changes
   useEffect(() => {
@@ -55,11 +77,20 @@ export default function TaskContentNew() {
 
   // Find selected task
   const selectedTask = selectedTaskId
-    ? filteredTasks.find(t => t.id === selectedTaskId)
+    ? filteredTasks.find((t) => t.id === selectedTaskId)
     : null;
 
   const handleTaskSelect = (taskId: string) => {
-    setSelectedTaskId(taskId === selectedTaskId ? null : taskId);
+    const next = taskId === selectedTaskId ? null : taskId;
+    setSelectedTaskId(next);
+    // Keep the URL in sync so cmd+R restores panel state (shallow — no navigation)
+    const params = new URLSearchParams(searchParams.toString());
+    if (next) {
+      params.set("task", next);
+    } else {
+      params.delete("task");
+    }
+    router.replace(`/tasks?${params.toString()}`, { scroll: false });
   };
 
   const handleTaskToggle = (projectId: string, taskId: string) => {
@@ -74,15 +105,20 @@ export default function TaskContentNew() {
     if (trimmedTitle.length > 200) return;
 
     // Add task with description if provided - returns the created task ID
-    const newTaskId = await addTask(e, quickAddDescription.trim(), '', selectedProjectForTask || undefined);
-    
+    const newTaskId = await addTask(
+      e,
+      quickAddDescription.trim(),
+      "",
+      selectedProjectForTask || undefined,
+    );
+
     // Open the details panel for the new task
     if (newTaskId) {
       setSelectedTaskId(newTaskId);
     }
-    
+
     // Reset description fields
-    setQuickAddDescription('');
+    setQuickAddDescription("");
     setShowQuickAddDescription(false);
   };
 
@@ -201,7 +237,10 @@ export default function TaskContentNew() {
                 {/* Search Bar and Sort Controls */}
                 <div className="flex gap-2">
                   <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
+                    <Search
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                      size={16}
+                    />
                     <Input
                       type="text"
                       value={searchQuery}
@@ -211,14 +250,14 @@ export default function TaskContentNew() {
                     />
                     {searchQuery && (
                       <button
-                        onClick={() => setSearchQuery('')}
+                        onClick={() => setSearchQuery("")}
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       >
                         <X size={16} />
                       </button>
                     )}
                   </div>
-                  
+
                   <TaskSortControl
                     currentSort={sortBy}
                     onSortChange={setSortBy}
@@ -252,15 +291,21 @@ export default function TaskContentNew() {
                     <div className="flex items-center gap-2">
                       {shouldShowProjectSelector && projects.length > 0 ? (
                         <Select
-                          value={selectedProjectForTask || ''}
-                          onValueChange={(value) => setSelectedProjectForTask(value)}
+                          value={selectedProjectForTask || ""}
+                          onValueChange={(value) =>
+                            setSelectedProjectForTask(value)
+                          }
                         >
                           <SelectTrigger className="h-8 text-xs max-w-[200px]">
                             <div className="flex items-center gap-2">
-                              <Folder size={12} className="text-muted-foreground" />
+                              <Folder
+                                size={12}
+                                className="text-muted-foreground"
+                              />
                               <span>
-                                {projects.find((p) => p.id === selectedProjectForTask)?.name ||
-                                  'Select project'}
+                                {projects.find(
+                                  (p) => p.id === selectedProjectForTask,
+                                )?.name || "Select project"}
                               </span>
                             </div>
                           </SelectTrigger>
@@ -278,13 +323,19 @@ export default function TaskContentNew() {
                       ) : activeProject ? (
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Folder size={12} />
-                          <span>{projects.find((p) => p.id === activeProject)?.name}</span>
+                          <span>
+                            {projects.find((p) => p.id === activeProject)?.name}
+                          </span>
                         </div>
                       ) : null}
 
                       <Button
                         type="submit"
-                        disabled={!newTaskTitle.trim() || isCreatingTask || !selectedProjectForTask}
+                        disabled={
+                          !newTaskTitle.trim() ||
+                          isCreatingTask ||
+                          !selectedProjectForTask
+                        }
                         size="sm"
                         className="h-8 px-3 ml-auto"
                       >
@@ -323,7 +374,9 @@ export default function TaskContentNew() {
                           task={task}
                           isSelected={selectedTaskId === task.id}
                           onSelect={() => handleTaskSelect(task.id)}
-                          onToggleComplete={() => handleTaskToggle(task.projectId, task.id)}
+                          onToggleComplete={() =>
+                            handleTaskToggle(task.projectId, task.id)
+                          }
                           hideProjectName={!showAllProjects}
                         />
                       ))
@@ -339,14 +392,32 @@ export default function TaskContentNew() {
             {selectedTask ? (
               <TaskDetailsPanel
                 task={selectedTask}
-                onClose={() => setSelectedTaskId(null)}
+                onClose={() => {
+                  setSelectedTaskId(null);
+                  const params = new URLSearchParams(searchParams.toString());
+                  params.delete("task");
+                  const qs = params.toString();
+                  router.replace(qs ? `/tasks?${qs}` : "/tasks", {
+                    scroll: false,
+                  });
+                }}
               />
             ) : (
               <div className="flex items-center justify-center h-full p-8">
                 <div className="text-center">
                   <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    <svg
+                      className="w-8 h-8 text-muted-foreground"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                      />
                     </svg>
                   </div>
                   <h3 className="text-sm font-medium text-foreground mb-2">

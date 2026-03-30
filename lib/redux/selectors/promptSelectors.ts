@@ -81,10 +81,10 @@ export function applySortComparator(a: PromptData, b: PromptData, sortBy: Prompt
     switch (sortBy) {
         case 'name-asc':      return (a.name     ?? '').localeCompare(b.name     ?? '');
         case 'name-desc':     return (b.name     ?? '').localeCompare(a.name     ?? '');
-        case 'created-desc':  return (b.createdAt ?? 0) - (a.createdAt ?? 0);
+        case 'created-desc':  return +(b.createdAt ?? 0) - +(a.createdAt ?? 0);
         case 'category-asc':  return (a.category  ?? '').localeCompare(b.category ?? '');
         case 'updated-desc':
-        default:              return (b.updatedAt ?? 0) - (a.updatedAt ?? 0);
+        default:              return +(b.updatedAt ?? 0) - +(a.updatedAt ?? 0);
     }
 }
 

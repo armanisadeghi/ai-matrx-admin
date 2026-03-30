@@ -1,4 +1,5 @@
 import { getAdminSupabaseClient } from '@/utils/supabase/getScriptClient';
+import { requireUserId } from '@/utils/auth/getUserId';
 import {
   ShortcutCategory,
   PromptBuiltin,

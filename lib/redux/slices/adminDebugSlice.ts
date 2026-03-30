@@ -18,60 +18,61 @@
 // Indicators (promptDebug, resourceDebug, executionStateDebug) are unchanged from
 // the original design — they drive the floating debug panels in DebugIndicatorManager.
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '@/lib/redux/store';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { RootState } from "@/lib/redux/store";
+import type { DebugData } from "@/components/debug/SystemPromptDebugModal";
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
 export interface RouteContext {
-    pathname: string;
-    searchParams: Record<string, string>;
-    capturedAt: number;          // epoch ms
-    userAgent: string;
-    viewportWidth: number;
-    viewportHeight: number;
-    renderCount: number;         // increments each time pathname changes
+  pathname: string;
+  searchParams: Record<string, string>;
+  capturedAt: number; // epoch ms
+  userAgent: string;
+  viewportWidth: number;
+  viewportHeight: number;
+  renderCount: number; // increments each time pathname changes
 }
 
 export interface ConsoleErrorEntry {
-    id: string;
-    message: string;
-    source: 'console.error' | 'unhandledrejection' | 'error-event';
-    stack?: string;
-    capturedAt: number;          // epoch ms
+  id: string;
+  message: string;
+  source: "console.error" | "unhandledrejection" | "error-event";
+  stack?: string;
+  capturedAt: number; // epoch ms
 }
 
 export interface AdminDebugState {
-    isDebugMode: boolean;
+  isDebugMode: boolean;
 
-    // Auto-captured by AdminDebugContextCollector — never write manually
-    routeContext: RouteContext | null;
+  // Auto-captured by AdminDebugContextCollector — never write manually
+  routeContext: RouteContext | null;
 
-    // Ring buffer of captured console errors — max 30
-    consoleErrors: ConsoleErrorEntry[];
+  // Ring buffer of captured console errors — max 30
+  consoleErrors: ConsoleErrorEntry[];
 
-    // Namespaced key/value store — keys should be "Namespace:Label"
-    // e.g. "Chat:Session ID", "API:Backend URL"
-    debugData: Record<string, unknown>;
+  // Namespaced key/value store — keys should be "Namespace:Label"
+  // e.g. "Chat:Session ID", "API:Backend URL"
+  debugData: Record<string, unknown>;
 
-    // Floating debug panel indicators (unchanged from original design)
-    indicators: {
-        promptDebug?: { isOpen: boolean; data: unknown };
-        resourceDebug?: { isOpen: boolean; runId: string };
-        executionStateDebug?: { isOpen: boolean; runId: string };
-    };
+  // Floating debug panel indicators (unchanged from original design)
+  indicators: {
+    promptDebug?: { isOpen: boolean; data: DebugData | null };
+    resourceDebug?: { isOpen: boolean; runId: string };
+    executionStateDebug?: { isOpen: boolean; runId: string };
+  };
 }
 
 const MAX_CONSOLE_ERRORS = 30;
 
 const initialState: AdminDebugState = {
-    isDebugMode: false,
-    routeContext: null,
-    consoleErrors: [],
-    debugData: {},
-    indicators: {},
+  isDebugMode: false,
+  routeContext: null,
+  consoleErrors: [],
+  debugData: {},
+  indicators: {},
 };
 
 // ============================================================================
@@ -79,98 +80,119 @@ const initialState: AdminDebugState = {
 // ============================================================================
 
 const adminDebugSlice = createSlice({
-    name: 'adminDebug',
-    initialState,
-    reducers: {
-        // ── Debug mode ──────────────────────────────────────────────────────
+  name: "adminDebug",
+  initialState,
+  reducers: {
+    // ── Debug mode ──────────────────────────────────────────────────────
 
-        toggleDebugMode: (state) => {
-            state.isDebugMode = !state.isDebugMode;
-        },
-        setDebugMode: (state, action: PayloadAction<boolean>) => {
-            state.isDebugMode = action.payload;
-        },
-
-        // ── Route context (written by AdminDebugContextCollector only) ───────
-
-        setRouteContext: (state, action: PayloadAction<RouteContext>) => {
-            state.routeContext = action.payload;
-        },
-
-        // ── Console errors ───────────────────────────────────────────────────
-
-        appendConsoleError: (state, action: PayloadAction<ConsoleErrorEntry>) => {
-            state.consoleErrors.unshift(action.payload);
-            if (state.consoleErrors.length > MAX_CONSOLE_ERRORS) {
-                state.consoleErrors.length = MAX_CONSOLE_ERRORS;
-            }
-        },
-        clearConsoleErrors: (state) => {
-            state.consoleErrors = [];
-        },
-
-        // ── Debug data (namespaced key/value) ────────────────────────────────
-
-        // Merge key/value pairs — use namespaced keys: "Chat:Session ID"
-        updateDebugData: (state, action: PayloadAction<Record<string, unknown>>) => {
-            state.debugData = { ...state.debugData, ...action.payload };
-        },
-
-        // Replace ALL debug data
-        setDebugData: (state, action: PayloadAction<Record<string, unknown>>) => {
-            state.debugData = action.payload;
-        },
-
-        // Set a single key
-        setDebugKey: (state, action: PayloadAction<{ key: string; value: unknown }>) => {
-            state.debugData[action.payload.key] = action.payload.value;
-        },
-
-        // Remove a single key
-        removeDebugKey: (state, action: PayloadAction<string>) => {
-            delete state.debugData[action.payload];
-        },
-
-        // Remove all keys for a namespace prefix — call on component unmount
-        // e.g. clearDebugNamespace('Chat') removes all "Chat:*" keys
-        clearDebugNamespace: (state, action: PayloadAction<string>) => {
-            const prefix = action.payload + ':';
-            for (const key of Object.keys(state.debugData)) {
-                if (key.startsWith(prefix)) {
-                    delete state.debugData[key];
-                }
-            }
-        },
-
-        // Clear all debug data
-        clearDebugData: (state) => {
-            state.debugData = {};
-        },
-
-        // Reset everything
-        resetDebugState: () => initialState,
-
-        // ── Indicator management (unchanged) ─────────────────────────────────
-
-        showPromptDebugIndicator: (state, action: PayloadAction<unknown>) => {
-            state.indicators.promptDebug = { isOpen: true, data: action.payload };
-        },
-        hidePromptDebugIndicator: (state) => {
-            state.indicators.promptDebug = undefined;
-        },
-        showResourceDebugIndicator: (state, action: PayloadAction<{ runId: string }>) => {
-            state.indicators.resourceDebug = { isOpen: true, runId: action.payload.runId };
-        },
-        hideResourceDebugIndicator: (state) => {
-            state.indicators.resourceDebug = undefined;
-        },
-        showExecutionStateDebug: (state, action: PayloadAction<{ runId: string }>) => {
-            state.indicators.executionStateDebug = { isOpen: true, runId: action.payload.runId };
-        },
-        hideExecutionStateDebug: (state) => {
-            state.indicators.executionStateDebug = undefined;
-        },
+    toggleDebugMode: (state) => {
+      state.isDebugMode = !state.isDebugMode;
     },
+    setDebugMode: (state, action: PayloadAction<boolean>) => {
+      state.isDebugMode = action.payload;
+    },
+
+    // ── Route context (written by AdminDebugContextCollector only) ───────
+
+    setRouteContext: (state, action: PayloadAction<RouteContext>) => {
+      state.routeContext = action.payload;
+    },
+
+    // ── Console errors ───────────────────────────────────────────────────
+
+    appendConsoleError: (state, action: PayloadAction<ConsoleErrorEntry>) => {
+      state.consoleErrors.unshift(action.payload);
+      if (state.consoleErrors.length > MAX_CONSOLE_ERRORS) {
+        state.consoleErrors.length = MAX_CONSOLE_ERRORS;
+      }
+    },
+    clearConsoleErrors: (state) => {
+      state.consoleErrors = [];
+    },
+
+    // ── Debug data (namespaced key/value) ────────────────────────────────
+
+    // Merge key/value pairs — use namespaced keys: "Chat:Session ID"
+    updateDebugData: (
+      state,
+      action: PayloadAction<Record<string, unknown>>,
+    ) => {
+      state.debugData = { ...state.debugData, ...action.payload };
+    },
+
+    // Replace ALL debug data
+    setDebugData: (state, action: PayloadAction<Record<string, unknown>>) => {
+      state.debugData = action.payload;
+    },
+
+    // Set a single key
+    setDebugKey: (
+      state,
+      action: PayloadAction<{ key: string; value: unknown }>,
+    ) => {
+      state.debugData[action.payload.key] = action.payload.value;
+    },
+
+    // Remove a single key
+    removeDebugKey: (state, action: PayloadAction<string>) => {
+      delete state.debugData[action.payload];
+    },
+
+    // Remove all keys for a namespace prefix — call on component unmount
+    // e.g. clearDebugNamespace('Chat') removes all "Chat:*" keys
+    clearDebugNamespace: (state, action: PayloadAction<string>) => {
+      const prefix = action.payload + ":";
+      for (const key of Object.keys(state.debugData)) {
+        if (key.startsWith(prefix)) {
+          delete state.debugData[key];
+        }
+      }
+    },
+
+    // Clear all debug data
+    clearDebugData: (state) => {
+      state.debugData = {};
+    },
+
+    // Reset everything
+    resetDebugState: () => initialState,
+
+    // ── Indicator management (unchanged) ─────────────────────────────────
+
+    showPromptDebugIndicator: (
+      state,
+      action: PayloadAction<DebugData | null>,
+    ) => {
+      state.indicators.promptDebug = { isOpen: true, data: action.payload };
+    },
+    hidePromptDebugIndicator: (state) => {
+      state.indicators.promptDebug = undefined;
+    },
+    showResourceDebugIndicator: (
+      state,
+      action: PayloadAction<{ runId: string }>,
+    ) => {
+      state.indicators.resourceDebug = {
+        isOpen: true,
+        runId: action.payload.runId,
+      };
+    },
+    hideResourceDebugIndicator: (state) => {
+      state.indicators.resourceDebug = undefined;
+    },
+    showExecutionStateDebug: (
+      state,
+      action: PayloadAction<{ runId: string }>,
+    ) => {
+      state.indicators.executionStateDebug = {
+        isOpen: true,
+        runId: action.payload.runId,
+      };
+    },
+    hideExecutionStateDebug: (state) => {
+      state.indicators.executionStateDebug = undefined;
+    },
+  },
 });
 
 // ============================================================================
@@ -178,37 +200,45 @@ const adminDebugSlice = createSlice({
 // ============================================================================
 
 export const {
-    toggleDebugMode,
-    setDebugMode,
-    setRouteContext,
-    appendConsoleError,
-    clearConsoleErrors,
-    updateDebugData,
-    setDebugData,
-    setDebugKey,
-    removeDebugKey,
-    clearDebugNamespace,
-    clearDebugData,
-    resetDebugState,
-    showPromptDebugIndicator,
-    hidePromptDebugIndicator,
-    showResourceDebugIndicator,
-    hideResourceDebugIndicator,
-    showExecutionStateDebug,
-    hideExecutionStateDebug,
+  toggleDebugMode,
+  setDebugMode,
+  setRouteContext,
+  appendConsoleError,
+  clearConsoleErrors,
+  updateDebugData,
+  setDebugData,
+  setDebugKey,
+  removeDebugKey,
+  clearDebugNamespace,
+  clearDebugData,
+  resetDebugState,
+  showPromptDebugIndicator,
+  hidePromptDebugIndicator,
+  showResourceDebugIndicator,
+  hideResourceDebugIndicator,
+  showExecutionStateDebug,
+  hideExecutionStateDebug,
 } = adminDebugSlice.actions;
 
 // ── Selectors ────────────────────────────────────────────────────────────────
 
 export const selectAdminDebug = (state: RootState) => state.adminDebug;
-export const selectIsDebugMode = (state: RootState) => state.adminDebug.isDebugMode;
-export const selectRouteContext = (state: RootState) => state.adminDebug.routeContext;
-export const selectConsoleErrors = (state: RootState) => state.adminDebug.consoleErrors;
+export const selectIsDebugMode = (state: RootState) =>
+  state.adminDebug.isDebugMode;
+export const selectRouteContext = (state: RootState) =>
+  state.adminDebug.routeContext;
+export const selectConsoleErrors = (state: RootState) =>
+  state.adminDebug.consoleErrors;
 export const selectDebugData = (state: RootState) => state.adminDebug.debugData;
-export const selectDebugKey = (key: string) => (state: RootState) => state.adminDebug.debugData[key];
-export const selectDebugIndicators = (state: RootState) => state.adminDebug.indicators;
-export const selectPromptDebugIndicator = (state: RootState) => state.adminDebug.indicators.promptDebug;
-export const selectResourceDebugIndicator = (state: RootState) => state.adminDebug.indicators.resourceDebug;
-export const selectExecutionStateDebug = (state: RootState) => state.adminDebug.indicators.executionStateDebug;
+export const selectDebugKey = (key: string) => (state: RootState) =>
+  state.adminDebug.debugData[key];
+export const selectDebugIndicators = (state: RootState) =>
+  state.adminDebug.indicators;
+export const selectPromptDebugIndicator = (state: RootState) =>
+  state.adminDebug.indicators.promptDebug;
+export const selectResourceDebugIndicator = (state: RootState) =>
+  state.adminDebug.indicators.resourceDebug;
+export const selectExecutionStateDebug = (state: RootState) =>
+  state.adminDebug.indicators.executionStateDebug;
 
 export default adminDebugSlice.reducer;

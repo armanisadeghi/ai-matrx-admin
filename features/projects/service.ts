@@ -10,7 +10,8 @@
  * Mirrors features/organizations/service.ts
  */
 
-import { supabase } from '@/utils/supabase/client';
+import { supabase } from "@/utils/supabase/client";
+import { requireUserId, getUserEmail } from "@/utils/auth/getUserId";
 import {
   Project,
   ProjectWithRole,
@@ -29,13 +30,15 @@ import {
   validateProjectSlug,
   validateEmail,
   generateProjectSlug,
-} from './types';
+} from "./types";
 
 // ============================================================================
 // Project CRUD Operations
 // ============================================================================
 
-export async function createProject(options: CreateProjectOptions): Promise<ProjectResult> {
+export async function createProject(
+  options: CreateProjectOptions,
+): Promise<ProjectResult> {
   try {
     const { name, slug, organizationId, description, settings } = options;
 
@@ -51,14 +54,19 @@ export async function createProject(options: CreateProjectOptions): Promise<Proj
 
     const slugFree = await isProjectSlugAvailable(slug, organizationId ?? null);
     if (!slugFree) {
-      const scope = organizationId ? 'in this organization' : 'in your personal projects';
-      return { success: false, error: `A project with that slug already exists ${scope}` };
+      const scope = organizationId
+        ? "in this organization"
+        : "in your personal projects";
+      return {
+        success: false,
+        error: `A project with that slug already exists ${scope}`,
+      };
     }
 
     const currentUserId = requireUserId();
 
     const { data: project, error: projectError } = await supabase
-      .from('projects')
+      .from("projects")
       .insert({
         name,
         slug,
@@ -72,41 +80,50 @@ export async function createProject(options: CreateProjectOptions): Promise<Proj
       .single();
 
     if (projectError) {
-      console.error('Error creating project:', projectError.message);
-      return { success: false, error: projectError.message || 'Failed to create project' };
+      console.error("Error creating project:", projectError.message);
+      return {
+        success: false,
+        error: projectError.message || "Failed to create project",
+      };
     }
 
     if (!project) {
-      return { success: false, error: 'Project created but no data returned' };
+      return { success: false, error: "Project created but no data returned" };
     }
 
     // Add creator as owner
-    const { error: memberError } = await supabase.from('project_members').insert({
-      project_id: project.id,
-      user_id: currentUserId,
-      role: 'owner',
-    });
+    const { error: memberError } = await supabase
+      .from("project_members")
+      .insert({
+        project_id: project.id,
+        user_id: currentUserId,
+        role: "owner",
+      });
 
     if (memberError) {
-      console.error('Error adding project owner:', memberError.message);
-      return { success: false, error: memberError.message || 'Failed to add you as project owner' };
+      console.error("Error adding project owner:", memberError.message);
+      return {
+        success: false,
+        error: memberError.message || "Failed to add you as project owner",
+      };
     }
 
     return {
       success: true,
-      message: 'Project created successfully',
+      message: "Project created successfully",
       project: transformProjectFromDb(project),
     };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Failed to create project';
-    console.error('Error creating project:', error);
+    const msg =
+      error instanceof Error ? error.message : "Failed to create project";
+    console.error("Error creating project:", error);
     return { success: false, error: msg };
   }
 }
 
 export async function updateProject(
   projectId: string,
-  updates: UpdateProjectOptions
+  updates: UpdateProjectOptions,
 ): Promise<ProjectResult> {
   try {
     const updateData: Record<string, unknown> = {};
@@ -116,13 +133,14 @@ export async function updateProject(
       if (!validation.valid) return { success: false, error: validation.error };
       updateData.name = updates.name;
     }
-    if (updates.description !== undefined) updateData.description = updates.description;
+    if (updates.description !== undefined)
+      updateData.description = updates.description;
     if (updates.settings !== undefined) updateData.settings = updates.settings;
 
     const { data, error } = await supabase
-      .from('projects')
+      .from("projects")
       .update(updateData)
-      .eq('id', projectId)
+      .eq("id", projectId)
       .select()
       .single();
 
@@ -130,24 +148,31 @@ export async function updateProject(
 
     return {
       success: true,
-      message: 'Project updated successfully',
+      message: "Project updated successfully",
       project: transformProjectFromDb(data),
     };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Failed to update project';
-    console.error('Error updating project:', error);
+    const msg =
+      error instanceof Error ? error.message : "Failed to update project";
+    console.error("Error updating project:", error);
     return { success: false, error: msg };
   }
 }
 
-export async function deleteProject(projectId: string): Promise<OperationResult> {
+export async function deleteProject(
+  projectId: string,
+): Promise<OperationResult> {
   try {
-    const { error } = await supabase.from('projects').delete().eq('id', projectId);
+    const { error } = await supabase
+      .from("projects")
+      .delete()
+      .eq("id", projectId);
     if (error) throw error;
-    return { success: true, message: 'Project deleted successfully' };
+    return { success: true, message: "Project deleted successfully" };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Failed to delete project';
-    console.error('Error deleting project:', error);
+    const msg =
+      error instanceof Error ? error.message : "Failed to delete project";
+    console.error("Error deleting project:", error);
     return { success: false, error: msg };
   }
 }
@@ -155,69 +180,72 @@ export async function deleteProject(projectId: string): Promise<OperationResult>
 export async function getProject(projectId: string): Promise<Project | null> {
   try {
     const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', projectId)
+      .from("projects")
+      .select("*")
+      .eq("id", projectId)
       .single();
     if (error) throw error;
     return transformProjectFromDb(data);
   } catch (error) {
-    console.error('Error fetching project:', error);
+    console.error("Error fetching project:", error);
     return null;
   }
 }
 
 export async function getProjectBySlug(
   slug: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<Project | null> {
   try {
     const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('slug', slug)
-      .eq('organization_id', organizationId)
+      .from("projects")
+      .select("*")
+      .eq("slug", slug)
+      .eq("organization_id", organizationId)
       .single();
     if (error) throw error;
     return transformProjectFromDb(data);
   } catch (error) {
-    console.error('Error fetching project by slug:', error);
+    console.error("Error fetching project by slug:", error);
     return null;
   }
 }
 
-export async function getPersonalProjectBySlug(slug: string): Promise<Project | null> {
+export async function getPersonalProjectBySlug(
+  slug: string,
+): Promise<Project | null> {
   try {
     const userId = requireUserId();
 
     const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('slug', slug)
-      .is('organization_id', null)
-      .eq('created_by', userId)
+      .from("projects")
+      .select("*")
+      .eq("slug", slug)
+      .is("organization_id", null)
+      .eq("created_by", userId)
       .single();
     if (error) throw error;
     return transformProjectFromDb(data);
   } catch (error) {
-    console.error('Error fetching personal project by slug:', error);
+    console.error("Error fetching personal project by slug:", error);
     return null;
   }
 }
 
-export async function getOrgProjects(organizationId: string): Promise<ProjectWithRole[]> {
+export async function getOrgProjects(
+  organizationId: string,
+): Promise<ProjectWithRole[]> {
   try {
     const currentUserId = requireUserId();
 
-
     const { data, error } = await supabase
-      .from('project_members')
+      .from("project_members")
       .select(`role, projects(*)`)
-      .eq('user_id', currentUserId)
-      .not('projects.organization_id', 'is', null);
+      .eq("user_id", currentUserId)
+      .not("projects.organization_id", "is", null);
 
     if (error) {
-      console.error('Error fetching org projects:', error.message);
+      console.error("Error fetching org projects:", error.message);
       return [];
     }
 
@@ -228,13 +256,19 @@ export async function getOrgProjects(organizationId: string): Promise<ProjectWit
           return proj && proj.organization_id === organizationId;
         })
         .map(async (item: Record<string, unknown>) => {
-          const proj = transformProjectFromDb(item.projects as Record<string, unknown>);
+          const proj = transformProjectFromDb(
+            item.projects as Record<string, unknown>,
+          );
           const { count } = await supabase
-            .from('project_members')
-            .select('*', { count: 'exact', head: true })
-            .eq('project_id', proj.id);
-          return { ...proj, role: item.role as ProjectRole, memberCount: count ?? 0 };
-        })
+            .from("project_members")
+            .select("*", { count: "exact", head: true })
+            .eq("project_id", proj.id);
+          return {
+            ...proj,
+            role: item.role as ProjectRole,
+            memberCount: count ?? 0,
+          };
+        }),
     );
 
     return projects.sort((a, b) => {
@@ -244,8 +278,9 @@ export async function getOrgProjects(organizationId: string): Promise<ProjectWit
     });
   } catch (error: unknown) {
     const err = error as { code?: string; message?: string };
-    if (err?.code === '42P01' || err?.message?.includes('does not exist')) return [];
-    console.error('Error in getOrgProjects:', error);
+    if (err?.code === "42P01" || err?.message?.includes("does not exist"))
+      return [];
+    console.error("Error in getOrgProjects:", error);
     return [];
   }
 }
@@ -254,47 +289,52 @@ export async function getUserProjects(): Promise<ProjectWithRole[]> {
   try {
     const currentUserId = requireUserId();
 
-
     const { data, error } = await supabase
-      .from('project_members')
+      .from("project_members")
       .select(`role, projects(*)`)
-      .eq('user_id', currentUserId);
+      .eq("user_id", currentUserId);
 
     if (error) {
-      console.error('Error fetching user projects:', error.message);
+      console.error("Error fetching user projects:", error.message);
       return [];
     }
 
     const projects: ProjectWithRole[] = await Promise.all(
       (data ?? []).map(async (item: Record<string, unknown>) => {
-        const proj = transformProjectFromDb(item.projects as Record<string, unknown>);
+        const proj = transformProjectFromDb(
+          item.projects as Record<string, unknown>,
+        );
         const { count } = await supabase
-          .from('project_members')
-          .select('*', { count: 'exact', head: true })
-          .eq('project_id', proj.id);
-        return { ...proj, role: item.role as ProjectRole, memberCount: count ?? 0 };
-      })
+          .from("project_members")
+          .select("*", { count: "exact", head: true })
+          .eq("project_id", proj.id);
+        return {
+          ...proj,
+          role: item.role as ProjectRole,
+          memberCount: count ?? 0,
+        };
+      }),
     );
 
     return projects.sort((a, b) => a.name.localeCompare(b.name));
   } catch (error) {
-    console.error('Error in getUserProjects:', error);
+    console.error("Error in getUserProjects:", error);
     return [];
   }
 }
 
 export async function isProjectSlugAvailable(
   slug: string,
-  organizationId: string | null
+  organizationId: string | null,
 ): Promise<boolean> {
   try {
-    let query = supabase.from('projects').select('id').eq('slug', slug);
+    let query = supabase.from("projects").select("id").eq("slug", slug);
     if (organizationId) {
-      query = query.eq('organization_id', organizationId);
+      query = query.eq("organization_id", organizationId);
     } else {
       // Personal project: scope uniqueness to the current user
       const userId = requireUserId();
-      query = query.is('organization_id', null).eq('created_by', userId);
+      query = query.is("organization_id", null).eq("created_by", userId);
     }
     const { data } = await query.single();
     return !data;
@@ -307,14 +347,13 @@ export async function getPersonalProjects(): Promise<ProjectWithRole[]> {
   try {
     const currentUserId = requireUserId();
 
-
     const { data, error } = await supabase
-      .from('project_members')
+      .from("project_members")
       .select(`role, projects(*)`)
-      .eq('user_id', currentUserId);
+      .eq("user_id", currentUserId);
 
     if (error) {
-      console.error('Error fetching personal projects:', error.message);
+      console.error("Error fetching personal projects:", error.message);
       return [];
     }
 
@@ -322,21 +361,29 @@ export async function getPersonalProjects(): Promise<ProjectWithRole[]> {
       (data ?? [])
         .filter((item: Record<string, unknown>) => {
           const proj = item.projects as Record<string, unknown> | null;
-          return proj && (proj.is_personal === true || proj.organization_id === null);
+          return (
+            proj && (proj.is_personal === true || proj.organization_id === null)
+          );
         })
         .map(async (item: Record<string, unknown>) => {
-          const proj = transformProjectFromDb(item.projects as Record<string, unknown>);
+          const proj = transformProjectFromDb(
+            item.projects as Record<string, unknown>,
+          );
           const { count } = await supabase
-            .from('project_members')
-            .select('*', { count: 'exact', head: true })
-            .eq('project_id', proj.id);
-          return { ...proj, role: item.role as ProjectRole, memberCount: count ?? 0 };
-        })
+            .from("project_members")
+            .select("*", { count: "exact", head: true })
+            .eq("project_id", proj.id);
+          return {
+            ...proj,
+            role: item.role as ProjectRole,
+            memberCount: count ?? 0,
+          };
+        }),
     );
 
     return projects.sort((a, b) => a.name.localeCompare(b.name));
   } catch (error) {
-    console.error('Error in getPersonalProjects:', error);
+    console.error("Error in getPersonalProjects:", error);
     return [];
   }
 }
@@ -348,12 +395,15 @@ export { generateProjectSlug as suggestProjectSlug };
 // ============================================================================
 
 export async function getProjectMembers(
-  projectId: string
+  projectId: string,
 ): Promise<ProjectMemberWithUser[]> {
   try {
-    const { data, error } = await supabase.rpc('get_project_members_with_users', {
-      p_project_id: projectId,
-    });
+    const { data, error } = await supabase.rpc(
+      "get_project_members_with_users",
+      {
+        p_project_id: projectId,
+      },
+    );
     if (error) throw error;
 
     return (data ?? []).map((row: Record<string, unknown>) => ({
@@ -365,13 +415,13 @@ export async function getProjectMembers(
       invitedBy: row.invited_by as string | null,
       user: {
         id: row.user_id as string,
-        email: (row.user_email as string) || '',
+        email: (row.user_email as string) || "",
         displayName: (row.user_display_name as string) || undefined,
         avatarUrl: (row.user_avatar_url as string) || undefined,
       },
     }));
   } catch (error) {
-    console.error('Error fetching project members:', error);
+    console.error("Error fetching project members:", error);
     return [];
   }
 }
@@ -379,35 +429,38 @@ export async function getProjectMembers(
 export async function updateProjectMemberRole(
   projectId: string,
   userId: string,
-  newRole: ProjectRole
+  newRole: ProjectRole,
 ): Promise<OperationResult> {
   try {
-    if (newRole !== 'owner') {
+    if (newRole !== "owner") {
       const { data: owners } = await supabase
-        .from('project_members')
-        .select('id')
-        .eq('project_id', projectId)
-        .eq('role', 'owner');
+        .from("project_members")
+        .select("id")
+        .eq("project_id", projectId)
+        .eq("role", "owner");
 
       if (owners && owners.length === 1) {
         const { data: member } = await supabase
-          .from('project_members')
-          .select('role')
-          .eq('project_id', projectId)
-          .eq('user_id', userId)
+          .from("project_members")
+          .select("role")
+          .eq("project_id", projectId)
+          .eq("user_id", userId)
           .single();
 
-        if (member?.role === 'owner') {
-          return { success: false, error: 'Cannot change role of the last owner' };
+        if (member?.role === "owner") {
+          return {
+            success: false,
+            error: "Cannot change role of the last owner",
+          };
         }
       }
     }
 
     const { data: updatedRows, error } = await supabase
-      .from('project_members')
+      .from("project_members")
       .update({ role: newRole })
-      .eq('project_id', projectId)
-      .eq('user_id', userId)
+      .eq("project_id", projectId)
+      .eq("user_id", userId)
       .select();
 
     if (error) throw error;
@@ -415,47 +468,48 @@ export async function updateProjectMemberRole(
     if (!updatedRows || updatedRows.length === 0) {
       return {
         success: false,
-        error: 'Unable to update member role. You may not have permission.',
+        error: "Unable to update member role. You may not have permission.",
       };
     }
 
-    return { success: true, message: 'Member role updated successfully' };
+    return { success: true, message: "Member role updated successfully" };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Failed to update member role';
-    console.error('Error updating project member role:', error);
+    const msg =
+      error instanceof Error ? error.message : "Failed to update member role";
+    console.error("Error updating project member role:", error);
     return { success: false, error: msg };
   }
 }
 
 export async function removeProjectMember(
   projectId: string,
-  userId: string
+  userId: string,
 ): Promise<OperationResult> {
   try {
     const { data: member } = await supabase
-      .from('project_members')
-      .select('role')
-      .eq('project_id', projectId)
-      .eq('user_id', userId)
+      .from("project_members")
+      .select("role")
+      .eq("project_id", projectId)
+      .eq("user_id", userId)
       .single();
 
-    if (member?.role === 'owner') {
+    if (member?.role === "owner") {
       const { data: owners } = await supabase
-        .from('project_members')
-        .select('id')
-        .eq('project_id', projectId)
-        .eq('role', 'owner');
+        .from("project_members")
+        .select("id")
+        .eq("project_id", projectId)
+        .eq("role", "owner");
 
       if (owners && owners.length === 1) {
-        return { success: false, error: 'Cannot remove the last owner' };
+        return { success: false, error: "Cannot remove the last owner" };
       }
     }
 
     const { data: deletedRows, error } = await supabase
-      .from('project_members')
+      .from("project_members")
       .delete()
-      .eq('project_id', projectId)
-      .eq('user_id', userId)
+      .eq("project_id", projectId)
+      .eq("user_id", userId)
       .select();
 
     if (error) throw error;
@@ -463,46 +517,50 @@ export async function removeProjectMember(
     if (!deletedRows || deletedRows.length === 0) {
       return {
         success: false,
-        error: 'Unable to remove member. You may not have permission.',
+        error: "Unable to remove member. You may not have permission.",
       };
     }
 
-    return { success: true, message: 'Member removed successfully' };
+    return { success: true, message: "Member removed successfully" };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Failed to remove member';
-    console.error('Error removing project member:', error);
+    const msg =
+      error instanceof Error ? error.message : "Failed to remove member";
+    console.error("Error removing project member:", error);
     return { success: false, error: msg };
   }
 }
 
-export async function leaveProject(projectId: string): Promise<OperationResult> {
+export async function leaveProject(
+  projectId: string,
+): Promise<OperationResult> {
   try {
     const currentUserId = requireUserId();
-
 
     return await removeProjectMember(projectId, currentUserId);
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Failed to leave project';
-    console.error('Error leaving project:', error);
+    const msg =
+      error instanceof Error ? error.message : "Failed to leave project";
+    console.error("Error leaving project:", error);
     return { success: false, error: msg };
   }
 }
 
-export async function getProjectUserRole(projectId: string): Promise<ProjectRole | null> {
+export async function getProjectUserRole(
+  projectId: string,
+): Promise<ProjectRole | null> {
   try {
     const currentUserId = requireUserId();
 
-
     const { data } = await supabase
-      .from('project_members')
-      .select('role')
-      .eq('project_id', projectId)
-      .eq('user_id', currentUserId)
+      .from("project_members")
+      .select("role")
+      .eq("project_id", projectId)
+      .eq("user_id", currentUserId)
       .single();
 
     return (data?.role as ProjectRole) ?? null;
   } catch (error) {
-    console.error('Error fetching project user role:', error);
+    console.error("Error fetching project user role:", error);
     return null;
   }
 }
@@ -512,159 +570,189 @@ export async function getProjectUserRole(projectId: string): Promise<ProjectRole
 // ============================================================================
 
 export async function inviteToProject(
-  options: InviteProjectMemberOptions
+  options: InviteProjectMemberOptions,
 ): Promise<ProjectInvitationResult> {
   try {
-    const { projectId, email, role = 'member' } = options;
+    const { projectId, email, role = "member" } = options;
 
     const emailValidation = validateEmail(email);
     if (!emailValidation.valid) {
       return { success: false, error: emailValidation.error };
     }
 
-    const response = await fetch('/api/projects/invite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projectId, email: email.toLowerCase().trim(), role }),
+    const response = await fetch("/api/projects/invite", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projectId,
+        email: email.toLowerCase().trim(),
+        role,
+      }),
     });
 
     const result = await response.json();
 
     if (!response.ok || !result.success) {
-      return { success: false, error: result.error || 'Failed to send invitation' };
+      return {
+        success: false,
+        error: result.error || "Failed to send invitation",
+      };
     }
 
     return {
       success: true,
-      message: 'Invitation sent successfully',
+      message: "Invitation sent successfully",
       invitation: transformInvitationFromDb(result.data),
     };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Failed to send invitation';
-    console.error('Error inviting to project:', error);
+    const msg =
+      error instanceof Error ? error.message : "Failed to send invitation";
+    console.error("Error inviting to project:", error);
     return { success: false, error: msg };
   }
 }
 
-export async function getProjectInvitations(projectId: string): Promise<ProjectInvitation[]> {
+export async function getProjectInvitations(
+  projectId: string,
+): Promise<ProjectInvitation[]> {
   try {
     const { data, error } = await supabase
-      .from('project_invitations')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('invited_at', { ascending: false });
+      .from("project_invitations")
+      .select("*")
+      .eq("project_id", projectId)
+      .order("invited_at", { ascending: false });
 
     if (error) throw error;
 
     return (data ?? []).map(transformInvitationFromDb);
   } catch (error) {
-    console.error('Error fetching project invitations:', error);
+    console.error("Error fetching project invitations:", error);
     return [];
   }
 }
 
-export async function cancelProjectInvitation(invitationId: string): Promise<OperationResult> {
+export async function cancelProjectInvitation(
+  invitationId: string,
+): Promise<OperationResult> {
   try {
     const { error } = await supabase
-      .from('project_invitations')
+      .from("project_invitations")
       .delete()
-      .eq('id', invitationId);
+      .eq("id", invitationId);
 
     if (error) throw error;
-    return { success: true, message: 'Invitation cancelled successfully' };
+    return { success: true, message: "Invitation cancelled successfully" };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Failed to cancel invitation';
-    console.error('Error cancelling project invitation:', error);
+    const msg =
+      error instanceof Error ? error.message : "Failed to cancel invitation";
+    console.error("Error cancelling project invitation:", error);
     return { success: false, error: msg };
   }
 }
 
-export async function resendProjectInvitation(invitationId: string): Promise<OperationResult> {
+export async function resendProjectInvitation(
+  invitationId: string,
+): Promise<OperationResult> {
   try {
-    const response = await fetch('/api/projects/invitations/resend', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/projects/invitations/resend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ invitationId }),
     });
 
     const result = await response.json();
 
     if (!response.ok || !result.success) {
-      return { success: false, error: result.error || 'Failed to resend invitation' };
+      return {
+        success: false,
+        error: result.error || "Failed to resend invitation",
+      };
     }
 
-    return { success: true, message: 'Invitation resent successfully' };
+    return { success: true, message: "Invitation resent successfully" };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Failed to resend invitation';
-    console.error('Error resending project invitation:', error);
+    const msg =
+      error instanceof Error ? error.message : "Failed to resend invitation";
+    console.error("Error resending project invitation:", error);
     return { success: false, error: msg };
   }
 }
 
-export async function acceptProjectInvitation(token: string): Promise<ProjectResult> {
+export async function acceptProjectInvitation(
+  token: string,
+): Promise<ProjectResult> {
   try {
     const currentUserId = requireUserId();
 
     const { data: invitation, error: inviteError } = await supabase
-      .from('project_invitations')
-      .select('*, projects(*)')
-      .eq('token', token)
-      .eq('email', { id: currentUserId }.email)
-      .gt('expires_at', new Date().toISOString())
+      .from("project_invitations")
+      .select("*, projects(*)")
+      .eq("token", token)
+      .eq("email", getUserEmail() ?? "")
+      .gt("expires_at", new Date().toISOString())
       .single();
 
     if (inviteError || !invitation) {
-      return { success: false, error: 'Invalid or expired invitation' };
+      return { success: false, error: "Invalid or expired invitation" };
     }
 
-    const { error: memberError } = await supabase.from('project_members').insert({
-      project_id: invitation.project_id,
-      user_id: currentUserId,
-      role: invitation.role,
-      invited_by: invitation.invited_by,
-    });
+    const { error: memberError } = await supabase
+      .from("project_members")
+      .insert({
+        project_id: invitation.project_id,
+        user_id: currentUserId,
+        role: invitation.role,
+        invited_by: invitation.invited_by,
+      });
 
     if (memberError) {
-      if (memberError.code === '23505') {
-        return { success: false, error: 'You are already a member of this project' };
+      if (memberError.code === "23505") {
+        return {
+          success: false,
+          error: "You are already a member of this project",
+        };
       }
       throw memberError;
     }
 
-    await supabase.from('project_invitations').delete().eq('id', invitation.id);
+    await supabase.from("project_invitations").delete().eq("id", invitation.id);
 
     return {
       success: true,
-      message: 'Successfully joined project',
+      message: "Successfully joined project",
       project: transformProjectFromDb(invitation.projects),
     };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Failed to accept invitation';
-    console.error('Error accepting project invitation:', error);
+    const msg =
+      error instanceof Error ? error.message : "Failed to accept invitation";
+    console.error("Error accepting project invitation:", error);
     return { success: false, error: msg };
   }
 }
 
-export async function getUserProjectInvitations(): Promise<ProjectInvitationWithProject[]> {
+export async function getUserProjectInvitations(): Promise<
+  ProjectInvitationWithProject[]
+> {
   try {
     const currentUserId = requireUserId();
 
-
     const { data, error } = await supabase
-      .from('project_invitations')
-      .select('*, projects(*)')
-      .eq('email', { id: currentUserId }.email)
-      .gt('expires_at', new Date().toISOString())
-      .order('invited_at', { ascending: false });
+      .from("project_invitations")
+      .select("*, projects(*)")
+      .eq("email", getUserEmail() ?? "")
+      .gt("expires_at", new Date().toISOString())
+      .order("invited_at", { ascending: false });
 
     if (error) throw error;
 
     return (data ?? []).map((item: Record<string, unknown>) => ({
       ...transformInvitationFromDb(item),
-      project: item.projects ? transformProjectFromDb(item.projects as Record<string, unknown>) : undefined,
+      project: item.projects
+        ? transformProjectFromDb(item.projects as Record<string, unknown>)
+        : undefined,
     }));
   } catch (error) {
-    console.error('Error fetching user project invitations:', error);
+    console.error("Error fetching user project invitations:", error);
     return [];
   }
 }
@@ -688,7 +776,9 @@ function transformProjectFromDb(dbRecord: Record<string, unknown>): Project {
   };
 }
 
-function transformInvitationFromDb(dbRecord: Record<string, unknown>): ProjectInvitation {
+function transformInvitationFromDb(
+  dbRecord: Record<string, unknown>,
+): ProjectInvitation {
   return {
     id: dbRecord.id as string,
     projectId: dbRecord.project_id as string,

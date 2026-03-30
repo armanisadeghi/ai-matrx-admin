@@ -1,5 +1,6 @@
 import { CanvasContent } from '@/features/canvas/redux/canvasSlice';
 import { supabase } from '@/utils/supabase/client';
+import { requireUserId } from '@/utils/auth/getUserId';
 
 export interface CanvasItemRow {
   id: string;

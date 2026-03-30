@@ -13,6 +13,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { requireUserId } from '@/utils/auth/getUserId';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { supabase } from '@/utils/supabase/client';

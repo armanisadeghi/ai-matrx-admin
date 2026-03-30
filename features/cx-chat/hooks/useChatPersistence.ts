@@ -6,12 +6,13 @@ import type {
   CxConversationWithMessages,
   CxMessageInsert,
   CxContentBlock,
+  CxMessageRole,
 } from "@/features/cx-chat/types/cx-tables";
 
 /** Minimal chat message shape used by saveMessages */
 interface ChatMessage {
   id: string;
-  role: string;
+  role: CxMessageRole;
   content: string;
   variables?: Record<string, string>;
   resources?: unknown[];

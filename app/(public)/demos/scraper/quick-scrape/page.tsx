@@ -1,406 +1,464 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Globe, Loader2, Send, ExternalLink, FileText, Link as LinkIcon } from "lucide-react";
+import React, { useState } from "react";
+import {
+  Globe,
+  Loader2,
+  Send,
+  ExternalLink,
+  Link as LinkIcon,
+  AlertCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DemoPageLayout } from "../_components/DemoPageLayout";
 import { ResponseViewer } from "../_components/ResponseViewer";
-import { usePublicScraperStream } from "@/features/scraper/hooks/usePublicScraperStream";
+import { useScraperApi } from "@/features/scraper/hooks/useScraperApi";
 
-// Types for scraper response
-interface ScraperOverview {
-    page_title?: string;
-    url?: string;
-    website?: string;
-    char_count?: number;
-    has_structured_content?: boolean;
-    outline?: Record<string, string[]>;
+function normalizeUrl(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const withProtocol = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
+  try {
+    new URL(withProtocol);
+    return withProtocol;
+  } catch {
+    return null;
+  }
 }
 
-interface ScraperLinks {
-    internal?: string[];
-    external?: string[];
-    images?: string[];
-    documents?: string[];
+// ─── helpers ─────────────────────────────────────────────────────────────────
+
+function EmptyField({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-2 p-4 rounded-lg border border-dashed border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30">
+      <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
+      <p className="text-sm text-amber-700 dark:text-amber-400">
+        <span className="font-mono font-medium">{label}</span> was returned
+        empty by the API.
+      </p>
+    </div>
+  );
 }
 
-interface ScraperResult {
-    status: string;
-    url: string;
-    overview?: ScraperOverview;
-    text_data?: string;
-    structured_data?: object;
-    organized_data?: object;
-    links?: ScraperLinks;
-    main_image?: string | null;
-    scraped_at?: string;
+function TextBlock({ content, label }: { content: string; label: string }) {
+  if (!content) return <EmptyField label={label} />;
+  return (
+    <pre className="whitespace-pre-wrap text-sm font-sans text-foreground bg-muted p-4 rounded-lg leading-relaxed">
+      {content}
+    </pre>
+  );
 }
 
-interface ScraperResponse {
-    response_type: string;
-    metadata?: { execution_time_ms?: number };
-    results: ScraperResult[];
+function charCount(s: string | undefined): string {
+  if (!s) return "empty";
+  return `${s.length.toLocaleString()} chars`;
 }
 
-// Rendered content component
-function RenderedContent({ data }: { data: ScraperResponse }) {
-    const [activeTab, setActiveTab] = useState("overview");
-    
-    if (!data?.results?.length) {
-        return <div className="p-4 text-gray-500">No results found</div>;
-    }
+// ─── main rendered content ────────────────────────────────────────────────────
 
-    const result = data.results[0];
-    const overview = result.overview || {};
-    const links = result.links || {};
+function RenderedContent({ raw }: { raw: Record<string, unknown> }) {
+  const [activeTab, setActiveTab] = useState("overview");
 
-    return (
-        <div className="h-full flex flex-col overflow-hidden">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-                <TabsList className="w-full justify-start rounded-none border-b border-border h-10 px-3 shrink-0">
-                    <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
-                    <TabsTrigger value="text" className="text-xs">Text Content</TabsTrigger>
-                    <TabsTrigger value="links" className="text-xs">Links</TabsTrigger>
-                    <TabsTrigger value="structured" className="text-xs">Structured Data</TabsTrigger>
-                </TabsList>
+  const overview = (raw.overview as Record<string, unknown>) ?? {};
+  const links = (raw.links as Record<string, string[]>) ?? {};
+  const images = (raw.images as string[]) ?? (links.images as string[]) ?? [];
 
-                {/* Overview Tab */}
-                <TabsContent value="overview" className="flex-1 overflow-auto p-4 m-0">
-                    <div className="space-y-4">
-                        {/* Title & URL */}
-                        <div className="space-y-2">
-                            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                                {overview.page_title || "Untitled Page"}
-                            </h2>
-                            <a 
-                                href={result.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                            >
-                                {result.url}
-                                <ExternalLink className="w-3.5 h-3.5" />
-                            </a>
+  // All text variants exactly as returned by the API
+  const textVariants: { key: string; label: string; description: string }[] = [
+    {
+      key: "text_data",
+      label: "text_data",
+      description: "Legacy plain text",
+    },
+    {
+      key: "ai_content",
+      label: "ai_content",
+      description: "Clean text — best for AI processing",
+    },
+    {
+      key: "ai_research_content",
+      label: "ai_research_content",
+      description: "Clean text with inline links — best for AI research",
+    },
+    {
+      key: "ai_research_with_images",
+      label: "ai_research_with_images",
+      description: "Research text including image references",
+    },
+    {
+      key: "markdown_renderable",
+      label: "markdown_renderable",
+      description: "Full markdown with links and images",
+    },
+  ];
+
+  return (
+    <div className="h-full flex flex-col overflow-hidden">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="flex-1 flex flex-col overflow-hidden"
+      >
+        <TabsList className="w-full justify-start rounded-none border-b border-border h-10 px-2 shrink-0 gap-0.5 overflow-x-auto">
+          <TabsTrigger value="overview" className="text-xs shrink-0">
+            Overview
+          </TabsTrigger>
+          {textVariants.map(({ key, label }) => {
+            const val = raw[key] as string | undefined;
+            const isEmpty = !val;
+            return (
+              <TabsTrigger
+                key={key}
+                value={key}
+                className="text-xs shrink-0 gap-1"
+              >
+                <span className="font-mono">{label}</span>
+                {isEmpty && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                )}
+              </TabsTrigger>
+            );
+          })}
+          <TabsTrigger value="links" className="text-xs shrink-0">
+            Links
+          </TabsTrigger>
+          <TabsTrigger value="organized" className="text-xs shrink-0">
+            Organized
+          </TabsTrigger>
+          <TabsTrigger value="structured" className="text-xs shrink-0">
+            Structured
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ── Overview ─────────────────────────────────────────────────────── */}
+        <TabsContent value="overview" className="flex-1 overflow-auto p-4 m-0">
+          <div className="space-y-4 max-w-3xl">
+            <div className="space-y-1">
+              <h2 className="text-xl font-semibold">
+                {(overview.page_title as string) ||
+                  (raw.title as string) ||
+                  "Untitled Page"}
+              </h2>
+              <a
+                href={(raw.response_url as string) || (raw.url as string)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline flex items-center gap-1"
+              >
+                {(raw.response_url as string) || (raw.url as string)}
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+              <div className="flex items-center gap-2 flex-wrap pt-1">
+                <Badge variant="outline" className="text-xs">
+                  {(raw.cms as string) || "unknown CMS"}
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  {(raw.firewall as string) || "no firewall"}
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  HTTP {raw.status_code as number}
+                </Badge>
+                <Badge
+                  variant={raw.success ? "default" : "destructive"}
+                  className="text-xs"
+                >
+                  {raw.success ? "success" : "failed"}
+                </Badge>
+              </div>
+            </div>
+
+            {/* Stats grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                {
+                  label: "char_count (overview)",
+                  value:
+                    (overview.char_count as number)?.toLocaleString() ?? "0",
+                  warn: !(overview.char_count as number),
+                },
+                {
+                  label: "Internal Links",
+                  value: links.internal?.length ?? 0,
+                  warn: false,
+                },
+                {
+                  label: "External Links",
+                  value: links.external?.length ?? 0,
+                  warn: false,
+                },
+                { label: "Images", value: images.length, warn: false },
+              ].map(({ label, value, warn }) => (
+                <div
+                  key={label}
+                  className={`p-3 rounded-lg ${warn ? "bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800" : "bg-muted"}`}
+                >
+                  <div className="text-xs text-muted-foreground mb-1 font-mono">
+                    {label}
+                  </div>
+                  <div className="text-lg font-semibold">{value}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Text variants availability matrix */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Text Variants</h3>
+              <div className="space-y-1.5">
+                {textVariants.map(({ key, label, description }) => {
+                  const val = raw[key] as string | undefined;
+                  return (
+                    <div
+                      key={key}
+                      className="flex items-center gap-3 p-2 rounded-lg bg-muted"
+                    >
+                      <div
+                        className={`w-2 h-2 rounded-full shrink-0 ${val ? "bg-green-500" : "bg-amber-400"}`}
+                      />
+                      <code className="text-xs font-mono text-foreground w-48 shrink-0">
+                        {label}
+                      </code>
+                      <span className="text-xs text-muted-foreground flex-1">
+                        {description}
+                      </span>
+                      <span
+                        className={`text-xs font-mono shrink-0 ${val ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}
+                      >
+                        {charCount(val)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {overview.outline &&
+              Object.keys(overview.outline as object).length > 0 && (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">Page Outline</h3>
+                  <div className="space-y-1 bg-muted p-3 rounded-lg">
+                    {Object.keys(overview.outline as object).map(
+                      (heading, i) => (
+                        <div key={i} className="text-sm text-foreground">
+                          {heading}
                         </div>
+                      ),
+                    )}
+                  </div>
+                </div>
+              )}
 
-                        {/* Stats Grid */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <div className="p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
-                                <div className="text-xs text-gray-500 mb-1">Characters</div>
-                                <div className="text-lg font-semibold">{overview.char_count?.toLocaleString() || 0}</div>
-                            </div>
-                            <div className="p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
-                                <div className="text-xs text-gray-500 mb-1">Internal Links</div>
-                                <div className="text-lg font-semibold">{links.internal?.length || 0}</div>
-                            </div>
-                            <div className="p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
-                                <div className="text-xs text-gray-500 mb-1">External Links</div>
-                                <div className="text-lg font-semibold">{links.external?.length || 0}</div>
-                            </div>
-                            <div className="p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
-                                <div className="text-xs text-gray-500 mb-1">Images</div>
-                                <div className="text-lg font-semibold">{links.images?.length || 0}</div>
-                            </div>
-                        </div>
+            {raw.scraped_at && (
+              <p className="text-xs text-muted-foreground/60 font-mono">
+                Scraped at {raw.scraped_at as string}
+              </p>
+            )}
+          </div>
+        </TabsContent>
 
-                        {/* Main Image */}
-                        {result.main_image && (
-                            <div className="space-y-2">
-                                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Main Image</h3>
-                                <img 
-                                    src={result.main_image} 
-                                    alt="Main page image"
-                                    className="max-w-md rounded-lg border border-border"
-                                />
-                            </div>
-                        )}
+        {/* ── Text variant tabs ─────────────────────────────────────────────── */}
+        {textVariants.map(({ key, label, description }) => (
+          <TabsContent
+            key={key}
+            value={key}
+            className="flex-1 overflow-auto p-4 m-0"
+          >
+            <div className="space-y-3 max-w-3xl">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-sm font-semibold font-mono">{label}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {description}
+                  </p>
+                </div>
+                <span className="text-xs font-mono text-muted-foreground shrink-0">
+                  {charCount(raw[key] as string | undefined)}
+                </span>
+              </div>
+              <TextBlock content={raw[key] as string} label={label} />
+            </div>
+          </TabsContent>
+        ))}
 
-                        {/* Outline */}
-                        {overview.outline && Object.keys(overview.outline).length > 0 && (
-                            <div className="space-y-2">
-                                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Page Outline</h3>
-                                <div className="space-y-1 bg-gray-50 dark:bg-zinc-800 p-3 rounded-lg">
-                                    {Object.entries(overview.outline).map(([heading, content], index) => (
-                                        <div key={index} className="text-sm">
-                                            <span className="font-medium text-gray-700 dark:text-gray-300">{heading}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+        {/* ── Links ────────────────────────────────────────────────────────── */}
+        <TabsContent value="links" className="flex-1 overflow-auto m-0">
+          <div className="p-4 space-y-6 max-w-3xl">
+            {(
+              [
+                "internal",
+                "external",
+                "others",
+                "images",
+                "documents",
+                "audio",
+                "videos",
+              ] as const
+            ).map((kind) => {
+              const arr = links[kind];
+              if (!arr?.length) return null;
+              return (
+                <div key={kind} className="space-y-2">
+                  <h3 className="text-sm font-medium flex items-center gap-2">
+                    <LinkIcon className="w-4 h-4" />
+                    <span className="font-mono">{kind}</span>
+                    <span className="text-muted-foreground">
+                      ({arr.length})
+                    </span>
+                  </h3>
+                  <div className="space-y-0.5 max-h-48 overflow-auto bg-muted rounded-lg p-2">
+                    {arr.slice(0, 100).map((link, i) => (
+                      <a
+                        key={i}
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-xs text-primary hover:underline truncate py-0.5"
+                      >
+                        {link}
+                      </a>
+                    ))}
+                    {arr.length > 100 && (
+                      <p className="text-xs text-muted-foreground pt-1">
+                        ...and {arr.length - 100} more
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            {!Object.values(links).some((v) => (v as string[])?.length) && (
+              <EmptyField label="links" />
+            )}
+          </div>
+        </TabsContent>
 
-                        {/* Metadata */}
-                        {data.metadata?.execution_time_ms && (
-                            <div className="text-xs text-gray-400">
-                                Scraped in {data.metadata.execution_time_ms}ms at {result.scraped_at || new Date().toISOString()}
-                            </div>
-                        )}
-                    </div>
-                </TabsContent>
+        {/* ── Organized data ────────────────────────────────────────────────── */}
+        <TabsContent value="organized" className="flex-1 overflow-auto m-0">
+          <div className="p-4 space-y-3 max-w-3xl">
+            <p className="text-xs text-muted-foreground">
+              Raw <code className="font-mono">organized_data</code> from the API
+            </p>
+            {raw.organized_data ? (
+              <pre className="text-xs bg-muted text-foreground p-4 rounded-lg overflow-auto">
+                {JSON.stringify(raw.organized_data, null, 2)}
+              </pre>
+            ) : (
+              <EmptyField label="organized_data" />
+            )}
+          </div>
+        </TabsContent>
 
-                {/* Text Content Tab */}
-                <TabsContent value="text" className="flex-1 overflow-auto m-0">
-                    <div className="p-4">
-                        {result.text_data ? (
-                            <div className="prose dark:prose-invert max-w-none">
-                                <pre className="whitespace-pre-wrap text-sm font-sans text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-zinc-800 p-4 rounded-lg">
-                                    {result.text_data}
-                                </pre>
-                            </div>
-                        ) : (
-                            <p className="text-gray-500">No text content extracted</p>
-                        )}
-                    </div>
-                </TabsContent>
-
-                {/* Links Tab */}
-                <TabsContent value="links" className="flex-1 overflow-auto m-0">
-                    <div className="p-4 space-y-6">
-                        {/* Internal Links */}
-                        {links.internal && links.internal.length > 0 && (
-                            <div className="space-y-2">
-                                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                    <LinkIcon className="w-4 h-4" />
-                                    Internal Links ({links.internal.length})
-                                </h3>
-                                <div className="space-y-1 max-h-48 overflow-auto">
-                                    {links.internal.slice(0, 50).map((link, i) => (
-                                        <a 
-                                            key={i}
-                                            href={link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="block text-xs text-blue-600 dark:text-blue-400 hover:underline truncate"
-                                        >
-                                            {link}
-                                        </a>
-                                    ))}
-                                    {links.internal.length > 50 && (
-                                        <p className="text-xs text-gray-400">...and {links.internal.length - 50} more</p>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* External Links */}
-                        {links.external && links.external.length > 0 && (
-                            <div className="space-y-2">
-                                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                    <ExternalLink className="w-4 h-4" />
-                                    External Links ({links.external.length})
-                                </h3>
-                                <div className="space-y-1 max-h-48 overflow-auto">
-                                    {links.external.slice(0, 50).map((link, i) => (
-                                        <a 
-                                            key={i}
-                                            href={link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="block text-xs text-purple-600 dark:text-purple-400 hover:underline truncate"
-                                        >
-                                            {link}
-                                        </a>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Images */}
-                        {links.images && links.images.length > 0 && (
-                            <div className="space-y-2">
-                                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Images ({links.images.length})
-                                </h3>
-                                <div className="grid grid-cols-4 md:grid-cols-6 gap-2 max-h-64 overflow-auto">
-                                    {links.images.slice(0, 24).map((img, i) => (
-                                        <a 
-                                            key={i}
-                                            href={img}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            <img 
-                                                src={img} 
-                                                alt={`Image ${i + 1}`}
-                                                className="w-full h-16 object-cover rounded border border-border hover:border-primary transition-colors"
-                                                onError={(e) => {
-                                                    (e.target as HTMLImageElement).style.display = 'none';
-                                                }}
-                                            />
-                                        </a>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </TabsContent>
-
-                {/* Structured Data Tab */}
-                <TabsContent value="structured" className="flex-1 overflow-auto m-0">
-                    <div className="p-4 space-y-4">
-                        {result.structured_data && Object.keys(result.structured_data).length > 0 ? (
-                            <pre className="text-xs bg-gray-50 dark:bg-zinc-800 p-4 rounded-lg overflow-auto">
-                                {JSON.stringify(result.structured_data, null, 2)}
-                            </pre>
-                        ) : (
-                            <p className="text-gray-500">No structured data found</p>
-                        )}
-
-                        {result.organized_data && Object.keys(result.organized_data).length > 0 && (
-                            <div className="space-y-2">
-                                <h3 className="text-sm font-medium">Organized Data</h3>
-                                <pre className="text-xs bg-gray-50 dark:bg-zinc-800 p-4 rounded-lg overflow-auto">
-                                    {JSON.stringify(result.organized_data, null, 2)}
-                                </pre>
-                            </div>
-                        )}
-                    </div>
-                </TabsContent>
-            </Tabs>
-        </div>
-    );
+        {/* ── Structured / metadata ────────────────────────────────────────── */}
+        <TabsContent value="structured" className="flex-1 overflow-auto m-0">
+          <div className="p-4 space-y-4 max-w-3xl">
+            {raw.structured_data ? (
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground font-mono">
+                  structured_data
+                </p>
+                <pre className="text-xs bg-muted text-foreground p-4 rounded-lg overflow-auto">
+                  {JSON.stringify(raw.structured_data, null, 2)}
+                </pre>
+              </div>
+            ) : (
+              <EmptyField label="structured_data" />
+            )}
+            {raw.metadata ? (
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground font-mono">
+                  metadata (json-ld / opengraph / meta_tags)
+                </p>
+                <pre className="text-xs bg-muted text-foreground p-4 rounded-lg overflow-auto">
+                  {JSON.stringify(raw.metadata, null, 2)}
+                </pre>
+              </div>
+            ) : (
+              <EmptyField label="metadata" />
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
 }
+
+// ─── page ─────────────────────────────────────────────────────────────────────
 
 export default function QuickScrapeDemoPage() {
-    const [url, setUrl] = useState("");
-    const [scraperData, setScraperData] = useState<ScraperResponse | null>(null);
+  const [url, setUrl] = useState("");
+  const {
+    scrapeUrlRaw,
+    rawData,
+    isLoading,
+    hasError,
+    error,
+    statusMessage,
+    reset,
+  } = useScraperApi();
 
-    const {
-        isLoading,
-        error,
-        results,
-        quickScrape,
-        reset,
-    } = usePublicScraperStream({
-        onData: (data) => {
-            console.log('[Quick Scrape] Data received:', data);
-            // Transform to old format
-            if (data && typeof data === 'object' && 'response_type' in data) {
-                setScraperData(data as ScraperResponse);
-            } else {
-                // Wrap in expected format
-                setScraperData({
-                    response_type: 'scraped_pages',
-                    results: results.map(r => ({
-                        status: 'success',
-                        url: r.overview?.url || url,
-                        overview: r.overview,
-                        text_data: r.text_data,
-                        structured_data: r.structured_data,
-                        organized_data: r.organized_data,
-                        links: r.links,
-                        main_image: r.main_image,
-                        scraped_at: r.scraped_at,
-                    }))
-                });
-            }
-        },
-    });
+  const handleScrape = async () => {
+    const normalized = normalizeUrl(url);
+    if (!normalized) return;
+    setUrl(normalized);
+    reset();
+    await scrapeUrlRaw(normalized, { use_cache: false });
+  };
 
-    const handleScrape = async () => {
-        if (!url.trim()) return;
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !isLoading) handleScrape();
+  };
 
-        // Validate URL
-        try {
-            new URL(url);
-        } catch {
-            return;
-        }
+  const inputSection = (
+    <div className="flex gap-3 items-center">
+      <Input
+        type="url"
+        placeholder="example.com"
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+        onKeyDown={handleKeyDown}
+        disabled={isLoading}
+        className="flex-1 bg-background text-foreground border-border placeholder:text-muted-foreground"
+        style={{ fontSize: "16px" }}
+      />
+      <Button
+        onClick={handleScrape}
+        disabled={!url.trim() || isLoading}
+        className="px-6"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            {statusMessage ?? "Scraping..."}
+          </>
+        ) : (
+          <>
+            <Send className="w-4 h-4 mr-2" />
+            Scrape
+          </>
+        )}
+      </Button>
+    </div>
+  );
 
-        setScraperData(null);
-        await quickScrape({
-            urls: [url.trim()],
-            anchor_size: 100,
-            get_content_filter_removal_details: true,
-            get_links: true,
-            get_main_image: true,
-            get_organized_data: true,
-            get_overview: true,
-            get_structured_data: true,
-            get_text_data: true,
-            include_anchors: true,
-            include_highlighting_markers: false,
-            include_media: true,
-            include_media_description: true,
-            include_media_links: true,
-            use_cache: false,
-        });
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !isLoading) {
-            handleScrape();
-        }
-    };
-
-    // Sync results to response format
-    useEffect(() => {
-        if (results.length > 0 && !scraperData) {
-            setScraperData({
-                response_type: 'scraped_pages',
-                results: results.map(r => ({
-                    status: 'success',
-                    url: r.overview?.url || url,
-                    overview: r.overview,
-                    text_data: r.text_data,
-                    structured_data: r.structured_data,
-                    organized_data: r.organized_data,
-                    links: r.links,
-                    main_image: r.main_image,
-                    scraped_at: r.scraped_at,
-                }))
-            });
-        }
-    }, [results, scraperData, url]);
-
-    const inputSection = (
-        <div className="flex gap-3 items-center">
-            <div className="flex-1">
-                <Input
-                    type="url"
-                    placeholder="https://example.com"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    disabled={isLoading}
-                    className="text-base"
-                />
-            </div>
-            <Button 
-                onClick={handleScrape} 
-                disabled={!url.trim() || isLoading}
-                className="px-6"
-            >
-                {isLoading ? (
-                    <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Scraping...
-                    </>
-                ) : (
-                    <>
-                        <Send className="w-4 h-4 mr-2" />
-                        Scrape
-                    </>
-                )}
-            </Button>
-        </div>
-    );
-
-    return (
-        <DemoPageLayout
-            title="Quick Scrape"
-            description="Scrape a URL and view the extracted content"
-            inputSection={inputSection}
-        >
-            <ResponseViewer
-                data={scraperData}
-                isLoading={isLoading}
-                error={error}
-                title="Scrape Results"
-                renderContent={(data) => <RenderedContent data={data as ScraperResponse} />}
-            />
-        </DemoPageLayout>
-    );
+  return (
+    <DemoPageLayout
+      title="Quick Scrape"
+      description="Scrape a URL — all returned fields shown as-is"
+      inputSection={inputSection}
+    >
+      <ResponseViewer
+        data={rawData}
+        isLoading={isLoading}
+        error={hasError ? error : null}
+        title="Scrape Results"
+        renderContent={(d) => (
+          <RenderedContent raw={d as Record<string, unknown>} />
+        )}
+      />
+    </DemoPageLayout>
+  );
 }

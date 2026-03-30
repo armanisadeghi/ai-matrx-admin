@@ -1,13 +1,17 @@
 /**
  * Prompt Import Service
- * 
+ *
  * Handles importing prompts from JSON format into the database
  */
 
-import { v4 as uuidv4 } from 'uuid';
-import { supabase } from '@/utils/supabase/client';
-import type { PromptImportResult, PromptBatchImportResult } from '../types/prompt-json';
-import { PromptData, PromptsBatchData } from '@/features/prompts/types/core';
+import { v4 as uuidv4 } from "uuid";
+import { supabase } from "@/utils/supabase/client";
+import { requireUserId } from "@/utils/auth/getUserId";
+import type {
+  PromptImportResult,
+  PromptBatchImportResult,
+} from "../types/prompt-json";
+import { PromptData, PromptsBatchData } from "@/features/prompts/types/core";
 
 /**
  * Extract variable names from messages
@@ -17,7 +21,7 @@ function extractVariablesFromMessages(messages: any[]): string[] {
   const variablePattern = /\{\{\s*([^}]+?)\s*\}\}/g;
   const variables = new Set<string>();
 
-  messages.forEach(msg => {
+  messages.forEach((msg) => {
     const matches = msg.content.matchAll(variablePattern);
     for (const match of matches) {
       variables.add(match[1].trim());
@@ -32,28 +36,31 @@ function extractVariablesFromMessages(messages: any[]): string[] {
  * Converts {{ variable }} to {{variable}}
  */
 function normalizeVariableSyntax(content: string): string {
-  return content.replace(/\{\{\s*([^}]+?)\s*\}\}/g, '{{$1}}');
+  return content.replace(/\{\{\s*([^}]+?)\s*\}\}/g, "{{$1}}");
 }
 
 /**
  * Validate prompt JSON
  */
-function validatePromptJSON(prompt: PromptData): { valid: boolean; error?: string } {
-  if (!prompt.name || prompt.name.trim() === '') {
-    return { valid: false, error: 'Prompt name is required' };
+function validatePromptJSON(prompt: PromptData): {
+  valid: boolean;
+  error?: string;
+} {
+  if (!prompt.name || prompt.name.trim() === "") {
+    return { valid: false, error: "Prompt name is required" };
   }
 
   if (!prompt.messages || prompt.messages.length === 0) {
-    return { valid: false, error: 'At least one message is required' };
+    return { valid: false, error: "At least one message is required" };
   }
 
   // Validate message structure
   for (const msg of prompt.messages) {
-    if (!msg.role || !['system', 'user', 'assistant'].includes(msg.role)) {
+    if (!msg.role || !["system", "user", "assistant"].includes(msg.role)) {
       return { valid: false, error: `Invalid message role: ${msg.role}` };
     }
-    if (typeof msg.content !== 'string') {
-      return { valid: false, error: 'Message content must be a string' };
+    if (typeof msg.content !== "string") {
+      return { valid: false, error: "Message content must be a string" };
     }
   }
 
@@ -63,16 +70,18 @@ function validatePromptJSON(prompt: PromptData): { valid: boolean; error?: strin
 /**
  * Import a single prompt from JSON
  */
-export async function importPrompt(promptData: PromptData): Promise<PromptImportResult> {
+export async function importPrompt(
+  promptData: PromptData,
+): Promise<PromptImportResult> {
   try {
     // Validate input
     const validation = validatePromptJSON(promptData);
     if (!validation.valid) {
       return {
         success: false,
-        promptId: '',
-        promptName: promptData.name || '',
-        error: validation.error
+        promptId: "",
+        promptName: promptData.name || "",
+        error: validation.error,
       };
     }
 
@@ -82,21 +91,25 @@ export async function importPrompt(promptData: PromptData): Promise<PromptImport
     const promptId = promptData.id || uuidv4();
 
     // Normalize variable syntax in all messages (remove spaces from {{ var }})
-    const normalizedMessages = (promptData.messages || []).map(msg => ({
+    const normalizedMessages = (promptData.messages || []).map((msg) => ({
       ...msg,
-      content: normalizeVariableSyntax(msg.content)
+      content: normalizeVariableSyntax(msg.content),
     }));
 
     // Extract variables from normalized messages
     const extractedVariables = extractVariablesFromMessages(normalizedMessages);
 
     // Build variable defaults array, preserving customComponent
-    const variableDefaults = extractedVariables.map(varName => {
-      const provided = promptData.variableDefaults?.find(v => v.name === varName);
+    const variableDefaults = extractedVariables.map((varName) => {
+      const provided = promptData.variableDefaults?.find(
+        (v) => v.name === varName,
+      );
       return {
         name: varName,
-        defaultValue: provided?.defaultValue || '',
-        ...(provided?.customComponent && { customComponent: provided.customComponent })
+        defaultValue: provided?.defaultValue || "",
+        ...(provided?.customComponent && {
+          customComponent: provided.customComponent,
+        }),
       };
     });
 
@@ -121,49 +134,46 @@ export async function importPrompt(promptData: PromptData): Promise<PromptImport
 
     // Check if prompt with this ID already exists
     const { data: existing } = await supabase
-      .from('prompts')
-      .select('id')
-      .eq('id', promptId)
+      .from("prompts")
+      .select("id")
+      .eq("id", promptId)
       .single();
 
     if (existing) {
       // Update existing prompt
       const { error } = await supabase
-        .from('prompts')
+        .from("prompts")
         .update(dbPromptData)
-        .eq('id', promptId);
+        .eq("id", promptId);
 
       if (error) throw error;
 
       return {
         success: true,
         promptId,
-        promptName: promptData.name || '',
-        message: 'Prompt updated successfully'
+        promptName: promptData.name || "",
+        message: "Prompt updated successfully",
       };
     } else {
       // Insert new prompt
-      const { error } = await supabase
-        .from('prompts')
-        .insert(dbPromptData);
+      const { error } = await supabase.from("prompts").insert(dbPromptData);
 
       if (error) throw error;
 
       return {
         success: true,
         promptId,
-        promptName: promptData.name || '',
-        message: 'Prompt created successfully'
+        promptName: promptData.name || "",
+        message: "Prompt created successfully",
       };
     }
-
   } catch (error) {
-    console.error('Error importing prompt:', error);
+    console.error("Error importing prompt:", error);
     return {
       success: false,
-      promptId: promptData.id || '',
-      promptName: promptData.name || '',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      promptId: promptData.id || "",
+      promptName: promptData.name || "",
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -171,7 +181,9 @@ export async function importPrompt(promptData: PromptData): Promise<PromptImport
 /**
  * Import multiple prompts from batch JSON
  */
-export async function importPromptBatch(batchJSON: PromptsBatchData): Promise<PromptBatchImportResult> {
+export async function importPromptBatch(
+  batchJSON: PromptsBatchData,
+): Promise<PromptBatchImportResult> {
   const results: PromptImportResult[] = [];
 
   for (const promptData of batchJSON.prompts) {
@@ -179,14 +191,14 @@ export async function importPromptBatch(batchJSON: PromptsBatchData): Promise<Pr
     results.push(result);
   }
 
-  const totalImported = results.filter(r => r.success).length;
-  const totalFailed = results.filter(r => !r.success).length;
+  const totalImported = results.filter((r) => r.success).length;
+  const totalFailed = results.filter((r) => !r.success).length;
 
   return {
     success: totalFailed === 0,
     results,
     totalImported,
-    totalFailed
+    totalFailed,
   };
 }
 
@@ -194,17 +206,18 @@ export async function importPromptBatch(batchJSON: PromptsBatchData): Promise<Pr
  * Export a prompt as JSON
  * Includes all variable data including customComponent configurations
  */
-export async function exportPromptAsJSON(promptId: string): Promise<PromptData | null> {
+export async function exportPromptAsJSON(
+  promptId: string,
+): Promise<PromptData | null> {
   try {
-
     const { data: prompt, error } = await supabase
-      .from('prompts')
-      .select('*')
-      .eq('id', promptId)
+      .from("prompts")
+      .select("*")
+      .eq("id", promptId)
       .single();
 
     if (error || !prompt) {
-      console.error('Error fetching prompt:', error);
+      console.error("Error fetching prompt:", error);
       return null;
     }
 
@@ -225,10 +238,8 @@ export async function exportPromptAsJSON(promptId: string): Promise<PromptData |
       isFavorite: prompt.is_favorite ?? false,
       isArchived: prompt.is_archived ?? false,
     };
-
   } catch (error) {
-    console.error('Error exporting prompt:', error);
+    console.error("Error exporting prompt:", error);
     return null;
   }
 }
-

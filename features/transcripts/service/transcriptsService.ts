@@ -1,6 +1,7 @@
 // features/transcripts/service/transcriptsService.ts
 
 import { supabase } from '@/utils/supabase/client';
+import { requireUserId } from '@/utils/auth/getUserId';
 import type { Transcript, CreateTranscriptInput, UpdateTranscriptInput, TranscriptSegment } from '../types';
 
 /**

@@ -1668,25 +1668,6 @@
         }
       }
     },
-    "/scraper/mic-check": {
-      "post": {
-        "tags": [
-          "Scraper"
-        ],
-        "summary": "Mic Check",
-        "operationId": "mic_check_scraper_mic_check_post",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          }
-        }
-      }
-    },
     "/scraper/compat/quick-scrape": {
       "post": {
         "tags": [

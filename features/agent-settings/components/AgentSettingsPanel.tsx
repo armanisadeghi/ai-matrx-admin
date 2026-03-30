@@ -3,16 +3,8 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AgentSettingsContent } from "./AgentSettingsContent";
 
-interface AvailableTool {
-  name: string;
-  description?: string;
-  category?: string;
-  icon?: string;
-}
-
 interface AgentSettingsPanelProps {
   agentId: string;
-  availableTools?: AvailableTool[];
   usedVariableNames?: Set<string>;
   showTools?: boolean;
   showVariables?: boolean;
@@ -28,7 +20,6 @@ interface AgentSettingsPanelProps {
  */
 export function AgentSettingsPanel({
   agentId,
-  availableTools,
   usedVariableNames,
   showTools = true,
   showVariables = true,
@@ -45,7 +36,6 @@ export function AgentSettingsPanel({
       <ScrollArea className="flex-1 overflow-auto">
         <AgentSettingsContent
           agentId={agentId}
-          availableTools={availableTools}
           usedVariableNames={usedVariableNames}
           showTools={showTools}
           showVariables={showVariables}

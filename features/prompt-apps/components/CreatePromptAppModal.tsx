@@ -1,13 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import FullScreenOverlay, { TabDefinition } from '@/components/official/FullScreenOverlay';
-import { CreatePromptAppForm } from './CreatePromptAppForm';
-import { AutoCreatePromptAppForm } from './AutoCreatePromptAppForm';
-import { SearchablePromptSelect } from './SearchablePromptSelect';
-import { supabase } from '@/utils/supabase/client';
-import { Loader2 } from 'lucide-react';
-import { Label } from '@/components/ui/label';
+import { useState, useEffect } from "react";
+import FullScreenOverlay, {
+  TabDefinition,
+} from "@/components/official/FullScreenOverlay";
+import { CreatePromptAppForm } from "./CreatePromptAppForm";
+import { AutoCreatePromptAppForm } from "./AutoCreatePromptAppForm";
+import { SearchablePromptSelect } from "./SearchablePromptSelect";
+import { supabase } from "@/utils/supabase/client";
+import { Loader2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { requireUserId } from "@/utils/auth/getUserId";
 
 interface CreatePromptAppModalProps {
   isOpen: boolean;
@@ -18,12 +21,19 @@ interface CreatePromptAppModalProps {
   prompt?: any;
 }
 
-export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt: promptProp }: CreatePromptAppModalProps) {
+export function CreatePromptAppModal({
+  isOpen,
+  onClose,
+  promptId,
+  prompt: promptProp,
+}: CreatePromptAppModalProps) {
   const [prompts, setPrompts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPromptId, setSelectedPromptId] = useState<string | undefined>(promptId);
+  const [selectedPromptId, setSelectedPromptId] = useState<string | undefined>(
+    promptId,
+  );
   const [selectedPrompt, setSelectedPrompt] = useState<any>(promptProp);
 
   useEffect(() => {
@@ -35,7 +45,7 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt: prompt
   // Sync preselected prompt once prompts are loaded
   useEffect(() => {
     if (prompts.length > 0 && promptId && !selectedPrompt) {
-      const found = prompts.find(p => p.id === promptId);
+      const found = prompts.find((p) => p.id === promptId);
       if (found) setSelectedPrompt(found);
     }
   }, [prompts, promptId, selectedPrompt]);
@@ -48,23 +58,23 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt: prompt
       const userId = requireUserId();
 
       const { data: promptsData, error: promptsError } = await supabase
-        .from('prompts')
-        .select('*')
-        .eq('user_id', userId)
-        .order('updated_at', { ascending: false });
+        .from("prompts")
+        .select("*")
+        .eq("user_id", userId)
+        .order("updated_at", { ascending: false });
 
       if (promptsError) throw promptsError;
 
       const { data: categoriesData } = await supabase
-        .from('prompt_app_categories')
-        .select('*')
-        .order('sort_order');
+        .from("prompt_app_categories")
+        .select("*")
+        .order("sort_order");
 
       setPrompts(promptsData || []);
       setCategories(categoriesData || []);
     } catch (err) {
-      console.error('Error loading data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load data');
+      console.error("Error loading data:", err);
+      setError(err instanceof Error ? err.message : "Failed to load data");
     } finally {
       setIsLoading(false);
     }
@@ -91,7 +101,7 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt: prompt
       />
       {prompts.length > 0 && (
         <p className="text-xs text-muted-foreground">
-          {prompts.length} prompt{prompts.length !== 1 ? 's' : ''} available
+          {prompts.length} prompt{prompts.length !== 1 ? "s" : ""} available
         </p>
       )}
     </div>
@@ -99,8 +109,8 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt: prompt
 
   const tabs: TabDefinition[] = [
     {
-      id: 'auto',
-      label: 'Auto Create',
+      id: "auto",
+      label: "Auto Create",
       content: isLoading ? (
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
@@ -129,8 +139,8 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt: prompt
       ),
     },
     {
-      id: 'manual',
-      label: 'Create Manually',
+      id: "manual",
+      label: "Create Manually",
       content: isLoading ? (
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />

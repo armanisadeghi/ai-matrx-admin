@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/client";
+import { requireUserId } from "@/utils/auth/getUserId";
 import type {
   AiRun,
   AiRunWithTasks,
@@ -11,7 +12,7 @@ import type {
 
 /**
  * AI Runs Service - Client-side CRUD operations for ai_runs table
- * 
+ *
  * This service provides all operations needed to manage AI conversation runs.
  * All operations respect RLS policies and work with the current user's session.
  */
@@ -22,7 +23,7 @@ export const aiRunsService = {
    */
   async create(input: CreateAiRunInput): Promise<AiRun> {
     const supabase = createClient();
-    
+
     const userId = requireUserId();
 
     const { data, error } = await supabase
@@ -105,7 +106,7 @@ export const aiRunsService = {
    */
   async list(filters: AiRunsListFilters = {}): Promise<AiRunsListResponse> {
     const supabase = createClient();
-    
+
     const {
       source_type,
       source_id,
@@ -118,16 +119,14 @@ export const aiRunsService = {
       order_direction = "desc",
     } = filters;
 
-    let query = supabase
-      .from("ai_runs")
-      .select("*", { count: "exact" });
+    let query = supabase.from("ai_runs").select("*", { count: "exact" });
 
     // Apply filters
     if (source_type) query = query.eq("source_type", source_type);
     if (source_id) query = query.eq("source_id", source_id);
     if (status) query = query.eq("status", status);
     if (starred !== undefined) query = query.eq("is_starred", starred);
-    
+
     // Search in name and description
     if (search) {
       query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
@@ -185,10 +184,7 @@ export const aiRunsService = {
   async hardDelete(runId: string): Promise<void> {
     const supabase = createClient();
 
-    const { error } = await supabase
-      .from("ai_runs")
-      .delete()
-      .eq("id", runId);
+    const { error } = await supabase.from("ai_runs").delete().eq("id", runId);
 
     if (error) throw error;
   },
@@ -301,4 +297,3 @@ export const aiRunsService = {
     return data;
   },
 };
-

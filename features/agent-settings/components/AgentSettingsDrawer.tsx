@@ -54,7 +54,6 @@ export function AgentSettingsDrawer({
         <ScrollArea className="flex-1 overflow-auto pb-safe">
           <AgentSettingsContent
             agentId={agentId}
-            availableTools={availableTools}
             usedVariableNames={usedVariableNames}
             showTools={showTools}
             showVariables={showVariables}

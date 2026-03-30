@@ -3,19 +3,6 @@ import React, { useState, useRef, useEffect } from "react";
 import SmallIndicator from "./SmallIndicator";
 import MediumIndicator from "./MediumIndicator";
 import LargeIndicator from "./LargeIndicator";
-interface User {
-  id: string;
-  email?: string;
-  name?: string;
-  userMetadata?: {
-    fullName: string;
-  };
-  [key: string]: unknown;
-}
-
-interface AdminIndicatorProps {
-  user: User;
-}
 
 type IndicatorSize = "small" | "medium" | "large";
 
@@ -24,7 +11,7 @@ interface Position {
   y: number;
 }
 
-const AdminIndicator: React.FC<AdminIndicatorProps> = ({ user }) => {
+const AdminIndicator: React.FC = () => {
   const [size, setSize] = useState<IndicatorSize>("small");
   const [position, setPosition] = useState<Position>({ x: 50, y: 5 });
   const [isDragging, setIsDragging] = useState(false);
@@ -103,7 +90,6 @@ const AdminIndicator: React.FC<AdminIndicatorProps> = ({ user }) => {
             }}
           >
             <MediumIndicator
-              user={user}
               onDragStart={handleMouseDown}
               onSizeUp={() => cycleSize("up")}
               onSizeDown={() => cycleSize("down")}
@@ -113,7 +99,6 @@ const AdminIndicator: React.FC<AdminIndicatorProps> = ({ user }) => {
       case "large":
         return (
           <LargeIndicator
-            user={user}
             onSizeDown={() => setSize("medium")}
             onSizeSmall={() => setSize("small")}
           />

@@ -1,49 +1,65 @@
 /**
  * Prompt Generator Component
- * 
+ *
  * Provides AI-powered generation of new prompts from user specifications
  */
 
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { submitChatFastAPI as createAndSubmitTask } from '@/lib/redux/socket-io/thunks/submitChatFastAPI';
-import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
-import { supabase } from '@/utils/supabase/client';
-import { v4 as uuidv4 } from 'uuid';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Sparkles, Check, X, Loader2, Copy, AlertTriangle, Wand2, BookmarkPlus, BookmarkCheck } from 'lucide-react';
-import { toast } from 'sonner';
-import MarkdownStream from '@/components/MarkdownStream';
-import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
-import { useRouter } from 'next/navigation';
-import { usePromptsBasePath } from '../../../hooks/usePromptsBasePath';
-import { VoiceTextarea } from '@/features/audio';
-import { PromptJsonDisplay } from './PromptJsonDisplay';
-import { extractNonJsonContent } from './progressive-json-parser';
-import { PROMPT_BUILTINS } from '@/lib/redux/prompt-execution/builtins';
-import { NotesAPI } from '@/features/notes/service/notesApi';
+import { submitChatFastAPI as createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitChatFastAPI";
+import {
+  selectPrimaryResponseTextByTaskId,
+  selectPrimaryResponseEndedByTaskId,
+} from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { supabase } from "@/utils/supabase/client";
+import { v4 as uuidv4 } from "uuid";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Sparkles,
+  Check,
+  X,
+  Loader2,
+  Copy,
+  AlertTriangle,
+  Wand2,
+  BookmarkPlus,
+  BookmarkCheck,
+} from "lucide-react";
+import { toast } from "sonner";
+import MarkdownStream from "@/components/MarkdownStream";
+import { extractJsonFromText } from "@/features/prompts/utils/json-extraction";
+import { useRouter } from "next/navigation";
+import { usePromptsBasePath } from "../../../hooks/usePromptsBasePath";
+import { VoiceTextarea } from "@/features/audio";
+import { PromptJsonDisplay } from "./PromptJsonDisplay";
+import { extractNonJsonContent } from "./progressive-json-parser";
+import { PROMPT_BUILTINS } from "@/lib/redux/prompt-execution/builtins";
+import { NotesAPI } from "@/features/notes/service/notesApi";
+import { requireUserId } from "@/utils/auth/getUserId";
 
 interface PromptGeneratorProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function PromptGenerator({
-  isOpen,
-  onClose,
-}: PromptGeneratorProps) {
+export function PromptGenerator({ isOpen, onClose }: PromptGeneratorProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const basePath = usePromptsBasePath();
-  
-  const [promptPurpose, setPromptPurpose] = useState('');
-  const [additionalContext, setAdditionalContext] = useState('');
-  const [promptName, setPromptName] = useState('');
+
+  const [promptPurpose, setPromptPurpose] = useState("");
+  const [additionalContext, setAdditionalContext] = useState("");
+  const [promptName, setPromptName] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
@@ -52,41 +68,49 @@ export function PromptGenerator({
   const [isSavingNote, setIsSavingNote] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
   const sessionNoteId = useRef<string | null>(null);
-  
+
   // Watch streaming text
-  const streamingText = useAppSelector(state => 
-    currentTaskId ? selectPrimaryResponseTextByTaskId(currentTaskId)(state) : ''
+  const streamingText = useAppSelector((state) =>
+    currentTaskId
+      ? selectPrimaryResponseTextByTaskId(currentTaskId)(state)
+      : "",
   );
-  
-  const isResponseEnded = useAppSelector(state =>
-    currentTaskId ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state) : false
+
+  const isResponseEnded = useAppSelector((state) =>
+    currentTaskId
+      ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state)
+      : false,
   );
 
   // Extract JSON from streaming response when it ends
   useEffect(() => {
     if (isResponseEnded && streamingText && isGenerating) {
       setIsGenerating(false);
-      
+
       // Use the safe extraction utility
       const result = extractJsonFromText(streamingText);
-      
+
       if (result.success && result.data) {
         setExtractedJson(result.data);
         setExtractionError(null);
-        
+
         // Auto-populate the prompt name if available
-        if (result.data.name && typeof result.data.name === 'string') {
+        if (result.data.name && typeof result.data.name === "string") {
           setPromptName(result.data.name);
         }
-        
-        toast.success('Prompt generated successfully', {
-          description: 'Review the generated prompt and click "Create Prompt" to save it'
+
+        toast.success("Prompt generated successfully", {
+          description:
+            'Review the generated prompt and click "Create Prompt" to save it',
         });
       } else {
         // Extraction failed
-        setExtractionError(result.error || 'Could not extract JSON from response');
-        toast.error('Could not extract JSON', {
-          description: 'The raw response is still available below. You may need to manually extract the JSON.',
+        setExtractionError(
+          result.error || "Could not extract JSON from response",
+        );
+        toast.error("Could not extract JSON", {
+          description:
+            "The raw response is still available below. You may need to manually extract the JSON.",
           duration: 5000,
         });
       }
@@ -101,7 +125,7 @@ export function PromptGenerator({
     if (additionalContext.trim()) {
       parts.push(`## Additional Context\n\n${additionalContext.trim()}`);
     }
-    return parts.join('\n\n');
+    return parts.join("\n\n");
   };
 
   const saveToNote = async (silent = false) => {
@@ -113,17 +137,24 @@ export function PromptGenerator({
       if (sessionNoteId.current) {
         await NotesAPI.update(sessionNoteId.current, { content });
       } else {
-        const label = promptPurpose.trim().slice(0, 60) || 'AI Prompt Generator Draft';
-        const note = await NotesAPI.create({ label, content, folder_name: 'Prompts' });
+        const label =
+          promptPurpose.trim().slice(0, 60) || "AI Prompt Generator Draft";
+        const note = await NotesAPI.create({
+          label,
+          content,
+          folder_name: "Prompts",
+        });
         sessionNoteId.current = note.id;
       }
       setNoteSaved(true);
       if (!silent) {
-        toast.success('Saved to Notes', { description: 'Your inputs have been saved in the Prompts folder.' });
+        toast.success("Saved to Notes", {
+          description: "Your inputs have been saved in the Prompts folder.",
+        });
       }
     } catch {
       if (!silent) {
-        toast.error('Failed to save note');
+        toast.error("Failed to save note");
       }
     } finally {
       setIsSavingNote(false);
@@ -132,7 +163,7 @@ export function PromptGenerator({
 
   const handleGenerate = async () => {
     if (!promptPurpose.trim()) {
-      toast.error('Please describe the purpose of your prompt');
+      toast.error("Please describe the purpose of your prompt");
       return;
     }
 
@@ -142,71 +173,73 @@ export function PromptGenerator({
     setIsGenerating(true);
     setExtractedJson(null);
     setExtractionError(null);
-    
+
     try {
       // 1. Fetch prompt template
       const { data: prompt, error: promptError } = await supabase
-        .from('prompt_builtins')
-        .select('*')
-        .eq('id', PROMPT_BUILTINS.FULL_PROMPT_STRUCTURE_BUILDER.id)
+        .from("prompt_builtins")
+        .select("*")
+        .eq("id", PROMPT_BUILTINS.FULL_PROMPT_STRUCTURE_BUILDER.id)
         .single();
 
       if (promptError || !prompt) {
-        throw new Error('Full Prompt Structure Builder not found');
+        throw new Error("Full Prompt Structure Builder not found");
       }
 
       // 2. Find the last user message index
       const lastUserIndex = prompt.messages.reduce(
-        (lastIdx: number, msg: any, idx: number) => msg.role === 'user' ? idx : lastIdx,
-        -1
+        (lastIdx: number, msg: any, idx: number) =>
+          msg.role === "user" ? idx : lastIdx,
+        -1,
       );
 
       // 3. Replace variables and append context to last user message
       const messages = prompt.messages.map((msg: any, idx: number) => {
         let content = msg.content;
-        
+
         // Directly replace prompt_purpose variable
         content = content.replace(/{{prompt_purpose}}/g, promptPurpose);
-        
+
         // Append additional context only to the last user message
         if (idx === lastUserIndex && additionalContext.trim()) {
           content += `\n\n${additionalContext}`;
         }
-        
+
         return {
           role: msg.role,
-          content
+          content,
         };
       });
 
       // 4. Build chat config
       const modelId = prompt.settings?.model_id;
       if (!modelId) {
-        throw new Error('No model specified in prompt');
+        throw new Error("No model specified in prompt");
       }
 
       const chatConfig = {
         model_id: modelId,
         messages,
         stream: true,
-        ...prompt.settings
+        ...prompt.settings,
       };
 
       // 5. Submit task — set taskId BEFORE dispatch so streaming UI mounts immediately
       const taskId = uuidv4();
       setCurrentTaskId(taskId);
 
-      await dispatch(createAndSubmitTask({
-        service: 'chat_service',
-        taskName: 'direct_chat',
-        taskData: { chat_config: chatConfig },
-        customTaskId: taskId
-      })).unwrap();
-      
+      await dispatch(
+        createAndSubmitTask({
+          service: "chat_service",
+          taskName: "direct_chat",
+          taskData: { chat_config: chatConfig },
+          customTaskId: taskId,
+        }),
+      ).unwrap();
     } catch (error) {
-      console.error('Generation error:', error);
-      toast.error('Failed to generate prompt', {
-        description: error instanceof Error ? error.message : 'Unknown error'
+      console.error("Generation error:", error);
+      toast.error("Failed to generate prompt", {
+        description: error instanceof Error ? error.message : "Unknown error",
       });
       setIsGenerating(false);
       setCurrentTaskId(null);
@@ -215,19 +248,18 @@ export function PromptGenerator({
 
   const handleCreatePrompt = async () => {
     if (!extractedJson) {
-      toast.error('No generated prompt to save');
+      toast.error("No generated prompt to save");
       return;
     }
 
     if (!promptName.trim()) {
-      toast.error('Please enter a name for your prompt');
+      toast.error("Please enter a name for your prompt");
       return;
     }
 
     setIsSaving(true);
-    
+
     try {
-      
       // Get current user
       const userId = requireUserId();
 
@@ -239,32 +271,32 @@ export function PromptGenerator({
         name: promptName.trim(),
         description: extractedJson.description || null,
         messages: extractedJson.messages || [],
-        variable_defaults: extractedJson.variableDefaults || extractedJson.variables || [],
+        variable_defaults:
+          extractedJson.variableDefaults || extractedJson.variables || [],
         settings: extractedJson.settings || {},
         // created_at and updated_at are automatically set by the database
       };
 
       const { error: insertError } = await supabase
-        .from('prompts')
+        .from("prompts")
         .insert([dbPromptData]);
 
       if (insertError) {
         throw insertError;
       }
 
-      toast.success('Prompt created successfully!', {
-        description: 'Opening prompt editor with test runner...'
+      toast.success("Prompt created successfully!", {
+        description: "Opening prompt editor with test runner...",
       });
 
       // Close modal and navigate to the new prompt with autoRun query param
       handleClose();
       router.push(`${basePath}/edit/${promptId}?autoRun=true`);
       router.refresh();
-      
     } catch (error) {
-      console.error('Error creating prompt:', error);
-      toast.error('Failed to create prompt', {
-        description: error instanceof Error ? error.message : 'Unknown error'
+      console.error("Error creating prompt:", error);
+      toast.error("Failed to create prompt", {
+        description: error instanceof Error ? error.message : "Unknown error",
       });
     } finally {
       setIsSaving(false);
@@ -273,9 +305,9 @@ export function PromptGenerator({
 
   const handleClose = () => {
     setCurrentTaskId(null);
-    setPromptPurpose('');
-    setAdditionalContext('');
-    setPromptName('');
+    setPromptPurpose("");
+    setAdditionalContext("");
+    setPromptName("");
     setIsGenerating(false);
     setIsSaving(false);
     setExtractedJson(null);
@@ -289,13 +321,13 @@ export function PromptGenerator({
   const handleCopyGenerated = () => {
     if (extractedJson) {
       navigator.clipboard.writeText(JSON.stringify(extractedJson, null, 2));
-      toast.success('Copied generated prompt to clipboard');
+      toast.success("Copied generated prompt to clipboard");
     }
   };
 
   const handleCopyRawResponse = () => {
     navigator.clipboard.writeText(streamingText);
-    toast.success('Copied raw response to clipboard');
+    toast.success("Copied raw response to clipboard");
   };
 
   const hasGeneratedPrompt = extractedJson !== null;
@@ -326,7 +358,10 @@ export function PromptGenerator({
                     variant="ghost"
                     size="sm"
                     onClick={() => saveToNote(false)}
-                    disabled={isSavingNote || (!promptPurpose.trim() && !additionalContext.trim())}
+                    disabled={
+                      isSavingNote ||
+                      (!promptPurpose.trim() && !additionalContext.trim())
+                    }
                     className="h-7 px-2 text-xs text-muted-foreground hover:text-primary"
                     title="Save inputs to Notes"
                   >
@@ -338,7 +373,7 @@ export function PromptGenerator({
                       <BookmarkPlus className="h-3.5 w-3.5" />
                     )}
                     <span className="hidden sm:inline ml-1">
-                      {noteSaved ? 'Saved' : 'Save to Notes'}
+                      {noteSaved ? "Saved" : "Save to Notes"}
                     </span>
                   </Button>
                 </div>
@@ -352,10 +387,10 @@ export function PromptGenerator({
                   className="min-h-[120px] sm:min-h-[180px] text-sm border border-border rounded-xl"
                   disabled={isGenerating || hasGeneratedPrompt}
                   onTranscriptionComplete={(text) => {
-                    toast.success('Voice explanation added');
+                    toast.success("Voice explanation added");
                   }}
                   onTranscriptionError={(error) => {
-                    toast.error('Voice input failed', {
+                    toast.error("Voice input failed", {
                       description: error,
                     });
                   }}
@@ -380,10 +415,10 @@ export function PromptGenerator({
                   className="min-h-[120px] sm:min-h-[180px] text-sm border border-border rounded-xl"
                   disabled={isGenerating || hasGeneratedPrompt}
                   onTranscriptionComplete={(text) => {
-                    toast.success('Voice context added');
+                    toast.success("Voice context added");
                   }}
                   onTranscriptionError={(error) => {
-                    toast.error('Voice input failed', {
+                    toast.error("Voice input failed", {
                       description: error,
                     });
                   }}
@@ -404,7 +439,7 @@ export function PromptGenerator({
                     onChange={(e) => setPromptName(e.target.value)}
                     placeholder="Enter a name for your new prompt"
                     className="text-base"
-                    style={{ fontSize: '14px' }}
+                    style={{ fontSize: "14px" }}
                     disabled={isSaving}
                   />
                 </div>
@@ -415,7 +450,9 @@ export function PromptGenerator({
           {/* AI Response Section */}
           <div className="flex flex-col min-h-0 flex-1 lg:flex-initial">
             <div className="flex items-center justify-between mb-2 flex-shrink-0">
-              <Label className="text-xs sm:text-sm font-medium">Generated Prompt</Label>
+              <Label className="text-xs sm:text-sm font-medium">
+                Generated Prompt
+              </Label>
               {streamingText && !isGenerating && (
                 <div className="flex gap-1">
                   {hasGeneratedPrompt && (
@@ -448,7 +485,9 @@ export function PromptGenerator({
                 <div className="h-full flex flex-col">
                   <div className="flex-none flex items-center gap-2 p-2 border-b border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/30">
                     <Loader2 className="h-4 w-4 animate-spin text-purple-600 dark:text-purple-400" />
-                    <span className="text-xs font-medium text-purple-700 dark:text-purple-300">Generating your prompt...</span>
+                    <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
+                      Generating your prompt...
+                    </span>
                   </div>
                   <div className="flex-1 overflow-y-auto p-3">
                     {streamingText ? (
@@ -466,11 +505,12 @@ export function PromptGenerator({
                     <div className="flex-none p-2 bg-amber-100 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 flex items-start gap-2">
                       <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                       <span className="text-xs text-amber-700 dark:text-amber-300">
-                        <strong>JSON Extraction Failed:</strong> {extractionError}
+                        <strong>JSON Extraction Failed:</strong>{" "}
+                        {extractionError}
                       </span>
                     </div>
                   )}
-                  
+
                   {hasGeneratedPrompt && !extractionError && (
                     <div className="flex-none p-2 bg-green-100 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800 flex items-center gap-2">
                       <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
@@ -479,7 +519,7 @@ export function PromptGenerator({
                       </span>
                     </div>
                   )}
-                  
+
                   {/* Simple clean display of the response */}
                   <div className="flex-1 overflow-y-auto p-3">
                     <StreamingResponseDisplay
@@ -495,7 +535,8 @@ export function PromptGenerator({
                     Ready to generate
                   </p>
                   <p className="text-xs text-gray-400 dark:text-gray-500 max-w-md">
-                    Fill in the prompt purpose and click "Generate" to let AI create your prompt configuration
+                    Fill in the prompt purpose and click "Generate" to let AI
+                    create your prompt configuration
                   </p>
                 </div>
               )}
@@ -527,16 +568,16 @@ export function PromptGenerator({
               className="flex-1 sm:flex-initial"
             >
               <X className="h-4 w-4 mr-2" />
-              {hasGeneratedPrompt ? 'Discard' : 'Cancel'}
+              {hasGeneratedPrompt ? "Discard" : "Cancel"}
             </Button>
-            
+
             {hasGeneratedPrompt && !isGenerating ? (
               <>
                 <Button
                   variant="outline"
                   onClick={() => {
                     setExtractedJson(null);
-                    setPromptName('');
+                    setPromptName("");
                   }}
                   disabled={isSaving}
                   className="flex-1 sm:flex-initial"
@@ -590,7 +631,7 @@ export function PromptGenerator({
 
 /**
  * StreamingResponseDisplay Component
- * 
+ *
  * Splits the response into markdown and JSON sections
  * Renders markdown normally and JSON with the special display
  */
@@ -602,16 +643,16 @@ function StreamingResponseDisplay({
   isStreamActive: boolean;
 }) {
   // Check if content contains a JSON block (tagged or untagged)
-  const hasTaggedJson = content.includes('```json');
+  const hasTaggedJson = content.includes("```json");
   // Also detect plain ``` blocks that contain JSON (start with '{' after optional whitespace)
   const hasPlainCodeBlock = !hasTaggedJson && /```\s*\n\s*\{/.test(content);
   const hasJsonBlock = hasTaggedJson || hasPlainCodeBlock;
 
   // Normalize plain ``` to ```json so the rest of the pipeline handles it uniformly
   const normalizedContent = hasPlainCodeBlock
-    ? content.replace(/```(\s*\n\s*\{)/, '```json$1')
+    ? content.replace(/```(\s*\n\s*\{)/, "```json$1")
     : content;
-  
+
   if (!hasJsonBlock) {
     // No JSON block, render as normal markdown
     return (
@@ -622,10 +663,10 @@ function StreamingResponseDisplay({
       />
     );
   }
-  
+
   // Split content into before/after JSON
   const { before, after } = extractNonJsonContent(normalizedContent);
-  
+
   return (
     <div className="space-y-4">
       {/* Before JSON content */}
@@ -636,13 +677,13 @@ function StreamingResponseDisplay({
           hideCopyButton={true}
         />
       )}
-      
+
       {/* JSON Display */}
       <PromptJsonDisplay
         content={normalizedContent}
         isStreamActive={isStreamActive}
       />
-      
+
       {/* After JSON content */}
       {after && (
         <MarkdownStream
@@ -654,4 +695,3 @@ function StreamingResponseDisplay({
     </div>
   );
 }
-

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useApiAuth } from '@/hooks/useApiAuth';
-import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
+import { useState, useCallback, useRef, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { useApiAuth } from "@/hooks/useApiAuth";
+import { selectIsUsingLocalhost } from "@/lib/redux/slices/adminPreferencesSlice";
 import type {
   QuickScrapeRequest,
   SearchKeywordsRequest,
@@ -11,10 +11,11 @@ import type {
   SearchAndScrapeLimitedRequest,
   ScraperStreamEvent,
   ScrapedResult,
+  ScrapedResultsEnvelope,
   SearchResult,
-} from '../types/scraper-api';
-import * as scraperService from '../services/scraperApiService';
-import { BACKEND_URLS } from '@/lib/api/endpoints';
+} from "../types/scraper-api";
+import * as scraperService from "../services/scraperApiService";
+import { BACKEND_URLS } from "@/lib/api/endpoints";
 
 // ============================================================================
 // TYPES
@@ -40,7 +41,9 @@ interface UsePublicScraperStreamReturn {
   quickScrape: (request: QuickScrapeRequest) => Promise<void>;
   searchKeywords: (request: SearchKeywordsRequest) => Promise<void>;
   searchAndScrape: (request: SearchAndScrapeRequest) => Promise<void>;
-  searchAndScrapeLimited: (request: SearchAndScrapeLimitedRequest) => Promise<void>;
+  searchAndScrapeLimited: (
+    request: SearchAndScrapeLimitedRequest,
+  ) => Promise<void>;
   micCheck: () => Promise<void>;
   cancel: () => void;
   reset: () => void;
@@ -51,7 +54,7 @@ interface UsePublicScraperStreamReturn {
 // ============================================================================
 
 export function usePublicScraperStream(
-  options: UsePublicScraperStreamOptions = {}
+  options: UsePublicScraperStreamOptions = {},
 ): UsePublicScraperStreamReturn {
   const { onStatusUpdate, onData, onError, onComplete } = options;
 
@@ -71,12 +74,13 @@ export function usePublicScraperStream(
 
   // Backend URL selection (admin can override to localhost via Redux)
   const useLocalhost = useSelector(selectIsUsingLocalhost);
-  
+
   const getBackendUrl = useCallback(() => {
-    const url = (isAdmin && useLocalhost)
-      ? BACKEND_URLS.localhost
-      : BACKEND_URLS.production;
-    console.log('[Scraper Hook] Backend URL:', url, { isAdmin, useLocalhost });
+    const url =
+      isAdmin && useLocalhost
+        ? BACKEND_URLS.localhost
+        : BACKEND_URLS.production;
+    console.log("[Scraper Hook] Backend URL:", url, { isAdmin, useLocalhost });
     return url;
   }, [isAdmin, useLocalhost]);
 
@@ -103,42 +107,60 @@ export function usePublicScraperStream(
           }
 
           switch (event.event) {
-            case 'status_update':
-              const message = (event.data.user_message ?? event.data.user_visible_message) || event.data.system_message;
+            case "status_update":
+              const message =
+                (event.data.user_message ?? event.data.user_visible_message) ||
+                event.data.system_message;
               setStatusMessage(message || null);
               onStatusUpdate?.(event.data.status, message);
               break;
 
-            case 'data':
-              // Check if it's a scraped result or search result
-              if ('text_data' in event.data || 'overview' in event.data) {
-                setResults((prev) => [...prev, event.data as ScrapedResult]);
-              } else if ('keyword' in event.data || 'results' in event.data) {
-                setSearchResults((prev) => [...prev, event.data as SearchResult]);
+            case "data": {
+              const d = event.data;
+              if (
+                "response_type" in d &&
+                d.response_type === "fetch_results" &&
+                "results" in d &&
+                Array.isArray((d as ScrapedResultsEnvelope).results)
+              ) {
+                // Envelope format: { response_type, metadata, results: [...] }
+                setResults((prev) => [
+                  ...prev,
+                  ...(d as ScrapedResultsEnvelope).results,
+                ]);
+              } else if ("text_data" in d || "overview" in d) {
+                // Legacy single-result format
+                setResults((prev) => [...prev, d as ScrapedResult]);
+              } else if ("keyword" in d) {
+                setSearchResults((prev) => [...prev, d as SearchResult]);
               }
-              onData?.(event.data);
+              onData?.(d);
               break;
+            }
 
-            case 'error':
-              const errorMsg = (event.data.user_message ?? event.data.user_visible_message) || event.data.message;
+            case "error":
+              const errorMsg =
+                (event.data.user_message ?? event.data.user_visible_message) ||
+                event.data.message;
               setError(errorMsg);
               onError?.(errorMsg);
               break;
 
-            case 'end':
+            case "end":
               setIsStreaming(false);
               onComplete?.();
               break;
           }
         }
       } catch (err) {
-        if (err instanceof Error && err.name === 'AbortError') {
+        if (err instanceof Error && err.name === "AbortError") {
           // Aborted - not an error
           setIsStreaming(false);
           return;
         }
 
-        const errorMessage = err instanceof Error ? err.message : 'Stream processing failed';
+        const errorMessage =
+          err instanceof Error ? err.message : "Stream processing failed";
         setError(errorMessage);
         onError?.(errorMessage);
       } finally {
@@ -146,7 +168,7 @@ export function usePublicScraperStream(
         setIsStreaming(false);
       }
     },
-    [onStatusUpdate, onData, onError, onComplete]
+    [onStatusUpdate, onData, onError, onComplete],
   );
 
   // Quick scrape
@@ -168,18 +190,19 @@ export function usePublicScraperStream(
           request,
           headers,
           backendUrl,
-          abortControllerRef.current.signal
+          abortControllerRef.current.signal,
         );
 
         await processStream(stream);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Quick scrape failed';
+        const errorMessage =
+          err instanceof Error ? err.message : "Quick scrape failed";
         setError(errorMessage);
         onError?.(errorMessage);
         setIsLoading(false);
       }
     },
-    [getHeaders, waitForAuth, getBackendUrl, processStream, onError]
+    [getHeaders, waitForAuth, getBackendUrl, processStream, onError],
   );
 
   // Search keywords
@@ -201,18 +224,19 @@ export function usePublicScraperStream(
           request,
           headers,
           backendUrl,
-          abortControllerRef.current.signal
+          abortControllerRef.current.signal,
         );
 
         await processStream(stream);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Search failed';
+        const errorMessage =
+          err instanceof Error ? err.message : "Search failed";
         setError(errorMessage);
         onError?.(errorMessage);
         setIsLoading(false);
       }
     },
-    [getHeaders, waitForAuth, getBackendUrl, processStream, onError]
+    [getHeaders, waitForAuth, getBackendUrl, processStream, onError],
   );
 
   // Search and scrape
@@ -234,18 +258,19 @@ export function usePublicScraperStream(
           request,
           headers,
           backendUrl,
-          abortControllerRef.current.signal
+          abortControllerRef.current.signal,
         );
 
         await processStream(stream);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Search and scrape failed';
+        const errorMessage =
+          err instanceof Error ? err.message : "Search and scrape failed";
         setError(errorMessage);
         onError?.(errorMessage);
         setIsLoading(false);
       }
     },
-    [getHeaders, waitForAuth, getBackendUrl, processStream, onError]
+    [getHeaders, waitForAuth, getBackendUrl, processStream, onError],
   );
 
   // Search and scrape limited
@@ -267,18 +292,21 @@ export function usePublicScraperStream(
           request,
           headers,
           backendUrl,
-          abortControllerRef.current.signal
+          abortControllerRef.current.signal,
         );
 
         await processStream(stream);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Search and scrape limited failed';
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "Search and scrape limited failed";
         setError(errorMessage);
         onError?.(errorMessage);
         setIsLoading(false);
       }
     },
-    [getHeaders, waitForAuth, getBackendUrl, processStream, onError]
+    [getHeaders, waitForAuth, getBackendUrl, processStream, onError],
   );
 
   // Mic check
@@ -293,20 +321,25 @@ export function usePublicScraperStream(
       await waitForAuth();
       const headers = getHeaders();
       const backendUrl = getBackendUrl();
-      
-      console.log('[Scraper Hook] Mic Check - Backend URL:', backendUrl);
-      console.log('[Scraper Hook] Mic Check - Headers:', { 
-        hasAuth: !!headers.Authorization, 
-        hasFingerprint: !!headers['X-Fingerprint-ID'],
-        headerKeys: Object.keys(headers)
+
+      console.log("[Scraper Hook] Mic Check - Backend URL:", backendUrl);
+      console.log("[Scraper Hook] Mic Check - Headers:", {
+        hasAuth: !!headers.Authorization,
+        hasFingerprint: !!headers["X-Fingerprint-ID"],
+        headerKeys: Object.keys(headers),
       });
 
       abortControllerRef.current = new AbortController();
-      const stream = scraperService.micCheck(headers, backendUrl, abortControllerRef.current.signal);
+      const stream = scraperService.micCheck(
+        headers,
+        backendUrl,
+        abortControllerRef.current.signal,
+      );
 
       await processStream(stream);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Mic check failed';
+      const errorMessage =
+        err instanceof Error ? err.message : "Mic check failed";
       setError(errorMessage);
       onError?.(errorMessage);
       setIsLoading(false);

@@ -1,6 +1,6 @@
 // UI Types for Task Manager
-import { ReactNode } from 'react';
-import type { TaskSortField } from './sort';
+import { ReactNode } from "react";
+import type { TaskSortField } from "./sort";
 
 export interface Task {
   id: string;
@@ -9,7 +9,7 @@ export interface Task {
   description: string;
   attachments: string[];
   dueDate: string;
-  priority?: 'low' | 'medium' | 'high' | null;
+  priority?: "low" | "medium" | "high" | null;
   assigneeId?: string | null;
   assigneeName?: string | null;
   parentTaskId?: string | null;
@@ -17,6 +17,7 @@ export interface Task {
   updatedAt?: string | null;
   userId?: string | null;
   isPublic?: boolean;
+  settings?: { labels?: string[]; [key: string]: unknown };
 }
 
 export interface Project {
@@ -30,11 +31,11 @@ export interface TaskWithProject extends Task {
   projectName: string;
 }
 
-export type TaskFilterType = 'all' | 'incomplete' | 'overdue';
+export type TaskFilterType = "all" | "incomplete" | "overdue";
 
 export interface TaskContextType {
   projects: Project[];
-  sharedTasks: import('./database').DatabaseTask[];
+  sharedTasks: import("./database").DatabaseTask[];
   loading: boolean;
   // Operation states for loading feedback
   isCreatingProject: boolean;
@@ -65,20 +66,61 @@ export interface TaskContextType {
   toggleTaskExpand: (taskId: string) => void;
   addProject: (e: React.FormEvent) => Promise<void>;
   updateProject: (projectId: string, name: string) => Promise<void>;
-  updateTaskProject: (taskId: string, projectId: string | null) => Promise<void>;
+  updateTaskProject: (
+    taskId: string,
+    projectId: string | null,
+  ) => Promise<void>;
   deleteProject: (projectId: string, e: React.MouseEvent) => Promise<void>;
-  addTask: (e: React.FormEvent, description?: string, dueDate?: string, targetProjectId?: string) => Promise<string | null>;
+  addTask: (
+    e: React.FormEvent,
+    description?: string,
+    dueDate?: string,
+    targetProjectId?: string,
+    priority?: "low" | "medium" | "high" | null,
+  ) => Promise<string | null>;
   toggleTaskComplete: (projectId: string, taskId: string) => Promise<void>;
-  updateTaskTitle: (projectId: string, taskId: string, title: string) => Promise<void>;
-  updateTaskDescription: (projectId: string, taskId: string, description: string) => Promise<void>;
-  updateTaskDueDate: (projectId: string, taskId: string, dueDate: string) => Promise<void>;
-  deleteTask: (projectId: string, taskId: string, e: React.MouseEvent) => Promise<void>;
-  addAttachment: (projectId: string, taskId: string, e: React.MouseEvent) => void;
-  removeAttachment: (projectId: string, taskId: string, attachmentName: string) => void;
-  copyTaskToClipboard: (task: TaskWithProject, e: React.MouseEvent) => Promise<void>;
+  updateTaskTitle: (
+    projectId: string,
+    taskId: string,
+    title: string,
+  ) => Promise<void>;
+  updateTaskDescription: (
+    projectId: string,
+    taskId: string,
+    description: string,
+  ) => Promise<void>;
+  updateTaskDueDate: (
+    projectId: string,
+    taskId: string,
+    dueDate: string,
+  ) => Promise<void>;
+  deleteTask: (
+    projectId: string,
+    taskId: string,
+    e: React.MouseEvent,
+  ) => Promise<void>;
+  addAttachment: (
+    projectId: string,
+    taskId: string,
+    e: React.MouseEvent,
+  ) => void;
+  removeAttachment: (
+    projectId: string,
+    taskId: string,
+    attachmentName: string,
+  ) => void;
+  copyTaskToClipboard: (
+    task: TaskWithProject,
+    e: React.MouseEvent,
+  ) => Promise<void>;
   getFilteredTasks: () => TaskWithProject[];
+  getAllTasks: () => TaskWithProject[];
   // Subtask methods
-  createSubtask: (parentTaskId: string, title: string, description?: string) => Promise<void>;
+  createSubtask: (
+    parentTaskId: string,
+    title: string,
+    description?: string,
+  ) => Promise<void>;
   updateSubtaskStatus: (subtaskId: string, completed: boolean) => Promise<void>;
   deleteSubtask: (subtaskId: string) => Promise<void>;
   // Comment methods
@@ -92,7 +134,7 @@ export interface TaskProviderProps {
 }
 
 // Re-export database types
-export * from './database';
+export * from "./database";
 
 // Re-export sort types
-export * from './sort';
+export * from "./sort";

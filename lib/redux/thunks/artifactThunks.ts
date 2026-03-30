@@ -38,7 +38,7 @@ import { rowToArtifactRecord } from "@/features/artifacts/types";
 
 async function callArtifactsApi(
   action: string,
-  params: Record<string, unknown>,
+  params: object,
 ): Promise<{ data?: unknown; error?: string }> {
   const res = await fetch("/api/artifacts", {
     method: "POST",

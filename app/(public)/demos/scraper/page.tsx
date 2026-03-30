@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, Globe, Search, Zap, Mic } from "lucide-react";
+import { ChevronRight, Globe, Search, Zap } from "lucide-react";
 
 const scraperDemos = [
     {
@@ -26,14 +26,6 @@ const scraperDemos = [
         icon: Zap,
         color: "text-purple-600 dark:text-purple-400",
         bgColor: "bg-purple-50 dark:bg-purple-950/30",
-    },
-    {
-        id: "mic-check",
-        name: "Mic Check",
-        description: "Test endpoint that returns sample data - useful for testing the UI",
-        icon: Mic,
-        color: "text-orange-600 dark:text-orange-400",
-        bgColor: "bg-orange-50 dark:bg-orange-950/30",
     },
 ];
 
@@ -77,7 +69,7 @@ export default function ScraperDemosPage() {
                         <p>POST /api/scraper/quick-scrape</p>
                         <p>POST /api/scraper/search</p>
                         <p>POST /api/scraper/search-and-scrape</p>
-                        <p>POST /api/scraper/mic-check</p>
+                        <p>POST /api/scraper/search-and-scrape-limited</p>
                     </div>
                 </div>
             </div>

@@ -48,21 +48,21 @@ export interface SearchKeywordsRequest {
   keywords: string[];
   country_code?: string;
   total_results_per_keyword?: number;
-  search_type?: 'web' | 'news' | 'all';
+  search_type?: "web" | "news" | "all";
 }
 
 export interface SearchAndScrapeRequest extends ScrapeOptions {
   keywords: string[];
   country_code?: string;
   total_results_per_keyword?: number;
-  search_type?: 'web' | 'news' | 'all';
+  search_type?: "web" | "news" | "all";
 }
 
 export interface SearchAndScrapeLimitedRequest extends ScrapeOptions {
   keyword: string;
   country_code?: string;
   max_page_read?: number;
-  search_type?: 'web' | 'news' | 'all';
+  search_type?: "web" | "news" | "all";
 }
 
 // ============================================================================
@@ -76,9 +76,9 @@ export type ScraperStreamEvent =
   | ScraperEndEvent;
 
 export interface ScraperStatusUpdateEvent {
-  event: 'status_update';
+  event: "status_update";
   data: {
-    status: 'connected' | 'processing' | 'warning';
+    status: "connected" | "processing" | "warning";
     system_message?: string;
     user_message?: string;
     /** @deprecated Use user_message. Kept for backward compatibility. */
@@ -87,13 +87,23 @@ export interface ScraperStatusUpdateEvent {
   };
 }
 
+export interface ScrapedResultsEnvelope {
+  response_type: "fetch_results";
+  metadata: { execution_time_ms: number };
+  results: ScrapedResult[];
+}
+
 export interface ScraperDataEvent {
-  event: 'data';
-  data: ScrapedResult | SearchResult | Record<string, unknown>;
+  event: "data";
+  data:
+    | ScrapedResultsEnvelope
+    | ScrapedResult
+    | SearchResult
+    | Record<string, unknown>;
 }
 
 export interface ScraperErrorEvent {
-  event: 'error';
+  event: "error";
   data: {
     type: string;
     message: string;
@@ -106,7 +116,7 @@ export interface ScraperErrorEvent {
 }
 
 export interface ScraperEndEvent {
-  event: 'end';
+  event: "end";
   data: true;
 }
 
@@ -114,20 +124,68 @@ export interface ScraperEndEvent {
 // SCRAPED DATA TYPES
 // ============================================================================
 
+export interface ScrapedResultHashes {
+  /** Array of uint32 values (MinHash signature) */
+  minhash?: number[] | string;
+  /** SimHash fingerprint as integer */
+  simhash?: number | string;
+  outline_simhash?: number | string;
+}
+
 export interface ScrapedResult {
+  /** true = scraped successfully, false = scrape failed */
+  success?: boolean;
+  /** Human-readable reason when success is false */
+  failure_reason?: string | null;
   url?: string;
+  /** Resolved URL after redirects */
+  response_url?: string;
+  /** HTTP status code */
+  status_code?: number;
+  /** CMS detected (e.g. "wordpress", "unknown") */
+  cms?: string;
+  /** Firewall detected (e.g. "cloudflare", "none") */
+  firewall?: string;
+
+  // ── Text variants (richest first) ──
+  /** Markdown with links and images */
+  markdown_renderable?: string;
+  /** Markdown grouped by header */
+  markdown_renderable_by_header?: Record<string, string>;
+  /** Clean text with inline links — best for AI/research */
+  ai_research_content?: string;
+  /** Clean plain text — best for AI processing */
+  ai_content?: string;
+  /** Legacy plain text field */
   text_data?: string;
-  organized_data?: Record<string, unknown>;
+
+  organized_data?:
+    | Array<{ type: string; level?: number; content: string }>
+    | Record<string, unknown>;
   structured_data?: Record<string, unknown>;
+  document_outline?: Array<{ type: string; level: number; content: string }>;
+  tables?: unknown[];
+  code_blocks?: unknown[];
+  lists?: unknown[];
+
   overview?: {
     page_title?: string;
     url?: string;
     website?: string;
     char_count?: number;
+    char_count_formatted?: number;
     has_structured_content?: boolean;
     outline?: Record<string, string[]>;
+    table_count?: number;
+    code_block_count?: number;
+    list_count?: number;
+    unique_page_name?: string;
+    metadata?: Record<string, unknown>;
     [key: string]: unknown;
   };
+  /** Top-level page title (mirrors overview.page_title) */
+  title?: string;
+
   links?: {
     internal?: string[];
     external?: string[];
@@ -138,20 +196,39 @@ export interface ScrapedResult {
     videos?: string[];
     archives?: string[];
   };
+  images?: string[];
+  videos?: string[];
+  audios?: string[];
   main_image?: string;
   content_filter_removal_details?: unknown[];
-  hashes?: string[];
+  failure_details?: unknown[];
+  hashes?: ScrapedResultHashes | null;
   scraped_at?: string;
+  /** Per-result metadata (json-ld, opengraph, meta_tags, etc.) */
+  metadata?: Record<string, unknown>;
 }
 
+/** A single search result item as returned directly by the API */
+export interface SearchResultItem {
+  keyword?: string;
+  type?: string;
+  title?: string;
+  url?: string;
+  /** Result description / snippet */
+  description?: string;
+  /** Alias for description — some consumers use this */
+  snippet?: string;
+  source?: string;
+  age?: string;
+  thumbnail?: string | null;
+  rank?: number;
+}
+
+/** Legacy grouped format — kept for backward compat */
 export interface SearchResult {
   keyword?: string;
-  results?: Array<{
-    title?: string;
-    url?: string;
-    snippet?: string;
-    rank?: number;
-  }>;
+  /** Flat items when the API returns them un-grouped */
+  results?: SearchResultItem[];
   total_results?: number;
 }
 

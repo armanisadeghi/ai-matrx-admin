@@ -19,7 +19,7 @@ import { debugModules } from "@/components/admin/debug/debugModuleRegistry";
 import DebugModulePanel from "@/components/admin/debug/DebugModulePanel";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { toggleDebugMode, selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsAdmin, selectUser } from "@/lib/redux/slices/userSlice";
 import {
     selectActiveServer,
     selectResolvedBaseUrl,
@@ -53,22 +53,13 @@ const StatusDot: React.FC<StatusDotProps> = ({ status, size = 8 }) => {
     );
 };
 
-interface UserForIndicator {
-    id: string;
-    email?: string;
-    name?: string;
-    userMetadata?: { fullName: string };
-    [key: string]: unknown;
-}
-
 interface MediumIndicatorProps {
-    user: UserForIndicator;
     onDragStart: (e: React.MouseEvent) => void;
     onSizeUp: () => void;
     onSizeDown: () => void;
 }
 
-const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, onSizeUp, onSizeDown }) => {
+const MediumIndicator: React.FC<MediumIndicatorProps> = ({ onDragStart, onSizeUp, onSizeDown }) => {
     const currentPath = usePathname();
     const [showServerDropdown, setShowServerDropdown] = useState(false);
     const [showRecentCalls, setShowRecentCalls] = useState(false);
@@ -81,6 +72,7 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
     const dispatch = useAppDispatch();
 
     // ── Selectors (all from Redux — no local state for these) ──
+    const user = useAppSelector(selectUser);
     const isAdmin = useAppSelector(selectIsAdmin);
     const activeServer = useAppSelector(selectActiveServer);
     const resolvedUrl = useAppSelector(selectResolvedBaseUrl);

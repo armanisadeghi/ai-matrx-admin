@@ -63,7 +63,7 @@ import { openHtmlPreview } from "@/lib/redux/slices/overlaySlice";
 
 // ── Icon map ──────────────────────────────────────────────────────────────────
 
-const ARTIFACT_ICONS: Record<ArtifactType, React.ElementType> = {
+const ARTIFACT_ICONS: Record<ArtifactType, React.FC<{ className?: string }>> = {
   html_page: Globe,
   flashcard_deck: BookOpen,
   org_chart: Network,
@@ -132,6 +132,7 @@ function ArtifactCard({
   onOpenEditor,
 }: ArtifactCardProps) {
   const Icon = ARTIFACT_ICONS[artifact.artifactType] ?? FileText;
+
   const isDisabled = isNavigating || isAnyNavigating;
   const label =
     ARTIFACT_TYPE_LABELS[artifact.artifactType] ?? artifact.artifactType;

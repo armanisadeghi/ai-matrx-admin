@@ -12,34 +12,34 @@
  */
 
 // ── Top-level wrapper ────────────────────────────────────────────────────────
-export { UnifiedChatWrapper } from './UnifiedChatWrapper';
-export type { UnifiedChatWrapperProps } from './UnifiedChatWrapper';
+export { UnifiedChatWrapper } from "./UnifiedChatWrapper";
+export type { UnifiedChatWrapperProps } from "./UnifiedChatWrapper";
 
 // ── Hooks ────────────────────────────────────────────────────────────────────
-export { useConversationSession } from './hooks/useConversationSession';
-export type { ConversationSessionConfig, ConversationSessionReturn } from './hooks/useConversationSession';
+export { useConversationSession } from "./hooks/useConversationSession";
+export type {
+  ConversationSessionConfig,
+  ConversationSessionReturn,
+} from "./hooks/useConversationSession";
 
 // ── Types only (no component imports) ────────────────────────────────────────
-export type { ConversationShellProps } from './ConversationShell';
-export type { ConversationInputProps } from './ConversationInput';
-export type { AssistantMessageProps } from './AssistantMessage';
-export type { MessageOptionsMenuProps } from './MessageOptionsMenu';
+export type { ConversationShellProps } from "./ConversationShell";
+export type { ConversationInputProps } from "./ConversationInput";
+export type { AssistantMessageProps } from "./AssistantMessage";
+export type { MessageOptionsMenuProps } from "./MessageOptionsMenu";
 
 // ── Message actions (Redux-driven overlays) ─────────────────────────────────
 export {
   messageActionsActions,
   messageActionsReducer,
   selectMessageActionInstance,
-  selectOpenOverlays,
-  selectOverlaysForInstance,
-  selectIsMessageActionOverlayOpen,
-  selectMessageActionOverlayData,
-} from './redux/messageActionsSlice';
+} from "./redux/messageActionsSlice";
 export type {
-  MessageActionOverlayType,
   MessageActionInstance,
-  MessageActionOverlay,
   MessageActionsState,
-} from './redux/messageActionsSlice';
-export { getMessageActions, resumePendingAuthAction } from './actions/messageActionRegistry';
-export type { MessageActionContext } from './actions/messageActionRegistry';
+} from "./redux/messageActionsSlice";
+export {
+  getMessageActions,
+  resumePendingAuthAction,
+} from "./actions/messageActionRegistry";
+export type { MessageActionContext } from "./actions/messageActionRegistry";
