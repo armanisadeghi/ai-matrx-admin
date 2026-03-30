@@ -23,6 +23,8 @@ import { useToastManager } from "@/hooks/useToastManager";
 interface CreateListDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Override the post-create navigation. Receives the new list id. */
+  onSuccess?: (id: string) => void;
 }
 
 function CreateListForm({
@@ -132,13 +134,18 @@ function CreateListForm({
 export function CreateListDialog({
   open,
   onOpenChange,
+  onSuccess: onSuccessProp,
 }: CreateListDialogProps) {
   const isMobile = useIsMobile();
   const router = useRouter();
 
   const handleSuccess = (id: string) => {
     onOpenChange(false);
-    router.push(`/lists/${id}`);
+    if (onSuccessProp) {
+      onSuccessProp(id);
+    } else {
+      router.push(`/lists/${id}`);
+    }
   };
 
   if (isMobile) {

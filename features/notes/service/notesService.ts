@@ -1,46 +1,50 @@
 // features/notes/service/notesService.ts
 
-import { supabase } from '@/utils/supabase/client';
-import { requireUserId } from '@/utils/auth/getUserId';
-import type { Note, CreateNoteInput, UpdateNoteInput } from '../types';
-import { generateLabelFromContent } from '../hooks/useAutoLabel';
-import { findEmptyNewNote } from '../utils/noteUtils';
+import { supabase } from "@/utils/supabase/client";
+import { requireUserId } from "@/utils/auth/getUserId";
+import type { Note, CreateNoteInput, UpdateNoteInput } from "../types";
+import { generateLabelFromContent } from "../hooks/useAutoLabel";
+import { findEmptyNewNote } from "../utils/noteUtils";
 
 /**
- * Fetch all notes for the current user (excluding deleted)
+ * Fetch all notes owned by the current user (excluding deleted).
+ * Explicitly scoped to user_id — RLS now also grants access to shared notes
+ * via hierarchy, so without this filter "my notes" would include all accessible ones.
  */
 export async function fetchNotes(): Promise<Note[]> {
-    const { data, error } = await supabase
-        .from('notes')
-        .select('*')
-        .eq('is_deleted', false)
-        .order('updated_at', { ascending: false });
+  const userId = requireUserId();
+  const { data, error } = await supabase
+    .from("notes")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("is_deleted", false)
+    .order("updated_at", { ascending: false });
 
-    if (error) {
-        console.error('Error fetching notes:', error);
-        throw error;
-    }
+  if (error) {
+    console.error("Error fetching notes:", error);
+    throw error;
+  }
 
-    return data || [];
+  return data || [];
 }
 
 /**
  * Fetch a single note by ID
  */
 export async function fetchNoteById(id: string): Promise<Note | null> {
-    const { data, error } = await supabase
-        .from('notes')
-        .select('*')
-        .eq('id', id)
-        .eq('is_deleted', false)
-        .single();
+  const { data, error } = await supabase
+    .from("notes")
+    .select("*")
+    .eq("id", id)
+    .eq("is_deleted", false)
+    .single();
 
-    if (error) {
-        console.error('Error fetching note:', error);
-        return null;
-    }
+  if (error) {
+    console.error("Error fetching note:", error);
+    return null;
+  }
 
-    return data;
+  return data;
 }
 
 /**
@@ -49,70 +53,80 @@ export async function fetchNoteById(id: string): Promise<Note | null> {
  * IMPORTANT: Checks for existing empty notes and reuses them to prevent duplicates
  */
 export async function createNote(input: CreateNoteInput = {}): Promise<Note> {
-    const userId = requireUserId();
+  const userId = requireUserId();
 
-    const content = input.content || '';
-    const targetFolder = input.folder_name || 'Draft';
-    
-    // CRITICAL: If creating an empty note (no content or whitespace only), check for existing empty notes
-    const isCreatingEmptyNote = !content || content.trim() === '';
-    
-    if (isCreatingEmptyNote) {
-        // Fetch all user's notes to check for existing empty ones
-        const existingNotes = await fetchNotes();
-        const existingEmptyNote = findEmptyNewNote(existingNotes);
-        
-        if (existingEmptyNote) {
-            console.log('Reusing existing empty note instead of creating duplicate:', existingEmptyNote.id);
-            
-            // If it's in a different folder, move it to the target folder
-            if (existingEmptyNote.folder_name !== targetFolder) {
-                return updateNote(existingEmptyNote.id, { folder_name: targetFolder });
-            }
-            
-            // Already in the right folder, just return it
-            return existingEmptyNote;
-        }
+  const content = input.content || "";
+  const targetFolder = input.folder_name || "Draft";
+
+  // CRITICAL: If creating an empty note (no content or whitespace only), check for existing empty notes
+  const isCreatingEmptyNote = !content || content.trim() === "";
+
+  if (isCreatingEmptyNote) {
+    // Fetch all user's notes to check for existing empty ones
+    const existingNotes = await fetchNotes();
+    const existingEmptyNote = findEmptyNewNote(existingNotes);
+
+    if (existingEmptyNote) {
+      console.log(
+        "Reusing existing empty note instead of creating duplicate:",
+        existingEmptyNote.id,
+      );
+
+      // If it's in a different folder, move it to the target folder
+      if (existingEmptyNote.folder_name !== targetFolder) {
+        return updateNote(existingEmptyNote.id, { folder_name: targetFolder });
+      }
+
+      // Already in the right folder, just return it
+      return existingEmptyNote;
     }
+  }
 
-    // Auto-generate label from content if needed
-    let finalLabel = input.label || 'New Note';
-    
-    // Check if we should auto-generate the label
-    const shouldAutoGenerate = 
-        !finalLabel || 
-        finalLabel.trim() === '' || 
-        finalLabel.toLowerCase() === 'new note';
-    
-    if (shouldAutoGenerate && content.trim()) {
-        const generatedLabel = generateLabelFromContent(content);
-        if (generatedLabel) {
-            finalLabel = generatedLabel;
-        }
+  // Auto-generate label from content if needed
+  let finalLabel = input.label || "New Note";
+
+  // Check if we should auto-generate the label
+  const shouldAutoGenerate =
+    !finalLabel ||
+    finalLabel.trim() === "" ||
+    finalLabel.toLowerCase() === "new note";
+
+  if (shouldAutoGenerate && content.trim()) {
+    const generatedLabel = generateLabelFromContent(content);
+    if (generatedLabel) {
+      finalLabel = generatedLabel;
     }
+  }
 
-    // No existing empty note found, create a new one
-    const { data, error } = await supabase
-        .from('notes')
-        .insert({
-            user_id: userId,
-            label: finalLabel,
-            content: content,
-            folder_name: targetFolder,
-            tags: input.tags || [],
-            metadata: input.metadata || {},
-            position: input.position || 0,
-        })
-        .select()
-        .single();
+  // No existing empty note found, create a new one
+  const { data, error } = await supabase
+    .from("notes")
+    .insert({
+      user_id: userId,
+      label: finalLabel,
+      content: content,
+      folder_name: targetFolder,
+      tags: input.tags || [],
+      metadata: input.metadata || {},
+      position: input.position || 0,
+    })
+    .select()
+    .single();
 
-    if (error) {
-        console.error('Error creating note:', error);
-        throw error;
-    }
+  if (error) {
+    console.error("Error creating note:", error);
+    throw error;
+  }
 
-    console.log('Created new note:', data.id, 'Label:', finalLabel, 'Content length:', content.length);
-    return data;
+  console.log(
+    "Created new note:",
+    data.id,
+    "Label:",
+    finalLabel,
+    "Content length:",
+    content.length,
+  );
+  return data;
 }
 
 /**
@@ -122,50 +136,50 @@ export async function createNote(input: CreateNoteInput = {}): Promise<Note> {
  * (WHERE updated_at = ?) always fails. Concurrent-session conflicts are handled
  * via the Supabase Realtime subscription in NotesContext instead.
  */
-export async function updateNote(id: string, updates: UpdateNoteInput): Promise<Note> {
-    const { data, error } = await supabase
-        .from('notes')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+export async function updateNote(
+  id: string,
+  updates: UpdateNoteInput,
+): Promise<Note> {
+  const { data, error } = await supabase
+    .from("notes")
+    .update(updates)
+    .eq("id", id)
+    .select()
+    .single();
 
-    if (error) {
-        console.error('Error updating note:', error);
-        throw error;
-    }
+  if (error) {
+    console.error("Error updating note:", error);
+    throw error;
+  }
 
-    return data;
+  return data;
 }
 
 /**
  * Soft delete a note
  */
 export async function deleteNote(id: string): Promise<void> {
-    const { error } = await supabase
-        .from('notes')
-        .update({ is_deleted: true })
-        .eq('id', id);
+  const { error } = await supabase
+    .from("notes")
+    .update({ is_deleted: true })
+    .eq("id", id);
 
-    if (error) {
-        console.error('Error deleting note:', error);
-        throw error;
-    }
+  if (error) {
+    console.error("Error deleting note:", error);
+    throw error;
+  }
 }
 
 /**
  * Permanently delete a note
  */
 export async function permanentlyDeleteNote(id: string): Promise<void> {
-    const { error } = await supabase
-        .from('notes')
-        .delete()
-        .eq('id', id);
+  const { error } = await supabase.from("notes").delete().eq("id", id);
 
-    if (error) {
-        console.error('Error permanently deleting note:', error);
-        throw error;
-    }
+  if (error) {
+    console.error("Error permanently deleting note:", error);
+    throw error;
+  }
 }
 
 /**
@@ -173,38 +187,38 @@ export async function permanentlyDeleteNote(id: string): Promise<void> {
  * Smart labeling: If original was "New Note", auto-generate from content
  */
 export async function copyNote(id: string): Promise<Note> {
-    // First fetch the original note
-    const { data: original, error: fetchError} = await supabase
-        .from('notes')
-        .select('*')
-        .eq('id', id)
-        .single();
+  // First fetch the original note
+  const { data: original, error: fetchError } = await supabase
+    .from("notes")
+    .select("*")
+    .eq("id", id)
+    .single();
 
-    if (fetchError || !original) {
-        console.error('Error fetching note to copy:', fetchError);
-        throw fetchError || new Error('Note not found');
-    }
+  if (fetchError || !original) {
+    console.error("Error fetching note to copy:", fetchError);
+    throw fetchError || new Error("Note not found");
+  }
 
-    // Smart label handling
-    let copyLabel: string;
-    if (original.label.toLowerCase() === 'new note') {
-        // If original was "New Note", let auto-labeling handle it
-        copyLabel = 'New Note';
-    } else {
-        // Otherwise, append (Copy) to the original label
-        copyLabel = `${original.label} (Copy)`;
-    }
+  // Smart label handling
+  let copyLabel: string;
+  if (original.label.toLowerCase() === "new note") {
+    // If original was "New Note", let auto-labeling handle it
+    copyLabel = "New Note";
+  } else {
+    // Otherwise, append (Copy) to the original label
+    copyLabel = `${original.label} (Copy)`;
+  }
 
-    // Create a copy with modified label
-    const copy: CreateNoteInput = {
-        label: copyLabel,
-        content: original.content,
-        folder_name: original.folder_name,
-        tags: original.tags || [],
-        metadata: original.metadata || {},
-    };
+  // Create a copy with modified label
+  const copy: CreateNoteInput = {
+    label: copyLabel,
+    content: original.content,
+    folder_name: original.folder_name,
+    tags: original.tags || [],
+    metadata: original.metadata || {},
+  };
 
-    return await createNote(copy);
+  return await createNote(copy);
 }
 
 /**
@@ -212,152 +226,176 @@ export async function copyNote(id: string): Promise<Note> {
  * Returns a URL that users can visit to accept the share
  */
 export function generateShareLink(noteId: string): string {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-    return `${baseUrl}/notes/share/${noteId}`;
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  return `${baseUrl}/notes/share/${noteId}`;
 }
 
 /**
  * Accept a shared note (adds current user to shared_with)
  */
-export async function acceptSharedNote(noteId: string, userId: string): Promise<Note> {
-    // First get the current shared_with array
-    const { data: note, error: fetchError } = await supabase
-        .from('notes')
-        .select('shared_with')
-        .eq('id', noteId)
-        .single();
+export async function acceptSharedNote(
+  noteId: string,
+  userId: string,
+): Promise<Note> {
+  // First get the current shared_with array
+  const { data: note, error: fetchError } = await supabase
+    .from("notes")
+    .select("shared_with")
+    .eq("id", noteId)
+    .single();
 
-    if (fetchError || !note) {
-        console.error('Error fetching note:', fetchError);
-        throw fetchError || new Error('Note not found');
-    }
+  if (fetchError || !note) {
+    console.error("Error fetching note:", fetchError);
+    throw fetchError || new Error("Note not found");
+  }
 
-    const currentSharedWith = (note.shared_with as any) || {};
-    const userIds = currentSharedWith.userIds || [];
-    
-    // Add user if not already in the list
-    if (!userIds.includes(userId)) {
-        userIds.push(userId);
-    }
+  const currentSharedWith = (note.shared_with as any) || {};
+  const userIds = currentSharedWith.userIds || [];
 
-    // Update the note
-    const { data: updated, error: updateError } = await supabase
-        .from('notes')
-        .update({ 
-            shared_with: { ...currentSharedWith, userIds } 
-        })
-        .eq('id', noteId)
-        .select()
-        .single();
+  // Add user if not already in the list
+  if (!userIds.includes(userId)) {
+    userIds.push(userId);
+  }
 
-    if (updateError) {
-        console.error('Error accepting shared note:', updateError);
-        throw updateError;
-    }
+  // Update the note
+  const { data: updated, error: updateError } = await supabase
+    .from("notes")
+    .update({
+      shared_with: { ...currentSharedWith, userIds },
+    })
+    .eq("id", noteId)
+    .select()
+    .single();
 
-    return updated;
+  if (updateError) {
+    console.error("Error accepting shared note:", updateError);
+    throw updateError;
+  }
+
+  return updated;
 }
 
 /**
- * Fetch notes shared with the current user
+ * Fetch notes explicitly shared with the current user via the permissions table.
+ * Does not include notes accessible via project/workspace/org hierarchy —
+ * those appear in the normal fetchNotes() query via RLS.
+ * The old shared_with JSONB column approach is superseded by the permissions system.
  */
 export async function fetchSharedNotes(userId: string): Promise<Note[]> {
-    const { data, error } = await supabase
-        .from('notes')
-        .select('*')
-        .eq('is_deleted', false)
-        .order('updated_at', { ascending: false });
+  const { data: grants, error: grantsError } = await supabase
+    .from("permissions")
+    .select("resource_id")
+    .eq("resource_type", "notes")
+    .eq("granted_to_user_id", userId);
 
-    if (error) {
-        console.error('Error fetching shared notes:', error);
-        return [];
-    }
+  if (grantsError || !grants || grants.length === 0) return [];
 
-    // Filter notes where userId is in shared_with.userIds
-    return data.filter(note => {
-        const sharedWith = (note.shared_with as any) || {};
-        const userIds = sharedWith.userIds || [];
-        return userIds.includes(userId);
-    });
+  const noteIds = grants.map((g) => g.resource_id);
+
+  const { data, error } = await supabase
+    .from("notes")
+    .select("*")
+    .in("id", noteIds)
+    .neq("user_id", userId)
+    .eq("is_deleted", false)
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching shared notes:", error);
+    return [];
+  }
+
+  return data || [];
 }
 
 /**
- * Get all unique folder names
+ * Get all unique folder names for the current user
  */
 export async function fetchFolderNames(): Promise<string[]> {
-    const { data, error } = await supabase
-        .from('notes')
-        .select('folder_name')
-        .eq('is_deleted', false);
+  const userId = requireUserId();
+  const { data, error } = await supabase
+    .from("notes")
+    .select("folder_name")
+    .eq("user_id", userId)
+    .eq("is_deleted", false);
 
-    if (error) {
-        console.error('Error fetching folder names:', error);
-        return [];
-    }
+  if (error) {
+    console.error("Error fetching folder names:", error);
+    return [];
+  }
 
-    const uniqueFolders = Array.from(new Set(data.map(n => n.folder_name)));
-    return uniqueFolders.sort();
+  const uniqueFolders = Array.from(new Set(data.map((n) => n.folder_name)));
+  return uniqueFolders.sort();
 }
 
 /**
- * Get all unique tags
+ * Get all unique tags for the current user
  */
 export async function fetchTags(): Promise<string[]> {
-    const { data, error } = await supabase
-        .from('notes')
-        .select('tags')
-        .eq('is_deleted', false);
+  const userId = requireUserId();
+  const { data, error } = await supabase
+    .from("notes")
+    .select("tags")
+    .eq("user_id", userId)
+    .eq("is_deleted", false);
 
-    if (error) {
-        console.error('Error fetching tags:', error);
-        return [];
-    }
+  if (error) {
+    console.error("Error fetching tags:", error);
+    return [];
+  }
 
-    const allTags = data.flatMap(n => n.tags || []);
-    const uniqueTags = Array.from(new Set(allTags));
-    return uniqueTags.sort();
+  const allTags = data.flatMap((n) => n.tags || []);
+  const uniqueTags = Array.from(new Set(allTags));
+  return uniqueTags.sort();
 }
 
 /**
- * Rename a folder by updating all notes in that folder
+ * Rename a folder by updating all notes in that folder (current user only)
  */
-export async function renameFolder(oldName: string, newName: string): Promise<void> {
-    const { error } = await supabase
-        .from('notes')
-        .update({ folder_name: newName })
-        .eq('folder_name', oldName)
-        .eq('is_deleted', false);
+export async function renameFolder(
+  oldName: string,
+  newName: string,
+): Promise<void> {
+  const userId = requireUserId();
+  const { error } = await supabase
+    .from("notes")
+    .update({ folder_name: newName })
+    .eq("user_id", userId)
+    .eq("folder_name", oldName)
+    .eq("is_deleted", false);
 
-    if (error) {
-        console.error('Error renaming folder:', error);
-        throw error;
-    }
+  if (error) {
+    console.error("Error renaming folder:", error);
+    throw error;
+  }
 }
 
 /**
- * Bulk delete all notes in a folder (soft delete)
+ * Bulk soft-delete all notes in a folder (current user only)
  */
 export async function deleteFolderNotes(folderName: string): Promise<number> {
-    // First, count how many notes will be deleted
-    const { data: notesToDelete } = await supabase
-        .from('notes')
-        .select('id')
-        .eq('folder_name', folderName)
-        .eq('is_deleted', false);
+  const userId = requireUserId();
 
-    const count = notesToDelete?.length || 0;
+  const { data: notesToDelete } = await supabase
+    .from("notes")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("folder_name", folderName)
+    .eq("is_deleted", false);
 
-    // Perform bulk soft delete
-    const { error } = await supabase
-        .from('notes')
-        .update({ is_deleted: true })
-        .eq('folder_name', folderName)
-        .eq('is_deleted', false);
+  const count = notesToDelete?.length || 0;
 
-    if (error) {
-        console.error('Error deleting folder notes:', error);
-        throw error;
-    }
+  const { error } = await supabase
+    .from("notes")
+    .update({ is_deleted: true })
+    .eq("user_id", userId)
+    .eq("folder_name", folderName)
+    .eq("is_deleted", false);
 
-    return count;
+  if (error) {
+    console.error("Error deleting folder notes:", error);
+    throw error;
+  }
+
+  return count;
 }

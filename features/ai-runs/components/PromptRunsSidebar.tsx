@@ -14,7 +14,6 @@ import { aiRunsService } from "../services/ai-runs-service";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import { useRef } from "react";
 
 interface PromptRunsSidebarProps {
   promptId: string;
@@ -50,34 +49,42 @@ export function PromptRunsSidebar({
       setIsLoadingPrompts(true);
       try {
         const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         const { data, error } = await supabase
-          .from('prompts')
-          .select('id, name, description')
-          .order('name', { ascending: true });
-        
+          .from("prompts")
+          .select("id, name, description")
+          .eq("user_id", user?.id)
+          .order("name", { ascending: true });
+
         if (error) throw error;
-        
+
         setPrompts(data || []);
       } catch (error) {
-        console.error('Error fetching prompts:', error);
+        console.error("Error fetching prompts:", error);
       } finally {
         setIsLoadingPrompts(false);
       }
     };
-    
+
     fetchPrompts();
   }, []);
 
   // Always show runs for current prompt
-  const filters = { source_type: 'prompts' as const, source_id: promptId, limit: 20 };
+  const filters = {
+    source_type: "prompts" as const,
+    source_id: promptId,
+    limit: 20,
+  };
 
   const handleRunStar = async (runId: string) => {
     try {
       await aiRunsService.toggleStar(runId);
       // Trigger immediate refresh by changing the key
-      setRefreshTrigger(prev => prev + 1);
+      setRefreshTrigger((prev) => prev + 1);
     } catch (error) {
-      console.error('Error toggling star:', error);
+      console.error("Error toggling star:", error);
     }
   };
 
@@ -120,16 +127,17 @@ export function PromptRunsSidebar({
               className="w-full justify-between text-xs h-7 px-2"
               disabled={isLoadingPrompts}
             >
-              <span className="truncate">
-                {promptName}
-              </span>
+              <span className="truncate">{promptName}</span>
               <ChevronDown className="w-3 h-3 ml-1 flex-shrink-0" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-[240px] max-h-[300px] overflow-y-auto">
+          <DropdownMenuContent
+            align="start"
+            className="w-[240px] max-h-[300px] overflow-y-auto"
+          >
             {prompts.length === 0 ? (
               <div className="px-2 py-1.5 text-xs text-gray-500 dark:text-gray-400">
-                {isLoadingPrompts ? 'Loading...' : 'No prompts found'}
+                {isLoadingPrompts ? "Loading..." : "No prompts found"}
               </div>
             ) : (
               prompts.map((prompt) => (
@@ -138,7 +146,7 @@ export function PromptRunsSidebar({
                   onClick={() => handlePromptChange(prompt.id)}
                   disabled={prompt.id === promptId}
                   className={cn(
-                    prompt.id === promptId && "bg-blue-50 dark:bg-blue-950/30"
+                    prompt.id === promptId && "bg-blue-50 dark:bg-blue-950/30",
                   )}
                 >
                   <div className="flex flex-col min-w-0 flex-1">
@@ -170,14 +178,11 @@ export function PromptRunsSidebar({
           emptySubmessage="Start a conversation"
         />
       </div>
-      
+
       {/* Optional footer */}
       {footer && (
-        <div className="flex-shrink-0 border-t border-border">
-          {footer}
-        </div>
+        <div className="flex-shrink-0 border-t border-border">{footer}</div>
       )}
     </div>
   );
 }
-

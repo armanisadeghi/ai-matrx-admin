@@ -258,6 +258,32 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     // Agent Settings — unified settings management for all agent/prompt contexts
     // (builder, chat session overrides, multi-agent testing)
     agentSettings: agentSettingsReducer,
+
+    // NEW AGEENTS SYSTEM ======================================================
+
+    // // Layer 1 — Agent Source
+    // agents: agentsReducer,
+    // agentModelConfig: agentModelConfigReducer,
+    // agentVariableDefinitions: agentVariableDefinitionsReducer,
+    // agentTools: agentToolsReducer,
+    // agentContextSlots: agentContextSlotsReducer,
+    // agentShortcuts: agentShortcutsReducer,
+
+    // // Layer 2 — Active Scopes
+    // activeScopes: activeScopesReducer,
+
+    // // Layer 3 — Prompt Instances
+    // promptInstances: promptInstancesReducer,
+    // instanceModelOverrides: instanceModelOverridesReducer,
+    // instanceVariableValues: instanceVariableValuesReducer,
+    // instanceResources: instanceResourcesReducer,
+    // instanceContext: instanceContextReducer,
+    // instanceUserInput: instanceUserInputReducer,
+    // instanceClientTools: instanceClientToolsReducer,
+    // instanceUIState: instanceUIStateReducer,
+
+    // // Layer 4 — Request Execution
+    // activeRequests: activeRequestsReducer,
   });
 };
 

@@ -31,6 +31,7 @@ export async function createListAction(formData: {
 
   if (error) throw new Error(`Failed to create list: ${error.message}`);
   revalidatePath("/lists");
+  revalidatePath("/lists-v2");
   return data as { list_id: string; list_name: string };
 }
 
@@ -62,6 +63,8 @@ export async function updateListAction(formData: {
   if (error) throw new Error(`Failed to update list: ${error.message}`);
   revalidatePath("/lists");
   revalidatePath(`/lists/${formData.list_id}`);
+  revalidatePath("/lists-v2");
+  revalidatePath(`/lists-v2/${formData.list_id}`);
   return data;
 }
 
@@ -82,6 +85,7 @@ export async function deleteListAction(listId: string) {
 
   if (error) throw new Error(`Failed to delete list: ${error.message}`);
   revalidatePath("/lists");
+  revalidatePath("/lists-v2");
 }
 
 // ─── Item mutations ────────────────────────────────────────────────────────────
@@ -118,6 +122,7 @@ export async function addItemAction(params: {
 
   if (error) throw new Error(`Failed to add item: ${error.message}`);
   revalidatePath(`/lists/${params.listId}`);
+  revalidatePath(`/lists-v2/${params.listId}`);
   return data;
 }
 
@@ -154,6 +159,7 @@ export async function updateItemAction(params: {
 
   if (error) throw new Error(`Failed to update item: ${error.message}`);
   revalidatePath(`/lists/${params.listId}`);
+  revalidatePath(`/lists-v2/${params.listId}`);
   return data;
 }
 
@@ -172,4 +178,5 @@ export async function deleteItemAction(itemId: string, listId: string) {
 
   if (error) throw new Error(`Failed to delete item: ${error.message}`);
   revalidatePath(`/lists/${listId}`);
+  revalidatePath(`/lists-v2/${listId}`);
 }
