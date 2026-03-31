@@ -1,0 +1,385 @@
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type {
+  AgentShortcut,
+  AgentShortcutRecord,
+  AgentShortcutSliceState,
+  ShortcutFieldSnapshot,
+} from "./types";
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function makeEmptyRecord(id: string): AgentShortcutRecord {
+  return {
+    id,
+    categoryId: "",
+    label: "",
+    description: null,
+    iconName: null,
+    keyboardShortcut: null,
+    sortOrder: 0,
+
+    agentId: null,
+    agentVersionId: null,
+    useLatest: false,
+
+    enabledContexts: [],
+    scopeMappings: null,
+
+    resultDisplay: "modal-full",
+    allowChat: true,
+    autoRun: true,
+    applyVariables: true,
+    showVariables: false,
+    usePreExecutionInput: false,
+
+    isActive: true,
+
+    userId: null,
+    organizationId: null,
+    workspaceId: null,
+    projectId: null,
+    taskId: null,
+
+    createdAt: "",
+    updatedAt: "",
+
+    _dirty: false,
+    _dirtyFields: new Set(),
+    _fieldHistory: {},
+    _loadedFields: new Set(),
+    _loading: false,
+    _error: null,
+  };
+}
+
+/**
+ * Writes incoming fields onto the record AND tracks them in _loadedFields.
+ * Never overwrites with undefined. Does not touch runtime flags.
+ */
+function mergeAndTrack(
+  record: AgentShortcutRecord,
+  partial: Partial<AgentShortcut>,
+): void {
+  (Object.keys(partial) as (keyof AgentShortcut)[]).forEach((key) => {
+    if (partial[key] !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (record as any)[key] = partial[key];
+      record._loadedFields.add(key);
+    }
+  });
+}
+
+/**
+ * Applies a user edit with dirty tracking and history capture.
+ * Does NOT add to _loadedFields — user edits are not "fetched".
+ */
+function applyFieldEdit<K extends keyof AgentShortcut>(
+  record: AgentShortcutRecord,
+  field: K,
+  value: AgentShortcut[K],
+): void {
+  if (!record._dirtyFields.has(field)) {
+    (record._fieldHistory as ShortcutFieldSnapshot)[field] = record[
+      field
+    ] as AgentShortcut[K];
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (record as any)[field] = value;
+  record._dirtyFields.add(field);
+  record._dirty = true;
+}
+
+/**
+ * Marks a record as clean. Clears dirty state and history.
+ * _loadedFields is NOT cleared — cumulative.
+ */
+function markRecordClean(record: AgentShortcutRecord): void {
+  record._dirty = false;
+  record._dirtyFields = new Set();
+  record._fieldHistory = {};
+}
+
+// ---------------------------------------------------------------------------
+// Initial state
+// ---------------------------------------------------------------------------
+
+const initialState: AgentShortcutSliceState = {
+  shortcuts: {},
+  activeShortcutId: null,
+  initialLoaded: false,
+  contextLoaded: {},
+  status: "idle",
+  error: null,
+};
+
+// ---------------------------------------------------------------------------
+// Slice
+// ---------------------------------------------------------------------------
+
+export const agentShortcutSlice = createSlice({
+  name: "agentShortcut",
+  initialState,
+
+  reducers: {
+    // ── Full upsert (complete fetch — marks record clean) ────────────────────
+
+    /**
+     * Upserts a fully-fetched shortcut and marks it clean.
+     * All incoming fields tracked in _loadedFields.
+     */
+    upsertShortcut(state, action: PayloadAction<AgentShortcut>) {
+      const data = action.payload;
+      const existing = state.shortcuts[data.id];
+      if (existing) {
+        mergeAndTrack(existing, data);
+        markRecordClean(existing);
+      } else {
+        const record = makeEmptyRecord(data.id);
+        mergeAndTrack(record, data);
+        markRecordClean(record);
+        state.shortcuts[data.id] = record;
+      }
+    },
+
+    /**
+     * Upserts multiple shortcuts at once (e.g. from RPC batch response).
+     * Each record is marked clean.
+     */
+    upsertShortcuts(state, action: PayloadAction<AgentShortcut[]>) {
+      action.payload.forEach((data) => {
+        const existing = state.shortcuts[data.id];
+        if (existing) {
+          mergeAndTrack(existing, data);
+          markRecordClean(existing);
+        } else {
+          const record = makeEmptyRecord(data.id);
+          mergeAndTrack(record, data);
+          markRecordClean(record);
+          state.shortcuts[data.id] = record;
+        }
+      });
+    },
+
+    /**
+     * Merges a partial payload into state.
+     * PRESERVES existing fields not in the payload.
+     * NEVER clears dirty state.
+     * New shortcuts initialised clean on first appearance.
+     */
+    mergePartialShortcut(
+      state,
+      action: PayloadAction<Partial<AgentShortcut> & { id: string }>,
+    ) {
+      const data = action.payload;
+      const existing = state.shortcuts[data.id];
+      if (existing) {
+        mergeAndTrack(existing, data);
+      } else {
+        const record = makeEmptyRecord(data.id);
+        mergeAndTrack(record, data);
+        state.shortcuts[data.id] = record;
+      }
+    },
+
+    // ── User field edits (trigger dirty) ─────────────────────────────────────
+
+    /** Edit any single field by name. Captures history and marks dirty. */
+    setShortcutField(
+      state,
+      action: PayloadAction<{
+        id: string;
+        field: keyof AgentShortcut;
+        value: AgentShortcut[keyof AgentShortcut];
+      }>,
+    ) {
+      const { id, field, value } = action.payload;
+      const record = state.shortcuts[id];
+      if (!record) return;
+      applyFieldEdit(record, field, value as AgentShortcut[typeof field]);
+    },
+
+    // ── Dedicated actions for complex fields ──────────────────────────────────
+
+    setShortcutEnabledContexts(
+      state,
+      action: PayloadAction<{
+        id: string;
+        enabledContexts: AgentShortcut["enabledContexts"];
+      }>,
+    ) {
+      const record = state.shortcuts[action.payload.id];
+      if (!record) return;
+      applyFieldEdit(record, "enabledContexts", action.payload.enabledContexts);
+    },
+
+    setShortcutScopeMappings(
+      state,
+      action: PayloadAction<{
+        id: string;
+        scopeMappings: AgentShortcut["scopeMappings"];
+      }>,
+    ) {
+      const record = state.shortcuts[action.payload.id];
+      if (!record) return;
+      applyFieldEdit(record, "scopeMappings", action.payload.scopeMappings);
+    },
+
+    // ── Dirty / history management ────────────────────────────────────────────
+
+    /** Reset one field to its original value from _fieldHistory. */
+    resetShortcutField(
+      state,
+      action: PayloadAction<{ id: string; field: keyof AgentShortcut }>,
+    ) {
+      const { id, field } = action.payload;
+      const record = state.shortcuts[id];
+      if (!record || !record._dirtyFields.has(field)) return;
+
+      const original = record._fieldHistory[field];
+      if (original !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (record as any)[field] = original;
+      }
+      record._dirtyFields.delete(field);
+      delete record._fieldHistory[field];
+      record._dirty = record._dirtyFields.size > 0;
+    },
+
+    /** Reset ALL dirty fields to their original values. No refetch needed. */
+    resetAllShortcutFields(state, action: PayloadAction<{ id: string }>) {
+      const record = state.shortcuts[action.payload.id];
+      if (!record) return;
+      (Object.keys(record._fieldHistory) as (keyof AgentShortcut)[]).forEach(
+        (field) => {
+          const original = record._fieldHistory[field];
+          if (original !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (record as any)[field] = original;
+          }
+        },
+      );
+      markRecordClean(record);
+    },
+
+    /** Called after a successful save. Current values become the new clean baseline. */
+    markShortcutSaved(state, action: PayloadAction<{ id: string }>) {
+      const record = state.shortcuts[action.payload.id];
+      if (!record) return;
+      markRecordClean(record);
+    },
+
+    /** Save failed — restore from snapshot taken before optimistic write. */
+    rollbackShortcutOptimisticUpdate(
+      state,
+      action: PayloadAction<{ id: string; snapshot: ShortcutFieldSnapshot }>,
+    ) {
+      const { id, snapshot } = action.payload;
+      const record = state.shortcuts[id];
+      if (!record) return;
+      (Object.keys(snapshot) as (keyof AgentShortcut)[]).forEach((field) => {
+        const value = snapshot[field];
+        if (value !== undefined) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (record as any)[field] = value;
+        }
+      });
+      record._dirty = record._dirtyFields.size > 0;
+    },
+
+    // ── Explicitly mark fields as loaded ─────────────────────────────────────
+
+    markShortcutFieldsLoaded(
+      state,
+      action: PayloadAction<{ id: string; fields: (keyof AgentShortcut)[] }>,
+    ) {
+      const record = state.shortcuts[action.payload.id];
+      if (!record) return;
+      action.payload.fields.forEach((f) => record._loadedFields.add(f));
+    },
+
+    // ── Per-record async state ────────────────────────────────────────────────
+
+    setShortcutLoading(
+      state,
+      action: PayloadAction<{ id: string; loading: boolean }>,
+    ) {
+      const record = state.shortcuts[action.payload.id];
+      if (record) record._loading = action.payload.loading;
+    },
+
+    setShortcutError(
+      state,
+      action: PayloadAction<{ id: string; error: string | null }>,
+    ) {
+      const record = state.shortcuts[action.payload.id];
+      if (record) record._error = action.payload.error;
+    },
+
+    // ── Active shortcut ───────────────────────────────────────────────────────
+
+    setActiveShortcutId(state, action: PayloadAction<string | null>) {
+      state.activeShortcutId = action.payload;
+    },
+
+    // ── Phase tracking ────────────────────────────────────────────────────────
+
+    setInitialLoaded(state, action: PayloadAction<boolean>) {
+      state.initialLoaded = action.payload;
+    },
+
+    setContextLoaded(
+      state,
+      action: PayloadAction<{ key: string; loaded: boolean }>,
+    ) {
+      state.contextLoaded[action.payload.key] = action.payload.loaded;
+    },
+
+    // ── Slice-level status ────────────────────────────────────────────────────
+
+    setShortcutsStatus(
+      state,
+      action: PayloadAction<AgentShortcutSliceState["status"]>,
+    ) {
+      state.status = action.payload;
+    },
+
+    setShortcutsError(state, action: PayloadAction<string | null>) {
+      state.error = action.payload;
+    },
+
+    // ── Remove ────────────────────────────────────────────────────────────────
+
+    removeShortcut(state, action: PayloadAction<string>) {
+      delete state.shortcuts[action.payload];
+      if (state.activeShortcutId === action.payload) {
+        state.activeShortcutId = null;
+      }
+    },
+  },
+});
+
+export const {
+  upsertShortcut,
+  upsertShortcuts,
+  mergePartialShortcut,
+  setShortcutField,
+  setShortcutEnabledContexts,
+  setShortcutScopeMappings,
+  resetShortcutField,
+  resetAllShortcutFields,
+  markShortcutSaved,
+  rollbackShortcutOptimisticUpdate,
+  markShortcutFieldsLoaded,
+  setShortcutLoading,
+  setShortcutError,
+  setActiveShortcutId,
+  setInitialLoaded,
+  setContextLoaded,
+  setShortcutsStatus,
+  setShortcutsError,
+  removeShortcut,
+} = agentShortcutSlice.actions;
+
+export default agentShortcutSlice.reducer;

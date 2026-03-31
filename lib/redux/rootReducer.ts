@@ -62,6 +62,9 @@ import entitySystemReducer from "./slices/entitySystemSlice";
 
 // Agent cache — unified slim/core/operational store for user prompts + builtins + shared
 import agentCacheReducer from "./slices/agentCacheSlice";
+import agentDefinitionReducer from "@/features/agents/redux/agent-definition/slice";
+import agentShortcutReducer from "@/features/agents/redux/agent-shortcuts/slice";
+import agentConsumersReducer from "@/features/agents/redux/agent-consumers/slice";
 
 // Prompt system
 import promptCacheReducer from "./slices/promptCacheSlice";
@@ -259,9 +262,14 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     // (builder, chat session overrides, multi-agent testing)
     agentSettings: agentSettingsReducer,
 
-    // NEW AGEENTS SYSTEM ======================================================
+    // NEW AGENTS SYSTEM =======================================================
 
-    // // Layer 1 — Agent Source
+    // Layer 1 — Agent Source
+    agentDefinition: agentDefinitionReducer,
+    agentShortcut: agentShortcutReducer,
+    agentConsumers: agentConsumersReducer,
+
+    // // (remaining layers — pending)
     // agents: agentsReducer,
     // agentModelConfig: agentModelConfigReducer,
     // agentVariableDefinitions: agentVariableDefinitionsReducer,

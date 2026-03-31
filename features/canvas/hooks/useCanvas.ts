@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useCallback } from 'react';
+import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   openCanvas,
@@ -10,17 +10,19 @@ import {
   selectCanvasIsOpen,
   selectCanvasContent,
   CanvasContent,
-} from '@/features/canvas/redux/canvasSlice';
+} from "@/features/canvas/redux/canvasSlice";
 
 /**
  * useCanvas - Simple hook for canvas interactions
- * 
+ *
  * Provides clean API for opening/closing canvas and accessing canvas state.
- * 
+ * Requires a Redux provider to be present in the tree (all authenticated and
+ * SSR routes satisfy this via Providers/StoreProvider).
+ *
  * @example
  * ```tsx
  * const { open, close, isOpen } = useCanvas();
- * 
+ *
  * const handleExpandQuiz = () => {
  *   open({
  *     type: 'quiz',
@@ -31,45 +33,33 @@ import {
  * ```
  */
 export function useCanvas() {
-  // Gracefully handle missing Redux provider (e.g., in public app context)
-  let dispatch: any;
-  let isOpen = false;
-  let content: CanvasContent | null = null;
-  let hasProvider = true;
+  const dispatch = useAppDispatch();
+  // Selectors use optional chaining internally so they return safe defaults
+  // when the canvas slice is missing from the store
+  const isOpen = useAppSelector(selectCanvasIsOpen);
+  const content = useAppSelector(selectCanvasContent);
 
-  try {
-    dispatch = useAppDispatch();
-    isOpen = useAppSelector(selectCanvasIsOpen);
-    content = useAppSelector(selectCanvasContent);
-  } catch (error) {
-    // Expected in public context without Redux provider - not critical
-    hasProvider = false;
-    console.warn('[useCanvas] Redux provider not found, canvas features disabled');
-  }
-
-  const open = useCallback((canvasContent: CanvasContent) => {
-    if (hasProvider && dispatch) {
+  const open = useCallback(
+    (canvasContent: CanvasContent) => {
       dispatch(openCanvas(canvasContent));
-    }
-  }, [dispatch, hasProvider]);
+    },
+    [dispatch],
+  );
 
   const close = useCallback(() => {
-    if (hasProvider && dispatch) {
-      dispatch(closeCanvas());
-    }
-  }, [dispatch, hasProvider]);
+    dispatch(closeCanvas());
+  }, [dispatch]);
 
   const clear = useCallback(() => {
-    if (hasProvider && dispatch) {
-      dispatch(clearCanvas());
-    }
-  }, [dispatch, hasProvider]);
+    dispatch(clearCanvas());
+  }, [dispatch]);
 
-  const update = useCallback((canvasContent: CanvasContent) => {
-    if (hasProvider && dispatch) {
+  const update = useCallback(
+    (canvasContent: CanvasContent) => {
       dispatch(updateCanvasContent({ content: canvasContent }));
-    }
-  }, [dispatch, hasProvider]);
+    },
+    [dispatch],
+  );
 
   return {
     open,
@@ -80,4 +70,3 @@ export function useCanvas() {
     content,
   };
 }
-

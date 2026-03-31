@@ -1,0 +1,905 @@
+/**
+ * Agent Definition — Redux Thunks
+ *
+ * Read thunks:
+ *   fetchAgentsList              — lightweight list for the agents page (owned + shared)
+ *   fetchAgentsListFull          — same as above + all active builtins (for pickers/dropdowns)
+ *   fetchSharedAgents            — agents shared with me (for "shared" tab)
+ *   fetchSharedAgentsForChat     — minimal shared list for chat agent picker
+ *   fetchAgentAccessLevel        — current user's permission level on an agent
+ *   fetchAgentExecutionMinimal   — id + variableDefinitions + contextSlots (skips if ready)
+ *   fetchAgentExecutionFull      — adds settings, tools, model (skips if ready)
+ *   fetchFullAgent               — complete row, marks record clean
+ *   fetchAgentVersionHistory     — paginated version list (returns data, no slice storage)
+ *   fetchAgentVersionSnapshot    — full version snapshot → stored in agents map (isVersion = true)
+ *   checkAgentDrift              — what references are behind? (returns data, no slice storage)
+ *   checkAgentReferences         — what references this agent? (returns data, no slice storage)
+ *
+ * Write thunks:
+ *   saveAgentField               — optimistic single-field save with rollback
+ *   saveAgent                    — save all dirty fields for an agent
+ *   createAgent                  — insert new agent
+ *   deleteAgent                  — delete agent
+ *   purgeAgentVersions           — delete old versions, keep N most recent
+ *
+ * RPC action thunks:
+ *   duplicateAgent               — calls duplicate_agent(), loads copy into state
+ *   promoteAgentVersion          — calls promote_agent_version(), reloads live row
+ *   acceptAgentVersion           — accept latest for a shortcut/app/derived ref
+ *   updateAgentFromSource        — reset derived agent to its source agent's data
+ */
+
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { supabase } from "@/utils/supabase/client";
+import type { AppDispatch, RootState } from "@/lib/redux/store";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import type {
+  AgentDefinition,
+  AgentListRow,
+  AgentExecutionMinimal,
+  AgentExecutionFull,
+  AgentDriftItem,
+  AgentReference,
+  AcceptVersionResult,
+  UpdateFromSourceResult,
+  PromoteVersionResult,
+} from "./types";
+import {
+  upsertAgent,
+  mergePartialAgent,
+  setAgentField,
+  setAgentLoading,
+  setAgentError,
+  setAgentsStatus,
+  setAgentsError,
+  markAgentSaved,
+  rollbackAgentOptimisticUpdate,
+  removeAgent,
+} from "./slice";
+import {
+  selectAgentById,
+  selectAgentExecutionPayload,
+  selectAgentCustomExecutionPayload,
+} from "./selectors";
+import {
+  dbRowToAgentDefinition,
+  agentDefinitionToInsert,
+  agentDefinitionToUpdate,
+} from "./converters";
+
+type ThunkApi = { dispatch: AppDispatch; state: RootState };
+
+// ---------------------------------------------------------------------------
+// Read thunks
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetches the lightweight agent list for the agents page.
+ * Maps AgentListRow → mergePartialAgent (list fields only).
+ * Does not overwrite fields already in state that were loaded by other means.
+ */
+export const fetchAgentsList = createAsyncThunk<void, void, ThunkApi>(
+  "agentDefinition/fetchList",
+  async (_, { dispatch }) => {
+    dispatch(setAgentsStatus("loading"));
+
+    const { data, error } = await supabase.rpc("get_agents_list");
+
+    if (error) {
+      dispatch(setAgentsError(error.message));
+      dispatch(setAgentsStatus("failed"));
+      throw error;
+    }
+
+    const rows = (data ?? []) as AgentListRow[];
+
+    for (const row of rows) {
+      dispatch(
+        mergePartialAgent({
+          id: row.id,
+          name: row.name,
+          description: row.description,
+          category: row.category,
+          tags: row.tags ?? [],
+          agentType: row.agent_type,
+          modelId: row.model_id,
+          isActive: row.is_active,
+          isArchived: row.is_archived,
+          isFavorite: row.is_favorite,
+          userId: row.user_id,
+          organizationId: row.organization_id,
+          workspaceId: row.workspace_id ?? null,
+          projectId: row.project_id ?? null,
+          taskId: row.task_id ?? null,
+          sourceAgentId: row.source_agent_id,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+          // Live agents from the list are never version snapshots
+          isVersion: false,
+          // Access metadata — now provided by the RPC directly
+          isOwner: row.is_owner,
+          accessLevel: row.access_level,
+          sharedByEmail: row.shared_by_email,
+        }),
+      );
+    }
+
+    dispatch(setAgentsStatus("succeeded"));
+  },
+);
+
+/**
+ * Fetches the full agent list for pickers and dropdowns.
+ * Returns everything from get_agents_list() PLUS all active builtin agents.
+ * Builtins arrive with accessLevel = 'system' so the UI can group them separately.
+ *
+ * Use this for any picker/dropdown that needs the complete agent catalogue.
+ * Use fetchAgentsList() for the agents page where builtins are not shown.
+ */
+export const fetchAgentsListFull = createAsyncThunk<void, void, ThunkApi>(
+  "agentDefinition/fetchListFull",
+  async (_, { dispatch }) => {
+    const { data, error } = await supabase.rpc("get_agents_list_full");
+
+    if (error) throw error;
+
+    const rows = (data ?? []) as AgentListRow[];
+
+    for (const row of rows) {
+      dispatch(
+        mergePartialAgent({
+          id: row.id,
+          name: row.name,
+          description: row.description,
+          category: row.category,
+          tags: row.tags ?? [],
+          agentType: row.agent_type,
+          modelId: row.model_id,
+          isActive: row.is_active,
+          isArchived: row.is_archived,
+          isFavorite: row.is_favorite,
+          userId: row.user_id,
+          organizationId: row.organization_id,
+          workspaceId: row.workspace_id ?? null,
+          projectId: row.project_id ?? null,
+          taskId: row.task_id ?? null,
+          sourceAgentId: row.source_agent_id,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+          isVersion: false,
+          isOwner: row.is_owner,
+          accessLevel: row.access_level,
+          sharedByEmail: row.shared_by_email,
+        }),
+      );
+    }
+  },
+);
+
+/**
+ * Fetches the minimal execution payload for an agent: id, variableDefinitions, contextSlots.
+ *
+ * Skips the network call if both fields are already loaded (isReady = true).
+ * Call this before executing an agent from a context menu shortcut.
+ */
+export const fetchAgentExecutionMinimal = createAsyncThunk<
+  void,
+  string,
+  ThunkApi
+>(
+  "agentDefinition/fetchExecutionMinimal",
+  async (agentId, { dispatch, getState }) => {
+    if (selectAgentExecutionPayload(getState(), agentId).isReady) return;
+
+    dispatch(setAgentLoading({ id: agentId, loading: true }));
+
+    const { data, error } = await supabase.rpc("get_agent_execution_minimal", {
+      agent_id: agentId,
+    });
+
+    dispatch(setAgentLoading({ id: agentId, loading: false }));
+
+    if (error) {
+      dispatch(setAgentError({ id: agentId, error: error.message }));
+      throw error;
+    }
+
+    const row = (
+      Array.isArray(data) ? data[0] : data
+    ) as AgentExecutionMinimal | null;
+    if (!row) return;
+
+    dispatch(
+      mergePartialAgent({
+        id: row.id,
+        variableDefinitions: row.variable_definitions,
+        contextSlots: row.context_slots ?? [],
+      }),
+    );
+  },
+);
+
+/**
+ * Fetches the full execution payload: adds settings, tools, customTools, modelId.
+ * Used by the agent builder preview pane and pages that allow pre-run configuration.
+ *
+ * Skips if all required fields are already loaded.
+ */
+export const fetchAgentExecutionFull = createAsyncThunk<void, string, ThunkApi>(
+  "agentDefinition/fetchExecutionFull",
+  async (agentId, { dispatch, getState }) => {
+    if (selectAgentCustomExecutionPayload(getState(), agentId).isReady) return;
+
+    dispatch(setAgentLoading({ id: agentId, loading: true }));
+
+    const { data, error } = await supabase.rpc("get_agent_execution_full", {
+      agent_id: agentId,
+    });
+
+    dispatch(setAgentLoading({ id: agentId, loading: false }));
+
+    if (error) {
+      dispatch(setAgentError({ id: agentId, error: error.message }));
+      throw error;
+    }
+
+    const row = (
+      Array.isArray(data) ? data[0] : data
+    ) as AgentExecutionFull | null;
+    if (!row) return;
+
+    dispatch(
+      mergePartialAgent({
+        id: row.id,
+        variableDefinitions: row.variable_definitions,
+        contextSlots: row.context_slots ?? [],
+        settings: row.settings,
+        tools: row.tools,
+        customTools: row.custom_tools,
+        modelId: row.model_id,
+      }),
+    );
+  },
+);
+
+/**
+ * Fetches the complete agent row via PostgREST and upserts it into state.
+ * Marks the record fully clean — all fields tracked as loaded.
+ * Use this when opening the agent builder or after creating/duplicating an agent.
+ */
+export const fetchFullAgent = createAsyncThunk<void, string, ThunkApi>(
+  "agentDefinition/fetchFull",
+  async (agentId, { dispatch }) => {
+    dispatch(setAgentLoading({ id: agentId, loading: true }));
+
+    const { data, error } = await supabase
+      .from("agents")
+      .select("*")
+      .eq("id", agentId)
+      .single();
+
+    dispatch(setAgentLoading({ id: agentId, loading: false }));
+
+    if (error) {
+      dispatch(setAgentError({ id: agentId, error: error.message }));
+      throw error;
+    }
+
+    dispatch(upsertAgent(dbRowToAgentDefinition(data)));
+  },
+);
+
+// ---------------------------------------------------------------------------
+// Version read thunks
+// ---------------------------------------------------------------------------
+
+export interface AgentVersionHistoryItem {
+  version_id: string;
+  version_number: number;
+  name: string;
+  changed_at: string;
+  change_note: string | null;
+}
+
+export interface AgentVersionSnapshot {
+  version_id: string;
+  version_number: number;
+  agent_type: string;
+  name: string;
+  description: string | null;
+  messages: AgentDefinition["messages"];
+  variable_definitions: AgentDefinition["variableDefinitions"];
+  model_id: string | null;
+  model_tiers: AgentDefinition["modelTiers"];
+  settings: AgentDefinition["settings"];
+  output_schema: AgentDefinition["outputSchema"];
+  tools: string[];
+  custom_tools: AgentDefinition["customTools"];
+  context_slots: AgentDefinition["contextSlots"];
+  category: string | null;
+  tags: string[];
+  is_active: boolean;
+  changed_at: string;
+  change_note: string | null;
+}
+
+/**
+ * Paginated version history for the agent editor's version panel.
+ * Returns the list directly — not stored in Redux (ephemeral UI state).
+ */
+export const fetchAgentVersionHistory = createAsyncThunk<
+  AgentVersionHistoryItem[],
+  { agentId: string; limit?: number; offset?: number },
+  ThunkApi
+>(
+  "agentDefinition/fetchVersionHistory",
+  async ({ agentId, limit = 50, offset = 0 }) => {
+    const { data, error } = await supabase.rpc("get_agent_version_history", {
+      agent_id: agentId,
+      limit_count: limit,
+      offset_count: offset,
+    });
+
+    if (error) throw error;
+
+    return (data ?? []) as AgentVersionHistoryItem[];
+  },
+);
+
+/**
+ * Fetches a full version snapshot for diff/preview.
+ * Stores it in the agents map with isVersion = true, keyed by agent_versions.id.
+ * Same record shape — no special handling needed in selectors or UI.
+ */
+export const fetchAgentVersionSnapshot = createAsyncThunk<
+  void,
+  { agentId: string; versionNumber: number },
+  ThunkApi
+>(
+  "agentDefinition/fetchVersionSnapshot",
+  async ({ agentId, versionNumber }, { dispatch }) => {
+    const { data, error } = await supabase.rpc("get_agent_version_snapshot", {
+      agent_id: agentId,
+      version_number: versionNumber,
+    });
+
+    if (error) throw error;
+
+    const row = (
+      Array.isArray(data) ? data[0] : data
+    ) as AgentVersionSnapshot | null;
+    if (!row) return;
+
+    dispatch(
+      upsertAgent({
+        id: row.version_id,
+        isVersion: true,
+        parentAgentId: agentId,
+        versionNumber: row.version_number,
+        changedAt: row.changed_at,
+        changeNote: row.change_note,
+
+        agentType: row.agent_type as AgentDefinition["agentType"],
+        name: row.name,
+        description: row.description,
+        category: row.category,
+        tags: row.tags,
+        isActive: row.is_active,
+
+        // Version snapshots don't have these live-agent-only fields
+        isPublic: false,
+        isArchived: false,
+        isFavorite: false,
+        userId: null,
+        organizationId: null,
+        workspaceId: null,
+        projectId: null,
+        taskId: null,
+        sourceAgentId: null,
+        sourceSnapshotAt: null,
+        createdAt: row.changed_at,
+        updatedAt: row.changed_at,
+
+        modelId: row.model_id,
+        messages: row.messages ?? [],
+        variableDefinitions: row.variable_definitions,
+        settings: row.settings,
+        tools: row.tools ?? [],
+        contextSlots: row.context_slots ?? [],
+        modelTiers: row.model_tiers,
+        outputSchema: row.output_schema,
+        customTools: row.custom_tools ?? [],
+
+        // Access metadata not available from the version snapshot RPC
+        isOwner: null,
+        accessLevel: null,
+        sharedByEmail: null,
+      }),
+    );
+  },
+);
+
+// ---------------------------------------------------------------------------
+// Write thunks
+// ---------------------------------------------------------------------------
+
+/**
+ * Optimistically saves a single field on an agent.
+ * Immediately updates state, persists to DB, rolls back on failure.
+ *
+ * Use for simple inline edits (name, description, isActive toggle, etc.).
+ */
+export const saveAgentField = createAsyncThunk<
+  void,
+  {
+    agentId: string;
+    field: keyof AgentDefinition;
+    value: AgentDefinition[keyof AgentDefinition];
+  },
+  ThunkApi
+>(
+  "agentDefinition/saveField",
+  async ({ agentId, field, value }, { dispatch, getState }) => {
+    const existing = selectAgentById(getState(), agentId);
+    const snapshot = existing ? { [field]: existing[field] } : {};
+
+    dispatch(setAgentField({ id: agentId, field, value }));
+
+    const { error } = await supabase
+      .from("agents")
+      .update(
+        agentDefinitionToUpdate({ [field]: value } as Partial<AgentDefinition>),
+      )
+      .eq("id", agentId);
+
+    if (error) {
+      dispatch(rollbackAgentOptimisticUpdate({ id: agentId, snapshot }));
+      dispatch(setAgentError({ id: agentId, error: error.message }));
+      throw error;
+    }
+
+    dispatch(markAgentSaved({ id: agentId }));
+  },
+);
+
+/**
+ * Saves all dirty fields for an agent in a single DB update.
+ * Reads dirty field values from state — no arg needed beyond agentId.
+ *
+ * Use after the user finishes editing in the agent builder.
+ */
+export const saveAgent = createAsyncThunk<void, string, ThunkApi>(
+  "agentDefinition/save",
+  async (agentId, { dispatch, getState }) => {
+    const record = selectAgentById(getState(), agentId);
+    if (!record || !record._dirty) return;
+
+    const dirtyPartial: Partial<AgentDefinition> = {};
+    record._dirtyFields.forEach((field) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (dirtyPartial as any)[field] = record[field];
+    });
+
+    const snapshot = { ...record._fieldHistory };
+
+    dispatch(setAgentLoading({ id: agentId, loading: true }));
+
+    const { error } = await supabase
+      .from("agents")
+      .update(agentDefinitionToUpdate(dirtyPartial))
+      .eq("id", agentId);
+
+    dispatch(setAgentLoading({ id: agentId, loading: false }));
+
+    if (error) {
+      dispatch(rollbackAgentOptimisticUpdate({ id: agentId, snapshot }));
+      dispatch(setAgentError({ id: agentId, error: error.message }));
+      throw error;
+    }
+
+    dispatch(markAgentSaved({ id: agentId }));
+  },
+);
+
+/**
+ * Creates a new agent and loads the returned row into state.
+ * userId is pulled from Redux — not passed by the caller.
+ */
+export const createAgent = createAsyncThunk<
+  string,
+  Partial<
+    Omit<
+      AgentDefinition,
+      | "id"
+      | "userId"
+      | "createdAt"
+      | "updatedAt"
+      | "isVersion"
+      | "parentAgentId"
+      | "versionNumber"
+      | "changedAt"
+      | "changeNote"
+    >
+  >,
+  ThunkApi
+>("agentDefinition/create", async (partial, { dispatch, getState }) => {
+  const userId = selectUserId(getState());
+
+  const draft: AgentDefinition = {
+    id: "",
+    name: partial.name ?? "Untitled Agent",
+    description: partial.description ?? null,
+    category: partial.category ?? null,
+    tags: partial.tags ?? [],
+    isActive: partial.isActive ?? true,
+    isPublic: partial.isPublic ?? false,
+    isArchived: partial.isArchived ?? false,
+    isFavorite: partial.isFavorite ?? false,
+    agentType: partial.agentType ?? "user",
+
+    // New agents are never version snapshots
+    isVersion: false,
+    parentAgentId: null,
+    versionNumber: null,
+    changedAt: null,
+    changeNote: null,
+
+    modelId: partial.modelId ?? null,
+    messages: partial.messages ?? [],
+    variableDefinitions: partial.variableDefinitions ?? null,
+    settings: partial.settings ?? ({} as AgentDefinition["settings"]),
+    tools: partial.tools ?? [],
+    contextSlots: partial.contextSlots ?? [],
+    modelTiers: partial.modelTiers ?? null,
+    outputSchema: partial.outputSchema ?? null,
+    customTools: partial.customTools ?? [],
+    userId,
+    organizationId: partial.organizationId ?? null,
+    workspaceId: partial.workspaceId ?? null,
+    projectId: partial.projectId ?? null,
+    taskId: partial.taskId ?? null,
+    sourceAgentId: null,
+    sourceSnapshotAt: null,
+    createdAt: "",
+    updatedAt: "",
+
+    // Caller owns the record they're creating
+    isOwner: true,
+    accessLevel: "owner",
+    sharedByEmail: null,
+  };
+
+  const { data, error } = await supabase
+    .from("agents")
+    .insert(agentDefinitionToInsert(draft))
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  const newAgent = dbRowToAgentDefinition(data);
+  dispatch(upsertAgent(newAgent));
+  return newAgent.id;
+});
+
+/**
+ * Deletes an agent from the DB and removes it from state.
+ */
+export const deleteAgent = createAsyncThunk<void, string, ThunkApi>(
+  "agentDefinition/delete",
+  async (agentId, { dispatch }) => {
+    const { error } = await supabase.from("agents").delete().eq("id", agentId);
+
+    if (error) throw error;
+
+    dispatch(removeAgent(agentId));
+  },
+);
+
+// ---------------------------------------------------------------------------
+// RPC action thunks
+// ---------------------------------------------------------------------------
+
+/**
+ * Duplicates an agent via the `duplicate_agent` RPC and loads the copy into state.
+ * Returns the new agent's id.
+ */
+export const duplicateAgent = createAsyncThunk<string, string, ThunkApi>(
+  "agentDefinition/duplicate",
+  async (agentId, { dispatch }) => {
+    const { data, error } = await supabase.rpc("duplicate_agent", {
+      agent_id: agentId,
+    });
+
+    if (error) throw error;
+
+    const newAgentId = data as string;
+    await dispatch(fetchFullAgent(newAgentId));
+    return newAgentId;
+  },
+);
+
+/**
+ * Promotes a past version to be the live agent via `promote_agent_version`.
+ * Reloads the live agents row after promotion so state reflects the promoted data.
+ */
+export const promoteAgentVersion = createAsyncThunk<
+  PromoteVersionResult,
+  { agentId: string; versionNumber: number },
+  ThunkApi
+>(
+  "agentDefinition/promoteVersion",
+  async ({ agentId, versionNumber }, { dispatch }) => {
+    const { data, error } = await supabase.rpc("promote_agent_version", {
+      agent_id: agentId,
+      version_number: versionNumber,
+    });
+
+    if (error) throw error;
+
+    const result = data as PromoteVersionResult;
+
+    if (result.success) {
+      await dispatch(fetchFullAgent(agentId));
+    }
+
+    return result;
+  },
+);
+
+// ---------------------------------------------------------------------------
+// Shared agents
+// ---------------------------------------------------------------------------
+
+export interface SharedAgentItem {
+  id: string;
+  name: string;
+  description: string | null;
+  agent_type: "user" | "builtin";
+  category: string | null;
+  tags: string[];
+  owner_id: string | null;
+  owner_email: string | null;
+  permission_level: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SharedAgentForChat {
+  id: string;
+  name: string;
+  permission_level: string;
+  owner_email: string | null;
+}
+
+/**
+ * Fetches all agents shared with the current user (not owned by them).
+ *
+ * @deprecated get_agents_list() now returns both owned and shared agents in one
+ * call with full access metadata. Prefer fetchAgentsList() instead.
+ * This thunk is kept for cases where only the shared subset is needed
+ * (e.g. a targeted refresh of the "Shared with me" tab without re-fetching owned agents).
+ */
+export const fetchSharedAgents = createAsyncThunk<
+  SharedAgentItem[],
+  void,
+  ThunkApi
+>("agentDefinition/fetchShared", async (_, { dispatch }) => {
+  const { data, error } = await supabase.rpc("get_agents_shared_with_me");
+
+  if (error) throw error;
+
+  const rows = (data ?? []) as SharedAgentItem[];
+
+  for (const row of rows) {
+    dispatch(
+      mergePartialAgent({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        category: row.category,
+        tags: row.tags ?? [],
+        agentType: row.agent_type,
+        isVersion: false,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        // Access metadata from shared agents RPC
+        isOwner: false,
+        accessLevel: row.permission_level as AgentDefinition["accessLevel"],
+        sharedByEmail: row.owner_email,
+      }),
+    );
+  }
+
+  return rows;
+});
+
+/**
+ * Fetches the minimal shared agent list for the chat agent picker.
+ * Returns the raw list — lightweight, not stored in slice
+ * (the picker only needs name + id, no need to hydrate execution fields).
+ */
+export const fetchSharedAgentsForChat = createAsyncThunk<
+  SharedAgentForChat[],
+  void,
+  ThunkApi
+>("agentDefinition/fetchSharedForChat", async () => {
+  const { data, error } = await supabase.rpc("get_shared_agents_for_chat");
+
+  if (error) throw error;
+
+  return (data ?? []) as SharedAgentForChat[];
+});
+
+// ---------------------------------------------------------------------------
+// Access level
+// ---------------------------------------------------------------------------
+
+export interface AgentAccessLevel {
+  agent_id: string;
+  agent_name: string;
+  owner_id: string | null;
+  owner_email: string | null;
+  access_level: "owner" | "admin" | "editor" | "viewer" | "public" | "none";
+  is_owner: boolean;
+}
+
+/**
+ * Returns the current user's permission level on a specific agent.
+ * Also merges the result into the slice so selectors stay consistent.
+ *
+ * Use when opening the agent builder, or when the record arrived via a
+ * shortcut/execution RPC (which don't include access metadata).
+ */
+export const fetchAgentAccessLevel = createAsyncThunk<
+  AgentAccessLevel,
+  string,
+  ThunkApi
+>("agentDefinition/fetchAccessLevel", async (agentId, { dispatch }) => {
+  const { data, error } = await supabase.rpc("get_agent_access_level", {
+    agent_id: agentId,
+  });
+
+  if (error) throw error;
+
+  const row = (Array.isArray(data) ? data[0] : data) as AgentAccessLevel | null;
+  if (!row) throw new Error(`No access level returned for agent ${agentId}`);
+
+  // Merge into slice so selectors reflect the current access state
+  dispatch(
+    mergePartialAgent({
+      id: agentId,
+      isOwner: row.is_owner,
+      accessLevel: row.access_level,
+      sharedByEmail: row.is_owner ? null : null, // not returned by this RPC
+    }),
+  );
+
+  return row;
+});
+
+// ---------------------------------------------------------------------------
+// Drift & references
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns all references that are behind (pointing to an older version).
+ * Pass agentId to check drift for one specific agent, or omit to check all.
+ * Returns data directly — drift UI renders from the returned array.
+ */
+export const checkAgentDrift = createAsyncThunk<
+  AgentDriftItem[],
+  string | undefined,
+  ThunkApi
+>("agentDefinition/checkDrift", async (agentId) => {
+  const params = agentId ? { agent_id: agentId } : {};
+  const { data, error } = await supabase.rpc("check_agent_drift", params);
+
+  if (error) throw error;
+
+  return (data ?? []) as AgentDriftItem[];
+});
+
+/**
+ * Returns all shortcuts, apps, and derived agents that reference a specific agent.
+ * Use before deleting an agent to warn the user about broken references.
+ * Returns data directly — not stored in Redux.
+ */
+export const checkAgentReferences = createAsyncThunk<
+  AgentReference[],
+  string,
+  ThunkApi
+>("agentDefinition/checkReferences", async (agentId) => {
+  const { data, error } = await supabase.rpc("check_agent_references", {
+    agent_id: agentId,
+  });
+
+  if (error) throw error;
+
+  return (data ?? []) as AgentReference[];
+});
+
+// ---------------------------------------------------------------------------
+// Version management
+// ---------------------------------------------------------------------------
+
+export interface PurgeVersionsResult {
+  success: boolean;
+  error?: string;
+  deleted_count?: number;
+  kept_count?: number;
+}
+
+/**
+ * Deletes old versions for an agent, keeping the N most recent.
+ * The RPC always preserves: version 1, the current live version,
+ * and any version pinned by a shortcut or app.
+ *
+ * keepCount defaults to 10 if not provided (matches the RPC default).
+ */
+export const purgeAgentVersions = createAsyncThunk<
+  PurgeVersionsResult,
+  { agentId: string; keepCount?: number },
+  ThunkApi
+>("agentDefinition/purgeVersions", async ({ agentId, keepCount }) => {
+  const params: Record<string, unknown> = { agent_id: agentId };
+  if (keepCount !== undefined) params.keep_count = keepCount;
+
+  const { data, error } = await supabase.rpc("purge_agent_versions", params);
+
+  if (error) throw error;
+
+  return data as PurgeVersionsResult;
+});
+
+// ---------------------------------------------------------------------------
+// Drift resolution
+// ---------------------------------------------------------------------------
+
+/**
+ * Accepts the latest version for a single reference (shortcut, app, or derived agent).
+ * After success the reference is no longer "behind".
+ *
+ * type: 'shortcut' | 'app' | 'derived_agent'
+ * refId: the id of the referencing entity
+ */
+export const acceptAgentVersion = createAsyncThunk<
+  AcceptVersionResult,
+  { type: "shortcut" | "app" | "derived_agent"; refId: string },
+  ThunkApi
+>("agentDefinition/acceptVersion", async ({ type, refId }) => {
+  const { data, error } = await supabase.rpc("accept_agent_version", {
+    type,
+    ref_id: refId,
+  });
+
+  if (error) throw error;
+
+  return data as AcceptVersionResult;
+});
+
+/**
+ * Resets a derived agent back to its source agent's current data.
+ * Use on the "update from source" button in the agent builder.
+ * On success, reloads the agent row to reflect the reset data.
+ */
+export const updateAgentFromSource = createAsyncThunk<
+  UpdateFromSourceResult,
+  string,
+  ThunkApi
+>("agentDefinition/updateFromSource", async (agentId, { dispatch }) => {
+  const { data, error } = await supabase.rpc("update_agent_from_source", {
+    agent_id: agentId,
+  });
+
+  if (error) throw error;
+
+  const result = data as UpdateFromSourceResult;
+
+  if (result.success) {
+    // Reload the live row — it now holds the source agent's data
+    await dispatch(fetchFullAgent(agentId));
+  }
+
+  return result;
+});

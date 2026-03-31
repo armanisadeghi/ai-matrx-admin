@@ -245,6 +245,7 @@ export type Database = {
       agent_shortcuts: {
         Row: {
           agent_id: string | null
+          agent_version_id: string | null
           allow_chat: boolean | null
           apply_variables: boolean | null
           auto_run: boolean | null
@@ -265,12 +266,14 @@ export type Database = {
           sort_order: number
           task_id: string | null
           updated_at: string
+          use_latest: boolean
           use_pre_execution_input: boolean | null
           user_id: string | null
           workspace_id: string | null
         }
         Insert: {
           agent_id?: string | null
+          agent_version_id?: string | null
           allow_chat?: boolean | null
           apply_variables?: boolean | null
           auto_run?: boolean | null
@@ -291,12 +294,14 @@ export type Database = {
           sort_order?: number
           task_id?: string | null
           updated_at?: string
+          use_latest?: boolean
           use_pre_execution_input?: boolean | null
           user_id?: string | null
           workspace_id?: string | null
         }
         Update: {
           agent_id?: string | null
+          agent_version_id?: string | null
           allow_chat?: boolean | null
           apply_variables?: boolean | null
           auto_run?: boolean | null
@@ -317,6 +322,7 @@ export type Database = {
           sort_order?: number
           task_id?: string | null
           updated_at?: string
+          use_latest?: boolean
           use_pre_execution_input?: boolean | null
           user_id?: string | null
           workspace_id?: string | null
@@ -362,6 +368,13 @@ export type Database = {
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_shortcuts_version_fk"
+            columns: ["agent_version_id"]
+            isOneToOne: false
+            referencedRelation: "agent_versions"
             referencedColumns: ["id"]
           },
           {
@@ -14725,6 +14738,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_agent_version: {
+        Args: { p_reference_id: string; p_reference_type: string }
+        Returns: Json
+      }
       accept_organization_invitation: {
         Args: { accepting_user_id: string; invitation_token: string }
         Returns: string
@@ -15346,6 +15363,13 @@ export type Database = {
         Args: { p_table_id: string; p_updates: Json }
         Returns: Json
       }
+      build_agent_shortcut_menu: {
+        Args: { p_placement_types: string[] }
+        Returns: {
+          menu_data: Json
+          placement_type: string
+        }[]
+      }
       build_category_hierarchy: {
         Args: { p_placement_types: string[] }
         Returns: {
@@ -15385,6 +15409,29 @@ export type Database = {
           p_view_count: number
         }
         Returns: number
+      }
+      check_agent_drift: {
+        Args: { p_agent_id?: string }
+        Returns: {
+          agent_id: string
+          agent_name: string
+          current_version: number
+          reference_id: string
+          reference_name: string
+          reference_type: string
+          version_pinned_to: number
+          versions_behind: number
+        }[]
+      }
+      check_agent_references: {
+        Args: { p_agent_id: string }
+        Returns: {
+          is_behind: boolean
+          reference_id: string
+          reference_name: string
+          reference_type: string
+          use_latest: boolean
+        }[]
       }
       check_builtin_drift: {
         Args: { p_builtin_id?: string }
@@ -16859,6 +16906,17 @@ export type Database = {
       }
       generate_invitation_code: { Args: never; Returns: string }
       generate_invitation_token: { Args: never; Returns: string }
+      get_agent_access_level: {
+        Args: { p_agent_id: string }
+        Returns: {
+          access_level: string
+          agent_id: string
+          agent_name: string
+          is_owner: boolean
+          owner_email: string
+          owner_id: string
+        }[]
+      }
       get_agent_core_batch: {
         Args: { p_ids: string[]; p_sources: string[] }
         Returns: {
@@ -16916,16 +16974,22 @@ export type Database = {
         Returns: {
           agent_context_slots: Json
           agent_id: string
+          agent_name: string
           agent_variable_definitions: Json
+          agent_version_id: string
           allow_chat: boolean
           apply_variables: boolean
           auto_run: boolean
           category_id: string
+          current_version: number
           description: string
           enabled_contexts: Json
           icon_name: string
+          is_behind: boolean
+          is_version: boolean
           keyboard_shortcut: string
           label: string
+          resolved_id: string
           result_display: string
           scope_mappings: Json
           shortcut_id: string
@@ -16936,6 +17000,7 @@ export type Database = {
           shortcut_workspace_id: string
           show_variables: boolean
           sort_order: number
+          use_latest: boolean
           use_pre_execution_input: boolean
         }[]
       }
@@ -16944,16 +17009,22 @@ export type Database = {
         Returns: {
           agent_context_slots: Json
           agent_id: string
+          agent_name: string
           agent_variable_definitions: Json
+          agent_version_id: string
           allow_chat: boolean
           apply_variables: boolean
           auto_run: boolean
           category_id: string
+          current_version: number
           description: string
           enabled_contexts: Json
           icon_name: string
+          is_behind: boolean
+          is_version: boolean
           keyboard_shortcut: string
           label: string
+          resolved_id: string
           result_display: string
           scope_mappings: Json
           shortcut_id: string
@@ -16961,7 +17032,42 @@ export type Database = {
           shortcut_user_id: string
           show_variables: boolean
           sort_order: number
+          use_latest: boolean
           use_pre_execution_input: boolean
+        }[]
+      }
+      get_agent_version_history: {
+        Args: { p_agent_id: string; p_limit?: number; p_offset?: number }
+        Returns: {
+          change_note: string
+          changed_at: string
+          name: string
+          version_id: string
+          version_number: number
+        }[]
+      }
+      get_agent_version_snapshot: {
+        Args: { p_agent_id: string; p_version_number: number }
+        Returns: {
+          agent_type: string
+          category: string
+          change_note: string
+          changed_at: string
+          context_slots: Json
+          custom_tools: Json
+          description: string
+          is_active: boolean
+          messages: Json
+          model_id: string
+          model_tiers: Json
+          name: string
+          output_schema: Json
+          settings: Json
+          tags: string[]
+          tools: string[]
+          variable_definitions: Json
+          version_id: string
+          version_number: number
         }[]
       }
       get_agent_work_queue: {
@@ -17017,6 +17123,7 @@ export type Database = {
       get_agents_list: {
         Args: never
         Returns: {
+          access_level: string
           agent_type: string
           category: string
           created_at: string
@@ -17025,16 +17132,60 @@ export type Database = {
           is_active: boolean
           is_archived: boolean
           is_favorite: boolean
+          is_owner: boolean
           model_id: string
           name: string
           organization_id: string
           project_id: string
+          shared_by_email: string
           source_agent_id: string
           tags: string[]
           task_id: string
           updated_at: string
           user_id: string
           workspace_id: string
+        }[]
+      }
+      get_agents_list_full: {
+        Args: never
+        Returns: {
+          access_level: string
+          agent_type: string
+          category: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          is_archived: boolean
+          is_favorite: boolean
+          is_owner: boolean
+          model_id: string
+          name: string
+          organization_id: string
+          project_id: string
+          shared_by_email: string
+          source_agent_id: string
+          tags: string[]
+          task_id: string
+          updated_at: string
+          user_id: string
+          workspace_id: string
+        }[]
+      }
+      get_agents_shared_with_me: {
+        Args: never
+        Returns: {
+          agent_type: string
+          category: string
+          created_at: string
+          description: string
+          id: string
+          name: string
+          owner_email: string
+          owner_id: string
+          permission_level: string
+          tags: string[]
+          updated_at: string
         }[]
       }
       get_applet_with_recipe: {
@@ -17684,7 +17835,6 @@ export type Database = {
           name: string
           owner_email: string
           permission_level: string
-          source: string
         }[]
       }
       get_ssr_shell_data: { Args: { p_user_id: string }; Returns: Json }
@@ -18067,8 +18217,16 @@ export type Database = {
         Args: { p_app_id: string; p_version_id: string }
         Returns: Json
       }
+      promote_agent_version: {
+        Args: { p_agent_id: string; p_version_number: number }
+        Returns: Json
+      }
       promote_version: {
         Args: { p_entity_id: string; p_entity_type: string; p_version: number }
+        Returns: Json
+      }
+      purge_agent_versions: {
+        Args: { p_agent_id: string; p_keep_count?: number }
         Returns: Json
       }
       purge_old_versions: {
@@ -18595,6 +18753,7 @@ export type Database = {
               isSetofReturn: false
             }
           }
+      update_agent_from_source: { Args: { p_agent_id: string }; Returns: Json }
       update_all_bucket_tree_structures: { Args: never; Returns: Json }
       update_all_trending_scores: { Args: never; Returns: undefined }
       update_arg: {
