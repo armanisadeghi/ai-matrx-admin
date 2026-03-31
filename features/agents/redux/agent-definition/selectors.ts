@@ -202,12 +202,12 @@ export const selectAgentSettings = createSelector(
 
 export const selectAgentTools = createSelector(
   [selectAgentById],
-  (record) => record?.tools ?? [],
+  (record) => record?.tools,
 );
 
 export const selectAgentCustomTools = createSelector(
   [selectAgentById],
-  (record) => record?.customTools ?? [],
+  (record) => record?.customTools,
 );
 
 export const selectAgentModelTiers = createSelector(

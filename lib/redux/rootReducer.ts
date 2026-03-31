@@ -65,6 +65,7 @@ import agentCacheReducer from "./slices/agentCacheSlice";
 import agentDefinitionReducer from "@/features/agents/redux/agent-definition/slice";
 import agentShortcutReducer from "@/features/agents/redux/agent-shortcuts/slice";
 import agentConsumersReducer from "@/features/agents/redux/agent-consumers/slice";
+import agentExecutionReducer from "@/features/agents/redux/agent-execution/slice";
 
 // Prompt system
 import promptCacheReducer from "./slices/promptCacheSlice";
@@ -268,6 +269,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     agentDefinition: agentDefinitionReducer,
     agentShortcut: agentShortcutReducer,
     agentConsumers: agentConsumersReducer,
+    agentExecution: agentExecutionReducer,
 
     // // (remaining layers — pending)
     // agents: agentsReducer,

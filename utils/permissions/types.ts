@@ -1,6 +1,6 @@
 /**
  * Permission System Types
- * 
+ *
  * Centralized type definitions for the RLS-based permission system.
  * These types align with the database schema and provide type safety
  * throughout the application.
@@ -12,41 +12,43 @@
 
 /**
  * All shareable resource types in the application.
- * 
+ *
  * Convention: new resource types use the exact table name (e.g., 'cx_conversation').
  * Legacy types use singular form (e.g., 'prompt' -> 'prompts' table).
  */
 export type ResourceType =
   // Legacy types (singular form, mapped to plural table names)
-  | 'prompt'
-  | 'workflow'
-  | 'note'
-  | 'recipe'
-  | 'document'
-  | 'conversation'
-  | 'applet'
-  | 'broker_value'
-  | 'message'
-  | 'organization'
-  | 'scrape_domain'
+  | "prompt"
+  | "workflow"
+  | "note"
+  | "recipe"
+  | "document"
+  | "conversation"
+  | "applet"
+  | "broker_value"
+  | "message"
+  | "organization"
+  | "scrape_domain"
   // New types (exact table names)
-  | 'cx_conversation'
-  | 'canvas_items'
-  | 'user_tables'
-  | 'user_lists'
-  | 'transcripts'
-  | 'quiz_sessions'
-  | 'sandbox_instances'
-  | 'user_files'
-  | 'prompt_actions'
-  | 'flashcard_data'
-  | 'flashcard_sets'
-  | 'tasks';
+  | "cx_conversation"
+  | "canvas_items"
+  | "user_tables"
+  | "user_lists"
+  | "transcripts"
+  | "quiz_sessions"
+  | "sandbox_instances"
+  | "user_files"
+  | "prompt_actions"
+  | "flashcard_data"
+  | "flashcard_sets"
+  | "tasks"
+  // New added types (Confirm with db)
+  | "agent";
 
 /**
  * Permission levels in hierarchical order: viewer < editor < admin
  */
-export type PermissionLevel = 'viewer' | 'editor' | 'admin';
+export type PermissionLevel = "viewer" | "editor" | "admin";
 
 /**
  * Complete permission record from database
@@ -193,7 +195,7 @@ export interface OwnerCheckResult {
 /**
  * Share target types
  */
-export type ShareTargetType = 'user' | 'organization' | 'public';
+export type ShareTargetType = "user" | "organization" | "public";
 
 /**
  * Sharing modal state
@@ -230,7 +232,7 @@ export interface ShareActionResult {
  */
 export function satisfiesPermissionLevel(
   current: PermissionLevel,
-  required: PermissionLevel
+  required: PermissionLevel,
 ): boolean {
   const levels: Record<PermissionLevel, number> = {
     viewer: 1,
@@ -247,9 +249,9 @@ export function satisfiesPermissionLevel(
  * @returns Array of permission levels
  */
 export function getPermissionLevelsAtOrAbove(
-  level: PermissionLevel
+  level: PermissionLevel,
 ): PermissionLevel[] {
-  const allLevels: PermissionLevel[] = ['viewer', 'editor', 'admin'];
+  const allLevels: PermissionLevel[] = ["viewer", "editor", "admin"];
   const levelIndex = allLevels.indexOf(level);
   return allLevels.slice(levelIndex);
 }
@@ -261,9 +263,9 @@ export function getPermissionLevelsAtOrAbove(
  */
 export function getPermissionLevelLabel(level: PermissionLevel): string {
   const labels: Record<PermissionLevel, string> = {
-    viewer: 'Can view',
-    editor: 'Can edit',
-    admin: 'Full access',
+    viewer: "Can view",
+    editor: "Can edit",
+    admin: "Full access",
   };
   return labels[level];
 }
@@ -276,30 +278,31 @@ export function getPermissionLevelLabel(level: PermissionLevel): string {
 export function getResourceTypeLabel(type: ResourceType): string {
   const labels: Record<ResourceType, string> = {
     // Legacy types
-    prompt: 'Prompt',
-    workflow: 'Workflow',
-    note: 'Note',
-    recipe: 'Recipe',
-    document: 'Document',
-    conversation: 'Conversation',
-    applet: 'Applet',
-    broker_value: 'Broker Value',
-    message: 'Message',
-    organization: 'Organization',
-    scrape_domain: 'Scrape Domain',
+    prompt: "Prompt",
+    workflow: "Workflow",
+    note: "Note",
+    recipe: "Recipe",
+    document: "Document",
+    conversation: "Conversation",
+    applet: "Applet",
+    broker_value: "Broker Value",
+    message: "Message",
+    organization: "Organization",
+    scrape_domain: "Scrape Domain",
     // New types
-    cx_conversation: 'Conversation',
-    canvas_items: 'Canvas',
-    user_tables: 'Table',
-    user_lists: 'List',
-    transcripts: 'Transcript',
-    quiz_sessions: 'Quiz',
-    sandbox_instances: 'Sandbox',
-    user_files: 'File',
-    prompt_actions: 'Action',
-    flashcard_data: 'Flashcard',
-    flashcard_sets: 'Flashcard Set',
-    tasks: 'Task',
+    cx_conversation: "Conversation",
+    canvas_items: "Canvas",
+    user_tables: "Table",
+    user_lists: "List",
+    transcripts: "Transcript",
+    quiz_sessions: "Quiz",
+    sandbox_instances: "Sandbox",
+    user_files: "File",
+    prompt_actions: "Action",
+    flashcard_data: "Flashcard",
+    flashcard_sets: "Flashcard Set",
+    tasks: "Task",
+    agent: "Agent",
   };
   return labels[type] || type;
 }
@@ -312,30 +315,30 @@ export function getResourceTypeLabel(type: ResourceType): string {
  */
 export function validatePermission(permission: Partial<Permission>): boolean {
   if (!permission.resourceType) {
-    throw new Error('Resource type is required');
+    throw new Error("Resource type is required");
   }
-  
+
   if (!permission.resourceId) {
-    throw new Error('Resource ID is required');
+    throw new Error("Resource ID is required");
   }
-  
+
   if (!permission.permissionLevel) {
-    throw new Error('Permission level is required');
+    throw new Error("Permission level is required");
   }
-  
+
   // Exactly one of userId, orgId, or isPublic must be set
   const targetsSet = [
     !!permission.grantedToUserId,
     !!permission.grantedToOrganizationId,
     !!permission.isPublic,
   ].filter(Boolean).length;
-  
+
   if (targetsSet !== 1) {
     throw new Error(
-      'Exactly one of grantedToUserId, grantedToOrganizationId, or isPublic must be set'
+      "Exactly one of grantedToUserId, grantedToOrganizationId, or isPublic must be set",
     );
   }
-  
+
   return true;
 }
 
@@ -350,10 +353,10 @@ export class PermissionError extends Error {
   constructor(
     message: string,
     public code: string,
-    public details?: any
+    public details?: any,
   ) {
     super(message);
-    this.name = 'PermissionError';
+    this.name = "PermissionError";
   }
 }
 
@@ -361,12 +364,11 @@ export class PermissionError extends Error {
  * Common permission error codes
  */
 export enum PermissionErrorCode {
-  NOT_FOUND = 'PERMISSION_NOT_FOUND',
-  ALREADY_EXISTS = 'PERMISSION_ALREADY_EXISTS',
-  INVALID_LEVEL = 'INVALID_PERMISSION_LEVEL',
-  INVALID_TARGET = 'INVALID_SHARE_TARGET',
-  UNAUTHORIZED = 'UNAUTHORIZED',
-  DATABASE_ERROR = 'DATABASE_ERROR',
-  VALIDATION_ERROR = 'VALIDATION_ERROR',
+  NOT_FOUND = "PERMISSION_NOT_FOUND",
+  ALREADY_EXISTS = "PERMISSION_ALREADY_EXISTS",
+  INVALID_LEVEL = "INVALID_PERMISSION_LEVEL",
+  INVALID_TARGET = "INVALID_SHARE_TARGET",
+  UNAUTHORIZED = "UNAUTHORIZED",
+  DATABASE_ERROR = "DATABASE_ERROR",
+  VALIDATION_ERROR = "VALIDATION_ERROR",
 }
-
