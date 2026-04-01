@@ -44,7 +44,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { sanitizeVariableName } from "@/features/prompts/utils/variable-utils";
+import { sanitizeVariableName } from "@/features/agents/utils/variable-utils";
 
 const CONTEXT_TYPES: ContextObjectType[] = [
   "text",

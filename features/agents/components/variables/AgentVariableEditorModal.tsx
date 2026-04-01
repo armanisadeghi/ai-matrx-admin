@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { sanitizeVariableName } from "@/features/prompts/utils/variable-utils";
-import type { VariableCustomComponent } from "@/features/prompts/types/core";
+import { sanitizeVariableName } from "@/features/agents/utils/variable-utils";
+import type { VariableCustomComponent } from "@/features/agents/redux/agent-definition/types";
 import type { VariableDefinition } from "@/features/agents/redux/agent-definition/types";
 import { AgentVariableEditor } from "./AgentVariableEditor";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -79,7 +79,7 @@ export function AgentVariableEditorModal({
     onSave({
       name: sanitizedName,
       defaultValue,
-      customComponent: customComponent as unknown as string | undefined,
+      customComponent: customComponent ?? undefined,
       required: required || undefined,
       helpText: helpText || undefined,
     });

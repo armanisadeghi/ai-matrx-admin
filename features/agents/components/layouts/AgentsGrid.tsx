@@ -44,7 +44,6 @@ import {
   makeSelectAgentListItems,
   selectAllAgentCategories,
   selectAllAgentTags,
-  AGENT_NONE_SENTINEL,
 } from "@/features/agents/redux/agent-consumers/selectors";
 import { selectAgentsSliceStatus } from "@/features/agents/redux/agent-definition/selectors";
 import {

@@ -3,58 +3,54 @@
 /**
  * AgentVariableInputForm
  *
- * Shown when a run instance has variable definitions.
- * Reads variable defaults + current values from agentExecution slice.
- * Writes via updateVariableValue action.
+ * Shown when an instance has variable definitions.
+ * Reads the snapshotted definitions + user values from the instance slices.
+ * Writes via setUserVariableValue.
+ *
+ * Prop: instanceId — the only key needed. No agentId.
  */
 
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
-  selectVariableDefaults,
-  selectVariableValues,
-  selectShowVariables,
-} from "@/features/agents/redux/agent-execution/selectors";
-import {
-  updateVariableValue,
-  setShowVariables,
-} from "@/features/agents/redux/agent-execution/slice";
+  selectInstanceVariableDefinitions,
+  selectUserVariableValues,
+} from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
+import { setUserVariableValue } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.slice";
+import { selectShowVariablePanel } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import { toggleVariablePanel } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Variable } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface AgentVariableInputFormProps {
-  runId: string;
+  instanceId: string;
 }
 
-export function AgentVariableInputForm({ runId }: AgentVariableInputFormProps) {
+export function AgentVariableInputForm({
+  instanceId,
+}: AgentVariableInputFormProps) {
   const dispatch = useAppDispatch();
-  const variables = useAppSelector((state) =>
-    selectVariableDefaults(state, runId),
+  const definitions = useAppSelector(
+    selectInstanceVariableDefinitions(instanceId),
   );
-  const values = useAppSelector((state) => selectVariableValues(state, runId));
-  const showVariables = useAppSelector((state) =>
-    selectShowVariables(state, runId),
-  );
+  const userValues = useAppSelector(selectUserVariableValues(instanceId));
+  const showVariables = useAppSelector(selectShowVariablePanel(instanceId));
 
-  if (!variables || variables.length === 0) return null;
+  if (!definitions || definitions.length === 0) return null;
 
   return (
     <div className="border border-border rounded-lg overflow-hidden">
       <button
         className="flex items-center justify-between w-full px-4 py-3 hover:bg-muted/50 transition-colors"
-        onClick={() =>
-          dispatch(setShowVariables({ runId, show: !showVariables }))
-        }
+        onClick={() => dispatch(toggleVariablePanel(instanceId))}
       >
         <div className="flex items-center gap-2">
           <Variable className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm font-medium">Variables</span>
           <Badge variant="secondary" className="text-[11px]">
-            {variables.length}
+            {definitions.length}
           </Badge>
         </div>
         {showVariables ? (
@@ -66,37 +62,41 @@ export function AgentVariableInputForm({ runId }: AgentVariableInputFormProps) {
 
       {showVariables && (
         <div className="px-4 pb-4 space-y-3 border-t border-border pt-3">
-          {variables.map((v) => {
-            const value = values[v.name] ?? String(v.defaultValue ?? "");
-            const isLong = String(v.defaultValue ?? "").length > 80;
+          {definitions.map((def) => {
+            const value = String(
+              userValues[def.name] ?? def.defaultValue ?? "",
+            );
+            const isLong = String(def.defaultValue ?? "").length > 80;
 
             return (
-              <div key={v.name} className="space-y-1.5">
+              <div key={def.name} className="space-y-1.5">
                 <div className="flex items-center gap-2">
                   <Label
-                    htmlFor={`var-${v.name}`}
+                    htmlFor={`var-${def.name}`}
                     className="text-xs font-medium"
                   >
-                    {`{{${v.name}}}`}
+                    {`{{${def.name}}}`}
                   </Label>
-                  {v.required && (
+                  {def.required && (
                     <Badge variant="destructive" className="text-[10px] h-4">
                       required
                     </Badge>
                   )}
                 </div>
-                {v.helpText && (
-                  <p className="text-xs text-muted-foreground">{v.helpText}</p>
+                {def.helpText && (
+                  <p className="text-xs text-muted-foreground">
+                    {def.helpText}
+                  </p>
                 )}
                 {isLong ? (
                   <Textarea
-                    id={`var-${v.name}`}
+                    id={`var-${def.name}`}
                     value={value}
                     onChange={(e) =>
                       dispatch(
-                        updateVariableValue({
-                          runId,
-                          name: v.name,
+                        setUserVariableValue({
+                          instanceId,
+                          name: def.name,
                           value: e.target.value,
                         }),
                       )
@@ -106,13 +106,13 @@ export function AgentVariableInputForm({ runId }: AgentVariableInputFormProps) {
                   />
                 ) : (
                   <Input
-                    id={`var-${v.name}`}
+                    id={`var-${def.name}`}
                     value={value}
                     onChange={(e) =>
                       dispatch(
-                        updateVariableValue({
-                          runId,
-                          name: v.name,
+                        setUserVariableValue({
+                          instanceId,
+                          name: def.name,
                           value: e.target.value,
                         }),
                       )

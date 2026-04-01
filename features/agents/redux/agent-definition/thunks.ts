@@ -45,6 +45,19 @@ import type {
   PromoteVersionResult,
 } from "./types";
 import {
+  parseExecutionMinimal,
+  parseExecutionFull,
+  parseVersionHistoryItem,
+  parseVersionSnapshot,
+  parseAccessLevel,
+  parseDriftItem,
+  parseAgentReference,
+  parsePromoteVersionResult,
+  parseAcceptVersionResult,
+  parseUpdateFromSourceResult,
+  parsePurgeVersionsResult,
+} from "./rpc-parsers";
+import {
   upsertAgent,
   mergePartialAgent,
   setAgentField,
@@ -205,10 +218,9 @@ export const fetchAgentExecutionMinimal = createAsyncThunk<
       throw error;
     }
 
-    const row = (Array.isArray(data)
-      ? data[0]
-      : data) as unknown as AgentExecutionMinimal | null;
-    if (!row) return;
+    const raw = Array.isArray(data) ? data[0] : data;
+    if (!raw) return;
+    const row = parseExecutionMinimal(raw);
 
     dispatch(
       mergePartialAgent({
@@ -245,10 +257,9 @@ export const fetchAgentExecutionFull = createAsyncThunk<void, string, ThunkApi>(
       throw error;
     }
 
-    const row = (Array.isArray(data)
-      ? data[0]
-      : data) as unknown as AgentExecutionFull | null;
-    if (!row) return;
+    const raw = Array.isArray(data) ? data[0] : data;
+    if (!raw) return;
+    const row = parseExecutionFull(raw);
 
     dispatch(
       mergePartialAgent({
@@ -345,7 +356,7 @@ export const fetchAgentVersionHistory = createAsyncThunk<
 
     if (error) throw error;
 
-    return (data ?? []) as AgentVersionHistoryItem[];
+    return (data ?? []).map(parseVersionHistoryItem);
   },
 );
 
@@ -368,10 +379,9 @@ export const fetchAgentVersionSnapshot = createAsyncThunk<
 
     if (error) throw error;
 
-    const row = (Array.isArray(data)
-      ? data[0]
-      : data) as unknown as AgentVersionSnapshot | null;
-    if (!row) return;
+    const raw = Array.isArray(data) ? data[0] : data;
+    if (!raw) return;
+    const row = parseVersionSnapshot(raw);
 
     dispatch(
       upsertAgent({
@@ -640,7 +650,7 @@ export const promoteAgentVersion = createAsyncThunk<
 
     if (error) throw error;
 
-    const result = data as unknown as PromoteVersionResult;
+    const result = parsePromoteVersionResult(data);
 
     if (result.success) {
       await dispatch(fetchFullAgent(agentId));
@@ -765,8 +775,9 @@ export const fetchAgentAccessLevel = createAsyncThunk<
 
   if (error) throw error;
 
-  const row = (Array.isArray(data) ? data[0] : data) as AgentAccessLevel | null;
-  if (!row) throw new Error(`No access level returned for agent ${agentId}`);
+  const rawRow = Array.isArray(data) ? data[0] : data;
+  if (!rawRow) throw new Error(`No access level returned for agent ${agentId}`);
+  const row = parseAccessLevel(rawRow);
 
   // Merge into slice so selectors reflect the current access state
   dispatch(
@@ -800,7 +811,7 @@ export const checkAgentDrift = createAsyncThunk<
 
   if (error) throw error;
 
-  return (data ?? []) as AgentDriftItem[];
+  return (data ?? []).map(parseDriftItem);
 });
 
 /**
@@ -819,7 +830,7 @@ export const checkAgentReferences = createAsyncThunk<
 
   if (error) throw error;
 
-  return (data ?? []) as AgentReference[];
+  return (data ?? []).map(parseAgentReference);
 });
 
 // ---------------------------------------------------------------------------
@@ -854,7 +865,7 @@ export const purgeAgentVersions = createAsyncThunk<
 
   if (error) throw error;
 
-  return data as unknown as PurgeVersionsResult;
+  return parsePurgeVersionsResult(data);
 });
 
 // ---------------------------------------------------------------------------
@@ -880,7 +891,7 @@ export const acceptAgentVersion = createAsyncThunk<
 
   if (error) throw error;
 
-  return data as unknown as AcceptVersionResult;
+  return parseAcceptVersionResult(data);
 });
 
 /**
@@ -899,7 +910,7 @@ export const updateAgentFromSource = createAsyncThunk<
 
   if (error) throw error;
 
-  const result = data as unknown as UpdateFromSourceResult;
+  const result = parseUpdateFromSourceResult(data);
 
   if (result.success) {
     // Reload the live row — it now holds the source agent's data

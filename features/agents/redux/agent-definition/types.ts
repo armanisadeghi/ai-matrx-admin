@@ -8,6 +8,30 @@ import { OutputSchema } from "@/features/agents/types/json-schema";
 
 export type AgentType = "user" | "builtin";
 
+// ---------------------------------------------------------------------------
+// Variable component types
+// ---------------------------------------------------------------------------
+
+/** The input UI type for a variable's custom component. */
+export type VariableComponentType =
+  | "textarea" // Default — multi-line text
+  | "toggle" // Boolean with custom on/off labels
+  | "radio" // Single-select from options
+  | "checkbox" // Multi-select from options
+  | "select" // Dropdown single-select
+  | "number"; // Number input with optional min/max/step
+
+/** Configuration for a variable's custom UI input component. */
+export interface VariableCustomComponent {
+  type: VariableComponentType;
+  options?: string[];
+  allowOther?: boolean;
+  toggleValues?: [string, string];
+  min?: number;
+  max?: number;
+  step?: number;
+}
+
 /**
  * Permission level for the current user on any given agent.
  * 'system'  — builtin agent; not owned or shared, read-only for everyone
@@ -29,7 +53,8 @@ export interface VariableDefinition {
   defaultValue: unknown;
   helpText?: string;
   required?: boolean;
-  customComponent?: string;
+  /** Custom UI input component for collecting this variable's value. */
+  customComponent?: VariableCustomComponent;
 }
 
 export interface ModelTier {

@@ -1,91 +1,3 @@
-/**
- * AI API — TypeScript types
- *
- * Canonical types for all requests, content blocks, and stream events.
- * These types cover:
- *   POST /ai/agents/{agent_id}
- *   POST /ai/conversations/{conversation_id}
- *   POST /ai/chat
- *
- * Generated from Python source — do not edit field names or types without
- * updating the corresponding Python models.
- */
-
-// =============================================================================
-// Content blocks — user_input
-// =============================================================================
-
-/** Plain text. The default when user_input is a string. */
-export interface TextBlock {
-  type: "text";
-  text: string;
-}
-
-/** Image by URL or base64. */
-export interface ImageBlock {
-  type: "image";
-  /** Public URL. Provide either url or base64_data. */
-  url?: string;
-  /** Raw base64-encoded bytes. Provide either url or base64_data. */
-  base64_data?: string;
-  /** MIME type. Auto-detected from URL/data if omitted. */
-  mime_type?: string;
-  /** Google only: "low" | "medium" | "high". Ignored by OpenAI and Anthropic. */
-  media_resolution?: "low" | "medium" | "high";
-}
-
-/** Audio file. */
-export interface AudioBlock {
-  type: "audio";
-  /** Public URL. Provide either url or base64_data. */
-  url?: string;
-  /** Raw base64-encoded bytes. Provide either url or base64_data. */
-  base64_data?: string;
-  /** MIME type. Auto-detected if omitted. */
-  mime_type?: string;
-  /**
-   * Default false.
-   * - false: sent natively (Google only).
-   * - true: transcribed via Groq Whisper first, then sent as text to any provider.
-   */
-  auto_transcribe?: boolean;
-  /** Whisper model to use. Default "whisper-large-v3-turbo". Only when auto_transcribe=true. */
-  transcription_model?: string;
-  /** ISO-639-1 language code e.g. "en", "es". Auto-detected if omitted. */
-  transcription_language?: string;
-}
-
-/** Video file. Google only — silently skipped by OpenAI and Anthropic. */
-export interface VideoBlock {
-  type: "video";
-  /** Public URL. Provide url, base64_data, or file_uri. */
-  url?: string;
-  /** Raw base64-encoded bytes. */
-  base64_data?: string;
-  /** Google File API URI (if pre-uploaded). */
-  file_uri?: string;
-  /** MIME type. Auto-detected if omitted. */
-  mime_type?: string;
-}
-
-/** YouTube video URL. Google only — silently skipped with a warning by others. */
-export interface YouTubeVideoBlock {
-  type: "youtube_video";
-  /** Full YouTube URL: "youtube.com/watch?v=..." or "youtu.be/..." */
-  url: string;
-}
-
-/** Document (PDF, DOCX, etc.). */
-export interface DocumentBlock {
-  type: "document";
-  /** Public URL. Provide either url or base64_data. */
-  url?: string;
-  /** Raw base64-encoded bytes. Include mime_type when using base64_data. */
-  base64_data?: string;
-  /** MIME type. Auto-detected if omitted. */
-  mime_type?: string;
-}
-
 // =============================================================================
 // Structured input blocks — live data injection
 // =============================================================================
@@ -98,6 +10,23 @@ export interface DocumentBlock {
 // The block's structural definition (type + IDs + keep_fresh: true) IS saved,
 // so the NEXT turn re-fetches fresh content automatically. Use for data that
 // changes often (live tables, tasks in progress).
+
+import type {
+  TextBlock,
+  ImageBlock,
+  AudioBlock,
+  VideoBlock,
+  YouTubeVideoBlock,
+  DocumentBlock,
+  WebpageInputBlock,
+  NotesInputBlock,
+  TaskInputBlock,
+  TableInputBlock,
+  ListInputBlock,
+  DataInputBlock,
+  ContentBlock,
+} from "./message-types";
+import { ClientToolResult } from "./request.types";
 
 /** Common fields on all structured input blocks. */
 interface StructuredInputBase {
@@ -139,222 +68,46 @@ interface StructuredInputBase {
   editable?: boolean;
 }
 
-/**
- * Scrape one or more public URLs and inject as <web_context> XML.
- * - Failed scrapes produce a visible failure notice so the model knows the
- *   page was unavailable and can inform the user.
- * - Failures are also emitted as a "structured_input_warning" stream event.
- * - optional_context=false raises only if ALL URLs fail; partial failures
- *   are always included as notices.
- */
-export interface WebpageInputBlock extends StructuredInputBase {
-  type: "input_webpage";
-  /** One or more public URLs to scrape. */
-  urls: string[];
-}
-
-/** Fetch one or more user notes by ID and inject as XML. */
-export interface NotesInputBlock extends StructuredInputBase {
-  type: "input_notes";
-  /** One or more note IDs. */
-  note_ids: string[];
-  /** XML template: "full" (default) | "compact" | "minimal" */
-  template?: "full" | "compact" | "minimal";
-}
-
-/** Fetch one or more task objects by ID and inject as XML. */
-export interface TaskInputBlock extends StructuredInputBase {
-  type: "input_task";
-  /** One or more task IDs. */
-  task_ids: string[];
-  /** XML template: "full" (default) | "compact" */
-  template?: "full" | "compact";
-}
-
-// Table bookmark shapes
-
-export interface FullTableBookmark {
-  type: "full_table";
-  table_id: string;
-  table_name?: string;
-}
-
-export interface TableColumnBookmark {
-  type: "table_column";
-  table_id: string;
-  column_name: string;
-  table_name?: string;
-}
-
-export interface TableRowBookmark {
-  type: "table_row";
-  table_id: string;
-  row_id: string;
-  table_name?: string;
-}
-
-export interface TableCellBookmark {
-  type: "table_cell";
-  table_id: string;
-  row_id: string;
-  column_name: string;
-  table_name?: string;
-}
-
-export type TableBookmark =
-  | FullTableBookmark
-  | TableColumnBookmark
-  | TableRowBookmark
-  | TableCellBookmark;
-
-/**
- * Fetch one or more user table bookmarks and inject as XML.
- * Each bookmark is the exact JSON object the UI copies to the clipboard —
- * pass them through as-is.
- */
-export interface TableInputBlock extends StructuredInputBase {
-  type: "input_table";
-  bookmarks: TableBookmark[];
-}
-
-// List bookmark shapes
-
-export interface FullListBookmark {
-  type: "full_list";
-  list_id: string;
-  list_name?: string;
-}
-
-export interface ListGroupBookmark {
-  type: "list_group";
-  list_id: string;
-  group_name: string;
-  list_name?: string;
-}
-
-export interface ListItemBookmark {
-  type: "list_item";
-  list_id: string;
-  item_id: string;
-  list_name?: string;
-}
-
-export type ListBookmark =
-  | FullListBookmark
-  | ListGroupBookmark
-  | ListItemBookmark;
-
-/**
- * Fetch one or more user list bookmarks and inject as XML.
- * Each bookmark is the exact JSON object the UI copies to the clipboard.
- */
-export interface ListInputBlock extends StructuredInputBase {
-  type: "input_list";
-  bookmarks: ListBookmark[];
-}
-
-// DataRef shapes — for input_data
-
-export interface DbRecordRef {
-  ref_type: "db_record";
-  /** Must be in the server allowlist: notes, tasks, projects, workspaces, organizations, contacts, contact_groups */
-  table: string;
-  /** Primary key of the row to fetch. */
-  id: string;
-  /** Optional display label for XML. Defaults to table name. */
-  label?: string;
-  /** Project only these fields. null/undefined = all allowed fields. */
-  fields?: string[];
-  /** Per-ref optional_context. When true, failure silently drops this ref. */
-  optional_context?: boolean;
-}
-
-export interface DbQueryRef {
-  ref_type: "db_query";
-  /** Must be in the server allowlist. */
-  table: string;
-  /** Optional display label for XML. */
-  label?: string;
-  /** Equality filters: { "field": value, ... }. Field must be in allowlist. */
-  filter?: Record<string, unknown>;
-  /** Project only these fields. null/undefined = all allowed fields. */
-  fields?: string[];
-  /** Sort order: { "field": "column_name", "direction": "asc" | "desc" } */
-  sort?: { field: string; direction: "asc" | "desc" };
-  /** Max rows returned. Default 50. */
-  limit?: number;
-  optional_context?: boolean;
-}
-
-export interface DbFieldRef {
-  ref_type: "db_field";
-  /** Must be in the server allowlist. */
-  table: string;
-  /** Primary key of the row. */
-  id: string;
-  /** Field name to retrieve. Must be in the allowlist for the table. */
-  field_name: string;
-  /** Optional display label for XML. */
-  label?: string;
-  optional_context?: boolean;
-}
-
-export type DataRef = DbRecordRef | DbQueryRef | DbFieldRef;
-
-/** Allowed tables for DataRef queries. */
-export type DataRefTable =
-  | "notes"
-  | "tasks"
-  | "projects"
-  | "workspaces"
-  | "organizations"
-  | "contacts"
-  | "contact_groups";
-
-/**
- * Fetch data from system tables using typed DataRef descriptors.
- * Results are wrapped in <data_context> XML.
- */
-export interface DataInputBlock extends StructuredInputBase {
-  type: "input_data";
-  refs: DataRef[];
-}
-
-// Union of all content blocks a client can send
-
-export type ContentBlock =
-  | TextBlock
-  | ImageBlock
-  | AudioBlock
-  | VideoBlock
-  | YouTubeVideoBlock
-  | DocumentBlock
-  | WebpageInputBlock
-  | NotesInputBlock
-  | TaskInputBlock
-  | TableInputBlock
-  | ListInputBlock
-  | DataInputBlock;
-
 // =============================================================================
 // LLM parameter overrides
 // =============================================================================
 
+/**
+ * LLM parameter overrides.
+ *
+ * Canonical frontend type — mirrors components['schemas']['LLMParams'] from
+ * types/python-generated/api-types.ts. Keep in sync with that file and with
+ * types/python-generated/llm-params.schema.json.
+ *
+ * All fields are optional. The backend treats null and absent identically —
+ * both mean "use the agent's stored default". The frontend uses undefined
+ * (not null) as the absent sentinel so that JSON.stringify omits the key.
+ *
+ * Run `pnpm update-api-types` after backend changes; TypeScript will flag
+ * any drift against the generated schema.
+ */
 export interface LLMParams {
-  /** Model id UUID. */
+  /** Model UUID. When present, overrides the agent's stored modelId. */
   model?: string;
 
-  // Sampling
+  // ── Sampling ────────────────────────────────────────────────────────────────
+  /** Max tokens the model will generate. */
   max_output_tokens?: number;
+  /** Randomness: 0 = deterministic, 2 = maximum. Provider ranges vary. */
   temperature?: number;
+  /** Nucleus sampling: top probability mass to consider. */
   top_p?: number;
+  /** Top-K sampling: limit next token to K candidates (integer). */
   top_k?: number;
 
-  // Tool calling
+  // ── Tool calling ────────────────────────────────────────────────────────────
+  /** "none" | "auto" | "required" */
   tool_choice?: "none" | "auto" | "required";
+  /** Allow the model to call multiple tools in a single turn. OpenAI only. */
   parallel_tool_calls?: boolean;
 
-  // OpenAI thinking / reasoning
+  // ── Reasoning / thinking ─────────────────────────────────────────────────
+  /** OpenAI o-series reasoning effort. Also accepted by Cerebras. */
   reasoning_effort?:
     | "auto"
     | "none"
@@ -363,57 +116,79 @@ export interface LLMParams {
     | "medium"
     | "high"
     | "xhigh";
+  /** OpenAI o-series reasoning summary verbosity. */
   reasoning_summary?: "concise" | "detailed" | "never" | "auto" | "always";
-
-  // Google Gemini thinking
+  /** Google Gemini 2.x thinking level (maps to thinking budget internally). */
   thinking_level?: "minimal" | "low" | "medium" | "high";
+  /** Include the raw thinking text in the response. Anthropic + Google. */
   include_thoughts?: boolean;
-
-  // Anthropic + legacy Gemini thinking
+  /** Token budget for extended reasoning. Anthropic + legacy Gemini. */
   thinking_budget?: number;
-
-  // Cerebras-specific
-  /** Remove <thinking> blocks from the final response. Cerebras only. */
+  /** Strip <thinking> blocks from the final response. Cerebras only. */
   clear_thinking?: boolean;
   /** Suppress reasoning entirely (maps to reasoning_effort="none"). Cerebras only. */
   disable_reasoning?: boolean;
 
-  // Output control
+  // ── Output control ───────────────────────────────────────────────────────
+  /** Response format descriptor. { type: "json_object" } | { type: "json_schema", ... } */
   response_format?: Record<string, unknown>;
+  /** Stop generation at these sequences. */
   stop_sequences?: string[];
+  /** Stream tokens as they are generated. Default true for agent endpoints. */
   stream?: boolean;
+  /** Persist the conversation to the DB. Default true. */
   store?: boolean;
+  /** Verbosity hint for the model's response style. */
   verbosity?: string;
 
-  // Provider-native features
-  /** Enable model-native web search. OpenAI / Google. */
+  // ── Provider-native features ─────────────────────────────────────────────
+  /** Use the model's built-in web search tool. OpenAI / Google. */
   internal_web_search?: boolean;
-  /** Model reads URLs in context natively. Google only. */
+  /** Let the model natively read URLs in context. Google only. */
   internal_url_context?: boolean;
 
-  // Image generation
+  // ── Image generation ─────────────────────────────────────────────────────
+  /** Image size string e.g. "1024x1024". Provider-specific. */
   size?: string;
+  /** Quality preset e.g. "hd", "standard". Provider-specific. */
   quality?: string;
+  /** Number of images to generate. */
   count?: number;
 
-  // Audio / TTS
+  // ── Audio / TTS ──────────────────────────────────────────────────────────
+  /** Voice name (string) or multi-speaker config (array of {name, voice}). */
   tts_voice?: string | Array<Record<string, string>>;
+  /** Output audio format e.g. "mp3", "wav". */
   audio_format?: string;
 
-  // Video generation
+  // ── Video / diffusion generation ─────────────────────────────────────────
+  /** Duration string e.g. "5". */
   seconds?: string;
+  /** Frames per second (integer). */
   fps?: number;
+  /** Diffusion steps (integer). Higher = better quality but slower. */
   steps?: number;
+  /** Reproducibility seed (integer). */
   seed?: number;
+  /** CFG / guidance scale (integer on backend). */
   guidance_scale?: number;
+  /** Image quality score 0–100 (integer). */
   output_quality?: number;
+  /** Negative prompt for diffusion models. */
   negative_prompt?: string;
+  /** Output file format e.g. "png", "webp", "mp4". */
   output_format?: string;
+  /** Output width in pixels (integer). */
   width?: number;
+  /** Output height in pixels (integer). */
   height?: number;
+  /** Reference frame images for video generation. */
   frame_images?: unknown[];
+  /** Reference images for image generation. */
   reference_images?: unknown[];
+  /** LoRA weights for image generation. */
   image_loras?: unknown[];
+  /** Disable the model's built-in safety filter. */
   disable_safety_checker?: boolean;
 }
 
@@ -516,18 +291,6 @@ export type ContextValue =
   | boolean
   | Record<string, unknown>
   | unknown[];
-
-/**
- * The active organizational scope for a request.
- * Stamped onto AppContext.metadata["active_scope"] when context objects are
- * applied. Also available on ToolContext.project_id / organization_id.
- */
-export interface ActiveScope {
-  organization_id: string | null;
-  workspace_id: string | null;
-  project_id: string | null;
-  task_id: string | null;
-}
 
 // =============================================================================
 // Agent start request
@@ -725,27 +488,6 @@ export interface ConversationContinueRequest {
   workspace_id?: string | null;
   project_id?: string | null;
   task_id?: string | null;
-}
-
-// =============================================================================
-// Tool results — POST /ai/conversations/{conversation_id}/tool_results
-// =============================================================================
-
-/**
- * A single client-executed tool result.
- * call_id and tool_name must match the tool_delegated stream event exactly.
- */
-export interface ClientToolResult {
-  /** Must match call_id from the tool_delegated stream event. */
-  call_id: string;
-  /** Must match tool_name from the tool_delegated stream event. */
-  tool_name: string;
-  /** The tool's return value. Any JSON-serializable value. */
-  output?: unknown;
-  /** Set true when the tool failed. Default: false. */
-  is_error?: boolean;
-  /** Required when is_error=true. The model receives this message. */
-  error_message?: string;
 }
 
 /** POST /ai/conversations/{conversation_id}/tool_results */

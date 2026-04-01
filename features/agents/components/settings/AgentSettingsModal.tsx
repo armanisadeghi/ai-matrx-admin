@@ -1,13 +1,5 @@
 "use client";
 
-/**
- * AgentSettingsModal
- *
- * Dialog/Drawer wrapper around AgentSettingsCore.
- * Triggered via a SlidersHorizontal icon button.
- * Uses Drawer on mobile (bottom sheet) and Dialog on desktop.
- */
-
 import { useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -15,14 +7,12 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerContent,
-  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
@@ -53,12 +43,11 @@ export function AgentSettingsModal({ agentId }: AgentSettingsModalProps) {
       <>
         {trigger}
         <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent className="px-4 pb-safe max-h-[85dvh]">
-            <DrawerHeader className="px-0">
-              <DrawerTitle>Model Settings</DrawerTitle>
-              <DrawerDescription>
-                Configure the AI model and parameters for this agent.
-              </DrawerDescription>
+          <DrawerContent className="px-4 pb-safe max-h-[90dvh]">
+            <DrawerHeader className="px-0 py-2">
+              <DrawerTitle className="text-xs font-semibold uppercase tracking-wide">
+                Model Settings
+              </DrawerTitle>
             </DrawerHeader>
             <div className="overflow-y-auto pb-6">
               <AgentSettingsCore agentId={agentId} />
@@ -73,14 +62,25 @@ export function AgentSettingsModal({ agentId }: AgentSettingsModalProps) {
     <>
       {trigger}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Model Settings</DialogTitle>
-            <DialogDescription>
-              Configure the AI model and parameters for this agent.
-            </DialogDescription>
+        <DialogContent className="max-w-lg p-0 overflow-hidden flex flex-col max-h-[85vh]">
+          <DialogHeader className="px-4 py-2.5 border-b border-border flex-shrink-0">
+            <DialogTitle className="text-xs font-semibold uppercase tracking-wide">
+              Model Settings
+            </DialogTitle>
           </DialogHeader>
-          <AgentSettingsCore agentId={agentId} scrollHeight="420px" />
+          <div className="overflow-y-auto px-4 py-3 flex-1">
+            <AgentSettingsCore agentId={agentId} />
+          </div>
+          <div className="flex items-center justify-end px-4 py-2.5 border-t border-border bg-gray-50 dark:bg-gray-900/50 flex-shrink-0">
+            <Button
+              variant="ghost"
+              onClick={() => setOpen(false)}
+              size="sm"
+              className="h-7 text-xs"
+            >
+              Close
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>

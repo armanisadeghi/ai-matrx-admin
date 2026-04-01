@@ -1973,6 +1973,13 @@ export interface components {
              * @default []
              */
             client_tools: string[];
+            /**
+             * Custom Tools
+             * @default []
+             */
+            custom_tools: {
+                [key: string]: unknown;
+            }[];
             ide_state?: components["schemas"]["IdeState"] | null;
             /**
              * Context
@@ -1981,6 +1988,14 @@ export interface components {
             context: {
                 [key: string]: unknown;
             };
+            /** Organization Id */
+            organization_id?: string | null;
+            /** Workspace Id */
+            workspace_id?: string | null;
+            /** Project Id */
+            project_id?: string | null;
+            /** Task Id */
+            task_id?: string | null;
         };
         /** AnalyzeBulkRequest */
         AnalyzeBulkRequest: {
@@ -2286,6 +2301,13 @@ export interface components {
              * @default []
              */
             client_tools: string[];
+            /**
+             * Custom Tools
+             * @default []
+             */
+            custom_tools: {
+                [key: string]: unknown;
+            }[];
             ide_state?: components["schemas"]["IdeState"] | null;
             /**
              * Context
@@ -2294,6 +2316,14 @@ export interface components {
             context: {
                 [key: string]: unknown;
             };
+            /** Organization Id */
+            organization_id?: string | null;
+            /** Workspace Id */
+            workspace_id?: string | null;
+            /** Project Id */
+            project_id?: string | null;
+            /** Task Id */
+            task_id?: string | null;
         };
         /** DirectChatRequest */
         DirectChatRequest: {

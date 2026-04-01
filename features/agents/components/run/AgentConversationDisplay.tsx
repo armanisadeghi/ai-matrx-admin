@@ -3,32 +3,32 @@
 /**
  * AgentConversationDisplay
  *
- * Renders the full conversation history for a run instance.
- * Reads messages from agentExecution slice, renders assistant messages
- * as formatted markdown text and user messages as plain text bubbles.
- * Appends AgentStreamingMessage when the run is active.
+ * Renders the full conversation history for an execution instance.
+ * Reads completed turns from instanceConversationHistory and appends
+ * AgentStreamingMessage while a response is in-flight.
+ *
+ * Prop: instanceId — the only key needed. No agentId, no runId.
  */
 
 import { useEffect, useRef } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { selectConversationTurns } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import {
-  selectInstanceMessages,
   selectIsExecuting,
-} from "@/features/agents/redux/agent-execution/selectors";
+  selectIsStreaming,
+} from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { AgentStreamingMessage } from "./AgentStreamingMessage";
 import { Bot, User } from "lucide-react";
-import { cn } from "@/lib/utils";
-import type { AgentRunMessage } from "@/features/agents/redux/agent-execution/types";
 
 interface AgentConversationDisplayProps {
-  runId: string;
+  instanceId: string;
 }
 
-function UserMessage({ message }: { message: AgentRunMessage }) {
+function UserBubble({ text }: { text: string }) {
   return (
     <div className="flex gap-3 items-start justify-end">
       <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-primary text-primary-foreground px-4 py-2.5 text-sm">
-        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        <p className="whitespace-pre-wrap break-words">{text}</p>
       </div>
       <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
         <User className="w-3.5 h-3.5 text-muted-foreground" />
@@ -37,7 +37,7 @@ function UserMessage({ message }: { message: AgentRunMessage }) {
   );
 }
 
-function AssistantMessage({ message }: { message: AgentRunMessage }) {
+function AssistantBubble({ text }: { text: string }) {
   return (
     <div className="flex gap-3 items-start">
       <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
@@ -45,7 +45,7 @@ function AssistantMessage({ message }: { message: AgentRunMessage }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed">
-          {message.content}
+          {text}
         </div>
       </div>
     </div>
@@ -53,25 +53,20 @@ function AssistantMessage({ message }: { message: AgentRunMessage }) {
 }
 
 export function AgentConversationDisplay({
-  runId,
+  instanceId,
 }: AgentConversationDisplayProps) {
-  const rawMessages = useAppSelector((state) =>
-    selectInstanceMessages(state, runId),
-  );
-  const messages = rawMessages ?? [];
-  const isExecuting = useAppSelector((state) =>
-    selectIsExecuting(state, runId),
-  );
+  const turns = useAppSelector(selectConversationTurns(instanceId));
+  const isExecuting = useAppSelector(selectIsExecuting(instanceId));
+  const isStreaming = useAppSelector(selectIsStreaming(instanceId));
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll on new messages or streaming chunks
+  const isActive = isExecuting || isStreaming;
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length, isExecuting]);
+  }, [turns.length, isActive]);
 
-  const visibleMessages = messages.filter((m) => m.role !== "system");
-
-  if (visibleMessages.length === 0 && !isExecuting) {
+  if (turns.length === 0 && !isActive) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-6">
         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -89,14 +84,14 @@ export function AgentConversationDisplay({
 
   return (
     <div className="flex flex-col gap-4 py-4 px-4">
-      {visibleMessages.map((msg, i) =>
-        msg.role === "user" ? (
-          <UserMessage key={i} message={msg} />
-        ) : (
-          <AssistantMessage key={i} message={msg} />
-        ),
+      {turns.map((turn) =>
+        turn.role === "user" ? (
+          <UserBubble key={turn.turnId} text={turn.content} />
+        ) : turn.role === "assistant" ? (
+          <AssistantBubble key={turn.turnId} text={turn.content} />
+        ) : null,
       )}
-      {isExecuting && <AgentStreamingMessage runId={runId} />}
+      {isActive && <AgentStreamingMessage instanceId={instanceId} />}
       <div ref={bottomRef} />
     </div>
   );

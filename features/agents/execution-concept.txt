@@ -1,0 +1,471 @@
+Code Context  [mode: signatures  —  signatures — code skeleton (functions/classes/methods, no bodies)]
+
+Location: /Users/armanisadeghi/code/matrx-admin/features/agents/execution-system
+
+Here is the code for the module I want you to review.
+A directory tree is shown first, followed by the code.
+
+./
+├── execution-instances/
+│   ├── execution-instances.selectors.ts
+│   ├── execution-instances.slice.ts
+│   ├── index.ts
+├── instance-client-tools/
+│   ├── index.ts
+│   ├── instance-client-tools.selectors.ts
+│   ├── instance-client-tools.slice.ts
+├── instance-context/
+│   ├── index.ts
+│   ├── instance-context.selectors.ts
+│   ├── instance-context.slice.ts
+├── instance-model-overrides/
+│   ├── index.ts
+│   ├── instance-model-overrides.selectors.ts
+│   ├── instance-model-overrides.slice.ts
+├── instance-resources/
+│   ├── index.ts
+│   ├── instance-resources.selectors.ts
+│   ├── instance-resources.slice.ts
+├── instance-ui-state/
+│   ├── index.ts
+│   ├── instance-ui-state.selectors.ts
+│   ├── instance-ui-state.slice.ts
+├── instance-user-input/
+│   ├── index.ts
+│   ├── instance-user-input.selectors.ts
+│   ├── instance-user-input.slice.ts
+├── instance-variable-values/
+│   ├── index.ts
+│   ├── instance-variable-values.selectors.ts
+│   ├── instance-variable-values.slice.ts
+├── selectors/
+│   ├── aggregate.selectors.ts
+│   ├── instance-model-overrides.selectors.ts
+│   ├── instance-variable-values.selectors.ts
+├── thunks/
+│   ├── create-instance.thunk.ts
+│   ├── execute-instance.thunk.ts
+│   ├── fetch-agent.thunk.ts
+│   ├── index.ts
+│   ├── save-agent.thunk.ts
+├── types/
+│   ├── common.types.ts
+│   ├── instance.types.ts
+│   ├── request.types.ts
+│   ├── scope.types.ts
+├── utils/
+│   ├── ids.ts
+│   ├── index.ts
+│   ├── source-slice-helpers.ts
+
+
+
+---
+Filepath: instance-model-overrides/instance-model-overrides.slice.ts  [typescript]
+
+  export interface InstanceModelOverridesState
+  initInstanceOverrides( state, action: PayloadAction<{ instanceId: string }>, )
+  setOverrides( state, action: PayloadAction<{ instanceId: string; changes: Partial<ModelOverrides>; }>, )
+  if (entry)
+  markRemoved( state, action: PayloadAction<{ instanceId: string; key: string }>, )
+  resetOverride( state, action: PayloadAction<{ instanceId: string; key: string }>, )
+  resetAllOverrides(state, action: PayloadAction<string>)
+  removeInstanceOverrides(state, action: PayloadAction<string>)
+
+
+---
+Filepath: instance-model-overrides/instance-model-overrides.selectors.ts  [typescript]
+
+  for (const key of overrideState.removals)
+  export const selectInstanceOverrideState = (instanceId: string) =>
+  export const selectCurrentSettings = (instanceId: string, agentId: string) =>
+  export const selectSettingsOverridesForApi = (instanceId: string, agentId: string) =>
+  export const selectHasOverrides = (instanceId: string) =>
+  export const selectOverriddenKeys = (instanceId: string) =>
+
+
+---
+Filepath: instance-model-overrides/index.ts  [typescript]
+
+
+
+---
+Filepath: instance-variable-values/instance-variable-values.selectors.ts  [typescript]
+
+  for (const def of definitions)
+  if (def.name in userValues)
+  export const selectUserVariableValues = (instanceId: string) =>
+  export const selectScopeVariableValues = (instanceId: string) =>
+  export const selectResolvedVariables = (instanceId: string, agentId: string) =>
+  export const selectMissingRequiredVariables = (instanceId: string, agentId: string) =>
+  export const selectVariableProvenance = (instanceId: string, agentId: string) =>
+
+
+---
+Filepath: instance-variable-values/instance-variable-values.slice.ts  [typescript]
+
+  interface InstanceVariableValuesEntry
+  export interface InstanceVariableValuesState
+  initInstanceVariables( state, action: PayloadAction<{ instanceId: string; scopeValues?: Record<string, unknown>; }>, )
+  setUserVariableValue( state, action: PayloadAction<{ instanceId: string; name: string; value: unknown; }>, )
+  if (entry)
+  setUserVariableValues( state, action: PayloadAction<{ instanceId: string; values: Record<string, unknown>; }>, )
+  clearUserVariableValue( state, action: PayloadAction<{ instanceId: string; name: string }>, )
+  setScopeVariableValues( state, action: PayloadAction<{ instanceId: string; values: Record<string, unknown>; }>, )
+  resetUserVariableValues(state, action: PayloadAction<string>)
+  removeInstanceVariables(state, action: PayloadAction<string>)
+
+
+---
+Filepath: instance-variable-values/index.ts  [typescript]
+
+
+
+---
+Filepath: types/common.types.ts  [typescript]
+
+  export interface DirtyTrackable
+  export interface AsyncState
+  export interface SourceSliceState<T> extends DirtyTrackable, AsyncState
+  export interface InstanceSliceState<T>
+  export interface AgentPayload<T>
+  export interface InstancePayload<T>
+
+
+---
+Filepath: types/scope.types.ts  [typescript]
+
+  export interface ScopeEntity
+  export type ScopeEntityType = | 'user' | 'organization' | 'workspace' | 'project' | 'task'
+  export interface ActiveScope
+
+
+---
+Filepath: types/request.types.ts  [typescript]
+
+  export type RequestStatus = | 'pending' // Request assembled, not yet sent | 'connecting' // HTTP request in flight, no response yet | 'streaming' // Receiving stream chunks | 'awaiting-tools' // Suspended — waiting for client tool results | 'complete' // Stream ended successfully | 'error' // Stream ended with error | 'timeout'
+  export interface ActiveRequest
+  export interface PendingToolCall
+  export interface StreamWarning
+  export interface AssembledAgentRequest
+  export interface AssembledContinueRequest
+  export interface ClientToolResult
+
+
+---
+Filepath: types/instance.types.ts  [typescript]
+
+  export type InstanceStatus = | "draft" // Being configured (manual or pre-autoRun) | "ready" // Fully configured, awaiting execution | "running" // API call in flight | "streaming" // Receiving stream chunks | "paused" // Waiting for client tool results | "complete" // Stream ended successfully | "error"
+  export type InstanceOrigin = | "manual" // User opened the agent runner | "shortcut" // Triggered by a shortcut | "test" // Created as part of parallel testing | "sub-agent"
+  export interface ExecutionInstance
+  export interface InstanceModelOverrideState
+  export type ResourceStatus = | "pending" // Just added, not yet processed | "resolving" // Client-side processing in progress (e.g., URL scraping) | "ready" // Resolved and ready for the API call | "error"
+  export type ResourceBlockType = | "text" | "image" | "audio" | "video" | "youtube_video" | "document" | "input_webpage" | "input_notes" | "input_task" | "input_table" | "input_list" | "input_data"
+  export interface ResourceOptions
+  export interface ManagedResource
+  export interface InstanceContextEntry
+  export interface InstanceUserInputState
+  export type ResultDisplayMode = | "modal-full" | "modal-compact" | "chat-bubble" | "inline" | "panel" | "toast"
+  export interface InstanceUIState
+
+
+---
+Filepath: instance-user-input/instance-user-input.selectors.ts  [typescript]
+
+  export const selectUserInputText = (instanceId: string) =>
+  export const selectUserInputContentBlocks = (instanceId: string) =>
+  export const selectHasUserInput = (instanceId: string) =>
+
+
+---
+Filepath: instance-user-input/index.ts  [typescript]
+
+
+
+---
+Filepath: instance-user-input/instance-user-input.slice.ts  [typescript]
+
+  export interface InstanceUserInputSliceState
+  initInstanceUserInput( state, action: PayloadAction<{ instanceId: string; text?: string }>, )
+  setUserInputText( state, action: PayloadAction<{ instanceId: string; text: string }>, )
+  if (entry)
+  setUserInputContentBlocks( state, action: PayloadAction<{ instanceId: string; blocks: Array<Record<string, unknown>>; }>, )
+  clearUserInput(state, action: PayloadAction<string>)
+  removeInstanceUserInput(state, action: PayloadAction<string>)
+
+
+---
+Filepath: execution-instances/execution-instances.selectors.ts  [typescript]
+
+  export const selectInstance = (instanceId: string) =>
+  export const selectAllInstanceIds = (state: RootState): string[] =>
+  export const selectInstancesByAgent = (agentId: string) =>
+  export const selectInstanceStatus = (instanceId: string) =>
+  export const selectRunningInstances = (state: RootState): ExecutionInstance[] =>
+  export const selectInstanceScopeId = (instanceId: string) =>
+
+
+---
+Filepath: execution-instances/execution-instances.slice.ts  [typescript]
+
+  export interface ExecutionInstancesState
+  createInstance( state, action: PayloadAction<{ instanceId?: string; agentId: string; agentType: AgentType; scopeId: string; origin: InstanceOrigin; shortcutId?: string; status?: InstanceStatus; }>, )
+  setInstanceStatus( state, action: PayloadAction<{ instanceId: string; status: InstanceStatus; }>, )
+  if (instance)
+  destroyInstance(state, action: PayloadAction<string>)
+  destroyInstancesForAgent(state, action: PayloadAction<string>)
+  for (const id of toRemove)
+
+
+---
+Filepath: execution-instances/index.ts  [typescript]
+
+
+
+---
+Filepath: thunks/create-instance.thunk.ts  [typescript]
+
+  interface CreateManualInstanceArgs
+  interface CreateShortcutInstanceArgs
+  interface CreateTestInstanceArgs
+  if (!shortcut)
+  if (!agent)
+  for (const mapping of mappings)
+  if (mapping.mapTo === "variable")
+  if (contextEntries.length > 0)
+
+
+---
+Filepath: thunks/execute-instance.thunk.ts  [typescript]
+
+  interface ExecuteInstanceArgs
+  interface ExecuteInstanceResult
+  interface SubmitToolResultsArgs
+  export function assembleRequest( state: RootState, instanceId: string, ): AssembledAgentRequest | null
+  if (resourcePayloads.length > 0)
+  if (textInput)
+  if (contentBlocks)
+  if (!instance)
+  if (!payload)
+  if (!response.ok)
+  if (!response.body)
+  while (true)
+  for (const line of lines)
+  switch (event.event)
+  if (event.data.conversation_id)
+  if (content)
+  if (!request?.conversationId)
+  for (const result of results)
+
+
+---
+Filepath: thunks/fetch-agent.thunk.ts  [typescript]
+
+  interface FetchAgentArgs
+  interface FetchAgentsListArgs
+  if (!response.ok)
+
+
+---
+Filepath: thunks/save-agent.thunk.ts  [typescript]
+
+  if (state.agents.dirtyIds[agentId])
+  if (state.agentModelConfig.dirtyIds[agentId])
+  if (state.agentVariableDefinitions.dirtyIds[agentId])
+  if (state.agentTools.dirtyIds[agentId])
+  if (state.agentContextSlots.dirtyIds[agentId])
+
+
+---
+Filepath: thunks/index.ts  [typescript]
+
+
+
+---
+Filepath: instance-client-tools/instance-client-tools.slice.ts  [typescript]
+
+  export interface InstanceClientToolsState
+  initInstanceClientTools( state, action: PayloadAction<{ instanceId: string; tools?: string[]; }>, )
+  addClientTool( state, action: PayloadAction<{ instanceId: string; toolName: string }>, )
+  removeClientTool( state, action: PayloadAction<{ instanceId: string; toolName: string }>, )
+  if (tools)
+  setClientTools( state, action: PayloadAction<{ instanceId: string; tools: string[]; }>, )
+  removeInstanceClientTools(state, action: PayloadAction<string>)
+
+
+---
+Filepath: instance-client-tools/instance-client-tools.selectors.ts  [typescript]
+
+  export const selectInstanceClientTools = (instanceId: string) =>
+
+
+---
+Filepath: instance-client-tools/index.ts  [typescript]
+
+
+
+---
+Filepath: utils/source-slice-helpers.ts  [typescript]
+
+  export function createSourceInitialState<T>(): SourceSliceState<T>
+  export function upsertEntity<T extends object>( state: Draft<SourceSliceState<T>>, id: string, data: T, ): void
+  export function removeEntity<T>( state: Draft<SourceSliceState<T>>, id: string, ): void
+  export function markDirty<T>( state: Draft<SourceSliceState<T>>, id: string, ): void
+  export function clearDirty<T>( state: Draft<SourceSliceState<T>>, id: string, ): void
+  export function createAsyncHandlers<T>()
+
+
+---
+Filepath: utils/ids.ts  [typescript]
+
+  export const generateInstanceId = (): string =>
+  export const generateResourceId = (): string =>
+  export const generateRequestId = (): string =>
+  export const generateScopeId = (): string =>
+
+
+---
+Filepath: utils/index.ts  [typescript]
+
+
+
+---
+Filepath: instance-context/instance-context.selectors.ts  [typescript]
+
+  for (const entry of entries)
+  export const selectInstanceContextEntries = (instanceId: string) =>
+  export const selectInstanceContextEntry = (instanceId: string, key: string) =>
+  export const selectSlotMatchedContext = (instanceId: string) =>
+  export const selectAdHocContext = (instanceId: string) =>
+  export const selectContextPayload = (instanceId: string) =>
+
+
+---
+Filepath: instance-context/instance-context.slice.ts  [typescript]
+
+  export interface InstanceContextState
+  function inferType(value: unknown): ContextObjectType
+  if (typeof value === "string")
+  initInstanceContext(state, action: PayloadAction<{ instanceId: string }>)
+  setContextEntry( state, action: PayloadAction<{ instanceId: string; key: string; value: unknown; slotMatched?: boolean; type?: ContextObjectType; label?: string; }>, )
+  if (context)
+  setContextEntries( state, action: PayloadAction<{ instanceId: string; entries: Array<{ key: string; value: unknown; slotMatched?: boolean; type?: ContextObjectType; label?: string; }>; }>, )
+  for (const entry of entries)
+  removeContextEntry( state, action: PayloadAction<{ instanceId: string; key: string }>, )
+  clearInstanceContext(state, action: PayloadAction<string>)
+  removeInstanceContext(state, action: PayloadAction<string>)
+
+
+---
+Filepath: instance-context/index.ts  [typescript]
+
+
+
+---
+Filepath: instance-resources/instance-resources.selectors.ts  [typescript]
+
+  switch (r.blockType)
+  if (typeof content === "string")
+  export const selectInstanceResources = (instanceId: string) =>
+  export const selectResource = (instanceId: string, resourceId: string) =>
+  export const selectReadyResources = (instanceId: string) =>
+  export const selectPendingResources = (instanceId: string) =>
+  export const selectAllResourcesResolved = (instanceId: string) =>
+  export const selectResourcePayloads = (instanceId: string) =>
+
+
+---
+Filepath: instance-resources/index.ts  [typescript]
+
+
+
+---
+Filepath: instance-resources/instance-resources.slice.ts  [typescript]
+
+  export interface InstanceResourcesState
+  initInstanceResources( state, action: PayloadAction<{ instanceId: string }>, )
+  addResource( state, action: PayloadAction<{ instanceId: string; blockType: ResourceBlockType; source: unknown; options?: Partial<ResourceOptions>; resourceId?: string; }>, )
+  if (resources)
+  setResourceStatus( state, action: PayloadAction<{ instanceId: string; resourceId: string; status: ResourceStatus; errorMessage?: string; }>, )
+  if (resource)
+  setResourcePreview( state, action: PayloadAction<{ instanceId: string; resourceId: string; preview: unknown; }>, )
+  setResourceEditedContent( state, action: PayloadAction<{ instanceId: string; resourceId: string; content: unknown; }>, )
+  setResourcePayload( state, action: PayloadAction<{ instanceId: string; resourceId: string; payload: Record<string, unknown>; }>, )
+  updateResourceOptions( state, action: PayloadAction<{ instanceId: string; resourceId: string; options: Partial<ResourceOptions>; }>, )
+  removeResource( state, action: PayloadAction<{ instanceId: string; resourceId: string; }>, )
+  reorderResources( state, action: PayloadAction<{ instanceId: string; orderedIds: string[]; }>, )
+  if (resources[id])
+  removeInstanceResources(state, action: PayloadAction<string>)
+
+
+---
+Filepath: instance-ui-state/instance-ui-state.selectors.ts  [typescript]
+
+  export const selectInstanceUIState = (instanceId: string) =>
+  export const selectDisplayMode = (instanceId: string) =>
+  export const selectAllowChat = (instanceId: string) =>
+  export const selectShowVariablePanel = (instanceId: string) =>
+  export const selectModeState = (instanceId: string) =>
+
+
+---
+Filepath: instance-ui-state/index.ts  [typescript]
+
+
+
+---
+Filepath: instance-ui-state/instance-ui-state.slice.ts  [typescript]
+
+  export interface InstanceUIStateSlice
+  initInstanceUIState( state, action: PayloadAction<{ instanceId: string; displayMode?: ResultDisplayMode; allowChat?: boolean; showVariablePanel?: boolean; }>, )
+  setDisplayMode( state, action: PayloadAction<{ instanceId: string; mode: ResultDisplayMode; }>, )
+  if (entry)
+  toggleExpanded(state, action: PayloadAction<string>)
+  toggleVariablePanel(state, action: PayloadAction<string>)
+  setAllowChat( state, action: PayloadAction<{ instanceId: string; allow: boolean }>, )
+  updateModeState( state, action: PayloadAction<{ instanceId: string; changes: Record<string, unknown>; }>, )
+  removeInstanceUIState(state, action: PayloadAction<string>)
+
+
+---
+Filepath: selectors/aggregate.selectors.ts  [typescript]
+
+  Boolean(state.agentContextSlots.dirtyIds[agentId])
+  if (!instance)
+  if (resources)
+  if (pending.length > 0)
+  if (errored.length > 0)
+  for (const def of definitions)
+  if (!hasValue)
+  assembleRequest(state, instanceId)
+  export const selectIsAnythingDirty = (agentId: string) =>
+  export const selectDirtySlices = (agentId: string) =>
+  export const selectIsInstanceReady = (instanceId: string, agentId: string) =>
+  export const selectAssembledRequest = (instanceId: string) =>
+  export const selectInstanceSummary = (instanceId: string) =>
+  export const selectAvailableShortcuts = (context: string, scopeId: string) =>
+
+
+---
+Filepath: selectors/instance-variable-values.selectors.ts  [typescript]
+
+  for (const def of definitions)
+  if (def.name in userValues)
+  export const selectUserVariableValues = (instanceId: string) =>
+  export const selectScopeVariableValues = (instanceId: string) =>
+  export const selectResolvedVariables = (instanceId: string, agentId: string) =>
+  export const selectMissingRequiredVariables = (instanceId: string, agentId: string) =>
+  export const selectVariableProvenance = (instanceId: string, agentId: string) =>
+
+
+---
+Filepath: selectors/instance-model-overrides.selectors.ts  [typescript]
+
+  for (const key of overrideState.removals)
+  export const selectInstanceOverrideState = (instanceId: string) =>
+  export const selectCurrentSettings = (instanceId: string, agentId: string) =>
+  export const selectSettingsOverridesForApi = (instanceId: string, agentId: string) =>
+  export const selectHasOverrides = (instanceId: string) =>
+  export const selectOverriddenKeys = (instanceId: string) =>
+
+Please review carefully and let me know if anything needs to be improved.

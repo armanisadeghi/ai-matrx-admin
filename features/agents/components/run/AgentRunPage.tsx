@@ -4,47 +4,33 @@
  * AgentRunPage
  *
  * The full execution page for an agent run.
+ * Creates an execution instance via createManualInstance, which snapshots
+ * the agent's variableDefinitions and settings ONCE at creation time.
+ * After that, the instance is fully self-contained — agentId is not
+ * referenced again by any component or selector.
  *
  * Layout:
- *   ┌──────────────────────────────────┐
- *   │   Sidebar (runs history)  │ Main │
- *   │                           │ conv │
- *   │                           │ area │
- *   └──────────────────────────────────┘
- *
- * State management:
- * - On mount: checks execution payload; fetches if not ready.
- * - Creates a run instance in agentExecution slice.
- * - URL param ?runId= enables direct run loading/sharing.
- * - Sidebar queries Supabase directly (Python manages persistence).
+ *   ┌────────────────────────────────────┐
+ *   │  Sidebar (runs history) │   Main   │
+ *   │                         │   conv   │
+ *   │                         │   area   │
+ *   └────────────────────────────────────┘
  */
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { v4 as uuidv4 } from "uuid";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  selectAgentById,
-  selectAgentExecutionPayload,
-} from "@/features/agents/redux/agent-definition/selectors";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
-import {
-  createInstance,
-  clearInstance,
-} from "@/features/agents/redux/agent-execution/slice";
-import {
-  selectInstanceStatus,
-  selectInstanceError,
-} from "@/features/agents/redux/agent-execution/selectors";
+import { selectAgentExecutionPayload } from "@/features/agents/redux/agent-definition/selectors";
+import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
+import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
 import { AgentConversationDisplay } from "./AgentConversationDisplay";
 import { AgentRunInput } from "./AgentRunInput";
 import { AgentVariableInputForm } from "./AgentVariableInputForm";
 import { AgentRunsSidebar } from "./AgentRunsSidebar";
 import { Loader2, Bot, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import type { VariableDefinition } from "@/features/agents/redux/agent-definition/types";
 
 interface AgentRunPageProps {
   agentId: string;
@@ -58,29 +44,24 @@ export function AgentRunPage({ agentId, agentName }: AgentRunPageProps) {
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
 
-  const record = useAppSelector((state) => selectAgentById(state, agentId));
   const executionPayload = useAppSelector((state) =>
     selectAgentExecutionPayload(state, agentId),
   );
 
-  const [runId, setRunId] = useState<string>(() => uuidv4());
+  const [instanceId, setInstanceId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [isInitializing, setIsInitializing] = useState(true);
 
   const currentRunId = searchParams.get("runId") ?? undefined;
-  const status = useAppSelector((state) => selectInstanceStatus(state, runId));
-  const error = useAppSelector((state) => selectInstanceError(state, runId));
 
-  // Initialize: fetch execution payload if not ready, then create instance
+  // Step 1: Ensure execution payload is loaded from the backend
   useEffect(() => {
     let cancelled = false;
     const init = async () => {
       setIsInitializing(true);
       try {
-        let payload = executionPayload;
-        if (!payload.isReady) {
+        if (!executionPayload.isReady) {
           await dispatch(fetchAgentExecutionMinimal(agentId)).unwrap();
-          // After fetch, re-read from store — selector will update after dispatch
         }
       } catch (err) {
         console.error("Failed to load agent execution payload:", err);
@@ -95,59 +76,48 @@ export function AgentRunPage({ agentId, agentName }: AgentRunPageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agentId]);
 
-  // Create run instance after initialization
+  // Step 2: Create the instance once payload is ready
   useEffect(() => {
     if (isInitializing) return;
-    dispatch(
-      createInstance({
-        runId,
-        agentId,
-        isVersion: executionPayload.isVersion ?? false,
-        agentName,
-        variableDefaults: (executionPayload.variableDefinitions ??
-          []) as VariableDefinition[],
-        contextSlots: executionPayload.contextSlots ?? [],
-      }),
-    );
+
+    let createdId: string | null = null;
+
+    dispatch(createManualInstance({ agentId }))
+      .unwrap()
+      .then((id) => {
+        createdId = id;
+        setInstanceId(id);
+      })
+      .catch((err) => {
+        console.error("Failed to create instance:", err);
+      });
+
     return () => {
-      dispatch(clearInstance({ runId }));
+      if (createdId) {
+        dispatch(destroyInstance(createdId));
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agentId, isInitializing]);
 
   const handleNewRun = useCallback(() => {
-    // Clear current instance + URL param, create fresh run
-    dispatch(clearInstance({ runId }));
-    const newRunId = uuidv4();
-    setRunId(newRunId);
+    if (!instanceId) return;
+
+    // Destroy current instance, start fresh
+    dispatch(destroyInstance(instanceId));
+    setInstanceId(null);
+
     const params = new URLSearchParams(searchParams.toString());
     params.delete("runId");
     router.replace(`${pathname}?${params.toString()}`);
-    // Instance will be created by the effect above (after runId changes)
-    dispatch(
-      createInstance({
-        runId: newRunId,
-        agentId,
-        isVersion: executionPayload.isVersion ?? false,
-        agentName,
-        variableDefaults: (executionPayload.variableDefinitions ??
-          []) as VariableDefinition[],
-        contextSlots: executionPayload.contextSlots ?? [],
-      }),
-    );
-    setRunId(newRunId);
-  }, [
-    agentId,
-    agentName,
-    dispatch,
-    executionPayload,
-    pathname,
-    router,
-    runId,
-    searchParams,
-  ]);
 
-  if (isInitializing) {
+    dispatch(createManualInstance({ agentId }))
+      .unwrap()
+      .then((id) => setInstanceId(id))
+      .catch((err) => console.error("Failed to create instance:", err));
+  }, [instanceId, agentId, dispatch, pathname, router, searchParams]);
+
+  if (isInitializing || !instanceId) {
     return (
       <div className="flex items-center justify-center h-full gap-3 text-muted-foreground">
         <Loader2 className="w-5 h-5 animate-spin text-primary" />
@@ -195,24 +165,17 @@ export function AgentRunPage({ agentId, agentName }: AgentRunPageProps) {
 
         {/* Conversation */}
         <div className="flex-1 overflow-y-auto min-h-0">
-          {error && (
-            <div className="mx-4 mt-4 px-4 py-3 rounded-lg border border-destructive/30 bg-destructive/5">
-              <p className="text-sm text-destructive">{error}</p>
-            </div>
-          )}
-          <AgentConversationDisplay runId={runId} />
+          <AgentConversationDisplay instanceId={instanceId} />
         </div>
 
         {/* Variable form */}
         <div className="px-4 py-2 border-t border-border">
-          <AgentVariableInputForm runId={runId} />
+          <AgentVariableInputForm instanceId={instanceId} />
         </div>
 
         {/* Input */}
-        <AgentRunInput runId={runId} />
+        <AgentRunInput instanceId={instanceId} />
       </div>
-
-      {/* Mobile sidebar as overlay (bottom sheet-style approach would go here) */}
     </div>
   );
 }

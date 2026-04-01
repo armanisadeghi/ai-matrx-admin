@@ -397,7 +397,16 @@ export type RoleMessage = UserMessage | AssistantMessage | ToolMessage;
  * replaced at runtime from AgentStartRequest.variables.
  */
 export interface AgentDefinitionMessage {
-  role: "user" | "assistant" | "system" | "developer" | "output";
+  /**
+   * Priming message role.
+   *
+   * "user" and "assistant" — standard turn-based priming messages.
+   * "system" — the system instruction. Stored as the first element of
+   *   messages[] as a convention. Only one system message per agent.
+   *   Content is a single TextBlock with the prompt text.
+   * "developer" and "output" are excluded — these are runtime-only roles.
+   */
+  role: "user" | "assistant" | "system";
   /**
    * Content blocks for this priming turn.
    * TextBlock is by far the most common. ImageBlock and DocumentBlock are

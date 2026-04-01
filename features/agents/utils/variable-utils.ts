@@ -1,0 +1,41 @@
+/**
+ * Utility functions for handling agent variables.
+ */
+
+/**
+ * Sanitizes a variable name for use in {{variable_name}} placeholders.
+ *
+ * Rules:
+ *   - Trim whitespace
+ *   - Lowercase
+ *   - Replace spaces and dashes with underscores
+ *   - Remove non-alphanumeric/underscore characters
+ *   - Collapse consecutive underscores to one
+ *   - Strip leading/trailing underscores
+ */
+export const sanitizeVariableName = (input: string): string => {
+  const trimmed = input.trim();
+  const lowercased = trimmed.toLowerCase();
+  const underscored = lowercased.replace(/[\s-]+/g, "_");
+  const cleaned = underscored.replace(/[^a-z0-9_]/g, "");
+  const single = cleaned.replace(/_+/g, "_");
+  return single.replace(/^_+|_+$/g, "");
+};
+
+/**
+ * Returns true when the sanitized form differs from a simple lowercase of the input.
+ * Use to decide whether to show the user a "will be saved as X" preview.
+ */
+export const shouldShowSanitizationPreview = (input: string): boolean => {
+  const trimmed = input.trim();
+  if (!trimmed) return false;
+  return sanitizeVariableName(input) !== trimmed.toLowerCase();
+};
+
+/**
+ * Checks whether a variable name appears as {{variableName}} in a text string.
+ */
+export const isVariableUsedInText = (
+  variableName: string,
+  text: string,
+): boolean => text.includes(`{{${variableName}}}`);

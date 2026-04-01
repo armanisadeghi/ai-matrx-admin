@@ -3,36 +3,27 @@
 /**
  * AgentStreamingMessage
  *
- * Isolated streaming text renderer.
- * Reads ONLY selectPrimaryResponseTextByTaskId(taskId) from socketResponseSlice,
- * preventing parent components from re-rendering on every chunk.
+ * Renders the live-streaming response for the current request.
+ * Reads ONLY from activeRequests.accumulatedText — isolated so the
+ * parent component does not re-render on every chunk.
  *
- * Usage: render this while status === "streaming" or status === "executing".
+ * Show this while selectIsStreaming(instanceId) or selectIsExecuting(instanceId) is true.
+ * Once the stream ends, executeInstance appends the turn to instanceConversationHistory
+ * and this component is hidden.
  */
 
-import { useMemo } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectPrimaryResponseTextByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-import { selectCurrentTaskId } from "@/features/agents/redux/agent-execution/selectors";
+import { selectLatestAccumulatedText } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { Loader2 } from "lucide-react";
 
 interface AgentStreamingMessageProps {
-  runId: string;
+  instanceId: string;
 }
 
-export function AgentStreamingMessage({ runId }: AgentStreamingMessageProps) {
-  const taskId = useAppSelector((state) => selectCurrentTaskId(state, runId));
-
-  const selectStreamText = useMemo(
-    () => (taskId ? selectPrimaryResponseTextByTaskId(taskId) : null),
-    [taskId],
-  );
-
-  const streamingText = useAppSelector((state) =>
-    selectStreamText ? selectStreamText(state) : "",
-  );
-
-  if (!taskId) return null;
+export function AgentStreamingMessage({
+  instanceId,
+}: AgentStreamingMessageProps) {
+  const streamingText = useAppSelector(selectLatestAccumulatedText(instanceId));
 
   return (
     <div className="flex gap-3 items-start">

@@ -55,7 +55,6 @@ import noteVersionsReducer from "./slices/noteVersionsSlice";
 import messagingReducer from "@/features/messaging/redux/messagingSlice";
 import smsReducer from "@/features/sms/redux/smsSlice";
 import adminPreferencesReducer from "./slices/adminPreferencesSlice";
-import appContextReducer from "./slices/appContextSlice";
 import apiConfigReducer from "./slices/apiConfigSlice";
 import activeChatReducer from "./slices/activeChatSlice";
 import entitySystemReducer from "./slices/entitySystemSlice";
@@ -65,7 +64,7 @@ import agentCacheReducer from "./slices/agentCacheSlice";
 import agentDefinitionReducer from "@/features/agents/redux/agent-definition/slice";
 import agentShortcutReducer from "@/features/agents/redux/agent-shortcuts/slice";
 import agentConsumersReducer from "@/features/agents/redux/agent-consumers/slice";
-import agentExecutionReducer from "@/features/agents/redux/agent-execution/slice";
+import agentExecutionReducer from "@/features/agents/_garbage/agent-execution/slice";
 
 // Prompt system
 import promptCacheReducer from "./slices/promptCacheSlice";
@@ -81,6 +80,19 @@ import { messageActionsReducer } from "@/features/cx-conversation/redux/messageA
 import artifactsReducer from "./slices/artifactsSlice";
 import htmlPagesReducer from "./slices/htmlPagesSlice";
 import { agentSettingsReducer } from "./slices/agent-settings";
+
+import appContextReducer from "./slices/appContextSlice";
+
+import { instanceUIStateReducer } from "@/features/agents/redux/execution-system/instance-ui-state";
+import { instanceClientToolsReducer } from "@/features/agents/redux/execution-system/instance-client-tools";
+import { instanceContextReducer } from "@/features/agents/redux/execution-system/instance-context";
+import { instanceModelOverridesReducer } from "@/features/agents/redux/execution-system/instance-model-overrides";
+import { instanceVariableValuesReducer } from "@/features/agents/redux/execution-system/instance-variable-values";
+import { instanceResourcesReducer } from "@/features/agents/redux/execution-system/instance-resources";
+import { instanceUserInputReducer } from "@/features/agents/redux/execution-system/instance-user-input";
+import { executionInstancesReducer } from "@/features/agents/redux/execution-system/execution-instances";
+import { activeRequestsReducer } from "@/features/agents/redux/execution-system/active-requests";
+import { instanceConversationHistoryReducer } from "@/features/agents/redux/execution-system/instance-conversation-history";
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
 
@@ -163,46 +175,73 @@ export const createRootReducer = (initialState: InitialReduxState) => {
       : (((state: Record<string, unknown> = {}) => state) as Reducer);
 
   return combineReducers({
+    user: userReducer,
+    userPreferences: userPreferencesReducer,
+
+    adminDebug: adminDebugReducer,
+    overlays: overlaySlice,
+    overlayData: overlayDataReducer,
+
+    // Canvas and Artifacts system ----------
+    canvas: canvasReducer,
+    // Artifact tracking — universal registry for all AI-generated content
+    artifacts: artifactsReducer,
+    // HTML pages — editor session state + page catalog
+    htmlPages: htmlPagesReducer,
+
+    // Text diff system
+    textDiff: textDiffReducer,
+    noteVersions: noteVersionsReducer,
+    // SMS integration
+    sms: smsReducer,
+
+    theme: themeReducer,
+
     ...featureReducers,
     ...moduleReducers,
     fileSystem: combineReducers(fileSystemReducers) as Reducer<FileSystemState>,
     entities: entitiesReducer,
     entityFields: fieldReducer,
     layout: layoutReducer,
-    theme: themeReducer,
     form: formReducer,
-    user: userReducer,
-    userPreferences: userPreferencesReducer,
     testRoutes: testRoutesReducer,
     flashcardChat: flashcardChatReducer,
-    aiChat: aiChatReducer,
-    adminDebug: adminDebugReducer,
     globalCache: globalCacheSlice.reducer,
     ui: uiReducer,
     storage: storageReducer,
+
+    // ==== OLD AI CHAT SYSTEM (DEPRECATED) ====
+    aiChat: aiChatReducer,
     conversation: conversationReducer,
     messages: messagesReducer,
     newMessage: newMessageReducer,
     chatDisplay: chatDisplayReducer,
 
+    // Active chat page state (selected agent, block mode, agent picker)
+    activeChat: activeChatReducer,
+
+    // Unified chat conversation UI slice (replaces ChatContext + prompt-execution for display)
+    chatConversations: chatConversationsReducer,
+
+    // Instance-based message action overlays (Save to Notes, Email, Auth Gate, etc.)
+    messageActions: messageActionsReducer,
+
+    // ===== OLD SOCKET.IO SYSTEM (DEPRECATED) ====
     socketConnections: socketConnectionReducer,
     socketResponse: socketResponseReducer,
     socketTasks: socketTasksReducer,
 
+    // ==== OLD APPLET SYSTEM (DEPRECATED) ====
     componentDefinitions: componentDefinitionsSlice.reducer,
-
     appBuilder: appBuilderSlice.reducer,
     appletBuilder: appletBuilderSlice.reducer,
     containerBuilder: containerBuilderSlice.reducer,
     fieldBuilder: fieldBuilderSlice.reducer,
-
     customAppRuntime: customAppRuntimeSlice,
     customAppletRuntime: customAppletRuntimeSlice,
-
     broker: brokerSlice, // Concept broker implementation
 
-    overlays: overlaySlice,
-    overlayData: overlayDataReducer,
+    // OLD PROMPT SYSTEM - WELL-BUILT but built on socket.io and recipes, not agents. (DEPRECATED)
     contextMenuCache: contextMenuCacheReducer,
     agentCache: agentCacheReducer,
     promptCache: promptCacheReducer,
@@ -216,52 +255,28 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     workflows: workflowSlice,
     workflowNodes: workflowNodeSlice,
 
-    canvas: canvasReducer,
-
-    // Text diff system
-    textDiff: textDiffReducer,
-    noteVersions: noteVersionsReducer,
-
     // Prompt Editor (Redux)
     promptEditor: promptEditorReducer,
-    modelRegistry: modelRegistryReducer,
 
     // Messaging system
     messaging: messagingReducer,
 
-    // SMS integration
-    sms: smsReducer,
-
-    // API config — single source of truth for active server, health, and call log
-    apiConfig: apiConfigReducer,
-
     // Admin preferences (legacy server fields migrated to apiConfig — kept for UI-only prefs)
     adminPreferences: adminPreferencesReducer,
-
-    // App context — unified "where are you working" hierarchy (org → workspace → project → task → conversation)
-    appContext: appContextReducer,
-
-    // Active chat page state (selected agent, block mode, agent picker)
-    activeChat: activeChatReducer,
-
-    // Unified chat conversation UI slice (replaces ChatContext + prompt-execution for display)
-    chatConversations: chatConversationsReducer,
-
-    // Instance-based message action overlays (Save to Notes, Email, Auth Gate, etc.)
-    messageActions: messageActionsReducer,
 
     // Entity system load status (on-demand schema + slices)
     entitySystem: entitySystemReducer,
 
-    // Artifact tracking — universal registry for all AI-generated content
-    artifacts: artifactsReducer,
-
-    // HTML pages — editor session state + page catalog
-    htmlPages: htmlPagesReducer,
-
     // Agent Settings — unified settings management for all agent/prompt contexts
     // (builder, chat session overrides, multi-agent testing)
     agentSettings: agentSettingsReducer,
+
+    // ==================================== RELATED TO AGENTS: ====================================
+
+    modelRegistry: modelRegistryReducer,
+
+    // API config — single source of truth for active server, health, and call log
+    apiConfig: apiConfigReducer,
 
     // NEW AGENTS SYSTEM =======================================================
 
@@ -269,31 +284,26 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     agentDefinition: agentDefinitionReducer,
     agentShortcut: agentShortcutReducer,
     agentConsumers: agentConsumersReducer,
-    agentExecution: agentExecutionReducer,
 
-    // // (remaining layers — pending)
-    // agents: agentsReducer,
-    // agentModelConfig: agentModelConfigReducer,
-    // agentVariableDefinitions: agentVariableDefinitionsReducer,
-    // agentTools: agentToolsReducer,
-    // agentContextSlots: agentContextSlotsReducer,
-    // agentShortcuts: agentShortcutsReducer,
+    // Layer 2 — App Context (scope injected automatically into every API call by callApi)
+    appContext: appContextReducer,
 
-    // // Layer 2 — Active Scopes
-    // activeScopes: activeScopesReducer,
-
-    // // Layer 3 — Prompt Instances
-    // promptInstances: promptInstancesReducer,
-    // instanceModelOverrides: instanceModelOverridesReducer,
-    // instanceVariableValues: instanceVariableValuesReducer,
-    // instanceResources: instanceResourcesReducer,
-    // instanceContext: instanceContextReducer,
-    // instanceUserInput: instanceUserInputReducer,
-    // instanceClientTools: instanceClientToolsReducer,
-    // instanceUIState: instanceUIStateReducer,
+    // Layer 3 — Prompt Instances
+    executionInstances: executionInstancesReducer,
+    instanceModelOverrides: instanceModelOverridesReducer,
+    instanceVariableValues: instanceVariableValuesReducer,
+    instanceResources: instanceResourcesReducer,
+    instanceContext: instanceContextReducer,
+    instanceUserInput: instanceUserInputReducer,
+    instanceClientTools: instanceClientToolsReducer,
+    instanceUIState: instanceUIStateReducer,
 
     // // Layer 4 — Request Execution
-    // activeRequests: activeRequestsReducer,
+    activeRequests: activeRequestsReducer,
+    instanceConversationHistory: instanceConversationHistoryReducer,
+
+    // Just garbage that makes no sense!
+    agentExecution: agentExecutionReducer,
   });
 };
 

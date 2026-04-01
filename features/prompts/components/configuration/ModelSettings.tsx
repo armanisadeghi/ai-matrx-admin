@@ -254,18 +254,54 @@ export function ModelSettings({
   // or when the model simply doesn't declare them but they're still accepted.
   const recognizedKeys = useMemo(() => {
     const keys = new Set<string>([
-      // Always-valid submission keys
+      // Always-valid submission keys (full LLM_PARAMS_KEYS set)
       "model_id",
       "temperature",
-      "max_tokens",
       "max_output_tokens",
+      "max_tokens",
       "top_p",
       "top_k",
+      "tool_choice",
+      "parallel_tool_calls",
+      "reasoning_effort",
+      "reasoning_summary",
+      "thinking_level",
+      "include_thoughts",
+      "thinking_budget",
+      "clear_thinking",
+      "disable_reasoning",
+      "response_format",
+      "stop_sequences",
       "stream",
       "store",
-      "tools",
-      // Deprecated but still present in saved settings
+      "verbosity",
+      "internal_web_search",
+      "internal_url_context",
+      "size",
+      "quality",
+      "count",
+      "tts_voice",
+      "audio_format",
+      "seconds",
+      "fps",
+      "steps",
+      "seed",
+      "guidance_scale",
+      "output_quality",
+      "negative_prompt",
       "output_format",
+      "width",
+      "height",
+      "frame_images",
+      "reference_images",
+      "image_loras",
+      "disable_safety_checker",
+      // Frontend-only UI flags
+      "tools",
+      "image_urls",
+      "file_urls",
+      "youtube_videos",
+      "n",
     ]);
     if (!normalizedControls) return keys;
     Object.keys(normalizedControls).forEach((key) => {
@@ -644,13 +680,17 @@ export function ModelSettings({
     { key: "top_p", label: "Top P" },
     { key: "top_k", label: "Top K" },
     { key: "thinking_budget", label: "Thinking Budget" },
+    { key: "thinking_level", label: "Thinking Level" },
     { key: "reasoning_effort", label: "Reasoning Effort" },
-    { key: "verbosity", label: "Verbosity" },
     { key: "reasoning_summary", label: "Reasoning Summary" },
+    { key: "verbosity", label: "Verbosity" },
     { key: "tool_choice", label: "Tool Choice" },
   ];
 
   const imageVideoSettings = [
+    { key: "size", label: "Size" },
+    { key: "quality", label: "Quality" },
+    { key: "count", label: "Count" },
     { key: "steps", label: "Steps" },
     { key: "guidance_scale", label: "Guidance Scale" },
     { key: "seed", label: "Seed" },
@@ -662,7 +702,6 @@ export function ModelSettings({
     { key: "output_quality", label: "Output Quality" },
     { key: "negative_prompt", label: "Negative Prompt" },
     { key: "reference_images", label: "Reference Images" },
-    { key: "response_format", label: "Response Format" },
   ];
 
   const booleanSettings = [
@@ -670,6 +709,8 @@ export function ModelSettings({
     { key: "stream", label: "Stream Response" },
     { key: "parallel_tool_calls", label: "Parallel Tool Calls" },
     { key: "include_thoughts", label: "Include Thoughts" },
+    { key: "clear_thinking", label: "Clear Thinking" },
+    { key: "disable_reasoning", label: "Disable Reasoning" },
     { key: "image_urls", label: "Image URLs" },
     { key: "file_urls", label: "File URLs" },
     { key: "internal_web_search", label: "Internal Web Search" },

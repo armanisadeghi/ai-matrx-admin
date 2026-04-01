@@ -35,7 +35,7 @@ export const LLM_PARAMS_KEYS = [
     'model', 'max_output_tokens', 'temperature', 'top_p', 'top_k',
     'tool_choice', 'parallel_tool_calls',
     'reasoning_effort', 'reasoning_summary', 'thinking_level',
-    'include_thoughts', 'thinking_budget',
+    'include_thoughts', 'thinking_budget', 'clear_thinking', 'disable_reasoning',
     'response_format', 'stop_sequences',
     'stream', 'store', 'verbosity',
     'internal_web_search', 'internal_url_context',
@@ -43,10 +43,7 @@ export const LLM_PARAMS_KEYS = [
     'tts_voice', 'audio_format',
     'seconds', 'fps', 'steps', 'seed',
     'guidance_scale', 'output_quality', 'negative_prompt', 'output_format',
-    'width', 'height', 'frame_images', 'reference_images', 'disable_safety_checker',
+    'width', 'height', 'frame_images', 'reference_images', 'image_loras', 'disable_safety_checker',
 ] as const satisfies readonly (keyof LLMParams)[];
-
-// image_loras is live on the backend but not yet in the generated types.
-// After `pnpm update-api-types`, move it into LLM_PARAMS_KEYS above.
 
 export type LLMParamsKey = (typeof LLM_PARAMS_KEYS)[number];

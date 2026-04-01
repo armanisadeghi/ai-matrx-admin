@@ -122,22 +122,32 @@ export const executeAgentMessage = createAsyncThunk<
         content: m.content,
       }));
 
-    // Apply variable substitution to template messages (first send only)
-    const processedTemplate = instance.requiresVariableReplacement
-      ? templateMessages.map((m) => ({
-          ...m,
-          content: applyVariableSubstitution(
-            typeof m.content === "string" ? m.content : "",
-            variableValues,
-          ),
-        }))
-      : templateMessages;
+    // Convert template messages (AgentDefinitionMessage[]) to the API wire format.
+    // AgentDefinitionMessage.content is Array<TextBlock | ImageBlock | ...>.
+    // For the /ai/chat endpoint we send each message as
+    //   { role, content: ContentBlock[] }
+    // and apply variable substitution to TextBlock.text on the first send.
+    const processedTemplate = templateMessages.map((m) => ({
+      role: m.role,
+      content: m.content.map((block) => {
+        if (block.type === "text" && instance.requiresVariableReplacement) {
+          return {
+            ...block,
+            text: applyVariableSubstitution(block.text, variableValues),
+          };
+        }
+        return block;
+      }),
+    }));
 
     // Final messages for the API
-    const apiMessages: Array<{ role: string; content: string }> = [
+    const apiMessages = [
       ...processedTemplate,
       ...conversationHistory,
-      { role: "user", content: input },
+      {
+        role: "user" as const,
+        content: [{ type: "text" as const, text: input }],
+      },
     ];
 
     // ── 5. Record user message in slice ──────────────────────────────────

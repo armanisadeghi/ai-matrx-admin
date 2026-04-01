@@ -17,11 +17,11 @@ import { Plus, X } from "lucide-react";
 import {
   sanitizeVariableName,
   shouldShowSanitizationPreview,
-} from "@/features/prompts/utils/variable-utils";
+} from "@/features/agents/utils/variable-utils";
 import type {
   VariableCustomComponent,
   VariableComponentType,
-} from "@/features/prompts/types/core";
+} from "@/features/agents/redux/agent-definition/types";
 
 interface AgentVariableEditorProps {
   name: string;

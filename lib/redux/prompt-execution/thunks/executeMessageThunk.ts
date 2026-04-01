@@ -1,16 +1,16 @@
 /**
  * Execute Message Thunk - REFACTORED
- * 
+ *
  * Simplified execution engine with clear separation:
  * - First execution: Apply variables to templates (flag-based)
  * - Subsequent: Simple append
  * - DB operations are NON-BLOCKING (fire-and-forget)
  */
 
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { v4 as uuidv4 } from 'uuid';
-import type { RootState, AppDispatch } from '../../store';
-import type { ExecuteMessagePayload, ConversationMessage } from '../types';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { v4 as uuidv4 } from "uuid";
+import type { RootState, AppDispatch } from "../../store";
+import type { ExecuteMessagePayload, ConversationMessage } from "../types";
 import {
   addMessage,
   clearMessages,
@@ -21,7 +21,7 @@ import {
   clearCurrentInput,
   clearResources,
   setShowVariables,
-} from '../slice';
+} from "../slice";
 import {
   selectInstance,
   selectCurrentInput,
@@ -29,12 +29,15 @@ import {
   selectPromptSettings,
   selectResources,
   selectDynamicContexts,
-} from '../selectors';
-import { createAndSubmitTask } from '../../socket-io/thunks/submitTaskThunk';
-import { executeMessageFastAPI } from './executeMessageFastAPIThunk';
-import { generateRunNameFromVariables, generateRunNameFromMessage } from '@/features/ai-runs/utils/name-generator';
-import { createClient } from '@/utils/supabase/client';
-import { processMessagesForExecution } from '../utils/message-builder';
+} from "../selectors";
+import { createAndSubmitTask } from "../../socket-io/thunks/submitTaskThunk";
+import { executeMessageFastAPI } from "./executeMessageFastAPIThunk";
+import {
+  generateRunNameFromVariables,
+  generateRunNameFromMessage,
+} from "@/features/ai-runs/utils/name-generator";
+import { createClient } from "@/utils/supabase/client";
+import { processMessagesForExecution } from "../utils/message-builder";
 
 /**
  * Async DB save (non-blocking)
@@ -48,7 +51,7 @@ async function saveRunToDBAsync(
   sourceId: string,
   settings: Record<string, any>,
   userId: string | null,
-  dynamicContexts?: Record<string, any>
+  dynamicContexts?: Record<string, any>,
 ) {
   try {
     const supabase = createClient();
@@ -62,7 +65,7 @@ async function saveRunToDBAsync(
       messages,
       settings,
       variable_values: variables,
-      status: 'active',
+      status: "active",
     };
 
     // Include dynamic contexts if they exist
@@ -70,11 +73,16 @@ async function saveRunToDBAsync(
       insertData.dynamic_contexts = dynamicContexts;
     }
 
-    await supabase.from('ai_runs').insert(insertData);
+    await supabase.from("ai_runs").insert(insertData as any);
 
-    console.log('✅ Run saved to DB', dynamicContexts ? `(with ${Object.keys(dynamicContexts).length} contexts)` : '');
+    console.log(
+      "✅ Run saved to DB",
+      dynamicContexts
+        ? `(with ${Object.keys(dynamicContexts).length} contexts)`
+        : "",
+    );
   } catch (err) {
-    console.error('❌ DB save failed:', err);
+    console.error("❌ DB save failed:", err);
   }
 }
 
@@ -84,14 +92,14 @@ async function saveRunToDBAsync(
 async function updateRunMessagesInDBAsync(
   runId: string,
   messages: ConversationMessage[],
-  dynamicContexts?: Record<string, any>
+  dynamicContexts?: Record<string, any>,
 ) {
   try {
     const supabase = createClient();
-    
+
     const updateData: Record<string, any> = {
       messages,
-      status: 'active',
+      status: "active",
     };
 
     // Include dynamic contexts if they exist
@@ -99,13 +107,16 @@ async function updateRunMessagesInDBAsync(
       updateData.dynamic_contexts = dynamicContexts;
     }
 
-    await supabase.from('ai_runs')
-      .update(updateData)
-      .eq('id', runId);
+    await supabase.from("ai_runs").update(updateData).eq("id", runId);
 
-    console.log('✅ Run updated in DB', dynamicContexts ? `(with ${Object.keys(dynamicContexts).length} contexts)` : '');
+    console.log(
+      "✅ Run updated in DB",
+      dynamicContexts
+        ? `(with ${Object.keys(dynamicContexts).length} contexts)`
+        : "",
+    );
   } catch (err) {
-    console.error('❌ DB update failed:', err);
+    console.error("❌ DB update failed:", err);
   }
 }
 
@@ -116,165 +127,177 @@ export const executeMessage = createAsyncThunk<
     dispatch: AppDispatch;
     state: RootState;
   }
->(
-  'promptExecution/executeMessage',
-  async (payload, { dispatch, getState }) => {
-    const { runId, userInput } = payload;
+>("promptExecution/executeMessage", async (payload, { dispatch, getState }) => {
+  const { runId, userInput } = payload;
 
-    try {
-      // ========== VALIDATION ==========
-      const state = getState();
-      const instance = selectInstance(state, runId);
+  try {
+    // ========== VALIDATION ==========
+    const state = getState();
+    const instance = selectInstance(state, runId);
 
-      if (!instance) {
-        throw new Error(`Instance not found: ${runId}`);
-      }
+    if (!instance) {
+      throw new Error(`Instance not found: ${runId}`);
+    }
 
-      if (instance.status === 'executing' || instance.status === 'streaming') {
-        throw new Error('Instance is already executing');
-      }
+    if (instance.status === "executing" || instance.status === "streaming") {
+      throw new Error("Instance is already executing");
+    }
 
-      const currentInput = selectCurrentInput(state, runId);
-      const inputToUse = userInput || currentInput;
+    const currentInput = selectCurrentInput(state, runId);
+    const inputToUse = userInput || currentInput;
 
-      if (!inputToUse.trim() && !instance.requiresVariableReplacement) {
-        throw new Error('No message content');
-      }
+    if (!inputToUse.trim() && !instance.requiresVariableReplacement) {
+      throw new Error("No message content");
+    }
 
-      dispatch(setInstanceStatus({ runId, status: 'executing' }));
+    dispatch(setInstanceStatus({ runId, status: "executing" }));
 
-      // ========== GET RESOURCES AND CONTEXTS BEFORE CLEARING ==========
-      const resources = selectResources(state, runId);
-      const dynamicContexts = selectDynamicContexts(state, runId);
-      const mergedVariables = selectMergedVariables(state, runId);
+    // ========== GET RESOURCES AND CONTEXTS BEFORE CLEARING ==========
+    const resources = selectResources(state, runId);
+    const dynamicContexts = selectDynamicContexts(state, runId);
+    const mergedVariables = selectMergedVariables(state, runId);
 
-      // ========== PROCESS MESSAGES (CENTRALIZED) ==========
-      // All message processing logic is now centralized in processMessagesForExecution
-      const messageResult = await processMessagesForExecution({
-        templateMessages: instance.messages,
-        isFirstExecution: instance.requiresVariableReplacement,
-        userInput: inputToUse.trim(),
-        resources,
-        variables: mergedVariables,
-        dynamicContexts,
-      });
+    // ========== PROCESS MESSAGES (CENTRALIZED) ==========
+    // All message processing logic is now centralized in processMessagesForExecution
+    const messageResult = await processMessagesForExecution({
+      templateMessages: instance.messages,
+      isFirstExecution: instance.requiresVariableReplacement,
+      userInput: inputToUse.trim(),
+      resources,
+      variables: mergedVariables,
+      dynamicContexts,
+    });
 
-      // CRITICAL: Only clear messages on FIRST execution
-      // Subsequent executions must preserve conversation history!
-      if (instance.requiresVariableReplacement) {
-        // First execution: Replace template messages with processed versions
-        dispatch(clearMessages({ runId }));
-        messageResult.messages.forEach(msg => dispatch(addMessage({ runId, message: msg })));
-        
-        // Mark first execution as complete
-        dispatch(setRequiresVariableReplacement({ runId, value: false }));
-        dispatch(setShowVariables({ runId, show: false }));
-      } else {
-        // Subsequent executions: Append new message (preserve conversation history!)
-        messageResult.messages.forEach(msg => dispatch(addMessage({ runId, message: msg })));
-      }
+    // CRITICAL: Only clear messages on FIRST execution
+    // Subsequent executions must preserve conversation history!
+    if (instance.requiresVariableReplacement) {
+      // First execution: Replace template messages with processed versions
+      dispatch(clearMessages({ runId }));
+      messageResult.messages.forEach((msg) =>
+        dispatch(addMessage({ runId, message: msg })),
+      );
 
-      // Clear input and resources AFTER building the message
-      dispatch(clearCurrentInput({ runId }));
-      dispatch(clearResources({ runId }));
+      // Mark first execution as complete
+      dispatch(setRequiresVariableReplacement({ runId, value: false }));
+      dispatch(setShowVariables({ runId, show: false }));
+    } else {
+      // Subsequent executions: Append new message (preserve conversation history!)
+      messageResult.messages.forEach((msg) =>
+        dispatch(addMessage({ runId, message: msg })),
+      );
+    }
 
-      // ========== MAKE API CALL (PRIORITY!) ==========
-      const freshState = getState();
-      const freshInstance = selectInstance(freshState, runId);
+    // Clear input and resources AFTER building the message
+    dispatch(clearCurrentInput({ runId }));
+    dispatch(clearResources({ runId }));
 
-      if (!freshInstance) {
-        throw new Error('Instance lost after message processing');
-      }
+    // ========== MAKE API CALL (PRIORITY!) ==========
+    const freshState = getState();
+    const freshInstance = selectInstance(freshState, runId);
 
-      const messagesToSend = freshInstance.messages.map(m => ({
-        role: m.role,
-        content: m.content,
-      }));
+    if (!freshInstance) {
+      throw new Error("Instance lost after message processing");
+    }
 
-      const promptSettings = selectPromptSettings(freshState, runId);
-      if (!promptSettings) {
-        throw new Error('Prompt settings not found');
-      }
+    const messagesToSend = freshInstance.messages.map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
 
-      const chatConfig = {
-        model_id: promptSettings.modelId,
-        messages: messagesToSend,
-        stream: true,
-        ...promptSettings.config,
-      };
+    const promptSettings = selectPromptSettings(freshState, runId);
+    if (!promptSettings) {
+      throw new Error("Prompt settings not found");
+    }
 
-      const taskId = uuidv4();
-      dispatch(startExecution({ runId, taskId }));
+    const chatConfig = {
+      model_id: promptSettings.modelId,
+      messages: messagesToSend,
+      stream: true,
+      ...promptSettings.config,
+    };
 
-      // Migration flag: true = FastAPI (new path), false = Socket.io (legacy path)
-      const USE_FASTAPI = true;
+    const taskId = uuidv4();
+    dispatch(startExecution({ runId, taskId }));
 
-      const apiPromise = USE_FASTAPI
-        ? dispatch(executeMessageFastAPI({ chatConfig, taskId, runId }))
-        : dispatch(createAndSubmitTask({
-            service: 'chat_service',
-            taskName: 'direct_chat',
+    // Migration flag: true = FastAPI (new path), false = Socket.io (legacy path)
+    const USE_FASTAPI = true;
+
+    const apiPromise = USE_FASTAPI
+      ? dispatch(executeMessageFastAPI({ chatConfig, taskId, runId }))
+      : dispatch(
+          createAndSubmitTask({
+            service: "chat_service",
+            taskName: "direct_chat",
             taskData: { chat_config: chatConfig },
             customTaskId: taskId,
-          }));
+          }),
+        );
 
-      // ========== ASYNC: Database Operations (NON-BLOCKING) ==========
-      // These happen after API call, don't block response
+    // ========== ASYNC: Database Operations (NON-BLOCKING) ==========
+    // These happen after API call, don't block response
 
-      if (instance.requiresVariableReplacement && instance.executionConfig.track_in_runs && !instance.executionConfig.use_pre_execution_input) {
-        // First message: create run in DB
-        const mergedVariables = selectMergedVariables(getState(), runId);
-        const contextsToSave = selectDynamicContexts(getState(), runId);
+    if (
+      instance.requiresVariableReplacement &&
+      instance.executionConfig.track_in_runs &&
+      !instance.executionConfig.use_pre_execution_input
+    ) {
+      // First message: create run in DB
+      const mergedVariables = selectMergedVariables(getState(), runId);
+      const contextsToSave = selectDynamicContexts(getState(), runId);
 
-        // Try to generate name from variables first
-        let runName = generateRunNameFromVariables(mergedVariables, instance.variableDefaults);
+      // Try to generate name from variables first
+      let runName = generateRunNameFromVariables(
+        mergedVariables,
+        instance.variableDefaults,
+      );
 
-        // Fallback to message content if no suitable variable found
-        if (!runName) {
-          const firstUserMessage = freshInstance.messages.find(m => m.role === 'user');
-          if (firstUserMessage) {
-            runName = generateRunNameFromMessage(firstUserMessage.content);
-          }
+      // Fallback to message content if no suitable variable found
+      if (!runName) {
+        const firstUserMessage = freshInstance.messages.find(
+          (m) => m.role === "user",
+        );
+        if (firstUserMessage) {
+          runName = generateRunNameFromMessage(firstUserMessage.content);
         }
-
-        runName = runName || 'New Conversation';
-
-        // Fire and forget - use runTracking values for correct source_type and source_id
-        const userId = (getState() as RootState).user.id;
-        saveRunToDBAsync(
-          runId,
-          runName,
-          freshInstance.messages,
-          mergedVariables,
-          instance.runTracking.sourceType,
-          instance.runTracking.sourceId,
-          instance.settings,
-          userId,
-          contextsToSave
-        ).then(() => {
-          dispatch(setRunId({ runId, runName, savedToDatabase: true }));
-        });
-
-      } else if (instance.runTracking.savedToDatabase) {
-        // Subsequent message: update run
-        const contextsToSave = selectDynamicContexts(getState(), runId);
-        updateRunMessagesInDBAsync(runId, freshInstance.messages, contextsToSave);
       }
 
-      // Return API promise
-      await apiPromise.unwrap();
-      return taskId;
+      runName = runName || "New Conversation";
 
-    } catch (error) {
-      console.error('❌ Failed to execute message:', error);
-
-      dispatch(setInstanceStatus({
+      // Fire and forget - use runTracking values for correct source_type and source_id
+      const userId = (getState() as RootState).user.id;
+      saveRunToDBAsync(
         runId,
-        status: 'error',
-        error: error instanceof Error ? error.message : 'Execution failed',
-      }));
-
-      throw error;
+        runName,
+        freshInstance.messages,
+        mergedVariables,
+        instance.runTracking.sourceType,
+        instance.runTracking.sourceId,
+        instance.settings,
+        userId,
+        contextsToSave,
+      ).then(() => {
+        dispatch(setRunId({ runId, runName, savedToDatabase: true }));
+      });
+    } else if (instance.runTracking.savedToDatabase) {
+      // Subsequent message: update run
+      const contextsToSave = selectDynamicContexts(getState(), runId);
+      updateRunMessagesInDBAsync(runId, freshInstance.messages, contextsToSave);
     }
+
+    // Return API promise
+    await apiPromise.unwrap();
+    return taskId;
+  } catch (error) {
+    console.error("❌ Failed to execute message:", error);
+
+    dispatch(
+      setInstanceStatus({
+        runId,
+        status: "error",
+        error: error instanceof Error ? error.message : "Execution failed",
+      }),
+    );
+
+    throw error;
   }
-);
+});

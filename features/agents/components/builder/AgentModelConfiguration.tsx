@@ -37,10 +37,6 @@ export function AgentModelConfiguration({
   const dispatch = useAppDispatch();
   const modelId = useAppSelector((state) => selectAgentModelId(state, agentId));
 
-  const settings = useAppSelector((state) =>
-    selectAgentSettings(state, agentId),
-  );
-
   const handleModelChange = useCallback(
     (newModelId: string) => {
       dispatch(
@@ -49,10 +45,6 @@ export function AgentModelConfiguration({
     },
     [agentId, dispatch],
   );
-
-  const handleSettingsClick = useCallback(() => {
-    console.log("settings clicked");
-  }, []);
 
   return (
     <div className="flex items-center gap-3">
