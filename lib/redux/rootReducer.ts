@@ -75,7 +75,7 @@ import promptRunnerReducer from "./slices/promptRunnerSlice";
 import promptExecutionReducer from "./prompt-execution/slice";
 import actionCacheReducer from "./prompt-execution/actionCacheSlice";
 import promptEditorReducer from "./slices/promptEditorSlice";
-import modelRegistryReducer from "./slices/modelRegistrySlice";
+import modelRegistryReducer from "../../features/ai-models/redux/modelRegistrySlice";
 import { chatConversationsReducer } from "@/features/cx-conversation/redux";
 import { messageActionsReducer } from "@/features/cx-conversation/redux/messageActionsSlice";
 import artifactsReducer from "./slices/artifactsSlice";

@@ -4,129 +4,180 @@
  * AgentContextSlotsManager
  *
  * Smart component — manages context slots for the active agent.
- * Context slots define dynamic content that can be injected at runtime
- * (e.g. clipboard content, selected text, note content).
+ * UI matches Variables row: compact chips (key only) + Dialog/Drawer editor.
+ * Persists `ContextSlot` shape (`key`, `type`, optional label/description).
  */
 
 import { useState, useCallback } from "react";
-import { Plus, Trash2, Pencil, LayoutPanelLeft } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  selectActiveAgentId,
-  selectAgentContextSlots,
-} from "@/features/agents/redux/agent-definition/selectors";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { selectAgentContextSlots } from "@/features/agents/redux/agent-definition/selectors";
 import { setAgentContextSlots } from "@/features/agents/redux/agent-definition/slice";
-import type { ContextSlot } from "@/features/agents/types/agent-api-types";
+import type {
+  ContextObjectType,
+  ContextSlot,
+} from "@/features/agents/types/agent-api-types";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerContent,
+  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { sanitizeVariableName } from "@/features/prompts/utils/variable-utils";
+
+const CONTEXT_TYPES: ContextObjectType[] = [
+  "text",
+  "file_url",
+  "json",
+  "db_ref",
+  "user",
+  "org",
+  "workspace",
+  "project",
+  "task",
+];
 
 interface SlotFormState {
-  id: string;
+  key: string;
   label: string;
   description: string;
-  required: boolean;
+  type: ContextObjectType;
 }
 
 const EMPTY_FORM: SlotFormState = {
-  id: "",
+  key: "",
   label: "",
   description: "",
-  required: false,
+  type: "text",
 };
 
-function SlotEditorContent({
-  form,
-  onChange,
-  onSave,
-  onCancel,
-  isEdit,
-}: {
+function getSlotKey(slot: ContextSlot): string {
+  if (slot.key) return slot.key;
+  const legacy = slot as unknown as { id?: string };
+  return legacy.id ?? "";
+}
+
+function toContextSlot(form: SlotFormState): ContextSlot {
+  const key = form.key.trim() ? sanitizeVariableName(form.key) : "";
+  const slot: ContextSlot = {
+    key,
+    type: form.type,
+  };
+  if (form.label.trim()) slot.label = form.label.trim();
+  if (form.description.trim()) slot.description = form.description.trim();
+  return slot;
+}
+
+interface SlotEditorFieldsProps {
   form: SlotFormState;
   onChange: (patch: Partial<SlotFormState>) => void;
-  onSave: () => void;
-  onCancel: () => void;
   isEdit: boolean;
-}) {
-  const valid = form.id.trim().length > 0 && form.label.trim().length > 0;
+  keyDuplicate: boolean;
+  /** False when key is non-empty but fails validation */
+  keyRulesOk: boolean;
+}
+
+function SlotEditorFields({
+  form,
+  onChange,
+  isEdit,
+  keyDuplicate,
+  keyRulesOk,
+}: SlotEditorFieldsProps) {
   return (
-    <div className="space-y-4 py-2">
+    <div className="space-y-4 py-1">
       <div className="space-y-1.5">
-        <Label htmlFor="slot-id">Slot ID</Label>
+        <Label htmlFor="slot-key">Context key</Label>
         <Input
-          id="slot-id"
-          value={form.id}
-          onChange={(e) =>
-            onChange({ id: e.target.value.replace(/\s/g, "_").toLowerCase() })
-          }
+          id="slot-key"
+          value={form.key}
+          onChange={(e) => onChange({ key: e.target.value })}
           placeholder="clipboard_content"
           disabled={isEdit}
           style={{ fontSize: "16px" }}
         />
+        {keyDuplicate && (
+          <p className="text-xs text-destructive">This key already exists.</p>
+        )}
+        {form.key.trim() && !keyRulesOk && (
+          <p className="text-xs text-muted-foreground">
+            Use letters, numbers, and underscores only. Start with a letter.
+          </p>
+        )}
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="slot-label">Display Label</Label>
+        <Label htmlFor="slot-type">Type</Label>
+        <Select
+          value={form.type}
+          onValueChange={(v) => onChange({ type: v as ContextObjectType })}
+        >
+          <SelectTrigger id="slot-type" className="text-base w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {CONTEXT_TYPES.map((t) => (
+              <SelectItem key={t} value={t} className="text-xs">
+                {t}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="slot-label">Label (optional)</Label>
         <Input
           id="slot-label"
           value={form.label}
           onChange={(e) => onChange({ label: e.target.value })}
-          placeholder="Clipboard Content"
+          placeholder="Clipboard content"
           style={{ fontSize: "16px" }}
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="slot-desc">Description</Label>
+        <Label htmlFor="slot-desc">Description (optional)</Label>
         <Textarea
           id="slot-desc"
           value={form.description}
           onChange={(e) => onChange({ description: e.target.value })}
-          placeholder="What content this slot provides..."
+          placeholder="What this slot provides at runtime…"
           className="min-h-[80px] resize-y"
           style={{ fontSize: "16px" }}
         />
-      </div>
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          id="slot-required"
-          checked={form.required}
-          onChange={(e) => onChange({ required: e.target.checked })}
-          className="rounded"
-        />
-        <Label htmlFor="slot-required" className="font-normal cursor-pointer">
-          Required
-        </Label>
-      </div>
-      <div className="flex gap-2 pt-2">
-        <Button onClick={onSave} disabled={!valid} className="flex-1">
-          {isEdit ? "Save Changes" : "Add Context Slot"}
-        </Button>
-        <Button variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
       </div>
     </div>
   );
 }
 
-export function AgentContextSlotsManager() {
+interface AgentContextSlotsManagerProps {
+  agentId: string;
+}
+
+export function AgentContextSlotsManager({
+  agentId,
+}: AgentContextSlotsManagerProps) {
   const dispatch = useAppDispatch();
   const isMobile = useIsMobile();
-  const agentId = useAppSelector(selectActiveAgentId);
   const slots = useAppSelector((state) =>
     selectAgentContextSlots(state, agentId),
   );
@@ -139,6 +190,23 @@ export function AgentContextSlotsManager() {
     setForm((prev) => ({ ...prev, ...patch }));
   }, []);
 
+  const sanitizedKey = form.key.trim() ? sanitizeVariableName(form.key) : "";
+  const keyValid =
+    /^[a-z_][a-z0-9_]*$/.test(sanitizedKey) && sanitizedKey.length > 0;
+
+  const existingKeys = slots
+    .map((s, i) => (i !== editIndex ? getSlotKey(s) : ""))
+    .filter(Boolean);
+
+  const keyDuplicate =
+    editIndex === null &&
+    sanitizedKey.length > 0 &&
+    existingKeys
+      .map((k) => k.toLowerCase())
+      .includes(sanitizedKey.toLowerCase());
+
+  const canSave = keyValid && !keyDuplicate;
+
   const openAdd = () => {
     setEditIndex(null);
     setForm(EMPTY_FORM);
@@ -146,42 +214,37 @@ export function AgentContextSlotsManager() {
   };
 
   const openEdit = (idx: number) => {
-    const s = slots[idx] as unknown as Record<string, unknown>;
-    setEditIndex(idx);
+    const slot = slots[idx];
+    if (!slot) return;
+    const legacy = slot as unknown as { id?: string };
     setForm({
-      id: String(s.id ?? ""),
-      label: String(s.label ?? ""),
-      description: String(s.description ?? ""),
-      required: Boolean(s.required ?? false),
+      key: slot.key || legacy.id || "",
+      label: slot.label ?? "",
+      description: slot.description ?? "",
+      type: slot.type ?? "text",
     });
+    setEditIndex(idx);
     setEditorOpen(true);
   };
 
   const handleSave = () => {
-    if (!agentId) return;
-    const updated = [...slots] as unknown as SlotFormState[];
-    const newSlot = {
-      id: form.id,
-      label: form.label,
-      description: form.description,
-      required: form.required,
-    };
-    if (editIndex !== null) {
-      updated[editIndex] = newSlot as unknown as SlotFormState;
-    } else {
-      updated.push(newSlot as unknown as SlotFormState);
-    }
+    if (!canSave) return;
+    const newSlot = toContextSlot(form);
+    const next: ContextSlot[] =
+      editIndex === null
+        ? [...slots, newSlot]
+        : slots.map((s, i) => (i === editIndex ? newSlot : s));
+
     dispatch(
       setAgentContextSlots({
         id: agentId,
-        contextSlots: updated as unknown as ContextSlot[],
+        contextSlots: next,
       }),
     );
     setEditorOpen(false);
   };
 
   const handleDelete = (idx: number) => {
-    if (!agentId) return;
     dispatch(
       setAgentContextSlots({
         id: agentId,
@@ -190,97 +253,91 @@ export function AgentContextSlotsManager() {
     );
   };
 
-  if (!agentId) return null;
+  const title = editIndex === null ? "Add context slot" : "Edit context slot";
+  const description =
+    editIndex === null
+      ? "Define a context key clients can pass in the request `context` object. Keys listed here get typed handling and labels for the model."
+      : "Update this slot’s key, type, or metadata.";
 
-  const editorContent = (
-    <SlotEditorContent
-      form={form}
-      onChange={patchForm}
-      onSave={handleSave}
-      onCancel={() => setEditorOpen(false)}
-      isEdit={editIndex !== null}
-    />
+  const editorBody = (
+    <>
+      <SlotEditorFields
+        form={form}
+        onChange={patchForm}
+        isEdit={editIndex !== null}
+        keyDuplicate={keyDuplicate}
+        keyRulesOk={keyValid}
+      />
+      <div className="flex justify-end gap-2 pt-4">
+        <Button variant="outline" onClick={() => setEditorOpen(false)}>
+          Cancel
+        </Button>
+        <Button onClick={handleSave} disabled={!canSave}>
+          {editIndex === null ? "Add slot" : "Save changes"}
+        </Button>
+      </div>
+    </>
   );
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <LayoutPanelLeft className="w-4 h-4 text-muted-foreground" />
-          <Label className="text-sm font-medium">Context Slots</Label>
-          {slots.length > 0 && (
-            <span className="text-xs text-muted-foreground">
-              ({slots.length})
-            </span>
-          )}
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 text-xs"
+    <>
+      <div className="flex items-center gap-2 flex-wrap">
+        <Label className="text-xs text-muted-foreground">Context</Label>
+
+        {slots.map((slot, i) => {
+          const key = getSlotKey(slot);
+          const detail = slot.label?.trim()
+            ? slot.label
+            : slot.description?.trim()
+              ? slot.description
+              : "";
+          return (
+            <div
+              key={`${key}-${i}`}
+              className="inline-flex items-center gap-1.5 px-2.5 rounded-md text-xs font-medium bg-muted text-foreground border border-border group"
+            >
+              <span
+                className="cursor-pointer transition-colors hover:text-primary truncate max-w-[160px]"
+                onClick={() => openEdit(i)}
+                title={detail ? `${key} — ${detail}` : `${key} (click to edit)`}
+              >
+                {key}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleDelete(i)}
+                title="Remove context slot"
+                className="hover:text-destructive transition-colors shrink-0"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          );
+        })}
+
+        <button
+          type="button"
+          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
           onClick={openAdd}
         >
-          <Plus className="w-3 h-3 mr-1" />
+          <Plus className="w-3.5 h-3.5" />
           Add
-        </Button>
+        </button>
       </div>
-
-      {slots.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border p-4 text-center">
-          <p className="text-xs text-muted-foreground">
-            No context slots. Slots let the agent receive external content
-            (clipboard, selections, notes) at runtime.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-1.5">
-          {slots.map((slot, i) => {
-            const s = slot as unknown as Record<string, unknown>;
-            return (
-              <div
-                key={String(s.id ?? i)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-card hover:bg-accent/30 group"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium truncate">
-                    {String(s.label ?? s.id)}
-                  </p>
-                  {s.description && (
-                    <p className="text-[10px] text-muted-foreground truncate">
-                      {String(s.description)}
-                    </p>
-                  )}
-                </div>
-                <button
-                  onClick={() => openEdit(i)}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-muted transition-all"
-                >
-                  <Pencil className="w-3 h-3 text-muted-foreground" />
-                </button>
-                <button
-                  onClick={() => handleDelete(i)}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-destructive/10 hover:text-destructive transition-all"
-                >
-                  <Trash2 className="w-3 h-3 text-muted-foreground" />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      )}
 
       {isMobile ? (
         <Drawer
           open={editorOpen}
           onOpenChange={(o) => !o && setEditorOpen(false)}
         >
-          <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle>
-                {editIndex !== null ? "Edit Context Slot" : "Add Context Slot"}
-              </DrawerTitle>
+          <DrawerContent className="px-4 pb-safe max-h-[90dvh]">
+            <DrawerHeader className="px-0">
+              <DrawerTitle>{title}</DrawerTitle>
+              <DrawerDescription>{description}</DrawerDescription>
             </DrawerHeader>
-            <div className="px-4 pb-8">{editorContent}</div>
+            <ScrollArea className="flex-1 overflow-y-auto pb-4">
+              {editorBody}
+            </ScrollArea>
           </DrawerContent>
         </Drawer>
       ) : (
@@ -288,16 +345,17 @@ export function AgentContextSlotsManager() {
           open={editorOpen}
           onOpenChange={(o) => !o && setEditorOpen(false)}
         >
-          <DialogContent className="sm:max-w-[400px]">
+          <DialogContent className="sm:max-w-[500px] max-h-[90dvh] overflow-hidden flex flex-col">
             <DialogHeader>
-              <DialogTitle>
-                {editIndex !== null ? "Edit Context Slot" : "Add Context Slot"}
-              </DialogTitle>
+              <DialogTitle>{title}</DialogTitle>
+              <DialogDescription>{description}</DialogDescription>
             </DialogHeader>
-            {editorContent}
+            <ScrollArea className="flex-1 overflow-y-auto pr-1">
+              <div className="py-1">{editorBody}</div>
+            </ScrollArea>
           </DialogContent>
         </Dialog>
       )}
-    </div>
+    </>
   );
 }

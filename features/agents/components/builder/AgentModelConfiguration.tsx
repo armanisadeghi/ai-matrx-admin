@@ -3,48 +3,46 @@
 /**
  * AgentModelConfiguration
  *
- * Smart component — reads modelId and settings from the active agent in Redux
- * and renders the shared ModelSettings panel. No content props.
- *
- * Pass `models` and `availableTools` as regular props (from server component fetch).
+ * Model selector row with inline controls (Variables, Tools, Settings).
+ * Uses AiModelSelect — data fetching (options + full record) is fully internal.
+ * All writes go through Redux.
  */
 
 import { useCallback } from "react";
-import { Cpu } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
-  selectActiveAgentId,
   selectAgentModelId,
   selectAgentSettings,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { setAgentField } from "@/features/agents/redux/agent-definition/slice";
+import { AgentSettingsModal } from "@/features/agents/components/settings/AgentSettingsModal";
+import { AgentVariablesModal } from "@/features/agents/components/settings/AgentVariablesModal";
+import { AgentToolsModal } from "@/features/agents/components/settings/AgentToolsModal";
+import { Label } from "@/components/ui/label";
+import { SmartModelSelect } from "@/features/ai-models/components/smart/SmartModelSelect";
 
 interface AgentModelConfigurationProps {
-  models: Array<{ id: string; name?: string; [key: string]: unknown }>;
-  availableTools?: unknown[];
+  agentId: string;
+  availableTools?: Array<{
+    name: string;
+    description?: string;
+    [key: string]: unknown;
+  }>;
 }
 
 export function AgentModelConfiguration({
-  models,
+  agentId,
   availableTools = [],
 }: AgentModelConfigurationProps) {
   const dispatch = useAppDispatch();
-  const agentId = useAppSelector(selectActiveAgentId);
-  const modelId = useAppSelector((state) =>
-    agentId ? selectAgentModelId(state, agentId) : null,
+  const modelId = useAppSelector((state) => selectAgentModelId(state, agentId));
+
+  const settings = useAppSelector((state) =>
+    selectAgentSettings(state, agentId),
   );
 
   const handleModelChange = useCallback(
     (newModelId: string) => {
-      if (!agentId) return;
       dispatch(
         setAgentField({ id: agentId, field: "modelId", value: newModelId }),
       );
@@ -52,34 +50,17 @@ export function AgentModelConfiguration({
     [agentId, dispatch],
   );
 
-  if (!agentId) return null;
+  const handleSettingsClick = useCallback(() => {
+    console.log("settings clicked");
+  }, []);
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <Cpu className="w-4 h-4 text-muted-foreground" />
-        <Label className="text-sm font-medium">Model</Label>
-      </div>
-
-      <Select value={modelId ?? ""} onValueChange={handleModelChange}>
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select a model..." />
-        </SelectTrigger>
-        <SelectContent>
-          {models.map((m) => (
-            <SelectItem key={String(m.id)} value={String(m.id)}>
-              {String(m.name ?? m.id)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {modelId && (
-        <p className="text-xs text-muted-foreground">
-          Selected:{" "}
-          <code className="bg-muted px-1 rounded text-[10px]">{modelId}</code>
-        </p>
-      )}
+    <div className="flex items-center gap-3">
+      <Label className="text-xs text-gray-600 dark:text-gray-400">Model</Label>
+      <SmartModelSelect value={modelId} onValueChange={handleModelChange} />
+      <AgentSettingsModal agentId={agentId} />
+      <AgentVariablesModal agentId={agentId} />
+      <AgentToolsModal agentId={agentId} availableTools={availableTools} />
     </div>
   );
 }

@@ -2,7 +2,11 @@
 
 import { createSelector } from "reselect";
 import type { RootState } from "@/lib/redux/store";
-import type { AgentDefinition, AgentDefinitionRecord } from "./types";
+import type {
+  AgentDefinition,
+  AgentDefinitionRecord,
+  AgentFetchStatus,
+} from "./types";
 
 // ---------------------------------------------------------------------------
 // Slice root
@@ -44,6 +48,19 @@ export const selectAgentById = createSelector(
   (agents, id): AgentDefinitionRecord | undefined => agents[id],
 );
 
+/**
+ * Returns the fetch status for a given agent record.
+ * undefined when the record does not exist in state.
+ * null when the record exists but no fetch has completed.
+ */
+export const selectAgentFetchStatus = createSelector(
+  [selectAgentById],
+  (record): AgentFetchStatus | null | undefined => {
+    if (!record) return undefined;
+    return record._fetchStatus;
+  },
+);
+
 /** Returns the pure domain fields (no _ prefixed runtime flags). */
 export const selectAgentDefinition = createSelector(
   [selectAgentById],
@@ -60,6 +77,75 @@ export const selectAgentDefinition = createSelector(
     } = record;
     return definition;
   },
+);
+
+// ---------------------------------------------------------------------------
+// Fetch-status boolean selectors
+//
+// The thunk that performed the fetch is the only authoritative source for
+// "what data this record contains". It sets _fetchStatus via setAgentFetchStatus
+// (partial fetches) or implicitly via upsertAgent (full / versionSnapshot).
+// Never infer readiness from field presence — a field can arrive via a
+// different, narrower fetch and would give a false positive.
+//
+// Each selector below builds on selectAgentFetchStatus (already a memoized
+// primitive) and does a pure boolean comparison — safe with useAppSelector.
+// ---------------------------------------------------------------------------
+
+/**
+ * True when the record has enough data to render an agent card.
+ * Requires: list | full | versionSnapshot
+ * (execution* statuses don't include name / description)
+ */
+export const selectAgentReadyForDisplay = createSelector(
+  [selectAgentFetchStatus],
+  (status): boolean =>
+    status === "list" || status === "full" || status === "versionSnapshot",
+);
+
+/**
+ * True when the record has enough data for basic (minimal) execution.
+ * Requires: execution | customExecution | full | versionSnapshot
+ */
+export const selectAgentReadyForExecution = createSelector(
+  [selectAgentFetchStatus],
+  (status): boolean =>
+    status === "execution" ||
+    status === "customExecution" ||
+    status === "full" ||
+    status === "versionSnapshot",
+);
+
+/**
+ * True when the record has enough data for custom execution
+ * (adds settings, tools, model on top of the minimal execution set).
+ * Requires: customExecution | full | versionSnapshot
+ */
+export const selectAgentReadyForCustomExecution = createSelector(
+  [selectAgentFetchStatus],
+  (status): boolean =>
+    status === "customExecution" ||
+    status === "full" ||
+    status === "versionSnapshot",
+);
+
+/**
+ * True when the record is ready for the agent builder / editor.
+ * Requires: full | versionSnapshot
+ * This is the gate used by AgentBuilder before mounting the builder UI.
+ */
+export const selectAgentReadyForBuilder = createSelector(
+  [selectAgentFetchStatus],
+  (status): boolean => status === "full" || status === "versionSnapshot",
+);
+
+/**
+ * True when the record is a version snapshot.
+ * Requires: versionSnapshot
+ */
+export const selectAgentReadyForVersionDisplay = createSelector(
+  [selectAgentFetchStatus],
+  (status): boolean => status === "versionSnapshot",
 );
 
 // ---------------------------------------------------------------------------
@@ -162,7 +248,7 @@ export const selectAgentCustomExecutionPayload = createSelector(
 
 export const selectAgentName = createSelector(
   [selectAgentById],
-  (record) => record?.name ?? null,
+  (record) => record?.name,
 );
 
 export const selectAgentDescription = createSelector(
@@ -182,7 +268,41 @@ export const selectAgentModelId = createSelector(
 
 export const selectAgentMessages = createSelector(
   [selectAgentById],
-  (record) => record?.messages ?? [],
+  (record) => record?.messages,
+);
+
+/**
+ * Returns a single message at `index` from the full messages array.
+ * Returns undefined when the record or index doesn't exist — handle in component.
+ */
+export const selectAgentMessageAtIndex = createSelector(
+  [selectAgentById, (_state: RootState, _id: string, index: number) => index],
+  (record, index) => record?.messages?.[index],
+);
+
+/**
+ * Returns the full system message object — all content blocks intact, raw from Redux.
+ * Returns undefined when no record or no system message exists — handle in component.
+ * Do NOT extract fields here. Components iterate the blocks themselves.
+ */
+export const selectAgentSystemMessage = createSelector(
+  [selectAgentById],
+  (record) => record?.messages?.find((m) => m.role === "system"),
+);
+
+/**
+ * Returns the indices (into the full messages array) of all non-system messages.
+ * Returns undefined when the record doesn't exist — handle in component.
+ */
+export const selectAgentConversationMessageIndices = createSelector(
+  [selectAgentById],
+  (record) => {
+    if (!record?.messages) return undefined;
+    return record.messages.reduce<number[]>((acc, m, i) => {
+      if (m.role !== "system") acc.push(i);
+      return acc;
+    }, []);
+  },
 );
 
 export const selectAgentVariableDefinitions = createSelector(

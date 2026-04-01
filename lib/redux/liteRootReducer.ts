@@ -36,7 +36,7 @@ import promptCacheReducer from "./slices/promptCacheSlice";
 import promptRunnerReducer from "./slices/promptRunnerSlice";
 import promptExecutionReducer from "./prompt-execution/slice";
 import actionCacheReducer from "./prompt-execution/actionCacheSlice";
-import modelRegistryReducer from "./slices/modelRegistrySlice";
+import modelRegistryReducer from "../../features/ai-models/redux/modelRegistrySlice";
 
 // Socket.IO (connection starts disconnected, connects on-demand via LazySocketInitializer)
 import socketConnectionReducer from "./socket-io/slices/socketConnectionsSlice";

@@ -4,7 +4,6 @@ import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { fetchAIModels } from "@/lib/api/ai-models-server";
 import { serverToolsService } from "@/utils/supabase/server-tools-service";
 import { AgentBuilder } from "@/features/agents/components/builder/AgentBuilder";
 
@@ -37,9 +36,8 @@ export default async function EditAgentPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [agentResult, aiModels, availableTools] = await Promise.all([
+  const [agentResult, availableTools] = await Promise.all([
     supabase.from("agents").select("id, name").eq("id", id).single(),
-    fetchAIModels(),
     serverToolsService.fetchTools(),
   ]);
 
@@ -73,9 +71,8 @@ export default async function EditAgentPage({
     <div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden">
       <AgentBuilder
         agentId={id}
-        models={aiModels}
         availableTools={
-          availableTools as Array<{
+          availableTools as unknown as Array<{
             name: string;
             description?: string;
             [key: string]: unknown;

@@ -69,7 +69,7 @@ import {
   selectAvailableModels,
   selectModelOptions,
   fetchAvailableModels,
-} from "@/lib/redux/slices/modelRegistrySlice";
+} from "@/features/ai-models/redux/modelRegistrySlice";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { selectActiveChatAgent } from "@/lib/redux/slices/activeChatSlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";

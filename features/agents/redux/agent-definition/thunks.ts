@@ -48,6 +48,7 @@ import {
   upsertAgent,
   mergePartialAgent,
   setAgentField,
+  setAgentFetchStatus,
   setAgentLoading,
   setAgentError,
   setAgentsStatus,
@@ -114,14 +115,13 @@ export const fetchAgentsList = createAsyncThunk<void, void, ThunkApi>(
           sourceAgentId: row.source_agent_id,
           createdAt: row.created_at,
           updatedAt: row.updated_at,
-          // Live agents from the list are never version snapshots
           isVersion: false,
-          // Access metadata — now provided by the RPC directly
           isOwner: row.is_owner,
           accessLevel: row.access_level,
           sharedByEmail: row.shared_by_email,
         }),
       );
+      dispatch(setAgentFetchStatus({ id: row.id, status: "list" }));
     }
 
     dispatch(setAgentsStatus("succeeded"));
@@ -172,6 +172,7 @@ export const fetchAgentsListFull = createAsyncThunk<void, void, ThunkApi>(
           sharedByEmail: row.shared_by_email,
         }),
       );
+      dispatch(setAgentFetchStatus({ id: row.id, status: "list" }));
     }
   },
 );
@@ -216,6 +217,7 @@ export const fetchAgentExecutionMinimal = createAsyncThunk<
         contextSlots: row.context_slots ?? [],
       }),
     );
+    dispatch(setAgentFetchStatus({ id: row.id, status: "execution" }));
   },
 );
 
@@ -259,6 +261,7 @@ export const fetchAgentExecutionFull = createAsyncThunk<void, string, ThunkApi>(
         modelId: row.model_id,
       }),
     );
+    dispatch(setAgentFetchStatus({ id: row.id, status: "customExecution" }));
   },
 );
 
@@ -703,12 +706,12 @@ export const fetchSharedAgents = createAsyncThunk<
         isVersion: false,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
-        // Access metadata from shared agents RPC
         isOwner: false,
         accessLevel: row.permission_level as AgentDefinition["accessLevel"],
         sharedByEmail: row.owner_email,
       }),
     );
+    dispatch(setAgentFetchStatus({ id: row.id, status: "list" }));
   }
 
   return rows;

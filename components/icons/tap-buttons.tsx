@@ -388,3 +388,180 @@ export function Settings2TapButton(props: TapButtonProps) {
     </Wrap>
   );
 }
+
+export function SaveTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Save" {...props}>
+      {/* Outer body: square with rounded bottom corners, notched top-right */}
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4.5 6a2 2 0 012-2h9.25L20.5 9v9a2 2 0 01-2 2h-12a2 2 0 01-2-2V6z"
+      />
+      {/* Label slot (top write-protect window) */}
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M8.5 4v4.5a.5.5 0 00.5.5h6a.5.5 0 00.5-.5V4"
+      />
+      {/* Read window (bottom storage area) */}
+      <rect
+        x="8"
+        y="14"
+        width="8"
+        height="5.5"
+        rx="0.5"
+        strokeLinejoin="round"
+      />
+    </Wrap>
+  );
+}
+
+export function SendTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Send" {...props}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6 12 3.269 3.125A59.769 59.769 0 0121.485 12 59.768 59.768 0 013.27 20.875L5.999 12zm0 0h7.5"
+      />
+    </Wrap>
+  );
+}
+
+export function MessageTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Message" {...props}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"
+      />
+    </Wrap>
+  );
+}
+
+export function VariableTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Variable" {...props}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4.745 3A23.933 23.933 0 003 12c0 3.183.62 6.22 1.745 9M19.255 3A23.933 23.933 0 0121 12c0 3.183-.62 6.22-1.745 9M8.25 8.885l1.444-.89a.75.75 0 011.105.402l2.402 7.206a.75.75 0 001.104.401l1.445-.889m-8.25.75l.213.09a1.687 1.687 0 002.062-.617l4.45-6.676a1.688 1.688 0 012.062-.618l.213.09"
+      />
+    </Wrap>
+  );
+}
+
+export function WrenchTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Tool" {...props}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"
+      />
+    </Wrap>
+  );
+}
+
+export function CommandTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Command" {...props}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6.75 7.5a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zM6.75 7.5v9M6.75 16.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5zM17.25 7.5a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zM17.25 7.5v9M17.25 16.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5zM6.75 12h10.5"
+      />
+    </Wrap>
+  );
+}
+
+export function TerminalTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Terminal" {...props}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z"
+      />
+    </Wrap>
+  );
+}
+
+export function TestTubeTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Test" {...props}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"
+      />
+    </Wrap>
+  );
+}
+
+export function ResetTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Reset" {...props}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+      />
+    </Wrap>
+  );
+}
+
+export function ClearTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Clear" {...props}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 9.75 14.25 12m0 0 2.25 2.25M14.25 12l2.25-2.25M14.25 12 12 14.25m-2.58 4.92-6.374-6.375a1.125 1.125 0 010-1.59L9.42 4.83c.21-.211.497-.33.795-.33H19.5a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25h-9.284c-.298 0-.585-.119-.795-.33z"
+      />
+    </Wrap>
+  );
+}
+
+export function RetryTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Retry" {...props}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0011.667-1.046M9.75 6.75l-2.766 2.266a8.25 8.25 0 001.046 11.667"
+      />
+    </Wrap>
+  );
+}
+
+export function LoadingTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Loading" {...props}>
+      <circle
+        className="animate-spin"
+        cx="12"
+        cy="12"
+        r="9"
+        strokeDasharray="28.27"
+        strokeDashoffset="9"
+        strokeLinecap="round"
+        style={{ transformOrigin: "12px 12px" }}
+      />
+    </Wrap>
+  );
+}
+
+export function RobotTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="AI Agent" {...props}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9 3.75H6.912a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H15M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859M12 3v8.25m0 0-3-3m3 3 3-3"
+      />
+    </Wrap>
+  );
+}

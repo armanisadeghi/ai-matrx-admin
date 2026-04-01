@@ -397,7 +397,7 @@ export type RoleMessage = UserMessage | AssistantMessage | ToolMessage;
  * replaced at runtime from AgentStartRequest.variables.
  */
 export interface AgentDefinitionMessage {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system" | "developer" | "output";
   /**
    * Content blocks for this priming turn.
    * TextBlock is by far the most common. ImageBlock and DocumentBlock are

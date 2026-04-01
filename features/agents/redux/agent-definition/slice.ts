@@ -3,9 +3,11 @@ import type {
   AgentDefinition,
   AgentDefinitionRecord,
   AgentDefinitionSliceState,
+  AgentFetchStatus,
   FieldSnapshot,
   LoadedFields,
 } from "./types";
+import { shouldUpgradeFetchStatus } from "./types";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -62,6 +64,7 @@ function makeEmptyRecord(id: string): AgentDefinitionRecord {
     _dirtyFields: new Set(),
     _fieldHistory: {},
     _loadedFields: new Set(),
+    _fetchStatus: null,
     _loading: false,
     _error: null,
   };
@@ -71,14 +74,50 @@ function makeEmptyRecord(id: string): AgentDefinitionRecord {
  * Writes incoming fields onto the record AND adds each key to _loadedFields.
  * Never overwrites with undefined. Does not touch runtime flags.
  */
+/**
+ * Normalizes the messages array from the DB.
+ * The canonical TextBlock shape is { type: "text", text: "..." }.
+ * If a block arrives with { type: "text", content: "..." } (malformed DB row),
+ * we fix it in-place, log an error so developers catch it, and move on.
+ * We do NOT change types to accommodate this — it is a data error.
+ */
+function normalizeMessages(
+  messages: AgentDefinition["messages"],
+): AgentDefinition["messages"] {
+  if (!messages) return messages;
+  return messages.map((msg) => ({
+    ...msg,
+    content: msg.content.map((block) => {
+      const raw = block as unknown as Record<string, unknown>;
+      if (
+        raw.type === "text" &&
+        raw.text === undefined &&
+        raw.content !== undefined
+      ) {
+        console.error(
+          "[AgentDefinition] Malformed TextBlock: field is 'content' but should be 'text'. " +
+            "Fix the database record. Block:",
+          raw,
+        );
+        return { type: "text" as const, text: raw.content as string };
+      }
+      return block;
+    }),
+  }));
+}
+
 function mergeAndTrack(
   record: AgentDefinitionRecord,
   partial: Partial<AgentDefinition>,
 ): void {
-  (Object.keys(partial) as (keyof AgentDefinition)[]).forEach((key) => {
-    if (partial[key] !== undefined) {
+  const normalized =
+    partial.messages !== undefined
+      ? { ...partial, messages: normalizeMessages(partial.messages) }
+      : partial;
+  (Object.keys(normalized) as (keyof AgentDefinition)[]).forEach((key) => {
+    if (normalized[key] !== undefined) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (record as any)[key] = partial[key];
+      (record as any)[key] = normalized[key];
       record._loadedFields.add(key);
     }
   });
@@ -115,6 +154,19 @@ function markRecordClean(record: AgentDefinitionRecord): void {
   record._fieldHistory = {};
 }
 
+/**
+ * Upgrades _fetchStatus if the incoming status has higher precedence.
+ * Never downgrades. See shouldUpgradeFetchStatus in types.ts.
+ */
+function applyFetchStatus(
+  record: AgentDefinitionRecord,
+  status: AgentFetchStatus,
+): void {
+  if (shouldUpgradeFetchStatus(record._fetchStatus, status)) {
+    record._fetchStatus = status;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Initial state
 // ---------------------------------------------------------------------------
@@ -143,14 +195,19 @@ export const agentDefinitionSlice = createSlice({
      */
     upsertAgent(state, action: PayloadAction<AgentDefinition>) {
       const data = action.payload;
+      const status: AgentFetchStatus = data.isVersion
+        ? "versionSnapshot"
+        : "full";
       const existing = state.agents[data.id];
       if (existing) {
         mergeAndTrack(existing, data);
         markRecordClean(existing);
+        applyFetchStatus(existing, status);
       } else {
         const record = makeEmptyRecord(data.id);
         mergeAndTrack(record, data);
         markRecordClean(record);
+        applyFetchStatus(record, status);
         state.agents[data.id] = record;
       }
     },
@@ -369,6 +426,22 @@ export const agentDefinitionSlice = createSlice({
       action.payload.fields.forEach((f) => record._loadedFields.add(f));
     },
 
+    // ── Fetch status ──────────────────────────────────────────────────────────
+
+    /**
+     * Upgrades the fetch status for a record. Never downgrades.
+     * Dispatched by thunks that use mergePartialAgent (list, execution, customExecution).
+     * upsertAgent handles full / versionSnapshot automatically.
+     */
+    setAgentFetchStatus(
+      state,
+      action: PayloadAction<{ id: string; status: AgentFetchStatus }>,
+    ) {
+      const record = state.agents[action.payload.id];
+      if (!record) return;
+      applyFetchStatus(record, action.payload.status);
+    },
+
     // ── Per-record async state ────────────────────────────────────────────────
 
     setAgentLoading(
@@ -444,6 +517,7 @@ export const {
   markAgentSaved,
   rollbackAgentOptimisticUpdate,
   markAgentFieldsLoaded,
+  setAgentFetchStatus,
   setAgentLoading,
   setAgentError,
   setActiveAgentId,

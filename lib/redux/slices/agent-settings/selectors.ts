@@ -12,7 +12,7 @@ import type { RootState } from "@/lib/redux/store";
 import {
   selectModelById,
   type AIModel,
-} from "@/lib/redux/slices/modelRegistrySlice";
+} from "@/features/ai-models/redux/modelRegistrySlice";
 import type {
   AgentSettings,
   AgentSettingsEntry,
@@ -20,7 +20,7 @@ import type {
   ConflictItem,
   NormalizedControls,
   PendingModelSwitch,
-} from "./types";
+} from "@/lib/redux/slices/agent-settings/types";
 import {
   buildApiPayload,
   getActionForMode,
@@ -28,7 +28,7 @@ import {
   mergeVariableValues,
   parseModelControls,
   resolveConflicts,
-} from "./internal-utils";
+} from "@/lib/redux/slices/agent-settings/internal-utils";
 
 // ── Stable empty references — prevents reference churn in memoized selectors ──
 
@@ -109,10 +109,10 @@ export const selectEffectiveModelName = createSelector(
       state.agentSettings?.entries[agentId]?.overrides?.model_id ??
       state.agentSettings?.entries[agentId]?.defaults?.model_id ??
       null,
-    (state: RootState) => state.modelRegistry?.availableModels ?? [],
+    (state: RootState) => state.modelRegistry?.availableModels,
   ],
   (modelId, availableModels): string | null => {
-    if (!modelId) return null;
+    if (!modelId || !availableModels) return null;
     const model = availableModels.find((m) => m.id === modelId);
     if (!model) return null;
     return model.common_name || model.name || model.id;
@@ -134,12 +134,7 @@ export const selectNormalizedControls = createSelector(
         state.agentSettings?.entries[agentId]?.defaults?.model_id ??
         null;
       if (!modelId) return null;
-      return (
-        selectModelById(
-          state as Parameters<typeof selectModelById>[0],
-          modelId,
-        ) ?? null
-      );
+      return selectModelById(state, modelId);
     },
   ],
   (model): NormalizedControls | null => {

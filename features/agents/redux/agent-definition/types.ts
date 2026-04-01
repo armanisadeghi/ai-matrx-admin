@@ -230,6 +230,58 @@ export interface UpdateFromSourceResult {
 // ---------------------------------------------------------------------------
 
 /**
+ * Tracks which data has been fetched for a given agent record.
+ *
+ * Precedence (highest wins — never downgrade):
+ *   versionSnapshot > full > customExecution / execution > list > null
+ *
+ *   null             — record exists in state but no fetch has completed yet
+ *   "list"           — display fields only (name, tags, category, access metadata, …)
+ *   "execution"      — minimal execution fields: variableDefinitions + contextSlots
+ *   "customExecution"— execution + settings, tools, customTools, modelId (pre-run overrides)
+ *   "full"           — complete agents table row; marks record clean
+ *   "versionSnapshot"— full content from agent_versions; marks record clean
+ *
+ * "execution" and "customExecution" are parallel tracks that do NOT override each other —
+ * a record may have both if fetchAgentExecutionMinimal ran before fetchAgentExecutionFull.
+ * In that case the status will be "customExecution" (the higher one).
+ *
+ * "shared" and "accessLevel" fetches patch access metadata only and do NOT change this field.
+ */
+export type AgentFetchStatus =
+  | "list"
+  | "execution"
+  | "customExecution"
+  | "full"
+  | "versionSnapshot";
+
+/**
+ * Rank table for precedence checks. Higher number = higher precedence.
+ * versionSnapshot is the ceiling — nothing may overwrite it.
+ */
+export const FETCH_STATUS_RANK: Record<AgentFetchStatus, number> = {
+  list: 1,
+  execution: 2,
+  customExecution: 3,
+  full: 4,
+  versionSnapshot: 5,
+};
+
+/**
+ * Returns true when the incoming status should overwrite the current one.
+ * "execution" and "customExecution" are deliberately NOT compared against each other
+ * on the same axis — if both are needed the slice applies them independently and
+ * the higher rank wins.
+ */
+export function shouldUpgradeFetchStatus(
+  current: AgentFetchStatus | null,
+  incoming: AgentFetchStatus,
+): boolean {
+  if (current === null) return true;
+  return FETCH_STATUS_RANK[incoming] > FETCH_STATUS_RANK[current];
+}
+
+/**
  * Snapshot of field values before user edits.
  * Anchored to the last clean fetch. Enables per-field undo.
  */
@@ -249,6 +301,7 @@ export interface AgentDefinitionRecord extends AgentDefinition {
   _dirtyFields: Set<keyof AgentDefinition>;
   _fieldHistory: FieldSnapshot;
   _loadedFields: LoadedFields;
+  _fetchStatus: AgentFetchStatus | null;
   _loading: boolean;
   _error: string | null;
 }

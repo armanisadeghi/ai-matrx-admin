@@ -13,18 +13,15 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import {
-  selectActiveAgentId,
-  selectAgentVariableDefinitions,
-} from "@/features/agents/redux/agent-definition/selectors";
+import { selectAgentVariableDefinitions } from "@/features/agents/redux/agent-definition/selectors";
 import { setAgentVariableDefinitions } from "@/features/agents/redux/agent-definition/slice";
 import type { VariableDefinition } from "@/features/agents/redux/agent-definition/types";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -143,10 +140,13 @@ function VariableEditorContent({
   );
 }
 
-export function AgentVariablesManager() {
+interface AgentVariablesManagerProps {
+  agentId: string;
+}
+
+export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
   const dispatch = useAppDispatch();
   const isMobile = useIsMobile();
-  const agentId = useAppSelector(selectActiveAgentId);
   const rawVariables = useAppSelector((state) =>
     selectAgentVariableDefinitions(state, agentId),
   );
@@ -179,7 +179,6 @@ export function AgentVariablesManager() {
   };
 
   const handleSave = () => {
-    if (!agentId) return;
     const updated: VariableDefinition[] = [...variables];
     const newVar: VariableDefinition = {
       name: form.name,
@@ -202,7 +201,6 @@ export function AgentVariablesManager() {
   };
 
   const handleDelete = (idx: number) => {
-    if (!agentId) return;
     const updated = variables.filter((_, i) => i !== idx);
     dispatch(
       setAgentVariableDefinitions({
@@ -211,8 +209,6 @@ export function AgentVariablesManager() {
       }),
     );
   };
-
-  if (!agentId) return null;
 
   const existingNames = variables
     .map((v, i) => (i !== editIndex ? v.name : ""))
@@ -319,6 +315,11 @@ export function AgentVariablesManager() {
               <DialogTitle>
                 {editIndex !== null ? "Edit Variable" : "Add Variable"}
               </DialogTitle>
+              <DialogDescription>
+                {editIndex !== null
+                  ? "Update this variable's name, value, or settings."
+                  : "Define a new variable to use in agent messages with {{variableName}}."}
+              </DialogDescription>
             </DialogHeader>
             {editorContent}
           </DialogContent>

@@ -1,16 +1,16 @@
 // types/reduxTypes.ts
-import { Database } from '@/types/matrixDb.types';
-import {TestDirectory} from "@/utils/directoryStructure";
-import {UserData} from "@/utils/userDataMapper";
-import {GlobalCacheState} from "@/lib/redux/schema/globalCacheSlice";
-import type { AIModel } from '@/lib/redux/slices/modelRegistrySlice';
-import type { ContextMenuRow } from '@/utils/supabase/ssrShellData';
+import { Database } from "@/types/matrixDb.types";
+import { TestDirectory } from "@/utils/directoryStructure";
+import { UserData } from "@/utils/userDataMapper";
+import { GlobalCacheState } from "@/lib/redux/schema/globalCacheSlice";
+import type { AIModel } from "@/features/ai-models/redux/modelRegistrySlice";
+import type { ContextMenuRow } from "@/utils/supabase/ssrShellData";
 
 export interface InitialReduxState {
-    user: UserData;
-    testRoutes: TestDirectory[];
-    userPreferences: Record<string, any>;
-    globalCache: GlobalCacheState;
+  user: UserData;
+  testRoutes: TestDirectory[];
+  userPreferences: Record<string, any>;
+  globalCache: GlobalCacheState;
 }
 
 /**
@@ -23,19 +23,14 @@ export interface InitialReduxState {
  * at hydration time — zero client fetches needed for these on page load.
  */
 export interface LiteInitialReduxState {
-    user?: Partial<UserData>;
-    userPreferences?: Record<string, unknown>;
-    // Pre-populated from SSR shell data RPC — no client fetch needed
-    modelRegistry?: { availableModels: AIModel[]; lastFetched: number };
-    contextMenuCache?: { rows: ContextMenuRow[]; hydrated: boolean };
-    // sms.unreadTotal seeded via PostPaintHydrator dispatch — not preloadedState
-    sms?: { unreadTotal: number };
+  user?: Partial<UserData>;
+  userPreferences?: Record<string, unknown>;
+  // Pre-populated from SSR shell data RPC — no client fetch needed
+  modelRegistry?: { availableModels: AIModel[]; lastFetched: number };
+  contextMenuCache?: { rows: ContextMenuRow[]; hydrated: boolean };
+  // sms.unreadTotal seeded via PostPaintHydrator dispatch — not preloadedState
+  sms?: { unreadTotal: number };
 }
-
-
-
-
-
 
 export type Id = string;
 export type Page = number;
@@ -48,80 +43,79 @@ export type UpdateFunction = string;
 export type CreateFunction = string;
 export type FeatureName = string;
 
-
 // RPC function types
-export type RpcFetchOneType = Database["public"]['Functions']['fetch_all_fk_ifk'];
-export type RpcFetchPaginatedType = Database["public"]['Functions']['fetch_paginated_with_all_ids'];
-export type RpcDeleteType = Database["public"]['Functions']['delete_by_id'];
-export type RpcUpdateType = Database["public"]['Functions']['update_by_id'];
-export type RpcCreateType = Database["public"]['Functions']['add_one_entry'];
-export type RpcFetchCustomRelsType = Database["public"]['Functions']['fetch_custom_rels'];
+export type RpcFetchOneType =
+  Database["public"]["Functions"]["fetch_all_fk_ifk"];
+export type RpcFetchPaginatedType =
+  Database["public"]["Functions"]["fetch_paginated_with_all_ids"];
+export type RpcDeleteType = Database["public"]["Functions"]["delete_by_id"];
+export type RpcUpdateType = Database["public"]["Functions"]["update_by_id"];
+export type RpcCreateType = Database["public"]["Functions"]["add_one_entry"];
+export type RpcFetchCustomRelsType =
+  Database["public"]["Functions"]["fetch_custom_rels"];
 
 // Thunk argument interfaces
 export interface FetchOneThunkArgs {
-    featureName: FeatureName;
-    id: Id;
-    tableList?: string[];
+  featureName: FeatureName;
+  id: Id;
+  tableList?: string[];
 }
 
 export interface FetchPaginatedThunkArgs {
-    featureName: FeatureName;
-    page: Page;
-    pageSize: PageSize;
-    includeAllIdsNames?: IncludeAllIdsNames;
-    conversionFunction?: ConversionFunction;
+  featureName: FeatureName;
+  page: Page;
+  pageSize: PageSize;
+  includeAllIdsNames?: IncludeAllIdsNames;
+  conversionFunction?: ConversionFunction;
 }
 
 export interface DeleteOneThunkArgs {
-    featureName: FeatureName;
-    id: Id;
+  featureName: FeatureName;
+  id: Id;
 }
 
 export interface DeleteManyThunkArgs {
-    featureName: FeatureName;
-    ids: Ids;
+  featureName: FeatureName;
+  ids: Ids;
 }
 
 export interface UpdateThunkArgs {
-    featureName: FeatureName;
-    payload: Payload;
-    updateFunction?: UpdateFunction;
+  featureName: FeatureName;
+  payload: Payload;
+  updateFunction?: UpdateFunction;
 }
 
 export interface CreateThunkArgs {
-    featureName: FeatureName;
-    payload: Payload;
-    createFunction?: CreateFunction;
+  featureName: FeatureName;
+  payload: Payload;
+  createFunction?: CreateFunction;
 }
 
-
 export type SliceState<FeatureType> = {
-    items: Record<string, FeatureType>;
-    allIdAndNames: { id: string; name: string }[];
-    totalCount: number;
-    loading: boolean;
-    error: string | null;
-    lastFetched: Record<string, number>;
-    staleTime: number;
-    backups: Record<string, FeatureType>;
+  items: Record<string, FeatureType>;
+  allIdAndNames: { id: string; name: string }[];
+  totalCount: number;
+  loading: boolean;
+  error: string | null;
+  lastFetched: Record<string, number>;
+  staleTime: number;
+  backups: Record<string, FeatureType>;
 };
 
-
 export interface PaginatedResponse<T> {
-    page: number;
-    allIdAndNames: Array<{ id: string; name: string }>;
-    pageSize: number;
-    totalCount: number;
-    paginatedData: T[];
+  page: number;
+  allIdAndNames: Array<{ id: string; name: string }>;
+  pageSize: number;
+  totalCount: number;
+  paginatedData: T[];
 }
 
 export interface DeleteResponse {
-    deletedIds: string[];
+  deletedIds: string[];
 }
 
-
 export interface FetchCustomRelsThunkArgs {
-    featureName: FeatureName;
-    id: Id;
-    tableList: string[];
+  featureName: FeatureName;
+  id: Id;
+  tableList: string[];
 }

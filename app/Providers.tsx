@@ -24,7 +24,6 @@ import { PreferenceSyncProvider } from "@/providers/usePreferenceSync";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PersistentComponentProvider } from "@/providers/persistance/PersistentComponentProvider";
 import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMConnector";
-import GoogleAPIProvider from "@/providers/google-provider/GoogleApiProvider";
 import { SelectedImagesProvider } from "@/components/image/context/SelectedImagesProvider";
 import { UniformHeightProvider } from "@/features/applet/runner/layouts/core/UniformHeightWrapper";
 import { GlobalBrokersInitializer } from "@/components/broker/UserBrokerInitializer";
@@ -35,6 +34,9 @@ import { TaskProvider } from "@/features/tasks/context/TaskContext";
 import { TranscriptsProvider } from "@/features/transcripts/context/TranscriptsContext";
 import { AudioRecoveryProvider } from "@/features/audio/providers/AudioRecoveryProvider";
 import { AudioRecoveryToast } from "@/features/audio/components/AudioRecoveryToast";
+
+// CURRENTLY UNUSED SO DISABLED - do not remove from here
+// import GoogleAPIProvider from "@/providers/google-provider/GoogleApiProvider";
 
 const allowedBuckets = [
   "userContent",
@@ -92,24 +94,24 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                 <TooltipProvider delayDuration={200}>
                                   <AudioModalProvider>
                                     <ModuleHeaderProvider>
-                                      <GoogleAPIProvider>
-                                        <UniformHeightProvider>
-                                          <SelectedImagesProvider>
-                                            <NotesProvider>
-                                              <TaskProvider>
-                                                <TranscriptsProvider>
-                                                  <AudioRecoveryProvider>
-                                                    <PersistentDOMConnector />
-                                                    <OverlayController />
-                                                    <AudioRecoveryToast />
-                                                    {children}
-                                                  </AudioRecoveryProvider>
-                                                </TranscriptsProvider>
-                                              </TaskProvider>
-                                            </NotesProvider>
-                                          </SelectedImagesProvider>
-                                        </UniformHeightProvider>
-                                      </GoogleAPIProvider>
+                                      {/* <GoogleAPIProvider> */}
+                                      <UniformHeightProvider>
+                                        <SelectedImagesProvider>
+                                          <NotesProvider>
+                                            <TaskProvider>
+                                              <TranscriptsProvider>
+                                                <AudioRecoveryProvider>
+                                                  <PersistentDOMConnector />
+                                                  <OverlayController />
+                                                  <AudioRecoveryToast />
+                                                  {children}
+                                                </AudioRecoveryProvider>
+                                              </TranscriptsProvider>
+                                            </TaskProvider>
+                                          </NotesProvider>
+                                        </SelectedImagesProvider>
+                                      </UniformHeightProvider>
+                                      {/* </GoogleAPIProvider> */}
                                     </ModuleHeaderProvider>
                                     <Toaster />
                                   </AudioModalProvider>

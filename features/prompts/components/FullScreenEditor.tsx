@@ -10,7 +10,6 @@ import { PromptEditorContextMenu } from "./PromptEditorContextMenu";
 import { SystemPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/SystemPromptOptimizer";
 import { ModelSettings } from "./configuration/ModelSettings";
 import { VariableEditor } from "./configuration/VariableEditor";
-import { VariableValidationPanel } from "./configuration/VariableValidationPanel";
 import { sanitizeVariableName, isVariableUsed } from "@/features/prompts/utils/variable-utils";
 import { validateVariables } from "@/features/prompts/utils/variable-validator";
 import { formatText } from "@/utils/text/text-case-converter";

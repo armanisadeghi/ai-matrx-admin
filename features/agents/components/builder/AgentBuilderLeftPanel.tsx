@@ -1,23 +1,23 @@
 "use client";
 
-/**
- * AgentBuilderLeftPanel
- *
- * Renders all the left-column builder sections.
- * Each child is a smart component — reads/writes Redux directly.
- * This component only passes structural props (models, availableTools).
- */
-
+import { useRef, useCallback } from "react";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { AgentModelConfiguration } from "./AgentModelConfiguration";
-import { AgentSystemMessage } from "./AgentSystemMessage";
-import { AgentMessages } from "./AgentMessages";
-import { AgentVariablesManager } from "./AgentVariablesManager";
+import { Messages } from "@/features/agents/components/messages/Messages";
+import { AgentVariablesManager } from "@/features/agents/components/variables/AgentVariablesManager";
 import { AgentContextSlotsManager } from "./AgentContextSlotsManager";
-import { AgentToolsManager } from "./AgentToolsManager";
-import { Separator } from "@/components/ui/separator";
+import { SystemMessage } from "@/features/agents/components/messages/SystemMessage";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { selectAgentMessages } from "@/features/agents/redux/agent-definition/selectors";
+import { setAgentMessages } from "@/features/agents/redux/agent-definition/slice";
+import type {
+  AgentDefinitionMessage,
+  TextBlock,
+} from "@/features/agents/types/agent-message-types";
 
 interface AgentBuilderLeftPanelProps {
-  models: Array<{ id: string; name?: string; [key: string]: unknown }>;
+  agentId: string;
   availableTools?: Array<{
     name: string;
     description?: string;
@@ -26,27 +26,78 @@ interface AgentBuilderLeftPanelProps {
 }
 
 export function AgentBuilderLeftPanel({
-  models,
+  agentId,
   availableTools = [],
 }: AgentBuilderLeftPanelProps) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const dispatch = useAppDispatch();
+  const allMessages = useAppSelector((state) =>
+    selectAgentMessages(state, agentId),
+  );
+
+  const handleAddMessage = useCallback(
+    (role: "user" | "assistant") => {
+      if (!allMessages) return;
+      const textBlock: TextBlock = { type: "text", text: "" };
+      const newMessage: AgentDefinitionMessage = { role, content: [textBlock] };
+      dispatch(
+        setAgentMessages({
+          id: agentId,
+          messages: [...allMessages, newMessage],
+        }),
+      );
+    },
+    [agentId, allMessages, dispatch],
+  );
+
   return (
-    <div className="flex flex-col gap-6 overflow-y-auto h-full pr-1">
-      <AgentModelConfiguration
-        models={models}
-        availableTools={availableTools}
-      />
-      <Separator />
-      <AgentSystemMessage />
-      <Separator />
-      <AgentMessages />
-      <Separator />
-      <AgentVariablesManager />
-      <Separator />
-      <AgentContextSlotsManager />
-      <Separator />
-      <AgentToolsManager availableTools={availableTools} />
-      {/* Bottom padding so content doesn't hide behind save bar */}
-      <div className="h-8 shrink-0" />
+    <div className="flex flex-col h-full">
+      {/* Top config — never scrolls */}
+      <div className="flex flex-col gap-2 shrink-0 pt-0.5 pb-2">
+        <AgentModelConfiguration
+          agentId={agentId}
+          availableTools={availableTools}
+        />
+        <AgentVariablesManager agentId={agentId} />
+        <AgentContextSlotsManager agentId={agentId} />
+      </div>
+
+      {/* Scrollable messages area */}
+      <div
+        ref={scrollContainerRef}
+        className="flex flex-col gap-2 overflow-y-auto flex-1 pr-1"
+      >
+        <SystemMessage
+          agentId={agentId}
+          scrollContainerRef={scrollContainerRef}
+        />
+        <Messages agentId={agentId} scrollContainerRef={scrollContainerRef} />
+        <div className="h-48 shrink-0" />
+      </div>
+
+      {/* Bottom add buttons — never scrolls */}
+      <div className="flex items-center justify-end gap-1 shrink-0 py-2 border-t border-border bg-background">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 text-xs"
+          onClick={() => handleAddMessage("user")}
+          disabled={!allMessages}
+        >
+          <Plus className="w-3 h-3 mr-1" />
+          User
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 text-xs"
+          onClick={() => handleAddMessage("assistant")}
+          disabled={!allMessages}
+        >
+          <Plus className="w-3 h-3 mr-1" />
+          Assistant
+        </Button>
+      </div>
     </div>
   );
 }

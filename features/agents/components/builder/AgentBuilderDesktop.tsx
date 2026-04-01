@@ -1,10 +1,8 @@
-"use client";
-
 import { AgentBuilderLeftPanel } from "./AgentBuilderLeftPanel";
 import { AgentBuilderRightPanel } from "./AgentBuilderRightPanel";
 
 interface AgentBuilderDesktopProps {
-  models: Array<{ id: string; name?: string; [key: string]: unknown }>;
+  agentId: string;
   availableTools?: Array<{
     name: string;
     description?: string;
@@ -13,21 +11,21 @@ interface AgentBuilderDesktopProps {
 }
 
 export function AgentBuilderDesktop({
-  models,
+  agentId,
   availableTools = [],
 }: AgentBuilderDesktopProps) {
   return (
     <div className="grid grid-cols-2 gap-4 h-full">
       {/* Left: Edit panel */}
-      <div className="h-full overflow-hidden">
+      <div className="h-full overflow-hidden max-w-[640px]">
         <AgentBuilderLeftPanel
-          models={models}
+          agentId={agentId}
           availableTools={availableTools}
         />
       </div>
       {/* Right: Test panel */}
       <div className="h-full overflow-hidden">
-        <AgentBuilderRightPanel />
+        <AgentBuilderRightPanel agentId={agentId} />
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import { AgentBuilderRightPanel } from "./AgentBuilderRightPanel";
 import { cn } from "@/lib/utils";
 
 interface AgentBuilderMobileProps {
-  models: Array<{ id: string; name?: string; [key: string]: unknown }>;
+  agentId: string;
   availableTools?: Array<{
     name: string;
     description?: string;
@@ -17,7 +17,7 @@ interface AgentBuilderMobileProps {
 type MobileTab = "build" | "test";
 
 export function AgentBuilderMobile({
-  models,
+  agentId,
   availableTools = [],
 }: AgentBuilderMobileProps) {
   const [activeTab, setActiveTab] = useState<MobileTab>("build");
@@ -47,12 +47,12 @@ export function AgentBuilderMobile({
         {activeTab === "build" ? (
           <div className="h-full overflow-y-auto p-4">
             <AgentBuilderLeftPanel
-              models={models}
+              agentId={agentId}
               availableTools={availableTools}
             />
           </div>
         ) : (
-          <AgentBuilderRightPanel />
+          <AgentBuilderRightPanel agentId={agentId} />
         )}
       </div>
     </div>

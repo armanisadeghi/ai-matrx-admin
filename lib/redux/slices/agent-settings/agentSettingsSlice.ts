@@ -17,7 +17,7 @@ import type { RootState } from "@/lib/redux/store";
 import {
   selectModelById,
   type AIModel,
-} from "@/lib/redux/slices/modelRegistrySlice";
+} from "@/features/ai-models/redux/modelRegistrySlice";
 import type {
   AgentContext,
   AgentSettings,

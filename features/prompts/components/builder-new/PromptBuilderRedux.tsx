@@ -11,7 +11,7 @@ import {
   selectPromptId,
   selectPromptSettings,
 } from "@/lib/redux/slices/promptEditorSlice";
-import { fetchAvailableModels } from "@/lib/redux/slices/modelRegistrySlice";
+import { fetchAvailableModels } from "@/features/ai-models/redux/modelRegistrySlice";
 import { PromptMessageList } from "./PromptMessageList";
 import { PromptVariableManager } from "./PromptVariableManager";
 import { PromptTestPanel } from "./PromptTestPanel";

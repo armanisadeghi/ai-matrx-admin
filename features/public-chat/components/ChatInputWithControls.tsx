@@ -45,7 +45,7 @@ import { PublicResourcePickerMenu } from "./resource-picker/PublicResourcePicker
 
 import type { PublicResource, PublicResourceType } from "../types/content";
 import type { AgentConfig } from "../context/DEPRECATED-ChatContext";
-import type { AIModel } from "@/lib/redux/slices/modelRegistrySlice";
+import type { AIModel } from "@/features/ai-models/redux/modelRegistrySlice";
 
 const PdfOptimizePrompt = lazy(() => import("./PdfOptimizePrompt"));
 

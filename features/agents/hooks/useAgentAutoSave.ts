@@ -3,50 +3,38 @@
 /**
  * useAgentAutoSave
  *
- * Debounced localStorage backup for the active agent.
- * When the agent has dirty state, writes a JSON snapshot to
- * localStorage every `debounceMs` milliseconds.
+ * Debounced localStorage backup for a specific agent.
+ * Caller must provide agentId — there is no global "active agent" fallback.
  *
- * On mount, if a matching key is found (agent id + dirty flag),
- * dispatches mergePartialAgent to recover unsaved changes.
- *
- * This is a safety net only — it does NOT replace the save thunk.
+ * On mount: recovers any unsaved changes from localStorage and merges into Redux.
+ * While dirty: writes a snapshot every DEBOUNCE_MS milliseconds.
+ * On clean (after save): removes the localStorage entry.
  */
 
 import { useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import {
-  selectActiveAgentId,
-  selectAgentById,
-} from "@/features/agents/redux/agent-definition/selectors";
+import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { mergePartialAgent } from "@/features/agents/redux/agent-definition/slice";
 
 const STORAGE_PREFIX = "agent-autosave:";
 const DEBOUNCE_MS = 2_000;
 
-export function useAgentAutoSave(agentId?: string) {
+export function useAgentAutoSave(agentId: string) {
   const dispatch = useAppDispatch();
-  const activeId = useAppSelector(selectActiveAgentId);
-  const id = agentId ?? activeId ?? null;
-
-  const record = useAppSelector((state) =>
-    id ? selectAgentById(state, id) : undefined,
-  );
-
+  const record = useAppSelector((state) => selectAgentById(state, agentId));
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Recovery on mount
   useEffect(() => {
-    if (!id) return;
-    const storageKey = `${STORAGE_PREFIX}${id}`;
+    const storageKey = `${STORAGE_PREFIX}${agentId}`;
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) {
         const saved = JSON.parse(raw) as Record<string, unknown>;
-        if (saved && saved._dirty) {
+        if (saved?._dirty) {
           dispatch(
             mergePartialAgent({
-              id,
+              id: agentId,
               ...saved,
               _skipDirty: true,
             } as unknown as Parameters<typeof mergePartialAgent>[0]),
@@ -54,22 +42,24 @@ export function useAgentAutoSave(agentId?: string) {
         }
       }
     } catch {
-      // Ignore parse errors
+      // Ignore parse errors / SSR
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [agentId]);
 
-  // Debounced backup
+  // Debounced backup when dirty
   useEffect(() => {
-    if (!id || !record?._dirty) return;
+    if (!record?._dirty) return;
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
-      const storageKey = `${STORAGE_PREFIX}${id}`;
+      const storageKey = `${STORAGE_PREFIX}${agentId}`;
       try {
         const snapshot: Record<string, unknown> = { _dirty: true };
         if (record._dirtyFields) {
           record._dirtyFields.forEach((field) => {
-            snapshot[field] = (record as Record<string, unknown>)[field];
+            snapshot[field] = (record as unknown as Record<string, unknown>)[
+              field
+            ];
           });
         }
         localStorage.setItem(storageKey, JSON.stringify(snapshot));
@@ -80,16 +70,16 @@ export function useAgentAutoSave(agentId?: string) {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [id, record]);
+  }, [agentId, record]);
 
   // Clear on successful save (clean state)
   useEffect(() => {
-    if (!id || record?._dirty !== false) return;
-    const storageKey = `${STORAGE_PREFIX}${id}`;
+    if (record?._dirty !== false) return;
+    const storageKey = `${STORAGE_PREFIX}${agentId}`;
     try {
       localStorage.removeItem(storageKey);
     } catch {
       // ignore
     }
-  }, [id, record?._dirty]);
+  }, [agentId, record?._dirty]);
 }

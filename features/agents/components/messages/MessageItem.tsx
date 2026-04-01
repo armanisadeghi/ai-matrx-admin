@@ -1,0 +1,559 @@
+"use client";
+
+import {
+  RefObject,
+  useRef,
+  useState,
+  useLayoutEffect,
+  useCallback,
+  useMemo,
+} from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import {
+  selectAgentMessageAtIndex,
+  selectAgentMessages,
+  selectAgentVariableDefinitions,
+} from "@/features/agents/redux/agent-definition/selectors";
+import { setAgentMessages } from "@/features/agents/redux/agent-definition/slice";
+import { UnifiedContextMenu } from "@/features/context-menu";
+import { HighlightedText } from "@/features/agents/components/shared/HighlightedText";
+import { MessageItemButtons } from "@/features/agents/components/messages/MessageItemButtons";
+import {
+  BlockList,
+  BlockType,
+} from "@/features/agents/components/messages/AddBlockButton";
+import type { AgentDefinitionMessage } from "@/features/agents/types/agent-message-types";
+
+/** Extract text from a TextBlock. */
+function extractTextFromBlock(block: Record<string, unknown>): string {
+  return (block.text as string | undefined) ?? "";
+}
+
+interface MessageItemProps {
+  messageIndex: number;
+  agentId: string;
+  onOpenFullScreenEditor?: (messageIndex: number) => void;
+  scrollContainerRef?: RefObject<HTMLDivElement>;
+}
+
+export function MessageItem({
+  messageIndex,
+  agentId,
+  onOpenFullScreenEditor,
+  scrollContainerRef,
+}: MessageItemProps) {
+  const dispatch = useAppDispatch();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [pendingAddType, setPendingAddType] = useState<
+    BlockType | null | undefined
+  >(undefined);
+  const [cursorPositions, setCursorPositions] = useState<
+    Record<number, number>
+  >({});
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const contextMenuOpenRef = useRef(false);
+  const textareaInitializedRef = useRef(false);
+  const scrollLockRef = useRef<{ scrollTop: number; overflow: string } | null>(
+    null,
+  );
+
+  const message = useAppSelector((state) =>
+    selectAgentMessageAtIndex(state, agentId, messageIndex),
+  );
+  const allMessages = useAppSelector((state) =>
+    selectAgentMessages(state, agentId),
+  );
+  const variableDefinitions = useAppSelector((state) =>
+    selectAgentVariableDefinitions(state, agentId),
+  );
+
+  const variableNames = variableDefinitions.map((v) => v.name);
+  const hasVariableSupport = variableDefinitions.length > 0;
+
+  // Derive content from blocks
+  const rawBlocks: Record<string, unknown>[] = message
+    ? (message.content as unknown as Record<string, unknown>[])
+    : [];
+  const textBlockRaw = rawBlocks.find((b) => b.type === "text");
+  const currentText = textBlockRaw ? extractTextFromBlock(textBlockRaw) : "";
+  const nonTextBlocks = rawBlocks.filter((b) => b.type !== "text");
+
+  // Redux write-backs
+  const handleTextChange = useCallback(
+    (value: string) => {
+      if (!allMessages || !message) return;
+      const nonText = rawBlocks.filter(
+        (b) => b.type !== "text",
+      ) as unknown as AgentDefinitionMessage["content"];
+      const updatedContent: AgentDefinitionMessage["content"] = [
+        { type: "text", text: value },
+        ...nonText,
+      ];
+      const updated = allMessages.map((m, i) =>
+        i === messageIndex ? { ...m, content: updatedContent } : m,
+      );
+      dispatch(setAgentMessages({ id: agentId, messages: updated }));
+    },
+    [agentId, messageIndex, allMessages, message, rawBlocks, dispatch],
+  );
+
+  const handleRoleChange = useCallback(
+    (role: "user" | "assistant") => {
+      if (!allMessages) return;
+      const updated = allMessages.map((m, i) =>
+        i === messageIndex ? { ...m, role } : m,
+      );
+      dispatch(setAgentMessages({ id: agentId, messages: updated }));
+    },
+    [agentId, messageIndex, allMessages, dispatch],
+  );
+
+  const handleRemoveBlock = useCallback(
+    (blockIndexInNonText: number) => {
+      if (!allMessages || !message) return;
+      let nonTextCount = -1;
+      const newContent = rawBlocks.filter((b) => {
+        if (b.type !== "text") {
+          nonTextCount++;
+          return nonTextCount !== blockIndexInNonText;
+        }
+        return true;
+      }) as unknown as AgentDefinitionMessage["content"];
+      const updated = allMessages.map((m, i) =>
+        i === messageIndex ? { ...m, content: newContent } : m,
+      );
+      dispatch(setAgentMessages({ id: agentId, messages: updated }));
+    },
+    [agentId, messageIndex, allMessages, message, rawBlocks, dispatch],
+  );
+
+  const handleAddBlock = useCallback(
+    (block: Record<string, unknown>) => {
+      if (!allMessages || !message) return;
+      const newContent = [
+        ...rawBlocks,
+        block,
+      ] as unknown as AgentDefinitionMessage["content"];
+      const updated = allMessages.map((m, i) =>
+        i === messageIndex ? { ...m, content: newContent } : m,
+      );
+      dispatch(setAgentMessages({ id: agentId, messages: updated }));
+    },
+    [agentId, messageIndex, allMessages, message, rawBlocks, dispatch],
+  );
+
+  const handleUpdateBlock = useCallback(
+    (index: number, block: Record<string, unknown>) => {
+      if (!allMessages || !message) return;
+      let nonTextCount = -1;
+      const newContent = rawBlocks.map((b) => {
+        if (b.type !== "text") {
+          nonTextCount++;
+          return nonTextCount === index ? block : b;
+        }
+        return b;
+      }) as unknown as AgentDefinitionMessage["content"];
+      const updated = allMessages.map((m, i) =>
+        i === messageIndex ? { ...m, content: newContent } : m,
+      );
+      dispatch(setAgentMessages({ id: agentId, messages: updated }));
+    },
+    [agentId, messageIndex, allMessages, message, rawBlocks, dispatch],
+  );
+
+  const handleDelete = useCallback(() => {
+    if (!allMessages) return;
+    const updated = allMessages.filter((_, i) => i !== messageIndex);
+    dispatch(setAgentMessages({ id: agentId, messages: updated }));
+  }, [agentId, messageIndex, allMessages, dispatch]);
+
+  const handleClear = useCallback(
+    () => handleTextChange(""),
+    [handleTextChange],
+  );
+
+  // Scroll fix: restore scroll after re-render
+  useLayoutEffect(() => {
+    if (!isEditing) return;
+    const textarea = textareaRef.current;
+    const scrollContainer = scrollContainerRef?.current;
+    if (!textarea || !scrollContainer) return;
+
+    const lockData = scrollLockRef.current;
+    const savedScroll = lockData?.scrollTop ?? scrollContainer.scrollTop;
+    const originalOverflow =
+      lockData?.overflow ?? scrollContainer.style.overflow;
+
+    scrollContainer.style.overflow = "hidden";
+    textarea.style.height = "auto";
+    textarea.style.height = textarea.scrollHeight + "px";
+    scrollContainer.scrollTop = savedScroll;
+    scrollContainer.style.overflow = originalOverflow;
+    scrollLockRef.current = null;
+  }, [currentText, isEditing, scrollContainerRef]);
+
+  useLayoutEffect(() => {
+    if (!isEditing) {
+      textareaInitializedRef.current = false;
+    }
+  }, [isEditing]);
+
+  // Context menu handlers
+  const handleTextReplace = useCallback(
+    (newText: string) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      handleTextChange(
+        currentText.substring(0, start) + newText + currentText.substring(end),
+      );
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start, start + newText.length);
+      }, 0);
+    },
+    [currentText, handleTextChange],
+  );
+
+  const handleTextInsertBefore = useCallback(
+    (text: string) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+      const start = textarea.selectionStart;
+      const insertText = text + "\n\n";
+      handleTextChange(
+        currentText.substring(0, start) +
+          insertText +
+          currentText.substring(start),
+      );
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(
+          start + insertText.length,
+          start + insertText.length,
+        );
+      }, 0);
+    },
+    [currentText, handleTextChange],
+  );
+
+  const handleTextInsertAfter = useCallback(
+    (text: string) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+      const end = textarea.selectionEnd;
+      const insertText = "\n\n" + text;
+      handleTextChange(
+        currentText.substring(0, end) + insertText + currentText.substring(end),
+      );
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(
+          end + insertText.length,
+          end + insertText.length,
+        );
+      }, 0);
+    },
+    [currentText, handleTextChange],
+  );
+
+  const handleContentInserted = useCallback(() => {
+    contextMenuOpenRef.current = false;
+  }, []);
+
+  // Textarea handlers
+  const handleTextareaRef = useCallback((el: HTMLTextAreaElement | null) => {
+    textareaRef.current = el;
+    if (el && !textareaInitializedRef.current) {
+      textareaInitializedRef.current = true;
+      el.style.height = "auto";
+      el.style.height = el.scrollHeight + "px";
+      el.focus({ preventScroll: true });
+    }
+  }, []);
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      if (!scrollContainerRef?.current) {
+        handleTextChange(e.target.value);
+        e.target.style.height = "auto";
+        e.target.style.height = e.target.scrollHeight + "px";
+        return;
+      }
+      const scrollContainer = scrollContainerRef.current;
+      if (!scrollLockRef.current) {
+        scrollLockRef.current = {
+          scrollTop: scrollContainer.scrollTop,
+          overflow: scrollContainer.style.overflow,
+        };
+      } else {
+        scrollLockRef.current.scrollTop = scrollContainer.scrollTop;
+      }
+      scrollContainer.style.overflow = "hidden";
+      handleTextChange(e.target.value);
+      e.target.style.height = "auto";
+      e.target.style.height = e.target.scrollHeight + "px";
+      scrollContainer.scrollTop = scrollLockRef.current.scrollTop;
+    },
+    [handleTextChange, scrollContainerRef],
+  );
+
+  const handleKeyDown = useCallback(
+    (_e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (scrollContainerRef?.current) {
+        const savedScroll = scrollContainerRef.current.scrollTop;
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (scrollContainerRef.current)
+              scrollContainerRef.current.scrollTop = savedScroll;
+          });
+        });
+      }
+    },
+    [scrollContainerRef],
+  );
+
+  const handleInput = useCallback(
+    (_e: React.FormEvent<HTMLTextAreaElement>) => {
+      if (scrollContainerRef?.current) {
+        const savedScroll = scrollContainerRef.current.scrollTop;
+        requestAnimationFrame(() => {
+          if (scrollContainerRef.current)
+            scrollContainerRef.current.scrollTop = savedScroll;
+        });
+      }
+    },
+    [scrollContainerRef],
+  );
+
+  const handleMouseDown = useCallback(
+    (_e: React.MouseEvent<HTMLTextAreaElement>) => {
+      if (scrollContainerRef?.current) {
+        const savedScroll = scrollContainerRef.current.scrollTop;
+        requestAnimationFrame(() => {
+          if (scrollContainerRef.current)
+            scrollContainerRef.current.scrollTop = savedScroll;
+        });
+      }
+    },
+    [scrollContainerRef],
+  );
+
+  const handleSelect = useCallback(
+    (e: React.SyntheticEvent<HTMLTextAreaElement>) => {
+      if (scrollContainerRef?.current) {
+        const savedScroll = scrollContainerRef.current.scrollTop;
+        requestAnimationFrame(() => {
+          if (scrollContainerRef.current)
+            scrollContainerRef.current.scrollTop = savedScroll;
+        });
+      }
+      const target = e.target as HTMLTextAreaElement;
+      setCursorPositions((prev) => ({
+        ...prev,
+        [messageIndex]: target.selectionStart,
+      }));
+    },
+    [scrollContainerRef, messageIndex],
+  );
+
+  const handleContextMenu = useCallback(() => {
+    contextMenuOpenRef.current = true;
+  }, []);
+
+  const handleFocus = useCallback(
+    (e: React.FocusEvent<HTMLTextAreaElement>) => {
+      setCursorPositions((prev) => ({
+        ...prev,
+        [messageIndex]: e.target.selectionStart,
+      }));
+    },
+    [messageIndex],
+  );
+
+  const handleBlur = useCallback(() => {
+    if (!contextMenuOpenRef.current) setIsEditing(false);
+    setTimeout(() => {
+      contextMenuOpenRef.current = false;
+    }, 100);
+  }, []);
+
+  const handleViewClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!scrollContainerRef?.current) return;
+      const scrollContainer = scrollContainerRef.current;
+      const savedScrollPosition = scrollContainer.scrollTop;
+      const target = e.target as HTMLElement;
+      const range = document.caretRangeFromPoint?.(e.clientX, e.clientY);
+      let clickPosition = 0;
+      if (range) {
+        const preCaretRange = range.cloneRange();
+        preCaretRange.selectNodeContents(target);
+        preCaretRange.setEnd(range.endContainer, range.endOffset);
+        clickPosition = preCaretRange.toString().length;
+      }
+      setIsEditing(true);
+      requestAnimationFrame(() => {
+        scrollContainer.scrollTop = savedScrollPosition;
+        if (textareaRef.current && clickPosition > 0) {
+          textareaRef.current.setSelectionRange(clickPosition, clickPosition);
+        }
+      });
+    },
+    [scrollContainerRef],
+  );
+
+  const contextMenuData = useMemo(
+    () => ({
+      content: currentText,
+      context: JSON.stringify({ messageIndex, agentId }),
+      currentMessageRole: message?.role ?? "user",
+      allMessages: JSON.stringify(allMessages),
+      promptVariables: JSON.stringify(variableDefinitions),
+    }),
+    [
+      currentText,
+      messageIndex,
+      agentId,
+      message,
+      allMessages,
+      variableDefinitions,
+    ],
+  );
+
+  const roleColor =
+    message?.role === "user"
+      ? "border-blue-500/30 bg-blue-500/5"
+      : message?.role === "assistant"
+        ? "border-purple-500/30 bg-purple-500/5"
+        : "border-border bg-muted";
+
+  const displayRole =
+    message?.role === "user" || message?.role === "assistant"
+      ? message.role
+      : "user";
+
+  if (!message || !allMessages) {
+    return <Skeleton className="h-[120px] w-full rounded-md" />;
+  }
+
+  return (
+    <div className={cn("group rounded-lg border", roleColor)}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-2 py-1 sticky top-0 z-10 rounded-t-lg bg-inherit">
+        <Select
+          value={displayRole}
+          onValueChange={(v) => handleRoleChange(v as "user" | "assistant")}
+        >
+          <SelectTrigger className="h-6 bg-transparent text-foreground !border-none hover:bg-accent w-auto min-w-[120px] text-xs !shadow-none focus:ring-0 focus:ring-offset-0 [&>svg]:opacity-0 [&>svg]:group-hover:opacity-100 [&>svg]:transition-opacity">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="user">User</SelectItem>
+            <SelectItem value="assistant">Assistant</SelectItem>
+          </SelectContent>
+        </Select>
+        <div className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+          <MessageItemButtons
+            isEditing={isEditing}
+            hasVariableSupport={hasVariableSupport}
+            hasFullScreenEditor={!!onOpenFullScreenEditor}
+            onInsertVariable={() => setIsEditing(true)}
+            onOpenFullScreenEditor={
+              onOpenFullScreenEditor
+                ? () => onOpenFullScreenEditor(messageIndex)
+                : undefined
+            }
+            onToggleEditing={() => setIsEditing((prev) => !prev)}
+            onClear={handleClear}
+            onDelete={handleDelete}
+            onAddBlockType={(type) => setPendingAddType(type)}
+            sheetTitle={`${message.role} Message Actions`}
+          />
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="px-2 pb-2">
+        {isEditing ? (
+          <UnifiedContextMenu
+            getTextarea={() => textareaRef.current}
+            contextData={{ contextMenuData }}
+            enabledPlacements={["ai-action", "content-block", "quick-action"]}
+            isEditable={true}
+            enableFloatingIcon={true}
+            onTextReplace={handleTextReplace}
+            onTextInsertBefore={handleTextInsertBefore}
+            onTextInsertAfter={handleTextInsertAfter}
+            onContentInserted={handleContentInserted}
+          >
+            <textarea
+              ref={handleTextareaRef}
+              value={currentText}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              onInput={handleInput}
+              onMouseDown={handleMouseDown}
+              onSelect={handleSelect}
+              onContextMenu={handleContextMenu}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              placeholder={
+                message.role === "assistant"
+                  ? "Assistant response / example output..."
+                  : "User message / example input..."
+              }
+              className="w-full bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted-foreground p-0 resize-none overflow-hidden leading-normal"
+              style={{ minHeight: "80px", lineHeight: "1.5" }}
+            />
+          </UnifiedContextMenu>
+        ) : (
+          <div
+            className="text-xs text-muted-foreground whitespace-pre-wrap cursor-text leading-normal"
+            onClick={handleViewClick}
+            style={{ minHeight: "80px", lineHeight: "1.5" }}
+          >
+            {currentText ? (
+              <HighlightedText
+                text={currentText}
+                validVariables={variableNames}
+              />
+            ) : (
+              <span className="italic">
+                {message.role === "assistant"
+                  ? "Assistant response / example output..."
+                  : "User message / example input..."}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Content blocks */}
+        {(nonTextBlocks.length > 0 || pendingAddType != null) && (
+          <div className="pt-2">
+            <BlockList
+              blocks={nonTextBlocks}
+              onUpdateBlock={handleUpdateBlock}
+              onRemoveBlock={handleRemoveBlock}
+              onAddBlock={handleAddBlock}
+              pendingAddType={pendingAddType}
+              onPendingAddTypeClear={() => setPendingAddType(undefined)}
+              validVariables={variableNames}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -3,15 +3,8 @@
 import { Settings2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectModelOptions } from "@/lib/redux/slices/modelRegistrySlice";
+import { SmartModelSelect } from "@/features/ai-models/components/smart/SmartModelSelect";
 import {
   selectEffectiveModelId,
   selectEffectiveSettings,
@@ -56,7 +49,6 @@ export function ModelSelectorRow({
   showSettingsBadges = true,
 }: ModelSelectorRowProps) {
   const dispatch = useAppDispatch();
-  const modelOptions = useAppSelector(selectModelOptions);
   const effectiveModelId = useAppSelector((state) =>
     selectEffectiveModelId(state, agentId),
   );
@@ -84,21 +76,12 @@ export function ModelSelectorRow({
     <div className="space-y-1.5">
       {/* Model selector + settings button */}
       <div className="flex items-center gap-1.5">
-        <Select
-          value={effectiveModelId ?? ""}
+        <SmartModelSelect
+          value={effectiveModelId}
           onValueChange={handleModelChange}
-        >
-          <SelectTrigger className="h-7 text-xs flex-1 min-w-0">
-            <SelectValue placeholder="Select model…" />
-          </SelectTrigger>
-          <SelectContent>
-            {modelOptions.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value} className="text-xs">
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Select model…"
+          triggerClassName="h-7 text-xs flex-1"
+        />
 
         <Button
           variant="outline"

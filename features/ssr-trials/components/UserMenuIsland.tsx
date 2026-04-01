@@ -27,11 +27,16 @@ export default function UserMenuIsland() {
   // Safely handle null/uninitialized state throughout.
   const reduxUser = useAppSelector(selectUser);
 
-  const user: UserMenuUser | null = reduxUser?.id ? {
-    name: reduxUser.userMetadata?.name || reduxUser.email?.split('@')[0] || 'User',
-    email: reduxUser.email ?? undefined,
-    avatarUrl: reduxUser.userMetadata?.avatarUrl ?? undefined,
-  } : null;
+  const user: UserMenuUser | null = reduxUser?.id
+    ? {
+        name:
+          reduxUser.userMetadata?.name ||
+          reduxUser.email?.split("@")[0] ||
+          "User",
+        email: reduxUser.email ?? undefined,
+        avatarUrl: reduxUser.userMetadata?.avatarUrl ?? undefined,
+      }
+    : null;
 
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -62,60 +67,60 @@ export default function UserMenuIsland() {
     <div ref={menuRef} className="relative">
       {/* Transparent 44px tap target wrapper */}
       <div className="flex items-center justify-center w-[60px] h-11">
-      <button
-        className={cn(
-          "shell-auth-island shell-glass shell-tactile cursor-pointer",
-          open && "!bg-[var(--shell-glass-bg-active)]",
-        )}
-        onClick={() => setOpen(!open)}
-        aria-label="User menu"
-        aria-expanded={open}
-        aria-haspopup="menu"
-      >
-        {/* Mini hamburger */}
-        <span className="flex flex-col items-center justify-center w-4 h-4 gap-[2.5px]">
-          <span
-            className={cn(
-              "w-2.5 h-[1.5px] rounded-sm transition-transform duration-200",
-              open ? "translate-y-[4px] rotate-45" : "",
-            )}
-            style={{ background: "var(--shell-nav-icon-hover)" }}
-          />
-          <span
-            className={cn(
-              "w-2.5 h-[1.5px] rounded-sm transition-opacity duration-150",
-              open ? "opacity-0" : "",
-            )}
-            style={{ background: "var(--shell-nav-icon-hover)" }}
-          />
-          <span
-            className={cn(
-              "w-2.5 h-[1.5px] rounded-sm transition-transform duration-200",
-              open ? "-translate-y-[4px] -rotate-45" : "",
-            )}
-            style={{ background: "var(--shell-nav-icon-hover)" }}
-          />
-        </span>
-
-        {/* Avatar */}
-        {user?.avatarUrl ? (
-          <Image
-            src={user.avatarUrl}
-            alt={user.name}
-            width={22}
-            height={22}
-            className="w-[22px] h-[22px] rounded-full object-cover"
-          />
-        ) : user?.name ? (
-          <span
-            className="w-[22px] h-[22px] rounded-full bg-[var(--shell-glass-bg-active)] flex items-center justify-center text-[10px] font-semibold text-[var(--shell-nav-text)]"
-          >
-            {user.name.charAt(0).toUpperCase()}
+        <button
+          className={cn(
+            "shell-auth-island shell-glass shell-tactile cursor-pointer",
+            open && "!bg-[var(--shell-glass-bg-active)]",
+          )}
+          onClick={() => setOpen(!open)}
+          aria-label="User menu"
+          aria-expanded={open}
+          aria-haspopup="menu"
+        >
+          {/* Mini hamburger */}
+          <span className="flex flex-col items-center justify-center w-4 h-4 gap-[2.5px]">
+            <span
+              className={cn(
+                "w-2.5 h-[1.5px] rounded-sm transition-transform duration-200",
+                open ? "translate-y-[4px] rotate-45" : "",
+              )}
+              style={{ background: "var(--shell-nav-icon-hover)" }}
+            />
+            <span
+              className={cn(
+                "w-2.5 h-[1.5px] rounded-sm transition-opacity duration-150",
+                open ? "opacity-0" : "",
+              )}
+              style={{ background: "var(--shell-nav-icon-hover)" }}
+            />
+            <span
+              className={cn(
+                "w-2.5 h-[1.5px] rounded-sm transition-transform duration-200",
+                open ? "-translate-y-[4px] -rotate-45" : "",
+              )}
+              style={{ background: "var(--shell-nav-icon-hover)" }}
+            />
           </span>
-        ) : (
-          <span className="w-[22px] h-[22px] rounded-full animate-pulse bg-[var(--shell-glass-bg-active)]" />
-        )}
-      </button>
+
+          {/* Avatar */}
+          {user?.avatarUrl ? (
+            <Image
+              src={user.avatarUrl}
+              alt={user.name}
+              width={22}
+              height={22}
+              className="w-[22px] h-[22px] rounded-full object-cover"
+              loading="eager"
+              priority
+            />
+          ) : user?.name ? (
+            <span className="w-[22px] h-[22px] rounded-full bg-[var(--shell-glass-bg-active)] flex items-center justify-center text-[10px] font-semibold text-[var(--shell-nav-text)]">
+              {user.name.charAt(0).toUpperCase()}
+            </span>
+          ) : (
+            <span className="w-[22px] h-[22px] rounded-full animate-pulse bg-[var(--shell-glass-bg-active)]" />
+          )}
+        </button>
       </div>
 
       {open && <UserMenuPanel />}

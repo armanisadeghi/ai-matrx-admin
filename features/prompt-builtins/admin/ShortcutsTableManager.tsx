@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React, { useState, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +17,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 import {
   Table,
   TableBody,
@@ -25,21 +25,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { useToast } from '@/components/ui/use-toast';
+} from "@/components/ui/tooltip";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Plus,
   Trash2,
@@ -60,40 +60,46 @@ import {
   Copy,
   Check,
   AlertTriangle,
-} from 'lucide-react';
-import {
-  ShortcutCategory,
-  PromptBuiltin,
-  PromptShortcut,
-} from '../types';
+} from "lucide-react";
+import { ShortcutCategory, PromptBuiltin, PromptShortcut } from "../types";
 import {
   fetchShortcutCategories,
   fetchPromptBuiltins,
   fetchShortcutsWithRelations,
   deletePromptShortcut,
   updatePromptShortcut,
-} from '../services/admin-service';
-import { PLACEMENT_TYPES, getPlacementTypeMeta } from '../constants';
-import { RESULT_DISPLAY_META, ResultDisplay } from '../types/execution-modes';
-import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
-import { ShortcutEditModal } from '../components/ShortcutEditModal';
-import { CategorySelector } from '../components/CategorySelector';
-import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';
-import { SelectBuiltinForShortcutModal } from '../components/SelectBuiltinForShortcutModal';
-import { PromptSettingsModal } from '@/features/prompts/components/PromptSettingsModal';
-import { DuplicateShortcutModal } from '../components/DuplicateShortcutModal';
-import { getIconComponent } from '@/components/official/IconResolver';
+} from "../services/admin-service";
+import { PLACEMENT_TYPES, getPlacementTypeMeta } from "../constants";
+import { RESULT_DISPLAY_META, ResultDisplay } from "../types/execution-modes";
+import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { ShortcutEditModal } from "../components/ShortcutEditModal";
+import { CategorySelector } from "../components/CategorySelector";
+import { SelectPromptForBuiltinModal } from "./SelectPromptForBuiltinModal";
+import { SelectBuiltinForShortcutModal } from "../components/SelectBuiltinForShortcutModal";
+import { PromptSettingsModal } from "@/features/prompts/components/PromptSettingsModal";
+import { DuplicateShortcutModal } from "../components/DuplicateShortcutModal";
+import { getIconComponent } from "@/components/official/IconResolver";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { getUserFriendlyError } from '../utils/error-handler';
-import { useModels } from '@/hooks/useModels';
+} from "@/components/ui/dropdown-menu";
+import { getUserFriendlyError } from "../utils/error-handler";
+import { useModels } from "@/features/ai-models/hooks/useModels";
 
-type SortField = 'label' | 'category' | 'status' | 'connection' | 'placement' | 'display' | 'auto_run' | 'allow_chat' | 'show_variables' | 'apply_variables';
-type SortDirection = 'asc' | 'desc';
+type SortField =
+  | "label"
+  | "category"
+  | "status"
+  | "connection"
+  | "placement"
+  | "display"
+  | "auto_run"
+  | "allow_chat"
+  | "show_variables"
+  | "apply_variables";
+type SortDirection = "asc" | "desc";
 
 interface ShortcutWithRelations extends PromptShortcut {
   category?: ShortcutCategory;
@@ -108,22 +114,31 @@ interface ShortcutsTableManagerProps {
  * Get result display metadata WITHOUT masking invalid values
  * Returns null for invalid values so we can show warnings
  */
-function getResultDisplayMeta(display: string | null | undefined): { label: string; description?: string; icon?: string; useCases?: readonly string[] } | null {
+function getResultDisplayMeta(
+  display: string | null | undefined,
+): {
+  label: string;
+  description?: string;
+  icon?: string;
+  useCases?: readonly string[];
+} | null {
   // Handle null/undefined
   if (!display) {
     return null;
   }
-  
+
   // Check if the display value exists in our metadata
   if (display in RESULT_DISPLAY_META) {
     return RESULT_DISPLAY_META[display as ResultDisplay];
   }
-  
+
   // Return null for invalid values - DO NOT MASK THE BUG
   return null;
 }
 
-export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps) {
+export function ShortcutsTableManager({
+  className,
+}: ShortcutsTableManagerProps) {
   const { models } = useModels();
   const [categories, setCategories] = useState<ShortcutCategory[]>([]);
   const [shortcuts, setShortcuts] = useState<ShortcutWithRelations[]>([]);
@@ -132,27 +147,38 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
   const [availableTools, setAvailableTools] = useState<any[]>([]);
 
   // Filters
-  const [sortField, setSortField] = useState<SortField>('label');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'connected' | 'unconnected'>('all');
-  const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [placementFilter, setPlacementFilter] = useState<string>('all');
-  const [displayFilter, setDisplayFilter] = useState<string>('all');
+  const [sortField, setSortField] = useState<SortField>("label");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "connected" | "unconnected"
+  >("all");
+  const [activeFilter, setActiveFilter] = useState<
+    "all" | "active" | "inactive"
+  >("all");
+  const [placementFilter, setPlacementFilter] = useState<string>("all");
+  const [displayFilter, setDisplayFilter] = useState<string>("all");
 
   // Modals
-  const [editingShortcut, setEditingShortcut] = useState<ShortcutWithRelations | null>(null);
+  const [editingShortcut, setEditingShortcut] =
+    useState<ShortcutWithRelations | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectingPromptFor, setSelectingPromptFor] = useState<ShortcutWithRelations | null>(null);
-  const [selectingBuiltinFor, setSelectingBuiltinFor] = useState<ShortcutWithRelations | null>(null);
+  const [selectingPromptFor, setSelectingPromptFor] =
+    useState<ShortcutWithRelations | null>(null);
+  const [selectingBuiltinFor, setSelectingBuiltinFor] =
+    useState<ShortcutWithRelations | null>(null);
   const [viewingBuiltinId, setViewingBuiltinId] = useState<string | null>(null);
-  const [duplicatingShortcut, setDuplicatingShortcut] = useState<ShortcutWithRelations | null>(null);
-  
+  const [duplicatingShortcut, setDuplicatingShortcut] =
+    useState<ShortcutWithRelations | null>(null);
+
   // Confirmation dialog states
-  const [deleteConfirmShortcut, setDeleteConfirmShortcut] = useState<{ id: string; label: string } | null>(null);
-  
+  const [deleteConfirmShortcut, setDeleteConfirmShortcut] = useState<{
+    id: string;
+    label: string;
+  } | null>(null);
+
   // Copy state
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -162,23 +188,26 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
   const loadData = React.useCallback(async () => {
     try {
       setLoading(true);
-      const [categoriesData, shortcutsData, builtinsData, toolsResponse] = await Promise.all([
-        fetchShortcutCategories(),
-        fetchShortcutsWithRelations(),
-        fetchPromptBuiltins({ is_active: true }),
-        fetch('/api/tools').then(r => r.json()).catch(() => ({ tools: [] })),
-      ]);
+      const [categoriesData, shortcutsData, builtinsData, toolsResponse] =
+        await Promise.all([
+          fetchShortcutCategories(),
+          fetchShortcutsWithRelations(),
+          fetchPromptBuiltins({ is_active: true }),
+          fetch("/api/tools")
+            .then((r) => r.json())
+            .catch(() => ({ tools: [] })),
+        ]);
 
       setCategories(categoriesData);
       setShortcuts(shortcutsData);
       setBuiltins(builtinsData);
       setAvailableTools(toolsResponse?.tools || []);
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error("Error loading data:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load data',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to load data",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -195,13 +224,13 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
     try {
       await navigator.clipboard.writeText(id);
       setCopiedId(id);
-      toast({ title: 'Success', description: 'ID copied to clipboard' });
+      toast({ title: "Success", description: "ID copied to clipboard" });
       setTimeout(() => setCopiedId(null), 2000);
     } catch (error) {
-      toast({ 
-        title: 'Error', 
-        description: 'Failed to copy ID',
-        variant: 'destructive' 
+      toast({
+        title: "Error",
+        description: "Failed to copy ID",
+        variant: "destructive",
       });
     }
   };
@@ -209,7 +238,7 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
   // Calculate available filters from actual data
   const availablePlacements = useMemo(() => {
     const placements = new Set<string>();
-    shortcuts.forEach(s => {
+    shortcuts.forEach((s) => {
       if (s.category?.placement_type) {
         placements.add(s.category.placement_type);
       }
@@ -219,63 +248,69 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
 
   const availableDisplays = useMemo(() => {
     const displays = new Set<string>();
-    shortcuts.forEach(s => {
-      displays.add(s.result_display || 'modal-full');
+    shortcuts.forEach((s) => {
+      displays.add(s.result_display || "modal-full");
     });
     return Array.from(displays).sort();
   }, [shortcuts]);
 
   const availableCategories = useMemo(() => {
     // If placement filter is active, only show categories for that placement
-    if (placementFilter !== 'all') {
-      return categories.filter(cat => 
-        cat.placement_type === placementFilter &&
-        shortcuts.some(s => s.category_id === cat.id)
+    if (placementFilter !== "all") {
+      return categories.filter(
+        (cat) =>
+          cat.placement_type === placementFilter &&
+          shortcuts.some((s) => s.category_id === cat.id),
       );
     }
     // Otherwise, only show categories that have shortcuts
-    return categories.filter(cat => 
-      shortcuts.some(s => s.category_id === cat.id)
+    return categories.filter((cat) =>
+      shortcuts.some((s) => s.category_id === cat.id),
     );
   }, [categories, shortcuts, placementFilter]);
 
   // Reset category filter when placement changes and category is no longer valid
   React.useEffect(() => {
-    if (categoryFilter !== 'all') {
-      const categoryExists = availableCategories.some(cat => cat.id === categoryFilter);
+    if (categoryFilter !== "all") {
+      const categoryExists = availableCategories.some(
+        (cat) => cat.id === categoryFilter,
+      );
       if (!categoryExists) {
-        setCategoryFilter('all');
+        setCategoryFilter("all");
       }
     }
   }, [placementFilter, categoryFilter, availableCategories]);
 
   // Optimistic update helper
-  const optimisticUpdate = React.useCallback(async (
-    shortcutId: string,
-    updates: Partial<PromptShortcut>,
-    successMessage: string
-  ) => {
-    // Optimistically update local state
-    setShortcuts(prev => prev.map(s => 
-      s.id === shortcutId ? { ...s, ...updates } : s
-    ));
+  const optimisticUpdate = React.useCallback(
+    async (
+      shortcutId: string,
+      updates: Partial<PromptShortcut>,
+      successMessage: string,
+    ) => {
+      // Optimistically update local state
+      setShortcuts((prev) =>
+        prev.map((s) => (s.id === shortcutId ? { ...s, ...updates } : s)),
+      );
 
-    try {
-      await updatePromptShortcut({
-        id: shortcutId,
-        ...updates,
-      });
-      toast({ title: 'Success', description: successMessage });
-    } catch (error: any) {
-      // Revert on error
-      toast({
-        title: 'Failed',
-        description: getUserFriendlyError(error),
-        variant: 'destructive'
-      });
-      loadData(); // Reload to get correct state
-    }
-  }, [toast, loadData]);
+      try {
+        await updatePromptShortcut({
+          id: shortcutId,
+          ...updates,
+        });
+        toast({ title: "Success", description: successMessage });
+      } catch (error: any) {
+        // Revert on error
+        toast({
+          title: "Failed",
+          description: getUserFriendlyError(error),
+          variant: "destructive",
+        });
+        loadData(); // Reload to get correct state
+      }
+    },
+    [toast, loadData],
+  );
 
   // Filter and sort shortcuts
   const filteredAndSorted = useMemo(() => {
@@ -284,41 +319,46 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(s =>
-        s.label.toLowerCase().includes(query) ||
-        s.description?.toLowerCase().includes(query) ||
-        s.keyboard_shortcut?.toLowerCase().includes(query) ||
-        s.id.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (s) =>
+          s.label.toLowerCase().includes(query) ||
+          s.description?.toLowerCase().includes(query) ||
+          s.keyboard_shortcut?.toLowerCase().includes(query) ||
+          s.id.toLowerCase().includes(query),
       );
     }
 
     // Category filter
-    if (categoryFilter !== 'all') {
-      filtered = filtered.filter(s => s.category_id === categoryFilter);
+    if (categoryFilter !== "all") {
+      filtered = filtered.filter((s) => s.category_id === categoryFilter);
     }
 
     // Placement filter
-    if (placementFilter !== 'all') {
-      filtered = filtered.filter(s => s.category?.placement_type === placementFilter);
+    if (placementFilter !== "all") {
+      filtered = filtered.filter(
+        (s) => s.category?.placement_type === placementFilter,
+      );
     }
 
     // Status filter (connected/unconnected)
-    if (statusFilter === 'connected') {
-      filtered = filtered.filter(s => s.prompt_builtin_id && s.builtin);
-    } else if (statusFilter === 'unconnected') {
-      filtered = filtered.filter(s => !s.prompt_builtin_id || !s.builtin);
+    if (statusFilter === "connected") {
+      filtered = filtered.filter((s) => s.prompt_builtin_id && s.builtin);
+    } else if (statusFilter === "unconnected") {
+      filtered = filtered.filter((s) => !s.prompt_builtin_id || !s.builtin);
     }
 
     // Active filter
-    if (activeFilter === 'active') {
-      filtered = filtered.filter(s => s.is_active);
-    } else if (activeFilter === 'inactive') {
-      filtered = filtered.filter(s => !s.is_active);
+    if (activeFilter === "active") {
+      filtered = filtered.filter((s) => s.is_active);
+    } else if (activeFilter === "inactive") {
+      filtered = filtered.filter((s) => !s.is_active);
     }
 
     // Display filter
-    if (displayFilter !== 'all') {
-      filtered = filtered.filter(s => (s.result_display || 'modal-full') === displayFilter);
+    if (displayFilter !== "all") {
+      filtered = filtered.filter(
+        (s) => (s.result_display || "modal-full") === displayFilter,
+      );
     }
 
     // Sort
@@ -326,73 +366,85 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
       let aVal: any, bVal: any;
 
       switch (sortField) {
-        case 'label':
+        case "label":
           aVal = a.label.toLowerCase();
           bVal = b.label.toLowerCase();
           break;
-        case 'category':
-          aVal = a.category?.label || '';
-          bVal = b.category?.label || '';
+        case "category":
+          aVal = a.category?.label || "";
+          bVal = b.category?.label || "";
           break;
-        case 'status':
+        case "status":
           aVal = a.is_active ? 1 : 0;
           bVal = b.is_active ? 1 : 0;
           break;
-        case 'connection':
-          aVal = (a.prompt_builtin_id && a.builtin) ? 1 : 0;
-          bVal = (b.prompt_builtin_id && b.builtin) ? 1 : 0;
+        case "connection":
+          aVal = a.prompt_builtin_id && a.builtin ? 1 : 0;
+          bVal = b.prompt_builtin_id && b.builtin ? 1 : 0;
           break;
-        case 'placement':
-          aVal = a.category?.placement_type || '';
-          bVal = b.category?.placement_type || '';
+        case "placement":
+          aVal = a.category?.placement_type || "";
+          bVal = b.category?.placement_type || "";
           break;
-        case 'display':
-          aVal = a.result_display || 'modal-full';
-          bVal = b.result_display || 'modal-full';
+        case "display":
+          aVal = a.result_display || "modal-full";
+          bVal = b.result_display || "modal-full";
           break;
-        case 'auto_run':
-          aVal = a.auto_run ?? true ? 1 : 0;
-          bVal = b.auto_run ?? true ? 1 : 0;
+        case "auto_run":
+          aVal = (a.auto_run ?? true) ? 1 : 0;
+          bVal = (b.auto_run ?? true) ? 1 : 0;
           break;
-        case 'allow_chat':
-          aVal = a.allow_chat ?? true ? 1 : 0;
-          bVal = b.allow_chat ?? true ? 1 : 0;
+        case "allow_chat":
+          aVal = (a.allow_chat ?? true) ? 1 : 0;
+          bVal = (b.allow_chat ?? true) ? 1 : 0;
           break;
-        case 'show_variables':
-          aVal = a.show_variables ?? false ? 1 : 0;
-          bVal = b.show_variables ?? false ? 1 : 0;
+        case "show_variables":
+          aVal = (a.show_variables ?? false) ? 1 : 0;
+          bVal = (b.show_variables ?? false) ? 1 : 0;
           break;
-        case 'apply_variables':
-          aVal = a.apply_variables ?? true ? 1 : 0;
-          bVal = b.apply_variables ?? true ? 1 : 0;
+        case "apply_variables":
+          aVal = (a.apply_variables ?? true) ? 1 : 0;
+          bVal = (b.apply_variables ?? true) ? 1 : 0;
           break;
         default:
           return 0;
       }
 
-      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
-      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
       return 0;
     });
 
     return filtered;
-  }, [shortcuts, searchQuery, categoryFilter, placementFilter, statusFilter, activeFilter, displayFilter, sortField, sortDirection]);
+  }, [
+    shortcuts,
+    searchQuery,
+    categoryFilter,
+    placementFilter,
+    statusFilter,
+    activeFilter,
+    displayFilter,
+    sortField,
+    sortDirection,
+  ]);
 
   // Stats
   const stats = useMemo(() => {
     const total = shortcuts.length;
-    const connected = shortcuts.filter(s => s.prompt_builtin_id && s.builtin).length;
-    const active = shortcuts.filter(s => s.is_active).length;
+    const connected = shortcuts.filter(
+      (s) => s.prompt_builtin_id && s.builtin,
+    ).length;
+    const active = shortcuts.filter((s) => s.is_active).length;
 
     return { total, connected, unconnected: total - connected, active };
   }, [shortcuts]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
@@ -401,18 +453,28 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
     setIsEditDialogOpen(true);
   };
 
-  const handleToggleActive = async (shortcutId: string, currentState: boolean) => {
+  const handleToggleActive = async (
+    shortcutId: string,
+    currentState: boolean,
+  ) => {
     try {
       await updatePromptShortcut({
         id: shortcutId,
         is_active: !currentState,
       });
 
-      toast({ title: 'Success', description: `Shortcut ${!currentState ? 'activated' : 'deactivated'}` });
+      toast({
+        title: "Success",
+        description: `Shortcut ${!currentState ? "activated" : "deactivated"}`,
+      });
       await loadData();
     } catch (error) {
       const errorMessage = getUserFriendlyError(error);
-      toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
@@ -425,26 +487,33 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
 
     try {
       await deletePromptShortcut(deleteConfirmShortcut.id);
-      toast({ title: 'Success', description: 'Shortcut deleted' });
+      toast({ title: "Success", description: "Shortcut deleted" });
       setDeleteConfirmShortcut(null);
       await loadData();
     } catch (error) {
       const errorMessage = getUserFriendlyError(error);
-      toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
-  const handleUpdateBuiltin = async (id: string, data: {
-    name: string;
-    description?: string;
-    variableDefaults: any[];
-    messages?: any[];
-    settings?: Record<string, any>;
-  }) => {
+  const handleUpdateBuiltin = async (
+    id: string,
+    data: {
+      name: string;
+      description?: string;
+      variableDefaults: any[];
+      messages?: any[];
+      settings?: Record<string, any>;
+    },
+  ) => {
     try {
       const response = await fetch(`/api/admin/prompt-builtins/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: data.name,
           description: data.description,
@@ -456,36 +525,45 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to update builtin');
+        throw new Error(error.error || "Failed to update builtin");
       }
 
-      toast({ title: 'Success', description: 'Prompt builtin updated successfully' });
+      toast({
+        title: "Success",
+        description: "Prompt builtin updated successfully",
+      });
       await loadData();
     } catch (error: any) {
       const errorMessage = getUserFriendlyError(error);
       toast({
-        title: 'Failed to Update Builtin',
+        title: "Failed to Update Builtin",
         description: errorMessage,
-        variant: 'destructive'
+        variant: "destructive",
       });
       throw error;
     }
   };
 
   const clearFilters = () => {
-    setSearchQuery('');
-    setCategoryFilter('all');
-    setPlacementFilter('all');
-    setStatusFilter('all');
-    setActiveFilter('all');
-    setDisplayFilter('all');
+    setSearchQuery("");
+    setCategoryFilter("all");
+    setPlacementFilter("all");
+    setStatusFilter("all");
+    setActiveFilter("all");
+    setDisplayFilter("all");
   };
 
-  const hasActiveFilters = searchQuery || categoryFilter !== 'all' || placementFilter !== 'all' || statusFilter !== 'all' || activeFilter !== 'all' || displayFilter !== 'all';
+  const hasActiveFilters =
+    searchQuery ||
+    categoryFilter !== "all" ||
+    placementFilter !== "all" ||
+    statusFilter !== "all" ||
+    activeFilter !== "all" ||
+    displayFilter !== "all";
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return null;
-    return sortDirection === 'asc' ? (
+    return sortDirection === "asc" ? (
       <ChevronUp className="h-3 w-3 inline ml-1" />
     ) : (
       <ChevronDown className="h-3 w-3 inline ml-1" />
@@ -535,19 +613,25 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
             </Card>
             <Card>
               <CardContent className="p-2">
-                <div className="text-xl font-bold text-green-600">{stats.connected}</div>
+                <div className="text-xl font-bold text-green-600">
+                  {stats.connected}
+                </div>
                 <div className="text-xs text-muted-foreground">Connected</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-2">
-                <div className="text-xl font-bold text-orange-600">{stats.unconnected}</div>
+                <div className="text-xl font-bold text-orange-600">
+                  {stats.unconnected}
+                </div>
                 <div className="text-xs text-muted-foreground">Unconnected</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-2">
-                <div className="text-xl font-bold text-blue-600">{stats.active}</div>
+                <div className="text-xl font-bold text-blue-600">
+                  {stats.active}
+                </div>
                 <div className="text-xs text-muted-foreground">Active</div>
               </CardContent>
             </Card>
@@ -589,15 +673,22 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">
-                  {placementFilter === 'all' ? 'All Categories' : 'All in Placement'}
+                  {placementFilter === "all"
+                    ? "All Categories"
+                    : "All in Placement"}
                 </SelectItem>
-                {availableCategories.map(cat => (
-                  <SelectItem key={cat.id} value={cat.id}>{cat.label}</SelectItem>
+                {availableCategories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+            <Select
+              value={statusFilter}
+              onValueChange={(v: any) => setStatusFilter(v)}
+            >
               <SelectTrigger className="w-[160px]">
                 <SelectValue />
               </SelectTrigger>
@@ -608,7 +699,10 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
               </SelectContent>
             </Select>
 
-            <Select value={activeFilter} onValueChange={(v: any) => setActiveFilter(v)}>
+            <Select
+              value={activeFilter}
+              onValueChange={(v: any) => setActiveFilter(v)}
+            >
               <SelectTrigger className="w-[140px]">
                 <SelectValue />
               </SelectTrigger>
@@ -631,8 +725,14 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                   return (
                     <SelectItem key={display} value={display}>
                       <div className="flex items-center gap-2">
-                        {isInvalid && <AlertTriangle className="h-3 w-3 text-destructive" />}
-                        <span className={isInvalid ? 'text-destructive font-semibold' : ''}>
+                        {isInvalid && (
+                          <AlertTriangle className="h-3 w-3 text-destructive" />
+                        )}
+                        <span
+                          className={
+                            isInvalid ? "text-destructive font-semibold" : ""
+                          }
+                        >
                           {isInvalid ? `⚠️ ${display}` : meta.label}
                         </span>
                       </div>
@@ -654,56 +754,80 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                     <span className="font-semibold">ID</span>
                   </TableHead>
                   <TableHead className="w-[50px]">Status</TableHead>
-                  <TableHead className="min-w-[200px]" onClick={() => handleSort('label')}>
+                  <TableHead
+                    className="min-w-[200px]"
+                    onClick={() => handleSort("label")}
+                  >
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
                       <span className="font-semibold">Label</span>
                       <ArrowUpDown className="h-3 w-3" />
                       <SortIcon field="label" />
                     </div>
                   </TableHead>
-                  <TableHead className="min-w-[120px]" onClick={() => handleSort('placement')}>
+                  <TableHead
+                    className="min-w-[120px]"
+                    onClick={() => handleSort("placement")}
+                  >
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
                       <span className="font-semibold">Placement</span>
                       <ArrowUpDown className="h-3 w-3" />
                       <SortIcon field="placement" />
                     </div>
                   </TableHead>
-                  <TableHead className="min-w-[130px]" onClick={() => handleSort('category')}>
+                  <TableHead
+                    className="min-w-[130px]"
+                    onClick={() => handleSort("category")}
+                  >
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
                       <span className="font-semibold">Category</span>
                       <ArrowUpDown className="h-3 w-3" />
                       <SortIcon field="category" />
                     </div>
                   </TableHead>
-                  <TableHead className="min-w-[100px]" onClick={() => handleSort('display')}>
+                  <TableHead
+                    className="min-w-[100px]"
+                    onClick={() => handleSort("display")}
+                  >
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
                       <span className="font-semibold">Display</span>
                       <ArrowUpDown className="h-3 w-3" />
                       <SortIcon field="display" />
                     </div>
                   </TableHead>
-                  <TableHead className="w-[70px]" onClick={() => handleSort('auto_run')}>
+                  <TableHead
+                    className="w-[70px]"
+                    onClick={() => handleSort("auto_run")}
+                  >
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary justify-center">
                       <span className="font-semibold">Auto</span>
                       <ArrowUpDown className="h-3 w-3" />
                       <SortIcon field="auto_run" />
                     </div>
                   </TableHead>
-                  <TableHead className="w-[70px]" onClick={() => handleSort('allow_chat')}>
+                  <TableHead
+                    className="w-[70px]"
+                    onClick={() => handleSort("allow_chat")}
+                  >
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary justify-center">
                       <span className="font-semibold">Chat</span>
                       <ArrowUpDown className="h-3 w-3" />
                       <SortIcon field="allow_chat" />
                     </div>
                   </TableHead>
-                  <TableHead className="w-[70px]" onClick={() => handleSort('show_variables')}>
+                  <TableHead
+                    className="w-[70px]"
+                    onClick={() => handleSort("show_variables")}
+                  >
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary justify-center">
                       <span className="font-semibold">Show Vars</span>
                       <ArrowUpDown className="h-3 w-3" />
                       <SortIcon field="show_variables" />
                     </div>
                   </TableHead>
-                  <TableHead className="w-[70px]" onClick={() => handleSort('apply_variables')}>
+                  <TableHead
+                    className="w-[70px]"
+                    onClick={() => handleSort("apply_variables")}
+                  >
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary justify-center">
                       <span className="font-semibold">Apply Vars</span>
                       <ArrowUpDown className="h-3 w-3" />
@@ -711,26 +835,35 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                     </div>
                   </TableHead>
                   <TableHead className="min-w-[120px]">Keyboard</TableHead>
-                  <TableHead className="min-w-[140px]" onClick={() => handleSort('connection')}>
+                  <TableHead
+                    className="min-w-[140px]"
+                    onClick={() => handleSort("connection")}
+                  >
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
                       <span className="font-semibold">AI Prompt</span>
                       <ArrowUpDown className="h-3 w-3" />
                       <SortIcon field="connection" />
                     </div>
                   </TableHead>
-                  <TableHead className="w-[80px]" onClick={() => handleSort('status')}>
+                  <TableHead
+                    className="w-[80px]"
+                    onClick={() => handleSort("status")}
+                  >
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
                       <span className="font-semibold">Active</span>
                       <ArrowUpDown className="h-3 w-3" />
                       <SortIcon field="status" />
                     </div>
                   </TableHead>
-                  <TableHead className="text-right w-[120px]">Actions</TableHead>
+                  <TableHead className="text-right w-[120px]">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredAndSorted.map((shortcut) => {
-                  const isConnected = shortcut.prompt_builtin_id && shortcut.builtin;
+                  const isConnected =
+                    shortcut.prompt_builtin_id && shortcut.builtin;
 
                   return (
                     <TableRow
@@ -764,14 +897,18 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                             <TooltipTrigger>
                               <CheckCircle2 className="h-4 w-4 text-green-600" />
                             </TooltipTrigger>
-                            <TooltipContent>Connected to AI prompt</TooltipContent>
+                            <TooltipContent>
+                              Connected to AI prompt
+                            </TooltipContent>
                           </Tooltip>
                         ) : (
                           <Tooltip>
                             <TooltipTrigger>
                               <Lock className="h-4 w-4 text-orange-600" />
                             </TooltipTrigger>
-                            <TooltipContent>No AI prompt connected</TooltipContent>
+                            <TooltipContent>
+                              No AI prompt connected
+                            </TooltipContent>
                           </Tooltip>
                         )}
                       </TableCell>
@@ -783,38 +920,50 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <Select
-                          value={shortcut.category?.placement_type || ''}
+                          value={shortcut.category?.placement_type || ""}
                           onValueChange={(value) => {
                             // Find a category with this placement type
-                            const targetCategory = categories.find(c => c.placement_type === value);
+                            const targetCategory = categories.find(
+                              (c) => c.placement_type === value,
+                            );
                             if (!targetCategory) return;
-                            
+
                             optimisticUpdate(
                               shortcut.id,
                               { category_id: targetCategory.id },
-                              'Placement updated'
+                              "Placement updated",
                             );
                           }}
                         >
                           <SelectTrigger className="h-7 text-xs">
                             <SelectValue placeholder="Select placement...">
-                              {shortcut.category?.placement_type && 
-                                getPlacementTypeMeta(shortcut.category.placement_type).label}
+                              {shortcut.category?.placement_type &&
+                                getPlacementTypeMeta(
+                                  shortcut.category.placement_type,
+                                ).label}
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
-                            {Object.entries(PLACEMENT_TYPES).map(([key, value]) => {
-                              const meta = getPlacementTypeMeta(value);
-                              const IconComponent = getIconComponent(meta.icon as any);
-                              return (
-                                <SelectItem key={value} value={value} className="text-xs">
-                                  <div className="flex items-center gap-2">
-                                    <IconComponent className="h-3.5 w-3.5" />
-                                    {meta.label}
-                                  </div>
-                                </SelectItem>
-                              );
-                            })}
+                            {Object.entries(PLACEMENT_TYPES).map(
+                              ([key, value]) => {
+                                const meta = getPlacementTypeMeta(value);
+                                const IconComponent = getIconComponent(
+                                  meta.icon as any,
+                                );
+                                return (
+                                  <SelectItem
+                                    key={value}
+                                    value={value}
+                                    className="text-xs"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <IconComponent className="h-3.5 w-3.5" />
+                                      {meta.label}
+                                    </div>
+                                  </SelectItem>
+                                );
+                              },
+                            )}
                           </SelectContent>
                         </Select>
                       </TableCell>
@@ -823,9 +972,17 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                           categories={categories}
                           value={shortcut.category_id}
                           onValueChange={(value) => {
-                            optimisticUpdate(shortcut.id, { category_id: value }, 'Category updated');
+                            optimisticUpdate(
+                              shortcut.id,
+                              { category_id: value },
+                              "Category updated",
+                            );
                           }}
-                          allowedPlacementTypes={shortcut.category?.placement_type ? [shortcut.category.placement_type] : undefined}
+                          allowedPlacementTypes={
+                            shortcut.category?.placement_type
+                              ? [shortcut.category.placement_type]
+                              : undefined
+                          }
                           compact
                         />
                       </TableCell>
@@ -844,75 +1001,129 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                                   </TooltipTrigger>
                                   <TooltipContent className="bg-destructive text-destructive-foreground">
                                     <div className="space-y-1">
-                                      <p className="font-semibold">⚠️ INVALID VALUE</p>
-                                      <p className="text-xs">Database contains: <code className="bg-background/20 px-1 rounded">{displayValue || 'null'}</code></p>
-                                      <p className="text-xs">This value is not recognized and will cause bugs!</p>
-                                      <p className="text-xs font-semibold mt-2">→ Select a valid value to fix</p>
+                                      <p className="font-semibold">
+                                        ⚠️ INVALID VALUE
+                                      </p>
+                                      <p className="text-xs">
+                                        Database contains:{" "}
+                                        <code className="bg-background/20 px-1 rounded">
+                                          {displayValue || "null"}
+                                        </code>
+                                      </p>
+                                      <p className="text-xs">
+                                        This value is not recognized and will
+                                        cause bugs!
+                                      </p>
+                                      <p className="text-xs font-semibold mt-2">
+                                        → Select a valid value to fix
+                                      </p>
                                     </div>
                                   </TooltipContent>
                                 </Tooltip>
                               )}
                               <Select
-                                value={isInvalid ? '' : (displayValue || 'modal-full')}
+                                value={
+                                  isInvalid ? "" : displayValue || "modal-full"
+                                }
                                 onValueChange={(value: any) => {
-                                  optimisticUpdate(shortcut.id, { result_display: value }, 'Display updated');
+                                  optimisticUpdate(
+                                    shortcut.id,
+                                    { result_display: value },
+                                    "Display updated",
+                                  );
                                 }}
                               >
-                                <SelectTrigger className={`h-7 text-xs ${isInvalid ? 'border-destructive text-destructive' : ''}`}>
+                                <SelectTrigger
+                                  className={`h-7 text-xs ${isInvalid ? "border-destructive text-destructive" : ""}`}
+                                >
                                   <SelectValue>
                                     {isInvalid ? (
                                       <span className="text-destructive font-semibold">
-                                        INVALID: {displayValue || 'null'}
+                                        INVALID: {displayValue || "null"}
                                       </span>
                                     ) : (
-                                      meta?.label || 'Select...'
+                                      meta?.label || "Select..."
                                     )}
                                   </SelectValue>
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {Object.entries(RESULT_DISPLAY_META).map(([key, value]) => (
-                                    <SelectItem key={key} value={key} className="text-xs">
-                                      {value.label}
-                                    </SelectItem>
-                                  ))}
+                                  {Object.entries(RESULT_DISPLAY_META).map(
+                                    ([key, value]) => (
+                                      <SelectItem
+                                        key={key}
+                                        value={key}
+                                        className="text-xs"
+                                      >
+                                        {value.label}
+                                      </SelectItem>
+                                    ),
+                                  )}
                                 </SelectContent>
                               </Select>
                             </div>
                           );
                         })()}
                       </TableCell>
-                      <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                      <TableCell
+                        className="text-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Checkbox
                           checked={shortcut.auto_run ?? true}
                           onCheckedChange={(checked) => {
-                            optimisticUpdate(shortcut.id, { auto_run: !!checked }, 'Auto-run updated');
+                            optimisticUpdate(
+                              shortcut.id,
+                              { auto_run: !!checked },
+                              "Auto-run updated",
+                            );
                           }}
                           className="mx-auto"
                         />
                       </TableCell>
-                      <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                      <TableCell
+                        className="text-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Checkbox
                           checked={shortcut.allow_chat ?? true}
                           onCheckedChange={(checked) => {
-                            optimisticUpdate(shortcut.id, { allow_chat: !!checked }, 'Allow chat updated');
+                            optimisticUpdate(
+                              shortcut.id,
+                              { allow_chat: !!checked },
+                              "Allow chat updated",
+                            );
                           }}
                           className="mx-auto"
                         />
                       </TableCell>
-                      <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                      <TableCell
+                        className="text-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Checkbox
                           checked={shortcut.show_variables ?? false}
                           onCheckedChange={(checked) => {
-                            optimisticUpdate(shortcut.id, { show_variables: !!checked }, 'Show variables updated');
+                            optimisticUpdate(
+                              shortcut.id,
+                              { show_variables: !!checked },
+                              "Show variables updated",
+                            );
                           }}
                           className="mx-auto"
                         />
                       </TableCell>
-                      <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                      <TableCell
+                        className="text-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Checkbox
                           checked={shortcut.apply_variables ?? true}
                           onCheckedChange={(checked) => {
-                            optimisticUpdate(shortcut.id, { apply_variables: !!checked }, 'Apply variables updated');
+                            optimisticUpdate(
+                              shortcut.id,
+                              { apply_variables: !!checked },
+                              "Apply variables updated",
+                            );
                           }}
                           className="mx-auto"
                         />
@@ -930,13 +1141,13 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                             <Button
                               variant={isConnected ? "ghost" : "ghost"}
                               size="sm"
-                              className={`h-6 px-2 text-xs ${isConnected ? 'justify-start' : ''}`}
+                              className={`h-6 px-2 text-xs ${isConnected ? "justify-start" : ""}`}
                             >
                               {isConnected ? (
                                 <>
                                   <Link2 className="h-3 w-3 mr-1 flex-shrink-0 text-green-600" />
                                   <span className="font-medium truncate">
-                                    {shortcut.builtin?.name || 'Connected'}
+                                    {shortcut.builtin?.name || "Connected"}
                                   </span>
                                 </>
                               ) : (
@@ -950,17 +1161,31 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                           <DropdownMenuContent align="end">
                             {isConnected ? (
                               <>
-                                <DropdownMenuItem onClick={() => setViewingBuiltinId(shortcut.prompt_builtin_id!)}>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    setViewingBuiltinId(
+                                      shortcut.prompt_builtin_id!,
+                                    )
+                                  }
+                                >
                                   <Edit2 className="h-4 w-4 mr-2" />
                                   Edit Builtin
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setSelectingBuiltinFor(shortcut)}>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    setSelectingBuiltinFor(shortcut)
+                                  }
+                                >
                                   <RefreshCw className="h-4 w-4 mr-2" />
                                   Change Builtin
                                 </DropdownMenuItem>
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   onClick={() => {
-                                    optimisticUpdate(shortcut.id, { prompt_builtin_id: null }, 'Builtin detached');
+                                    optimisticUpdate(
+                                      shortcut.id,
+                                      { prompt_builtin_id: null },
+                                      "Builtin detached",
+                                    );
                                   }}
                                   className="text-destructive"
                                 >
@@ -970,11 +1195,19 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                               </>
                             ) : (
                               <>
-                                <DropdownMenuItem onClick={() => setSelectingBuiltinFor(shortcut)}>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    setSelectingBuiltinFor(shortcut)
+                                  }
+                                >
                                   <Zap className="h-4 w-4 mr-2" />
                                   Select Existing Builtin
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setSelectingPromptFor(shortcut)}>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    setSelectingPromptFor(shortcut)
+                                  }
+                                >
                                   <FileText className="h-4 w-4 mr-2" />
                                   Create from Prompt
                                 </DropdownMenuItem>
@@ -983,19 +1216,25 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()} className="text-center">
+                      <TableCell
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-center"
+                      >
                         <Switch
                           checked={shortcut.is_active ?? true}
                           onCheckedChange={(checked) => {
                             optimisticUpdate(
                               shortcut.id,
                               { is_active: checked },
-                              `Shortcut ${checked ? 'activated' : 'deactivated'}`
+                              `Shortcut ${checked ? "activated" : "deactivated"}`,
                             );
                           }}
                         />
                       </TableCell>
-                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <TableCell
+                        className="text-right"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="flex justify-end gap-1">
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -1026,13 +1265,22 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleToggleActive(shortcut.id, shortcut.is_active)}
+                                onClick={() =>
+                                  handleToggleActive(
+                                    shortcut.id,
+                                    shortcut.is_active,
+                                  )
+                                }
                               >
-                                {shortcut.is_active ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                                {shortcut.is_active ? (
+                                  <EyeOff className="h-3 w-3" />
+                                ) : (
+                                  <Eye className="h-3 w-3" />
+                                )}
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              {shortcut.is_active ? 'Deactivate' : 'Activate'}
+                              {shortcut.is_active ? "Deactivate" : "Activate"}
                             </TooltipContent>
                           </Tooltip>
                           <Tooltip>
@@ -1040,7 +1288,9 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleDelete(shortcut.id, shortcut.label)}
+                                onClick={() =>
+                                  handleDelete(shortcut.id, shortcut.label)
+                                }
                               >
                                 <Trash2 className="h-3 w-3" />
                               </Button>
@@ -1060,7 +1310,11 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                 <Zap className="h-12 w-12 mx-auto text-muted-foreground mb-4 opacity-50" />
                 <p className="text-muted-foreground">No shortcuts found</p>
                 {hasActiveFilters && (
-                  <Button variant="link" onClick={clearFilters} className="mt-2">
+                  <Button
+                    variant="link"
+                    onClick={clearFilters}
+                    className="mt-2"
+                  >
                     Clear filters
                   </Button>
                 )}
@@ -1112,8 +1366,8 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
             onClose={() => setSelectingPromptFor(null)}
             shortcutId={selectingPromptFor.id}
             shortcutData={{
-              label: selectingPromptFor.label || '',
-              available_scopes: selectingPromptFor.available_scopes || []
+              label: selectingPromptFor.label || "",
+              available_scopes: selectingPromptFor.available_scopes || [],
             }}
             onSuccess={async () => {
               setSelectingPromptFor(null);
@@ -1136,35 +1390,41 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
         )}
 
         {/* View/Edit Builtin Modal */}
-        {viewingBuiltinId && (() => {
-          const builtin = builtins.find(b => b.id === viewingBuiltinId);
-          if (!builtin) return null;
+        {viewingBuiltinId &&
+          (() => {
+            const builtin = builtins.find((b) => b.id === viewingBuiltinId);
+            if (!builtin) return null;
 
-          return (
-            <PromptSettingsModal
-              isOpen={true}
-              onClose={() => setViewingBuiltinId(null)}
-              promptId={builtin.id}
-              promptName={builtin.name}
-              promptDescription={builtin.description || ''}
-              variableDefaults={builtin.variableDefaults || []}
-              messages={builtin.messages || []}
-              settings={builtin.settings || {}}
-              models={models}
-              availableTools={availableTools}
-              onUpdate={handleUpdateBuiltin}
-              onLocalStateUpdate={() => {}}
-            />
-          );
-        })()}
+            return (
+              <PromptSettingsModal
+                isOpen={true}
+                onClose={() => setViewingBuiltinId(null)}
+                promptId={builtin.id}
+                promptName={builtin.name}
+                promptDescription={builtin.description || ""}
+                variableDefaults={builtin.variableDefaults || []}
+                messages={builtin.messages || []}
+                settings={builtin.settings || {}}
+                models={models}
+                availableTools={availableTools}
+                onUpdate={handleUpdateBuiltin}
+                onLocalStateUpdate={() => {}}
+              />
+            );
+          })()}
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteConfirmShortcut} onOpenChange={(open) => !open && setDeleteConfirmShortcut(null)}>
+        <AlertDialog
+          open={!!deleteConfirmShortcut}
+          onOpenChange={(open) => !open && setDeleteConfirmShortcut(null)}
+        >
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Shortcut</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete &quot;{deleteConfirmShortcut?.label}&quot;? This action cannot be undone.
+                Are you sure you want to delete &quot;
+                {deleteConfirmShortcut?.label}&quot;? This action cannot be
+                undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -1196,4 +1456,3 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
     </TooltipProvider>
   );
 }
-
