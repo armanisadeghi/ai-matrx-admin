@@ -4,10 +4,13 @@ import type {
   ConversationMode,
 } from "./instance-conversation-history.slice";
 
+const EMPTY_TURNS: ConversationTurn[] = [];
+
 export const selectConversationTurns =
   (instanceId: string) =>
   (state: RootState): ConversationTurn[] =>
-    state.instanceConversationHistory.byInstanceId[instanceId]?.turns ?? [];
+    state.instanceConversationHistory.byInstanceId[instanceId]?.turns ??
+    EMPTY_TURNS;
 
 export const selectConversationMode =
   (instanceId: string) =>
@@ -17,8 +20,8 @@ export const selectConversationMode =
 export const selectStoredConversationId =
   (instanceId: string) =>
   (state: RootState): string | null =>
-    state.instanceConversationHistory.byInstanceId[instanceId]?.conversationId ??
-    null;
+    state.instanceConversationHistory.byInstanceId[instanceId]
+      ?.conversationId ?? null;
 
 export const selectTurnCount =
   (instanceId: string) =>

@@ -67,6 +67,13 @@ export function AgentBuilderRightPanel({
       .catch((err) => console.error("Failed to reset test instance:", err));
   }, [instanceId, agentId, dispatch]);
 
+  // Called by SmartAgentInput when autoClearConversation is ON and a new
+  // instance is created at submit time. We just swap our local instanceId —
+  // the display automatically binds to the new (empty) instance.
+  const handleNewInstance = useCallback((newId: string) => {
+    setInstanceId(newId);
+  }, []);
+
   return (
     <div className="flex flex-col h-full border border-border rounded-lg overflow-hidden bg-card max-w-[780px]">
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/30">
@@ -103,6 +110,7 @@ export function AgentBuilderRightPanel({
               instanceId={instanceId}
               showAutoClearToggle
               showSubmitOnEnterToggle
+              onNewInstance={handleNewInstance}
             />
           </div>
         </>

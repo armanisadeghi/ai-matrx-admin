@@ -64,9 +64,9 @@ import {
 import {
   addUserTurn,
   commitAssistantTurn,
-  clearHistory,
 } from "../instance-conversation-history/instance-conversation-history.slice";
-import { selectAutoClearConversation } from "../instance-ui-state/instance-ui-state.selectors";
+import { clearUserInput } from "../instance-user-input/instance-user-input.slice";
+import { clearAllResources } from "../instance-resources/instance-resources.slice";
 
 // =============================================================================
 // Assemble Request (pure selector logic, extracted for testability)
@@ -404,14 +404,11 @@ export const executeInstance = createAsyncThunk<
         }),
       );
 
-      // autoClearConversation: wipe the history so the next submission starts fresh.
-      // Used in builder/test mode where each send is independent.
-      const shouldAutoClear = selectAutoClearConversation(instanceId)(
-        getState() as RootState,
-      );
-      if (shouldAutoClear) {
-        dispatch(clearHistory(instanceId));
-      }
+      // Clear input text and resources now that the stream is done.
+      // We do this here (after stream ends) not in the component, because the
+      // thunk captured the input state at the top before anything was cleared.
+      dispatch(clearUserInput(instanceId));
+      dispatch(clearAllResources(instanceId));
 
       return { requestId, conversationId };
     } catch (error) {

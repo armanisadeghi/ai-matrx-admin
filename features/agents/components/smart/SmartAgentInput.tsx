@@ -30,6 +30,7 @@ import {
   Maximize2,
   Minimize2,
   RefreshCcw,
+  Braces,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
@@ -37,10 +38,7 @@ import { toast } from "sonner";
 
 // Instance state selectors
 import { selectUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
-import {
-  setUserInputText,
-  clearUserInput,
-} from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
+import { setUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
 import {
   selectSubmitOnEnter,
   selectAutoClearConversation,
@@ -54,14 +52,13 @@ import {
   toggleCreatorDebug,
   toggleVariablePanel,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
-import {
-  selectIsExecuting,
-  selectHasAnyContent,
-} from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import { selectIsExecuting } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import { selectInstanceVariableDefinitions } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 
 // Execution
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
-import { clearAfterSend } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
+import { reInstanceAndExecute } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
+import { selectHasConversationHistory } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 
 // Sub-components
 import { SmartAgentResourceChips } from "./SmartAgentResourceChips";
@@ -88,7 +85,7 @@ function InputButton({
   active = false,
   className = "",
 }: {
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   tooltip: string;
   onClick: () => void;
   active?: boolean;
@@ -123,6 +120,11 @@ interface SmartAgentInputProps {
   uploadPath?: string;
   enablePasteImages?: boolean;
   compact?: boolean;
+  /**
+   * Called when autoClearConversation is ON and a new instance is created on
+   * submit. The parent should update its local instanceId state with the new id.
+   */
+  onNewInstance?: (newInstanceId: string) => void;
 }
 
 // =============================================================================
@@ -139,6 +141,7 @@ export function SmartAgentInput({
   uploadPath = "agent-attachments",
   enablePasteImages = true,
   compact = false,
+  onNewInstance,
 }: SmartAgentInputProps) {
   const dispatch = useAppDispatch();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -154,9 +157,6 @@ export function SmartAgentInput({
   const isExecuting = useAppSelector((state) =>
     instanceId ? selectIsExecuting(instanceId)(state) : false,
   );
-  const hasContent = useAppSelector((state) =>
-    instanceId ? selectHasAnyContent(instanceId)(state) : false,
-  );
   const submitOnEnter = useAppSelector((state) =>
     instanceId ? selectSubmitOnEnter(instanceId)(state) : true,
   );
@@ -171,6 +171,14 @@ export function SmartAgentInput({
   );
   const showCreatorDebug = useAppSelector((state) =>
     instanceId ? selectShowCreatorDebug(instanceId)(state) : false,
+  );
+  const hasHistory = useAppSelector((state) =>
+    instanceId ? selectHasConversationHistory(instanceId)(state) : false,
+  );
+  const variableCount = useAppSelector((state) =>
+    instanceId
+      ? selectInstanceVariableDefinitions(instanceId)(state).length
+      : 0,
   );
 
   // ── File upload (for paste-image support) ───────────────────────────────────
@@ -262,16 +270,28 @@ export function SmartAgentInput({
   });
 
   // ── Send logic ──────────────────────────────────────────────────────────────
-  const isSendDisabled = !instanceId || isExecuting || !hasContent;
+  // Only block when not initialized or already executing.
+  // hasContent is NOT a gate — agents run on variables/context without user text.
+  const isSendDisabled = !instanceId || isExecuting;
 
   const handleSend = useCallback(() => {
     if (!instanceId || isSendDisabled) return;
-    // Clear input optimistically — the thunk captures the current state
-    dispatch(clearUserInput(instanceId));
-    dispatch(executeInstance({ instanceId }));
-    // Clear resources after send
-    dispatch(clearAfterSend(instanceId));
-  }, [instanceId, isSendDisabled, dispatch]);
+
+    if (autoClearConversation && hasHistory) {
+      // Re-instance path: create a fresh instance (re-snapshots the agent),
+      // transfer current variable values + user input, destroy old instance,
+      // then execute — the display resets because the instanceId changes.
+      dispatch(
+        reInstanceAndExecute({
+          currentInstanceId: instanceId,
+          onNewInstance: onNewInstance ?? (() => {}),
+        }),
+      );
+    } else {
+      // Normal path: continue the conversation (or start a new one).
+      dispatch(executeInstance({ instanceId }));
+    }
+  }, [instanceId, isSendDisabled, autoClearConversation, hasHistory, onNewInstance, dispatch]);
 
   const handleTextChange = useCallback(
     (value: string) => {
@@ -437,6 +457,20 @@ export function SmartAgentInput({
                   onClick={() => dispatch(toggleCreatorDebug(instanceId))}
                   active={showCreatorDebug}
                   className="text-amber-500"
+                />
+              )}
+
+              {/* Variable panel toggle — only when instance has variables */}
+              {variableCount > 0 && (
+                <InputButton
+                  icon={Braces}
+                  tooltip={
+                    showVariablePanel
+                      ? "Hide variables"
+                      : `Show ${variableCount} variable${variableCount !== 1 ? "s" : ""}`
+                  }
+                  onClick={() => dispatch(toggleVariablePanel(instanceId))}
+                  active={showVariablePanel}
                 />
               )}
 

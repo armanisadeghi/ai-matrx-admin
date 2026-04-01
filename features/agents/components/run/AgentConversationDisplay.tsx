@@ -3,14 +3,20 @@
 /**
  * AgentConversationDisplay
  *
- * Renders the full conversation history for an execution instance.
- * Reads completed turns from instanceConversationHistory and appends
- * AgentStreamingMessage while a response is in-flight.
+ * Renders the full conversation history for an execution instance using
+ * the same PromptUserMessage and PromptAssistantMessage components as the
+ * rest of the app — so markdown, code blocks, and all rich content rendering
+ * are identical.
  *
- * Prop: instanceId — the only key needed. No agentId, no runId.
+ * While a response is in-flight, AgentStreamingMessage is appended.
+ * Once the stream ends, executeInstance commits the turn to history and
+ * the streaming message is replaced by a permanent PromptAssistantMessage.
+ *
+ * Prop: instanceId only.
  */
 
 import { useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectConversationTurns } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import {
@@ -18,42 +24,27 @@ import {
   selectIsStreaming,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { AgentStreamingMessage } from "./AgentStreamingMessage";
-import { Bot, User } from "lucide-react";
+import { PromptUserMessage } from "@/features/prompts/components/builder/PromptUserMessage";
+import { Bot, MessageSquare } from "lucide-react";
+
+const PromptAssistantMessage = dynamic(
+  () =>
+    import("@/features/prompts/components/builder/PromptAssistantMessage").then(
+      (m) => ({ default: m.PromptAssistantMessage }),
+    ),
+  { ssr: false },
+);
 
 interface AgentConversationDisplayProps {
   instanceId: string;
-}
-
-function UserBubble({ text }: { text: string }) {
-  return (
-    <div className="flex gap-3 items-start justify-end">
-      <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-primary text-primary-foreground px-4 py-2.5 text-sm">
-        <p className="whitespace-pre-wrap break-words">{text}</p>
-      </div>
-      <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
-        <User className="w-3.5 h-3.5 text-muted-foreground" />
-      </div>
-    </div>
-  );
-}
-
-function AssistantBubble({ text }: { text: string }) {
-  return (
-    <div className="flex gap-3 items-start">
-      <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-        <Bot className="w-3.5 h-3.5 text-primary" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed">
-          {text}
-        </div>
-      </div>
-    </div>
-  );
+  compact?: boolean;
+  emptyStateMessage?: string;
 }
 
 export function AgentConversationDisplay({
   instanceId,
+  compact = false,
+  emptyStateMessage = "Ready to run",
 }: AgentConversationDisplayProps) {
   const turns = useAppSelector(selectConversationTurns(instanceId));
   const isExecuting = useAppSelector(selectIsExecuting(instanceId));
@@ -68,30 +59,54 @@ export function AgentConversationDisplay({
 
   if (turns.length === 0 && !isActive) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-6">
+      <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-6 py-12">
         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
           <Bot className="w-6 h-6 text-primary" />
         </div>
         <div>
-          <p className="text-sm font-medium">Ready to run</p>
+          <p className="text-sm font-medium">{emptyStateMessage}</p>
           <p className="text-xs text-muted-foreground mt-1">
-            Type a message below and press Enter to start.
+            Fill in any variables below and type a message to start.
           </p>
         </div>
       </div>
     );
   }
 
+  // Build a flat message list: user turn then assistant turn, alternating.
+  // turns[] from the slice has individual role-based entries, so just iterate.
+  const spacingClass = compact ? "space-y-2 pt-0 pb-2" : "space-y-6 pt-0 pb-4";
+
   return (
-    <div className="flex flex-col gap-4 py-4 px-4">
-      {turns.map((turn) =>
+    <div className={`${spacingClass} px-4`}>
+      {turns.map((turn, idx) =>
         turn.role === "user" ? (
-          <UserBubble key={turn.turnId} text={turn.content} />
+          <PromptUserMessage
+            key={turn.turnId}
+            content={turn.content}
+            messageIndex={idx}
+            compact={compact}
+          />
         ) : turn.role === "assistant" ? (
-          <AssistantBubble key={turn.turnId} text={turn.content} />
+          <PromptAssistantMessage
+            key={turn.turnId}
+            content={turn.content}
+            messageIndex={idx}
+            isStreamActive={false}
+            compact={compact}
+          />
         ) : null,
       )}
-      {isActive && <AgentStreamingMessage instanceId={instanceId} />}
+
+      {/* Live streaming turn — isolated to avoid parent re-renders on each chunk */}
+      {isActive && (
+        <AgentStreamingMessage
+          instanceId={instanceId}
+          messageIndex={turns.length}
+          compact={compact}
+        />
+      )}
+
       <div ref={bottomRef} />
     </div>
   );

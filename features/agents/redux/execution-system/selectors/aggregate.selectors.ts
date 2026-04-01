@@ -5,12 +5,26 @@
  *
  * CRITICAL: No selector here ever takes agentId as a parameter.
  * Everything needed is owned by the instance slices.
+ *
+ * SELECTOR RULES (enforced here):
+ * - Primitives returned directly — stable by value, safe for useAppSelector.
+ * - Arrays/objects from .filter()/.map() ALWAYS wrapped in createSelector.
+ * - No ?? [] / ?? {} / ?? null defaults — return undefined, guard in component.
+ * - Input selectors: plain state lookups only.
+ * - Result functions: all filtering, mapping, and derivation.
  */
 
+import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import type { AssembledAgentStartRequest } from "@/features/agents/types";
+import type {
+  PendingToolCall,
+  RequestStatus,
+} from "@/features/agents/types/request.types";
 import type { ShortcutContext } from "@/features/agents/redux/agent-shortcuts/types";
 import { assembleRequest } from "../thunks/execute-instance.thunk";
+
+const EMPTY_IDS: string[] = [];
 
 // =============================================================================
 // Instance Status Helpers
@@ -47,7 +61,7 @@ export const selectIsAwaitingTools =
 export const selectLatestAccumulatedText =
   (instanceId: string) =>
   (state: RootState): string => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? [];
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return "";
     const latest = state.activeRequests.byRequestId[ids[ids.length - 1]];
     return latest?.accumulatedText ?? "";
@@ -68,7 +82,7 @@ export const selectLatestConversationId =
     if (historyConversationId) return historyConversationId;
 
     // Fallback to active request (useful mid-stream, before commitAssistantTurn fires)
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? [];
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return null;
     const latest = state.activeRequests.byRequestId[ids[ids.length - 1]];
     return latest?.conversationId ?? null;
@@ -78,6 +92,83 @@ export const selectLatestConversationId =
 export const selectConversationMode =
   (instanceId: string) => (state: RootState) =>
     state.instanceConversationHistory.byInstanceId[instanceId]?.mode ?? "agent";
+
+/**
+ * The requestId for the most recent request on this instance.
+ * A primitive — safe to use directly with useAppSelector.
+ * Returns undefined (not null) so components can guard with `if (!requestId)`.
+ */
+export const selectLatestRequestId =
+  (instanceId: string) =>
+  (state: RootState): string | undefined => {
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    return ids.length > 0 ? ids[ids.length - 1] : undefined;
+  };
+
+/**
+ * The RequestStatus of the most recent request on this instance.
+ * A primitive — safe to use directly with useAppSelector.
+ * Returns undefined when no request exists yet.
+ */
+export const selectLatestRequestStatus =
+  (instanceId: string) =>
+  (state: RootState): RequestStatus | undefined => {
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return undefined;
+    return state.activeRequests.byRequestId[ids[ids.length - 1]]?.status;
+  };
+
+/**
+ * Is the instance in the "connecting" sub-state?
+ * True from HTTP send until the first chunk or error arrives.
+ * Useful for showing a "waiting for response" skeleton before streaming begins.
+ */
+export const selectIsConnecting =
+  (instanceId: string) =>
+  (state: RootState): boolean => {
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return false;
+    return (
+      state.activeRequests.byRequestId[ids[ids.length - 1]]?.status ===
+      "connecting"
+    );
+  };
+
+/**
+ * The error message for the most recent request, if it failed.
+ * A primitive — safe to use directly with useAppSelector.
+ * Returns undefined when no error exists.
+ */
+export const selectLatestError =
+  (instanceId: string) =>
+  (state: RootState): string | undefined => {
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return undefined;
+    return (
+      state.activeRequests.byRequestId[ids[ids.length - 1]]?.errorMessage ??
+      undefined
+    );
+  };
+
+/**
+ * Unresolved pending tool calls for the most recent request on this instance.
+ *
+ * Memoized with createSelector — returns a stable array reference when the
+ * pending calls haven't changed, preventing re-renders on every chunk arrival.
+ *
+ * Returns undefined (not []) when no request exists — guard in component.
+ */
+export const selectPendingToolCallsForInstance = (instanceId: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byInstanceId[instanceId],
+    (state: RootState) => state.activeRequests.byRequestId,
+    (instanceIds, byRequestId): PendingToolCall[] | undefined => {
+      if (!instanceIds || instanceIds.length === 0) return undefined;
+      const latest = byRequestId[instanceIds[instanceIds.length - 1]];
+      if (!latest) return undefined;
+      return latest.pendingToolCalls.filter((c) => !c.resolved);
+    },
+  );
 
 // =============================================================================
 // Send-Button Logic
@@ -184,7 +275,8 @@ export const selectInstanceSummary =
     const context = state.instanceContext.byInstanceId[instanceId];
     const userInput = state.instanceUserInput.byInstanceId[instanceId];
     const uiState = state.instanceUIState.byInstanceId[instanceId];
-    const requestIds = state.activeRequests.byInstanceId[instanceId] ?? [];
+    const requestIds =
+      state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
 
     return {
       instanceId,
@@ -208,6 +300,126 @@ export const selectInstanceSummary =
           : null,
     };
   };
+
+// =============================================================================
+// Display Mode — Cross-Slice Rendering Selectors
+// =============================================================================
+//
+// These combine executionInstances + instanceUIState to give a shell renderer
+// exactly what it needs: which instances are visible, in what mode, and at
+// what execution state. A single dispatch(setDisplayMode(...)) changes the
+// mode, and the correct shell component re-renders automatically.
+//
+// Factory pattern used (makeSelect*) because multiple shell components may
+// render concurrently — each gets its own memoized selector instance.
+
+/**
+ * Factory for a selector that returns a combined snapshot of an instance's
+ * display mode and execution status together.
+ *
+ * Use `useMemo(makeSelectInstanceDisplaySnapshot, [])` in a component so each
+ * instance gets its own memoized selector (createSelector cache size = 1).
+ *
+ * Returns undefined when the instance doesn't exist.
+ */
+export const makeSelectInstanceDisplaySnapshot = () =>
+  createSelector(
+    (state: RootState, instanceId: string) =>
+      state.instanceUIState.byInstanceId[instanceId],
+    (state: RootState, instanceId: string) =>
+      state.executionInstances.byInstanceId[instanceId],
+    (uiState, instance) => {
+      if (!uiState || !instance) return undefined;
+      return {
+        displayMode: uiState.displayMode,
+        isExpanded: uiState.isExpanded,
+        allowChat: uiState.allowChat,
+        instanceStatus: instance.status,
+        agentId: instance.agentId,
+        origin: instance.origin,
+      } as const;
+    },
+  );
+
+/**
+ * All instanceIds that have an active execution (running, streaming, or
+ * awaiting tools) grouped by their display mode.
+ *
+ * This is the primary input for an "ActiveAgentShell" component that needs
+ * to know what to render and where — without scanning every instance.
+ *
+ * Memoized — only recomputes when the instance or UI state maps change.
+ * Returns undefined (not {}) when there are no active instances.
+ */
+export const selectActiveInstancesByDisplayMode = createSelector(
+  (state: RootState) => state.executionInstances.byInstanceId,
+  (state: RootState) => state.instanceUIState.byInstanceId,
+  (byInstanceId, byUIState) => {
+    type DisplayModeMap = Record<string, string[]>;
+    const result: DisplayModeMap = {};
+    let hasAny = false;
+
+    for (const instanceId of Object.keys(byInstanceId)) {
+      const instance = byInstanceId[instanceId];
+      if (!instance) continue;
+      const { status } = instance;
+      if (
+        status !== "running" &&
+        status !== "streaming" &&
+        status !== "paused" &&
+        status !== "complete"
+      )
+        continue;
+
+      const mode = byUIState[instanceId]?.displayMode;
+      if (!mode) continue;
+
+      if (!result[mode]) result[mode] = [];
+      result[mode].push(instanceId);
+      hasAny = true;
+    }
+
+    return hasAny ? result : undefined;
+  },
+);
+
+/**
+ * All instanceIds that should be rendered as modals right now.
+ * Combines: displayMode is modal-full or modal-compact AND status is past draft.
+ * Memoized.
+ */
+export const selectActiveModalInstanceIds = createSelector(
+  (state: RootState) => state.executionInstances.byInstanceId,
+  (state: RootState) => state.instanceUIState.byInstanceId,
+  (byInstanceId, byUIState): string[] | undefined => {
+    const ids = Object.keys(byInstanceId).filter((id) => {
+      const status = byInstanceId[id]?.status;
+      if (status === "draft" || status === undefined) return false;
+      const mode = byUIState[id]?.displayMode;
+      return mode === "modal-full" || mode === "modal-compact";
+    });
+    return ids.length > 0 ? ids : undefined;
+  },
+);
+
+/**
+ * All instanceIds that should be rendered as persistent panels or chat bubbles.
+ * These stay mounted even when not actively streaming.
+ * Memoized.
+ */
+export const selectActivePanelInstanceIds = createSelector(
+  (state: RootState) => state.executionInstances.byInstanceId,
+  (state: RootState) => state.instanceUIState.byInstanceId,
+  (byInstanceId, byUIState): string[] | undefined => {
+    const ids = Object.keys(byInstanceId).filter((id) => {
+      const status = byInstanceId[id]?.status;
+      if (status === "draft" || status === undefined) return false;
+      const mode = byUIState[id]?.displayMode;
+      return mode === "panel" || mode === "chat-bubble";
+    });
+    return ids.length > 0 ? ids : undefined;
+  },
+);
 
 // =============================================================================
 // Shortcut Selectors

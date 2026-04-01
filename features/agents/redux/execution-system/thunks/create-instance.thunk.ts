@@ -22,9 +22,13 @@ import type {
   VariableDefinition,
 } from "@/features/agents/redux/agent-definition/types";
 import type { LLMParams } from "@/features/agents/types";
+import { executeInstance } from "./execute-instance.thunk";
 
 import { generateInstanceId } from "../utils";
-import { createInstance } from "../execution-instances/execution-instances.slice";
+import {
+  createInstance,
+  destroyInstance,
+} from "../execution-instances/execution-instances.slice";
 import { initInstanceOverrides } from "../instance-model-overrides/instance-model-overrides.slice";
 import {
   initInstanceVariables,
@@ -35,7 +39,10 @@ import {
   initInstanceContext,
   setContextEntries,
 } from "../instance-context/instance-context.slice";
-import { initInstanceUserInput } from "../instance-user-input/instance-user-input.slice";
+import {
+  initInstanceUserInput,
+  setUserInputText,
+} from "../instance-user-input/instance-user-input.slice";
 import { initInstanceClientTools } from "../instance-client-tools/instance-client-tools.slice";
 import { initInstanceUIState } from "../instance-ui-state/instance-ui-state.slice";
 import { initInstanceHistory } from "../instance-conversation-history/instance-conversation-history.slice";
@@ -133,6 +140,8 @@ export const createManualInstance = createAsyncThunk<
         instanceId,
         isCreator: snapshot.isCreator,
         autoClearConversation,
+        // Show variable panel by default when the agent has variables defined
+        showVariablePanel: snapshot.variableDefinitions.length > 0,
       }),
     );
     dispatch(initInstanceHistory({ instanceId }));
@@ -328,7 +337,11 @@ export const createTestInstance = createAsyncThunk<
     dispatch(initInstanceUserInput({ instanceId, text: userInput }));
     dispatch(initInstanceClientTools({ instanceId }));
     dispatch(
-      initInstanceUIState({ instanceId, isCreator: snapshot.isCreator }),
+      initInstanceUIState({
+        instanceId,
+        isCreator: snapshot.isCreator,
+        showVariablePanel: snapshot.variableDefinitions.length > 0,
+      }),
     );
     dispatch(initInstanceHistory({ instanceId }));
 
@@ -403,9 +416,157 @@ export const createManualInstanceNoAgent = createAsyncThunk<
     dispatch(initInstanceContext({ instanceId }));
     dispatch(initInstanceUserInput({ instanceId, text: userInput }));
     dispatch(initInstanceClientTools({ instanceId }));
-    dispatch(initInstanceUIState({ instanceId }));
+    dispatch(
+      initInstanceUIState({
+        instanceId,
+        showVariablePanel: variableDefinitions.length > 0,
+      }),
+    );
     dispatch(initInstanceHistory({ instanceId }));
 
     return instanceId;
+  },
+);
+
+// =============================================================================
+// Re-Instance and Execute (autoClearConversation path)
+// =============================================================================
+
+interface ReInstanceAndExecuteArgs {
+  /** The current instance that has existing history */
+  currentInstanceId: string;
+  /** Called with the new instanceId so the parent component can update its state */
+  onNewInstance: (newInstanceId: string) => void;
+  debug?: boolean;
+}
+
+interface ReInstanceAndExecuteResult {
+  newInstanceId: string;
+  requestId: string;
+  conversationId: string | null;
+}
+
+/**
+ * Auto-Clear submit path.
+ *
+ * When `autoClearConversation` is ON and the instance already has conversation
+ * history, submitting should NOT continue the existing conversation.
+ * Instead:
+ *   1. Read current variable values and user input text from the old instance
+ *   2. Create a brand-new instance by re-snapshotting the agent definition
+ *      (picks up any unsaved builder edits)
+ *   3. Transfer variable values and user input into the new instance
+ *   4. Destroy the old instance (clears the display)
+ *   5. Execute on the new instance (fresh agent call, no conversationId)
+ *
+ * The `onNewInstance` callback lets the parent component swap its local
+ * `instanceId` state so the display automatically binds to the new instance.
+ */
+export const reInstanceAndExecute = createAsyncThunk<
+  ReInstanceAndExecuteResult,
+  ReInstanceAndExecuteArgs
+>(
+  "instances/reInstanceAndExecute",
+  async (
+    { currentInstanceId, onNewInstance, debug = false },
+    { dispatch, getState },
+  ) => {
+    const state = getState() as RootState;
+
+    // Read what the user has filled in on the old instance BEFORE destroying it
+    const currentInput =
+      state.instanceUserInput.byInstanceId[currentInstanceId];
+    const currentVariables =
+      state.instanceVariableValues.byInstanceId[currentInstanceId];
+    const currentUIState =
+      state.instanceUIState.byInstanceId[currentInstanceId];
+
+    const userInputText = currentInput?.text ?? "";
+    const userValues = currentVariables?.userValues ?? {};
+
+    // Retrieve the agentId stored in the instance record (agentId is only read
+    // during instance creation — this is the next creation, so it's still valid)
+    const instance = state.executionInstances.byInstanceId[currentInstanceId];
+    if (!instance) {
+      throw new Error(`Instance ${currentInstanceId} not found`);
+    }
+    const { agentId, origin } = instance;
+
+    // Create a fresh instance, re-snapshotting the latest agent definition
+    // (captures any unsaved builder edits since the last instance was created)
+    const newInstanceId = generateInstanceId();
+    const snapshot = agentId ? readAgentSnapshot(state, agentId) : null;
+
+    dispatch(
+      createInstance({
+        instanceId: newInstanceId,
+        agentId,
+        agentType: snapshot?.agentType ?? instance.agentType,
+        origin: origin as InstanceOrigin,
+      }),
+    );
+
+    dispatch(
+      initInstanceOverrides({
+        instanceId: newInstanceId,
+        baseSettings: snapshot?.baseSettings ?? {},
+      }),
+    );
+    dispatch(
+      initInstanceVariables({
+        instanceId: newInstanceId,
+        definitions: snapshot?.variableDefinitions ?? [],
+        scopeValues: {},
+      }),
+    );
+    dispatch(initInstanceResources({ instanceId: newInstanceId }));
+    dispatch(initInstanceContext({ instanceId: newInstanceId }));
+    dispatch(initInstanceUserInput({ instanceId: newInstanceId }));
+    dispatch(initInstanceClientTools({ instanceId: newInstanceId }));
+    dispatch(
+      initInstanceUIState({
+        instanceId: newInstanceId,
+        isCreator: snapshot?.isCreator ?? currentUIState?.isCreator ?? false,
+        autoClearConversation: true,
+        showVariablePanel:
+          (snapshot?.variableDefinitions.length ?? 0) > 0 ||
+          (currentUIState?.showVariablePanel ?? false),
+        submitOnEnter: currentUIState?.submitOnEnter ?? true,
+      }),
+    );
+    dispatch(initInstanceHistory({ instanceId: newInstanceId }));
+
+    // Transfer whatever the user had filled in
+    if (Object.keys(userValues).length > 0) {
+      dispatch(
+        setUserVariableValues({
+          instanceId: newInstanceId,
+          values: userValues,
+        }),
+      );
+    }
+    if (userInputText) {
+      dispatch(
+        setUserInputText({ instanceId: newInstanceId, text: userInputText }),
+      );
+    }
+
+    // Notify the parent component to swap its instanceId — this causes the
+    // display to immediately switch to the (empty) new instance
+    onNewInstance(newInstanceId);
+
+    // Destroy the old instance after the parent has been notified
+    dispatch(destroyInstance(currentInstanceId));
+
+    // Execute on the new instance
+    const result = await dispatch(
+      executeInstance({ instanceId: newInstanceId, debug }),
+    ).unwrap();
+
+    return {
+      newInstanceId,
+      requestId: result.requestId,
+      conversationId: result.conversationId,
+    };
   },
 );
