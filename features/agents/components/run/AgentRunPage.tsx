@@ -25,9 +25,8 @@ import { selectAgentExecutionPayload } from "@/features/agents/redux/agent-defin
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
 import { AgentConversationDisplay } from "./AgentConversationDisplay";
-import { AgentRunInput } from "./AgentRunInput";
-import { AgentVariableInputForm } from "./AgentVariableInputForm";
 import { AgentRunsSidebar } from "./AgentRunsSidebar";
+import { SmartAgentInput } from "../smart";
 import { Loader2, Bot, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -168,13 +167,14 @@ export function AgentRunPage({ agentId, agentName }: AgentRunPageProps) {
           <AgentConversationDisplay instanceId={instanceId} />
         </div>
 
-        {/* Variable form */}
-        <div className="px-4 py-2 border-t border-border">
-          <AgentVariableInputForm instanceId={instanceId} />
+        {/* Input — SmartAgentInput includes variable panel and resource chips */}
+        <div className="px-3 pb-3 pt-2 border-t border-border">
+          <SmartAgentInput
+            instanceId={instanceId}
+            sendButtonVariant="blue"
+            showSubmitOnEnterToggle
+          />
         </div>
-
-        {/* Input */}
-        <AgentRunInput instanceId={instanceId} />
       </div>
     </div>
   );

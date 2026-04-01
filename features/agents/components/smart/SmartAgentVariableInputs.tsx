@@ -1,0 +1,201 @@
+"use client";
+
+/**
+ * SmartAgentVariableInputs
+ *
+ * Renders inline variable input rows above the textarea.
+ * Reads definitions and values from instanceVariableValues.
+ * Manages expanded-variable popovers via instanceUIState.
+ *
+ * Only renders when showVariablePanel is true AND definitions exist.
+ * Prop: instanceId only.
+ */
+
+import { useCallback } from "react";
+import { ChevronRight, ChevronUp } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import {
+  selectInstanceVariableDefinitions,
+  selectUserVariableValues,
+} from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
+import { setUserVariableValue } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.slice";
+import {
+  selectExpandedVariableId,
+  selectShowVariablePanel,
+} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import { setExpandedVariableId } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
+import { VariableInputComponent } from "@/features/prompts/components/variable-inputs";
+import { formatText } from "@/utils/text/text-case-converter";
+
+interface SmartAgentVariableInputsProps {
+  instanceId: string;
+  /** Pass through to VariableInputComponent for compact display */
+  compact?: boolean;
+  /** Called when Enter is pressed on the last variable, or always on Enter if submitOnEnter */
+  onSubmit?: () => void;
+  submitOnEnter?: boolean;
+}
+
+export function SmartAgentVariableInputs({
+  instanceId,
+  compact = false,
+  onSubmit,
+  submitOnEnter = true,
+}: SmartAgentVariableInputsProps) {
+  const dispatch = useAppDispatch();
+
+  const showVariablePanel = useAppSelector(selectShowVariablePanel(instanceId));
+  const definitions = useAppSelector(
+    selectInstanceVariableDefinitions(instanceId),
+  );
+  const userValues = useAppSelector(selectUserVariableValues(instanceId));
+  const expandedVariableId = useAppSelector(
+    selectExpandedVariableId(instanceId),
+  );
+
+  const handleValueChange = useCallback(
+    (name: string, value: string) => {
+      dispatch(setUserVariableValue({ instanceId, name, value }));
+    },
+    [instanceId, dispatch],
+  );
+
+  const handleExpand = useCallback(
+    (name: string | null) => {
+      dispatch(setExpandedVariableId({ instanceId, variableId: name }));
+    },
+    [instanceId, dispatch],
+  );
+
+  const handleVariableKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+      if (e.key !== "Enter" || e.shiftKey) return;
+      e.preventDefault();
+
+      const isLast = index === definitions.length - 1;
+      if (!isLast) {
+        // Move focus to next variable input
+        const container = (e.currentTarget as HTMLElement).closest(
+          "[data-variable-inputs]",
+        );
+        const next = container?.querySelector<HTMLInputElement>(
+          `[data-variable-index="${index + 1}"]`,
+        );
+        next?.focus();
+        return;
+      }
+      // Last variable: submit
+      if (submitOnEnter) {
+        onSubmit?.();
+      }
+    },
+    [definitions.length, submitOnEnter, onSubmit],
+  );
+
+  if (!showVariablePanel || definitions.length === 0) return null;
+
+  return (
+    <div className="border-b border-border" data-variable-inputs>
+      {definitions.map((variable, index) => {
+        const isExpanded = expandedVariableId === variable.name;
+        const rawValue =
+          (userValues[variable.name] as string | undefined) ??
+          variable.defaultValue ??
+          "";
+        const value =
+          typeof rawValue === "string" ? rawValue : String(rawValue ?? "");
+
+        if (isExpanded) {
+          return (
+            <Popover
+              key={variable.name}
+              open
+              onOpenChange={(open) => {
+                if (!open) handleExpand(null);
+              }}
+            >
+              <PopoverTrigger asChild>
+                <div
+                  className="w-full flex items-center gap-2 pl-1.5 pr-3 h-12 bg-background/50 border-b border-border cursor-pointer hover:border-muted-foreground/40 transition-colors group"
+                  onClick={() => handleExpand(variable.name)}
+                  tabIndex={index + 1}
+                >
+                  <Label className="text-xs font-medium text-muted-foreground whitespace-nowrap flex-shrink-0 cursor-pointer">
+                    {formatText(variable.name)}:
+                  </Label>
+                  <div className="flex-1 text-xs text-foreground min-w-0">
+                    {value ? (
+                      <span className="whitespace-nowrap overflow-hidden text-ellipsis block">
+                        {value.replace(/\n/g, " ↵ ")}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        {variable.helpText ?? "Enter value..."}
+                      </span>
+                    )}
+                  </div>
+                  <ChevronUp className="w-4 h-4 text-primary shrink-0" />
+                </div>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-[500px] max-h-[500px] p-2 border-border overflow-y-auto"
+                align="center"
+                side="top"
+                sideOffset={8}
+              >
+                <VariableInputComponent
+                  value={value}
+                  onChange={(v) => handleValueChange(variable.name, v)}
+                  variableName={variable.name}
+                  customComponent={variable.customComponent}
+                  onRequestClose={() => handleExpand(null)}
+                  helpText={variable.helpText}
+                  compact={compact}
+                />
+              </PopoverContent>
+            </Popover>
+          );
+        }
+
+        return (
+          <div
+            key={variable.name}
+            className="flex items-center gap-2 pl-1.5 pr-3 h-6 bg-background border-b border-border hover:bg-muted/50 transition-colors focus-within:border-primary/50 group"
+          >
+            <Label
+              className="text-xs font-medium text-muted-foreground whitespace-nowrap flex-shrink-0 cursor-pointer"
+              onClick={() => handleExpand(variable.name)}
+            >
+              {formatText(variable.name)}:
+            </Label>
+            <input
+              type="text"
+              value={value.includes("\n") ? value.replace(/\n/g, " ↵ ") : value}
+              onChange={(e) => handleValueChange(variable.name, e.target.value)}
+              onKeyDown={(e) => handleVariableKeyDown(e, index)}
+              placeholder={variable.helpText ?? "Enter value..."}
+              className="flex-1 text-base md:text-xs bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground/60 min-w-0"
+              data-variable-index={index}
+              tabIndex={index + 1}
+            />
+            <button
+              type="button"
+              onClick={() => handleExpand(variable.name)}
+              className="shrink-0 text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+              tabIndex={-1}
+              title="Expand to full editor"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}

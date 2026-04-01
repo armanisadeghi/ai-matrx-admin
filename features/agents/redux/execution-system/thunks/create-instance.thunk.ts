@@ -89,7 +89,10 @@ export const createManualInstance = createAsyncThunk<
   CreateManualInstanceArgs
 >(
   "instances/createManual",
-  async ({ agentId, agentType, autoClearConversation = false }, { dispatch, getState }) => {
+  async (
+    { agentId, agentType, autoClearConversation = false },
+    { dispatch, getState },
+  ) => {
     const instanceId = generateInstanceId();
     const state = getState() as RootState;
 
