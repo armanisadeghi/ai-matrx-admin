@@ -21,7 +21,9 @@ async function getSidebarLists(): Promise<UserList[]> {
       p_user_id: user.id,
     });
     if (error) return [];
-    return ((data as UserListSummaryRaw[]) ?? []).map(normalizeUserList);
+    return ((data as unknown as UserListSummaryRaw[]) ?? []).map(
+      normalizeUserList,
+    ) as UserList[];
   } catch {
     return [];
   }

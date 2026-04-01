@@ -26,6 +26,7 @@ import { createManualInstance } from "@/features/agents/redux/execution-system/t
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
 import { AgentConversationDisplay } from "./AgentConversationDisplay";
 import { AgentRunsSidebar } from "./AgentRunsSidebar";
+import { AgentRequestStats } from "./AgentRequestStats";
 import { SmartAgentInput } from "../smart";
 import { Loader2, Bot, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -166,6 +167,9 @@ export function AgentRunPage({ agentId, agentName }: AgentRunPageProps) {
         <div className="flex-1 overflow-y-auto min-h-0">
           <AgentConversationDisplay instanceId={instanceId} />
         </div>
+
+        {/* Stats bar — appears after first completion */}
+        <AgentRequestStats instanceId={instanceId} />
 
         {/* Input — SmartAgentInput includes variable panel and resource chips */}
         <div className="px-3 pb-3 pt-2 border-t border-border">

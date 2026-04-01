@@ -3,16 +3,21 @@
 /**
  * AgentStreamingMessage
  *
- * Renders the live-streaming response using the same PromptAssistantMessage
- * component that the rest of the app uses — so all markdown, code blocks,
- * and rich content rendering are identical.
+ * Before the first chunk arrives: shows AgentThinkingIndicator with a live
+ * elapsed timer ("Planning...").
+ * Once chunks start flowing: renders the live text via PromptAssistantMessage.
  *
  * Isolated so the parent does not re-render on every chunk.
  */
 
 import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectLatestAccumulatedText } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import {
+  selectLatestAccumulatedText,
+  selectIsWaitingForFirstToken,
+  selectLatestRequestStartedAt,
+} from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import { AgentPlanningIndicator } from "./AgentPlanningIndicator";
 
 const PromptAssistantMessage = dynamic(
   () =>
@@ -34,6 +39,13 @@ export function AgentStreamingMessage({
   compact,
 }: AgentStreamingMessageProps) {
   const streamingText = useAppSelector(selectLatestAccumulatedText(instanceId));
+  const isWaiting = useAppSelector(selectIsWaitingForFirstToken(instanceId));
+  const startedAt = useAppSelector(selectLatestRequestStartedAt(instanceId));
+
+  // Pre-first-token: show planning indicator with elapsed timer
+  if (isWaiting && !streamingText) {
+    return <AgentPlanningIndicator startedAt={startedAt} compact={compact} />;
+  }
 
   return (
     <PromptAssistantMessage

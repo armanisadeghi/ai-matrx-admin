@@ -135,6 +135,46 @@ export const selectIsConnecting =
   };
 
 /**
+ * Is the instance in the pre-first-token waiting phase?
+ * True from submit until the first chunk arrives (status: "running" or "connecting").
+ * Used to show the "Planning..." timer to the user.
+ *
+ * Note: the instance status goes "running" → "streaming" when the first chunk
+ * arrives. We want the spinner for the gap between those two states.
+ */
+export const selectIsWaitingForFirstToken =
+  (instanceId: string) =>
+  (state: RootState): boolean => {
+    const instanceStatus =
+      state.executionInstances.byInstanceId[instanceId]?.status;
+    // Running = request in flight but no chunks yet
+    if (instanceStatus === "running") return true;
+
+    // Also cover the "connecting" request status (before even the HTTP response)
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return false;
+    const latestStatus =
+      state.activeRequests.byRequestId[ids[ids.length - 1]]?.status;
+    return latestStatus === "connecting";
+  };
+
+/**
+ * When the most recent request on this instance was submitted (ISO string).
+ * Used to drive the pre-first-token elapsed timer in the UI.
+ * Returns undefined if no request exists yet.
+ */
+export const selectLatestRequestStartedAt =
+  (instanceId: string) =>
+  (state: RootState): string | undefined => {
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return undefined;
+    return (
+      state.activeRequests.byRequestId[ids[ids.length - 1]]?.startedAt ??
+      undefined
+    );
+  };
+
+/**
  * The error message for the most recent request, if it failed.
  * A primitive — safe to use directly with useAppSelector.
  * Returns undefined when no error exists.

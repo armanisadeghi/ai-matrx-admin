@@ -1,76 +1,77 @@
-import React from "react";
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import type { UserListWithItems } from "@/features/user-lists/types";
-import { ListDetailClient } from "@/features/user-lists/components/ListDetailClient";
+import { ListItemsTableView } from "@/features/user-lists/components/ListItemsTableView";
+import type { UserList, UserListItem } from "@/features/user-lists/types";
 
-interface ListDetailPageProps {
+interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-async function getListDetail(listId: string): Promise<{
-  list: UserListWithItems | null;
-  userId: string | null;
-}> {
+async function getListAndItems(
+  listId: string,
+): Promise<{ list: UserList; items: UserListItem[] } | null> {
   try {
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
+    if (!user) return null;
 
-    const [rpcResult, ownerResult] = await Promise.all([
-      supabase.rpc("get_user_list_with_items", { p_list_id: listId }),
-      supabase.from("user_lists").select("user_id").eq("id", listId).single(),
+    const [listResult, itemsResult] = await Promise.all([
+      supabase.from("user_lists").select("*").eq("id", listId).single(),
+      supabase
+        .from("user_list_items")
+        .select("*")
+        .eq("list_id", listId)
+        .order("group_name", { ascending: true })
+        .order("label", { ascending: true }),
     ]);
 
-    if (rpcResult.error || !rpcResult.data)
-      return { list: null, userId: user?.id ?? null };
+    if (listResult.error || !listResult.data) return null;
 
-    const list = rpcResult.data as UserListWithItems;
-    if (!ownerResult.error && ownerResult.data) {
-      list.user_id = ownerResult.data.user_id;
-    }
+    const list: UserList = {
+      id: listResult.data.id,
+      list_name: listResult.data.list_name,
+      description: listResult.data.description,
+      user_id: listResult.data.user_id,
+      is_public: listResult.data.is_public,
+      public_read: listResult.data.public_read,
+      created_at: listResult.data.created_at,
+      updated_at: listResult.data.updated_at,
+    };
 
-    return { list, userId: user?.id ?? null };
+    const items: UserListItem[] = (itemsResult.data ?? []) as UserListItem[];
+
+    return { list, items };
   } catch {
-    return { list: null, userId: null };
+    return null;
   }
 }
 
-export default async function ListDetailPage({ params }: ListDetailPageProps) {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const { list, userId } = await getListDetail(id);
+  const result = await getListAndItems(id);
+  if (!result) return { title: "List Not Found" };
+  return {
+    title: `${result.list.list_name} | My Lists | AI Matrx`,
+    description: result.list.description ?? undefined,
+  };
+}
 
-  if (!list) {
-    notFound();
-  }
+export default async function ListDetailPage({ params }: PageProps) {
+  const { id } = await params;
+  const result = await getListAndItems(id);
+
+  if (!result) notFound();
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      {/* Mobile back button */}
-      <div className="md:hidden flex items-center gap-2 px-4 py-2.5 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
-        <a
-          href="/lists"
-          className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors"
-        >
-          ← My Lists
-        </a>
-      </div>
-
-      <div className="flex-1 overflow-hidden">
-        <ListDetailClient list={list} userId={userId} />
+    <div className="h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6">
+        <ListItemsTableView list={result.list} items={result.items} />
       </div>
     </div>
   );
-}
-
-export async function generateMetadata({ params }: ListDetailPageProps) {
-  const { id } = await params;
-  const { list } = await getListDetail(id);
-  if (!list) return { title: "List not found | AI Matrx" };
-  return {
-    title: `${list.list_name} | AI Matrx`,
-    description:
-      list.description ?? `View and manage the "${list.list_name}" list`,
-  };
 }

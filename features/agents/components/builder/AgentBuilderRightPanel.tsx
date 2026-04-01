@@ -17,6 +17,7 @@ import { selectAgentById } from "@/features/agents/redux/agent-definition/select
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
 import { AgentConversationDisplay } from "../run/AgentConversationDisplay";
+import { AgentRequestStats } from "../run/AgentRequestStats";
 import { SmartAgentInput } from "../smart";
 import { RotateCcw, TestTube } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -103,6 +104,9 @@ export function AgentBuilderRightPanel({
           <div className="flex-1 overflow-y-auto min-h-0">
             <AgentConversationDisplay instanceId={instanceId} />
           </div>
+
+          {/* Stats bar — appears after first completion */}
+          <AgentRequestStats instanceId={instanceId} />
 
           {/* SmartAgentInput includes variable panel, resource chips, and auto-clear toggle */}
           <div className="px-3 pb-3 pt-2 border-t border-border">

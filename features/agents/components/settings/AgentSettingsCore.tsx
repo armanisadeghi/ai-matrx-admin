@@ -1,12 +1,23 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { X, FileJson, AlertCircle, ChevronLeft, Save } from "lucide-react";
+import {
+  X,
+  FileJson,
+  AlertCircle,
+  ChevronLeft,
+  Save,
+  AlertTriangle,
+} from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Textarea,
+  CopyTextarea,
+  TextareaWithPrefix,
+} from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -23,10 +34,12 @@ import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectAgentSettings,
   selectAgentModelId,
+  selectAgentTools,
 } from "@/features/agents/redux/agent-definition/selectors";
 import {
   setAgentSettings,
   setAgentField,
+  setAgentTools,
 } from "@/features/agents/redux/agent-definition/slice";
 import { selectAllModels } from "@/features/ai-models/redux/modelRegistrySlice";
 import { SmartModelSelect } from "@/features/ai-models/components/smart/SmartModelSelect";
@@ -131,6 +144,9 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
     selectAgentSettings(state, agentId),
   );
   const modelId = useAppSelector((state) => selectAgentModelId(state, agentId));
+  const agentTools = useAppSelector((state) =>
+    selectAgentTools(state, agentId),
+  );
   const models = useAppSelector(selectAllModels);
 
   const { normalizedControls, error } = useModelControls(models, modelId ?? "");
@@ -228,6 +244,52 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
         (currentSettings as Record<string, unknown>)[key] !== undefined,
     );
   }, [currentSettings, recognizedKeys]);
+
+  // Compute settings with invalid values (wrong enum option or out of range)
+  const invalidSettings = useMemo(() => {
+    if (!normalizedControls)
+      return [] as { key: string; value: unknown; reason: string }[];
+    const issues: { key: string; value: unknown; reason: string }[] = [];
+    Object.entries(currentSettings).forEach(([key, value]) => {
+      if (value === null || value === undefined) return;
+      const control = (
+        normalizedControls as unknown as Record<string, ControlDefinition>
+      )[key];
+      if (!control) return; // already caught by unrecognizedSettings
+      if (
+        control.type === "enum" &&
+        control.enum &&
+        control.enum.length > 0 &&
+        !control.enum.includes(value as string)
+      ) {
+        issues.push({
+          key,
+          value,
+          reason: `"${value}" is not a valid option. Expected one of: ${control.enum.join(", ")}`,
+        });
+      }
+      if (
+        (control.type === "number" || control.type === "integer") &&
+        typeof value === "number"
+      ) {
+        if (control.min !== undefined && value < control.min) {
+          issues.push({
+            key,
+            value,
+            reason: `${value} is below minimum (${control.min})`,
+          });
+        }
+        if (control.max !== undefined && value > control.max) {
+          issues.push({
+            key,
+            value,
+            reason: `${value} exceeds maximum (${control.max})`,
+          });
+        }
+      }
+    });
+    return issues;
+  }, [currentSettings, normalizedControls]);
 
   const handleModelChange = (newModelId: string) => {
     dispatch(
@@ -363,25 +425,51 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
     setEnabledSettings(newEnabled);
   };
 
+  // Build composite JSON that represents the full effective API payload
+  const buildFullSettingsJson = () => {
+    const composite: Record<string, unknown> = {};
+    if (modelId) composite.model_id = modelId;
+    if (agentTools && agentTools.length > 0) composite.tools = agentTools;
+    Object.assign(composite, currentSettings);
+    return JSON.stringify(composite, null, 2);
+  };
+
   const handleFlipToJson = () => {
-    setJsonText(JSON.stringify(currentSettings, null, 2));
+    setJsonText(buildFullSettingsJson());
     setJsonError(null);
     setShowJsonEditor(true);
     setTimeout(() => jsonTextareaRef.current?.focus(), 420);
   };
 
   const handleFlipBack = () => {
+    // Reset draft to current state so unsaved edits don't persist
+    setJsonText(buildFullSettingsJson());
     setShowJsonEditor(false);
     setJsonError(null);
   };
 
   const handleJsonApply = () => {
     try {
-      const parsed = JSON.parse(jsonText) as LLMParams;
+      const parsed = JSON.parse(jsonText) as Record<string, unknown>;
+
+      // Extract top-level special keys and route them to the correct actions
+      const { model_id, tools, ...llmParams } = parsed;
+
+      if (model_id !== undefined && typeof model_id === "string") {
+        dispatch(
+          setAgentField({ id: agentId, field: "modelId", value: model_id }),
+        );
+      }
+      if (tools !== undefined && Array.isArray(tools)) {
+        dispatch(setAgentTools({ id: agentId, tools: tools as string[] }));
+      }
+
       setJsonError(null);
-      dispatch(setAgentSettings({ id: agentId, settings: parsed }));
+      dispatch(
+        setAgentSettings({ id: agentId, settings: llmParams as LLMParams }),
+      );
       const newEnabled = new Set<string>();
-      Object.entries(parsed).forEach(([key, value]) => {
+      Object.entries(llmParams).forEach(([key, value]) => {
         if (value !== null && value !== undefined) newEnabled.add(key);
       });
       setEnabledSettings(newEnabled);
@@ -440,23 +528,46 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
     }
 
     if (control.type === "enum" && control.enum) {
+      const storedValue = value as string | undefined;
+      const isValueMismatch =
+        storedValue !== undefined &&
+        storedValue !== null &&
+        storedValue !== "" &&
+        !control.enum.includes(storedValue);
+
       return (
-        <Select
-          value={actualValue as string}
-          onValueChange={(val) => handleSettingChange(key, val)}
-          disabled={!isEnabled}
-        >
-          <SelectTrigger className="h-7 text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="text-xs">
-            {control.enum.map((option) => (
-              <SelectItem key={option} value={option} className="text-xs py-1">
-                {option}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-1.5 flex-1">
+          <Select
+            value={isValueMismatch ? "" : (actualValue as string)}
+            onValueChange={(val) => handleSettingChange(key, val)}
+            disabled={!isEnabled}
+          >
+            <SelectTrigger className="h-7 text-xs flex-1">
+              <SelectValue
+                placeholder={isValueMismatch ? `⚠ ${storedValue}` : "Select..."}
+              />
+            </SelectTrigger>
+            <SelectContent className="text-xs">
+              {control.enum.map((option) => (
+                <SelectItem
+                  key={option}
+                  value={option}
+                  className="text-xs py-1"
+                >
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {isValueMismatch && (
+            <span
+              title={`"${storedValue}" is not a recognized option for this model`}
+              className="text-amber-500 flex-shrink-0"
+            >
+              <AlertTriangle className="h-3.5 w-3.5" />
+            </span>
+          )}
+        </div>
       );
     }
 
@@ -593,11 +704,13 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
   // Setting groups
   const textModelSettings: { key: keyof LLMParams; label: string }[] = [
     { key: "response_format", label: "Response Format" },
+    { key: "stop_sequences", label: "Stop Sequences" },
     { key: "temperature", label: "Temperature" },
     { key: "max_output_tokens", label: "Max Output Tokens" },
     { key: "top_p", label: "Top P" },
     { key: "top_k", label: "Top K" },
     { key: "thinking_budget", label: "Thinking Budget" },
+    { key: "thinking_level", label: "Thinking Level" },
     { key: "reasoning_effort", label: "Reasoning Effort" },
     { key: "reasoning_summary", label: "Reasoning Summary" },
     { key: "verbosity", label: "Verbosity" },
@@ -617,6 +730,9 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
   ];
 
   const imageVideoSettings: { key: keyof LLMParams; label: string }[] = [
+    { key: "size", label: "Size" },
+    { key: "quality", label: "Quality" },
+    { key: "count", label: "Count" },
     { key: "steps", label: "Steps" },
     { key: "guidance_scale", label: "Guidance Scale" },
     { key: "seed", label: "Seed" },
@@ -626,6 +742,11 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
     { key: "seconds", label: "Duration (s)" },
     { key: "output_quality", label: "Output Quality" },
     { key: "negative_prompt", label: "Negative Prompt" },
+  ];
+
+  const audioSettings: { key: keyof LLMParams; label: string }[] = [
+    { key: "tts_voice", label: "TTS Voice" },
+    { key: "audio_format", label: "Audio Format" },
   ];
 
   return (
@@ -647,11 +768,11 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
         >
           <div className="space-y-1.5">
             {/* Model selector */}
-            <div className="flex items-center gap-2 pb-2 border-b border-border">
+            <div className="flex items-center gap-2 pb-1 border-b border-border">
               <Label className="text-xs text-muted-foreground flex-shrink-0 w-36">
                 Model
               </Label>
-              <div className="flex-1">
+              <div className="flex-1 flex justify-start">
                 <SmartModelSelect
                   value={modelId}
                   onValueChange={handleModelChange}
@@ -668,7 +789,11 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
                     Unrecognized Settings
                   </div>
                   <div className="text-yellow-700 dark:text-yellow-300 mb-1">
-                    Not shown in UI: {unrecognizedSettings.join(", ")}
+                    These keys are not recognized for this model and are not
+                    shown in the UI:{" "}
+                    <span className="font-mono">
+                      {unrecognizedSettings.join(", ")}
+                    </span>
                   </div>
                   <Button
                     variant="outline"
@@ -683,6 +808,25 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
               </div>
             )}
 
+            {/* Invalid value warnings */}
+            {invalidSettings.length > 0 && (
+              <div className="flex items-start gap-2 p-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded text-xs">
+                <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <div className="font-semibold text-orange-800 dark:text-orange-200 mb-1">
+                    Invalid Setting Values
+                  </div>
+                  <ul className="text-orange-700 dark:text-orange-300 space-y-0.5">
+                    {invalidSettings.map(({ key, reason }) => (
+                      <li key={key}>
+                        <span className="font-mono">{key}</span>: {reason}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
             {/* Text model settings */}
             {textModelSettings.map(({ key, label }) => {
               const control = getControl(key);
@@ -690,11 +834,25 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
               return renderControl(key, label, control);
             })}
 
+            {/* Audio settings */}
+            {audioSettings.some(({ key }) => getControl(key)) && (
+              <div className="border-t pt-2 mt-2">
+                <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Audio Settings
+                </div>
+                {audioSettings.map(({ key, label }) => {
+                  const control = getControl(key);
+                  if (!control) return null;
+                  return renderControl(key, label, control);
+                })}
+              </div>
+            )}
+
             {/* Image/Video settings */}
             {imageVideoSettings.some(({ key }) => getControl(key)) && (
               <div className="border-t pt-2 mt-2">
                 <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Image/Video Settings
+                  Image / Video Settings
                 </div>
                 {imageVideoSettings.map(({ key, label }) => {
                   const control = getControl(key);
@@ -724,7 +882,7 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
                 variant="outline"
                 size="sm"
                 onClick={handleFlipToJson}
-                className="w-full h-7 text-xs"
+                className="w-full h-7 text-xs bg-card"
               >
                 <FileJson className="h-3.5 w-3.5 mr-1.5" />
                 Edit as JSON
@@ -756,7 +914,13 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
             </span>
           </div>
 
-          <Textarea
+          <p className="text-[10px] text-muted-foreground">
+            Shows the full effective payload:{" "}
+            <span className="font-mono">model_id</span>,{" "}
+            <span className="font-mono">tools</span>, and all LLM parameters.
+          </p>
+
+          <CopyTextarea
             ref={jsonTextareaRef}
             value={jsonText}
             onChange={(e) => {

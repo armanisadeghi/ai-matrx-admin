@@ -24,6 +24,8 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 import { destroyInstance } from "../execution-instances/execution-instances.slice";
+import type { CompletionStats } from "@/features/agents/types/instance.types";
+import type { ClientMetrics } from "@/features/agents/types/request.types";
 
 // =============================================================================
 // Types
@@ -64,6 +66,12 @@ export interface ConversationTurn {
 
   /** Why the model stopped generating */
   finishReason?: string;
+
+  /** Full completion stats from the server (usage, timing, tools) — assistant turns only */
+  completionStats?: CompletionStats;
+
+  /** Client-side performance metrics (timing, data volume) — assistant turns only */
+  clientMetrics?: ClientMetrics;
 
   /** Editing / forking support (future) */
   isEdited?: boolean;
@@ -148,8 +156,12 @@ const instanceConversationHistorySlice = createSlice({
         conversationId?: string | null;
       }>,
     ) {
-      const { instanceId, content, contentBlocks, conversationId = null } =
-        action.payload;
+      const {
+        instanceId,
+        content,
+        contentBlocks,
+        conversationId = null,
+      } = action.payload;
 
       const entry = state.byInstanceId[instanceId];
       if (!entry) return;
@@ -178,6 +190,7 @@ const instanceConversationHistorySlice = createSlice({
         conversationId: string | null;
         tokenUsage?: TokenUsage;
         finishReason?: string;
+        completionStats?: CompletionStats;
       }>,
     ) {
       const {
@@ -187,6 +200,7 @@ const instanceConversationHistorySlice = createSlice({
         conversationId,
         tokenUsage,
         finishReason,
+        completionStats,
       } = action.payload;
 
       const entry = state.byInstanceId[instanceId];
@@ -210,7 +224,35 @@ const instanceConversationHistorySlice = createSlice({
         conversationId,
         ...(tokenUsage && { tokenUsage }),
         ...(finishReason && { finishReason }),
+        ...(completionStats && { completionStats }),
       });
+    },
+
+    /**
+     * Attach client-side performance metrics to the most recent assistant turn.
+     * Dispatched once after finalizeClientMetrics — fire-and-forget.
+     * Keyed by requestId so it always lands on the correct turn even if
+     * multiple concurrent requests are in flight.
+     */
+    attachClientMetrics(
+      state,
+      action: PayloadAction<{
+        instanceId: string;
+        requestId: string;
+        clientMetrics: ClientMetrics;
+      }>,
+    ) {
+      const { instanceId, requestId, clientMetrics } = action.payload;
+      const entry = state.byInstanceId[instanceId];
+      if (!entry) return;
+
+      const turn = entry.turns
+        .slice()
+        .reverse()
+        .find((t) => t.role === "assistant" && t.requestId === requestId);
+      if (turn) {
+        turn.clientMetrics = clientMetrics;
+      }
     },
 
     /**
@@ -226,8 +268,12 @@ const instanceConversationHistorySlice = createSlice({
         mode?: ConversationMode;
       }>,
     ) {
-      const { instanceId, turns, conversationId, mode = "conversation" } =
-        action.payload;
+      const {
+        instanceId,
+        turns,
+        conversationId,
+        mode = "conversation",
+      } = action.payload;
 
       const entry = state.byInstanceId[instanceId];
       if (!entry) return;
@@ -265,6 +311,7 @@ export const {
   initInstanceHistory,
   addUserTurn,
   commitAssistantTurn,
+  attachClientMetrics,
   loadConversationHistory,
   clearHistory,
   removeInstanceHistory,

@@ -14,6 +14,51 @@ import { AgentType } from "../redux/agent-definition/types";
 import { ContextObjectType, LLMParams } from "./agent-api-types";
 
 // =============================================================================
+// Completion Stats — full payload from the server's completion stream event
+// =============================================================================
+
+export interface ModelUsage {
+  input_tokens: number;
+  output_tokens: number;
+  cached_input_tokens: number;
+  total_tokens: number;
+  api: string;
+  request_count: number;
+  cost: number;
+}
+
+export interface CompletionStats {
+  status: string;
+  iterations: number;
+  finish_reason: string;
+  total_usage: {
+    by_model: Record<string, ModelUsage>;
+    total: {
+      input_tokens: number;
+      output_tokens: number;
+      cached_input_tokens: number;
+      total_tokens: number;
+      total_requests: number;
+      unique_models: number;
+      total_cost: number;
+    };
+  };
+  timing_stats: {
+    total_duration: number;
+    api_duration: number;
+    tool_duration: number;
+    iterations: number;
+    avg_iteration_duration: number;
+  };
+  tool_call_stats: {
+    total_tool_calls: number;
+    iterations_with_tools: number;
+    by_tool: Record<string, unknown>;
+  };
+  metadata: unknown;
+}
+
+// =============================================================================
 // Instance Shell
 // =============================================================================
 

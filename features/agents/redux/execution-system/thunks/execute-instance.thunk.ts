@@ -23,6 +23,8 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import type { AssembledAgentStartRequest } from "@/features/agents/types/request.types";
+import type { CompletionStats } from "@/features/agents/types/instance.types";
+import type { ClientMetrics } from "@/features/agents/types/request.types";
 import { generateRequestId } from "../utils";
 import { setInstanceStatus } from "../execution-instances";
 import { selectResourcePayloads } from "../instance-resources";
@@ -58,11 +60,13 @@ import {
   appendChunk,
   appendDataPayload,
   createRequest,
+  finalizeClientMetrics,
   setConversationId,
   setRequestStatus,
 } from "../active-requests/active-requests.slice";
 import {
   addUserTurn,
+  attachClientMetrics,
   commitAssistantTurn,
 } from "../instance-conversation-history/instance-conversation-history.slice";
 import { clearUserInput } from "../instance-user-input/instance-user-input.slice";
@@ -256,6 +260,9 @@ export const executeInstance = createAsyncThunk<
         routedPayload = payload as unknown as Record<string, unknown>;
       }
 
+      // Record the true submit moment — this is t=0 for all client timing.
+      const submitAt = performance.now();
+
       // Fire the API call
       const response = await fetch(url, {
         method: "POST",
@@ -267,10 +274,13 @@ export const executeInstance = createAsyncThunk<
         throw new Error(`API error: ${response.status} ${response.statusText}`);
       }
 
-      // Read conversation_id from header immediately — available before body
+      // Read conversation_id from header immediately — available before body.
+      // Record when we received it: measures our internal overhead before the
+      // server starts streaming (internalLatency = conversationIdAt - submitAt).
       const conversationIdFromHeader =
         response.headers.get("X-Conversation-ID");
       let conversationId: string | null = conversationIdFromHeader;
+      const conversationIdAt = conversationId ? performance.now() : null;
 
       if (conversationId) {
         dispatch(setConversationId({ requestId, conversationId }));
@@ -282,16 +292,39 @@ export const executeInstance = createAsyncThunk<
       // Parse stream using the shared NDJSON parser (backpressure-safe)
       const { events } = parseNdjsonStream(response);
 
-      // Track token usage from the completion event for the assistant turn
+      // Track completion data from the completion event for the assistant turn
       let tokenUsage:
         | { input: number; output: number; total: number }
         | undefined;
       let finishReason: string | undefined;
+      let completionStats: CompletionStats | undefined;
+
+      // Client-side event counters — never inspected mid-stream, computed once after.
+      let clientFirstChunkAt: number | null = null;
+      let totalEvents = 0;
+      let chunkEvents = 0;
+      let dataEvents = 0;
+      let toolEvents = 0;
+      let otherEvents = 0;
+      let totalPayloadBytes = 0;
 
       for await (const event of events) {
+        // Fire-and-forget counters — no blocking work done here
+        totalEvents++;
+        try {
+          totalPayloadBytes += new TextEncoder().encode(
+            JSON.stringify(event),
+          ).length;
+        } catch {
+          // ignore encoding errors in metrics
+        }
         if (isChunkEvent(event)) {
+          chunkEvents++;
+          if (clientFirstChunkAt === null)
+            clientFirstChunkAt = performance.now();
           dispatch(appendChunk({ requestId, content: event.data.text }));
         } else if (isStatusUpdateEvent(event)) {
+          otherEvents++;
           // Store status_update events — useful for "agent thinking" UI indicators
           dispatch(
             appendDataPayload({
@@ -300,6 +333,7 @@ export const executeInstance = createAsyncThunk<
             }),
           );
         } else if (isDataEvent(event)) {
+          dataEvents++;
           const data = event.data as Record<string, unknown>;
           // conversation_id arrives here too (redundant with header, but handle it)
           if (
@@ -313,6 +347,7 @@ export const executeInstance = createAsyncThunk<
             dispatch(appendDataPayload({ requestId, data }));
           }
         } else if (isToolEventEvent(event)) {
+          toolEvents++;
           const toolData = event.data;
           if (toolData.event === "tool_delegated") {
             dispatch(
@@ -339,6 +374,7 @@ export const executeInstance = createAsyncThunk<
             );
           }
         } else if (isContentBlockEvent(event)) {
+          otherEvents++;
           // Structured content blocks — store for UI rendering
           dispatch(
             appendDataPayload({
@@ -347,20 +383,55 @@ export const executeInstance = createAsyncThunk<
             }),
           );
         } else if (isCompletionEvent(event)) {
-          // Extract token usage and finish reason for the history turn
+          otherEvents++;
+          // Capture the full CompletionStats payload
           const d = event.data as Record<string, unknown>;
-          if (typeof d.input_tokens === "number") {
+
+          // Build typed CompletionStats from the server payload
+          completionStats = {
+            status: (d.status as string) ?? "complete",
+            iterations: (d.iterations as number) ?? 1,
+            finish_reason: (d.finish_reason as string) ?? "stop",
+            total_usage: (d.total_usage as CompletionStats["total_usage"]) ?? {
+              by_model: {},
+              total: {
+                input_tokens: 0,
+                output_tokens: 0,
+                cached_input_tokens: 0,
+                total_tokens: 0,
+                total_requests: 0,
+                unique_models: 0,
+                total_cost: 0,
+              },
+            },
+            timing_stats:
+              (d.timing_stats as CompletionStats["timing_stats"]) ?? {
+                total_duration: 0,
+                api_duration: 0,
+                tool_duration: 0,
+                iterations: 1,
+                avg_iteration_duration: 0,
+              },
+            tool_call_stats:
+              (d.tool_call_stats as CompletionStats["tool_call_stats"]) ?? {
+                total_tool_calls: 0,
+                iterations_with_tools: 0,
+                by_tool: {},
+              },
+            metadata: d.metadata ?? null,
+          };
+
+          // Derive tokenUsage/finishReason from the richer stats for backward compat
+          const totalUsage = completionStats.total_usage?.total;
+          if (totalUsage) {
             tokenUsage = {
-              input: d.input_tokens as number,
-              output: (d.output_tokens as number) ?? 0,
-              total:
-                (d.total_tokens as number) ??
-                (d.input_tokens as number) + ((d.output_tokens as number) ?? 0),
+              input: totalUsage.input_tokens,
+              output: totalUsage.output_tokens,
+              total: totalUsage.total_tokens,
             };
           }
-          if (typeof d.finish_reason === "string") {
-            finishReason = d.finish_reason as string;
-          }
+          finishReason = completionStats.finish_reason;
+
           // Store raw completion data for telemetry
           dispatch(
             appendDataPayload({
@@ -369,6 +440,7 @@ export const executeInstance = createAsyncThunk<
             }),
           );
         } else if (isErrorEvent(event)) {
+          otherEvents++;
           dispatch(
             setRequestStatus({
               requestId,
@@ -378,12 +450,17 @@ export const executeInstance = createAsyncThunk<
           );
           dispatch(setInstanceStatus({ instanceId, status: "error" }));
         } else if (isEndEvent(event)) {
+          otherEvents++;
           dispatch(setRequestStatus({ requestId, status: "complete" }));
           dispatch(setInstanceStatus({ instanceId, status: "complete" }));
         } else if (isHeartbeatEvent(event)) {
+          otherEvents++;
           // Keep-alive ping — no action needed
         }
       }
+
+      // Stream loop has exited — record the stream-end timestamp.
+      const streamEndAt = performance.now();
 
       // Commit the completed assistant response to conversation history
       const finalState = getState() as RootState;
@@ -401,6 +478,7 @@ export const executeInstance = createAsyncThunk<
           conversationId: finalConversationId,
           ...(tokenUsage && { tokenUsage }),
           ...(finishReason && { finishReason }),
+          ...(completionStats && { completionStats }),
         }),
       );
 
@@ -409,6 +487,49 @@ export const executeInstance = createAsyncThunk<
       // thunk captured the input state at the top before anything was cleared.
       dispatch(clearUserInput(instanceId));
       dispatch(clearAllResources(instanceId));
+
+      // Record when Redux commit + render is scheduled (approximation — the
+      // actual paint happens asynchronously, but this captures the JS-thread
+      // settle point which is the meaningful overhead we can detect).
+      const renderCompleteAt = performance.now();
+
+      // Compute and store all client metrics in a single fire-and-forget dispatch.
+      const internalLatencyMs =
+        conversationIdAt !== null ? conversationIdAt - submitAt : null;
+      const ttftMs =
+        clientFirstChunkAt !== null ? clientFirstChunkAt - submitAt : null;
+      const streamDurationMs =
+        clientFirstChunkAt !== null ? streamEndAt - clientFirstChunkAt : null;
+      const renderDelayMs =
+        streamEndAt !== null ? renderCompleteAt - streamEndAt : null;
+      const totalClientDurationMs = renderCompleteAt - submitAt;
+
+      const accumulatedTextBytes = new TextEncoder().encode(
+        completedText,
+      ).length;
+
+      const clientMetrics: ClientMetrics = {
+        submitAt,
+        conversationIdAt,
+        firstChunkAt: clientFirstChunkAt,
+        streamEndAt,
+        renderCompleteAt,
+        internalLatencyMs,
+        ttftMs,
+        streamDurationMs,
+        renderDelayMs,
+        totalClientDurationMs,
+        totalEvents,
+        chunkEvents,
+        dataEvents,
+        toolEvents,
+        otherEvents,
+        accumulatedTextBytes,
+        totalPayloadBytes,
+      };
+
+      dispatch(finalizeClientMetrics({ requestId, metrics: clientMetrics }));
+      dispatch(attachClientMetrics({ instanceId, requestId, clientMetrics }));
 
       return { requestId, conversationId };
     } catch (error) {

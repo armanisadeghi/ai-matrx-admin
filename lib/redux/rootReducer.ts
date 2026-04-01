@@ -64,7 +64,7 @@ import agentCacheReducer from "./slices/agentCacheSlice";
 import agentDefinitionReducer from "@/features/agents/redux/agent-definition/slice";
 import agentShortcutReducer from "@/features/agents/redux/agent-shortcuts/slice";
 import agentConsumersReducer from "@/features/agents/redux/agent-consumers/slice";
-import agentExecutionReducer from "@/features/agents/_garbage/agent-execution/slice";
+// import agentExecutionReducer from "@/features/agents/_garbage/agent-execution/slice";
 
 // Prompt system
 import promptCacheReducer from "./slices/promptCacheSlice";
@@ -303,7 +303,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     instanceConversationHistory: instanceConversationHistoryReducer,
 
     // Just garbage that makes no sense!
-    agentExecution: agentExecutionReducer,
+    // agentExecution: agentExecutionReducer,
   });
 };
 

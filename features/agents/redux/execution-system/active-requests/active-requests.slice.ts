@@ -15,6 +15,7 @@ import type {
   RequestStatus,
   PendingToolCall,
   StreamWarning,
+  ClientMetrics,
 } from "@/features/agents/types/request.types";
 import { generateRequestId } from "../utils";
 import { destroyInstance } from "../execution-instances/execution-instances.slice";
@@ -76,6 +77,7 @@ const activeRequestsSlice = createSlice({
         startedAt: now,
         firstChunkAt: null,
         completedAt: null,
+        clientMetrics: null,
       };
 
       if (!state.byInstanceId[instanceId]) {
@@ -230,6 +232,21 @@ const activeRequestsSlice = createSlice({
     },
 
     /**
+     * Store the computed client-side metrics for a completed request.
+     * Dispatched once after the stream loop exits — never during the stream.
+     * Fire-and-forget: no component waits for this.
+     */
+    finalizeClientMetrics(
+      state,
+      action: PayloadAction<{ requestId: string; metrics: ClientMetrics }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (request) {
+        request.clientMetrics = action.payload.metrics;
+      }
+    },
+
+    /**
      * Remove a request entry.
      */
     removeRequest(state, action: PayloadAction<string>) {
@@ -270,6 +287,7 @@ export const {
   addPendingToolCall,
   resolveToolCall,
   addWarning,
+  finalizeClientMetrics,
   removeRequest,
 } = activeRequestsSlice.actions;
 
