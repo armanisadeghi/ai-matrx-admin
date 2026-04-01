@@ -195,7 +195,7 @@ export const fetchAgentExecutionMinimal = createAsyncThunk<
     dispatch(setAgentLoading({ id: agentId, loading: true }));
 
     const { data, error } = await supabase.rpc("get_agent_execution_minimal", {
-      agent_id: agentId,
+      p_agent_id: agentId,
     });
 
     dispatch(setAgentLoading({ id: agentId, loading: false }));
@@ -205,9 +205,9 @@ export const fetchAgentExecutionMinimal = createAsyncThunk<
       throw error;
     }
 
-    const row = (
-      Array.isArray(data) ? data[0] : data
-    ) as AgentExecutionMinimal | null;
+    const row = (Array.isArray(data)
+      ? data[0]
+      : data) as unknown as AgentExecutionMinimal | null;
     if (!row) return;
 
     dispatch(
@@ -235,7 +235,7 @@ export const fetchAgentExecutionFull = createAsyncThunk<void, string, ThunkApi>(
     dispatch(setAgentLoading({ id: agentId, loading: true }));
 
     const { data, error } = await supabase.rpc("get_agent_execution_full", {
-      agent_id: agentId,
+      p_agent_id: agentId,
     });
 
     dispatch(setAgentLoading({ id: agentId, loading: false }));
@@ -245,9 +245,9 @@ export const fetchAgentExecutionFull = createAsyncThunk<void, string, ThunkApi>(
       throw error;
     }
 
-    const row = (
-      Array.isArray(data) ? data[0] : data
-    ) as AgentExecutionFull | null;
+    const row = (Array.isArray(data)
+      ? data[0]
+      : data) as unknown as AgentExecutionFull | null;
     if (!row) return;
 
     dispatch(
@@ -338,9 +338,9 @@ export const fetchAgentVersionHistory = createAsyncThunk<
   "agentDefinition/fetchVersionHistory",
   async ({ agentId, limit = 50, offset = 0 }) => {
     const { data, error } = await supabase.rpc("get_agent_version_history", {
-      agent_id: agentId,
-      limit_count: limit,
-      offset_count: offset,
+      p_agent_id: agentId,
+      p_limit: limit,
+      p_offset: offset,
     });
 
     if (error) throw error;
@@ -362,15 +362,15 @@ export const fetchAgentVersionSnapshot = createAsyncThunk<
   "agentDefinition/fetchVersionSnapshot",
   async ({ agentId, versionNumber }, { dispatch }) => {
     const { data, error } = await supabase.rpc("get_agent_version_snapshot", {
-      agent_id: agentId,
-      version_number: versionNumber,
+      p_agent_id: agentId,
+      p_version_number: versionNumber,
     });
 
     if (error) throw error;
 
-    const row = (
-      Array.isArray(data) ? data[0] : data
-    ) as AgentVersionSnapshot | null;
+    const row = (Array.isArray(data)
+      ? data[0]
+      : data) as unknown as AgentVersionSnapshot | null;
     if (!row) return;
 
     dispatch(
@@ -611,7 +611,7 @@ export const duplicateAgent = createAsyncThunk<string, string, ThunkApi>(
   "agentDefinition/duplicate",
   async (agentId, { dispatch }) => {
     const { data, error } = await supabase.rpc("duplicate_agent", {
-      agent_id: agentId,
+      p_agent_id: agentId,
     });
 
     if (error) throw error;
@@ -634,13 +634,13 @@ export const promoteAgentVersion = createAsyncThunk<
   "agentDefinition/promoteVersion",
   async ({ agentId, versionNumber }, { dispatch }) => {
     const { data, error } = await supabase.rpc("promote_agent_version", {
-      agent_id: agentId,
-      version_number: versionNumber,
+      p_agent_id: agentId,
+      p_version_number: versionNumber,
     });
 
     if (error) throw error;
 
-    const result = data as PromoteVersionResult;
+    const result = data as unknown as PromoteVersionResult;
 
     if (result.success) {
       await dispatch(fetchFullAgent(agentId));
@@ -760,7 +760,7 @@ export const fetchAgentAccessLevel = createAsyncThunk<
   ThunkApi
 >("agentDefinition/fetchAccessLevel", async (agentId, { dispatch }) => {
   const { data, error } = await supabase.rpc("get_agent_access_level", {
-    agent_id: agentId,
+    p_agent_id: agentId,
   });
 
   if (error) throw error;
@@ -795,7 +795,7 @@ export const checkAgentDrift = createAsyncThunk<
   string | undefined,
   ThunkApi
 >("agentDefinition/checkDrift", async (agentId) => {
-  const params = agentId ? { agent_id: agentId } : {};
+  const params = agentId ? { p_agent_id: agentId } : {};
   const { data, error } = await supabase.rpc("check_agent_drift", params);
 
   if (error) throw error;
@@ -814,7 +814,7 @@ export const checkAgentReferences = createAsyncThunk<
   ThunkApi
 >("agentDefinition/checkReferences", async (agentId) => {
   const { data, error } = await supabase.rpc("check_agent_references", {
-    agent_id: agentId,
+    p_agent_id: agentId,
   });
 
   if (error) throw error;
@@ -845,14 +845,16 @@ export const purgeAgentVersions = createAsyncThunk<
   { agentId: string; keepCount?: number },
   ThunkApi
 >("agentDefinition/purgeVersions", async ({ agentId, keepCount }) => {
-  const params: Record<string, unknown> = { agent_id: agentId };
-  if (keepCount !== undefined) params.keep_count = keepCount;
+  const params: { p_agent_id: string; p_keep_count?: number } = {
+    p_agent_id: agentId,
+  };
+  if (keepCount !== undefined) params.p_keep_count = keepCount;
 
   const { data, error } = await supabase.rpc("purge_agent_versions", params);
 
   if (error) throw error;
 
-  return data as PurgeVersionsResult;
+  return data as unknown as PurgeVersionsResult;
 });
 
 // ---------------------------------------------------------------------------
@@ -872,13 +874,13 @@ export const acceptAgentVersion = createAsyncThunk<
   ThunkApi
 >("agentDefinition/acceptVersion", async ({ type, refId }) => {
   const { data, error } = await supabase.rpc("accept_agent_version", {
-    type,
-    ref_id: refId,
+    p_reference_type: type,
+    p_reference_id: refId,
   });
 
   if (error) throw error;
 
-  return data as AcceptVersionResult;
+  return data as unknown as AcceptVersionResult;
 });
 
 /**
@@ -892,12 +894,12 @@ export const updateAgentFromSource = createAsyncThunk<
   ThunkApi
 >("agentDefinition/updateFromSource", async (agentId, { dispatch }) => {
   const { data, error } = await supabase.rpc("update_agent_from_source", {
-    agent_id: agentId,
+    p_agent_id: agentId,
   });
 
   if (error) throw error;
 
-  const result = data as UpdateFromSourceResult;
+  const result = data as unknown as UpdateFromSourceResult;
 
   if (result.success) {
     // Reload the live row — it now holds the source agent's data

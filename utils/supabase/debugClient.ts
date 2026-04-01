@@ -1,9 +1,10 @@
 // utils/supabase/client.ts
 
 import { createBrowserClient } from "@supabase/ssr";
+import type { Database } from '@/types/database.types';
 
 export const createClient = () =>
-  createBrowserClient(
+  createBrowserClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!.trim(),
     (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim()
   );
@@ -22,7 +23,7 @@ function logResults(label: string, data: any, error?: any) {
 }
 
 export const createDebugClient = () => {
-  const client = createBrowserClient(
+  const client = createBrowserClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!.trim(),
     (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim()
   );

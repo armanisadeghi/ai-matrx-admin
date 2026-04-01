@@ -2,6 +2,7 @@
 // Admin client for server-side operations that bypass RLS
 
 import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database.types';
 
 /**
  * Creates an admin Supabase client with service/secret key.
@@ -20,7 +21,7 @@ export function createAdminClient() {
     throw new Error('SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY) is not configured. Please add it to your .env.local file.');
   }
 
-  return createClient(supabaseUrl, supabaseServiceKey, {
+  return createClient<Database>(supabaseUrl, supabaseServiceKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
