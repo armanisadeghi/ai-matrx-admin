@@ -46,6 +46,7 @@ import customAppletRuntimeSlice from "./app-runner/slices/customAppletRuntimeSli
 import brokerSlice from "./brokerSlice/slice";
 import overlaySlice from "./slices/overlaySlice";
 import overlayDataReducer from "./slices/overlayDataSlice";
+import voicePadReducer from "./slices/voicePadSlice";
 import dbFunctionNodeSlice from "./workflows/db-function-node/dbFunctionNodeSlice";
 import workflowSlice from "./workflow/slice";
 import workflowNodeSlice from "./workflow-nodes/slice";
@@ -181,6 +182,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     adminDebug: adminDebugReducer,
     overlays: overlaySlice,
     overlayData: overlayDataReducer,
+    voicePad: voicePadReducer,
 
     // Canvas and Artifacts system ----------
     canvas: canvasReducer,

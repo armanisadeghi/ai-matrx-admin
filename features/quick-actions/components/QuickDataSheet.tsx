@@ -52,9 +52,10 @@ export function QuickDataSheet({ onClose, className }: QuickDataSheetProps) {
             const { data, error: rpcError } = await supabase.rpc('get_user_tables');
             
             if (rpcError) throw rpcError;
-            if (!data.success) throw new Error(data.error || 'Failed to load tables');
+            const tablesPayload = data as unknown as { success: boolean; error?: string; tables?: UserTable[] };
+            if (!tablesPayload.success) throw new Error(tablesPayload.error || 'Failed to load tables');
             
-            const tablesList = data.tables || [];
+            const tablesList = tablesPayload.tables || [];
             setTables(tablesList);
             
             // Auto-select first table if available

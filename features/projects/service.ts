@@ -12,6 +12,7 @@
 
 import { supabase } from "@/utils/supabase/client";
 import { requireUserId, getUserEmail } from "@/utils/auth/getUserId";
+import type { DbRpcRow } from "@/types/supabase-rpc";
 import {
   Project,
   ProjectWithRole,
@@ -31,6 +32,25 @@ import {
   validateEmail,
   generateProjectSlug,
 } from "./types";
+
+// ============================================================================
+// DB Row Interfaces
+// ============================================================================
+
+interface ProjectMemberWithUserRow {
+  id: string;
+  invited_by: string;
+  joined_at: string;
+  project_id: string;
+  role: string;
+  user_avatar_url: string;
+  user_display_name: string;
+  user_email: string;
+  user_id: string;
+}
+type _CheckProjectMemberWithUserRow = ProjectMemberWithUserRow extends DbRpcRow<"get_project_members_with_users"> ? true : false;
+declare const _projectMemberWithUserRow: _CheckProjectMemberWithUserRow;
+true satisfies typeof _projectMemberWithUserRow;
 
 // ============================================================================
 // Project CRUD Operations
@@ -406,18 +426,18 @@ export async function getProjectMembers(
     );
     if (error) throw error;
 
-    return (data ?? []).map((row: Record<string, unknown>) => ({
-      id: row.id as string,
-      projectId: row.project_id as string,
-      userId: row.user_id as string,
+    return (data as unknown as ProjectMemberWithUserRow[] ?? []).map((row) => ({
+      id: row.id,
+      projectId: row.project_id,
+      userId: row.user_id,
       role: row.role as ProjectRole,
-      joinedAt: row.joined_at as string,
+      joinedAt: row.joined_at,
       invitedBy: row.invited_by as string | null,
       user: {
-        id: row.user_id as string,
-        email: (row.user_email as string) || "",
-        displayName: (row.user_display_name as string) || undefined,
-        avatarUrl: (row.user_avatar_url as string) || undefined,
+        id: row.user_id,
+        email: row.user_email || "",
+        displayName: row.user_display_name || undefined,
+        avatarUrl: row.user_avatar_url || undefined,
       },
     }));
   } catch (error) {

@@ -1,51 +1,55 @@
 import { supabase } from '@/utils/supabase/client';
 
-export const fetchWithFk = async (args: any): Promise<any> => {
+export const fetchWithFk = async (args: any): Promise<unknown> => {
     try {
+        // Generic handler — fetch_with_fk returns Json directly
         const { data, error } = await supabase.rpc('fetch_with_fk', args);
         if (error) {
             throw error;
         }
-        return data;
+        return data as unknown;
     } catch (error: any) {
         console.error('Error in fetchWithFk:', error);
         return null;
     }
 };
 
-export const fetchWithIfk = async (args: any): Promise<any> => {
+export const fetchWithIfk = async (args: any): Promise<unknown> => {
     try {
+        // Generic handler — fetch_with_ifk returns Json directly
         const { data, error } = await supabase.rpc('fetch_with_ifk', args);
         if (error) {
             throw error;
         }
-        return data;
+        return data as unknown;
     } catch (error: any) {
         console.error('Error in fetchWithIfk:', error);
         return null;
     }
 };
 
-export const fetchWithFkIfk = async (args: any): Promise<any> => {
+export const fetchWithFkIfk = async (args: any): Promise<unknown> => {
     try {
+        // Generic handler — fetch_all_fk_ifk returns Json directly
         const { data, error } = await supabase.rpc('fetch_all_fk_ifk', args);
         if (error) {
             throw error;
         }
-        return data;
+        return data as unknown;
     } catch (error: any) {
         console.error('Error in fetchWithFkIfk:', error);
         return null;
     }
 };
 
-export const fetchCustomRels = async (args: any): Promise<any> => {
+export const fetchCustomRels = async (args: any): Promise<unknown> => {
     try {
+        // Generic handler — fetch_custom_rels returns Json directly
         const { data, error } = await supabase.rpc('fetch_custom_rels', args);
         if (error) {
             throw error;
         }
-        return data;
+        return data as unknown;
     } catch (error: any) {
         console.error('Error in fetchCustomRels:', error);
         return null;

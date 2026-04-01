@@ -22,6 +22,7 @@ import {
   FolderOpen,
   Sparkles,
   Bug,
+  Mic,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -59,6 +60,7 @@ export function MobileUnifiedMenu() {
     openQuickFiles,
     openQuickUtilities,
     openQuickAIResults,
+    openVoicePad,
   } = useQuickActions();
 
   // Notifications state (placeholder)
@@ -177,6 +179,11 @@ export function MobileUnifiedMenu() {
           <DropdownMenuItem onClick={() => openQuickUtilities()}>
             <LayoutGrid className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
             <span className="text-sm">Utilities Hub</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem onClick={() => openVoicePad()}>
+            <Mic className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
+            <span className="text-sm">Voice Input</span>
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />

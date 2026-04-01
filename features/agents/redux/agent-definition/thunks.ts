@@ -32,6 +32,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
+import type { DbRpcRow } from "@/types/supabase-rpc";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import type {
   AgentDefinition,
@@ -44,19 +45,6 @@ import type {
   UpdateFromSourceResult,
   PromoteVersionResult,
 } from "./types";
-import {
-  parseExecutionMinimal,
-  parseExecutionFull,
-  parseVersionHistoryItem,
-  parseVersionSnapshot,
-  parseAccessLevel,
-  parseDriftItem,
-  parseAgentReference,
-  parsePromoteVersionResult,
-  parseAcceptVersionResult,
-  parseUpdateFromSourceResult,
-  parsePurgeVersionsResult,
-} from "./rpc-parsers";
 import {
   upsertAgent,
   mergePartialAgent,
@@ -220,7 +208,7 @@ export const fetchAgentExecutionMinimal = createAsyncThunk<
 
     const raw = Array.isArray(data) ? data[0] : data;
     if (!raw) return;
-    const row = parseExecutionMinimal(raw);
+    const row = raw as unknown as AgentExecutionMinimal;
 
     dispatch(
       mergePartialAgent({
@@ -259,7 +247,7 @@ export const fetchAgentExecutionFull = createAsyncThunk<void, string, ThunkApi>(
 
     const raw = Array.isArray(data) ? data[0] : data;
     if (!raw) return;
-    const row = parseExecutionFull(raw);
+    const row = raw as unknown as AgentExecutionFull;
 
     dispatch(
       mergePartialAgent({
@@ -314,6 +302,12 @@ export interface AgentVersionHistoryItem {
   changed_at: string;
   change_note: string | null;
 }
+type _Check_AgentVersionHistoryItem =
+  AgentVersionHistoryItem extends DbRpcRow<"get_agent_version_history">
+    ? true
+    : false;
+declare const _agentVersionHistoryItem: _Check_AgentVersionHistoryItem;
+true satisfies typeof _agentVersionHistoryItem;
 
 export interface AgentVersionSnapshot {
   version_id: string;
@@ -336,6 +330,12 @@ export interface AgentVersionSnapshot {
   changed_at: string;
   change_note: string | null;
 }
+type _Check_AgentVersionSnapshot =
+  AgentVersionSnapshot extends DbRpcRow<"get_agent_version_snapshot">
+    ? true
+    : false;
+declare const _agentVersionSnapshot: _Check_AgentVersionSnapshot;
+true satisfies typeof _agentVersionSnapshot;
 
 /**
  * Paginated version history for the agent editor's version panel.
@@ -356,7 +356,7 @@ export const fetchAgentVersionHistory = createAsyncThunk<
 
     if (error) throw error;
 
-    return (data ?? []).map(parseVersionHistoryItem);
+    return (data ?? []) as AgentVersionHistoryItem[];
   },
 );
 
@@ -381,7 +381,7 @@ export const fetchAgentVersionSnapshot = createAsyncThunk<
 
     const raw = Array.isArray(data) ? data[0] : data;
     if (!raw) return;
-    const row = parseVersionSnapshot(raw);
+    const row = raw as unknown as AgentVersionSnapshot;
 
     dispatch(
       upsertAgent({
@@ -650,7 +650,7 @@ export const promoteAgentVersion = createAsyncThunk<
 
     if (error) throw error;
 
-    const result = parsePromoteVersionResult(data);
+    const result = data as unknown as PromoteVersionResult;
 
     if (result.success) {
       await dispatch(fetchFullAgent(agentId));
@@ -756,6 +756,10 @@ export interface AgentAccessLevel {
   access_level: "owner" | "admin" | "editor" | "viewer" | "public" | "none";
   is_owner: boolean;
 }
+type _Check_AgentAccessLevel =
+  AgentAccessLevel extends DbRpcRow<"get_agent_access_level"> ? true : false;
+declare const _agentAccessLevel: _Check_AgentAccessLevel;
+true satisfies typeof _agentAccessLevel;
 
 /**
  * Returns the current user's permission level on a specific agent.
@@ -777,7 +781,7 @@ export const fetchAgentAccessLevel = createAsyncThunk<
 
   const rawRow = Array.isArray(data) ? data[0] : data;
   if (!rawRow) throw new Error(`No access level returned for agent ${agentId}`);
-  const row = parseAccessLevel(rawRow);
+  const row = rawRow as AgentAccessLevel;
 
   // Merge into slice so selectors reflect the current access state
   dispatch(
@@ -811,7 +815,7 @@ export const checkAgentDrift = createAsyncThunk<
 
   if (error) throw error;
 
-  return (data ?? []).map(parseDriftItem);
+  return (data ?? []) as AgentDriftItem[];
 });
 
 /**
@@ -830,7 +834,7 @@ export const checkAgentReferences = createAsyncThunk<
 
   if (error) throw error;
 
-  return (data ?? []).map(parseAgentReference);
+  return (data ?? []) as AgentReference[];
 });
 
 // ---------------------------------------------------------------------------
@@ -843,6 +847,7 @@ export interface PurgeVersionsResult {
   deleted_count?: number;
   kept_count?: number;
 }
+// purge_agent_versions returns Json directly — no DB row schema to check.
 
 /**
  * Deletes old versions for an agent, keeping the N most recent.
@@ -865,7 +870,7 @@ export const purgeAgentVersions = createAsyncThunk<
 
   if (error) throw error;
 
-  return parsePurgeVersionsResult(data);
+  return data as unknown as PurgeVersionsResult;
 });
 
 // ---------------------------------------------------------------------------
@@ -891,7 +896,7 @@ export const acceptAgentVersion = createAsyncThunk<
 
   if (error) throw error;
 
-  return parseAcceptVersionResult(data);
+  return data as unknown as AcceptVersionResult;
 });
 
 /**
@@ -910,7 +915,7 @@ export const updateAgentFromSource = createAsyncThunk<
 
   if (error) throw error;
 
-  const result = parseUpdateFromSourceResult(data);
+  const result = data as unknown as UpdateFromSourceResult;
 
   if (result.success) {
     // Reload the live row — it now holds the source agent's data

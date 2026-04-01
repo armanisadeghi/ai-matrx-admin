@@ -72,15 +72,17 @@ export function ListDetailClient({ list, userId }: ListDetailClientProps) {
 
   return (
     <>
-      <ListDetail
-        list={list}
-        userId={userId}
-        onEditList={() => setEditListOpen(true)}
-        onDeleteList={() => setDeleteListOpen(true)}
-        onEditItem={handleEditItem}
-        onDeleteItem={handleDeleteItemRequest}
-        onAddItem={handleAddItem}
-      />
+      <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+        <ListDetail
+          list={list}
+          userId={userId}
+          onEditList={() => setEditListOpen(true)}
+          onDeleteList={() => setDeleteListOpen(true)}
+          onEditItem={handleEditItem}
+          onDeleteItem={handleDeleteItemRequest}
+          onAddItem={handleAddItem}
+        />
+      </div>
 
       <EditListDialog
         list={list}

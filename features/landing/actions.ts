@@ -232,7 +232,8 @@ export async function markInvitationCodeUsed(
       p_user_id: userId,
     });
 
-    if (error || !data) {
+    const success = data as unknown as boolean;
+    if (error || !success) {
       console.error('Error marking invitation code as used:', error);
       return { success: false, error: 'Failed to process invitation code.' };
     }

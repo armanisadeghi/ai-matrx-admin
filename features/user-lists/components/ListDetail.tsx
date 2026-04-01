@@ -80,7 +80,7 @@ export function ListDetail({
 
       {/* Scrollable content area */}
       <div className="flex-1 overflow-y-auto">
-        <div className="px-4 @lg:px-6 py-4 space-y-4 max-w-4xl">
+        <div className="px-3 py-3 space-y-3">
           {groups.map(([groupName, items], index) => (
             <GroupSection
               key={groupName}
@@ -100,7 +100,7 @@ export function ListDetail({
 
       {/* Sticky add-item bar */}
       {isOwner && (
-        <div className="flex-shrink-0 border-t border-border bg-card/80 backdrop-blur-sm px-4 @lg:px-6 py-3 pb-safe">
+        <div className="flex-shrink-0 border-t border-border bg-card/80 backdrop-blur-sm px-3 py-2 pb-safe">
           <Button
             variant="outline"
             size="sm"

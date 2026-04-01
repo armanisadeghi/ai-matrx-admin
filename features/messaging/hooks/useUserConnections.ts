@@ -17,11 +17,39 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { useConversations } from "@/hooks/useSupabaseMessaging";
 import { useUserOrganizations } from "@/features/organizations/hooks";
 import type { UserBasicInfo } from "../types";
+import type { DbRpcRow } from "@/types/supabase-rpc";
 
 export interface ConnectionUser extends UserBasicInfo {
   source: "conversation" | "organization" | "invitation";
   sourceDetails?: string; // e.g., org name for organization connections
 }
+
+interface OrgMemberRow {
+  id: string;
+  invited_by: string;
+  joined_at: string;
+  organization_id: string;
+  role: string;
+  user_avatar_url: string;
+  user_display_name: string;
+  user_email: string;
+  user_id: string;
+}
+type _CheckOrgMemberRow = OrgMemberRow extends DbRpcRow<"get_organization_members_with_users"> ? true : false;
+declare const _orgMemberRow: _CheckOrgMemberRow;
+true satisfies typeof _orgMemberRow;
+
+interface LookupUserByEmailRow {
+  user_id: string;
+  user_email: string;
+}
+type _CheckLookupRow = LookupUserByEmailRow extends DbRpcRow<"lookup_user_by_email"> ? true : false;
+declare const _lookupRow: _CheckLookupRow;
+true satisfies typeof _lookupRow;
+
+type _CheckDmUserInfo = UserBasicInfo extends DbRpcRow<"get_dm_user_info"> ? true : false;
+declare const _dmUserInfo: _CheckDmUserInfo;
+true satisfies typeof _dmUserInfo;
 
 interface UseUserConnectionsReturn {
   connections: ConnectionUser[];
@@ -101,7 +129,7 @@ export function useUserConnections(): UseUserConnectionsReturn {
         }
 
         // Add members (excluding current user)
-        (members || []).forEach((member: any) => {
+        (members as unknown as OrgMemberRow[] || []).forEach((member) => {
           if (member.user_id !== currentUserId) {
             const existingUser = usersMap.get(member.user_id);
             // Only add if not already in map, or update sourceDetails
@@ -142,20 +170,22 @@ export function useUserConnections(): UseUserConnectionsReturn {
             { lookup_email: invite.email.toLowerCase() }
           );
 
-          if (lookupResult && lookupResult[0]) {
-            const invitedUserId = lookupResult[0].user_id;
+          if (lookupResult && lookupResult.length > 0) {
+            const lookupRows = lookupResult as unknown as LookupUserByEmailRow[];
+            const invitedUserId = lookupRows[0].user_id;
             if (invitedUserId !== currentUserId && !usersMap.has(invitedUserId)) {
               // Get full user info
               const { data: userInfo } = await supabase.rpc("get_dm_user_info", {
                 p_user_id: invitedUserId,
               });
 
-              if (userInfo && userInfo[0]) {
+              const dmRows = userInfo as unknown as UserBasicInfo[];
+              if (dmRows && dmRows[0]) {
                 usersMap.set(invitedUserId, {
                   user_id: invitedUserId,
-                  email: userInfo[0].email,
-                  display_name: userInfo[0].display_name,
-                  avatar_url: userInfo[0].avatar_url,
+                  email: dmRows[0].email,
+                  display_name: dmRows[0].display_name,
+                  avatar_url: dmRows[0].avatar_url,
                   source: "invitation",
                   sourceDetails: `Invited to ${org.name}`,
                 });

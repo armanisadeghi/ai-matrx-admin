@@ -27,6 +27,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { useDebounce } from "@/features/tasks/hooks/useDebounce";
 import { useUserConnections, type ConnectionUser } from "../hooks/useUserConnections";
 import type { UserBasicInfo } from "../types";
+import type { DbRpcRow } from "@/types/supabase-rpc";
 
 interface NewConversationDialogProps {
   open: boolean;
@@ -37,6 +38,21 @@ interface NewConversationDialogProps {
 interface SearchResult extends UserBasicInfo {
   match_score?: number;
 }
+type _CheckSearchResult = SearchResult extends DbRpcRow<"search_users_intelligent"> ? true : false;
+declare const _searchResult: _CheckSearchResult;
+true satisfies typeof _searchResult;
+
+interface LookupUserByEmailRow {
+  user_id: string;
+  user_email: string;
+}
+type _CheckLookupUserByEmailRow = LookupUserByEmailRow extends DbRpcRow<"lookup_user_by_email"> ? true : false;
+declare const _lookupUserByEmailRow: _CheckLookupUserByEmailRow;
+true satisfies typeof _lookupUserByEmailRow;
+
+type _CheckUserBasicInfo = UserBasicInfo extends DbRpcRow<"get_dm_user_info"> ? true : false;
+declare const _dmUserInfo: _CheckUserBasicInfo;
+true satisfies typeof _dmUserInfo;
 
 export function NewConversationDialog({
   open,
@@ -140,15 +156,17 @@ export function NewConversationDialog({
           );
 
           if (fallbackData && fallbackData.length > 0) {
+            const fallbackRows = fallbackData as unknown as LookupUserByEmailRow[];
             const results: SearchResult[] = [];
-            for (const row of fallbackData) {
+            for (const row of fallbackRows) {
               if (row.user_id !== currentUserId) {
                 const { data: userInfo } = await supabase.rpc(
                   "get_dm_user_info",
                   { p_user_id: row.user_id }
                 );
-                if (userInfo && userInfo[0]) {
-                  results.push(userInfo[0]);
+                const userRows = userInfo as unknown as UserBasicInfo[];
+                if (userRows && userRows[0]) {
+                  results.push(userRows[0]);
                 }
               }
             }
@@ -158,7 +176,8 @@ export function NewConversationDialog({
           }
         } else {
           // Transform search results
-          const results: SearchResult[] = (data || []).map((row: any) => ({
+          const searchRows = (data as unknown as SearchResult[]) || [];
+          const results: SearchResult[] = searchRows.map((row) => ({
             user_id: row.user_id,
             email: row.email,
             display_name: row.display_name,

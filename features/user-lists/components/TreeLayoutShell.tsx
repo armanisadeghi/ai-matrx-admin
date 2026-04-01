@@ -11,19 +11,28 @@ interface TreeLayoutShellProps {
   children: React.ReactNode;
 }
 
+const CONTENT_HEIGHT = "calc(100dvh - 2.5rem)";
+
 export function TreeLayoutShell({ sidebar, children }: TreeLayoutShellProps) {
   const isMobile = useIsMobile();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   if (isMobile) {
     return (
-      <div className="relative flex flex-col h-[calc(100dvh-var(--header-height))]">
-        <div className="flex-1 overflow-hidden">{children}</div>
+      <div
+        style={{
+          height: CONTENT_HEIGHT,
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <div style={{ flex: 1, overflow: "hidden" }}>{children}</div>
 
         <Button
           variant="secondary"
           size="sm"
-          className="fixed bottom-4 left-4 z-40 h-9 gap-1.5 shadow-md"
+          className="fixed left-4 z-40 h-9 gap-1.5 shadow-md"
           style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
           onClick={() => setDrawerOpen(true)}
         >
@@ -44,14 +53,13 @@ export function TreeLayoutShell({ sidebar, children }: TreeLayoutShellProps) {
   }
 
   return (
-    <div className="flex h-[calc(100dvh-var(--header-height))]">
-      {/* Fixed-width tree sidebar */}
+    <div
+      style={{ height: CONTENT_HEIGHT, overflow: "hidden", display: "flex" }}
+    >
       <div className="w-56 flex-shrink-0 border-r border-border/60 flex flex-col overflow-hidden">
         {sidebar}
       </div>
-
-      {/* Content area */}
-      <div className="flex-1 overflow-hidden min-w-0">{children}</div>
+      <div style={{ flex: 1, overflow: "hidden", minWidth: 0 }}>{children}</div>
     </div>
   );
 }

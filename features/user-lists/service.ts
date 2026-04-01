@@ -28,7 +28,7 @@ export async function getOwnedListsSummary(
     p_user_id: userId,
   });
   if (error) throw new Error(`Failed to load lists: ${error.message}`);
-  return ((data as UserListSummaryRaw[]) ?? []).map(normalizeUserList);
+  return ((data as unknown as UserListSummaryRaw[]) ?? []).map(normalizeUserList);
 }
 
 /**
@@ -53,7 +53,7 @@ export async function getListWithItems(
     p_list_id: listId,
   });
   if (error) throw new Error(`Failed to load list: ${error.message}`);
-  return (data as UserListWithItems) ?? null;
+  return (data as unknown as UserListWithItems) ?? null;
 }
 
 // ─── Create ────────────────────────────────────────────────────────────────────

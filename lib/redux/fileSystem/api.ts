@@ -1,5 +1,18 @@
 import { AvailableBuckets } from "./types";
 import { supabaseStandard, supabaseDebug } from "@/utils/supabase/debugClient";
+import type { DbRpcRow } from "@/types/supabase-rpc";
+
+export interface StorageFolderItem {
+  created_at: string;
+  id: string;
+  last_accessed_at: string;
+  metadata: unknown;
+  name: string;
+  updated_at: string;
+}
+type _CheckStorageFolderItem = StorageFolderItem extends DbRpcRow<"rename_storage_folder"> ? true : false;
+declare const _storageFolderItem: _CheckStorageFolderItem;
+true satisfies typeof _storageFolderItem;
 
 const debug = true;
 const supabase = debug ? supabaseDebug : supabaseStandard;
@@ -94,6 +107,6 @@ export async function moveOrRenameFile(
       throw new Error(`Error moving folder: ${error.message}`);
     }
   
-    return data;
+    return data as unknown as StorageFolderItem[];
   }
   

@@ -23,7 +23,7 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from "@/components/ui/context-menu";
+} from "@/components/ui/context-menu/index";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -80,7 +80,13 @@ interface NodeMenuItemsProps {
   onInfo?: (node: TreeNodeData) => void;
 }
 
-function NodeMenuItems({ node, onEdit, onDelete, onAddItem, onInfo }: NodeMenuItemsProps) {
+function NodeMenuItems({
+  node,
+  onEdit,
+  onDelete,
+  onAddItem,
+  onInfo,
+}: NodeMenuItemsProps) {
   return (
     <>
       {onInfo && (
@@ -133,10 +139,10 @@ export function TreeNode({
   const [, startTransition] = useTransition();
 
   const Icon = NODE_ICONS[node.type];
-  const hasChildren =
-    node.type !== "item" && (node.childCount ?? 0) > 0;
+  const hasChildren = node.type !== "item" && (node.childCount ?? 0) > 0;
   const isDisabled = isAnyNavigating;
-  const href = node.type === "list" ? `/lists/${node.id}` : `/lists/${node.listId}`;
+  const href =
+    node.type === "list" ? `/lists/${node.id}` : `/lists/${node.listId}`;
 
   const handleClick = (e: React.MouseEvent) => {
     if (e.metaKey || e.ctrlKey) return;
@@ -257,19 +263,22 @@ export function TreeNode({
                       View details
                     </DropdownMenuItem>
                   )}
-                  {(node.type === "list" || node.type === "group") && onAddItem && (
-                    <DropdownMenuItem onClick={() => onAddItem(node)}>
-                      <Plus className="h-3.5 w-3.5 mr-2" />
-                      Add item
-                    </DropdownMenuItem>
-                  )}
+                  {(node.type === "list" || node.type === "group") &&
+                    onAddItem && (
+                      <DropdownMenuItem onClick={() => onAddItem(node)}>
+                        <Plus className="h-3.5 w-3.5 mr-2" />
+                        Add item
+                      </DropdownMenuItem>
+                    )}
                   {onEdit && (
                     <DropdownMenuItem onClick={() => onEdit(node)}>
                       <Pencil className="h-3.5 w-3.5 mr-2" />
                       Edit
                     </DropdownMenuItem>
                   )}
-                  {(onEdit || onAddItem) && onDelete && <DropdownMenuSeparator />}
+                  {(onEdit || onAddItem) && onDelete && (
+                    <DropdownMenuSeparator />
+                  )}
                   {onDelete && (
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"

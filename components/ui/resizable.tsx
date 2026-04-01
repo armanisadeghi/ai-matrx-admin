@@ -1,37 +1,51 @@
-"use client"
+"use client";
 
-import { DragHandleDots2Icon } from "@radix-ui/react-icons"
-import { Group, Panel, Separator } from "react-resizable-panels"
+/**
+ * react-resizable-panels v4 wrapper
+ *
+ * v4 changes vs v1/v2:
+ * - Group prop: `orientation` (not `direction`)
+ * - Data attributes on DOM: `data-group`, `data-panel`, `data-separator` (no `data-panel-group-direction`)
+ * - Group sets height:100%/width:100%/overflow:hidden internally
+ * - Panel renders two divs: outer (flex sizing) wraps inner (overflow:auto, receives className/style)
+ *   To override: pass `style={{ overflow: "hidden", height: "100%" }}` directly to Panel
+ * - Separator renders its own div with flexBasis:auto/flexShrink:0
+ */
 
-import { cn } from "@/styles/themes/utils"
+import { DragHandleDots2Icon } from "@radix-ui/react-icons";
+import { Group, Panel, Separator } from "react-resizable-panels";
+
+import { cn } from "@/styles/themes/utils";
 
 const ResizablePanelGroup = ({
   className,
   ...props
 }: React.ComponentProps<typeof Group>) => (
-  <Group
-    className={cn(
-      "flex h-full w-full data-[panel-group-direction=vertical]:flex-col",
-      className
-    )}
-    {...props}
-  />
-)
+  <Group className={cn("flex h-full w-full", className)} {...props} />
+);
 
-const ResizablePanel = Panel
+const ResizablePanel = Panel;
 
 const ResizableHandle = ({
   withHandle,
   className,
   ...props
 }: React.ComponentProps<typeof Separator> & {
-  withHandle?: boolean
+  withHandle?: boolean;
 }) => (
   <Separator
     className={cn(
-      "relative flex w-px items-center justify-center bg-border after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 data-[panel-group-direction=vertical]:h-px data-[panel-group-direction=vertical]:w-full data-[panel-group-direction=vertical]:after:left-0 data-[panel-group-direction=vertical]:after:h-1 data-[panel-group-direction=vertical]:after:w-full data-[panel-group-direction=vertical]:after:-translate-y-1/2 data-[panel-group-direction=vertical]:after:translate-x-0 [&[data-panel-group-direction=vertical]>div]:rotate-90",
-      className
+      "relative flex w-px items-center justify-center bg-border",
+      "after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2",
+      "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1",
+      // Vertical group handle (orientation="vertical") — separator is horizontal
+      "[&[aria-orientation=horizontal]]:h-px [&[aria-orientation=horizontal]]:w-full",
+      "[&[aria-orientation=horizontal]]:after:left-0 [&[aria-orientation=horizontal]]:after:h-1",
+      "[&[aria-orientation=horizontal]]:after:w-full [&[aria-orientation=horizontal]]:after:-translate-y-1/2",
+      "[&[aria-orientation=horizontal]]:after:translate-x-0",
+      className,
     )}
+    style={{ cursor: "col-resize" }}
     {...props}
   >
     {withHandle && (
@@ -40,6 +54,6 @@ const ResizableHandle = ({
       </div>
     )}
   </Separator>
-)
+);
 
-export { ResizablePanelGroup, ResizablePanel, ResizableHandle }
+export { ResizablePanelGroup, ResizablePanel, ResizableHandle };

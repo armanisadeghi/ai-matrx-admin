@@ -4,6 +4,7 @@
 
 import NavItem from "./NavItem";
 import ShellIcon from "./ShellIcon";
+import SidebarVoicePadToggle from "./SidebarVoicePadToggle";
 import {
   primaryNavItems,
   settingsItem,
@@ -45,8 +46,9 @@ export default function Sidebar({ pathname }: SidebarProps) {
         <div id="admin-nav-slot" />
       </nav>
 
-      {/* Footer — Settings */}
+      {/* Footer — Voice + Settings */}
       <div className="shell-sidebar-footer">
+        <SidebarVoicePadToggle />
         <NavItem item={settingsItem} isActive={isActive(settingsItem)} />
       </div>
     </aside>

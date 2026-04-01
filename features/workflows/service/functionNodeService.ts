@@ -203,7 +203,7 @@ export async function duplicateWorkflowNodeRPC(nodeId: string): Promise<DbFuncti
     if (error) throw new Error(`Failed to duplicate node via RPC: ${error.message}`);
     if (!data) throw new Error("No data returned from RPC duplication");
 
-    return data;
+    return data as unknown as DbFunctionNode;
 }
 
 export async function duplicateWorkflowNodeWithConversion(nodeId: string): Promise<FunctionNode> {

@@ -149,7 +149,7 @@ export async function duplicateWorkflowRelayRPC(relayId: string): Promise<DbBrok
     if (error) throw new Error(`Failed to duplicate relay via RPC: ${error.message}`);
     if (!data) throw new Error("No data returned from RPC duplication");
 
-    return data;
+    return data as unknown as DbBrokerRelayData;
 }
 
 export async function duplicateRelayWithConversion(relayId: string): Promise<BrokerRelayNode> {

@@ -82,9 +82,10 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
             const { data, error } = await supabase.rpc('get_user_tables');
             
             if (error) throw error;
-            if (!data.success) throw new Error(data.error || 'Failed to load tables');
+            const tablesPayload = data as unknown as { success: boolean; error?: string; tables?: UserTable[] };
+            if (!tablesPayload.success) throw new Error(tablesPayload.error || 'Failed to load tables');
             
-            setTables(data.tables || []);
+            setTables(tablesPayload.tables || []);
         } catch (err) {
             console.error('Error fetching tables:', err);
             setError('Failed to load your tables');
@@ -99,16 +100,17 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
             setLoadingDetails(true);
             
             // Get fields
-            const { data: tableData, error: tableError } = await supabase
+            const { data: tableDataRaw, error: tableError } = await supabase
                 .rpc('get_user_table_complete', { p_table_id: table.id });
                 
             if (tableError) throw tableError;
+            const tableData = tableDataRaw as unknown as { success: boolean; error?: string; fields?: TableField[] };
             if (!tableData.success) throw new Error(tableData.error || 'Failed to load table');
             
             setFields(tableData.fields || []);
             
             // Get rows (first 100)
-            const { data: rowsData, error: rowsError } = await supabase
+            const { data: rowsDataRaw, error: rowsError } = await supabase
                 .rpc('get_user_table_data_paginated', {
                     p_table_id: table.id,
                     p_limit: 100,
@@ -119,6 +121,7 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
                 });
                 
             if (rowsError) throw rowsError;
+            const rowsData = rowsDataRaw as unknown as { success: boolean; error?: string; data?: TableRow[] };
             if (!rowsData.success) throw new Error(rowsData.error || 'Failed to load rows');
             
             setRows(rowsData.data || []);

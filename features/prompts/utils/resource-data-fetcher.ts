@@ -32,7 +32,7 @@ async function fetchTableDataByReference(tableRef: TableResourceData): Promise<{
             case 'full_table': {
                 // For full table, fetch table metadata and a sample of rows
                 // We use list_table_rows RPC which is designed for this
-                const { data: rowsData, error } = await supabase
+                const { data: rowsDataRaw, error } = await supabase
                     .rpc('list_table_rows', { 
                         ref: { 
                             type: 'full_table', 
@@ -47,6 +47,7 @@ async function fetchTableDataByReference(tableRef: TableResourceData): Promise<{
                     return null;
                 }
                 
+                const rowsData = rowsDataRaw as unknown as { fields?: unknown[]; rows?: unknown[] } | null;
                 return {
                     fields: rowsData?.fields || [],
                     rows: rowsData?.rows || [],
@@ -56,7 +57,7 @@ async function fetchTableDataByReference(tableRef: TableResourceData): Promise<{
             
             case 'table_row': {
                 // Fetch specific row using get_table_row RPC
-                const { data: row, error } = await supabase
+                const { data: rowRaw, error } = await supabase
                     .rpc('get_table_row', { ref: tableRef });
                 
                 if (error) {
@@ -64,6 +65,7 @@ async function fetchTableDataByReference(tableRef: TableResourceData): Promise<{
                     return null;
                 }
                 
+                const row = rowRaw as unknown as Record<string, unknown> | null;
                 return {
                     row: row || {},
                     referenceType: 'table_row'
@@ -89,17 +91,19 @@ async function fetchTableDataByReference(tableRef: TableResourceData): Promise<{
                     return null;
                 }
                 
+                const colData = columnResult.data as unknown;
+                const rowsPayload = rowsResult.data as unknown as { rows?: unknown[]; fields?: unknown[] } | null;
                 return {
-                    column: columnResult.data,
-                    rows: rowsResult.data?.rows || [],
-                    fields: rowsResult.data?.fields || [],
+                    column: colData,
+                    rows: rowsPayload?.rows || [],
+                    fields: rowsPayload?.fields || [],
                     referenceType: 'table_column'
                 };
             }
             
             case 'table_cell': {
                 // Fetch specific cell using get_table_cell RPC
-                const { data: cellData, error } = await supabase
+                const { data: cellRaw, error } = await supabase
                     .rpc('get_table_cell', { ref: tableRef });
                 
                 if (error) {
@@ -107,6 +111,7 @@ async function fetchTableDataByReference(tableRef: TableResourceData): Promise<{
                     return null;
                 }
                 
+                const cellData = cellRaw as unknown as { value?: unknown } | null;
                 return {
                     value: cellData?.value,
                     referenceType: 'table_cell'

@@ -43,6 +43,7 @@ import {
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
+import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
 import type { NoteSummary } from "../layout";
@@ -1026,6 +1027,42 @@ export default function NotesWorkspace({
     scheduleSave(activeNoteId, label, newContent);
   };
 
+  const handleTranscription = useCallback(
+    (text: string) => {
+      if (!text.trim() || !activeNoteId) return;
+      const textarea = textareaRef.current;
+      if (textarea) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const current = textarea.value;
+        const before = current.slice(0, start);
+        const after = current.slice(end);
+        const sep =
+          before.length > 0 && !before.endsWith("\n") && !before.endsWith(" ")
+            ? " "
+            : "";
+        const newContent = before + sep + text + after;
+        handleContentChange({
+          target: { value: newContent },
+        } as ChangeEvent<HTMLTextAreaElement>);
+        requestAnimationFrame(() => {
+          const newPos = start + sep.length + text.length;
+          textarea.selectionStart = newPos;
+          textarea.selectionEnd = newPos;
+          textarea.focus();
+        });
+      } else {
+        const current =
+          activeCached?.localEdits?.content ?? activeCached?.data.content ?? "";
+        const sep = current.length > 0 ? "\n\n" : "";
+        handleContentChange({
+          target: { value: current + sep + text },
+        } as ChangeEvent<HTMLTextAreaElement>);
+      }
+    },
+    [activeNoteId, activeCached],
+  );
+
   const goBack = () => updateUrl(null);
 
   // Word/char count
@@ -1223,6 +1260,11 @@ export default function NotesWorkspace({
                       >
                         <Trash2 />
                       </button>
+                      <MicrophoneIconButton
+                        onTranscriptionComplete={handleTranscription}
+                        variant="icon-only"
+                        size="sm"
+                      />
                     </div>
                   )}
                   <span

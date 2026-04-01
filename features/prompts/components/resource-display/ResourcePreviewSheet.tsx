@@ -43,15 +43,16 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
 
                 if (referenceType === 'table_row') {
                     // Fetch specific row using new RPC
-                    const { data: row, error } = await supabase
+                    const { data: rowRaw, error } = await supabase
                         .rpc('get_table_row', { ref });
 
                     if (error) throw error;
-                    if (!row) throw new Error('Row not found');
+                    if (!rowRaw) throw new Error('Row not found');
 
+                    const row = rowRaw as unknown as { id: string; data: Record<string, unknown> };
                     setTableData({
                         type: 'table_row',
-                        row: row
+                        row
                     });
                 } else if (referenceType === 'table_column') {
                     // Fetch column definition and row values
@@ -70,22 +71,25 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                     if (columnResult.error) throw columnResult.error;
                     if (rowsResult.error) throw rowsResult.error;
 
+                    const colData = columnResult.data as unknown as { data_type?: string } | null;
+                    const rowsPayload = rowsResult.data as unknown as { rows?: unknown[]; total?: number } | null;
                     setTableData({
                         type: 'table_column',
-                        column: columnResult.data,
-                        rows: rowsResult.data?.rows || [],
-                        total: rowsResult.data?.total || 0,
+                        column: colData,
+                        rows: rowsPayload?.rows || [],
+                        total: rowsPayload?.total || 0,
                         columnName: resource.data.column_name,
                         columnDisplayName: resource.data.column_display_name
                     });
                 } else if (referenceType === 'table_cell') {
                     // Fetch specific cell value using new RPC
-                    const { data: cellData, error } = await supabase
+                    const { data: cellRaw, error } = await supabase
                         .rpc('get_table_cell', { ref });
 
                     if (error) throw error;
-                    if (!cellData) throw new Error('Cell not found');
+                    if (!cellRaw) throw new Error('Cell not found');
 
+                    const cellData = cellRaw as unknown as { value: unknown; field: unknown };
                     setTableData({
                         type: 'table_cell',
                         value: cellData.value,

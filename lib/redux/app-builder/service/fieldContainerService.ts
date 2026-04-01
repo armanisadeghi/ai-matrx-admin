@@ -240,8 +240,8 @@ export const addOrRefreshFieldInGroup = async (groupId: string, fieldId: string)
             throw new Error("No data returned from refresh_field_in_group operation");
         }
 
-        // Convert the returned jsonb data to our application format
-        return dbToComponentGroup(data as ComponentGroupDB);
+        // refresh_field_in_group returns Json — cast through unknown for safety
+        return dbToComponentGroup(data as unknown as ComponentGroupDB);
     } catch (err) {
         console.error("Exception in addOrRefreshFieldInGroup:", err);
         throw err;

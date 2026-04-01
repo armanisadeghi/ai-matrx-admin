@@ -19,6 +19,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
 import type { RootState, AppDispatch } from "../store";
+import type { DbRpcRow } from "@/types/supabase-rpc";
 import {
   AgentRecord,
   AgentSource,
@@ -96,10 +97,20 @@ interface SlimRow {
   name: string;
   source: string;
 }
-interface SharedSlimRow extends SlimRow {
+type _CheckSlimRow = SlimRow extends DbRpcRow<"get_agents_for_chat"> ? true : false;
+declare const _slimRow: _CheckSlimRow;
+true satisfies typeof _slimRow;
+
+interface SharedSlimRow {
+  id: string;
+  name: string;
   permission_level: string;
   owner_email: string;
 }
+type _CheckSharedSlimRow = SharedSlimRow extends DbRpcRow<"get_shared_agents_for_chat"> ? true : false;
+declare const _sharedSlimRow: _CheckSharedSlimRow;
+true satisfies typeof _sharedSlimRow;
+
 interface CoreRow {
   id: string;
   source: string;
@@ -115,6 +126,10 @@ interface CoreRow {
   updated_at: string;
   version: number | null;
 }
+type _CheckCoreRow = CoreRow extends DbRpcRow<"get_agent_core_batch"> ? true : false;
+declare const _coreRow: _CheckCoreRow;
+true satisfies typeof _coreRow;
+
 interface OperationalRow {
   id: string;
   source: string;
@@ -123,6 +138,9 @@ interface OperationalRow {
   /** Full settings jsonb (model_id, temperature, tools, thinking_budget, etc.) */
   settings: Record<string, unknown> | null;
 }
+type _CheckOperationalRow = OperationalRow extends DbRpcRow<"get_agent_operational"> ? true : false;
+declare const _operationalRow: _CheckOperationalRow;
+true satisfies typeof _operationalRow;
 
 function mapSlimRow(row: SlimRow): AgentRecord {
   return {
@@ -205,7 +223,7 @@ export const fetchAgentSlimList = createAsyncThunk<
       });
       if (error) throw error;
 
-      const rows = (data ?? []) as SlimRow[];
+      const rows = (data ?? []) as unknown as SlimRow[];
       const ownedRows = rows
         .filter((r) => r.source === "prompts")
         .map(mapSlimRow);
@@ -240,7 +258,7 @@ export const fetchAgentSlimList = createAsyncThunk<
       const { data, error } = await supabase.rpc("get_shared_agents_for_chat");
       if (error) throw error;
 
-      const sharedRows = ((data ?? []) as SharedSlimRow[]).map(
+      const sharedRows = ((data ?? []) as unknown as SharedSlimRow[]).map(
         mapSharedSlimRow,
       );
       dispatch(upsertAgentsSlim(sharedRows));
@@ -301,7 +319,7 @@ export const fetchAgentCoreBatch = createAsyncThunk<
     throw error;
   }
 
-  const upgraded = ((data ?? []) as CoreRow[]).map(mapCoreRow);
+  const upgraded = ((data ?? []) as unknown as CoreRow[]).map(mapCoreRow);
   dispatch(upsertAgentsCore(upgraded));
   dispatch(setAgentError(null));
 });
@@ -345,7 +363,7 @@ export const fetchAgentOperational = createAsyncThunk<
       throw error;
     }
 
-    const rows = (data ?? []) as OperationalRow[];
+    const rows = (data ?? []) as unknown as OperationalRow[];
     if (rows.length === 0) return null;
 
     const record = mapOperationalRow(rows[0]);

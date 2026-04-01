@@ -41,7 +41,7 @@ export async function getVersionHistory(
         throw error;
     }
 
-    return data || [];
+    return (data as unknown as VersionHistoryItem[]) || [];
 }
 
 // ============================================================================
@@ -67,7 +67,7 @@ export async function getVersionSnapshot(
         throw error;
     }
 
-    return data as VersionSnapshot;
+    return data as unknown as VersionSnapshot;
 }
 
 // ============================================================================
@@ -95,7 +95,7 @@ export async function getVersionDiff(
         throw error;
     }
 
-    return data as VersionDiff;
+    return data as unknown as VersionDiff;
 }
 
 // ============================================================================
@@ -122,7 +122,7 @@ export async function promoteVersion(
         throw error;
     }
 
-    return data as PromoteVersionResult;
+    return data as unknown as PromoteVersionResult;
 }
 
 /**
@@ -144,7 +144,7 @@ export async function restoreVersion(
         throw error;
     }
 
-    return data as number;
+    return data as unknown as number;
 }
 
 // ============================================================================
@@ -170,7 +170,7 @@ export async function purgeOldVersions(
         throw error;
     }
 
-    return data as number;
+    return data as unknown as number;
 }
 
 // ============================================================================
@@ -194,7 +194,7 @@ export async function pinPromptAppToVersion(
         throw error;
     }
 
-    return data as PinVersionResult;
+    return data as unknown as PinVersionResult;
 }
 
 // ============================================================================
@@ -216,5 +216,5 @@ export async function checkPromptAppDrift(
         throw error;
     }
 
-    return data || [];
+    return (data as unknown as DriftItem[]) || [];
 }

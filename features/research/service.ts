@@ -29,7 +29,7 @@ import type {
 export async function getTopicOverview(topicId: string): Promise<ResearchProgress | null> {
     const { data, error } = await supabase.rpc('get_topic_overview', { p_topic_id: topicId });
     if (error) throw error;
-    return (data as ResearchProgress) ?? null;
+    return (data as unknown as ResearchProgress) ?? null;
 }
 
 // ============================================================================

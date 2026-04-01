@@ -68,6 +68,7 @@ const initialState: OverlayState = {
     contentHistory: makeDefaultInstance(),
     feedbackDialog: makeDefaultInstance(),
     shareModal: makeDefaultInstance(),
+    voicePad: makeDefaultInstance(),
   },
 };
 

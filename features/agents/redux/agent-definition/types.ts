@@ -5,6 +5,7 @@ import {
 } from "@/features/agents/types/agent-api-types";
 import { AgentDefinitionMessage } from "@/features/agents/types/agent-message-types";
 import { OutputSchema } from "@/features/agents/types/json-schema";
+import type { DbRpcRow } from "@/types/supabase-rpc";
 
 export type AgentType = "user" | "builtin";
 
@@ -249,6 +250,51 @@ export interface UpdateFromSourceResult {
   source_version?: number;
   agent_name?: string;
 }
+
+// ---------------------------------------------------------------------------
+// Compile-time DB shape guards — zero runtime cost.
+//
+// Each line below asserts that the interface above is structurally compatible
+// with the Supabase-generated return type for that RPC (with Json → unknown).
+//
+// HOW TO READ AN ERROR HERE:
+//   "Type 'false' is not assignable to type 'true'"
+//   means the interface has a key that the DB doesn't return,
+//   OR the DB returns a key that the interface doesn't declare.
+//   Fix the interface to match the DB, then regenerate types with `supabase gen types`.
+//
+// Json fields (variable_definitions, settings, etc.) are typed `unknown` on
+// the DB side after transformation — your interface may narrow them freely.
+// ---------------------------------------------------------------------------
+
+type _Check_AgentListRow =
+  AgentListRow extends DbRpcRow<"get_agents_list"> ? true : false;
+declare const _agentListRow: _Check_AgentListRow;
+true satisfies typeof _agentListRow;
+
+type _Check_AgentExecutionMinimal =
+  AgentExecutionMinimal extends DbRpcRow<"get_agent_execution_minimal">
+    ? true
+    : false;
+declare const _agentExecutionMinimal: _Check_AgentExecutionMinimal;
+true satisfies typeof _agentExecutionMinimal;
+
+type _Check_AgentExecutionFull =
+  AgentExecutionFull extends DbRpcRow<"get_agent_execution_full">
+    ? true
+    : false;
+declare const _agentExecutionFull: _Check_AgentExecutionFull;
+true satisfies typeof _agentExecutionFull;
+
+type _Check_AgentDriftItem =
+  AgentDriftItem extends DbRpcRow<"check_agent_drift"> ? true : false;
+declare const _agentDriftItem: _Check_AgentDriftItem;
+true satisfies typeof _agentDriftItem;
+
+type _Check_AgentReference =
+  AgentReference extends DbRpcRow<"check_agent_references"> ? true : false;
+declare const _agentReference: _Check_AgentReference;
+true satisfies typeof _agentReference;
 
 // ---------------------------------------------------------------------------
 // Runtime records & slice state

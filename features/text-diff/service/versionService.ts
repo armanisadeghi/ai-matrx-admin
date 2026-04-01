@@ -61,7 +61,7 @@ export async function restoreVersion(
     throw error;
   }
 
-  return !!data;
+  return !!(data as unknown as boolean);
 }
 
 /**

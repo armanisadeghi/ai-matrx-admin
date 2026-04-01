@@ -32,7 +32,7 @@ export async function createListAction(formData: {
   if (error) throw new Error(`Failed to create list: ${error.message}`);
   revalidatePath("/lists");
   revalidatePath("/lists-v2");
-  return data as { list_id: string; list_name: string };
+  return data as unknown as { list_id: string; list_name: string };
 }
 
 // ─── Update ────────────────────────────────────────────────────────────────────

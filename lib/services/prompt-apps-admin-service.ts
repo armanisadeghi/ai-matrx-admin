@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/client";
 import { getScriptSupabaseClient } from "@/utils/supabase/getScriptClient";
 import { requireUserId } from "@/utils/auth/getUserId";
+import type { DbRpcRow } from "@/types/supabase-rpc";
 
 // Helper to get the right client based on context
 function getClient() {
@@ -10,6 +11,19 @@ function getClient() {
     return getScriptSupabaseClient();
   }
 }
+
+// ============================================================================
+// RPC row types
+// ============================================================================
+
+interface UserEmailRow {
+  display_name: string;
+  email: string;
+  id: string;
+}
+type _CheckUserEmailRow = UserEmailRow extends DbRpcRow<"get_user_emails_by_ids"> ? true : false;
+declare const _userEmailRow: _CheckUserEmailRow;
+true satisfies typeof _userEmailRow;
 
 // ============================================================================
 // Types
@@ -496,7 +510,7 @@ export async function fetchAppsAdmin(filters?: {
 
     if (users && users.length > 0) {
       const userMap = new Map(
-        (users as { id: string; email: string }[]).map((user) => [
+        (users as unknown as UserEmailRow[]).map((user) => [
           user.id,
           user,
         ]),

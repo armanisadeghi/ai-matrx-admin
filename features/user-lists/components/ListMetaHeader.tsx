@@ -83,7 +83,7 @@ export function ListMetaHeader({
   };
 
   return (
-    <div className="flex flex-col gap-3 px-6 py-5 border-b border-border bg-card/50">
+    <div className="flex flex-col gap-2 px-3 py-3 border-b border-border bg-card/50">
       {/* Top row: title + actions */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">

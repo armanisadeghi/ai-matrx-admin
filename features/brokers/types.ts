@@ -1,3 +1,5 @@
+import type { DbRpcRow } from "@/types/supabase-rpc";
+
 // Enums matching your database types
 export enum DataType {
   STR = 'str',
@@ -231,7 +233,10 @@ export const SCOPE_LEVELS: ScopeLevel[] = [
     scope_level: ScopeLevel;
     scope_id: string | null;
   }
-  
+type _CheckResolvedBrokerValue = ResolvedBrokerValue extends DbRpcRow<"get_broker_values_for_context"> ? true : false;
+declare const _resolvedBrokerValue: _CheckResolvedBrokerValue;
+true satisfies typeof _resolvedBrokerValue;
+
   export interface CompleteBrokerData {
     broker_id: string;
     broker_name: string;
@@ -243,6 +248,9 @@ export const SCOPE_LEVELS: ScopeLevel[] = [
     default_value: string | null;
     description: string | null;
   }
+type _CheckCompleteBrokerData = CompleteBrokerData extends DbRpcRow<"get_complete_broker_data_for_context"> ? true : false;
+declare const _completeBrokerData: _CheckCompleteBrokerData;
+true satisfies typeof _completeBrokerData;
   
   // Context for broker resolution
   export interface BrokerContext {
@@ -303,7 +311,16 @@ export interface UpdateBrokerInput {
     broker_id: string;
     value: any;
   }
-  
+
+export interface BulkUpsertBrokerResult {
+  broker_id: string;
+  broker_value_id: string;
+  success: boolean;
+}
+type _CheckBulkUpsertBrokerResult = BulkUpsertBrokerResult extends DbRpcRow<"bulk_upsert_broker_values"> ? true : false;
+declare const _bulkUpsertBrokerResult: _CheckBulkUpsertBrokerResult;
+true satisfies typeof _bulkUpsertBrokerResult;
+
   export interface CreateWorkspaceInput {
     organization_id: string;
     parent_workspace_id?: string | null;

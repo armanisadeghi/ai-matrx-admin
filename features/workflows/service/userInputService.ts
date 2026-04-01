@@ -190,7 +190,7 @@ export async function duplicateWorkflowUserInputRPC(inputId: string): Promise<Db
     if (error) throw new Error(`Failed to duplicate user input via RPC: ${error.message}`);
     if (!data) throw new Error("No data returned from RPC duplication");
 
-    return data;
+    return data as unknown as DbUserInput;
 }
 
 export async function duplicateUserInputWithConversion(inputId: string): Promise<Node> {

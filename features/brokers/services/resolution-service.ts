@@ -81,7 +81,7 @@ export async function resolveBrokersForContext(
     const values: Record<string, any> = {};
     const scopeLevels: Record<string, string> = {};
 
-    const resolvedValues = (data as ResolvedBrokerValue[]) || [];
+    const resolvedValues = (data as unknown as ResolvedBrokerValue[]) ?? [];
 
     resolvedValues.forEach((item) => {
       // Extract the actual value from JSONB

@@ -5,6 +5,8 @@
 // prompt_builtins, and prompt_apps.
 // ============================================================================
 
+import type { DbRpcRow } from "@/types/supabase-rpc";
+
 /**
  * Entity types supported by the versioning system.
  * Maps to the `entity_type` parameter used by all versioning RPCs.
@@ -19,12 +21,15 @@ export type VersionEntityType = 'prompt' | 'builtin' | 'prompt_app';
  * Single row from `get_version_history` RPC.
  */
 export interface VersionHistoryItem {
-    version_id: string;       // UUID of the version row
-    version_number: number;   // Human-readable version number
-    name: string | null;      // Entity name at that version
-    changed_at: string;       // ISO timestamp
-    change_note: string | null;
+    version_id: string;
+    version_number: number;
+    name: string;
+    changed_at: string;
+    change_note: string;
 }
+type _CheckVersionHistoryItem = VersionHistoryItem extends DbRpcRow<"get_version_history"> ? true : false;
+declare const _versionHistoryItem: _CheckVersionHistoryItem;
+true satisfies typeof _versionHistoryItem;
 
 /**
  * Full snapshot returned by `get_version_snapshot` RPC.
@@ -62,8 +67,13 @@ export interface DriftItem {
     pinned_version: number;
     current_version: number;
     versions_behind: number;
+    prompt_id: string;
     prompt_name: string;
+    prompt_source_type: string;
 }
+type _CheckDriftItem = DriftItem extends DbRpcRow<"check_prompt_app_drift"> ? true : false;
+declare const _driftItem: _CheckDriftItem;
+true satisfies typeof _driftItem;
 
 /**
  * Result from `pin_prompt_app_to_version` RPC.

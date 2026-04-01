@@ -100,7 +100,7 @@ export const contextVariableService = {
       p_include_secrets: false,
     });
     if (error) throw error;
-    return data as ResolvedContext;
+    return data as unknown as ResolvedContext;
   },
 
   // ─── Create a variable at a scope ─────────────────────────────────

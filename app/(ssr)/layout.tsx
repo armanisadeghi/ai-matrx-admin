@@ -25,6 +25,7 @@ import { DebugIndicatorManager } from "@/components/debug/DebugIndicatorManager"
 import { CanvasSideSheet } from "@/features/canvas/core/CanvasSideSheet";
 import LazySocketInitializer from "@/lib/redux/socket-io/connection/LazySocketInitializer";
 import LazyMessagingIsland from "@/features/ssr-trials/components/LazyMessagingIsland";
+import VoicePadIsland from "@/features/ssr-trials/components/VoicePadIsland";
 import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
 
 const emptyGlobalCache = getEmptyGlobalCache();
@@ -115,7 +116,7 @@ export default async function SSRLayout({
   return (
     <Providers initialReduxState={initialReduxState}>
       <AuthSessionWatcher />
-      <LazySocketInitializer />
+      {/* LazySocketInitializer disabled — server no longer supports socket.io */}
       <AnnouncementProvider />
       <AppleKeyExpiryBanner />
       <AdminNavInjector />
@@ -143,6 +144,7 @@ export default async function SSRLayout({
       <VisualViewportSync />
       <DevPerfOverlayIsland />
       <AdminIndicatorIsland />
+      <VoicePadIsland />
       <DebugIndicatorManager />
       <CanvasSideSheet />
       <LazyMessagingIsland />

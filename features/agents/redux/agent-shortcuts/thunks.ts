@@ -102,7 +102,7 @@ export const buildAgentShortcutMenu = createAsyncThunk<
     throw error;
   }
 
-  const results = (data ?? []) as AgentShortcutMenuResult[];
+  const results = (data ?? []) as unknown as AgentShortcutMenuResult[];
   const allShortcuts: AgentShortcut[] = [];
 
   for (const placement of results) {
@@ -464,7 +464,7 @@ export const fetchUserShortcuts = createAsyncThunk<
 
   if (error) throw error;
 
-  return (data ?? []) as UserShortcutItem[];
+  return (data ?? []) as unknown as UserShortcutItem[];
 });
 
 /**

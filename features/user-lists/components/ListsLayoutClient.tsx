@@ -18,27 +18,31 @@ function LayoutInner({ lists, children }: ListsLayoutClientProps) {
   const [variant, setVariant] = useLayoutVariant();
   const { activeListData } = useActiveList();
 
+  // The toggle bar sits inside the right panel so each shell only needs to
+  // render sidebar | (toggle + content). Height is owned by the shell itself.
   const contentWithToggle = (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-end px-3 py-1.5 border-b border-border/40 flex-shrink-0">
         <LayoutToggle value={variant} onChange={setVariant} />
       </div>
-      <div className="flex-1 overflow-hidden">{children}</div>
+      <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
     </div>
   );
 
   if (variant === "tree") {
-    const sidebar = (
-      <ListsTreeNav lists={lists} activeListData={activeListData} />
-    );
     return (
-      <TreeLayoutShell sidebar={sidebar}>{contentWithToggle}</TreeLayoutShell>
+      <TreeLayoutShell
+        sidebar={<ListsTreeNav lists={lists} activeListData={activeListData} />}
+      >
+        {contentWithToggle}
+      </TreeLayoutShell>
     );
   }
 
-  const sidebar = <CategoryPanel lists={lists} />;
   return (
-    <SplitLayoutShell sidebar={sidebar}>{contentWithToggle}</SplitLayoutShell>
+    <SplitLayoutShell sidebar={<CategoryPanel lists={lists} />}>
+      {contentWithToggle}
+    </SplitLayoutShell>
   );
 }
 

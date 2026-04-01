@@ -4,6 +4,9 @@
 // since external agents authenticate via API key, not Supabase sessions.
 
 import { createAdminClient } from '@/utils/supabase/adminClient';
+// Supabase RPC returns typed rows (no Json fields in these RPCs), but the
+// return types use plain `string` while UserFeedback uses narrowed literals.
+// We cast as `unknown as UserFeedback` at each call site.
 import type {
     UserFeedback,
     FeedbackComment,
@@ -138,7 +141,7 @@ export async function getWorkQueue(): Promise<ServiceResult<UserFeedback[]>> {
         const { data, error } = await supabase.rpc('get_agent_work_queue');
 
         if (error) return { success: false, error: error.message };
-        return { success: true, data: data || [] };
+        return { success: true, data: (data || []) as unknown as UserFeedback[] };
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Unexpected error in getWorkQueue';
         return { success: false, error: message };
@@ -157,7 +160,7 @@ export async function getComments(
         });
 
         if (error) return { success: false, error: error.message };
-        return { success: true, data: data || [] };
+        return { success: true, data: (data || []) as unknown as FeedbackComment[] };
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Unexpected error in getComments';
         return { success: false, error: message };
@@ -208,7 +211,7 @@ export async function triageItem(
         });
 
         if (error) return { success: false, error: error.message };
-        return { success: true, data };
+        return { success: true, data: data as unknown as UserFeedback };
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Unexpected error in triageItem';
         return { success: false, error: message };
@@ -233,7 +236,7 @@ export async function addComment(
         });
 
         if (error) return { success: false, error: error.message };
-        return { success: true, data };
+        return { success: true, data: data as unknown as FeedbackComment };
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Unexpected error in addComment';
         return { success: false, error: message };
@@ -258,7 +261,7 @@ export async function resolveWithTesting(
         });
 
         if (error) return { success: false, error: error.message };
-        return { success: true, data };
+        return { success: true, data: data as unknown as UserFeedback };
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Unexpected error in resolveWithTesting';
         return { success: false, error: message };
@@ -283,7 +286,7 @@ export async function setAdminDecision(
         });
 
         if (error) return { success: false, error: error.message };
-        return { success: true, data };
+        return { success: true, data: data as unknown as UserFeedback };
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Unexpected error in setAdminDecision';
         return { success: false, error: message };

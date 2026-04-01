@@ -4,6 +4,7 @@ import { requireUserId } from '@/utils/auth/getUserId';
 import { supabase } from "@/utils/supabase/client";
 import { RuntimeCompiledRecipe } from "../../app-runner/types";
 import { RecipeInfo } from "@/features/recipes/types";
+import type { DbRpcRow } from "@/types/supabase-rpc";
 
 export type CustomAppletConfigDB = {
     id: string;
@@ -19,9 +20,9 @@ export type CustomAppletConfigDB = {
     accent_color?: string;
     layout_type?: AppletLayoutOption;
     containers?: AppletContainer[];
-    data_source_config?: any;
-    result_component_config?: any;
-    next_step_config?: any;
+    data_source_config?: unknown;
+    result_component_config?: unknown;
+    next_step_config?: unknown;
     user_id?: string;
     is_public?: boolean;
     authenticated_read?: boolean;
@@ -32,6 +33,9 @@ export type CustomAppletConfigDB = {
     app_id?: string;
     broker_map?: BrokerMapping[];
 };
+type _CheckCustomAppletConfigDB = CustomAppletConfigDB extends DbRpcRow<"add_groups_to_applet"> ? true : false;
+declare const _customAppletConfigDB: _CheckCustomAppletConfigDB;
+true satisfies typeof _customAppletConfigDB;
 
 
 /**
@@ -441,7 +445,7 @@ export const addContainersToApplet = async (appletId: string, groupIds: string[]
 
         console.log("addContainersToApplet data", data);
 
-        return dbToAppletConfig(data);
+        return dbToAppletConfig(data as unknown as CustomAppletConfigDB);
     } catch (err) {
         console.error("Exception in addContainersToApplet:", err);
         throw err;

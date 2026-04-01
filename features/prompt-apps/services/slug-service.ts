@@ -5,6 +5,7 @@
  */
 
 import { createClient } from '@/utils/supabase/client';
+import type { DbRpcRow } from "@/types/supabase-rpc";
 
 const supabase = createClient();
 
@@ -84,6 +85,9 @@ interface SlugValidationResult {
   is_format_valid: boolean;
   error: string | null;
 }
+type _CheckSlugValidationResult = SlugValidationResult extends DbRpcRow<"validate_slugs"> ? true : false;
+declare const _slugValidationResult: _CheckSlugValidationResult;
+true satisfies typeof _slugValidationResult;
 
 interface BatchSlugValidationResult {
   valid: SlugValidationResult[];
@@ -104,7 +108,7 @@ export async function isSlugAvailable(slug: string): Promise<boolean> {
 
     if (!data || data.length === 0) return false;
 
-    const result = data[0] as SlugValidationResult;
+    const result = (data as unknown as SlugValidationResult[])[0];
     return result.is_format_valid && result.is_available;
   } catch (error) {
     console.error('Error checking slug availability:', error);
@@ -133,7 +137,7 @@ export async function validateSlugsInBatch(
 
     if (error) throw error;
 
-    const results = (data || []) as SlugValidationResult[];
+    const results = (data as unknown as SlugValidationResult[]) || [];
 
     const valid = results.filter(r => r.is_format_valid);
     const invalid = results.filter(r => !r.is_format_valid);

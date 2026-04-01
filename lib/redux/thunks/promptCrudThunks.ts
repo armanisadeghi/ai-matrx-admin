@@ -13,6 +13,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { supabase } from '@/utils/supabase/client';
 import { RootState, AppDispatch } from '../store';
+import type { DbRpcRow } from '@/types/supabase-rpc';
 import {
     cachePrompt,
     removePrompt,
@@ -35,6 +36,27 @@ import {
     toDbUpdate,
 } from '@/features/prompts/utils/dbTransforms';
 import { satisfiesPermissionLevel } from '@/utils/permissions/types';
+
+// ---------------------------------------------------------------------------
+// DB row types
+// ---------------------------------------------------------------------------
+
+interface SharedPromptDbRow {
+    created_at: string;
+    description: string;
+    id: string;
+    messages: unknown;
+    name: string;
+    owner_email: string;
+    permission_level: string;
+    settings: unknown;
+    updated_at: string;
+    user_id: string;
+    variable_defaults: unknown;
+}
+type _CheckSharedPromptDbRow = SharedPromptDbRow extends DbRpcRow<"get_prompts_shared_with_me"> ? true : false;
+declare const _sharedPromptDbRow: _CheckSharedPromptDbRow;
+true satisfies typeof _sharedPromptDbRow;
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -367,7 +389,7 @@ export const fetchSharedPrompts = createAsyncThunk<
             throw error;
         }
 
-        const records: SharedPromptRecord[] = (data ?? []).map((row: any) => ({
+        const records: SharedPromptRecord[] = ((data ?? []) as unknown as SharedPromptDbRow[]).map((row) => ({
             id:              row.id,
             name:            row.name,
             description:     row.description ?? null,

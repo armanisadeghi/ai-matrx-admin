@@ -5,6 +5,7 @@ import type {
   Workspace,
   ResolvedBrokerValue,
   CompleteBrokerData,
+  BulkUpsertBrokerResult,
   BrokerContext,
   CreateBrokerInput,
   UpdateBrokerInput,
@@ -173,7 +174,7 @@ export class BrokerService {
   static async bulkUpsertBrokerValues(
     brokerValues: BulkBrokerValueInput[],
     scope: Partial<BrokerContext> & { created_by?: string }
-  ): Promise<Array<{ broker_id: string; broker_value_id: string; success: boolean }>> {
+  ): Promise<BulkUpsertBrokerResult[]> {
     const { data, error } = await supabase.rpc('bulk_upsert_broker_values', {
       p_broker_value_pairs: brokerValues,
       p_is_global: false,
@@ -188,7 +189,7 @@ export class BrokerService {
     });
 
     if (error) throw error;
-    return data || [];
+    return (data ?? []) as unknown as BulkUpsertBrokerResult[];
   }
 
   /**
@@ -230,7 +231,7 @@ export class BrokerService {
     );
 
     if (error) throw error;
-    return data || [];
+    return (data ?? []) as unknown as ResolvedBrokerValue[];
   }
 
   /**
@@ -255,7 +256,7 @@ export class BrokerService {
     );
 
     if (error) throw error;
-    return data || [];
+    return (data ?? []) as unknown as CompleteBrokerData[];
   }
 
   /**

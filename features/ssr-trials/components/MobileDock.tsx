@@ -3,11 +3,13 @@
 
 import MobileDockShell from "./MobileDockShell";
 import MobileDockItems from "./MobileDockItems";
+import MobileDockVoiceButton from "./MobileDockVoiceButton";
 
 export default function MobileDock() {
   return (
     <MobileDockShell>
       <MobileDockItems />
+      <MobileDockVoiceButton />
     </MobileDockShell>
   );
 }

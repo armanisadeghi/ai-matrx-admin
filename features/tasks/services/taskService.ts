@@ -2,6 +2,7 @@
 import { supabase } from "@/utils/supabase/client";
 import { requireUserId } from "@/utils/auth/getUserId";
 import { getSharedWithMe } from "@/utils/permissions/service";
+import type { DbRpcRow } from "@/types/supabase-rpc";
 import type { DatabaseTask } from "../types";
 
 export interface CreateTaskInput {
@@ -451,6 +452,22 @@ export async function getSharedWithMeTasks(): Promise<DatabaseTask[]> {
 // Task-specific Sharing Helpers (wrap the universal Phase 1 RPCs)
 // ============================================================================
 
+export interface ResourcePermission {
+  id: string;
+  resource_id: string;
+  resource_type: string;
+  granted_to_user_id: string;
+  granted_to_user: unknown;
+  granted_to_organization_id: string;
+  granted_to_organization: unknown;
+  permission_level: string;
+  is_public: boolean;
+  created_at: string;
+}
+type _CheckResourcePermission = ResourcePermission extends DbRpcRow<"get_resource_permissions"> ? true : false;
+declare const _resourcePermission: _CheckResourcePermission;
+true satisfies typeof _resourcePermission;
+
 export interface TaskShareResult {
   success: boolean;
   message?: string;
@@ -473,10 +490,11 @@ export async function shareTask(
     p_permission_level: level,
   });
   if (error) return { success: false, error: error.message };
+  const result = data as unknown as TaskShareResult;
   return {
-    success: data?.success ?? false,
-    message: data?.message,
-    error: data?.error,
+    success: result?.success ?? false,
+    message: result?.message,
+    error: result?.error,
   };
 }
 
@@ -489,10 +507,11 @@ export async function makeTaskPublic(taskId: string): Promise<TaskShareResult> {
     p_resource_id: taskId,
   });
   if (error) return { success: false, error: error.message };
+  const result = data as unknown as TaskShareResult;
   return {
-    success: data?.success ?? false,
-    message: data?.message,
-    error: data?.error,
+    success: result?.success ?? false,
+    message: result?.message,
+    error: result?.error,
   };
 }
 
@@ -507,10 +526,11 @@ export async function makeTaskPrivate(
     p_resource_id: taskId,
   });
   if (error) return { success: false, error: error.message };
+  const result = data as unknown as TaskShareResult;
   return {
-    success: data?.success ?? false,
-    message: data?.message,
-    error: data?.error,
+    success: result?.success ?? false,
+    message: result?.message,
+    error: result?.error,
   };
 }
 
@@ -528,10 +548,11 @@ export async function revokeTaskAccess(
     p_target_user_id: targetUserId,
   });
   if (error) return { success: false, error: error.message };
+  const result = data as unknown as TaskShareResult;
   return {
-    success: data?.success ?? false,
-    message: data?.message,
-    error: data?.error,
+    success: result?.success ?? false,
+    message: result?.message,
+    error: result?.error,
   };
 }
 
@@ -548,7 +569,7 @@ export async function getTaskPermissions(taskId: string) {
     console.error("Error fetching task permissions:", error.message);
     return [];
   }
-  return data || [];
+  return (data as unknown as ResourcePermission[]) || [];
 }
 
 /**

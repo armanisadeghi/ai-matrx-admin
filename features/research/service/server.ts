@@ -19,5 +19,5 @@ export async function getTopicOverviewServer(topicId: string): Promise<ResearchP
     const supabase = await createClient();
     const { data, error } = await supabase.rpc('get_topic_overview', { p_topic_id: topicId });
     if (error) throw error;
-    return (data as ResearchProgress) ?? null;
+    return (data as unknown as ResearchProgress) ?? null;
 }
