@@ -29,7 +29,7 @@ import {
   AGENT_NONE_SENTINEL,
 } from "./slice";
 import type { AgentConsumerState, AgentSortOption } from "./slice";
-import type { AgentDefinitionRecord } from "../agent-definition/types";
+import type { AgentDefinitionRecord } from "../../types/agent-definition.types";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 

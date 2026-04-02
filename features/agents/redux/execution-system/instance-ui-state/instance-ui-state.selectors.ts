@@ -134,6 +134,16 @@ export const selectModeState =
   (state: RootState): Record<string, unknown> | undefined =>
     state.instanceUIState.byInstanceId[instanceId]?.modeState;
 
+// ── Global preference selectors ───────────────────────────────────────────────
+
+/**
+ * Whether the chat route is in block mode (admin/pilot feature).
+ * Global display preference — not tied to any specific instance.
+ * Read at execute time like apiBaseUrl.
+ */
+export const selectUseBlockMode = (state: RootState): boolean =>
+  state.instanceUIState.useBlockMode;
+
 // ── Global registry selectors (keyed by display mode) ────────────────────────
 // These are memoized because they build arrays from the full map.
 // Each returns a stable array — only recomputes when the map changes.

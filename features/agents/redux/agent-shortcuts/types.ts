@@ -1,5 +1,5 @@
 import { ContextSlot } from "@/features/agents/types/agent-api-types";
-import { VariableDefinition } from "@/features/agents/redux/agent-definition/types";
+import { VariableDefinition } from "@/features/agents/types/agent-definition.types";
 import { ResultDisplay } from "@/features/agents/utils/run-ui-utils";
 import { ShortcutContext } from "@/features/agents/utils/shortcut-context-utils";
 import type { DbRpcRow } from "@/types/supabase-rpc";
@@ -110,7 +110,10 @@ export interface AgentShortcutInitialRow {
   agent_variable_definitions: VariableDefinition[] | null;
   agent_context_slots: ContextSlot[] | null;
 }
-type _CheckAgentShortcutInitialRow = AgentShortcutInitialRow extends DbRpcRow<"get_agent_shortcuts_initial"> ? true : false;
+type _CheckAgentShortcutInitialRow =
+  AgentShortcutInitialRow extends DbRpcRow<"get_agent_shortcuts_initial">
+    ? true
+    : false;
 declare const _agentShortcutInitialRow: _CheckAgentShortcutInitialRow;
 true satisfies typeof _agentShortcutInitialRow;
 
@@ -123,7 +126,10 @@ export interface AgentShortcutContextRow extends AgentShortcutInitialRow {
   shortcut_project_id: string | null;
   shortcut_task_id: string | null;
 }
-type _CheckAgentShortcutContextRow = AgentShortcutContextRow extends DbRpcRow<"get_agent_shortcuts_for_context"> ? true : false;
+type _CheckAgentShortcutContextRow =
+  AgentShortcutContextRow extends DbRpcRow<"get_agent_shortcuts_for_context">
+    ? true
+    : false;
 declare const _agentShortcutContextRow: _CheckAgentShortcutContextRow;
 true satisfies typeof _agentShortcutContextRow;
 
@@ -134,7 +140,10 @@ export interface AgentShortcutMenuResult {
   placement_type: string;
   menu_data: AgentShortcutCategory[];
 }
-type _CheckAgentShortcutMenuResult = AgentShortcutMenuResult extends DbRpcRow<"build_agent_shortcut_menu"> ? true : false;
+type _CheckAgentShortcutMenuResult =
+  AgentShortcutMenuResult extends DbRpcRow<"build_agent_shortcut_menu">
+    ? true
+    : false;
 declare const _agentShortcutMenuResult: _CheckAgentShortcutMenuResult;
 true satisfies typeof _agentShortcutMenuResult;
 

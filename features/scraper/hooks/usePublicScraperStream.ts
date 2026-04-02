@@ -44,7 +44,6 @@ interface UsePublicScraperStreamReturn {
   searchAndScrapeLimited: (
     request: SearchAndScrapeLimitedRequest,
   ) => Promise<void>;
-  micCheck: () => Promise<void>;
   cancel: () => void;
   reset: () => void;
 }
@@ -309,43 +308,6 @@ export function usePublicScraperStream(
     [getHeaders, waitForAuth, getBackendUrl, processStream, onError],
   );
 
-  // Mic check
-  const micCheck = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    setResults([]);
-    setSearchResults([]);
-    setStatusMessage(null);
-
-    try {
-      await waitForAuth();
-      const headers = getHeaders();
-      const backendUrl = getBackendUrl();
-
-      console.log("[Scraper Hook] Mic Check - Backend URL:", backendUrl);
-      console.log("[Scraper Hook] Mic Check - Headers:", {
-        hasAuth: !!headers.Authorization,
-        hasFingerprint: !!headers["X-Fingerprint-ID"],
-        headerKeys: Object.keys(headers),
-      });
-
-      abortControllerRef.current = new AbortController();
-      const stream = scraperService.micCheck(
-        headers,
-        backendUrl,
-        abortControllerRef.current.signal,
-      );
-
-      await processStream(stream);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Mic check failed";
-      setError(errorMessage);
-      onError?.(errorMessage);
-      setIsLoading(false);
-    }
-  }, [getHeaders, waitForAuth, getBackendUrl, processStream, onError]);
-
   // Cancel current operation
   const cancel = useCallback(() => {
     if (abortControllerRef.current) {
@@ -379,7 +341,6 @@ export function usePublicScraperStream(
     searchKeywords,
     searchAndScrape,
     searchAndScrapeLimited,
-    micCheck,
     cancel,
     reset,
   };

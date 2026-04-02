@@ -67,7 +67,8 @@ export interface PromptSettings {
   disable_safety_checker?: LLMParams["disable_safety_checker"];
 
   // Backend accepts response_format as Dict[str, Any] | null. DB may store a string.
-  response_format?: ResponseFormatDict | string;
+  // Record<string, unknown> covers merged LLMParams from instance overrides / OpenAPI parity.
+  response_format?: ResponseFormatDict | string | Record<string, unknown>;
 
   // Frontend-only fields (not in LLMParams)
   tools?: string[];

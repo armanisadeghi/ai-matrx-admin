@@ -19,10 +19,21 @@ import { destroyInstance } from "../execution-instances/execution-instances.slic
 
 export interface InstanceUIStateSlice {
   byInstanceId: Record<string, InstanceUIState>;
+
+  /**
+   * Admin/pilot feature — when true, chat renders in "block mode" where each
+   * message is a distinct, collapsible block instead of a continuous thread.
+   *
+   * Lives here until promoted to a full user preference (userPreferencesSlice).
+   * Read at execute time like apiBaseUrl — applied to the instance at creation.
+   * Not tied to any specific instance — it is a global display preference.
+   */
+  useBlockMode: boolean;
 }
 
 const initialState: InstanceUIStateSlice = {
   byInstanceId: {},
+  useBlockMode: false,
 };
 
 // =============================================================================
@@ -167,6 +178,15 @@ const instanceUIStateSlice = createSlice({
     removeInstanceUIState(state, action: PayloadAction<string>) {
       delete state.byInstanceId[action.payload];
     },
+
+    /**
+     * Toggle block mode for the chat route.
+     * Admin/pilot only — will move to userPreferencesSlice when promoted.
+     * Global display preference — not tied to any specific instance.
+     */
+    setUseBlockMode(state, action: PayloadAction<boolean>) {
+      state.useBlockMode = action.payload;
+    },
   },
 
   extraReducers: (builder) => {
@@ -188,6 +208,7 @@ export const {
   setSubmitOnEnter,
   setAutoClearConversation,
   removeInstanceUIState,
+  setUseBlockMode,
 } = instanceUIStateSlice.actions;
 
 export default instanceUIStateSlice.reducer;

@@ -340,7 +340,6 @@ export function useScraperApi(): UseScraperApiReturn {
         const body: QuickScrapeRequest = {
           urls: [url],
           use_cache: true,
-          stream: false,
           get_text_data: true,
           get_overview: true,
           get_links: true,
@@ -404,7 +403,6 @@ export function useScraperApi(): UseScraperApiReturn {
         const body: QuickScrapeRequest = {
           urls: [url],
           use_cache: false,
-          stream: false,
           get_text_data: true,
           get_overview: true,
           get_links: true,
@@ -464,7 +462,6 @@ export function useScraperApi(): UseScraperApiReturn {
         const body: QuickScrapeRequest = {
           urls: [url],
           use_cache: true,
-          stream: false,
           get_text_data: true,
           get_overview: true,
           get_links: true,
@@ -523,7 +520,6 @@ export function useScraperApi(): UseScraperApiReturn {
         const body: QuickScrapeRequest = {
           urls,
           use_cache: true,
-          stream: false,
           get_text_data: true,
           get_overview: true,
           get_links: true,

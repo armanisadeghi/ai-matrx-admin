@@ -21,7 +21,10 @@
  */
 
 import type { Database } from "@/types/database.types";
-import type { AgentDefinition, AgentType } from "./types";
+import type {
+  AgentDefinition,
+  AgentType,
+} from "../../types/agent-definition.types";
 
 // ---------------------------------------------------------------------------
 // Supabase row types (derived from generated types)

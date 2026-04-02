@@ -1,3 +1,5 @@
-export { useScraperContent, type UseScraperContent } from "./useScraperContent";
-export { useScraperApi, type ScraperResult } from "./useScraperApi";
-
+export {
+  useScraperApi,
+  type ScraperResult,
+  type UseScraperApiReturn,
+} from "./useScraperApi";

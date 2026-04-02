@@ -15,7 +15,7 @@ import type {
   InstanceOrigin,
 } from "@/features/agents/types";
 import { generateInstanceId } from "../utils";
-import { AgentType } from "@/features/agents/redux/agent-definition/types";
+import { AgentType } from "@/features/agents/types/agent-definition.types";
 
 // =============================================================================
 // State

@@ -20,7 +20,13 @@ import type { AssembledAgentStartRequest } from "@/features/agents/types";
 import type {
   PendingToolCall,
   RequestStatus,
+  ToolLifecycleEntry,
 } from "@/features/agents/types/request.types";
+import type {
+  StatusUpdatePayload,
+  ContentBlockPayload,
+  CompletionPayload,
+} from "@/types/python-generated/stream-events";
 import type { ShortcutContext } from "@/features/agents/redux/agent-shortcuts/types";
 import { assembleRequest } from "../thunks/execute-instance.thunk";
 
@@ -460,6 +466,154 @@ export const selectActivePanelInstanceIds = createSelector(
     return ids.length > 0 ? ids : undefined;
   },
 );
+
+// =============================================================================
+// Instance-Level Bridges — Status Updates
+// =============================================================================
+
+/**
+ * The latest status update for this instance's most recent request.
+ * Drives the "thinking...", "processing...", "waiting..." indicator.
+ * Returns null when no status updates have arrived yet.
+ */
+export const selectLatestCurrentStatus =
+  (instanceId: string) =>
+  (state: RootState): StatusUpdatePayload | null => {
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return null;
+    return (
+      state.activeRequests.byRequestId[ids[ids.length - 1]]?.currentStatus ??
+      null
+    );
+  };
+
+/**
+ * Just the user-facing message string from the latest status update.
+ * Falls back to the raw status field if no user_message is set.
+ */
+export const selectLatestStatusMessage =
+  (instanceId: string) =>
+  (state: RootState): string | null => {
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return null;
+    const current =
+      state.activeRequests.byRequestId[ids[ids.length - 1]]?.currentStatus;
+    return current?.user_message ?? current?.status ?? null;
+  };
+
+// =============================================================================
+// Instance-Level Bridges — Content Blocks
+// =============================================================================
+
+/**
+ * All content blocks from the latest request on this instance, in order.
+ * Memoized — stable reference until a new block arrives.
+ */
+export const selectLatestContentBlocks = (instanceId: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byInstanceId[instanceId],
+    (state: RootState) => state.activeRequests.byRequestId,
+    (instanceIds, byRequestId): ContentBlockPayload[] => {
+      if (!instanceIds || instanceIds.length === 0) return [];
+      const latest = byRequestId[instanceIds[instanceIds.length - 1]];
+      if (!latest) return [];
+      return latest.contentBlockOrder
+        .map((id) => latest.contentBlocks[id])
+        .filter((b): b is ContentBlockPayload => b != null);
+    },
+  );
+
+/**
+ * Content block count for the latest request. Primitive — safe for useAppSelector.
+ */
+export const selectLatestContentBlockCount =
+  (instanceId: string) =>
+  (state: RootState): number => {
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return 0;
+    return (
+      state.activeRequests.byRequestId[ids[ids.length - 1]]?.contentBlockOrder
+        .length ?? 0
+    );
+  };
+
+// =============================================================================
+// Instance-Level Bridges — Tool Lifecycle
+// =============================================================================
+
+/**
+ * All active (in-progress) tools for this instance's latest request.
+ * Memoized.
+ */
+export const selectLatestActiveTools = (instanceId: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byInstanceId[instanceId],
+    (state: RootState) => state.activeRequests.byRequestId,
+    (instanceIds, byRequestId): ToolLifecycleEntry[] => {
+      if (!instanceIds || instanceIds.length === 0) return [];
+      const latest = byRequestId[instanceIds[instanceIds.length - 1]];
+      if (!latest) return [];
+      return Object.values(latest.toolLifecycle).filter(
+        (t) =>
+          t.status === "started" ||
+          t.status === "progress" ||
+          t.status === "step",
+      );
+    },
+  );
+
+/**
+ * All tool lifecycle entries for this instance's latest request.
+ * Memoized.
+ */
+export const selectLatestToolLifecycles = (instanceId: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byInstanceId[instanceId],
+    (state: RootState) => state.activeRequests.byRequestId,
+    (instanceIds, byRequestId): ToolLifecycleEntry[] => {
+      if (!instanceIds || instanceIds.length === 0) return [];
+      const latest = byRequestId[instanceIds[instanceIds.length - 1]];
+      if (!latest) return [];
+      return Object.values(latest.toolLifecycle);
+    },
+  );
+
+// =============================================================================
+// Instance-Level Bridges — Completion
+// =============================================================================
+
+/**
+ * The completion payload for this instance's latest request.
+ * null until the stream finishes.
+ */
+export const selectLatestCompletion =
+  (instanceId: string) =>
+  (state: RootState): CompletionPayload | null => {
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return null;
+    return (
+      state.activeRequests.byRequestId[ids[ids.length - 1]]?.completion ?? null
+    );
+  };
+
+// =============================================================================
+// Instance-Level Bridges — Errors
+// =============================================================================
+
+/**
+ * Whether the latest error on this instance was fatal (stream killed).
+ * Combine with selectLatestError to decide if the user needs a recovery path.
+ */
+export const selectLatestErrorIsFatal =
+  (instanceId: string) =>
+  (state: RootState): boolean => {
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return false;
+    return (
+      state.activeRequests.byRequestId[ids[ids.length - 1]]?.errorIsFatal ??
+      false
+    );
+  };
 
 // =============================================================================
 // Shortcut Selectors

@@ -20,7 +20,7 @@ import type { RootState } from "@/lib/redux/store";
 import type {
   AgentType,
   VariableDefinition,
-} from "@/features/agents/redux/agent-definition/types";
+} from "@/features/agents/types/agent-definition.types";
 import type { LLMParams } from "@/features/agents/types";
 import { executeInstance } from "./execute-instance.thunk";
 

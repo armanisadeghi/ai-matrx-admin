@@ -1,12 +1,23 @@
 /**
  * Active Requests Slice
  *
- * Tracks everything that happens after an API call fires:
- * stream status, accumulated response, tool delegation, warnings,
- * and the sub-agent conversation tree.
+ * Tracks everything that happens after an API call fires.
+ * Each semantically distinct server event type gets its own dedicated
+ * storage field — no untyped catch-all bags.
  *
  * Keyed by requestId (not instanceId) because one instance can spawn
- * multiple requests via sub-agent conversations.
+ * multiple requests via multi-turn conversations.
+ *
+ * Storage map:
+ *   chunk events       → accumulatedText (string concat)
+ *   status_update      → currentStatus + statusHistory
+ *   content_block      → contentBlocks (Record by blockId) + contentBlockOrder
+ *   tool_event         → toolLifecycle (Record by callId) + pendingToolCalls
+ *   completion         → completion (single object)
+ *   error              → errorMessage + errorIsFatal + status change
+ *   data               → dataPayloads (genuine catch-all, small)
+ *   heartbeat          → dropped (no storage)
+ *   end                → status change only
  */
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
@@ -16,7 +27,14 @@ import type {
   PendingToolCall,
   StreamWarning,
   ClientMetrics,
+  ToolLifecycleEntry,
+  ToolLifecycleStatus,
 } from "@/features/agents/types/request.types";
+import type {
+  StatusUpdatePayload,
+  ContentBlockPayload,
+  CompletionPayload,
+} from "@/types/python-generated/stream-events";
 import { generateRequestId } from "../utils";
 import { destroyInstance } from "../execution-instances/execution-instances.slice";
 
@@ -26,8 +44,6 @@ import { destroyInstance } from "../execution-instances/execution-instances.slic
 
 export interface ActiveRequestsState {
   byRequestId: Record<string, ActiveRequest>;
-
-  /** Map instanceId → requestIds for quick lookup */
   byInstanceId: Record<string, string[]>;
 }
 
@@ -44,9 +60,6 @@ const activeRequestsSlice = createSlice({
   name: "activeRequests",
   initialState,
   reducers: {
-    /**
-     * Create a new request entry when an API call fires.
-     */
     createRequest(
       state,
       action: PayloadAction<{
@@ -70,10 +83,17 @@ const activeRequestsSlice = createSlice({
         parentConversationId,
         status: "pending",
         accumulatedText: "",
-        dataPayloads: [],
+        currentStatus: null,
+        statusHistory: [],
+        contentBlocks: {},
+        contentBlockOrder: [],
+        toolLifecycle: {},
         pendingToolCalls: [],
-        warnings: [],
+        completion: null,
         errorMessage: null,
+        errorIsFatal: false,
+        warnings: [],
+        dataPayloads: [],
         startedAt: now,
         firstChunkAt: null,
         completedAt: null,
@@ -86,22 +106,21 @@ const activeRequestsSlice = createSlice({
       state.byInstanceId[instanceId].push(requestId);
     },
 
-    /**
-     * Update request status.
-     */
     setRequestStatus(
       state,
       action: PayloadAction<{
         requestId: string;
         status: RequestStatus;
         errorMessage?: string;
+        isFatal?: boolean;
       }>,
     ) {
-      const { requestId, status, errorMessage } = action.payload;
+      const { requestId, status, errorMessage, isFatal } = action.payload;
       const request = state.byRequestId[requestId];
       if (request) {
         request.status = status;
-        if (errorMessage) request.errorMessage = errorMessage;
+        if (errorMessage !== undefined) request.errorMessage = errorMessage;
+        if (isFatal !== undefined) request.errorIsFatal = isFatal;
         if (
           status === "complete" ||
           status === "error" ||
@@ -112,9 +131,6 @@ const activeRequestsSlice = createSlice({
       }
     },
 
-    /**
-     * Set the conversation ID (received from the server on first response).
-     */
     setConversationId(
       state,
       action: PayloadAction<{
@@ -128,9 +144,8 @@ const activeRequestsSlice = createSlice({
       }
     },
 
-    /**
-     * Append a text chunk from the stream.
-     */
+    // ── Chunks ─────────────────────────────────────────────────
+
     appendChunk(
       state,
       action: PayloadAction<{ requestId: string; content: string }>,
@@ -145,26 +160,116 @@ const activeRequestsSlice = createSlice({
       }
     },
 
-    /**
-     * Append a structured data payload.
-     */
-    appendDataPayload(
+    // ── Status Updates ─────────────────────────────────────────
+
+    setCurrentStatus(
       state,
       action: PayloadAction<{
         requestId: string;
-        data: Record<string, unknown>;
+        status: StatusUpdatePayload;
       }>,
     ) {
       const request = state.byRequestId[action.payload.requestId];
       if (request) {
-        request.dataPayloads.push(action.payload.data);
+        request.currentStatus = action.payload.status;
+        request.statusHistory.push(action.payload.status);
       }
     },
 
-    /**
-     * Register a tool delegation event from the stream.
-     * The AI loop is now suspended waiting for the client.
-     */
+    // ── Content Blocks ─────────────────────────────────────────
+
+    upsertContentBlock(
+      state,
+      action: PayloadAction<{
+        requestId: string;
+        block: ContentBlockPayload;
+      }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (!request) return;
+
+      const { block } = action.payload;
+      const isNew = !(block.blockId in request.contentBlocks);
+
+      request.contentBlocks[block.blockId] = block;
+
+      if (isNew) {
+        request.contentBlockOrder.push(block.blockId);
+      }
+    },
+
+    // ── Tool Lifecycle ─────────────────────────────────────────
+
+    upsertToolLifecycle(
+      state,
+      action: PayloadAction<{
+        requestId: string;
+        callId: string;
+        toolName: string;
+        status: ToolLifecycleStatus;
+        arguments?: Record<string, unknown>;
+        message?: string | null;
+        data?: Record<string, unknown> | null;
+        result?: unknown;
+        resultPreview?: string | null;
+        errorType?: string | null;
+        errorMessage?: string | null;
+        isDelegated?: boolean;
+      }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (!request) return;
+
+      const {
+        callId,
+        toolName,
+        status,
+        message,
+        data,
+        result,
+        resultPreview,
+        errorType,
+        errorMessage: toolError,
+        isDelegated,
+      } = action.payload;
+      const args = action.payload.arguments;
+
+      const existing = request.toolLifecycle[callId];
+      const now = new Date().toISOString();
+
+      if (existing) {
+        existing.status = status;
+        if (message !== undefined) existing.latestMessage = message ?? null;
+        if (data !== undefined) existing.latestData = data ?? null;
+        if (result !== undefined) existing.result = result;
+        if (resultPreview !== undefined)
+          existing.resultPreview = resultPreview ?? null;
+        if (errorType !== undefined) existing.errorType = errorType ?? null;
+        if (toolError !== undefined) existing.errorMessage = toolError ?? null;
+        if (isDelegated !== undefined) existing.isDelegated = isDelegated;
+        if (status === "completed" || status === "error") {
+          existing.completedAt = now;
+        }
+      } else {
+        request.toolLifecycle[callId] = {
+          callId,
+          toolName,
+          status,
+          arguments: args ?? {},
+          startedAt: now,
+          completedAt:
+            status === "completed" || status === "error" ? now : null,
+          latestMessage: message ?? null,
+          latestData: data ?? null,
+          result: result ?? null,
+          resultPreview: resultPreview ?? null,
+          errorType: errorType ?? null,
+          errorMessage: toolError ?? null,
+          isDelegated: isDelegated ?? false,
+        };
+      }
+    },
+
     addPendingToolCall(
       state,
       action: PayloadAction<{
@@ -179,7 +284,7 @@ const activeRequestsSlice = createSlice({
       const request = state.byRequestId[requestId];
       if (request) {
         const now = new Date();
-        const deadline = new Date(now.getTime() + 120_000); // 120s timeout
+        const deadline = new Date(now.getTime() + 120_000);
 
         request.pendingToolCalls.push({
           ...toolCall,
@@ -191,9 +296,6 @@ const activeRequestsSlice = createSlice({
       }
     },
 
-    /**
-     * Mark a tool call as resolved (client submitted result).
-     */
     resolveToolCall(
       state,
       action: PayloadAction<{ requestId: string; callId: string }>,
@@ -207,7 +309,6 @@ const activeRequestsSlice = createSlice({
           call.resolved = true;
         }
 
-        // If all pending calls are resolved, resume streaming status
         const allResolved = request.pendingToolCalls.every((c) => c.resolved);
         if (allResolved && request.status === "awaiting-tools") {
           request.status = "streaming";
@@ -215,9 +316,38 @@ const activeRequestsSlice = createSlice({
       }
     },
 
-    /**
-     * Add a structured input warning.
-     */
+    // ── Completion ─────────────────────────────────────────────
+
+    setCompletion(
+      state,
+      action: PayloadAction<{
+        requestId: string;
+        data: CompletionPayload;
+      }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (request) {
+        request.completion = action.payload.data;
+      }
+    },
+
+    // ── Data Events (genuine catch-all) ────────────────────────
+
+    appendDataPayload(
+      state,
+      action: PayloadAction<{
+        requestId: string;
+        data: Record<string, unknown>;
+      }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (request) {
+        request.dataPayloads.push(action.payload.data);
+      }
+    },
+
+    // ── Warnings ───────────────────────────────────────────────
+
     addWarning(
       state,
       action: PayloadAction<{
@@ -231,11 +361,8 @@ const activeRequestsSlice = createSlice({
       }
     },
 
-    /**
-     * Store the computed client-side metrics for a completed request.
-     * Dispatched once after the stream loop exits — never during the stream.
-     * Fire-and-forget: no component waits for this.
-     */
+    // ── Client Metrics ─────────────────────────────────────────
+
     finalizeClientMetrics(
       state,
       action: PayloadAction<{ requestId: string; metrics: ClientMetrics }>,
@@ -246,9 +373,8 @@ const activeRequestsSlice = createSlice({
       }
     },
 
-    /**
-     * Remove a request entry.
-     */
+    // ── Cleanup ────────────────────────────────────────────────
+
     removeRequest(state, action: PayloadAction<string>) {
       const request = state.byRequestId[action.payload];
       if (request) {
@@ -283,9 +409,13 @@ export const {
   setRequestStatus,
   setConversationId,
   appendChunk,
-  appendDataPayload,
+  setCurrentStatus,
+  upsertContentBlock,
+  upsertToolLifecycle,
   addPendingToolCall,
   resolveToolCall,
+  setCompletion,
+  appendDataPayload,
   addWarning,
   finalizeClientMetrics,
   removeRequest,

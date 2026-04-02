@@ -5,43 +5,41 @@
  * within the ssr/chat layout.
  *
  * Called ONCE from ChatPanelContent (the first persistent client component in
- * the layout). Handles Tier 1 and Tier 3 at the right time and place:
+ * the layout). Handles catalogue init and per-agent operational fetch:
  *
- *   Tier 1 — Slim list (names + basics):
- *     Dispatched once on mount via initializeAgents().
- *     Guarded by TTL inside the thunk — no double-fetching within 15 min.
- *     Also wired to tab-visibility stale-while-revalidate.
+ *   Catalogue (Tier 1+):
+ *     Dispatches initializeChatAgents() on mount — fetches owned + shared +
+ *     builtins via get_agents_list_full(). TTL-guarded (15 min). Also wired
+ *     to tab-visibility stale-while-revalidate (4-hour threshold).
  *
- *   Tier 2 — Core (descriptions, tags, etc.):
- *     Owned by AgentPickerSheet via autoUpgradeToCore when the picker opens.
- *     Not touched here.
- *
- *   Tier 3 — Operational (variableDefaults, dynamicModel, settings):
+ *   Execution fetch (Tier 2):
  *     Triggered whenever an agentId appears in the URL — either the
  *     /ssr/chat/a/[agentId] route or the ?agent=[agentId] search param.
- *     Dispatches fetchAgentOperational (idempotent via the thunk's own guard),
- *     then hydrates activeChatSlice with the full config.
+ *     Dispatches fetchAgentExecutionMinimal (idempotent via the thunk's own
+ *     guard), then hydrates activeChatSlice with the full config.
+ *
+ * Migration note (Phase 1):
+ *   Previously used initializeAgents() + fetchAgentOperational() from the
+ *   legacy agentCacheSlice / agentFetchThunks system. Both now point to the
+ *   new features/agents/redux/agent-definition system, which fetches directly
+ *   from the `agents` table (agents have replaced prompts).
  */
 
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
-  initializeAgents,
-  fetchAgentOperational,
-  refreshAgents,
-  isTabStale,
-} from "@/lib/redux/thunks/agentFetchThunks";
+  initializeChatAgents,
+  isChatListStale,
+  fetchAgentExecutionMinimal,
+} from "@/features/agents/redux/agent-definition/thunks";
+import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import {
   activeChatActions,
   selectActiveChatAgent,
   type ActiveChatAgent,
 } from "@/lib/redux/slices/activeChatSlice";
-import type {
-  AgentRecord,
-  AgentSource,
-} from "@/lib/redux/slices/agentCacheSlice";
-import type { PromptSettings } from "@/features/prompts/types/core";
+import type { LLMParams } from "@/lib/types/agent-chat";
 import { DEFAULT_AGENTS } from "@/features/cx-chat/components/agent/local-agents";
 import type { RootState } from "@/lib/redux/store";
 
@@ -72,28 +70,22 @@ export function useAgentBootstrap() {
   const searchParams = useSearchParams();
   const selectedAgent = useAppSelector(selectActiveChatAgent);
 
-  // Track the last agentId we handled to prevent redundant Tier 3 fetches.
-  const lastOperationalId = useRef<string | null>(null);
-  const lastVisible = useRef<number>(Date.now());
+  // Track the last agentId we handled to prevent redundant execution fetches.
+  const lastExecutionId = useRef<string | null>(null);
 
-  // ── Tier 1: Slim list — once on mount, then TTL-guarded ──────────────────
+  // ── Catalogue init — once on mount, then TTL-guarded ─────────────────────
   useEffect(() => {
-    dispatch(initializeAgents());
+    dispatch(initializeChatAgents());
   }, [dispatch]);
 
   // ── Tab visibility stale-while-revalidate ────────────────────────────────
   useEffect(() => {
     const handleVisibility = () => {
-      if (document.visibilityState === "hidden") {
-        lastVisible.current = Date.now();
-        return;
+      if (document.visibilityState !== "visible") return;
+      // isChatListStale() reads the module-level timestamp — no Redux read needed
+      if (isChatListStale()) {
+        dispatch(initializeChatAgents({ force: true }));
       }
-      // Re-read state at call time — avoid stale closure
-      dispatch((_, getState: () => RootState) => {
-        if (isTabStale(getState())) {
-          dispatch(refreshAgents());
-        }
-      });
     };
 
     document.addEventListener("visibilitychange", handleVisibility);
@@ -101,17 +93,16 @@ export function useAgentBootstrap() {
       document.removeEventListener("visibilitychange", handleVisibility);
   }, [dispatch]);
 
-  // ── Tier 3: Operational fetch — triggered by URL ──────────────────────────
+  // ── Per-agent execution fetch — triggered by URL ──────────────────────────
   useEffect(() => {
     const agentId = resolveAgentIdFromUrl(pathname, searchParams);
 
     // No agent in URL — nothing to fetch
     if (!agentId) return;
 
-    // Already handled this exact agentId — skip (thunk is idempotent too, but
-    // avoiding the dispatch entirely is cleaner)
-    if (agentId === lastOperationalId.current) return;
-    lastOperationalId.current = agentId;
+    // Already handled this exact agentId — skip
+    if (agentId === lastExecutionId.current) return;
+    lastExecutionId.current = agentId;
 
     // Fast path: hardcoded DEFAULT_AGENT — no DB fetch needed
     const builtIn = DEFAULT_AGENTS.find((a) => a.promptId === agentId);
@@ -130,63 +121,73 @@ export function useAgentBootstrap() {
       return;
     }
 
-    // All user-created agents live in "prompts" source.
-    // Builtins in DB (not in DEFAULT_AGENTS) are rare; the thunk handles them.
-    const source: AgentSource = "prompts";
+    // Fetch minimal execution data from the agents table (variableDefinitions + contextSlots).
+    // The thunk is idempotent — it skips the network call if the record is already ready.
+    dispatch(fetchAgentExecutionMinimal(agentId)).then(() => {
+      // Read the record from state after the thunk resolves
+      dispatch((_: unknown, getState: () => RootState) => {
+        const state = getState();
+        const record = selectAgentById(state, agentId);
 
-    dispatch(fetchAgentOperational({ id: agentId, source })).then((action) => {
-      // fetchAgentOperational.fulfilled carries AgentRecord | null as payload
-      if (action.type !== fetchAgentOperational.fulfilled.type) return;
+        if (!record) {
+          // Agent not found — mark as fetched so UI doesn't keep waiting
+          dispatch(
+            activeChatActions.setSelectedAgent({
+              promptId: agentId,
+              name:
+                selectedAgent.promptId === agentId ? selectedAgent.name : "",
+              configFetched: true,
+            }),
+          );
+          return;
+        }
 
-      const record = action.payload as AgentRecord | null;
+        // variableDefinitions is VariableDefinition[] — same shape as PromptVariable[]
+        // (VariableDefinition is a superset; the cast is safe for activeChatSlice consumption)
+        const variableDefaults =
+          record.variableDefinitions as ActiveChatAgent["variableDefaults"];
 
-      if (!record) {
-        // Agent not found in DB — mark as fetched so UI doesn't keep waiting
+        // Hydrate activeChatSlice with the agent config
         dispatch(
           activeChatActions.setSelectedAgent({
-            promptId: agentId,
-            name: selectedAgent.promptId === agentId ? selectedAgent.name : "",
+            promptId: record.id,
+            name:
+              record.name ||
+              (selectedAgent.promptId === agentId ? selectedAgent.name : ""),
+            description: record.description ?? undefined,
+            variableDefaults,
             configFetched: true,
           }),
         );
-        return;
-      }
 
-      // Pull settings apart: model_id + runtime settings (everything except tools)
-      const agentSettings = record.settings ?? {};
-      const { model_id, tools: _tools, ...runtimeSettings } = agentSettings;
-      const modelId = typeof model_id === "string" ? model_id : null;
+        // If settings are already loaded (e.g. from a previous fetchAgentExecutionFull),
+        // propagate model override and runtime settings to activeChatSlice.
+        // LLMParams uses `model` (not model_id); tools live at agent level, not in LLMParams.
+        if (record.settings && Object.keys(record.settings).length > 0) {
+          const settings = record.settings as LLMParams;
+          const {
+            model,
+            tools: _tools,
+            ...runtimeSettings
+          } = settings as LLMParams & { tools?: unknown };
 
-      // Hydrate activeChatSlice with the full operational config
-      dispatch(
-        activeChatActions.setSelectedAgent({
-          promptId: record.id,
-          name:
-            record.name ||
-            (selectedAgent.promptId === agentId ? selectedAgent.name : ""),
-          description: record.description,
-          variableDefaults:
-            record.variableDefaults as ActiveChatAgent["variableDefaults"],
-          dynamicModel: record.dynamicModel,
-          configFetched: true,
-        }),
-      );
-
-      // Apply model override and runtime settings for dirty-detection
-      if (modelId) {
-        dispatch(activeChatActions.setModelOverride(modelId));
-      }
-      if (Object.keys(runtimeSettings).length > 0) {
-        dispatch(
-          activeChatActions.setAgentDefaultSettings(
-            runtimeSettings as PromptSettings,
-          ),
-        );
-      }
+          if (typeof model === "string" && model) {
+            dispatch(activeChatActions.setModelOverride(model));
+          }
+          if (Object.keys(runtimeSettings).length > 0) {
+            dispatch(
+              activeChatActions.setAgentDefaultSettings(
+                runtimeSettings as LLMParams,
+              ),
+            );
+          }
+        }
+      });
     });
+
     // pathname and searchParams change on every navigation — that's our trigger.
-    // We intentionally exclude dispatch and selectedAgent to avoid re-running on
-    // Redux updates; lastOperationalId.current is our guard against duplicates.
+    // Intentionally excluding dispatch + selectedAgent to avoid re-running on
+    // Redux updates; lastExecutionId.current is our guard against duplicates.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, searchParams]);
 }

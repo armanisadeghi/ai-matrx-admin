@@ -1,32 +1,70 @@
-'use client';
+"use client";
 
-// ChatMobileAgentName — Minimal client island for the mobile header center slot.
+// ChatMobileAgentName — Mobile header center slot.
 //
-// Migrated to pure Redux: reads agent name from activeChatSlice.
+// Reads agent name from URL agentId → agentDefinition slice.
+// Tapping opens AgentPickerSheet — navigates to /ssr/chat/a/{id} on select.
 
-import { ChevronDown } from 'lucide-react';
-import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
-import { activeChatActions, selectActiveChatAgent } from '@/lib/redux/slices/activeChatSlice';
+import { useState, useCallback } from "react";
+import { ChevronDown } from "lucide-react";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
+
+const AgentPickerSheet = dynamic(
+  () =>
+    import("@/features/cx-chat/components/agent/AgentPickerSheet").then(
+      (m) => ({ default: m.AgentPickerSheet }),
+    ),
+  { ssr: false },
+);
 
 export default function ChatMobileAgentName() {
-    const dispatch = useAppDispatch();
-    const selectedAgent = useAppSelector(selectActiveChatAgent);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
 
-    // Don't render until agent config is resolved — avoids showing a raw UUID
-    const isLoading = !selectedAgent?.configFetched && !selectedAgent?.name;
-    const displayName = isLoading ? '' : (selectedAgent?.name || 'Matrx Chat');
+  const agentIdFromUrl = (() => {
+    const pathMatch = pathname.match(/\/ssr\/chat\/a\/([^/?]+)/);
+    return pathMatch?.[1] ?? searchParams.get("agent") ?? undefined;
+  })();
 
-    return (
-        <button
-            onClick={() => dispatch(activeChatActions.openAgentPicker())}
-            className="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full matrx-shell-glass text-sm font-medium text-foreground/90 transition-colors select-none min-w-0 active:scale-95"
-            style={{ WebkitTapHighlightColor: 'transparent' }}
-            aria-label="Change AI agent"
-        >
-            <span className="truncate max-w-[180px]">
-                {displayName}
-            </span>
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-        </button>
-    );
+  const agentRecord = useAppSelector((state) =>
+    agentIdFromUrl ? selectAgentById(state, agentIdFromUrl) : undefined,
+  );
+  const displayName = agentRecord?.name ?? "Matrx Chat";
+
+  const handleAgentSelect = useCallback(
+    (agent: { promptId: string }) => {
+      setIsPickerOpen(false);
+      router.push(`/ssr/chat/a/${agent.promptId}`);
+    },
+    [router],
+  );
+
+  return (
+    <>
+      <AgentPickerSheet
+        open={isPickerOpen}
+        onOpenChange={setIsPickerOpen}
+        selectedAgent={
+          agentRecord
+            ? { promptId: agentRecord.id, name: agentRecord.name }
+            : null
+        }
+        onSelect={handleAgentSelect}
+      />
+      <button
+        onClick={() => setIsPickerOpen(true)}
+        className="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full matrx-shell-glass text-sm font-medium text-foreground/90 transition-colors select-none min-w-0 active:scale-95"
+        style={{ WebkitTapHighlightColor: "transparent" }}
+        aria-label="Change AI agent"
+      >
+        <span className="truncate max-w-[180px]">{displayName}</span>
+        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+      </button>
+    </>
+  );
 }

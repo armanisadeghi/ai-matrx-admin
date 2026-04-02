@@ -18,8 +18,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { sanitizeVariableName } from "@/features/agents/utils/variable-utils";
-import type { VariableCustomComponent } from "@/features/agents/redux/agent-definition/types";
-import type { VariableDefinition } from "@/features/agents/redux/agent-definition/types";
+import type { VariableCustomComponent } from "@/features/agents/types/agent-definition.types";
+import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
 import { AgentVariableEditor } from "./AgentVariableEditor";
 import { useIsMobile } from "@/hooks/use-mobile";
 

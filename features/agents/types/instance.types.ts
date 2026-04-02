@@ -10,7 +10,7 @@
  * Multiple instances of the same agent coexist with zero shared mutable state.
  */
 
-import { AgentType } from "../redux/agent-definition/types";
+import { AgentType } from "./agent-definition.types";
 import { ContextObjectType, LLMParams } from "./agent-api-types";
 
 // =============================================================================

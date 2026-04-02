@@ -21,11 +21,10 @@ import {
   selectIsAdmin,
 } from "@/lib/redux/slices/userSlice";
 import {
-  activeChatActions,
-  selectActiveChatUseBlockMode,
-  selectActiveChatSessionId,
-} from "@/lib/redux/slices/activeChatSlice";
-import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
+  selectUseBlockMode,
+  setUseBlockMode,
+} from "@/features/agents/redux/execution-system/instance-ui-state";
+import { usePathname, useSearchParams } from "next/navigation";
 
 const ShareModal = dynamic(
   () => import("@/features/sharing").then((m) => ({ default: m.ShareModal })),
@@ -34,15 +33,22 @@ const ShareModal = dynamic(
 
 export default function ChatHeaderControls() {
   const dispatch = useAppDispatch();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const isAdmin = useAppSelector(selectIsAdmin);
 
-  const useBlockMode = useAppSelector(selectActiveChatUseBlockMode);
-  const sessionId = useAppSelector(selectActiveChatSessionId);
+  const blockMode = useAppSelector(selectUseBlockMode);
+
+  // Derive conversationId from URL — header only needs it for the share button.
+  const conversationId = (() => {
+    const pathMatch = pathname.match(/\/ssr\/chat\/c\/([^/?]+)/);
+    return pathMatch?.[1] ?? searchParams.get("conversation") ?? null;
+  })();
 
   const [isShareOpen, setIsShareOpen] = useState(false);
 
-  const showShare = isAuthenticated && !!sessionId;
+  const showShare = isAuthenticated && !!conversationId;
   if (!showShare && !isAdmin) return null;
 
   return (
@@ -50,34 +56,21 @@ export default function ChatHeaderControls() {
       <PageHeaderPortal>
         <div className="hidden lg:flex items-center justify-end w-full gap-1">
           {isAdmin && (
-            <>
-              <button
-                onClick={() => {
-                  const newVal = !useBlockMode;
-                  dispatch(activeChatActions.setUseBlockMode(newVal));
-                  if (sessionId) {
-                    dispatch(
-                      chatConversationsActions.updateUIState({
-                        sessionId,
-                        updates: { useBlockMode: newVal },
-                      }),
-                    );
-                  }
-                }}
-                title={
-                  useBlockMode
-                    ? "Block mode ON — click to disable."
-                    : "Block mode OFF — click to enable."
-                }
-                className={`p-1.5 rounded-md transition-colors ${
-                  useBlockMode
-                    ? "text-violet-600 dark:text-violet-400 bg-violet-500/15 border border-violet-500/30"
-                    : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 border border-transparent"
-                }`}
-              >
-                <Blocks className="h-3.5 w-3.5" />
-              </button>
-            </>
+            <button
+              onClick={() => dispatch(setUseBlockMode(!blockMode))}
+              title={
+                blockMode
+                  ? "Block mode ON — click to disable."
+                  : "Block mode OFF — click to enable."
+              }
+              className={`p-1.5 rounded-md transition-colors ${
+                blockMode
+                  ? "text-violet-600 dark:text-violet-400 bg-violet-500/15 border border-violet-500/30"
+                  : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 border border-transparent"
+              }`}
+            >
+              <Blocks className="h-3.5 w-3.5" />
+            </button>
           )}
 
           {showShare && (
@@ -90,12 +83,12 @@ export default function ChatHeaderControls() {
         </div>
       </PageHeaderPortal>
 
-      {isShareOpen && sessionId && (
+      {isShareOpen && conversationId && (
         <ShareModal
           isOpen={isShareOpen}
           onClose={() => setIsShareOpen(false)}
           resourceType="cx_conversation"
-          resourceId={sessionId}
+          resourceId={conversationId}
           resourceName="Chat"
           isOwner={true}
         />

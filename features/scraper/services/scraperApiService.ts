@@ -1,9 +1,9 @@
 /**
  * Scraper API Service
- * 
+ *
  * Direct calls to Python FastAPI scraper endpoints with streaming support.
  * Uses centralized auth handling via useApiAuth hook.
- * 
+ *
  * Backend URL is passed dynamically to support admin localhost override.
  */
 
@@ -13,8 +13,8 @@ import type {
   SearchAndScrapeRequest,
   SearchAndScrapeLimitedRequest,
   ScraperStreamEvent,
-} from '../types/scraper-api';
-import { parseNdjsonStream } from '@/lib/api/stream-parser';
+} from "../types/scraper-api";
+import { parseNdjsonStream } from "@/lib/api/stream-parser";
 
 /**
  * Parse NDJSON stream from scraper API.
@@ -25,7 +25,7 @@ import { parseNdjsonStream } from '@/lib/api/stream-parser';
  * ReadableStream and fill the OS TCP receive buffer.
  */
 async function* parseScraperStream(
-  response: Response
+  response: Response,
 ): AsyncGenerator<ScraperStreamEvent> {
   const { events } = parseNdjsonStream(response);
   for await (const event of events) {
@@ -40,18 +40,22 @@ export async function* quickScrape(
   request: QuickScrapeRequest,
   headers: Record<string, string>,
   backendUrl: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): AsyncGenerator<ScraperStreamEvent> {
   const response = await fetch(`${backendUrl}/api/scraper/quick-scrape`, {
-    method: 'POST',
+    method: "POST",
     headers,
     body: JSON.stringify(request),
     signal,
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
-    throw new Error(`Quick scrape failed: ${response.status} - ${error.detail || error.message || 'Unknown error'}`);
+    const error = await response
+      .json()
+      .catch(() => ({ detail: "Unknown error" }));
+    throw new Error(
+      `Quick scrape failed: ${response.status} - ${error.detail || error.message || "Unknown error"}`,
+    );
   }
 
   yield* parseScraperStream(response);
@@ -64,18 +68,22 @@ export async function* searchKeywords(
   request: SearchKeywordsRequest,
   headers: Record<string, string>,
   backendUrl: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): AsyncGenerator<ScraperStreamEvent> {
   const response = await fetch(`${backendUrl}/api/scraper/search`, {
-    method: 'POST',
+    method: "POST",
     headers,
     body: JSON.stringify(request),
     signal,
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
-    throw new Error(`Search failed: ${response.status} - ${error.detail || error.message || 'Unknown error'}`);
+    const error = await response
+      .json()
+      .catch(() => ({ detail: "Unknown error" }));
+    throw new Error(
+      `Search failed: ${response.status} - ${error.detail || error.message || "Unknown error"}`,
+    );
   }
 
   yield* parseScraperStream(response);
@@ -88,18 +96,22 @@ export async function* searchAndScrape(
   request: SearchAndScrapeRequest,
   headers: Record<string, string>,
   backendUrl: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): AsyncGenerator<ScraperStreamEvent> {
   const response = await fetch(`${backendUrl}/api/scraper/search-and-scrape`, {
-    method: 'POST',
+    method: "POST",
     headers,
     body: JSON.stringify(request),
     signal,
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
-    throw new Error(`Search and scrape failed: ${response.status} - ${error.detail || error.message || 'Unknown error'}`);
+    const error = await response
+      .json()
+      .catch(() => ({ detail: "Unknown error" }));
+    throw new Error(
+      `Search and scrape failed: ${response.status} - ${error.detail || error.message || "Unknown error"}`,
+    );
   }
 
   yield* parseScraperStream(response);
@@ -112,40 +124,25 @@ export async function* searchAndScrapeLimited(
   request: SearchAndScrapeLimitedRequest,
   headers: Record<string, string>,
   backendUrl: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): AsyncGenerator<ScraperStreamEvent> {
-  const response = await fetch(`${backendUrl}/api/scraper/search-and-scrape-limited`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(request),
-    signal,
-  });
+  const response = await fetch(
+    `${backendUrl}/api/scraper/search-and-scrape-limited`,
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify(request),
+      signal,
+    },
+  );
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
-    throw new Error(`Search and scrape limited failed: ${response.status} - ${error.detail || error.message || 'Unknown error'}`);
-  }
-
-  yield* parseScraperStream(response);
-}
-
-/**
- * Mic check - test endpoint
- */
-export async function* micCheck(
-  headers: Record<string, string>,
-  backendUrl: string,
-  signal?: AbortSignal
-): AsyncGenerator<ScraperStreamEvent> {
-  const response = await fetch(`${backendUrl}/api/scraper/mic-check`, {
-    method: 'POST',
-    headers,
-    signal,
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
-    throw new Error(`Mic check failed: ${response.status} - ${error.detail || error.message || 'Unknown error'}`);
+    const error = await response
+      .json()
+      .catch(() => ({ detail: "Unknown error" }));
+    throw new Error(
+      `Search and scrape limited failed: ${response.status} - ${error.detail || error.message || "Unknown error"}`,
+    );
   }
 
   yield* parseScraperStream(response);

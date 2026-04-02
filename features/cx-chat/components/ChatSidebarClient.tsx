@@ -13,9 +13,18 @@
 //
 // Navigation: Uses Next.js router.push() for proper App Router navigation.
 
-import { useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { useAgentBootstrap } from "@/features/cx-chat/hooks/useAgentBootstrap";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
+
+const AgentPickerSheet = dynamic(
+  () =>
+    import("@/features/cx-chat/components/agent/AgentPickerSheet").then(
+      (m) => ({ default: m.AgentPickerSheet }),
+    ),
+  { ssr: false },
+);
+import { useChatCatalogueInit } from "@/features/cx-chat/hooks/useChatCatalogueInit";
 import { ChevronDown } from "lucide-react";
 import { SidebarActions } from "@/features/cx-chat/components/sidebar/SidebarActions";
 import { SsrSidebarAgents } from "./SsrSidebarAgents";
@@ -26,13 +35,9 @@ import {
   PanelLeftTapButton,
   PlusTapButton,
 } from "@/components/icons/tap-buttons";
-import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import {
-  activeChatActions,
-  selectActiveChatAgent,
-  selectActiveChatSessionId,
-  type ActiveChatAgent,
-} from "@/lib/redux/slices/activeChatSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
+import { initializeChatAgents } from "@/features/agents/redux/agent-definition/thunks";
 
 // ============================================================================
 // NAVIGATION HELPERS
@@ -139,43 +144,62 @@ function SidebarSearchGroup({
 
 export function ChatPanelContent() {
   const router = useRouter();
-  const dispatch = useAppDispatch();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
-  const selectedAgent = useAppSelector(selectActiveChatAgent);
-  const activeConversationId = useAppSelector(selectActiveChatSessionId);
 
-  // Single entry point for all agent data fetching within the ssr/chat layout.
-  // Tier 1 (slim list) fires on mount; Tier 3 (operational) fires on agent URL changes.
-  // Tier 2 (core) is triggered by AgentPickerSheet when it opens.
-  useAgentBootstrap();
+  const dispatch = useAppDispatch();
+
+  // Fetch once on mount
+  useEffect(() => {
+    dispatch(initializeChatAgents());
+  }, [dispatch]);
+
+  // Derive agentId and conversationId directly from the URL.
+  // The sidebar and header only need these two values — nothing else.
+  const agentIdFromUrl = (() => {
+    const pathMatch = pathname.match(/\/ssr\/chat\/a\/([^/?]+)/);
+    return pathMatch?.[1] ?? searchParams.get("agent") ?? undefined;
+  })();
+
+  const conversationIdFromUrl = (() => {
+    const pathMatch = pathname.match(/\/ssr\/chat\/c\/([^/?]+)/);
+    return pathMatch?.[1] ?? undefined;
+  })();
+
+  // Agent name for display — read directly from agentDefinition via the URL agentId.
+  // No instance traversal needed: agentId is in the URL, name is in the catalogue.
+  const activeAgentRecord = useAppSelector((state) =>
+    agentIdFromUrl ? selectAgentById(state, agentIdFromUrl) : undefined,
+  );
+
+  const selectedAgentCompat = activeAgentRecord
+    ? { promptId: activeAgentRecord.id, name: activeAgentRecord.name }
+    : null;
 
   const handleSelectChat = useCallback(
     (id: string) => {
       closeMobilePanel();
-      const agentId = selectedAgent?.promptId;
-      const url = agentId
-        ? `/ssr/chat/c/${id}?agent=${agentId}`
+      const url = agentIdFromUrl
+        ? `/ssr/chat/c/${id}?agent=${agentIdFromUrl}`
         : `/ssr/chat/c/${id}`;
       router.push(url);
     },
-    [router, selectedAgent?.promptId],
+    [router, agentIdFromUrl],
   );
 
   const handleNewChat = useCallback(() => {
     closeMobilePanel();
-    const agentId = selectedAgent?.promptId;
-    router.push(agentId ? `/ssr/chat/a/${agentId}` : "/ssr/chat");
-  }, [router, selectedAgent?.promptId]);
+    router.push(agentIdFromUrl ? `/ssr/chat/a/${agentIdFromUrl}` : "/ssr/chat");
+  }, [router, agentIdFromUrl]);
 
   const handleAgentSelect = useCallback(
-    (agent: ActiveChatAgent) => {
+    (agent: { promptId: string }) => {
       closeMobilePanel();
-      dispatch(activeChatActions.setSelectedAgent(agent));
-      dispatch(activeChatActions.setActiveSessionId(null));
-      dispatch(activeChatActions.resetModelState());
+      // Navigation triggers ChatInstanceManager on the new page to handle instance lifecycle.
       router.push(`/ssr/chat/a/${agent.promptId}`);
     },
-    [dispatch, router],
+    [router],
   );
 
   const handleBack = useCallback(() => {
@@ -234,11 +258,11 @@ export function ChatPanelContent() {
           <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none">
             <SsrSidebarAgents
               searchQuery={searchQuery}
-              selectedAgent={selectedAgent}
+              selectedAgent={selectedAgentCompat}
               onAgentSelect={handleAgentSelect}
             />
             <SsrSidebarChats
-              activeRequestId={activeConversationId}
+              activeRequestId={conversationIdFromUrl}
               onSelectChat={handleSelectChat}
               onNewChat={handleNewChat}
               searchQuery={searchQuery}
@@ -258,37 +282,65 @@ export function ChatPanelContent() {
 
 export function ChatDesktopHeader() {
   const router = useRouter();
-  const dispatch = useAppDispatch();
-  const selectedAgent = useAppSelector(selectActiveChatAgent);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
 
-  const isAgentLoading = !selectedAgent?.configFetched && !selectedAgent?.name;
-  const displayName = isAgentLoading ? "" : selectedAgent?.name || "Matrx Chat";
+  // agentId is in the URL — read the name directly from agentDefinition.
+  const agentIdFromUrl = (() => {
+    const pathMatch = pathname.match(/\/ssr\/chat\/a\/([^/?]+)/);
+    return pathMatch?.[1] ?? searchParams.get("agent") ?? undefined;
+  })();
+
+  const activeAgentRecord = useAppSelector((state) =>
+    agentIdFromUrl ? selectAgentById(state, agentIdFromUrl) : undefined,
+  );
+  const displayName = activeAgentRecord?.name ?? "Matrx Chat";
 
   const handleNewChat = useCallback(() => {
-    const agentId = selectedAgent?.promptId;
-    router.push(agentId ? `/ssr/chat/a/${agentId}` : "/ssr/chat");
-  }, [router, selectedAgent?.promptId]);
+    router.push(agentIdFromUrl ? `/ssr/chat/a/${agentIdFromUrl}` : "/ssr/chat");
+  }, [router, agentIdFromUrl]);
+
+  const handleAgentSelect = useCallback(
+    (agent: { promptId: string }) => {
+      setIsPickerOpen(false);
+      router.push(`/ssr/chat/a/${agent.promptId}`);
+    },
+    [router],
+  );
 
   return (
-    <div className="flex items-center w-full min-w-0">
-      <PanelLeftTapButton
-        onClick={togglePanel}
-        ariaLabel="Toggle sidebar"
-        className="text-muted-foreground"
+    <>
+      <AgentPickerSheet
+        open={isPickerOpen}
+        onOpenChange={setIsPickerOpen}
+        selectedAgent={
+          activeAgentRecord
+            ? { promptId: activeAgentRecord.id, name: activeAgentRecord.name }
+            : null
+        }
+        onSelect={handleAgentSelect}
       />
-      <button
-        onClick={() => dispatch(activeChatActions.openAgentPicker())}
-        className="flex items-center gap-1 min-w-0 px-1.5 py-1 rounded-md hover:bg-accent/50 transition-colors"
-        title={`Switch agent: ${displayName}`}
-      >
-        <span className="text-xs font-medium text-foreground truncate max-w-[140px]">
-          {displayName}
-        </span>
-        <ChevronDown className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-      </button>
-      <span className="ml-auto" />
-      <PlusTapButton onClick={handleNewChat} ariaLabel="New chat" />
-    </div>
+      <div className="flex items-center w-full min-w-0">
+        <PanelLeftTapButton
+          onClick={togglePanel}
+          ariaLabel="Toggle sidebar"
+          className="text-muted-foreground"
+        />
+        <button
+          onClick={() => setIsPickerOpen(true)}
+          className="flex items-center gap-1 min-w-0 px-1.5 py-1 rounded-md hover:bg-accent/50 transition-colors"
+          title={`Active agent: ${displayName}`}
+        >
+          <span className="text-xs font-medium text-foreground truncate max-w-[140px]">
+            {displayName}
+          </span>
+          <ChevronDown className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+        </button>
+        <span className="ml-auto" />
+        <PlusTapButton onClick={handleNewChat} ariaLabel="New chat" />
+      </div>
+    </>
   );
 }
 

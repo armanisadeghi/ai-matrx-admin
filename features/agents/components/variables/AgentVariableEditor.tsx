@@ -21,7 +21,7 @@ import {
 import type {
   VariableCustomComponent,
   VariableComponentType,
-} from "@/features/agents/redux/agent-definition/types";
+} from "@/features/agents/types/agent-definition.types";
 
 interface AgentVariableEditorProps {
   name: string;

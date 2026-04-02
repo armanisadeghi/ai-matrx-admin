@@ -1,4 +1,4 @@
-import type { PromptVariable } from "@/features/prompts/types/core";
+import type { PromptVariable } from "@/lib/types/agent-chat";
 
 /**
  * Minimal agent shape used by the SSR welcome screen and agent resolver.
@@ -23,6 +23,7 @@ export interface AgentOption {
 }
 
 // Re-export Redux-global agent types so cx-chat code has one import source
+// AgentRecord / AgentSource kept for any legacy consumers; agentCacheSlice is being phased out
 export type {
   AgentRecord,
   AgentSource,

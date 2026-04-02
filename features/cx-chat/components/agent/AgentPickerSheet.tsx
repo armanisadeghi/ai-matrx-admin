@@ -1,5 +1,12 @@
 "use client";
 
+// AgentPickerSheet — Phase 4b migration.
+//
+// Replaced old cx-chat useAgentConsumer (agentCacheSlice / prompts table) with
+// direct reads from agentDefinition slice (agents table).
+// Search is now local state; all agents are already loaded by useChatCatalogueInit.
+// No more selectAgent() upgrade call — agentDefinition data is always full.
+
 import { useState, useMemo, useRef, useEffect } from "react";
 import {
   Search,
@@ -12,15 +19,40 @@ import {
   Globe,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAgentConsumer } from "@/features/cx-chat/hooks/useAgentConsumer";
-import type { AgentRecord } from "@/features/cx-chat/hooks/useAgentConsumer";
+import { useAppSelector } from "@/lib/redux/hooks";
+import {
+  selectOwnedAgents,
+  selectBuiltinAgents,
+  selectAgentsSliceStatus,
+} from "@/features/agents/redux/agent-definition/selectors";
+import type { AgentDefinitionRecord } from "@/features/agents/types/agent-definition.types";
 import { DEFAULT_AGENTS } from "@/features/cx-chat/components/agent/local-agents";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import type { AgentConfig } from "@/features/cx-chat/types/agents";
 
-// ============================================================================
-// TYPES
-// ============================================================================
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function toAgentConfig(agent: AgentDefinitionRecord): AgentConfig {
+  return {
+    promptId: agent.id,
+    name: agent.name,
+    description: agent.description ?? undefined,
+    variableDefaults:
+      agent.variableDefinitions as AgentConfig["variableDefaults"],
+  };
+}
+
+// ── Filter type ───────────────────────────────────────────────────────────────
+
+type FilterType = "all" | "system" | "mine";
+
+const FILTERS: { id: FilterType; label: string; icon: React.ReactNode }[] = [
+  { id: "all", label: "All", icon: <Globe className="h-3 w-3" /> },
+  { id: "system", label: "System", icon: <Sparkles className="h-3 w-3" /> },
+  { id: "mine", label: "My Agents", icon: <User className="h-3 w-3" /> },
+];
+
+// ── Props ─────────────────────────────────────────────────────────────────────
 
 interface AgentPickerSheetProps {
   open: boolean;
@@ -29,23 +61,7 @@ interface AgentPickerSheetProps {
   onSelect: (agent: AgentConfig) => void;
 }
 
-// Filter toggle type — this is purely a display-layer concept, not stored in Redux
-type FilterType = "all" | "system" | "mine";
-
-// ── Helper ────────────────────────────────────────────────────────────────────
-
-function toAgentConfig(agent: AgentRecord): AgentConfig {
-  return {
-    promptId: agent.id,
-    name: agent.name,
-    description: agent.description,
-    variableDefaults: agent.variableDefaults as AgentConfig["variableDefaults"],
-  };
-}
-
-// ============================================================================
-// SHARED SUB-COMPONENTS
-// ============================================================================
+// ── Shared sub-components ─────────────────────────────────────────────────────
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
@@ -54,12 +70,6 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-
-const FILTERS: { id: FilterType; label: string; icon: React.ReactNode }[] = [
-  { id: "all", label: "All", icon: <Globe className="h-3 w-3" /> },
-  { id: "system", label: "System", icon: <Sparkles className="h-3 w-3" /> },
-  { id: "mine", label: "My Agents", icon: <User className="h-3 w-3" /> },
-];
 
 function FilterToggles({
   active,
@@ -106,20 +116,22 @@ function FilterToggles({
   );
 }
 
-// ============================================================================
-// MOBILE AGENT LIST ITEM
-// ============================================================================
+// ── Mobile agent list item ────────────────────────────────────────────────────
 
 function MobileAgentItem({
-  agent,
+  promptId,
+  name,
+  description,
   isSelected,
-  onSelect,
   icon,
+  onSelect,
 }: {
-  agent: { promptId: string; name: string; description?: string };
+  promptId: string;
+  name: string;
+  description?: string | null;
   isSelected: boolean;
-  onSelect: () => void;
   icon?: React.ReactNode;
+  onSelect: () => void;
 }) {
   return (
     <button
@@ -137,11 +149,11 @@ function MobileAgentItem({
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-[15px] font-medium text-foreground truncate">
-          {agent.name}
+          {name}
         </div>
-        {agent.description && (
+        {description && (
           <div className="text-[13px] text-muted-foreground line-clamp-1 mt-0.5">
-            {agent.description}
+            {description}
           </div>
         )}
       </div>
@@ -154,30 +166,27 @@ function MobileAgentItem({
   );
 }
 
-// ============================================================================
-// DESKTOP AGENT CARD
-// ============================================================================
+// ── Desktop agent card ────────────────────────────────────────────────────────
 
 function DesktopAgentCard({
-  agent,
+  promptId,
+  name,
+  description,
+  varCount,
   isSelected,
-  onSelect,
   icon,
   badge,
+  onSelect,
 }: {
-  agent: {
-    promptId: string;
-    name: string;
-    description?: string;
-    variableDefaults?: AgentConfig["variableDefaults"];
-  };
+  promptId: string;
+  name: string;
+  description?: string | null;
+  varCount?: number;
   isSelected: boolean;
-  onSelect: () => void;
   icon?: React.ReactNode;
   badge?: string;
+  onSelect: () => void;
 }) {
-  const varCount = agent.variableDefaults?.length ?? 0;
-
   return (
     <button
       onClick={onSelect}
@@ -202,11 +211,11 @@ function DesktopAgentCard({
 
       <div className="w-full">
         <div className="text-sm font-medium text-foreground truncate leading-tight">
-          {agent.name}
+          {name}
         </div>
-        {agent.description && (
+        {description && (
           <div className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
-            {agent.description}
+            {description}
           </div>
         )}
       </div>
@@ -217,7 +226,7 @@ function DesktopAgentCard({
             {badge}
           </span>
         )}
-        {varCount > 0 && (
+        {(varCount ?? 0) > 0 && (
           <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
             {varCount} {varCount === 1 ? "input" : "inputs"}
           </span>
@@ -227,9 +236,7 @@ function DesktopAgentCard({
   );
 }
 
-// ============================================================================
-// MOBILE BOTTOM SHEET
-// ============================================================================
+// ── Mobile bottom sheet ───────────────────────────────────────────────────────
 
 function MobileAgentPicker({
   open,
@@ -238,55 +245,62 @@ function MobileAgentPicker({
   onSelect,
 }: AgentPickerSheetProps) {
   const [showSearch, setShowSearch] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<FilterType>("all");
 
-  // searchTerm is owned by Redux via useAgentConsumer so all agents are
-  // searched (not just the first page). The hook returns already-filtered lists.
-  const { owned, builtins, isLoading, selectAgent, searchTerm, setSearchTerm } =
-    useAgentConsumer("agent-picker-mobile", {
-      ephemeral: true,
-      autoUpgradeToCore: open,
-    });
+  const owned = useAppSelector(selectOwnedAgents);
+  const builtins = useAppSelector(selectBuiltinAgents);
+  const status = useAppSelector(selectAgentsSliceStatus);
+  const isLoading = status === "loading";
 
-  // Reset state when closed
   useEffect(() => {
     if (!open) {
       setSearchTerm("");
       setShowSearch(false);
       setFilter("all");
     }
-  }, [open, setSearchTerm]);
+  }, [open]);
 
-  const handleSelect = async (record: AgentRecord) => {
-    await selectAgent(record.id, record.source, (fullAgent) => {
-      onSelect(toAgentConfig(fullAgent));
-    });
-    onOpenChange(false);
-    setSearchTerm("");
-    setShowSearch(false);
-    setFilter("all");
-  };
+  const q = searchTerm.toLowerCase().trim();
 
-  // Hardcoded DEFAULT_AGENTS are filtered locally (they never enter Redux)
   const filteredSystem = useMemo(() => {
-    const q = searchTerm.toLowerCase().trim();
-    const base = DEFAULT_AGENTS;
     if (filter === "mine") return [];
-    if (!q) return base;
-    return base.filter(
+    if (!q) return DEFAULT_AGENTS;
+    return DEFAULT_AGENTS.filter(
       (a) =>
         a.name.toLowerCase().includes(q) ||
         a.description?.toLowerCase().includes(q),
     );
-  }, [searchTerm, filter]);
+  }, [q, filter]);
 
-  // builtins + owned are already filtered by the Redux selector
-  const visibleBuiltins = filter === "mine" ? [] : builtins;
-  const visibleOwned = filter === "system" ? [] : owned;
+  const filteredBuiltins = useMemo(() => {
+    if (filter === "mine") return [];
+    if (!q) return builtins;
+    return builtins.filter(
+      (a) =>
+        a.name.toLowerCase().includes(q) ||
+        a.description?.toLowerCase().includes(q),
+    );
+  }, [builtins, q, filter]);
+
+  const filteredOwned = useMemo(() => {
+    if (filter === "system") return [];
+    if (!q) return owned;
+    return owned.filter(
+      (a) =>
+        a.name.toLowerCase().includes(q) ||
+        a.description?.toLowerCase().includes(q),
+    );
+  }, [owned, q, filter]);
 
   const systemCount = DEFAULT_AGENTS.length + builtins.length;
-  const hasSystem = filteredSystem.length > 0 || visibleBuiltins.length > 0;
-  const hasUser = visibleOwned.length > 0;
+
+  const handleSelectBuiltin = (agent: AgentDefinitionRecord) => {
+    onSelect(toAgentConfig(agent));
+    onOpenChange(false);
+    setSearchTerm("");
+    setFilter("all");
+  };
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -300,9 +314,7 @@ function MobileAgentPicker({
               if (showSearch) {
                 setSearchTerm("");
                 setShowSearch(false);
-              } else {
-                setShowSearch(true);
-              }
+              } else setShowSearch(true);
             }}
             className="p-2 -mr-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-colors"
           >
@@ -341,89 +353,89 @@ function MobileAgentPicker({
         </div>
 
         <div
-          className="flex-1 overflow-y-auto overscroll-contain pb-safe"
+          className="flex-1 overflow-y-auto overscroll-contain"
           style={{
             paddingBottom: "max(1rem, env(safe-area-inset-bottom, 0px))",
           }}
         >
-          {hasSystem && (
+          {(filteredSystem.length > 0 || filteredBuiltins.length > 0) && (
             <>
               <SectionHeader>System Agents</SectionHeader>
               <div className="px-2">
                 {filteredSystem.map((agent) => (
                   <MobileAgentItem
                     key={agent.id}
-                    agent={agent}
+                    promptId={agent.promptId}
+                    name={agent.name}
+                    description={agent.description}
                     icon={
                       (agent as typeof agent & { icon?: React.ReactNode }).icon
                     }
                     isSelected={selectedAgent?.promptId === agent.promptId}
-                    onSelect={() =>
+                    onSelect={() => {
                       onSelect({
                         promptId: agent.promptId,
                         name: agent.name,
                         description: agent.description,
-                      })
-                    }
+                      });
+                      onOpenChange(false);
+                    }}
                   />
                 ))}
-                {visibleBuiltins.map((agent) => (
+                {filteredBuiltins.map((agent) => (
                   <MobileAgentItem
                     key={agent.id}
-                    agent={{
-                      promptId: agent.id,
-                      name: agent.name,
-                      description: agent.description,
-                    }}
+                    promptId={agent.id}
+                    name={agent.name}
+                    description={agent.description}
                     isSelected={selectedAgent?.promptId === agent.id}
-                    onSelect={() => handleSelect(agent)}
+                    onSelect={() => handleSelectBuiltin(agent)}
                   />
                 ))}
               </div>
             </>
           )}
 
-          {hasUser && (
+          {filteredOwned.length > 0 && (
             <>
               <SectionHeader>My Agents</SectionHeader>
               <div className="px-2">
-                {visibleOwned.map((agent) => (
+                {filteredOwned.map((agent) => (
                   <MobileAgentItem
                     key={agent.id}
-                    agent={{
-                      promptId: agent.id,
-                      name: agent.name,
-                      description: agent.description,
-                    }}
+                    promptId={agent.id}
+                    name={agent.name}
+                    description={agent.description}
                     isSelected={selectedAgent?.promptId === agent.id}
-                    onSelect={() => handleSelect(agent)}
+                    onSelect={() => handleSelectBuiltin(agent)}
                   />
                 ))}
               </div>
             </>
           )}
 
-          {isLoading && !hasUser && (
+          {isLoading && filteredOwned.length === 0 && (
             <div className="flex items-center justify-center gap-2 py-6 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span className="text-sm">Loading agents...</span>
             </div>
           )}
 
-          {!hasSystem && !hasUser && !isLoading && (
-            <div className="py-10 text-center text-sm text-muted-foreground">
-              No agents found
-            </div>
-          )}
+          {filteredSystem.length === 0 &&
+            filteredBuiltins.length === 0 &&
+            filteredOwned.length === 0 &&
+            !isLoading && (
+              <div className="py-10 text-center text-sm text-muted-foreground">
+                No agents found
+              </div>
+            )}
         </div>
       </DrawerContent>
     </Drawer>
   );
 }
 
-// ============================================================================
-// DESKTOP MODAL
-// ============================================================================
+// ── Desktop modal ─────────────────────────────────────────────────────────────
 
 function DesktopAgentPicker({
   open,
@@ -432,15 +444,13 @@ function DesktopAgentPicker({
   onSelect,
 }: AgentPickerSheetProps) {
   const [filter, setFilter] = useState<FilterType>("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // searchTerm lives in Redux so the selector filters across ALL fetched agents,
-  // not just the current page. No local useState for search.
-  const { owned, builtins, isLoading, selectAgent, searchTerm, setSearchTerm } =
-    useAgentConsumer("agent-picker-desktop", {
-      ephemeral: true,
-      autoUpgradeToCore: open,
-    });
+  const owned = useAppSelector(selectOwnedAgents);
+  const builtins = useAppSelector(selectBuiltinAgents);
+  const status = useAppSelector(selectAgentsSliceStatus);
+  const isLoading = status === "loading";
 
   useEffect(() => {
     if (open) {
@@ -449,7 +459,7 @@ function DesktopAgentPicker({
       setSearchTerm("");
       setFilter("all");
     }
-  }, [open, setSearchTerm]);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -460,34 +470,47 @@ function DesktopAgentPicker({
     return () => window.removeEventListener("keydown", handleKey);
   }, [open, onOpenChange]);
 
-  const handleSelect = async (record: AgentRecord) => {
-    await selectAgent(record.id, record.source, (fullAgent) => {
-      onSelect(toAgentConfig(fullAgent));
-    });
-    onOpenChange(false);
-    setSearchTerm("");
-  };
+  const q = searchTerm.toLowerCase().trim();
 
-  // DEFAULT_AGENTS are hard-coded and filtered locally (not in Redux)
   const filteredSystem = useMemo(() => {
-    const q = searchTerm.toLowerCase().trim();
-    const base = DEFAULT_AGENTS;
     if (filter === "mine") return [];
-    if (!q) return base;
-    return base.filter(
+    if (!q) return DEFAULT_AGENTS;
+    return DEFAULT_AGENTS.filter(
       (a) =>
         a.name.toLowerCase().includes(q) ||
         a.description?.toLowerCase().includes(q),
     );
-  }, [searchTerm, filter]);
+  }, [q, filter]);
 
-  // builtins + owned already filtered by Redux selector (search + archFilter etc.)
-  const visibleBuiltins = filter === "mine" ? [] : builtins;
-  const visibleOwned = filter === "system" ? [] : owned;
+  const filteredBuiltins = useMemo(() => {
+    if (filter === "mine") return [];
+    if (!q) return builtins;
+    return builtins.filter(
+      (a) =>
+        a.name.toLowerCase().includes(q) ||
+        a.description?.toLowerCase().includes(q),
+    );
+  }, [builtins, q, filter]);
+
+  const filteredOwned = useMemo(() => {
+    if (filter === "system") return [];
+    if (!q) return owned;
+    return owned.filter(
+      (a) =>
+        a.name.toLowerCase().includes(q) ||
+        a.description?.toLowerCase().includes(q),
+    );
+  }, [owned, q, filter]);
 
   const systemCount = DEFAULT_AGENTS.length + builtins.length;
   const totalResults =
-    filteredSystem.length + visibleBuiltins.length + visibleOwned.length;
+    filteredSystem.length + filteredBuiltins.length + filteredOwned.length;
+
+  const handleSelect = (agent: AgentDefinitionRecord) => {
+    onSelect(toAgentConfig(agent));
+    onOpenChange(false);
+    setSearchTerm("");
+  };
 
   if (!open) return null;
 
@@ -497,13 +520,12 @@ function DesktopAgentPicker({
         className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] animate-in fade-in-0 duration-150"
         onClick={() => onOpenChange(false)}
       />
-
       <div className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh] pointer-events-none">
         <div
           className="pointer-events-auto w-[560px] max-h-[70vh] bg-popover rounded-2xl border border-border shadow-2xl flex flex-col overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Search bar */}
+          {/* Search + filters */}
           <div className="px-4 pt-4 pb-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -524,7 +546,6 @@ function DesktopAgentPicker({
                 </button>
               )}
             </div>
-
             <div className="flex items-center justify-between mt-3">
               <FilterToggles
                 active={filter}
@@ -544,9 +565,9 @@ function DesktopAgentPicker({
 
           {/* Agent grid */}
           <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3">
-            {(filteredSystem.length > 0 || visibleBuiltins.length > 0) && (
+            {(filteredSystem.length > 0 || filteredBuiltins.length > 0) && (
               <div className="mb-4">
-                {filter === "all" && visibleOwned.length > 0 && (
+                {filter === "all" && filteredOwned.length > 0 && (
                   <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                     System
                   </div>
@@ -555,32 +576,33 @@ function DesktopAgentPicker({
                   {filteredSystem.map((agent) => (
                     <DesktopAgentCard
                       key={agent.id}
-                      agent={agent}
+                      promptId={agent.promptId}
+                      name={agent.name}
+                      description={agent.description}
+                      varCount={agent.variableDefaults?.length}
                       icon={
                         (agent as typeof agent & { icon?: React.ReactNode })
                           .icon
                       }
                       isSelected={selectedAgent?.promptId === agent.promptId}
-                      onSelect={() =>
+                      onSelect={() => {
                         onSelect({
                           promptId: agent.promptId,
                           name: agent.name,
                           description: agent.description,
-                        })
-                      }
+                        });
+                        onOpenChange(false);
+                      }}
                       badge="System"
                     />
                   ))}
-                  {visibleBuiltins.map((agent) => (
+                  {filteredBuiltins.map((agent) => (
                     <DesktopAgentCard
                       key={agent.id}
-                      agent={{
-                        promptId: agent.id,
-                        name: agent.name,
-                        description: agent.description,
-                        variableDefaults:
-                          agent.variableDefaults as AgentConfig["variableDefaults"],
-                      }}
+                      promptId={agent.id}
+                      name={agent.name}
+                      description={agent.description}
+                      varCount={agent.variableDefinitions?.length}
                       isSelected={selectedAgent?.promptId === agent.id}
                       onSelect={() => handleSelect(agent)}
                       badge="System"
@@ -590,25 +612,23 @@ function DesktopAgentPicker({
               </div>
             )}
 
-            {visibleOwned.length > 0 && (
+            {filteredOwned.length > 0 && (
               <div className="mb-2">
                 {filter === "all" &&
-                  (filteredSystem.length > 0 || visibleBuiltins.length > 0) && (
+                  (filteredSystem.length > 0 ||
+                    filteredBuiltins.length > 0) && (
                     <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                       My Agents
                     </div>
                   )}
                 <div className="grid grid-cols-2 gap-2">
-                  {visibleOwned.map((agent) => (
+                  {filteredOwned.map((agent) => (
                     <DesktopAgentCard
                       key={agent.id}
-                      agent={{
-                        promptId: agent.id,
-                        name: agent.name,
-                        description: agent.description,
-                        variableDefaults:
-                          agent.variableDefaults as AgentConfig["variableDefaults"],
-                      }}
+                      promptId={agent.id}
+                      name={agent.name}
+                      description={agent.description}
+                      varCount={agent.variableDefinitions?.length}
                       isSelected={selectedAgent?.promptId === agent.id}
                       onSelect={() => handleSelect(agent)}
                     />
@@ -617,7 +637,7 @@ function DesktopAgentPicker({
               </div>
             )}
 
-            {isLoading && visibleOwned.length === 0 && filter !== "system" && (
+            {isLoading && filteredOwned.length === 0 && filter !== "system" && (
               <div className="flex items-center justify-center gap-2 py-8 text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span className="text-sm">Loading agents...</span>
@@ -650,9 +670,7 @@ function DesktopAgentPicker({
   );
 }
 
-// ============================================================================
-// UNIFIED AGENT PICKER — Drawer on mobile, custom modal on desktop
-// ============================================================================
+// ── Unified export — Drawer on mobile, custom modal on desktop ────────────────
 
 export function AgentPickerSheet(props: AgentPickerSheetProps) {
   const isMobile = useIsMobile();

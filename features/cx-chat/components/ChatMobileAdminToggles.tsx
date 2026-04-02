@@ -12,19 +12,16 @@ import {
   switchServer,
 } from "@/lib/redux/slices/apiConfigSlice";
 import {
-  activeChatActions,
-  selectActiveChatUseBlockMode,
-  selectActiveChatSessionId,
-} from "@/lib/redux/slices/activeChatSlice";
-import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
+  selectUseBlockMode,
+  setUseBlockMode,
+} from "@/features/agents/redux/execution-system/instance-ui-state";
 
 export default function ChatMobileAdminToggles() {
   const dispatch = useAppDispatch();
   const isAdmin = useAppSelector(selectIsAdmin);
   const activeServer = useAppSelector(selectActiveServer);
   const isUsingLocalhost = activeServer === "localhost";
-  const useBlockMode = useAppSelector(selectActiveChatUseBlockMode);
-  const sessionId = useAppSelector(selectActiveChatSessionId);
+  const blockMode = useAppSelector(selectUseBlockMode);
 
   if (!isAdmin) return null;
 
@@ -35,16 +32,7 @@ export default function ChatMobileAdminToggles() {
   };
 
   const handleToggleBlockMode = () => {
-    const newVal = !useBlockMode;
-    dispatch(activeChatActions.setUseBlockMode(newVal));
-    if (sessionId) {
-      dispatch(
-        chatConversationsActions.updateUIState({
-          sessionId,
-          updates: { useBlockMode: newVal },
-        }),
-      );
-    }
+    dispatch(setUseBlockMode(!blockMode));
   };
 
   return (
@@ -67,12 +55,12 @@ export default function ChatMobileAdminToggles() {
       <button
         onClick={handleToggleBlockMode}
         title={
-          useBlockMode
+          blockMode
             ? "Block mode ON — using agents-blocks endpoint. Click to disable."
             : "Block mode OFF — using standard agents endpoint. Click to enable."
         }
         className={`p-1.5 rounded-md transition-colors ${
-          useBlockMode
+          blockMode
             ? "text-violet-600 dark:text-violet-400 bg-violet-500/15 border border-violet-500/30"
             : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 border border-transparent"
         }`}

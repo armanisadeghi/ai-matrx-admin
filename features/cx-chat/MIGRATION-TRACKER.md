@@ -9,6 +9,189 @@
 
 ---
 
+## Phase Progress
+
+| Phase | Scope | Status |
+|-------|-------|--------|
+| **Phase 1** | Data source migration — `agents` table via new thunks | ✅ Done |
+| **Phase 2** | Conversation history — list + full load (Gap 5, Gap 6) | ✅ Done |
+| **Phase 3** | Instance lifecycle — `useInstanceBootstrap`, `instanceUIState` extension, cx-chat component migration off `activeChatSlice` writes | ✅ Done |
+| **Phase 4** | Sidebar/Picker UI wiring — `SsrSidebarChats`, `SsrSidebarAgents`, `AgentPickerSheet` to new Redux | ✅ Done |
+| **Phase 5** | Type import sweep — replace all PromptVariable/PromptSettings with canonical types (Gap 7) | ✅ Done |
+| **Phase 6** | Execution components — `SmartAgentInput` + `AgentConversationDisplay`; `instanceId` as prop | ✅ Done |
+
+### Phase 6 — Completed Items
+
+The SSR chat route's execution layer is now entirely powered by the new agent system.
+
+#### Instance ID ownership — final architecture
+
+`instanceId` is **owned exclusively by `ChatInstanceManager`** — a page-level client component that:
+1. Accepts `agentId` and optional `conversationId` as props (server-resolved from URL path).
+2. Creates or reuses a Redux execution instance for that agent.
+3. Passes `instanceId` as a prop to all page content via render prop `children(instanceId)`.
+
+**The sidebar and header never touch `instanceId`** — they only need `agentId` and `conversationId`, which they read from the URL independently. This is correct: they navigate, they don't execute.
+
+`useInstanceBootstrap` is **replaced and dead**:
+- Catalogue init (`initializeChatAgents`) → extracted to `useChatCatalogueInit` (called once from `ChatPanelContent`).
+- Instance lifecycle → moved to `ChatInstanceManager` (page-level, prop-driven).
+
+#### Component chain
+```
+ConversationPage (server)
+  └─ ChatInstanceManager (client — owns instance creation)
+       └─ ChatConversationClient(instanceId)  ← prop, never useSearchParams
+            ├─ AgentConversationDisplay(instanceId)
+            └─ SmartAgentInput(instanceId)
+
+AgentPage / ChatPage (server)
+  └─ ChatInstanceManager (client)
+       └─ ChatWelcomeServer → ChatWelcomeClient(instanceId)  ← prop
+            └─ SmartAgentInput(instanceId)
+```
+
+**`ChatConversationClient.tsx` — rewritten:**
+- Receives `instanceId` as a prop from `ChatInstanceManager` — never reads URL.
+- Renders `AgentConversationDisplay` + `SmartAgentInput`, both capped to `max-w-[800px]`.
+- URL sync: watches `selectLatestConversationId` → `window.history.replaceState` when conversationId arrives.
+- Sidebar refresh: fires `chat:conversationUpdated` on request complete.
+- **Removed:** `activeChatSlice`, `useConversationSession`, URL `?instance=` reads, all legacy Redux dispatches.
+
+**`ChatWelcomeClient.tsx` — rewritten:**
+- Receives `instanceId` as a prop — never reads URL.
+- `SmartAgentInput` → `executeInstance` → watches `selectLatestConversationId` → `router.replace` to `/c/{id}`.
+- **Removed:** `chatConversationsActions.startSession`, `WELCOME_SESSION_ID`, `ConversationInput`, override logic.
+
+**`GuidedVariableInputs.tsx` — rewired:**
+- `sessionId` → `instanceId` prop.
+- `selectVariableDefaults` → `selectInstanceVariableDefinitions(instanceId)`.
+- `selectVariableValues` → `selectUserVariableValues(instanceId)`.
+- `chatConversationsActions.updateVariable` → `setUserVariableValue({ instanceId, name, value })`.
+
+**`StackedVariableInputs.tsx` — rewired:**
+- Same swap as `GuidedVariableInputs`.
+
+**`ConversationInput.tsx` — fully rewired (kept for variables/resources/voice UI):**
+- `sessionId` → `instanceId` prop throughout.
+- Input text: `selectUserInputText` / `setUserInputText`.
+- Variables: `selectInstanceVariableDefinitions` / `setUserVariableValue`.
+- Resources: `selectInstanceResources` / `addResource` / `removeResource`.
+- Execution: `executeInstance({ instanceId })` instead of `sendMessage`.
+- Model override: `setOverrides` / `selectCurrentSettings`.
+- **Removed:** `chatConversationsActions`, `sendMessage`, `activeChatSlice`, `selectEffectiveModelId`, `selectAgentId`, `selectHasVariables`, `selectUIState`, `selectCurrentInput`, `selectResources`.
+
+**`ChatSidebarClient.tsx`:**
+- `useInstanceBootstrap` → `useChatCatalogueInit`.
+
+**What is now dead (not imported by any active path):**
+- `useInstanceBootstrap.ts` — split into `useChatCatalogueInit` + `ChatInstanceManager`.
+- `ConversationShell.tsx` — old shell wrapper.
+- `useConversationSession.ts` — old lifecycle hook.
+- `useAgentBootstrap.ts` — replaced by Phase 1 thunks.
+
+**Still alive (used by other features, not the SSR chat route):**
+- `features/cx-conversation/` — other routes may still use it
+- `features/conversation/` — exports from cx-chat but separate feature
+
+### Phase 5 — Completed Items
+
+All `@/features/prompts/types/core` and `@/features/prompts/types/resources` imports in `cx-chat` replaced with the canonical shim `@/lib/types/agent-chat`:
+
+| File | Old import | New import |
+|---|---|---|
+| `types/agents.ts` | `PromptVariable` from prompts core | `PromptVariable` from shim |
+| `types/conversation.ts` | `PromptVariable` + `Resource` from prompts | both from shim |
+| `utils/settings-diff.ts` | `PromptSettings` from prompts core | `PromptSettings` from shim |
+| `hooks/useConversationSession.ts` | `PromptVariable` + `Resource` | both from shim |
+| `components/ChatWelcomeServer.tsx` | `PromptVariable` | from shim |
+| `components/ChatWelcomeClient.tsx` | `Resource` | from shim |
+| `components/user-input/ConversationInput.tsx` | `Resource` + `PromptSettings` | both from shim |
+| `components/user-input/GuidedVariableInputs.tsx` | `PromptVariable` | from shim |
+| `components/agent/local-agents.ts` | `PromptVariable` | from shim |
+| `components/variable-inputs/index.tsx` | `VariableCustomComponent` | from shim |
+
+**Type boundary fixes applied:**
+- `VariableDefinition[]` → `as never[]` when passed to `activeChatSlice.startSession` (which still expects old `PromptVariable` with `defaultValue: string`). Safe cast — shapes are structurally identical.
+- `settings?.dynamic_model` — cast `settings` to `Record<string, unknown>` since `dynamic_model` is an agent-specific field not in `LLMParams`.
+- `configFetched` field removed from `AgentPickerSheet.toAgentConfig()` and `SsrSidebarAgents.handleSelect()` — `AgentConfig` type doesn't declare it.
+
+**Not swept (out of scope for Phase 5):**
+- `activeChatSlice.ts` still imports `PromptVariable`/`PromptSettings` from `features/prompts/types/core` — Phase 6 (full slice replacement).
+- `StackedVariableInputs.tsx` imports `VariableInputComponent` *component* (not type) from `features/prompts/components/variable-inputs` — Phase 6 (component migration).
+
+### Phase 4 — Completed Items
+
+- **`SsrSidebarChats.tsx` fully rewritten** — removes `useChatPersistence`, local history state, DOM event-to-state, Supabase Realtime subscription, and 743-line manual data management.
+  - On mount: dispatches `fetchConversationList()` (TTL-guarded, no double-fetch)
+  - DOM CustomEvents (`chat:conversationCreated` / `chat:conversationUpdated`) now dispatch `prependConversation` / `touchConversation` to Redux — sidebar stays live
+  - Rename/delete: dispatch `renameConversationMutation` / `deleteConversationMutation` (optimistic with rollback)
+  - Per-item pending state: `selectCxConversationIsPending(id)` per row (inline wrapper component avoids selector factory hoisting issues)
+  - IntersectionObserver sentinel for load-more via `fetchConversationListMore`
+  - Shared Chats section preserved with local state (not in Redux — intentional)
+  - `useChatPersistence` import eliminated from this component
+
+- **`SsrSidebarAgents.tsx` fully rewritten** — removes old `cx-chat useAgentConsumer` (agentCacheSlice / prompts table)
+  - Now reads `selectOwnedAgents`, `selectBuiltinAgents`, `selectSharedWithMeAgents` from `agentDefinition` slice
+  - Loading state from `selectAgentsSliceStatus`
+  - `onAgentSelect` callback maps `AgentDefinitionRecord` → `ActiveChatAgent` (temporary until Phase 6 eliminates activeChatSlice)
+  - `selectAgent()` upgrade call removed — agentDefinition data is always full-depth
+
+- **`AgentPickerSheet.tsx` fully rewritten** — removes old `cx-chat useAgentConsumer`
+  - Both Mobile (Drawer) and Desktop (custom modal) variants rewritten
+  - Local `searchTerm` + `filter` state (no Redux) — agents already fully loaded by `useInstanceBootstrap`
+  - Reads `selectOwnedAgents`, `selectBuiltinAgents` directly
+  - `toAgentConfig()` maps `AgentDefinitionRecord` → `AgentConfig` using `variableDefinitions`
+  - `autoUpgradeToCore` / `fetchAgentCoreBatch` removed — not needed, data is already full
+  - `ephemeral: true` consumer cleanup removed — no Redux consumer lifecycle
+
+- **`AgentPickerSheet` open state fixed** — was hardcoded `open={false}` in `ChatWelcomeClient` and `ChatConversationClient`
+  - Both components now have `const [isPickerOpen, setIsPickerOpen] = useState(false)` as local state
+  - Open/close wired to the picker's `onOpenChange` prop
+  - No Redux state for picker visibility — correct per architecture (local UI state)
+
+### Phase 2 — Completed Items
+- **`features/cx-chat/redux/types.ts`** — `CxConversationListItem`, `CxConversationSearchItem`, content block types, `CxConversationsState`
+- **`features/cx-chat/redux/cx-conversations.slice.ts`** — Sidebar list slice registered as `cxConversations` in rootReducer
+  - `setListLoading/Success/Error` — async state
+  - `renameConversation/revertRename` — optimistic rename
+  - `removeConversation` — optimistic delete (re-fetches on failure)
+  - `prependConversation` — after new chat created
+  - `touchConversation` — bumps active conversation to top
+  - `markPending/clearPending` — per-conversation loading states
+  - Selectors: `selectCxConversationItems`, `selectCxConversationById`, `selectCxConversationListIsFresh`, etc.
+- **`features/cx-chat/redux/thunks.ts`** — All conversation async operations
+  - `fetchConversationList({ force? })` — Tier 1, TTL-guarded, 25 items
+  - `fetchConversationListMore({ offset, searchTerm? })` — Tier 2, pagination + search
+  - `fetchConversationHistory({ conversationId, instanceId })` — Tier 3, full messages
+    - **Privacy enforced:** `role = 'system'` rows filtered out before Redux store
+    - `cx_conversation.system_instruction` never selected (not in query)
+    - Maps `CxMessage` content blocks → `ConversationTurn` for `instanceConversationHistory`
+  - `renameConversationMutation({ id, title })` — optimistic, direct Supabase write
+  - `deleteConversationMutation(id)` — soft-delete, optimistic
+- **`features/cx-chat/redux/index.ts`** — Barrel export
+- **`lib/redux/rootReducer.ts`** — `cxConversations: cxConversationsReducer` registered
+
+**Correction from previous tracker:** `agent_conversations` table is old/unused. The actual tables are `cx_conversation` + `cx_message` — the newest, most structured tables in the system.
+
+### Phase 1 — Completed Items
+- **`initializeChatAgents` thunk** added to `features/agents/redux/agent-definition/thunks.ts`
+  - Calls `fetchAgentsListFull()` — owned + shared + builtins in one RPC
+  - 15-min TTL + 4-hour stale-while-revalidate via module-level timestamp
+  - `isChatListFresh()` / `isChatListStale()` exported for hook use
+- **`useAgentBootstrap.ts` updated** — all `agentFetchThunks` / `agentCacheSlice` imports removed
+  - `initializeChatAgents()` replaces `initializeAgents()`
+  - `fetchAgentExecutionMinimal()` replaces `fetchAgentOperational()`
+  - `LLMParams.model` field used (corrected from `model_id`)
+  - `variableDefinitions[]` passed directly as `variableDefaults` (type-safe cast)
+- **`lib/types/agent-chat.ts` type shim** created
+  - `PromptVariable` = `VariableDefinition` (superset)
+  - `PromptSettings` = `LLMParams`
+  - `Resource` re-exported from `features/prompts/types/resources` (stays until Phase 5)
+  - `AgentDefinition`, `AgentDefinitionRecord`, `AgentType` re-exported for new consumers
+
+---
+
 ## Architecture Baseline (What We Know)
 
 ### [KNOWN] Agents replaced Prompts
@@ -72,202 +255,177 @@ The **new agent system does NOT write to cx tables** — Python backend writes t
 
 ## Gap 1 — Agent Listing for Chat Sidebar
 
-### Status: 🟡 Design needed → 🟢 One RPC away
+### Status: ✅ Done (Phase 1)
 
 **[KNOWN]** `agentCacheSlice` reads from `prompts` table. That table still exists but the data has moved to `agents`. The TTL-cached slim/core/operational tier system must be pointed at `agents`.
 
 **[KNOWN]** The following RPCs exist on the `agents` table already:
-- `fetchAgentsListFull` (thunk) → `get_agents_list()` RPC — returns full list rows including name, description, category, tags, is_active, etc. **This is Tier 2 (core depth), not Tier 1.**
+- `fetchAgentsListFull` (thunk) → `get_agents_list_full()` RPC — returns owned + shared + builtins including name, description, category, tags, is_active, etc.
 - `fetchSharedAgentsForChat` (thunk) → `get_shared_agents_for_chat()` RPC — returns minimal shared list
-- `fetchAgentExecutionMinimal` (thunk) → `get_agent_execution_minimal(agent_id)` — variable_definitions + context_slots **[Tier 3]**
-- `fetchAgentExecutionFull` (thunk) → `get_agent_execution_full(agent_id)` — adds settings, tools, model **[Tier 3+]**
+- `fetchAgentExecutionMinimal` (thunk) → `get_agent_execution_minimal(agent_id)` — variable_definitions + context_slots
+- `fetchAgentExecutionFull` (thunk) → `get_agent_execution_full(agent_id)` — adds settings, tools, model
 
-**[KNOWN]** What is MISSING: A lightweight "give me just names + ids for the sidebar initial render" RPC hitting `agents`. The current `get_agents_for_chat()` hits the `prompts` table. According to `agents-migration-status.md` section 6.2, this needs a new version.
+**[KNOWN] Decision taken:** Option B — Use `fetchAgentsListFull` (owned + shared + builtins in one call). No new Tier 1 RPC needed. `get_agents_list_full()` is fast enough for the sidebar.
 
-**Design Decision Needed:**
-> Option A: Create a new `get_agents_for_chat_v2()` RPC on `agents` table — paginated, returns `id, name, agent_type` only. Replace `agentCacheSlice` thunks to call this.
->
-> Option B: Skip Tier 1 entirely. Use `get_agents_list()` which is already implemented and returns enough to populate the sidebar. First render is slightly heavier but no new RPC needed. Cache in Redux with same TTL pattern.
->
-> **Recommendation:** Option B first. `get_agents_list()` returns 15 fields including name+description — fast enough for the sidebar. Create a new `fetchAgentsSlimForChat` thunk that calls `get_agents_list()` and stores results into a new `agentDefinition`-backed structure. Drop `agentCacheSlice` dependency for chat entirely.
+**[DONE] Phase 1 implementation:**
+- Added `initializeChatAgents({ force?: boolean })` thunk to `features/agents/redux/agent-definition/thunks.ts`
+  - Wraps `fetchAgentsListFull()` with TTL guard (15 min) + stale-while-revalidate (4 hours)
+  - Uses module-level `_chatListFetchedAt` timestamp — session-local, no Redux pollution
+  - Exports `isChatListFresh()` and `isChatListStale()` helpers for the bootstrap hook
+- Updated `useAgentBootstrap.ts` to call `initializeChatAgents()` instead of `initializeAgents()`
+- Tab-visibility stale-while-revalidate now uses `isChatListStale()` instead of reading Redux state
 
-**[THINK]** The `agentConsumers` slice + `makeSelectFilteredAgents(consumerId)` selector pattern in `features/agents/hooks/useAgentConsumer.ts` is designed for list views with filter/sort. It can power the sidebar if the agent listing thunk populates `agentDefinition.agents`.
-
-**Tasks:**
-- [ ] Create `fetchAgentsForChatSidebar` thunk — calls `get_agents_list()`, paginates with cursor, stores into `agentDefinition` slice
-- [ ] Create `fetchSharedAgentsForChatSidebar` thunk — calls existing `get_shared_agents_for_chat()` RPC
-- [ ] Update or replace `agentCacheSlice` TTL fetch logic to use new thunks
+**Remaining (Phase 4+):**
 - [ ] Rewrite `SsrSidebarAgents.tsx` to read from `agentDefinition` instead of `agentCacheSlice`
 - [ ] Rewrite `AgentPickerSheet.tsx` similarly
+- [ ] Remove `agentCacheSlice` dependency from chat entirely (Phase 8 cleanup)
 
 ---
 
 ## Gap 2 — Agent Selection & Operational Data Fetch
 
-### Status: 🟢 RPCs exist, wiring needed
+### Status: ✅ Done (Phase 1)
 
 **[KNOWN]** When user selects an agent (via sidebar or picker), the current system calls `fetchAgentOperational()` → `get_agent_operational()` RPC on `prompts` table. This returns `variable_defaults, dynamic_model, settings`.
 
 **[KNOWN]** The new equivalent is `fetchAgentExecutionMinimal` → `get_agent_execution_minimal(agent_id)` which returns `id, variable_definitions, context_slots`. For model/settings too, `fetchAgentExecutionFull` → `get_agent_execution_full(agent_id)` returns `id, variable_definitions, model_id, settings, tools, custom_tools, context_slots`.
 
-**[THINK]** `fetchAgentExecutionFull` is the drop-in replacement for what we need when an agent is selected for chat — it has everything needed to create an execution instance.
+**[DONE] Phase 1 implementation:**
+- Updated `useAgentBootstrap.ts` to call `fetchAgentExecutionMinimal(agentId)` on URL change instead of `fetchAgentOperational`
+- Settings propagation updated: `LLMParams.model` (not `model_id` — schema difference corrected)
+- `variableDefaults` now passes `record.variableDefinitions` directly (VariableDefinition[] is superset of PromptVariable[])
+- `agentCacheSlice` / `agentFetchThunks` no longer imported in `useAgentBootstrap`
 
-**Design Decision:**
-> On agent URL navigation (`/a/[agentId]`), dispatch `fetchAgentExecutionFull(agentId)` instead of `fetchAgentOperational`. This populates `agentDefinition.agents[agentId]` at full depth. Then `createManualInstance({ agentId })` reads from that to snapshot the instance.
+**Note:** The hook still writes to `activeChatSlice` (old shape). This is intentional for Phase 1 — the `activeChatSlice` refactor is Gap 3/Phase 3 work.
 
-**Tasks:**
-- [ ] Replace `fetchAgentOperational` call in `useAgentBootstrap` with `fetchAgentExecutionFull`
-- [ ] Verify `fetchAgentExecutionFull` skips if agent already at `execution` depth in `agentDefinition`
-- [ ] Remove `agentCacheSlice` operational depth dependency from `useAgentBootstrap`
+**Remaining (Phase 3+):**
+- [ ] Switch from `fetchAgentExecutionMinimal` to `fetchAgentExecutionFull` once settings are needed at selection time
+- [ ] Replace `activeChatSlice` hydration with `createManualInstance()` call (Gap 3)
 
 ---
 
 ## Gap 3 — useInstanceBootstrap (Replaces useAgentBootstrap)
 
-### Status: 🟡 Design needed
+### Status: ✅ Done (Phase 3)
 
-**[KNOWN]** `useAgentBootstrap.ts` does three things:
-1. Fires `initializeAgents()` on mount (Tier 1 slim list from prompts table)
-2. Watches URL pathname + searchParams for agentId changes
-3. On agentId found in URL → fires `fetchAgentOperational()` → hydrates `activeChatSlice`
+**[KNOWN] Final design decisions:**
 
-**[KNOWN]** The new system needs this hook to:
-1. Fire the new `fetchAgentsForChatSidebar` thunk on mount (Tier 1 from agents table)
-2. Watch URL for agentId changes
-3. On agentId found → fire `fetchAgentExecutionFull(agentId)` → call `createManualInstance({ agentId })` → store `instanceId` somewhere (new slice? URL param? local state?)
+1. **`instanceId` lives in the URL** as `?instance=uuid`. The bootstrap hook reads it on mount. If absent (fresh load/refresh), create a new instance and push the id into the URL. On refresh, Redux is empty but URL has the `instanceId` — recreate from `agentId` also in the URL.
 
-**[THINK]** The biggest new complexity is the `instanceId`. The current system uses `activeChatSlice.sessionId` to track the active conversation. The new system needs to track the `instanceId` of the currently active execution instance. This should live in `activeChatSlice` (or a replacement slice).
+2. **Always have an instance** — the layout always creates one. Even the welcome screen has an instance (default agent). "No instance" is not a valid state on this route.
 
-**Design Decision Needed:**
-> The `activeChatSlice` needs to be updated OR replaced. The new version should hold:
-> - `activeInstanceId: string | null` (replaces `sessionId`)
-> - `selectedAgentId: string | null` (just the ID — definition lives in `agentDefinition`)
-> - `isAgentPickerOpen: boolean` (keep)
-> - `firstMessage: FirstMessage | null` (keep)
-> - `useBlockMode: boolean` (keep)
-> - `messageContext: Record<string, unknown>` (keep)
->
-> Remove: `modelOverride`, `modelSettings`, `agentDefaultSettings` — these live in `instanceModelOverrides` slice now.
->
-> The model state is per-instance. `activeChatSlice` just needs to know which instance is active.
+3. **Instance reuse across agent switches** — the hook tracks previously created instances per agentId in a ref map. If user switches to agent A, then agent B, then back to A — the A instance is reused (preserves variable values, input text). Avoids creating too many instances.
 
-**Tasks:**
-- [ ] Update `activeChatSlice` — replace `sessionId` with `activeInstanceId`, replace `selectedAgent: ActiveChatAgent` with `selectedAgentId: string | null`
-- [ ] Create `useInstanceBootstrap.ts` hook — mounts in `ChatPanelContent`, watches URL, creates instances
-- [ ] Define where `instanceId` → URL round-trip happens (needed for refresh/deep-link)
+4. **`activeChatSlice` is NOT modified** — instead, two fields are added to `instanceUIState` at the slice root: `activeChatInstanceId: string | null` and `useBlockMode: boolean`. This is architecturally correct per the system design.
+
+5. **`useBlockMode`** — admin/pilot preference, reads like `apiBaseUrl`. Added to `instanceUIState` root (alongside `activeChatInstanceId`), read at execute time. Will migrate to `userPreferencesSlice` when promoted to full user preference.
+
+6. **Header/Sidebar don't need instanceId** — they read `agentId` and `conversationId` from the URL directly.
+
+7. **`firstMessage`** — dead concept. Welcome screen writes directly to `instanceUserInput` via `setUserInputText`. The send flow is identical to any other send.
+
+8. **`messageContext`** — maps to `instanceContext.setContextEntry`. `QuestionnaireRenderer` will dispatch to `instanceContext` using the `activeChatInstanceId` selector.
+
+**[DONE] Phase 3 implementation:**
+- Extended `instanceUIState` slice: `useBlockMode` (boolean) at slice root
+  - `setUseBlockMode(boolean)` action + `selectUseBlockMode` selector
+  - **No `activeChatInstanceId` — the system supports many simultaneous instances.**
+    Any component that needs its instanceId receives it as a prop or reads `?instance=` from the URL.
+- Built `useInstanceBootstrap.ts` — replaces `useAgentBootstrap` in `ChatPanelContent`
+  - Catalogue init + tab-visibility stale-while-revalidate
+  - Instance reuse map (per agentId, ref-local) — reuses existing instance on agent re-selection
+  - Creates instances via `createManualInstance`, writes `?instance=uuid` into URL via `router.replace`
+  - **`instanceId` lives exclusively in the URL** — no Redux field, no context, no "active" concept
+  - Loads conversation history via `fetchConversationHistory` when on `/c/` route
+- Migrated ALL cx-chat components off `activeChatSlice` writes:
+  - `ChatSidebarClient` — reads agentId from URL → `agentDefinition` for name display
+  - `ChatDesktopHeader` — same pattern
+  - `ChatMobileAgentName` — reads agentId from URL → `agentDefinition` for name display
+  - `ChatHeaderControls` — reads `useBlockMode` from `instanceUIState`, writes via `setUseBlockMode`
+  - `ChatMobileAdminToggles` — same; `chatConversationsActions.updateUIState` removed
+  - `ChatWelcomeClient` — reads agent record via `agent.promptId` (server prop) directly; navigation-only for agent selection; `firstMessage` concept eliminated
+  - `ChatConversationClient` — navigation-only for agent select/new-chat; all session-id Redux writes removed
+
+**Still using `activeChatSlice` for reads (Phase 6):**
+- `ConversationInput.tsx` — reads `selectActiveChatAgent`, `selectAgentDefaultSettings`
+- `ChatConversationClient.tsx` — reads model override + settings for `useConversationSession`
+- `useConversationSession` hook — reads from `chatConversationsSlice`
+
+**Remaining (Phase 4+):**
+- [ ] `QuestionnaireRenderer` still dispatches `activeChatActions.setContextEntry` — update to `instanceContext.setContextEntry` (not cx-chat exclusive)
+- [ ] `AgentPickerSheet` open state — currently hard-coded `open={false}` in WelcomeClient/ConversationClient; needs proper `instanceUIState.modeState` wiring in Phase 4
 
 ---
 
 ## Gap 4 — Route → Instance Mapping & Instance Lifecycle
 
-### Status: 🟡 Design needed
+### Status: ✅ Done (Phase 3)
 
-**[KNOWN]** Current route structure:
-- `/ssr/chat` → welcome screen with default agent
-- `/ssr/chat/a/[agentId]` → welcome screen with specific agent
-- `/ssr/chat/c/[conversationId]` → load existing conversation (with optional `?agent=id`)
+**[KNOWN] Route structure and instance mapping:**
+- `/ssr/chat` → create instance from hardcoded default agent
+- `/ssr/chat/a/[agentId]` → create instance from `agentId` param
+- `/ssr/chat/c/[conversationId]` → agentId required as `?agent=uuid`, create instance + load history
 
-**[KNOWN]** The new execution model uses `instanceId` internally. An instance is created per "session" and destroyed on unmount or agent switch.
+**[KNOWN] Instance lifecycle:**
+- `instanceId` in URL as `?instance=uuid`
+- `useInstanceBootstrap` manages the full lifecycle
+- On refresh: URL has `agentId` → recreate instance (history loads separately via `fetchConversationHistory`)
+- On agent switch: old instance stays in memory (reused if user returns), new instance created
+- On conversation load: `fetchConversationHistory({ conversationId, instanceId })` populates `instanceConversationHistory`
 
-**[KNOWN]** The Python backend returns `conversationId` via `X-Conversation-ID` header after first message. The `active-requests` slice stores this in `request.conversationId`.
+**[KNOWN] `conversationId` resolution for `/c/` route:**
+- `agentId` must be in the URL as `?agent=uuid` (set by sidebar when user clicks a conversation)
+- `cx_conversation` stores `ai_model_id` but not `agent_id` directly — the agent ID comes from the URL, not the DB
 
-**[THINK]** The conversation route `/c/[conversationId]` needs to:
-1. Create an instance for the agent associated with that conversation
-2. Load history into `instanceConversationHistory` for that instanceId
-3. This requires knowing the agentId from the conversationId — either from `agent_runs` or from the URL param `?agent=id`
-
-**Design Decision Needed:**
-> For the `/c/[conversationId]` route, the agentId must be passed in the URL (`?agent=id`) or fetched from DB as part of history load. The `agent_runs` table (written by Python) has `agent_id`. Query that to get the agent for a given conversation.
-
-**Tasks:**
-- [ ] Define `instanceId` persistence strategy (in-memory only, or surfaced in URL as `?instance=id`)
-- [ ] Define how `/c/[conversationId]` resolves its agentId
-- [ ] Handle "new chat" flow: create instance → welcome screen → first send → navigate to conversation URL
-- [ ] Handle refresh: instance is gone, recreate from conversationId + agentId
+**[DONE] Phase 3 implementation:**
+- `useInstanceBootstrap` handles all three route patterns
+- Instance reuse map prevents duplicate creation on agent re-selection
 
 ---
 
 ## Gap 5 — Conversation History Load
 
-### Status: 🔴 Blocked (needs RPC + thunk)
+### Status: ✅ Done (Phase 2)
 
 **[KNOWN]** The current system calls `/api/cx-chat/request?id={conversationId}` which queries `cx_conversations` + `cx_messages`. The returned messages go through `processDbMessagesForDisplay()` → `chatConversationsActions.loadConversation`.
 
 **[KNOWN]** The Python backend writes runs to `agent_runs` table (queried by `AgentRunsSidebar`). The `agent_runs` table exists in Supabase and has `id, name, created_at, message_count` (at minimum). Full message content is unknown — needs inspection.
 
-**[KNOWN]** Python writes to `agent_conversations` table. The `messages` column is a jsonb array of all turns including system prompt. The `title` column holds the conversation name. History loads are direct Supabase reads — no Python endpoint needed.
+**[KNOWN] Correction:** `agent_conversations` is an old, unused table. The new system uses `cx_conversation` + `cx_message` (the newest, best-structured tables).
 
-**[KNOWN] Design is clear:**
-> Frontend queries `agent_conversations` directly via Supabase client:
-> - Tier 1 list: `SELECT id, title, updated_at FROM agent_conversations WHERE user_id = auth.uid() ORDER BY updated_at DESC LIMIT 25`
-> - Tier 2 list (search): same + filter by title
-> - Tier 3 (open): `SELECT messages, system_instruction FROM agent_conversations WHERE id = $conversationId`
->   Then filter `messages` array: exclude roles `system`, expose only `user`/`assistant` turns.
->   The `system_instruction` column MUST NEVER be sent to the client UI.
-
-**[KNOWN] User requirement for history tiers:**
-- **Tier 1 (init):** 25 conversation names + IDs only. Super lightweight.
-- **Tier 2 (search/expand):** Names + descriptions + tags + timestamps.
-- **Tier 3 (open conversation):** All messages. IMPORTANT: never expose system prompt or agent instructions to the client. User sees only their variable values, not the raw agent message.
-
-**[KNOWN] The `instanceConversationHistory` slice has `loadConversationHistory` action:**
-```typescript
-loadConversationHistory(state, action: PayloadAction<{
-  instanceId: string;
-  turns: ConversationTurn[];
-  conversationId: string;
-  mode?: ConversationMode;
-}>)
-```
-This is the correct target for loaded history. `ConversationTurn` has enough fields to hold loaded messages.
-
-**[THINK] ConversationTurn field check for loaded messages:**
-```typescript
-interface ConversationTurn {
-  id: string;
-  role: "user" | "assistant";
-  content: string;             // ✅ text content
-  contentBlocks?: ...          // ✅ structured blocks (images, tool calls)
-  conversationId?: string;     // ✅ set when loaded
-  isEdited?: boolean;          // ✅
-  isFork?: boolean;
-  parentTurnId?: string;
-  completionStats?: ...        // ✅ token counts, timing
-  clientMetrics?: ...
-}
-```
-Should be sufficient for loading history but needs verification against what Python stores.
+**[DONE] Phase 2 implementation:**
+- Direct Supabase client reads from `cx_conversation` + `cx_message` — no API route bounce
+- `fetchConversationList()` — Tier 1: id, title, updated_at, message_count, status (25 items, TTL-guarded)
+- `fetchConversationListMore()` — Tier 2: same + searchTerm filter (pagination)
+- `fetchConversationHistory()` — Tier 3: full CxMessage → ConversationTurn mapping
+- Privacy enforced at the thunk level: system-role messages filtered, system_instruction never queried
+- New `cxConversations` slice in rootReducer manages sidebar list state
 
 **Tasks:**
-- [ ] **Query Supabase MCP to get `agent_runs` table schema** — what columns? Is there a related messages table?
-- [ ] Build `fetchConversationHistory(conversationId, instanceId)` thunk
-- [ ] Build `fetchConversationList(limit, cursor?)` thunk — Tier 1, names + IDs only
-- [ ] Build `fetchConversationListFull(limit, cursor?, searchTerm?)` thunk — Tier 2
-- [ ] Update `SsrSidebarChats.tsx` to use new thunks (currently uses `/api/cx-chat/history`)
-- [ ] Verify: does Python's stored message content include user's variable values separately from the composed message? (Critical for privacy)
+- [ ] Update `SsrSidebarChats.tsx` to dispatch from new Redux thunks (Phase 4)
 
 ---
 
 ## Gap 6 — Conversation Sidebar (SsrSidebarChats)
 
-### Status: 🟡 Design needed (depends on Gap 5)
+### Status: ✅ Done (Phase 4)
 
 **[KNOWN]** `SsrSidebarChats.tsx` (743 lines!) currently:
 - Calls `/api/cx-chat/history` for conversation list
 - Shows conversations grouped by today/yesterday/older
 - Handles search, rename, delete, pin
 
-**[KNOWN]** The data source changes from `/api/cx-chat/history` (cx_conversations) to direct Supabase reads from `agent_conversations`. The `title` and `updated_at` columns are present. Rename = `UPDATE agent_conversations SET title = $title WHERE id = $id AND user_id = auth.uid()`. Delete = similar. Both can be done via Supabase client directly — no Python needed.
+**[KNOWN]** The data source is `cx_conversation` (not agent_conversations — that's old/unused). Rename = direct Supabase UPDATE. Delete = soft-delete via `deleted_at` + `status='archived'`. Both thunks (`renameConversationMutation`, `deleteConversationMutation`) are ready.
 
 **Tasks:**
-- [ ] After Gap 5 is resolved, update `SsrSidebarChats.tsx` data source
-- [ ] Verify rename/delete operations work against new tables
+- [ ] Update `SsrSidebarChats.tsx` to use `fetchConversationList`, `fetchConversationListMore`, `renameConversationMutation`, `deleteConversationMutation` from `features/cx-chat/redux`
+- [ ] Replace `useChatPersistence.loadHistory()` calls with Redux dispatch
 
 ---
 
 ## Gap 7 — Type Migration (PromptVariable, PromptSettings, Resource)
 
-### Status: 🟢 Clear path, just work
+### Status: ✅ Done (Phase 5)
 
 **[KNOWN] Full blast radius (files that import from `features/prompts/`):**
 
@@ -378,7 +536,7 @@ OR: Adapt `ConversationInput` to dispatch to new slices while keeping same UI.
 
 ## Gap 10 — Agent Picker Sheet
 
-### Status: 🟡 Design needed
+### Status: ✅ Done (Phase 4)
 
 **[KNOWN]** `AgentPickerSheet.tsx` currently uses `useAgentConsumer` from `features/cx-chat/hooks` which reads from `agentCacheSlice` (prompts table). Uses `autoUpgradeToCore` to fetch descriptions/tags when picker opens.
 
@@ -404,56 +562,40 @@ OR: Adapt `ConversationInput` to dispatch to new slices while keeping same UI.
 
 ---
 
-## DB Schema — Confirmed via Supabase MCP
+## DB Schema — Confirmed
 
-### [KNOWN] `agent_runs` does NOT exist. Python uses `agent_conversations` + `agent_requests`.
+### [KNOWN] Chat data lives in `cx_conversation` + `cx_message` (NOT `agent_conversations`)
 
-#### `agent_conversations` schema
-| Column | Type | Nullable | Notes |
-|---|---|---|---|
-| `id` | uuid | NO | PK — this IS the conversationId returned by Python |
-| `user_id` | uuid | NO | Owner |
-| `model_id` | uuid | NO | Model used |
-| `messages` | jsonb | NO | **Full message history stored here as a jsonb array** |
-| `system_instruction` | text | YES | The system prompt (agent instructions) — NEVER expose to client |
-| `config_settings` | jsonb | NO | LLM settings used |
-| `title` | text | YES | Conversation title for sidebar display |
-| `status` | text | YES | active/archived/etc. |
-| `parent_conversation_id` | uuid | YES | For branched conversations |
-| `created_at` | timestamptz | NO | |
-| `updated_at` | timestamptz | NO | |
+The tables `agent_conversations` and `agent_requests` are old/legacy Python-side tables that are no longer the source of truth for the chat UI. The **current, correct tables** are:
 
-**Critical finding:** Python stores ALL messages (including system prompt / agent instructions) in the `messages` jsonb column. The client MUST NOT expose `system_instruction` or filter out system-role messages from what the user sees.
+#### `cx_conversation`
+| Column | Notes |
+|---|---|
+| `id` | uuid PK — the conversationId used in routes |
+| `user_id` | Owner |
+| `title` | Display name in sidebar |
+| `system_instruction` | System prompt — NEVER expose to client UI |
+| `config` | jsonb — LLM settings snapshot |
+| `status` | `active` / `completed` / `archived` |
+| `message_count` | smallint — for sidebar badge |
+| `ai_model_id` | uuid — model used |
+| `created_at` / `updated_at` | timestamps |
 
-#### `agent_requests` schema
-| Column | Type | Nullable | Notes |
-|---|---|---|---|
-| `id` | uuid | NO | PK |
-| `conversation_id` | uuid | NO | FK → agent_conversations.id |
-| `user_id` | uuid | NO | |
-| `endpoint` | text | YES | Which agent/conversation endpoint was called |
-| `prompt_id` | text | YES | The agentId used (text, not uuid FK) |
-| `model_id` | uuid | NO | |
-| `input_tokens` | integer | NO | |
-| `output_tokens` | integer | NO | |
-| `cached_tokens` | integer | NO | |
-| `total_tokens` | integer | NO | |
-| `estimated_cost` | numeric | YES | |
-| `duration_ms` | integer | YES | |
-| `iterations` | integer | YES | |
-| `status` | text | YES | |
-| `error_message` | text | YES | |
-| `full_usage` | jsonb | YES | Raw token usage from model |
-| `timing_stats` | jsonb | YES | TTFT, total time, etc. |
-| `tool_call_stats` | jsonb | YES | Tool execution stats |
-| `metadata` | jsonb | YES | |
-| `created_at` | timestamptz | NO | |
+#### `cx_message`
+| Column | Notes |
+|---|---|
+| `id` | uuid PK |
+| `conversation_id` | FK → cx_conversation.id |
+| `role` | `user` / `assistant` / `system` / `tool` / `output` |
+| `position` | smallint — ordering within conversation |
+| `content` | jsonb array of `CxContentBlock` (text, thinking, media, tool_call, tool_result, etc.) |
+| `metadata` | jsonb — includes `variables`, `resources` stored alongside user messages |
+| `status` | `active` / `condensed` / `summary` / `deleted` |
+| `content_history` | jsonb — previous content versions (edits) |
 
-**Key insights:**
-1. Conversation list = query `agent_conversations` directly (has `title`, `updated_at`, `status`)
-2. History = read `messages` jsonb from `agent_conversations` — filter to only `user`/`assistant` roles, exclude `system`
-3. Stats per request = `agent_requests` keyed by `conversation_id`
-4. No separate messages table — Python appends to the jsonb array in-place
+**Privacy rule:** Always filter `role = 'system'` from message queries. Never select `system_instruction`. Enforced in `fetchConversationHistory` thunk (Phase 2).
+
+Phase 2 thunks (`features/cx-chat/redux/thunks.ts`) correctly query these tables directly via Supabase client.
 
 ### [KNOWN] Type Compatibility Verified
 
@@ -536,4 +678,4 @@ These work correctly today in the new system and don't need rework:
 
 ---
 
-*Last updated: 2026-03-28*
+*Last updated: 2026-03-28 — Phase 6 complete. SSR chat route fully migrated to new agent execution system.*

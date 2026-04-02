@@ -1,5 +1,28 @@
+/**
+ * Active Request Selectors
+ *
+ * SELECTOR RULES (same as aggregate.selectors.ts):
+ * - Primitives returned directly — stable by value, safe for useAppSelector.
+ * - Arrays/objects from .filter()/.map() ALWAYS wrapped in createSelector.
+ * - Input selectors: plain state lookups only.
+ * - Result functions: all filtering, mapping, and derivation.
+ */
+
+import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
-import type { ActiveRequest } from "@/features/agents/types/request.types";
+import type {
+  ActiveRequest,
+  ToolLifecycleEntry,
+} from "@/features/agents/types/request.types";
+import type {
+  StatusUpdatePayload,
+  ContentBlockPayload,
+  CompletionPayload,
+} from "@/types/python-generated/stream-events";
+
+// =============================================================================
+// Core Request Selectors
+// =============================================================================
 
 export const selectRequest =
   (requestId: string) =>
@@ -15,9 +38,6 @@ export const selectRequestsForInstance =
       .filter((r): r is ActiveRequest => r != null);
   };
 
-/**
- * Get the primary (most recent) request for an instance.
- */
 export const selectPrimaryRequest =
   (instanceId: string) =>
   (state: RootState): ActiveRequest | undefined => {
@@ -34,19 +54,193 @@ export const selectAccumulatedText =
   (state: RootState): string =>
     state.activeRequests.byRequestId[requestId]?.accumulatedText ?? "";
 
-/**
- * The conversation ID for a specific request.
- * Named selectRequestConversationId to avoid collision with appContextSlice's
- * selectConversationId (which returns the global app-level conversation context).
- */
 export const selectRequestConversationId =
   (requestId: string) =>
   (state: RootState): string | null =>
     state.activeRequests.byRequestId[requestId]?.conversationId ?? null;
 
-/**
- * Pending tool calls that haven't been resolved yet.
- */
+export const selectHasActiveRequests = (state: RootState): boolean =>
+  Object.values(state.activeRequests.byRequestId).some(
+    (r) =>
+      r.status === "pending" ||
+      r.status === "connecting" ||
+      r.status === "streaming" ||
+      r.status === "awaiting-tools",
+  );
+
+// =============================================================================
+// Status Update Selectors
+// =============================================================================
+
+/** The most recent status update for a request. Primitive — safe for useAppSelector. */
+export const selectCurrentStatus =
+  (requestId: string) =>
+  (state: RootState): StatusUpdatePayload | null =>
+    state.activeRequests.byRequestId[requestId]?.currentStatus ?? null;
+
+/** Just the user-facing message from the latest status update. */
+export const selectCurrentStatusMessage =
+  (requestId: string) =>
+  (state: RootState): string | null =>
+    state.activeRequests.byRequestId[requestId]?.currentStatus?.user_message ??
+    state.activeRequests.byRequestId[requestId]?.currentStatus?.status ??
+    null;
+
+/** Full status history — for timeline / debug views. Memoized. */
+export const selectStatusHistory = (requestId: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byRequestId[requestId],
+    (request): StatusUpdatePayload[] => request?.statusHistory ?? [],
+  );
+
+// =============================================================================
+// Content Block Selectors
+// =============================================================================
+
+/** A single content block by blockId. Primitive-ish — object ref stable until upserted. */
+export const selectContentBlock =
+  (requestId: string, blockId: string) =>
+  (state: RootState): ContentBlockPayload | undefined =>
+    state.activeRequests.byRequestId[requestId]?.contentBlocks[blockId];
+
+/** Ordered blockIds for rendering. Stable array ref until a new block arrives. */
+export const selectContentBlockOrder =
+  (requestId: string) =>
+  (state: RootState): string[] =>
+    state.activeRequests.byRequestId[requestId]?.contentBlockOrder ?? [];
+
+/** All content blocks in emission order. Memoized. */
+export const selectAllContentBlocks = (requestId: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byRequestId[requestId],
+    (request): ContentBlockPayload[] => {
+      if (!request) return [];
+      return request.contentBlockOrder
+        .map((id) => request.contentBlocks[id])
+        .filter((b): b is ContentBlockPayload => b != null);
+    },
+  );
+
+/** Content blocks filtered by type (e.g., "code", "flashcards"). Memoized. */
+export const selectContentBlocksByType = (requestId: string, type: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byRequestId[requestId],
+    (request): ContentBlockPayload[] => {
+      if (!request) return [];
+      return request.contentBlockOrder
+        .map((id) => request.contentBlocks[id])
+        .filter((b): b is ContentBlockPayload => b != null && b.type === type);
+    },
+  );
+
+/** Blocks still streaming. Memoized. */
+export const selectStreamingBlocks = (requestId: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byRequestId[requestId],
+    (request): ContentBlockPayload[] => {
+      if (!request) return [];
+      return request.contentBlockOrder
+        .map((id) => request.contentBlocks[id])
+        .filter(
+          (b): b is ContentBlockPayload =>
+            b != null && b.status === "streaming",
+        );
+    },
+  );
+
+/** Blocks that are complete. Memoized. */
+export const selectCompletedBlocks = (requestId: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byRequestId[requestId],
+    (request): ContentBlockPayload[] => {
+      if (!request) return [];
+      return request.contentBlockOrder
+        .map((id) => request.contentBlocks[id])
+        .filter(
+          (b): b is ContentBlockPayload => b != null && b.status === "complete",
+        );
+    },
+  );
+
+/** How many content blocks exist for this request. Primitive. */
+export const selectContentBlockCount =
+  (requestId: string) =>
+  (state: RootState): number =>
+    state.activeRequests.byRequestId[requestId]?.contentBlockOrder.length ?? 0;
+
+// =============================================================================
+// Tool Lifecycle Selectors
+// =============================================================================
+
+/** A single tool lifecycle entry by callId. */
+export const selectToolLifecycle =
+  (requestId: string, callId: string) =>
+  (state: RootState): ToolLifecycleEntry | undefined =>
+    state.activeRequests.byRequestId[requestId]?.toolLifecycle[callId];
+
+/** All tool lifecycle entries. Memoized. */
+export const selectAllToolLifecycles = (requestId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.toolLifecycle,
+    (lifecycle): ToolLifecycleEntry[] =>
+      lifecycle ? Object.values(lifecycle) : [],
+  );
+
+/** Tools that are actively running (started, progress, step). Memoized. */
+export const selectActiveTools = (requestId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.toolLifecycle,
+    (lifecycle): ToolLifecycleEntry[] => {
+      if (!lifecycle) return [];
+      return Object.values(lifecycle).filter(
+        (t) =>
+          t.status === "started" ||
+          t.status === "progress" ||
+          t.status === "step",
+      );
+    },
+  );
+
+/** Tools that completed successfully. Memoized. */
+export const selectCompletedTools = (requestId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.toolLifecycle,
+    (lifecycle): ToolLifecycleEntry[] => {
+      if (!lifecycle) return [];
+      return Object.values(lifecycle).filter((t) => t.status === "completed");
+    },
+  );
+
+/** Tools that errored. Memoized. */
+export const selectToolErrors = (requestId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.toolLifecycle,
+    (lifecycle): ToolLifecycleEntry[] => {
+      if (!lifecycle) return [];
+      return Object.values(lifecycle).filter((t) => t.status === "error");
+    },
+  );
+
+/** How many tools are currently active. Primitive. */
+export const selectActiveToolCount =
+  (requestId: string) =>
+  (state: RootState): number => {
+    const lifecycle =
+      state.activeRequests.byRequestId[requestId]?.toolLifecycle;
+    if (!lifecycle) return 0;
+    return Object.values(lifecycle).filter(
+      (t) =>
+        t.status === "started" ||
+        t.status === "progress" ||
+        t.status === "step",
+    ).length;
+  };
+
+/** Pending tool calls that haven't been resolved yet. */
 export const selectUnresolvedToolCalls =
   (requestId: string) => (state: RootState) => {
     const request = state.activeRequests.byRequestId[requestId];
@@ -54,10 +248,30 @@ export const selectUnresolvedToolCalls =
     return request.pendingToolCalls.filter((c) => !c.resolved);
   };
 
-/**
- * Build the conversation tree for an instance.
- * Returns requests grouped by parent-child relationship.
- */
+// =============================================================================
+// Completion Selectors
+// =============================================================================
+
+/** The completion payload for a request. null until completion event fires. */
+export const selectCompletion =
+  (requestId: string) =>
+  (state: RootState): CompletionPayload | null =>
+    state.activeRequests.byRequestId[requestId]?.completion ?? null;
+
+// =============================================================================
+// Error Selectors
+// =============================================================================
+
+/** Whether the error on this request was fatal. */
+export const selectErrorIsFatal =
+  (requestId: string) =>
+  (state: RootState): boolean =>
+    state.activeRequests.byRequestId[requestId]?.errorIsFatal ?? false;
+
+// =============================================================================
+// Conversation Tree
+// =============================================================================
+
 export const selectConversationTree =
   (instanceId: string) =>
   (
@@ -84,15 +298,3 @@ export const selectConversationTree =
 
     return { root, children };
   };
-
-/**
- * Are there any active (in-flight) requests across all instances?
- */
-export const selectHasActiveRequests = (state: RootState): boolean =>
-  Object.values(state.activeRequests.byRequestId).some(
-    (r) =>
-      r.status === "pending" ||
-      r.status === "connecting" ||
-      r.status === "streaming" ||
-      r.status === "awaiting-tools",
-  );

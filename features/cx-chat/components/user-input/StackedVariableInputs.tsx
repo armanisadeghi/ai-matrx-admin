@@ -11,18 +11,18 @@ import {
 import { formatText } from "@/utils/text/text-case-converter";
 import { VariableInputComponent } from "@/features/prompts/components/variable-inputs";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
 import {
-  selectVariableDefaults,
-  selectVariableValues,
-} from "@/features/cx-conversation/redux/selectors";
+  selectInstanceVariableDefinitions,
+  selectUserVariableValues,
+} from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
+import { setUserVariableValue } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.slice";
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
 interface StackedVariableInputsProps {
-  sessionId: string;
+  instanceId: string;
   disabled?: boolean;
   compact?: boolean;
   /** Hide the outer wrapper (for embedding in custom layouts) */
@@ -37,32 +37,24 @@ interface StackedVariableInputsProps {
  * StackedVariableInputs - Variable input component that self-manages via Redux
  */
 export function StackedVariableInputs({
-  sessionId,
+  instanceId,
   disabled = false,
   compact = false,
   minimal = false,
 }: StackedVariableInputsProps) {
   const dispatch = useAppDispatch();
-  const variableDefaults = useAppSelector((state) =>
-    selectVariableDefaults(state, sessionId),
+  const variableDefaults = useAppSelector(
+    selectInstanceVariableDefinitions(instanceId),
   );
-  const values = useAppSelector((state) =>
-    selectVariableValues(state, sessionId),
-  );
+  const values = useAppSelector(selectUserVariableValues(instanceId));
 
   const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
 
   const handleVariableChange = useCallback(
     (variableName: string, value: string) => {
-      dispatch(
-        chatConversationsActions.updateVariable({
-          sessionId,
-          variableName,
-          value,
-        }),
-      );
+      dispatch(setUserVariableValue({ instanceId, name: variableName, value }));
     },
-    [dispatch, sessionId],
+    [dispatch, instanceId],
   );
 
   const handleExpandedVariableChange = useCallback(

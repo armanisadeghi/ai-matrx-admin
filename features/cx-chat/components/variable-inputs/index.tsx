@@ -17,7 +17,7 @@ import { CheckboxGroupInput } from "./CheckboxGroupInput";
 import { SelectInput } from "./SelectInput";
 import { NumberInput } from "./NumberInput";
 import { TextareaInput } from "./TextareaInput";
-import { VariableCustomComponent } from "@/features/prompts/types/core";
+import type { VariableCustomComponent } from "@/lib/types/agent-chat";
 import { formatText } from "@/utils/text/text-case-converter";
 import { Label } from "@/components/ui/label";
 

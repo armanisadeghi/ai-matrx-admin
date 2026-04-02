@@ -516,6 +516,14 @@ function ClientPanel({
           <StatRow label="Chunk events" value={String(metrics.chunkEvents)} />
           <StatRow label="Data events" value={String(metrics.dataEvents)} />
           <StatRow label="Tool events" value={String(metrics.toolEvents)} />
+          <StatRow
+            label="Block events"
+            value={String(metrics.contentBlockEvents)}
+          />
+          <StatRow
+            label="Status events"
+            value={String(metrics.statusUpdateEvents)}
+          />
           <StatRow label="Other events" value={String(metrics.otherEvents)} />
         </div>
       </section>

@@ -6,8 +6,8 @@ import type {
   AgentFetchStatus,
   FieldSnapshot,
   LoadedFields,
-} from "./types";
-import { shouldUpgradeFetchStatus } from "./types";
+} from "../../types/agent-definition.types";
+import { shouldUpgradeFetchStatus } from "../../types/agent-definition.types";
 
 // ---------------------------------------------------------------------------
 // Helpers

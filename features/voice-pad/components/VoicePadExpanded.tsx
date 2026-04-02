@@ -70,29 +70,28 @@ export default function VoicePadExpanded({
 
   return (
     <div className="w-80 rounded-xl bg-card/95 backdrop-blur-md border border-border shadow-xl overflow-hidden">
-      {/* Header — always visible, draggable */}
-      <div className="flex items-center gap-1 px-2 py-1.5 border-b border-border/50 bg-muted/30">
-        <button
-          type="button"
-          onMouseDown={onDragStart}
-          className="cursor-grab active:cursor-grabbing p-0.5 text-muted-foreground hover:text-foreground"
-          aria-label="Drag"
-        >
-          <GripVertical className="h-3.5 w-3.5" />
-        </button>
+      {/* Header — entire bar is the drag handle; icons stop propagation */}
+      <div
+        className="flex items-center gap-1 px-2 py-1.5 border-b border-border/50 bg-muted/30 cursor-grab active:cursor-grabbing select-none"
+        onMouseDown={onDragStart}
+      >
+        <GripVertical className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
         <span className="text-xs font-medium text-foreground/80 flex-1">
           Voice Pad
         </span>
 
-        <MicrophoneIconButton
-          onTranscriptionComplete={onTranscriptionComplete}
-          variant="icon-only"
-          size="sm"
-        />
+        <div onMouseDown={(e) => e.stopPropagation()}>
+          <MicrophoneIconButton
+            onTranscriptionComplete={onTranscriptionComplete}
+            variant="icon-only"
+            size="sm"
+          />
+        </div>
 
         <button
           type="button"
           onClick={onCollapse}
+          onMouseDown={(e) => e.stopPropagation()}
           className="p-0.5 text-muted-foreground hover:text-foreground transition-colors"
           aria-label="Collapse"
         >
@@ -101,6 +100,7 @@ export default function VoicePadExpanded({
         <button
           type="button"
           onClick={onClose}
+          onMouseDown={(e) => e.stopPropagation()}
           className="p-0.5 text-muted-foreground hover:text-destructive transition-colors"
           aria-label="Close"
         >

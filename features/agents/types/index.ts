@@ -5,3 +5,4 @@ export type * from "./instance.types";
 export type * from "./json-schema";
 export type * from "./message-types";
 export type * from "./request.types";
+export type * from "./agent-definition.types";

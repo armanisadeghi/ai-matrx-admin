@@ -19,7 +19,7 @@ import {
   selectAgentMessages,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { setAgentVariableDefinitions } from "@/features/agents/redux/agent-definition/slice";
-import type { VariableDefinition } from "@/features/agents/redux/agent-definition/types";
+import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
 import { AgentVariableEditorModal } from "./AgentVariableEditorModal";
 
 interface AgentVariablesManagerProps {

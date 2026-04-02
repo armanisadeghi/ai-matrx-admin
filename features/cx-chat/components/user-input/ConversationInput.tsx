@@ -43,31 +43,25 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
-import { sendMessage } from "@/features/cx-conversation/redux/thunks/sendMessage";
+import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+// Instance-system state
+import { selectUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
+import { setUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
+import { selectInstanceVariableDefinitions } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
+import { selectInstanceResources } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.selectors";
 import {
-  selectCurrentInput,
-  selectResources,
-  selectVariableDefaults,
-  selectIsExecuting,
-  selectUIState,
-  selectShowDebugInfo,
-  selectHasVariables,
-  selectAgentId,
-  selectEffectiveModelId,
-  selectEffectiveModelLabel,
-  selectEffectiveSettings,
-} from "@/features/cx-conversation/redux/selectors";
+  addResource,
+  removeResource,
+} from "@/features/agents/redux/execution-system/instance-resources/instance-resources.slice";
+import { selectIsExecuting } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import { selectCurrentSettings } from "@/features/agents/redux/execution-system/instance-model-overrides/instance-model-overrides.selectors";
+import { setOverrides } from "@/features/agents/redux/execution-system/instance-model-overrides/instance-model-overrides.slice";
+import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
 import {
   selectAvailableModels,
   selectModelOptions,
   fetchAvailableModels,
 } from "@/features/ai-models/redux/modelRegistrySlice";
-import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
-import {
-  selectActiveChatAgent,
-  selectAgentDefaultSettings,
-} from "@/lib/redux/slices/activeChatSlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { ResourceChips } from "@/features/prompts/components/resource-display";
 import { ResourcePickerMenu } from "@/features/prompts/components/resource-picker/ResourcePickerMenu";
@@ -76,15 +70,56 @@ import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUpl
 import { ModelSettingsDialog } from "@/features/prompts/components/configuration/ModelSettingsDialog";
 import { ChatDebugModal } from "../../admin/ChatDebugModal";
 import { toast } from "sonner";
-import type { Resource } from "@/features/prompts/types/resources";
 import type { PromptSettings } from "@/features/prompts/types/core";
+import type {
+  ManagedResource,
+  ResourceBlockType,
+} from "@/features/agents/types";
+import type { Resource } from "@/features/prompts/types/resources";
+import { selectActiveChatAgent } from "@/lib/redux/slices/activeChatSlice";
 
+/** Map user-upload MIME to API content-block type (see ResourceBlockType). */
+function uploadMimeToBlockType(mime: string): ResourceBlockType {
+  return mime.startsWith("image/") ? "image" : "document";
+}
+
+/** Map ResourcePickerMenu payload types → instance ResourceBlockType. */
+function pickerResourceTypeToBlockType(type: string): ResourceBlockType {
+  switch (type) {
+    case "image_url":
+    case "image":
+      return "image";
+    case "youtube":
+      return "youtube_video";
+    case "webpage":
+      return "input_webpage";
+    case "notes":
+    case "note":
+      return "input_notes";
+    case "tasks":
+    case "task":
+      return "input_task";
+    case "tables":
+    case "table":
+      return "input_table";
+    case "audio":
+      return "audio";
+    case "brokers":
+      return "input_data";
+    case "file_url":
+    case "file":
+    case "upload":
+    case "storage":
+    default:
+      return "document";
+  }
+}
 // ============================================================================
 // PROPS
 // ============================================================================
 
 export interface ConversationInputProps {
-  sessionId: string;
+  instanceId: string;
 
   // ── Feature flags (all default off unless noted) ───────────────────────────
   showVariables?: boolean;
@@ -130,7 +165,7 @@ export interface ConversationInputProps {
    */
   onSubmitOverride?: (
     content: string,
-    resources: Resource[],
+    resources: ManagedResource[],
   ) => Promise<boolean>;
 
   // ── Footer row ─────────────────────────────────────────────────────────────
@@ -154,7 +189,7 @@ export interface ConversationInputProps {
 // ============================================================================
 
 export function ConversationInput({
-  sessionId,
+  instanceId,
   showVariables = false,
   showVoice = true,
   showResourcePicker = true,
@@ -189,34 +224,23 @@ export function ConversationInput({
   const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false);
 
-  // ── Redux state ────────────────────────────────────────────────────────────
+  // ── Redux state (all from instance system) ─────────────────────────────────
   const content = useAppSelector((state) =>
-    selectCurrentInput(state, sessionId),
+    selectUserInputText(instanceId)(state),
   );
-  const resources = useAppSelector((state) =>
-    selectResources(state, sessionId),
+  const resources = useAppSelector(selectInstanceResources(instanceId));
+  const variableDefaults = useAppSelector(
+    selectInstanceVariableDefinitions(instanceId),
   );
-  const variableDefaults = useAppSelector((state) =>
-    selectVariableDefaults(state, sessionId),
-  );
-  const isExecuting = useAppSelector((state) =>
-    selectIsExecuting(state, sessionId),
-  );
-  const hasVariables = useAppSelector((state) =>
-    selectHasVariables(state, sessionId),
-  );
-  const uiState = useAppSelector((state) => selectUIState(state, sessionId));
-  const agentId = useAppSelector((state) => selectAgentId(state, sessionId));
-
-  // ── Agent (for footer ResponseModeButtons) ────────────────────────────────
-  const selectedAgent = useAppSelector(selectActiveChatAgent);
+  const isExecuting = useAppSelector(selectIsExecuting(instanceId));
+  const hasVariables = variableDefaults.length > 0;
+  const settingsForDialog = useAppSelector(selectCurrentSettings(instanceId));
 
   // ── Admin / debug ──────────────────────────────────────────────────────────
   const isAdmin = useAppSelector(selectIsAdmin);
   const isGlobalDebugMode = useAppSelector(selectIsDebugMode);
-  const showDebugInfo = useAppSelector((s) =>
-    selectShowDebugInfo(s, sessionId),
-  );
+  const selectedAgent = useAppSelector(selectActiveChatAgent);
+  const showDebugInfo = false; // Debug modal wired to instanceId directly below
 
   // ── URL params (for variable layout toggle) ───────────────────────────────
   const router = useRouter();
@@ -240,12 +264,12 @@ export function ConversationInput({
   const modelOptions = useAppSelector(selectModelOptions);
   const availableModels = useAppSelector(selectAvailableModels);
 
-  const currentModelId = useAppSelector((state) =>
-    selectEffectiveModelId(state, sessionId),
-  );
-  const currentModelName = useAppSelector((state) =>
-    selectEffectiveModelLabel(state, sessionId),
-  );
+  const currentModelId = (settingsForDialog as Record<string, unknown>)
+    ?.model as string | undefined;
+  const currentModelName =
+    modelOptions.find((o) => o.value === currentModelId)?.label ??
+    currentModelId ??
+    "";
 
   // Ensure models are loaded when model picker or settings are shown
   useEffect(() => {
@@ -270,37 +294,38 @@ export function ConversationInput({
         try {
           const result = await uploadFile(file);
           if (!result) throw new Error("Upload returned no result");
-          const resource: Resource = {
-            type: file.type.startsWith("image/") ? "image_link" : "file",
-            data: {
-              url: result.url,
-              filename: file.name,
-              mime_type: file.type,
-              size: file.size,
-            },
-          } as unknown as Resource;
+          const blockType = uploadMimeToBlockType(file.type);
           dispatch(
-            chatConversationsActions.addResource({ sessionId, resource }),
+            addResource({
+              instanceId,
+              blockType,
+              source: {
+                url: result.url,
+                filename: file.name,
+                mimeType: file.type,
+              },
+            }),
           );
         } catch (err) {
           toast.error(`Failed to upload ${file.name}`);
         }
       }
     },
-    [dispatch, sessionId, uploadFile],
+    [dispatch, instanceId, uploadFile],
   );
 
   const handleResourceSelected = useCallback(
     (resource: { type: string; data: unknown }) => {
       dispatch(
-        chatConversationsActions.addResource({
-          sessionId,
-          resource: resource as Resource,
+        addResource({
+          instanceId,
+          blockType: pickerResourceTypeToBlockType(resource.type),
+          source: resource.data,
         }),
       );
       setIsResourcePickerOpen(false);
     },
-    [dispatch, sessionId],
+    [dispatch, instanceId],
   );
 
   // ── Clipboard paste ────────────────────────────────────────────────────────
@@ -316,14 +341,9 @@ export function ConversationInput({
     (text: string) => {
       if (!text) return;
       const newContent = content ? `${content} ${text}` : text;
-      dispatch(
-        chatConversationsActions.setCurrentInput({
-          sessionId,
-          input: newContent,
-        }),
-      );
+      dispatch(setUserInputText({ instanceId, text: newContent }));
     },
-    [content, dispatch, sessionId],
+    [content, dispatch, instanceId],
   );
 
   // ── Auto-resize textarea ───────────────────────────────────────────────────
@@ -342,59 +362,29 @@ export function ConversationInput({
       const finalContent = (overrideContent ?? content).trim();
       if (isExecuting) return;
 
-      // Welcome screen override — intercepts submit before sendMessage
+      // Welcome screen override — intercepts submit for navigation
       if (onSubmitOverride) {
         const shouldClear = await onSubmitOverride(finalContent, resources);
         if (shouldClear) {
-          dispatch(
-            chatConversationsActions.setCurrentInput({ sessionId, input: "" }),
-          );
-          dispatch(chatConversationsActions.clearResources(sessionId));
+          dispatch(setUserInputText({ instanceId, text: "" }));
         }
         onSend?.();
         return;
       }
 
-      if (!agentId) return;
-
-      // Build variables from variableDefaults
-      const variables: Record<string, string> = {};
-      variableDefaults.forEach((v) => {
-        if (v.defaultValue !== undefined && v.defaultValue !== null) {
-          variables[v.name] = String(v.defaultValue);
-        }
-      });
-
-      // Convert Resource[] to ConversationResource[] for the API
-      const conversationResources =
-        resources.length > 0
-          ? resources.map((r) => ({
-              type: r.type,
-              data: r.data as Record<string, unknown>,
-            }))
-          : undefined;
-
-      dispatch(
-        sendMessage({
-          sessionId,
-          content: finalContent,
-          resources: conversationResources,
-          variables: Object.keys(variables).length > 0 ? variables : undefined,
-        }),
-      );
-
-      dispatch(
-        chatConversationsActions.setCurrentInput({ sessionId, input: "" }),
-      );
-      dispatch(chatConversationsActions.clearResources(sessionId));
+      // Set the text in Redux then fire executeInstance — it assembles everything
+      // (user input, variables, resources, model overrides) from instance slices.
+      if (finalContent) {
+        dispatch(setUserInputText({ instanceId, text: finalContent }));
+      }
+      dispatch(executeInstance({ instanceId }));
+      dispatch(setUserInputText({ instanceId, text: "" }));
       onSend?.();
     },
     [
       content,
       isExecuting,
-      agentId,
-      sessionId,
-      variableDefaults,
+      instanceId,
       resources,
       dispatch,
       onSend,
@@ -419,56 +409,29 @@ export function ConversationInput({
   // ── Model override ─────────────────────────────────────────────────────────
   const handleModelSelect = useCallback(
     (modelId: string) => {
-      dispatch(
-        chatConversationsActions.setModelOverride({
-          sessionId,
-          model: modelId,
-        }),
-      );
+      dispatch(setOverrides({ instanceId, changes: { model: modelId } }));
       setIsModelPickerOpen(false);
     },
-    [dispatch, sessionId],
+    [dispatch, instanceId],
   );
 
   // ── Settings dialog ────────────────────────────────────────────────────────
-  // Show the full effective settings (agent defaults + user overrides merged)
-  const settingsForDialog = useAppSelector((state) =>
-    selectEffectiveSettings(state, sessionId),
-  );
-  // Agent defaults — used to compute the diff on save (only store true overrides)
-  const agentDefaultSettings = useAppSelector(selectAgentDefaultSettings);
-
+  // selectCurrentSettings returns merged base+overrides — the instance system
+  // handles diff tracking internally (selectSettingsOverridesForApi sends only deltas).
   const handleSettingsChange = useCallback(
     (newSettings: PromptSettings) => {
-      const { model_id, ...changedSettings } = newSettings;
-
-      // Only store keys where the value genuinely differs from the agent default.
-      // Sending the default value back as an "override" is a no-op at best and
-      // an error at worst (server rejects redundant default overrides).
-      const trueOverrides: Record<string, unknown> = {};
-      for (const [key, value] of Object.entries(changedSettings)) {
-        const defaultVal = (agentDefaultSettings as Record<string, unknown>)[
-          key
-        ];
-        if (JSON.stringify(value) !== JSON.stringify(defaultVal)) {
-          trueOverrides[key] = value;
-        }
-      }
-
-      dispatch(
-        chatConversationsActions.updateUIState({
-          sessionId,
-          updates: {
-            ...(model_id ? { modelOverride: model_id } : {}),
-            modelSettings: trueOverrides,
-          },
-        }),
-      );
+      const { model_id, ...rest } = newSettings as Record<string, unknown>;
+      if (model_id)
+        dispatch(
+          setOverrides({ instanceId, changes: { model: model_id as string } }),
+        );
+      if (Object.keys(rest).length > 0)
+        dispatch(setOverrides({ instanceId, changes: rest }));
     },
-    [dispatch, sessionId, agentDefaultSettings],
+    [dispatch, instanceId],
   );
 
-  const isDisabled = isExecuting || (!agentId && !onSubmitOverride);
+  const isDisabled = isExecuting;
 
   // The bordered input box — its shape changes based on mode:
   //   default  : rounded pill (welcome screen, big input)
@@ -486,7 +449,7 @@ export function ConversationInput({
       {/* ── Variables (above the bordered input box) ──────────────────── */}
       {hasVariables && useGuidedVars && (
         <GuidedVariableInputs
-          sessionId={sessionId}
+          instanceId={instanceId}
           disabled={isExecuting}
           seamless
         />
@@ -494,7 +457,7 @@ export function ConversationInput({
       {hasVariables && !useGuidedVars && (
         <div className="max-h-[30vh] md:max-h-[45vh] overflow-y-auto overscroll-contain rounded-xl mb-1">
           <StackedVariableInputs
-            sessionId={sessionId}
+            instanceId={instanceId}
             disabled={isExecuting}
             minimal
           />
@@ -518,7 +481,7 @@ export function ConversationInput({
               <span>Session State</span>
             </button>
             <span className="text-[9px] text-red-400/70 font-mono truncate">
-              {sessionId.slice(0, 8)}…
+              {instanceId.slice(0, 8)}…
             </span>
           </div>
         )}
@@ -527,17 +490,22 @@ export function ConversationInput({
         {resources.length > 0 && (
           <div className="px-3">
             <ResourceChips
-              resources={resources}
-              onRemove={(resource) => {
-                const r = resource as unknown as { id: string };
+              resources={
+                resources as unknown as Parameters<
+                  typeof ResourceChips
+                >[0]["resources"]
+              }
+              onRemove={(index) => {
+                const r = resources[index];
+                if (!r) return;
                 dispatch(
-                  chatConversationsActions.removeResource({
-                    sessionId,
-                    resourceId: r.id ?? "",
+                  removeResource({
+                    instanceId,
+                    resourceId: r.resourceId,
                   }),
                 );
               }}
-              onPreview={(resource) => {
+              onPreview={(resource, _index) => {
                 setPreviewResource(resource);
                 setPreviewSheetOpen(true);
               }}
@@ -600,12 +568,7 @@ export function ConversationInput({
             ref={textareaRef}
             value={content}
             onChange={(e) =>
-              dispatch(
-                chatConversationsActions.setCurrentInput({
-                  sessionId,
-                  input: e.target.value,
-                }),
-              )
+              dispatch(setUserInputText({ instanceId, text: e.target.value }))
             }
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
@@ -708,7 +671,7 @@ export function ConversationInput({
         {/* Admin debug modal */}
         {isAdmin && (
           <ChatDebugModal
-            sessionId={sessionId}
+            sessionId={instanceId}
             isOpen={isDebugModalOpen}
             onClose={() => setIsDebugModalOpen(false)}
           />

@@ -5,8 +5,7 @@
 // defaults are included. Sending unchanged settings causes the server
 // to reject the request.
 
-import type { PromptSettings } from "@/features/prompts/types/core";
-
+import type { LLMParams } from "@/lib/api/types";
 /**
  * Compare user settings against agent defaults and return ONLY the overrides.
  *
@@ -19,9 +18,9 @@ import type { PromptSettings } from "@/features/prompts/types/core";
  * @returns An object containing only the changed/added settings, or null if no overrides.
  */
 export function computeSettingsOverrides(
-  agentDefaults: PromptSettings | undefined,
-  userSettings: PromptSettings,
-): PromptSettings | null {
+  agentDefaults: LLMParams | undefined,
+  userSettings: LLMParams,
+): LLMParams | null {
   const defaults = (agentDefaults ?? {}) as Record<string, unknown>;
   const user = userSettings as Record<string, unknown>;
   const overrides: Record<string, unknown> = {};
@@ -53,7 +52,7 @@ export function computeSettingsOverrides(
     }
   }
 
-  return hasOverrides ? (overrides as PromptSettings) : null;
+  return hasOverrides ? (overrides as LLMParams) : null;
 }
 
 /**

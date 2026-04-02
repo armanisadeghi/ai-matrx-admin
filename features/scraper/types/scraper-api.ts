@@ -41,7 +41,6 @@ export interface ScrapeOptions {
 export interface QuickScrapeRequest extends ScrapeOptions {
   urls: string[];
   use_cache?: boolean;
-  stream?: boolean;
 }
 
 export interface SearchKeywordsRequest {

@@ -2,70 +2,109 @@
  * Request Execution Types
  *
  * Tracks everything that happens after an API call fires:
- * stream status, accumulated response, tool delegation management,
- * and the sub-agent conversation tree.
+ * stream status, accumulated response, tool lifecycle, content blocks,
+ * status updates, and the sub-agent conversation tree.
  *
  * Keyed by requestId (not instanceId) because a single instance can
  * spawn multiple requests via sub-agent conversations.
+ *
+ * ARCHITECTURE: Every semantically distinct event type from the server gets
+ * its own dedicated field on ActiveRequest. The only catch-all is dataPayloads,
+ * which holds genuinely unstructured data events. Components subscribe to
+ * individual fields — never scan an untyped array.
  */
+
+import type {
+  StatusUpdatePayload,
+  ContentBlockPayload,
+  CompletionPayload,
+} from "@/types/python-generated/stream-events";
 
 // =============================================================================
 // Client-Side Metrics
 //
-// These are measurements taken by the client, independent of the server's
-// own timing/usage reports. Computed once after stream completion — never
+// Measurements taken by the client, independent of the server's own
+// timing/usage reports. Computed once after stream completion — never
 // during the stream so they add zero latency overhead.
 // =============================================================================
 
 export interface ClientMetrics {
-  // --- Timing (all in milliseconds from the submit click) ---
-
   /** When dispatch(executeInstance) fired. The true "submit" moment. */
   submitAt: number;
 
   /**
    * When the X-Conversation-ID header arrived (first server ACK).
-   * Measures our internal overhead before the server starts working:
    *   internalLatency = conversationIdAt - submitAt
    */
   conversationIdAt: number | null;
 
   /**
    * When the first chunk arrived from the stream.
-   * Time-to-first-token (from our perspective):
    *   ttft = firstChunkAt - submitAt
    */
   firstChunkAt: number | null;
 
   /**
    * When the stream loop exited (end event or error).
-   * Server-observed total duration:
    *   streamDuration = streamEndAt - firstChunkAt
    */
   streamEndAt: number | null;
 
   /**
    * When commitAssistantTurn completed (Redux + React render settled).
-   * Detects rendering bottlenecks:
    *   renderDelay = renderCompleteAt - streamEndAt
    */
   renderCompleteAt: number | null;
 
-  // --- Derived (ms, computed post-stream) ---
-  internalLatencyMs: number | null; // conversationIdAt - submitAt
-  ttftMs: number | null; // firstChunkAt - submitAt
-  streamDurationMs: number | null; // streamEndAt - firstChunkAt
-  renderDelayMs: number | null; // renderCompleteAt - streamEndAt
-  totalClientDurationMs: number | null; // renderCompleteAt - submitAt
+  internalLatencyMs: number | null;
+  ttftMs: number | null;
+  streamDurationMs: number | null;
+  renderDelayMs: number | null;
+  totalClientDurationMs: number | null;
 
-  // --- Data volume (computed once post-stream, never counted live) ---
-  totalEvents: number; // total NDJSON events received
-  chunkEvents: number; // isChunkEvent count
-  dataEvents: number; // isDataEvent count
-  toolEvents: number; // isToolEventEvent count
-  otherEvents: number; // everything else
-  accumulatedTextBytes: number; // byte length of the final text response
-  totalPayloadBytes: number; // estimated byte length of all raw events combined
+  totalEvents: number;
+  chunkEvents: number;
+  dataEvents: number;
+  toolEvents: number;
+  contentBlockEvents: number;
+  statusUpdateEvents: number;
+  otherEvents: number;
+  accumulatedTextBytes: number;
+  totalPayloadBytes: number;
+}
+
+// =============================================================================
+// Tool Lifecycle
+//
+// Full state machine per tool call. The reducer handles transitions:
+//   started → progress/step → result_preview → completed/error
+//
+// Keyed by callId for O(1) lookup. Components subscribe to individual
+// entries — no array scanning needed.
+// =============================================================================
+
+export type ToolLifecycleStatus =
+  | "started"
+  | "progress"
+  | "step"
+  | "result_preview"
+  | "completed"
+  | "error";
+
+export interface ToolLifecycleEntry {
+  callId: string;
+  toolName: string;
+  status: ToolLifecycleStatus;
+  arguments: Record<string, unknown>;
+  startedAt: string;
+  completedAt: string | null;
+  latestMessage: string | null;
+  latestData: Record<string, unknown> | null;
+  result: unknown | null;
+  resultPreview: string | null;
+  errorType: string | null;
+  errorMessage: string | null;
+  isDelegated: boolean;
 }
 
 // =============================================================================
@@ -73,13 +112,13 @@ export interface ClientMetrics {
 // =============================================================================
 
 export type RequestStatus =
-  | "pending" // Request assembled, not yet sent
-  | "connecting" // HTTP request in flight, no response yet
-  | "streaming" // Receiving stream chunks
-  | "awaiting-tools" // Suspended — waiting for client tool results
-  | "complete" // Stream ended successfully
-  | "error" // Stream ended with error
-  | "timeout"; // Client tool response timed out
+  | "pending"
+  | "connecting"
+  | "streaming"
+  | "awaiting-tools"
+  | "complete"
+  | "error"
+  | "timeout";
 
 export interface ActiveRequest {
   requestId: string;
@@ -93,30 +132,45 @@ export interface ActiveRequest {
 
   status: RequestStatus;
 
-  /** Accumulated text response from chunk events */
+  // ── Streaming Text (chunks) ──────────────────────────────────
   accumulatedText: string;
 
-  /** Structured data payloads from data/tool/completion/content_block events */
-  dataPayloads: Array<Record<string, unknown>>;
+  // ── Status Updates ───────────────────────────────────────────
+  /** The most recent status update — overwrites on each new event */
+  currentStatus: StatusUpdatePayload | null;
+  /** Full history for debugging / timeline display */
+  statusHistory: StatusUpdatePayload[];
 
-  /** Pending tool delegations awaiting client response */
+  // ── Content Blocks ───────────────────────────────────────────
+  /** Keyed by blockId for O(1) lookup. Each block upserted in place. */
+  contentBlocks: Record<string, ContentBlockPayload>;
+  /** Ordered list of blockIds preserving server emission order */
+  contentBlockOrder: string[];
+
+  // ── Tool Lifecycle ───────────────────────────────────────────
+  /** Delegations that need client action (unchanged from before) */
   pendingToolCalls: PendingToolCall[];
+  /** Full lifecycle per tool call — started → progress → completed/error */
+  toolLifecycle: Record<string, ToolLifecycleEntry>;
 
-  /** Warnings from structured input resolution */
+  // ── Completion ───────────────────────────────────────────────
+  /** Exactly one per request. null until the completion event fires. */
+  completion: CompletionPayload | null;
+
+  // ── Errors & Warnings ────────────────────────────────────────
+  errorMessage: string | null;
+  /** Whether the error was fatal (stream killed) or non-fatal (stream continues) */
+  errorIsFatal: boolean;
   warnings: StreamWarning[];
 
-  /** Error message if status is 'error' */
-  errorMessage: string | null;
+  // ── Data Events (genuine catch-all) ──────────────────────────
+  /** ONLY for unstructured data events — NOT status/tools/blocks/completion */
+  dataPayloads: Array<Record<string, unknown>>;
 
-  /** Timing (ISO strings for display) */
+  // ── Timing ───────────────────────────────────────────────────
   startedAt: string;
   firstChunkAt: string | null;
   completedAt: string | null;
-
-  /**
-   * Client-side performance metrics, computed once after stream completion.
-   * null until the stream ends and finalizeClientMetrics is dispatched.
-   */
   clientMetrics: ClientMetrics | null;
 }
 
@@ -128,14 +182,8 @@ export interface PendingToolCall {
   callId: string;
   toolName: string;
   arguments: Record<string, unknown>;
-
-  /** When this delegation was received */
   receivedAt: string;
-
-  /** 120-second deadline from the server */
   deadlineAt: string;
-
-  /** Whether the client has submitted a result */
   resolved: boolean;
 }
 

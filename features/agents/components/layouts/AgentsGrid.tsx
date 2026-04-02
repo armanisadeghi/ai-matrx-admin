@@ -52,7 +52,7 @@ import {
   duplicateAgent,
 } from "@/features/agents/redux/agent-definition/thunks";
 import type { AgentSortOption } from "@/features/agents/redux/agent-consumers/slice";
-import type { AgentDefinitionRecord } from "@/features/agents/redux/agent-definition/types";
+import type { AgentDefinitionRecord } from "@/features/agents/types/agent-definition.types";
 
 const NewAgentModal = dynamic(
   () => import("./NewAgentModal").then((m) => ({ default: m.NewAgentModal })),

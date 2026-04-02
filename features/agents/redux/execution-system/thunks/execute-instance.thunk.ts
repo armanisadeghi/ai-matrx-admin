@@ -54,7 +54,9 @@ import {
   isCompletionEvent,
   isContentBlockEvent,
   isHeartbeatEvent,
+  isBrokerEvent,
 } from "@/types/python-generated/stream-events";
+import type { ToolLifecycleStatus } from "@/features/agents/types/request.types";
 import {
   addPendingToolCall,
   appendChunk,
@@ -63,6 +65,10 @@ import {
   finalizeClientMetrics,
   setConversationId,
   setRequestStatus,
+  setCurrentStatus,
+  upsertContentBlock,
+  upsertToolLifecycle,
+  setCompletion,
 } from "../active-requests/active-requests.slice";
 import {
   addUserTurn,
@@ -305,37 +311,32 @@ export const executeInstance = createAsyncThunk<
       let chunkEvents = 0;
       let dataEvents = 0;
       let toolEvents = 0;
+      let contentBlockEvents = 0;
+      let statusUpdateEvents = 0;
       let otherEvents = 0;
       let totalPayloadBytes = 0;
 
       for await (const event of events) {
-        // Fire-and-forget counters — no blocking work done here
         totalEvents++;
         try {
           totalPayloadBytes += new TextEncoder().encode(
             JSON.stringify(event),
           ).length;
         } catch {
-          // ignore encoding errors in metrics
+          /* ignore encoding errors in metrics */
         }
+
         if (isChunkEvent(event)) {
           chunkEvents++;
           if (clientFirstChunkAt === null)
             clientFirstChunkAt = performance.now();
           dispatch(appendChunk({ requestId, content: event.data.text }));
         } else if (isStatusUpdateEvent(event)) {
-          otherEvents++;
-          // Store status_update events — useful for "agent thinking" UI indicators
-          dispatch(
-            appendDataPayload({
-              requestId,
-              data: { status_update: event.data },
-            }),
-          );
+          statusUpdateEvents++;
+          dispatch(setCurrentStatus({ requestId, status: event.data }));
         } else if (isDataEvent(event)) {
           dataEvents++;
           const data = event.data as Record<string, unknown>;
-          // conversation_id arrives here too (redundant with header, but handle it)
           if (
             data.event === "conversation_id" &&
             typeof data.conversation_id === "string" &&
@@ -349,6 +350,7 @@ export const executeInstance = createAsyncThunk<
         } else if (isToolEventEvent(event)) {
           toolEvents++;
           const toolData = event.data;
+
           if (toolData.event === "tool_delegated") {
             dispatch(
               addPendingToolCall({
@@ -356,38 +358,62 @@ export const executeInstance = createAsyncThunk<
                 toolCall: {
                   callId: toolData.call_id,
                   toolName: toolData.tool_name,
-                  // arguments live in data.data when provided
                   arguments: (toolData.data as Record<string, unknown>) ?? {},
                 },
               }),
             );
-            dispatch(setInstanceStatus({ instanceId, status: "paused" }));
-          }
-          // tool_started, tool_progress, tool_completed, tool_error —
-          // logged to dataPayloads for UI consumption
-          else {
             dispatch(
-              appendDataPayload({
+              upsertToolLifecycle({
                 requestId,
-                data: { tool_event: toolData },
+                callId: toolData.call_id,
+                toolName: toolData.tool_name,
+                status: "started",
+                arguments: (toolData.data as Record<string, unknown>) ?? {},
+                isDelegated: true,
+              }),
+            );
+            dispatch(setInstanceStatus({ instanceId, status: "paused" }));
+          } else {
+            const lifecycleStatus = toolData.event.replace(
+              "tool_",
+              "",
+            ) as ToolLifecycleStatus;
+
+            dispatch(
+              upsertToolLifecycle({
+                requestId,
+                callId: toolData.call_id,
+                toolName: toolData.tool_name,
+                status: lifecycleStatus,
+                message: toolData.message,
+                data: toolData.data as Record<string, unknown> | null,
+                ...(toolData.event === "tool_completed" && {
+                  result: (toolData.data as Record<string, unknown>)?.result,
+                }),
+                ...(toolData.event === "tool_result_preview" && {
+                  resultPreview: (toolData.data as Record<string, unknown>)
+                    ?.preview as string | undefined,
+                }),
+                ...(toolData.event === "tool_error" && {
+                  errorType: (toolData.data as Record<string, unknown>)
+                    ?.error_type as string | undefined,
+                  errorMessage: toolData.message,
+                }),
               }),
             );
           }
         } else if (isContentBlockEvent(event)) {
-          otherEvents++;
-          // Structured content blocks — store for UI rendering
+          contentBlockEvents++;
           dispatch(
-            appendDataPayload({
+            upsertContentBlock({
               requestId,
-              data: { content_block: event.data },
+              block: event.data,
             }),
           );
         } else if (isCompletionEvent(event)) {
           otherEvents++;
-          // Capture the full CompletionStats payload
           const d = event.data as Record<string, unknown>;
 
-          // Build typed CompletionStats from the server payload
           completionStats = {
             status: (d.status as string) ?? "complete",
             iterations: (d.iterations as number) ?? 1,
@@ -421,7 +447,6 @@ export const executeInstance = createAsyncThunk<
             metadata: d.metadata ?? null,
           };
 
-          // Derive tokenUsage/finishReason from the richer stats for backward compat
           const totalUsage = completionStats.total_usage?.total;
           if (totalUsage) {
             tokenUsage = {
@@ -432,20 +457,21 @@ export const executeInstance = createAsyncThunk<
           }
           finishReason = completionStats.finish_reason;
 
-          // Store raw completion data for telemetry
           dispatch(
-            appendDataPayload({
+            setCompletion({
               requestId,
-              data: { completion: event.data },
+              data: event.data,
             }),
           );
         } else if (isErrorEvent(event)) {
           otherEvents++;
+          const isFatal = true;
           dispatch(
             setRequestStatus({
               requestId,
               status: "error",
               errorMessage: event.data.user_message ?? event.data.message,
+              isFatal,
             }),
           );
           dispatch(setInstanceStatus({ instanceId, status: "error" }));
@@ -453,16 +479,21 @@ export const executeInstance = createAsyncThunk<
           otherEvents++;
           dispatch(setRequestStatus({ requestId, status: "complete" }));
           dispatch(setInstanceStatus({ instanceId, status: "complete" }));
+        } else if (isBrokerEvent(event)) {
+          otherEvents++;
+          dispatch(
+            appendDataPayload({
+              requestId,
+              data: { broker: event.data },
+            }),
+          );
         } else if (isHeartbeatEvent(event)) {
           otherEvents++;
-          // Keep-alive ping — no action needed
         }
       }
 
-      // Stream loop has exited — record the stream-end timestamp.
       const streamEndAt = performance.now();
 
-      // Commit the completed assistant response to conversation history
       const finalState = getState() as RootState;
       const completedText =
         finalState.activeRequests.byRequestId[requestId]?.accumulatedText ?? "";
@@ -482,18 +513,11 @@ export const executeInstance = createAsyncThunk<
         }),
       );
 
-      // Clear input text and resources now that the stream is done.
-      // We do this here (after stream ends) not in the component, because the
-      // thunk captured the input state at the top before anything was cleared.
       dispatch(clearUserInput(instanceId));
       dispatch(clearAllResources(instanceId));
 
-      // Record when Redux commit + render is scheduled (approximation — the
-      // actual paint happens asynchronously, but this captures the JS-thread
-      // settle point which is the meaningful overhead we can detect).
       const renderCompleteAt = performance.now();
 
-      // Compute and store all client metrics in a single fire-and-forget dispatch.
       const internalLatencyMs =
         conversationIdAt !== null ? conversationIdAt - submitAt : null;
       const ttftMs =
@@ -523,6 +547,8 @@ export const executeInstance = createAsyncThunk<
         chunkEvents,
         dataEvents,
         toolEvents,
+        contentBlockEvents,
+        statusUpdateEvents,
         otherEvents,
         accumulatedTextBytes,
         totalPayloadBytes,

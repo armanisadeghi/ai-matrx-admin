@@ -66,7 +66,8 @@ export function SplitLayoutShell({ sidebar, children }: SplitLayoutShellProps) {
 
   return (
     <Group orientation="horizontal" style={{ height: CONTENT_HEIGHT }}>
-      <Panel defaultSize={22} minSize={14} maxSize={40}>
+      {/* defaultSize must be a STRING to be treated as percentage — numbers = pixels! */}
+      <Panel defaultSize="22%" minSize="14%" maxSize="40%">
         <div className="h-full flex flex-col overflow-hidden border-r border-border/60">
           {sidebar}
         </div>
@@ -85,7 +86,7 @@ export function SplitLayoutShell({ sidebar, children }: SplitLayoutShellProps) {
         </div>
       </Separator>
 
-      <Panel defaultSize={78} minSize={40}>
+      <Panel defaultSize="78%" minSize="40%">
         <div className="h-full flex flex-col overflow-hidden">{children}</div>
       </Panel>
     </Group>

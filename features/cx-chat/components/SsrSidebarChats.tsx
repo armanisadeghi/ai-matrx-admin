@@ -1,11 +1,16 @@
 "use client";
 
-// app/(ssr)/ssr/chat/_components/SsrSidebarChats.tsx
+// SsrSidebarChats — Conversation list for the ssr/chat sidebar.
 //
-// SSR-specific version of SidebarChats that uses DOM CustomEvents
-// instead of the deprecated AgentsContext sidebarEvents bus.
-// The conversation client dispatches 'chat:conversationCreated' and
-// 'chat:conversationUpdated' — this component listens for those.
+// Data source: cxConversations Redux slice (cx_conversation table via thunks).
+// Phase 4a migration: replaced useChatPersistence + local state with Redux.
+//
+// Own section: conversations fetched with fetchConversationList on mount,
+//   paginated with fetchConversationListMore on scroll.
+// Shared section: still fetched locally via API (not in Redux slice).
+// Mutations: renameConversationMutation + deleteConversationMutation from thunks.
+// Live updates: prependConversation + touchConversation dispatched from
+//   ChatConversationClient via DOM CustomEvents → Redux (no more local state).
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
@@ -31,12 +36,25 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { ShareModal } from "@/features/sharing";
-import { supabase } from "@/utils/supabase/client";
-import { useChatPersistence } from "@/features/cx-chat/hooks/useChatPersistence";
-import type {
-  CxConversationSummary,
-  SharedCxConversationSummary,
-} from "@/features/cx-chat/types/cx-tables";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import {
+  selectCxConversationItems,
+  selectCxConversationListStatus,
+  selectCxConversationHasMore,
+  selectCxConversationIsPending,
+  prependConversation,
+  touchConversation,
+} from "@/features/cx-chat/redux/cx-conversations.slice";
+import {
+  fetchConversationList,
+  fetchConversationListMore,
+  renameConversationMutation,
+  deleteConversationMutation,
+} from "@/features/cx-chat/redux/thunks";
+import type { CxConversationListItem } from "@/features/cx-chat/redux/types";
+import type { SharedCxConversationSummary } from "@/features/cx-chat/types/cx-tables";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 interface SsrSidebarChatsProps {
   activeRequestId?: string | null;
@@ -46,21 +64,24 @@ interface SsrSidebarChatsProps {
   onCloseSidebar?: () => void;
 }
 
+// ── Time grouping ─────────────────────────────────────────────────────────────
+
+const GROUP_ORDER = ["Today", "Yesterday", "This Week", "This Month", "Older"];
+
 function groupByTime(
-  items: CxConversationSummary[],
-): Record<string, CxConversationSummary[]> {
+  items: CxConversationListItem[],
+): Record<string, CxConversationListItem[]> {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterday = new Date(today.getTime() - 86400000);
-  const weekAgo = new Date(today.getTime() - 7 * 86400000);
-  const monthAgo = new Date(today.getTime() - 30 * 86400000);
+  const yesterday = new Date(today.getTime() - 86_400_000);
+  const weekAgo = new Date(today.getTime() - 7 * 86_400_000);
+  const monthAgo = new Date(today.getTime() - 30 * 86_400_000);
 
-  const groups: Record<string, CxConversationSummary[]> = {};
+  const groups: Record<string, CxConversationListItem[]> = {};
 
   for (const item of items) {
-    const date = new Date(item.updated_at || item.created_at);
+    const date = new Date(item.updatedAt);
     let group: string;
-
     if (date >= today) group = "Today";
     else if (date >= yesterday) group = "Yesterday";
     else if (date >= weekAgo) group = "This Week";
@@ -74,6 +95,8 @@ function groupByTime(
   return groups;
 }
 
+// ── Sub-components ────────────────────────────────────────────────────────────
+
 function InlineRename({
   value,
   onChange,
@@ -86,7 +109,6 @@ function InlineRename({
   onCancel: () => void;
 }) {
   const ref = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
     ref.current?.focus();
     ref.current?.select();
@@ -177,6 +199,7 @@ function DeleteConfirm({
 function ConversationItem({
   item,
   isActive,
+  isPending,
   isRenaming,
   isDeleting,
   renameValue,
@@ -189,8 +212,9 @@ function ConversationItem({
   onConfirmDelete,
   onCancelDelete,
 }: {
-  item: CxConversationSummary;
+  item: CxConversationListItem;
   isActive: boolean;
+  isPending: boolean;
   isRenaming: boolean;
   isDeleting: boolean;
   renameValue: string;
@@ -245,7 +269,7 @@ function ConversationItem({
           isActive
             ? "bg-accent/70 dark:bg-accent/50"
             : "hover:bg-accent/40 dark:hover:bg-accent/20"
-        }`}
+        } ${isPending ? "opacity-60" : ""}`}
       >
         <div className="flex items-center">
           <button
@@ -322,6 +346,8 @@ function ConversationItem({
   );
 }
 
+// ── Shared chats section — kept as local state (not in Redux slice) ───────────
+
 function SharedConversationItem({
   item,
   isActive,
@@ -385,7 +411,7 @@ function SharedChatsSection({
   searchQuery,
 }: {
   activeRequestId?: string | null;
-  onSelectChat: (requestId: string) => void;
+  onSelectChat: (id: string) => void;
   onCloseSidebar?: () => void;
   searchQuery: string;
 }) {
@@ -400,7 +426,6 @@ function SharedChatsSection({
     if (!isOpen || hasFetched) return;
     let cancelled = false;
     setIsLoading(true);
-
     (async () => {
       try {
         const response = await fetch("/api/cx-chat/shared");
@@ -417,7 +442,6 @@ function SharedChatsSection({
         }
       }
     })();
-
     return () => {
       cancelled = true;
     };
@@ -491,6 +515,8 @@ function SharedChatsSection({
   );
 }
 
+// ── Main component ────────────────────────────────────────────────────────────
+
 export function SsrSidebarChats({
   activeRequestId,
   onSelectChat,
@@ -498,104 +524,47 @@ export function SsrSidebarChats({
   searchQuery = "",
   onCloseSidebar,
 }: SsrSidebarChatsProps) {
+  const dispatch = useAppDispatch();
   const user = useSelector(selectUser);
   const isAuthenticated = !!user?.id;
 
-  const [history, setHistory] = useState<CxConversationSummary[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // ── Redux state ─────────────────────────────────────────────────────────────
+  const items = useAppSelector(selectCxConversationItems);
+  const listStatus = useAppSelector(selectCxConversationListStatus);
+  const hasMore = useAppSelector(selectCxConversationHasMore);
+  const isLoading = listStatus === "loading";
+
+  // ── Local UI state ──────────────────────────────────────────────────────────
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const { loadHistory, renameConversation, deleteConversation } =
-    useChatPersistence();
-  const realtimeSubscriptionRef = useRef<ReturnType<
-    typeof supabase.channel
-  > | null>(null);
-
-  const fetchHistory = useCallback(async () => {
-    setIsLoading(true);
-    const data = await loadHistory(100);
-    setHistory(data);
-    setIsLoading(false);
-  }, [loadHistory]);
-
+  // ── Initial load ────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isAuthenticated) return;
+    dispatch(fetchConversationList());
+  }, [dispatch, isAuthenticated]);
 
-    fetchHistory();
-
-    const subscription = supabase
-      .channel("cx_conversations_realtime")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "cx_conversation" },
-        (payload) => {
-          if (payload.eventType === "INSERT") {
-            fetchHistory();
-          } else if (payload.eventType === "UPDATE") {
-            setHistory((prev) =>
-              prev.map((item) =>
-                item.id === payload.new.id
-                  ? {
-                      ...item,
-                      title: payload.new.title || item.title,
-                      status: payload.new.status || item.status,
-                      updated_at: payload.new.updated_at || item.updated_at,
-                    }
-                  : item,
-              ),
-            );
-          } else if (payload.eventType === "DELETE") {
-            setHistory((prev) =>
-              prev.filter((item) => item.id !== payload.old.id),
-            );
-          }
-        },
-      )
-      .subscribe();
-
-    realtimeSubscriptionRef.current = subscription;
-
-    return () => {
-      if (realtimeSubscriptionRef.current) {
-        supabase.removeChannel(realtimeSubscriptionRef.current);
-      }
-    };
-  }, [fetchHistory, isAuthenticated]);
-
-  // Listen for DOM CustomEvents dispatched by ChatConversationClient
+  // ── DOM CustomEvent listeners — new conversations created during streaming ──
+  // ChatConversationClient dispatches these when the backend returns a new id.
   useEffect(() => {
     const handleCreated = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { id: string; title: string };
-      setHistory((prev) => {
-        if (prev.some((h) => h.id === detail.id)) return prev;
-        return [
-          {
-            id: detail.id,
-            title: detail.title,
-            status: "active" as const,
-            message_count: 0,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          ...prev,
-        ];
-      });
+      const { id, title } = (e as CustomEvent<{ id: string; title: string }>)
+        .detail;
+      dispatch(
+        prependConversation({
+          id,
+          title: title || null,
+          updatedAt: new Date().toISOString(),
+          messageCount: 0,
+          status: "active",
+        }),
+      );
     };
 
     const handleUpdated = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { id: string };
-      setHistory((prev) => {
-        const index = prev.findIndex((h) => h.id === detail.id);
-        if (index <= 0) return prev;
-        const item = prev[index];
-        return [
-          { ...item, updated_at: new Date().toISOString() },
-          ...prev.slice(0, index),
-          ...prev.slice(index + 1),
-        ];
-      });
+      const { id } = (e as CustomEvent<{ id: string }>).detail;
+      dispatch(touchConversation({ id }));
     };
 
     window.addEventListener("chat:conversationCreated", handleCreated);
@@ -604,37 +573,55 @@ export function SsrSidebarChats({
       window.removeEventListener("chat:conversationCreated", handleCreated);
       window.removeEventListener("chat:conversationUpdated", handleUpdated);
     };
-  }, []);
+  }, [dispatch]);
 
+  // ── Search filtering ────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
-    if (!searchQuery.trim()) return history;
+    if (!searchQuery.trim()) return items;
     const q = searchQuery.toLowerCase();
-    return history.filter((h) => h.title?.toLowerCase().includes(q));
-  }, [history, searchQuery]);
+    return items.filter((h) => h.title?.toLowerCase().includes(q));
+  }, [items, searchQuery]);
 
   const grouped = useMemo(() => groupByTime(filtered), [filtered]);
 
+  // ── Load-more on scroll ─────────────────────────────────────────────────────
+  const bottomRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!hasMore || isLoading || !bottomRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          dispatch(
+            fetchConversationListMore({
+              offset: items.length,
+              searchTerm: searchQuery || undefined,
+            }),
+          );
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(bottomRef.current);
+    return () => observer.disconnect();
+  }, [dispatch, hasMore, isLoading, items.length, searchQuery]);
+
+  // ── Mutations ───────────────────────────────────────────────────────────────
   const handleStartRename = useCallback((id: string, currentLabel: string) => {
     setRenamingId(id);
     setRenameValue(currentLabel || "");
   }, []);
 
-  const handleConfirmRename = useCallback(async () => {
+  const handleConfirmRename = useCallback(() => {
     if (!renamingId || !renameValue.trim()) {
       setRenamingId(null);
       return;
     }
-    const success = await renameConversation(renamingId, renameValue.trim());
-    if (success) {
-      setHistory((prev) =>
-        prev.map((h) =>
-          h.id === renamingId ? { ...h, title: renameValue.trim() } : h,
-        ),
-      );
-    }
+    dispatch(
+      renameConversationMutation({ id: renamingId, title: renameValue.trim() }),
+    );
     setRenamingId(null);
     setRenameValue("");
-  }, [renamingId, renameValue, renameConversation]);
+  }, [dispatch, renamingId, renameValue]);
 
   const handleCancelRename = useCallback(() => {
     setRenamingId(null);
@@ -645,19 +632,18 @@ export function SsrSidebarChats({
     setDeletingId(id);
   }, []);
 
-  const handleConfirmDelete = useCallback(async () => {
+  const handleConfirmDelete = useCallback(() => {
     if (!deletingId) return;
-    const success = await deleteConversation(deletingId);
-    if (success) {
-      setHistory((prev) => prev.filter((h) => h.id !== deletingId));
-      if (activeRequestId === deletingId) onNewChat();
-    }
+    dispatch(deleteConversationMutation(deletingId));
+    if (activeRequestId === deletingId) onNewChat();
     setDeletingId(null);
-  }, [deletingId, deleteConversation, activeRequestId, onNewChat]);
+  }, [dispatch, deletingId, activeRequestId, onNewChat]);
 
   const handleCancelDelete = useCallback(() => {
     setDeletingId(null);
   }, []);
+
+  // ── Render ──────────────────────────────────────────────────────────────────
 
   if (!isAuthenticated) {
     return (
@@ -676,7 +662,7 @@ export function SsrSidebarChats({
         Chats
       </div>
 
-      {isLoading && history.length === 0 && (
+      {isLoading && items.length === 0 && (
         <div className="flex flex-col items-center justify-center py-6 text-center">
           <div className="w-4 h-4 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin mb-2" />
           <p className="text-[10px] text-muted-foreground">Loading...</p>
@@ -699,14 +685,14 @@ export function SsrSidebarChats({
         </div>
       )}
 
-      {Object.entries(grouped).map(([section, items]) => (
+      {GROUP_ORDER.filter((g) => grouped[g]?.length).map((section) => (
         <div key={section} className="mb-1.5">
           <div className="px-2 py-0.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider select-none">
             {section}
           </div>
           <div className="space-y-0.5">
-            {items.map((item) => (
-              <ConversationItem
+            {grouped[section].map((item) => (
+              <ConversationItemWrapper
                 key={item.id}
                 item={item}
                 isActive={activeRequestId === item.id}
@@ -732,6 +718,9 @@ export function SsrSidebarChats({
         </div>
       ))}
 
+      {/* Intersection observer sentinel for load-more */}
+      {hasMore && <div ref={bottomRef} className="h-4" />}
+
       <SharedChatsSection
         activeRequestId={activeRequestId}
         onSelectChat={onSelectChat}
@@ -740,4 +729,15 @@ export function SsrSidebarChats({
       />
     </div>
   );
+}
+
+// Thin wrapper that reads isPending from Redux per-item.
+// Kept separate so the selector call is co-located with the item.
+function ConversationItemWrapper(
+  props: Omit<React.ComponentProps<typeof ConversationItem>, "isPending">,
+) {
+  const isPending = useAppSelector(
+    selectCxConversationIsPending(props.item.id),
+  );
+  return <ConversationItem {...props} isPending={isPending} />;
 }

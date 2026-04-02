@@ -39,18 +39,15 @@ function CollapsedPill({
   onClose: () => void;
 }) {
   return (
-    <div className="flex items-center gap-0.5 rounded-full bg-card/95 backdrop-blur-md border border-border shadow-lg px-1.5 py-1">
-      <button
-        type="button"
-        onMouseDown={onDragStart}
-        className="cursor-grab active:cursor-grabbing p-0.5 text-muted-foreground hover:text-foreground"
-        aria-label="Drag"
-      >
-        <GripVertical className="h-3 w-3" />
-      </button>
+    <div
+      className="flex items-center gap-0.5 rounded-full bg-card/95 backdrop-blur-md border border-border shadow-lg px-1.5 py-1 cursor-grab active:cursor-grabbing select-none"
+      onMouseDown={onDragStart}
+    >
+      <GripVertical className="h-3 w-3 text-muted-foreground shrink-0" />
       <button
         type="button"
         onClick={onExpand}
+        onMouseDown={(e) => e.stopPropagation()}
         className="p-1 rounded-full text-primary hover:bg-primary/10 transition-colors"
         aria-label="Expand voice pad"
       >
@@ -59,6 +56,7 @@ function CollapsedPill({
       <button
         type="button"
         onClick={onExpand}
+        onMouseDown={(e) => e.stopPropagation()}
         className="p-0.5 text-muted-foreground hover:text-foreground"
         aria-label="Expand"
       >
@@ -67,6 +65,7 @@ function CollapsedPill({
       <button
         type="button"
         onClick={onClose}
+        onMouseDown={(e) => e.stopPropagation()}
         className="p-0.5 text-muted-foreground hover:text-destructive"
         aria-label="Close voice pad"
       >

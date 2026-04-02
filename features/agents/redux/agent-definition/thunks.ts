@@ -44,7 +44,7 @@ import type {
   AcceptVersionResult,
   UpdateFromSourceResult,
   PromoteVersionResult,
-} from "./types";
+} from "../../types/agent-definition.types";
 import {
   upsertAgent,
   mergePartialAgent,
@@ -898,6 +898,62 @@ export const acceptAgentVersion = createAsyncThunk<
 
   return data as unknown as AcceptVersionResult;
 });
+
+// ---------------------------------------------------------------------------
+// Chat sidebar bootstrap
+// ---------------------------------------------------------------------------
+
+/**
+ * Module-level TTL guard — avoids hammering the DB when many components mount.
+ * This is intentionally NOT stored in Redux: it's a session-local guard, not
+ * user-visible state. Reset happens when the module is hot-reloaded in dev.
+ */
+let _chatListFetchedAt: number | null = null;
+const CHAT_LIST_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const CHAT_LIST_STALE_MS = 4 * 60 * 60 * 1000; // 4 hours — tab-restore threshold
+
+/** True if the chat list was fetched within TTL. */
+export function isChatListFresh(): boolean {
+  if (_chatListFetchedAt === null) return false;
+  return Date.now() - _chatListFetchedAt < CHAT_LIST_TTL_MS;
+}
+
+/** True if the chat list is so old it should be refreshed in the background. */
+export function isChatListStale(): boolean {
+  if (_chatListFetchedAt === null) return true;
+  return Date.now() - _chatListFetchedAt > CHAT_LIST_STALE_MS;
+}
+
+/**
+ * Initializes the agent catalogue for the chat sidebar.
+ * Calls fetchAgentsListFull() — owned + shared + builtins — in a single RPC.
+ *
+ * TTL-guarded: safe to call on every component mount. Skips the network call
+ * if data is still fresh (< 15 min). Stale-while-revalidate: if a tab is
+ * restored after > 4 hours, the caller can force a refresh via `force: true`.
+ *
+ * Usage:
+ *   dispatch(initializeChatAgents())          // skip if fresh
+ *   dispatch(initializeChatAgents({ force: true }))  // always re-fetch
+ */
+export const initializeChatAgents = createAsyncThunk<
+  void,
+  { force?: boolean } | void,
+  ThunkApi
+>(
+  "agentDefinition/initializeChatAgents",
+  async (arg, { dispatch, getState }) => {
+    const force = (arg as { force?: boolean } | undefined)?.force ?? false;
+
+    if (!force && isChatListFresh()) return;
+
+    // If already loading, don't fire a duplicate request
+    if (getState().agentDefinition.status === "loading" && !force) return;
+
+    await dispatch(fetchAgentsListFull());
+    _chatListFetchedAt = Date.now();
+  },
+);
 
 /**
  * Resets a derived agent back to its source agent's current data.

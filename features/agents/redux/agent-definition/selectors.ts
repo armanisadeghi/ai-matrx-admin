@@ -6,7 +6,7 @@ import type {
   AgentDefinition,
   AgentDefinitionRecord,
   AgentFetchStatus,
-} from "./types";
+} from "../../types/agent-definition.types";
 
 // ---------------------------------------------------------------------------
 // Slice root

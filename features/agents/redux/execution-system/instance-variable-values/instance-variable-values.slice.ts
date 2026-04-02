@@ -16,36 +16,36 @@
  *   3. Definition defaults (from the snapshotted definitions below)
  */
 
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { VariableDefinition } from '@/features/agents/redux/agent-definition/types';
-import { destroyInstance } from '../execution-instances/execution-instances.slice';
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
+import { destroyInstance } from "../execution-instances/execution-instances.slice";
 
 // =============================================================================
 // State
 // =============================================================================
 
 export interface InstanceVariableValuesEntry {
-    instanceId: string;
+  instanceId: string;
 
-    /**
-     * Snapshot of variable definitions copied from the agent at instance creation.
-     * Never read from agentDefinition after this point.
-     */
-    definitions: VariableDefinition[];
+  /**
+   * Snapshot of variable definitions copied from the agent at instance creation.
+   * Never read from agentDefinition after this point.
+   */
+  definitions: VariableDefinition[];
 
-    /** Values explicitly set by the user */
-    userValues: Record<string, unknown>;
+  /** Values explicitly set by the user */
+  userValues: Record<string, unknown>;
 
-    /** Values auto-populated from scope/context at creation time */
-    scopeValues: Record<string, unknown>;
+  /** Values auto-populated from scope/context at creation time */
+  scopeValues: Record<string, unknown>;
 }
 
 export interface InstanceVariableValuesState {
-    byInstanceId: Record<string, InstanceVariableValuesEntry>;
+  byInstanceId: Record<string, InstanceVariableValuesEntry>;
 }
 
 const initialState: InstanceVariableValuesState = {
-    byInstanceId: {},
+  byInstanceId: {},
 };
 
 // =============================================================================
@@ -53,128 +53,128 @@ const initialState: InstanceVariableValuesState = {
 // =============================================================================
 
 const instanceVariableValuesSlice = createSlice({
-    name: 'instanceVariableValues',
-    initialState,
-    reducers: {
-        /**
-         * Initialize variable values for a new instance.
-         * Copies definitions from the agent ONCE — never look up agentId again.
-         */
-        initInstanceVariables(
-            state,
-            action: PayloadAction<{
-                instanceId: string;
-                /** Snapshot of variable definitions from the agent. Required for isolation. */
-                definitions?: VariableDefinition[];
-                scopeValues?: Record<string, unknown>;
-            }>,
-        ) {
-            const { instanceId, definitions = [], scopeValues = {} } = action.payload;
-            state.byInstanceId[instanceId] = {
-                instanceId,
-                definitions,
-                userValues: {},
-                scopeValues,
-            };
-        },
-
-        /**
-         * Set a user-provided variable value.
-         * This takes highest priority in resolution.
-         */
-        setUserVariableValue(
-            state,
-            action: PayloadAction<{
-                instanceId: string;
-                name: string;
-                value: unknown;
-            }>,
-        ) {
-            const { instanceId, name, value } = action.payload;
-            const entry = state.byInstanceId[instanceId];
-            if (entry) {
-                entry.userValues[name] = value;
-            }
-        },
-
-        /**
-         * Set multiple user-provided variable values at once.
-         */
-        setUserVariableValues(
-            state,
-            action: PayloadAction<{
-                instanceId: string;
-                values: Record<string, unknown>;
-            }>,
-        ) {
-            const { instanceId, values } = action.payload;
-            const entry = state.byInstanceId[instanceId];
-            if (entry) {
-                Object.assign(entry.userValues, values);
-            }
-        },
-
-        /**
-         * Clear a user-provided value, falling back to scope or default.
-         */
-        clearUserVariableValue(
-            state,
-            action: PayloadAction<{ instanceId: string; name: string }>,
-        ) {
-            const { instanceId, name } = action.payload;
-            const entry = state.byInstanceId[instanceId];
-            if (entry) {
-                delete entry.userValues[name];
-            }
-        },
-
-        /**
-         * Replace scope-resolved values (after a scope resolution RPC).
-         */
-        setScopeVariableValues(
-            state,
-            action: PayloadAction<{
-                instanceId: string;
-                values: Record<string, unknown>;
-            }>,
-        ) {
-            const { instanceId, values } = action.payload;
-            const entry = state.byInstanceId[instanceId];
-            if (entry) {
-                entry.scopeValues = values;
-            }
-        },
-
-        /**
-         * Reset all user values — fall back entirely to scope + defaults.
-         */
-        resetUserVariableValues(state, action: PayloadAction<string>) {
-            const entry = state.byInstanceId[action.payload];
-            if (entry) {
-                entry.userValues = {};
-            }
-        },
-
-        removeInstanceVariables(state, action: PayloadAction<string>) {
-            delete state.byInstanceId[action.payload];
-        },
+  name: "instanceVariableValues",
+  initialState,
+  reducers: {
+    /**
+     * Initialize variable values for a new instance.
+     * Copies definitions from the agent ONCE — never look up agentId again.
+     */
+    initInstanceVariables(
+      state,
+      action: PayloadAction<{
+        instanceId: string;
+        /** Snapshot of variable definitions from the agent. Required for isolation. */
+        definitions?: VariableDefinition[];
+        scopeValues?: Record<string, unknown>;
+      }>,
+    ) {
+      const { instanceId, definitions = [], scopeValues = {} } = action.payload;
+      state.byInstanceId[instanceId] = {
+        instanceId,
+        definitions,
+        userValues: {},
+        scopeValues,
+      };
     },
 
-    extraReducers: (builder) => {
-        builder.addCase(destroyInstance, (state, action) => {
-            delete state.byInstanceId[action.payload];
-        });
+    /**
+     * Set a user-provided variable value.
+     * This takes highest priority in resolution.
+     */
+    setUserVariableValue(
+      state,
+      action: PayloadAction<{
+        instanceId: string;
+        name: string;
+        value: unknown;
+      }>,
+    ) {
+      const { instanceId, name, value } = action.payload;
+      const entry = state.byInstanceId[instanceId];
+      if (entry) {
+        entry.userValues[name] = value;
+      }
     },
+
+    /**
+     * Set multiple user-provided variable values at once.
+     */
+    setUserVariableValues(
+      state,
+      action: PayloadAction<{
+        instanceId: string;
+        values: Record<string, unknown>;
+      }>,
+    ) {
+      const { instanceId, values } = action.payload;
+      const entry = state.byInstanceId[instanceId];
+      if (entry) {
+        Object.assign(entry.userValues, values);
+      }
+    },
+
+    /**
+     * Clear a user-provided value, falling back to scope or default.
+     */
+    clearUserVariableValue(
+      state,
+      action: PayloadAction<{ instanceId: string; name: string }>,
+    ) {
+      const { instanceId, name } = action.payload;
+      const entry = state.byInstanceId[instanceId];
+      if (entry) {
+        delete entry.userValues[name];
+      }
+    },
+
+    /**
+     * Replace scope-resolved values (after a scope resolution RPC).
+     */
+    setScopeVariableValues(
+      state,
+      action: PayloadAction<{
+        instanceId: string;
+        values: Record<string, unknown>;
+      }>,
+    ) {
+      const { instanceId, values } = action.payload;
+      const entry = state.byInstanceId[instanceId];
+      if (entry) {
+        entry.scopeValues = values;
+      }
+    },
+
+    /**
+     * Reset all user values — fall back entirely to scope + defaults.
+     */
+    resetUserVariableValues(state, action: PayloadAction<string>) {
+      const entry = state.byInstanceId[action.payload];
+      if (entry) {
+        entry.userValues = {};
+      }
+    },
+
+    removeInstanceVariables(state, action: PayloadAction<string>) {
+      delete state.byInstanceId[action.payload];
+    },
+  },
+
+  extraReducers: (builder) => {
+    builder.addCase(destroyInstance, (state, action) => {
+      delete state.byInstanceId[action.payload];
+    });
+  },
 });
 
 export const {
-    initInstanceVariables,
-    setUserVariableValue,
-    setUserVariableValues,
-    clearUserVariableValue,
-    setScopeVariableValues,
-    resetUserVariableValues,
-    removeInstanceVariables,
+  initInstanceVariables,
+  setUserVariableValue,
+  setUserVariableValues,
+  clearUserVariableValue,
+  setScopeVariableValues,
+  resetUserVariableValues,
+  removeInstanceVariables,
 } = instanceVariableValuesSlice.actions;
 
 export default instanceVariableValuesSlice.reducer;

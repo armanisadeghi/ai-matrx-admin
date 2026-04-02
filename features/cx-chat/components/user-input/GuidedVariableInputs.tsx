@@ -7,20 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
 import { formatText } from "@/utils/text/text-case-converter";
-import type { PromptVariable } from "@/features/prompts/types/core";
+import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
 import {
-  selectVariableDefaults,
-  selectVariableValues,
-} from "@/features/cx-conversation/redux/selectors";
+  selectInstanceVariableDefinitions,
+  selectUserVariableValues,
+} from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
+import { setUserVariableValue } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.slice";
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
 interface GuidedVariableInputsProps {
-  sessionId: string;
+  instanceId: string;
   disabled?: boolean;
   /** When true, renders with flat bottom (no bottom border-radius) for seamless join with chat input */
   seamless?: boolean;
@@ -475,7 +475,7 @@ function GuidedVariableContent({
   onChange,
   onAutoAdvance,
 }: {
-  variable: PromptVariable;
+  variable: VariableDefinition;
   value: string;
   onChange: (v: string) => void;
   onAutoAdvance: () => void;
@@ -566,17 +566,15 @@ function GuidedVariableContent({
 // ============================================================================
 
 export function GuidedVariableInputs({
-  sessionId,
+  instanceId,
   disabled = false,
   seamless = false,
 }: GuidedVariableInputsProps) {
   const dispatch = useAppDispatch();
-  const variableDefaults = useAppSelector((state) =>
-    selectVariableDefaults(state, sessionId),
+  const variableDefaults = useAppSelector(
+    selectInstanceVariableDefinitions(instanceId),
   );
-  const values = useAppSelector((state) =>
-    selectVariableValues(state, sessionId),
-  );
+  const values = useAppSelector(selectUserVariableValues(instanceId));
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -629,14 +627,14 @@ export function GuidedVariableInputs({
   const handleChange = useCallback(
     (v: string) => {
       dispatch(
-        chatConversationsActions.updateVariable({
-          sessionId,
-          variableName: variable.name,
+        setUserVariableValue({
+          instanceId,
+          name: variable.name,
           value: v,
         }),
       );
     },
-    [dispatch, sessionId, variable.name],
+    [dispatch, instanceId, variable.name],
   );
 
   const handleKeyDown = useCallback(

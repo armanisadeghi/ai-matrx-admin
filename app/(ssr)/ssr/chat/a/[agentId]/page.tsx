@@ -1,16 +1,7 @@
-// app/(ssr)/ssr/chat/a/[agentId]/page.tsx
-//
-// Agent-direct route — /ssr/chat/a/[agentId]
-// Server component that:
-//   1. Resolves the agent from hardcoded data (instant SSR, no DB call)
-//   2. Fires a server-side warm call to the Python backend
-//   3. Renders the welcome screen with the agent pre-selected
-//
-// The client island handles input interactivity and fetches
-// full agent config from the database after paint (only for non-builtin agents).
+// app/(ssr)/ssr/chat/a/[agentId]/page.tsx — Agent welcome screen.
 
-import ChatWelcomeServer from "@/features/cx-chat/components/ChatWelcomeServer";
 import ChatHeaderControls from "@/features/cx-chat/components/ChatHeaderControls";
+import ChatWelcomeServer from "@/features/cx-chat/components/ChatWelcomeServer";
 import { resolveAgentForSSR } from "@/features/cx-chat/components/agent/agents";
 import { BACKEND_URLS, ENDPOINTS } from "@/lib/api/endpoints";
 
@@ -20,9 +11,7 @@ export default async function AgentPage({
   params: Promise<{ agentId: string }>;
 }) {
   const { agentId } = await params;
-  const [agent] = await Promise.all([
-    Promise.resolve(resolveAgentForSSR(agentId)),
-  ]);
+  const agent = resolveAgentForSSR(agentId);
 
   fetch(`${BACKEND_URLS.production}${ENDPOINTS.ai.agentWarm(agentId)}`, {
     method: "POST",

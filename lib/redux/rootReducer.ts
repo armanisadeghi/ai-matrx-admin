@@ -78,6 +78,7 @@ import promptEditorReducer from "./slices/promptEditorSlice";
 import modelRegistryReducer from "../../features/ai-models/redux/modelRegistrySlice";
 import { chatConversationsReducer } from "@/features/cx-conversation/redux";
 import { messageActionsReducer } from "@/features/cx-conversation/redux/messageActionsSlice";
+import cxConversationsReducer from "@/features/cx-chat/redux/cx-conversations.slice";
 import artifactsReducer from "./slices/artifactsSlice";
 import htmlPagesReducer from "./slices/htmlPagesSlice";
 import { agentSettingsReducer } from "./slices/agent-settings";
@@ -274,6 +275,9 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     agentSettings: agentSettingsReducer,
 
     // ==================================== RELATED TO AGENTS: ====================================
+
+    // cx_ conversation sidebar list — Tier 1/2 from cx_conversation table
+    cxConversations: cxConversationsReducer,
 
     modelRegistry: modelRegistryReducer,
 

@@ -11,13 +11,12 @@
 
 import type { StreamEvent } from "@/types/python-generated/stream-events";
 import type { LLMParams } from "@/lib/api/types";
-import type { Resource } from "@/features/prompts/types/resources";
-import type { PromptVariable } from "@/features/prompts/types/core";
 import type {
   CxToolCall,
   CxContentBlock,
   CxContentHistoryEntry,
 } from "./cx-tables";
+import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
 
 // ============================================================================
 // MESSAGE TYPES
@@ -189,7 +188,7 @@ export interface ConversationSession {
 
   // ========== Configuration ==========
   /** Variable definitions for agents that have template variables */
-  variableDefaults: PromptVariable[];
+  variableDefaults: VariableDefinition[];
   /** Whether this session needs variable replacement before first execution */
   requiresVariableReplacement: boolean;
 
@@ -221,7 +220,7 @@ export interface ChatConversationsState {
   currentInputs: Record<string, string>;
 
   /** High-frequency: attachments */
-  resources: Record<string, Resource[]>;
+  resources: Record<string, ConversationResource[]>;
 
   /** High-frequency: per-session UI state */
   uiState: Record<string, SessionUIState>;
@@ -234,7 +233,7 @@ export interface ChatConversationsState {
 export interface StartSessionPayload {
   sessionId: string;
   agentId: string;
-  variableDefaults?: PromptVariable[];
+  variableDefaults?: VariableDefinition[];
   variables?: Record<string, string>;
   requiresVariableReplacement?: boolean;
   modelOverride?: string;
@@ -295,7 +294,7 @@ export interface SetExpandedVariablePayload {
 
 export interface AddResourcePayload {
   sessionId: string;
-  resource: Resource;
+  resource: ConversationResource;
 }
 
 export interface RemoveResourcePayload {
@@ -313,7 +312,7 @@ export interface LoadConversationPayload {
   conversationId: string;
   messages: ConversationMessage[];
   agentId: string;
-  variableDefaults?: PromptVariable[];
+  variableDefaults?: VariableDefinition[];
   /** All CxToolCall records for the conversation, keyed by call_id */
   toolCallsById?: Record<string, CxToolCall>;
 }
