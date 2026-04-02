@@ -15,10 +15,7 @@ import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAuthenticated } from "@/lib/redux/slices/userSlice";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
-import {
-  selectLatestConversationId,
-  selectIsExecuting,
-} from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import { selectLatestConversationId } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { SmartAgentInput } from "@/features/agents/components/smart/SmartAgentInput";
 
 const AgentPickerSheet = dynamic(
@@ -58,8 +55,6 @@ export default function ChatWelcomeClient({
   const latestConversationId = useAppSelector(
     selectLatestConversationId(instanceId),
   );
-  const isExecuting = useAppSelector(selectIsExecuting(instanceId));
-
   const hasNavigated = useRef(false);
   useEffect(() => {
     if (!latestConversationId || hasNavigated.current) return;
@@ -112,12 +107,6 @@ export default function ChatWelcomeClient({
               showSubmitOnEnterToggle
               enablePasteImages={isAuthenticated}
             />
-
-            {isExecuting && (
-              <p className="text-center text-xs text-muted-foreground mt-3 animate-pulse">
-                Starting conversation...
-              </p>
-            )}
           </div>
         </div>
       </div>

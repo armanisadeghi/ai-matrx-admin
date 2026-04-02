@@ -31,6 +31,7 @@ import {
   Minimize2,
   RefreshCcw,
   Braces,
+  Bug,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
@@ -52,8 +53,12 @@ import {
   toggleCreatorDebug,
   toggleVariablePanel,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
-import { selectIsExecuting } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
-import { selectInstanceVariableDefinitions } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
+import {
+  selectIsExecuting,
+  selectShouldShowVariables,
+  selectLatestRequestStatus,
+} from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import { selectInstanceResources } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.selectors";
 
 // Execution
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
@@ -76,6 +81,14 @@ import {
   addResource,
   setResourcePreview,
 } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.slice";
+
+// Admin debug
+import { useDebugContext } from "@/hooks/useDebugContext";
+import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
+
+// Admin debug modal
+import { ChatDebugModal } from "@/features/cx-chat/admin/ChatDebugModal";
 
 // Inline button helper
 function InputButton({
@@ -175,11 +188,41 @@ export function SmartAgentInput({
   const hasHistory = useAppSelector((state) =>
     instanceId ? selectHasConversationHistory(instanceId)(state) : false,
   );
-  const variableCount = useAppSelector((state) =>
-    instanceId
-      ? selectInstanceVariableDefinitions(instanceId)(state).length
-      : 0,
+  const shouldShowVariables = useAppSelector((state) =>
+    instanceId ? selectShouldShowVariables(instanceId)(state) : false,
   );
+
+  // ── Admin / debug ──────────────────────────────────────────────────────────
+  const isAdmin = useAppSelector(selectIsAdmin);
+  const isDebugMode = useAppSelector(selectIsDebugMode);
+  const [isDebugOpen, setIsDebugOpen] = useState(false);
+  const { publish: publishDebug } = useDebugContext("AgentInput");
+  const latestStatus = useAppSelector((state) =>
+    instanceId ? selectLatestRequestStatus(instanceId)(state) : undefined,
+  );
+  const resourceCount = useAppSelector((state) =>
+    instanceId ? selectInstanceResources(instanceId)(state).length : 0,
+  );
+  useEffect(() => {
+    if (!instanceId) return;
+    publishDebug({
+      "Instance ID": instanceId,
+      "Is Executing": isExecuting,
+      "Request Status": latestStatus ?? "—",
+      "Should Show Variables": shouldShowVariables,
+      "Resource Count": resourceCount,
+      "Input Length": inputText.length,
+      "Has History": hasHistory,
+    });
+  }, [
+    instanceId,
+    isExecuting,
+    latestStatus,
+    shouldShowVariables,
+    resourceCount,
+    inputText.length,
+    hasHistory,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── File upload (for paste-image support) ───────────────────────────────────
   const { uploadMultipleToPrivateUserAssets } = useFileUploadWithStorage(
@@ -291,7 +334,14 @@ export function SmartAgentInput({
       // Normal path: continue the conversation (or start a new one).
       dispatch(executeInstance({ instanceId }));
     }
-  }, [instanceId, isSendDisabled, autoClearConversation, hasHistory, onNewInstance, dispatch]);
+  }, [
+    instanceId,
+    isSendDisabled,
+    autoClearConversation,
+    hasHistory,
+    onNewInstance,
+    dispatch,
+  ]);
 
   const handleTextChange = useCallback(
     (value: string) => {
@@ -449,6 +499,16 @@ export function SmartAgentInput({
             </div>
           ) : (
             <>
+              {/* Admin debug button */}
+              {isAdmin && (
+                <InputButton
+                  icon={Bug}
+                  tooltip="Debug instance state"
+                  onClick={() => setIsDebugOpen(true)}
+                  className="text-orange-500"
+                />
+              )}
+
               {/* Creator debug toggle */}
               {isCreator && (
                 <InputButton
@@ -460,14 +520,12 @@ export function SmartAgentInput({
                 />
               )}
 
-              {/* Variable panel toggle — only when instance has variables */}
-              {variableCount > 0 && (
+              {/* Variable panel toggle — only when variables should be shown */}
+              {shouldShowVariables && (
                 <InputButton
                   icon={Braces}
                   tooltip={
-                    showVariablePanel
-                      ? "Hide variables"
-                      : `Show ${variableCount} variable${variableCount !== 1 ? "s" : ""}`
+                    showVariablePanel ? "Hide variables" : "Show variables"
                   }
                   onClick={() => dispatch(toggleVariablePanel(instanceId))}
                   active={showVariablePanel}
@@ -547,6 +605,14 @@ export function SmartAgentInput({
           </Button>
         </div>
       </div>
+
+      {isAdmin && isDebugOpen && (
+        <ChatDebugModal
+          sessionId={instanceId}
+          isOpen={isDebugOpen}
+          onClose={() => setIsDebugOpen(false)}
+        />
+      )}
     </div>
   );
 }

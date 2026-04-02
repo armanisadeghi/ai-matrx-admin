@@ -7,13 +7,13 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+import { useDebugContext } from "@/hooks/useDebugContext";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
   CornerDownLeft,
   ChevronDown,
   Loader2,
-  Database,
   List,
   Layers,
 } from "lucide-react";
@@ -47,13 +47,16 @@ import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 // Instance-system state
 import { selectUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { setUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
-import { selectInstanceVariableDefinitions } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 import { selectInstanceResources } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.selectors";
 import {
   addResource,
   removeResource,
 } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.slice";
-import { selectIsExecuting } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import {
+  selectIsExecuting,
+  selectShouldShowVariables,
+  selectLatestRequestStatus,
+} from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectCurrentSettings } from "@/features/agents/redux/execution-system/instance-model-overrides/instance-model-overrides.selectors";
 import { setOverrides } from "@/features/agents/redux/execution-system/instance-model-overrides/instance-model-overrides.slice";
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
@@ -63,12 +66,12 @@ import {
   fetchAvailableModels,
 } from "@/features/ai-models/redux/modelRegistrySlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
+import { ChatDebugModal } from "../../admin/ChatDebugModal";
 import { ResourceChips } from "@/features/prompts/components/resource-display";
 import { ResourcePickerMenu } from "@/features/prompts/components/resource-picker/ResourcePickerMenu";
 import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
 import { ModelSettingsDialog } from "@/features/prompts/components/configuration/ModelSettingsDialog";
-import { ChatDebugModal } from "../../admin/ChatDebugModal";
 import { toast } from "sonner";
 import type { PromptSettings } from "@/features/prompts/types/core";
 import type {
@@ -76,7 +79,6 @@ import type {
   ResourceBlockType,
 } from "@/features/agents/types";
 import type { Resource } from "@/features/prompts/types/resources";
-import { selectActiveChatAgent } from "@/lib/redux/slices/activeChatSlice";
 
 /** Map user-upload MIME to API content-block type (see ResourceBlockType). */
 function uploadMimeToBlockType(mime: string): ResourceBlockType {
@@ -222,25 +224,40 @@ export function ConversationInput({
   const [previewResource, setPreviewResource] = useState<Resource | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
-  const [isDebugModalOpen, setIsDebugModalOpen] = useState(false);
-
+  const [isDebugOpen, setIsDebugOpen] = useState(false);
   // ── Redux state (all from instance system) ─────────────────────────────────
   const content = useAppSelector((state) =>
     selectUserInputText(instanceId)(state),
   );
   const resources = useAppSelector(selectInstanceResources(instanceId));
-  const variableDefaults = useAppSelector(
-    selectInstanceVariableDefinitions(instanceId),
-  );
   const isExecuting = useAppSelector(selectIsExecuting(instanceId));
-  const hasVariables = variableDefaults.length > 0;
+  const hasVariables = useAppSelector(selectShouldShowVariables(instanceId));
   const settingsForDialog = useAppSelector(selectCurrentSettings(instanceId));
 
   // ── Admin / debug ──────────────────────────────────────────────────────────
   const isAdmin = useAppSelector(selectIsAdmin);
-  const isGlobalDebugMode = useAppSelector(selectIsDebugMode);
-  const selectedAgent = useAppSelector(selectActiveChatAgent);
-  const showDebugInfo = false; // Debug modal wired to instanceId directly below
+  const isDebugMode = useAppSelector(selectIsDebugMode);
+  const { publish: publishDebug } = useDebugContext("Input");
+
+  // Publish instance state to the floating AdminIndicator whenever it changes.
+  const latestStatus = useAppSelector(selectLatestRequestStatus(instanceId));
+  useEffect(() => {
+    publishDebug({
+      "Instance ID": instanceId,
+      "Is Executing": isExecuting,
+      "Request Status": latestStatus ?? "—",
+      "Has Variables": hasVariables,
+      "Resource Count": resources.length,
+      "Input Length": content.length,
+    });
+  }, [
+    instanceId,
+    isExecuting,
+    latestStatus,
+    hasVariables,
+    resources.length,
+    content.length,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── URL params (for variable layout toggle) ───────────────────────────────
   const router = useRouter();
@@ -466,26 +483,6 @@ export function ConversationInput({
 
       {/* ── Bordered input box ────────────────────────────────────────── */}
       <div className={inputBoxClass}>
-        {/* Admin global debug toolbar */}
-        {isAdmin && isGlobalDebugMode && (
-          <div className="flex items-center gap-2 px-3 py-1 bg-red-950/20 border-b border-red-800/40 rounded-t-2xl">
-            <span className="text-[10px] font-semibold text-red-400 uppercase tracking-wide">
-              Debug
-            </span>
-            <button
-              onClick={() => setIsDebugModalOpen(true)}
-              className="flex items-center gap-1 px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-medium rounded transition-colors"
-              title="Open debug modal"
-            >
-              <Database className="w-2.5 h-2.5" />
-              <span>Session State</span>
-            </button>
-            <span className="text-[9px] text-red-400/70 font-mono truncate">
-              {instanceId.slice(0, 8)}…
-            </span>
-          </div>
-        )}
-
         {/* Resource chips */}
         {resources.length > 0 && (
           <div className="px-3">
@@ -556,9 +553,9 @@ export function ConversationInput({
                     showSettings ? () => setIsSettingsOpen(true) : undefined
                   }
                   onDebugClick={
-                    isAdmin ? () => setIsDebugModalOpen(true) : undefined
+                    isAdmin ? () => setIsDebugOpen(true) : undefined
                   }
-                  showDebugActive={showDebugInfo}
+                  showDebugActive={isAdmin}
                 />
               </PopoverContent>
             </Popover>
@@ -591,6 +588,7 @@ export function ConversationInput({
             isUploading={isUploading}
             sendButtonVariant={sendButtonVariant}
             onSubmit={() => handleSubmit()}
+            onDebugClick={isAdmin ? () => setIsDebugOpen(true) : undefined}
           />
         </div>
 
@@ -669,14 +667,15 @@ export function ConversationInput({
         )}
 
         {/* Admin debug modal */}
-        {isAdmin && (
-          <ChatDebugModal
-            sessionId={instanceId}
-            isOpen={isDebugModalOpen}
-            onClose={() => setIsDebugModalOpen(false)}
-          />
-        )}
       </div>
+
+      {isAdmin && isDebugOpen && (
+        <ChatDebugModal
+          sessionId={instanceId}
+          isOpen={isDebugOpen}
+          onClose={() => setIsDebugOpen(false)}
+        />
+      )}
 
       {/* ── Footer row (outside the bordered box, below it) ───────────── */}
       {showFooter && (
@@ -689,7 +688,7 @@ export function ConversationInput({
           ) : (
             <ResponseModeButtons
               disabled={isExecuting}
-              selectedAgentId={selectedAgent.promptId}
+              selectedAgentId={null}
               onModeSelect={onAgentModeSelect ?? (() => {})}
             />
           )}

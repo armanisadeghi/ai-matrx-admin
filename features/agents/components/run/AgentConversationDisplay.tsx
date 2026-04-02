@@ -24,8 +24,8 @@ import {
   selectIsStreaming,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { AgentStreamingMessage } from "./AgentStreamingMessage";
-import { PromptUserMessage } from "@/features/prompts/components/builder/PromptUserMessage";
-import { Bot, MessageSquare } from "lucide-react";
+import { AgentUserMessage } from "./AgentUserMessage";
+import { Bot } from "lucide-react";
 
 const PromptAssistantMessage = dynamic(
   () =>
@@ -81,9 +81,10 @@ export function AgentConversationDisplay({
     <div className={`${spacingClass} px-4`}>
       {turns.map((turn, idx) =>
         turn.role === "user" ? (
-          <PromptUserMessage
+          <AgentUserMessage
             key={turn.turnId}
             content={turn.content}
+            contentBlocks={turn.contentBlocks}
             messageIndex={idx}
             compact={compact}
           />

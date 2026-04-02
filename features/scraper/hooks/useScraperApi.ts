@@ -16,7 +16,7 @@
  *   POST /api/scraper/search-and-scrape-limited — single keyword, limited pages
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useBackendApi } from "@/hooks/useBackendApi";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
@@ -110,6 +110,8 @@ export interface UseScraperApiReturn extends ScraperApiState {
   searchAndScrapeLimited: (
     request: SearchAndScrapeLimitedRequest,
   ) => Promise<ScraperResult[] | null>;
+  /** Abort any in-flight request immediately */
+  cancel: () => void;
   reset: () => void;
 }
 
@@ -144,6 +146,20 @@ async function consumeScrapeStream(
     const eventType = e.event as string | undefined;
     const eventData = e.data as Record<string, unknown> | undefined;
 
+    if (process.env.NODE_ENV === "development") {
+      console.debug("[scraper stream] raw event:", {
+        eventType,
+        eventDataKeys: eventData
+          ? Object.keys(eventData).join(", ")
+          : "(no data)",
+        responseType: eventData?.response_type,
+        hasResults: Array.isArray(eventData?.results),
+        resultsCount: Array.isArray(eventData?.results)
+          ? (eventData!.results as unknown[]).length
+          : 0,
+      });
+    }
+
     if (eventType === "status_update") {
       const msg = (eventData?.user_message ??
         eventData?.user_visible_message ??
@@ -153,48 +169,34 @@ async function consumeScrapeStream(
       if (!eventData) continue;
       const responseType = eventData.response_type as string | undefined;
 
-      if (process.env.NODE_ENV === "development") {
-        console.debug(
-          "[scraper stream] data event — response_type:",
-          responseType,
-          "keys:",
-          Object.keys(eventData).join(", "),
-        );
-      }
-
       if (
-        responseType === "fetch_results" ||
-        responseType === "scraped_pages" ||
-        responseType === "search_and_scrape_results" ||
-        responseType === "search_scrape_results"
-      ) {
-        // Envelope: { response_type, metadata, results: [...] }
-        results = [
-          ...results,
-          ...((eventData.results as Array<Record<string, unknown>>) ?? []),
-        ];
-        if (eventData.metadata)
-          metadata = eventData.metadata as Record<string, unknown>;
-      } else if (
         Array.isArray(eventData.results) &&
-        eventData.results.length > 0
+        (eventData.results as unknown[]).length > 0
       ) {
-        // Unknown envelope type but has a results array — extract items
+        // Any envelope with a results array — covers all response_type values
         results = [
           ...results,
           ...(eventData.results as Array<Record<string, unknown>>),
         ];
         if (eventData.metadata)
           metadata = eventData.metadata as Record<string, unknown>;
-      } else if ("text_data" in eventData || "overview" in eventData) {
-        // Single-result (no envelope)
+      } else if (
+        "text_data" in eventData ||
+        "overview" in eventData ||
+        "url" in eventData
+      ) {
+        // Single-result (no envelope) — direct result object
         results.push(eventData);
       } else if ("keyword" in eventData) {
-        // Search result
+        // Search result item
         results.push(eventData);
-      } else {
-        // Unknown data shape — push it anyway so callers can inspect
-        results.push(eventData);
+      } else if (process.env.NODE_ENV === "development") {
+        console.debug(
+          "[scraper stream] data event with unrecognized shape — response_type:",
+          responseType,
+          "keys:",
+          Object.keys(eventData).join(", "),
+        );
       }
     } else if (eventType === "error") {
       const errData = eventData ?? (e as Record<string, unknown>);
@@ -206,11 +208,9 @@ async function consumeScrapeStream(
       // Raw line with no event wrapper — the line itself is the payload.
       // Some backend versions send the envelope directly as a top-level object.
       const responseType = e.response_type as string | undefined;
-      if (
-        (responseType === "fetch_results" ||
-          responseType === "scraped_pages") &&
-        Array.isArray(e.results)
-      ) {
+      if (Array.isArray(e.results) && (e.results as unknown[]).length > 0) {
+        // Any envelope with a results array — covers fetch_results, scraped_pages,
+        // search_and_scrape_results, search_scrape_results, and any future types
         results = [
           ...results,
           ...(e.results as Array<Record<string, unknown>>),
@@ -218,9 +218,31 @@ async function consumeScrapeStream(
         if (e.metadata) metadata = e.metadata as Record<string, unknown>;
       } else if ("text_data" in e || "overview" in e || "keyword" in e) {
         results.push(e);
+      } else if (process.env.NODE_ENV === "development") {
+        console.debug(
+          "[scraper stream] unhandled raw (no event) line — response_type:",
+          responseType,
+          "keys:",
+          Object.keys(e).join(", "),
+        );
       }
+    } else if (
+      process.env.NODE_ENV === "development" &&
+      eventType !== "end" &&
+      eventType !== "status_update"
+    ) {
+      console.debug("[scraper stream] unhandled event type:", eventType);
     }
     // "end" event — loop will naturally finish
+  }
+
+  if (process.env.NODE_ENV === "development") {
+    console.debug(
+      "[scraper stream] finished — results count:",
+      results.length,
+      "metadata:",
+      metadata,
+    );
   }
 
   return { results, metadata };
@@ -321,6 +343,30 @@ export function useScraperApi(): UseScraperApiReturn {
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
+  // AbortController for in-flight requests — cancelled on unmount or via cancel()
+  const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
+
+  const cancel = useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setIsLoading(false);
+    setStatusMessage(null);
+  }, []);
+
+  /** Create a fresh AbortController, replacing any previous one */
+  const newSignal = useCallback((): AbortSignal => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    return controller.signal;
+  }, []);
+
   const onStatus = useCallback((msg: string) => setStatusMessage(msg), []);
 
   // --------------------------------------------------------------------------
@@ -337,6 +383,7 @@ export function useScraperApi(): UseScraperApiReturn {
       setStatusMessage(null);
 
       try {
+        const signal = newSignal();
         const body: QuickScrapeRequest = {
           urls: [url],
           use_cache: true,
@@ -356,7 +403,11 @@ export function useScraperApi(): UseScraperApiReturn {
           ...options,
         };
 
-        const response = await api.post(ENDPOINTS.scraper.quickScrape, body);
+        const response = await api.post(
+          ENDPOINTS.scraper.quickScrape,
+          body,
+          signal,
+        );
         const { results, metadata } = await consumeScrapeStream(
           response,
           onStatus,
@@ -387,7 +438,7 @@ export function useScraperApi(): UseScraperApiReturn {
         setIsLoading(false);
       }
     },
-    [api, onStatus],
+    [api, newSignal, onStatus],
   );
 
   // --------------------------------------------------------------------------
@@ -459,6 +510,7 @@ export function useScraperApi(): UseScraperApiReturn {
       setStatusMessage(null);
 
       try {
+        const signal = newSignal();
         const body: QuickScrapeRequest = {
           urls: [url],
           use_cache: true,
@@ -478,7 +530,11 @@ export function useScraperApi(): UseScraperApiReturn {
           ...options,
         };
 
-        const response = await api.post(ENDPOINTS.scraper.quickScrape, body);
+        const response = await api.post(
+          ENDPOINTS.scraper.quickScrape,
+          body,
+          signal,
+        );
         const { results, metadata } = await consumeScrapeStream(
           response,
           onStatus,
@@ -500,7 +556,7 @@ export function useScraperApi(): UseScraperApiReturn {
         setIsLoading(false);
       }
     },
-    [api, onStatus],
+    [api, newSignal, onStatus],
   );
 
   // --------------------------------------------------------------------------
@@ -517,6 +573,7 @@ export function useScraperApi(): UseScraperApiReturn {
       setStatusMessage(null);
 
       try {
+        const signal = newSignal();
         const body: QuickScrapeRequest = {
           urls,
           use_cache: true,
@@ -536,7 +593,11 @@ export function useScraperApi(): UseScraperApiReturn {
           ...options,
         };
 
-        const response = await api.post(ENDPOINTS.scraper.quickScrape, body);
+        const response = await api.post(
+          ENDPOINTS.scraper.quickScrape,
+          body,
+          signal,
+        );
         const { results, metadata } = await consumeScrapeStream(
           response,
           onStatus,
@@ -559,7 +620,7 @@ export function useScraperApi(): UseScraperApiReturn {
         setIsLoading(false);
       }
     },
-    [api, onStatus],
+    [api, newSignal, onStatus],
   );
 
   // --------------------------------------------------------------------------
@@ -576,7 +637,12 @@ export function useScraperApi(): UseScraperApiReturn {
       setStatusMessage(null);
 
       try {
-        const response = await api.post(ENDPOINTS.scraper.search, request);
+        const signal = newSignal();
+        const response = await api.post(
+          ENDPOINTS.scraper.search,
+          request,
+          signal,
+        );
         const { results } = await consumeScrapeStream(response, onStatus);
 
         // API returns flat items — each has keyword, title, url, description, etc.
@@ -617,7 +683,7 @@ export function useScraperApi(): UseScraperApiReturn {
         setIsLoading(false);
       }
     },
-    [api, onStatus],
+    [api, newSignal, onStatus],
   );
 
   // --------------------------------------------------------------------------
@@ -633,9 +699,11 @@ export function useScraperApi(): UseScraperApiReturn {
       setStatusMessage(null);
 
       try {
+        const signal = newSignal();
         const response = await api.post(
           ENDPOINTS.scraper.searchAndScrape,
           request,
+          signal,
         );
         const { results, metadata } = await consumeScrapeStream(
           response,
@@ -658,7 +726,7 @@ export function useScraperApi(): UseScraperApiReturn {
         setIsLoading(false);
       }
     },
-    [api, onStatus],
+    [api, newSignal, onStatus],
   );
 
   // --------------------------------------------------------------------------
@@ -674,9 +742,11 @@ export function useScraperApi(): UseScraperApiReturn {
       setStatusMessage(null);
 
       try {
+        const signal = newSignal();
         const response = await api.post(
           ENDPOINTS.scraper.searchAndScrapeLimited,
           request,
+          signal,
         );
         const { results, metadata } = await consumeScrapeStream(
           response,
@@ -701,7 +771,7 @@ export function useScraperApi(): UseScraperApiReturn {
         setIsLoading(false);
       }
     },
-    [api, onStatus],
+    [api, newSignal, onStatus],
   );
 
   // --------------------------------------------------------------------------
@@ -733,6 +803,7 @@ export function useScraperApi(): UseScraperApiReturn {
     search,
     searchAndScrape,
     searchAndScrapeLimited,
+    cancel,
     reset,
   };
 }

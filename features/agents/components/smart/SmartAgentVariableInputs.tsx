@@ -24,6 +24,7 @@ import {
   selectInstanceVariableDefinitions,
   selectUserVariableValues,
 } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
+import { selectShouldShowVariables } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { setUserVariableValue } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.slice";
 import {
   selectExpandedVariableId,
@@ -51,6 +52,9 @@ export function SmartAgentVariableInputs({
   const dispatch = useAppDispatch();
 
   const showVariablePanel = useAppSelector(selectShowVariablePanel(instanceId));
+  const shouldShowVariables = useAppSelector(
+    selectShouldShowVariables(instanceId),
+  );
   const definitions = useAppSelector(
     selectInstanceVariableDefinitions(instanceId),
   );
@@ -98,7 +102,8 @@ export function SmartAgentVariableInputs({
     [definitions.length, submitOnEnter, onSubmit],
   );
 
-  if (!showVariablePanel || definitions.length === 0) return null;
+  if (!shouldShowVariables || !showVariablePanel || definitions.length === 0)
+    return null;
 
   return (
     <div className="border-b border-border" data-variable-inputs>

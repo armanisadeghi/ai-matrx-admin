@@ -190,7 +190,7 @@ export const executeInstance = createAsyncThunk<
         throw new Error(`Instance ${instanceId} not found`);
       }
 
-      // Capture the user's input text BEFORE assembling (for history + display)
+      // Capture the user's input BEFORE assembling (for history + display).
       const userInputEntry = state.instanceUserInput.byInstanceId[instanceId];
       const userInputText = userInputEntry?.text?.trim() ?? "";
       const userContentBlocks = userInputEntry?.contentBlocks ?? undefined;
@@ -226,13 +226,25 @@ export const executeInstance = createAsyncThunk<
         selectLatestConversationId(instanceId)(state);
 
       // Add the user's message to history immediately — before the API call fires.
-      // This makes the message appear in the UI instantly (optimistic update).
-      if (userInputText || userContentBlocks) {
+      // Include resource payload blocks so they display even before the DB round-trip.
+      // The condition covers: typed text, content blocks, OR resources.
+      const resourceBlocks =
+        payload.user_input && Array.isArray(payload.user_input)
+          ? (payload.user_input as Array<Record<string, unknown>>).filter(
+              (b) => b["type"] !== "text",
+            )
+          : [];
+      if (userInputText || userContentBlocks || resourceBlocks.length > 0) {
         dispatch(
           addUserTurn({
             instanceId,
             content: userInputText,
-            ...(userContentBlocks && { contentBlocks: userContentBlocks }),
+            contentBlocks: [
+              ...(userContentBlocks ?? []),
+              ...resourceBlocks,
+            ].length > 0
+              ? [...(userContentBlocks ?? []), ...resourceBlocks]
+              : undefined,
             conversationId: existingConversationId,
           }),
         );

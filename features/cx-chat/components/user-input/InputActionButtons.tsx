@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Loader2, Bug } from "lucide-react";
 import { TapTargetButtonSolid } from "@/components/icons/TapTargetButton";
 import { ArrowUpTapButton } from "@/components/icons/tap-buttons";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
@@ -15,6 +15,8 @@ interface InputActionButtonsProps {
   isUploading: boolean;
   sendButtonVariant: "gray" | "blue" | "default";
   onSubmit: () => void;
+  /** When provided, shows the Bug icon button (admin+debug mode only) */
+  onDebugClick?: () => void;
 }
 
 export function InputActionButtons({
@@ -25,6 +27,7 @@ export function InputActionButtons({
   isUploading,
   sendButtonVariant,
   onSubmit,
+  onDebugClick,
 }: InputActionButtonsProps) {
   const bgColor = sendButtonVariant === "gray" ? "bg-muted" : "bg-blue-600";
   const hoverBgColor =
@@ -34,6 +37,17 @@ export function InputActionButtons({
 
   return (
     <div className="flex items-center">
+      {onDebugClick && (
+        <button
+          type="button"
+          onClick={onDebugClick}
+          title="Debug instance state"
+          className="p-1.5 text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-300 transition-colors"
+        >
+          <Bug className="w-3.5 h-3.5" />
+        </button>
+      )}
+
       {showVoice && (
         <MicrophoneIconButton
           variant="icon-only"

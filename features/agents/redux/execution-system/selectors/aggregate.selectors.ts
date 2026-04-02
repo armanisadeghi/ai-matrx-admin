@@ -348,6 +348,84 @@ export const selectInstanceSummary =
   };
 
 // =============================================================================
+// Variable Display
+// =============================================================================
+
+/**
+ * Should the variable input UI be shown for this instance right now?
+ *
+ * True only when ALL of the following hold:
+ *   1. The instance has at least one variable definition.
+ *   2. No turns have been committed yet (first message not sent).
+ *   3. The instance is not currently executing (mid-stream = too late).
+ *
+ * Components get a single boolean — all the "why" lives here.
+ */
+export const selectShouldShowVariables =
+  (instanceId: string) =>
+  (state: RootState): boolean => {
+    const definitions =
+      state.instanceVariableValues.byInstanceId[instanceId]?.definitions;
+    if (!definitions || definitions.length === 0) return false;
+
+    const turns =
+      state.instanceConversationHistory.byInstanceId[instanceId]?.turns;
+    if (turns && turns.length > 0) return false;
+
+    const status = state.executionInstances.byInstanceId[instanceId]?.status;
+    if (status === "running" || status === "streaming") return false;
+
+    return true;
+  };
+
+// =============================================================================
+// Conversation → Instance Lookup
+// =============================================================================
+
+/**
+ * Find an existing instanceId that is already associated with a conversationId.
+ *
+ * Used when navigating to /c/[conversationId] after a stream starts on the
+ * welcome screen. The stream wrote conversationId into both:
+ *   - instanceConversationHistory[instanceId].conversationId  (primary)
+ *   - activeRequests[requestId].conversationId                (mid-stream fallback)
+ *
+ * If an instance is found, the conversation page reuses it directly — the
+ * stream continues uninterrupted and no fetchConversationHistory is needed.
+ *
+ * If null is returned, the page should create a fresh instance and load
+ * history from the database.
+ *
+ * Returns the instanceId string, or null.
+ */
+export const selectInstanceIdByConversationId =
+  (conversationId: string) =>
+  (state: RootState): string | null => {
+    // 1. Primary: check instanceConversationHistory — authoritative after commitAssistantTurn
+    for (const instanceId of state.executionInstances.allInstanceIds) {
+      const historyEntry =
+        state.instanceConversationHistory.byInstanceId[instanceId];
+      if (historyEntry?.conversationId === conversationId) return instanceId;
+    }
+
+    // 2. Fallback: check activeRequests — catches mid-stream before commit fires
+    for (const instanceId of state.executionInstances.allInstanceIds) {
+      const requestIds =
+        state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+      for (const requestId of requestIds) {
+        if (
+          state.activeRequests.byRequestId[requestId]?.conversationId ===
+          conversationId
+        ) {
+          return instanceId;
+        }
+      }
+    }
+
+    return null;
+  };
+
+// =============================================================================
 // Display Mode — Cross-Slice Rendering Selectors
 // =============================================================================
 //

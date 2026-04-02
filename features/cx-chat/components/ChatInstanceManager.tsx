@@ -29,6 +29,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { fetchConversationHistory } from "@/features/cx-chat/redux/thunks";
+import { selectInstanceIdByConversationId } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import ChatWelcomeClient from "@/features/cx-chat/components/ChatWelcomeClient";
 import ChatConversationClient from "@/features/cx-chat/components/core/ChatConversationClient";
 import type { RootState } from "@/lib/redux/store";
@@ -74,10 +75,26 @@ export function ChatInstanceManager(props: ChatInstanceManagerProps) {
     setInstanceId(null);
 
     (async () => {
-      // 1. Ensure agent execution data (variables, context slots) is loaded.
+      // 1. For conversation routes: check if an instance already owns this
+      //    conversationId (stream started on the welcome screen and the router
+      //    navigated here mid-stream or just after). Reuse it directly so the
+      //    stream continues uninterrupted — no DB fetch needed.
+      if (conversationId) {
+        const existingId = await dispatch(
+          (_: unknown, getState: () => RootState) =>
+            selectInstanceIdByConversationId(conversationId)(getState()),
+        );
+        if (existingId) {
+          instanceByAgentId.current.set(agentId, existingId);
+          setInstanceId(existingId);
+          return;
+        }
+      }
+
+      // 2. Ensure agent execution data (variables, context slots) is loaded.
       await dispatch(fetchAgentExecutionMinimal(agentId));
 
-      // 2. Reuse a previously created instance for this agent if still alive.
+      // 3. Reuse a previously created instance for this agent if still alive.
       let resolvedId: string | null = null;
       const cached = instanceByAgentId.current.get(agentId);
       if (cached) {
@@ -88,7 +105,7 @@ export function ChatInstanceManager(props: ChatInstanceManagerProps) {
         if (stillAlive) resolvedId = cached;
       }
 
-      // 3. Create a fresh instance when nothing is reusable.
+      // 4. Create a fresh instance when nothing is reusable.
       if (!resolvedId) {
         const result = await dispatch(createManualInstance({ agentId }));
         if (createManualInstance.fulfilled.match(result)) {
@@ -98,17 +115,18 @@ export function ChatInstanceManager(props: ChatInstanceManagerProps) {
 
       if (!resolvedId) return;
 
-      // 4. Persist for reuse within this session.
+      // 5. Persist for reuse within this session.
       instanceByAgentId.current.set(agentId, resolvedId);
 
-      // 5. For conversation routes: load history.
+      // 6. Load conversation history from DB. The thunk is idempotent —
+      //    it skips the fetch if history is already loaded for this instance.
       if (conversationId) {
         dispatch(
           fetchConversationHistory({ conversationId, instanceId: resolvedId }),
         );
       }
 
-      // 6. Expose instanceId — this triggers a re-render with the real content.
+      // 7. Expose instanceId — triggers re-render with the real content.
       setInstanceId(resolvedId);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps

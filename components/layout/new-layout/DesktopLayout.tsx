@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, lazy, Suspense } from "react";
-import { Menu, Mic } from "lucide-react";
+import { Menu, Mic, Bug } from "lucide-react";
 import { NavigationMenu } from "@/features/applet/runner/header/navigation-menu/NavigationMenu";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 import NotificationDropdown from "@/components/ui/notifications/NotificationDropdown";
@@ -8,8 +8,11 @@ import { Notification } from "@/types/notification.types";
 import { MessageIcon } from "@/features/messaging/components/MessageIcon";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import {
+  selectIsOverlayOpen,
+  toggleOverlay,
+} from "@/lib/redux/slices/overlaySlice";
 import {
   Tooltip,
   TooltipContent,
@@ -19,6 +22,7 @@ import {
 import { QuickActionsMenu } from "@/features/quick-actions/components/QuickActionsMenu";
 import FeedbackButton from "@/components/layout/FeedbackButton";
 import type { RootState } from "@/lib/redux/store";
+import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import Image from "next/image";
 import { useVoicePad } from "@/features/voice-pad";
 
@@ -55,6 +59,7 @@ export default function DesktopLayout({
   const [isAdminMenuCollapsed, setIsAdminMenuCollapsed] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const dispatch = useAppDispatch();
   const isAdminIndicatorVisible = useAppSelector((state) =>
     selectIsOverlayOpen(state, "adminIndicator"),
   );
@@ -62,6 +67,7 @@ export default function DesktopLayout({
 
   // Get user data from Redux
   const user = useAppSelector((state: RootState) => state.user);
+  const isAdminUser = useAppSelector(selectIsAdmin) ?? false;
   const displayName =
     user.userMetadata?.name ||
     user.userMetadata?.fullName ||
@@ -290,6 +296,55 @@ export default function DesktopLayout({
                     </ul>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Admin indicator toggle — same overlay & selector as UserMenuPanel */}
+            {isAdminUser && (
+              <div className="flex-shrink-0 mb-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        dispatch(toggleOverlay({ overlayId: "adminIndicator" }))
+                      }
+                      className={`relative flex items-center px-2 py-2 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] w-full ${
+                        isAdminIndicatorVisible
+                          ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 shadow-sm"
+                          : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:shadow-sm"
+                      }`}
+                    >
+                      <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center">
+                        <Bug
+                          className={`w-4 h-4 ${
+                            isAdminIndicatorVisible
+                              ? "text-green-600 dark:text-green-400"
+                              : ""
+                          }`}
+                        />
+                      </div>
+                      <span
+                        className={`absolute left-9 text-xs whitespace-nowrap transition-all duration-300 ease-in-out ${
+                          isSidebarCollapsed
+                            ? "opacity-0 translate-x-2 pointer-events-none"
+                            : "opacity-100 translate-x-0"
+                        }`}
+                      >
+                        {isAdminIndicatorVisible ? "Hide" : "Show"} Indicator
+                      </span>
+                    </button>
+                  </TooltipTrigger>
+                  {isSidebarCollapsed && !isTransitioning && (
+                    <TooltipContent
+                      side="right"
+                      className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600"
+                    >
+                      {isAdminIndicatorVisible ? "Hide" : "Show"} Admin
+                      Indicator
+                    </TooltipContent>
+                  )}
+                </Tooltip>
               </div>
             )}
 
