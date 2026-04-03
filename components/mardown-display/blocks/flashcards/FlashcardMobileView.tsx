@@ -181,63 +181,58 @@ const CardSlide: React.FC<CardSlideProps> = ({
   const isMultiLine =
     card.back != null && (card.back.includes("\n") || card.back.length > 120);
 
-  // Front: pure character-length sizing — single concept, no wrapping penalty.
+  // Front: generous sizing — use the full card area, only shrink for very long text.
+  // Content scrolls if it overflows, so prefer readability over fitting everything.
   const getFrontTextSize = (text: string) => {
     const l = text.length;
     if (l < 20) return "text-5xl";
-    if (l < 35) return "text-4xl";
-    if (l < 60) return "text-3xl";
-    if (l < 100) return "text-2xl";
-    if (l < 160) return "text-xl";
-    if (l < 240) return "text-lg";
-    if (l < 360) return "text-base";
-    return "text-sm";
+    if (l < 40) return "text-4xl";
+    if (l < 80) return "text-3xl";
+    if (l < 150) return "text-2xl";
+    if (l < 300) return "text-xl";
+    if (l < 500) return "text-lg";
+    return "text-base";
   };
 
-  // Back multiline: driven primarily by LINE COUNT, secondarily by total length.
-  // Portrait mobile has ~70vh of card height — be generous with size.
+  // Back multiline: generous sizing — the card scrolls, so keep text large and readable.
   const getBackMultilineTextSize = (text: string) => {
     const lines = countLines(text);
     const l = text.length;
 
     if (lines <= 2) {
-      // 2 items or fewer — go bold, fill the space
-      if (l < 60) return "text-4xl";
-      if (l < 100) return "text-3xl";
-      if (l < 180) return "text-2xl";
+      if (l < 80) return "text-4xl";
+      if (l < 150) return "text-3xl";
+      if (l < 250) return "text-2xl";
       return "text-xl";
     }
     if (lines <= 4) {
-      if (l < 120) return "text-3xl";
-      if (l < 200) return "text-2xl";
-      if (l < 320) return "text-xl";
+      if (l < 150) return "text-3xl";
+      if (l < 280) return "text-2xl";
+      if (l < 450) return "text-xl";
       return "text-lg";
     }
-    if (lines <= 6) {
-      if (l < 280) return "text-xl";
-      if (l < 450) return "text-lg";
+    if (lines <= 7) {
+      if (l < 350) return "text-xl";
+      if (l < 600) return "text-lg";
       return "text-base";
     }
-    if (lines <= 9) {
-      if (l < 450) return "text-lg";
-      if (l < 650) return "text-base";
-      return "text-sm";
+    if (lines <= 12) {
+      if (l < 600) return "text-lg";
+      return "text-base";
     }
-    // 10+ lines
-    if (l < 650) return "text-base";
-    return "text-sm";
+    // 13+ lines — still keep base size, card will scroll
+    return "text-base";
   };
 
   // Back single-line (long paragraph, no newlines).
   const getBackSingleTextSize = (text: string) => {
     const l = text.length;
-    if (l < 40) return "text-4xl";
-    if (l < 80) return "text-3xl";
-    if (l < 140) return "text-2xl";
-    if (l < 220) return "text-xl";
-    if (l < 360) return "text-lg";
-    if (l < 500) return "text-base";
-    return "text-sm";
+    if (l < 50) return "text-4xl";
+    if (l < 100) return "text-3xl";
+    if (l < 200) return "text-2xl";
+    if (l < 350) return "text-xl";
+    if (l < 550) return "text-lg";
+    return "text-base";
   };
 
   // Short lists (≤4 lines) should be vertically centered, not top-aligned.
@@ -280,23 +275,27 @@ const CardSlide: React.FC<CardSlideProps> = ({
       >
         {/* Front */}
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 to-indigo-950"
+          className="absolute inset-0 bg-gradient-to-br from-blue-900 to-indigo-950"
           style={{ backfaceVisibility: "hidden" }}
         >
           <div
-            className="w-full px-6 py-6 flex items-center justify-center h-full overflow-y-auto scrollbar-none"
+            className="w-full h-full overflow-y-auto scrollbar-none p-3"
             style={{
               opacity: textVisible ? 1 : 0,
               transition: `opacity ${TEXT_FADE_OUT_MS}ms ease`,
             }}
           >
-            <ConfigurableMarkdownContent
-              content={card.front ?? ""}
-              isStreamActive={false}
-              showCopyButton={false}
-              styleConfig={frontStyle}
-              componentOverrides={{ p: centeredParagraph }}
-            />
+            <div className="min-h-full flex items-center justify-center">
+              <div className="w-full">
+                <ConfigurableMarkdownContent
+                  content={card.front ?? ""}
+                  isStreamActive={false}
+                  showCopyButton={false}
+                  styleConfig={frontStyle}
+                  componentOverrides={{ p: centeredParagraph }}
+                />
+              </div>
+            </div>
           </div>
           {showHints && (
             <TapZoneHints
@@ -310,35 +309,34 @@ const CardSlide: React.FC<CardSlideProps> = ({
 
         {/* Back */}
         <div
-          className={cn(
-            "absolute inset-0 flex flex-col bg-gradient-to-br from-green-900 to-emerald-950",
-            backNeedsTopAlign
-              ? "items-start justify-start"
-              : "items-center justify-center",
-          )}
+          className="absolute inset-0 bg-gradient-to-br from-green-900 to-emerald-950"
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
           <div
-            className={cn(
-              "w-full px-6 overflow-y-auto scrollbar-none",
-              backNeedsTopAlign
-                ? "h-full pt-8 pb-8"
-                : "flex items-center justify-center py-6 h-full",
-            )}
+            className="w-full h-full overflow-y-auto scrollbar-none p-3"
             style={{
               opacity: textVisible ? 1 : 0,
               transition: `opacity ${TEXT_FADE_OUT_MS}ms ease`,
             }}
           >
-            <ConfigurableMarkdownContent
-              content={backContent}
-              isStreamActive={false}
-              showCopyButton={false}
-              styleConfig={backStyle}
-              componentOverrides={
-                backNeedsTopAlign ? undefined : { p: centeredParagraph }
-              }
-            />
+            <div className={cn(
+              "w-full",
+              backNeedsTopAlign
+                ? "pt-2 pb-2"
+                : "min-h-full flex items-center justify-center",
+            )}>
+              <div className="w-full">
+                <ConfigurableMarkdownContent
+                  content={backContent}
+                  isStreamActive={false}
+                  showCopyButton={false}
+                  styleConfig={backStyle}
+                  componentOverrides={
+                    backNeedsTopAlign ? undefined : { p: centeredParagraph }
+                  }
+                />
+              </div>
+            </div>
           </div>
           {showHints && (
             <TapZoneHints
