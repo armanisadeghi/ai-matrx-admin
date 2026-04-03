@@ -8,9 +8,11 @@
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
+  BuilderAdvancedSettings,
   InstanceUIState,
   ResultDisplayMode,
 } from "@/features/agents/types";
+import { DEFAULT_BUILDER_ADVANCED_SETTINGS } from "@/features/agents/types/instance.types";
 import { destroyInstance } from "../execution-instances/execution-instances.slice";
 
 // =============================================================================
@@ -54,6 +56,8 @@ const instanceUIStateSlice = createSlice({
         isCreator?: boolean;
         submitOnEnter?: boolean;
         autoClearConversation?: boolean;
+        reuseConversationId?: boolean;
+        builderAdvancedSettings?: Partial<BuilderAdvancedSettings>;
       }>,
     ) {
       const {
@@ -64,6 +68,8 @@ const instanceUIStateSlice = createSlice({
         isCreator = false,
         submitOnEnter = true,
         autoClearConversation = false,
+        reuseConversationId = false,
+        builderAdvancedSettings,
       } = action.payload;
 
       state.byInstanceId[instanceId] = {
@@ -77,6 +83,11 @@ const instanceUIStateSlice = createSlice({
         showCreatorDebug: false,
         submitOnEnter,
         autoClearConversation,
+        reuseConversationId,
+        builderAdvancedSettings: {
+          ...DEFAULT_BUILDER_ADVANCED_SETTINGS,
+          ...builderAdvancedSettings,
+        },
         modeState: {},
       };
     },
@@ -175,6 +186,38 @@ const instanceUIStateSlice = createSlice({
       }
     },
 
+    setReuseConversationId(
+      state,
+      action: PayloadAction<{ instanceId: string; value: boolean }>,
+    ) {
+      const entry = state.byInstanceId[action.payload.instanceId];
+      if (entry) {
+        entry.reuseConversationId = action.payload.value;
+      }
+    },
+
+    setBuilderAdvancedSettings(
+      state,
+      action: PayloadAction<{
+        instanceId: string;
+        changes: Partial<BuilderAdvancedSettings>;
+      }>,
+    ) {
+      const entry = state.byInstanceId[action.payload.instanceId];
+      if (entry) {
+        Object.assign(entry.builderAdvancedSettings, action.payload.changes);
+      }
+    },
+
+    resetBuilderAdvancedSettings(state, action: PayloadAction<string>) {
+      const entry = state.byInstanceId[action.payload];
+      if (entry) {
+        entry.builderAdvancedSettings = {
+          ...DEFAULT_BUILDER_ADVANCED_SETTINGS,
+        };
+      }
+    },
+
     removeInstanceUIState(state, action: PayloadAction<string>) {
       delete state.byInstanceId[action.payload];
     },
@@ -207,6 +250,9 @@ export const {
   toggleCreatorDebug,
   setSubmitOnEnter,
   setAutoClearConversation,
+  setReuseConversationId,
+  setBuilderAdvancedSettings,
+  resetBuilderAdvancedSettings,
   removeInstanceUIState,
   setUseBlockMode,
 } = instanceUIStateSlice.actions;

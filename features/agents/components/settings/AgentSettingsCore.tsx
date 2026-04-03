@@ -2,22 +2,20 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import {
-  X,
-  FileJson,
-  AlertCircle,
-  ChevronLeft,
   Save,
   AlertTriangle,
+  Eye,
+  Trash2,
+  WrenchIcon,
+  Settings2,
+  Code2,
+  SlidersHorizontal,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Textarea,
-  CopyTextarea,
-  TextareaWithPrefix,
-} from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -27,8 +25,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   useModelControls,
   ControlDefinition,
+  NormalizedControls,
 } from "@/features/agents/hooks/useModelControls";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
@@ -44,6 +49,9 @@ import {
 import { selectAllModels } from "@/features/ai-models/redux/modelRegistrySlice";
 import { SmartModelSelect } from "@/features/ai-models/components/smart/SmartModelSelect";
 import type { LLMParams } from "@/features/agents/types/agent-api-types";
+
+// ── Tab type ─────────────────────────────────────────────────────────────────
+type SettingsTab = "settings" | "raw" | "raw-edit" | "model-config";
 
 // ── NumberInput ──────────────────────────────────────────────────────────────
 interface NumberInputProps {
@@ -131,6 +139,423 @@ function NumberInput({
   );
 }
 
+// ── HighlightedJson ──────────────────────────────────────────────────────────
+// A read-only syntax-highlighted JSON viewer with a floating copy button.
+interface HighlightedJsonProps {
+  value: Record<string, unknown>;
+  highlightKeys?: Record<string, "error" | "warning" | "info">;
+}
+
+function HighlightedJson({ value, highlightKeys = {} }: HighlightedJsonProps) {
+  const [copied, setCopied] = useState(false);
+
+  const raw = useMemo(() => JSON.stringify(value, null, 2), [value]);
+  const lines = useMemo(() => raw.split("\n"), [raw]);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(raw).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  };
+
+  return (
+    <div className="relative group">
+      {/* Copy button — floats top-right, visible on hover */}
+      <button
+        onClick={handleCopy}
+        className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity
+          flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium
+          bg-card border border-border text-muted-foreground hover:text-foreground
+          shadow-sm"
+      >
+        {copied ? "Copied!" : "Copy"}
+      </button>
+
+      <pre
+        className="text-xs font-mono leading-5 overflow-auto rounded p-3 select-text
+          bg-zinc-100 dark:bg-zinc-800
+          text-zinc-800 dark:text-zinc-200"
+      >
+        {lines.map((line, i) => {
+          const keyMatch = line.match(/^\s*"([^"]+)":/);
+          const key = keyMatch?.[1];
+          const highlight = key ? highlightKeys[key] : undefined;
+          const colored = colorizeJsonLine(line);
+
+          if (highlight) {
+            const cls =
+              highlight === "error"
+                ? "bg-red-100 dark:bg-red-950/50 border-l-4 border-red-500 dark:border-red-400"
+                : highlight === "warning"
+                  ? "bg-yellow-100 dark:bg-yellow-900 border-l-4 border-yellow-500 dark:border-yellow-400"
+                  : "bg-blue-100 dark:bg-blue-950/40 border-l-4 border-blue-500 dark:border-blue-400";
+            return (
+              <span key={i} className={`block -mx-3 px-3 ${cls}`}>
+                <span dangerouslySetInnerHTML={{ __html: colored }} />
+                {"\n"}
+              </span>
+            );
+          }
+
+          return (
+            <span key={i}>
+              <span dangerouslySetInnerHTML={{ __html: colored }} />
+              {"\n"}
+            </span>
+          );
+        })}
+      </pre>
+    </div>
+  );
+}
+
+/** Tokenize a single JSON line into colored HTML spans. Works for both light and dark. */
+function colorizeJsonLine(line: string): string {
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  return line
+    .replace(
+      /("(?:[^"\\]|\\.)*")\s*:/g, // key
+      (_, k) =>
+        `<span class="text-sky-700 dark:text-sky-400">${esc(k)}</span>:`,
+    )
+    .replace(
+      /:\s*("(?:[^"\\]|\\.)*")/g, // string value
+      (_, v) =>
+        `: <span class="text-emerald-700 dark:text-emerald-400">${esc(v)}</span>`,
+    )
+    .replace(
+      /:\s*(\btrue\b|\bfalse\b)/g, // boolean
+      (_, v) =>
+        `: <span class="text-violet-700 dark:text-violet-400">${v}</span>`,
+    )
+    .replace(
+      /:\s*(\bnull\b)/g, // null
+      (_, v) => `: <span class="text-zinc-500">${v}</span>`,
+    )
+    .replace(
+      /:\s*(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g, // number
+      (_, v) =>
+        `: <span class="text-amber-700 dark:text-amber-400">${v}</span>`,
+    );
+}
+
+// ── IssueTable ────────────────────────────────────────────────────────────────
+interface UnrecognizedIssue {
+  kind: "unrecognized";
+  key: string;
+}
+interface InvalidIssue {
+  kind: "invalid";
+  key: string;
+  value: unknown;
+  reason: string;
+}
+type Issue = UnrecognizedIssue | InvalidIssue;
+
+interface IssueTableProps {
+  issues: Issue[];
+  onView: (key: string) => void;
+  onRemove: (key: string) => void;
+  onFixEnum: (key: string) => void;
+}
+
+function IssueTable({ issues, onView, onRemove, onFixEnum }: IssueTableProps) {
+  if (issues.length === 0) return null;
+
+  return (
+    <TooltipProvider delayDuration={300}>
+      <div className="rounded border border-yellow-400 dark:border-yellow-600 overflow-hidden mb-3">
+        {/* Warning section header */}
+        <div className="flex items-center gap-2 px-2.5 py-1.5 bg-yellow-50 dark:bg-yellow-950/40 border-b border-yellow-300 dark:border-yellow-700">
+          <AlertTriangle className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
+          <span className="text-xs font-semibold text-yellow-800 dark:text-yellow-300">
+            Settings Warnings
+          </span>
+          <span className="ml-auto text-[10px] text-yellow-600 dark:text-yellow-500">
+            {issues.length} issue{issues.length !== 1 ? "s" : ""} detected
+          </span>
+        </div>
+
+        {/* Column headers — 3 columns: badge | key+detail | actions */}
+        <div className="grid grid-cols-[100px_1fr_56px] items-center gap-2 px-2.5 py-1 bg-yellow-50/60 dark:bg-yellow-950/20 border-b border-yellow-200 dark:border-yellow-800/50">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-yellow-700 dark:text-yellow-500">
+            Type
+          </span>
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-yellow-700 dark:text-yellow-500">
+            Key / Detail
+          </span>
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-yellow-700 dark:text-yellow-500 text-right">
+            Actions
+          </span>
+        </div>
+
+        {issues.map((issue, idx) => {
+          const isLast = idx === issues.length - 1;
+          const isUnrecognized = issue.kind === "unrecognized";
+
+          return (
+            <div
+              key={`${issue.kind}-${issue.key}`}
+              className={`grid grid-cols-[100px_1fr_56px] items-center gap-2 px-2.5 py-1.5 ${
+                !isLast
+                  ? "border-b border-yellow-200 dark:border-yellow-800/40"
+                  : ""
+              } ${
+                isUnrecognized
+                  ? "bg-yellow-50/30 dark:bg-yellow-950/15"
+                  : "bg-orange-50/30 dark:bg-orange-950/15"
+              }`}
+            >
+              {/* type badge */}
+              <div className="flex-shrink-0">
+                {isUnrecognized ? (
+                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800">
+                    <AlertTriangle className="h-2.5 w-2.5" />
+                    Unknown Key
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300 border border-orange-200 dark:border-orange-800">
+                    <AlertTriangle className="h-2.5 w-2.5" />
+                    Invalid Value
+                  </span>
+                )}
+              </div>
+
+              {/* key + detail */}
+              <div className="min-w-0">
+                <span className="font-mono text-xs text-foreground block truncate">
+                  {issue.key}
+                </span>
+                {!isUnrecognized && (
+                  <span className="text-[10px] text-muted-foreground leading-tight block">
+                    {(issue as InvalidIssue).reason}
+                  </span>
+                )}
+              </div>
+
+              {/* actions: View + Remove/Fix */}
+              <div className="flex items-center gap-0 flex-shrink-0 justify-end">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                      onClick={() => onView(issue.key)}
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="text-xs">
+                    View in Raw JSON
+                  </TooltipContent>
+                </Tooltip>
+
+                {isUnrecognized ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                        onClick={() => onRemove(issue.key)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="text-xs">
+                      Remove this key
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-muted-foreground hover:text-orange-500"
+                        onClick={() => onFixEnum(issue.key)}
+                      >
+                        <WrenchIcon className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="text-xs">
+                      Reset to default value
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </TooltipProvider>
+  );
+}
+
+// ── ModelConfigViewer ─────────────────────────────────────────────────────────
+function ModelConfigViewer({
+  normalizedControls,
+}: {
+  normalizedControls: NormalizedControls;
+}) {
+  const entries = useMemo(() => {
+    const result: { key: string; control: ControlDefinition }[] = [];
+    Object.entries(normalizedControls).forEach(([key, val]) => {
+      if (key === "rawControls" || key === "unmappedControls") return;
+      if (val && typeof val === "object" && "type" in val) {
+        result.push({ key, control: val as ControlDefinition });
+      }
+    });
+    return result.sort((a, b) => a.key.localeCompare(b.key));
+  }, [normalizedControls]);
+
+  const unmapped = useMemo(
+    () => Object.entries(normalizedControls.unmappedControls ?? {}),
+    [normalizedControls],
+  );
+
+  return (
+    <div className="space-y-3">
+      <p className="text-[10px] text-muted-foreground">
+        Parameters this model exposes. These drive which settings appear in the
+        Settings tab.
+      </p>
+
+      {entries.length === 0 ? (
+        <p className="text-xs text-muted-foreground italic">
+          No controls defined for this model.
+        </p>
+      ) : (
+        <div className="rounded border border-border overflow-hidden">
+          {/* Fixed columns — Range/Options column scrolls horizontally per-row */}
+          <div className="grid grid-cols-[1fr_70px_160px_70px] gap-2 px-2.5 py-1 bg-muted/50 border-b border-border">
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Key
+            </span>
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Type
+            </span>
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Range / Options
+            </span>
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Default
+            </span>
+          </div>
+          {entries.map(({ key, control }, idx) => {
+            const rangeOrOptions =
+              control.type === "enum" && control.enum?.length
+                ? control.enum.join(", ")
+                : control.min !== undefined && control.max !== undefined
+                  ? `${control.min} – ${control.max}`
+                  : "—";
+
+            return (
+              <div
+                key={key}
+                className={`grid grid-cols-[1fr_70px_160px_70px] gap-2 px-2.5 py-1.5 text-xs items-center ${
+                  idx < entries.length - 1 ? "border-b border-border" : ""
+                } ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"}`}
+              >
+                <span className="font-mono text-foreground truncate">
+                  {key}
+                </span>
+                <span className="text-muted-foreground">{control.type}</span>
+                {/* scrollable horizontally so long enum lists are never cut off */}
+                <div className="overflow-x-auto">
+                  <span className="text-muted-foreground text-[10px] whitespace-nowrap">
+                    {rangeOrOptions}
+                  </span>
+                </div>
+                <span className="font-mono text-muted-foreground text-[10px] truncate">
+                  {control.default !== undefined && control.default !== null
+                    ? String(control.default)
+                    : "—"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {unmapped.length > 0 && (
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+            Unmapped controls
+          </p>
+          {/* Full JSON, no height cap — everything visible */}
+          <pre className="text-[10px] font-mono bg-muted/30 rounded p-2 overflow-x-auto text-muted-foreground whitespace-pre-wrap break-all">
+            {JSON.stringify(Object.fromEntries(unmapped), null, 2)}
+          </pre>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── VSCode-style Tab Bar ──────────────────────────────────────────────────────
+interface TabBarProps {
+  active: SettingsTab;
+  onChange: (tab: SettingsTab) => void;
+  issueCount: number;
+}
+
+function TabBar({ active, onChange, issueCount }: TabBarProps) {
+  const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
+    {
+      id: "settings",
+      label: "Settings",
+      icon: <SlidersHorizontal className="h-3 w-3" />,
+    },
+    {
+      id: "raw",
+      label: "Raw Settings",
+      icon: <Code2 className="h-3 w-3" />,
+    },
+    {
+      id: "raw-edit",
+      label: "Raw Editable",
+      icon: <Save className="h-3 w-3" />,
+    },
+    {
+      id: "model-config",
+      label: "Model Config",
+      icon: <Settings2 className="h-3 w-3" />,
+    },
+  ];
+
+  return (
+    <div className="flex border-b border-border flex-shrink-0 -mx-3 px-3">
+      {tabs.map((tab) => {
+        const isActive = active === tab.id;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => onChange(tab.id)}
+            className={`relative flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors select-none ${
+              isActive
+                ? "text-foreground border-b-2 border-primary -mb-px"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {tab.icon}
+            {tab.label}
+            {tab.id === "settings" && issueCount > 0 && (
+              <span className="ml-0.5 inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-yellow-500 text-[9px] font-bold text-white leading-none">
+                {issueCount > 9 ? "9+" : issueCount}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── AgentSettingsCore ────────────────────────────────────────────────────────
 
 interface AgentSettingsCoreProps {
@@ -153,6 +578,8 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
 
   const currentSettings: LLMParams = settings ?? {};
 
+  const [activeTab, setActiveTab] = useState<SettingsTab>("settings");
+
   // Track enabled settings (keys with non-null values)
   const [enabledSettings, setEnabledSettings] = useState<Set<string>>(() => {
     const enabled = new Set<string>();
@@ -171,25 +598,19 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings]);
 
-  // JSON flip
-  const [showJsonEditor, setShowJsonEditor] = useState(false);
   const [jsonText, setJsonText] = useState("");
   const [jsonError, setJsonError] = useState<string | null>(null);
   const jsonTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const recognizedKeys = useMemo(() => {
     const keys = new Set<string>([
-      // ── All LLMParams fields (keep in sync with agent-api-types.ts LLMParams) ──
       "model",
-      // Sampling
       "max_output_tokens",
       "temperature",
       "top_p",
       "top_k",
-      // Tool calling
       "tool_choice",
       "parallel_tool_calls",
-      // Reasoning / thinking
       "reasoning_effort",
       "reasoning_summary",
       "thinking_level",
@@ -197,23 +618,18 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
       "thinking_budget",
       "clear_thinking",
       "disable_reasoning",
-      // Output control
       "response_format",
       "stop_sequences",
       "stream",
       "store",
       "verbosity",
-      // Provider-native features
       "internal_web_search",
       "internal_url_context",
-      // Image generation
       "size",
       "quality",
       "count",
-      // Audio / TTS
       "tts_voice",
       "audio_format",
-      // Video / diffusion generation
       "seconds",
       "fps",
       "steps",
@@ -236,17 +652,18 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
     return keys;
   }, [normalizedControls]);
 
-  const unrecognizedSettings = useMemo(() => {
-    return Object.keys(currentSettings).filter(
-      (key) =>
-        recognizedKeys.has(key) === false &&
-        (currentSettings as Record<string, unknown>)[key] !== null &&
-        (currentSettings as Record<string, unknown>)[key] !== undefined,
-    );
-  }, [currentSettings, recognizedKeys]);
+  const unrecognizedKeys = useMemo(
+    () =>
+      Object.keys(currentSettings).filter(
+        (key) =>
+          !recognizedKeys.has(key) &&
+          (currentSettings as Record<string, unknown>)[key] !== null &&
+          (currentSettings as Record<string, unknown>)[key] !== undefined,
+      ),
+    [currentSettings, recognizedKeys],
+  );
 
-  // Compute settings with invalid values (wrong enum option or out of range)
-  const invalidSettings = useMemo(() => {
+  const invalidSettingsList = useMemo(() => {
     if (!normalizedControls)
       return [] as { key: string; value: unknown; reason: string }[];
     const issues: { key: string; value: unknown; reason: string }[] = [];
@@ -255,17 +672,26 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
       const control = (
         normalizedControls as unknown as Record<string, ControlDefinition>
       )[key];
-      if (!control) return; // already caught by unrecognizedSettings
+      if (!control) return;
+
+      const compareValue =
+        key === "response_format" &&
+        typeof value === "object" &&
+        value !== null &&
+        "type" in (value as Record<string, unknown>)
+          ? (value as Record<string, unknown>).type
+          : value;
+
       if (
         control.type === "enum" &&
         control.enum &&
         control.enum.length > 0 &&
-        !control.enum.includes(value as string)
+        !control.enum.includes(compareValue as string)
       ) {
         issues.push({
           key,
           value,
-          reason: `"${value}" is not a valid option. Expected one of: ${control.enum.join(", ")}`,
+          reason: `"${compareValue}" is not a valid option. Expected: ${control.enum.join(", ")}`,
         });
       }
       if (
@@ -290,6 +716,36 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
     });
     return issues;
   }, [currentSettings, normalizedControls]);
+
+  // Unified issue list for the tab badge and table
+  const allIssues: Issue[] = useMemo(
+    () => [
+      ...unrecognizedKeys.map(
+        (key): UnrecognizedIssue => ({ kind: "unrecognized", key }),
+      ),
+      ...invalidSettingsList.map(
+        ({ key, value, reason }): InvalidIssue => ({
+          kind: "invalid",
+          key,
+          value,
+          reason,
+        }),
+      ),
+    ],
+    [unrecognizedKeys, invalidSettingsList],
+  );
+
+  // Highlight map for the JSON viewer: which keys have issues
+  const jsonHighlights = useMemo(() => {
+    const map: Record<string, "error" | "warning" | "info"> = {};
+    unrecognizedKeys.forEach((k) => {
+      map[k] = "warning";
+    });
+    invalidSettingsList.forEach(({ key }) => {
+      map[key] = "error";
+    });
+    return map;
+  }, [unrecognizedKeys, invalidSettingsList]);
 
   const handleModelChange = (newModelId: string) => {
     dispatch(
@@ -364,7 +820,6 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
     );
   };
 
-  // Safe accessor — NormalizedControls has known keys only; cast via unknown to index by string
   const getControl = (key: string): ControlDefinition | undefined =>
     normalizedControls
       ? (normalizedControls as unknown as Record<string, ControlDefinition>)[
@@ -389,11 +844,7 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
             defaultValue = "";
           } else if (control.type === "boolean") {
             defaultValue = false;
-          } else if (
-            control.type === "enum" &&
-            control.enum &&
-            control.enum.length > 0
-          ) {
+          } else if (control.type === "enum" && control.enum?.length) {
             defaultValue = control.enum[0];
           } else if (
             control.type === "array" ||
@@ -425,7 +876,7 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
     setEnabledSettings(newEnabled);
   };
 
-  // Build composite JSON that represents the full effective API payload
+  // Build composite JSON payload
   const buildFullSettingsJson = () => {
     const composite: Record<string, unknown> = {};
     if (modelId) composite.model_id = modelId;
@@ -434,25 +885,21 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
     return JSON.stringify(composite, null, 2);
   };
 
-  const handleFlipToJson = () => {
-    setJsonText(buildFullSettingsJson());
-    setJsonError(null);
-    setShowJsonEditor(true);
-    setTimeout(() => jsonTextareaRef.current?.focus(), 420);
-  };
-
-  const handleFlipBack = () => {
-    // Reset draft to current state so unsaved edits don't persist
-    setJsonText(buildFullSettingsJson());
-    setShowJsonEditor(false);
-    setJsonError(null);
-  };
+  // Sync JSON text whenever tab changes to either raw tab
+  useEffect(() => {
+    if (activeTab === "raw" || activeTab === "raw-edit") {
+      setJsonText(buildFullSettingsJson());
+      setJsonError(null);
+      if (activeTab === "raw-edit") {
+        setTimeout(() => jsonTextareaRef.current?.focus(), 50);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   const handleJsonApply = () => {
     try {
       const parsed = JSON.parse(jsonText) as Record<string, unknown>;
-
-      // Extract top-level special keys and route them to the correct actions
       const { model_id, tools, ...llmParams } = parsed;
 
       if (model_id !== undefined && typeof model_id === "string") {
@@ -473,37 +920,51 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
         if (value !== null && value !== undefined) newEnabled.add(key);
       });
       setEnabledSettings(newEnabled);
-      setShowJsonEditor(false);
+      setActiveTab("settings");
     } catch (e) {
       setJsonError(e instanceof Error ? e.message : "Invalid JSON");
     }
   };
 
-  if (error) {
-    return (
-      <div className="text-xs text-red-600 dark:text-red-400 px-1 py-2">
-        Error loading model controls: {error}
-      </div>
-    );
-  }
+  // Issue table handlers
+  const handleIssueView = (key: string) => {
+    setJsonText(buildFullSettingsJson());
+    setActiveTab("raw");
+    setTimeout(() => {
+      const el = jsonTextareaRef.current;
+      if (!el) return;
+      const idx = el.value.indexOf(`"${key}"`);
+      if (idx >= 0) el.setSelectionRange(idx, idx + key.length + 2);
+    }, 100);
+  };
 
-  if (!normalizedControls) {
-    return (
-      <div className="space-y-3 px-1 py-2">
-        <div className="flex items-center gap-2">
-          <Label className="text-xs text-muted-foreground w-36 flex-shrink-0">
-            Model
-          </Label>
-          <SmartModelSelect value={modelId} onValueChange={handleModelChange} />
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Select a model to see available settings.
-        </p>
-      </div>
-    );
-  }
+  const handleIssueRemove = (key: string) => {
+    const { [key]: _removed, ...rest } = currentSettings as Record<
+      string,
+      unknown
+    >;
+    dispatch(setAgentSettings({ id: agentId, settings: rest as LLMParams }));
+  };
 
-  // ── renderControl ──────────────────────────────────────────────────────────
+  const handleIssueFix = (key: string) => {
+    const control = getControl(key);
+    if (!control) return;
+    // Reset to first valid enum option or control default
+    const fix =
+      control.type === "enum" && control.enum?.length
+        ? control.enum[0]
+        : control.default;
+    if (fix !== undefined && fix !== null) {
+      dispatch(
+        setAgentSettings({
+          id: agentId,
+          settings: { ...currentSettings, [key]: fix },
+        }),
+      );
+    }
+  };
+
+  // ── render helpers ────────────────────────────────────────────────────────
 
   const renderControlInput = (
     key: keyof LLMParams,
@@ -528,7 +989,13 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
     }
 
     if (control.type === "enum" && control.enum) {
-      const storedValue = value as string | undefined;
+      const storedValue =
+        key === "response_format" &&
+        typeof value === "object" &&
+        value !== null &&
+        "type" in (value as Record<string, unknown>)
+          ? String((value as Record<string, unknown>).type)
+          : (value as string | undefined);
       const isValueMismatch =
         storedValue !== undefined &&
         storedValue !== null &&
@@ -560,12 +1027,18 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
             </SelectContent>
           </Select>
           {isValueMismatch && (
-            <span
-              title={`"${storedValue}" is not a recognized option for this model`}
-              className="text-amber-500 flex-shrink-0"
-            >
-              <AlertTriangle className="h-3.5 w-3.5" />
-            </span>
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-amber-500 flex-shrink-0 cursor-help">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs max-w-[220px]">
+                  "{storedValue}" is not a recognized option for this model
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
       );
@@ -597,7 +1070,6 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
       control.min !== undefined &&
       control.max !== undefined
     ) {
-      const step = control.type === "integer" ? 1 : 0.01;
       return (
         <NumberInput
           value={actualValue as number}
@@ -605,7 +1077,7 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
           onSliderChange={(val) => handleSettingChange(key, val)}
           min={control.min}
           max={control.max}
-          step={step}
+          step={control.type === "integer" ? 1 : 0.01}
           isInteger={control.type === "integer"}
           disabled={!isEnabled}
           withSlider
@@ -749,23 +1221,35 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
     { key: "audio_format", label: "Audio Format" },
   ];
 
+  // ── Early returns ─────────────────────────────────────────────────────────
+  if (error) {
+    return (
+      <div className="text-xs text-red-600 dark:text-red-400 px-1 py-2">
+        Error loading model controls: {error}
+      </div>
+    );
+  }
+
+  const noControls = !normalizedControls;
+
+  // ── Main render ───────────────────────────────────────────────────────────
   return (
-    <div className="relative" style={{ perspective: "1200px" }}>
+    <div className="flex flex-col h-full">
+      {/* Tab bar */}
+      {!noControls && (
+        <TabBar
+          active={activeTab}
+          onChange={setActiveTab}
+          issueCount={allIssues.length}
+        />
+      )}
+
+      {/* Tab content — fills remaining height */}
       <div
-        className="relative w-full transition-transform duration-500 ease-in-out"
-        style={{
-          transformStyle: "preserve-3d",
-          transform: showJsonEditor ? "rotateY(180deg)" : "rotateY(0deg)",
-          minHeight: showJsonEditor ? "420px" : undefined,
-        }}
+        className={`flex-1 min-h-0 ${activeTab === "raw-edit" ? "flex flex-col" : "overflow-y-auto"} pt-3`}
       >
-        {/* ── FRONT: settings panel ─────────────────────────── */}
-        <div
-          style={{
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
-          }}
-        >
+        {/* ── SETTINGS TAB ───────────────────────────────────────────────── */}
+        {(activeTab === "settings" || noControls) && (
           <div className="space-y-1.5">
             {/* Model selector */}
             <div className="flex items-center gap-2 pb-1 border-b border-border">
@@ -780,183 +1264,156 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
               </div>
             </div>
 
-            {/* Unrecognized settings warning */}
-            {unrecognizedSettings.length > 0 && (
-              <div className="flex items-start gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-xs">
-                <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <div className="font-semibold text-yellow-800 dark:text-yellow-200 mb-1">
-                    Unrecognized Settings
-                  </div>
-                  <div className="text-yellow-700 dark:text-yellow-300 mb-1">
-                    These keys are not recognized for this model and are not
-                    shown in the UI:{" "}
-                    <span className="font-mono">
-                      {unrecognizedSettings.join(", ")}
-                    </span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleFlipToJson}
-                    className="h-6 text-[10px] px-2"
-                  >
-                    <FileJson className="h-3 w-3 mr-1" />
-                    View in JSON Editor
-                  </Button>
-                </div>
-              </div>
+            {noControls && (
+              <p className="text-xs text-muted-foreground">
+                Select a model to see available settings.
+              </p>
             )}
 
-            {/* Invalid value warnings */}
-            {invalidSettings.length > 0 && (
-              <div className="flex items-start gap-2 p-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded text-xs">
-                <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-500 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <div className="font-semibold text-orange-800 dark:text-orange-200 mb-1">
-                    Invalid Setting Values
-                  </div>
-                  <ul className="text-orange-700 dark:text-orange-300 space-y-0.5">
-                    {invalidSettings.map(({ key, reason }) => (
-                      <li key={key}>
-                        <span className="font-mono">{key}</span>: {reason}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+            {/* Issue table */}
+            {!noControls && allIssues.length > 0 && (
+              <IssueTable
+                issues={allIssues}
+                onView={handleIssueView}
+                onRemove={handleIssueRemove}
+                onFixEnum={handleIssueFix}
+              />
             )}
 
             {/* Text model settings */}
-            {textModelSettings.map(({ key, label }) => {
-              const control = getControl(key);
-              if (!control) return null;
-              return renderControl(key, label, control);
-            })}
+            {!noControls &&
+              textModelSettings.map(({ key, label }) => {
+                const control = getControl(key);
+                if (!control) return null;
+                return renderControl(key, label, control);
+              })}
 
             {/* Audio settings */}
-            {audioSettings.some(({ key }) => getControl(key)) && (
-              <div className="border-t pt-2 mt-2">
-                <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Audio Settings
+            {!noControls &&
+              audioSettings.some(({ key }) => getControl(key)) && (
+                <div className="border-t pt-2 mt-2">
+                  <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    Audio Settings
+                  </div>
+                  {audioSettings.map(({ key, label }) => {
+                    const control = getControl(key);
+                    if (!control) return null;
+                    return renderControl(key, label, control);
+                  })}
                 </div>
-                {audioSettings.map(({ key, label }) => {
-                  const control = getControl(key);
-                  if (!control) return null;
-                  return renderControl(key, label, control);
-                })}
-              </div>
-            )}
+              )}
 
             {/* Image/Video settings */}
-            {imageVideoSettings.some(({ key }) => getControl(key)) && (
-              <div className="border-t pt-2 mt-2">
-                <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Image / Video Settings
+            {!noControls &&
+              imageVideoSettings.some(({ key }) => getControl(key)) && (
+                <div className="border-t pt-2 mt-2">
+                  <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    Image / Video Settings
+                  </div>
+                  {imageVideoSettings.map(({ key, label }) => {
+                    const control = getControl(key);
+                    if (!control) return null;
+                    return renderControl(key, label, control);
+                  })}
                 </div>
-                {imageVideoSettings.map(({ key, label }) => {
-                  const control = getControl(key);
-                  if (!control) return null;
-                  return renderControl(key, label, control);
-                })}
-              </div>
-            )}
+              )}
 
             {/* Boolean / Feature flags */}
-            {booleanSettings.some(({ key }) => getControl(key)) && (
-              <div className="border-t pt-2 mt-2">
-                <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Feature Flags
+            {!noControls &&
+              booleanSettings.some(({ key }) => getControl(key)) && (
+                <div className="border-t pt-2 mt-2">
+                  <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    Feature Flags
+                  </div>
+                  {booleanSettings.map(({ key, label }) => {
+                    const control = getControl(key);
+                    if (!control) return null;
+                    return renderControl(key, label, control);
+                  })}
                 </div>
-                {booleanSettings.map(({ key, label }) => {
-                  const control = getControl(key);
-                  if (!control) return null;
-                  return renderControl(key, label, control);
-                })}
+              )}
+          </div>
+        )}
+
+        {/* ── RAW SETTINGS TAB (colorful read-only viewer) ───────────────── */}
+        {activeTab === "raw" && (
+          <div className="flex flex-col gap-2">
+            <p className="text-[10px] text-muted-foreground">
+              Read-only view of the full effective payload.{" "}
+              {allIssues.length > 0 && (
+                <span className="text-yellow-600 dark:text-yellow-400">
+                  Highlighted lines have issues.
+                </span>
+              )}
+            </p>
+            <div className="rounded border border-border overflow-hidden">
+              <HighlightedJson
+                value={(() => {
+                  try {
+                    return JSON.parse(buildFullSettingsJson());
+                  } catch {
+                    return {};
+                  }
+                })()}
+                highlightKeys={jsonHighlights}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── RAW EDITABLE TAB (full-height textarea) ────────────────────── */}
+        {activeTab === "raw-edit" && (
+          <div className="flex flex-col h-full gap-2">
+            <p className="text-[10px] text-muted-foreground flex-shrink-0">
+              Edit the full JSON payload directly, then apply your changes.
+            </p>
+
+            <Textarea
+              ref={jsonTextareaRef}
+              value={jsonText}
+              onChange={(e) => {
+                setJsonText(e.target.value);
+                setJsonError(null);
+              }}
+              placeholder='{"temperature": 0.7, "max_output_tokens": 1024}'
+              spellCheck={false}
+              autoGrow={true}
+            />
+
+            {jsonError && (
+              <div className="flex-shrink-0 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-xs text-red-800 dark:text-red-200">
+                <strong>Parse error:</strong> {jsonError}
               </div>
             )}
 
-            {/* JSON editor button */}
-            <div className="border-t pt-2 mt-2">
+            <div className="flex items-center justify-between gap-2 flex-shrink-0">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                onClick={handleFlipToJson}
-                className="w-full h-7 text-xs bg-card"
+                onClick={() => {
+                  setJsonText(buildFullSettingsJson());
+                  setJsonError(null);
+                }}
+                className="h-7 text-xs"
               >
-                <FileJson className="h-3.5 w-3.5 mr-1.5" />
-                Edit as JSON
+                Reset
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleJsonApply}
+                className="h-7 text-xs gap-1.5"
+              >
+                <Save className="w-3 h-3" />
+                Apply changes
               </Button>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* ── BACK: JSON editor ─────────────────────────────── */}
-        <div
-          className="absolute inset-0 flex flex-col gap-2"
-          style={{
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
-            transform: "rotateY(180deg)",
-          }}
-        >
-          <div className="flex items-center justify-between pb-2 border-b border-border">
-            <button
-              onClick={handleFlipBack}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-              Back to settings
-            </button>
-            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-              <FileJson className="w-3.5 h-3.5 text-primary" />
-              Raw JSON
-            </span>
-          </div>
-
-          <p className="text-[10px] text-muted-foreground">
-            Shows the full effective payload:{" "}
-            <span className="font-mono">model_id</span>,{" "}
-            <span className="font-mono">tools</span>, and all LLM parameters.
-          </p>
-
-          <CopyTextarea
-            ref={jsonTextareaRef}
-            value={jsonText}
-            onChange={(e) => {
-              setJsonText(e.target.value);
-              setJsonError(null);
-            }}
-            className="flex-1 font-mono text-xs resize-none min-h-[320px]"
-            placeholder='{"temperature": 0.7, "max_output_tokens": 1024}'
-            spellCheck={false}
-          />
-
-          {jsonError && (
-            <div className="px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-xs text-red-800 dark:text-red-200">
-              <strong>Parse error:</strong> {jsonError}
-            </div>
-          )}
-
-          <div className="flex items-center justify-between gap-2 pt-1 border-t border-border">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleFlipBack}
-              className="h-7 text-xs"
-            >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              onClick={handleJsonApply}
-              className="h-7 text-xs gap-1.5"
-            >
-              <Save className="w-3 h-3" />
-              Apply changes
-            </Button>
-          </div>
-        </div>
+        {/* ── MODEL CONFIG TAB ───────────────────────────────────────────── */}
+        {activeTab === "model-config" && normalizedControls && (
+          <ModelConfigViewer normalizedControls={normalizedControls} />
+        )}
       </div>
     </div>
   );

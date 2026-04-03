@@ -28,8 +28,11 @@ import {
   BarChart2,
   Radio,
   Database,
+  RotateCcw,
 } from "lucide-react";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
+import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
 import {
   selectLatestCompletionStats,
   selectAggregateStats,
@@ -84,79 +87,187 @@ function FinishBadge({ reason }: { reason: string }) {
 }
 
 // =============================================================================
+// Self-contained reset button — owns its own dispatch logic
+// =============================================================================
+
+function ResetButton({
+  instanceId,
+  agentId,
+  onNewInstance,
+}: {
+  instanceId: string;
+  agentId: string;
+  onNewInstance: (newId: string) => void;
+}) {
+  const dispatch = useAppDispatch();
+
+  const handleReset = useCallback(() => {
+    dispatch(destroyInstance(instanceId));
+    dispatch(createManualInstance({ agentId, autoClearConversation: true }))
+      .unwrap()
+      .then(onNewInstance)
+      .catch((err) => console.error("Failed to reset test instance:", err));
+  }, [instanceId, agentId, onNewInstance, dispatch]);
+
+  return (
+    <button
+      type="button"
+      onClick={handleReset}
+      className="p-1 text-muted-foreground hover:text-foreground transition-colors shrink-0"
+      title="Reset conversation"
+    >
+      <RotateCcw className="w-3.5 h-3.5" />
+    </button>
+  );
+}
+
+// =============================================================================
 // Collapsed pill row
 // =============================================================================
 
 function CollapsedRowWithClient({
   stats,
   clientMetrics,
+  instanceId,
+  agentId,
+  onNewInstance,
   onExpand,
 }: {
   stats: CompletionStats;
   clientMetrics: ClientMetrics | undefined;
+  instanceId: string;
+  agentId: string;
+  onNewInstance: (newId: string) => void;
   onExpand: () => void;
 }) {
   const total = stats.total_usage?.total;
   const timing = stats.timing_stats;
 
   return (
-    <button
-      type="button"
-      onClick={onExpand}
-      className="w-full flex items-center gap-3 px-3 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
-    >
-      {/* Server duration */}
-      {timing && (
-        <span className="flex items-center gap-1">
-          <Clock className="w-3 h-3" />
-          {fmtDuration(timing.total_duration)}
+    <div className="flex items-center gap-1 px-3 py-1">
+      <button
+        type="button"
+        onClick={onExpand}
+        className="flex-1 flex items-center gap-3 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors rounded px-1 py-0.5"
+      >
+        {/* Server duration */}
+        {timing && (
+          <span className="flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            {fmtDuration(timing.total_duration)}
+          </span>
+        )}
+
+        {/* TTFT — client-side, most useful metric for perceived speed */}
+        {clientMetrics?.ttftMs != null && (
+          <span
+            className="flex items-center gap-1 text-primary/80"
+            title="Time to first token (client perspective)"
+          >
+            <Radio className="w-3 h-3" />
+            {fmtMs(clientMetrics.ttftMs)} ttft
+          </span>
+        )}
+
+        {/* Tokens */}
+        {total && (
+          <span className="flex items-center gap-1">
+            <Zap className="w-3 h-3" />
+            {fmtTokens(total.total_tokens)} tokens
+            {total.cached_input_tokens > 0 && (
+              <span className="text-[10px] text-muted-foreground/60">
+                ({fmtTokens(total.cached_input_tokens)} cached)
+              </span>
+            )}
+          </span>
+        )}
+
+        {/* Cost */}
+        {total && total.total_cost > 0 && (
+          <span className="flex items-center gap-1">
+            <DollarSign className="w-3 h-3" />
+            {fmtCost(total.total_cost)}
+          </span>
+        )}
+
+        {/* Finish reason */}
+        <FinishBadge reason={stats.finish_reason} />
+
+        {/* Iterations if > 1 */}
+        {stats.iterations > 1 && (
+          <span className="text-[10px] text-muted-foreground/70">
+            {stats.iterations} iter
+          </span>
+        )}
+
+        <ChevronDown className="w-3 h-3 ml-auto shrink-0" />
+      </button>
+
+      <ResetButton
+        instanceId={instanceId}
+        agentId={agentId}
+        onNewInstance={onNewInstance}
+      />
+    </div>
+  );
+}
+
+// =============================================================================
+// Shared table primitives
+// =============================================================================
+
+function TableSection({
+  icon,
+  title,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/30 border-b border-border">
+        <span className="text-muted-foreground">{icon}</span>
+        <span className="text-xs font-semibold text-foreground/80 uppercase tracking-wide">
+          {title}
         </span>
-      )}
+      </div>
+      <table className="w-full text-xs">{children}</table>
+    </div>
+  );
+}
 
-      {/* TTFT — client-side, most useful metric for perceived speed */}
-      {clientMetrics?.ttftMs != null && (
-        <span
-          className="flex items-center gap-1 text-primary/80"
-          title="Time to first token (client perspective)"
-        >
-          <Radio className="w-3 h-3" />
-          {fmtMs(clientMetrics.ttftMs)} ttft
-        </span>
-      )}
-
-      {/* Tokens */}
-      {total && (
-        <span className="flex items-center gap-1">
-          <Zap className="w-3 h-3" />
-          {fmtTokens(total.total_tokens)} tokens
-          {total.cached_input_tokens > 0 && (
-            <span className="text-[10px] text-muted-foreground/60">
-              ({fmtTokens(total.cached_input_tokens)} cached)
-            </span>
-          )}
-        </span>
-      )}
-
-      {/* Cost */}
-      {total && total.total_cost > 0 && (
-        <span className="flex items-center gap-1">
-          <DollarSign className="w-3 h-3" />
-          {fmtCost(total.total_cost)}
-        </span>
-      )}
-
-      {/* Finish reason */}
-      <FinishBadge reason={stats.finish_reason} />
-
-      {/* Iterations if > 1 */}
-      {stats.iterations > 1 && (
-        <span className="text-[10px] text-muted-foreground/70">
-          {stats.iterations} iter
-        </span>
-      )}
-
-      <ChevronDown className="w-3 h-3 ml-auto shrink-0" />
-    </button>
+function TR({
+  label,
+  value,
+  mono,
+  dim,
+  highlight,
+  idx,
+}: {
+  label: string;
+  value: React.ReactNode;
+  mono?: boolean;
+  dim?: boolean;
+  highlight?: boolean;
+  idx: number;
+}) {
+  return (
+    <tr className={idx % 2 === 0 ? "bg-muted/20" : ""}>
+      <td className="px-3 py-1 text-muted-foreground whitespace-nowrap w-1/2">
+        {label}
+      </td>
+      <td
+        className={`px-3 py-1 text-right tabular-nums whitespace-nowrap ${
+          mono ? "font-mono" : ""
+        } ${dim ? "text-muted-foreground" : ""} ${
+          highlight ? "text-primary font-semibold" : "text-foreground"
+        }`}
+      >
+        {value}
+      </td>
+    </tr>
   );
 }
 
@@ -171,145 +282,162 @@ function LastRequestPanel({ stats }: { stats: CompletionStats }) {
   const tools = stats.tool_call_stats;
 
   return (
-    <div className="space-y-3 p-3">
-      {/* Token usage */}
-      {total && (
-        <section>
-          <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
-            <Zap className="w-3 h-3" /> Token Usage
-          </h4>
-          <div className="grid grid-cols-4 gap-2">
+    <div className="divide-y divide-border">
+      {/* Summary strip */}
+      <div className="flex items-center gap-4 px-3 py-2 bg-muted/10 text-xs flex-wrap">
+        {timing && (
+          <span className="flex items-center gap-1 text-foreground">
+            <Clock className="w-3 h-3 text-muted-foreground" />
+            <span className="font-mono font-semibold">
+              {fmtDuration(timing.total_duration)}
+            </span>
+            <span className="text-muted-foreground">total</span>
+          </span>
+        )}
+        {total && (
+          <>
+            <span className="flex items-center gap-1 text-foreground">
+              <Zap className="w-3 h-3 text-muted-foreground" />
+              <span className="font-mono font-semibold">
+                {fmtTokens(total.total_tokens)}
+              </span>
+              <span className="text-muted-foreground">
+                tokens ({fmtTokens(total.input_tokens)} in /{" "}
+                {fmtTokens(total.output_tokens)} out
+                {total.cached_input_tokens > 0
+                  ? ` / ${fmtTokens(total.cached_input_tokens)} cached`
+                  : ""}
+                )
+              </span>
+            </span>
+            {total.total_cost > 0 && (
+              <span className="flex items-center gap-1 text-foreground">
+                <DollarSign className="w-3 h-3 text-muted-foreground" />
+                <span className="font-mono font-semibold">
+                  {fmtCost(total.total_cost)}
+                </span>
+              </span>
+            )}
+          </>
+        )}
+        <span className="ml-auto flex items-center gap-2">
+          <FinishBadge reason={stats.finish_reason} />
+          {stats.iterations > 1 && (
+            <span className="text-muted-foreground">
+              {stats.iterations} iter
+            </span>
+          )}
+        </span>
+      </div>
+
+      {/* Timing breakdown */}
+      {timing && (
+        <TableSection icon={<Clock className="w-3 h-3" />} title="Timing">
+          <tbody>
             {[
-              { label: "Input", value: fmtTokens(total.input_tokens) },
-              { label: "Output", value: fmtTokens(total.output_tokens) },
-              { label: "Cached", value: fmtTokens(total.cached_input_tokens) },
-              { label: "Total", value: fmtTokens(total.total_tokens) },
-            ].map(({ label, value }) => (
-              <div
-                key={label}
-                className="bg-muted/40 rounded p-1.5 text-center"
-              >
-                <div className="text-xs font-semibold">{value}</div>
-                <div className="text-[10px] text-muted-foreground">{label}</div>
-              </div>
+              {
+                label: "Total duration",
+                value: fmtDuration(timing.total_duration),
+              },
+              {
+                label: "API duration",
+                value: fmtDuration(timing.api_duration),
+              },
+              {
+                label: "Tool duration",
+                value: fmtDuration(timing.tool_duration),
+              },
+            ].map(({ label, value }, i) => (
+              <TR key={label} idx={i} label={label} value={value} mono />
             ))}
-          </div>
-        </section>
+          </tbody>
+        </TableSection>
       )}
 
       {/* Per-model breakdown */}
       {Object.keys(byModel).length > 0 && (
-        <section>
-          <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
-            <Cpu className="w-3 h-3" /> Models
-          </h4>
-          <div className="space-y-1">
-            {Object.entries(byModel).map(([modelName, usage]) => (
-              <div
-                key={modelName}
-                className="flex items-center justify-between text-xs px-2 py-1 bg-muted/30 rounded"
-              >
-                <span className="font-mono text-[11px] text-foreground/80 truncate max-w-[140px]">
-                  {modelName}
-                </span>
-                <span className="text-muted-foreground text-[10px] shrink-0">
-                  {usage.api}
-                </span>
-                <span className="shrink-0">
-                  {fmtTokens(usage.total_tokens)} tok
-                </span>
-                {usage.cost > 0 && (
-                  <span className="shrink-0 text-muted-foreground">
-                    {fmtCost(usage.cost)}
-                  </span>
-                )}
-              </div>
-            ))}
+        <div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/30 border-b border-border">
+            <Cpu className="w-3 h-3 text-muted-foreground" />
+            <span className="text-xs font-semibold text-foreground/80 uppercase tracking-wide">
+              Models
+            </span>
           </div>
-        </section>
-      )}
-
-      {/* Timing */}
-      {timing && (
-        <section>
-          <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
-            <Clock className="w-3 h-3" /> Timing
-          </h4>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { label: "Total", value: fmtDuration(timing.total_duration) },
-              { label: "API", value: fmtDuration(timing.api_duration) },
-              { label: "Tools", value: fmtDuration(timing.tool_duration) },
-            ].map(({ label, value }) => (
-              <div
-                key={label}
-                className="bg-muted/40 rounded p-1.5 text-center"
-              >
-                <div className="text-xs font-semibold">{value}</div>
-                <div className="text-[10px] text-muted-foreground">{label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Tools */}
-      {tools && tools.total_tool_calls > 0 && (
-        <section>
-          <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
-            <Wrench className="w-3 h-3" /> Tool Calls
-          </h4>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="bg-muted/40 rounded p-1.5 text-center">
-              <div className="text-xs font-semibold">
-                {tools.total_tool_calls}
-              </div>
-              <div className="text-[10px] text-muted-foreground">Total</div>
-            </div>
-            <div className="bg-muted/40 rounded p-1.5 text-center">
-              <div className="text-xs font-semibold">
-                {tools.iterations_with_tools}
-              </div>
-              <div className="text-[10px] text-muted-foreground">
-                Iterations
-              </div>
-            </div>
-          </div>
-          {Object.keys(tools.by_tool).length > 0 && (
-            <div className="mt-1 space-y-0.5">
-              {Object.entries(tools.by_tool).map(([name, info]) => (
-                <div
-                  key={name}
-                  className="flex items-center justify-between text-[11px] px-2 py-0.5 bg-muted/20 rounded"
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-muted/40">
+                <th className="px-3 py-1 text-left font-medium text-muted-foreground">
+                  Model
+                </th>
+                <th className="px-3 py-1 text-left font-medium text-muted-foreground">
+                  API
+                </th>
+                <th className="px-3 py-1 text-right font-medium text-muted-foreground">
+                  Tokens
+                </th>
+                <th className="px-3 py-1 text-right font-medium text-muted-foreground">
+                  Cost
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(byModel).map(([modelName, usage], i) => (
+                <tr
+                  key={modelName}
+                  className={i % 2 === 0 ? "bg-muted/20" : ""}
                 >
-                  <span className="font-mono text-foreground/80">{name}</span>
-                  <span className="text-muted-foreground">
-                    {typeof info === "object" && info !== null
-                      ? JSON.stringify(info)
-                      : String(info)}
-                  </span>
-                </div>
+                  <td className="px-3 py-1 font-mono text-foreground/80 truncate max-w-[160px]">
+                    {modelName}
+                  </td>
+                  <td className="px-3 py-1 text-muted-foreground">
+                    {usage.api}
+                  </td>
+                  <td className="px-3 py-1 text-right font-mono tabular-nums">
+                    {fmtTokens(usage.total_tokens)}
+                  </td>
+                  <td className="px-3 py-1 text-right font-mono tabular-nums text-muted-foreground">
+                    {usage.cost > 0 ? fmtCost(usage.cost) : "—"}
+                  </td>
+                </tr>
               ))}
-            </div>
-          )}
-        </section>
+            </tbody>
+          </table>
+        </div>
       )}
 
-      {/* Status + finish reason */}
-      <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1">
-        <span>
-          Status: <span className="text-foreground">{stats.status}</span>
-        </span>
-        <span>
-          Finish: <FinishBadge reason={stats.finish_reason} />
-        </span>
-        {stats.iterations > 1 && (
-          <span>
-            Iterations:{" "}
-            <span className="text-foreground">{stats.iterations}</span>
-          </span>
-        )}
-      </div>
+      {/* Tool calls */}
+      {tools && tools.total_tool_calls > 0 && (
+        <TableSection icon={<Wrench className="w-3 h-3" />} title="Tool Calls">
+          <tbody>
+            <TR
+              idx={0}
+              label="Total calls"
+              value={tools.total_tool_calls}
+              mono
+            />
+            <TR
+              idx={1}
+              label="Iterations with tools"
+              value={tools.iterations_with_tools}
+              mono
+            />
+            {Object.entries(tools.by_tool).map(([name, info], i) => (
+              <TR
+                key={name}
+                idx={i + 2}
+                label={name}
+                value={
+                  typeof info === "object" && info !== null
+                    ? JSON.stringify(info)
+                    : String(info)
+                }
+                mono
+                dim
+              />
+            ))}
+          </tbody>
+        </TableSection>
+      )}
     </div>
   );
 }
@@ -325,78 +453,118 @@ function SessionPanel({ instanceId }: { instanceId: string }) {
 
   if (aggregate.requestCount === 0) {
     return (
-      <div className="p-3 text-xs text-muted-foreground">No data yet.</div>
+      <div className="p-4 text-xs text-muted-foreground">No data yet.</div>
     );
   }
 
   return (
-    <div className="space-y-3 p-3">
-      {/* Session totals */}
-      <section>
-        <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
-          <BarChart2 className="w-3 h-3" /> Session Totals
-        </h4>
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            { label: "Requests", value: String(aggregate.requestCount) },
-            { label: "Tokens", value: fmtTokens(aggregate.totalTokens) },
-            { label: "Cost", value: fmtCost(aggregate.totalCost) },
-            { label: "Duration", value: fmtDuration(aggregate.totalDuration) },
-          ].map(({ label, value }) => (
-            <div key={label} className="bg-muted/40 rounded p-1.5 text-center">
-              <div className="text-xs font-semibold">{value}</div>
-              <div className="text-[10px] text-muted-foreground">{label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+    <div className="divide-y divide-border">
+      {/* Session totals summary strip */}
+      <div className="flex items-center gap-5 px-3 py-2 bg-muted/10 text-xs flex-wrap">
+        <span className="flex items-center gap-1">
+          <BarChart2 className="w-3 h-3 text-muted-foreground" />
+          <span className="font-mono font-semibold text-foreground">
+            {aggregate.requestCount}
+          </span>
+          <span className="text-muted-foreground">requests</span>
+        </span>
+        <span className="flex items-center gap-1">
+          <Zap className="w-3 h-3 text-muted-foreground" />
+          <span className="font-mono font-semibold text-foreground">
+            {fmtTokens(aggregate.totalTokens)}
+          </span>
+          <span className="text-muted-foreground">tokens</span>
+        </span>
+        {aggregate.totalCost > 0 && (
+          <span className="flex items-center gap-1">
+            <DollarSign className="w-3 h-3 text-muted-foreground" />
+            <span className="font-mono font-semibold text-foreground">
+              {fmtCost(aggregate.totalCost)}
+            </span>
+          </span>
+        )}
+        <span className="flex items-center gap-1">
+          <Clock className="w-3 h-3 text-muted-foreground" />
+          <span className="font-mono font-semibold text-foreground">
+            {fmtDuration(aggregate.totalDuration)}
+          </span>
+          <span className="text-muted-foreground">total time</span>
+        </span>
+      </div>
 
-      {/* Per-turn history */}
-      {assistantTurns.length > 1 && (
-        <section>
-          <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-            Per-Request Breakdown
-          </h4>
-          <div className="space-y-1 max-h-48 overflow-y-auto">
-            {assistantTurns.map((turn, idx) => {
-              const s = turn.completionStats;
-              const t = s?.total_usage?.total;
-              return (
-                <div
-                  key={turn.turnId}
-                  className="flex items-center gap-3 text-[11px] px-2 py-1 bg-muted/30 rounded"
-                >
-                  <span className="text-muted-foreground shrink-0">
-                    #{idx + 1}
-                  </span>
-                  {s && (
-                    <>
-                      <span className="flex items-center gap-0.5">
-                        <Clock className="w-2.5 h-2.5 text-muted-foreground" />
-                        {fmtDuration(s.timing_stats?.total_duration ?? 0)}
-                      </span>
-                      {t && (
-                        <span className="flex items-center gap-0.5">
-                          <Zap className="w-2.5 h-2.5 text-muted-foreground" />
-                          {fmtTokens(t.total_tokens)}
-                        </span>
-                      )}
-                      {t && t.total_cost > 0 && (
-                        <span className="text-muted-foreground">
-                          {fmtCost(t.total_cost)}
-                        </span>
-                      )}
-                      <FinishBadge reason={s.finish_reason} />
-                    </>
-                  )}
-                  {!s && (
-                    <span className="text-muted-foreground/50">no stats</span>
-                  )}
-                </div>
-              );
-            })}
+      {/* Per-turn history table */}
+      {assistantTurns.length > 0 && (
+        <div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/30 border-b border-border">
+            <BarChart2 className="w-3 h-3 text-muted-foreground" />
+            <span className="text-xs font-semibold text-foreground/80 uppercase tracking-wide">
+              Per-Request Breakdown
+            </span>
           </div>
-        </section>
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-muted/40">
+                <th className="px-3 py-1 text-left font-medium text-muted-foreground w-8">
+                  #
+                </th>
+                <th className="px-3 py-1 text-right font-medium text-muted-foreground">
+                  Duration
+                </th>
+                <th className="px-3 py-1 text-right font-medium text-muted-foreground">
+                  Tokens
+                </th>
+                <th className="px-3 py-1 text-right font-medium text-muted-foreground">
+                  In / Out
+                </th>
+                <th className="px-3 py-1 text-right font-medium text-muted-foreground">
+                  Cost
+                </th>
+                <th className="px-3 py-1 text-center font-medium text-muted-foreground">
+                  Result
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {assistantTurns.map((turn, idx) => {
+                const s = turn.completionStats;
+                const t = s?.total_usage?.total;
+                return (
+                  <tr
+                    key={turn.turnId}
+                    className={idx % 2 === 0 ? "bg-muted/20" : ""}
+                  >
+                    <td className="px-3 py-1 text-muted-foreground font-mono">
+                      {idx + 1}
+                    </td>
+                    <td className="px-3 py-1 text-right font-mono tabular-nums">
+                      {s
+                        ? fmtDuration(s.timing_stats?.total_duration ?? 0)
+                        : "—"}
+                    </td>
+                    <td className="px-3 py-1 text-right font-mono tabular-nums">
+                      {t ? fmtTokens(t.total_tokens) : "—"}
+                    </td>
+                    <td className="px-3 py-1 text-right font-mono tabular-nums text-muted-foreground text-[11px]">
+                      {t
+                        ? `${fmtTokens(t.input_tokens)} / ${fmtTokens(t.output_tokens)}`
+                        : "—"}
+                    </td>
+                    <td className="px-3 py-1 text-right font-mono tabular-nums text-muted-foreground">
+                      {t && t.total_cost > 0 ? fmtCost(t.total_cost) : "—"}
+                    </td>
+                    <td className="px-3 py-1 text-center">
+                      {s ? (
+                        <FinishBadge reason={s.finish_reason} />
+                      ) : (
+                        <span className="text-muted-foreground/50">—</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
@@ -423,23 +591,39 @@ function fmtBytes(bytes: number): string {
 // Client Metrics Panel — "Client" tab
 // =============================================================================
 
-function StatRow({
-  label,
-  value,
-  highlight,
+function ClientTableCol({
+  icon,
+  title,
+  rows,
 }: {
-  label: string;
-  value: string;
-  highlight?: boolean;
+  icon: React.ReactNode;
+  title: string;
+  rows: Array<{ label: string; value: string; highlight?: boolean }>;
 }) {
   return (
-    <div className="flex items-center justify-between py-0.5">
-      <span className="text-[11px] text-muted-foreground">{label}</span>
-      <span
-        className={`text-[11px] font-mono tabular-nums ${highlight ? "text-primary font-semibold" : "text-foreground"}`}
-      >
-        {value}
-      </span>
+    <div className="flex-1 min-w-0 border-r border-border last:border-r-0">
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/30 border-b border-border">
+        <span className="text-muted-foreground">{icon}</span>
+        <span className="text-xs font-semibold text-foreground/80 uppercase tracking-wide">
+          {title}
+        </span>
+      </div>
+      <table className="w-full text-xs">
+        <tbody>
+          {rows.map(({ label, value, highlight }, i) => (
+            <tr key={label} className={i % 2 === 0 ? "bg-muted/20" : ""}>
+              <td className="px-3 py-1 text-muted-foreground">{label}</td>
+              <td
+                className={`px-3 py-1 text-right font-mono tabular-nums whitespace-nowrap ${
+                  highlight ? "text-primary font-semibold" : "text-foreground"
+                }`}
+              >
+                {value}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -453,115 +637,109 @@ function ClientPanel({
 }) {
   if (!metrics) {
     return (
-      <div className="p-3 text-xs text-muted-foreground text-center">
+      <div className="p-4 text-xs text-muted-foreground text-center">
         No client metrics yet.
       </div>
     );
   }
 
+  const timingRows = [
+    {
+      label: "Internal latency",
+      value: fmtMs(metrics.internalLatencyMs),
+      highlight:
+        metrics.internalLatencyMs != null && metrics.internalLatencyMs > 500,
+    },
+    {
+      label: "Time to first token",
+      value: fmtMs(metrics.ttftMs),
+      highlight: true,
+    },
+    { label: "Stream duration", value: fmtMs(metrics.streamDurationMs) },
+    {
+      label: "Render delay",
+      value: fmtMs(metrics.renderDelayMs),
+      highlight: metrics.renderDelayMs != null && metrics.renderDelayMs > 200,
+    },
+    {
+      label: "Total client duration",
+      value: fmtMs(metrics.totalClientDurationMs),
+    },
+  ];
+
+  const dataRows = [
+    { label: "Response text", value: fmtBytes(metrics.accumulatedTextBytes) },
+    { label: "Total payload", value: fmtBytes(metrics.totalPayloadBytes) },
+    { label: "Total events", value: String(metrics.totalEvents) },
+    { label: "Chunk events", value: String(metrics.chunkEvents) },
+    { label: "Data events", value: String(metrics.dataEvents) },
+    { label: "Tool events", value: String(metrics.toolEvents) },
+    { label: "Block events", value: String(metrics.contentBlockEvents) },
+    { label: "Status events", value: String(metrics.statusUpdateEvents) },
+    { label: "Other events", value: String(metrics.otherEvents) },
+  ];
+
   return (
-    <div className="space-y-3 p-3">
-      {/* Timing */}
-      <section>
-        <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
-          <Clock className="w-3 h-3" /> Client Timing
-        </h4>
-        <div className="space-y-0.5">
-          <StatRow
-            label="Internal latency (submit → conv ID)"
-            value={fmtMs(metrics.internalLatencyMs)}
-            highlight={
-              metrics.internalLatencyMs != null &&
-              metrics.internalLatencyMs > 500
-            }
-          />
-          <StatRow
-            label="Time to first token (submit → chunk 1)"
-            value={fmtMs(metrics.ttftMs)}
-            highlight
-          />
-          <StatRow
-            label="Stream duration (chunk 1 → stream end)"
-            value={fmtMs(metrics.streamDurationMs)}
-          />
-          <StatRow
-            label="Render delay (stream end → Redux commit)"
-            value={fmtMs(metrics.renderDelayMs)}
-            highlight={
-              metrics.renderDelayMs != null && metrics.renderDelayMs > 200
-            }
-          />
-          <StatRow
-            label="Total client duration"
-            value={fmtMs(metrics.totalClientDurationMs)}
-          />
-        </div>
-      </section>
+    <div className="divide-y divide-border">
+      {/* Two-column layout: Timing | Data Volume */}
+      <div className="flex">
+        <ClientTableCol
+          icon={<Clock className="w-3 h-3" />}
+          title="Client Timing"
+          rows={timingRows}
+        />
+        <ClientTableCol
+          icon={<Database className="w-3 h-3" />}
+          title="Data Volume"
+          rows={dataRows}
+        />
+      </div>
 
-      {/* Data volume */}
-      <section>
-        <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
-          <Database className="w-3 h-3" /> Data Volume (Last Request)
-        </h4>
-        <div className="space-y-0.5">
-          <StatRow
-            label="Response text"
-            value={fmtBytes(metrics.accumulatedTextBytes)}
-          />
-          <StatRow
-            label="Total payload (all events)"
-            value={fmtBytes(metrics.totalPayloadBytes)}
-          />
-          <StatRow label="Total events" value={String(metrics.totalEvents)} />
-          <StatRow label="Chunk events" value={String(metrics.chunkEvents)} />
-          <StatRow label="Data events" value={String(metrics.dataEvents)} />
-          <StatRow label="Tool events" value={String(metrics.toolEvents)} />
-          <StatRow
-            label="Block events"
-            value={String(metrics.contentBlockEvents)}
-          />
-          <StatRow
-            label="Status events"
-            value={String(metrics.statusUpdateEvents)}
-          />
-          <StatRow label="Other events" value={String(metrics.otherEvents)} />
-        </div>
-      </section>
-
-      {/* Session averages (only if > 1 request) */}
+      {/* Session averages — full-width when present */}
       {aggregateClient.totalRequests > 1 && (
-        <section>
-          <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
-            <Radio className="w-3 h-3" /> Session Averages (
-            {aggregateClient.totalRequests} requests)
-          </h4>
-          <div className="space-y-0.5">
-            <StatRow
-              label="Avg TTFT"
-              value={fmtMs(aggregateClient.avgTtftMs)}
-            />
-            <StatRow
-              label="Avg internal latency"
-              value={fmtMs(aggregateClient.avgInternalLatencyMs)}
-            />
-            <StatRow
-              label="Avg total duration"
-              value={fmtMs(aggregateClient.avgTotalDurationMs)}
-            />
-            <StatRow
-              label="Total payload received"
-              value={fmtBytes(aggregateClient.totalPayloadBytes)}
-            />
-            <StatRow
-              label="Total text received"
-              value={fmtBytes(aggregateClient.totalTextBytes)}
-            />
-            <StatRow
-              label="Total events"
-              value={String(aggregateClient.totalEvents)}
-            />
-          </div>
-        </section>
+        <TableSection
+          icon={<Radio className="w-3 h-3" />}
+          title={`Session Averages (${aggregateClient.totalRequests} requests)`}
+        >
+          <tbody>
+            {[
+              {
+                label: "Avg TTFT",
+                value: fmtMs(aggregateClient.avgTtftMs),
+                highlight: true,
+              },
+              {
+                label: "Avg internal latency",
+                value: fmtMs(aggregateClient.avgInternalLatencyMs),
+              },
+              {
+                label: "Avg total duration",
+                value: fmtMs(aggregateClient.avgTotalDurationMs),
+              },
+              {
+                label: "Total payload received",
+                value: fmtBytes(aggregateClient.totalPayloadBytes),
+              },
+              {
+                label: "Total text received",
+                value: fmtBytes(aggregateClient.totalTextBytes),
+              },
+              {
+                label: "Total events",
+                value: String(aggregateClient.totalEvents),
+              },
+            ].map(({ label, value, highlight }, i) => (
+              <TR
+                key={label}
+                idx={i}
+                label={label}
+                value={value}
+                mono
+                highlight={highlight}
+              />
+            ))}
+          </tbody>
+        </TableSection>
       )}
     </div>
   );
@@ -573,9 +751,15 @@ function ClientPanel({
 
 interface AgentRequestStatsProps {
   instanceId: string;
+  agentId: string;
+  onNewInstance: (newId: string) => void;
 }
 
-export function AgentRequestStats({ instanceId }: AgentRequestStatsProps) {
+export function AgentRequestStats({
+  instanceId,
+  agentId,
+  onNewInstance,
+}: AgentRequestStatsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<"last" | "session" | "client">(
     "last",
@@ -593,7 +777,6 @@ export function AgentRequestStats({ instanceId }: AgentRequestStatsProps) {
   const handleExpand = useCallback(() => setIsExpanded(true), []);
   const handleCollapse = useCallback(() => setIsExpanded(false), []);
 
-  // Nothing to show until at least one turn has completed
   if (!latestStats) return null;
 
   if (!isExpanded) {
@@ -602,6 +785,9 @@ export function AgentRequestStats({ instanceId }: AgentRequestStatsProps) {
         <CollapsedRowWithClient
           stats={latestStats}
           clientMetrics={latestClientMetrics}
+          instanceId={instanceId}
+          agentId={agentId}
+          onNewInstance={onNewInstance}
           onExpand={handleExpand}
         />
       </div>
@@ -636,19 +822,29 @@ export function AgentRequestStats({ instanceId }: AgentRequestStatsProps) {
           ))}
         </div>
 
-        {/* Collapse button */}
-        <button
-          type="button"
-          onClick={handleCollapse}
-          className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-          title="Collapse"
-        >
-          <ChevronUp className="w-3.5 h-3.5" />
-        </button>
+        {/* Collapse + Reset */}
+        <div className="flex items-center gap-1">
+          <ResetButton
+            instanceId={instanceId}
+            agentId={agentId}
+            onNewInstance={(newId) => {
+              onNewInstance(newId);
+              setIsExpanded(false);
+            }}
+          />
+          <button
+            type="button"
+            onClick={handleCollapse}
+            className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+            title="Collapse"
+          >
+            <ChevronUp className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
-      {/* Tab content — max height with scroll */}
-      <div className="max-h-72 overflow-y-auto">
+      {/* Tab content — fixed height, always scrollable */}
+      <div className="h-72 overflow-y-auto">
         {activeTab === "last" && <LastRequestPanel stats={latestStats} />}
         {activeTab === "session" && <SessionPanel instanceId={instanceId} />}
         {activeTab === "client" && (

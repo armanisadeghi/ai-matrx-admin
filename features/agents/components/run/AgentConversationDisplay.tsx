@@ -25,7 +25,7 @@ import {
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { AgentStreamingMessage } from "./AgentStreamingMessage";
 import { AgentUserMessage } from "./AgentUserMessage";
-import { Bot } from "lucide-react";
+import { Bot, Webhook } from "lucide-react";
 
 const PromptAssistantMessage = dynamic(
   () =>
@@ -60,8 +60,8 @@ export function AgentConversationDisplay({
   if (turns.length === 0 && !isActive) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-6 py-12">
-        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-          <Bot className="w-6 h-6 text-primary" />
+        <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+          <Webhook className="w-12 h-12 text-primary" />
         </div>
         <div>
           <p className="text-sm font-medium">{emptyStateMessage}</p>

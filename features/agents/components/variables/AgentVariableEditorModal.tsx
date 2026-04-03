@@ -87,10 +87,6 @@ export function AgentVariableEditorModal({
   };
 
   const title = mode === "add" ? "Add Variable" : "Edit Variable";
-  const description =
-    mode === "add"
-      ? "Define a new variable to use in agent messages with {{variableName}}."
-      : "Update this variable's name, default value, or configuration.";
 
   const content = (
     <>
@@ -125,7 +121,9 @@ export function AgentVariableEditorModal({
         <DrawerContent className="px-4 pb-safe max-h-[90dvh]">
           <DrawerHeader className="px-0">
             <DrawerTitle>{title}</DrawerTitle>
-            <DrawerDescription>{description}</DrawerDescription>
+            <DrawerDescription>
+              <span className="sr-only">Variables</span>
+            </DrawerDescription>
           </DrawerHeader>
           <ScrollArea className="flex-1 overflow-y-auto pb-4">
             {content}
@@ -140,7 +138,9 @@ export function AgentVariableEditorModal({
       <DialogContent className="sm:max-w-[500px] max-h-[90dvh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogDescription>
+            <span className="sr-only">Variables</span>
+          </DialogDescription>
         </DialogHeader>
         <ScrollArea className="flex-1 overflow-y-auto pr-1">
           <div className="py-1">{content}</div>

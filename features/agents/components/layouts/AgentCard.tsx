@@ -19,6 +19,7 @@ import { selectAgentById } from "@/features/agents/redux/agent-definition/select
 import { ShareModal } from "@/features/sharing";
 import { AgentActionModal } from "./AgentActionModal";
 import { FavoriteAgentButton } from "./FavoriteAgentButton";
+import { useAgentsBasePath } from "@/features/agents/hooks/useAgentsBasePath";
 import { useState } from "react";
 
 interface AgentCardProps {
@@ -49,6 +50,7 @@ export function AgentCard({
   const isOwner = record?.isOwner ?? true;
   const accessLevel = record?.accessLevel ?? null;
 
+  const basePath = useAgentsBasePath();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [lastModalCloseTime, setLastModalCloseTime] = useState(0);
@@ -58,18 +60,19 @@ export function AgentCard({
   const handleRun = (e?: React.MouseEvent) => {
     if (e && (e.metaKey || e.ctrlKey)) return;
     e?.preventDefault();
-    if (onNavigate && !isAnyNavigating) onNavigate(id, `/ai/agents/run/${id}`);
+    if (onNavigate && !isAnyNavigating) onNavigate(id, `${basePath}/run/${id}`);
   };
 
   const handleEdit = (e?: React.MouseEvent) => {
     if (e && (e.metaKey || e.ctrlKey)) return;
     e?.preventDefault();
-    if (onNavigate && !isAnyNavigating) onNavigate(id, `/ai/agents/edit/${id}`);
+    if (onNavigate && !isAnyNavigating)
+      onNavigate(id, `${basePath}/edit/${id}`);
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
     if (e.metaKey || e.ctrlKey) {
-      window.open(`/ai/agents/run/${id}`, "_blank");
+      window.open(`${basePath}/run/${id}`, "_blank");
       return;
     }
     const timeSinceClose = Date.now() - lastModalCloseTime;
@@ -177,7 +180,7 @@ export function AgentCard({
           onClick={(e) => e.stopPropagation()}
         >
           <Link
-            href={`/ai/agents/run/${id}`}
+            href={`${basePath}/run/${id}`}
             tabIndex={-1}
             onClick={(e) => {
               e.stopPropagation();
@@ -196,7 +199,7 @@ export function AgentCard({
           </Link>
           {canEdit && (
             <Link
-              href={`/ai/agents/edit/${id}`}
+              href={`${basePath}/edit/${id}`}
               tabIndex={-1}
               onClick={(e) => {
                 e.stopPropagation();

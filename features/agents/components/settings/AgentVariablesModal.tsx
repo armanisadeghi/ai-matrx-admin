@@ -1,12 +1,5 @@
 "use client";
 
-/**
- * AgentVariablesModal
- *
- * Dialog/Drawer wrapper around AgentVariablesManager.
- * Triggered via a Variable icon button.
- */
-
 import { useState } from "react";
 import { Variable } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -14,17 +7,18 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerContent,
-  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
+  DrawerDescription,
 } from "@/components/ui/drawer";
+import { AgentVariablesPanel } from "@/features/agents/components/variables/AgentVariablesPanel";
 import { AgentVariablesManager } from "@/features/agents/components/variables/AgentVariablesManager";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentVariableDefinitions } from "@/features/agents/redux/agent-definition/selectors";
@@ -64,15 +58,14 @@ export function AgentVariablesModal({ agentId }: AgentVariablesModalProps) {
       <>
         {trigger}
         <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent className="px-4 pb-safe max-h-[85dvh]">
-            <DrawerHeader className="px-0">
-              <DrawerTitle>Variables</DrawerTitle>
+          <DrawerContent className="max-h-[90dvh] flex flex-col">
+            <DrawerHeader className="px-4 pt-4 pb-2 shrink-0">
+              <DrawerTitle>Agent Variables</DrawerTitle>
               <DrawerDescription>
-                Define variables to use in agent messages with{" "}
-                {"{{variableName}}"}.
+                {count} variable{count !== 1 ? "s" : ""} defined
               </DrawerDescription>
             </DrawerHeader>
-            <div className="overflow-y-auto pb-6">
+            <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-safe">
               <AgentVariablesManager agentId={agentId} />
             </div>
           </DrawerContent>
@@ -85,15 +78,20 @@ export function AgentVariablesModal({ agentId }: AgentVariablesModalProps) {
     <>
       {trigger}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Variables</DialogTitle>
-            <DialogDescription>
-              Define variables to use in agent messages with{" "}
-              {"{{variableName}}"}.
+        <DialogContent className="max-w-[90vw] w-full xl:max-w-4xl h-[80dvh] flex flex-col overflow-hidden p-0">
+          <DialogHeader className="px-6 pt-5 pb-4 shrink-0 border-b border-border">
+            <DialogTitle className="text-base font-semibold">
+              Agent Variables
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              {count > 0
+                ? `${count} variable${count !== 1 ? "s" : ""} defined — select one to edit or add a new one`
+                : "Define named values that can be filled in when running this agent"}
             </DialogDescription>
           </DialogHeader>
-          <AgentVariablesManager agentId={agentId} />
+          <div className="flex-1 overflow-hidden" style={{ minHeight: 0 }}>
+            <AgentVariablesPanel agentId={agentId} />
+          </div>
         </DialogContent>
       </Dialog>
     </>

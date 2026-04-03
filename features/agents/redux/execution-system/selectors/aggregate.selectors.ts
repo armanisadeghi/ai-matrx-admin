@@ -70,7 +70,11 @@ export const selectLatestAccumulatedText =
     const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return "";
     const latest = state.activeRequests.byRequestId[ids[ids.length - 1]];
-    return latest?.accumulatedText ?? "";
+    if (!latest) return "";
+    // Lazy join: textChunks accumulate via O(1) push during streaming,
+    // joined here only when the selector is actually called by a subscriber.
+    if (latest.textChunks.length > 0) return latest.textChunks.join("");
+    return latest.accumulatedText || "";
   };
 
 /**

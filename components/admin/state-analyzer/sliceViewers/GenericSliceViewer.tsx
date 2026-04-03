@@ -1,50 +1,108 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import JsonTree from "@/components/admin/state-analyzer/components/JsonTree";
+import { JsonTreeViewer } from "@/components/official/json-explorer/JsonTreeViewer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatJson } from "@/utils/json/json-cleaner-utility";
 import { CopyButton } from "@/components/matrx/buttons/CopyButton";
+import { JsonTruncator } from "@/components/official-candidate/json-truncator/JsonTruncator";
 
-const GenericSliceViewer = ({ sliceKey, state }) => {
+const TRIGGER =
+  "text-xs px-2 py-0.5 h-6 rounded-none border-r border-border last:border-r-0 " +
+  "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none " +
+  "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground";
+
+const GenericSliceViewer = ({
+  sliceKey,
+  state,
+}: {
+  sliceKey: string;
+  state: any;
+}) => {
   const formattedJson = formatJson(state, 2);
+  const truncatorValue = useMemo(
+    () => (typeof state === "string" ? state : JSON.stringify(state, null, 2)),
+    [state],
+  );
 
   return (
-    <div className="p-4 bg-white dark:bg-zinc-800 rounded-lg">
-      <div className="flex items-start justify-between gap-3 mb-4">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
-          {sliceKey} State
-        </h2>
-        <CopyButton content={formattedJson} size="sm" className="shrink-0" />
-      </div>
+    // Fill whatever height the parent gives us, flex column so header + tabs stack
+    <div className="h-full flex flex-col bg-white dark:bg-zinc-800 rounded-lg overflow-hidden min-h-0">
+      <Tabs
+        defaultValue="json"
+        className="flex-1 flex flex-col min-h-0 overflow-hidden"
+      >
+        {/* ── Single compact header row ── */}
+        <div className="flex items-center gap-2 pl-3 pr-8 py-1 border-b border-border flex-shrink-0">
+          <h2 className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate shrink-0">
+            {sliceKey}
+          </h2>
+          <TabsList className="h-auto shrink-0 gap-0 rounded-md border border-border bg-transparent p-0 overflow-hidden">
+            <TabsTrigger className={TRIGGER} value="json">
+              JSON
+            </TabsTrigger>
+            <TabsTrigger className={TRIGGER} value="raw">
+              Explorer
+            </TabsTrigger>
+            <TabsTrigger className={TRIGGER} value="tree-viewer">
+              Tree
+            </TabsTrigger>
+            <TabsTrigger className={TRIGGER} value="json-tree">
+              JSON Tree
+            </TabsTrigger>
+            <TabsTrigger className={TRIGGER} value="truncator">
+              Truncator
+            </TabsTrigger>
+          </TabsList>
+          <div className="flex-1" />
+          <CopyButton content={formattedJson} size="sm" className="shrink-0" />
+        </div>
 
-      <Tabs defaultValue="json">
-        <TabsList className="mb-4">
-          <TabsTrigger value="json">JSON</TabsTrigger>
-          <TabsTrigger value="raw">JSON Explorer</TabsTrigger>
-          <TabsTrigger value="tree">Tree View</TabsTrigger>
-        </TabsList>
+        {/* ── Tab panels — all flex-1 so they fill the remaining height ── */}
         <TabsContent
           value="json"
-          className="bg-gray-50 dark:bg-zinc-900 p-4 rounded-lg overflow-auto max-h-full"
+          className="flex-1 min-h-0 overflow-auto mt-0 border-none outline-none ring-0 bg-gray-50 dark:bg-zinc-900"
         >
-          <pre className="w-full h-full overflow-auto text-gray-800 dark:text-gray-300">
+          <pre className="p-2 text-xs text-gray-800 dark:text-gray-300 whitespace-pre-wrap">
             {formattedJson}
           </pre>
         </TabsContent>
 
         <TabsContent
           value="raw"
-          className="bg-gray-50 dark:bg-zinc-900 p-4 rounded-lg overflow-auto max-h-full"
+          className="flex-1 min-h-0 overflow-auto mt-0 border-none outline-none ring-0 bg-gray-50 dark:bg-zinc-900"
         >
           <RawJsonExplorer pageData={state} />
         </TabsContent>
+
         <TabsContent
-          value="tree"
-          className="bg-gray-50 dark:bg-zinc-900 p-4 rounded-lg overflow-auto max-h-full"
+          value="tree-viewer"
+          className="flex-1 min-h-0 overflow-auto mt-0 border-none outline-none ring-0 bg-gray-50 dark:bg-zinc-900"
+        >
+          <JsonTreeViewer data={state} />
+        </TabsContent>
+
+        <TabsContent
+          value="json-tree"
+          className="flex-1 min-h-0 overflow-auto mt-0 border-none outline-none ring-0 bg-gray-50 dark:bg-zinc-900"
         >
           <JsonTree data={state} />
+        </TabsContent>
+
+        {/* Truncator fills height directly — no extra overflow wrapper needed */}
+        <TabsContent
+          value="truncator"
+          className="flex-1 min-h-0 overflow-hidden mt-0 border-none outline-none ring-0"
+        >
+          <JsonTruncator
+            initialValue={truncatorValue}
+            tabbed
+            defaultTab="fields"
+            className="h-full"
+            allowLayoutToggle
+          />
         </TabsContent>
       </Tabs>
     </div>

@@ -14,7 +14,8 @@ import { useIsMounted } from "@/hooks/use-is-mounted";
  * allowing scroll events to work properly.
  */
 const DialogContainerContext = React.createContext<HTMLElement | null>(null);
-export const useDialogContainer = () => React.useContext(DialogContainerContext);
+export const useDialogContainer = () =>
+  React.useContext(DialogContainerContext);
 
 /**
  * Hydration-safe Dialog wrapper.
@@ -65,14 +66,17 @@ const DialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
-  const [containerEl, setContainerEl] = React.useState<HTMLElement | null>(null);
+  const [containerEl, setContainerEl] = React.useState<HTMLElement | null>(
+    null,
+  );
 
   const mergedRef = React.useCallback(
     (node: HTMLDivElement | null) => {
       containerRef.current = node;
       setContainerEl(node);
       if (typeof ref === "function") ref(node);
-      else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      else if (ref)
+        (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
     },
     [ref],
   );

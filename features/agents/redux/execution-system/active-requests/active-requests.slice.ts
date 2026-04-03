@@ -9,7 +9,7 @@
  * multiple requests via multi-turn conversations.
  *
  * Storage map:
- *   chunk events       → accumulatedText (string concat)
+ *   chunk events       → textChunks (O(1) push) + lazy join in selectors
  *   status_update      → currentStatus + statusHistory
  *   content_block      → contentBlocks (Record by blockId) + contentBlockOrder
  *   tool_event         → toolLifecycle (Record by callId) + pendingToolCalls
@@ -82,6 +82,7 @@ const activeRequestsSlice = createSlice({
         conversationId: null,
         parentConversationId,
         status: "pending",
+        textChunks: [],
         accumulatedText: "",
         currentStatus: null,
         statusHistory: [],
@@ -155,8 +156,22 @@ const activeRequestsSlice = createSlice({
         if (!request.firstChunkAt) {
           request.firstChunkAt = new Date().toISOString();
         }
-        request.accumulatedText += action.payload.content;
-        request.status = "streaming";
+        // O(1) push — lazy join in selectors avoids O(n) concat per chunk
+        request.textChunks.push(action.payload.content);
+      }
+    },
+
+    /**
+     * Joins textChunks into accumulatedText. Call once after the stream ends
+     * so that commitAssistantTurn reads the final string without a selector.
+     */
+    finalizeAccumulatedText(
+      state,
+      action: PayloadAction<{ requestId: string }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (request && request.textChunks.length > 0) {
+        request.accumulatedText = request.textChunks.join("");
       }
     },
 
@@ -409,6 +424,7 @@ export const {
   setRequestStatus,
   setConversationId,
   appendChunk,
+  finalizeAccumulatedText,
   setCurrentStatus,
   upsertContentBlock,
   upsertToolLifecycle,

@@ -12,9 +12,11 @@
 import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import type {
+  BuilderAdvancedSettings,
   InstanceUIState,
   ResultDisplayMode,
 } from "@/features/agents/types";
+import { DEFAULT_BUILDER_ADVANCED_SETTINGS } from "@/features/agents/types/instance.types";
 
 /**
  * Full UI state for an instance.
@@ -133,6 +135,35 @@ export const selectModeState =
   (instanceId: string) =>
   (state: RootState): Record<string, unknown> | undefined =>
     state.instanceUIState.byInstanceId[instanceId]?.modeState;
+
+export const selectReuseConversationId =
+  (instanceId: string) =>
+  (state: RootState): boolean =>
+    state.instanceUIState.byInstanceId[instanceId]?.reuseConversationId ??
+    false;
+
+/**
+ * Builder advanced settings for a chat-mode instance.
+ * Returns the existing object by reference — no new object constructed.
+ * Falls back to defaults when instance not initialized.
+ */
+export const selectBuilderAdvancedSettings =
+  (instanceId: string) =>
+  (state: RootState): BuilderAdvancedSettings =>
+    state.instanceUIState.byInstanceId[instanceId]?.builderAdvancedSettings ??
+    DEFAULT_BUILDER_ADVANCED_SETTINGS;
+
+export const selectBuilderDebug =
+  (instanceId: string) =>
+  (state: RootState): boolean =>
+    state.instanceUIState.byInstanceId[instanceId]?.builderAdvancedSettings
+      ?.debug ?? false;
+
+export const selectUseStructuredSystemInstruction =
+  (instanceId: string) =>
+  (state: RootState): boolean =>
+    state.instanceUIState.byInstanceId[instanceId]?.builderAdvancedSettings
+      ?.useStructuredSystemInstruction ?? false;
 
 // ── Global preference selectors ───────────────────────────────────────────────
 

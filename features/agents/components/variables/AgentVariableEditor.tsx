@@ -160,7 +160,7 @@ export function AgentVariableEditor({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
       {/* Name */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">Name</Label>
@@ -215,18 +215,12 @@ export function AgentVariableEditor({
           minHeight={60}
           maxHeight={200}
         />
-        <p className="text-xs text-muted-foreground">
-          Provide instructions or context for this variable
-        </p>
       </div>
 
       {/* Required */}
       <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border">
         <div className="flex-1">
           <Label className="text-sm font-medium">Required</Label>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            User must provide a value for this variable
-          </p>
         </div>
         <Switch
           checked={required}
@@ -318,7 +312,7 @@ export function AgentVariableEditor({
             </div>
           )}
           {!readonly && (
-            <div className="flex gap-2">
+            <div className="flex gap-1.5">
               <Input
                 value={newOption}
                 onChange={(e) => setNewOption(e.target.value)}
@@ -329,15 +323,18 @@ export function AgentVariableEditor({
                   }
                 }}
                 placeholder="Add option..."
+                className="h-7 text-xs"
               />
               <Button
                 type="button"
-                size="sm"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 shrink-0"
                 onClick={handleAddOption}
                 disabled={!newOption.trim()}
+                title="Add option"
               >
-                <Plus className="w-4 h-4 mr-1" />
-                Add
+                <Plus className="w-3.5 h-3.5" />
               </Button>
             </div>
           )}

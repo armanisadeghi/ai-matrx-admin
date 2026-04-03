@@ -102,6 +102,63 @@ All 10 slices use the same key structure: `byInstanceId: Record<string, T>`.
    - `end` → `commitAssistantTurn` writes completed text to conversation history
 6. **Client metrics** — computed after stream ends, attached to both request and conversation turn. Now tracks `contentBlockEvents` and `statusUpdateEvents` alongside the original counters.
 
+### Step D — Chat Execution Path (Builder)
+
+The builder right panel uses a separate execution path that always hits `POST /api/ai/chat` with the agent definition read FRESH from Redux (including unsaved dirty edits). This bypasses the agent/conversation routing entirely.
+
+**Key files:**
+- `execute-chat-instance.thunk.ts` — `assembleChatRequest()` + `executeChatInstance` thunk
+- `process-stream.ts` — shared NDJSON stream processor used by both `executeInstance` and `executeChatInstance`
+
+**Differences from the standard path (Step B/C):**
+
+| Concern | Standard (`executeInstance`) | Builder (`executeChatInstance`) |
+|---------|---------------------------|-------------------------------|
+| Agent definition | Snapshotted at instance creation | Read FRESH on every execution |
+| Endpoint | `/agents/{id}` → `/conversations/{id}` | Always `/api/ai/chat` |
+| LLM params | `config_overrides` (delta only) | Spread flat at top level (full merged settings) |
+| Messages | Server manages history; client sends `user_input` | Client builds full `messages[]` from priming + history + input |
+| Control fields | N/A | `debug`, `store`, `max_iterations`, `max_retries_per_iteration` from `builderAdvancedSettings` |
+| Conversation mode | `"agent"` or `"conversation"` | `"chat"` |
+
+**`assembleChatRequest(state, instanceId)` source mapping:**
+
+| Source Slice | Selector | → Payload Field |
+|-------------|----------|----------------|
+| `agentDefinition` (FRESH read) | `state.agentDefinition.agents[agentId]` | `ai_model_id`, `messages` (priming), `tools`, `custom_tools` |
+| `instanceConversationHistory` | `historyEntry.turns[]` → `turnsToMessages()` | appended to `messages` |
+| `instanceUserInput` | direct read | appended to `messages` as final user turn |
+| `instanceResources` | `selectResourcePayloads` | merged into final user message blocks |
+| `instanceModelOverrides` | `selectCurrentSettings` (full merged, NOT deltas) | spread flat on payload |
+| `instanceVariableValues` | `selectResolvedVariables` | `variables` |
+| `instanceContext` | `selectContextPayload` | `context` |
+| `instanceClientTools` | direct read | `client_tools` |
+| `instanceUIState` | `builderAdvancedSettings` | `debug`, `store`, `max_iterations`, `max_retries_per_iteration` |
+| `instanceUIState` | `reuseConversationId` | conditionally sets `conversation_id` |
+
+**Type safety:** `ChatRequestPayload` is derived directly from the auto-generated schema via `NonNullableFields<components["schemas"]["ChatRequest"]>` in `agent-api-types.ts`. No hand-rolled interfaces — `pnpm update-api-types` picks up backend changes automatically.
+
+**Three scenarios in the builder:**
+1. **First call** — No history. Priming messages + user input → `/api/ai/chat`.
+2. **AutoClear ON + history exists** — `reInstanceAndExecute({ useChat: true })` destroys the old instance, creates a fresh one with `mode: "chat"`, then dispatches `executeChatInstance`.
+3. **Multi-turn continuation** — Priming messages + accumulated history turns + new user input → `/api/ai/chat`.
+
+**Structured System Instruction (parallel toggle):**
+
+When `builderAdvancedSettings.useStructuredSystemInstruction` is ON, the system message from the agent's priming messages is **extracted** from the `messages` array and sent as a structured `system_instruction` object instead. This unlocks the server's `SystemInstruction` builder pipeline:
+
+- `content` — the extracted system message text (what we currently use)
+- `include_date` — inject current date (default: true)
+- `intro` / `outro` — text placed before/after everything
+- `prepend_sections` / `append_sections` — injected around the base instruction
+- `content_blocks` — UUIDs or slugs fetched from the DB and injected automatically
+- `tools_list` — tool names auto-formatted in the prompt
+- `include_code_guidelines` / `include_safety_guidelines` — built-in sections
+
+When the toggle is OFF (default), the system message stays in `messages[]` and the server extracts it automatically — identical to the current behavior. See `aidream-chat-endpoint.md` for the full `SystemInstruction` type and rendering order.
+
+Types: `SystemInstruction` and `SystemInstructionInput` in `agent-api-types.ts`.
+
 ---
 
 ## Key Design Rules

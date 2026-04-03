@@ -27,197 +27,117 @@ import type {
   ContentBlock,
 } from "./message-types";
 import { ClientToolResult } from "./request.types";
+import type { components } from "@/types/python-generated/api-types";
 
-/** Common fields on all structured input blocks. */
-interface StructuredInputBase {
-  /** Default true. Fetch result is injected as plain text. */
-  convert_to_text?: boolean;
-  /**
-   * Default false.
-   * When true: fetch/resolve failures silently drop this block instead of
-   * aborting the request.
-   */
-  optional_context?: boolean;
-  /**
-   * Default false.
-   * When true: resolved content is sent to the model but stripped from the
-   * message before it is persisted to the database. The block definition
-   * (type, IDs) is always saved. Re-fetched fresh on every subsequent turn.
-   */
-  keep_fresh?: boolean;
-  /**
-   * Default false.
-   * When true: the CRUD/patch tools for this content type are automatically
-   * injected into the agent's active tool list for the duration of the request.
-   * The model can then read, update, and patch the item without the agent
-   * definition needing to pre-configure those tools.
-   *
-   * Pairs naturally with keep_fresh — edits made by the model are immediately
-   * visible on the next turn because the block is re-fetched fresh.
-   *
-   * Tool sets injected per type:
-   *   input_notes  → note_get, note_list, note_create, note_update, note_patch, note_delete
-   *   input_task   → task_get, task_list, task_create, task_update, task_delete
-   *   input_table  → usertable_get_all/metadata/fields/data/search, usertable_add_rows,
-   *                  usertable_update_row, usertable_delete_row, usertable_create_advanced
-   *   input_list   → userlist_get_all, userlist_get_details, userlist_update_item,
-   *                  userlist_batch_update, userlist_create, userlist_create_simple
-   *   input_webpage → (none — external content is read-only)
-   *   input_data   → (none — DB refs are read-only by default)
-   */
-  editable?: boolean;
-}
+// StructuredInputBase is defined in message-types.ts — not re-declared here.
 
 // =============================================================================
 // LLM parameter overrides
 // =============================================================================
 
+// Strip | null from every field so callers can use optional chaining (?.xxx)
+// without needing to guard against explicit null. The backend treats null and
+// absent identically — the frontend uses undefined as the absent sentinel so
+// that JSON.stringify omits the key.
+type NonNullableFields<T> = {
+  [K in keyof T]?: NonNullable<T[K]>;
+};
+
 /**
  * LLM parameter overrides.
  *
- * Canonical frontend type — mirrors components['schemas']['LLMParams'] from
- * types/python-generated/api-types.ts. Keep in sync with that file and with
- * types/python-generated/llm-params.schema.json.
+ * Single source of truth: auto-generated from components['schemas']['LLMParams']
+ * in types/python-generated/api-types.ts.
  *
- * All fields are optional. The backend treats null and absent identically —
- * both mean "use the agent's stored default". The frontend uses undefined
- * (not null) as the absent sentinel so that JSON.stringify omits the key.
- *
- * Run `pnpm update-api-types` after backend changes; TypeScript will flag
- * any drift against the generated schema.
+ * Run `pnpm update-api-types` after backend changes — TypeScript will
+ * immediately flag any field drift here.
  */
-export interface LLMParams {
-  /** Model UUID. When present, overrides the agent's stored modelId. */
-  model?: string;
+export type LLMParams = NonNullableFields<components["schemas"]["LLMParams"]>;
 
-  // ── Sampling ────────────────────────────────────────────────────────────────
-  /** Max tokens the model will generate. */
-  max_output_tokens?: number;
-  /** Randomness: 0 = deterministic, 2 = maximum. Provider ranges vary. */
-  temperature?: number;
-  /** Nucleus sampling: top probability mass to consider. */
-  top_p?: number;
-  /** Top-K sampling: limit next token to K candidates (integer). */
-  top_k?: number;
-
-  // ── Tool calling ────────────────────────────────────────────────────────────
-  /** "none" | "auto" | "required" */
-  tool_choice?: "none" | "auto" | "required";
-  /** Allow the model to call multiple tools in a single turn. OpenAI only. */
-  parallel_tool_calls?: boolean;
-
-  // ── Reasoning / thinking ─────────────────────────────────────────────────
-  /** OpenAI o-series reasoning effort. Also accepted by Cerebras. */
-  reasoning_effort?:
-    | "auto"
-    | "none"
-    | "minimal"
-    | "low"
-    | "medium"
-    | "high"
-    | "xhigh";
-  /** OpenAI o-series reasoning summary verbosity. */
-  reasoning_summary?: "concise" | "detailed" | "never" | "auto" | "always";
-  /** Google Gemini 2.x thinking level (maps to thinking budget internally). */
-  thinking_level?: "minimal" | "low" | "medium" | "high";
-  /** Include the raw thinking text in the response. Anthropic + Google. */
-  include_thoughts?: boolean;
-  /** Token budget for extended reasoning. Anthropic + legacy Gemini. */
-  thinking_budget?: number;
-  /** Strip <thinking> blocks from the final response. Cerebras only. */
-  clear_thinking?: boolean;
-  /** Suppress reasoning entirely (maps to reasoning_effort="none"). Cerebras only. */
-  disable_reasoning?: boolean;
-
-  // ── Output control ───────────────────────────────────────────────────────
-  /** Response format descriptor. { type: "json_object" } | { type: "json_schema", ... } */
-  response_format?: Record<string, unknown>;
-  /** Stop generation at these sequences. */
-  stop_sequences?: string[];
-  /** Stream tokens as they are generated. Default true for agent endpoints. */
-  stream?: boolean;
-  /** Persist the conversation to the DB. Default true. */
-  store?: boolean;
-  /** Verbosity hint for the model's response style. */
-  verbosity?: string;
-
-  // ── Provider-native features ─────────────────────────────────────────────
-  /** Use the model's built-in web search tool. OpenAI / Google. */
-  internal_web_search?: boolean;
-  /** Let the model natively read URLs in context. Google only. */
-  internal_url_context?: boolean;
-
-  // ── Image generation ─────────────────────────────────────────────────────
-  /** Image size string e.g. "1024x1024". Provider-specific. */
-  size?: string;
-  /** Quality preset e.g. "hd", "standard". Provider-specific. */
-  quality?: string;
-  /** Number of images to generate. */
-  count?: number;
-
-  // ── Audio / TTS ──────────────────────────────────────────────────────────
-  /** Voice name (string) or multi-speaker config (array of {name, voice}). */
-  tts_voice?: string | Array<Record<string, string>>;
-  /** Output audio format e.g. "mp3", "wav". */
-  audio_format?: string;
-
-  // ── Video / diffusion generation ─────────────────────────────────────────
-  /** Duration string e.g. "5". */
-  seconds?: string;
-  /** Frames per second (integer). */
-  fps?: number;
-  /** Diffusion steps (integer). Higher = better quality but slower. */
-  steps?: number;
-  /** Reproducibility seed (integer). */
-  seed?: number;
-  /** CFG / guidance scale (integer on backend). */
-  guidance_scale?: number;
-  /** Image quality score 0–100 (integer). */
-  output_quality?: number;
-  /** Negative prompt for diffusion models. */
-  negative_prompt?: string;
-  /** Output file format e.g. "png", "webp", "mp4". */
-  output_format?: string;
-  /** Output width in pixels (integer). */
-  width?: number;
-  /** Output height in pixels (integer). */
-  height?: number;
-  /** Reference frame images for video generation. */
-  frame_images?: unknown[];
-  /** Reference images for image generation. */
-  reference_images?: unknown[];
-  /** LoRA weights for image generation. */
-  image_loras?: unknown[];
-  /** Disable the model's built-in safety filter. */
-  disable_safety_checker?: boolean;
-}
+/**
+ * Wire format for POST /api/ai/chat.
+ *
+ * Single source of truth: auto-generated from components['schemas']['ChatRequest']
+ * in types/python-generated/api-types.ts.
+ *
+ * Run `pnpm update-api-types` after backend changes — TypeScript will
+ * immediately flag any field drift here.
+ */
+export type ChatRequestPayload = NonNullableFields<
+  components["schemas"]["ChatRequest"]
+>;
 
 // =============================================================================
-// IDE state
+// Structured System Instructions
+// =============================================================================
+//
+// The chat endpoint accepts system_instruction as either a plain string or a
+// structured object. The server's SystemInstruction.from_dict() handles both.
+// When passed as a structured object, the server assembles the final prompt from
+// the fields below in a deterministic order (see aidream-chat-endpoint.md).
+//
+// The auto-generated OpenAPI schema only declares system_instruction as string,
+// but ChatRequest's `& { [key: string]: unknown }` intersection allows sending
+// the structured form without a type error.
+
+/**
+ * Structured system instruction — full capability map for the server's
+ * SystemInstruction builder. All fields are optional.
+ *
+ * Rendered order on the server:
+ *   intro → date → prepend_sections → base_instruction → tools_list
+ *   → code_guidelines → safety_guidelines → content_blocks
+ *   → append_sections → outro
+ */
+export interface SystemInstruction {
+  base_instruction?: string;
+  content?: string;
+  intro?: string;
+  outro?: string;
+  prepend_sections?: string[];
+  append_sections?: string[];
+  content_blocks?: string[];
+  tools_list?: string[];
+  include_date?: boolean;
+  include_code_guidelines?: boolean;
+  include_safety_guidelines?: boolean;
+  version?: string;
+  category?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Pass a plain string for simple system prompts, or a structured object
+ * to use the full SystemInstruction builder on the server.
+ */
+export type SystemInstructionInput = string | SystemInstruction;
+
+// =============================================================================
+// IDE state — derived from auto-generated schemas
 // =============================================================================
 
-export interface IdeFileState {
-  path: string;
-  content: string;
-  language: string;
-}
+// NonNullableFields strips | null from all fields so callers use optional-chaining
+// without needing to guard against explicit null (undefined is the absent sentinel).
 
-export interface IdeDiagnostic {
-  message: string;
-  severity: string; // "error" | "warning" | "information" | "hint"
-  range: Record<string, unknown>;
-  source?: string;
-}
+/** Snapshot of a single file open in the IDE. */
+export type IdeFileState = NonNullableFields<
+  components["schemas"]["IdeFileState"]
+>;
 
-export interface IdeGitState {
-  branch: string;
-  status: string;
-}
+/** A single IDE diagnostic (lint error, type error, etc.). */
+export type IdeDiagnostic = NonNullableFields<
+  components["schemas"]["IdeDiagnostic"]
+>;
 
-export interface IdeWorkspaceState {
-  name: string;
-  folders: string[];
-}
+/** Git branch + status snapshot. */
+export type IdeGitState = NonNullableFields<
+  components["schemas"]["IdeGitState"]
+>;
+
+/** Workspace name + open folders. */
+export type IdeWorkspaceState = NonNullableFields<
+  components["schemas"]["IdeWorkspaceState"]
+>;
 
 /**
  * Structured snapshot of the user's IDE/editor state.
@@ -242,13 +162,7 @@ export interface IdeWorkspaceState {
  *   vsc_git_all               branch + status combined
  *   vsc_all                   everything above combined
  */
-export interface IdeState {
-  active_file?: IdeFileState;
-  selected_text?: string;
-  diagnostics?: IdeDiagnostic[];
-  workspace?: IdeWorkspaceState;
-  git?: IdeGitState;
-}
+export type IdeState = NonNullableFields<components["schemas"]["IdeState"]>;
 
 // =============================================================================
 // Context objects
@@ -583,76 +497,43 @@ export type CtxGetResult =
   | CtxGetSummaryResult;
 
 // =============================================================================
-// Stream events
+// Stream events — re-exported from auto-generated source
 // =============================================================================
+//
+// Single source of truth: types/python-generated/stream-events.ts
+// Run `pnpm update-api-types` after backend event schema changes.
+//
+// NOTE: "tool_delegated" is a sub-event value within ToolEventPayload.event,
+// not a top-level stream event type. Consumers check event.data.event === "tool_delegated"
+// inside a ToolEventEvent, not as a top-level discriminant.
+//
+// NOTE: "structured_input_warning" is a frontend-documented event that is NOT
+// yet in the auto-generated schema. If the backend emits it, add it to the
+// Python events schema (aidream/api/events.py) and run pnpm update-api-types.
 
-/** Initial connection / status message. */
-export interface MessageEvent {
-  event: "message";
-  data: { content: string };
-}
-
-/** A single token chunk streamed from the model. */
-export interface ChunkEvent {
-  event: "chunk";
-  data: { content: string };
-}
-
-/**
- * The model called a tool listed in client_tools.
- * The AI loop is now SUSPENDED — POST results to
- *   POST /ai/conversations/{id}/tool_results
- * to resume it. 120-second timeout before the model gets an error result.
- * Multiple tool_delegated events may arrive in one turn for parallel tool calls.
- * Batch all results into a single tool_results POST.
- */
-export interface ToolDelegatedEvent {
-  event: "tool_delegated";
-  data: {
-    tool_name: string;
-    call_id: string;
-    arguments: Record<string, unknown>;
-  };
-}
-
-/**
- * One or more structured input blocks had scrape/fetch failures.
- * The model's context already includes failure notices. Show this as a UI warning.
- */
-export interface StructuredInputWarningEvent {
-  event: "structured_input_warning";
-  data: {
-    type: string; // e.g. "input_webpage"
-    failures: Array<{
-      url?: string;
-      reason: string;
-    }>;
-  };
-}
-
-/** Structured data payload (tool results, summaries, etc.). Shape varies by source. */
-export interface DataEvent {
-  event: "data";
-  data: Record<string, unknown>;
-}
-
-/** Stream finished successfully. */
-export interface EndEvent {
-  event: "end";
-  data: Record<string, never>;
-}
-
-/** Fatal error — stream closes after this. */
-export interface ErrorEvent {
-  event: "error";
-  data: { message: string };
-}
-
-export type StreamEvent =
-  | MessageEvent
-  | ChunkEvent
-  | ToolDelegatedEvent
-  | StructuredInputWarningEvent
-  | DataEvent
-  | EndEvent
-  | ErrorEvent;
+export type {
+  EventType,
+  ToolEventType,
+  ChunkPayload,
+  StatusUpdatePayload,
+  DataPayload,
+  CompletionPayload,
+  ErrorPayload,
+  ToolEventPayload,
+  BrokerPayload,
+  HeartbeatPayload,
+  EndPayload,
+  ContentBlockPayload,
+  StreamEvent,
+  TypedStreamEvent,
+  ChunkEvent,
+  StatusUpdateEvent,
+  DataEvent,
+  CompletionEvent,
+  ErrorEvent,
+  ToolEventEvent,
+  BrokerEvent,
+  HeartbeatEvent,
+  EndEvent,
+  ContentBlockEvent,
+} from "@/types/python-generated/stream-events";

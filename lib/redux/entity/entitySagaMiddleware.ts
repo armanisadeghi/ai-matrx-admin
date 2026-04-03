@@ -33,8 +33,11 @@ const watchedActions = new Set(["fetchRecordsSuccess"]);
 
 // Check if an action should bypass middleware (streaming or socketResponse actions)
 const isStreamingAction = (type: string): boolean => {
-    // Check if the action type starts with 'streaming/' or 'socketResponse/'
-    return type.startsWith("streaming/") || type.startsWith("socketResponse/");
+    return (
+        type.startsWith("streaming/") ||
+        type.startsWith("socketResponse/") ||
+        type === "activeRequests/appendChunk"
+    );
 };
 
 // Middleware implementation with streaming action bypass

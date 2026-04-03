@@ -35,6 +35,161 @@ const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({
 
   // Create tabs based on the exact slices from your root reducer
   const tabs: TabDefinition[] = [
+    // CX list, artifacts, HTML sessions, agent settings — swap GenericSliceViewer for custom viewers later
+    {
+      id: "executionInstances",
+      label: "Execution Instances",
+      content: (
+        <GenericSliceViewer
+          sliceKey="executionInstances"
+          state={completeState.executionInstances}
+        />
+      ),
+    },
+    {
+      id: "activeRequests",
+      label: "Active Requests",
+      content: (
+        <GenericSliceViewer
+          sliceKey="activeRequests"
+          state={completeState.activeRequests}
+        />
+      ),
+    },
+    {
+      id: "instanceConversationHistory",
+      label: "Instance Conversation History",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceConversationHistory"
+          state={completeState.instanceConversationHistory}
+        />
+      ),
+    },
+
+    {
+      id: "cxConversations",
+      label: "CX Conversations",
+      content: (
+        <GenericSliceViewer
+          sliceKey="cxConversations"
+          state={completeState.cxConversations}
+        />
+      ),
+    },
+    {
+      id: "artifacts",
+      label: "Artifacts",
+      content: (
+        <GenericSliceViewer
+          sliceKey="artifacts"
+          state={completeState.artifacts}
+        />
+      ),
+    },
+    {
+      id: "htmlPages",
+      label: "HTML Pages",
+      content: (
+        <GenericSliceViewer
+          sliceKey="htmlPages"
+          state={completeState.htmlPages}
+        />
+      ),
+    },
+    {
+      id: "agentSettings",
+      label: "Agent Settings",
+      content: (
+        <GenericSliceViewer
+          sliceKey="agentSettings"
+          state={completeState.agentSettings}
+        />
+      ),
+    },
+    {
+      id: "appContext",
+      label: "App Context",
+      content: (
+        <GenericSliceViewer
+          sliceKey="appContext"
+          state={completeState.appContext}
+        />
+      ),
+    },
+
+    // Agent execution system (per-instance slices) — placeholders for dedicated viewers
+    {
+      id: "instanceUIState",
+      label: "Instance UI State",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceUIState"
+          state={completeState.instanceUIState}
+        />
+      ),
+    },
+    {
+      id: "instanceClientTools",
+      label: "Instance Client Tools",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceClientTools"
+          state={completeState.instanceClientTools}
+        />
+      ),
+    },
+    {
+      id: "instanceContext",
+      label: "Instance Context",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceContext"
+          state={completeState.instanceContext}
+        />
+      ),
+    },
+    {
+      id: "instanceModelOverrides",
+      label: "Instance Model Overrides",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceModelOverrides"
+          state={completeState.instanceModelOverrides}
+        />
+      ),
+    },
+    {
+      id: "instanceVariableValues",
+      label: "Instance Variable Values",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceVariableValues"
+          state={completeState.instanceVariableValues}
+        />
+      ),
+    },
+    {
+      id: "instanceResources",
+      label: "Instance Resources",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceResources"
+          state={completeState.instanceResources}
+        />
+      ),
+    },
+    {
+      id: "instanceUserInput",
+      label: "Instance User Input",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceUserInput"
+          state={completeState.instanceUserInput}
+        />
+      ),
+    },
+
     {
       id: "workflows",
       label: "Workflows",
@@ -351,160 +506,6 @@ const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({
       ),
     },
 
-    // CX list, artifacts, HTML sessions, agent settings — swap GenericSliceViewer for custom viewers later
-    {
-      id: "cxConversations",
-      label: "CX Conversations",
-      content: (
-        <GenericSliceViewer
-          sliceKey="cxConversations"
-          state={completeState.cxConversations}
-        />
-      ),
-    },
-    {
-      id: "artifacts",
-      label: "Artifacts",
-      content: (
-        <GenericSliceViewer
-          sliceKey="artifacts"
-          state={completeState.artifacts}
-        />
-      ),
-    },
-    {
-      id: "htmlPages",
-      label: "HTML Pages",
-      content: (
-        <GenericSliceViewer
-          sliceKey="htmlPages"
-          state={completeState.htmlPages}
-        />
-      ),
-    },
-    {
-      id: "agentSettings",
-      label: "Agent Settings",
-      content: (
-        <GenericSliceViewer
-          sliceKey="agentSettings"
-          state={completeState.agentSettings}
-        />
-      ),
-    },
-    {
-      id: "appContext",
-      label: "App Context",
-      content: (
-        <GenericSliceViewer
-          sliceKey="appContext"
-          state={completeState.appContext}
-        />
-      ),
-    },
-
-    // Agent execution system (per-instance slices) — placeholders for dedicated viewers
-    {
-      id: "instanceUIState",
-      label: "Instance UI State",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceUIState"
-          state={completeState.instanceUIState}
-        />
-      ),
-    },
-    {
-      id: "instanceClientTools",
-      label: "Instance Client Tools",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceClientTools"
-          state={completeState.instanceClientTools}
-        />
-      ),
-    },
-    {
-      id: "instanceContext",
-      label: "Instance Context",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceContext"
-          state={completeState.instanceContext}
-        />
-      ),
-    },
-    {
-      id: "instanceModelOverrides",
-      label: "Instance Model Overrides",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceModelOverrides"
-          state={completeState.instanceModelOverrides}
-        />
-      ),
-    },
-    {
-      id: "instanceVariableValues",
-      label: "Instance Variable Values",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceVariableValues"
-          state={completeState.instanceVariableValues}
-        />
-      ),
-    },
-    {
-      id: "instanceResources",
-      label: "Instance Resources",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceResources"
-          state={completeState.instanceResources}
-        />
-      ),
-    },
-    {
-      id: "instanceUserInput",
-      label: "Instance User Input",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceUserInput"
-          state={completeState.instanceUserInput}
-        />
-      ),
-    },
-    {
-      id: "executionInstances",
-      label: "Execution Instances",
-      content: (
-        <GenericSliceViewer
-          sliceKey="executionInstances"
-          state={completeState.executionInstances}
-        />
-      ),
-    },
-    {
-      id: "activeRequests",
-      label: "Active Requests",
-      content: (
-        <GenericSliceViewer
-          sliceKey="activeRequests"
-          state={completeState.activeRequests}
-        />
-      ),
-    },
-    {
-      id: "instanceConversationHistory",
-      label: "Instance Conversation History",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceConversationHistory"
-          state={completeState.instanceConversationHistory}
-        />
-      ),
-    },
-
     ...Object.keys(featureSchemas).map((key) => ({
       id: `feature-${key}`,
       label: `Feature: ${key}`,
@@ -528,6 +529,7 @@ const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({
       tabs={tabs}
       width="95vw"
       height="95vh"
+      compactTabs={true}
     />
   );
 };

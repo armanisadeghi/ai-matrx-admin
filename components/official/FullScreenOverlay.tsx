@@ -52,7 +52,47 @@ export interface FullScreenOverlayProps {
   sharedHeaderClassName?: string;
   // Hide the title visually (keeps it for screen readers)
   hideTitle?: boolean;
+  // Render tabs as a compact rectangular button-group instead of the default pill style
+  compactTabs?: boolean;
 }
+
+// Plain-button tab bar that is guaranteed to scroll horizontally.
+// We avoid Radix TabsList/TabsTrigger here because they render as
+// inline-flex and fight the scroll container on mobile.
+const ScrollableTabBar = ({
+  tabs,
+  activeTab,
+  onTabChange,
+  compact,
+}: {
+  tabs: TabDefinition[];
+  activeTab: string;
+  onTabChange: (id: string) => void;
+  compact: boolean;
+}) => (
+  <div className="inline-flex flex-row overflow-x-auto scrollbar-none gap-0 rounded-md bg-transparent border-2 border-border">
+    {tabs.map((tab, index) => {
+      const isActive = tab.id === activeTab;
+      const isNotLast = index < tabs.length - 1;
+      return (
+        <button
+          key={tab.id}
+          type="button"
+          onClick={() => onTabChange(tab.id)}
+          className={cn(
+            "shrink-0 whitespace-nowrap text-xs px-2 py-0.5 h-6 cursor-pointer transition-colors",
+            isNotLast && "border-r border-border",
+            isActive
+              ? "bg-primary text-primary-foreground"
+              : "bg-gray-50 dark:bg-gray-800 text-muted-foreground hover:bg-muted hover:text-foreground",
+          )}
+        >
+          {tab.label}
+        </button>
+      );
+    })}
+  </div>
+);
 
 const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
   isOpen,
@@ -82,6 +122,7 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
   sharedHeader,
   sharedHeaderClassName,
   hideTitle = false,
+  compactTabs = true,
 }) => {
   const [activeTab, setActiveTab] = React.useState<string>(
     initialTab || (tabs.length > 0 ? tabs[0].id : ""),
@@ -205,10 +246,10 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         className={cn(
-          "flex flex-col p-0 gap-0 bg-textured border-2 border-solid border-border",
+          "flex flex-col p-0 gap-0 bg-background border-solid",
           isMobile
-            ? "!fixed !top-0 !left-0 !right-0 !bottom-0 !translate-x-0 !translate-y-0 w-full max-w-full rounded-none border-0"
-            : "rounded-3xl",
+            ? "!fixed !top-0 !left-0 !right-0 !bottom-0 !translate-x-0 !translate-y-0 w-full max-w-full rounded-none border-2 border-border"
+            : "rounded-3xl border-2 border-border",
         )}
         style={
           isMobile
@@ -216,17 +257,20 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
             : { width, maxWidth: width, height, maxHeight: height }
         }
       >
+        {/* Header — explicit width:100% so calc() children have a reference point.
+            DialogTitle is required for a11y; DialogDescription stays sr-only. */}
         <DialogHeader
-          className={cn(
-            "flex flex-col border-b flex-shrink-0",
-            isMobile
-              ? "px-2 pt-2 pb-1.5 space-y-1.5 pt-safe"
-              : "px-4 pt-2.5 pb-1",
-          )}
+          className={cn("w-full pl-2 pr-10", isMobile ? "pt-safe" : "")}
         >
-          <div className="flex flex-row justify-between items-center">
+          <div
+            className={cn(
+              "flex flex-row items-center pr-10",
+              isMobile ? "px-2 pt-2 pb-1" : "px-4 pt-2.5 pb-0",
+            )}
+          >
             <DialogTitle
               className={cn(
+                "shrink-0",
                 isMobile ? "text-base font-semibold" : "text-sm",
                 hideTitle && "sr-only",
               )}
@@ -240,50 +284,16 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
             )}
           </div>
 
-          {/* Tabs - below title on mobile, inline on desktop */}
-          <Tabs
-            value={activeTab}
-            onValueChange={handleTabChange}
-            className={cn(
-              "overflow-x-auto overflow-y-hidden scrollbar-none min-w-0 max-w-full",
-              isMobile ? "w-full" : "mx-auto",
-            )}
-          >
-            <TabsList
-              className={cn(
-                "rounded-3xl space-x-0.5 w-max",
-                isMobile ? "flex justify-start" : "",
-              )}
-            >
-              {tabs.map((tab, index) => {
-                // Determine tab position styling
-                let positionClass = "rounded-none";
-                if (tabs.length === 1) {
-                  positionClass = "rounded-l-full rounded-r-full";
-                } else if (index === 0) {
-                  positionClass = "rounded-l-full rounded-r-none";
-                } else if (index === tabs.length - 1) {
-                  positionClass = "rounded-l-none rounded-r-full";
-                }
-
-                return (
-                  <TabsTrigger
-                    key={`header-${tab.id}`}
-                    className={cn(
-                      positionClass,
-                      "border-border hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-600 data-[state=active]:bg-gray-200 dark:data-[state=active]:bg-gray-700",
-                      isMobile
-                        ? "px-4 py-2 text-sm min-h-[44px]"
-                        : "text-xs px-2 py-0.5",
-                    )}
-                    value={tab.id}
-                  >
-                    {tab.label}
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
-          </Tabs>
+          <div className="max-w-full overflow-y-hidden pb-2">
+            <div className="inline-flex items-center">
+              <ScrollableTabBar
+                tabs={tabs}
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
+                compact={compactTabs}
+              />
+            </div>
+          </div>
         </DialogHeader>
 
         {sharedHeader && (
@@ -315,14 +325,14 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
           )}
 
           <div
-            className="flex flex-col overflow-hidden min-h-0"
+            className="flex flex-col overflow-hidden min-h-0 "
             style={
               !isMobile ? { width: `${contentWidth}%` } : { width: "100%" }
             }
           >
             <Tabs
               value={activeTab}
-              className="flex-grow flex flex-col overflow-hidden min-h-0"
+              className="flex-grow flex flex-col overflow-hidden min-h-0 border border-border"
             >
               {tabs.map((tab) => (
                 <TabsContent

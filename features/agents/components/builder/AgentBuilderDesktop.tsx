@@ -15,17 +15,19 @@ export function AgentBuilderDesktop({
   availableTools = [],
 }: AgentBuilderDesktopProps) {
   return (
-    <div className="grid grid-cols-2 gap-4 h-full">
-      {/* Left: Edit panel */}
-      <div className="h-full overflow-hidden max-w-[640px]">
+    <div className="flex gap-4 h-full">
+      {/* Left: Edit panel — capped at 640px */}
+      <div className="h-full overflow-hidden w-full max-w-[640px] shrink-0">
         <AgentBuilderLeftPanel
           agentId={agentId}
           availableTools={availableTools}
         />
       </div>
-      {/* Right: Test panel */}
-      <div className="h-full overflow-hidden">
-        <AgentBuilderRightPanel agentId={agentId} />
+      {/* Right: Test panel — takes remaining space, contents centered */}
+      <div className="flex-1 h-full overflow-hidden flex justify-center">
+        <div className="w-full max-w-3xl h-full">
+          <AgentBuilderRightPanel agentId={agentId} />
+        </div>
       </div>
     </div>
   );

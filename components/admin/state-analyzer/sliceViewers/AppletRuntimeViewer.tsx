@@ -6,7 +6,7 @@ import JsonTree from "@/components/admin/state-analyzer/components/JsonTree";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatJson } from "@/utils/json/json-cleaner-utility";
 
-const AppletRuntimeViewer = ({ sliceKey, state }) => {
+const AppletRuntimeViewer = ({ sliceKey, state }: { sliceKey: string; state: any }) => {
     const applets = state?.applets || {};
     const appletIds = Object.keys(applets);
 

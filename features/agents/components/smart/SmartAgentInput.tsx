@@ -62,8 +62,10 @@ import { selectInstanceResources } from "@/features/agents/redux/execution-syste
 
 // Execution
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
+import { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
 import { reInstanceAndExecute } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { selectHasConversationHistory } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
+import { selectConversationMode } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 
 // Sub-components
 import { SmartAgentResourceChips } from "./SmartAgentResourceChips";
@@ -188,6 +190,10 @@ export function SmartAgentInput({
   const hasHistory = useAppSelector((state) =>
     instanceId ? selectHasConversationHistory(instanceId)(state) : false,
   );
+  const conversationMode = useAppSelector((state) =>
+    instanceId ? selectConversationMode(instanceId)(state) : "agent",
+  );
+  const isChatMode = conversationMode === "chat";
   const shouldShowVariables = useAppSelector((state) =>
     instanceId ? selectShouldShowVariables(instanceId)(state) : false,
   );
@@ -321,17 +327,16 @@ export function SmartAgentInput({
     if (!instanceId || isSendDisabled) return;
 
     if (autoClearConversation && hasHistory) {
-      // Re-instance path: create a fresh instance (re-snapshots the agent),
-      // transfer current variable values + user input, destroy old instance,
-      // then execute — the display resets because the instanceId changes.
       dispatch(
         reInstanceAndExecute({
           currentInstanceId: instanceId,
           onNewInstance: onNewInstance ?? (() => {}),
+          useChat: isChatMode,
         }),
       );
+    } else if (isChatMode) {
+      dispatch(executeChatInstance({ instanceId }));
     } else {
-      // Normal path: continue the conversation (or start a new one).
       dispatch(executeInstance({ instanceId }));
     }
   }, [
@@ -339,6 +344,7 @@ export function SmartAgentInput({
     isSendDisabled,
     autoClearConversation,
     hasHistory,
+    isChatMode,
     onNewInstance,
     dispatch,
   ]);

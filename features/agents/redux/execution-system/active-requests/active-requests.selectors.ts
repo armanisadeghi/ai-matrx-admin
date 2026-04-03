@@ -51,8 +51,12 @@ export const selectRequestStatus = (requestId: string) => (state: RootState) =>
 
 export const selectAccumulatedText =
   (requestId: string) =>
-  (state: RootState): string =>
-    state.activeRequests.byRequestId[requestId]?.accumulatedText ?? "";
+  (state: RootState): string => {
+    const request = state.activeRequests.byRequestId[requestId];
+    if (!request) return "";
+    if (request.textChunks.length > 0) return request.textChunks.join("");
+    return request.accumulatedText || "";
+  };
 
 export const selectRequestConversationId =
   (requestId: string) =>

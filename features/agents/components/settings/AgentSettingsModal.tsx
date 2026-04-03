@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -151,13 +152,13 @@ export function AgentSettingsModal({ agentId }: AgentSettingsModalProps) {
             else handleOpen();
           }}
         >
-          <DrawerContent className="px-4 pb-safe max-h-[90dvh] flex flex-col">
+          <DrawerContent className="px-4 pb-safe h-[80dvh] flex flex-col">
             <DrawerHeader className="px-0 py-2 flex-shrink-0">
               <DrawerTitle className="text-xs font-semibold uppercase tracking-wide">
                 Model Settings
               </DrawerTitle>
             </DrawerHeader>
-            <div className="overflow-y-auto flex-1 pb-2">
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden pb-2">
               <AgentSettingsCore agentId={agentId} />
             </div>
             {footer}
@@ -198,13 +199,17 @@ export function AgentSettingsModal({ agentId }: AgentSettingsModalProps) {
           else handleOpen();
         }}
       >
-        <DialogContent className="max-w-lg p-0 overflow-hidden flex flex-col max-h-[85vh]">
+        <DialogContent className="max-w-xl p-0 overflow-hidden flex flex-col h-[65vh] max-h-[65vh]">
           <DialogHeader className="px-4 py-2.5 border-b border-border flex-shrink-0">
             <DialogTitle className="text-xs font-semibold uppercase tracking-wide">
               Model Settings
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Configure model settings, view raw JSON, and inspect model
+              parameters.
+            </DialogDescription>
           </DialogHeader>
-          <div className="overflow-y-auto px-3 py-1 flex-1">
+          <div className="flex-1 min-h-0 flex flex-col px-3 py-1 overflow-hidden">
             <AgentSettingsCore agentId={agentId} />
           </div>
           {footer}

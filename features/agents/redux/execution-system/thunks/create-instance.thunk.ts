@@ -22,7 +22,9 @@ import type {
   VariableDefinition,
 } from "@/features/agents/types/agent-definition.types";
 import type { LLMParams } from "@/features/agents/types";
+import type { ConversationMode } from "../instance-conversation-history/instance-conversation-history.slice";
 import { executeInstance } from "./execute-instance.thunk";
+import { executeChatInstance } from "./execute-chat-instance.thunk";
 
 import { generateInstanceId } from "../utils";
 import {
@@ -89,6 +91,13 @@ interface CreateManualInstanceArgs {
    * Set true in builder/test panels.
    */
   autoClearConversation?: boolean;
+  /**
+   * Conversation mode for the history slice.
+   * "chat" — client owns history; turns[] are serialized into messages[] for /ai/chat
+   * "agent" — server owns history; standard /agents + /conversations routing
+   * Defaults to "agent".
+   */
+  mode?: ConversationMode;
 }
 
 export const createManualInstance = createAsyncThunk<
@@ -97,7 +106,7 @@ export const createManualInstance = createAsyncThunk<
 >(
   "instances/createManual",
   async (
-    { agentId, agentType, autoClearConversation = false },
+    { agentId, agentType, autoClearConversation = false, mode = "agent" },
     { dispatch, getState },
   ) => {
     const instanceId = generateInstanceId();
@@ -140,11 +149,10 @@ export const createManualInstance = createAsyncThunk<
         instanceId,
         isCreator: snapshot.isCreator,
         autoClearConversation,
-        // Show variable panel by default when the agent has variables defined
         showVariablePanel: snapshot.variableDefinitions.length > 0,
       }),
     );
-    dispatch(initInstanceHistory({ instanceId }));
+    dispatch(initInstanceHistory({ instanceId, mode }));
 
     return instanceId;
   },
@@ -438,6 +446,8 @@ interface ReInstanceAndExecuteArgs {
   /** Called with the new instanceId so the parent component can update its state */
   onNewInstance: (newInstanceId: string) => void;
   debug?: boolean;
+  /** When true, uses executeChatInstance instead of executeInstance and sets mode to "chat" */
+  useChat?: boolean;
 }
 
 interface ReInstanceAndExecuteResult {
@@ -468,7 +478,7 @@ export const reInstanceAndExecute = createAsyncThunk<
 >(
   "instances/reInstanceAndExecute",
   async (
-    { currentInstanceId, onNewInstance, debug = false },
+    { currentInstanceId, onNewInstance, debug = false, useChat = false },
     { dispatch, getState },
   ) => {
     const state = getState() as RootState;
@@ -532,9 +542,16 @@ export const reInstanceAndExecute = createAsyncThunk<
           (snapshot?.variableDefinitions.length ?? 0) > 0 ||
           (currentUIState?.showVariablePanel ?? false),
         submitOnEnter: currentUIState?.submitOnEnter ?? true,
+        reuseConversationId: currentUIState?.reuseConversationId ?? false,
+        builderAdvancedSettings: currentUIState?.builderAdvancedSettings,
       }),
     );
-    dispatch(initInstanceHistory({ instanceId: newInstanceId }));
+    dispatch(
+      initInstanceHistory({
+        instanceId: newInstanceId,
+        mode: useChat ? "chat" : "agent",
+      }),
+    );
 
     // Transfer whatever the user had filled in
     if (Object.keys(userValues).length > 0) {
@@ -558,10 +575,14 @@ export const reInstanceAndExecute = createAsyncThunk<
     // Destroy the old instance after the parent has been notified
     dispatch(destroyInstance(currentInstanceId));
 
-    // Execute on the new instance
-    const result = await dispatch(
-      executeInstance({ instanceId: newInstanceId, debug }),
-    ).unwrap();
+    // Execute on the new instance — route to the correct thunk based on mode
+    const result = useChat
+      ? await dispatch(
+          executeChatInstance({ instanceId: newInstanceId }),
+        ).unwrap()
+      : await dispatch(
+          executeInstance({ instanceId: newInstanceId, debug }),
+        ).unwrap();
 
     return {
       newInstanceId,

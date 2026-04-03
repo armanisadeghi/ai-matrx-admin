@@ -151,7 +151,7 @@ if (typeof window !== 'undefined') {
 }
 
 // List of prefixes to exclude (case-insensitive)
-const excludedPrefixes = ['socket', 'theme', 'entity', 'userPreferences', 'socketResponse'];
+const excludedPrefixes = ['socket', 'theme', 'entity', 'userPreferences', 'socketResponse', 'activeRequests'];
 
 export const loggerMiddleware: Middleware = (store) => (next) => async (action: ReduxAction) => {
     // PERFORMANCE: Early exit for socketResponse actions to avoid middleware overhead

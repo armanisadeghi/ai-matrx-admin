@@ -226,6 +226,37 @@ export type ResultDisplayMode =
   | "panel"
   | "toast";
 
+/**
+ * Transient builder/test settings sent to the chat endpoint on each call.
+ * NOT persisted with the agent definition — destroyed with the instance.
+ */
+export interface BuilderAdvancedSettings {
+  debug: boolean;
+  store: boolean;
+  maxIterations: number;
+  maxRetriesPerIteration: number;
+
+  /**
+   * When true, the system message from the agent's priming messages is extracted
+   * and sent as a structured `system_instruction` object instead of being included
+   * inline in the `messages` array.
+   *
+   * The structured form unlocks the server's SystemInstruction builder — intro,
+   * outro, content_blocks, tools_list, date injection, guidelines sections, etc.
+   *
+   * Default: false — the simple path (system message stays in messages[]).
+   */
+  useStructuredSystemInstruction: boolean;
+}
+
+export const DEFAULT_BUILDER_ADVANCED_SETTINGS: BuilderAdvancedSettings = {
+  debug: false,
+  store: false,
+  maxIterations: 20,
+  maxRetriesPerIteration: 2,
+  useStructuredSystemInstruction: false,
+};
+
 export interface InstanceUIState {
   instanceId: string;
   displayMode: ResultDisplayMode;
@@ -265,6 +296,19 @@ export interface InstanceUIState {
    * DEFAULT: false in run mode (AgentRunPage) where multi-turn is desired.
    */
   autoClearConversation: boolean;
+
+  /**
+   * When true, subsequent chat calls reuse the conversation_id from the first
+   * response. When false (default), each call gets a fresh conversation.
+   * Only applies to chat-mode instances (builder test runs).
+   */
+  reuseConversationId: boolean;
+
+  /**
+   * Builder-only control knobs sent to the chat endpoint.
+   * Ephemeral — not saved with the agent definition.
+   */
+  builderAdvancedSettings: BuilderAdvancedSettings;
 
   /**
    * Arbitrary UI state specific to the display mode.

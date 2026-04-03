@@ -133,6 +133,8 @@ export interface ActiveRequest {
   status: RequestStatus;
 
   // ── Streaming Text (chunks) ──────────────────────────────────
+  /** O(1) array accumulation — joined lazily in selectors */
+  textChunks: string[];
   accumulatedText: string;
 
   // ── Status Updates ───────────────────────────────────────────
