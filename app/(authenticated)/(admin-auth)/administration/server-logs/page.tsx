@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import CoolifyLogViewer from '@/components/admin/server-logs/CoolifyLogViewer';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ServerLogsPage() {
-    return (
-        <div className="w-full h-full overflow-auto">
-            <CoolifyLogViewer />
-        </div>
-    );
+  const router = useRouter();
+  useEffect(() => {
+    router.replace("/administration/server-logs/ai-dream-server");
+  }, [router]);
+  return null;
 }

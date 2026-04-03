@@ -95,11 +95,8 @@ function JsonNode({
     if (typeof data === "number")
       return <span className="text-blue-500 dark:text-blue-400">{data}</span>;
     if (typeof data === "string") {
-      const displayStr = data.length > 200 ? data.slice(0, 200) + "..." : data;
       return (
-        <span className="text-green-600 dark:text-green-400">
-          "{displayStr}"
-        </span>
+        <span className="text-green-600 dark:text-green-400">"{data}"</span>
       );
     }
     return null;
