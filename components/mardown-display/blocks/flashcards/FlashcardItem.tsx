@@ -4,6 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/styles/themes/utils";
 import { ConfigurableMarkdownContent } from "@/components/mardown-display/chat-markdown/ConfigurableMarkdownContent";
 import type { MarkdownStyleConfig } from "@/components/mardown-display/chat-markdown/ConfigurableMarkdownContent";
+import { CheckCircle, AlertCircle, XCircle } from "lucide-react";
+import type { ReviewResult } from "@/features/flashcards/types";
 
 const centeredParagraph = ({ node, children, ...props }: any) => (
   <p className="text-center" {...props}>{children}</p>
@@ -14,6 +16,10 @@ interface FlashcardItemProps {
   back: string | null;
   index: number;
   layoutMode?: "grid" | "list";
+  /** When provided, shows review buttons on the back of the card (study mode). */
+  onReview?: (cardIndex: number, result: ReviewResult) => void;
+  /** Last review result — shows a small indicator on the front corner. */
+  lastResult?: ReviewResult | null;
 }
 
 const FlashcardItem: React.FC<FlashcardItemProps> = ({
@@ -21,6 +27,8 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
   back,
   index,
   layoutMode = "grid",
+  onReview,
+  lastResult,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -53,6 +61,19 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
       e.preventDefault();
       setIsFlipped(!isFlipped);
     }
+  };
+
+  const handleReview = (result: ReviewResult, e: React.MouseEvent) => {
+    e.stopPropagation();
+    onReview?.(index, result);
+    // Flip back to front after reviewing
+    setTimeout(() => setIsFlipped(false), 300);
+  };
+
+  const resultIndicator: Record<ReviewResult, { color: string; label: string }> = {
+    correct: { color: "bg-green-500", label: "Correct" },
+    partial: { color: "bg-amber-500", label: "Partial" },
+    incorrect: { color: "bg-red-500", label: "Incorrect" },
   };
 
   const getTextSizeClass = (text: string, isMultiLine: boolean = false) => {
@@ -192,6 +213,15 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
                 componentOverrides={{ p: centeredParagraph }}
               />
             </div>
+            {lastResult && (
+              <div
+                className={cn(
+                  "absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full",
+                  resultIndicator[lastResult].color,
+                )}
+                title={resultIndicator[lastResult].label}
+              />
+            )}
             {isHovered && (
               <div className="absolute bottom-1 right-2 text-[9px] text-blue-600/60 dark:text-blue-400/60 animate-in fade-in duration-200 whitespace-nowrap">
                 click to flip
@@ -215,7 +245,8 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
         >
           <CardContent
             className={cn(
-              "flex flex-col h-full !p-2 !pb-0 relative",
+              "flex flex-col h-full !p-2 relative",
+              onReview ? "!pb-0" : "!pb-0",
               isMultiLineBack ? "items-start justify-start" : "items-center justify-center",
             )}
           >
@@ -239,11 +270,38 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
                 <div className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none bg-gradient-to-t from-emerald-50 dark:from-emerald-950 to-transparent" />
               )}
             </div>
-            {isHovered && (
+            {onReview ? (
+              <div className="flex items-center justify-center gap-1.5 py-1.5 border-t border-green-200 dark:border-green-800 mt-auto shrink-0">
+                <button
+                  onClick={(e) => handleReview('incorrect', e)}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60 transition-colors"
+                  title="I got this wrong"
+                >
+                  <XCircle className="h-3.5 w-3.5" />
+                  Missed
+                </button>
+                <button
+                  onClick={(e) => handleReview('partial', e)}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-colors"
+                  title="I partially knew this"
+                >
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  Partial
+                </button>
+                <button
+                  onClick={(e) => handleReview('correct', e)}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/60 transition-colors"
+                  title="I got this right"
+                >
+                  <CheckCircle className="h-3.5 w-3.5" />
+                  Got it
+                </button>
+              </div>
+            ) : isHovered ? (
               <div className="absolute bottom-1 right-2 text-[9px] text-green-600/60 dark:text-green-400/60 animate-in fade-in duration-200 whitespace-nowrap">
                 click to flip
               </div>
-            )}
+            ) : null}
           </CardContent>
         </Card>
       </div>

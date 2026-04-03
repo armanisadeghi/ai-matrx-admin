@@ -34,6 +34,7 @@ const TroubleshootingBlock = dynamic(() => import("@/components/mardown-display/
 const DecisionTreeBlock = dynamic(() => import("@/components/mardown-display/blocks/decision-tree/DecisionTreeBlock"), { ssr: false });
 const InteractiveDiagramBlock = dynamic(() => import("@/components/mardown-display/blocks/diagram/InteractiveDiagramBlock"), { ssr: false });
 const FlashcardsBlock = dynamic(() => import("@/components/mardown-display/blocks/flashcards/FlashcardsBlock"), { ssr: false });
+const CanvasFlashcardsView = dynamic(() => import("@/features/flashcards/components/CanvasFlashcardsView").then((m) => ({ default: m.CanvasFlashcardsView })), { ssr: false });
 const CodeBlock = dynamic(() => import("@/features/code-editor/components/code-block/CodeBlock"), { ssr: false });
 const MathProblem = dynamic(() => import("@/features/math/components/MathProblem"), { ssr: false });
 const CodePreviewCanvas = dynamic(() => import("@/features/canvas/custom-components/CodePreviewCanvas").then((m) => ({ default: m.CodePreviewCanvas })), { ssr: false });
@@ -358,7 +359,12 @@ function renderContent(content: CanvasContent): React.ReactNode {
     case 'flashcards':
       return (
         <div className="h-full">
-          <FlashcardsBlock content={data} className="my-0 sm:my-0 rounded-none sm:rounded-3xl border-0 sm:border-2" />
+          <CanvasFlashcardsView
+            content={typeof data === 'string' ? data : undefined}
+            serverData={typeof data === 'object' ? data : undefined}
+            conversationId={content.metadata?.conversationId as string | undefined}
+            messageId={content.metadata?.messageId as string | undefined}
+          />
         </div>
       );
 
