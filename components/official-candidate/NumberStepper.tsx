@@ -32,7 +32,7 @@ import { useState, useEffect } from "react";
 import { Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export interface NumericStepperProps {
+export interface NumberStepperProps {
   value: number;
   onChange: (v: number) => void;
   min?: number;
@@ -43,7 +43,7 @@ export interface NumericStepperProps {
   className?: string;
 }
 
-export function NumericStepper({
+export function NumberStepper({
   value,
   onChange,
   min,
@@ -52,7 +52,7 @@ export function NumericStepper({
   step = 1,
   minChars = 2,
   className,
-}: NumericStepperProps) {
+}: NumberStepperProps) {
   const [draft, setDraft] = useState(String(value));
 
   useEffect(() => {
@@ -145,4 +145,4 @@ export function NumericStepper({
   );
 }
 
-export default NumericStepper;
+export default NumberStepper;

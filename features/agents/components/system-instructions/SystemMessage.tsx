@@ -16,8 +16,8 @@ import { SystemPromptOptimizer } from "@/features/prompts/components/actions/pro
 import type { AgentDefinitionMessage } from "@/features/agents/types/agent-message-types";
 
 // Module Shared Components
-import { HighlightedText } from "@/features/agents/components/shared/HighlightedText";
-import { SystemMessageButtons } from "@/features/agents/components/messages/SystemMessageButtons";
+import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
+import { SystemMessageButtons } from "@/features/agents/components/system-instructions/SystemMessageButtons";
 import {
   BlockList,
   BlockType,

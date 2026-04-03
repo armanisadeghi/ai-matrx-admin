@@ -1,4 +1,4 @@
-import { AgentsGrid } from "@/features/agents/components/layouts/AgentsGrid";
+import { AgentsGrid } from "@/features/agents/components/agent-listings/AgentsGrid";
 
 export const metadata = {
   title: "Agents",

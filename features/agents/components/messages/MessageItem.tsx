@@ -25,7 +25,7 @@ import {
 } from "@/features/agents/redux/agent-definition/selectors";
 import { setAgentMessages } from "@/features/agents/redux/agent-definition/slice";
 import { UnifiedContextMenu } from "@/features/context-menu";
-import { HighlightedText } from "@/features/agents/components/shared/HighlightedText";
+import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
 import { MessageItemButtons } from "@/features/agents/components/messages/MessageItemButtons";
 import {
   BlockList,

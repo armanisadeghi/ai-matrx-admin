@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useRef, useCallback } from "react";
-import { GripVertical, ChevronDown, X, Copy, Trash2 } from "lucide-react";
+import { Copy, Trash2, X } from "lucide-react";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { FloatingPanel } from "@/components/official-candidate/FloatingPanel";
 
 interface TranscriptEntry {
   id: string;
@@ -69,45 +70,23 @@ export default function VoicePadExpanded({
   const hasContent = entries.length > 0 || draftText.trim().length > 0;
 
   return (
-    <div className="w-80 rounded-xl bg-card/95 backdrop-blur-md border border-border shadow-xl overflow-hidden">
-      {/* Header — entire bar is the drag handle; icons stop propagation */}
-      <div
-        className="flex items-center gap-1 px-2 py-1.5 border-b border-border/50 bg-muted/30 cursor-grab active:cursor-grabbing select-none"
-        onMouseDown={onDragStart}
-      >
-        <GripVertical className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-        <span className="text-xs font-medium text-foreground/80 flex-1">
-          Voice Pad
-        </span>
-
-        <div onMouseDown={(e) => e.stopPropagation()}>
-          <MicrophoneIconButton
-            onTranscriptionComplete={onTranscriptionComplete}
-            variant="icon-only"
-            size="sm"
-          />
-        </div>
-
-        <button
-          type="button"
-          onClick={onCollapse}
-          onMouseDown={(e) => e.stopPropagation()}
-          className="p-0.5 text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Collapse"
-        >
-          <ChevronDown className="h-3.5 w-3.5" />
-        </button>
-        <button
-          type="button"
-          onClick={onClose}
-          onMouseDown={(e) => e.stopPropagation()}
-          className="p-0.5 text-muted-foreground hover:text-destructive transition-colors"
-          aria-label="Close"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      </div>
-
+    <FloatingPanel
+      title="Voice Pad"
+      size="md"
+      onDragStart={onDragStart}
+      onClose={onClose}
+      onCollapsedChange={(c) => {
+        if (c) onCollapse();
+      }}
+      actions={
+        <MicrophoneIconButton
+          onTranscriptionComplete={onTranscriptionComplete}
+          variant="icon-only"
+          size="sm"
+        />
+      }
+      bodyClassName="p-0"
+    >
       {/* Transcript area */}
       <div className="p-2">
         {hasContent ? (
@@ -121,7 +100,6 @@ export default function VoicePadExpanded({
               "bg-background/50 border border-border/50 px-2 py-1.5",
               "text-sm text-foreground placeholder:text-muted-foreground",
               "focus:outline-none focus:ring-1 focus:ring-ring",
-              "text-base",
             )}
             style={{ fontSize: "16px" }}
           />
@@ -203,6 +181,6 @@ export default function VoicePadExpanded({
           </span>
         </div>
       )}
-    </div>
+    </FloatingPanel>
   );
 }

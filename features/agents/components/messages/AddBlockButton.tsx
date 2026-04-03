@@ -12,7 +12,7 @@ import {
   Check,
   Pencil,
 } from "lucide-react";
-import { HighlightedText } from "@/features/agents/components/shared/HighlightedText";
+import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

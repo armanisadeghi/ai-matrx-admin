@@ -15,9 +15,9 @@ import {
   selectAgentSettings,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { setAgentField } from "@/features/agents/redux/agent-definition/slice";
-import { AgentSettingsModal } from "@/features/agents/components/settings/AgentSettingsModal";
-import { AgentVariablesModal } from "@/features/agents/components/settings/AgentVariablesModal";
-import { AgentToolsModal } from "@/features/agents/components/settings/AgentToolsModal";
+import { AgentSettingsModal } from "@/features/agents/components/settings-management/AgentSettingsModal";
+import { AgentVariablesModal } from "@/features/agents/components/variables-management/AgentVariablesModal";
+import { AgentToolsModal } from "@/features/agents/components/tools-management/AgentToolsModal";
 import { Label } from "@/components/ui/label";
 import { SmartModelSelect } from "@/features/ai-models/components/smart/SmartModelSelect";
 
@@ -47,12 +47,18 @@ export function AgentModelConfiguration({
   );
 
   return (
-    <div className="flex items-center gap-3">
-      <Label className="text-xs text-gray-600 dark:text-gray-400">Model</Label>
-      <SmartModelSelect value={modelId} onValueChange={handleModelChange} />
-      <AgentSettingsModal agentId={agentId} />
-      <AgentVariablesModal agentId={agentId} />
-      <AgentToolsModal agentId={agentId} availableTools={availableTools} />
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3 min-w-0">
+        <Label className="text-xs text-gray-600 dark:text-gray-400 shrink-0">
+          Model
+        </Label>
+        <SmartModelSelect value={modelId} onValueChange={handleModelChange} />
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        <AgentSettingsModal agentId={agentId} />
+        <AgentVariablesModal agentId={agentId} />
+        <AgentToolsModal agentId={agentId} availableTools={availableTools} />
+      </div>
     </div>
   );
 }

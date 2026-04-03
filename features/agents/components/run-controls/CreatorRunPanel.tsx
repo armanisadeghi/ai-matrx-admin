@@ -1,17 +1,14 @@
 "use client";
 
 /**
- * AgentRequestStats
+ * CreatorRunPanel — Creator Run Panel
  *
- * A collapsible stats bar displayed between the conversation and the input area.
- * Shows per-request and session-aggregate usage data from the server's
- * completion payload.
+ * A collapsible, always-visible tabbed panel between conversation and input.
+ * Collapsed: single compact row with "Creator Panel" + stats pills.
+ * Expanded: fixed-height tabbed panel (h-72).
  *
- * Collapsed (default): single compact row — duration, tokens, cost, finish reason.
- * Expanded: tabbed panel with full model breakdown, timing, tool call stats,
- *           and per-turn session history.
- *
- * Renders null until the first assistant turn with completionStats is committed.
+ * Tabs:
+ *   Actions | Run Settings | System Prompt | Last Request | Session | Client
  */
 
 import { useState, useCallback } from "react";
@@ -31,8 +28,12 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
-import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { recreateManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
+import { setBuilderAdvancedSettings } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
+import { selectUseStructuredSystemInstruction } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import { RunSettingsEditor } from "./RunSettingsEditor";
 import {
   selectLatestCompletionStats,
   selectAggregateStats,
@@ -43,6 +44,19 @@ import {
 import type { AggregateClientMetrics } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import type { CompletionStats } from "@/features/agents/types/instance.types";
 import type { ClientMetrics } from "@/features/agents/types/request.types";
+import { SystemInstructionEditor } from "../system-instructions/SystemInstructionEditor";
+
+// =============================================================================
+// Tab type
+// =============================================================================
+
+type TabId =
+  | "actions"
+  | "settings"
+  | "sysprompt"
+  | "last"
+  | "session"
+  | "client";
 
 // =============================================================================
 // Helpers
@@ -66,6 +80,19 @@ function fmtCost(cost: number): string {
   return `$${cost.toFixed(4)}`;
 }
 
+function fmtMs(ms: number | null | undefined): string {
+  if (ms == null) return "—";
+  if (ms < 1000) return `${Math.round(ms)}ms`;
+  return `${(ms / 1000).toFixed(2)}s`;
+}
+
+function fmtBytes(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
 function FinishBadge({ reason }: { reason: string }) {
   const isStop = reason === "stop" || reason === "end_turn";
   return (
@@ -83,132 +110,6 @@ function FinishBadge({ reason }: { reason: string }) {
       )}
       {reason}
     </span>
-  );
-}
-
-// =============================================================================
-// Self-contained reset button — owns its own dispatch logic
-// =============================================================================
-
-function ResetButton({
-  instanceId,
-  agentId,
-  onNewInstance,
-}: {
-  instanceId: string;
-  agentId: string;
-  onNewInstance: (newId: string) => void;
-}) {
-  const dispatch = useAppDispatch();
-
-  const handleReset = useCallback(() => {
-    dispatch(destroyInstance(instanceId));
-    dispatch(createManualInstance({ agentId, autoClearConversation: true }))
-      .unwrap()
-      .then(onNewInstance)
-      .catch((err) => console.error("Failed to reset test instance:", err));
-  }, [instanceId, agentId, onNewInstance, dispatch]);
-
-  return (
-    <button
-      type="button"
-      onClick={handleReset}
-      className="p-1 text-muted-foreground hover:text-foreground transition-colors shrink-0"
-      title="Reset conversation"
-    >
-      <RotateCcw className="w-3.5 h-3.5" />
-    </button>
-  );
-}
-
-// =============================================================================
-// Collapsed pill row
-// =============================================================================
-
-function CollapsedRowWithClient({
-  stats,
-  clientMetrics,
-  instanceId,
-  agentId,
-  onNewInstance,
-  onExpand,
-}: {
-  stats: CompletionStats;
-  clientMetrics: ClientMetrics | undefined;
-  instanceId: string;
-  agentId: string;
-  onNewInstance: (newId: string) => void;
-  onExpand: () => void;
-}) {
-  const total = stats.total_usage?.total;
-  const timing = stats.timing_stats;
-
-  return (
-    <div className="flex items-center gap-1 px-3 py-1">
-      <button
-        type="button"
-        onClick={onExpand}
-        className="flex-1 flex items-center gap-3 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors rounded px-1 py-0.5"
-      >
-        {/* Server duration */}
-        {timing && (
-          <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            {fmtDuration(timing.total_duration)}
-          </span>
-        )}
-
-        {/* TTFT — client-side, most useful metric for perceived speed */}
-        {clientMetrics?.ttftMs != null && (
-          <span
-            className="flex items-center gap-1 text-primary/80"
-            title="Time to first token (client perspective)"
-          >
-            <Radio className="w-3 h-3" />
-            {fmtMs(clientMetrics.ttftMs)} ttft
-          </span>
-        )}
-
-        {/* Tokens */}
-        {total && (
-          <span className="flex items-center gap-1">
-            <Zap className="w-3 h-3" />
-            {fmtTokens(total.total_tokens)} tokens
-            {total.cached_input_tokens > 0 && (
-              <span className="text-[10px] text-muted-foreground/60">
-                ({fmtTokens(total.cached_input_tokens)} cached)
-              </span>
-            )}
-          </span>
-        )}
-
-        {/* Cost */}
-        {total && total.total_cost > 0 && (
-          <span className="flex items-center gap-1">
-            <DollarSign className="w-3 h-3" />
-            {fmtCost(total.total_cost)}
-          </span>
-        )}
-
-        {/* Finish reason */}
-        <FinishBadge reason={stats.finish_reason} />
-
-        {/* Iterations if > 1 */}
-        {stats.iterations > 1 && (
-          <span className="text-[10px] text-muted-foreground/70">
-            {stats.iterations} iter
-          </span>
-        )}
-
-        <ChevronDown className="w-3 h-3 ml-auto shrink-0" />
-      </button>
-
-      <ResetButton
-        instanceId={instanceId}
-        agentId={agentId}
-        onNewInstance={onNewInstance}
-      />
-    </div>
   );
 }
 
@@ -272,10 +173,110 @@ function TR({
 }
 
 // =============================================================================
-// Expanded panel — Last Request tab
+// Tab 1: Actions
 // =============================================================================
 
-function LastRequestPanel({ stats }: { stats: CompletionStats }) {
+function ActionsTab({
+  instanceId,
+  onNewInstance,
+}: {
+  instanceId: string;
+  onNewInstance?: (newId: string) => void;
+}) {
+  const dispatch = useAppDispatch();
+
+  const handleReset = useCallback(() => {
+    dispatch(recreateManualInstance(instanceId))
+      .unwrap()
+      .then((newId) => onNewInstance?.(newId))
+      .catch((err) => console.error("Failed to reset test instance:", err));
+  }, [instanceId, onNewInstance, dispatch]);
+
+  return (
+    <div className="px-3 py-2 space-y-1">
+      <button
+        type="button"
+        onClick={handleReset}
+        className="flex items-center gap-2 w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded transition-colors"
+      >
+        <RotateCcw className="w-3 h-3 shrink-0" />
+        Reset conversation
+      </button>
+    </div>
+  );
+}
+
+// =============================================================================
+// Tab 2: Run Settings
+// =============================================================================
+
+function RunSettingsTab({ instanceId }: { instanceId: string }) {
+  return (
+    <div className="px-3 py-2">
+      <RunSettingsEditor instanceId={instanceId} />
+    </div>
+  );
+}
+
+// =============================================================================
+// Tab 3: System Prompt
+// =============================================================================
+
+function SystemPromptTab({ instanceId }: { instanceId: string }) {
+  const dispatch = useAppDispatch();
+  const isActive = useAppSelector(
+    selectUseStructuredSystemInstruction(instanceId),
+  );
+
+  return (
+    <div className="px-3 py-2">
+      <div className="flex items-center justify-between pb-2 mb-2 border-b border-border">
+        <Label
+          htmlFor={`sysprompt-active-${instanceId}`}
+          className="text-xs text-muted-foreground cursor-pointer"
+        >
+          Structured system prompt
+        </Label>
+        <Switch
+          id={`sysprompt-active-${instanceId}`}
+          checked={isActive}
+          onCheckedChange={(v) =>
+            dispatch(
+              setBuilderAdvancedSettings({
+                instanceId,
+                changes: { useStructuredSystemInstruction: v },
+              }),
+            )
+          }
+          className="scale-75 origin-right"
+        />
+      </div>
+
+      {isActive ? (
+        <SystemInstructionEditor instanceId={instanceId} />
+      ) : (
+        <p className="text-xs text-muted-foreground/60">
+          Enable to configure structured system instruction fields (intro,
+          outro, content blocks, etc.)
+        </p>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
+// Tab 4: Last Request
+// =============================================================================
+
+function LastRequestPanel({ stats }: { stats: CompletionStats | undefined }) {
+  if (!stats) {
+    return (
+      <div className="p-4 text-xs text-muted-foreground text-center">
+        No request data yet.
+      </div>
+    );
+  }
+
   const total = stats.total_usage?.total;
   const byModel = stats.total_usage?.by_model ?? {};
   const timing = stats.timing_stats;
@@ -283,7 +284,6 @@ function LastRequestPanel({ stats }: { stats: CompletionStats }) {
 
   return (
     <div className="divide-y divide-border">
-      {/* Summary strip */}
       <div className="flex items-center gap-4 px-3 py-2 bg-muted/10 text-xs flex-wrap">
         {timing && (
           <span className="flex items-center gap-1 text-foreground">
@@ -330,7 +330,6 @@ function LastRequestPanel({ stats }: { stats: CompletionStats }) {
         </span>
       </div>
 
-      {/* Timing breakdown */}
       {timing && (
         <TableSection icon={<Clock className="w-3 h-3" />} title="Timing">
           <tbody>
@@ -354,7 +353,6 @@ function LastRequestPanel({ stats }: { stats: CompletionStats }) {
         </TableSection>
       )}
 
-      {/* Per-model breakdown */}
       {Object.keys(byModel).length > 0 && (
         <div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/30 border-b border-border">
@@ -405,7 +403,6 @@ function LastRequestPanel({ stats }: { stats: CompletionStats }) {
         </div>
       )}
 
-      {/* Tool calls */}
       {tools && tools.total_tool_calls > 0 && (
         <TableSection icon={<Wrench className="w-3 h-3" />} title="Tool Calls">
           <tbody>
@@ -443,7 +440,7 @@ function LastRequestPanel({ stats }: { stats: CompletionStats }) {
 }
 
 // =============================================================================
-// Expanded panel — Session tab
+// Tab 5: Session
 // =============================================================================
 
 function SessionPanel({ instanceId }: { instanceId: string }) {
@@ -453,13 +450,14 @@ function SessionPanel({ instanceId }: { instanceId: string }) {
 
   if (aggregate.requestCount === 0) {
     return (
-      <div className="p-4 text-xs text-muted-foreground">No data yet.</div>
+      <div className="p-4 text-xs text-muted-foreground text-center">
+        No session data yet.
+      </div>
     );
   }
 
   return (
     <div className="divide-y divide-border">
-      {/* Session totals summary strip */}
       <div className="flex items-center gap-5 px-3 py-2 bg-muted/10 text-xs flex-wrap">
         <span className="flex items-center gap-1">
           <BarChart2 className="w-3 h-3 text-muted-foreground" />
@@ -492,7 +490,6 @@ function SessionPanel({ instanceId }: { instanceId: string }) {
         </span>
       </div>
 
-      {/* Per-turn history table */}
       {assistantTurns.length > 0 && (
         <div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/30 border-b border-border">
@@ -571,24 +568,7 @@ function SessionPanel({ instanceId }: { instanceId: string }) {
 }
 
 // =============================================================================
-// Helpers
-// =============================================================================
-
-function fmtMs(ms: number | null | undefined): string {
-  if (ms == null) return "—";
-  if (ms < 1000) return `${Math.round(ms)}ms`;
-  return `${(ms / 1000).toFixed(2)}s`;
-}
-
-function fmtBytes(bytes: number): string {
-  if (bytes === 0) return "0 B";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-}
-
-// =============================================================================
-// Client Metrics Panel — "Client" tab
+// Tab 6: Client Metrics
 // =============================================================================
 
 function ClientTableCol({
@@ -614,9 +594,7 @@ function ClientTableCol({
             <tr key={label} className={i % 2 === 0 ? "bg-muted/20" : ""}>
               <td className="px-3 py-1 text-muted-foreground">{label}</td>
               <td
-                className={`px-3 py-1 text-right font-mono tabular-nums whitespace-nowrap ${
-                  highlight ? "text-primary font-semibold" : "text-foreground"
-                }`}
+                className={`px-3 py-1 text-right font-mono tabular-nums whitespace-nowrap ${highlight ? "text-primary font-semibold" : "text-foreground"}`}
               >
                 {value}
               </td>
@@ -681,7 +659,6 @@ function ClientPanel({
 
   return (
     <div className="divide-y divide-border">
-      {/* Two-column layout: Timing | Data Volume */}
       <div className="flex">
         <ClientTableCol
           icon={<Clock className="w-3 h-3" />}
@@ -695,7 +672,6 @@ function ClientPanel({
         />
       </div>
 
-      {/* Session averages — full-width when present */}
       {aggregateClient.totalRequests > 1 && (
         <TableSection
           icon={<Radio className="w-3 h-3" />}
@@ -746,23 +722,81 @@ function ClientPanel({
 }
 
 // =============================================================================
+// Collapsed stats pills
+// =============================================================================
+
+function CollapsedStatsPills({
+  stats,
+  clientMetrics,
+}: {
+  stats: CompletionStats;
+  clientMetrics: ClientMetrics | undefined;
+}) {
+  const total = stats.total_usage?.total;
+  const timing = stats.timing_stats;
+
+  return (
+    <>
+      {timing && (
+        <span className="flex items-center gap-1">
+          <Clock className="w-3 h-3" />
+          {fmtDuration(timing.total_duration)}
+        </span>
+      )}
+      {clientMetrics?.ttftMs != null && (
+        <span
+          className="flex items-center gap-1 text-primary/80"
+          title="Time to first token"
+        >
+          <Radio className="w-3 h-3" />
+          {fmtMs(clientMetrics.ttftMs)} ttft
+        </span>
+      )}
+      {total && (
+        <span className="flex items-center gap-1">
+          <Zap className="w-3 h-3" />
+          {fmtTokens(total.total_tokens)} tok
+        </span>
+      )}
+      {total && total.total_cost > 0 && (
+        <span className="flex items-center gap-1">
+          <DollarSign className="w-3 h-3" />
+          {fmtCost(total.total_cost)}
+        </span>
+      )}
+      <FinishBadge reason={stats.finish_reason} />
+    </>
+  );
+}
+
+// =============================================================================
 // Main component
 // =============================================================================
 
-interface AgentRequestStatsProps {
+const ALL_TABS: TabId[] = [
+  "actions",
+  "settings",
+  "sysprompt",
+  "last",
+  "session",
+  "client",
+];
+
+interface CreatorRunPanelProps {
   instanceId: string;
-  agentId: string;
-  onNewInstance: (newId: string) => void;
+  onNewInstance?: (newId: string) => void;
+  /** Restrict which tabs are visible. Defaults to all tabs when omitted. */
+  tabs?: TabId[];
 }
 
-export function AgentRequestStats({
+export function CreatorRunPanel({
   instanceId,
-  agentId,
   onNewInstance,
-}: AgentRequestStatsProps) {
+  tabs: allowedTabs,
+}: CreatorRunPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [activeTab, setActiveTab] = useState<"last" | "session" | "client">(
-    "last",
+  const [activeTab, setActiveTab] = useState<TabId>(() =>
+    allowedTabs && allowedTabs.length > 0 ? allowedTabs[0] : "actions",
   );
 
   const latestStats = useAppSelector(selectLatestCompletionStats(instanceId));
@@ -777,41 +811,59 @@ export function AgentRequestStats({
   const handleExpand = useCallback(() => setIsExpanded(true), []);
   const handleCollapse = useCallback(() => setIsExpanded(false), []);
 
-  if (!latestStats) return null;
-
+  // ── Collapsed view ────────────────────────────────────────────────────────
   if (!isExpanded) {
     return (
-      <div className="border-t border-border">
-        <CollapsedRowWithClient
-          stats={latestStats}
-          clientMetrics={latestClientMetrics}
-          instanceId={instanceId}
-          agentId={agentId}
-          onNewInstance={onNewInstance}
-          onExpand={handleExpand}
-        />
+      <div className="border-t border-l border-r border-border">
+        <button
+          type="button"
+          onClick={handleExpand}
+          className="flex items-center gap-3 w-full pl-2 pr-3 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+        >
+          <span className="font-medium text-foreground">Creator Panel</span>
+          {latestStats && (
+            <CollapsedStatsPills
+              stats={latestStats}
+              clientMetrics={latestClientMetrics}
+            />
+          )}
+          <ChevronDown className="w-3 h-3 shrink-0 ml-auto" />
+        </button>
       </div>
     );
   }
 
-  const tabs: Array<{ id: "last" | "session" | "client"; label: string }> = [
-    { id: "last", label: "Last Request" },
-    { id: "session", label: `Session (${aggregate.requestCount})` },
-    { id: "client", label: "Client Metrics" },
+  // ── Expanded view ─────────────────────────────────────────────────────────
+  const visibleTabIds = allowedTabs ?? ALL_TABS;
+
+  const allTabDefs: Array<{ id: TabId; label: string }> = [
+    { id: "actions", label: "Actions" },
+    { id: "settings", label: "Run" },
+    { id: "sysprompt", label: "System" },
+    { id: "last", label: "Request" },
+    {
+      id: "session",
+      label:
+        aggregate.requestCount > 0
+          ? `Session (${aggregate.requestCount})`
+          : "Session",
+    },
+    { id: "client", label: "Client" },
   ];
+
+  const tabs = allTabDefs.filter((t) => visibleTabIds.includes(t.id));
 
   return (
     <div className="border-t border-border bg-card">
-      {/* Header row */}
-      <div className="flex items-center justify-between px-3 py-1 border-b border-border">
-        {/* Tabs */}
-        <div className="flex items-center gap-0">
+      {/* Tab header */}
+      <div className="flex items-center justify-between px-2 py-0 border-b border-border">
+        <div className="flex items-center gap-0 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-1 text-xs font-medium transition-colors border-b-2 -mb-px ${
+              className={`px-2 py-1.5 text-[11px] font-medium transition-colors border-b-2 -mb-px whitespace-nowrap ${
                 activeTab === tab.id
                   ? "border-primary text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -822,29 +874,25 @@ export function AgentRequestStats({
           ))}
         </div>
 
-        {/* Collapse + Reset */}
-        <div className="flex items-center gap-1">
-          <ResetButton
-            instanceId={instanceId}
-            agentId={agentId}
-            onNewInstance={(newId) => {
-              onNewInstance(newId);
-              setIsExpanded(false);
-            }}
-          />
-          <button
-            type="button"
-            onClick={handleCollapse}
-            className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-            title="Collapse"
-          >
-            <ChevronUp className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleCollapse}
+          className="p-1 text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          title="Collapse"
+        >
+          <ChevronUp className="w-3.5 h-3.5" />
+        </button>
       </div>
 
-      {/* Tab content — fixed height, always scrollable */}
+      {/* Tab content — fixed height */}
       <div className="h-72 overflow-y-auto">
+        {activeTab === "actions" && (
+          <ActionsTab instanceId={instanceId} onNewInstance={onNewInstance} />
+        )}
+        {activeTab === "settings" && <RunSettingsTab instanceId={instanceId} />}
+        {activeTab === "sysprompt" && (
+          <SystemPromptTab instanceId={instanceId} />
+        )}
         {activeTab === "last" && <LastRequestPanel stats={latestStats} />}
         {activeTab === "session" && <SessionPanel instanceId={instanceId} />}
         {activeTab === "client" && (

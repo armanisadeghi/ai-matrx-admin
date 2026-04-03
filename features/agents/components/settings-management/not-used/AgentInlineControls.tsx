@@ -11,8 +11,8 @@
  *   <AgentInlineControls agentId={agentId} availableTools={tools} />
  */
 
-import { AgentVariablesModal } from "../AgentVariablesModal";
-import { AgentToolsModal } from "../AgentToolsModal";
+import { AgentVariablesModal } from "../../variables-management/AgentVariablesModal";
+import { AgentToolsModal } from "../../tools-management/AgentToolsModal";
 import { AgentSettingsModal } from "../AgentSettingsModal";
 import { setAgentField } from "../../../redux/agent-definition/slice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";

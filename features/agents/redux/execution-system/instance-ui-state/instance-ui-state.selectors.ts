@@ -165,6 +165,16 @@ export const selectUseStructuredSystemInstruction =
     state.instanceUIState.byInstanceId[instanceId]?.builderAdvancedSettings
       ?.useStructuredSystemInstruction ?? false;
 
+/**
+ * Structured system instruction overrides configured via the modal.
+ * Returns the existing object by reference — no new object constructed.
+ * Returns undefined when not set (guard in component).
+ */
+export const selectStructuredInstruction =
+  (instanceId: string) => (state: RootState) =>
+    state.instanceUIState.byInstanceId[instanceId]?.builderAdvancedSettings
+      ?.structuredInstruction;
+
 // ── Global preference selectors ───────────────────────────────────────────────
 
 /**

@@ -437,6 +437,79 @@ export const createManualInstanceNoAgent = createAsyncThunk<
 );
 
 // =============================================================================
+// Recreate Manual Instance (reset conversation, re-snapshot agent)
+// =============================================================================
+
+/**
+ * Destroys the current instance and creates a fresh one for the same agent.
+ * Re-snapshots the agent definition so any unsaved builder edits are picked up.
+ * Preserves autoClearConversation and isCreator from the old UI state.
+ *
+ * Usage:
+ *   dispatch(recreateManualInstance(instanceId)).unwrap().then(onNewInstance)
+ */
+export const recreateManualInstance = createAsyncThunk<string, string>(
+  "instances/recreateManual",
+  async (currentInstanceId, { dispatch, getState }) => {
+    const state = getState() as RootState;
+
+    const instance = state.executionInstances.byInstanceId[currentInstanceId];
+    if (!instance) {
+      throw new Error(`Instance ${currentInstanceId} not found`);
+    }
+
+    const { agentId } = instance;
+    const currentUIState =
+      state.instanceUIState.byInstanceId[currentInstanceId];
+
+    const snapshot = agentId ? readAgentSnapshot(state, agentId) : null;
+    const newInstanceId = generateInstanceId();
+
+    dispatch(
+      createInstance({
+        instanceId: newInstanceId,
+        agentId,
+        agentType: snapshot?.agentType ?? instance.agentType,
+        origin: instance.origin as InstanceOrigin,
+      }),
+    );
+
+    dispatch(
+      initInstanceOverrides({
+        instanceId: newInstanceId,
+        baseSettings: snapshot?.baseSettings ?? {},
+      }),
+    );
+    dispatch(
+      initInstanceVariables({
+        instanceId: newInstanceId,
+        definitions: snapshot?.variableDefinitions ?? [],
+        scopeValues: {},
+      }),
+    );
+    dispatch(initInstanceResources({ instanceId: newInstanceId }));
+    dispatch(initInstanceContext({ instanceId: newInstanceId }));
+    dispatch(initInstanceUserInput({ instanceId: newInstanceId }));
+    dispatch(initInstanceClientTools({ instanceId: newInstanceId }));
+    dispatch(
+      initInstanceUIState({
+        instanceId: newInstanceId,
+        isCreator: snapshot?.isCreator ?? currentUIState?.isCreator ?? false,
+        autoClearConversation: currentUIState?.autoClearConversation ?? true,
+        showVariablePanel:
+          (snapshot?.variableDefinitions.length ?? 0) > 0 ||
+          (currentUIState?.showVariablePanel ?? false),
+      }),
+    );
+    dispatch(initInstanceHistory({ instanceId: newInstanceId, mode: "agent" }));
+
+    dispatch(destroyInstance(currentInstanceId));
+
+    return newInstanceId;
+  },
+);
+
+// =============================================================================
 // Re-Instance and Execute (autoClearConversation path)
 // =============================================================================
 

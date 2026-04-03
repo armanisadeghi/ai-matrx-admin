@@ -11,14 +11,13 @@
  * inside AgentRequestStats (appears only after a response).
  */
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
 import { AgentConversationDisplay } from "../run/AgentConversationDisplay";
-import { AgentRequestStats } from "../run/AgentRequestStats";
+import { CreatorRunPanel } from "../run-controls/CreatorRunPanel";
 import { SmartAgentInput } from "../smart";
-import { BuilderAdvancedSettingsPopover } from "./BuilderAdvancedSettingsPopover";
 
 interface AgentBuilderRightPanelProps {
   agentId: string;
@@ -55,25 +54,16 @@ export function AgentBuilderRightPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agentId]);
 
-  const handleNewInstance = useCallback((newId: string) => {
-    setInstanceId(newId);
-  }, []);
-
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {instanceId ? (
         <>
-          <div className="flex items-center justify-end px-2 py-1 shrink-0">
-            <BuilderAdvancedSettingsPopover instanceId={instanceId} />
-          </div>
-
           <div className="flex-1 overflow-y-auto min-h-0">
             <AgentConversationDisplay instanceId={instanceId} />
           </div>
 
-          <AgentRequestStats
+          <CreatorRunPanel
             instanceId={instanceId}
-            agentId={agentId}
             onNewInstance={setInstanceId}
           />
 
@@ -81,7 +71,7 @@ export function AgentBuilderRightPanel({
             instanceId={instanceId}
             showAutoClearToggle
             showSubmitOnEnterToggle
-            onNewInstance={handleNewInstance}
+            onNewInstance={setInstanceId}
           />
         </>
       ) : (

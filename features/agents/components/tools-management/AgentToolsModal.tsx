@@ -18,7 +18,7 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
-import { AgentToolsManager } from "@/features/agents/components/builder/AgentToolsManager";
+import { AgentToolsManager } from "@/features/agents/components/tools-management/AgentToolsManager";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentTools } from "@/features/agents/redux/agent-definition/selectors";
 

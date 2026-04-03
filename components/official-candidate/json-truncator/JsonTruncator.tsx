@@ -22,7 +22,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { BasicInput } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { NumericStepper } from "@/components/official-candidate/NumericStepper";
+import { NumberStepper } from "@/components/official-candidate/NumberStepper";
 import {
   Copy,
   ChevronRight,
@@ -108,7 +108,7 @@ const MAX_DEPTH_LS_KEY = "data-truncator:max-depth";
 const DEFAULT_AUTO_THRESHOLD = 100;
 
 // NumInput is an alias for the shared NumericStepper component.
-const NumInput = NumericStepper;
+const NumInput = NumberStepper;
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 
