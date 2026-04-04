@@ -18,7 +18,6 @@ import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
 import { initializeUserPreferencesState } from "@/lib/redux/slices/userPreferencesSlice";
 import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
 import { CanvasSideSheet } from "@/features/canvas/core/CanvasSideSheet";
-import { DynamicSocketInitializer } from "@/app/(authenticated)/dynamic-imports/DynamicSocketInitializer";
 import { DynamicAdminIndicatorWrapper } from "@/app/(authenticated)/dynamic-imports/DynamicAdminIndicatorWrapper";
 import { DynamicDebugIndicatorManager } from "@/app/(authenticated)/dynamic-imports/DynamicDebugIndicatorManager";
 import { DynamicAnnouncementProvider } from "@/app/(authenticated)/dynamic-imports/DynamicAnnouncementProvider";
@@ -28,12 +27,9 @@ import {
 } from "@/app/(authenticated)/dynamic-imports/DynamicMessaging";
 import { DynamicAppleKeyExpiryBanner } from "@/app/(authenticated)/dynamic-imports/DynamicAppleKeyExpiryBanner";
 import { DynamicVoicePad } from "@/app/(authenticated)/dynamic-imports/DynamicVoicePad";
-import { DynamicWindowTray } from "@/app/(authenticated)/dynamic-imports/DynamicWindowTray";
+import { DynamicWindowTraySync } from "@/app/(authenticated)/dynamic-imports/DynamicWindowTraySync";
 
 const emptyGlobalCache = getEmptyGlobalCache();
-console.warn(
-  "[AuthLayout] Booting with empty entity shell — entity system will load on-demand via EntityPack",
-);
 
 export default async function AuthenticatedLayout({
   children,
@@ -135,8 +131,8 @@ export default async function AuthenticatedLayout({
       {/* Global Messaging System - Side Sheet + Data Loader */}
       <DynamicMessagingInitializer />
       <DynamicMessagingSideSheet />
-      {/* Window manager tray — must be outside ResponsiveLayout to avoid transform stacking context */}
-      <DynamicWindowTray />
+      {/* Reposition minimized windows on viewport resize */}
+      <DynamicWindowTraySync />
     </Providers>
   );
 }

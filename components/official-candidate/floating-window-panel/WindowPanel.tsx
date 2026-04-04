@@ -35,8 +35,12 @@ import {
   type UseWindowPanelOptions,
   type ResizeEdge,
 } from "./hooks/useWindowPanel";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { updateWindowRect } from "@/lib/redux/slices/windowManagerSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import {
+  updateWindowRect,
+  selectWindowsHidden,
+} from "@/lib/redux/slices/windowManagerSlice";
+import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 
 // ─── Resize handle descriptors ───────────────────────────────────────────────
 
@@ -119,6 +123,8 @@ export function WindowPanel({
   } = useWindowPanel({ ...hookOpts, title });
 
   const dispatch = useAppDispatch();
+  const windowsHidden = useAppSelector(selectWindowsHidden);
+  const isDebugMode = useAppSelector(selectIsDebugMode);
 
   // ── Portal target (client-only) ──────────────────────────────────────────
   const [portalTarget, setPortalTarget] = useState<Element | null>(null);
@@ -211,17 +217,21 @@ export function WindowPanel({
     );
   }, [dispatch, id, rect.width, rect.height]);
 
-  // ── Shared header ────────────────────────────────────────────────────────
+  const isMinimized = windowState === "minimized";
+  const isMaximized = windowState === "maximized";
+
+  // ── Header (shared across all states) ───────────────────────────────────
   const header = (
     <WindowHeader
       title={title}
       actionNodes={actionNodes}
-      onDragStart={windowState === "windowed" ? onDragStart : undefined}
+      onDragStart={onDragStart}
       onMinimize={onMinimize}
       onToggleMaximize={onToggleMaximize}
       onClose={onClose}
       onRestore={onRestore}
-      isMaximized={windowState === "maximized"}
+      isMaximized={isMaximized}
+      isMinimized={isMinimized}
       snapLeft={snapLeft}
       snapRight={snapRight}
       snapTop={snapTop}
@@ -231,18 +241,9 @@ export function WindowPanel({
   );
 
   // ────────────────────────────────────────────────────────────────────────
-  // MINIMIZED — keep the component mounted (so the hook stays alive and
-  // unregisterWindow never fires), but render nothing visible here.
-  // WindowTray (mounted in the layout) reads Redux and renders the chip.
-  // ────────────────────────────────────────────────────────────────────────
-  if (windowState === "minimized") {
-    return <></>;
-  }
-
-  // ────────────────────────────────────────────────────────────────────────
   // MAXIMIZED — portalled to body so it covers the full viewport
   // ────────────────────────────────────────────────────────────────────────
-  if (windowState === "maximized") {
+  if (isMaximized) {
     const el = (
       <div
         className={cn(
@@ -250,7 +251,7 @@ export function WindowPanel({
           "bg-card/98 backdrop-blur-md border border-border shadow-2xl",
           "overflow-hidden",
         )}
-        style={{ zIndex }}
+        style={{ zIndex, visibility: windowsHidden ? "hidden" : undefined }}
         onMouseDown={onFocus}
       >
         {header}
@@ -263,7 +264,9 @@ export function WindowPanel({
   }
 
   // ────────────────────────────────────────────────────────────────────────
-  // WINDOWED — portalled to body so it escapes any overflow:hidden parent
+  // WINDOWED + MINIMIZED — same shell, minimized just has a tiny rect from
+  // Redux (set by minimizeWindow) so no body content is visible.
+  // The body is still rendered (keeps state alive) but clipped by overflow.
   // ────────────────────────────────────────────────────────────────────────
   const el = (
     <div
@@ -279,29 +282,128 @@ export function WindowPanel({
         width: rect.width,
         height: rect.height,
         zIndex,
-        minWidth: minWidth ?? 180,
-        minHeight: minHeight ?? 80,
+        minWidth: isMinimized ? 0 : (minWidth ?? 180),
+        minHeight: isMinimized ? 0 : (minHeight ?? 80),
+        visibility: windowsHidden ? "hidden" : undefined,
       }}
       onMouseDown={onFocus}
     >
-      {HANDLES.map((h) => (
-        <div
-          key={h.edge}
-          className={cn(
-            h.className,
-            "z-10 hover:bg-primary/20 transition-colors",
-          )}
-          onMouseDown={onResizeStart(h.edge)}
-        />
-      ))}
+      {!isMinimized &&
+        HANDLES.map((h) => (
+          <div
+            key={h.edge}
+            className={cn(
+              h.className,
+              "z-10 hover:bg-primary/20 transition-colors",
+            )}
+            onMouseDown={onResizeStart(h.edge)}
+          />
+        ))}
       {header}
-      <div className={cn("flex-1 overflow-auto min-h-0", bodyClassName)}>
-        {children}
-      </div>
+
+      {/* Debug strip — shown in the body when open, or in the minimized shell */}
+      {isDebugMode && <DebugStrip rect={rect} zIndex={zIndex} />}
+
+      {!isMinimized && (
+        <div className={cn("flex-1 overflow-auto min-h-0", bodyClassName)}>
+          {children}
+        </div>
+      )}
     </div>
   );
 
   return portalTarget ? createPortal(el, portalTarget) : null;
+}
+
+// ─── DebugStrip ───────────────────────────────────────────────────────────────
+
+interface DebugStripProps {
+  rect: { x: number; y: number; width: number; height: number };
+  zIndex: number;
+}
+
+function DebugStrip({ rect, zIndex }: DebugStripProps) {
+  const [vp, setVp] = useState(() =>
+    typeof window === "undefined"
+      ? { vw: 0, vh: 0, sw: 0, sh: 0, dpr: 1 }
+      : {
+          vw: window.innerWidth,
+          vh: window.innerHeight,
+          sw: window.screen.width,
+          sh: window.screen.height,
+          dpr: window.devicePixelRatio ?? 1,
+        },
+  );
+
+  useEffect(() => {
+    const update = () =>
+      setVp({
+        vw: window.innerWidth,
+        vh: window.innerHeight,
+        sw: window.screen.width,
+        sh: window.screen.height,
+        dpr: window.devicePixelRatio ?? 1,
+      });
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  const windowEntries: [string, number][] = [
+    ["x", rect.x],
+    ["y", rect.y],
+    ["w", rect.width],
+    ["h", rect.height],
+    ["z", zIndex],
+  ];
+
+  const viewportEntries: [string, number | string][] = [
+    ["vw", vp.vw],
+    ["vh", vp.vh],
+    ["sw", vp.sw],
+    ["sh", vp.sh],
+    ["dpr", vp.dpr],
+  ];
+
+  return (
+    <div className="flex flex-col gap-0.5 px-3 py-1.5 border-b border-amber-500/20 bg-amber-500/5 shrink-0 font-mono text-[10px]">
+      {/* Row 1 — window position/size */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-amber-400/50 uppercase tracking-wide text-[9px]">
+          win
+        </span>
+        {windowEntries.map(([label, val]) => (
+          <span
+            key={label}
+            className="inline-flex items-center gap-0.5 leading-none"
+          >
+            <span className="text-amber-500/60">{label}:</span>
+            <span className="text-amber-400 font-bold tabular-nums">
+              {Math.round(val as number)}
+            </span>
+          </span>
+        ))}
+      </div>
+      {/* Row 2 — viewport / screen */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-sky-400/50 uppercase tracking-wide text-[9px]">
+          vp
+        </span>
+        {viewportEntries.map(([label, val]) => (
+          <span
+            key={label}
+            className="inline-flex items-center gap-0.5 leading-none"
+          >
+            <span className="text-sky-500/60">{label}:</span>
+            <span className="text-sky-400 font-bold tabular-nums">
+              {typeof val === "number" && !Number.isInteger(val)
+                ? val.toFixed(2)
+                : Math.round(val as number)}
+            </span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // ─── WindowHeader ─────────────────────────────────────────────────────────────
@@ -309,12 +411,13 @@ export function WindowPanel({
 interface WindowHeaderProps {
   title?: string;
   actionNodes: React.ReactNode[];
-  onDragStart?: (e: React.MouseEvent) => void;
+  onDragStart: (e: React.MouseEvent) => void;
   onMinimize: () => void;
   onToggleMaximize: () => void;
   onRestore: () => void;
   onClose?: () => void;
   isMaximized: boolean;
+  isMinimized: boolean;
   snapLeft: () => void;
   snapRight: () => void;
   snapTop: () => void;
@@ -331,6 +434,7 @@ function WindowHeader({
   onRestore,
   onClose,
   isMaximized,
+  isMinimized,
   snapLeft,
   snapRight,
   snapTop,
@@ -340,60 +444,129 @@ function WindowHeader({
   return (
     <div
       className={cn(
-        "relative flex items-center gap-1.5 px-2 py-1.5 z-20",
-        "border-b border-border/50 bg-muted/40 select-none shrink-0",
-        onDragStart ? "cursor-grab active:cursor-grabbing" : "cursor-default",
+        "relative flex items-center gap-1.5 px-2 py-1.5 z-20 shrink-0",
+        "border-b border-border/50 bg-muted/40 select-none",
+        isMaximized ? "cursor-default" : "cursor-grab active:cursor-grabbing",
+        isMinimized && "border-b-0",
       )}
-      onMouseDown={onDragStart}
+      onMouseDown={isMaximized ? undefined : onDragStart}
     >
-      {/* Traffic-light controls */}
-      <div
-        className="flex items-center gap-1 shrink-0"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
-        {/* Red — Close */}
-        <TrafficLight
-          color="red"
-          icon={<X className="w-2 h-2" />}
-          onClick={onClose ?? undefined}
-          disabled={!onClose}
-          aria-label="Close"
-        />
+      {/* Traffic-light controls — hover the group to reveal all icons */}
+      <TrafficLightGroup
+        isMinimized={isMinimized}
+        isMaximized={isMaximized}
+        onClose={onClose}
+        onMinimize={onMinimize}
+        onRestore={onRestore}
+        onToggleMaximize={onToggleMaximize}
+        snapLeft={snapLeft}
+        snapRight={snapRight}
+        snapTop={snapTop}
+        snapBottom={snapBottom}
+        snapCentre={snapCentre}
+      />
 
-        {/* Yellow — Minimize */}
-        <TrafficLight
-          color="yellow"
-          icon={<Minus className="w-2 h-2" />}
-          onClick={onMinimize}
-          aria-label="Minimize"
-        />
-
-        {/* Green — Maximize / dropdown */}
-        <GreenTrafficLight
-          isMaximized={isMaximized}
-          onToggleMaximize={onToggleMaximize}
-          onRestore={onRestore}
-          snapLeft={snapLeft}
-          snapRight={snapRight}
-          snapTop={snapTop}
-          snapBottom={snapBottom}
-          snapCentre={snapCentre}
-        />
-      </div>
-
-      {onDragStart && (
-        <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
-      )}
+      <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
 
       <span className="text-xs font-medium text-foreground/80 flex-1 truncate">
         {title ?? ""}
       </span>
 
-      {actionNodes.map((node, i) => (
-        <div key={i} onMouseDown={(e) => e.stopPropagation()}>
-          {node}
-        </div>
-      ))}
+      {/* When minimized, hide action buttons to keep the chip tidy */}
+      {!isMinimized &&
+        actionNodes.map((node, i) => (
+          <div key={i} onMouseDown={(e) => e.stopPropagation()}>
+            {node}
+          </div>
+        ))}
+    </div>
+  );
+}
+
+// ─── TrafficLightGroup ────────────────────────────────────────────────────────
+// Hover state lives here — all three dots reveal their icons together.
+
+interface TrafficLightGroupProps {
+  isMinimized: boolean;
+  isMaximized: boolean;
+  onClose?: () => void;
+  onMinimize: () => void;
+  onRestore: () => void;
+  onToggleMaximize: () => void;
+  snapLeft: () => void;
+  snapRight: () => void;
+  snapTop: () => void;
+  snapBottom: () => void;
+  snapCentre: () => void;
+}
+
+function TrafficLightGroup({
+  isMinimized,
+  isMaximized,
+  onClose,
+  onMinimize,
+  onRestore,
+  onToggleMaximize,
+  snapLeft,
+  snapRight,
+  snapTop,
+  snapBottom,
+  snapCentre,
+}: TrafficLightGroupProps) {
+  const [groupHovered, setGroupHovered] = useState(false);
+
+  return (
+    <div
+      className="flex items-center gap-1 shrink-0"
+      onMouseEnter={() => setGroupHovered(true)}
+      onMouseLeave={() => setGroupHovered(false)}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      {/* Red — Close */}
+      <TrafficLight
+        color="red"
+        showIcon={groupHovered}
+        icon={
+          <X className="w-2.5 h-2.5 stroke-[3]" style={{ color: "#7f1d1d" }} />
+        }
+        onClick={onClose ?? undefined}
+        disabled={!onClose}
+        aria-label="Close"
+      />
+
+      {/* Yellow — Minimize / restore */}
+      <TrafficLight
+        color="yellow"
+        showIcon={groupHovered}
+        icon={
+          isMinimized ? (
+            <Maximize2
+              className="w-2.5 h-2.5 stroke-[3]"
+              style={{ color: "#713f12" }}
+            />
+          ) : (
+            <Minus
+              className="w-2.5 h-2.5 stroke-[3]"
+              style={{ color: "#713f12" }}
+            />
+          )
+        }
+        onClick={isMinimized ? onRestore : onMinimize}
+        aria-label={isMinimized ? "Restore" : "Minimize"}
+      />
+
+      {/* Green — Maximize / dropdown */}
+      <GreenTrafficLight
+        showIcon={groupHovered}
+        isMaximized={isMaximized}
+        onToggleMaximize={onToggleMaximize}
+        onRestore={onRestore}
+        snapLeft={snapLeft}
+        snapRight={snapRight}
+        snapTop={snapTop}
+        snapBottom={snapBottom}
+        snapCentre={snapCentre}
+      />
     </div>
   );
 }
@@ -403,6 +576,7 @@ function WindowHeader({
 interface TrafficLightProps {
   color: "red" | "yellow";
   icon: React.ReactNode;
+  showIcon: boolean;
   onClick?: () => void;
   disabled?: boolean;
   "aria-label"?: string;
@@ -411,11 +585,11 @@ interface TrafficLightProps {
 function TrafficLight({
   color,
   icon,
+  showIcon,
   onClick,
   disabled,
   "aria-label": label,
 }: TrafficLightProps) {
-  const [hovered, setHovered] = useState(false);
   const base =
     "w-3 h-3 rounded-full flex items-center justify-center transition-colors shrink-0 relative";
   const colours =
@@ -430,15 +604,13 @@ function TrafficLight({
       type="button"
       className={cn(base, colours)}
       onClick={disabled ? undefined : onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       onMouseDown={(e) => e.stopPropagation()}
       aria-label={label}
       disabled={disabled}
     >
       <span
-        className="transition-opacity"
-        style={{ opacity: hovered && !disabled ? 1 : 0 }}
+        className="transition-opacity duration-100"
+        style={{ opacity: showIcon && !disabled ? 1 : 0 }}
       >
         {icon}
       </span>
@@ -449,6 +621,7 @@ function TrafficLight({
 // ─── GreenTrafficLight (with dropdown) ───────────────────────────────────────
 
 interface GreenTrafficLightProps {
+  showIcon: boolean;
   isMaximized: boolean;
   onToggleMaximize: () => void;
   onRestore: () => void;
@@ -460,6 +633,7 @@ interface GreenTrafficLightProps {
 }
 
 function GreenTrafficLight({
+  showIcon,
   isMaximized,
   onToggleMaximize,
   onRestore,
@@ -469,7 +643,6 @@ function GreenTrafficLight({
   snapBottom,
   snapCentre,
 }: GreenTrafficLightProps) {
-  const [hovered, setHovered] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -480,23 +653,18 @@ function GreenTrafficLight({
   const scheduleClose = () => {
     leaveTimer.current = setTimeout(() => {
       setDropdownOpen(false);
-      setHovered(false);
     }, 120);
   };
 
   const handleAction = (fn: () => void) => {
     setDropdownOpen(false);
-    setHovered(false);
     fn();
   };
 
   return (
     <div
       className="relative"
-      onMouseEnter={() => {
-        setHovered(true);
-        openDropdown();
-      }}
+      onMouseEnter={openDropdown}
       onMouseLeave={scheduleClose}
     >
       {/* The dot */}
@@ -511,13 +679,19 @@ function GreenTrafficLight({
         aria-label={isMaximized ? "Restore" : "Maximize"}
       >
         <span
-          className="transition-opacity"
-          style={{ opacity: hovered ? 1 : 0 }}
+          className="transition-opacity duration-100"
+          style={{ opacity: showIcon ? 1 : 0 }}
         >
           {isMaximized ? (
-            <Minimize2 className="w-2 h-2 text-green-900/80" />
+            <Minimize2
+              className="w-2.5 h-2.5 stroke-[3]"
+              style={{ color: "#14532d" }}
+            />
           ) : (
-            <Maximize2 className="w-2 h-2 text-green-900/80" />
+            <Maximize2
+              className="w-2.5 h-2.5 stroke-[3]"
+              style={{ color: "#14532d" }}
+            />
           )}
         </span>
       </button>

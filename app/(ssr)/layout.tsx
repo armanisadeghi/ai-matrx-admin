@@ -24,11 +24,10 @@ import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
 import AppleKeyExpiryBanner from "@/components/admin/AppleKeyExpiryBanner";
 import { DebugIndicatorManager } from "@/components/debug/DebugIndicatorManager";
 import { CanvasSideSheet } from "@/features/canvas/core/CanvasSideSheet";
-import LazySocketInitializer from "@/lib/redux/socket-io/connection/LazySocketInitializer";
 import LazyMessagingIsland from "@/features/ssr-trials/components/LazyMessagingIsland";
 import VoicePadIsland from "@/features/ssr-trials/components/VoicePadIsland";
 import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
-import { DynamicWindowTray } from "@/app/(authenticated)/dynamic-imports/DynamicWindowTray";
+import { DynamicWindowTraySync } from "@/app/(authenticated)/dynamic-imports/DynamicWindowTraySync";
 
 const emptyGlobalCache = getEmptyGlobalCache();
 
@@ -150,8 +149,8 @@ export default async function SSRLayout({
       <DebugIndicatorManager />
       <CanvasSideSheet />
       <LazyMessagingIsland />
-      {/* Window manager tray — must be outside shell-root to avoid transform stacking context */}
-      <DynamicWindowTray />
+      {/* Reposition minimized windows on viewport resize */}
+      <DynamicWindowTraySync />
     </Providers>
   );
 }

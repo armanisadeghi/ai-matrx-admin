@@ -17,9 +17,11 @@ export interface WindowEntry {
   state: WindowState;
   /** Last windowed size/position — restored when coming back from max/min */
   windowed: WindowRect;
+  /** Saved rect before minimize so restore can return to the original size */
+  preMinimizedRect: WindowRect | null;
   /** z-index order — higher = on top */
   zIndex: number;
-  /** Order in the minimized tray (0-based) */
+  /** Order in the minimized tray (0-based, kept for compat but unused in chip-less mode) */
   traySlot: number | null;
 }
 
@@ -29,12 +31,70 @@ export interface WindowManagerState {
   nextZIndex: number;
   /** How many slots are currently occupied in the tray */
   trayCount: number;
+  /** Global visibility toggle — windows stay mounted but are visually hidden */
+  windowsHidden: boolean;
 }
 
-// ─── Defaults ─────────────────────────────────────────────────────────────────
+// ─── Tray layout constants ────────────────────────────────────────────────────
+//
+// All minimized-chip placement math derives from these values.
+// Change them here and every calculation updates automatically.
+//
+//  ┌─────────────────────────────── viewport ────────────────────────────────┐
+//  │                                                                         │
+//  │   [chip 4]  [chip 3]  [chip 2]  [chip 1]  [chip 0]  ← MARGIN_RIGHT    │
+//  │                                                   ↕ MARGIN_BOTTOM      │
+//  └─────────────────────────────────────────────────────────────────────────┘
+//
+//  Row 0 starts at the bottom-right. Once a row is full, row 1 opens directly
+//  above it (separated by GAP_Y). Rows keep growing upward as needed.
+
+export const TRAY_CHIP_W = 270; // px — minimized chip width
+export const TRAY_CHIP_H = 100; // px — minimized chip height
+export const TRAY_GAP_X = 8; // px — horizontal gap between chips
+export const TRAY_GAP_Y = 8; // px — vertical gap between rows
+export const TRAY_MARGIN_R = 20; // px — gap from right viewport edge
+export const TRAY_MARGIN_B = 20; // px — gap from bottom viewport edge
+export const TRAY_MARGIN_L = 8; // px — left boundary: don't go further left
+
+// Chips per row given a viewport width
+export function trayChipsPerRow(viewportWidth: number): number {
+  const usable = viewportWidth - TRAY_MARGIN_R - TRAY_MARGIN_L;
+  return Math.max(
+    1,
+    Math.floor((usable + TRAY_GAP_X) / (TRAY_CHIP_W + TRAY_GAP_X)),
+  );
+}
+
+// Compute (x, y) for a given tray slot index and viewport dimensions
+export function traySlotRect(
+  slot: number,
+  viewportWidth: number,
+  viewportHeight: number,
+): { x: number; y: number; width: number; height: number } {
+  const perRow = trayChipsPerRow(viewportWidth);
+  const col = slot % perRow; // 0 = rightmost
+  const row = Math.floor(slot / perRow); // 0 = bottom row
+
+  const x =
+    viewportWidth -
+    TRAY_MARGIN_R -
+    TRAY_CHIP_W -
+    col * (TRAY_CHIP_W + TRAY_GAP_X);
+
+  const y =
+    viewportHeight -
+    TRAY_MARGIN_B -
+    TRAY_CHIP_H -
+    row * (TRAY_CHIP_H + TRAY_GAP_Y);
+
+  return { x, y, width: TRAY_CHIP_W, height: TRAY_CHIP_H };
+}
+
+// ─── Base constants ───────────────────────────────────────────────────────────
 
 const BASE_Z = 1000;
-const TRAY_SLOT_WIDTH = 200; // px, matches tray chip width
+const TRAY_SLOT_WIDTH = TRAY_CHIP_W; // kept for selector compat
 
 // ─── Initial state ────────────────────────────────────────────────────────────
 
@@ -42,6 +102,7 @@ const initialState: WindowManagerState = {
   windows: {},
   nextZIndex: BASE_Z,
   trayCount: 0,
+  windowsHidden: false,
 };
 
 // ─── Slice ────────────────────────────────────────────────────────────────────
@@ -66,6 +127,7 @@ const windowManagerSlice = createSlice({
         title: title ?? id,
         state: "windowed",
         windowed: initial,
+        preMinimizedRect: null,
         zIndex: state.nextZIndex++,
         traySlot: null,
       };
@@ -110,13 +172,17 @@ const windowManagerSlice = createSlice({
       if (!win) return;
       if (win.traySlot !== null) {
         state.trayCount = Math.max(0, state.trayCount - 1);
-        // Compact slots above this one
         Object.values(state.windows).forEach((w) => {
           if (w.traySlot !== null && w.traySlot > win.traySlot!) {
             w.traySlot -= 1;
           }
         });
         win.traySlot = null;
+      }
+      // Recover the rect we had before minimizing (if any)
+      if (win.preMinimizedRect) {
+        win.windowed = win.preMinimizedRect;
+        win.preMinimizedRect = null;
       }
       win.state = "windowed";
       win.zIndex = state.nextZIndex++;
@@ -139,13 +205,53 @@ const windowManagerSlice = createSlice({
       win.zIndex = state.nextZIndex++;
     },
 
-    /** Switch to minimized state — assigns a tray slot. */
-    minimizeWindow(state, action: PayloadAction<string>) {
-      const win = state.windows[action.payload];
+    /**
+     * Minimize a window — parks it in the tray grid at the bottom of the
+     * viewport. Caller must supply current viewport dimensions so the reducer
+     * can compute the exact position without touching window/document.
+     */
+    minimizeWindow(
+      state,
+      action: PayloadAction<{
+        id: string;
+        viewportWidth: number;
+        viewportHeight: number;
+      }>,
+    ) {
+      const { id, viewportWidth, viewportHeight } = action.payload;
+      const win = state.windows[id];
       if (!win || win.state === "minimized") return;
-      win.traySlot = state.trayCount;
+
+      // Save full-size rect so restore can return to it
+      win.preMinimizedRect = { ...win.windowed };
+
+      // Assign the next available tray slot and compute its position
+      const slot = state.trayCount;
+      win.traySlot = slot;
       state.trayCount += 1;
+
+      win.windowed = traySlotRect(slot, viewportWidth, viewportHeight);
       win.state = "minimized";
+    },
+
+    /**
+     * Minimize ALL non-minimized, non-maximized windows in one shot.
+     * Use for a "collapse all" button. Caller supplies viewport dimensions.
+     */
+    minimizeAll(
+      state,
+      action: PayloadAction<{ viewportWidth: number; viewportHeight: number }>,
+    ) {
+      const { viewportWidth, viewportHeight } = action.payload;
+      Object.values(state.windows).forEach((win) => {
+        if (win.state !== "windowed") return;
+        win.preMinimizedRect = { ...win.windowed };
+        const slot = state.trayCount;
+        win.traySlot = slot;
+        state.trayCount += 1;
+        win.windowed = traySlotRect(slot, viewportWidth, viewportHeight);
+        win.state = "minimized";
+      });
     },
 
     /** Update the windowed rect (called during drag or resize). */
@@ -156,6 +262,52 @@ const windowManagerSlice = createSlice({
       const win = state.windows[action.payload.id];
       if (!win) return;
       win.windowed = { ...win.windowed, ...action.payload.rect };
+    },
+
+    /**
+     * Recompute tray positions for all minimized windows after a viewport
+     * resize. Each window keeps its existing traySlot number — only x/y/w/h
+     * are recalculated. No-op if nothing is minimized.
+     */
+    recomputeTrayPositions(
+      state,
+      action: PayloadAction<{ viewportWidth: number; viewportHeight: number }>,
+    ) {
+      const { viewportWidth, viewportHeight } = action.payload;
+      const minimized = Object.values(state.windows).filter(
+        (w) => w.state === "minimized" && w.traySlot !== null,
+      );
+      if (minimized.length === 0) return;
+      minimized.forEach((win) => {
+        win.windowed = traySlotRect(
+          win.traySlot!,
+          viewportWidth,
+          viewportHeight,
+        );
+      });
+    },
+
+    /**
+     * Restore ALL minimized windows to their pre-minimized rects in one shot.
+     * Maximized windows are left alone — only minimized ones are affected.
+     */
+    restoreAll(state) {
+      Object.values(state.windows).forEach((win) => {
+        if (win.state !== "minimized") return;
+        if (win.preMinimizedRect) {
+          win.windowed = win.preMinimizedRect;
+          win.preMinimizedRect = null;
+        }
+        win.traySlot = null;
+        win.state = "windowed";
+        win.zIndex = state.nextZIndex++;
+      });
+      state.trayCount = 0;
+    },
+
+    /** Toggle global visibility of all windows (they stay mounted). */
+    toggleWindowsHidden(state) {
+      state.windowsHidden = !state.windowsHidden;
     },
 
     /** Move a minimized chip to a new tray slot (drag-within-tray). */
@@ -193,8 +345,12 @@ export const {
   restoreWindow,
   maximizeWindow,
   minimizeWindow,
+  minimizeAll,
+  restoreAll,
+  recomputeTrayPositions,
   updateWindowRect,
   updateWindowTitle,
+  toggleWindowsHidden,
   moveTraySlot,
 } = windowManagerSlice.actions;
 
@@ -223,5 +379,20 @@ export const selectTrayWindows = (state: StateWithWM) =>
     .sort((a, b) => (a.traySlot ?? 0) - (b.traySlot ?? 0));
 
 export const selectTraySlotWidth = () => TRAY_SLOT_WIDTH;
+
+export const selectWindowsHidden = (state: StateWithWM) =>
+  state.windowManager.windowsHidden;
+
+/** All registered windows sorted by zIndex descending (most-recently-focused first). */
+export const selectAllWindows = (state: StateWithWM) =>
+  Object.values(state.windowManager.windows).sort(
+    (a, b) => b.zIndex - a.zIndex,
+  );
+
+/** True when every registered window is minimized (or there are none). */
+export const selectAllMinimized = (state: StateWithWM) => {
+  const wins = Object.values(state.windowManager.windows);
+  return wins.length > 0 && wins.every((w) => w.state === "minimized");
+};
 
 export default windowManagerSlice.reducer;

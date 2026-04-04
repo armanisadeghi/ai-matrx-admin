@@ -138,7 +138,8 @@ export function useWindowPanel(
     (e: React.MouseEvent) => {
       e.preventDefault();
       dispatch(focusWindow(id));
-      if (!entry || entry.state !== "windowed") return;
+      // Allow drag in windowed AND minimized states (maximized is handled by header)
+      if (!entry || entry.state === "maximized") return;
       dragStart.current = {
         mx: e.clientX,
         my: e.clientY,
@@ -224,10 +225,15 @@ export function useWindowPanel(
     () => dispatch(maximizeWindow(id)),
     [dispatch, id],
   );
-  const onMinimize = useCallback(
-    () => dispatch(minimizeWindow(id)),
-    [dispatch, id],
-  );
+  const onMinimize = useCallback(() => {
+    dispatch(
+      minimizeWindow({
+        id,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+      }),
+    );
+  }, [dispatch, id]);
   const onToggleMaximize = useCallback(() => {
     if (entry?.state === "maximized") dispatch(restoreWindow(id));
     else dispatch(maximizeWindow(id));

@@ -12,7 +12,7 @@
     "lint": "next lint",
     "test": "ts-node -P tsconfig.json tests/setup.ts",
     "clean": "rimraf .next node_modules/.cache",
-    "types": "npx supabase gen types typescript --project-id txzxabzwovsujtloxrus --schema public > types/matrixDb.types.ts && bash scripts/fix-encoding.sh",
+    "types": "npx supabase gen types typescript --project-id txzxabzwovsujtloxrus --schema public > types/matrixDb.types.ts && bash scripts/fix-encoding.sh && bash scripts/patch-db-types.sh",
     "analyze": "ANALYZE=true pnpm build",
     "analyze:win": "set ANALYZE=true && pnpm build",
     "migrate-content-blocks": "npx tsx scripts/migrate-content-blocks.ts",

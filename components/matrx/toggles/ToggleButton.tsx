@@ -1,23 +1,25 @@
 import React, { useState } from "react";
-import { Loader2, Clock, HelpCircle } from "lucide-react";
-import { cn } from "@/lib/utils"; // Assuming you have a cn utility in this location
+import { Loader2, Clock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ToggleButtonProps {
   isEnabled: boolean;
   onClick: () => void;
   disabled?: boolean;
-  label: string;
+  label?: string;
   defaultIcon: React.ReactElement<{ size?: number; className?: string }>;
   enabledIcon: React.ReactElement<{ size?: number; className?: string }>;
   enabledIconColor?: string;
   tooltip?: string;
-  isLoading?: boolean; // Loading state prop
-  isWaiting?: boolean; // Waiting for user interaction prop
-  waitingTooltip?: string; // Tooltip text for waiting state
-  className?: string; // Additional classes for the button
-  iconClassName?: string; // Additional classes for the icon
-  labelClassName?: string; // Additional classes for the label
-  tooltipClassName?: string; // Additional classes for the tooltip
+  isLoading?: boolean;
+  isWaiting?: boolean;
+  waitingTooltip?: string;
+  /** Icon size in px — defaults to 14 for compact admin-indicator style */
+  iconSize?: number;
+  className?: string;
+  iconClassName?: string;
+  labelClassName?: string;
+  tooltipClassName?: string;
 }
 
 const ToggleButton: React.FC<ToggleButtonProps> = ({
@@ -32,23 +34,24 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({
   isLoading = false,
   isWaiting = false,
   waitingTooltip,
+  iconSize = 14,
   className,
   iconClassName,
   labelClassName,
-  tooltipClassName
+  tooltipClassName,
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
 
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-flex">
       <button
         className={cn(
-          "py-1 px-2 rounded-full flex items-center border border-zinc-300 dark:border-zinc-700 transition-colors", 
+          "p-1 rounded flex items-center gap-1 transition-colors",
           isEnabled
-            ? "bg-zinc-300 dark:bg-zinc-600 text-gray-800 dark:text-gray-200"
-            : "text-gray-800 dark:text-gray-300 hover:bg-zinc-300 dark:hover:bg-zinc-700",
+            ? "bg-slate-600 text-white"
+            : "text-slate-300 hover:bg-slate-700",
           disabled && "opacity-50 cursor-not-allowed",
-          className
+          className,
         )}
         onClick={onClick}
         disabled={disabled || isLoading}
@@ -56,51 +59,50 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({
         onMouseLeave={() => setShowTooltip(false)}
         onFocus={() => setShowTooltip(true)}
         onBlur={() => setShowTooltip(false)}
-        aria-describedby={(tooltip || waitingTooltip) ? "tooltip" : undefined}
+        aria-describedby={
+          tooltip || waitingTooltip ? "toggle-tooltip" : undefined
+        }
         data-waiting={isWaiting}
       >
         {isLoading ? (
-          <Loader2 
-            size={18} 
-            className={cn("animate-spin text-blue-500 dark:text-blue-400", iconClassName)} 
+          <Loader2
+            size={iconSize}
+            className={cn("animate-spin text-blue-400", iconClassName)}
           />
         ) : isWaiting ? (
           <Clock
-            size={18}
-            className={cn("text-green-500 dark:text-green-400 animate-pulse", iconClassName)}
+            size={iconSize}
+            className={cn("text-green-400 animate-pulse", iconClassName)}
           />
         ) : isEnabled ? (
-          React.cloneElement(enabledIcon, { 
-            size: 18, 
-            className: cn(enabledIconColor, iconClassName)
+          React.cloneElement(enabledIcon, {
+            size: iconSize,
+            className: cn(enabledIconColor, iconClassName),
           })
         ) : (
-          React.cloneElement(defaultIcon, { 
-            size: 18,
-            className: cn(iconClassName)
+          React.cloneElement(defaultIcon, {
+            size: iconSize,
+            className: cn(iconClassName),
           })
         )}
-        
+
         {label && (
-          <span className={cn("text-xs ml-1 pr-1", labelClassName)}>
-            {label}
-          </span>
+          <span className={cn("text-xs", labelClassName)}>{label}</span>
         )}
       </button>
-      
+
       {showTooltip && (isWaiting ? waitingTooltip : tooltip) && (
-        <div 
-          id="tooltip"
+        <div
+          id="toggle-tooltip"
           role="tooltip"
           className={cn(
-            "absolute z-50 px-3 py-2 text-sm font-medium text-white bg-gray-900 dark:bg-gray-700 rounded-lg shadow-sm",
-            "opacity-100 tooltip transition-opacity duration-300 bottom-full left-1/2",
-            "transform -translate-x-1/2 -translate-y-2 min-w-max",
-            tooltipClassName
+            "absolute z-50 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded shadow-sm",
+            "bottom-full left-1/2 -translate-x-1/2 -translate-y-1.5 min-w-max pointer-events-none",
+            tooltipClassName,
           )}
         >
           {isWaiting ? waitingTooltip : tooltip}
-          <div className="tooltip-arrow absolute w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45 left-1/2 -translate-x-1/2 translate-y-1 top-full" />
+          <div className="absolute w-2 h-2 bg-gray-900 rotate-45 left-1/2 -translate-x-1/2 translate-y-1 top-full" />
         </div>
       )}
     </div>

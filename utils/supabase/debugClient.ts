@@ -1,12 +1,16 @@
 // utils/supabase/client.ts
 
 import { createBrowserClient } from "@supabase/ssr";
-import type { Database } from '@/types/database.types';
+import type { Database } from "@/types/database.types";
 
 export const createClient = () =>
   createBrowserClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!.trim(),
-    (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim()
+    (
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      ""
+    ).trim(),
   );
 
 function logParams(label: string, params: any) {
@@ -25,7 +29,11 @@ function logResults(label: string, data: any, error?: any) {
 export const createDebugClient = () => {
   const client = createBrowserClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!.trim(),
-    (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim()
+    (
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      ""
+    ).trim(),
   );
 
   const handler = {

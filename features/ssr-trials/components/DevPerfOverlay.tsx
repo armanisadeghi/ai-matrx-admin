@@ -5,8 +5,8 @@
  * Shows Web Vitals, hydration timing, and navigation metrics in a draggable panel.
  * Only renders in development — completely tree-shaken in production.
  *
- * Toggle panel: Ctrl+Shift+P (or click the ⏱ button in the bottom-right)
- * Hide/show everything: Ctrl+Shift+H
+ * Toggle panel: Ctrl/⌘+Shift+P (or click the ⏱ button in the bottom-right)
+ * Hide/show everything: Ctrl/⌘+Shift+H
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -59,14 +59,23 @@ function DevPerfOverlayInner() {
   const [navEntries, setNavEntries] = useState<PerformanceNavigationTiming[]>(
     [],
   );
+  const [isMac, setIsMac] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setIsMac(
+      navigator.platform.toUpperCase().includes("MAC") ||
+        navigator.userAgent.includes("Mac"),
+    );
+  }, []);
+
+  useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.key === "H") {
+      const mod = e.ctrlKey || e.metaKey;
+      if (mod && e.shiftKey && e.key === "H") {
         e.preventDefault();
         setHidden((h) => !h);
-      } else if (e.ctrlKey && e.shiftKey && e.key === "P") {
+      } else if (mod && e.shiftKey && e.key === "P") {
         e.preventDefault();
         setVisible((v) => !v);
       }
@@ -144,7 +153,7 @@ function DevPerfOverlayInner() {
           backdropFilter: "blur(8px)",
           transition: "background 150ms",
         }}
-        title="Toggle performance overlay (Ctrl+Shift+P)"
+        title={`Toggle performance overlay (${isMac ? "⌘" : "Ctrl"}+Shift+P)`}
       >
         {"⏱"}
       </button>
@@ -250,8 +259,9 @@ function DevPerfOverlayInner() {
               textAlign: "center",
             }}
           >
-            Ctrl+Shift+P to toggle &middot; Ctrl+Shift+H to hide &middot; Check
-            terminal for server timings
+            {isMac ? "⌘" : "Ctrl"}+Shift+P to toggle &middot;{" "}
+            {isMac ? "⌘" : "Ctrl"}+Shift+H to hide &middot; Check terminal for
+            server timings
           </div>
         </div>
       )}
