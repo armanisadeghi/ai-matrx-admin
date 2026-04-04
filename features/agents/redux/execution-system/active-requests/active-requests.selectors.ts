@@ -13,6 +13,7 @@ import type { RootState } from "@/lib/redux/store";
 import type {
   ActiveRequest,
   ToolLifecycleEntry,
+  TimelineEntry,
 } from "@/features/agents/types/request.types";
 import type {
   StatusUpdatePayload,
@@ -302,3 +303,49 @@ export const selectConversationTree =
 
     return { root, children };
   };
+
+// =============================================================================
+// Timeline Selectors
+// =============================================================================
+
+/** The full timeline for a request. Stable ref — only grows. */
+export const selectTimeline =
+  (requestId: string) =>
+  (state: RootState): TimelineEntry[] =>
+    state.activeRequests.byRequestId[requestId]?.timeline ?? [];
+
+/** Timeline length. Primitive — safe for useAppSelector. */
+export const selectTimelineLength =
+  (requestId: string) =>
+  (state: RootState): number =>
+    state.activeRequests.byRequestId[requestId]?.timeline.length ?? 0;
+
+/** Whether text is currently streaming (inside a text_start..text_end run). */
+export const selectIsInTextRun =
+  (requestId: string) =>
+  (state: RootState): boolean =>
+    state.activeRequests.byRequestId[requestId]?.isTextStreaming ?? false;
+
+/** Timeline filtered to a specific kind. Memoized. */
+export const selectTimelineByKind = (requestId: string, kind: TimelineEntry["kind"]) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byRequestId[requestId]?.timeline,
+    (timeline): TimelineEntry[] => {
+      if (!timeline) return [];
+      return timeline.filter((e) => e.kind === kind);
+    },
+  );
+
+/** Count of timeline entries by kind. Memoized. */
+export const selectTimelineKindCounts = (requestId: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byRequestId[requestId]?.timeline,
+    (timeline): Record<string, number> => {
+      const counts: Record<string, number> = {};
+      if (!timeline) return counts;
+      for (const entry of timeline) {
+        counts[entry.kind] = (counts[entry.kind] ?? 0) + 1;
+      }
+      return counts;
+    },
+  );

@@ -6,8 +6,14 @@ import type {
   AgentFetchStatus,
   FieldSnapshot,
   LoadedFields,
+  UndoEntry,
 } from "../../types/agent-definition.types";
-import { shouldUpgradeFetchStatus } from "../../types/agent-definition.types";
+import {
+  shouldUpgradeFetchStatus,
+  UNDO_MAX_ENTRIES,
+  UNDO_MAX_BYTES,
+  UNDO_COALESCE_MS,
+} from "../../types/agent-definition.types";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -22,7 +28,6 @@ function makeEmptyRecord(id: string): AgentDefinitionRecord {
     tags: [],
     agentType: "user",
 
-    // Version identity — defaults to live-agent state
     isVersion: false,
     parentAgentId: null,
     versionNumber: null,
@@ -55,7 +60,6 @@ function makeEmptyRecord(id: string): AgentDefinitionRecord {
     createdAt: "",
     updatedAt: "",
 
-    // Access metadata — unknown until fetched via get_agents_list or get_agent_access_level
     isOwner: null,
     accessLevel: null,
     sharedByEmail: null,
@@ -67,6 +71,8 @@ function makeEmptyRecord(id: string): AgentDefinitionRecord {
     _fetchStatus: null,
     _loading: false,
     _error: null,
+    _undoPast: [],
+    _undoFuture: [],
   };
 }
 
@@ -123,8 +129,114 @@ function mergeAndTrack(
   });
 }
 
+// ---------------------------------------------------------------------------
+// Undo/redo helpers
+// ---------------------------------------------------------------------------
+
+function estimateBytes(value: unknown): number {
+  if (value == null) return 8;
+  if (typeof value === "string") return value.length * 2;
+  if (typeof value === "number" || typeof value === "boolean") return 8;
+  try {
+    return JSON.stringify(value).length * 2;
+  } catch {
+    return 1024;
+  }
+}
+
+function totalStackBytes(stack: UndoEntry[]): number {
+  let total = 0;
+  for (const entry of stack) total += entry.byteEstimate;
+  return total;
+}
+
 /**
- * Applies a user edit with dirty tracking and history capture.
+ * Compresses the undo stack when it exceeds limits.
+ * Strategy: keep the most recent entries and the oldest entry (for deep undo),
+ * then thin out the middle by merging consecutive same-field entries and
+ * dropping every other entry when still over budget.
+ * This means 50 stored entries can represent 200+ logical user actions.
+ */
+function compressStack(stack: UndoEntry[]): UndoEntry[] {
+  if (
+    stack.length <= UNDO_MAX_ENTRIES &&
+    totalStackBytes(stack) <= UNDO_MAX_BYTES
+  ) {
+    return stack;
+  }
+
+  const protectedHead = 1;
+  const protectedTail = Math.min(20, Math.floor(stack.length * 0.4));
+
+  if (stack.length <= protectedHead + protectedTail) return stack;
+
+  const head = stack.slice(0, protectedHead);
+  const tail = stack.slice(-protectedTail);
+  let middle = stack.slice(protectedHead, stack.length - protectedTail);
+
+  // Phase 1: merge consecutive same-field entries in the middle (keep the oldest value)
+  const merged: UndoEntry[] = [];
+  for (const entry of middle) {
+    const prev = merged[merged.length - 1];
+    if (prev && prev.field === entry.field) {
+      continue; // drop the newer duplicate — prev already holds the older value
+    }
+    merged.push(entry);
+  }
+  middle = merged;
+
+  // Phase 2: if still over count, drop every other entry from the middle
+  let result = [...head, ...middle, ...tail];
+  if (result.length > UNDO_MAX_ENTRIES) {
+    const thinned: UndoEntry[] = [];
+    for (let i = 0; i < middle.length; i++) {
+      if (i % 2 === 0) thinned.push(middle[i]);
+    }
+    result = [...head, ...thinned, ...tail];
+  }
+
+  // Phase 3: if still over byte budget, drop from the oldest end of the middle
+  while (
+    result.length > protectedHead + protectedTail + 1 &&
+    totalStackBytes(result) > UNDO_MAX_BYTES
+  ) {
+    result.splice(protectedHead, 1);
+  }
+
+  return result;
+}
+
+/**
+ * Pushes an undo entry, coalescing rapid edits to the same field.
+ * Clears the redo stack (standard undo/redo semantics).
+ */
+function pushUndoEntry(
+  record: AgentDefinitionRecord,
+  field: keyof AgentDefinition,
+  previousValue: AgentDefinition[keyof AgentDefinition],
+): void {
+  const now = Date.now();
+  const bytes = estimateBytes(previousValue);
+  const top = record._undoPast[record._undoPast.length - 1];
+
+  if (top && top.field === field && now - top.timestamp < UNDO_COALESCE_MS) {
+    // Coalesce: keep the original (older) value, just update the timestamp
+    top.timestamp = now;
+  } else {
+    record._undoPast.push({
+      field,
+      value: previousValue,
+      timestamp: now,
+      byteEstimate: bytes,
+    });
+  }
+
+  record._undoFuture = [];
+  record._undoPast = compressStack(record._undoPast);
+}
+
+/**
+ * Applies a user edit with dirty tracking, field history, and undo stack.
  * Captures the original value ONCE per field per clean cycle.
  * Does NOT add the field to _loadedFields — user edits are not "fetched".
  */
@@ -133,11 +245,14 @@ function applyFieldEdit<K extends keyof AgentDefinition>(
   field: K,
   value: AgentDefinition[K],
 ): void {
+  const previousValue = record[field] as AgentDefinition[K];
+
   if (!record._dirtyFields.has(field)) {
-    (record._fieldHistory as FieldSnapshot)[field] = record[
-      field
-    ] as AgentDefinition[K];
+    (record._fieldHistory as FieldSnapshot)[field] = previousValue;
   }
+
+  pushUndoEntry(record, field, previousValue);
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (record as any)[field] = value;
   record._dirtyFields.add(field);
@@ -145,13 +260,15 @@ function applyFieldEdit<K extends keyof AgentDefinition>(
 }
 
 /**
- * Marks a record as clean. Clears dirty state and history.
+ * Marks a record as clean. Clears dirty state, field history, and undo stacks.
  * _loadedFields is NOT cleared — fetched state is cumulative.
  */
 function markRecordClean(record: AgentDefinitionRecord): void {
   record._dirty = false;
   record._dirtyFields = new Set();
   record._fieldHistory = {};
+  record._undoPast = [];
+  record._undoFuture = [];
 }
 
 /**
@@ -415,6 +532,74 @@ export const agentDefinitionSlice = createSlice({
       record._dirty = record._dirtyFields.size > 0;
     },
 
+    // ── Undo / Redo ──────────────────────────────────────────────────────────
+
+    /**
+     * Pops the most recent entry from _undoPast, pushes current value to
+     * _undoFuture, and restores the previous value. Also maintains dirty tracking.
+     */
+    undoAgentEdit(state, action: PayloadAction<{ id: string }>) {
+      const record = state.agents[action.payload.id];
+      if (!record || record._undoPast.length === 0) return;
+
+      const entry = record._undoPast.pop()!;
+      const currentValue = record[
+        entry.field
+      ] as AgentDefinition[keyof AgentDefinition];
+      record._undoFuture.push({
+        field: entry.field,
+        value: currentValue,
+        timestamp: Date.now(),
+        byteEstimate: estimateBytes(currentValue),
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (record as any)[entry.field] = entry.value;
+
+      // Recalculate dirty state: compare against _fieldHistory (the clean baseline)
+      const originalValue = record._fieldHistory[entry.field];
+      if (originalValue !== undefined && entry.value === originalValue) {
+        record._dirtyFields.delete(entry.field);
+      } else if (!record._dirtyFields.has(entry.field)) {
+        record._dirtyFields.add(entry.field);
+      }
+      record._dirty = record._dirtyFields.size > 0;
+    },
+
+    /**
+     * Pops the most recent entry from _undoFuture, pushes current value to
+     * _undoPast, and applies the redo value. Also maintains dirty tracking.
+     */
+    redoAgentEdit(state, action: PayloadAction<{ id: string }>) {
+      const record = state.agents[action.payload.id];
+      if (!record || record._undoFuture.length === 0) return;
+
+      const entry = record._undoFuture.pop()!;
+      const currentValue = record[
+        entry.field
+      ] as AgentDefinition[keyof AgentDefinition];
+      record._undoPast.push({
+        field: entry.field,
+        value: currentValue,
+        timestamp: Date.now(),
+        byteEstimate: estimateBytes(currentValue),
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (record as any)[entry.field] = entry.value;
+
+      record._dirtyFields.add(entry.field);
+      record._dirty = true;
+    },
+
+    /** Clears the undo/redo stacks without affecting the current state. */
+    clearAgentUndoHistory(state, action: PayloadAction<{ id: string }>) {
+      const record = state.agents[action.payload.id];
+      if (!record) return;
+      record._undoPast = [];
+      record._undoFuture = [];
+    },
+
     // ── Explicitly mark fields as loaded (without writing data) ──────────────
 
     markAgentFieldsLoaded(
@@ -516,6 +701,9 @@ export const {
   resetAllAgentFields,
   markAgentSaved,
   rollbackAgentOptimisticUpdate,
+  undoAgentEdit,
+  redoAgentEdit,
+  clearAgentUndoHistory,
   markAgentFieldsLoaded,
   setAgentFetchStatus,
   setAgentLoading,

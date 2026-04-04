@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { serverToolsService } from "@/utils/supabase/server-tools-service";
 import { AgentBuilder } from "@/features/agents/components/builder/AgentBuilder";
+import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 // Cache AI models for 12 hours
 export const revalidate = 43200;
@@ -71,13 +72,7 @@ export default async function EditAgentPage({
     <div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden">
       <AgentBuilder
         agentId={id}
-        availableTools={
-          availableTools as unknown as Array<{
-            name: string;
-            description?: string;
-            [key: string]: unknown;
-          }>
-        }
+        availableTools={availableTools as DatabaseTool[]}
       />
     </div>
   );

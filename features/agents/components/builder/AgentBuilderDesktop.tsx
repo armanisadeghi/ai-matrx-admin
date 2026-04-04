@@ -1,13 +1,10 @@
 import { AgentBuilderLeftPanel } from "./AgentBuilderLeftPanel";
 import { AgentBuilderRightPanel } from "./AgentBuilderRightPanel";
+import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 interface AgentBuilderDesktopProps {
   agentId: string;
-  availableTools?: Array<{
-    name: string;
-    description?: string;
-    [key: string]: unknown;
-  }>;
+  availableTools?: DatabaseTool[];
 }
 
 export function AgentBuilderDesktop({

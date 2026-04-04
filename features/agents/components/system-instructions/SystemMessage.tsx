@@ -30,6 +30,8 @@ import {
 } from "@/features/agents/redux/agent-definition/selectors";
 import { selectAgentSystemMessage } from "@/features/agents/redux/agent-definition/selectors";
 import { setAgentMessages } from "../../redux/agent-definition/slice";
+import { useAgentUndoRedo } from "@/features/agents/hooks/useAgentUndoRedo";
+import { openUndoHistory } from "@/lib/redux/slices/overlaySlice";
 import { Terminal } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -73,6 +75,14 @@ export function SystemMessage({
   const variableDefinitions = useAppSelector((state) =>
     selectAgentVariableDefinitions(state, agentId),
   );
+
+  const { canUndo, canRedo, undo, redo, undoHint, redoHint } = useAgentUndoRedo(
+    { agentId },
+  );
+
+  const handleViewHistory = useCallback(() => {
+    dispatch(openUndoHistory({ agentId }));
+  }, [dispatch, agentId]);
 
   // console.log("[AGENT SYSTEM MESSAGE] messages", messages);
   // console.log("[AGENT SYSTEM MESSAGE] systemMessage", systemMessage);
@@ -264,8 +274,7 @@ export function SystemMessage({
     handleTextChange(optimizedText);
   };
 
-  const handleInsertVariable = () => {
-    if (!hasVariableSupport) return;
+  const handleBeforeVariableSelectorOpen = useCallback(() => {
     const textarea = textareaRefs.current[systemMessageIndex];
     if (textarea) {
       setCursorPositions((prev) => ({
@@ -276,7 +285,35 @@ export function SystemMessage({
     if (!isEditing) {
       setIsEditing(true);
     }
-  };
+  }, [systemMessageIndex, isEditing]);
+
+  const insertVariableIntoSystemMessage = useCallback(
+    (variable: string) => {
+      const textarea = textareaRefs.current[systemMessageIndex];
+      const cursorPos =
+        cursorPositions[systemMessageIndex] ?? developerMessage.length;
+      const insertion = `{{${variable}}}`;
+      const newContent =
+        developerMessage.substring(0, cursorPos) +
+        insertion +
+        developerMessage.substring(cursorPos);
+      handleTextChange(newContent);
+      const newCursorPos = cursorPos + insertion.length;
+      setCursorPositions((prev) => ({
+        ...prev,
+        [systemMessageIndex]: newCursorPos,
+      }));
+      setTimeout(() => {
+        if (textarea) {
+          textarea.focus({ preventScroll: true });
+          textarea.setSelectionRange(newCursorPos, newCursorPos);
+          textarea.style.height = "auto";
+          textarea.style.height = `${textarea.scrollHeight}px`;
+        }
+      }, 0);
+    },
+    [developerMessage, cursorPositions, systemMessageIndex, handleTextChange],
+  );
 
   const handleTextReplace = useCallback(
     (newText: string) => {
@@ -529,7 +566,12 @@ export function SystemMessage({
               isEditing={isEditing}
               hasVariableSupport={hasVariableSupport}
               hasFullScreenEditor={!!onOpenFullScreenEditor}
-              onInsertVariable={handleInsertVariable}
+              variableNames={variableNames}
+              onVariableSelected={insertVariableIntoSystemMessage}
+              onBeforeVariableSelectorOpen={handleBeforeVariableSelectorOpen}
+              templateCurrentContent={developerMessage}
+              onTemplateContentSelected={handleTextChange}
+              onSaveTemplate={() => {}}
               onOptimize={() => setIsOptimizerOpen(true)}
               onOpenFullScreenEditor={onOpenFullScreenEditor}
               onToggleEditing={() => setIsEditing((prev) => !prev)}
@@ -554,6 +596,14 @@ export function SystemMessage({
               onTextInsertBefore={handleTextInsertBefore}
               onTextInsertAfter={handleTextInsertAfter}
               onContentInserted={handleContentInserted}
+              onUndo={undo}
+              onRedo={redo}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              undoHint={undoHint}
+              redoHint={redoHint}
+              onViewHistory={handleViewHistory}
+              hasHistory={canUndo || canRedo}
             >
               <textarea
                 ref={handleTextareaRef}

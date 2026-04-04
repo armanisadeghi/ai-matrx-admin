@@ -15,14 +15,11 @@ import type {
   AgentDefinitionMessage,
   TextBlock,
 } from "@/features/agents/types/agent-message-types";
+import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 interface AgentBuilderLeftPanelProps {
   agentId: string;
-  availableTools?: Array<{
-    name: string;
-    description?: string;
-    [key: string]: unknown;
-  }>;
+  availableTools?: DatabaseTool[];
 }
 
 export function AgentBuilderLeftPanel({

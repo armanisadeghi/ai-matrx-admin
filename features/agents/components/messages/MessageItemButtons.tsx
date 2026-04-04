@@ -1,4 +1,12 @@
-import { Eye, Edit2, Maximize2, Braces, Eraser, X } from "lucide-react";
+import {
+  Eye,
+  Edit2,
+  Maximize2,
+  Braces,
+  Eraser,
+  X,
+  FileText,
+} from "lucide-react";
 
 import {
   ResponsiveIconButtonGroup,
@@ -8,12 +16,27 @@ import {
   AddBlockTrigger,
   BlockType,
 } from "@/features/agents/components/messages/AddBlockButton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { TemplateSelector } from "@/features/content-templates/components/TemplateSelector";
+import type { MessageRole } from "@/features/content-templates/types/content-templates-db";
+import { VariableSelector } from "@/features/agents/components/variables-management/VariableSelector";
 
 interface MessageItemButtonsProps {
   isEditing?: boolean;
   hasVariableSupport?: boolean;
   hasFullScreenEditor?: boolean;
-  onInsertVariable?: () => void;
+  variableNames?: string[];
+  onVariableSelected?: (name: string) => void;
+  onBeforeVariableSelectorOpen?: () => void;
+  templateRole?: MessageRole;
+  templateCurrentContent?: string;
+  onTemplateContentSelected?: (content: string) => void;
+  templateMessageIndex?: number;
+  onSaveTemplate?: (label: string, content: string, tags: string[]) => void;
   onOpenFullScreenEditor?: () => void;
   onToggleEditing?: () => void;
   onClear?: () => void;
@@ -26,7 +49,14 @@ export function MessageItemButtons({
   isEditing = false,
   hasVariableSupport = false,
   hasFullScreenEditor = false,
-  onInsertVariable,
+  variableNames = [],
+  onVariableSelected,
+  onBeforeVariableSelectorOpen,
+  templateRole = "user",
+  templateCurrentContent = "",
+  onTemplateContentSelected,
+  templateMessageIndex = 0,
+  onSaveTemplate,
   onOpenFullScreenEditor,
   onToggleEditing,
   onClear,
@@ -34,21 +64,79 @@ export function MessageItemButtons({
   onAddBlockType,
   sheetTitle = "Message Actions",
 }: MessageItemButtonsProps) {
+  const variableButton: IconButtonConfig = hasVariableSupport
+    ? {
+        id: "variable",
+        icon: Braces,
+        tooltip: "Insert Variable",
+        mobileLabel: "Insert Variable",
+        hidden: false,
+        render: () => (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <VariableSelector
+                  variables={variableNames}
+                  onVariableSelected={(v) => onVariableSelected?.(v)}
+                  onBeforeOpen={onBeforeVariableSelectorOpen}
+                />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="z-[9999]">
+              Insert Variable
+            </TooltipContent>
+          </Tooltip>
+        ),
+      }
+    : {
+        id: "variable",
+        icon: Braces,
+        tooltip: "Insert Variable",
+        mobileLabel: "Insert Variable",
+        hidden: true,
+      };
+
   const buttons: IconButtonConfig[] = [
+    variableButton,
     {
-      id: "variable",
-      icon: Braces,
-      tooltip: "Insert Variable",
-      mobileLabel: "Insert Variable",
-      hidden: !hasVariableSupport,
-      onClick: (e) => {
-        e?.stopPropagation();
-        onInsertVariable?.();
-      },
-      onMouseDown: (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      },
+      id: "template",
+      icon: FileText,
+      tooltip: "Templates",
+      mobileLabel: "Templates",
+      render: () => (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              onMouseDown={(e) => {
+                e.stopPropagation();
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <TemplateSelector
+                role={templateRole}
+                currentContent={templateCurrentContent}
+                onTemplateSelected={(content) =>
+                  onTemplateContentSelected?.(content)
+                }
+                onSaveTemplate={onSaveTemplate ?? (() => {})}
+                messageIndex={templateMessageIndex}
+              />
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="z-[9999]">
+            Templates
+          </TooltipContent>
+        </Tooltip>
+      ),
     },
     {
       id: "fullscreen",

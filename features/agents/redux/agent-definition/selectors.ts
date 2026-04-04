@@ -73,6 +73,8 @@ export const selectAgentDefinition = createSelector(
       _loadedFields,
       _loading,
       _error,
+      _undoPast,
+      _undoFuture,
       ...definition
     } = record;
     return definition;
@@ -369,6 +371,34 @@ export const selectAgentVersionNumber = createSelector(
 export const selectAgentChangeNote = createSelector(
   [selectAgentById],
   (record) => record?.changeNote ?? null,
+);
+
+// ---------------------------------------------------------------------------
+// Status flags
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Undo / redo
+// ---------------------------------------------------------------------------
+
+export const selectAgentCanUndo = createSelector(
+  [selectAgentById],
+  (record): boolean => (record?._undoPast.length ?? 0) > 0,
+);
+
+export const selectAgentCanRedo = createSelector(
+  [selectAgentById],
+  (record): boolean => (record?._undoFuture.length ?? 0) > 0,
+);
+
+export const selectAgentUndoDepth = createSelector(
+  [selectAgentById],
+  (record): number => record?._undoPast.length ?? 0,
+);
+
+export const selectAgentRedoDepth = createSelector(
+  [selectAgentById],
+  (record): number => record?._undoFuture.length ?? 0,
 );
 
 // ---------------------------------------------------------------------------

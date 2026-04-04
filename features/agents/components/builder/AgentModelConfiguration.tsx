@@ -20,14 +20,11 @@ import { AgentVariablesModal } from "@/features/agents/components/variables-mana
 import { AgentToolsModal } from "@/features/agents/components/tools-management/AgentToolsModal";
 import { Label } from "@/components/ui/label";
 import { SmartModelSelect } from "@/features/ai-models/components/smart/SmartModelSelect";
+import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 interface AgentModelConfigurationProps {
   agentId: string;
-  availableTools?: Array<{
-    name: string;
-    description?: string;
-    [key: string]: unknown;
-  }>;
+  availableTools?: DatabaseTool[];
 }
 
 export function AgentModelConfiguration({
@@ -54,7 +51,7 @@ export function AgentModelConfiguration({
         </Label>
         <SmartModelSelect value={modelId} onValueChange={handleModelChange} />
       </div>
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-1 shrink-0 pr-2">
         <AgentSettingsModal agentId={agentId} />
         <AgentVariablesModal agentId={agentId} />
         <AgentToolsModal agentId={agentId} availableTools={availableTools} />

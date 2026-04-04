@@ -21,6 +21,7 @@ import type {
   PendingToolCall,
   RequestStatus,
   ToolLifecycleEntry,
+  TimelineEntry,
 } from "@/features/agents/types/request.types";
 import type {
   StatusUpdatePayload,
@@ -693,6 +694,40 @@ export const selectLatestErrorIsFatal =
     if (ids.length === 0) return false;
     return (
       state.activeRequests.byRequestId[ids[ids.length - 1]]?.errorIsFatal ??
+      false
+    );
+  };
+
+// =============================================================================
+// Instance-Level Bridges — Timeline
+// =============================================================================
+
+/**
+ * The full timeline for this instance's latest request.
+ * Stable reference — array only grows, never shrinks mid-stream.
+ */
+export const selectLatestTimeline =
+  (instanceId: string) =>
+  (state: RootState): TimelineEntry[] => {
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return [];
+    return (
+      state.activeRequests.byRequestId[ids[ids.length - 1]]?.timeline ?? []
+    );
+  };
+
+/**
+ * Whether the latest request is currently inside a text-streaming run.
+ * Useful to distinguish "actively receiving text" from "streaming but doing
+ * non-text work" (tools, status updates, etc.).
+ */
+export const selectIsInTextRun =
+  (instanceId: string) =>
+  (state: RootState): boolean => {
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return false;
+    return (
+      state.activeRequests.byRequestId[ids[ids.length - 1]]?.isTextStreaming ??
       false
     );
   };

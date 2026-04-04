@@ -69,6 +69,7 @@ const initialState: OverlayState = {
     feedbackDialog: makeDefaultInstance(),
     shareModal: makeDefaultInstance(),
     voicePad: makeDefaultInstance(),
+    undoHistory: makeDefaultInstance(),
   },
 };
 
@@ -390,4 +391,14 @@ export const openShareModal = (options: ShareModalPayload) =>
       resourceName: options.resourceName,
       isOwner: options.isOwner,
     },
+  });
+
+interface UndoHistoryPayload {
+  agentId: string;
+}
+
+export const openUndoHistory = (options: UndoHistoryPayload) =>
+  openOverlay({
+    overlayId: "undoHistory",
+    data: { agentId: options.agentId },
   });
