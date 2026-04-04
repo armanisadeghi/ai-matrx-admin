@@ -3,7 +3,8 @@
 import dynamic from "next/dynamic";
 
 const VoicePadWrapper = dynamic(
-  () => import("@/features/voice-pad/components/VoicePadWrapper"),
+  () =>
+    import("@/components/official-candidate/voice-pad/components/VoicePadWrapper"),
   { ssr: false },
 );
 

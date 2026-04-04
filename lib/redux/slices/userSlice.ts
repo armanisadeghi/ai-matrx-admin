@@ -109,54 +109,40 @@ export const {
 } = userSlice.actions;
 export default userSlice.reducer;
 
-// Selectors
+// ── Primitive selectors — all return stable scalars, safe for useAppSelector ──
+
 export const selectUser = (state: any) => state.user;
+export const selectUserId = (state: any): string | null => state.user.id;
+export const selectIsAdmin = (state: any): boolean => state.user.isAdmin;
+export const selectAccessToken = (state: any): string | null =>
+  state.user.accessToken;
+export const selectFingerprintId = (state: any): string | null =>
+  state.user.fingerprintId;
+export const selectAuthReady = (state: any): boolean => state.user.authReady;
+export const selectShellDataLoaded = (state: any): boolean =>
+  state.user.shellDataLoaded;
+export const selectIsAuthenticated = (state: any): boolean => !!state.user.id;
 
-export const selectDisplayName = (state: any) => {
-  const user = state.user;
-  return (
-    user.userMetadata.name ||
-    user.userMetadata.fullName ||
-    (user.email ? user.email.split("@")[0] : null) ||
-    "User"
-  );
-};
+// ── Derived selectors — memoized with createSelector ─────────────────────────
 
-export const selectProfilePhoto = (state: any) => {
-  const user = state.user;
-  return user.userMetadata.picture || null;
-};
+export const selectDisplayName = createSelector(
+  (state: any) => state.user.userMetadata.name,
+  (state: any) => state.user.userMetadata.fullName,
+  (state: any) => state.user.email,
+  (name, fullName, email): string =>
+    name || fullName || (email ? email.split("@")[0] : null) || "User",
+);
 
-export const selectIsAdmin = (state: any) => {
-  const user = state.user;
-  return user.isAdmin || false;
-};
+export const selectProfilePhoto = (state: any): string | null =>
+  state.user.userMetadata.picture ?? null;
 
-export const selectAccessToken = (state: any) => {
-  return state.user.accessToken || null;
-};
-
-export const selectFingerprintId = (state: any) => {
-  return state.user.fingerprintId || null;
-};
-
-export const selectAuthReady = (state: any) => {
-  return state.user.authReady || false;
-};
-
-export const selectIsAuthenticated = (state: any) => {
-  return !!state.user.id;
-};
-
-export const selectShellDataLoaded = (state: any) => {
-  return state.user.shellDataLoaded || false;
-};
-
+/**
+ * Returns a memoized context object. Only use when you genuinely need all
+ * three fields together — prefer individual primitive selectors otherwise.
+ */
 export const selectUserContext = createSelector(
-  (state: any) => state.user,
-  (user) => ({
-    user,
-    isAuthenticated: !!user.id,
-    isAdmin: user.isAdmin || false,
-  }),
+  selectIsAuthenticated,
+  selectIsAdmin,
+  (state: any) => state.user as ReturnType<typeof selectUser>,
+  (isAuthenticated, isAdmin, user) => ({ user, isAuthenticated, isAdmin }),
 );

@@ -556,7 +556,7 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
 
 /**
  * QuickTasksSheet - Efficient task manager for FloatingSheet
- * Follows the pattern established by QuickNotesSheet
+ * Follows the pattern established by features/notes/actions/QuickNotesSheet
  */
 export function QuickTasksSheet({ onClose, className }: QuickTasksSheetProps) {
   return (

@@ -1,4 +1,8 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -358,14 +362,17 @@ export const {
 
 type StateWithWM = { windowManager: WindowManagerState };
 
+// Raw slice accessor — used as input selector for derived selectors
+const selectWindowsMap = (state: StateWithWM) => state.windowManager.windows;
+
 export const selectWindow = (id: string) => (state: StateWithWM) =>
-  state.windowManager.windows[id] ?? null;
+  state.windowManager.windows[id];
 
 export const selectWindowState = (id: string) => (state: StateWithWM) =>
-  state.windowManager.windows[id]?.state ?? "windowed";
+  state.windowManager.windows[id]?.state;
 
 export const selectWindowRect = (id: string) => (state: StateWithWM) =>
-  state.windowManager.windows[id]?.windowed ?? null;
+  state.windowManager.windows[id]?.windowed;
 
 export const selectWindowZIndex = (id: string) => (state: StateWithWM) =>
   state.windowManager.windows[id]?.zIndex ?? BASE_Z;
@@ -373,26 +380,33 @@ export const selectWindowZIndex = (id: string) => (state: StateWithWM) =>
 export const selectWindowTitle = (id: string) => (state: StateWithWM) =>
   state.windowManager.windows[id]?.title ?? id;
 
-export const selectTrayWindows = (state: StateWithWM) =>
-  Object.values(state.windowManager.windows)
-    .filter((w) => w.state === "minimized")
-    .sort((a, b) => (a.traySlot ?? 0) - (b.traySlot ?? 0));
-
 export const selectTraySlotWidth = () => TRAY_SLOT_WIDTH;
 
 export const selectWindowsHidden = (state: StateWithWM) =>
   state.windowManager.windowsHidden;
 
+/**
+ * Minimized windows sorted by tray slot ascending.
+ * Memoized — only recalculates when the windows map reference changes.
+ */
+export const selectTrayWindows = createSelector([selectWindowsMap], (windows) =>
+  Object.values(windows)
+    .filter((w) => w.state === "minimized")
+    .sort((a, b) => (a.traySlot ?? 0) - (b.traySlot ?? 0)),
+);
+
 /** All registered windows sorted by zIndex descending (most-recently-focused first). */
-export const selectAllWindows = (state: StateWithWM) =>
-  Object.values(state.windowManager.windows).sort(
-    (a, b) => b.zIndex - a.zIndex,
-  );
+export const selectAllWindows = createSelector([selectWindowsMap], (windows) =>
+  Object.values(windows).sort((a, b) => b.zIndex - a.zIndex),
+);
 
 /** True when every registered window is minimized (or there are none). */
-export const selectAllMinimized = (state: StateWithWM) => {
-  const wins = Object.values(state.windowManager.windows);
-  return wins.length > 0 && wins.every((w) => w.state === "minimized");
-};
+export const selectAllMinimized = createSelector(
+  [selectWindowsMap],
+  (windows) => {
+    const wins = Object.values(windows);
+    return wins.length > 0 && wins.every((w) => w.state === "minimized");
+  },
+);
 
 export default windowManagerSlice.reducer;

@@ -1,4 +1,8 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 
 export type VoicePadSize = "collapsed" | "expanded";
 
@@ -67,10 +71,17 @@ export const selectVoicePadEntries = (state: StateWithVoicePad) =>
   state.voicePad.entries;
 export const selectVoicePadDraftText = (state: StateWithVoicePad) =>
   state.voicePad.draftText;
-export const selectVoicePadAllText = (state: StateWithVoicePad) => {
-  const entryText = state.voicePad.entries.map((e) => e.text).join("\n\n");
-  const draft = state.voicePad.draftText;
-  return draft || entryText;
-};
+
+/** Memoized — recalculates only when entries or draftText actually change. */
+export const selectVoicePadAllText = createSelector(
+  [
+    (state: StateWithVoicePad) => state.voicePad.entries,
+    (state: StateWithVoicePad) => state.voicePad.draftText,
+  ],
+  (entries, draft): string => {
+    const entryText = entries.map((e) => e.text).join("\n\n");
+    return draft || entryText;
+  },
+);
 
 export default voicePadSlice.reducer;

@@ -18,7 +18,7 @@
 // Indicators (promptDebug, resourceDebug, executionStateDebug) are unchanged from
 // the original design — they drive the floating debug panels in DebugIndicatorManager.
 
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import type { DebugData } from "@/components/debug/SystemPromptDebugModal";
 
@@ -222,7 +222,10 @@ export const {
 
 // ── Selectors ────────────────────────────────────────────────────────────────
 
-export const selectAdminDebug = (state: RootState) => state.adminDebug;
+// Raw slice accessors — used as inputs to derived selectors
+const selectAdminDebugSlice = (state: RootState) => state.adminDebug;
+const selectIndicators = (state: RootState) => state.adminDebug.indicators;
+
 export const selectIsDebugMode = (state: RootState) =>
   state.adminDebug.isDebugMode;
 export const selectRouteContext = (state: RootState) =>
@@ -232,8 +235,13 @@ export const selectConsoleErrors = (state: RootState) =>
 export const selectDebugData = (state: RootState) => state.adminDebug.debugData;
 export const selectDebugKey = (key: string) => (state: RootState) =>
   state.adminDebug.debugData[key];
-export const selectDebugIndicators = (state: RootState) =>
-  state.adminDebug.indicators;
+
+/** Full slice snapshot — only use for the "Copy Context" serialization path, not in reactive components. */
+export const selectAdminDebug = selectAdminDebugSlice;
+
+/** All indicator sub-objects — direct reference; stable unless an indicator changes. */
+export const selectDebugIndicators = selectIndicators;
+
 export const selectPromptDebugIndicator = (state: RootState) =>
   state.adminDebug.indicators.promptDebug;
 export const selectResourceDebugIndicator = (state: RootState) =>

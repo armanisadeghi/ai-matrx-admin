@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 
 const WindowTray = dynamic(
   () =>
-    import("@/components/official-candidate/floating-window-panel/unused/WindowTray"),
+    import("@/components/official-candidate/floating-window-panel/WindowTray"),
   { ssr: false },
 );
 

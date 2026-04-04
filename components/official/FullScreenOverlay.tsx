@@ -277,11 +277,9 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
             >
               {title}
             </DialogTitle>
-            {description && (
-              <DialogDescription className="sr-only">
-                {description}
-              </DialogDescription>
-            )}
+            <DialogDescription className="sr-only">
+              {description ?? title}
+            </DialogDescription>
           </div>
 
           <div className="max-w-full overflow-y-hidden pb-2">

@@ -1,7 +1,7 @@
 "use client";
 
 import { Mic } from "lucide-react";
-import { useVoicePad } from "@/features/voice-pad";
+import { useVoicePad } from "@/components/official-candidate/voice-pad";
 
 export default function MobileDockVoiceButton() {
   const { toggle, isOpen } = useVoicePad();

@@ -67,7 +67,7 @@ const FullscreenBrokerState = dynamic(
 const QuickNotesSheet = dynamic(
   () =>
     Promise.all([
-      import("@/features/notes/components/QuickNotesSheet"),
+      import("@/features/notes/actions/QuickNotesSheet"),
       import("@/features/notes/context/NotesContext"),
     ]).then(([sheetMod, ctxMod]) => {
       const Sheet = sheetMod.QuickNotesSheet;
@@ -173,10 +173,10 @@ const AnnouncementsViewer = dynamic(
 const QuickSaveModalWithProvider = dynamic(
   () =>
     Promise.all([
-      import("@/features/notes/components/QuickSaveModal"),
+      import("@/features/notes/actions/QuickNoteSaveModal"),
       import("@/features/notes/context/NotesContext"),
     ]).then(([modalMod, ctxMod]) => {
-      const Modal = modalMod.QuickSaveModal;
+      const Modal = modalMod.QuickNoteSaveModal;
       const Provider = ctxMod.NotesProvider;
       function QuickSaveModalWithNotesProvider(
         props: React.ComponentProps<typeof Modal>,

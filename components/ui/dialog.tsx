@@ -6,6 +6,7 @@ import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { cn } from "@/lib/utils";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { useIsMounted } from "@/hooks/use-is-mounted";
+import { treeContainsComponent } from "@/lib/react/treeContainsComponent";
 
 /**
  * Context that provides the Dialog content DOM element so that nested portaled
@@ -61,6 +62,33 @@ const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+const DialogTitle = React.forwardRef<
+  React.ComponentRef<typeof DialogPrimitive.Title>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Title
+    ref={ref}
+    className={cn(
+      "text-lg font-semibold leading-none tracking-tight",
+      className,
+    )}
+    {...props}
+  />
+));
+DialogTitle.displayName = DialogPrimitive.Title.displayName;
+
+const DialogDescription = React.forwardRef<
+  React.ComponentRef<typeof DialogPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description
+    ref={ref}
+    className={cn("text-sm text-muted-foreground", className)}
+    {...props}
+  />
+));
+DialogDescription.displayName = DialogPrimitive.Description.displayName;
+
 const DialogContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
@@ -81,27 +109,12 @@ const DialogContent = React.forwardRef<
     [ref],
   );
 
-  // Check if children contain a DialogTitle
-  const hasTitle = React.Children.toArray(children).some((child) => {
-    if (React.isValidElement(child)) {
-      if (child.type === DialogTitle) {
-        return true;
-      }
-      if (
-        child.props &&
-        typeof child.props === "object" &&
-        "children" in child.props
-      ) {
-        const nestedChildren = (child.props as { children: React.ReactNode })
-          .children;
-        return React.Children.toArray(nestedChildren).some(
-          (nested) =>
-            React.isValidElement(nested) && nested.type === DialogTitle,
-        );
-      }
-    }
-    return false;
-  });
+  const hasTitle =
+    treeContainsComponent(children, DialogTitle) ||
+    treeContainsComponent(children, DialogPrimitive.Title);
+  const hasDescription =
+    treeContainsComponent(children, DialogDescription) ||
+    treeContainsComponent(children, DialogPrimitive.Description);
 
   return (
     <DialogPortal>
@@ -116,6 +129,7 @@ const DialogContent = React.forwardRef<
           backdropFilter: "blur(8px) saturate(1.8) brightness(1.1)",
           border: "2.5px solid rgba(180, 205, 255, 0.40)",
         }}
+        {...(hasDescription ? {} : { "aria-describedby": undefined })}
         {...props}
       >
         {!hasTitle && (
@@ -163,33 +177,6 @@ const DialogFooter = ({
   />
 );
 DialogFooter.displayName = "DialogFooter";
-
-const DialogTitle = React.forwardRef<
-  React.ComponentRef<typeof DialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Title
-    ref={ref}
-    className={cn(
-      "text-lg font-semibold leading-none tracking-tight",
-      className,
-    )}
-    {...props}
-  />
-));
-DialogTitle.displayName = DialogPrimitive.Title.displayName;
-
-const DialogDescription = React.forwardRef<
-  React.ComponentRef<typeof DialogPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Description
-    ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
-    {...props}
-  />
-));
-DialogDescription.displayName = DialogPrimitive.Description.displayName;
 
 export {
   Dialog,

@@ -24,7 +24,7 @@ import FeedbackButton from "@/components/layout/FeedbackButton";
 import type { RootState } from "@/lib/redux/store";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import Image from "next/image";
-import { useVoicePad } from "@/features/voice-pad";
+import { useVoicePad } from "@/components/official-candidate/voice-pad";
 
 // Lazy-loaded admin icon — never imported for non-admin users
 const ShieldIcon = lazy(() =>

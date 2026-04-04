@@ -399,3 +399,47 @@ export async function deleteFolderNotes(folderName: string): Promise<number> {
 
   return count;
 }
+
+/**
+ * Folders are not a separate table: a folder "exists" when at least one note has that `folder_name`.
+ * Call this before UIs (e.g. Quick Save) that need the folder to appear in pickers.
+ *
+ * Uses a direct insert — not `createNote` — so empty-note deduplication / draft reuse logic does not run.
+ * The placeholder label is the folder name (never "New Note") so `findEmptyNewNote` ignores it.
+ */
+export async function ensureFolderMaterialized(
+  folderName: string,
+): Promise<void> {
+  const trimmed = folderName.trim();
+  if (!trimmed) return;
+
+  const userId = requireUserId();
+
+  const { count, error: countError } = await supabase
+    .from("notes")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("folder_name", trimmed)
+    .eq("is_deleted", false);
+
+  if (countError) {
+    console.error("ensureFolderMaterialized: count error", countError);
+    throw countError;
+  }
+  if ((count ?? 0) > 0) return;
+
+  const { error: insertError } = await supabase.from("notes").insert({
+    user_id: userId,
+    label: trimmed,
+    content: "",
+    folder_name: trimmed,
+    tags: [],
+    metadata: { matrx_folder_placeholder: true },
+    position: 0,
+  });
+
+  if (insertError) {
+    console.error("ensureFolderMaterialized: insert error", insertError);
+    throw insertError;
+  }
+}

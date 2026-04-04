@@ -5,14 +5,15 @@
  */
 
 import {
-    createNote as createNoteService,
-    updateNote as updateNoteService,
-    deleteNote as deleteNoteService,
-    copyNote as copyNoteService,
-    fetchNotes,
-    fetchNoteById,
-} from './notesService';
-import type { CreateNoteInput, UpdateNoteInput, Note } from '../types';
+  createNote as createNoteService,
+  updateNote as updateNoteService,
+  deleteNote as deleteNoteService,
+  copyNote as copyNoteService,
+  fetchNotes,
+  fetchNoteById,
+  ensureFolderMaterialized as ensureFolderMaterializedService,
+} from "./notesService";
+import type { CreateNoteInput, UpdateNoteInput, Note } from "../types";
 
 /**
  * Create a new note (client-side call)
@@ -27,7 +28,7 @@ import type { CreateNoteInput, UpdateNoteInput, Note } from '../types';
  * ```
  */
 export async function create(input: CreateNoteInput): Promise<Note> {
-    return createNoteService(input);
+  return createNoteService(input);
 }
 
 /**
@@ -39,8 +40,11 @@ export async function create(input: CreateNoteInput): Promise<Note> {
  * });
  * ```
  */
-export async function update(noteId: string, updates: UpdateNoteInput): Promise<Note> {
-    return updateNoteService(noteId, updates);
+export async function update(
+  noteId: string,
+  updates: UpdateNoteInput,
+): Promise<Note> {
+  return updateNoteService(noteId, updates);
 }
 
 /**
@@ -51,7 +55,7 @@ export async function update(noteId: string, updates: UpdateNoteInput): Promise<
  * ```
  */
 export async function remove(noteId: string): Promise<void> {
-    return deleteNoteService(noteId);
+  return deleteNoteService(noteId);
 }
 
 /**
@@ -62,7 +66,7 @@ export async function remove(noteId: string): Promise<void> {
  * ```
  */
 export async function getAll(): Promise<Note[]> {
-    return fetchNotes();
+  return fetchNotes();
 }
 
 /**
@@ -73,7 +77,7 @@ export async function getAll(): Promise<Note[]> {
  * ```
  */
 export async function getById(noteId: string): Promise<Note | null> {
-    return fetchNoteById(noteId);
+  return fetchNoteById(noteId);
 }
 
 /**
@@ -83,12 +87,15 @@ export async function getById(noteId: string): Promise<Note | null> {
  * const note = await NotesAPI.quickCreate("My quick note content");
  * ```
  */
-export async function quickCreate(content: string, label?: string): Promise<Note> {
-    return createNoteService({
-        label: label || 'Quick Note',
-        content,
-        folder_name: 'Draft',
-    });
+export async function quickCreate(
+  content: string,
+  label?: string,
+): Promise<Note> {
+  return createNoteService({
+    label: label || "Quick Note",
+    content,
+    folder_name: "Draft",
+  });
 }
 
 /**
@@ -99,17 +106,27 @@ export async function quickCreate(content: string, label?: string): Promise<Note
  * ```
  */
 export async function copy(noteId: string): Promise<Note> {
-    return copyNoteService(noteId);
+  return copyNoteService(noteId);
+}
+
+/**
+ * Ensure at least one note exists in the folder so the folder appears in UIs
+ * that derive folders from notes. No-op if the folder already has notes.
+ */
+export async function ensureFolderMaterialized(
+  folderName: string,
+): Promise<void> {
+  return ensureFolderMaterializedService(folderName);
 }
 
 // Default export as namespace
 export const NotesAPI = {
-    create,
-    update,
-    remove,
-    copy,
-    getAll,
-    getById,
-    quickCreate,
+  create,
+  update,
+  remove,
+  copy,
+  getAll,
+  getById,
+  quickCreate,
+  ensureFolderMaterialized,
 };
-

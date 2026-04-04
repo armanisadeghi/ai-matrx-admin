@@ -1,16 +1,21 @@
 // lib/redux/slices/promptCacheSlice.ts
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '@/lib/redux/store';
-import { PromptData, PromptMessage, PromptSettings, PromptVariable } from '@/features/prompts/types/core';
-import type { PermissionLevel } from '@/utils/permissions/types';
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { RootState } from "@/lib/redux/store";
+import {
+  PromptData,
+  PromptMessage,
+  PromptSettings,
+  PromptVariable,
+} from "@/features/prompts/types/core";
+import type { PermissionLevel } from "@/utils/permissions/types";
 
 /**
  * Prompt Cache Slice
- * 
+ *
  * Stores fetched prompts in Redux to avoid redundant database queries.
  * Prompts are cached for the entire session after first fetch.
- * 
+ *
  * Benefits:
  * - Fetch once, use forever
  * - Instant prompt opening (no loading state)
@@ -26,9 +31,9 @@ export interface CachedPrompt {
   variableDefaults?: PromptVariable[];
   settings: PromptSettings;
   userId: string;
-  source: 'prompts' | 'prompt_builtins';
+  source: "prompts" | "prompt_builtins";
   fetchedAt: number;
-  status: 'cached' | 'stale';
+  status: "cached" | "stale";
   tags?: string[];
   category?: string;
   isArchived?: boolean;
@@ -39,7 +44,7 @@ export interface CachedPrompt {
   tools?: unknown;
 }
 
-export type ListStatus = 'idle' | 'loading' | 'success' | 'error';
+export type ListStatus = "idle" | "loading" | "success" | "error";
 
 /**
  * A prompt shared with the current user from someone else's library.
@@ -57,8 +62,8 @@ export interface SharedPromptRecord {
   permissionLevel: PermissionLevel;
   ownerEmail: string;
   // Derived helpers — computed once on load, never re-derived at render time
-  canEdit: boolean;    // permissionLevel >= 'editor'
-  canDelete: boolean;  // permissionLevel === 'admin'
+  canEdit: boolean; // permissionLevel >= 'editor'
+  canDelete: boolean; // permissionLevel === 'admin'
 }
 
 export interface PromptCacheState {
@@ -68,7 +73,7 @@ export interface PromptCacheState {
   };
   // Per-ID fetch status — guards against duplicate in-flight requests
   fetchStatus: {
-    [promptId: string]: 'idle' | 'loading' | 'success' | 'error';
+    [promptId: string]: "idle" | "loading" | "success" | "error";
   };
 
   // Flat list of the current user's OWN prompts — used by CRUD / management UIs
@@ -88,27 +93,33 @@ const initialState: PromptCacheState = {
   prompts: {},
   fetchStatus: {},
   allPrompts: [],
-  listStatus: 'idle',
+  listStatus: "idle",
   listError: null,
   lastFetchedAt: null,
   sharedPrompts: [],
-  sharedListStatus: 'idle',
+  sharedListStatus: "idle",
   sharedListError: null,
 };
 
 const promptCacheSlice = createSlice({
-  name: 'promptCache',
+  name: "promptCache",
   initialState,
   reducers: {
     // Add or update a prompt in cache
     cachePrompt: (state, action: PayloadAction<CachedPrompt>) => {
       const prompt = action.payload;
       state.prompts[prompt.id] = prompt;
-      state.fetchStatus[prompt.id] = 'success';
+      state.fetchStatus[prompt.id] = "success";
     },
 
     // Update fetch status (for loading states)
-    setFetchStatus: (state, action: PayloadAction<{ promptId: string; status: 'idle' | 'loading' | 'success' | 'error' }>) => {
+    setFetchStatus: (
+      state,
+      action: PayloadAction<{
+        promptId: string;
+        status: "idle" | "loading" | "success" | "error";
+      }>,
+    ) => {
       const { promptId, status } = action.payload;
       state.fetchStatus[promptId] = status;
     },
@@ -124,7 +135,7 @@ const promptCacheSlice = createSlice({
     markPromptStale: (state, action: PayloadAction<string>) => {
       const promptId = action.payload;
       if (state.prompts[promptId]) {
-        state.prompts[promptId].status = 'stale';
+        state.prompts[promptId].status = "stale";
       }
     },
 
@@ -133,10 +144,10 @@ const promptCacheSlice = createSlice({
       state.prompts = {};
       state.fetchStatus = {};
       state.allPrompts = [];
-      state.listStatus = 'idle';
+      state.listStatus = "idle";
       state.listError = null;
       state.sharedPrompts = [];
-      state.sharedListStatus = 'idle';
+      state.sharedListStatus = "idle";
       state.sharedListError = null;
     },
 
@@ -145,13 +156,16 @@ const promptCacheSlice = createSlice({
     /** Replace the entire prompt list (used after fetchAll). */
     setPromptList: (state, action: PayloadAction<PromptData[]>) => {
       state.allPrompts = action.payload;
-      state.listStatus = 'success';
+      state.listStatus = "success";
       state.listError = null;
       state.lastFetchedAt = Date.now();
     },
 
     /** Set the list-level fetch status and optional error message. */
-    setListStatus: (state, action: PayloadAction<{ status: ListStatus; error?: string }>) => {
+    setListStatus: (
+      state,
+      action: PayloadAction<{ status: ListStatus; error?: string }>,
+    ) => {
       state.listStatus = action.payload.status;
       state.listError = action.payload.error ?? null;
     },
@@ -174,20 +188,28 @@ const promptCacheSlice = createSlice({
 
     /** Remove a prompt from the flat list by ID (used after delete). */
     removePromptFromList: (state, action: PayloadAction<string>) => {
-      state.allPrompts = state.allPrompts.filter((p) => p.id !== action.payload);
+      state.allPrompts = state.allPrompts.filter(
+        (p) => p.id !== action.payload,
+      );
     },
 
     // ── Shared prompts (prompts shared with the current user by others) ───────
 
     /** Replace the entire shared-prompts list (used after fetchSharedWithMe). */
-    setSharedPromptList: (state, action: PayloadAction<SharedPromptRecord[]>) => {
+    setSharedPromptList: (
+      state,
+      action: PayloadAction<SharedPromptRecord[]>,
+    ) => {
       state.sharedPrompts = action.payload;
-      state.sharedListStatus = 'success';
+      state.sharedListStatus = "success";
       state.sharedListError = null;
     },
 
     /** Set the shared-list fetch status and optional error message. */
-    setSharedListStatus: (state, action: PayloadAction<{ status: ListStatus; error?: string }>) => {
+    setSharedListStatus: (
+      state,
+      action: PayloadAction<{ status: ListStatus; error?: string }>,
+    ) => {
       state.sharedListStatus = action.payload.status;
       state.sharedListError = action.payload.error ?? null;
     },
@@ -197,7 +219,10 @@ const promptCacheSlice = createSlice({
      * Used when an editor-level mutation comes back from the DB so the list
      * reflects the saved name / description immediately.
      */
-    upsertSharedPromptInList: (state, action: PayloadAction<SharedPromptRecord>) => {
+    upsertSharedPromptInList: (
+      state,
+      action: PayloadAction<SharedPromptRecord>,
+    ) => {
       const incoming = action.payload;
       const idx = state.sharedPrompts.findIndex((p) => p.id === incoming.id);
       if (idx !== -1) {
@@ -216,7 +241,9 @@ const promptCacheSlice = createSlice({
      * Used when an admin-level delete succeeds, or when the owner revokes access.
      */
     removeSharedPromptFromList: (state, action: PayloadAction<string>) => {
-      state.sharedPrompts = state.sharedPrompts.filter((p) => p.id !== action.payload);
+      state.sharedPrompts = state.sharedPrompts.filter(
+        (p) => p.id !== action.payload,
+      );
       // Also evict from the execution cache — no longer accessible
       delete state.prompts[action.payload];
       delete state.fetchStatus[action.payload];
@@ -224,72 +251,96 @@ const promptCacheSlice = createSlice({
   },
 });
 
+// ── Raw slice accessors (inputs to memoized selectors) ────────────────────
+
+const selectPromptCacheSlice = (state: RootState) => state.promptCache;
+const selectAllPromptsRaw = (state: RootState) => state.promptCache?.allPrompts;
+const selectSharedPromptsRaw = (state: RootState) =>
+  state.promptCache?.sharedPrompts;
+
 // ── Selectors: per-ID execution cache ─────────────────────────────────────
+
 export const selectCachedPrompt = (state: RootState, promptId: string) =>
-  state.promptCache?.prompts[promptId] || null;
+  state.promptCache?.prompts[promptId];
 
 export const selectIsPromptCached = (state: RootState, promptId: string) =>
   !!state.promptCache?.prompts[promptId];
 
 export const selectPromptFetchStatus = (state: RootState, promptId: string) =>
-  state.promptCache?.fetchStatus[promptId] || 'idle';
+  state.promptCache?.fetchStatus[promptId] ?? "idle";
 
 export const selectAllCachedPrompts = (state: RootState) =>
-  state.promptCache?.prompts || {};
+  state.promptCache?.prompts;
 
 // ── Selectors: flat list (CRUD / management UIs) ───────────────────────────
-export const selectAllUserPrompts = (state: RootState): PromptData[] =>
-  state.promptCache?.allPrompts ?? [];
 
-export const selectUserPromptById = (state: RootState, id: string): PromptData | undefined =>
+export const selectAllUserPrompts = (
+  state: RootState,
+): PromptData[] | undefined => state.promptCache?.allPrompts;
+
+export const selectUserPromptById = (
+  state: RootState,
+  id: string,
+): PromptData | undefined =>
   state.promptCache?.allPrompts.find((p) => p.id === id);
 
 export const selectPromptsListStatus = (state: RootState): ListStatus =>
-  state.promptCache?.listStatus ?? 'idle';
+  state.promptCache?.listStatus ?? "idle";
 
 export const selectPromptsListError = (state: RootState): string | null =>
   state.promptCache?.listError ?? null;
 
 export const selectPromptsListIsLoading = (state: RootState): boolean =>
-  state.promptCache?.listStatus === 'loading';
+  state.promptCache?.listStatus === "loading";
 
 export const selectPromptsLastFetchedAt = (state: RootState): number | null =>
   state.promptCache?.lastFetchedAt ?? null;
 
 // ── Selectors: shared prompts ──────────────────────────────────────────────
-export const selectSharedPrompts = (state: RootState): SharedPromptRecord[] =>
-  state.promptCache?.sharedPrompts ?? [];
 
-export const selectSharedPromptById = (state: RootState, id: string): SharedPromptRecord | undefined =>
+export const selectSharedPrompts = (
+  state: RootState,
+): SharedPromptRecord[] | undefined => state.promptCache?.sharedPrompts;
+
+export const selectSharedPromptById = (
+  state: RootState,
+  id: string,
+): SharedPromptRecord | undefined =>
   state.promptCache?.sharedPrompts.find((p) => p.id === id);
 
 export const selectSharedPromptsListStatus = (state: RootState): ListStatus =>
-  state.promptCache?.sharedListStatus ?? 'idle';
+  state.promptCache?.sharedListStatus ?? "idle";
 
 export const selectSharedPromptsListError = (state: RootState): string | null =>
   state.promptCache?.sharedListError ?? null;
 
 export const selectSharedPromptsIsLoading = (state: RootState): boolean =>
-  state.promptCache?.sharedListStatus === 'loading';
+  state.promptCache?.sharedListStatus === "loading";
 
 /**
- * Selector: prompts the current user can edit (own prompts + editor/admin shared).
- * Useful for the prompt-picker in the editor so both sources appear together.
+ * Memoized — prompts the current user can edit (own + editor/admin shared).
+ * Returns a stable object reference when neither list has changed.
  */
-export const selectEditablePrompts = (state: RootState) => ({
-  ownedPrompts: state.promptCache?.allPrompts ?? [],
-  sharedEditable: (state.promptCache?.sharedPrompts ?? []).filter((p) => p.canEdit),
-});
+export const selectEditablePrompts = createSelector(
+  [selectAllPromptsRaw, selectSharedPromptsRaw],
+  (allPrompts, sharedPrompts) => ({
+    ownedPrompts: allPrompts ?? [],
+    sharedEditable: (sharedPrompts ?? []).filter((p) => p.canEdit),
+  }),
+);
 
 /**
- * All unique prompt IDs the current user can at minimum VIEW
- * (union of owned + every shared ID).
+ * Memoized — all unique prompt IDs the current user can at minimum VIEW.
+ * Returns a stable array reference when neither list has changed.
  */
-export const selectAllAccessiblePromptIds = (state: RootState): string[] => {
-  const ownedIds = (state.promptCache?.allPrompts ?? []).map((p) => p.id!);
-  const sharedIds = (state.promptCache?.sharedPrompts ?? []).map((p) => p.id);
-  return [...new Set([...ownedIds, ...sharedIds])];
-};
+export const selectAllAccessiblePromptIds = createSelector(
+  [selectAllPromptsRaw, selectSharedPromptsRaw],
+  (allPrompts, sharedPrompts): string[] => {
+    const ownedIds = (allPrompts ?? []).map((p) => p.id!);
+    const sharedIds = (sharedPrompts ?? []).map((p) => p.id);
+    return [...new Set([...ownedIds, ...sharedIds])];
+  },
+);
 
 export const {
   cachePrompt,
@@ -310,4 +361,3 @@ export const {
 } = promptCacheSlice.actions;
 
 export default promptCacheSlice.reducer;
-

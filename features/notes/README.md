@@ -2,6 +2,8 @@
 
 A simple, fast notes system with folder organization, tags, and auto-labeling.
 
+**Cross-app UI entry points** live in `features/notes/actions/`. See [`actions.md`](./actions.md) for a short developer reference and usage map.
+
 ## Auto-Save Behavior
 
 - **Debounce Time**: 3 seconds (reduced frequency for less intrusive autosave)
@@ -496,18 +498,18 @@ Table: `notes`
 ## Component Overview
 
 **Full Interface:**
-- `NotesLayout` - Complete notes app with sidebar
-- `QuickNotesSheet` - Compact sheet version
+- `NotesLayout` - Complete notes app with sidebar (`features/notes/components/`)
+- `QuickNotesSheet` - Compact sheet version (`features/notes/actions/`)
 
-**Quick Actions:**
+**Quick Actions** (`features/notes/actions/`):
 - `SaveToScratchButton` - One-click save to Scratch
 - `SaveSelectionButton` - Save selected text
 - `QuickCaptureButton` - Opens modal for editing
-- `QuickSaveModal` - Edit + folder selection
+- `QuickSaveModal` / `QuickNoteSaveModal` - Edit + folder selection
 
 **When to Use What:**
 - Need full app? → `NotesLayout` or `/notes` route
-- Quick capture in header? → `QuickNotesButton` (already integrated)
+- Quick capture in header? → `QuickNotesButton` (exported; wire where needed) or `useQuickActions().openQuickNotes()`
 - Save AI output? → `SaveToScratchButton`
 - Save while reading? → `SaveSelectionButton`
 - Need user to edit first? → `QuickSaveModal` or `QuickCaptureButton`

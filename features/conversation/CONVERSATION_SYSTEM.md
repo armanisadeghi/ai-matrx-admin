@@ -232,7 +232,7 @@ These are all non-generic dependencies the unified system relies on. They live o
 | `AdvancedMenu` | `components/official/AdvancedMenu.tsx` | `MessageOptionsMenu` | Positioned menu with categorized items, loading states, toast feedback. Accepts `MenuItem[]`. |
 | `AuthGateDialog` | `components/dialogs/AuthGateDialog.tsx` | `MessageOptionsMenu` | Modal prompting login for auth-required features. Accepts `featureName`, `featureDescription`. |
 | `EmailInputDialog` | `components/dialogs/EmailInputDialog.tsx` | `MessageOptionsMenu` | Collects email for unauthenticated users, calls `onSubmit(email)`. |
-| `QuickSaveModal` | `features/notes/components/QuickSaveModal.tsx` (via `features/notes` barrel) | `MessageOptionsMenu` | Save-to-notes modal with folder selector |
+| `QuickSaveModal` | `features/notes/actions/QuickNoteSaveModal.tsx` (via `features/notes` barrel as `QuickSaveModal`) | `MessageOptionsMenu` | Save-to-notes modal with folder selector |
 | `NotesAPI` | `features/notes/` (barrel) | `MessageOptionsMenu` | `NotesAPI.create({ label, content, folder_name, tags })` |
 | `TranscriptionLoader` | `features/audio/` (barrel) | `ConversationInput` | Loading indicator shown while transcription is in progress |
 | `ResizableCanvas` | `features/canvas/core/ResizableCanvas.tsx` | `ConversationShell` (lazy) | Draggable width canvas panel wrapper |

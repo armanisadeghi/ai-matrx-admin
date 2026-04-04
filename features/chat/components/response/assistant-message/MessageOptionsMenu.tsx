@@ -3,16 +3,32 @@
  * `features/cx-conversation/MessageOptionsMenu` instead. This legacy variant
  * manages its own local state for sub-modals and will be removed after migration.
  */
-import React, { useState } from "react";
-import { BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain, Save, Volume2, Edit, CheckSquare, Mail, Printer, ScanLine } from "lucide-react";
+import React from "react";
+import {
+  BookText,
+  FileText,
+  Briefcase,
+  Copy,
+  FileCode,
+  Eye,
+  Globe,
+  Brain,
+  Save,
+  Volume2,
+  Edit,
+  CheckSquare,
+  Mail,
+  Printer,
+  ScanLine,
+} from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { printMarkdownContent } from "@/features/chat/utils/markdown-print-utils";
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
 import { NotesAPI } from "@/features/notes";
-import { QuickSaveModal } from "@/features/notes";
 import { useCartesiaWithPreferences } from "@/hooks/tts/simple/useCartesiaWithPreferences";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
 import { toast } from "sonner";
 import { useQuickActions } from "@/features/quick-actions/hooks/useQuickActions";
 
@@ -35,22 +51,38 @@ interface MessageOptionsMenuProps {
   };
 }
 
-const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClose, onShowHtmlPreview, onEditContent, onFullPrint, isCapturing, isOpen, anchorElement, metadata }) => {
-  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({
+  content,
+  onClose,
+  onShowHtmlPreview,
+  onEditContent,
+  onFullPrint,
+  isCapturing,
+  isOpen,
+  anchorElement,
+  metadata,
+}) => {
+  const dispatch = useAppDispatch();
   const { openQuickTasks } = useQuickActions();
-  
+
   // Get user's voice preferences (for Cartesia TTS)
-  const voicePreferences = useAppSelector((state) => state.userPreferences?.voice);
-  const voiceName = voicePreferences?.voice ? 'Cartesia' : 'Default voice';
-  
+  const voicePreferences = useAppSelector(
+    (state) => state.userPreferences?.voice,
+  );
+  const voiceName = voicePreferences?.voice ? "Cartesia" : "Default voice";
+
   // Cartesia TTS hook with preferences integration
-  const { speak, isGenerating: isTtsGenerating, isPlaying: isTtsPlaying } = useCartesiaWithPreferences({
+  const {
+    speak,
+    isGenerating: isTtsGenerating,
+    isPlaying: isTtsPlaying,
+  } = useCartesiaWithPreferences({
     processMarkdown: true,
     onError: (error) => {
-      toast.error('Speech playback failed', { description: error });
+      toast.error("Speech playback failed", { description: error });
     },
     onPlaybackStart: () => {
-      toast.success('Playing audio...', {
+      toast.success("Playing audio...", {
         description: `Using ${voiceName}`,
       });
     },
@@ -59,15 +91,22 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
   // Notes handlers
   const handleSaveToScratch = async () => {
     await NotesAPI.create({
-      label: 'New Note',
+      label: "New Note",
       content: content,
-      folder_name: 'Scratch',
+      folder_name: "Scratch",
       tags: [],
     });
   };
 
   const handleSaveToNotes = () => {
-    setIsSaveModalOpen(true);
+    dispatch(
+      openSaveToNotes({
+        content,
+        defaultFolder: "Scratch",
+        instanceId: crypto.randomUUID(),
+      }),
+    );
+    onClose();
   };
 
   // Add to Tasks handler
@@ -77,12 +116,14 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
       content,
       metadata,
       prePopulate: {
-        title: 'New Task from AI Response',
+        title: "New Task from AI Response",
         description: content,
-        metadataInfo: metadata ? `\n\n---\n**Origin Info:**\n${JSON.stringify(metadata, null, 2)}` : ''
-      }
+        metadataInfo: metadata
+          ? `\n\n---\n**Origin Info:**\n${JSON.stringify(metadata, null, 2)}`
+          : "",
+      },
     };
-    
+
     openQuickTasks(taskData);
     onClose();
   };
@@ -103,7 +144,7 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
   // Copy handlers - simplified without state management
   const getErrorMessage = (error: unknown, fallback: string): string => {
     if (error instanceof Error) return error.message || fallback;
-    if (typeof error === 'string') return error || fallback;
+    if (typeof error === "string") return error || fallback;
     return fallback;
   };
 
@@ -112,7 +153,7 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
       onSuccess: () => {},
       onError: (error) => {
         throw new Error(getErrorMessage(error, "Failed to copy text"));
-      }
+      },
     });
   };
 
@@ -122,8 +163,10 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
       formatForGoogleDocs: true,
       onSuccess: () => {},
       onError: (error) => {
-        throw new Error(getErrorMessage(error, "Failed to copy for Google Docs"));
-      }
+        throw new Error(
+          getErrorMessage(error, "Failed to copy for Google Docs"),
+        );
+      },
     });
   };
 
@@ -134,7 +177,7 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
       onSuccess: () => {},
       onError: (error) => {
         throw new Error(getErrorMessage(error, "Failed to copy with thinking"));
-      }
+      },
     });
   };
 
@@ -142,19 +185,21 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
     if (!onShowHtmlPreview) {
       throw new Error("HTML preview handler not configured");
     }
-    
+
     await copyToClipboard(content, {
       isMarkdown: true,
       formatForWordPress: true,
       showHtmlPreview: true,
       onShowHtmlPreview: (html) => {
-        onShowHtmlPreview(html, 'WordPress HTML Preview');
+        onShowHtmlPreview(html, "WordPress HTML Preview");
         onClose();
       },
       onSuccess: () => {},
       onError: (error) => {
-        throw new Error(getErrorMessage(error, "Failed to generate HTML preview"));
-      }
+        throw new Error(
+          getErrorMessage(error, "Failed to generate HTML preview"),
+        );
+      },
     });
   };
 
@@ -185,7 +230,7 @@ ${cssContent}
             onSuccess: () => {},
             onError: (error) => {
               throw new Error(getErrorMessage(error, "Failed to copy HTML"));
-            }
+            },
           });
         } catch (error) {
           throw new Error("Failed to generate complete HTML");
@@ -194,17 +239,20 @@ ${cssContent}
       onSuccess: () => {},
       onError: (error) => {
         throw new Error(getErrorMessage(error, "Failed to generate HTML"));
-      }
+      },
     });
   };
 
   // Save as file handler
   const handleSaveAsFile = () => {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const timestamp = new Date()
+      .toISOString()
+      .replace(/[:.]/g, "-")
+      .slice(0, 19);
     const filename = `ai-response-${timestamp}.md`;
-    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+    const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
@@ -216,7 +264,7 @@ ${cssContent}
 
   // Print / Save as PDF handler (Tier 1 — regex-based, prose only)
   const handlePrint = () => {
-    printMarkdownContent(content, 'AI Response');
+    printMarkdownContent(content, "AI Response");
     onClose();
   };
 
@@ -230,9 +278,9 @@ ${cssContent}
 
   // Email to me handler
   const handleEmailToMe = async () => {
-    const response = await fetch('/api/chat/email-response', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/chat/email-response", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         content,
         metadata: {
@@ -243,46 +291,45 @@ ${cssContent}
     });
 
     const data = await response.json();
-    
+
     if (!data.success) {
-      throw new Error(data.msg || 'Failed to send email');
+      throw new Error(data.msg || "Failed to send email");
     }
-    
+
     onClose();
   };
-
 
   // Build menu items for AdvancedMenu (iOS-style: icon + label only)
   const menuItems: MenuItem[] = [
     // Edit Content - First for easy access
-    { 
-      key: 'edit-content',
-      icon: Edit, 
-      iconColor: "text-emerald-500 dark:text-emerald-400", 
+    {
+      key: "edit-content",
+      icon: Edit,
+      iconColor: "text-emerald-500 dark:text-emerald-400",
       label: "Edit content",
       action: handleEditContent,
       category: "Edit",
       successMessage: "Opening editor...",
       errorMessage: "Failed to open editor",
-      showToast: false
+      showToast: false,
     },
     // Add to Tasks
-    { 
-      key: 'add-to-tasks',
-      icon: CheckSquare, 
-      iconColor: "text-blue-500 dark:text-blue-400", 
+    {
+      key: "add-to-tasks",
+      icon: CheckSquare,
+      iconColor: "text-blue-500 dark:text-blue-400",
       label: "Add to Tasks",
       action: handleAddToTasks,
       category: "Actions",
       successMessage: "Opening Tasks...",
       errorMessage: "Failed to open Tasks",
-      showToast: false
+      showToast: false,
     },
     // Audio Option
-    { 
-      key: 'play-audio',
-      icon: Volume2, 
-      iconColor: "text-indigo-500 dark:text-indigo-400", 
+    {
+      key: "play-audio",
+      icon: Volume2,
+      iconColor: "text-indigo-500 dark:text-indigo-400",
       label: "Play audio",
       action: handlePlayAudio,
       category: "Audio",
@@ -291,71 +338,71 @@ ${cssContent}
       disabled: isTtsGenerating || isTtsPlaying,
     },
     // Copy Options
-    { 
-      key: 'copy-plain',
-      icon: Copy, 
-      iconColor: "text-blue-500 dark:text-blue-400", 
+    {
+      key: "copy-plain",
+      icon: Copy,
+      iconColor: "text-blue-500 dark:text-blue-400",
       label: "Copy text",
       action: handleCopyPlain,
       category: "Copy",
       successMessage: "Plain text copied",
-      errorMessage: "Failed to copy text"
+      errorMessage: "Failed to copy text",
     },
-    { 
-      key: 'copy-docs',
-      icon: FileText, 
-      iconColor: "text-green-500 dark:text-green-400", 
+    {
+      key: "copy-docs",
+      icon: FileText,
+      iconColor: "text-green-500 dark:text-green-400",
       label: "Copy for Docs",
       action: handleCopyGoogleDocs,
       category: "Copy",
       successMessage: "Formatted for Google Docs",
-      errorMessage: "Failed to copy"
+      errorMessage: "Failed to copy",
     },
-    { 
-      key: 'copy-thinking',
-      icon: Brain, 
-      iconColor: "text-purple-500 dark:text-purple-400", 
+    {
+      key: "copy-thinking",
+      icon: Brain,
+      iconColor: "text-purple-500 dark:text-purple-400",
       label: "With thinking",
       action: handleCopyWithThinking,
       category: "Copy",
       successMessage: "Copied with thinking blocks",
-      errorMessage: "Failed to copy"
+      errorMessage: "Failed to copy",
     },
     // Export Options
-    { 
-      key: 'html-preview',
-      icon: Eye, 
-      iconColor: "text-indigo-500 dark:text-indigo-400", 
+    {
+      key: "html-preview",
+      icon: Eye,
+      iconColor: "text-indigo-500 dark:text-indigo-400",
       label: "HTML preview",
       action: handleHtmlPreview,
       category: "Export",
       successMessage: "Preview opened",
-      errorMessage: "Failed to open preview"
+      errorMessage: "Failed to open preview",
     },
-    { 
-      key: 'copy-html',
-      icon: Globe, 
-      iconColor: "text-orange-500 dark:text-orange-400", 
+    {
+      key: "copy-html",
+      icon: Globe,
+      iconColor: "text-orange-500 dark:text-orange-400",
       label: "Copy HTML page",
       action: handleCopyCompleteHTML,
       category: "Export",
       successMessage: "HTML page copied",
-      errorMessage: "Failed to copy HTML"
+      errorMessage: "Failed to copy HTML",
     },
-    { 
-      key: 'email-to-me',
-      icon: Mail, 
-      iconColor: "text-sky-500 dark:text-sky-400", 
+    {
+      key: "email-to-me",
+      icon: Mail,
+      iconColor: "text-sky-500 dark:text-sky-400",
       label: "Email to me",
       action: handleEmailToMe,
       category: "Export",
       successMessage: "Email sent!",
-      errorMessage: "Failed to send email"
+      errorMessage: "Failed to send email",
     },
-    { 
-      key: 'print',
-      icon: Printer, 
-      iconColor: "text-slate-500 dark:text-slate-400", 
+    {
+      key: "print",
+      icon: Printer,
+      iconColor: "text-slate-500 dark:text-slate-400",
       label: "Print / Save PDF",
       action: handlePrint,
       category: "Export",
@@ -364,7 +411,7 @@ ${cssContent}
       showToast: false,
     },
     {
-      key: 'full-print',
+      key: "full-print",
       icon: ScanLine,
       iconColor: "text-slate-600 dark:text-slate-300",
       label: isCapturing ? "Generating PDF…" : "Full Print (all blocks)",
@@ -377,55 +424,65 @@ ${cssContent}
       disabled: isCapturing,
     },
     // Action Options
-    { 
-      key: 'save-scratch',
-      icon: FileText, 
-      iconColor: "text-cyan-500 dark:text-cyan-400", 
+    {
+      key: "save-scratch",
+      icon: FileText,
+      iconColor: "text-cyan-500 dark:text-cyan-400",
       label: "Save to Scratch",
       action: handleSaveToScratch,
       category: "Actions",
       successMessage: "Saved to Scratch!",
-      errorMessage: "Failed to save"
+      errorMessage: "Failed to save",
     },
-    { 
-      key: 'save-notes',
-      icon: Save, 
-      iconColor: "text-violet-500 dark:text-violet-400", 
+    {
+      key: "save-notes",
+      icon: Save,
+      iconColor: "text-violet-500 dark:text-violet-400",
       label: "Save to Notes",
       action: handleSaveToNotes,
       category: "Actions",
       successMessage: "Opening save dialog...",
       errorMessage: "Failed to open dialog",
-      showToast: false
+      showToast: false,
     },
-    { 
-      key: 'save-file',
-      icon: FileCode, 
-      iconColor: "text-rose-500 dark:text-rose-400", 
+    {
+      key: "save-file",
+      icon: FileCode,
+      iconColor: "text-rose-500 dark:text-rose-400",
       label: "Save as file",
       action: handleSaveAsFile,
       category: "Actions",
       successMessage: "File saved!",
       errorMessage: "Failed to save file",
     },
-    { 
-      key: 'convert-broker',
-      icon: Briefcase, 
-      iconColor: "text-amber-500 dark:text-amber-400", 
+    {
+      key: "convert-broker",
+      icon: Briefcase,
+      iconColor: "text-amber-500 dark:text-amber-400",
       label: "Convert to broker",
-      action: () => { toast.info('Coming soon', { description: 'Convert to broker will be available shortly.' }); onClose(); },
+      action: () => {
+        toast.info("Coming soon", {
+          description: "Convert to broker will be available shortly.",
+        });
+        onClose();
+      },
       category: "Actions",
       showToast: false,
     },
-    { 
-      key: 'add-docs',
-      icon: BookText, 
-      iconColor: "text-emerald-500 dark:text-emerald-400", 
+    {
+      key: "add-docs",
+      icon: BookText,
+      iconColor: "text-emerald-500 dark:text-emerald-400",
       label: "Add to docs",
-      action: () => { toast.info('Coming soon', { description: 'Add to docs will be available shortly.' }); onClose(); },
+      action: () => {
+        toast.info("Coming soon", {
+          description: "Add to docs will be available shortly.",
+        });
+        onClose();
+      },
       category: "Actions",
       showToast: false,
-    }
+    },
   ];
 
   return (
@@ -437,17 +494,6 @@ ${cssContent}
         title="Message Options"
         position="bottom-left"
         anchorElement={anchorElement}
-      />
-      
-      <QuickSaveModal
-        open={isSaveModalOpen}
-        onOpenChange={setIsSaveModalOpen}
-        initialContent={content}
-        defaultFolder="Scratch"
-        onSaved={() => {
-          setIsSaveModalOpen(false);
-          onClose();
-        }}
       />
     </>
   );
