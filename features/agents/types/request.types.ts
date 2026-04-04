@@ -199,11 +199,30 @@ export interface ActiveRequest {
    */
   textRunChunkStart: number;
 
+  // ── Raw Event Log (absolute truth) ──────────────────────────
+  /**
+   * Every single event yielded by the NDJSON parser, captured BEFORE
+   * any type-guard matching or processing. Nothing is filtered, coalesced,
+   * or dropped. This is the forensic record — if an event reached the
+   * client, it is here.
+   *
+   * NOT used by any selector or component for rendering — purely for
+   * the StreamDebugPanel "Raw" tab.
+   */
+  rawEvents: RawStreamEvent[];
+
   // ── Timing ───────────────────────────────────────────────────
   startedAt: string;
   firstChunkAt: string | null;
   completedAt: string | null;
   clientMetrics: ClientMetrics | null;
+}
+
+export interface RawStreamEvent {
+  idx: number;
+  timestamp: number;
+  eventType: string;
+  data: unknown;
 }
 
 // =============================================================================
@@ -226,7 +245,8 @@ export type TimelineEntry =
   | TimelineError
   | TimelineEnd
   | TimelineBroker
-  | TimelineHeartbeat;
+  | TimelineHeartbeat
+  | TimelineUnknown;
 
 interface TimelineBase {
   seq: number;
@@ -293,6 +313,12 @@ export interface TimelineBroker extends TimelineBase {
 
 export interface TimelineHeartbeat extends TimelineBase {
   kind: "heartbeat";
+}
+
+export interface TimelineUnknown extends TimelineBase {
+  kind: "unknown";
+  originalEvent: string;
+  rawData: unknown;
 }
 
 // =============================================================================

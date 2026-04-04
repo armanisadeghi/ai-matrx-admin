@@ -19,13 +19,10 @@ import { useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectConversationTurns } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
-import {
-  selectIsExecuting,
-  selectIsStreaming,
-} from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import { selectStreamPhase } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { AgentStreamingMessage } from "./AgentStreamingMessage";
 import { AgentUserMessage } from "./AgentUserMessage";
-import { Bot, Webhook } from "lucide-react";
+import { Webhook } from "lucide-react";
 
 const PromptAssistantMessage = dynamic(
   () =>
@@ -47,11 +44,15 @@ export function AgentConversationDisplay({
   emptyStateMessage = "Ready to run",
 }: AgentConversationDisplayProps) {
   const turns = useAppSelector(selectConversationTurns(instanceId));
-  const isExecuting = useAppSelector(selectIsExecuting(instanceId));
-  const isStreaming = useAppSelector(selectIsStreaming(instanceId));
+  const phase = useAppSelector(selectStreamPhase(instanceId));
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const isActive = isExecuting || isStreaming;
+  const isActive =
+    phase === "connecting" ||
+    phase === "pre_token" ||
+    phase === "text_streaming" ||
+    phase === "interstitial" ||
+    phase === "error";
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

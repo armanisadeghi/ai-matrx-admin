@@ -1,6 +1,6 @@
 // utils/supabase/tools-service.ts
 
-import { createClient } from './client';
+import { createClient } from "./client";
 
 export interface DatabaseTool {
   id: string;
@@ -43,20 +43,20 @@ export class ToolsService {
   async fetchTools(): Promise<DatabaseTool[]> {
     try {
       const { data, error } = await this.supabase
-        .from('tools')
-        .select('*')
-        .eq('is_active', true)
-        .order('category', { ascending: true })
-        .order('name', { ascending: true });
+        .from("tools")
+        .select("*")
+        .eq("is_active", true)
+        .order("category", { ascending: true })
+        .order("name", { ascending: true });
 
       if (error) {
-        console.error('Error fetching tools:', error);
+        console.error("Error fetching tools:", error);
         throw error;
       }
 
       return data || [];
     } catch (error) {
-      console.error('Failed to fetch tools:', error);
+      console.error("Failed to fetch tools:", error);
       throw error;
     }
   }
@@ -67,45 +67,45 @@ export class ToolsService {
   async fetchToolsByCategory(category: string): Promise<DatabaseTool[]> {
     try {
       const { data, error } = await this.supabase
-        .from('tools')
-        .select('*')
-        .eq('is_active', true)
-        .eq('category', category)
-        .order('name', { ascending: true });
+        .from("tools")
+        .select("*")
+        .eq("is_active", true)
+        .eq("category", category)
+        .order("name", { ascending: true });
 
       if (error) {
-        console.error('Error fetching tools by category:', error);
+        console.error("Error fetching tools by category:", error);
         throw error;
       }
 
       return data || [];
     } catch (error) {
-      console.error('Failed to fetch tools by category:', error);
+      console.error("Failed to fetch tools by category:", error);
       throw error;
     }
   }
 
   /**
-   * Fetch tools by tool identifiers (names)
+   * Fetch tools by UUID
    */
-  async fetchToolsByIds(toolIdentifiers: string[]): Promise<DatabaseTool[]> {
-    if (toolIdentifiers.length === 0) return [];
+  async fetchToolsByIds(toolIds: string[]): Promise<DatabaseTool[]> {
+    if (toolIds.length === 0) return [];
 
     try {
       const { data, error } = await this.supabase
-        .from('tools')
-        .select('*')
-        .in('name', toolIdentifiers)  // Query by 'name' field which contains the tool identifiers
-        .eq('is_active', true);
+        .from("tools")
+        .select("*")
+        .in("id", toolIds)
+        .eq("is_active", true);
 
       if (error) {
-        console.error('Error fetching tools by identifiers:', error);
+        console.error("Error fetching tools by identifiers:", error);
         throw error;
       }
 
       return data || [];
     } catch (error) {
-      console.error('Failed to fetch tools by identifiers:', error);
+      console.error("Failed to fetch tools by identifiers:", error);
       throw error;
     }
   }
@@ -118,21 +118,21 @@ export class ToolsService {
 
     try {
       const { data, error } = await this.supabase
-        .from('tools')
-        .select('*')
-        .eq('is_active', true)
+        .from("tools")
+        .select("*")
+        .eq("is_active", true)
         .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
-        .order('category', { ascending: true })
-        .order('name', { ascending: true });
+        .order("category", { ascending: true })
+        .order("name", { ascending: true });
 
       if (error) {
-        console.error('Error searching tools:', error);
+        console.error("Error searching tools:", error);
         throw error;
       }
 
       return data || [];
     } catch (error) {
-      console.error('Failed to search tools:', error);
+      console.error("Failed to search tools:", error);
       throw error;
     }
   }

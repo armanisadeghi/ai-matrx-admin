@@ -52,15 +52,69 @@ import {
 // ─── App registry ─────────────────────────────────────────────────────────────
 
 export const APPS = [
-  { key: "ai-dream-server", label: "AI Dream Server", env: "production" },
-  { key: "ai-dream-server-dev", label: "AI Dream Server", env: "development" },
-  { key: "scraper-service", label: "Scraper Service", env: "production" },
-  { key: "scraper-service-dev", label: "Scraper Service", env: "development" },
-  { key: "matrx-ai", label: "Matrx AI", env: "production" },
-  { key: "matrx-ai-dev", label: "Matrx AI", env: "development" },
+  // ── Coolify-hosted (remote) ──────────────────────────────────────────────
+  {
+    key: "ai-dream-server",
+    label: "AI Dream Server",
+    env: "production",
+    source: "coolify" as const,
+  },
+  {
+    key: "ai-dream-server-dev",
+    label: "AI Dream Server",
+    env: "development",
+    source: "coolify" as const,
+  },
+  {
+    key: "scraper-service",
+    label: "Scraper Service",
+    env: "production",
+    source: "coolify" as const,
+  },
+  {
+    key: "scraper-service-dev",
+    label: "Scraper Service",
+    env: "development",
+    source: "coolify" as const,
+  },
+  {
+    key: "matrx-ai",
+    label: "Matrx AI",
+    env: "production",
+    source: "coolify" as const,
+  },
+  {
+    key: "matrx-ai-dev",
+    label: "Matrx AI",
+    env: "development",
+    source: "coolify" as const,
+  },
+  // ── Local file-based (requires Python server running on same machine) ────
+  {
+    key: "local-python-run",
+    label: "Python Server",
+    env: "localhost",
+    source: "local" as const,
+  },
+  {
+    key: "local-python-dev",
+    label: "Python Server (dev log)",
+    env: "localhost",
+    source: "local" as const,
+  },
 ] as const;
 
 export type AppKey = (typeof APPS)[number]["key"];
+
+/** Returns the API route URL for fetching logs for a given app */
+function logsApiUrl(appKey: AppKey, lines: number): string {
+  const app = APPS.find((a) => a.key === appKey);
+  const base =
+    app?.source === "local"
+      ? "/api/admin/local-logs"
+      : "/api/admin/coolify-logs";
+  return `${base}?app=${appKey}&lines=${lines}`;
+}
 
 const LINE_OPTIONS = [50, 100, 200, 500, 1000, 2000, 5000, 10000];
 const POLL_INTERVALS = [
@@ -610,10 +664,9 @@ export default function CoolifyLogViewer({
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(
-        `/api/admin/coolify-logs?app=${selectedApp}&lines=${lineCount}`,
-        { cache: "no-store" },
-      );
+      const res = await fetch(logsApiUrl(selectedApp, lineCount), {
+        cache: "no-store",
+      });
       const data: LogResponse = await res.json();
       if (!res.ok) {
         setError(data.error ?? `HTTP ${res.status}`);
@@ -688,12 +741,18 @@ export default function CoolifyLogViewer({
                     <Badge
                       variant="outline"
                       className={
-                        app.env === "production"
-                          ? "text-[10px] py-0 border-orange-500/60 text-orange-400"
-                          : "text-[10px] py-0 border-neutral-500 text-neutral-400"
+                        app.source === "local"
+                          ? "text-[10px] py-0 border-emerald-500/60 text-emerald-400"
+                          : app.env === "production"
+                            ? "text-[10px] py-0 border-orange-500/60 text-orange-400"
+                            : "text-[10px] py-0 border-neutral-500 text-neutral-400"
                       }
                     >
-                      {app.env === "production" ? "prod" : "dev"}
+                      {app.source === "local"
+                        ? "local"
+                        : app.env === "production"
+                          ? "prod"
+                          : "dev"}
                     </Badge>
                   </span>
                 </SelectItem>

@@ -11,7 +11,7 @@
  *   Actions | Run Settings | System Prompt | Last Request | Session | Client
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import {
   Clock,
   Zap,
@@ -28,8 +28,15 @@ import {
   RotateCcw,
   PictureInPicture2,
   Maximize2,
+  AppWindow,
+  SlidersHorizontal,
 } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import {
+  restoreWindow,
+  focusWindow,
+  selectWindow,
+} from "@/lib/redux/slices/windowManagerSlice";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { recreateManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
@@ -42,13 +49,21 @@ import {
   selectConversationTurns,
   selectLatestClientMetrics,
   selectAggregateClientMetrics,
+  selectConversationTitle,
 } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import type { AggregateClientMetrics } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import type { CompletionStats } from "@/features/agents/types/instance.types";
 import type { ClientMetrics } from "@/features/agents/types/request.types";
+import { selectLatestRequestId } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import {
+  selectTimelineDerivedTiming,
+  type TimelineDerivedTiming,
+} from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
 import { SystemInstructionEditor } from "../system-instructions/SystemInstructionEditor";
 import { StreamDebugFloating } from "../debug/StreamDebugFloating";
 import { openStreamDebug } from "@/lib/redux/slices/overlaySlice";
+import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
+import { StreamDebugPanel } from "../debug/StreamDebugPanel";
 
 // =============================================================================
 // Tab type
@@ -184,10 +199,14 @@ function ActionsTab({
   instanceId,
   onNewInstance,
   onOpenStreamDebugFloating,
+  onOpenStreamDebugWindow,
+  onOpenRunSettingsWindow,
 }: {
   instanceId: string;
   onNewInstance?: (newId: string) => void;
   onOpenStreamDebugFloating: () => void;
+  onOpenStreamDebugWindow: () => void;
+  onOpenRunSettingsWindow: () => void;
 }) {
   const dispatch = useAppDispatch();
 
@@ -212,13 +231,25 @@ function ActionsTab({
         <RotateCcw className="w-3 h-3 shrink-0" />
         Reset conversation
       </button>
+
+      <div className="pt-1 pb-0.5 px-2 text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wide">
+        Stream Debug
+      </div>
       <button
         type="button"
         onClick={onOpenStreamDebugFloating}
         className="flex items-center gap-2 w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded transition-colors"
       >
         <PictureInPicture2 className="w-3 h-3 shrink-0" />
-        Stream debug — floating panel
+        Floating panel (legacy)
+      </button>
+      <button
+        type="button"
+        onClick={onOpenStreamDebugWindow}
+        className="flex items-center gap-2 w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded transition-colors"
+      >
+        <AppWindow className="w-3 h-3 shrink-0" />
+        Window panel
       </button>
       <button
         type="button"
@@ -226,7 +257,19 @@ function ActionsTab({
         className="flex items-center gap-2 w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded transition-colors"
       >
         <Maximize2 className="w-3 h-3 shrink-0" />
-        Stream debug — fullscreen
+        Fullscreen overlay
+      </button>
+
+      <div className="pt-1 pb-0.5 px-2 text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wide">
+        Tools
+      </div>
+      <button
+        type="button"
+        onClick={onOpenRunSettingsWindow}
+        className="flex items-center gap-2 w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded transition-colors"
+      >
+        <SlidersHorizontal className="w-3 h-3 shrink-0" />
+        Run settings — window panel
       </button>
     </div>
   );
@@ -635,11 +678,13 @@ function ClientTableCol({
 function ClientPanel({
   metrics,
   aggregateClient,
+  timelineTiming,
 }: {
   metrics: ClientMetrics | undefined;
   aggregateClient: AggregateClientMetrics;
+  timelineTiming: TimelineDerivedTiming | undefined;
 }) {
-  if (!metrics) {
+  if (!metrics && !timelineTiming) {
     return (
       <div className="p-4 text-xs text-muted-foreground text-center">
         No client metrics yet.
@@ -647,55 +692,113 @@ function ClientPanel({
     );
   }
 
-  const timingRows = [
-    {
-      label: "Internal latency",
-      value: fmtMs(metrics.internalLatencyMs),
-      highlight:
-        metrics.internalLatencyMs != null && metrics.internalLatencyMs > 500,
-    },
-    {
-      label: "Time to first token",
-      value: fmtMs(metrics.ttftMs),
-      highlight: true,
-    },
-    { label: "Stream duration", value: fmtMs(metrics.streamDurationMs) },
-    {
-      label: "Render delay",
-      value: fmtMs(metrics.renderDelayMs),
-      highlight: metrics.renderDelayMs != null && metrics.renderDelayMs > 200,
-    },
-    {
-      label: "Total client duration",
-      value: fmtMs(metrics.totalClientDurationMs),
-    },
-  ];
+  const timingRows = metrics
+    ? [
+        {
+          label: "Internal latency",
+          value: fmtMs(metrics.internalLatencyMs),
+          highlight:
+            metrics.internalLatencyMs != null &&
+            metrics.internalLatencyMs > 500,
+        },
+        {
+          label: "Time to first token",
+          value: fmtMs(metrics.ttftMs),
+          highlight: true,
+        },
+        { label: "Stream duration", value: fmtMs(metrics.streamDurationMs) },
+        {
+          label: "Render delay",
+          value: fmtMs(metrics.renderDelayMs),
+          highlight:
+            metrics.renderDelayMs != null && metrics.renderDelayMs > 200,
+        },
+        {
+          label: "Total client duration",
+          value: fmtMs(metrics.totalClientDurationMs),
+        },
+      ]
+    : [];
 
-  const dataRows = [
-    { label: "Response text", value: fmtBytes(metrics.accumulatedTextBytes) },
-    { label: "Total payload", value: fmtBytes(metrics.totalPayloadBytes) },
-    { label: "Total events", value: String(metrics.totalEvents) },
-    { label: "Chunk events", value: String(metrics.chunkEvents) },
-    { label: "Data events", value: String(metrics.dataEvents) },
-    { label: "Tool events", value: String(metrics.toolEvents) },
-    { label: "Block events", value: String(metrics.contentBlockEvents) },
-    { label: "Status events", value: String(metrics.statusUpdateEvents) },
-    { label: "Other events", value: String(metrics.otherEvents) },
-  ];
+  const dataRows = metrics
+    ? [
+        {
+          label: "Response text",
+          value: fmtBytes(metrics.accumulatedTextBytes),
+        },
+        { label: "Total payload", value: fmtBytes(metrics.totalPayloadBytes) },
+        { label: "Total events", value: String(metrics.totalEvents) },
+        { label: "Chunk events", value: String(metrics.chunkEvents) },
+        { label: "Data events", value: String(metrics.dataEvents) },
+        { label: "Tool events", value: String(metrics.toolEvents) },
+        { label: "Block events", value: String(metrics.contentBlockEvents) },
+        { label: "Status events", value: String(metrics.statusUpdateEvents) },
+        { label: "Other events", value: String(metrics.otherEvents) },
+      ]
+    : [];
+
+  const timelineRows = timelineTiming
+    ? [
+        {
+          label: "Time to first status",
+          value: fmtMs(timelineTiming.timeToFirstStatusMs),
+        },
+        {
+          label: "Time to first text",
+          value: fmtMs(timelineTiming.timeToFirstTextMs),
+          highlight: true,
+        },
+        {
+          label: "Text streaming",
+          value: fmtMs(timelineTiming.textStreamingDurationMs),
+        },
+        {
+          label: "Tool execution",
+          value: fmtMs(timelineTiming.toolExecutionDurationMs),
+        },
+        {
+          label: "Interstitial",
+          value: fmtMs(timelineTiming.interstitialDurationMs),
+        },
+        {
+          label: "Total timeline",
+          value: fmtMs(timelineTiming.totalTimelineDurationMs),
+        },
+        {
+          label: "Text runs",
+          value: String(timelineTiming.textRunCount),
+        },
+        {
+          label: "Tool calls",
+          value: String(timelineTiming.toolCallCount),
+        },
+      ]
+    : [];
 
   return (
     <div className="divide-y divide-border">
       <div className="flex">
-        <ClientTableCol
-          icon={<Clock className="w-3 h-3" />}
-          title="Client Timing"
-          rows={timingRows}
-        />
-        <ClientTableCol
-          icon={<Database className="w-3 h-3" />}
-          title="Data Volume"
-          rows={dataRows}
-        />
+        {timingRows.length > 0 && (
+          <ClientTableCol
+            icon={<Clock className="w-3 h-3" />}
+            title="Client Timing"
+            rows={timingRows}
+          />
+        )}
+        {timelineRows.length > 0 && (
+          <ClientTableCol
+            icon={<BarChart2 className="w-3 h-3" />}
+            title="Timeline Timing"
+            rows={timelineRows}
+          />
+        )}
+        {dataRows.length > 0 && (
+          <ClientTableCol
+            icon={<Database className="w-3 h-3" />}
+            title="Data Volume"
+            rows={dataRows}
+          />
+        )}
       </div>
 
       {aggregateClient.totalRequests > 1 && (
@@ -820,15 +923,50 @@ export function CreatorRunPanel({
   onNewInstance,
   tabs: allowedTabs,
 }: CreatorRunPanelProps) {
+  const dispatch = useAppDispatch();
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>(() =>
     allowedTabs && allowedTabs.length > 0 ? allowedTabs[0] : "actions",
   );
   const [streamDebugFloatingOpen, setStreamDebugFloatingOpen] = useState(false);
+  // Window panels stay mounted once opened (never unmounted while minimized).
+  // Only set to false when the user explicitly closes via onClose.
+  const [streamDebugWindowOpen, setStreamDebugWindowOpen] = useState(false);
+  const [runSettingsWindowOpen, setRunSettingsWindowOpen] = useState(false);
+
+  // Freeze window ids at first render — they must never change even if
+  // instanceId changes (e.g. after reset), otherwise the hook cleanup
+  // fires, unregisters the window from Redux, and the tray chip disappears.
+  const streamDebugIdRef = useRef(`stream-debug-${instanceId}`);
+  const runSettingsIdRef = useRef(`run-settings-${instanceId}`);
+  const streamDebugId = streamDebugIdRef.current;
+  const runSettingsId = runSettingsIdRef.current;
+
+  const streamDebugEntry = useAppSelector(selectWindow(streamDebugId));
+  const runSettingsEntry = useAppSelector(selectWindow(runSettingsId));
 
   const openStreamDebugFloating = useCallback(() => {
     setStreamDebugFloatingOpen(true);
   }, []);
+
+  const openStreamDebugWindow = useCallback(() => {
+    if (streamDebugEntry) {
+      // Already registered — restore if minimized, then focus
+      dispatch(restoreWindow(streamDebugId));
+      dispatch(focusWindow(streamDebugId));
+    } else {
+      setStreamDebugWindowOpen(true);
+    }
+  }, [dispatch, streamDebugEntry, streamDebugId]);
+
+  const openRunSettingsWindow = useCallback(() => {
+    if (runSettingsEntry) {
+      dispatch(restoreWindow(runSettingsId));
+      dispatch(focusWindow(runSettingsId));
+    } else {
+      setRunSettingsWindowOpen(true);
+    }
+  }, [dispatch, runSettingsEntry, runSettingsId]);
 
   const latestStats = useAppSelector(selectLatestCompletionStats(instanceId));
   const aggregate = useAppSelector(selectAggregateStats(instanceId));
@@ -838,9 +976,52 @@ export function CreatorRunPanel({
   const aggregateClientMetrics = useAppSelector(
     selectAggregateClientMetrics(instanceId),
   );
+  const conversationTitle = useAppSelector(selectConversationTitle(instanceId));
+  const latestRequestId = useAppSelector(selectLatestRequestId(instanceId));
+  const timelineTiming = useAppSelector(
+    latestRequestId
+      ? selectTimelineDerivedTiming(latestRequestId)
+      : () => undefined,
+  );
 
   const handleExpand = useCallback(() => setIsExpanded(true), []);
   const handleCollapse = useCallback(() => setIsExpanded(false), []);
+
+  // ── Window panels — rendered OUTSIDE the collapsed/expanded branches ───────
+  // They must always stay mounted once opened so the hook's cleanup never fires
+  // and the minimized tray chip keeps working. Only unmounted on explicit close.
+  const windowPanels = (
+    <>
+      {streamDebugFloatingOpen && (
+        <StreamDebugFloating
+          instanceId={instanceId}
+          onClose={() => setStreamDebugFloatingOpen(false)}
+        />
+      )}
+      {streamDebugWindowOpen && (
+        <WindowPanel
+          id={streamDebugId}
+          title="Stream Debug"
+          initialRect={{ width: 680, height: 520 }}
+          onClose={() => setStreamDebugWindowOpen(false)}
+        >
+          <StreamDebugPanel instanceId={instanceId} />
+        </WindowPanel>
+      )}
+      {runSettingsWindowOpen && (
+        <WindowPanel
+          id={runSettingsId}
+          title="Run Settings"
+          initialRect={{ width: 420, height: 480 }}
+          onClose={() => setRunSettingsWindowOpen(false)}
+        >
+          <div className="p-3">
+            <RunSettingsEditor instanceId={instanceId} />
+          </div>
+        </WindowPanel>
+      )}
+    </>
+  );
 
   // ── Collapsed view ────────────────────────────────────────────────────────
   if (!isExpanded) {
@@ -852,7 +1033,9 @@ export function CreatorRunPanel({
             onClick={handleExpand}
             className="flex items-center gap-3 w-full pl-2 pr-3 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
           >
-            <span className="font-medium text-foreground">Creator Panel</span>
+            <span className="font-medium text-foreground truncate">
+              {conversationTitle ?? "Creator Panel"}
+            </span>
             {latestStats && (
               <CollapsedStatsPills
                 stats={latestStats}
@@ -862,12 +1045,7 @@ export function CreatorRunPanel({
             <ChevronDown className="w-3 h-3 shrink-0 ml-auto" />
           </button>
         </div>
-        {streamDebugFloatingOpen && (
-          <StreamDebugFloating
-            instanceId={instanceId}
-            onClose={() => setStreamDebugFloatingOpen(false)}
-          />
-        )}
+        {windowPanels}
       </>
     );
   }
@@ -931,6 +1109,8 @@ export function CreatorRunPanel({
               instanceId={instanceId}
               onNewInstance={onNewInstance}
               onOpenStreamDebugFloating={openStreamDebugFloating}
+              onOpenStreamDebugWindow={openStreamDebugWindow}
+              onOpenRunSettingsWindow={openRunSettingsWindow}
             />
           )}
           {activeTab === "settings" && (
@@ -945,16 +1125,12 @@ export function CreatorRunPanel({
             <ClientPanel
               metrics={latestClientMetrics}
               aggregateClient={aggregateClientMetrics}
+              timelineTiming={timelineTiming}
             />
           )}
         </div>
       </div>
-      {streamDebugFloatingOpen && (
-        <StreamDebugFloating
-          instanceId={instanceId}
-          onClose={() => setStreamDebugFloatingOpen(false)}
-        />
-      )}
+      {windowPanels}
     </>
   );
 }

@@ -1,29 +1,34 @@
 "use client";
 
 /**
- * AgentPlanningIndicator
+ * AgentStatusIndicator
  *
- * Shown between submit and first server event — covers the window where
- * the client is waiting for the server to accept the request, route it,
- * and begin processing. Professional animated indicator with shimmer bar
- * and a text sweep effect.
+ * Renders the server's user_message from status updates with a pulsing
+ * indicator and shimmer bar. Shown during pre-token and interstitial
+ * phases. The text itself has a left-to-right color sweep animation
+ * so it feels alive rather than static.
  */
 
 import { Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface AgentPlanningIndicatorProps {
+interface AgentStatusIndicatorProps {
+  message: string | null;
   compact?: boolean;
 }
 
-export function AgentPlanningIndicator({
+export function AgentStatusIndicator({
+  message,
   compact = false,
-}: AgentPlanningIndicatorProps) {
+}: AgentStatusIndicatorProps) {
+  const displayMessage = message ?? "Processing...";
+
   if (compact) {
     return (
       <div className="flex items-center gap-2 py-1">
-        <AnimatedText text="Connecting" className="text-[11px]" />
-        <ShimmerBar className="w-14" />
+        <StatusPulse />
+        <AnimatedText text={displayMessage} className="text-[11px] truncate" />
+        <ShimmerBar className="w-10 flex-shrink-0" />
       </div>
     );
   }
@@ -34,7 +39,10 @@ export function AgentPlanningIndicator({
         <Bot className="w-4 h-4 text-primary animate-pulse" />
       </div>
       <div className="flex flex-col gap-1.5 min-w-0">
-        <AnimatedText text="Connecting" className="text-sm font-medium" />
+        <div className="flex items-center gap-2.5">
+          <AnimatedText text={displayMessage} className="text-sm font-medium" />
+          <StatusPulse />
+        </div>
         <ShimmerBar className="w-32" />
       </div>
     </div>
@@ -60,21 +68,15 @@ function AnimatedText({
       }}
     >
       {text}
-      <PulsingDots />
     </span>
   );
 }
 
-function PulsingDots() {
+function StatusPulse() {
   return (
-    <span className="inline-flex gap-[2px] ml-0.5 align-baseline" aria-hidden>
-      {[0, 150, 300].map((delay) => (
-        <span
-          key={delay}
-          className="inline-block w-[4px] h-[4px] rounded-full bg-current animate-bounce"
-          style={{ animationDelay: `${delay}ms` }}
-        />
-      ))}
+    <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
+      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40" />
+      <span className="relative inline-flex rounded-full h-2 w-2 bg-primary/60" />
     </span>
   );
 }

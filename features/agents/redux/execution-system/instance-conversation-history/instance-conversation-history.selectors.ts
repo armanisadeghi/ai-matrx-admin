@@ -253,3 +253,24 @@ export const selectAggregateClientMetrics = (instanceId: string) =>
       };
     },
   );
+
+// =============================================================================
+// Conversation Label Selectors
+// =============================================================================
+
+export const selectConversationTitle =
+  (instanceId: string) =>
+  (state: RootState): string | null =>
+    state.instanceConversationHistory.byInstanceId[instanceId]?.title ?? null;
+
+export const selectConversationDescription =
+  (instanceId: string) =>
+  (state: RootState): string | null =>
+    state.instanceConversationHistory.byInstanceId[instanceId]?.description ??
+    null;
+
+export const selectConversationKeywords =
+  (instanceId: string) =>
+  (state: RootState): string[] | null =>
+    state.instanceConversationHistory.byInstanceId[instanceId]?.keywords ??
+    null;

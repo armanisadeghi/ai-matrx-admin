@@ -733,6 +733,65 @@ export const selectIsInTextRun =
   };
 
 // =============================================================================
+// Stream Phase — unified rendering state
+// =============================================================================
+
+/**
+ * Which visual phase the stream is in. Components render different UI for each.
+ *
+ * - idle: no active request
+ * - connecting: HTTP request in flight, no server events yet
+ * - pre_token: server events arriving (status updates, data) but no text yet
+ * - text_streaming: text chunks actively flowing
+ * - interstitial: between text runs (tools, status updates, more planning)
+ * - complete: stream finished
+ * - error: fatal error
+ */
+export type StreamPhase =
+  | "idle"
+  | "connecting"
+  | "pre_token"
+  | "text_streaming"
+  | "interstitial"
+  | "complete"
+  | "error";
+
+export const selectStreamPhase =
+  (instanceId: string) =>
+  (state: RootState): StreamPhase => {
+    const instance = state.executionInstances.byInstanceId[instanceId];
+    if (!instance) return "idle";
+
+    const instanceStatus = instance.status;
+
+    if (instanceStatus === "draft" || instanceStatus === "ready") return "idle";
+    if (instanceStatus === "complete") return "complete";
+    if (instanceStatus === "error") return "error";
+
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return "idle";
+
+    const request = state.activeRequests.byRequestId[ids[ids.length - 1]];
+    if (!request) return "idle";
+
+    if (request.status === "error") return "error";
+    if (request.status === "complete") return "complete";
+    if (request.status === "connecting") return "connecting";
+
+    if (request.isTextStreaming) return "text_streaming";
+
+    if (request.textChunks.length > 0 && request.status === "streaming") {
+      return "interstitial";
+    }
+
+    if (request.status === "streaming" || request.status === "pending") {
+      return "pre_token";
+    }
+
+    return "idle";
+  };
+
+// =============================================================================
 // Shortcut Selectors
 // =============================================================================
 

@@ -97,6 +97,11 @@ export interface InstanceConversationHistoryEntry {
 
   /** True if turns were loaded from a previous session (Supabase fetch) */
   loadedFromHistory: boolean;
+
+  /** Server-assigned conversation label (from conversation_labeled data event) */
+  title: string | null;
+  description: string | null;
+  keywords: string[] | null;
 }
 
 export interface InstanceConversationHistoryState {
@@ -139,6 +144,9 @@ const instanceConversationHistorySlice = createSlice({
           conversationId: null,
           turns: [],
           loadedFromHistory: false,
+          title: null,
+          description: null,
+          keywords: null,
         };
       }
     },
@@ -284,6 +292,25 @@ const instanceConversationHistorySlice = createSlice({
       entry.loadedFromHistory = true;
     },
 
+    /** Set conversation label from server's conversation_labeled data event. */
+    setConversationLabel(
+      state,
+      action: PayloadAction<{
+        instanceId: string;
+        title: string;
+        description: string | null;
+        keywords: string[] | null;
+      }>,
+    ) {
+      const { instanceId, title, description, keywords } = action.payload;
+      const entry = state.byInstanceId[instanceId];
+      if (entry) {
+        entry.title = title;
+        entry.description = description;
+        entry.keywords = keywords;
+      }
+    },
+
     /** Clear all turns (reset for a new run on the same instance). */
     clearHistory(state, action: PayloadAction<string>) {
       const entry = state.byInstanceId[action.payload];
@@ -292,6 +319,9 @@ const instanceConversationHistorySlice = createSlice({
         entry.conversationId = null;
         entry.loadedFromHistory = false;
         entry.mode = "agent";
+        entry.title = null;
+        entry.description = null;
+        entry.keywords = null;
       }
     },
 
@@ -313,6 +343,7 @@ export const {
   commitAssistantTurn,
   attachClientMetrics,
   loadConversationHistory,
+  setConversationLabel,
   clearHistory,
   removeInstanceHistory,
 } = instanceConversationHistorySlice.actions;

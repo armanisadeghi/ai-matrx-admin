@@ -14,16 +14,20 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
-  History,
-  Plus,
   Clock,
   Loader2,
   ChevronRight,
   MessageSquare,
+  PanelLeft,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
+
+// Module-level cache — checked once per session, avoids repeated 404 noise
+// when the agent_runs table hasn't been created by the Python backend yet.
+let agentRunsTableExists: boolean | null = null;
 
 interface AgentRun {
   id: string;
@@ -37,6 +41,7 @@ interface AgentRunsSidebarProps {
   agentName: string;
   currentRunId?: string;
   onNewRun: () => void;
+  onClose: () => void;
 }
 
 function formatDate(iso: string | null): string {
@@ -57,6 +62,7 @@ export function AgentRunsSidebar({
   agentName,
   currentRunId,
   onNewRun,
+  onClose,
 }: AgentRunsSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -65,9 +71,13 @@ export function AgentRunsSidebar({
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchRuns = useCallback(async () => {
+    // Skip immediately if a previous attempt already confirmed the table is missing
+    if (agentRunsTableExists === false) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      // Attempt to query agent_runs table (created by Python)
-      // Falls back gracefully if table doesn't exist yet.
       const { data, error } = await supabase
         .from("agent_runs" as never)
         .select("id, name, created_at, message_count")
@@ -75,11 +85,15 @@ export function AgentRunsSidebar({
         .order("created_at", { ascending: false })
         .limit(50);
 
-      if (!error && data) {
+      if (error) {
+        // Any error (404 = table missing) — stop polling for this session
+        agentRunsTableExists = false;
+      } else if (data) {
+        agentRunsTableExists = true;
         setRuns(data as AgentRun[]);
       }
     } catch {
-      // Table may not exist yet — silently handle
+      // Silently ignore
     } finally {
       setIsLoading(false);
     }
@@ -87,6 +101,7 @@ export function AgentRunsSidebar({
 
   useEffect(() => {
     fetchRuns();
+    if (agentRunsTableExists === false) return;
     const interval = setInterval(fetchRuns, 10_000);
     return () => clearInterval(interval);
   }, [fetchRuns]);
@@ -99,24 +114,29 @@ export function AgentRunsSidebar({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-border">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <History className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Run History</span>
-          </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 text-xs gap-1 text-primary"
-            onClick={onNewRun}
-          >
-            <Plus className="w-3 h-3" />
-            New
-          </Button>
-        </div>
-        <p className="text-xs text-muted-foreground truncate">{agentName}</p>
+      {/* Sidebar header — toggle + label + new button, all compact */}
+      <div className="flex items-center gap-1 px-1 py-1 border-b border-border shrink-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 shrink-0"
+          onClick={onClose}
+          title="Hide history"
+        >
+          <PanelLeft className="w-4 h-4" />
+        </Button>
+        <span className="text-xs font-medium text-muted-foreground flex-1 truncate pl-0.5">
+          Run History
+        </span>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7 px-2 text-xs gap-1 text-primary shrink-0"
+          onClick={onNewRun}
+        >
+          <Plus className="w-3 h-3" />
+          New
+        </Button>
       </div>
 
       {/* Run list */}

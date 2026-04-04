@@ -6,6 +6,7 @@ import NavItem from "./NavItem";
 import ShellIcon from "./ShellIcon";
 import SidebarVoicePadToggle from "./SidebarVoicePadToggle";
 import SidebarAdminIndicatorToggle from "./SidebarAdminIndicatorToggle";
+import SidebarEnvToggle from "./SidebarEnvToggle";
 import {
   primaryNavItems,
   settingsItem,
@@ -49,6 +50,7 @@ export default function Sidebar({ pathname }: SidebarProps) {
 
       {/* Footer — Admin indicator (admins), Voice + Settings */}
       <div className="shell-sidebar-footer">
+        <SidebarEnvToggle />
         <SidebarAdminIndicatorToggle />
         <SidebarVoicePadToggle />
         <NavItem item={settingsItem} isActive={isActive(settingsItem)} />

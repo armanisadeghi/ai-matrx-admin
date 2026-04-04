@@ -32,6 +32,7 @@ import {
   appendChunk,
   appendDataPayload,
   appendTimeline,
+  appendRawEvent,
   markTextStreamStart,
   closeTextRun,
   finalizeAccumulatedText,
@@ -46,6 +47,7 @@ import {
 import {
   commitAssistantTurn,
   attachClientMetrics,
+  setConversationLabel,
 } from "../instance-conversation-history/instance-conversation-history.slice";
 import { clearUserInput } from "../instance-user-input/instance-user-input.slice";
 import { clearAllResources } from "../instance-resources/instance-resources.slice";
@@ -105,12 +107,25 @@ export async function processStream({
   let totalPayloadBytes = 0;
 
   let isInTextRun = false;
-  let timelineSeq = 0;
+  let unknownEvents = 0;
+  // seq is assigned by the reducer (request.timeline.length) — pass 0 as placeholder
 
   const encoder = new TextEncoder();
   for await (const event of events) {
     totalEvents++;
     const now = performance.now();
+
+    dispatch(
+      appendRawEvent({
+        requestId,
+        event: {
+          idx: totalEvents,
+          timestamp: now,
+          eventType: event.event,
+          data: event.data,
+        },
+      }),
+    );
 
     if (isChunkEvent(event)) {
       chunkEvents++;
@@ -121,7 +136,6 @@ export async function processStream({
       if (!isInTextRun) {
         isInTextRun = true;
         dispatch(markTextStreamStart({ requestId, timestamp: now }));
-        timelineSeq++;
       }
 
       dispatch(appendChunk({ requestId, content: text }));
@@ -138,7 +152,7 @@ export async function processStream({
             requestId,
             entry: {
               kind: "status_update",
-              seq: timelineSeq++,
+              seq: 0,
               timestamp: now,
               data: event.data,
             },
@@ -154,6 +168,18 @@ export async function processStream({
         ) {
           conversationId = data.conversation_id;
           dispatch(setConversationId({ requestId, conversationId }));
+        } else if (
+          data.event === "conversation_labeled" &&
+          typeof data.title === "string"
+        ) {
+          dispatch(
+            setConversationLabel({
+              instanceId,
+              title: data.title,
+              description: (data.description as string | null) ?? null,
+              keywords: (data.keywords as string[] | null) ?? null,
+            }),
+          );
         } else {
           dispatch(appendDataPayload({ requestId, data }));
         }
@@ -162,7 +188,7 @@ export async function processStream({
             requestId,
             entry: {
               kind: "data",
-              seq: timelineSeq++,
+              seq: 0,
               timestamp: now,
               data,
             },
@@ -229,7 +255,7 @@ export async function processStream({
             requestId,
             entry: {
               kind: "tool_event",
-              seq: timelineSeq++,
+              seq: 0,
               timestamp: now,
               subEvent: toolData.event,
               callId: toolData.call_id,
@@ -251,7 +277,7 @@ export async function processStream({
             requestId,
             entry: {
               kind: "content_block",
-              seq: timelineSeq++,
+              seq: 0,
               timestamp: now,
               blockId: event.data.blockId,
               blockType: event.data.type,
@@ -279,14 +305,13 @@ export async function processStream({
               total_cost: 0,
             },
           },
-          timing_stats:
-            (d.timing_stats as CompletionStats["timing_stats"]) ?? {
-              total_duration: 0,
-              api_duration: 0,
-              tool_duration: 0,
-              iterations: 1,
-              avg_iteration_duration: 0,
-            },
+          timing_stats: (d.timing_stats as CompletionStats["timing_stats"]) ?? {
+            total_duration: 0,
+            api_duration: 0,
+            tool_duration: 0,
+            iterations: 1,
+            avg_iteration_duration: 0,
+          },
           tool_call_stats:
             (d.tool_call_stats as CompletionStats["tool_call_stats"]) ?? {
               total_tool_calls: 0,
@@ -317,7 +342,7 @@ export async function processStream({
             requestId,
             entry: {
               kind: "completion",
-              seq: timelineSeq++,
+              seq: 0,
               timestamp: now,
             },
           }),
@@ -339,7 +364,7 @@ export async function processStream({
             requestId,
             entry: {
               kind: "error",
-              seq: timelineSeq++,
+              seq: 0,
               timestamp: now,
               errorType: event.data.error_type,
               message: event.data.user_message ?? event.data.message,
@@ -356,7 +381,7 @@ export async function processStream({
             requestId,
             entry: {
               kind: "end",
-              seq: timelineSeq++,
+              seq: 0,
               timestamp: now,
               reason: (event.data as Record<string, unknown>)?.reason as
                 | string
@@ -377,7 +402,7 @@ export async function processStream({
             requestId,
             entry: {
               kind: "broker",
-              seq: timelineSeq++,
+              seq: 0,
               timestamp: now,
               brokerId: event.data.broker_id,
             },
@@ -390,8 +415,27 @@ export async function processStream({
             requestId,
             entry: {
               kind: "heartbeat",
-              seq: timelineSeq++,
+              seq: 0,
               timestamp: now,
+            },
+          }),
+        );
+      } else {
+        unknownEvents++;
+        otherEvents++;
+        console.warn(
+          `[stream:${requestId.slice(0, 8)}] Unrecognized event type: "${event.event}"`,
+          event,
+        );
+        dispatch(
+          appendTimeline({
+            requestId,
+            entry: {
+              kind: "unknown",
+              seq: 0,
+              timestamp: now,
+              originalEvent: String(event.event ?? "undefined"),
+              rawData: event.data,
             },
           }),
         );
@@ -399,8 +443,25 @@ export async function processStream({
     }
   }
 
+  if (unknownEvents > 0) {
+    console.warn(
+      `[stream:${requestId.slice(0, 8)}] Stream completed with ${unknownEvents} unrecognized event(s)`,
+    );
+  }
+
   if (isInTextRun) {
     dispatch(closeTextRun({ requestId, timestamp: performance.now() }));
+  }
+
+  const postLoopState = getState();
+  const postLoopRequest = postLoopState.activeRequests.byRequestId[requestId];
+  if (
+    postLoopRequest &&
+    postLoopRequest.status !== "complete" &&
+    postLoopRequest.status !== "error"
+  ) {
+    dispatch(setRequestStatus({ requestId, status: "complete" }));
+    dispatch(setInstanceStatus({ instanceId, status: "complete" }));
   }
 
   const streamEndAt = performance.now();

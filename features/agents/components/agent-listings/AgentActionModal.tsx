@@ -5,25 +5,21 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import {
   Play,
   Pencil,
+  X,
+  Eye,
   Copy,
   Share2,
   Trash2,
   Loader2,
-  Bot,
+  AppWindow,
   LucideIcon,
 } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PrimaryActionButtonProps {
   icon: LucideIcon;
@@ -76,31 +72,45 @@ function PrimaryActionButton({
 interface AgentActionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  agentName?: string;
+  agentId?: string;
+  agentName: string;
   agentDescription?: string;
-  onRun?: (e?: React.MouseEvent) => void;
-  onEdit?: (e?: React.MouseEvent) => void;
+  onRun: () => void;
+  onEdit: () => void;
+  onView?: () => void;
   onDuplicate?: () => void;
   onShare?: () => void;
   onDelete?: () => void;
+  onCreateApp?: () => void;
+  showView?: boolean;
+  showDuplicate?: boolean;
+  showShare?: boolean;
+  showDelete?: boolean;
+  showCreateApp?: boolean;
   isDeleting?: boolean;
   isDuplicating?: boolean;
 }
 
-function ModalBody({
+export function AgentActionModal({
+  isOpen,
+  onClose,
   agentName,
   agentDescription,
   onRun,
   onEdit,
+  onView,
   onDuplicate,
   onShare,
   onDelete,
-  isDeleting,
-  isDuplicating,
-  onClose,
-}: Omit<AgentActionModalProps, "isOpen">) {
-  const isAnyActionActive = isDeleting || isDuplicating;
-
+  onCreateApp,
+  showView = true,
+  showDuplicate = true,
+  showShare = true,
+  showDelete = true,
+  showCreateApp = true,
+  isDeleting = false,
+  isDuplicating = false,
+}: AgentActionModalProps) {
   const handleAction = (
     e: React.MouseEvent,
     actionName: string,
@@ -110,128 +120,123 @@ function ModalBody({
     e.preventDefault();
     actionFn();
     if (actionName !== "share") {
-      onClose?.();
+      onClose();
     }
   };
 
-  return (
-    <>
-      <div className="space-y-2">
-        {onRun && (
-          <PrimaryActionButton
-            icon={Play}
-            title="Run Agent"
-            onClick={(e) => handleAction(e, "run", () => onRun())}
-            disabled={isAnyActionActive}
-            gradientFrom="from-primary/10 group-hover:from-primary/20"
-            gradientTo="to-secondary/10 group-hover:to-secondary/20"
-            iconBgColor="bg-primary"
-            iconTextColor="text-primary-foreground"
-          />
-        )}
-        {onEdit && (
-          <PrimaryActionButton
-            icon={Pencil}
-            title="Edit Agent"
-            onClick={(e) => handleAction(e, "edit", () => onEdit())}
-            disabled={isAnyActionActive}
-            gradientFrom="from-secondary/10 group-hover:from-secondary/20"
-            gradientTo="to-accent/10 group-hover:to-accent/20"
-            iconBgColor="bg-secondary"
-            iconTextColor="text-secondary-foreground"
-          />
-        )}
-      </div>
-
-      {(onDuplicate || onShare || onDelete) && (
-        <div className="border-t border-border pt-2 sm:pt-3">
-          <div className="grid grid-cols-2 gap-2">
-            {onDuplicate && (
-              <Button
-                variant="outline"
-                onClick={(e) => handleAction(e, "duplicate", onDuplicate)}
-                disabled={isAnyActionActive}
-                className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2 px-3 sm:px-4 border-border hover:bg-accent relative"
-              >
-                {isDuplicating && (
-                  <div className="absolute inset-0 bg-muted/50 backdrop-blur-sm flex items-center justify-center rounded-md">
-                    <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
-                  </div>
-                )}
-                <Copy className="w-4 h-4 flex-shrink-0" />
-                <span className="text-xs sm:text-sm font-medium">
-                  Duplicate
-                </span>
-              </Button>
-            )}
-            {onShare && (
-              <Button
-                variant="outline"
-                onClick={(e) => handleAction(e, "share", onShare)}
-                disabled={isAnyActionActive}
-                className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2 px-3 sm:px-4 border-border hover:bg-accent"
-              >
-                <Share2 className="w-4 h-4 flex-shrink-0" />
-                <span className="text-xs sm:text-sm font-medium">Share</span>
-              </Button>
-            )}
-            {onDelete && (
-              <Button
-                variant="outline"
-                onClick={(e) => handleAction(e, "delete", onDelete)}
-                disabled={isAnyActionActive}
-                className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2 px-3 sm:px-4 border-destructive/30 text-destructive hover:bg-destructive/10 relative"
-              >
-                {isDeleting && (
-                  <div className="absolute inset-0 bg-destructive/20 backdrop-blur-sm flex items-center justify-center rounded-md">
-                    <Loader2 className="w-4 h-4 text-destructive animate-spin" />
-                  </div>
-                )}
-                <Trash2 className="w-4 h-4 flex-shrink-0" />
-                <span className="text-xs sm:text-sm font-medium">Delete</span>
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-export function AgentActionModal({
-  isOpen,
-  onClose,
-  agentName,
-  ...rest
-}: AgentActionModalProps) {
-  const isMobile = useIsMobile();
-
-  if (isMobile) {
-    return (
-      <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle className="text-xl font-bold text-center text-foreground">
-              {agentName || "Untitled Agent"}
-            </DrawerTitle>
-          </DrawerHeader>
-          <div className="px-4 pb-6">
-            <ModalBody agentName={agentName} onClose={onClose} {...rest} />
-          </div>
-        </DrawerContent>
-      </Drawer>
-    );
-  }
+  const isAnyActionActive = isDeleting || isDuplicating;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-2rem)] my-2 overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl font-bold text-center text-foreground">
             {agentName || "Untitled Agent"}
           </DialogTitle>
         </DialogHeader>
-        <ModalBody agentName={agentName} onClose={onClose} {...rest} />
+
+        <div className="space-y-2">
+          <PrimaryActionButton
+            icon={Play}
+            title="Run Agent"
+            onClick={(e) => handleAction(e, "run", onRun)}
+            disabled={isAnyActionActive}
+            gradientFrom="from-primary/10 group-hover:from-primary/20"
+            gradientTo="to-secondary/10 group-hover:to-secondary/20"
+            iconBgColor="bg-primary"
+            iconTextColor="text-primary-foreground"
+          />
+
+          <PrimaryActionButton
+            icon={Pencil}
+            title="Edit Agent"
+            onClick={(e) => handleAction(e, "edit", onEdit)}
+            disabled={isAnyActionActive}
+            gradientFrom="from-secondary/10 group-hover:from-secondary/20"
+            gradientTo="to-accent/10 group-hover:to-accent/20"
+            iconBgColor="bg-secondary"
+            iconTextColor="text-secondary-foreground"
+          />
+
+          {showCreateApp && onCreateApp && (
+            <PrimaryActionButton
+              icon={AppWindow}
+              title="Create App"
+              onClick={(e) => handleAction(e, "create-app", onCreateApp)}
+              disabled={isAnyActionActive}
+              gradientFrom="from-green-500/10 group-hover:from-green-500/20"
+              gradientTo="to-green-500/10 group-hover:to-green-500/20"
+              iconBgColor="bg-green-500"
+              iconTextColor="text-secondary-foreground"
+            />
+          )}
+        </div>
+
+        {(showView || showDuplicate || showShare || showDelete) && (
+          <div className="border-t border-border pt-2 sm:pt-3">
+            <div className="grid grid-cols-2 gap-2">
+              {showView && onView && (
+                <Button
+                  variant="outline"
+                  onClick={(e) => handleAction(e, "view", onView)}
+                  disabled={isAnyActionActive}
+                  className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2 px-3 sm:px-4 border-border hover:bg-accent"
+                >
+                  <Eye className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium">View</span>
+                </Button>
+              )}
+
+              {showDuplicate && onDuplicate && (
+                <Button
+                  variant="outline"
+                  onClick={(e) => handleAction(e, "duplicate", onDuplicate)}
+                  disabled={isAnyActionActive}
+                  className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2 px-3 sm:px-4 border-border hover:bg-accent relative"
+                >
+                  {isDuplicating && (
+                    <div className="absolute inset-0 bg-muted/50 backdrop-blur-sm flex items-center justify-center rounded-md">
+                      <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+                    </div>
+                  )}
+                  <Copy className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium">
+                    Duplicate
+                  </span>
+                </Button>
+              )}
+
+              {showShare && onShare && (
+                <Button
+                  variant="outline"
+                  onClick={(e) => handleAction(e, "share", onShare)}
+                  disabled={isAnyActionActive}
+                  className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2 px-3 sm:px-4 border-border hover:bg-accent"
+                >
+                  <Share2 className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium">Share</span>
+                </Button>
+              )}
+
+              {showDelete && onDelete && (
+                <Button
+                  variant="outline"
+                  onClick={(e) => handleAction(e, "delete", onDelete)}
+                  disabled={isAnyActionActive}
+                  className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2 px-3 sm:px-4 border-destructive/30 text-destructive hover:bg-destructive/10 relative"
+                >
+                  {isDeleting && (
+                    <div className="absolute inset-0 bg-destructive/20 backdrop-blur-sm flex items-center justify-center rounded-md">
+                      <Loader2 className="w-4 h-4 text-destructive animate-spin" />
+                    </div>
+                  )}
+                  <Trash2 className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium">Delete</span>
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

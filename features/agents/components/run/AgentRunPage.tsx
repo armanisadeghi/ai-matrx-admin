@@ -126,8 +126,8 @@ export function AgentRunPage({ agentId, agentName }: AgentRunPageProps) {
   }
 
   return (
-    <div className="flex h-full overflow-hidden">
-      {/* Sidebar */}
+    <div className="relative flex h-full overflow-hidden">
+      {/* Sidebar — header contains toggle, label, and New button */}
       {!isMobile && sidebarOpen && (
         <div className="w-64 shrink-0 border-r border-border overflow-hidden flex flex-col">
           <AgentRunsSidebar
@@ -135,40 +135,41 @@ export function AgentRunPage({ agentId, agentName }: AgentRunPageProps) {
             agentName={agentName}
             currentRunId={currentRunId}
             onNewRun={handleNewRun}
+            onClose={() => setSidebarOpen(false)}
           />
         </div>
       )}
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Sidebar toggle */}
-        {!isMobile && (
-          <div className="flex items-center px-3 py-1.5 shrink-0">
+      <div className="flex-1 overflow-hidden flex justify-center min-w-0">
+        {/* Floating toggle — only when sidebar is closed, doesn't take any space */}
+        {!isMobile && !sidebarOpen && (
+          <div className="absolute top-1 left-1 z-10">
             <Button
               variant="ghost"
               size="icon"
               className="h-7 w-7"
-              onClick={() => setSidebarOpen((v) => !v)}
-              title={sidebarOpen ? "Hide history" : "Show history"}
+              onClick={() => setSidebarOpen(true)}
+              title="Show history"
             >
               <PanelLeft className="w-4 h-4" />
             </Button>
           </div>
         )}
 
-        {/* Conversation */}
-        <div className="flex-1 overflow-y-auto min-h-0">
-          <AgentConversationDisplay instanceId={instanceId} />
-        </div>
+        <div className="w-full max-w-3xl h-full flex flex-col overflow-hidden">
+          {/* Conversation */}
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <AgentConversationDisplay instanceId={instanceId} />
+          </div>
 
-        {/* Stats bar — appears after first completion */}
-        <CreatorRunPanel
-          instanceId={instanceId}
-          onNewInstance={setInstanceId}
-        />
+          {/* Stats bar — appears after first completion */}
+          <CreatorRunPanel
+            instanceId={instanceId}
+            onNewInstance={setInstanceId}
+          />
 
-        {/* Input — SmartAgentInput includes variable panel and resource chips */}
-        <div className="px-3 pb-3 pt-2 border-t border-border">
+          {/* Input */}
           <SmartAgentInput
             instanceId={instanceId}
             sendButtonVariant="blue"

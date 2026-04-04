@@ -47,6 +47,7 @@ import brokerSlice from "./brokerSlice/slice";
 import overlaySlice from "./slices/overlaySlice";
 import overlayDataReducer from "./slices/overlayDataSlice";
 import voicePadReducer from "./slices/voicePadSlice";
+import windowManagerReducer from "./slices/windowManagerSlice";
 import dbFunctionNodeSlice from "./workflows/db-function-node/dbFunctionNodeSlice";
 import workflowSlice from "./workflow/slice";
 import workflowNodeSlice from "./workflow-nodes/slice";
@@ -185,6 +186,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     overlays: overlaySlice,
     overlayData: overlayDataReducer,
     voicePad: voicePadReducer,
+    windowManager: windowManagerReducer,
 
     // Canvas and Artifacts system ----------
     canvas: canvasReducer,

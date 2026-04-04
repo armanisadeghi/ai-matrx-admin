@@ -7,19 +7,28 @@ import {
   MoreVertical,
   Play,
   Pencil,
+  Eye,
   Copy,
   Trash2,
   Share2,
+  AppWindow,
+  Settings,
+  LayoutPanelTop,
+  Globe,
+  FileText,
   Bot,
-  Archive,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { RootState } from "@/lib/redux/store";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { ShareModal } from "@/features/sharing";
 import { AgentActionModal } from "./AgentActionModal";
+import { ComingSoonModal } from "./ComingSoonModal";
 import { FavoriteAgentButton } from "./FavoriteAgentButton";
 import { useAgentsBasePath } from "@/features/agents/hooks/useAgentsBasePath";
+import { toast } from "@/lib/toast-service";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,22 +61,23 @@ export function AgentListItem({
 }: AgentListItemProps) {
   const record = useAppSelector((state) => selectAgentById(state, id));
   const name = record?.name ?? "Untitled Agent";
-  const description = record?.description ?? null;
-  const category = record?.category ?? null;
-  const tags = record?.tags ?? [];
   const isArchived = record?.isArchived ?? false;
   const isOwner = record?.isOwner ?? true;
-  const accessLevel = record?.accessLevel ?? null;
 
+  const isSystemAdmin = useAppSelector((state: RootState) =>
+    selectIsAdmin(state),
+  );
   const basePath = useAgentsBasePath();
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isCreateAppModalOpen, setIsCreateAppModalOpen] = useState(false);
+  const [isConvertToBuiltinModalOpen, setIsConvertToBuiltinModalOpen] =
+    useState(false);
+  const [isMetadataModalOpen, setIsMetadataModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
+  const [isConvertingToTemplate, setIsConvertingToTemplate] = useState(false);
   const [lastModalCloseTime, setLastModalCloseTime] = useState(0);
-
-  const isDisabled = isNavigating || isAnyNavigating;
-  const canEdit =
-    isOwner || accessLevel === "admin" || accessLevel === "editor";
 
   const handleItemClick = (e: React.MouseEvent) => {
     if (e.metaKey || e.ctrlKey) {
@@ -85,33 +95,84 @@ export function AgentListItem({
     setLastModalCloseTime(Date.now());
   };
 
-  const handleRun = (e?: React.MouseEvent) => {
-    if (e && (e.metaKey || e.ctrlKey)) return;
-    e?.stopPropagation();
-    if (onNavigate && !isDisabled) onNavigate(id, `${basePath}/${id}/run`);
-  };
-
-  const handleEdit = (e?: React.MouseEvent) => {
-    if (e && (e.metaKey || e.ctrlKey)) return;
-    e?.stopPropagation();
-    if (onNavigate && !isDisabled) onNavigate(id, `${basePath}/${id}/edit`);
-  };
-
-  const handleDuplicate = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    onDuplicate?.(id);
-  };
-
-  const handleDelete = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    onDelete?.(id, name);
-  };
-
   const handleShareClick = (e?: React.MouseEvent) => {
     e?.stopPropagation();
     setIsMenuOpen(false);
     setIsShareModalOpen(true);
   };
+
+  const handleCreateApp = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setIsMenuOpen(false);
+    setIsCreateAppModalOpen(true);
+  };
+
+  const handleEditDetails = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setIsMenuOpen(false);
+    setIsActionModalOpen(false);
+    setIsMetadataModalOpen(true);
+  };
+
+  const handleRun = (e?: React.MouseEvent) => {
+    if (e && (e.metaKey || e.ctrlKey)) return;
+    e?.stopPropagation();
+    if (onNavigate && !isDisabled) {
+      onNavigate(id, `${basePath}/${id}/run`);
+    }
+  };
+
+  const handleEdit = (e?: React.MouseEvent) => {
+    if (e && (e.metaKey || e.ctrlKey)) return;
+    e?.stopPropagation();
+    if (onNavigate && !isDisabled) {
+      onNavigate(id, `${basePath}/${id}/edit`);
+    }
+  };
+
+  const handleView = (e?: React.MouseEvent) => {
+    if (e && (e.metaKey || e.ctrlKey)) return;
+    e?.stopPropagation();
+    if (onNavigate && !isDisabled) {
+      onNavigate(id, `${basePath}/${id}/run`);
+    }
+  };
+
+  const handleDuplicate = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (onDuplicate) {
+      onDuplicate(id);
+    }
+  };
+
+  const handleDelete = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (onDelete) {
+      onDelete(id, name);
+    }
+  };
+
+  const handleConvertToTemplate = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isSystemAdmin || isConvertingToTemplate) return;
+    setIsConvertingToTemplate(true);
+    setIsMenuOpen(false);
+    try {
+      toast.info("Convert to Template is coming soon for agents.");
+    } finally {
+      setIsConvertingToTemplate(false);
+    }
+  };
+
+  const handleMakeGlobalBuiltin = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isSystemAdmin) return;
+    setIsMenuOpen(false);
+    setIsAdminMenuOpen(false);
+    setIsConvertToBuiltinModalOpen(true);
+  };
+
+  const isDisabled = isNavigating || isAnyNavigating || isConvertingToTemplate;
 
   return (
     <>
@@ -124,7 +185,7 @@ export function AgentListItem({
           isDisabled && "opacity-50 cursor-not-allowed",
           isArchived && !isDisabled && "opacity-70",
         )}
-        onClick={handleItemClick}
+        onClick={(e) => handleItemClick(e)}
         title={
           isDisabled
             ? isNavigating
@@ -150,41 +211,14 @@ export function AgentListItem({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h4 className="text-sm font-medium text-foreground truncate">
-              {name}
+              {name || "Untitled Agent"}
             </h4>
             {isArchived && (
               <span className="flex-shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                 Archived
               </span>
             )}
-            {!isOwner && (
-              <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] bg-secondary/20 text-secondary-foreground capitalize">
-                {accessLevel}
-              </span>
-            )}
           </div>
-          {(category || tags.length > 0) && (
-            <div className="flex gap-1 mt-0.5 flex-wrap">
-              {category && (
-                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-secondary/10 text-muted-foreground truncate max-w-[80px]">
-                  {category}
-                </span>
-              )}
-              {tags.slice(0, 2).map((t) => (
-                <span
-                  key={t}
-                  className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary truncate max-w-[60px]"
-                >
-                  {t}
-                </span>
-              ))}
-              {tags.length > 2 && (
-                <span className="text-[10px] text-muted-foreground">
-                  +{tags.length - 2}
-                </span>
-              )}
-            </div>
-          )}
         </div>
 
         <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
@@ -210,55 +244,108 @@ export function AgentListItem({
                   Run
                 </DropdownMenuItem>
               </Link>
-              {canEdit && (
-                <Link
-                  href={`${basePath}/${id}/edit`}
-                  tabIndex={-1}
-                  onClick={(e) => handleEdit(e)}
-                >
-                  <DropdownMenuItem disabled={isDisabled}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Edit
-                  </DropdownMenuItem>
-                </Link>
-              )}
-              {isOwner && (
-                <DropdownMenuItem
-                  onClick={handleDuplicate}
-                  disabled={isDuplicating || isDisabled}
-                >
-                  {isDuplicating ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Copy className="mr-2 h-4 w-4" />
-                  )}
-                  {isDuplicating ? "Duplicating..." : "Duplicate"}
+              <Link
+                href={`${basePath}/${id}/edit`}
+                tabIndex={-1}
+                onClick={(e) => handleEdit(e)}
+              >
+                <DropdownMenuItem disabled={isDisabled}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
                 </DropdownMenuItem>
-              )}
-              {isOwner && (
-                <DropdownMenuItem
-                  onClick={handleShareClick}
-                  disabled={isDisabled}
-                >
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Share
+              </Link>
+              <Link
+                href={`${basePath}/${id}/run`}
+                tabIndex={-1}
+                onClick={(e) => handleView(e)}
+              >
+                <DropdownMenuItem disabled={isDisabled}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  View
                 </DropdownMenuItem>
-              )}
-              {isOwner && (
+              </Link>
+              <DropdownMenuItem
+                onClick={handleDuplicate}
+                disabled={isDuplicating || isDisabled}
+              >
+                {isDuplicating ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Copy className="mr-2 h-4 w-4" />
+                )}
+                {isDuplicating ? "Duplicating..." : "Duplicate"}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleShareClick}
+                disabled={isDisabled}
+              >
+                <Share2 className="mr-2 h-4 w-4" />
+                Share
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleCreateApp} disabled={isDisabled}>
+                <AppWindow className="mr-2 h-4 w-4" />
+                Create App
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleEditDetails}
+                disabled={isDisabled}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Edit Details
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                onClick={handleDelete}
+                disabled={isDeleting || isDisabled}
+                className="text-destructive focus:text-destructive"
+              >
+                {isDeleting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="mr-2 h-4 w-4" />
+                )}
+                {isDeleting ? "Deleting..." : "Delete"}
+              </DropdownMenuItem>
+
+              {isSystemAdmin && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleDelete}
-                    disabled={isDeleting || isDisabled}
-                    className="text-destructive focus:text-destructive"
+                  <DropdownMenu
+                    open={isAdminMenuOpen}
+                    onOpenChange={setIsAdminMenuOpen}
                   >
-                    {isDeleting ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="mr-2 h-4 w-4" />
-                    )}
-                    {isDeleting ? "Deleting..." : "Delete"}
-                  </DropdownMenuItem>
+                    <DropdownMenuTrigger asChild>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <Settings className="mr-2 h-4 w-4" />
+                        Admin Actions
+                      </DropdownMenuItem>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      side="left"
+                      align="start"
+                      className="w-48"
+                    >
+                      <DropdownMenuItem
+                        onClick={handleConvertToTemplate}
+                        disabled={isConvertingToTemplate}
+                      >
+                        {isConvertingToTemplate ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <LayoutPanelTop className="mr-2 h-4 w-4" />
+                        )}
+                        {isConvertingToTemplate
+                          ? "Converting..."
+                          : "Convert to Template"}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleMakeGlobalBuiltin}>
+                        <Globe className="mr-2 h-4 w-4" />
+                        Make Global Built-in
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </>
               )}
             </DropdownMenuContent>
@@ -269,13 +356,15 @@ export function AgentListItem({
       <AgentActionModal
         isOpen={isActionModalOpen}
         onClose={handleActionModalClose}
+        agentId={id}
         agentName={name}
-        agentDescription={description ?? undefined}
         onRun={handleRun}
-        onEdit={canEdit ? () => handleEdit() : undefined}
-        onDuplicate={isOwner ? () => onDuplicate?.(id) : undefined}
-        onShare={isOwner ? handleShareClick : undefined}
-        onDelete={isOwner ? () => onDelete?.(id, name) : undefined}
+        onEdit={() => handleEdit()}
+        onView={handleView}
+        onDuplicate={handleDuplicate}
+        onDelete={handleDelete}
+        onShare={handleShareClick}
+        onCreateApp={handleCreateApp}
         isDuplicating={isDuplicating}
         isDeleting={isDeleting}
       />
@@ -288,6 +377,30 @@ export function AgentListItem({
           resourceId={id}
           resourceName={name}
           isOwner={isOwner}
+        />
+      )}
+      {isCreateAppModalOpen && (
+        <ComingSoonModal
+          isOpen={isCreateAppModalOpen}
+          onClose={() => setIsCreateAppModalOpen(false)}
+          featureName="Create App from Agent"
+        />
+      )}
+      {isConvertToBuiltinModalOpen && (
+        <ComingSoonModal
+          isOpen={isConvertToBuiltinModalOpen}
+          onClose={() => setIsConvertToBuiltinModalOpen(false)}
+          featureName="Convert to Agent Builtin"
+        />
+      )}
+      {isMetadataModalOpen && (
+        <ComingSoonModal
+          isOpen={isMetadataModalOpen}
+          onClose={() => {
+            setIsMetadataModalOpen(false);
+            setLastModalCloseTime(Date.now());
+          }}
+          featureName="Edit Agent Details"
         />
       )}
     </>

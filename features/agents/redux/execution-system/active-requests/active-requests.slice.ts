@@ -30,6 +30,7 @@ import type {
   ToolLifecycleEntry,
   ToolLifecycleStatus,
   TimelineEntry,
+  RawStreamEvent,
 } from "@/features/agents/types/request.types";
 import type {
   StatusUpdatePayload,
@@ -97,6 +98,7 @@ const activeRequestsSlice = createSlice({
         warnings: [],
         dataPayloads: [],
         timeline: [],
+        rawEvents: [],
         isTextStreaming: false,
         textRunChunkStart: 0,
         startedAt: now,
@@ -397,10 +399,9 @@ const activeRequestsSlice = createSlice({
       if (!request) return;
 
       if (request.isTextStreaming) {
-        const seq = request.timeline.length;
         request.timeline.push({
           kind: "text_end",
-          seq,
+          seq: request.timeline.length,
           timestamp: action.payload.entry.timestamp,
           chunkStartIndex: request.textRunChunkStart,
           chunkEndIndex: request.textChunks.length,
@@ -409,7 +410,24 @@ const activeRequestsSlice = createSlice({
         request.isTextStreaming = false;
       }
 
-      request.timeline.push(action.payload.entry);
+      const entry = { ...action.payload.entry, seq: request.timeline.length };
+      request.timeline.push(entry);
+    },
+
+    /**
+     * Captures every raw event exactly as received from the NDJSON parser.
+     * No filtering, no coalescing — the forensic truth.
+     */
+    appendRawEvent(
+      state,
+      action: PayloadAction<{
+        requestId: string;
+        event: RawStreamEvent;
+      }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (!request) return;
+      request.rawEvents.push(action.payload.event);
     },
 
     /**
@@ -429,10 +447,9 @@ const activeRequestsSlice = createSlice({
       request.isTextStreaming = true;
       request.textRunChunkStart = request.textChunks.length;
 
-      const seq = request.timeline.length;
       request.timeline.push({
         kind: "text_start",
-        seq,
+        seq: request.timeline.length,
         timestamp: action.payload.timestamp,
         chunkStartIndex: request.textChunks.length,
       });
@@ -452,10 +469,9 @@ const activeRequestsSlice = createSlice({
       const request = state.byRequestId[action.payload.requestId];
       if (!request || !request.isTextStreaming) return;
 
-      const seq = request.timeline.length;
       request.timeline.push({
         kind: "text_end",
-        seq,
+        seq: request.timeline.length,
         timestamp: action.payload.timestamp,
         chunkStartIndex: request.textRunChunkStart,
         chunkEndIndex: request.textChunks.length,
@@ -522,6 +538,7 @@ export const {
   appendDataPayload,
   addWarning,
   appendTimeline,
+  appendRawEvent,
   markTextStreamStart,
   closeTextRun,
   finalizeClientMetrics,

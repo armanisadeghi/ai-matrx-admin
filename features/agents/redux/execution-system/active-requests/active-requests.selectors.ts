@@ -14,6 +14,7 @@ import type {
   ActiveRequest,
   ToolLifecycleEntry,
   TimelineEntry,
+  RawStreamEvent,
 } from "@/features/agents/types/request.types";
 import type {
   StatusUpdatePayload,
@@ -314,6 +315,12 @@ export const selectTimeline =
   (state: RootState): TimelineEntry[] =>
     state.activeRequests.byRequestId[requestId]?.timeline ?? [];
 
+/** The raw event log — every event before processing. Stable ref — only grows. */
+export const selectRawEvents =
+  (requestId: string) =>
+  (state: RootState): RawStreamEvent[] =>
+    state.activeRequests.byRequestId[requestId]?.rawEvents ?? [];
+
 /** Timeline length. Primitive — safe for useAppSelector. */
 export const selectTimelineLength =
   (requestId: string) =>
@@ -327,7 +334,10 @@ export const selectIsInTextRun =
     state.activeRequests.byRequestId[requestId]?.isTextStreaming ?? false;
 
 /** Timeline filtered to a specific kind. Memoized. */
-export const selectTimelineByKind = (requestId: string, kind: TimelineEntry["kind"]) =>
+export const selectTimelineByKind = (
+  requestId: string,
+  kind: TimelineEntry["kind"],
+) =>
   createSelector(
     (state: RootState) => state.activeRequests.byRequestId[requestId]?.timeline,
     (timeline): TimelineEntry[] => {
@@ -347,5 +357,125 @@ export const selectTimelineKindCounts = (requestId: string) =>
         counts[entry.kind] = (counts[entry.kind] ?? 0) + 1;
       }
       return counts;
+    },
+  );
+
+// =============================================================================
+// Timeline-Derived Timing
+// =============================================================================
+
+export interface TimelineDerivedTiming {
+  /** Delta from request start (timeline[0]) to first status_update */
+  timeToFirstStatusMs: number | null;
+  /** Delta from request start to first text_start */
+  timeToFirstTextMs: number | null;
+  /** Sum of all text_start→text_end durations */
+  textStreamingDurationMs: number;
+  /** Sum of all tool_started→tool_completed durations (by callId) */
+  toolExecutionDurationMs: number;
+  /** Total stream time minus text streaming time minus tool time */
+  interstitialDurationMs: number | null;
+  /** Total timeline span: last entry timestamp - first entry timestamp */
+  totalTimelineDurationMs: number | null;
+  /** Number of distinct text runs */
+  textRunCount: number;
+  /** Number of distinct tool calls tracked */
+  toolCallCount: number;
+}
+
+const EMPTY_TIMING: TimelineDerivedTiming = {
+  timeToFirstStatusMs: null,
+  timeToFirstTextMs: null,
+  textStreamingDurationMs: 0,
+  toolExecutionDurationMs: 0,
+  interstitialDurationMs: null,
+  totalTimelineDurationMs: null,
+  textRunCount: 0,
+  toolCallCount: 0,
+};
+
+/**
+ * Walk the timeline once and compute precise timing metrics.
+ * Memoized — only recomputes when the timeline array ref changes.
+ */
+export const selectTimelineDerivedTiming = (requestId: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byRequestId[requestId]?.timeline,
+    (timeline): TimelineDerivedTiming => {
+      if (!timeline || timeline.length === 0) return EMPTY_TIMING;
+
+      const origin = timeline[0].timestamp;
+      let timeToFirstStatusMs: number | null = null;
+      let timeToFirstTextMs: number | null = null;
+      let textStreamingDurationMs = 0;
+      let textRunCount = 0;
+
+      let currentTextRunStart: number | null = null;
+
+      const toolStarts = new Map<string, number>();
+      let toolExecutionDurationMs = 0;
+      let toolCallCount = 0;
+
+      for (const entry of timeline) {
+        switch (entry.kind) {
+          case "status_update":
+            if (timeToFirstStatusMs === null) {
+              timeToFirstStatusMs = entry.timestamp - origin;
+            }
+            break;
+
+          case "text_start":
+            if (timeToFirstTextMs === null) {
+              timeToFirstTextMs = entry.timestamp - origin;
+            }
+            currentTextRunStart = entry.timestamp;
+            textRunCount++;
+            break;
+
+          case "text_end":
+            if (currentTextRunStart !== null) {
+              textStreamingDurationMs += entry.timestamp - currentTextRunStart;
+              currentTextRunStart = null;
+            }
+            break;
+
+          case "tool_event":
+            if (entry.subEvent === "tool_started") {
+              toolStarts.set(entry.callId, entry.timestamp);
+            } else if (
+              entry.subEvent === "tool_completed" ||
+              entry.subEvent === "tool_error"
+            ) {
+              const start = toolStarts.get(entry.callId);
+              if (start !== undefined) {
+                toolExecutionDurationMs += entry.timestamp - start;
+                toolStarts.delete(entry.callId);
+                toolCallCount++;
+              }
+            }
+            break;
+        }
+      }
+
+      const last = timeline[timeline.length - 1];
+      const totalTimelineDurationMs = last.timestamp - origin;
+
+      const interstitialDurationMs =
+        totalTimelineDurationMs > 0
+          ? totalTimelineDurationMs -
+            textStreamingDurationMs -
+            toolExecutionDurationMs
+          : null;
+
+      return {
+        timeToFirstStatusMs,
+        timeToFirstTextMs,
+        textStreamingDurationMs,
+        toolExecutionDurationMs,
+        interstitialDurationMs,
+        totalTimelineDurationMs,
+        textRunCount,
+        toolCallCount,
+      };
     },
   );

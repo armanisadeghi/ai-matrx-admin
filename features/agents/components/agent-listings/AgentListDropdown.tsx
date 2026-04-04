@@ -3,19 +3,21 @@
 import { useState, useRef, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Bot,
   Search,
   X,
   ChevronDown,
   ArrowUpDown,
   Star,
-  Archive,
   Tag,
   Folder,
   Loader2,
   RotateCcw,
   Check,
   ChevronRight,
+  Bot,
+  Users,
+  Clock,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -56,16 +58,17 @@ const SORT_OPTIONS: { value: AgentSortOption; label: string }[] = [
   { value: "category-asc", label: "Category" },
 ];
 
-type SubView = "sort" | "categories" | "tags" | null;
+type RightPanel = "detail" | "sort" | "categories" | "tags" | null;
 
 interface AgentListDropdownProps {
   onSelect?: (agentId: string) => void;
-  /** If provided, navigates to this path template (replaces {id}) instead of dispatching setActiveAgentId */
   navigateTo?: string;
   className?: string;
-  /** Label shown on the trigger. Defaults to "Agents" */
   label?: string;
 }
+
+const PANEL_HEIGHT = "528px";
+const LIST_MAX_HEIGHT = "528px";
 
 export function AgentListDropdown({
   onSelect,
@@ -79,9 +82,16 @@ export function AgentListDropdown({
   const [, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
-  const [subView, setSubView] = useState<SubView>(null);
+  const [rightPanel, setRightPanel] = useState<RightPanel>(null);
   const [catSearch, setCatSearch] = useState("");
   const [tagSearch, setTagSearch] = useState("");
+  const [hoveredAgent, setHoveredAgent] =
+    useState<AgentDefinitionRecord | null>(null);
+  const [mobileDetailAgent, setMobileDetailAgent] =
+    useState<AgentDefinitionRecord | null>(null);
+  const [mobileSubView, setMobileSubView] = useState<
+    "sort" | "categories" | "tags" | null
+  >(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const consumer = useAgentConsumer(CONSUMER_ID, {
@@ -109,9 +119,12 @@ export function AgentListDropdown({
       setTimeout(() => inputRef.current?.focus(), 50);
     }
     if (!nextOpen) {
-      setSubView(null);
+      setRightPanel(null);
       setCatSearch("");
       setTagSearch("");
+      setHoveredAgent(null);
+      setMobileDetailAgent(null);
+      setMobileSubView(null);
     }
   };
 
@@ -130,8 +143,38 @@ export function AgentListDropdown({
     (consumer.sortBy !== "updated-desc" ? 1 : 0) +
     (consumer.includedCats.length > 0 ? 1 : 0) +
     (consumer.includedTags.length > 0 ? 1 : 0) +
-    (consumer.favFilter !== "all" ? 1 : 0) +
-    (consumer.archFilter !== "active" ? 1 : 0);
+    (consumer.favFilter !== "all" ? 1 : 0);
+
+  const hasRightPanel = rightPanel !== null;
+
+  const handleFilterChipClick = (panel: "sort" | "categories" | "tags") => {
+    if (isMobile) {
+      setMobileSubView(panel);
+    } else {
+      setRightPanel(rightPanel === panel ? null : panel);
+    }
+  };
+
+  const handleAgentHover = (agent: AgentDefinitionRecord) => {
+    if (isMobile) return;
+    if (
+      rightPanel === "sort" ||
+      rightPanel === "categories" ||
+      rightPanel === "tags"
+    )
+      return;
+    setHoveredAgent(agent);
+    setRightPanel("detail");
+  };
+
+  const handleAgentHoverEnd = (agent: AgentDefinitionRecord) => {
+    if (isMobile) return;
+    if (rightPanel !== "detail") return;
+    if (hoveredAgent?.id === agent.id) {
+      setHoveredAgent(null);
+      setRightPanel(null);
+    }
+  };
 
   const trigger = (
     <button
@@ -142,7 +185,6 @@ export function AgentListDropdown({
         className,
       )}
     >
-      <Bot className="w-3.5 h-3.5 text-muted-foreground" />
       <span className="truncate max-w-[120px]">{label}</span>
       {activeFilterCount > 0 && (
         <span className="flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
@@ -153,28 +195,29 @@ export function AgentListDropdown({
     </button>
   );
 
-  const content = (
-    <DropdownBody
+  const listPanel = (
+    <ListPanel
       agents={agents}
       isLoading={isLoading}
       consumer={consumer}
       activeAgentId={activeAgentId}
       allCategories={allCategories}
       allTags={allTags}
-      subView={subView}
-      setSubView={setSubView}
-      catSearch={catSearch}
-      setCatSearch={setCatSearch}
-      tagSearch={tagSearch}
-      setTagSearch={setTagSearch}
       inputRef={inputRef}
       onSelectAgent={handleSelectAgent}
       onReset={consumer.resetFilters}
       activeFilterCount={activeFilterCount}
       isMobile={isMobile}
+      hoveredAgent={hoveredAgent}
+      onAgentHover={handleAgentHover}
+      onAgentHoverEnd={handleAgentHoverEnd}
+      onDetailPress={setMobileDetailAgent}
+      onFilterChipClick={handleFilterChipClick}
+      rightPanel={rightPanel}
     />
   );
 
+  // ── Mobile ──
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={handleOpen}>
@@ -182,194 +225,605 @@ export function AgentListDropdown({
         <DrawerContent className="max-h-[85dvh]">
           <DrawerTitle className="sr-only">Select Agent</DrawerTitle>
           <div className="flex flex-col overflow-hidden max-h-[calc(85dvh-2rem)]">
-            {content}
+            {mobileDetailAgent ? (
+              <div className="flex flex-col overflow-hidden">
+                <button
+                  onClick={() => setMobileDetailAgent(null)}
+                  className="flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium text-primary hover:bg-muted/30 transition-colors border-b border-border shrink-0"
+                >
+                  <ChevronRight className="w-4 h-4 rotate-180" />
+                  Back
+                </button>
+                <div className="overflow-y-auto">
+                  <AgentDetailCard
+                    agent={mobileDetailAgent}
+                    onSelect={() => handleSelectAgent(mobileDetailAgent)}
+                  />
+                </div>
+              </div>
+            ) : mobileSubView ? (
+              <MobileSubView
+                view={mobileSubView}
+                consumer={consumer}
+                allCategories={allCategories}
+                allTags={allTags}
+                catSearch={catSearch}
+                setCatSearch={setCatSearch}
+                tagSearch={tagSearch}
+                setTagSearch={setTagSearch}
+                onBack={() => {
+                  setMobileSubView(null);
+                  setCatSearch("");
+                  setTagSearch("");
+                }}
+              />
+            ) : (
+              listPanel
+            )}
           </div>
         </DrawerContent>
       </Drawer>
     );
   }
 
+  // ── Desktop ──
   return (
     <Popover open={open} onOpenChange={handleOpen}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent
         align="start"
         sideOffset={4}
-        className="w-[320px] p-0 overflow-hidden"
+        className={cn(
+          "p-0 overflow-hidden",
+          hasRightPanel ? "w-[680px]" : "w-[340px]",
+        )}
+        style={{
+          height: hasRightPanel ? PANEL_HEIGHT : undefined,
+          maxHeight: LIST_MAX_HEIGHT,
+        }}
       >
-        {content}
+        <div className="flex h-full">
+          <div
+            className={cn(
+              "flex flex-col min-w-0",
+              hasRightPanel
+                ? "w-[340px] shrink-0 border-r border-border"
+                : "flex-1",
+            )}
+          >
+            {listPanel}
+          </div>
+          {hasRightPanel && (
+            <div
+              className="w-[340px] shrink-0 overflow-hidden flex flex-col"
+              style={{ height: PANEL_HEIGHT }}
+            >
+              {rightPanel === "detail" && hoveredAgent && (
+                <AgentDetailCard
+                  agent={hoveredAgent}
+                  onSelect={() => handleSelectAgent(hoveredAgent)}
+                />
+              )}
+              {rightPanel === "sort" && (
+                <SideSortPanel
+                  consumer={consumer}
+                  onClose={() => setRightPanel(null)}
+                />
+              )}
+              {rightPanel === "categories" && (
+                <SideCategoriesPanel
+                  consumer={consumer}
+                  allCategories={allCategories}
+                  search={catSearch}
+                  setSearch={setCatSearch}
+                  onClose={() => {
+                    setRightPanel(null);
+                    setCatSearch("");
+                  }}
+                />
+              )}
+              {rightPanel === "tags" && (
+                <SideTagsPanel
+                  consumer={consumer}
+                  allTags={allTags}
+                  search={tagSearch}
+                  setSearch={setTagSearch}
+                  onClose={() => {
+                    setRightPanel(null);
+                    setTagSearch("");
+                  }}
+                />
+              )}
+            </div>
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Internal body component
+// Detail card
 // ---------------------------------------------------------------------------
 
-interface DropdownBodyProps {
-  agents: AgentDefinitionRecord[];
-  isLoading: boolean;
-  consumer: ReturnType<typeof useAgentConsumer>;
-  activeAgentId: string | null;
-  allCategories: string[];
-  allTags: string[];
-  subView: SubView;
-  setSubView: (v: SubView) => void;
-  catSearch: string;
-  setCatSearch: (v: string) => void;
-  tagSearch: string;
-  setTagSearch: (v: string) => void;
-  inputRef: React.RefObject<HTMLInputElement | null>;
-  onSelectAgent: (a: AgentDefinitionRecord) => void;
-  onReset: () => void;
-  activeFilterCount: number;
-  isMobile: boolean;
+function AgentDetailCard({
+  agent,
+  onSelect,
+}: {
+  agent: AgentDefinitionRecord;
+  onSelect: () => void;
+}) {
+  const updatedDate = agent.updatedAt ? new Date(agent.updatedAt) : null;
+  const createdDate = agent.createdAt ? new Date(agent.createdAt) : null;
+
+  const formatDate = (d: Date | null) => {
+    if (!d) return null;
+    return d.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="px-4 pt-4 pb-3">
+        <div className="flex items-start gap-3">
+          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <Bot className="w-4.5 h-4.5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-semibold text-foreground leading-tight truncate">
+              {agent.name || "Untitled"}
+            </h3>
+            {agent.isFavorite && (
+              <div className="flex items-center gap-1 mt-0.5">
+                <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                <span className="text-[11px] text-amber-600 dark:text-amber-400">
+                  Favorite
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="h-px bg-border mx-3" />
+
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+        {agent.description && (
+          <div>
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
+              Description
+            </p>
+            <p className="text-xs text-foreground/80 leading-relaxed">
+              {agent.description}
+            </p>
+          </div>
+        )}
+
+        {agent.category && (
+          <div className="flex items-center gap-2">
+            <Folder className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            <span className="text-xs text-foreground/80">{agent.category}</span>
+          </div>
+        )}
+
+        {agent.tags && agent.tags.length > 0 && (
+          <div>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Tag className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              <span className="text-[11px] font-medium text-muted-foreground">
+                Tags
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {agent.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center h-5 px-1.5 rounded text-[10px] font-medium bg-muted text-muted-foreground"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {agent.accessLevel && (
+          <div className="flex items-center gap-2">
+            {agent.isOwner === false ? (
+              <Users className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            ) : (
+              <Globe className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            )}
+            <div className="flex flex-col">
+              <span className="text-xs text-foreground/80 capitalize">
+                {agent.accessLevel === "owner"
+                  ? "You own this"
+                  : `Shared — ${agent.accessLevel}`}
+              </span>
+              {agent.sharedByEmail && (
+                <span className="text-[10px] text-muted-foreground">
+                  by {agent.sharedByEmail}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {agent.modelId && (
+          <div className="flex items-center gap-2">
+            <Bot className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            <span className="text-xs text-foreground/80 font-mono truncate">
+              {agent.modelId}
+            </span>
+          </div>
+        )}
+
+        {(updatedDate || createdDate) && (
+          <div className="pt-1 space-y-1">
+            {updatedDate && (
+              <div className="flex items-center gap-2">
+                <Clock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                <span className="text-[11px] text-muted-foreground">
+                  Updated {formatDate(updatedDate)}
+                </span>
+              </div>
+            )}
+            {createdDate && (
+              <div className="flex items-center gap-2">
+                <Clock className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
+                <span className="text-[11px] text-muted-foreground/70">
+                  Created {formatDate(createdDate)}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="h-px bg-border mx-3 mt-auto" />
+      <div className="px-3 py-2.5 shrink-0">
+        <button
+          onClick={onSelect}
+          className="w-full h-8 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 active:bg-primary/80 transition-colors"
+        >
+          Select Agent
+        </button>
+      </div>
+    </div>
+  );
 }
 
-function DropdownBody({
-  agents,
-  isLoading,
+// ---------------------------------------------------------------------------
+// Side panels for desktop (sort, categories, tags)
+// ---------------------------------------------------------------------------
+
+function SidePanelHeader({
+  title,
+  onClose,
+}: {
+  title: string;
+  onClose: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between px-3 py-2 border-b border-border shrink-0">
+      <span className="text-xs font-semibold text-foreground">{title}</span>
+      <button
+        onClick={onClose}
+        className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+}
+
+function SideSortPanel({
   consumer,
-  activeAgentId,
+  onClose,
+}: {
+  consumer: ReturnType<typeof useAgentConsumer>;
+  onClose: () => void;
+}) {
+  return (
+    <div className="flex flex-col h-full">
+      <SidePanelHeader title="Sort By" onClose={onClose} />
+      <div className="overflow-y-auto flex-1">
+        {SORT_OPTIONS.map((opt) => (
+          <OptionRow
+            key={opt.value}
+            label={opt.label}
+            selected={consumer.sortBy === opt.value}
+            onClick={() => consumer.setSortBy(opt.value)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SideCategoriesPanel({
+  consumer,
+  allCategories,
+  search,
+  setSearch,
+  onClose,
+}: {
+  consumer: ReturnType<typeof useAgentConsumer>;
+  allCategories: string[];
+  search: string;
+  setSearch: (v: string) => void;
+  onClose: () => void;
+}) {
+  const filtered = allCategories.filter(
+    (c) => !search || c.toLowerCase().includes(search.toLowerCase()),
+  );
+  return (
+    <div className="flex flex-col h-full">
+      <SidePanelHeader title="Categories" onClose={onClose} />
+      <div className="px-2 pt-2 pb-1 shrink-0">
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Filter categories..."
+        />
+      </div>
+      {consumer.includedCats.length > 0 && (
+        <button
+          onClick={() => consumer.includedCats.forEach(consumer.toggleCategory)}
+          className="mx-2 mb-1 h-6 rounded text-[11px] font-medium text-primary hover:bg-muted/50 transition-colors text-left shrink-0"
+        >
+          Clear ({consumer.includedCats.length})
+        </button>
+      )}
+      <div className="overflow-y-auto flex-1">
+        {filtered.length === 0 ? (
+          <p className="text-xs text-muted-foreground text-center py-6">
+            No categories
+          </p>
+        ) : (
+          filtered.map((cat) => (
+            <CheckRow
+              key={cat}
+              label={cat}
+              checked={consumer.includedCats.includes(cat)}
+              onClick={() => consumer.toggleCategory(cat)}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SideTagsPanel({
+  consumer,
+  allTags,
+  search,
+  setSearch,
+  onClose,
+}: {
+  consumer: ReturnType<typeof useAgentConsumer>;
+  allTags: string[];
+  search: string;
+  setSearch: (v: string) => void;
+  onClose: () => void;
+}) {
+  const filtered = allTags.filter(
+    (t) => !search || t.toLowerCase().includes(search.toLowerCase()),
+  );
+  return (
+    <div className="flex flex-col h-full">
+      <SidePanelHeader title="Tags" onClose={onClose} />
+      <div className="px-2 pt-2 pb-1 shrink-0">
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Filter tags..."
+        />
+      </div>
+      {consumer.includedTags.length > 0 && (
+        <button
+          onClick={() => consumer.includedTags.forEach(consumer.toggleTag)}
+          className="mx-2 mb-1 h-6 rounded text-[11px] font-medium text-primary hover:bg-muted/50 transition-colors text-left shrink-0"
+        >
+          Clear ({consumer.includedTags.length})
+        </button>
+      )}
+      <div className="overflow-y-auto flex-1">
+        {filtered.length === 0 ? (
+          <p className="text-xs text-muted-foreground text-center py-6">
+            No tags
+          </p>
+        ) : (
+          filtered.map((tag) => (
+            <CheckRow
+              key={tag}
+              label={tag}
+              checked={consumer.includedTags.includes(tag)}
+              onClick={() => consumer.toggleTag(tag)}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Mobile sub-view (replaces list — iOS drill-down for sort/categories/tags)
+// ---------------------------------------------------------------------------
+
+function MobileSubView({
+  view,
+  consumer,
   allCategories,
   allTags,
-  subView,
-  setSubView,
   catSearch,
   setCatSearch,
   tagSearch,
   setTagSearch,
-  inputRef,
-  onSelectAgent,
-  onReset,
-  activeFilterCount,
-  isMobile,
-}: DropdownBodyProps) {
-  if (subView === "sort") {
-    return (
-      <SubViewPanel
-        title="Sort"
-        onBack={() => setSubView(null)}
-        isMobile={isMobile}
+  onBack,
+}: {
+  view: "sort" | "categories" | "tags";
+  consumer: ReturnType<typeof useAgentConsumer>;
+  allCategories: string[];
+  allTags: string[];
+  catSearch: string;
+  setCatSearch: (v: string) => void;
+  tagSearch: string;
+  setTagSearch: (v: string) => void;
+  onBack: () => void;
+}) {
+  const title =
+    view === "sort" ? "Sort" : view === "categories" ? "Categories" : "Tags";
+
+  return (
+    <div className="flex flex-col">
+      <button
+        onClick={onBack}
+        className="flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium text-primary hover:bg-muted/30 transition-colors border-b border-border shrink-0"
       >
-        {SORT_OPTIONS.map((opt) => (
+        <ChevronRight className="w-4 h-4 rotate-180" />
+        {title}
+      </button>
+      {view === "sort" &&
+        SORT_OPTIONS.map((opt) => (
           <OptionRow
             key={opt.value}
             label={opt.label}
             selected={consumer.sortBy === opt.value}
             onClick={() => {
               consumer.setSortBy(opt.value);
-              setSubView(null);
+              onBack();
             }}
           />
         ))}
-      </SubViewPanel>
-    );
-  }
-
-  if (subView === "categories") {
-    const filtered = allCategories.filter(
-      (c) => !catSearch || c.toLowerCase().includes(catSearch.toLowerCase()),
-    );
-    return (
-      <SubViewPanel
-        title="Categories"
-        onBack={() => {
-          setSubView(null);
-          setCatSearch("");
-        }}
-        isMobile={isMobile}
-      >
-        <div className="px-2 pb-1.5">
-          <SearchInput
-            value={catSearch}
-            onChange={setCatSearch}
-            placeholder="Filter categories..."
-          />
-        </div>
-        {consumer.includedCats.length > 0 && (
-          <button
-            onClick={() =>
-              consumer.includedCats.forEach(consumer.toggleCategory)
-            }
-            className="mx-2 mb-1 h-6 rounded text-[11px] font-medium text-primary hover:bg-muted/50 transition-colors"
-          >
-            Clear ({consumer.includedCats.length})
-          </button>
-        )}
-        <div className="overflow-y-auto max-h-[240px]">
-          {filtered.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-4">
-              No categories
-            </p>
-          ) : (
-            filtered.map((cat) => (
-              <CheckRow
-                key={cat}
-                label={cat}
-                checked={consumer.includedCats.includes(cat)}
-                onClick={() => consumer.toggleCategory(cat)}
-              />
-            ))
+      {view === "categories" && (
+        <>
+          <div className="px-2 pt-2 pb-1">
+            <SearchInput
+              value={catSearch}
+              onChange={setCatSearch}
+              placeholder="Filter categories..."
+            />
+          </div>
+          {consumer.includedCats.length > 0 && (
+            <button
+              onClick={() =>
+                consumer.includedCats.forEach(consumer.toggleCategory)
+              }
+              className="mx-2 mb-1 h-6 rounded text-[11px] font-medium text-primary hover:bg-muted/50 transition-colors text-left"
+            >
+              Clear ({consumer.includedCats.length})
+            </button>
           )}
-        </div>
-      </SubViewPanel>
-    );
-  }
-
-  if (subView === "tags") {
-    const filtered = allTags.filter(
-      (t) => !tagSearch || t.toLowerCase().includes(tagSearch.toLowerCase()),
-    );
-    return (
-      <SubViewPanel
-        title="Tags"
-        onBack={() => {
-          setSubView(null);
-          setTagSearch("");
-        }}
-        isMobile={isMobile}
-      >
-        <div className="px-2 pb-1.5">
-          <SearchInput
-            value={tagSearch}
-            onChange={setTagSearch}
-            placeholder="Filter tags..."
-          />
-        </div>
-        {consumer.includedTags.length > 0 && (
-          <button
-            onClick={() => consumer.includedTags.forEach(consumer.toggleTag)}
-            className="mx-2 mb-1 h-6 rounded text-[11px] font-medium text-primary hover:bg-muted/50 transition-colors"
-          >
-            Clear ({consumer.includedTags.length})
-          </button>
-        )}
-        <div className="overflow-y-auto max-h-[240px]">
-          {filtered.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-4">
-              No tags
-            </p>
-          ) : (
-            filtered.map((tag) => (
-              <CheckRow
-                key={tag}
-                label={tag}
-                checked={consumer.includedTags.includes(tag)}
-                onClick={() => consumer.toggleTag(tag)}
-              />
-            ))
+          <div className="overflow-y-auto max-h-[300px]">
+            {allCategories
+              .filter(
+                (c) =>
+                  !catSearch ||
+                  c.toLowerCase().includes(catSearch.toLowerCase()),
+              )
+              .map((cat) => (
+                <CheckRow
+                  key={cat}
+                  label={cat}
+                  checked={consumer.includedCats.includes(cat)}
+                  onClick={() => consumer.toggleCategory(cat)}
+                />
+              ))}
+          </div>
+        </>
+      )}
+      {view === "tags" && (
+        <>
+          <div className="px-2 pt-2 pb-1">
+            <SearchInput
+              value={tagSearch}
+              onChange={setTagSearch}
+              placeholder="Filter tags..."
+            />
+          </div>
+          {consumer.includedTags.length > 0 && (
+            <button
+              onClick={() => consumer.includedTags.forEach(consumer.toggleTag)}
+              className="mx-2 mb-1 h-6 rounded text-[11px] font-medium text-primary hover:bg-muted/50 transition-colors text-left"
+            >
+              Clear ({consumer.includedTags.length})
+            </button>
           )}
-        </div>
-      </SubViewPanel>
-    );
-  }
+          <div className="overflow-y-auto max-h-[300px]">
+            {allTags
+              .filter(
+                (t) =>
+                  !tagSearch ||
+                  t.toLowerCase().includes(tagSearch.toLowerCase()),
+              )
+              .map((tag) => (
+                <CheckRow
+                  key={tag}
+                  label={tag}
+                  checked={consumer.includedTags.includes(tag)}
+                  onClick={() => consumer.toggleTag(tag)}
+                />
+              ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
+// ---------------------------------------------------------------------------
+// List panel (always visible on desktop, primary view on mobile)
+// ---------------------------------------------------------------------------
+
+interface ListPanelProps {
+  agents: AgentDefinitionRecord[];
+  isLoading: boolean;
+  consumer: ReturnType<typeof useAgentConsumer>;
+  activeAgentId: string | null;
+  allCategories: string[];
+  allTags: string[];
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onSelectAgent: (a: AgentDefinitionRecord) => void;
+  onReset: () => void;
+  activeFilterCount: number;
+  isMobile: boolean;
+  hoveredAgent: AgentDefinitionRecord | null;
+  onAgentHover: (a: AgentDefinitionRecord) => void;
+  onAgentHoverEnd: (a: AgentDefinitionRecord) => void;
+  onDetailPress: (a: AgentDefinitionRecord) => void;
+  onFilterChipClick: (panel: "sort" | "categories" | "tags") => void;
+  rightPanel: RightPanel;
+}
+
+function ListPanel({
+  agents,
+  isLoading,
+  consumer,
+  activeAgentId,
+  allCategories,
+  allTags,
+  inputRef,
+  onSelectAgent,
+  onReset,
+  activeFilterCount,
+  isMobile,
+  hoveredAgent,
+  onAgentHover,
+  onAgentHoverEnd,
+  onDetailPress,
+  onFilterChipClick,
+  rightPanel,
+}: ListPanelProps) {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full">
       {/* Search */}
-      <div className="px-2 pt-2 pb-1">
+      <div className="px-2 pt-2 pb-1 shrink-0">
         <SearchInput
           ref={inputRef}
           value={consumer.searchTerm}
@@ -379,7 +833,7 @@ function DropdownBody({
       </div>
 
       {/* Filter bar */}
-      <div className="flex items-center gap-1 px-2 pb-1.5 overflow-x-auto scrollbar-none">
+      <div className="flex items-center gap-1 px-2 pb-1.5 overflow-x-auto scrollbar-none shrink-0">
         <FilterChip
           icon={ArrowUpDown}
           label={
@@ -387,7 +841,8 @@ function DropdownBody({
             "Sort"
           }
           active={consumer.sortBy !== "updated-desc"}
-          onClick={() => setSubView("sort")}
+          focused={!isMobile && rightPanel === "sort"}
+          onClick={() => onFilterChipClick("sort")}
         />
         <FilterChip
           icon={Star}
@@ -409,30 +864,17 @@ function DropdownBody({
             consumer.setFavFilter(next as "all" | "yes" | "no");
           }}
         />
-        <FilterChip
-          icon={Archive}
-          label="Archived"
-          active={consumer.archFilter !== "active"}
-          onClick={() => {
-            const next =
-              consumer.archFilter === "active"
-                ? "both"
-                : consumer.archFilter === "both"
-                  ? "archived"
-                  : "active";
-            consumer.setArchFilter(next as "active" | "archived" | "both");
-          }}
-        />
         {allCategories.length > 0 && (
           <FilterChip
             icon={Folder}
             label={
               consumer.includedCats.length > 0
                 ? `${consumer.includedCats.length}`
-                : "Cat"
+                : "Category"
             }
             active={consumer.includedCats.length > 0}
-            onClick={() => setSubView("categories")}
+            focused={!isMobile && rightPanel === "categories"}
+            onClick={() => onFilterChipClick("categories")}
           />
         )}
         {allTags.length > 0 && (
@@ -444,7 +886,8 @@ function DropdownBody({
                 : "Tags"
             }
             active={consumer.includedTags.length > 0}
-            onClick={() => setSubView("tags")}
+            focused={!isMobile && rightPanel === "tags"}
+            onClick={() => onFilterChipClick("tags")}
           />
         )}
         {activeFilterCount > 0 && (
@@ -457,10 +900,10 @@ function DropdownBody({
         )}
       </div>
 
-      <div className="h-px bg-border" />
+      <div className="h-px bg-border shrink-0" />
 
       {/* Agent list */}
-      <div className="overflow-y-auto max-h-[320px] md:max-h-[360px]">
+      <div className="overflow-y-auto flex-1 min-h-0">
         {isLoading ? (
           <div className="flex items-center justify-center py-8 gap-2 text-muted-foreground">
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -468,7 +911,6 @@ function DropdownBody({
           </div>
         ) : agents.length === 0 ? (
           <div className="flex flex-col items-center py-8 text-muted-foreground">
-            <Bot className="w-5 h-5 mb-1.5 opacity-40" />
             <span className="text-xs">No agents found</span>
           </div>
         ) : (
@@ -478,7 +920,12 @@ function DropdownBody({
                 key={agent.id}
                 agent={agent}
                 isActive={agent.id === activeAgentId}
+                isHovered={hoveredAgent?.id === agent.id}
+                isMobile={isMobile}
                 onClick={() => onSelectAgent(agent)}
+                onHover={() => onAgentHover(agent)}
+                onHoverEnd={() => onAgentHoverEnd(agent)}
+                onDetailPress={() => onDetailPress(agent)}
               />
             ))}
           </div>
@@ -486,8 +933,8 @@ function DropdownBody({
       </div>
 
       {/* Footer count */}
-      <div className="h-px bg-border" />
-      <div className="flex items-center justify-between px-2.5 py-1.5">
+      <div className="h-px bg-border shrink-0" />
+      <div className="flex items-center justify-between px-2.5 py-1.5 shrink-0">
         <span className="text-[10px] text-muted-foreground tabular-nums">
           {agents.length} agent{agents.length !== 1 ? "s" : ""}
         </span>
@@ -505,7 +952,7 @@ function DropdownBody({
 }
 
 // ---------------------------------------------------------------------------
-// Primitive building blocks
+// Primitives
 // ---------------------------------------------------------------------------
 
 const SearchInput = ({
@@ -545,11 +992,13 @@ function FilterChip({
   icon: Icon,
   label,
   active,
+  focused,
   onClick,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   active: boolean;
+  focused?: boolean;
   onClick: () => void;
 }) {
   return (
@@ -557,9 +1006,11 @@ function FilterChip({
       onClick={onClick}
       className={cn(
         "inline-flex items-center gap-1 h-6 px-1.5 rounded text-[11px] font-medium shrink-0 transition-colors",
-        active
-          ? "bg-primary/10 text-primary border border-primary/20"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-transparent",
+        focused
+          ? "bg-primary/15 text-primary border border-primary/30 ring-1 ring-primary/20"
+          : active
+            ? "bg-primary/10 text-primary border border-primary/20"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-transparent",
       )}
     >
       <Icon className="w-3 h-3" />
@@ -571,90 +1022,65 @@ function FilterChip({
 function AgentRow({
   agent,
   isActive,
+  isHovered,
+  isMobile,
   onClick,
+  onHover,
+  onHoverEnd,
+  onDetailPress,
 }: {
   agent: AgentDefinitionRecord;
   isActive: boolean;
+  isHovered: boolean;
+  isMobile: boolean;
   onClick: () => void;
+  onHover: () => void;
+  onHoverEnd: () => void;
+  onDetailPress: () => void;
 }) {
   return (
-    <button
-      onClick={onClick}
+    <div
       className={cn(
-        "flex items-center gap-2.5 w-full px-2.5 py-1.5 text-left transition-colors",
+        "flex items-center w-full text-left transition-colors group",
         "hover:bg-muted/50 active:bg-muted/70",
         isActive && "bg-primary/5",
+        !isMobile && isHovered && "bg-muted/40",
       )}
+      onMouseEnter={isMobile ? undefined : onHover}
+      onMouseLeave={isMobile ? undefined : onHoverEnd}
     >
-      <div
-        className={cn(
-          "w-6 h-6 rounded shrink-0 flex items-center justify-center",
-          isActive ? "bg-primary/15" : "bg-muted",
-        )}
-      >
-        <Bot
-          className={cn(
-            "w-3.5 h-3.5",
-            isActive ? "text-primary" : "text-muted-foreground",
-          )}
-        />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <span
-            className={cn(
-              "text-xs font-medium truncate",
-              isActive && "text-primary",
-            )}
-          >
-            {agent.name || "Untitled"}
-          </span>
-          {agent.isFavorite && (
-            <Star className="w-2.5 h-2.5 text-amber-500 fill-amber-500 shrink-0" />
-          )}
-          {agent.isOwner === false && (
-            <span className="text-[9px] text-muted-foreground bg-muted px-1 rounded shrink-0">
-              shared
-            </span>
-          )}
-        </div>
-        {agent.description && (
-          <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
-            {agent.description}
-          </p>
-        )}
-      </div>
-      {agent.category && (
-        <span className="text-[9px] text-muted-foreground/60 shrink-0 max-w-[60px] truncate">
-          {agent.category}
-        </span>
-      )}
-    </button>
-  );
-}
-
-function SubViewPanel({
-  title,
-  onBack,
-  children,
-  isMobile,
-}: {
-  title: string;
-  onBack: () => void;
-  children: React.ReactNode;
-  isMobile: boolean;
-}) {
-  return (
-    <div className="flex flex-col">
       <button
-        onClick={onBack}
-        className="flex items-center gap-1.5 px-2.5 py-2 text-xs font-medium text-foreground hover:bg-muted/30 transition-colors"
+        onClick={onClick}
+        className="flex items-center gap-2 flex-1 min-w-0 px-3 py-2"
       >
-        <ChevronRight className="w-3 h-3 rotate-180 text-muted-foreground" />
-        {title}
+        {agent.isFavorite && (
+          <Star className="w-3 h-3 text-amber-500 fill-amber-500 shrink-0" />
+        )}
+        <span
+          className={cn(
+            "text-[13px] font-medium truncate",
+            isActive ? "text-primary" : "text-foreground",
+          )}
+        >
+          {agent.name || "Untitled"}
+        </span>
+        {agent.isOwner === false && (
+          <span className="text-[9px] text-muted-foreground bg-muted px-1 py-px rounded shrink-0 ml-auto">
+            shared
+          </span>
+        )}
       </button>
-      <div className="h-px bg-border" />
-      {children}
+      {isMobile && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDetailPress();
+          }}
+          className="flex items-center justify-center w-10 h-full shrink-0 text-muted-foreground/40 active:text-muted-foreground"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      )}
     </div>
   );
 }

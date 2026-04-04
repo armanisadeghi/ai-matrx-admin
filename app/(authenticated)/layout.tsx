@@ -28,6 +28,7 @@ import {
 } from "@/app/(authenticated)/dynamic-imports/DynamicMessaging";
 import { DynamicAppleKeyExpiryBanner } from "@/app/(authenticated)/dynamic-imports/DynamicAppleKeyExpiryBanner";
 import { DynamicVoicePad } from "@/app/(authenticated)/dynamic-imports/DynamicVoicePad";
+import { DynamicWindowTray } from "@/app/(authenticated)/dynamic-imports/DynamicWindowTray";
 
 const emptyGlobalCache = getEmptyGlobalCache();
 console.warn(
@@ -134,6 +135,8 @@ export default async function AuthenticatedLayout({
       {/* Global Messaging System - Side Sheet + Data Loader */}
       <DynamicMessagingInitializer />
       <DynamicMessagingSideSheet />
+      {/* Window manager tray — must be outside ResponsiveLayout to avoid transform stacking context */}
+      <DynamicWindowTray />
     </Providers>
   );
 }

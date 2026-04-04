@@ -176,26 +176,24 @@ function ServerToolsTab({
     [selectedTools],
   );
 
-  const availableNameSet = useMemo(
-    () => new Set(availableTools.map((t) => t.name)),
+  const availableIdSet = useMemo(
+    () => new Set(availableTools.map((t) => t.id)),
     [availableTools],
   );
 
   const orphanedTools = useMemo(() => {
     if (!Array.isArray(selectedTools)) return [];
-    return (selectedTools as string[]).filter(
-      (name) => !availableNameSet.has(name),
-    );
-  }, [selectedTools, availableNameSet]);
+    return (selectedTools as string[]).filter((id) => !availableIdSet.has(id));
+  }, [selectedTools, availableIdSet]);
 
   const toggleTool = useCallback(
-    (toolName: string) => {
+    (toolId: string) => {
       const current = Array.isArray(selectedTools)
         ? (selectedTools as string[])
         : [];
-      const next = current.includes(toolName)
-        ? current.filter((t) => t !== toolName)
-        : [...current, toolName];
+      const next = current.includes(toolId)
+        ? current.filter((t) => t !== toolId)
+        : [...current, toolId];
       dispatch(
         setAgentTools({
           id: agentId,
@@ -221,8 +219,8 @@ function ServerToolsTab({
         ? (selectedTools as string[])
         : [];
       const toAdd = tools
-        .map((t) => t.name)
-        .filter((n) => !current.includes(n));
+        .map((t) => t.id)
+        .filter((id) => !current.includes(id));
       dispatch(
         setAgentTools({
           id: agentId,
@@ -234,7 +232,7 @@ function ServerToolsTab({
   );
 
   const removeOrphan = useCallback(
-    (toolName: string) => {
+    (toolId: string) => {
       const current = Array.isArray(selectedTools)
         ? (selectedTools as string[])
         : [];
@@ -242,7 +240,7 @@ function ServerToolsTab({
         setAgentTools({
           id: agentId,
           tools: current.filter(
-            (t) => t !== toolName,
+            (t) => t !== toolId,
           ) as unknown as typeof selectedTools,
         }),
       );
@@ -258,11 +256,11 @@ function ServerToolsTab({
       setAgentTools({
         id: agentId,
         tools: current.filter((t) =>
-          availableNameSet.has(t),
+          availableIdSet.has(t),
         ) as unknown as typeof selectedTools,
       }),
     );
-  }, [agentId, selectedTools, availableNameSet, dispatch]);
+  }, [agentId, selectedTools, availableIdSet, dispatch]);
 
   const categories = useMemo(() => {
     const map = new Map<string, number>();
@@ -287,7 +285,7 @@ function ServerToolsTab({
 
   const visibleTools = useMemo(() => {
     if (activeCategory === ENABLED_CATEGORY) {
-      return searchFiltered.filter((t) => activeSet.has(t.name));
+      return searchFiltered.filter((t) => activeSet.has(t.id));
     }
     if (activeCategory === ALL_CATEGORY) {
       return searchFiltered;
@@ -301,7 +299,7 @@ function ServerToolsTab({
     const map = new Map<string, number>();
     for (const tool of availableTools) {
       const cat = tool.category ?? "General";
-      if (activeSet.has(tool.name)) {
+      if (activeSet.has(tool.id)) {
         map.set(cat, (map.get(cat) ?? 0) + 1);
       }
     }
@@ -462,18 +460,16 @@ function ServerToolsTab({
               </div>
             ) : (
               visibleTools.map((tool) => {
-                const isActive = activeSet.has(tool.name);
+                const isActive = activeSet.has(tool.id);
                 return (
                   <ToolCard
-                    key={tool.name}
+                    key={tool.id}
                     tool={tool}
                     active={isActive}
-                    expanded={expandedTool === tool.name}
+                    expanded={expandedTool === tool.id}
                     onToggle={toggleTool}
                     onExpand={() =>
-                      setExpandedTool(
-                        expandedTool === tool.name ? null : tool.name,
-                      )
+                      setExpandedTool(expandedTool === tool.id ? null : tool.id)
                     }
                   />
                 );
@@ -988,8 +984,8 @@ function ClientToolsTab({
 
   const enabledServerTools = useMemo(() => {
     if (!Array.isArray(selectedTools)) return [];
-    const names = new Set(selectedTools as string[]);
-    return availableTools.filter((t) => names.has(t.name));
+    const ids = new Set(selectedTools as string[]);
+    return availableTools.filter((t) => ids.has(t.id));
   }, [selectedTools, availableTools]);
 
   const enabledCustomTools: CustomToolDefinition[] = useMemo(
@@ -2572,7 +2568,7 @@ function ToolCard({
     >
       <div className="flex items-start gap-3 w-full px-3 py-2.5">
         {/* Checkbox */}
-        <button onClick={() => onToggle(tool.name)} className="mt-0.5 shrink-0">
+        <button onClick={() => onToggle(tool.id)} className="mt-0.5 shrink-0">
           <div
             className={`flex items-center justify-center w-4 h-4 rounded border-[1.5px] transition-all ${
               active

@@ -112,7 +112,7 @@ export function AgentOptionsMenu() {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-72">
         {GENERAL_ITEMS.map(({ label, icon: Icon }) => (
           <DropdownMenuItem key={label} onClick={comingSoon}>
             <Icon className="w-4 h-4 mr-2 text-muted-foreground" />

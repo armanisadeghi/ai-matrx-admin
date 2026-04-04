@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { shallowEqual } from "react-redux";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,7 @@ import type {
   TimelineEntry,
   ClientMetrics,
   ToolLifecycleEntry,
+  RawStreamEvent,
 } from "@/features/agents/types/request.types";
 import type {
   StatusUpdatePayload,
@@ -312,6 +314,7 @@ function getTimelineColor(kind: TimelineEntry["kind"]): string {
     end: EVENT_COLORS.end,
     broker: EVENT_COLORS.broker,
     heartbeat: EVENT_COLORS.heartbeat,
+    unknown: "bg-red-600/30 text-red-300 border-red-500/50 font-semibold",
   };
   return map[kind] ?? "bg-gray-500/20 text-gray-400 border-gray-500/30";
 }
@@ -329,6 +332,7 @@ function getTimelineIcon(kind: TimelineEntry["kind"]): React.ReactNode {
     end: EVENT_ICONS.end,
     broker: EVENT_ICONS.broker,
     heartbeat: EVENT_ICONS.heartbeat,
+    unknown: <AlertTriangle className="h-2.5 w-2.5" />,
   };
   return map[kind] ?? <CircleDot className="h-2.5 w-2.5" />;
 }
@@ -362,6 +366,8 @@ function timelineSummary(entry: TimelineEntry, textChunks: string[]): string {
       return `broker: ${entry.brokerId}`;
     case "heartbeat":
       return "heartbeat";
+    case "unknown":
+      return `UNRECOGNIZED (${entry.originalEvent}): ${JSON.stringify(entry.rawData).slice(0, 100)}`;
     default:
       return "";
   }
@@ -393,9 +399,15 @@ function TimelineRow({
         expanded && "bg-muted/10",
       )}
     >
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setLocalExpanded(!localExpanded)}
+        onKeyDown={(e) =>
+          e.key === "Enter" || e.key === " "
+            ? setLocalExpanded(!localExpanded)
+            : undefined
+        }
         className="w-full flex items-center gap-1.5 px-2 py-1 text-left cursor-pointer"
       >
         <span className="text-[10px] font-mono text-muted-foreground/60 w-7 shrink-0 text-right">
@@ -434,7 +446,7 @@ function TimelineRow({
         ) : (
           <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
         )}
-      </button>
+      </div>
       {expanded && (
         <div className="px-1.5 pb-1 ml-[90px]">
           {entry.kind === "text_end" && (
@@ -641,6 +653,7 @@ const ALL_TIMELINE_KINDS: TimelineEntry["kind"][] = [
   "end",
   "broker",
   "heartbeat",
+  "unknown",
 ];
 
 function TimelineFilterBar({
@@ -774,9 +787,9 @@ function TimelineTab({ request }: { request: ActiveRequest }) {
         ref={scrollRef}
         className="flex-1 overflow-y-auto overflow-x-hidden min-h-0"
       >
-        {filtered.map((entry) => (
+        {filtered.map((entry, idx) => (
           <TimelineRow
-            key={entry.seq}
+            key={`${entry.seq}-${idx}`}
             entry={entry}
             baseTime={baseTime}
             textChunks={request.textChunks}
@@ -1139,11 +1152,177 @@ function StateSnapshotTab({
 }
 
 // =============================================================================
+// Raw Events Tab — unprocessed, unfiltered forensic view
+// =============================================================================
+
+function RawEventsTab({ request }: { request: ActiveRequest }) {
+  const rawEvents = request.rawEvents ?? [];
+  const [expandedIdx, setExpandedIdx] = useState<Set<number>>(new Set());
+  const [filterType, setFilterType] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const eventTypes = React.useMemo(() => {
+    const types = new Set<string>();
+    for (const e of rawEvents) types.add(e.eventType);
+    return Array.from(types).sort();
+  }, [rawEvents]);
+
+  const filtered = filterType
+    ? rawEvents.filter((e) => e.eventType === filterType)
+    : rawEvents;
+
+  const toggleExpanded = (idx: number) => {
+    setExpandedIdx((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  };
+
+  if (rawEvents.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full text-muted-foreground text-xs">
+        No raw events captured yet
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center gap-1 px-2 py-1 border-b border-border/30 bg-muted/10 flex-wrap">
+        <span className="text-[9px] text-muted-foreground font-medium mr-1">
+          {rawEvents.length} events
+        </span>
+        <button
+          type="button"
+          onClick={() => setFilterType(null)}
+          className={cn(
+            "px-1.5 py-0.5 rounded text-[9px] cursor-pointer transition-colors",
+            !filterType
+              ? "bg-primary/20 text-primary"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/30",
+          )}
+        >
+          All
+        </button>
+        {eventTypes.map((type) => (
+          <button
+            key={type}
+            type="button"
+            onClick={() => setFilterType(filterType === type ? null : type)}
+            className={cn(
+              "px-1.5 py-0.5 rounded text-[9px] cursor-pointer transition-colors",
+              filterType === type
+                ? "bg-primary/20 text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/30",
+            )}
+          >
+            {type} ({rawEvents.filter((e) => e.eventType === type).length})
+          </button>
+        ))}
+        <CopyBtn
+          text={JSON.stringify(rawEvents, null, 2)}
+          id="raw-all"
+          className="ml-auto"
+        />
+      </div>
+
+      <ScrollArea className="flex-1 min-h-0" ref={scrollRef}>
+        <div className="divide-y divide-border/20">
+          {filtered.map((evt) => {
+            const isExpanded = expandedIdx.has(evt.idx);
+            const colorClass =
+              EVENT_COLORS[evt.eventType] ??
+              "bg-gray-500/20 text-gray-400 border-gray-500/30";
+            const icon = EVENT_ICONS[evt.eventType] ?? (
+              <AlertTriangle className="h-2.5 w-2.5" />
+            );
+
+            const dataPreview = (() => {
+              if (evt.data === null || evt.data === undefined) return "null";
+              if (typeof evt.data === "object") {
+                const d = evt.data as Record<string, unknown>;
+                if (d.event) return `event: ${d.event}`;
+                if (d.text !== undefined)
+                  return `text: "${String(d.text).slice(0, 40)}..."`;
+                if (d.status) return `status: ${d.status}`;
+                if (d.tool_name) return `tool: ${d.tool_name}`;
+                const keys = Object.keys(d);
+                return keys.length <= 4
+                  ? keys.join(", ")
+                  : `${keys.slice(0, 3).join(", ")} +${keys.length - 3}`;
+              }
+              return String(evt.data).slice(0, 60);
+            })();
+
+            return (
+              <div
+                key={evt.idx}
+                className={cn(
+                  "px-2 py-0.5 cursor-pointer hover:bg-muted/20 transition-colors",
+                  isExpanded && "bg-muted/10",
+                )}
+                onClick={() => toggleExpanded(evt.idx)}
+              >
+                <div className="flex items-center gap-1.5 min-h-[18px]">
+                  <span className="text-[9px] text-muted-foreground/60 font-mono w-4 text-right flex-shrink-0">
+                    {evt.idx}
+                  </span>
+
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "px-1 py-0 text-[8px] leading-[14px] h-[14px] inline-flex items-center gap-0.5 font-mono border rounded-sm flex-shrink-0",
+                      colorClass,
+                    )}
+                  >
+                    {icon}
+                    {evt.eventType}
+                  </Badge>
+
+                  <span className="text-[9px] text-muted-foreground/60 font-mono flex-shrink-0">
+                    {evt.timestamp.toFixed(0)}ms
+                  </span>
+
+                  {!isExpanded && (
+                    <span className="text-[9px] text-muted-foreground truncate">
+                      {dataPreview}
+                    </span>
+                  )}
+
+                  <CopyBtn
+                    text={JSON.stringify(evt, null, 2)}
+                    id={`raw-${evt.idx}`}
+                    className="ml-auto flex-shrink-0"
+                  />
+                </div>
+
+                {isExpanded && (
+                  <div className="ml-5 mt-0.5 mb-1">
+                    <JsonView
+                      data={evt.data}
+                      label="data"
+                      id={`raw-data-${evt.idx}`}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+}
+
+// =============================================================================
 // Tab definitions
 // =============================================================================
 
 type TabId =
   | "events"
+  | "raw"
   | "tools"
   | "status"
   | "blocks"
@@ -1154,6 +1333,7 @@ type TabId =
 
 const TAB_DEFS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: "events", label: "Timeline", icon: <Zap className="h-3 w-3" /> },
+  { id: "raw", label: "Raw", icon: <Radio className="h-3 w-3" /> },
   { id: "text", label: "Text", icon: <FileText className="h-3 w-3" /> },
   { id: "tools", label: "Tools", icon: <Wrench className="h-3 w-3" /> },
   { id: "status", label: "Status", icon: <Activity className="h-3 w-3" /> },
@@ -1197,6 +1377,7 @@ export function StreamDebugPanel({
 
   const requestIds = useAppSelector(
     (state) => state.activeRequests.byInstanceId[instanceId] ?? [],
+    shallowEqual,
   );
 
   const [selectedRequestIdx, setSelectedRequestIdx] = useState<number>(-1);
@@ -1298,6 +1479,7 @@ export function StreamDebugPanel({
 
       <div className="flex-1 min-h-0 overflow-hidden">
         {activeTab === "events" && <TimelineTab request={request} />}
+        {activeTab === "raw" && <RawEventsTab request={request} />}
         {activeTab === "text" && <TextTab request={request} />}
         {activeTab === "tools" && <ToolsTab request={request} />}
         {activeTab === "status" && <StatusTab request={request} />}

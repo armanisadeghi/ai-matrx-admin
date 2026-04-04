@@ -7,6 +7,7 @@ import { getUserSessionData } from "@/utils/supabase/userSessionData";
 import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGlobalCache";
 import { InitialReduxState } from "@/types/reduxTypes";
 import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
+import type { Json } from "@/types/database.types";
 import { initializeUserPreferencesState } from "@/lib/redux/slices/userPreferencesSlice";
 import { setGlobalUserIdAndToken } from "@/lib/globalState";
 import Sidebar from "@/features/ssr-trials/components/Sidebar";
@@ -27,6 +28,7 @@ import LazySocketInitializer from "@/lib/redux/socket-io/connection/LazySocketIn
 import LazyMessagingIsland from "@/features/ssr-trials/components/LazyMessagingIsland";
 import VoicePadIsland from "@/features/ssr-trials/components/VoicePadIsland";
 import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
+import { DynamicWindowTray } from "@/app/(authenticated)/dynamic-imports/DynamicWindowTray";
 
 const emptyGlobalCache = getEmptyGlobalCache();
 
@@ -75,7 +77,7 @@ export default async function SSRLayout({
     if (!sessionData.preferencesExist) {
       await supabase.from("user_preferences").insert({
         user_id: userData.id,
-        preferences: defaultUserPreferences,
+        preferences: defaultUserPreferences as unknown as Json,
       });
       userPreferences = initializeUserPreferencesState(
         defaultUserPreferences,
@@ -148,6 +150,8 @@ export default async function SSRLayout({
       <DebugIndicatorManager />
       <CanvasSideSheet />
       <LazyMessagingIsland />
+      {/* Window manager tray — must be outside shell-root to avoid transform stacking context */}
+      <DynamicWindowTray />
     </Providers>
   );
 }
