@@ -112,7 +112,7 @@ const makeMobileCardStyle = (
   typography: {
     fontSizeLtr: textSizeClass,
     fontSizeRtl: textSizeClass,
-    leading: centered ? "leading-relaxed" : "leading-snug",
+    leading: centered ? "leading-normal" : "leading-snug",
     tracking: "tracking-normal",
   },
   colors: {
@@ -181,58 +181,60 @@ const CardSlide: React.FC<CardSlideProps> = ({
   const isMultiLine =
     card.back != null && (card.back.includes("\n") || card.back.length > 120);
 
-  // Front: generous sizing — use the full card area, only shrink for very long text.
-  // Content scrolls if it overflows, so prefer readability over fitting everything.
+  // Front: fullscreen mobile — the card is the entire viewport so text should be
+  // large and fill the space. The card scrolls, so prefer huge readable text.
+  // A ~90-char question at text-4xl wraps to ~4 lines and fills the screen nicely.
   const getFrontTextSize = (text: string) => {
     const l = text.length;
-    if (l < 20) return "text-5xl";
-    if (l < 40) return "text-4xl";
-    if (l < 80) return "text-3xl";
-    if (l < 150) return "text-2xl";
-    if (l < 300) return "text-xl";
-    if (l < 500) return "text-lg";
-    return "text-base";
+    if (l < 30) return "text-6xl";
+    if (l < 60) return "text-5xl";
+    if (l < 120) return "text-4xl";
+    if (l < 200) return "text-3xl";
+    if (l < 350) return "text-2xl";
+    if (l < 600) return "text-xl";
+    return "text-lg";
   };
 
-  // Back multiline: generous sizing — the card scrolls, so keep text large and readable.
+  // Back multiline: keep text large — card scrolls for overflow.
   const getBackMultilineTextSize = (text: string) => {
     const lines = countLines(text);
     const l = text.length;
 
     if (lines <= 2) {
-      if (l < 80) return "text-4xl";
-      if (l < 150) return "text-3xl";
-      if (l < 250) return "text-2xl";
-      return "text-xl";
+      if (l < 100) return "text-5xl";
+      if (l < 200) return "text-4xl";
+      if (l < 350) return "text-3xl";
+      return "text-2xl";
     }
     if (lines <= 4) {
-      if (l < 150) return "text-3xl";
-      if (l < 280) return "text-2xl";
-      if (l < 450) return "text-xl";
-      return "text-lg";
+      if (l < 200) return "text-4xl";
+      if (l < 350) return "text-3xl";
+      if (l < 550) return "text-2xl";
+      return "text-xl";
     }
     if (lines <= 7) {
-      if (l < 350) return "text-xl";
-      if (l < 600) return "text-lg";
-      return "text-base";
+      if (l < 400) return "text-2xl";
+      if (l < 700) return "text-xl";
+      return "text-lg";
     }
     if (lines <= 12) {
-      if (l < 600) return "text-lg";
-      return "text-base";
+      if (l < 700) return "text-xl";
+      return "text-lg";
     }
-    // 13+ lines — still keep base size, card will scroll
-    return "text-base";
+    // 13+ lines — still keep readable, card will scroll
+    return "text-lg";
   };
 
   // Back single-line (long paragraph, no newlines).
   const getBackSingleTextSize = (text: string) => {
     const l = text.length;
-    if (l < 50) return "text-4xl";
-    if (l < 100) return "text-3xl";
-    if (l < 200) return "text-2xl";
-    if (l < 350) return "text-xl";
-    if (l < 550) return "text-lg";
-    return "text-base";
+    if (l < 30) return "text-6xl";
+    if (l < 60) return "text-5xl";
+    if (l < 120) return "text-4xl";
+    if (l < 200) return "text-3xl";
+    if (l < 350) return "text-2xl";
+    if (l < 600) return "text-xl";
+    return "text-lg";
   };
 
   // Short lists (≤4 lines) should be vertically centered, not top-aligned.
@@ -279,7 +281,7 @@ const CardSlide: React.FC<CardSlideProps> = ({
           style={{ backfaceVisibility: "hidden" }}
         >
           <div
-            className="w-full h-full overflow-y-auto scrollbar-none p-3"
+            className="w-full h-full overflow-y-auto scrollbar-none px-6 py-10"
             style={{
               opacity: textVisible ? 1 : 0,
               transition: `opacity ${TEXT_FADE_OUT_MS}ms ease`,
@@ -313,7 +315,7 @@ const CardSlide: React.FC<CardSlideProps> = ({
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
           <div
-            className="w-full h-full overflow-y-auto scrollbar-none p-3"
+            className="w-full h-full overflow-y-auto scrollbar-none px-6 py-10"
             style={{
               opacity: textVisible ? 1 : 0,
               transition: `opacity ${TEXT_FADE_OUT_MS}ms ease`,
