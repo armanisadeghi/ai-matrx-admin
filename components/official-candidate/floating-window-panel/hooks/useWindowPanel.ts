@@ -7,7 +7,6 @@
  * Handles:
  *  - Registration / cleanup on mount/unmount
  *  - Drag-to-move (header mousedown → document mousemove/mouseup)
- *  - Drag-while-minimized (chip header mousedown — same mechanism)
  *  - Resize (edge/corner handles → document mousemove/mouseup)
  *  - Window state transitions (windowed / maximized / minimized)
  *  - Focus-on-click (brings panel to top of z stack)
@@ -25,7 +24,6 @@ import {
   maximizeWindow,
   minimizeWindow,
   updateWindowRect,
-  updateMinimizedPos,
   updateWindowTitle,
   selectWindow,
   type WindowRect,
@@ -53,7 +51,7 @@ export type ResizeEdge =
 export interface UseWindowPanelOptions {
   /** Stable, unique id. If omitted a React useId-based id is used. */
   id?: string;
-  /** Title shown in the header and chip. */
+  /** Title shown in the header and tray chip. */
   title?: string;
   /** Initial position and size. Defaults to centred with 320×400. */
   initialRect?: Partial<WindowRect>;
@@ -70,14 +68,10 @@ export interface UseWindowPanelReturn {
   windowState: "windowed" | "maximized" | "minimized";
   /** Current windowed rect from Redux. */
   rect: WindowRect;
-  /** Current minimized chip position from Redux. */
-  minimizedPos: { x: number; y: number };
   /** z-index from Redux. */
   zIndex: number;
-  /** Mousedown handler for the drag handle (header) in windowed state. */
+  /** Mousedown handler for the drag handle (header). */
   onDragStart: (e: React.MouseEvent) => void;
-  /** Mousedown handler for dragging the chip in minimized state. */
-  onChipDragStart: (e: React.MouseEvent) => void;
   /** Mousedown handler factory for resize handles. */
   onResizeStart: (edge: ResizeEdge) => (e: React.MouseEvent) => void;
   /** Bring this window to the top. */
@@ -86,7 +80,7 @@ export interface UseWindowPanelReturn {
   onRestore: () => void;
   /** Transition to maximized state. */
   onMaximize: () => void;
-  /** Transition to minimized (chip) state. */
+  /** Transition to minimized (tray) state. */
   onMinimize: () => void;
   /** Toggle maximized ↔ windowed. */
   onToggleMaximize: () => void;
@@ -132,7 +126,7 @@ export function useWindowPanel(
     }
   }, [id, opts.title, dispatch]);
 
-  // ── Drag-to-move (windowed) ───────────────────────────────────────────────
+  // ── Drag-to-move ─────────────────────────────────────────────────────────────
   const dragStart = useRef<{
     mx: number;
     my: number;
@@ -160,45 +154,6 @@ export function useWindowPanel(
       };
       const onUp = () => {
         dragStart.current = null;
-        document.removeEventListener("mousemove", onMove);
-        document.removeEventListener("mouseup", onUp);
-      };
-      document.addEventListener("mousemove", onMove);
-      document.addEventListener("mouseup", onUp);
-    },
-    [dispatch, id, entry],
-  );
-
-  // ── Drag chip (minimized) ─────────────────────────────────────────────────
-  const chipDragStart = useRef<{
-    mx: number;
-    my: number;
-    cx: number;
-    cy: number;
-  } | null>(null);
-
-  const onChipDragStart = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      dispatch(focusWindow(id));
-      if (!entry || entry.state !== "minimized") return;
-      chipDragStart.current = {
-        mx: e.clientX,
-        my: e.clientY,
-        cx: entry.minimized.x,
-        cy: entry.minimized.y,
-      };
-
-      const onMove = (ev: MouseEvent) => {
-        if (!chipDragStart.current) return;
-        const nx =
-          chipDragStart.current.cx + (ev.clientX - chipDragStart.current.mx);
-        const ny =
-          chipDragStart.current.cy + (ev.clientY - chipDragStart.current.my);
-        dispatch(updateMinimizedPos({ id, x: nx, y: ny }));
-      };
-      const onUp = () => {
-        chipDragStart.current = null;
         document.removeEventListener("mousemove", onMove);
         document.removeEventListener("mouseup", onUp);
       };
@@ -278,7 +233,7 @@ export function useWindowPanel(
     else dispatch(maximizeWindow(id));
   }, [dispatch, id, entry]);
 
-  // ── Stable fallback values before first render ─────────────────────────────
+  // ── Stable fallback rect before first render ───────────────────────────────
   const rect: WindowRect = entry?.windowed ?? {
     x: 0,
     y: 0,
@@ -286,16 +241,12 @@ export function useWindowPanel(
     height: opts.initialRect?.height ?? DEFAULT_HEIGHT,
   };
 
-  const minimizedPos = entry?.minimized ?? { x: 0, y: 0 };
-
   return {
     id,
     windowState: entry?.state ?? "windowed",
     rect,
-    minimizedPos,
     zIndex: entry?.zIndex ?? 1000,
     onDragStart,
-    onChipDragStart,
     onResizeStart,
     onFocus,
     onRestore,

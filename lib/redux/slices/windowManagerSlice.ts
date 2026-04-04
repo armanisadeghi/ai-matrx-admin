@@ -17,11 +17,9 @@ export interface WindowEntry {
   state: WindowState;
   /** Last windowed size/position — restored when coming back from max/min */
   windowed: WindowRect;
-  /** Position of the minimized chip — defaults to bottom-right, draggable */
-  minimized: { x: number; y: number };
   /** z-index order — higher = on top */
   zIndex: number;
-  /** Order in the minimized tray (0-based, kept for compat but not used for layout) */
+  /** Order in the minimized tray (0-based) */
   traySlot: number | null;
 }
 
@@ -36,20 +34,7 @@ export interface WindowManagerState {
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
 const BASE_Z = 1000;
-const TRAY_SLOT_WIDTH = 210; // px, matches chip width
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-/** Default bottom-right position for a chip, staggered by slot index */
-function defaultMinimizedPos(slot: number): { x: number; y: number } {
-  const chipW = TRAY_SLOT_WIDTH;
-  const chipGap = 8;
-  const bottom = 12;
-  const right = 12 + slot * (chipW + chipGap);
-  // We don't have window dimensions here, so use a safe large value offset
-  // The component clamps on first render if needed.
-  return { x: -(right + chipW), y: -(bottom + 64) };
-}
+const TRAY_SLOT_WIDTH = 200; // px, matches tray chip width
 
 // ─── Initial state ────────────────────────────────────────────────────────────
 
@@ -81,7 +66,6 @@ const windowManagerSlice = createSlice({
         title: title ?? id,
         state: "windowed",
         windowed: initial,
-        minimized: { x: 0, y: 0 }, // will be set properly on first minimize
         zIndex: state.nextZIndex++,
         traySlot: null,
       };
@@ -100,8 +84,10 @@ const windowManagerSlice = createSlice({
     unregisterWindow(state, action: PayloadAction<string>) {
       const win = state.windows[action.payload];
       if (!win) return;
+      // Free tray slot
       if (win.traySlot !== null) {
         state.trayCount = Math.max(0, state.trayCount - 1);
+        // Compact remaining tray slots
         Object.values(state.windows).forEach((w) => {
           if (w.traySlot !== null && w.traySlot > win.traySlot!) {
             w.traySlot -= 1;
@@ -124,6 +110,7 @@ const windowManagerSlice = createSlice({
       if (!win) return;
       if (win.traySlot !== null) {
         state.trayCount = Math.max(0, state.trayCount - 1);
+        // Compact slots above this one
         Object.values(state.windows).forEach((w) => {
           if (w.traySlot !== null && w.traySlot > win.traySlot!) {
             w.traySlot -= 1;
@@ -152,13 +139,11 @@ const windowManagerSlice = createSlice({
       win.zIndex = state.nextZIndex++;
     },
 
-    /** Switch to minimized state — assigns a tray slot and sets initial chip position. */
+    /** Switch to minimized state — assigns a tray slot. */
     minimizeWindow(state, action: PayloadAction<string>) {
       const win = state.windows[action.payload];
       if (!win || win.state === "minimized") return;
       win.traySlot = state.trayCount;
-      // Set default chip position (bottom-right, staggered by slot)
-      win.minimized = defaultMinimizedPos(state.trayCount);
       state.trayCount += 1;
       win.state = "minimized";
     },
@@ -173,27 +158,26 @@ const windowManagerSlice = createSlice({
       win.windowed = { ...win.windowed, ...action.payload.rect };
     },
 
-    /** Update the minimized chip position (drag while minimized). */
-    updateMinimizedPos(
-      state,
-      action: PayloadAction<{ id: string; x: number; y: number }>,
-    ) {
-      const win = state.windows[action.payload.id];
-      if (!win) return;
-      win.minimized = { x: action.payload.x, y: action.payload.y };
-    },
-
-    /** Move a minimized chip to a new tray slot (kept for compat). */
+    /** Move a minimized chip to a new tray slot (drag-within-tray). */
     moveTraySlot(state, action: PayloadAction<{ id: string; toSlot: number }>) {
       const { id, toSlot } = action.payload;
       const win = state.windows[id];
       if (!win || win.traySlot === null) return;
       const fromSlot = win.traySlot;
+      // Shift other windows
       Object.values(state.windows).forEach((w) => {
         if (w.id === id || w.traySlot === null) return;
-        if (fromSlot < toSlot && w.traySlot > fromSlot && w.traySlot <= toSlot) {
+        if (
+          fromSlot < toSlot &&
+          w.traySlot > fromSlot &&
+          w.traySlot <= toSlot
+        ) {
           w.traySlot -= 1;
-        } else if (fromSlot > toSlot && w.traySlot >= toSlot && w.traySlot < fromSlot) {
+        } else if (
+          fromSlot > toSlot &&
+          w.traySlot >= toSlot &&
+          w.traySlot < fromSlot
+        ) {
           w.traySlot += 1;
         }
       });
@@ -210,7 +194,6 @@ export const {
   maximizeWindow,
   minimizeWindow,
   updateWindowRect,
-  updateMinimizedPos,
   updateWindowTitle,
   moveTraySlot,
 } = windowManagerSlice.actions;
