@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useRef,
   useMemo,
+  useLayoutEffect,
 } from "react";
 import { useSwipeable } from "react-swipeable";
 import {
@@ -103,15 +104,13 @@ const centeredParagraph = ({ node, children, ...props }: any) => (
 );
 
 // Shared style config factory for mobile flashcard faces.
-// We zero out all wrapper margins/padding so the card backgrounds
-// control the space, and we force white text so it reads on dark gradients.
+// Font size is applied via inline style (not Tailwind class) so dynamic sizing works.
 const makeMobileCardStyle = (
-  textSizeClass: string,
   centered: boolean,
 ): MarkdownStyleConfig => ({
   typography: {
-    fontSizeLtr: textSizeClass,
-    fontSizeRtl: textSizeClass,
+    fontSizeLtr: "",
+    fontSizeRtl: "",
     leading: centered ? "leading-normal" : "leading-snug",
     tracking: "tracking-normal",
   },
@@ -160,13 +159,91 @@ const makeMobileCardStyle = (
   wrapperClassName: cn(
     "text-white font-medium w-full",
     centered ? "text-center" : "text-left",
-    textSizeClass,
   ),
 });
 
 // Count meaningful lines (non-empty after trimming) in a back-card string.
 const countLines = (text: string): number =>
   text.split("\n").filter((l) => l.trim().length > 0).length;
+
+// ─────────────────────────────────────────────
+// FitTextFace — renders markdown content and auto-sizes font to fill container
+// ─────────────────────────────────────────────
+const MAX_FONT_PX = 72;
+const MIN_FONT_PX = 14;
+
+interface FitTextFaceProps {
+  content: string;
+  centered: boolean;
+  isStreamActive?: boolean;
+  componentOverrides?: Record<string, React.ComponentType<any>>;
+}
+
+const FitTextFace: React.FC<FitTextFaceProps> = ({
+  content,
+  centered,
+  isStreamActive = false,
+  componentOverrides,
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const [fontSize, setFontSize] = useState(MAX_FONT_PX);
+
+  const styleConfig = useMemo(() => makeMobileCardStyle(centered), [centered]);
+
+  // After render, measure whether text overflows the container.
+  // Binary-search from MAX down to MIN to find the largest size that fits.
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    const text = textRef.current;
+    if (!container || !text) return;
+
+    const containerH = container.clientHeight;
+    if (containerH === 0) return;
+
+    let lo = MIN_FONT_PX;
+    let hi = MAX_FONT_PX;
+    let best = MIN_FONT_PX;
+
+    while (lo <= hi) {
+      const mid = Math.floor((lo + hi) / 2);
+      text.style.fontSize = `${mid}px`;
+      // Force layout recalc
+      const textH = text.scrollHeight;
+
+      if (textH <= containerH) {
+        best = mid;
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
+      }
+    }
+
+    text.style.fontSize = `${best}px`;
+    setFontSize(best);
+  }, [content]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="w-full h-full flex items-center justify-center"
+    >
+      <div
+        ref={textRef}
+        className="w-full"
+        style={{ fontSize: `${fontSize}px` }}
+      >
+        <ConfigurableMarkdownContent
+          content={content}
+          isStreamActive={isStreamActive}
+          showCopyButton={false}
+          styleConfig={styleConfig}
+          componentOverrides={componentOverrides}
+        />
+      </div>
+    </div>
+  );
+};
 
 const CardSlide: React.FC<CardSlideProps> = ({
   card,
@@ -181,87 +258,12 @@ const CardSlide: React.FC<CardSlideProps> = ({
   const isMultiLine =
     card.back != null && (card.back.includes("\n") || card.back.length > 120);
 
-  // Front: fullscreen mobile — the card is the entire viewport so text should be
-  // large and fill the space. The card scrolls, so prefer huge readable text.
-  // A ~90-char question at text-4xl wraps to ~4 lines and fills the screen nicely.
-  const getFrontTextSize = (text: string) => {
-    const l = text.length;
-    if (l < 30) return "text-6xl";
-    if (l < 60) return "text-5xl";
-    if (l < 120) return "text-4xl";
-    if (l < 200) return "text-3xl";
-    if (l < 350) return "text-2xl";
-    if (l < 600) return "text-xl";
-    return "text-lg";
-  };
-
-  // Back multiline: keep text large — card scrolls for overflow.
-  const getBackMultilineTextSize = (text: string) => {
-    const lines = countLines(text);
-    const l = text.length;
-
-    if (lines <= 2) {
-      if (l < 100) return "text-5xl";
-      if (l < 200) return "text-4xl";
-      if (l < 350) return "text-3xl";
-      return "text-2xl";
-    }
-    if (lines <= 4) {
-      if (l < 200) return "text-4xl";
-      if (l < 350) return "text-3xl";
-      if (l < 550) return "text-2xl";
-      return "text-xl";
-    }
-    if (lines <= 7) {
-      if (l < 400) return "text-2xl";
-      if (l < 700) return "text-xl";
-      return "text-lg";
-    }
-    if (lines <= 12) {
-      if (l < 700) return "text-xl";
-      return "text-lg";
-    }
-    // 13+ lines — still keep readable, card will scroll
-    return "text-lg";
-  };
-
-  // Back single-line (long paragraph, no newlines).
-  const getBackSingleTextSize = (text: string) => {
-    const l = text.length;
-    if (l < 30) return "text-6xl";
-    if (l < 60) return "text-5xl";
-    if (l < 120) return "text-4xl";
-    if (l < 200) return "text-3xl";
-    if (l < 350) return "text-2xl";
-    if (l < 600) return "text-xl";
-    return "text-lg";
-  };
+  const backContent = card.back === null ? "_Loading…_" : card.back;
 
   // Short lists (≤4 lines) should be vertically centered, not top-aligned.
   const backLineCount = card.back ? countLines(card.back) : 0;
   const isShortList = isMultiLine && backLineCount <= 4;
-
-  const frontStyle = useMemo(
-    () => makeMobileCardStyle(getFrontTextSize(card.front ?? ""), true),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [card.front],
-  );
-  const backStyle = useMemo(
-    () => {
-      const sizeClass = isMultiLine
-        ? getBackMultilineTextSize(card.back ?? "")
-        : getBackSingleTextSize(card.back ?? "");
-      // Short lists center like single-line; long lists left-align
-      return makeMobileCardStyle(sizeClass, !isMultiLine || isShortList);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [card.back, isMultiLine, isShortList],
-  );
-
-  const backContent = card.back === null ? "_Loading…_" : card.back;
-
-  // Vertical alignment: center everything except long multiline lists
-  const backNeedsTopAlign = isMultiLine && !isShortList;
+  const backCentered = !isMultiLine || isShortList;
 
   return (
     <div
@@ -281,23 +283,17 @@ const CardSlide: React.FC<CardSlideProps> = ({
           style={{ backfaceVisibility: "hidden" }}
         >
           <div
-            className="w-full h-full overflow-y-auto scrollbar-none px-6 py-10"
+            className="w-full h-full px-6 py-10"
             style={{
               opacity: textVisible ? 1 : 0,
               transition: `opacity ${TEXT_FADE_OUT_MS}ms ease`,
             }}
           >
-            <div className="min-h-full flex items-center justify-center">
-              <div className="w-full">
-                <ConfigurableMarkdownContent
-                  content={card.front ?? ""}
-                  isStreamActive={false}
-                  showCopyButton={false}
-                  styleConfig={frontStyle}
-                  componentOverrides={{ p: centeredParagraph }}
-                />
-              </div>
-            </div>
+            <FitTextFace
+              content={card.front ?? ""}
+              centered={true}
+              componentOverrides={{ p: centeredParagraph }}
+            />
           </div>
           {showHints && (
             <TapZoneHints
@@ -315,30 +311,18 @@ const CardSlide: React.FC<CardSlideProps> = ({
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
           <div
-            className="w-full h-full overflow-y-auto scrollbar-none px-6 py-10"
+            className="w-full h-full px-6 py-10"
             style={{
               opacity: textVisible ? 1 : 0,
               transition: `opacity ${TEXT_FADE_OUT_MS}ms ease`,
             }}
           >
-            <div className={cn(
-              "w-full",
-              backNeedsTopAlign
-                ? "pt-2 pb-2"
-                : "min-h-full flex items-center justify-center",
-            )}>
-              <div className="w-full">
-                <ConfigurableMarkdownContent
-                  content={backContent}
-                  isStreamActive={false}
-                  showCopyButton={false}
-                  styleConfig={backStyle}
-                  componentOverrides={
-                    backNeedsTopAlign ? undefined : { p: centeredParagraph }
-                  }
-                />
-              </div>
-            </div>
+            <FitTextFace
+              content={backContent}
+              centered={backCentered}
+              isStreamActive={card.back === null}
+              componentOverrides={backCentered ? { p: centeredParagraph } : undefined}
+            />
           </div>
           {showHints && (
             <TapZoneHints
