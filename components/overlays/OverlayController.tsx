@@ -213,8 +213,11 @@ const ContentHistoryViewer = dynamic(
   { ssr: false },
 );
 
-const FeedbackDialog = dynamic(
-  () => import("@/features/ssr-trials/components/FeedbackDialog"),
+const FeedbackWindow = dynamic(
+  () =>
+    import("@/features/feedback/FeedbackWindow").then((m) => ({
+      default: m.FeedbackWindow,
+    })),
   { ssr: false },
 );
 
@@ -623,9 +626,7 @@ export const OverlayController: React.FC = () => {
         />
       )}
 
-      {isFeedbackDialogOpen && (
-        <FeedbackDialog onClose={() => close("feedbackDialog")} />
-      )}
+      {isFeedbackDialogOpen && <FeedbackWindow />}
 
       {isUndoHistoryOpen &&
         (undoHistoryData as { agentId?: string } | null)?.agentId && (

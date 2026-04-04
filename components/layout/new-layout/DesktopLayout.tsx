@@ -20,7 +20,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { QuickActionsMenu } from "@/features/quick-actions/components/QuickActionsMenu";
-import FeedbackButton from "@/components/layout/FeedbackButton";
+import FeedbackButton from "@/features/feedback/FeedbackButton";
 import type { RootState } from "@/lib/redux/store";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import Image from "next/image";

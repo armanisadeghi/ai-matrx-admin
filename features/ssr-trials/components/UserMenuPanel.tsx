@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import dynamic from "next/dynamic";
 import {
   Settings,
   LogOut,
@@ -32,12 +31,8 @@ import {
   openOverlay,
   openUserPreferences,
   openAnnouncements,
+  openFeedbackDialog,
 } from "@/lib/redux/slices/overlaySlice";
-
-const FeedbackDialog = dynamic(() => import("./FeedbackDialog"), {
-  ssr: false,
-  loading: () => null,
-});
 
 function closeMenu() {
   const cb = document.getElementById(
@@ -99,6 +94,20 @@ export default function UserMenuPanel() {
     closeMenu();
   }, [dispatch]);
 
+  const handleOpenFeedback = useCallback(() => {
+    dispatch(openFeedbackDialog());
+    closeMenu();
+  }, [dispatch]);
+
+  const handleToggleAdminIndicator = useCallback(() => {
+    dispatch(toggleOverlay({ overlayId: "adminIndicator" }));
+    closeMenu();
+  }, [dispatch]);
+
+  const handleNotifications = useCallback(() => {
+    closeMenu();
+  }, []);
+
   const user = reduxUser?.id
     ? {
         name:
@@ -111,7 +120,6 @@ export default function UserMenuPanel() {
     : null;
 
   const [isDark, setIsDark] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
 
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains("dark"));
@@ -206,25 +214,15 @@ export default function UserMenuPanel() {
       <Link href="/messages" className={itemClass} onClick={closeMenu}>
         <MessageSquare /> Direct Messages
       </Link>
-      <button className={itemClass} onClick={closeMenu}>
+      <button className={itemClass} onClick={handleNotifications}>
         <Bell /> Notifications
       </button>
       <button className={itemClass} onClick={handleOpenAnnouncements}>
         <Megaphone /> Announcements
       </button>
-      <button
-        className={itemClass}
-        onClick={() => {
-          closeMenu();
-          setShowFeedback(true);
-        }}
-      >
+      <button className={itemClass} onClick={handleOpenFeedback}>
         <Bug /> Submit Feedback
       </button>
-
-      {showFeedback && (
-        <FeedbackDialog onClose={() => setShowFeedback(false)} />
-      )}
 
       {isAdmin && (
         <>
@@ -238,10 +236,7 @@ export default function UserMenuPanel() {
           </Link>
           <button
             className={cn(itemClass, "[&_svg]:text-amber-500")}
-            onClick={() => {
-              dispatch(toggleOverlay({ overlayId: "adminIndicator" }));
-              closeMenu();
-            }}
+            onClick={handleToggleAdminIndicator}
           >
             {isAdminIndicatorOpen ? <EyeOff /> : <Eye />}
             {isAdminIndicatorOpen ? "Hide" : "Show"} Admin Indicator

@@ -33,7 +33,7 @@ import type { RootState } from "@/lib/redux/store";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
 import { Notification } from "@/types/notification.types";
 import { useQuickActions } from "@/features/quick-actions/hooks/useQuickActions";
-import FeedbackButton from "@/components/layout/FeedbackButton";
+import FeedbackButton from "@/features/feedback/FeedbackButton";
 
 export function MobileUnifiedMenu() {
   const router = useRouter();
