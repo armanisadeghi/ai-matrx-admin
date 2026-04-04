@@ -25,13 +25,15 @@ import {
 } from "@/features/agents/redux/agent-definition/selectors";
 import { setAgentMessages } from "@/features/agents/redux/agent-definition/slice";
 import { UnifiedContextMenu } from "@/features/context-menu";
-import { HighlightedText } from "@/features/agents/components/shared/HighlightedText";
+import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
 import { MessageItemButtons } from "@/features/agents/components/messages/MessageItemButtons";
 import {
   BlockList,
   BlockType,
 } from "@/features/agents/components/messages/AddBlockButton";
 import type { AgentDefinitionMessage } from "@/features/agents/types/agent-message-types";
+import { useAgentUndoRedo } from "@/features/agents/hooks/useAgentUndoRedo";
+import { openUndoHistory } from "@/lib/redux/slices/overlaySlice";
 
 /** Extract text from a TextBlock. */
 function extractTextFromBlock(block: Record<string, unknown>): string {
@@ -76,6 +78,14 @@ export function MessageItem({
   const variableDefinitions = useAppSelector((state) =>
     selectAgentVariableDefinitions(state, agentId),
   );
+
+  const { canUndo, canRedo, undo, redo, undoHint, redoHint } = useAgentUndoRedo(
+    { agentId },
+  );
+
+  const handleViewHistory = useCallback(() => {
+    dispatch(openUndoHistory({ agentId }));
+  }, [dispatch, agentId]);
 
   const variableNames = variableDefinitions.map((v) => v.name);
   const hasVariableSupport = variableDefinitions.length > 0;
@@ -271,6 +281,46 @@ export function MessageItem({
   const handleContentInserted = useCallback(() => {
     contextMenuOpenRef.current = false;
   }, []);
+
+  const insertVariableAtCursor = useCallback(
+    (variable: string) => {
+      const textarea = textareaRef.current;
+      const cursorPos = cursorPositions[messageIndex] ?? currentText.length;
+      const insertion = `{{${variable}}}`;
+      const newText =
+        currentText.substring(0, cursorPos) +
+        insertion +
+        currentText.substring(cursorPos);
+      handleTextChange(newText);
+      const newCursorPos = cursorPos + insertion.length;
+      setCursorPositions((prev) => ({
+        ...prev,
+        [messageIndex]: newCursorPos,
+      }));
+      setTimeout(() => {
+        if (textarea) {
+          textarea.focus({ preventScroll: true });
+          textarea.setSelectionRange(newCursorPos, newCursorPos);
+          textarea.style.height = "auto";
+          textarea.style.height = `${textarea.scrollHeight}px`;
+        }
+      }, 0);
+    },
+    [currentText, cursorPositions, messageIndex, handleTextChange],
+  );
+
+  const handleBeforeVariableSelectorOpen = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      setCursorPositions((prev) => ({
+        ...prev,
+        [messageIndex]: textarea.selectionStart,
+      }));
+    }
+    if (!isEditing) {
+      setIsEditing(true);
+    }
+  }, [messageIndex, isEditing]);
 
   // Textarea handlers
   const handleTextareaRef = useCallback((el: HTMLTextAreaElement | null) => {
@@ -469,7 +519,14 @@ export function MessageItem({
             isEditing={isEditing}
             hasVariableSupport={hasVariableSupport}
             hasFullScreenEditor={!!onOpenFullScreenEditor}
-            onInsertVariable={() => setIsEditing(true)}
+            variableNames={variableNames}
+            onVariableSelected={insertVariableAtCursor}
+            onBeforeVariableSelectorOpen={handleBeforeVariableSelectorOpen}
+            templateRole={message.role}
+            templateCurrentContent={currentText}
+            onTemplateContentSelected={handleTextChange}
+            templateMessageIndex={messageIndex}
+            onSaveTemplate={() => {}}
             onOpenFullScreenEditor={
               onOpenFullScreenEditor
                 ? () => onOpenFullScreenEditor(messageIndex)
@@ -497,6 +554,14 @@ export function MessageItem({
             onTextInsertBefore={handleTextInsertBefore}
             onTextInsertAfter={handleTextInsertAfter}
             onContentInserted={handleContentInserted}
+            onUndo={undo}
+            onRedo={redo}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            undoHint={undoHint}
+            redoHint={redoHint}
+            onViewHistory={handleViewHistory}
+            hasHistory={canUndo || canRedo}
           >
             <textarea
               ref={handleTextareaRef}

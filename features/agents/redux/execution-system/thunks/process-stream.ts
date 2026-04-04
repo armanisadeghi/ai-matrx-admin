@@ -31,6 +31,9 @@ import {
   addPendingToolCall,
   appendChunk,
   appendDataPayload,
+  appendTimeline,
+  markTextStreamStart,
+  closeTextRun,
   finalizeAccumulatedText,
   finalizeClientMetrics,
   setConversationId,
@@ -101,174 +104,303 @@ export async function processStream({
   let otherEvents = 0;
   let totalPayloadBytes = 0;
 
+  let isInTextRun = false;
+  let timelineSeq = 0;
+
   const encoder = new TextEncoder();
   for await (const event of events) {
     totalEvents++;
+    const now = performance.now();
 
     if (isChunkEvent(event)) {
       chunkEvents++;
-      if (clientFirstChunkAt === null) clientFirstChunkAt = performance.now();
+      if (clientFirstChunkAt === null) clientFirstChunkAt = now;
       const text = event.data.text;
       totalPayloadBytes += encoder.encode(text).length;
-      dispatch(appendChunk({ requestId, content: text }));
-    } else if (isStatusUpdateEvent(event)) {
-      statusUpdateEvents++;
-      dispatch(setCurrentStatus({ requestId, status: event.data }));
-    } else if (isDataEvent(event)) {
-      dataEvents++;
-      const data = event.data as Record<string, unknown>;
-      if (
-        data.event === "conversation_id" &&
-        typeof data.conversation_id === "string" &&
-        !conversationId
-      ) {
-        conversationId = data.conversation_id;
-        dispatch(setConversationId({ requestId, conversationId }));
-      } else {
-        dispatch(appendDataPayload({ requestId, data }));
-      }
-    } else if (isToolEventEvent(event)) {
-      toolEvents++;
-      const toolData = event.data;
 
-      if (toolData.event === "tool_delegated") {
+      if (!isInTextRun) {
+        isInTextRun = true;
+        dispatch(markTextStreamStart({ requestId, timestamp: now }));
+        timelineSeq++;
+      }
+
+      dispatch(appendChunk({ requestId, content: text }));
+    } else {
+      if (isInTextRun) {
+        isInTextRun = false;
+      }
+
+      if (isStatusUpdateEvent(event)) {
+        statusUpdateEvents++;
+        dispatch(setCurrentStatus({ requestId, status: event.data }));
         dispatch(
-          addPendingToolCall({
+          appendTimeline({
             requestId,
-            toolCall: {
-              callId: toolData.call_id,
-              toolName: toolData.tool_name,
-              arguments: (toolData.data as Record<string, unknown>) ?? {},
+            entry: {
+              kind: "status_update",
+              seq: timelineSeq++,
+              timestamp: now,
+              data: event.data,
             },
           }),
         );
+      } else if (isDataEvent(event)) {
+        dataEvents++;
+        const data = event.data as Record<string, unknown>;
+        if (
+          data.event === "conversation_id" &&
+          typeof data.conversation_id === "string" &&
+          !conversationId
+        ) {
+          conversationId = data.conversation_id;
+          dispatch(setConversationId({ requestId, conversationId }));
+        } else {
+          dispatch(appendDataPayload({ requestId, data }));
+        }
         dispatch(
-          upsertToolLifecycle({
+          appendTimeline({
             requestId,
-            callId: toolData.call_id,
-            toolName: toolData.tool_name,
-            status: "started",
-            arguments: (toolData.data as Record<string, unknown>) ?? {},
-            isDelegated: true,
+            entry: {
+              kind: "data",
+              seq: timelineSeq++,
+              timestamp: now,
+              data,
+            },
           }),
         );
-        dispatch(setInstanceStatus({ instanceId, status: "paused" }));
-      } else {
-        const lifecycleStatus = toolData.event.replace(
-          "tool_",
-          "",
-        ) as ToolLifecycleStatus;
+      } else if (isToolEventEvent(event)) {
+        toolEvents++;
+        const toolData = event.data;
+
+        if (toolData.event === "tool_delegated") {
+          dispatch(
+            addPendingToolCall({
+              requestId,
+              toolCall: {
+                callId: toolData.call_id,
+                toolName: toolData.tool_name,
+                arguments: (toolData.data as Record<string, unknown>) ?? {},
+              },
+            }),
+          );
+          dispatch(
+            upsertToolLifecycle({
+              requestId,
+              callId: toolData.call_id,
+              toolName: toolData.tool_name,
+              status: "started",
+              arguments: (toolData.data as Record<string, unknown>) ?? {},
+              isDelegated: true,
+            }),
+          );
+          dispatch(setInstanceStatus({ instanceId, status: "paused" }));
+        } else {
+          const lifecycleStatus = toolData.event.replace(
+            "tool_",
+            "",
+          ) as ToolLifecycleStatus;
+
+          dispatch(
+            upsertToolLifecycle({
+              requestId,
+              callId: toolData.call_id,
+              toolName: toolData.tool_name,
+              status: lifecycleStatus,
+              message: toolData.message,
+              data: toolData.data as Record<string, unknown> | null,
+              ...(toolData.event === "tool_completed" && {
+                result: (toolData.data as Record<string, unknown>)?.result,
+              }),
+              ...(toolData.event === "tool_result_preview" && {
+                resultPreview: (toolData.data as Record<string, unknown>)
+                  ?.preview as string | undefined,
+              }),
+              ...(toolData.event === "tool_error" && {
+                errorType: (toolData.data as Record<string, unknown>)
+                  ?.error_type as string | undefined,
+                errorMessage: toolData.message,
+              }),
+            }),
+          );
+        }
 
         dispatch(
-          upsertToolLifecycle({
+          appendTimeline({
             requestId,
-            callId: toolData.call_id,
-            toolName: toolData.tool_name,
-            status: lifecycleStatus,
-            message: toolData.message,
-            data: toolData.data as Record<string, unknown> | null,
-            ...(toolData.event === "tool_completed" && {
-              result: (toolData.data as Record<string, unknown>)?.result,
-            }),
-            ...(toolData.event === "tool_result_preview" && {
-              resultPreview: (toolData.data as Record<string, unknown>)
-                ?.preview as string | undefined,
-            }),
-            ...(toolData.event === "tool_error" && {
-              errorType: (toolData.data as Record<string, unknown>)
-                ?.error_type as string | undefined,
-              errorMessage: toolData.message,
-            }),
+            entry: {
+              kind: "tool_event",
+              seq: timelineSeq++,
+              timestamp: now,
+              subEvent: toolData.event,
+              callId: toolData.call_id,
+              toolName: toolData.tool_name,
+              data: (toolData.data as Record<string, unknown>) ?? null,
+            },
           }),
         );
-      }
-    } else if (isContentBlockEvent(event)) {
-      contentBlockEvents++;
-      dispatch(
-        upsertContentBlock({
-          requestId,
-          block: event.data,
-        }),
-      );
-    } else if (isCompletionEvent(event)) {
-      otherEvents++;
-      const d = event.data as Record<string, unknown>;
+      } else if (isContentBlockEvent(event)) {
+        contentBlockEvents++;
+        dispatch(
+          upsertContentBlock({
+            requestId,
+            block: event.data,
+          }),
+        );
+        dispatch(
+          appendTimeline({
+            requestId,
+            entry: {
+              kind: "content_block",
+              seq: timelineSeq++,
+              timestamp: now,
+              blockId: event.data.blockId,
+              blockType: event.data.type,
+              blockStatus: event.data.status,
+            },
+          }),
+        );
+      } else if (isCompletionEvent(event)) {
+        otherEvents++;
+        const d = event.data as Record<string, unknown>;
 
-      completionStats = {
-        status: (d.status as string) ?? "complete",
-        iterations: (d.iterations as number) ?? 1,
-        finish_reason: (d.finish_reason as string) ?? "stop",
-        total_usage: (d.total_usage as CompletionStats["total_usage"]) ?? {
-          by_model: {},
-          total: {
-            input_tokens: 0,
-            output_tokens: 0,
-            cached_input_tokens: 0,
-            total_tokens: 0,
-            total_requests: 0,
-            unique_models: 0,
-            total_cost: 0,
+        completionStats = {
+          status: (d.status as string) ?? "complete",
+          iterations: (d.iterations as number) ?? 1,
+          finish_reason: (d.finish_reason as string) ?? "stop",
+          total_usage: (d.total_usage as CompletionStats["total_usage"]) ?? {
+            by_model: {},
+            total: {
+              input_tokens: 0,
+              output_tokens: 0,
+              cached_input_tokens: 0,
+              total_tokens: 0,
+              total_requests: 0,
+              unique_models: 0,
+              total_cost: 0,
+            },
           },
-        },
-        timing_stats: (d.timing_stats as CompletionStats["timing_stats"]) ?? {
-          total_duration: 0,
-          api_duration: 0,
-          tool_duration: 0,
-          iterations: 1,
-          avg_iteration_duration: 0,
-        },
-        tool_call_stats:
-          (d.tool_call_stats as CompletionStats["tool_call_stats"]) ?? {
-            total_tool_calls: 0,
-            iterations_with_tools: 0,
-            by_tool: {},
-          },
-        metadata: d.metadata ?? null,
-      };
-
-      const totalUsage = completionStats.total_usage?.total;
-      if (totalUsage) {
-        tokenUsage = {
-          input: totalUsage.input_tokens,
-          output: totalUsage.output_tokens,
-          total: totalUsage.total_tokens,
+          timing_stats:
+            (d.timing_stats as CompletionStats["timing_stats"]) ?? {
+              total_duration: 0,
+              api_duration: 0,
+              tool_duration: 0,
+              iterations: 1,
+              avg_iteration_duration: 0,
+            },
+          tool_call_stats:
+            (d.tool_call_stats as CompletionStats["tool_call_stats"]) ?? {
+              total_tool_calls: 0,
+              iterations_with_tools: 0,
+              by_tool: {},
+            },
+          metadata: d.metadata ?? null,
         };
-      }
-      finishReason = completionStats.finish_reason;
 
-      dispatch(
-        setCompletion({
-          requestId,
-          data: event.data,
-        }),
-      );
-    } else if (isErrorEvent(event)) {
-      otherEvents++;
-      const isFatal = true;
-      dispatch(
-        setRequestStatus({
-          requestId,
-          status: "error",
-          errorMessage: event.data.user_message ?? event.data.message,
-          isFatal,
-        }),
-      );
-      dispatch(setInstanceStatus({ instanceId, status: "error" }));
-    } else if (isEndEvent(event)) {
-      otherEvents++;
-      dispatch(setRequestStatus({ requestId, status: "complete" }));
-      dispatch(setInstanceStatus({ instanceId, status: "complete" }));
-    } else if (isBrokerEvent(event)) {
-      otherEvents++;
-      dispatch(
-        appendDataPayload({
-          requestId,
-          data: { broker: event.data },
-        }),
-      );
-    } else if (isHeartbeatEvent(event)) {
-      otherEvents++;
+        const totalUsage = completionStats.total_usage?.total;
+        if (totalUsage) {
+          tokenUsage = {
+            input: totalUsage.input_tokens,
+            output: totalUsage.output_tokens,
+            total: totalUsage.total_tokens,
+          };
+        }
+        finishReason = completionStats.finish_reason;
+
+        dispatch(
+          setCompletion({
+            requestId,
+            data: event.data,
+          }),
+        );
+        dispatch(
+          appendTimeline({
+            requestId,
+            entry: {
+              kind: "completion",
+              seq: timelineSeq++,
+              timestamp: now,
+            },
+          }),
+        );
+      } else if (isErrorEvent(event)) {
+        otherEvents++;
+        const isFatal = true;
+        dispatch(
+          setRequestStatus({
+            requestId,
+            status: "error",
+            errorMessage: event.data.user_message ?? event.data.message,
+            isFatal,
+          }),
+        );
+        dispatch(setInstanceStatus({ instanceId, status: "error" }));
+        dispatch(
+          appendTimeline({
+            requestId,
+            entry: {
+              kind: "error",
+              seq: timelineSeq++,
+              timestamp: now,
+              errorType: event.data.error_type,
+              message: event.data.user_message ?? event.data.message,
+              isFatal,
+            },
+          }),
+        );
+      } else if (isEndEvent(event)) {
+        otherEvents++;
+        dispatch(setRequestStatus({ requestId, status: "complete" }));
+        dispatch(setInstanceStatus({ instanceId, status: "complete" }));
+        dispatch(
+          appendTimeline({
+            requestId,
+            entry: {
+              kind: "end",
+              seq: timelineSeq++,
+              timestamp: now,
+              reason: (event.data as Record<string, unknown>)?.reason as
+                | string
+                | undefined,
+            },
+          }),
+        );
+      } else if (isBrokerEvent(event)) {
+        otherEvents++;
+        dispatch(
+          appendDataPayload({
+            requestId,
+            data: { broker: event.data },
+          }),
+        );
+        dispatch(
+          appendTimeline({
+            requestId,
+            entry: {
+              kind: "broker",
+              seq: timelineSeq++,
+              timestamp: now,
+              brokerId: event.data.broker_id,
+            },
+          }),
+        );
+      } else if (isHeartbeatEvent(event)) {
+        otherEvents++;
+        dispatch(
+          appendTimeline({
+            requestId,
+            entry: {
+              kind: "heartbeat",
+              seq: timelineSeq++,
+              timestamp: now,
+            },
+          }),
+        );
+      }
     }
+  }
+
+  if (isInTextRun) {
+    dispatch(closeTextRun({ requestId, timestamp: performance.now() }));
   }
 
   const streamEndAt = performance.now();

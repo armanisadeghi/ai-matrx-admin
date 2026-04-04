@@ -29,3 +29,7 @@ export const selectRunningInstances = (state: RootState): ExecutionInstance[] =>
         (inst.status === "running" || inst.status === "streaming"),
     );
 
+export const selectAgentIdFromInstance =
+  (instanceId: string) =>
+  (state: RootState): string | undefined =>
+    state.executionInstances.byInstanceId[instanceId]?.agentId;

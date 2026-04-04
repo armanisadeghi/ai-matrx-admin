@@ -218,6 +218,29 @@ const instanceUIStateSlice = createSlice({
       }
     },
 
+    setStructuredInstruction(
+      state,
+      action: PayloadAction<{
+        instanceId: string;
+        changes: Record<string, unknown>;
+      }>,
+    ) {
+      const entry = state.byInstanceId[action.payload.instanceId];
+      if (entry) {
+        Object.assign(
+          entry.builderAdvancedSettings.structuredInstruction,
+          action.payload.changes,
+        );
+      }
+    },
+
+    resetStructuredInstruction(state, action: PayloadAction<string>) {
+      const entry = state.byInstanceId[action.payload];
+      if (entry) {
+        entry.builderAdvancedSettings.structuredInstruction = {};
+      }
+    },
+
     removeInstanceUIState(state, action: PayloadAction<string>) {
       delete state.byInstanceId[action.payload];
     },
@@ -253,6 +276,8 @@ export const {
   setReuseConversationId,
   setBuilderAdvancedSettings,
   resetBuilderAdvancedSettings,
+  setStructuredInstruction,
+  resetStructuredInstruction,
   removeInstanceUIState,
   setUseBlockMode,
 } = instanceUIStateSlice.actions;

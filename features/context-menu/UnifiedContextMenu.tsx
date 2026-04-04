@@ -61,6 +61,9 @@ import {
   AlertCircle,
   AlertTriangle,
   Mic,
+  Undo2,
+  Redo2,
+  History,
 } from "lucide-react";
 import { useUnifiedContextMenu } from "@/features/prompt-builtins/hooks";
 import {
@@ -143,6 +146,22 @@ interface UnifiedContextMenuProps {
   className?: string;
   /** Enable floating icon on text selection (default: true) */
   enableFloatingIcon?: boolean;
+  /** Undo callback — if provided, an Undo menu item appears in browser actions */
+  onUndo?: () => void;
+  /** Redo callback — if provided, a Redo menu item appears in browser actions */
+  onRedo?: () => void;
+  /** Whether undo is currently available (controls disabled state) */
+  canUndo?: boolean;
+  /** Whether redo is currently available (controls disabled state) */
+  canRedo?: boolean;
+  /** Shortcut hint for undo (e.g. "⌘Z" or "Ctrl+Z") */
+  undoHint?: string;
+  /** Shortcut hint for redo (e.g. "⇧⌘Z" or "Ctrl+Y") */
+  redoHint?: string;
+  /** Callback to open the full undo/redo history overlay */
+  onViewHistory?: () => void;
+  /** Whether there is any history to view (controls disabled state) */
+  hasHistory?: boolean;
 }
 
 export function UnifiedContextMenu({
@@ -164,6 +183,14 @@ export function UnifiedContextMenu({
   contextData = {},
   className,
   enableFloatingIcon = true,
+  onUndo,
+  onRedo,
+  canUndo = false,
+  canRedo = false,
+  undoHint,
+  redoHint,
+  onViewHistory,
+  hasHistory = false,
 }: UnifiedContextMenuProps) {
   // Determine which placement types to load from DB (everything except quick-action)
   const dbPlacementTypes = enabledPlacements.filter(
@@ -1156,6 +1183,41 @@ export function UnifiedContextMenu({
                 </div>
               </div>
             </div>
+          </>
+        )}
+
+        {/* Undo / Redo */}
+        {(onUndo || onRedo) && (
+          <>
+            {onUndo && (
+              <MenuItem onSelect={onUndo} disabled={!canUndo}>
+                <Undo2 className="h-4 w-4 mr-2" />
+                Undo
+                {undoHint && (
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    {undoHint}
+                  </span>
+                )}
+              </MenuItem>
+            )}
+            {onRedo && (
+              <MenuItem onSelect={onRedo} disabled={!canRedo}>
+                <Redo2 className="h-4 w-4 mr-2" />
+                Redo
+                {redoHint && (
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    {redoHint}
+                  </span>
+                )}
+              </MenuItem>
+            )}
+            {onViewHistory && (
+              <MenuItem onSelect={onViewHistory} disabled={!hasHistory}>
+                <History className="h-4 w-4 mr-2" />
+                View History
+              </MenuItem>
+            )}
+            <Separator />
           </>
         )}
 

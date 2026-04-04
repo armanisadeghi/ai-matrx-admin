@@ -22,11 +22,14 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
 import { selectAgentExecutionPayload } from "@/features/agents/redux/agent-definition/selectors";
-import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
+import {
+  createManualInstance,
+  recreateManualInstance,
+} from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
 import { AgentConversationDisplay } from "./AgentConversationDisplay";
 import { AgentRunsSidebar } from "./AgentRunsSidebar";
-import { AgentRequestStats } from "./AgentRequestStats";
+import { CreatorRunPanel } from "../run-controls/CreatorRunPanel";
 import { SmartAgentInput } from "../smart";
 import { Loader2, Bot, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -103,19 +106,15 @@ export function AgentRunPage({ agentId, agentName }: AgentRunPageProps) {
   const handleNewRun = useCallback(() => {
     if (!instanceId) return;
 
-    // Destroy current instance, start fresh
-    dispatch(destroyInstance(instanceId));
-    setInstanceId(null);
-
     const params = new URLSearchParams(searchParams.toString());
     params.delete("runId");
     router.replace(`${pathname}?${params.toString()}`);
 
-    dispatch(createManualInstance({ agentId }))
+    dispatch(recreateManualInstance(instanceId))
       .unwrap()
       .then((id) => setInstanceId(id))
       .catch((err) => console.error("Failed to create instance:", err));
-  }, [instanceId, agentId, dispatch, pathname, router, searchParams]);
+  }, [instanceId, dispatch, pathname, router, searchParams]);
 
   if (isInitializing || !instanceId) {
     return (
@@ -169,7 +168,10 @@ export function AgentRunPage({ agentId, agentName }: AgentRunPageProps) {
         </div>
 
         {/* Stats bar — appears after first completion */}
-        <AgentRequestStats instanceId={instanceId} />
+        <CreatorRunPanel
+          instanceId={instanceId}
+          onNewInstance={setInstanceId}
+        />
 
         {/* Input — SmartAgentInput includes variable panel and resource chips */}
         <div className="px-3 pb-3 pt-2 border-t border-border">
@@ -177,6 +179,7 @@ export function AgentRunPage({ agentId, agentName }: AgentRunPageProps) {
             instanceId={instanceId}
             sendButtonVariant="blue"
             showSubmitOnEnterToggle
+            onNewInstance={setInstanceId}
           />
         </div>
       </div>

@@ -137,6 +137,14 @@ export const adminCategories = [
         link: "/administration/sandbox",
         isNew: true,
       },
+      {
+        title: "Server Logs",
+        description:
+          "Live log viewer for all Coolify-managed services. Filter by level, category, and module. Split-screen JSON inspector with deep-link URLs per server.",
+        icon: <IconLogs />,
+        link: "/administration/server-logs",
+        isNew: true,
+      },
     ],
   },
   {

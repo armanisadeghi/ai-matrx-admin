@@ -4,14 +4,11 @@ import { useState } from "react";
 import { AgentBuilderLeftPanel } from "./AgentBuilderLeftPanel";
 import { AgentBuilderRightPanel } from "./AgentBuilderRightPanel";
 import { cn } from "@/lib/utils";
+import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 interface AgentBuilderMobileProps {
   agentId: string;
-  availableTools?: Array<{
-    name: string;
-    description?: string;
-    [key: string]: unknown;
-  }>;
+  availableTools?: DatabaseTool[];
 }
 
 type MobileTab = "build" | "test";

@@ -25,6 +25,7 @@ import {
   usePrintOptions,
 } from "@/features/chat/components/print/PrintOptionsDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useSearchParams } from "next/navigation";
 
 interface FlashcardsBlockProps {
   content?: string;
@@ -106,6 +107,7 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
   const [showMobilePrompt, setShowMobilePrompt] = useState(false);
   const { open: openCanvas } = useCanvas();
   const isMobile = useIsMobile();
+  const searchParams = useSearchParams();
   const stabilityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const promptedRef = useRef(false);
 
@@ -152,6 +154,16 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
     }, 1000);
     return () => { if (stabilityTimer.current) clearTimeout(stabilityTimer.current); };
   }, [isMobile, flashcards.length, isComplete]);
+
+  // Auto-enter flash mode when URL contains ?mode=flash
+  useEffect(() => {
+    if (searchParams.get("mode") === "flash" && flashcards.length > 0 && !isMobileView) {
+      setMobileStartIndex(0);
+      setIsMobileView(true);
+      // Suppress the mobile prompt since we're already entering flash mode
+      promptedRef.current = true;
+    }
+  }, [searchParams, flashcards.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle ESC key to exit fullscreen
   useEffect(() => {

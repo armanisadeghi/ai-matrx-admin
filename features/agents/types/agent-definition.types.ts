@@ -367,6 +367,23 @@ export type FieldSnapshot = {
  */
 export type LoadedFields = Set<keyof AgentDefinition>;
 
+/**
+ * A single entry in the per-agent undo/redo stack.
+ * Stores the field name and the value it held *before* the change.
+ * `timestamp` enables coalescing rapid edits into one logical entry.
+ * `byteEstimate` enables smart compression to keep memory bounded.
+ */
+export interface UndoEntry {
+  field: keyof AgentDefinition;
+  value: AgentDefinition[keyof AgentDefinition];
+  timestamp: number;
+  byteEstimate: number;
+}
+
+export const UNDO_MAX_ENTRIES = 50;
+export const UNDO_MAX_BYTES = 2 * 1024 * 1024; // 2 MB soft cap per agent
+export const UNDO_COALESCE_MS = 600;
+
 export interface AgentDefinitionRecord extends AgentDefinition {
   _dirty: boolean;
   _dirtyFields: Set<keyof AgentDefinition>;
@@ -375,6 +392,8 @@ export interface AgentDefinitionRecord extends AgentDefinition {
   _fetchStatus: AgentFetchStatus | null;
   _loading: boolean;
   _error: string | null;
+  _undoPast: UndoEntry[];
+  _undoFuture: UndoEntry[];
 }
 
 export interface AgentDefinitionSliceState {

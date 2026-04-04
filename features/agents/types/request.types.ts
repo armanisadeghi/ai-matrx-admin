@@ -169,11 +169,130 @@ export interface ActiveRequest {
   /** ONLY for unstructured data events — NOT status/tools/blocks/completion */
   dataPayloads: Array<Record<string, unknown>>;
 
+  // ── Event Timeline (first-class sequential record) ───────────
+  /**
+   * The authoritative ordered record of every meaningful event during
+   * this request's lifetime. This is NOT a debug copy — it IS the
+   * source of truth for event ordering.
+   *
+   * Chunks are coalesced: a `text_start` entry marks when text began
+   * streaming and `text_end` marks when a non-chunk event interrupted
+   * (or the stream ended). Individual chunks live in textChunks[] for
+   * O(1) append. Everything else gets its own timeline entry.
+   *
+   * This allows full reconstruction of the assistant's behavior:
+   *   thinking → tool calls → results → more thinking → text → more tools → text
+   */
+  timeline: TimelineEntry[];
+
+  /**
+   * Tracks whether we're currently inside a text-streaming run.
+   * When true, chunks are flowing into textChunks[] and the timeline
+   * has an open `text_start` that hasn't been closed by `text_end` yet.
+   */
+  isTextStreaming: boolean;
+
+  /**
+   * Running index for the current text run. When isTextStreaming flips
+   * to false, this is written into the text_end entry so selectors can
+   * reconstruct which chunks belong to which text run.
+   */
+  textRunChunkStart: number;
+
   // ── Timing ───────────────────────────────────────────────────
   startedAt: string;
   firstChunkAt: string | null;
   completedAt: string | null;
   clientMetrics: ClientMetrics | null;
+}
+
+// =============================================================================
+// Event Timeline — first-class sequential record
+// =============================================================================
+
+/**
+ * Discriminated union of all timeline entries.
+ * `seq` is the global monotonic index across all event types.
+ * `timestamp` is performance.now() for sub-millisecond ordering.
+ */
+export type TimelineEntry =
+  | TimelineTextStart
+  | TimelineTextEnd
+  | TimelineStatusUpdate
+  | TimelineToolEvent
+  | TimelineContentBlock
+  | TimelineDataEvent
+  | TimelineCompletion
+  | TimelineError
+  | TimelineEnd
+  | TimelineBroker
+  | TimelineHeartbeat;
+
+interface TimelineBase {
+  seq: number;
+  timestamp: number;
+}
+
+export interface TimelineTextStart extends TimelineBase {
+  kind: "text_start";
+  chunkStartIndex: number;
+}
+
+export interface TimelineTextEnd extends TimelineBase {
+  kind: "text_end";
+  chunkStartIndex: number;
+  chunkEndIndex: number;
+  chunkCount: number;
+}
+
+export interface TimelineStatusUpdate extends TimelineBase {
+  kind: "status_update";
+  data: StatusUpdatePayload;
+}
+
+export interface TimelineToolEvent extends TimelineBase {
+  kind: "tool_event";
+  subEvent: string;
+  callId: string;
+  toolName: string;
+  data: Record<string, unknown> | null;
+}
+
+export interface TimelineContentBlock extends TimelineBase {
+  kind: "content_block";
+  blockId: string;
+  blockType: string;
+  blockStatus: string;
+}
+
+export interface TimelineDataEvent extends TimelineBase {
+  kind: "data";
+  data: Record<string, unknown>;
+}
+
+export interface TimelineCompletion extends TimelineBase {
+  kind: "completion";
+}
+
+export interface TimelineError extends TimelineBase {
+  kind: "error";
+  errorType: string;
+  message: string;
+  isFatal: boolean;
+}
+
+export interface TimelineEnd extends TimelineBase {
+  kind: "end";
+  reason?: string;
+}
+
+export interface TimelineBroker extends TimelineBase {
+  kind: "broker";
+  brokerId: string;
+}
+
+export interface TimelineHeartbeat extends TimelineBase {
+  kind: "heartbeat";
 }
 
 // =============================================================================

@@ -12,6 +12,7 @@
 
 import { AgentType } from "./agent-definition.types";
 import { ContextObjectType, LLMParams } from "./agent-api-types";
+import type { SystemInstruction } from "./agent-api-types";
 
 // =============================================================================
 // Completion Stats — full payload from the server's completion stream event
@@ -247,6 +248,15 @@ export interface BuilderAdvancedSettings {
    * Default: false — the simple path (system message stays in messages[]).
    */
   useStructuredSystemInstruction: boolean;
+
+  /**
+   * User-provided overrides for structured system instruction fields.
+   * Only applied when `useStructuredSystemInstruction` is true.
+   * The `content` / `base_instruction` field is auto-populated from the
+   * agent's system message — the rest are additive fields the user configures
+   * via the structured instruction modal.
+   */
+  structuredInstruction: Partial<SystemInstruction>;
 }
 
 export const DEFAULT_BUILDER_ADVANCED_SETTINGS: BuilderAdvancedSettings = {
@@ -255,6 +265,7 @@ export const DEFAULT_BUILDER_ADVANCED_SETTINGS: BuilderAdvancedSettings = {
   maxIterations: 20,
   maxRetriesPerIteration: 2,
   useStructuredSystemInstruction: false,
+  structuredInstruction: {},
 };
 
 export interface InstanceUIState {

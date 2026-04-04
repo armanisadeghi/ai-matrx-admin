@@ -18,8 +18,8 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
-import { AgentVariablesPanel } from "@/features/agents/components/variables/AgentVariablesPanel";
-import { AgentVariablesManager } from "@/features/agents/components/variables/AgentVariablesManager";
+import { AgentVariablesPanel } from "@/features/agents/components/variables-management/AgentVariablesPanel";
+import { AgentVariablesManager } from "@/features/agents/components/variables-management/AgentVariablesManager";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentVariableDefinitions } from "@/features/agents/redux/agent-definition/selectors";
 

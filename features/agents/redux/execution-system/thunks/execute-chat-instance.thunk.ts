@@ -135,13 +135,12 @@ export function assembleChatRequest(
   if (agent.messages && agent.messages.length > 0) {
     for (const msg of agent.messages) {
       if (useStructured && msg.role === "system") {
-        // Extract the system message into a structured SystemInstruction object.
-        // The server's from_dict() will process the content field and assemble
-        // the full prompt using the structured builder pipeline.
         const textContent = extractSystemText(msg.content);
+        const userOverrides = advancedSettings?.structuredInstruction ?? {};
         structuredSystemInstruction = {
           content: textContent,
           include_date: true,
+          ...userOverrides,
         };
       } else {
         messages.push({
@@ -227,7 +226,8 @@ export function assembleChatRequest(
   if (custom_tools) request.custom_tools = custom_tools;
   if (client_tools) request.client_tools = client_tools;
   if (structuredSystemInstruction)
-    request.system_instruction = structuredSystemInstruction as unknown as string;
+    request.system_instruction =
+      structuredSystemInstruction as unknown as string;
 
   return request;
 }

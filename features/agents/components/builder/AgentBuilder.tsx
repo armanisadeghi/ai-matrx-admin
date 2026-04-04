@@ -25,6 +25,7 @@ import { fetchFullAgent } from "@/features/agents/redux/agent-definition/thunks"
 import { useAgentAutoSave } from "@/features/agents/hooks/useAgentAutoSave";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AgentBuilderTopBar } from "./AgentBuilderTopBar";
+import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 // Lazy-loaded only after the record is confirmed fully loaded.
 // This keeps both builders out of the initial bundle and prevents
@@ -46,11 +47,7 @@ const AgentBuilderMobile = dynamic(
 
 interface AgentBuilderProps {
   agentId: string;
-  availableTools?: Array<{
-    name: string;
-    description?: string;
-    [key: string]: unknown;
-  }>;
+  availableTools?: DatabaseTool[];
 }
 
 export function AgentBuilder({

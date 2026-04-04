@@ -29,6 +29,7 @@ import type {
   ClientMetrics,
   ToolLifecycleEntry,
   ToolLifecycleStatus,
+  TimelineEntry,
 } from "@/features/agents/types/request.types";
 import type {
   StatusUpdatePayload,
@@ -95,6 +96,9 @@ const activeRequestsSlice = createSlice({
         errorIsFatal: false,
         warnings: [],
         dataPayloads: [],
+        timeline: [],
+        isTextStreaming: false,
+        textRunChunkStart: 0,
         startedAt: now,
         firstChunkAt: null,
         completedAt: null,
@@ -376,6 +380,90 @@ const activeRequestsSlice = createSlice({
       }
     },
 
+    // ── Event Timeline ──────────────────────────────────────────
+
+    /**
+     * Append a non-chunk event to the timeline.
+     * If text is currently streaming, automatically closes the text run first.
+     */
+    appendTimeline(
+      state,
+      action: PayloadAction<{
+        requestId: string;
+        entry: TimelineEntry;
+      }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (!request) return;
+
+      if (request.isTextStreaming) {
+        const seq = request.timeline.length;
+        request.timeline.push({
+          kind: "text_end",
+          seq,
+          timestamp: action.payload.entry.timestamp,
+          chunkStartIndex: request.textRunChunkStart,
+          chunkEndIndex: request.textChunks.length,
+          chunkCount: request.textChunks.length - request.textRunChunkStart,
+        });
+        request.isTextStreaming = false;
+      }
+
+      request.timeline.push(action.payload.entry);
+    },
+
+    /**
+     * Called when the first chunk of a new text run arrives.
+     * Records a `text_start` marker. Subsequent chunks just push to textChunks.
+     */
+    markTextStreamStart(
+      state,
+      action: PayloadAction<{
+        requestId: string;
+        timestamp: number;
+      }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (!request) return;
+
+      request.isTextStreaming = true;
+      request.textRunChunkStart = request.textChunks.length;
+
+      const seq = request.timeline.length;
+      request.timeline.push({
+        kind: "text_start",
+        seq,
+        timestamp: action.payload.timestamp,
+        chunkStartIndex: request.textChunks.length,
+      });
+    },
+
+    /**
+     * Explicitly close an open text run (e.g., at stream end).
+     * No-op if text is not currently streaming.
+     */
+    closeTextRun(
+      state,
+      action: PayloadAction<{
+        requestId: string;
+        timestamp: number;
+      }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (!request || !request.isTextStreaming) return;
+
+      const seq = request.timeline.length;
+      request.timeline.push({
+        kind: "text_end",
+        seq,
+        timestamp: action.payload.timestamp,
+        chunkStartIndex: request.textRunChunkStart,
+        chunkEndIndex: request.textChunks.length,
+        chunkCount: request.textChunks.length - request.textRunChunkStart,
+      });
+      request.isTextStreaming = false;
+    },
+
     // ── Client Metrics ─────────────────────────────────────────
 
     finalizeClientMetrics(
@@ -433,6 +521,9 @@ export const {
   setCompletion,
   appendDataPayload,
   addWarning,
+  appendTimeline,
+  markTextStreamStart,
+  closeTextRun,
   finalizeClientMetrics,
   removeRequest,
 } = activeRequestsSlice.actions;

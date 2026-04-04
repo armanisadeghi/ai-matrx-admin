@@ -226,6 +226,14 @@ const ShareModal = dynamic(
   { ssr: false },
 );
 
+const UndoHistoryOverlay = dynamic(
+  () =>
+    import("@/features/agents/components/undo-history/UndoHistoryOverlay").then(
+      (m) => ({ default: m.UndoHistoryOverlay }),
+    ),
+  { ssr: false },
+);
+
 const PromptRunnerModal = dynamic(
   () =>
     import("@/features/prompts/components/results-display/PromptRunnerModal").then(
@@ -331,6 +339,12 @@ export const OverlayController: React.FC = () => {
   const authGateData = useAppSelector((s) => selectOverlayData(s, "authGate"));
   const isFeedbackDialogOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "feedbackDialog"),
+  );
+  const isUndoHistoryOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "undoHistory"),
+  );
+  const undoHistoryData = useAppSelector((s) =>
+    selectOverlayData(s, "undoHistory"),
   );
 
   // ── Instanced overlay selectors — returns all open instances ────────────
@@ -598,6 +612,15 @@ export const OverlayController: React.FC = () => {
       {isFeedbackDialogOpen && (
         <FeedbackDialog onClose={() => close("feedbackDialog")} />
       )}
+
+      {isUndoHistoryOpen &&
+        (undoHistoryData as { agentId?: string } | null)?.agentId && (
+          <UndoHistoryOverlay
+            isOpen={true}
+            onClose={() => close("undoHistory")}
+            agentId={(undoHistoryData as { agentId: string }).agentId}
+          />
+        )}
 
       {/* ── Instanced overlays — .map() renders each open instance ─────── */}
       {/* Each instance gets a stable key so React correctly reconciles them. */}

@@ -55,7 +55,10 @@ import type { AgentSortOption } from "@/features/agents/redux/agent-consumers/sl
 import type { AgentDefinitionRecord } from "@/features/agents/types/agent-definition.types";
 
 const NewAgentModal = dynamic(
-  () => import("./NewAgentModal").then((m) => ({ default: m.NewAgentModal })),
+  () =>
+    import("../TO-BE-ORGANIZED/NewAgentModal").then((m) => ({
+      default: m.NewAgentModal,
+    })),
   { ssr: false },
 );
 

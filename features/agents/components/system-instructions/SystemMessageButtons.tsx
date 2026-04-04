@@ -16,13 +16,25 @@ import {
   AddBlockTrigger,
   BlockType,
 } from "@/features/agents/components/messages/AddBlockButton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { TemplateSelector } from "@/features/content-templates/components/TemplateSelector";
+import { VariableSelector } from "@/features/agents/components/variables-management/VariableSelector";
 
 interface SystemMessageButtonsProps {
   isEditing?: boolean;
   hasVariableSupport?: boolean;
   hasFullScreenEditor?: boolean;
-  onInsertVariable?: () => void;
-  onOpenTemplates?: () => void;
+  variableNames?: string[];
+  onVariableSelected?: (name: string) => void;
+  onBeforeVariableSelectorOpen?: () => void;
+  /** Current system text — browse/save templates. */
+  templateCurrentContent?: string;
+  onTemplateContentSelected?: (content: string) => void;
+  onSaveTemplate?: (label: string, content: string, tags: string[]) => void;
   onOptimize?: () => void;
   onOpenFullScreenEditor?: () => void;
   onToggleEditing?: () => void;
@@ -34,43 +46,91 @@ export function SystemMessageButtons({
   isEditing = false,
   hasVariableSupport = false,
   hasFullScreenEditor = false,
-  onInsertVariable,
-  onOpenTemplates,
+  variableNames = [],
+  onVariableSelected,
+  onBeforeVariableSelectorOpen,
+  templateCurrentContent = "",
+  onTemplateContentSelected,
+  onSaveTemplate,
   onOptimize,
   onOpenFullScreenEditor,
   onToggleEditing,
   onClear,
   onAddBlockType,
 }: SystemMessageButtonsProps) {
+  const variableButton: IconButtonConfig = hasVariableSupport
+    ? {
+        id: "variable",
+        icon: Braces,
+        tooltip: "Insert Variable",
+        mobileLabel: "Insert Variable",
+        hidden: false,
+        render: () => (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <VariableSelector
+                  variables={variableNames}
+                  onVariableSelected={(v) => onVariableSelected?.(v)}
+                  onBeforeOpen={onBeforeVariableSelectorOpen}
+                />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="z-[9999]">
+              Insert Variable
+            </TooltipContent>
+          </Tooltip>
+        ),
+      }
+    : {
+        id: "variable",
+        icon: Braces,
+        tooltip: "Insert Variable",
+        mobileLabel: "Insert Variable",
+        hidden: true,
+      };
+
   const buttons: IconButtonConfig[] = [
-    {
-      id: "variable",
-      icon: Braces,
-      tooltip: "Insert Variable",
-      mobileLabel: "Insert Variable",
-      hidden: !hasVariableSupport,
-      onClick: (e) => {
-        e?.stopPropagation();
-        onInsertVariable?.();
-      },
-      onMouseDown: (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      },
-    },
+    variableButton,
     {
       id: "template",
       icon: FileText,
       tooltip: "Templates",
       mobileLabel: "Templates",
-      onClick: (e) => {
-        e?.stopPropagation();
-        onOpenTemplates?.();
-      },
-      onMouseDown: (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      },
+      render: () => (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              onMouseDown={(e) => {
+                e.stopPropagation();
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <TemplateSelector
+                role="system"
+                currentContent={templateCurrentContent}
+                onTemplateSelected={(content) =>
+                  onTemplateContentSelected?.(content)
+                }
+                onSaveTemplate={onSaveTemplate ?? (() => {})}
+                messageIndex={-1}
+              />
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="z-[9999]">
+            Templates
+          </TooltipContent>
+        </Tooltip>
+      ),
     },
     {
       id: "optimize",
