@@ -234,6 +234,14 @@ const UndoHistoryOverlay = dynamic(
   { ssr: false },
 );
 
+const StreamDebugOverlay = dynamic(
+  () =>
+    import("@/features/agents/components/debug/StreamDebugOverlay").then(
+      (m) => ({ default: m.StreamDebugOverlay }),
+    ),
+  { ssr: false },
+);
+
 const PromptRunnerModal = dynamic(
   () =>
     import("@/features/prompts/components/results-display/PromptRunnerModal").then(
@@ -345,6 +353,12 @@ export const OverlayController: React.FC = () => {
   );
   const undoHistoryData = useAppSelector((s) =>
     selectOverlayData(s, "undoHistory"),
+  );
+  const isStreamDebugOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "streamDebug"),
+  );
+  const streamDebugData = useAppSelector((s) =>
+    selectOverlayData(s, "streamDebug"),
   );
 
   // ── Instanced overlay selectors — returns all open instances ────────────
@@ -619,6 +633,15 @@ export const OverlayController: React.FC = () => {
             isOpen={true}
             onClose={() => close("undoHistory")}
             agentId={(undoHistoryData as { agentId: string }).agentId}
+          />
+        )}
+
+      {isStreamDebugOpen &&
+        (streamDebugData as { instanceId?: string } | null)?.instanceId && (
+          <StreamDebugOverlay
+            isOpen={true}
+            onClose={() => close("streamDebug")}
+            instanceId={(streamDebugData as { instanceId: string }).instanceId}
           />
         )}
 

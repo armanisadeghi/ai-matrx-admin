@@ -3,42 +3,30 @@ import { Card } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import type { Metadata } from "next";
 import { serverToolsService } from "@/utils/supabase/server-tools-service";
-import { AgentBuilder } from "@/features/agents/components/builder/AgentBuilder";
+import { AgentPageProvider } from "@/features/agents/components/shared/AgentPageContext";
+import { AgentSharedHeader } from "@/features/agents/components/shared/AgentSharedHeader";
+import PageHeader from "@/features/ssr-trials/components/PageHeader";
 import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
-// Cache AI models for 12 hours
 export const revalidate = 43200;
 
-export async function generateMetadata({
+export default async function AgentIdLayout({
   params,
+  children,
 }: {
   params: Promise<{ id: string }>;
-}): Promise<Metadata> {
-  const { id } = await params;
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("agents")
-    .select("name, description")
-    .eq("id", id)
-    .single();
-  return {
-    title: data?.name ? `${data.name} — Agent Builder` : "Agent Builder",
-    description: data?.description ?? "Build and configure your AI agent.",
-  };
-}
-
-export default async function EditAgentPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
+  children: React.ReactNode;
 }) {
   const { id } = await params;
   const supabase = await createClient();
 
   const [agentResult, availableTools] = await Promise.all([
-    supabase.from("agents").select("id, name").eq("id", id).single(),
+    supabase
+      .from("agents")
+      .select("id, name, description")
+      .eq("id", id)
+      .single(),
     serverToolsService.fetchTools(),
   ]);
 
@@ -59,7 +47,7 @@ export default async function EditAgentPage({
                 it.
               </p>
             </div>
-            <Link href="/ai/agents">
+            <Link href="/ssr/agents">
               <Button>Back to Agents</Button>
             </Link>
           </div>
@@ -69,11 +57,20 @@ export default async function EditAgentPage({
   }
 
   return (
-    <div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden">
-      <AgentBuilder
-        agentId={id}
-        availableTools={availableTools as DatabaseTool[]}
-      />
-    </div>
+    <AgentPageProvider
+      agentId={id}
+      agentName={data.name ?? "Agent"}
+      availableTools={availableTools as unknown as DatabaseTool[]}
+    >
+      <PageHeader>
+        <AgentSharedHeader />
+      </PageHeader>
+      <div
+        className="h-full flex flex-col overflow-hidden"
+        style={{ paddingTop: "var(--shell-header-h)" }}
+      >
+        {children}
+      </div>
+    </AgentPageProvider>
   );
 }

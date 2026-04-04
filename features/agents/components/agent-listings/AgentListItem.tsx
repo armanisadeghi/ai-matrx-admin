@@ -71,7 +71,7 @@ export function AgentListItem({
 
   const handleItemClick = (e: React.MouseEvent) => {
     if (e.metaKey || e.ctrlKey) {
-      window.open(`${basePath}/run/${id}`, "_blank");
+      window.open(`${basePath}/${id}/run`, "_blank");
       return;
     }
     const timeSinceClose = Date.now() - lastModalCloseTime;
@@ -88,13 +88,13 @@ export function AgentListItem({
   const handleRun = (e?: React.MouseEvent) => {
     if (e && (e.metaKey || e.ctrlKey)) return;
     e?.stopPropagation();
-    if (onNavigate && !isDisabled) onNavigate(id, `${basePath}/run/${id}`);
+    if (onNavigate && !isDisabled) onNavigate(id, `${basePath}/${id}/run`);
   };
 
   const handleEdit = (e?: React.MouseEvent) => {
     if (e && (e.metaKey || e.ctrlKey)) return;
     e?.stopPropagation();
-    if (onNavigate && !isDisabled) onNavigate(id, `${basePath}/edit/${id}`);
+    if (onNavigate && !isDisabled) onNavigate(id, `${basePath}/${id}/edit`);
   };
 
   const handleDuplicate = (e?: React.MouseEvent) => {
@@ -201,7 +201,7 @@ export function AgentListItem({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <Link
-                href={`${basePath}/run/${id}`}
+                href={`${basePath}/${id}/run`}
                 tabIndex={-1}
                 onClick={(e) => handleRun(e)}
               >
@@ -212,7 +212,7 @@ export function AgentListItem({
               </Link>
               {canEdit && (
                 <Link
-                  href={`${basePath}/edit/${id}`}
+                  href={`${basePath}/${id}/edit`}
                   tabIndex={-1}
                   onClick={(e) => handleEdit(e)}
                 >

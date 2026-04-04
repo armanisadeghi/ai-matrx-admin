@@ -48,6 +48,7 @@ function makeEmptyRecord(id: string): AgentDefinitionRecord {
     modelTiers: null,
     outputSchema: null,
     customTools: [],
+    mcpServers: [],
 
     userId: null,
     organizationId: null,
@@ -446,6 +447,18 @@ export const agentDefinitionSlice = createSlice({
       applyFieldEdit(record, "customTools", action.payload.customTools);
     },
 
+    setAgentMcpServers(
+      state,
+      action: PayloadAction<{
+        id: string;
+        mcpServers: AgentDefinition["mcpServers"];
+      }>,
+    ) {
+      const record = state.agents[action.payload.id];
+      if (!record) return;
+      applyFieldEdit(record, "mcpServers", action.payload.mcpServers);
+    },
+
     setAgentModelTiers(
       state,
       action: PayloadAction<{
@@ -695,6 +708,7 @@ export const {
   setAgentContextSlots,
   setAgentTools,
   setAgentCustomTools,
+  setAgentMcpServers,
   setAgentModelTiers,
   setAgentOutputSchema,
   resetAgentField,

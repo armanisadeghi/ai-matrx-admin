@@ -70,6 +70,7 @@ const initialState: OverlayState = {
     shareModal: makeDefaultInstance(),
     voicePad: makeDefaultInstance(),
     undoHistory: makeDefaultInstance(),
+    streamDebug: makeDefaultInstance(),
   },
 };
 
@@ -401,4 +402,14 @@ export const openUndoHistory = (options: UndoHistoryPayload) =>
   openOverlay({
     overlayId: "undoHistory",
     data: { agentId: options.agentId },
+  });
+
+interface StreamDebugPayload {
+  instanceId: string;
+}
+
+export const openStreamDebug = (options: StreamDebugPayload) =>
+  openOverlay({
+    overlayId: "streamDebug",
+    data: { instanceId: options.instanceId },
   });

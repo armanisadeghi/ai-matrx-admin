@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Wrench,
   Search,
@@ -25,12 +25,11 @@ import {
   Globe,
   Terminal,
   Radio,
-  Shield,
-  ShieldOff,
-  Power,
-  PowerOff,
-  ClipboardPaste,
   KeyRound,
+  Eye,
+  EyeOff,
+  Loader2,
+  Save,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -54,11 +53,29 @@ import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectAgentTools,
   selectAgentCustomTools,
+  selectAgentMcpServers,
 } from "@/features/agents/redux/agent-definition/selectors";
 import {
   setAgentTools,
   setAgentCustomTools,
+  setAgentMcpServers,
 } from "@/features/agents/redux/agent-definition/slice";
+import {
+  selectMcpCatalog,
+  selectMcpCatalogStatus,
+  selectMcpCatalogError,
+  selectMcpConnectingServerId,
+  fetchCatalog,
+  connectServer,
+  disconnectServer,
+} from "@/features/agents/redux/mcp/mcp.slice";
+import type {
+  McpCatalogEntry,
+  McpServerConfigEntry,
+  McpEnvSchemaField,
+} from "@/features/agents/types/mcp.types";
+import { MCP_CATEGORY_META } from "@/features/agents/types/mcp.types";
+import { fetchMcpServerConfigs } from "@/features/agents/services/mcp.service";
 import type { DatabaseTool } from "@/utils/supabase/tools-service";
 import type {
   CustomToolDefinition,
@@ -127,7 +144,7 @@ export function AgentToolsManager({
         {activeTab === "client" && (
           <ClientToolsTab agentId={agentId} availableTools={availableTools} />
         )}
-        {activeTab === "mcp" && <McpToolsTab />}
+        {activeTab === "mcp" && <McpToolsTab agentId={agentId} />}
       </div>
     </div>
   );
@@ -1130,419 +1147,11 @@ function ClientToolRow({
 }
 
 // =============================================================================
-// MCP Server Config Types
-// =============================================================================
-
-type McpTransport = "http" | "sse" | "stdio";
-
-type McpAuthStrategy =
-  | {
-      strategy: "oauth_discovery";
-      clientId?: string;
-      clientSecret?: string;
-      scopes?: string[];
-    }
-  | { strategy: "bearer"; tokenRef: string }
-  | { strategy: "header"; headerName: string; tokenRef: string }
-  | { strategy: "env" }
-  | { strategy: "none" };
-
-interface McpServerConfig {
-  name: string;
-  label?: string;
-  description?: string;
-  transport: McpTransport;
-  url?: string;
-  headers?: Record<string, string>;
-  command?: string;
-  args?: string[];
-  env?: Record<string, string>;
-  auth: McpAuthStrategy;
-  enabled: boolean;
-}
-
-// =============================================================================
-// MCP Config Parser — handles multiple paste formats
-// =============================================================================
-
-function parseMcpConfigInput(raw: string): {
-  servers: McpServerConfig[];
-  errors: string[];
-} {
-  const errors: string[] = [];
-  const servers: McpServerConfig[] = [];
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw.trim());
-  } catch {
-    errors.push("Invalid JSON. Please paste a valid JSON config.");
-    return { servers, errors };
-  }
-
-  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-    errors.push("Expected a JSON object.");
-    return { servers, errors };
-  }
-
-  const obj = parsed as Record<string, unknown>;
-
-  // Format 1: { "mcpServers": { ... } }
-  if (
-    "mcpServers" in obj &&
-    typeof obj.mcpServers === "object" &&
-    obj.mcpServers !== null
-  ) {
-    return extractServersFromMap(obj.mcpServers as Record<string, unknown>);
-  }
-
-  // Format 2: Single server with "type" or "transport" key → { "type": "http", "url": "..." }
-  if (
-    ("type" in obj || "transport" in obj) &&
-    ("url" in obj || "command" in obj)
-  ) {
-    const server = parseSingleServer("server", obj);
-    if (server) servers.push(server);
-    else errors.push("Could not parse server config.");
-    return { servers, errors };
-  }
-
-  // Format 3: Named map → { "notion": { ... }, "stripe": { ... } }
-  const keys = Object.keys(obj);
-  const looksLikeMap =
-    keys.length > 0 &&
-    keys.every((k) => {
-      const v = obj[k];
-      return typeof v === "object" && v !== null && !Array.isArray(v);
-    });
-
-  if (looksLikeMap) {
-    return extractServersFromMap(obj);
-  }
-
-  errors.push(
-    "Unrecognized format. Paste mcpServers JSON, a named server map, or a single server object.",
-  );
-  return { servers, errors };
-}
-
-function extractServersFromMap(map: Record<string, unknown>): {
-  servers: McpServerConfig[];
-  errors: string[];
-} {
-  const servers: McpServerConfig[] = [];
-  const errors: string[] = [];
-
-  for (const [name, value] of Object.entries(map)) {
-    if (typeof value !== "object" || value === null || Array.isArray(value)) {
-      errors.push(`Skipped "${name}" — not a valid server object.`);
-      continue;
-    }
-    const server = parseSingleServer(name, value as Record<string, unknown>);
-    if (server) servers.push(server);
-    else errors.push(`Could not parse server "${name}".`);
-  }
-
-  return { servers, errors };
-}
-
-function parseSingleServer(
-  name: string,
-  obj: Record<string, unknown>,
-): McpServerConfig | null {
-  const transport: McpTransport =
-    (obj.transport as McpTransport) ??
-    (obj.type as McpTransport) ??
-    (obj.command ? "stdio" : "http");
-
-  const isStdio = transport === "stdio";
-
-  if (!isStdio && !obj.url) return null;
-  if (isStdio && !obj.command) return null;
-
-  let auth: McpAuthStrategy = { strategy: "none" };
-
-  if (obj.auth && typeof obj.auth === "object") {
-    auth = obj.auth as McpAuthStrategy;
-  } else if (obj.headers && typeof obj.headers === "object") {
-    const headers = obj.headers as Record<string, string>;
-    const authHeader = headers["Authorization"] || headers["authorization"];
-    if (authHeader) {
-      auth = {
-        strategy: "bearer",
-        tokenRef: authHeader.replace(/^Bearer\s+/i, ""),
-      };
-    } else {
-      const firstKey = Object.keys(headers)[0];
-      if (firstKey) {
-        auth = {
-          strategy: "header",
-          headerName: firstKey,
-          tokenRef: headers[firstKey],
-        };
-      }
-    }
-  } else if (obj.env && typeof obj.env === "object") {
-    auth = { strategy: "env" };
-  }
-
-  return {
-    name,
-    label: (obj.label as string) ?? undefined,
-    description: (obj.description as string) ?? undefined,
-    transport,
-    url: obj.url as string | undefined,
-    headers:
-      obj.headers && typeof obj.headers === "object"
-        ? (obj.headers as Record<string, string>)
-        : undefined,
-    command: obj.command as string | undefined,
-    args: Array.isArray(obj.args) ? (obj.args as string[]) : undefined,
-    env:
-      obj.env && typeof obj.env === "object"
-        ? (obj.env as Record<string, string>)
-        : undefined,
-    auth,
-    enabled: obj.enabled !== false,
-  };
-}
-
-// =============================================================================
-// MCP Tools Tab
-// =============================================================================
-
-function McpToolsTab() {
-  const [servers, setServers] = useState<McpServerConfig[]>([]);
-  const [view, setView] = useState<"list" | "paste" | "form">("list");
-  const [editIndex, setEditIndex] = useState<number | null>(null);
-
-  const addServers = useCallback((newServers: McpServerConfig[]) => {
-    setServers((prev) => {
-      const names = new Set(prev.map((s) => s.name));
-      const deduped: McpServerConfig[] = [];
-      for (const s of newServers) {
-        let finalName = s.name;
-        let counter = 2;
-        while (names.has(finalName)) {
-          finalName = `${s.name}-${counter++}`;
-        }
-        names.add(finalName);
-        deduped.push({ ...s, name: finalName });
-      }
-      return [...prev, ...deduped];
-    });
-    setView("list");
-  }, []);
-
-  const updateServer = useCallback((index: number, server: McpServerConfig) => {
-    setServers((prev) => {
-      const next = [...prev];
-      next[index] = server;
-      return next;
-    });
-    setEditIndex(null);
-    setView("list");
-  }, []);
-
-  const removeServer = useCallback(
-    (index: number) => {
-      setServers((prev) => prev.filter((_, i) => i !== index));
-      if (editIndex === index) {
-        setEditIndex(null);
-        setView("list");
-      }
-    },
-    [editIndex],
-  );
-
-  const toggleServer = useCallback((index: number) => {
-    setServers((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], enabled: !next[index].enabled };
-      return next;
-    });
-  }, []);
-
-  if (view === "paste") {
-    return (
-      <McpPasteView onImport={addServers} onCancel={() => setView("list")} />
-    );
-  }
-
-  if (view === "form") {
-    return (
-      <McpServerForm
-        initial={editIndex !== null ? servers[editIndex] : undefined}
-        existingNames={servers
-          .filter((_, i) => i !== editIndex)
-          .map((s) => s.name)}
-        onSave={(server) => {
-          if (editIndex !== null) updateServer(editIndex, server);
-          else addServers([server]);
-        }}
-        onCancel={() => {
-          setEditIndex(null);
-          setView("list");
-        }}
-      />
-    );
-  }
-
-  return (
-    <McpServerList
-      servers={servers}
-      onAdd={() => {
-        setEditIndex(null);
-        setView("form");
-      }}
-      onPaste={() => setView("paste")}
-      onEdit={(i) => {
-        setEditIndex(i);
-        setView("form");
-      }}
-      onRemove={removeServer}
-      onToggle={toggleServer}
-    />
-  );
-}
-
-// =============================================================================
-// MCP Server List View
-// =============================================================================
-
-function McpServerList({
-  servers,
-  onAdd,
-  onPaste,
-  onEdit,
-  onRemove,
-  onToggle,
-}: {
-  servers: McpServerConfig[];
-  onAdd: () => void;
-  onPaste: () => void;
-  onEdit: (i: number) => void;
-  onRemove: (i: number) => void;
-  onToggle: (i: number) => void;
-}) {
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-
-  if (servers.length === 0) {
-    return (
-      <div className="flex flex-col h-full overflow-hidden">
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 text-muted-foreground px-8">
-          <div className="p-4 rounded-full bg-muted/40">
-            <Plug className="w-10 h-10 opacity-40" />
-          </div>
-          <div className="text-center max-w-md space-y-2">
-            <h3 className="text-sm font-semibold text-foreground">
-              MCP Server Integration
-            </h3>
-            <p className="text-xs leading-relaxed">
-              Connect external MCP servers to give this agent access to tools
-              from services like Notion, Stripe, Supabase, GitHub, and more.
-            </p>
-          </div>
-
-          <div className="flex gap-2 mt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs gap-1.5"
-              onClick={onPaste}
-            >
-              <ClipboardPaste className="w-3.5 h-3.5" />
-              Paste Config
-            </Button>
-            <Button size="sm" className="h-8 text-xs gap-1.5" onClick={onAdd}>
-              <Plus className="w-3.5 h-3.5" />
-              Add Server
-            </Button>
-          </div>
-
-          <div className="w-full max-w-md mt-4">
-            <div className="rounded-lg border border-border bg-card p-3 space-y-2">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                Quick Start — paste any of these formats:
-              </p>
-              <div className="space-y-1.5 text-[10px] font-mono text-muted-foreground">
-                <div className="flex items-start gap-2">
-                  <span className="text-primary/60 shrink-0 mt-px">1.</span>
-                  <span>{`{ "mcpServers": { "name": { "type": "http", "url": "..." } } }`}</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-primary/60 shrink-0 mt-px">2.</span>
-                  <span>{`{ "name": { "type": "http", "url": "..." } }`}</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-primary/60 shrink-0 mt-px">3.</span>
-                  <span>{`{ "type": "http", "url": "..." }`}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="px-4 py-3 border-b border-border shrink-0 flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold text-foreground">MCP Servers</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            {servers.length} server{servers.length !== 1 ? "s" : ""} configured{" "}
-            · {servers.filter((s) => s.enabled).length} enabled
-          </p>
-        </div>
-        <div className="flex gap-1.5">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs gap-1"
-            onClick={onPaste}
-          >
-            <ClipboardPaste className="w-3 h-3" />
-            Paste
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs gap-1"
-            onClick={onAdd}
-          >
-            <Plus className="w-3 h-3" />
-            Add
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
-        {servers.map((server, idx) => (
-          <McpServerCard
-            key={`${server.name}-${idx}`}
-            server={server}
-            expanded={expandedIndex === idx}
-            onExpand={() =>
-              setExpandedIndex(expandedIndex === idx ? null : idx)
-            }
-            onEdit={() => onEdit(idx)}
-            onRemove={() => onRemove(idx)}
-            onToggle={() => onToggle(idx)}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// =============================================================================
-// MCP Server Card
+// Transport badge metadata
 // =============================================================================
 
 const TRANSPORT_META: Record<
-  McpTransport,
+  string,
   { label: string; icon: React.ReactNode; color: string }
 > = {
   http: {
@@ -1562,97 +1171,398 @@ const TRANSPORT_META: Record<
   },
 };
 
-function authLabel(auth: McpAuthStrategy): string {
-  switch (auth.strategy) {
+function authStrategyLabel(strategy: string): string {
+  switch (strategy) {
     case "oauth_discovery":
       return "OAuth 2.1";
     case "bearer":
       return "Bearer Token";
-    case "header":
-      return `Header (${auth.headerName})`;
+    case "api_key":
+      return "API Key";
     case "env":
       return "Env Vars";
     case "none":
       return "No Auth";
+    default:
+      return strategy;
   }
 }
 
-function McpServerCard({
-  server,
-  expanded,
-  onExpand,
-  onEdit,
-  onRemove,
-  onToggle,
-}: {
-  server: McpServerConfig;
-  expanded: boolean;
-  onExpand: () => void;
-  onEdit: () => void;
-  onRemove: () => void;
-  onToggle: () => void;
-}) {
-  const meta = TRANSPORT_META[server.transport];
+function connectionBadge(status: string | null) {
+  switch (status) {
+    case "connected":
+      return {
+        label: "Connected",
+        cls: "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30",
+      };
+    case "expired":
+      return {
+        label: "Expired",
+        cls: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border-yellow-500/30",
+      };
+    case "refresh_failed":
+      return {
+        label: "Refresh Failed",
+        cls: "bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30",
+      };
+    case "error":
+      return {
+        label: "Error",
+        cls: "bg-destructive/15 text-destructive border-destructive/30",
+      };
+    case "disconnected":
+      return {
+        label: "Disconnected",
+        cls: "bg-muted text-muted-foreground border-border",
+      };
+    default:
+      return {
+        label: "Not Connected",
+        cls: "bg-muted text-muted-foreground border-border",
+      };
+  }
+}
+
+// =============================================================================
+// MCP Tools Tab — real catalog + agent-level server assignment
+// =============================================================================
+
+function McpToolsTab({ agentId }: { agentId: string }) {
+  const dispatch = useAppDispatch();
+  const catalog = useAppSelector(selectMcpCatalog);
+  const catalogStatus = useAppSelector(selectMcpCatalogStatus);
+  const catalogError = useAppSelector(selectMcpCatalogError);
+  const connectingServerId = useAppSelector(selectMcpConnectingServerId);
+  const agentMcpServers = useAppSelector((state) =>
+    selectAgentMcpServers(state, agentId),
+  );
+  const [showCatalog, setShowCatalog] = useState(false);
+  const [search, setSearch] = useState("");
+  const [expandedServer, setExpandedServer] = useState<string | null>(null);
+
+  const agentServerSet = useMemo(
+    () => new Set(agentMcpServers),
+    [agentMcpServers],
+  );
+
+  const agentCatalogEntries = useMemo(
+    () => catalog.filter((e) => agentServerSet.has(e.serverId)),
+    [catalog, agentServerSet],
+  );
+
+  useEffect(() => {
+    if (catalogStatus === "idle") {
+      dispatch(fetchCatalog());
+    }
+  }, [catalogStatus, dispatch]);
+
+  const addToAgent = useCallback(
+    (serverId: string) => {
+      if (!agentServerSet.has(serverId)) {
+        dispatch(
+          setAgentMcpServers({
+            id: agentId,
+            mcpServers: [...agentMcpServers, serverId],
+          }),
+        );
+      }
+    },
+    [agentId, agentMcpServers, agentServerSet, dispatch],
+  );
+
+  const removeFromAgent = useCallback(
+    (serverId: string) => {
+      dispatch(
+        setAgentMcpServers({
+          id: agentId,
+          mcpServers: agentMcpServers.filter((id) => id !== serverId),
+        }),
+      );
+    },
+    [agentId, agentMcpServers, dispatch],
+  );
+
+  if (showCatalog) {
+    return (
+      <McpCatalogPicker
+        catalog={catalog}
+        catalogStatus={catalogStatus}
+        catalogError={catalogError}
+        agentServerSet={agentServerSet}
+        connectingServerId={connectingServerId}
+        onAdd={addToAgent}
+        onBack={() => setShowCatalog(false)}
+        onConnect={(entry) => {
+          if (entry.authStrategy === "none") {
+            addToAgent(entry.serverId);
+            return;
+          }
+          if (entry.authStrategy === "oauth_discovery") {
+            window.open(
+              `/api/mcp/oauth/start?server_id=${entry.serverId}&return_url=${encodeURIComponent(window.location.href)}`,
+              "_blank",
+              "width=600,height=700",
+            );
+            return;
+          }
+          setShowCatalog(false);
+          setExpandedServer(entry.serverId);
+        }}
+        onDisconnect={(serverId) => dispatch(disconnectServer(serverId))}
+      />
+    );
+  }
+
+  if (agentCatalogEntries.length === 0 && catalogStatus !== "loading") {
+    return (
+      <div className="flex flex-col h-full overflow-hidden">
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 text-muted-foreground px-8">
+          <div className="p-4 rounded-full bg-muted/40">
+            <Plug className="w-10 h-10 opacity-40" />
+          </div>
+          <div className="text-center max-w-md space-y-2">
+            <h3 className="text-sm font-semibold text-foreground">
+              MCP Server Integration
+            </h3>
+            <p className="text-xs leading-relaxed">
+              Connect external MCP servers to give this agent access to tools
+              from services like Notion, Stripe, Supabase, GitHub, and more.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            className="h-8 text-xs gap-1.5"
+            onClick={() => setShowCatalog(true)}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Browse Catalog ({catalog.length} servers)
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div
-      className={`rounded-lg border transition-all ${
-        server.enabled
-          ? "bg-card border-border"
-          : "bg-muted/20 border-border/50 opacity-70"
-      }`}
-    >
-      <div className="flex items-start gap-3 px-3 py-2.5">
-        <button
-          onClick={onToggle}
-          className="mt-0.5 shrink-0"
-          title={server.enabled ? "Disable" : "Enable"}
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="px-4 py-3 border-b border-border shrink-0 flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-foreground">
+            Agent MCP Servers
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            {agentCatalogEntries.length} server
+            {agentCatalogEntries.length !== 1 ? "s" : ""} assigned
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 text-xs gap-1"
+          onClick={() => setShowCatalog(true)}
         >
-          {server.enabled ? (
-            <Power className="w-4 h-4 text-primary" />
-          ) : (
-            <PowerOff className="w-4 h-4 text-muted-foreground" />
-          )}
-        </button>
+          <Plus className="w-3 h-3" />
+          Add from Catalog
+        </Button>
+      </div>
+
+      {/* Search within assigned servers */}
+      {agentCatalogEntries.length > 4 && (
+        <div className="px-4 py-2 border-b border-border shrink-0">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Filter assigned servers..."
+              className="pl-8 h-7 text-xs"
+              style={{ fontSize: "16px" }}
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
+        {agentCatalogEntries
+          .filter(
+            (e) =>
+              !search.trim() ||
+              e.name.toLowerCase().includes(search.toLowerCase()) ||
+              e.vendor.toLowerCase().includes(search.toLowerCase()),
+          )
+          .map((entry) => (
+            <McpAgentServerCard
+              key={entry.serverId}
+              entry={entry}
+              expanded={expandedServer === entry.serverId}
+              connectingServerId={connectingServerId}
+              onExpand={() =>
+                setExpandedServer(
+                  expandedServer === entry.serverId ? null : entry.serverId,
+                )
+              }
+              onRemove={() => removeFromAgent(entry.serverId)}
+              onConnect={(entry) => {
+                if (entry.authStrategy === "oauth_discovery") {
+                  window.open(
+                    `/api/mcp/oauth/start?server_id=${entry.serverId}&return_url=${encodeURIComponent(window.location.href)}`,
+                    "_blank",
+                    "width=600,height=700",
+                  );
+                }
+              }}
+              onDisconnect={(serverId) => dispatch(disconnectServer(serverId))}
+            />
+          ))}
+      </div>
+
+      {/* Unresolved servers (agent references UUIDs not in catalog) */}
+      {agentMcpServers.some((id) => !catalog.find((c) => c.serverId === id)) &&
+        catalog.length > 0 && (
+          <div className="mx-3 mb-3 rounded border border-yellow-400 dark:border-yellow-600 bg-yellow-50/30 dark:bg-yellow-950/15 p-2.5">
+            <div className="flex items-center gap-2 text-[11px]">
+              <AlertTriangle className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-400 shrink-0" />
+              <span className="text-yellow-800 dark:text-yellow-300 font-medium">
+                {
+                  agentMcpServers.filter(
+                    (id) => !catalog.find((c) => c.serverId === id),
+                  ).length
+                }{" "}
+                server(s) referenced but not found in catalog
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 px-1.5 text-[10px] ml-auto text-yellow-700 dark:text-yellow-300 hover:text-destructive"
+                onClick={() => {
+                  const validIds = agentMcpServers.filter((id) =>
+                    catalog.find((c) => c.serverId === id),
+                  );
+                  dispatch(
+                    setAgentMcpServers({
+                      id: agentId,
+                      mcpServers: validIds,
+                    }),
+                  );
+                }}
+              >
+                Remove invalid
+              </Button>
+            </div>
+          </div>
+        )}
+    </div>
+  );
+}
+
+// =============================================================================
+// Agent Server Card — shows a server assigned to this agent
+// =============================================================================
+
+function McpAgentServerCard({
+  entry,
+  expanded,
+  connectingServerId,
+  onExpand,
+  onRemove,
+  onConnect,
+  onDisconnect,
+}: {
+  entry: McpCatalogEntry;
+  expanded: boolean;
+  connectingServerId: string | null;
+  onExpand: () => void;
+  onRemove: () => void;
+  onConnect: (entry: McpCatalogEntry) => void;
+  onDisconnect: (serverId: string) => void;
+}) {
+  const badge = connectionBadge(entry.connectionStatus);
+  const isConnecting = connectingServerId === entry.serverId;
+  const transportMeta = TRANSPORT_META[entry.transport] ?? TRANSPORT_META.http;
+  const needsCredentialForm =
+    entry.connectionStatus !== "connected" &&
+    entry.authStrategy !== "none" &&
+    entry.authStrategy !== "oauth_discovery";
+
+  return (
+    <div className="rounded-lg border border-border bg-card">
+      <div className="flex items-start gap-3 px-3 py-2.5">
+        {entry.iconUrl ? (
+          <img
+            src={entry.iconUrl}
+            alt=""
+            className="w-6 h-6 rounded mt-0.5 shrink-0 object-contain"
+          />
+        ) : (
+          <div
+            className="w-6 h-6 rounded mt-0.5 shrink-0 flex items-center justify-center text-[10px] font-bold text-white"
+            style={{ backgroundColor: entry.color ?? "#6b7280" }}
+          >
+            {entry.name.charAt(0).toUpperCase()}
+          </div>
+        )}
 
         <button onClick={onExpand} className="flex-1 min-w-0 text-left">
-          <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-xs font-semibold text-foreground truncate">
-              {server.label || server.name}
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+            <span className="text-xs font-semibold text-foreground">
+              {entry.name}
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              {entry.vendor}
             </span>
             <Badge
               variant="outline"
-              className={`text-[9px] h-4 px-1.5 gap-0.5 ${meta.color}`}
+              className={`text-[9px] h-4 px-1.5 gap-0.5 ${transportMeta.color}`}
             >
-              {meta.icon}
-              {meta.label}
+              {transportMeta.icon}
+              {transportMeta.label}
             </Badge>
             <Badge
-              variant="secondary"
-              className="text-[9px] h-4 px-1.5 gap-0.5"
+              variant="outline"
+              className={`text-[9px] h-4 px-1.5 border ${badge.cls}`}
             >
-              {server.auth.strategy === "none" ? (
-                <ShieldOff className="w-2.5 h-2.5" />
-              ) : (
-                <Shield className="w-2.5 h-2.5" />
-              )}
-              {authLabel(server.auth)}
+              {badge.label}
             </Badge>
           </div>
-          {(server.url || server.command) && (
-            <p className="text-[10px] font-mono text-muted-foreground truncate">
-              {server.url ||
-                `${server.command} ${(server.args ?? []).join(" ")}`}
-            </p>
-          )}
-          {server.description && (
-            <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
-              {server.description}
+          {entry.description && (
+            <p className="text-[11px] text-muted-foreground truncate">
+              {entry.description}
             </p>
           )}
         </button>
 
         <div className="flex items-center gap-0.5 shrink-0">
+          {entry.connectionStatus !== "connected" &&
+            entry.authStrategy !== "none" && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 text-[10px] px-2"
+                disabled={isConnecting}
+                onClick={() => {
+                  if (needsCredentialForm) {
+                    if (!expanded) onExpand();
+                  } else {
+                    onConnect(entry);
+                  }
+                }}
+              >
+                {isConnecting ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  "Connect"
+                )}
+              </Button>
+            )}
+          {entry.connectionStatus === "connected" && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 text-[10px] px-2 text-muted-foreground hover:text-destructive"
+              onClick={() => onDisconnect(entry.serverId)}
+            >
+              Disconnect
+            </Button>
+          )}
           <button
             onClick={onExpand}
             className="text-muted-foreground hover:text-foreground p-1"
@@ -1666,14 +1576,6 @@ function McpServerCard({
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6"
-            onClick={onEdit}
-          >
-            <Pencil className="h-3 w-3" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
             className="h-6 w-6 text-muted-foreground hover:text-destructive"
             onClick={onRemove}
           >
@@ -1682,851 +1584,834 @@ function McpServerCard({
         </div>
       </div>
 
-      {expanded && <McpServerDetail server={server} />}
+      {expanded && (
+        <div className="px-3 pb-3 border-t border-border/50 pt-2 space-y-2">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-[11px]">
+            <div>
+              <span className="text-muted-foreground">Transport:</span>{" "}
+              <span className="font-mono text-foreground">
+                {entry.transport}
+              </span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Auth:</span>{" "}
+              <span className="text-foreground">
+                {authStrategyLabel(entry.authStrategy)}
+              </span>
+            </div>
+            {entry.endpointUrl && (
+              <div className="col-span-2">
+                <span className="text-muted-foreground">Endpoint:</span>{" "}
+                <span className="font-mono text-foreground break-all">
+                  {entry.endpointUrl}
+                </span>
+              </div>
+            )}
+            <div>
+              <span className="text-muted-foreground">Category:</span>{" "}
+              <span className="text-foreground">
+                {MCP_CATEGORY_META[entry.category]?.label ?? entry.category}
+              </span>
+            </div>
+            {entry.connectionStatus === "connected" && entry.connectedAt && (
+              <div>
+                <span className="text-muted-foreground">Connected:</span>{" "}
+                <span className="text-foreground">
+                  {new Date(entry.connectedAt).toLocaleDateString()}
+                </span>
+              </div>
+            )}
+          </div>
+          <div className="flex gap-2 pt-1">
+            {entry.websiteUrl && (
+              <a
+                href={entry.websiteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] text-primary hover:underline"
+              >
+                Website
+              </a>
+            )}
+            {entry.docsUrl && (
+              <a
+                href={entry.docsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] text-primary hover:underline"
+              >
+                Documentation
+              </a>
+            )}
+          </div>
+
+          {needsCredentialForm && <McpCredentialForm entry={entry} />}
+        </div>
+      )}
     </div>
   );
 }
 
-function McpServerDetail({ server }: { server: McpServerConfig }) {
-  const [copied, setCopied] = useState(false);
+// =============================================================================
+// Credential Forms for non-OAuth servers
+// =============================================================================
 
-  const handleCopy = () => {
-    const config: Record<string, unknown> = { type: server.transport };
-    if (server.url) config.url = server.url;
-    if (server.command) config.command = server.command;
-    if (server.args) config.args = server.args;
-    if (server.headers) config.headers = server.headers;
-    if (server.env) config.env = server.env;
-    const output = { mcpServers: { [server.name]: config } };
-    navigator.clipboard.writeText(JSON.stringify(output, null, 2)).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
+function McpCredentialForm({ entry }: { entry: McpCatalogEntry }) {
+  if (entry.authStrategy === "bearer") {
+    return <BearerTokenForm entry={entry} />;
+  }
+  if (entry.authStrategy === "api_key") {
+    return <ApiKeyForm entry={entry} />;
+  }
+  if (entry.authStrategy === "env") {
+    return <EnvVarForm entry={entry} />;
+  }
+  return null;
+}
+
+function BearerTokenForm({ entry }: { entry: McpCatalogEntry }) {
+  const dispatch = useAppDispatch();
+  const connectingServerId = useAppSelector(selectMcpConnectingServerId);
+  const [token, setToken] = useState("");
+  const [showToken, setShowToken] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const isSaving = connectingServerId === entry.serverId;
+
+  const handleSubmit = async () => {
+    if (!token.trim()) {
+      setError("Token is required");
+      return;
+    }
+    setError(null);
+    try {
+      await dispatch(
+        connectServer({
+          serverId: entry.serverId,
+          accessToken: token.trim(),
+          transport: entry.transport,
+        }),
+      ).unwrap();
+      setToken("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Connection failed");
+    }
   };
 
   return (
-    <div className="px-3 pb-3 border-t border-border/50 pt-2 space-y-2">
-      <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-[11px]">
-        <div>
-          <span className="text-muted-foreground">Name:</span>{" "}
-          <span className="font-mono text-foreground">{server.name}</span>
-        </div>
-        <div>
-          <span className="text-muted-foreground">Transport:</span>{" "}
-          <span className="font-mono text-foreground">{server.transport}</span>
-        </div>
-        {server.url && (
-          <div className="col-span-2">
-            <span className="text-muted-foreground">URL:</span>{" "}
-            <span className="font-mono text-foreground break-all">
-              {server.url}
-            </span>
-          </div>
+    <div className="rounded border border-border bg-muted/20 p-3 space-y-2.5">
+      <p className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+        <KeyRound className="w-3.5 h-3.5" />
+        Bearer Token
+      </p>
+      <p className="text-[10px] text-muted-foreground leading-relaxed">
+        Provide an access token or personal access token (PAT) for {entry.name}.
+        {entry.docsUrl && (
+          <>
+            {" "}
+            <a
+              href={entry.docsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              See docs
+            </a>
+          </>
         )}
-        {server.command && (
-          <div className="col-span-2">
-            <span className="text-muted-foreground">Command:</span>{" "}
-            <span className="font-mono text-foreground">
-              {server.command} {(server.args ?? []).join(" ")}
-            </span>
-          </div>
-        )}
-        <div>
-          <span className="text-muted-foreground">Auth:</span>{" "}
-          <span className="text-foreground">{authLabel(server.auth)}</span>
-        </div>
-        <div>
-          <span className="text-muted-foreground">Status:</span>{" "}
-          <span
-            className={
-              server.enabled ? "text-primary" : "text-muted-foreground"
-            }
-          >
-            {server.enabled ? "Enabled" : "Disabled"}
-          </span>
-        </div>
-      </div>
-
-      {server.headers && Object.keys(server.headers).length > 0 && (
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-            Headers
-          </p>
-          <div className="rounded border border-border bg-muted/20 p-2 space-y-0.5">
-            {Object.entries(server.headers).map(([k, v]) => (
-              <div key={k} className="flex gap-2 text-[10px] font-mono">
-                <span className="text-foreground">{k}:</span>
-                <span className="text-muted-foreground truncate">
-                  {v.includes("$") || v.length > 20
-                    ? `${v.slice(0, 20)}...`
-                    : v}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {server.env && Object.keys(server.env).length > 0 && (
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-            Environment Variables
-          </p>
-          <div className="rounded border border-border bg-muted/20 p-2 space-y-0.5">
-            {Object.entries(server.env).map(([k, v]) => (
-              <div key={k} className="flex gap-2 text-[10px] font-mono">
-                <span className="text-foreground">{k}=</span>
-                <span className="text-muted-foreground truncate">
-                  {v.startsWith("$") ? v : "••••••••"}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="flex justify-end">
+      </p>
+      <div className="relative">
+        <Input
+          type={showToken ? "text" : "password"}
+          value={token}
+          onChange={(e) => setToken(e.target.value)}
+          placeholder="Paste your token here..."
+          className="pr-9 h-8 text-xs font-mono"
+          style={{ fontSize: "16px" }}
+          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+        />
         <button
-          onClick={handleCopy}
-          className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+          type="button"
+          onClick={() => setShowToken(!showToken)}
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
         >
-          <Copy className="w-3 h-3" />
-          {copied ? "Copied!" : "Copy Config"}
+          {showToken ? (
+            <EyeOff className="w-3.5 h-3.5" />
+          ) : (
+            <Eye className="w-3.5 h-3.5" />
+          )}
         </button>
       </div>
+      {error && (
+        <p className="text-[10px] text-destructive flex items-center gap-1">
+          <AlertTriangle className="w-3 h-3 shrink-0" />
+          {error}
+        </p>
+      )}
+      <Button
+        size="sm"
+        className="h-7 text-[11px] gap-1.5 w-full"
+        disabled={isSaving || !token.trim()}
+        onClick={handleSubmit}
+      >
+        {isSaving ? (
+          <Loader2 className="w-3 h-3 animate-spin" />
+        ) : (
+          <Save className="w-3 h-3" />
+        )}
+        {isSaving ? "Saving..." : "Save & Connect"}
+      </Button>
     </div>
   );
 }
 
-// =============================================================================
-// MCP Paste View — flexible JSON paste input
-// =============================================================================
+function ApiKeyForm({ entry }: { entry: McpCatalogEntry }) {
+  const dispatch = useAppDispatch();
+  const connectingServerId = useAppSelector(selectMcpConnectingServerId);
+  const [apiKey, setApiKey] = useState("");
+  const [headerName, setHeaderName] = useState("X-API-Key");
+  const [showKey, setShowKey] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const isSaving = connectingServerId === entry.serverId;
 
-function McpPasteView({
-  onImport,
-  onCancel,
-}: {
-  onImport: (servers: McpServerConfig[]) => void;
-  onCancel: () => void;
-}) {
-  const [text, setText] = useState("");
-  const [parseResult, setParseResult] = useState<{
-    servers: McpServerConfig[];
-    errors: string[];
-  } | null>(null);
-  const handleParse = () => {
-    if (!text.trim()) return;
-    const result = parseMcpConfigInput(text);
-    setParseResult(result);
-  };
-
-  const handleImport = () => {
-    if (parseResult && parseResult.servers.length > 0) {
-      onImport(parseResult.servers);
+  const handleSubmit = async () => {
+    if (!apiKey.trim()) {
+      setError("API key is required");
+      return;
+    }
+    setError(null);
+    const credentials = JSON.stringify({
+      headerName: headerName.trim() || "X-API-Key",
+      apiKey: apiKey.trim(),
+    });
+    try {
+      await dispatch(
+        connectServer({
+          serverId: entry.serverId,
+          credentialsJson: credentials,
+          transport: entry.transport,
+        }),
+      ).unwrap();
+      setApiKey("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Connection failed");
     }
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="px-4 py-3 border-b border-border shrink-0 flex items-center justify-between">
+    <div className="rounded border border-border bg-muted/20 p-3 space-y-2.5">
+      <p className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+        <KeyRound className="w-3.5 h-3.5" />
+        API Key
+      </p>
+      <p className="text-[10px] text-muted-foreground leading-relaxed">
+        Provide your API key for {entry.name}.
+        {entry.docsUrl && (
+          <>
+            {" "}
+            <a
+              href={entry.docsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              See docs
+            </a>
+          </>
+        )}
+      </p>
+      <div className="space-y-2">
         <div>
-          <p className="text-xs font-semibold text-foreground">
-            Import MCP Servers
-          </p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            Paste your MCP server config — we'll figure out the format.
-          </p>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 text-xs"
-          onClick={onCancel}
-        >
-          <X className="w-3 h-3 mr-1" />
-          Cancel
-        </Button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        <div className="relative">
-          <textarea
-            value={text}
-            onChange={(e) => {
-              setText(e.target.value);
-              setParseResult(null);
-            }}
-            placeholder={`Paste your MCP server configuration here...
-
-Examples:
-{
-  "mcpServers": {
-    "supabase": {
-      "type": "http",
-      "url": "https://mcp.supabase.com/mcp"
-    }
-  }
-}
-
-Or just the inner part:
-{
-  "type": "http",
-  "url": "https://mcp.supabase.com/mcp"
-}`}
-            className="w-full h-56 rounded-lg border border-border bg-muted/20 p-3 text-xs font-mono resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 placeholder:text-muted-foreground/40"
+          <Label className="text-[10px] text-muted-foreground mb-1 block">
+            Header Name
+          </Label>
+          <Input
+            value={headerName}
+            onChange={(e) => setHeaderName(e.target.value)}
+            placeholder="X-API-Key"
+            className="h-7 text-xs font-mono"
             style={{ fontSize: "16px" }}
           />
         </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            className="h-8 text-xs gap-1.5"
-            onClick={handleParse}
-            disabled={!text.trim()}
-          >
-            <Search className="w-3 h-3" />
-            Parse Config
-          </Button>
-          {parseResult && parseResult.servers.length > 0 && (
-            <Button
-              size="sm"
-              className="h-8 text-xs gap-1.5"
-              onClick={handleImport}
+        <div>
+          <Label className="text-[10px] text-muted-foreground mb-1 block">
+            API Key
+          </Label>
+          <div className="relative">
+            <Input
+              type={showKey ? "text" : "password"}
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="Paste your API key..."
+              className="pr-9 h-7 text-xs font-mono"
+              style={{ fontSize: "16px" }}
+              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+            />
+            <button
+              type="button"
+              onClick={() => setShowKey(!showKey)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
-              <Plus className="w-3 h-3" />
-              Import {parseResult.servers.length} Server
-              {parseResult.servers.length !== 1 ? "s" : ""}
-            </Button>
-          )}
-        </div>
-
-        {parseResult && (
-          <div className="space-y-2">
-            {parseResult.errors.length > 0 && (
-              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 space-y-1">
-                {parseResult.errors.map((err, i) => (
-                  <div
-                    key={i}
-                    className="flex items-start gap-2 text-[11px] text-destructive"
-                  >
-                    <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" />
-                    <span>{err}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {parseResult.servers.length > 0 && (
-              <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-primary">
-                  {parseResult.servers.length} server
-                  {parseResult.servers.length !== 1 ? "s" : ""} detected
-                </p>
-                {parseResult.servers.map((server, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-3 p-2 rounded border border-border/50 bg-background text-xs"
-                  >
-                    <span
-                      className={`shrink-0 ${TRANSPORT_META[server.transport].color}`}
-                    >
-                      {TRANSPORT_META[server.transport].icon}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <span className="font-semibold text-foreground">
-                        {server.name}
-                      </span>
-                      {server.url && (
-                        <span className="text-[10px] font-mono text-muted-foreground ml-2 truncate">
-                          {server.url}
-                        </span>
-                      )}
-                      {server.command && (
-                        <span className="text-[10px] font-mono text-muted-foreground ml-2">
-                          {server.command}
-                        </span>
-                      )}
-                    </div>
-                    <Badge
-                      variant="secondary"
-                      className="text-[9px] h-4 shrink-0"
-                    >
-                      {authLabel(server.auth)}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="p-3 rounded-lg bg-muted/30 border border-border">
-          <div className="flex items-start gap-2">
-            <Info className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
-            <div className="text-[10px] text-muted-foreground space-y-1">
-              <p>
-                <strong>Supported formats:</strong> We accept the full{" "}
-                <code className="bg-muted px-1 py-0.5 rounded">mcpServers</code>{" "}
-                wrapper, a named map of servers, or a single server object.
-                Transport defaults to HTTP if not specified.
-              </p>
-              <p>
-                <strong>Secrets:</strong> Use{" "}
-                <code className="bg-muted px-1 py-0.5 rounded">
-                  {"${VAR_NAME}"}
-                </code>{" "}
-                references for tokens — they are never stored in plain text.
-              </p>
-            </div>
+              {showKey ? (
+                <EyeOff className="w-3.5 h-3.5" />
+              ) : (
+                <Eye className="w-3.5 h-3.5" />
+              )}
+            </button>
           </div>
         </div>
       </div>
+      {error && (
+        <p className="text-[10px] text-destructive flex items-center gap-1">
+          <AlertTriangle className="w-3 h-3 shrink-0" />
+          {error}
+        </p>
+      )}
+      <Button
+        size="sm"
+        className="h-7 text-[11px] gap-1.5 w-full"
+        disabled={isSaving || !apiKey.trim()}
+        onClick={handleSubmit}
+      >
+        {isSaving ? (
+          <Loader2 className="w-3 h-3 animate-spin" />
+        ) : (
+          <Save className="w-3 h-3" />
+        )}
+        {isSaving ? "Saving..." : "Save & Connect"}
+      </Button>
     </div>
   );
 }
 
-// =============================================================================
-// MCP Server Form — manual add / edit
-// =============================================================================
+function EnvVarForm({ entry }: { entry: McpCatalogEntry }) {
+  const dispatch = useAppDispatch();
+  const connectingServerId = useAppSelector(selectMcpConnectingServerId);
+  const [configs, setConfigs] = useState<McpServerConfigEntry[]>([]);
+  const [selectedConfigId, setSelectedConfigId] = useState<string | null>(null);
+  const [envValues, setEnvValues] = useState<Record<string, string>>({});
+  const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const isSaving = connectingServerId === entry.serverId;
 
-function McpServerForm({
-  initial,
-  existingNames,
-  onSave,
-  onCancel,
-}: {
-  initial?: McpServerConfig;
-  existingNames: string[];
-  onSave: (server: McpServerConfig) => void;
-  onCancel: () => void;
-}) {
-  const [name, setName] = useState(initial?.name ?? "");
-  const [label, setLabel] = useState(initial?.label ?? "");
-  const [description, setDescription] = useState(initial?.description ?? "");
-  const [transport, setTransport] = useState<McpTransport>(
-    initial?.transport ?? "http",
-  );
-  const [url, setUrl] = useState(initial?.url ?? "");
-  const [command, setCommand] = useState(initial?.command ?? "");
-  const [args, setArgs] = useState(initial?.args?.join(" ") ?? "");
-  const [authStrategy, setAuthStrategy] = useState<McpAuthStrategy["strategy"]>(
-    initial?.auth.strategy ?? "none",
-  );
-  const [tokenRef, setTokenRef] = useState(() => {
-    if (!initial?.auth) return "";
-    if ("tokenRef" in initial.auth) return initial.auth.tokenRef;
-    return "";
-  });
-  const [headerName, setHeaderName] = useState(() => {
-    if (initial?.auth && "headerName" in initial.auth)
-      return initial.auth.headerName;
-    return "X-API-Key";
-  });
-  const [scopes, setScopes] = useState(() => {
-    if (initial?.auth && "scopes" in initial.auth)
-      return (initial.auth.scopes ?? []).join(", ");
-    return "";
-  });
-  const [envEntries, setEnvEntries] = useState<
-    Array<{ key: string; value: string }>
-  >(() => {
-    if (initial?.env)
-      return Object.entries(initial.env).map(([key, value]) => ({
-        key,
-        value,
-      }));
-    return [];
-  });
-  const [headerEntries, setHeaderEntries] = useState<
-    Array<{ key: string; value: string }>
-  >(() => {
-    if (initial?.headers)
-      return Object.entries(initial.headers).map(([key, value]) => ({
-        key,
-        value,
-      }));
-    return [];
-  });
-
-  const isStdio = transport === "stdio";
-
-  const nameError = useMemo(() => {
-    if (!name) return null;
-    if (!/^[a-zA-Z0-9_-]{1,64}$/.test(name))
-      return "Letters, numbers, hyphens, underscores only (max 64)";
-    if (existingNames.includes(name) && name !== initial?.name)
-      return "Name already exists";
-    return null;
-  }, [name, existingNames, initial?.name]);
-
-  const canSave =
-    name.length > 0 &&
-    !nameError &&
-    (isStdio ? command.trim().length > 0 : url.trim().length > 0);
-
-  const handleSave = () => {
-    let auth: McpAuthStrategy;
-    switch (authStrategy) {
-      case "oauth_discovery":
-        auth = {
-          strategy: "oauth_discovery",
-          ...(scopes.trim()
-            ? {
-                scopes: scopes
-                  .split(",")
-                  .map((s) => s.trim())
-                  .filter(Boolean),
-              }
-            : {}),
-        };
-        break;
-      case "bearer":
-        auth = { strategy: "bearer", tokenRef: tokenRef.trim() || "TOKEN" };
-        break;
-      case "header":
-        auth = {
-          strategy: "header",
-          headerName: headerName.trim() || "X-API-Key",
-          tokenRef: tokenRef.trim() || "TOKEN",
-        };
-        break;
-      case "env":
-        auth = { strategy: "env" };
-        break;
-      default:
-        auth = { strategy: "none" };
-    }
-
-    const envObj: Record<string, string> = {};
-    for (const e of envEntries) {
-      if (e.key.trim()) envObj[e.key.trim()] = e.value;
-    }
-
-    const headersObj: Record<string, string> = {};
-    for (const h of headerEntries) {
-      if (h.key.trim()) headersObj[h.key.trim()] = h.value;
-    }
-    if (authStrategy === "bearer" && tokenRef.trim()) {
-      headersObj["Authorization"] =
-        `Bearer ${tokenRef.trim().startsWith("$") ? tokenRef.trim() : "${" + tokenRef.trim() + "}"}`;
-    }
-    if (authStrategy === "header" && headerName.trim() && tokenRef.trim()) {
-      headersObj[headerName.trim()] = tokenRef.trim().startsWith("$")
-        ? tokenRef.trim()
-        : `\${${tokenRef.trim()}}`;
-    }
-
-    const server: McpServerConfig = {
-      name: name.trim(),
-      label: label.trim() || undefined,
-      description: description.trim() || undefined,
-      transport,
-      url: !isStdio ? url.trim() : undefined,
-      command: isStdio ? command.trim() : undefined,
-      args: isStdio && args.trim() ? args.trim().split(/\s+/) : undefined,
-      headers: Object.keys(headersObj).length > 0 ? headersObj : undefined,
-      env: Object.keys(envObj).length > 0 ? envObj : undefined,
-      auth,
-      enabled: true,
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetchMcpServerConfigs(entry.serverId)
+      .then((data) => {
+        if (cancelled) return;
+        setConfigs(data);
+        if (data.length > 0) {
+          const defaultConfig = data.find((c) => c.isDefault) ?? data[0];
+          setSelectedConfigId(defaultConfig.id);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : "Failed to load config");
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
     };
+  }, [entry.serverId]);
 
-    onSave(server);
+  const selectedConfig = configs.find((c) => c.id === selectedConfigId);
+  const envSchema: McpEnvSchemaField[] = selectedConfig?.envSchema ?? [];
+
+  const handleSubmit = async () => {
+    const missingRequired = envSchema
+      .filter((f) => f.required && !envValues[f.key]?.trim())
+      .map((f) => f.label || f.key);
+
+    if (missingRequired.length > 0) {
+      setError(`Required: ${missingRequired.join(", ")}`);
+      return;
+    }
+
+    setError(null);
+    const credentials = JSON.stringify(envValues);
+    try {
+      await dispatch(
+        connectServer({
+          serverId: entry.serverId,
+          credentialsJson: credentials,
+          configId: selectedConfigId ?? undefined,
+          transport: entry.transport,
+        }),
+      ).unwrap();
+      setEnvValues({});
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Connection failed");
+    }
   };
 
-  return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="px-4 py-3 border-b border-border shrink-0 flex items-center justify-between">
-        <p className="text-xs font-semibold text-foreground">
-          {initial ? "Edit MCP Server" : "Add MCP Server"}
-        </p>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 text-xs"
-          onClick={onCancel}
-        >
-          <X className="w-3 h-3 mr-1" />
-          Cancel
-        </Button>
+  if (loading) {
+    return (
+      <div className="rounded border border-border bg-muted/20 p-3 flex items-center gap-2 text-[11px] text-muted-foreground">
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        Loading configuration...
       </div>
+    );
+  }
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Identity */}
-        <fieldset className="space-y-3">
-          <legend className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-            Identity
-          </legend>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-[11px] text-muted-foreground mb-1 block">
-                Server Name *
-              </Label>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="supabase"
-                className="h-7 text-xs"
-                style={{ fontSize: "16px" }}
-              />
-              {nameError && (
-                <p className="text-[10px] text-destructive mt-0.5">
-                  {nameError}
-                </p>
-              )}
-            </div>
-            <div>
-              <Label className="text-[11px] text-muted-foreground mb-1 block">
-                Display Name
-              </Label>
-              <Input
-                value={label}
-                onChange={(e) => setLabel(e.target.value)}
-                placeholder="Supabase (Production)"
-                className="h-7 text-xs"
-                style={{ fontSize: "16px" }}
-              />
-            </div>
-          </div>
-          <div>
-            <Label className="text-[11px] text-muted-foreground mb-1 block">
-              Description
-            </Label>
-            <Input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="What this server provides..."
-              className="h-7 text-xs"
-              style={{ fontSize: "16px" }}
-            />
-          </div>
-        </fieldset>
+  if (configs.length === 0) {
+    return (
+      <div className="rounded border border-border bg-muted/20 p-3 text-[11px] text-muted-foreground">
+        <p>No local configurations available for this server.</p>
+        <p className="mt-1 text-[10px]">
+          This server requires a local stdio setup. Check the{" "}
+          <a
+            href={entry.docsUrl ?? "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+          >
+            documentation
+          </a>{" "}
+          for manual setup instructions.
+        </p>
+      </div>
+    );
+  }
 
-        {/* Transport */}
-        <fieldset className="space-y-3">
-          <legend className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-            Transport
-          </legend>
-          <div className="flex gap-1.5">
-            {(["http", "sse", "stdio"] as McpTransport[]).map((t) => {
-              const meta = TRANSPORT_META[t];
-              return (
-                <button
-                  key={t}
-                  onClick={() => setTransport(t)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors border ${
-                    transport === t
-                      ? "bg-primary/10 border-primary/30 text-primary"
-                      : "border-border text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                  }`}
-                >
-                  {meta.icon}
-                  {meta.label}
-                </button>
-              );
-            })}
-          </div>
+  return (
+    <div className="rounded border border-border bg-muted/20 p-3 space-y-2.5">
+      <p className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+        <Terminal className="w-3.5 h-3.5" />
+        Environment Variables
+      </p>
 
-          {!isStdio ? (
-            <div>
-              <Label className="text-[11px] text-muted-foreground mb-1 block">
-                Server URL *
-              </Label>
-              <Input
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://mcp.example.com/mcp"
-                className="h-7 text-xs"
-                style={{ fontSize: "16px" }}
-              />
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <div>
-                <Label className="text-[11px] text-muted-foreground mb-1 block">
-                  Command *
-                </Label>
-                <Input
-                  value={command}
-                  onChange={(e) => setCommand(e.target.value)}
-                  placeholder="npx"
-                  className="h-7 text-xs"
-                  style={{ fontSize: "16px" }}
-                />
-              </div>
-              <div>
-                <Label className="text-[11px] text-muted-foreground mb-1 block">
-                  Arguments
-                </Label>
-                <Input
-                  value={args}
-                  onChange={(e) => setArgs(e.target.value)}
-                  placeholder="-y @modelcontextprotocol/server-github"
-                  className="h-7 text-xs"
-                  style={{ fontSize: "16px" }}
-                />
-                <p className="text-[10px] text-muted-foreground mt-0.5">
-                  Space-separated
-                </p>
-              </div>
-            </div>
-          )}
-        </fieldset>
-
-        {/* Authentication */}
-        <fieldset className="space-y-3">
-          <legend className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-            Authentication
-          </legend>
+      {configs.length > 1 && (
+        <div>
+          <Label className="text-[10px] text-muted-foreground mb-1 block">
+            Configuration
+          </Label>
           <Select
-            value={authStrategy}
-            onValueChange={(v) =>
-              setAuthStrategy(v as McpAuthStrategy["strategy"])
-            }
+            value={selectedConfigId ?? ""}
+            onValueChange={(v) => {
+              setSelectedConfigId(v);
+              setEnvValues({});
+            }}
           >
             <SelectTrigger className="h-7 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {!isStdio && (
-                <SelectItem value="none" className="text-xs">
-                  No Auth (Public)
+              {configs.map((c) => (
+                <SelectItem key={c.id} value={c.id} className="text-xs">
+                  {c.label}
+                  {c.isDefault && " (default)"}
                 </SelectItem>
-              )}
-              {!isStdio && (
-                <SelectItem value="oauth_discovery" className="text-xs">
-                  OAuth 2.1 Discovery
-                </SelectItem>
-              )}
-              {!isStdio && (
-                <SelectItem value="bearer" className="text-xs">
-                  Bearer Token
-                </SelectItem>
-              )}
-              {!isStdio && (
-                <SelectItem value="header" className="text-xs">
-                  Custom Header
-                </SelectItem>
-              )}
-              {isStdio && (
-                <SelectItem value="env" className="text-xs">
-                  Environment Variables
-                </SelectItem>
-              )}
-              {isStdio && (
-                <SelectItem value="none" className="text-xs">
-                  None
-                </SelectItem>
-              )}
+              ))}
             </SelectContent>
           </Select>
+        </div>
+      )}
 
-          {authStrategy === "bearer" && (
-            <div>
-              <Label className="text-[11px] text-muted-foreground mb-1 block">
-                Token / Variable Reference
-              </Label>
-              <div className="flex items-center gap-2">
-                <KeyRound className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                <Input
-                  value={tokenRef}
-                  onChange={(e) => setTokenRef(e.target.value)}
-                  placeholder="SUPABASE_ACCESS_TOKEN"
-                  className="h-7 text-xs flex-1"
-                  style={{ fontSize: "16px" }}
-                />
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-0.5">
-                Enter the env var name (e.g. SUPABASE_ACCESS_TOKEN) or the raw
-                token
-              </p>
-            </div>
+      {selectedConfig && (
+        <>
+          {selectedConfig.notes && (
+            <p className="text-[10px] text-muted-foreground leading-relaxed bg-muted/40 rounded px-2 py-1.5">
+              {selectedConfig.notes}
+            </p>
           )}
 
-          {authStrategy === "header" && (
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-[11px] text-muted-foreground mb-1 block">
-                  Header Name
+          <div className="space-y-2">
+            {envSchema.map((field) => (
+              <div key={field.key}>
+                <Label className="text-[10px] text-muted-foreground mb-1 flex items-center gap-1">
+                  <code className="bg-muted/60 px-1 py-0.5 rounded font-mono">
+                    {field.key}
+                  </code>
+                  {field.required && (
+                    <span className="text-destructive">*</span>
+                  )}
+                  {field.label !== field.key && (
+                    <span className="text-muted-foreground/70 ml-1">
+                      {field.label}
+                    </span>
+                  )}
                 </Label>
-                <Input
-                  value={headerName}
-                  onChange={(e) => setHeaderName(e.target.value)}
-                  placeholder="X-API-Key"
-                  className="h-7 text-xs"
-                  style={{ fontSize: "16px" }}
-                />
-              </div>
-              <div>
-                <Label className="text-[11px] text-muted-foreground mb-1 block">
-                  Token / Variable
-                </Label>
-                <Input
-                  value={tokenRef}
-                  onChange={(e) => setTokenRef(e.target.value)}
-                  placeholder="API_KEY"
-                  className="h-7 text-xs"
-                  style={{ fontSize: "16px" }}
-                />
-              </div>
-            </div>
-          )}
-
-          {authStrategy === "oauth_discovery" && (
-            <div>
-              <Label className="text-[11px] text-muted-foreground mb-1 block">
-                Scopes (optional, comma-separated)
-              </Label>
-              <Input
-                value={scopes}
-                onChange={(e) => setScopes(e.target.value)}
-                placeholder="read, write"
-                className="h-7 text-xs"
-                style={{ fontSize: "16px" }}
-              />
-              <p className="text-[10px] text-muted-foreground mt-0.5">
-                OAuth scopes are auto-discovered if left blank
-              </p>
-            </div>
-          )}
-        </fieldset>
-
-        {/* Env vars for stdio */}
-        {isStdio && (
-          <fieldset className="space-y-3">
-            <legend className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-              Environment Variables
-            </legend>
-            {envEntries.map((entry, idx) => (
-              <div key={idx} className="flex items-center gap-1.5">
-                <Input
-                  value={entry.key}
-                  onChange={(e) => {
-                    const next = [...envEntries];
-                    next[idx] = { ...next[idx], key: e.target.value };
-                    setEnvEntries(next);
-                  }}
-                  placeholder="GITHUB_TOKEN"
-                  className="h-6 text-[11px] flex-1"
-                  style={{ fontSize: "16px" }}
-                />
-                <span className="text-muted-foreground text-[11px]">=</span>
-                <Input
-                  value={entry.value}
-                  onChange={(e) => {
-                    const next = [...envEntries];
-                    next[idx] = { ...next[idx], value: e.target.value };
-                    setEnvEntries(next);
-                  }}
-                  placeholder="${GITHUB_TOKEN}"
-                  className="h-6 text-[11px] flex-1"
-                  style={{ fontSize: "16px" }}
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-5 w-5 text-muted-foreground hover:text-destructive"
-                  onClick={() =>
-                    setEnvEntries(envEntries.filter((_, i) => i !== idx))
-                  }
-                >
-                  <X className="h-3 w-3" />
-                </Button>
+                <div className="relative">
+                  <Input
+                    type={
+                      field.secret && !showSecrets[field.key]
+                        ? "password"
+                        : "text"
+                    }
+                    value={envValues[field.key] ?? ""}
+                    onChange={(e) =>
+                      setEnvValues((prev) => ({
+                        ...prev,
+                        [field.key]: e.target.value,
+                      }))
+                    }
+                    placeholder={field.placeholder ?? field.helpText ?? ""}
+                    className={`h-7 text-xs font-mono ${field.secret ? "pr-9" : ""}`}
+                    style={{ fontSize: "16px" }}
+                  />
+                  {field.secret && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowSecrets((prev) => ({
+                          ...prev,
+                          [field.key]: !prev[field.key],
+                        }))
+                      }
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showSecrets[field.key] ? (
+                        <EyeOff className="w-3.5 h-3.5" />
+                      ) : (
+                        <Eye className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  )}
+                </div>
+                {field.helpText && (
+                  <p className="text-[9px] text-muted-foreground/70 mt-0.5">
+                    {field.helpText}
+                  </p>
+                )}
               </div>
             ))}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-5 text-[10px] px-1.5"
-              onClick={() =>
-                setEnvEntries([...envEntries, { key: "", value: "" }])
-              }
-            >
-              <Plus className="w-2.5 h-2.5 mr-0.5" />
-              Add Variable
-            </Button>
-          </fieldset>
+          </div>
+        </>
+      )}
+
+      {error && (
+        <p className="text-[10px] text-destructive flex items-center gap-1">
+          <AlertTriangle className="w-3 h-3 shrink-0" />
+          {error}
+        </p>
+      )}
+
+      <Button
+        size="sm"
+        className="h-7 text-[11px] gap-1.5 w-full"
+        disabled={isSaving}
+        onClick={handleSubmit}
+      >
+        {isSaving ? (
+          <Loader2 className="w-3 h-3 animate-spin" />
+        ) : (
+          <Save className="w-3 h-3" />
         )}
+        {isSaving ? "Saving..." : "Save & Connect"}
+      </Button>
+    </div>
+  );
+}
 
-        {/* Custom headers for http/sse */}
-        {!isStdio &&
-          (authStrategy === "none" || authStrategy === "oauth_discovery") && (
-            <fieldset className="space-y-3">
-              <legend className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                Additional Headers (optional)
-              </legend>
-              {headerEntries.map((entry, idx) => (
-                <div key={idx} className="flex items-center gap-1.5">
-                  <Input
-                    value={entry.key}
-                    onChange={(e) => {
-                      const next = [...headerEntries];
-                      next[idx] = { ...next[idx], key: e.target.value };
-                      setHeaderEntries(next);
-                    }}
-                    placeholder="X-Custom-Header"
-                    className="h-6 text-[11px] flex-1"
-                    style={{ fontSize: "16px" }}
-                  />
-                  <span className="text-muted-foreground text-[11px]">:</span>
-                  <Input
-                    value={entry.value}
-                    onChange={(e) => {
-                      const next = [...headerEntries];
-                      next[idx] = { ...next[idx], value: e.target.value };
-                      setHeaderEntries(next);
-                    }}
-                    placeholder="value"
-                    className="h-6 text-[11px] flex-1"
-                    style={{ fontSize: "16px" }}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-5 w-5 text-muted-foreground hover:text-destructive"
-                    onClick={() =>
-                      setHeaderEntries(
-                        headerEntries.filter((_, i) => i !== idx),
-                      )
-                    }
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              ))}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-5 text-[10px] px-1.5"
-                onClick={() =>
-                  setHeaderEntries([...headerEntries, { key: "", value: "" }])
-                }
-              >
-                <Plus className="w-2.5 h-2.5 mr-0.5" />
-                Add Header
-              </Button>
-            </fieldset>
-          )}
-      </div>
+// =============================================================================
+// MCP Catalog Picker — overlay to browse and add servers
+// =============================================================================
 
-      {/* Footer */}
-      <div className="px-4 py-3 border-t border-border shrink-0 flex justify-end gap-2">
+function McpCatalogPicker({
+  catalog,
+  catalogStatus,
+  catalogError,
+  agentServerSet,
+  connectingServerId,
+  onAdd,
+  onBack,
+  onConnect,
+  onDisconnect,
+}: {
+  catalog: McpCatalogEntry[];
+  catalogStatus: string;
+  catalogError: string | null;
+  agentServerSet: Set<string>;
+  connectingServerId: string | null;
+  onAdd: (serverId: string) => void;
+  onBack: () => void;
+  onConnect: (entry: McpCatalogEntry) => void;
+  onDisconnect: (serverId: string) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+
+  const filtered = useMemo(() => {
+    let list = catalog;
+    if (activeCategory !== "all") {
+      list = list.filter((e) => e.category === activeCategory);
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (e) =>
+          e.name.toLowerCase().includes(q) ||
+          e.vendor.toLowerCase().includes(q) ||
+          (e.description ?? "").toLowerCase().includes(q),
+      );
+    }
+    return list;
+  }, [catalog, activeCategory, search]);
+
+  const featured = useMemo(
+    () => filtered.filter((e) => e.isFeatured),
+    [filtered],
+  );
+  const rest = useMemo(() => filtered.filter((e) => !e.isFeatured), [filtered]);
+
+  const categories = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const entry of catalog) {
+      map.set(entry.category, (map.get(entry.category) ?? 0) + 1);
+    }
+    return Array.from(map.entries()).sort(
+      ([a], [b]) =>
+        (MCP_CATEGORY_META[a as keyof typeof MCP_CATEGORY_META]?.order ?? 99) -
+        (MCP_CATEGORY_META[b as keyof typeof MCP_CATEGORY_META]?.order ?? 99),
+    );
+  }, [catalog]);
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="px-4 py-3 border-b border-border shrink-0 flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-foreground">MCP Catalog</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            {catalog.length} servers available
+          </p>
+        </div>
         <Button
           variant="ghost"
           size="sm"
           className="h-7 text-xs"
-          onClick={onCancel}
+          onClick={onBack}
         >
-          Cancel
+          <X className="w-3 h-3 mr-1" />
+          Close
         </Button>
-        <Button
-          size="sm"
-          className="h-7 text-xs"
-          onClick={handleSave}
-          disabled={!canSave}
-        >
-          {initial ? "Update Server" : "Add Server"}
-        </Button>
+      </div>
+
+      {catalogError && (
+        <div className="mx-4 mt-3 p-2.5 rounded border border-destructive/30 bg-destructive/5 text-[11px] text-destructive flex items-center gap-2">
+          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+          {catalogError}
+        </div>
+      )}
+
+      {/* Category tabs + search */}
+      <div className="px-4 py-2 border-b border-border shrink-0 space-y-2">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search servers..."
+            className="pl-8 h-7 text-xs"
+            style={{ fontSize: "16px" }}
+          />
+        </div>
+        <div className="flex gap-1 flex-wrap">
+          <button
+            onClick={() => setActiveCategory("all")}
+            className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${
+              activeCategory === "all"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            }`}
+          >
+            All ({catalog.length})
+          </button>
+          {categories.map(([cat, count]) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${
+                activeCategory === cat
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              }`}
+            >
+              {MCP_CATEGORY_META[cat as keyof typeof MCP_CATEGORY_META]
+                ?.label ?? cat}{" "}
+              ({count})
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
+        {catalogStatus === "loading" && catalog.length === 0 && (
+          <div className="flex items-center justify-center py-12 text-muted-foreground text-xs">
+            Loading catalog...
+          </div>
+        )}
+
+        {featured.length > 0 && (
+          <>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 px-1">
+              Featured
+            </p>
+            {featured.map((entry) => (
+              <McpCatalogCard
+                key={entry.serverId}
+                entry={entry}
+                isOnAgent={agentServerSet.has(entry.serverId)}
+                connectingServerId={connectingServerId}
+                onAdd={() => onAdd(entry.serverId)}
+                onConnect={() => onConnect(entry)}
+                onDisconnect={() => onDisconnect(entry.serverId)}
+              />
+            ))}
+            {rest.length > 0 && <div className="h-px bg-border mx-1 my-3" />}
+          </>
+        )}
+
+        {rest.map((entry) => (
+          <McpCatalogCard
+            key={entry.serverId}
+            entry={entry}
+            isOnAgent={agentServerSet.has(entry.serverId)}
+            connectingServerId={connectingServerId}
+            onAdd={() => onAdd(entry.serverId)}
+            onConnect={() => onConnect(entry)}
+            onDisconnect={() => onDisconnect(entry.serverId)}
+          />
+        ))}
+
+        {filtered.length === 0 && catalogStatus !== "loading" && (
+          <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
+            <Search className="w-5 h-5 opacity-40" />
+            <p className="text-xs">No servers match your search.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// MCP Catalog Card — a server in the catalog picker
+// =============================================================================
+
+function McpCatalogCard({
+  entry,
+  isOnAgent,
+  connectingServerId,
+  onAdd,
+  onConnect,
+  onDisconnect,
+}: {
+  entry: McpCatalogEntry;
+  isOnAgent: boolean;
+  connectingServerId: string | null;
+  onAdd: () => void;
+  onConnect: () => void;
+  onDisconnect: () => void;
+}) {
+  const badge = connectionBadge(entry.connectionStatus);
+  const isConnecting = connectingServerId === entry.serverId;
+  const needsAuth =
+    entry.authStrategy !== "none" && entry.connectionStatus !== "connected";
+
+  return (
+    <div
+      className={`rounded-lg border transition-all px-3 py-2.5 ${
+        isOnAgent
+          ? "bg-primary/5 border-primary/20"
+          : "bg-card border-border hover:border-primary/20"
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        {entry.iconUrl ? (
+          <img
+            src={entry.iconUrl}
+            alt=""
+            className="w-7 h-7 rounded mt-0.5 shrink-0 object-contain"
+          />
+        ) : (
+          <div
+            className="w-7 h-7 rounded mt-0.5 shrink-0 flex items-center justify-center text-[11px] font-bold text-white"
+            style={{ backgroundColor: entry.color ?? "#6b7280" }}
+          >
+            {entry.name.charAt(0).toUpperCase()}
+          </div>
+        )}
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+            <span className="text-xs font-semibold text-foreground">
+              {entry.name}
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              {entry.vendor}
+            </span>
+            {entry.isOfficial && (
+              <Badge variant="secondary" className="text-[9px] h-4 px-1">
+                Official
+              </Badge>
+            )}
+            <Badge
+              variant="outline"
+              className={`text-[9px] h-4 px-1.5 border ${badge.cls}`}
+            >
+              {badge.label}
+            </Badge>
+            {isOnAgent && (
+              <Badge
+                variant="outline"
+                className="text-[9px] h-4 px-1.5 border-primary/30 text-primary"
+              >
+                <Check className="w-2.5 h-2.5 mr-0.5" />
+                On Agent
+              </Badge>
+            )}
+          </div>
+          {entry.description && (
+            <p className="text-[11px] text-muted-foreground line-clamp-2">
+              {entry.description}
+            </p>
+          )}
+          <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+            <span className={TRANSPORT_META[entry.transport]?.color ?? ""}>
+              {TRANSPORT_META[entry.transport]?.label ?? entry.transport}
+            </span>
+            <span>·</span>
+            <span>{authStrategyLabel(entry.authStrategy)}</span>
+            <span>·</span>
+            <span>
+              {MCP_CATEGORY_META[entry.category]?.label ?? entry.category}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          {!isOnAgent && (
+            <Button size="sm" className="h-6 text-[10px] px-2" onClick={onAdd}>
+              <Plus className="w-3 h-3 mr-0.5" />
+              Add
+            </Button>
+          )}
+          {needsAuth && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-6 text-[10px] px-2"
+              disabled={isConnecting}
+              onClick={onConnect}
+            >
+              <KeyRound className="w-3 h-3 mr-0.5" />
+              {isConnecting ? "..." : "Connect"}
+            </Button>
+          )}
+          {entry.connectionStatus === "connected" && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 text-[10px] px-2 text-muted-foreground hover:text-destructive"
+              onClick={onDisconnect}
+            >
+              Disconnect
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

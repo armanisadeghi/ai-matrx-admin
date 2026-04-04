@@ -398,6 +398,7 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean | null
+          mcp_servers: string[]
           messages: Json | null
           model_id: string | null
           model_tiers: Json | null
@@ -420,6 +421,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean | null
+          mcp_servers?: string[]
           messages?: Json | null
           model_id?: string | null
           model_tiers?: Json | null
@@ -442,6 +444,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean | null
+          mcp_servers?: string[]
           messages?: Json | null
           model_id?: string | null
           model_tiers?: Json | null
@@ -476,6 +479,7 @@ export type Database = {
           is_archived: boolean
           is_favorite: boolean
           is_public: boolean
+          mcp_servers: string[]
           messages: Json
           model_id: string | null
           model_tiers: Json | null
@@ -507,6 +511,7 @@ export type Database = {
           is_archived?: boolean
           is_favorite?: boolean
           is_public?: boolean
+          mcp_servers?: string[]
           messages?: Json
           model_id?: string | null
           model_tiers?: Json | null
@@ -538,6 +543,7 @@ export type Database = {
           is_archived?: boolean
           is_favorite?: boolean
           is_public?: boolean
+          mcp_servers?: string[]
           messages?: Json
           model_id?: string | null
           model_tiers?: Json | null
@@ -4049,42 +4055,64 @@ export type Database = {
       }
       cx_message: {
         Row: {
+          agent_id: string | null
           content: Json
           content_history: Json | null
           conversation_id: string
           created_at: string
           deleted_at: string | null
           id: string
+          is_visible_to_model: boolean
+          is_visible_to_user: boolean
           metadata: Json
           position: number
           role: string
+          source: string
           status: string
+          user_content: Json | null
         }
         Insert: {
+          agent_id?: string | null
           content?: Json
           content_history?: Json | null
           conversation_id: string
           created_at?: string
           deleted_at?: string | null
           id?: string
+          is_visible_to_model?: boolean
+          is_visible_to_user?: boolean
           metadata?: Json
           position: number
           role: string
+          source?: string
           status?: string
+          user_content?: Json | null
         }
         Update: {
+          agent_id?: string | null
           content?: Json
           content_history?: Json | null
           conversation_id?: string
           created_at?: string
           deleted_at?: string | null
           id?: string
+          is_visible_to_model?: boolean
+          is_visible_to_user?: boolean
           metadata?: Json
           position?: number
           role?: string
+          source?: string
           status?: string
+          user_content?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "cx_message_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cx_message_conversation_id_fkey"
             columns: ["conversation_id"]
@@ -5861,6 +5889,239 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      mcp_server_configs: {
+        Row: {
+          args: string[]
+          command: string
+          config_type: string
+          created_at: string
+          env_schema: Json
+          id: string
+          is_default: boolean
+          label: string
+          min_node_version: string | null
+          notes: string | null
+          npm_package: string | null
+          pip_package: string | null
+          requires_docker: boolean
+          server_id: string
+          updated_at: string
+        }
+        Insert: {
+          args?: string[]
+          command: string
+          config_type?: string
+          created_at?: string
+          env_schema?: Json
+          id?: string
+          is_default?: boolean
+          label: string
+          min_node_version?: string | null
+          notes?: string | null
+          npm_package?: string | null
+          pip_package?: string | null
+          requires_docker?: boolean
+          server_id: string
+          updated_at?: string
+        }
+        Update: {
+          args?: string[]
+          command?: string
+          config_type?: string
+          created_at?: string
+          env_schema?: Json
+          id?: string
+          is_default?: boolean
+          label?: string
+          min_node_version?: string | null
+          notes?: string | null
+          npm_package?: string | null
+          pip_package?: string | null
+          requires_docker?: boolean
+          server_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcp_server_configs_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "mcp_servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mcp_servers: {
+        Row: {
+          auth_strategy: Database["public"]["Enums"]["mcp_auth_strategy"]
+          category: Database["public"]["Enums"]["mcp_server_category"]
+          color: string | null
+          created_at: string
+          description: string | null
+          docs_url: string | null
+          endpoint_url: string | null
+          has_local: boolean
+          has_remote: boolean
+          icon_url: string | null
+          id: string
+          is_featured: boolean
+          is_official: boolean
+          metadata: Json
+          name: string
+          oauth_client_id: string | null
+          oauth_scopes: string[] | null
+          slug: string
+          sort_order: number
+          status: Database["public"]["Enums"]["mcp_server_status"]
+          supports_mcp_apps: boolean
+          transport: Database["public"]["Enums"]["mcp_transport"]
+          updated_at: string
+          vendor: string
+          website_url: string | null
+        }
+        Insert: {
+          auth_strategy?: Database["public"]["Enums"]["mcp_auth_strategy"]
+          category?: Database["public"]["Enums"]["mcp_server_category"]
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          docs_url?: string | null
+          endpoint_url?: string | null
+          has_local?: boolean
+          has_remote?: boolean
+          icon_url?: string | null
+          id?: string
+          is_featured?: boolean
+          is_official?: boolean
+          metadata?: Json
+          name: string
+          oauth_client_id?: string | null
+          oauth_scopes?: string[] | null
+          slug: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["mcp_server_status"]
+          supports_mcp_apps?: boolean
+          transport?: Database["public"]["Enums"]["mcp_transport"]
+          updated_at?: string
+          vendor: string
+          website_url?: string | null
+        }
+        Update: {
+          auth_strategy?: Database["public"]["Enums"]["mcp_auth_strategy"]
+          category?: Database["public"]["Enums"]["mcp_server_category"]
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          docs_url?: string | null
+          endpoint_url?: string | null
+          has_local?: boolean
+          has_remote?: boolean
+          icon_url?: string | null
+          id?: string
+          is_featured?: boolean
+          is_official?: boolean
+          metadata?: Json
+          name?: string
+          oauth_client_id?: string | null
+          oauth_scopes?: string[] | null
+          slug?: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["mcp_server_status"]
+          supports_mcp_apps?: boolean
+          transport?: Database["public"]["Enums"]["mcp_transport"]
+          updated_at?: string
+          vendor?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      mcp_user_connections: {
+        Row: {
+          access_token_encrypted: string | null
+          config_id: string | null
+          connected_at: string | null
+          created_at: string
+          credentials_encrypted: string | null
+          endpoint_url_override: string | null
+          error_count: number
+          id: string
+          last_error: string | null
+          last_used_at: string | null
+          metadata: Json
+          oauth_client_id: string | null
+          oauth_scopes_granted: string[] | null
+          oauth_token_endpoint: string | null
+          refresh_token_encrypted: string | null
+          server_id: string
+          status: Database["public"]["Enums"]["mcp_connection_status"]
+          token_expires_at: string | null
+          transport_used: Database["public"]["Enums"]["mcp_transport"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token_encrypted?: string | null
+          config_id?: string | null
+          connected_at?: string | null
+          created_at?: string
+          credentials_encrypted?: string | null
+          endpoint_url_override?: string | null
+          error_count?: number
+          id?: string
+          last_error?: string | null
+          last_used_at?: string | null
+          metadata?: Json
+          oauth_client_id?: string | null
+          oauth_scopes_granted?: string[] | null
+          oauth_token_endpoint?: string | null
+          refresh_token_encrypted?: string | null
+          server_id: string
+          status?: Database["public"]["Enums"]["mcp_connection_status"]
+          token_expires_at?: string | null
+          transport_used?: Database["public"]["Enums"]["mcp_transport"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token_encrypted?: string | null
+          config_id?: string | null
+          connected_at?: string | null
+          created_at?: string
+          credentials_encrypted?: string | null
+          endpoint_url_override?: string | null
+          error_count?: number
+          id?: string
+          last_error?: string | null
+          last_used_at?: string | null
+          metadata?: Json
+          oauth_client_id?: string | null
+          oauth_scopes_granted?: string[] | null
+          oauth_token_endpoint?: string | null
+          refresh_token_encrypted?: string | null
+          server_id?: string
+          status?: Database["public"]["Enums"]["mcp_connection_status"]
+          token_expires_at?: string | null
+          transport_used?: Database["public"]["Enums"]["mcp_transport"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcp_user_connections_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "mcp_server_configs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mcp_user_connections_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "mcp_servers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       message: {
         Row: {
@@ -15759,6 +16020,20 @@ export type Database = {
         Returns: string
       }
       create_related_records: { Args: { input_data: Json }; Returns: Json }
+      create_shortcut_for_agent: {
+        Args: {
+          p_agent_id: string
+          p_category_id: string
+          p_label: string
+          p_organization_id?: string
+          p_project_id?: string
+          p_task_id?: string
+          p_use_latest?: boolean
+          p_user_id?: string
+          p_workspace_id?: string
+        }
+        Returns: string
+      }
       create_user_list: {
         Args: {
           p_authenticated_read?: boolean
@@ -16121,16 +16396,21 @@ export type Database = {
       cx_message_edit: {
         Args: { p_message_id: string; p_new_content: Json }
         Returns: {
+          agent_id: string | null
           content: Json
           content_history: Json | null
           conversation_id: string
           created_at: string
           deleted_at: string | null
           id: string
+          is_visible_to_model: boolean
+          is_visible_to_user: boolean
           metadata: Json
           position: number
           role: string
+          source: string
           status: string
+          user_content: Json | null
         }
         SetofOptions: {
           from: "*"
@@ -16139,6 +16419,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      decrypt_mcp_token: { Args: { p_encrypted: string }; Returns: string }
       delete_arg: { Args: { p_arg_id: string }; Returns: undefined }
       delete_by_id: {
         Args: { p_ids: string[]; p_table_name: string }
@@ -16164,6 +16445,10 @@ export type Database = {
         }[]
       }
       delete_user_table: { Args: { p_table_id: string }; Returns: Json }
+      disconnect_mcp_server: {
+        Args: { p_server_id: string }
+        Returns: undefined
+      }
       duplicate_agent: { Args: { p_agent_id: string }; Returns: string }
       duplicate_row: {
         Args: {
@@ -16173,6 +16458,7 @@ export type Database = {
         }
         Returns: Json
       }
+      duplicate_shortcut: { Args: { p_shortcut_id: string }; Returns: string }
       dynamic_search: {
         Args: {
           p_page_number?: number
@@ -16186,6 +16472,7 @@ export type Database = {
           total_count: number
         }[]
       }
+      encrypt_mcp_token: { Args: { p_plaintext: string }; Returns: string }
       execute_admin_query: { Args: { query: string }; Returns: Json }
       execute_complex_save: {
         Args: { operations: Json; options?: Json }
@@ -17388,6 +17675,59 @@ export type Database = {
           value_type: string
         }[]
       }
+      get_conversation_for_display: {
+        Args: { p_conversation_id: string }
+        Returns: {
+          conv_created_at: string
+          conv_description: string
+          conv_id: string
+          conv_is_public: boolean
+          conv_last_model_id: string
+          conv_message_count: number
+          conv_status: string
+          conv_title: string
+          conv_updated_at: string
+          conv_variables: Json
+          msg_agent_id: string
+          msg_created_at: string
+          msg_display_content: Json
+          msg_id: string
+          msg_metadata: Json
+          msg_position: number
+          msg_role: string
+          msg_source: string
+          msg_status: string
+        }[]
+      }
+      get_conversation_messages_for_display: {
+        Args: { p_conversation_id: string }
+        Returns: {
+          display_content: Json
+          msg_agent_id: string
+          msg_conversation_id: string
+          msg_created_at: string
+          msg_id: string
+          msg_metadata: Json
+          msg_position: number
+          msg_role: string
+          msg_source: string
+          msg_status: string
+        }[]
+      }
+      get_conversation_messages_for_model: {
+        Args: { p_conversation_id: string }
+        Returns: {
+          msg_content: Json
+          msg_conversation_id: string
+          msg_created_at: string
+          msg_id: string
+          msg_metadata: Json
+          msg_position: number
+          msg_role: string
+          msg_source: string
+          msg_status: string
+        }[]
+      }
       get_conversations_for_user: {
         Args: { p_user_id: string }
         Returns: {
@@ -17567,6 +17907,53 @@ export type Database = {
           referenced_column_name: string
           referencing_column_name: string
           referencing_table_name: string
+        }[]
+      }
+      get_mcp_catalog_for_user: {
+        Args: never
+        Returns: {
+          auth_strategy: Database["public"]["Enums"]["mcp_auth_strategy"]
+          category: Database["public"]["Enums"]["mcp_server_category"]
+          color: string
+          connected_at: string
+          connection_id: string
+          connection_status: Database["public"]["Enums"]["mcp_connection_status"]
+          description: string
+          docs_url: string
+          endpoint_url: string
+          has_local: boolean
+          has_remote: boolean
+          icon_url: string
+          is_featured: boolean
+          is_official: boolean
+          last_used_at: string
+          name: string
+          server_id: string
+          server_status: Database["public"]["Enums"]["mcp_server_status"]
+          slug: string
+          supports_mcp_apps: boolean
+          token_expires_at: string
+          transport: Database["public"]["Enums"]["mcp_transport"]
+          transport_used: Database["public"]["Enums"]["mcp_transport"]
+          vendor: string
+          website_url: string
+        }[]
+      }
+      get_mcp_credentials: {
+        Args: { p_server_id: string; p_user_id: string }
+        Returns: {
+          access_token: string
+          auth_strategy: Database["public"]["Enums"]["mcp_auth_strategy"]
+          connection_id: string
+          credentials_json: string
+          endpoint_url: string
+          oauth_client_id: string
+          oauth_token_endpoint: string
+          refresh_token: string
+          server_slug: string
+          status: Database["public"]["Enums"]["mcp_connection_status"]
+          token_expires_at: string
+          transport: Database["public"]["Enums"]["mcp_transport"]
         }[]
       }
       get_missing_broker_ids:
@@ -18065,6 +18452,41 @@ export type Database = {
           is_admin: boolean
           preferences: Json
           preferences_exists: boolean
+        }[]
+      }
+      get_user_shortcuts: {
+        Args: never
+        Returns: {
+          agent_id: string
+          agent_name: string
+          agent_version_id: string
+          allow_chat: boolean
+          apply_variables: boolean
+          auto_run: boolean
+          category_id: string
+          category_label: string
+          created_at: string
+          description: string
+          enabled_contexts: Json
+          icon_name: string
+          id: string
+          is_active: boolean
+          keyboard_shortcut: string
+          label: string
+          organization_id: string
+          project_id: string
+          result_display: string
+          scope_mappings: Json
+          scope_name: string
+          scope_type: string
+          show_variables: boolean
+          sort_order: number
+          task_id: string
+          updated_at: string
+          use_latest: boolean
+          use_pre_execution_input: boolean
+          user_id: string
+          workspace_id: string
         }[]
       }
       get_user_stats: { Args: { p_user_id: string }; Returns: Json }
@@ -19045,6 +19467,22 @@ export type Database = {
         }
         Returns: undefined
       }
+      upsert_mcp_connection: {
+        Args: {
+          p_access_token?: string
+          p_config_id?: string
+          p_credentials_json?: string
+          p_endpoint_override?: string
+          p_oauth_client_id?: string
+          p_oauth_scopes?: string[]
+          p_oauth_token_endpoint?: string
+          p_refresh_token?: string
+          p_server_id: string
+          p_token_expires_at?: string
+          p_transport?: Database["public"]["Enums"]["mcp_transport"]
+        }
+        Returns: string
+      }
       upsert_processors: {
         Args: {
           p_default_extractors?: Json
@@ -19684,6 +20122,39 @@ export type Database = {
         | "hypercluster"
         | "the_matrix"
         | "knowledge_matrix"
+      mcp_auth_strategy:
+        | "oauth_discovery"
+        | "bearer"
+        | "api_key"
+        | "env"
+        | "none"
+      mcp_connection_status:
+        | "connected"
+        | "expired"
+        | "refresh_failed"
+        | "disconnected"
+        | "error"
+      mcp_server_category:
+        | "productivity"
+        | "communication"
+        | "design"
+        | "developer"
+        | "database"
+        | "payments"
+        | "analytics"
+        | "crm"
+        | "storage"
+        | "ai"
+        | "search"
+        | "automation"
+        | "other"
+      mcp_server_status:
+        | "active"
+        | "beta"
+        | "community"
+        | "deprecated"
+        | "coming_soon"
+      mcp_transport: "http" | "sse" | "stdio"
       message_role: "user" | "system" | "assistant" | "tool"
       message_type:
         | "text"
@@ -20383,6 +20854,43 @@ export const Constants = {
         "the_matrix",
         "knowledge_matrix",
       ],
+      mcp_auth_strategy: [
+        "oauth_discovery",
+        "bearer",
+        "api_key",
+        "env",
+        "none",
+      ],
+      mcp_connection_status: [
+        "connected",
+        "expired",
+        "refresh_failed",
+        "disconnected",
+        "error",
+      ],
+      mcp_server_category: [
+        "productivity",
+        "communication",
+        "design",
+        "developer",
+        "database",
+        "payments",
+        "analytics",
+        "crm",
+        "storage",
+        "ai",
+        "search",
+        "automation",
+        "other",
+      ],
+      mcp_server_status: [
+        "active",
+        "beta",
+        "community",
+        "deprecated",
+        "coming_soon",
+      ],
+      mcp_transport: ["http", "sse", "stdio"],
       message_role: ["user", "system", "assistant", "tool"],
       message_type: [
         "text",

@@ -83,6 +83,7 @@ export function dbRowToAgentDefinition(row: AgentRow): AgentDefinition {
       (row.output_schema as unknown as AgentDefinition["outputSchema"]) ?? null,
     customTools:
       (row.custom_tools as unknown as AgentDefinition["customTools"]) ?? [],
+    mcpServers: row.mcp_servers ?? [],
 
     userId: row.user_id,
     organizationId: row.organization_id,
@@ -148,6 +149,7 @@ export function agentDefinitionToInsert(agent: AgentDefinition): AgentInsert {
       agent.outputSchema as unknown as Database["public"]["Tables"]["agents"]["Insert"]["output_schema"],
     custom_tools:
       agent.customTools as unknown as Database["public"]["Tables"]["agents"]["Insert"]["custom_tools"],
+    mcp_servers: agent.mcpServers,
 
     user_id: agent.userId,
     organization_id: agent.organizationId,
@@ -207,6 +209,7 @@ export function agentDefinitionToUpdate(
   if (partial.customTools !== undefined)
     update.custom_tools =
       partial.customTools as unknown as Database["public"]["Tables"]["agents"]["Update"]["custom_tools"];
+  if (partial.mcpServers !== undefined) update.mcp_servers = partial.mcpServers;
 
   if (partial.userId !== undefined) update.user_id = partial.userId;
   if (partial.organizationId !== undefined)

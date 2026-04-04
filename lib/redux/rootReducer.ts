@@ -82,6 +82,7 @@ import cxConversationsReducer from "@/features/cx-chat/redux/cx-conversations.sl
 import artifactsReducer from "./slices/artifactsSlice";
 import htmlPagesReducer from "./slices/htmlPagesSlice";
 import { agentSettingsReducer } from "./slices/agent-settings";
+import mcpReducer from "@/features/agents/redux/mcp/mcp.slice";
 
 import appContextReducer from "./slices/appContextSlice";
 
@@ -307,6 +308,9 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     // // Layer 4 — Request Execution
     activeRequests: activeRequestsReducer,
     instanceConversationHistory: instanceConversationHistoryReducer,
+
+    // MCP Catalog — global server registry + per-user connection state
+    mcp: mcpReducer,
 
     // Just garbage that makes no sense!
     // agentExecution: agentExecutionReducer,

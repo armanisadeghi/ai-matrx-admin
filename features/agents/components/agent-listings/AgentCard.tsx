@@ -60,19 +60,19 @@ export function AgentCard({
   const handleRun = (e?: React.MouseEvent) => {
     if (e && (e.metaKey || e.ctrlKey)) return;
     e?.preventDefault();
-    if (onNavigate && !isAnyNavigating) onNavigate(id, `${basePath}/run/${id}`);
+    if (onNavigate && !isAnyNavigating) onNavigate(id, `${basePath}/${id}/run`);
   };
 
   const handleEdit = (e?: React.MouseEvent) => {
     if (e && (e.metaKey || e.ctrlKey)) return;
     e?.preventDefault();
     if (onNavigate && !isAnyNavigating)
-      onNavigate(id, `${basePath}/edit/${id}`);
+      onNavigate(id, `${basePath}/${id}/edit`);
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
     if (e.metaKey || e.ctrlKey) {
-      window.open(`${basePath}/run/${id}`, "_blank");
+      window.open(`${basePath}/${id}/run`, "_blank");
       return;
     }
     const timeSinceClose = Date.now() - lastModalCloseTime;
@@ -180,7 +180,7 @@ export function AgentCard({
           onClick={(e) => e.stopPropagation()}
         >
           <Link
-            href={`${basePath}/run/${id}`}
+            href={`${basePath}/${id}/run`}
             tabIndex={-1}
             onClick={(e) => {
               e.stopPropagation();
@@ -199,7 +199,7 @@ export function AgentCard({
           </Link>
           {canEdit && (
             <Link
-              href={`${basePath}/edit/${id}`}
+              href={`${basePath}/${id}/edit`}
               tabIndex={-1}
               onClick={(e) => {
                 e.stopPropagation();

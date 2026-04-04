@@ -205,12 +205,12 @@ function StatusBar({
   instanceStatus?: InstanceStatus;
 }) {
   return (
-    <div className="flex items-center gap-1.5 flex-wrap px-1.5 py-1 border-b border-border/50 bg-muted/20">
-      <span className="text-[9px] text-muted-foreground font-mono">REQ</span>
+    <div className="flex items-center gap-2 flex-wrap px-2 py-1.5 border-b border-border/50 bg-muted/20">
+      <span className="text-[10px] text-muted-foreground font-mono">REQ</span>
       <Badge
         variant="outline"
         className={cn(
-          "text-[9px] px-1 py-0 h-4 font-mono",
+          "text-[10px] px-1.5 py-0 h-5 font-mono",
           STATUS_COLORS[request.status] ?? "",
         )}
       >
@@ -218,13 +218,13 @@ function StatusBar({
       </Badge>
       {instanceStatus && (
         <>
-          <span className="text-[9px] text-muted-foreground font-mono">
+          <span className="text-[10px] text-muted-foreground font-mono">
             INST
           </span>
           <Badge
             variant="outline"
             className={cn(
-              "text-[9px] px-1 py-0 h-4 font-mono",
+              "text-[10px] px-1.5 py-0 h-5 font-mono",
               INSTANCE_STATUS_COLORS[instanceStatus] ?? "",
             )}
           >
@@ -234,10 +234,10 @@ function StatusBar({
       )}
       {request.currentStatus && (
         <>
-          <span className="text-[9px] text-muted-foreground">|</span>
+          <span className="text-[10px] text-muted-foreground">|</span>
           <Badge
             variant="outline"
-            className="text-[9px] px-1 py-0 h-4 bg-yellow-500/10 text-yellow-400"
+            className="text-[10px] px-1.5 py-0 h-5 bg-yellow-500/10 text-yellow-400"
           >
             {request.currentStatus.user_message ?? request.currentStatus.status}
           </Badge>
@@ -245,15 +245,15 @@ function StatusBar({
       )}
       {request.errorMessage && (
         <>
-          <span className="text-[9px] text-muted-foreground">|</span>
-          <Badge variant="destructive" className="text-[9px] px-1 py-0 h-4">
+          <span className="text-[10px] text-muted-foreground">|</span>
+          <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-5">
             {request.errorIsFatal ? "FATAL" : "ERR"}:{" "}
             {request.errorMessage.slice(0, 60)}
           </Badge>
         </>
       )}
       {request.conversationId && (
-        <span className="text-[9px] text-muted-foreground font-mono ml-auto flex items-center gap-0.5">
+        <span className="text-[10px] text-muted-foreground font-mono ml-auto flex items-center gap-0.5">
           conv: {request.conversationId.slice(0, 8)}...
           <CopyBtn text={request.conversationId} id="conv-id" />
         </span>
@@ -264,9 +264,9 @@ function StatusBar({
 
 function MetricsBar({ metrics }: { metrics: ClientMetrics }) {
   return (
-    <div className="flex items-center gap-2 flex-wrap px-1.5 py-0.5 border-b border-border/50 bg-muted/10 text-[9px]">
+    <div className="flex items-center gap-2 flex-wrap px-2 py-1 border-b border-border/50 bg-muted/10 text-[10px]">
       <span className="flex items-center gap-0.5 text-muted-foreground">
-        <Clock className="h-2.5 w-2.5" /> TTFT:
+        <Clock className="h-3 w-3" /> TTFT:
       </span>
       <span className="font-mono text-foreground/80">
         {metrics.ttftMs !== null ? `${metrics.ttftMs.toFixed(0)}ms` : "—"}
@@ -290,7 +290,7 @@ function MetricsBar({ metrics }: { metrics: ClientMetrics }) {
       <span className="font-mono text-foreground/80">
         {metrics.totalEvents}
       </span>
-      <span className="text-[8px] text-muted-foreground/60">
+      <span className="text-[9px] text-muted-foreground/60">
         (chunk:{metrics.chunkEvents} status:{metrics.statusUpdateEvents} tool:
         {metrics.toolEvents} data:{metrics.dataEvents} block:
         {metrics.contentBlockEvents} other:{metrics.otherEvents})
@@ -371,12 +371,15 @@ function TimelineRow({
   entry,
   baseTime,
   textChunks,
+  forceExpanded = false,
 }: {
   entry: TimelineEntry;
   baseTime: number;
   textChunks: string[];
+  forceExpanded?: boolean;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [localExpanded, setLocalExpanded] = useState(false);
+  const expanded = forceExpanded || localExpanded;
   const relativeMs = entry.timestamp - baseTime;
   const colorClass = getTimelineColor(entry.kind);
   const icon = getTimelineIcon(entry.kind);
@@ -392,19 +395,19 @@ function TimelineRow({
     >
       <button
         type="button"
-        onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-1 px-1.5 py-0.5 text-left cursor-pointer"
+        onClick={() => setLocalExpanded(!localExpanded)}
+        className="w-full flex items-center gap-1.5 px-2 py-1 text-left cursor-pointer"
       >
-        <span className="text-[9px] font-mono text-muted-foreground/60 w-6 shrink-0 text-right">
+        <span className="text-[10px] font-mono text-muted-foreground/60 w-7 shrink-0 text-right">
           {entry.seq}
         </span>
-        <span className="text-[9px] font-mono text-muted-foreground/80 w-16 shrink-0 text-right">
+        <span className="text-[10px] font-mono text-muted-foreground/80 w-16 shrink-0 text-right">
           {relativeMs.toFixed(0)}ms
         </span>
         <Badge
           variant="outline"
           className={cn(
-            "text-[9px] px-1 py-0 h-4 gap-0.5 shrink-0 border",
+            "text-[10px] px-1.5 py-0 h-5 gap-0.5 shrink-0 border",
             colorClass,
           )}
         >
@@ -415,21 +418,21 @@ function TimelineRow({
           <Badge
             variant="outline"
             className={cn(
-              "text-[9px] px-1 py-0 h-4 shrink-0 border",
+              "text-[10px] px-1.5 py-0 h-5 shrink-0 border",
               colorClass,
             )}
           >
             {entry.subEvent}
           </Badge>
         )}
-        <span className="flex-1 text-[9px] text-muted-foreground/60 truncate font-mono">
+        <span className="flex-1 text-[10px] text-muted-foreground/60 truncate font-mono">
           {summary}
         </span>
         <CopyBtn text={json} id={`tl-${entry.seq}`} />
         {expanded ? (
-          <ChevronDown className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+          <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
         ) : (
-          <ChevronRight className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+          <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
         )}
       </button>
       {expanded && (
@@ -650,8 +653,8 @@ function TimelineFilterBar({
   counts: Record<string, number>;
 }) {
   return (
-    <div className="flex items-center gap-0.5 flex-wrap px-1.5 py-0.5 border-b border-border/50">
-      <Filter className="h-3 w-3 text-muted-foreground mr-0.5" />
+    <div className="flex items-center gap-1 flex-wrap px-2 py-1 border-b border-border/50">
+      <Filter className="h-3.5 w-3.5 text-muted-foreground mr-0.5" />
       {ALL_TIMELINE_KINDS.map((kind) => {
         const active = activeFilters.has(kind);
         const count = counts[kind] ?? 0;
@@ -661,7 +664,7 @@ function TimelineFilterBar({
             type="button"
             onClick={() => onToggle(kind)}
             className={cn(
-              "inline-flex items-center gap-0.5 text-[9px] px-1 py-0 h-4 rounded border transition-colors",
+              "inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0 h-5 rounded border transition-colors",
               active
                 ? getTimelineColor(kind)
                 : "bg-muted/20 text-muted-foreground/40 border-transparent hover:border-border/50",
@@ -687,6 +690,7 @@ function TimelineTab({ request }: { request: ActiveRequest }) {
   );
   const scrollRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState(true);
+  const [allExpanded, setAllExpanded] = useState(false);
   const prevLengthRef = useRef(0);
 
   const counts: Record<string, number> = {};
@@ -725,23 +729,35 @@ function TimelineTab({ request }: { request: ActiveRequest }) {
         onToggle={toggleFilter}
         counts={counts}
       />
-      <div className="flex items-center gap-1 px-1.5 py-0.5 border-b border-border/30 text-[9px] text-muted-foreground">
+      <div className="flex items-center gap-1.5 px-2 py-1 border-b border-border/30 text-[10px] text-muted-foreground">
         <span>
           {filtered.length} of {request.timeline.length} entries
         </span>
         {request.isTextStreaming && (
           <Badge
             variant="outline"
-            className="text-[8px] px-1 py-0 h-3 bg-blue-500/10 text-blue-400 animate-pulse"
+            className="text-[9px] px-1.5 py-0 h-4 bg-blue-500/10 text-blue-400 animate-pulse"
           >
             STREAMING TEXT
           </Badge>
         )}
         <button
           type="button"
+          onClick={() => setAllExpanded(!allExpanded)}
+          className={cn(
+            "ml-auto px-1.5 py-0 h-5 rounded text-[10px] border",
+            allExpanded
+              ? "bg-purple-500/20 text-purple-400 border-purple-500/30"
+              : "bg-muted/20 text-muted-foreground border-transparent hover:border-border/50",
+          )}
+        >
+          {allExpanded ? "collapse all" : "expand all"}
+        </button>
+        <button
+          type="button"
           onClick={() => setAutoScroll(!autoScroll)}
           className={cn(
-            "ml-auto px-1 py-0 h-4 rounded text-[9px] border",
+            "px-1.5 py-0 h-5 rounded text-[10px] border",
             autoScroll
               ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
               : "bg-muted/20 text-muted-foreground border-transparent",
@@ -764,10 +780,11 @@ function TimelineTab({ request }: { request: ActiveRequest }) {
             entry={entry}
             baseTime={baseTime}
             textChunks={request.textChunks}
+            forceExpanded={allExpanded}
           />
         ))}
         {filtered.length === 0 && (
-          <div className="text-[10px] text-muted-foreground/60 text-center py-4">
+          <div className="text-[11px] text-muted-foreground/60 text-center py-4">
             {request.timeline.length === 0
               ? "No events yet — waiting for stream..."
               : "No entries match current filters"}
@@ -1153,11 +1170,24 @@ const TAB_DEFS: { id: TabId; label: string; icon: React.ReactNode }[] = [
 export interface StreamDebugPanelProps {
   instanceId: string;
   className?: string;
+  /**
+   * When true, hides the StatusBar, MetricsBar, request selector, and internal tab bar.
+   * Used when the parent (e.g., FullScreenOverlay) provides its own chrome.
+   * In hideChrome mode, only the "events" (Timeline) tab content is rendered.
+   */
+  hideChrome?: boolean;
+  /**
+   * Override which requestId to display, bypassing the internal selector.
+   * Used by the overlay to synchronize request selection across tabs.
+   */
+  requestIdOverride?: string;
 }
 
 export function StreamDebugPanel({
   instanceId,
   className,
+  hideChrome = false,
+  requestIdOverride,
 }: StreamDebugPanelProps) {
   const [activeTab, setActiveTab] = useState<TabId>("events");
 
@@ -1172,7 +1202,8 @@ export function StreamDebugPanel({
   const [selectedRequestIdx, setSelectedRequestIdx] = useState<number>(-1);
   const effectiveIdx =
     selectedRequestIdx === -1 ? requestIds.length - 1 : selectedRequestIdx;
-  const selectedRequestId = requestIds[effectiveIdx];
+  const derivedRequestId = requestIds[effectiveIdx];
+  const selectedRequestId = requestIdOverride ?? derivedRequestId;
 
   const request = useAppSelector((state) =>
     selectedRequestId
@@ -1184,11 +1215,27 @@ export function StreamDebugPanel({
     return (
       <div
         className={cn(
-          "flex items-center justify-center text-[10px] text-muted-foreground/60",
+          "flex items-center justify-center text-[11px] text-muted-foreground/60 p-4",
           className,
         )}
       >
         No active request for this instance. Run the agent to begin debugging.
+        {requestIds.length === 0 && (
+          <span className="block text-[10px] mt-1">(0 requests found)</span>
+        )}
+      </div>
+    );
+  }
+
+  if (hideChrome) {
+    return (
+      <div
+        className={cn(
+          "flex flex-col h-full bg-background text-foreground",
+          className,
+        )}
+      >
+        <TimelineTab request={request} />
       </div>
     );
   }
@@ -1204,23 +1251,29 @@ export function StreamDebugPanel({
       {request.clientMetrics && <MetricsBar metrics={request.clientMetrics} />}
 
       {requestIds.length > 1 && (
-        <div className="flex items-center gap-1 px-1.5 py-0.5 border-b border-border/30 text-[9px]">
-          <span className="text-muted-foreground">Request:</span>
-          {requestIds.map((id, idx) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setSelectedRequestIdx(idx)}
-              className={cn(
-                "px-1.5 py-0 h-4 rounded border text-[9px] font-mono",
-                idx === effectiveIdx
-                  ? "bg-primary/20 text-primary border-primary/30"
-                  : "bg-muted/20 text-muted-foreground border-transparent hover:border-border/50",
-              )}
-            >
-              #{idx + 1}
-            </button>
-          ))}
+        <div className="flex items-center gap-1.5 px-2 py-1 border-b border-border/30 text-[10px]">
+          <span className="text-muted-foreground font-medium">Request:</span>
+          {requestIds.map((id, idx) => {
+            const req = requestIds[idx];
+            return (
+              <button
+                key={req}
+                type="button"
+                onClick={() => setSelectedRequestIdx(idx)}
+                className={cn(
+                  "px-2 py-0.5 h-5 rounded border text-[10px] font-mono",
+                  idx === effectiveIdx
+                    ? "bg-primary/20 text-primary border-primary/30"
+                    : "bg-muted/20 text-muted-foreground border-transparent hover:border-border/50",
+                )}
+              >
+                #{idx + 1}
+              </button>
+            );
+          })}
+          <span className="text-muted-foreground/60 text-[9px] ml-auto">
+            {requestIds.length} total
+          </span>
         </div>
       )}
 
@@ -1231,7 +1284,7 @@ export function StreamDebugPanel({
             type="button"
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              "inline-flex items-center gap-0.5 px-2 py-1 text-[10px] whitespace-nowrap border-b-2 transition-colors cursor-pointer",
+              "inline-flex items-center gap-1 px-3 py-1.5 text-[11px] whitespace-nowrap border-b-2 transition-colors cursor-pointer",
               activeTab === tab.id
                 ? "border-primary text-primary bg-primary/5"
                 : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/20",

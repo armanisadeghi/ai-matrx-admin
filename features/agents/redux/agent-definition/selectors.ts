@@ -332,6 +332,11 @@ export const selectAgentCustomTools = createSelector(
   (record) => record?.customTools,
 );
 
+export const selectAgentMcpServers = createSelector(
+  [selectAgentById],
+  (record) => record?.mcpServers ?? [],
+);
+
 export const selectAgentModelTiers = createSelector(
   [selectAgentById],
   (record) => record?.modelTiers ?? null,

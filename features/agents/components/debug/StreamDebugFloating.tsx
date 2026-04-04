@@ -61,7 +61,7 @@ export function StreamDebugFloating({
     <div className="fixed z-50" style={{ left: position.x, top: position.y }}>
       <FloatingPanel
         title="Stream Debug"
-        size={large ? "2xl" : "lg"}
+        size={large ? "full" : "2xl"}
         onDragStart={handleMouseDown}
         onClose={onClose}
         bodyClassName="p-0"
@@ -72,14 +72,19 @@ export function StreamDebugFloating({
             className="p-0.5 text-muted-foreground hover:text-foreground transition-colors"
           >
             {large ? (
-              <Minimize2 className="h-3 w-3" />
+              <Minimize2 className="h-3.5 w-3.5" />
             ) : (
-              <Maximize2 className="h-3 w-3" />
+              <Maximize2 className="h-3.5 w-3.5" />
             )}
           </button>
         }
       >
-        <div className={cn("overflow-hidden", large ? "h-[70vh]" : "h-[50vh]")}>
+        <div
+          className={cn(
+            "overflow-hidden",
+            large ? "h-[80vh] w-[80vw]" : "h-[60vh]",
+          )}
+        >
           <StreamDebugPanel instanceId={instanceId} className="h-full" />
         </div>
       </FloatingPanel>

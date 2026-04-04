@@ -4,7 +4,11 @@ import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { AgentRunPage } from "@/features/agents/components/run/AgentRunPage";
+import { serverToolsService } from "@/utils/supabase/server-tools-service";
+import { AgentBuilder } from "@/features/agents/components/builder/AgentBuilder";
+import type { DatabaseTool } from "@/utils/supabase/tools-service";
+
+export const revalidate = 43200;
 
 export async function generateMetadata({
   params,
@@ -19,12 +23,12 @@ export async function generateMetadata({
     .eq("id", id)
     .single();
   return {
-    title: data?.name ? `Run ${data.name}` : "Run Agent",
-    description: data?.description ?? "Execute your AI agent.",
+    title: data?.name ? `${data.name} — Agent Builder` : "Agent Builder",
+    description: data?.description ?? "Build and configure your AI agent.",
   };
 }
 
-export default async function RunAgentPage({
+export default async function EditAgentPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -32,11 +36,12 @@ export default async function RunAgentPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("agents")
-    .select("id, name")
-    .eq("id", id)
-    .single();
+  const [agentResult, availableTools] = await Promise.all([
+    supabase.from("agents").select("id, name").eq("id", id).single(),
+    serverToolsService.fetchTools(),
+  ]);
+
+  const { data, error } = agentResult;
 
   if (error || !data) {
     return (
@@ -64,7 +69,10 @@ export default async function RunAgentPage({
 
   return (
     <div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden">
-      <AgentRunPage agentId={id} agentName={data.name ?? "Agent"} />
+      <AgentBuilder
+        agentId={id}
+        availableTools={availableTools as DatabaseTool[]}
+      />
     </div>
   );
 }

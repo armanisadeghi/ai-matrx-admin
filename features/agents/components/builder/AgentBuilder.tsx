@@ -5,15 +5,10 @@
  *
  * Main orchestrator for the agent edit page.
  * - Fetches full agent data if not already loaded.
- * - AgentBuilderTopBar handles explicit save (saveAgent).
+ * - Save/status is handled by the shared AgentSharedHeader (portalled into the shell).
  * - Renders a skeleton until the full fetch completes, then lazy-loads
  *   AgentBuilderDesktop or AgentBuilderMobile based on viewport.
  * - Enables useAgentAutoSave for localStorage backup.
- *
- * Props surface:
- *   agentId        — resolved from URL params by the route
- *   models         — fetched server-side (model list)
- *   availableTools — fetched server-side (tool registry)
  */
 
 import { useEffect } from "react";
@@ -24,7 +19,6 @@ import { selectAgentReadyForBuilder } from "@/features/agents/redux/agent-defini
 import { fetchFullAgent } from "@/features/agents/redux/agent-definition/thunks";
 import { useAgentAutoSave } from "@/features/agents/hooks/useAgentAutoSave";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { AgentBuilderTopBar } from "./AgentBuilderTopBar";
 import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 // Lazy-loaded only after the record is confirmed fully loaded.
@@ -72,9 +66,6 @@ export function AgentBuilder({
 
   return (
     <div className="flex flex-col h-full">
-      <AgentBuilderTopBar agentId={agentId} />
-
-      {/* Builder content — skeleton until full fetch completes */}
       <div className="flex-1 overflow-hidden p-2">
         {!isReadyForBuilder ? (
           <AgentBuilderSkeleton isMobile={isMobile} />

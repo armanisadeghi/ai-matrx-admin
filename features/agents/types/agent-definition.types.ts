@@ -118,6 +118,7 @@ export interface AgentDefinition {
   modelTiers: ModelTiers | null;
   outputSchema: OutputSchema | null;
   customTools: CustomToolDefinition[];
+  mcpServers: string[]; // uuid[] → mcp_servers catalog
 
   // Ownership & Hierarchy (null on version records)
   userId: string | null;

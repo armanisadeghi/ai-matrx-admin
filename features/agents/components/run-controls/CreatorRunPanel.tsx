@@ -48,7 +48,7 @@ import type { CompletionStats } from "@/features/agents/types/instance.types";
 import type { ClientMetrics } from "@/features/agents/types/request.types";
 import { SystemInstructionEditor } from "../system-instructions/SystemInstructionEditor";
 import { StreamDebugFloating } from "../debug/StreamDebugFloating";
-import { StreamDebugOverlay } from "../debug/StreamDebugOverlay";
+import { openStreamDebug } from "@/lib/redux/slices/overlaySlice";
 
 // =============================================================================
 // Tab type
@@ -184,12 +184,10 @@ function ActionsTab({
   instanceId,
   onNewInstance,
   onOpenStreamDebugFloating,
-  onOpenStreamDebugOverlay,
 }: {
   instanceId: string;
   onNewInstance?: (newId: string) => void;
   onOpenStreamDebugFloating: () => void;
-  onOpenStreamDebugOverlay: () => void;
 }) {
   const dispatch = useAppDispatch();
 
@@ -199,6 +197,10 @@ function ActionsTab({
       .then((newId) => onNewInstance?.(newId))
       .catch((err) => console.error("Failed to reset test instance:", err));
   }, [instanceId, onNewInstance, dispatch]);
+
+  const handleOpenStreamDebugOverlay = useCallback(() => {
+    dispatch(openStreamDebug({ instanceId }));
+  }, [dispatch, instanceId]);
 
   return (
     <div className="px-3 py-2 space-y-1">
@@ -220,7 +222,7 @@ function ActionsTab({
       </button>
       <button
         type="button"
-        onClick={onOpenStreamDebugOverlay}
+        onClick={handleOpenStreamDebugOverlay}
         className="flex items-center gap-2 w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded transition-colors"
       >
         <Maximize2 className="w-3 h-3 shrink-0" />
@@ -823,15 +825,9 @@ export function CreatorRunPanel({
     allowedTabs && allowedTabs.length > 0 ? allowedTabs[0] : "actions",
   );
   const [streamDebugFloatingOpen, setStreamDebugFloatingOpen] = useState(false);
-  const [streamDebugOverlayOpen, setStreamDebugOverlayOpen] = useState(false);
 
   const openStreamDebugFloating = useCallback(() => {
-    setStreamDebugOverlayOpen(false);
     setStreamDebugFloatingOpen(true);
-  }, []);
-  const openStreamDebugOverlay = useCallback(() => {
-    setStreamDebugFloatingOpen(false);
-    setStreamDebugOverlayOpen(true);
   }, []);
 
   const latestStats = useAppSelector(selectLatestCompletionStats(instanceId));
@@ -872,11 +868,6 @@ export function CreatorRunPanel({
             onClose={() => setStreamDebugFloatingOpen(false)}
           />
         )}
-        <StreamDebugOverlay
-          instanceId={instanceId}
-          isOpen={streamDebugOverlayOpen}
-          onClose={() => setStreamDebugOverlayOpen(false)}
-        />
       </>
     );
   }
@@ -940,7 +931,6 @@ export function CreatorRunPanel({
               instanceId={instanceId}
               onNewInstance={onNewInstance}
               onOpenStreamDebugFloating={openStreamDebugFloating}
-              onOpenStreamDebugOverlay={openStreamDebugOverlay}
             />
           )}
           {activeTab === "settings" && (
@@ -965,11 +955,6 @@ export function CreatorRunPanel({
           onClose={() => setStreamDebugFloatingOpen(false)}
         />
       )}
-      <StreamDebugOverlay
-        instanceId={instanceId}
-        isOpen={streamDebugOverlayOpen}
-        onClose={() => setStreamDebugOverlayOpen(false)}
-      />
     </>
   );
 }

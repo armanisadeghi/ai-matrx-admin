@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Bot, Plus, Wand2, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAgentsBasePath } from "@/features/agents/hooks/useAgentsBasePath";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ interface NewAgentModalProps {
 function NewAgentForm({ onClose }: { onClose: () => void }) {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const basePath = useAgentsBasePath();
   const [, startTransition] = useTransition();
   const [name, setName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -46,7 +48,7 @@ function NewAgentForm({ onClose }: { onClose: () => void }) {
       ).unwrap();
       toast.success("Agent created!");
       onClose();
-      startTransition(() => router.push(`/ai/agents/edit/${result}`));
+      startTransition(() => router.push(`${basePath}/${result}/edit`));
     } catch (err) {
       console.error("Failed to create agent:", err);
       toast.error("Failed to create agent. Please try again.");
