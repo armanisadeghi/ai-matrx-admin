@@ -4,6 +4,7 @@
 
 import NavItem from "./NavItem";
 import ShellIcon from "./ShellIcon";
+import SidebarNotesToggle from "@/features/notes/actions/SidebarNotesToggle";
 import SidebarVoicePadToggle from "./SidebarVoicePadToggle";
 import SidebarAdminIndicatorToggle from "./SidebarAdminIndicatorToggle";
 import SidebarEnvToggle from "./SidebarEnvToggle";
@@ -12,7 +13,7 @@ import {
   primaryNavItems,
   settingsItem,
   type ShellNavItem,
-} from "../../../app/(ssr)/nav-data";
+} from "../constants/nav-data";
 
 interface SidebarProps {
   pathname: string;
@@ -54,6 +55,7 @@ export default function Sidebar({ pathname }: SidebarProps) {
         <SidebarEnvToggle />
         <SidebarAdminIndicatorToggle />
         <SidebarWindowToggle />
+        <SidebarNotesToggle />
         <SidebarVoicePadToggle />
         <NavItem item={settingsItem} isActive={isActive(settingsItem)} />
       </div>

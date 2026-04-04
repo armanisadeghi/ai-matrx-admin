@@ -9,7 +9,7 @@
 
 import Link from "next/link";
 import ShellIcon from "./ShellIcon";
-import type { ShellNavItem } from "../../../app/(ssr)/nav-data";
+import type { ShellNavItem } from "../constants/nav-data";
 
 interface NavItemProps {
   item: ShellNavItem;

@@ -2,13 +2,16 @@
 
 import React, { useState, useCallback } from "react";
 import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
-import { Plus, Trash2 } from "lucide-react";
+import { NotesWindow } from "@/features/notes/actions/NotesWindow";
+import { Plus, Trash2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/ButtonMine";
 import { DEMO_WINDOWS } from "./demo-windows";
 
+const NOTES_WINDOW_ID = "window-notes";
+
 export default function WindowDemoPage() {
   const [openWindows, setOpenWindows] = useState<Set<string>>(
-    () => new Set(["window-0", "window-1"]),
+    () => new Set(["window-0", "window-1", NOTES_WINDOW_ID]),
   );
 
   const openWindow = useCallback((id: string) => {
@@ -23,6 +26,8 @@ export default function WindowDemoPage() {
     });
   }, []);
 
+  const notesOpen = openWindows.has(NOTES_WINDOW_ID);
+
   return (
     <div className="h-[calc(100dvh-var(--header-height,2.5rem))] flex flex-col bg-textured overflow-hidden">
       {/* ── Toolbar ────────────────────────────────────────────────────────── */}
@@ -34,6 +39,29 @@ export default function WindowDemoPage() {
           Open windows to test drag, resize, minimize, and maximize.
         </span>
         <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Notes (real window) */}
+          <Button
+            type="button"
+            size="xs"
+            variant={notesOpen ? "default" : "outline"}
+            onClick={() =>
+              notesOpen
+                ? closeWindow(NOTES_WINDOW_ID)
+                : openWindow(NOTES_WINDOW_ID)
+            }
+          >
+            <span className="text-amber-500">
+              <FileText className="h-4 w-4" />
+            </span>
+            Notes
+            {notesOpen ? (
+              <Trash2 className="h-3 w-3 ml-0.5 opacity-60" />
+            ) : (
+              <Plus className="h-3 w-3 ml-0.5 opacity-60" />
+            )}
+          </Button>
+
+          {/* Demo windows */}
           {DEMO_WINDOWS.map((def, i) => {
             const id = `window-${i}`;
             const isOpen = openWindows.has(id);
@@ -70,7 +98,16 @@ export default function WindowDemoPage() {
         </div>
       </div>
 
-      {/* ── Windows ────────────────────────────────────────────────────────── */}
+      {/* ── Notes Window (real, self-contained) ────────────────────────────── */}
+      {notesOpen && (
+        <NotesWindow
+          id={NOTES_WINDOW_ID}
+          initialRect={{ x: 560, y: 60, width: 520, height: 400 }}
+          onClose={() => closeWindow(NOTES_WINDOW_ID)}
+        />
+      )}
+
+      {/* ── Demo Windows (placeholder bodies) ─────────────────────────────── */}
       {DEMO_WINDOWS.map((def, i) => {
         const id = `window-${i}`;
         if (!openWindows.has(id)) return null;

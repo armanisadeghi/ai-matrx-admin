@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import Link from "next/link";
 import ShellIcon from "./ShellIcon";
-import { adminNavItems } from "../../../app/(ssr)/nav-data";
+import { adminNavItems } from "../constants/nav-data";
 import MobileSheetNavLink from "./MobileSheetNavLink";
 
 function AdminSidebarItems() {

@@ -1,26 +1,24 @@
 import type { ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
-import { BarChart3, Code2, FileText, Settings, Terminal } from "lucide-react";
+import { BarChart3, Code2, Settings, Terminal } from "lucide-react";
 import {
   AnalyticsWindowBody,
   CodeEditorWindowBody,
   LogViewerWindowBody,
-  NotesWindowBody,
   SettingsWindowBody,
 } from "./window-bodies";
 
 export interface DemoWindowDefinition {
   title: string;
   Icon: LucideIcon;
-  /** Toolbar icon color (Tailwind class, e.g. `text-blue-500`) */
   iconColor: string;
   Body: ComponentType;
   initialRect?: { x: number; y: number; width: number; height: number };
 }
 
 /**
- * Registry: swap any `Body` import to a real screen for integration testing.
- * IDs are derived at runtime as `window-${index}` to match toolbar order.
+ * Registry of demo-only windows that use fake placeholder bodies.
+ * Real windows (Notes) are rendered directly on the page — see page.tsx.
  */
 export const DEMO_WINDOWS: DemoWindowDefinition[] = [
   {
@@ -43,13 +41,6 @@ export const DEMO_WINDOWS: DemoWindowDefinition[] = [
     iconColor: "text-violet-500",
     Body: AnalyticsWindowBody,
     initialRect: { x: 80, y: 500, width: 440, height: 320 },
-  },
-  {
-    title: "Notes",
-    Icon: FileText,
-    iconColor: "text-amber-500",
-    Body: NotesWindowBody,
-    initialRect: { x: 560, y: 420, width: 360, height: 280 },
   },
   {
     title: "Settings",

@@ -18,7 +18,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
-  GripVertical,
   Minus,
   Maximize2,
   Minimize2,
@@ -86,7 +85,10 @@ const HANDLES: HandleDef[] = [
 export interface WindowPanelProps extends UseWindowPanelOptions {
   children: React.ReactNode;
   title?: string;
+  /** @deprecated Use `actionsLeft` and `actionsRight` instead */
   actions?: React.ReactNode;
+  actionsLeft?: React.ReactNode;
+  actionsRight?: React.ReactNode;
   onClose?: () => void;
   bodyClassName?: string;
   className?: string;
@@ -100,6 +102,8 @@ export function WindowPanel({
   children,
   title,
   actions,
+  actionsLeft,
+  actionsRight,
   onClose,
   bodyClassName,
   className,
@@ -133,14 +137,8 @@ export function WindowPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Action nodes — stop drag propagation ────────────────────────────────
-  const actionNodes = actions
-    ? React.Children.toArray(
-        React.isValidElement(actions) || typeof actions !== "object"
-          ? [actions]
-          : (actions as React.ReactNode),
-      )
-    : [];
+  // Backward compat: legacy `actions` maps to actionsRight
+  const resolvedActionsRight = actionsRight ?? actions ?? null;
 
   // ── Snap helpers (Move & Resize menu) ───────────────────────────────────
   const snapLeft = useCallback(() => {
@@ -224,7 +222,8 @@ export function WindowPanel({
   const header = (
     <WindowHeader
       title={title}
-      actionNodes={actionNodes}
+      actionsLeft={actionsLeft}
+      actionsRight={resolvedActionsRight}
       onDragStart={onDragStart}
       onMinimize={onMinimize}
       onToggleMaximize={onToggleMaximize}
@@ -410,7 +409,8 @@ function DebugStrip({ rect, zIndex }: DebugStripProps) {
 
 interface WindowHeaderProps {
   title?: string;
-  actionNodes: React.ReactNode[];
+  actionsLeft?: React.ReactNode;
+  actionsRight?: React.ReactNode;
   onDragStart: (e: React.MouseEvent) => void;
   onMinimize: () => void;
   onToggleMaximize: () => void;
@@ -427,7 +427,8 @@ interface WindowHeaderProps {
 
 function WindowHeader({
   title,
-  actionNodes,
+  actionsLeft,
+  actionsRight,
   onDragStart,
   onMinimize,
   onToggleMaximize,
@@ -444,14 +445,14 @@ function WindowHeader({
   return (
     <div
       className={cn(
-        "relative flex items-center gap-1.5 px-2 py-1.5 z-20 shrink-0",
+        "relative flex items-center gap-1 px-2 py-1.5 z-20 shrink-0",
         "border-b border-border/50 bg-muted/40 select-none",
         isMaximized ? "cursor-default" : "cursor-grab active:cursor-grabbing",
         isMinimized && "border-b-0",
       )}
       onMouseDown={isMaximized ? undefined : onDragStart}
     >
-      {/* Traffic-light controls — hover the group to reveal all icons */}
+      {/* Traffic-light controls */}
       <TrafficLightGroup
         isMinimized={isMinimized}
         isMaximized={isMaximized}
@@ -466,19 +467,30 @@ function WindowHeader({
         snapCentre={snapCentre}
       />
 
-      <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+      {/* Left action zone */}
+      {!isMinimized && actionsLeft && (
+        <div
+          className="flex items-center gap-0.5 shrink-0 ml-1 text-foreground/80 [&_svg]:text-foreground/80"
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          {actionsLeft}
+        </div>
+      )}
 
-      <span className="text-xs font-medium text-foreground/80 flex-1 truncate">
+      {/* Centered title — always visible, including when minimized */}
+      <span className="text-xs font-medium text-foreground/80 flex-1 truncate text-center">
         {title ?? ""}
       </span>
 
-      {/* When minimized, hide action buttons to keep the chip tidy */}
-      {!isMinimized &&
-        actionNodes.map((node, i) => (
-          <div key={i} onMouseDown={(e) => e.stopPropagation()}>
-            {node}
-          </div>
-        ))}
+      {/* Right action zone */}
+      {!isMinimized && actionsRight && (
+        <div
+          className="flex items-center gap-0.5 shrink-0 text-foreground/80 [&_svg]:text-foreground/80"
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          {actionsRight}
+        </div>
+      )}
     </div>
   );
 }

@@ -4,7 +4,10 @@
 
 import Link from "next/link";
 import ShellIcon from "@/features/ssr-trials/components/ShellIcon";
-import { primaryNavItems, iconColorMap } from "@/app/(ssr)/nav-data";
+import {
+  primaryNavItems,
+  iconColorMap,
+} from "@/features/ssr-trials/constants/nav-data";
 
 export default function DashboardGrid() {
   return (
