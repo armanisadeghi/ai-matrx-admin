@@ -2,11 +2,11 @@
 
 ## Table Names
 
-| Before | After |
-|--------|-------|
-| `agents` | `agx_agent` |
-| `agent_versions` | `agx_version` |
-| `agent_shortcuts` | `agx_shortcut` |
+| Before | After | App code |
+|--------|-------|----------|
+| `agents` | `agx_agent` | X (all `supabase.from`, permissions `getTableName`, SSR/agent routes) |
+| `agent_versions` | `agx_version` | — (no direct `.from()` in repo; types/comments only) |
+| `agent_shortcuts` | `agx_shortcut` | X (redux shortcuts thunks + converters already used `agx_shortcut`) |
 
 ## Permission `resource_type` Strings
 

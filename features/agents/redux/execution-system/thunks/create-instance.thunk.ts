@@ -51,7 +51,9 @@ import { initInstanceHistory } from "../instance-conversation-history/instance-c
 import {
   InstanceOrigin,
   ResultDisplayMode,
+  type SourceFeature,
 } from "@/features/agents/types/instance.types";
+import { mapScopeToInstance } from "@/features/agents/utils/scope-mapping";
 
 // =============================================================================
 // Shared helper — reads agent snapshot data. The ONLY place agentId is used.
@@ -83,21 +85,10 @@ function readAgentSnapshot(
 
 interface CreateManualInstanceArgs {
   agentId: string;
-  /** Optional — if omitted, read from agentDefinition at creation time */
   agentType?: AgentType;
-  /**
-   * When true, conversation history is wiped after each submission so every
-   * send starts a fresh agent call. Defaults to false.
-   * Set true in builder/test panels.
-   */
   autoClearConversation?: boolean;
-  /**
-   * Conversation mode for the history slice.
-   * "chat" — client owns history; turns[] are serialized into messages[] for /ai/chat
-   * "agent" — server owns history; standard /agents + /conversations routing
-   * Defaults to "agent".
-   */
   mode?: ConversationMode;
+  sourceFeature?: SourceFeature;
 }
 
 export const createManualInstance = createAsyncThunk<
@@ -106,27 +97,31 @@ export const createManualInstance = createAsyncThunk<
 >(
   "instances/createManual",
   async (
-    { agentId, agentType, autoClearConversation = false, mode = "agent" },
+    {
+      agentId,
+      agentType,
+      autoClearConversation = false,
+      mode = "agent",
+      sourceFeature = "agent-runner",
+    },
     { dispatch, getState },
   ) => {
     const instanceId = generateInstanceId();
     const state = getState() as RootState;
 
-    // Read agent snapshot ONCE — last time agentId is used
     const snapshot = readAgentSnapshot(state, agentId);
     const resolvedAgentType = agentType ?? snapshot.agentType;
 
-    // 1. Create the instance shell
     dispatch(
       createInstance({
         instanceId,
         agentId,
         agentType: resolvedAgentType,
         origin: "manual" as InstanceOrigin,
+        sourceFeature,
       }),
     );
 
-    // 2. Initialize all sibling slices with snapshotted data
     dispatch(
       initInstanceOverrides({
         instanceId,
@@ -164,11 +159,11 @@ export const createManualInstance = createAsyncThunk<
 
 interface CreateShortcutInstanceArgs {
   shortcutId: string;
-  /**
-   * Values from the UI (e.g., selected text, current item, recent history).
-   * These get mapped to variables/context via the shortcut's scopeMappings.
-   */
   uiScopes: Record<string, unknown>;
+  sourceFeature?: SourceFeature;
+  displayMode?: ResultDisplayMode;
+  allowChat?: boolean;
+  showVariables?: boolean;
 }
 
 export const createInstanceFromShortcut = createAsyncThunk<
@@ -176,7 +171,17 @@ export const createInstanceFromShortcut = createAsyncThunk<
   CreateShortcutInstanceArgs
 >(
   "instances/createFromShortcut",
-  async ({ shortcutId, uiScopes }, { dispatch, getState }) => {
+  async (
+    {
+      shortcutId,
+      uiScopes,
+      sourceFeature = "context-menu",
+      displayMode,
+      allowChat,
+      showVariables,
+    },
+    { dispatch, getState },
+  ) => {
     const instanceId = generateInstanceId();
     const state = getState() as RootState;
     const shortcut = state.agentShortcut[shortcutId];
@@ -185,11 +190,9 @@ export const createInstanceFromShortcut = createAsyncThunk<
 
     const { agentId } = shortcut;
 
-    // Read agent snapshot ONCE — last time agentId is used
     const snapshot = readAgentSnapshot(state, agentId);
-    const slotKeys = new Set(snapshot.contextSlots.map((s) => s.key));
 
-    // 1. Create instance shell
+    // 1. Create instance shell with source tracking
     dispatch(
       createInstance({
         instanceId,
@@ -197,6 +200,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
         agentType: snapshot.agentType,
         origin: "shortcut" as InstanceOrigin,
         shortcutId,
+        sourceFeature,
       }),
     );
 
@@ -221,60 +225,26 @@ export const createInstanceFromShortcut = createAsyncThunk<
     dispatch(
       initInstanceUIState({
         instanceId,
-        displayMode: shortcut.resultDisplay as ResultDisplayMode,
-        allowChat: shortcut.allowChat,
-        showVariablePanel: shortcut.showVariables,
+        displayMode: (displayMode ??
+          shortcut.resultDisplay) as ResultDisplayMode,
+        allowChat: allowChat ?? shortcut.allowChat,
+        showVariablePanel: showVariables ?? shortcut.showVariables,
         isCreator: snapshot.isCreator,
       }),
     );
 
-    // 3. Apply scope mappings
-    const mappings = shortcut.scopeMappings ?? [];
-    const variableValues: Record<string, unknown> = {};
-    const contextEntries: Array<{
-      key: string;
-      value: unknown;
-      slotMatched?: boolean;
-      label?: string;
-    }> = [];
-    const mappedKeys = new Set<string>();
+    // 3. Apply scope mappings via universal utility
+    const { variableValues, contextEntries } = mapScopeToInstance(
+      uiScopes,
+      shortcut.scopeMappings,
+      snapshot.variableDefinitions,
+      snapshot.contextSlots,
+    );
 
-    for (const mapping of mappings) {
-      const value = uiScopes[mapping.sourceKey];
-      if (value === undefined) continue;
-
-      mappedKeys.add(mapping.sourceKey);
-
-      if (mapping.mapTo === "variable") {
-        variableValues[mapping.targetKey] = value;
-      } else {
-        contextEntries.push({
-          key: mapping.targetKey,
-          value,
-          slotMatched: slotKeys.has(mapping.targetKey),
-          label: mapping.targetKey,
-        });
-      }
-    }
-
-    // 4. Unmapped UI scopes fall through to context as ad-hoc
-    for (const [key, value] of Object.entries(uiScopes)) {
-      if (!mappedKeys.has(key) && value !== undefined) {
-        contextEntries.push({
-          key,
-          value,
-          slotMatched: slotKeys.has(key),
-          label: key,
-        });
-      }
-    }
-
-    // 5. Apply variable values
     if (shortcut.applyVariables && Object.keys(variableValues).length > 0) {
       dispatch(setUserVariableValues({ instanceId, values: variableValues }));
     }
 
-    // 6. Apply context entries
     if (contextEntries.length > 0) {
       dispatch(setContextEntries({ instanceId, entries: contextEntries }));
     }
@@ -292,12 +262,10 @@ export const createInstanceFromShortcut = createAsyncThunk<
 interface CreateTestInstanceArgs {
   agentId: string;
   agentType?: AgentType;
-  /** Pre-configured variable values for this test case */
   variables?: Record<string, unknown>;
-  /** Pre-configured overrides for this test case */
   overrides?: Partial<LLMParams>;
-  /** Pre-configured user input for this test case */
   userInput?: string;
+  sourceFeature?: SourceFeature;
 }
 
 export const createTestInstance = createAsyncThunk<
@@ -306,27 +274,32 @@ export const createTestInstance = createAsyncThunk<
 >(
   "instances/createTest",
   async (
-    { agentId, agentType, variables, overrides, userInput },
+    {
+      agentId,
+      agentType,
+      variables,
+      overrides,
+      userInput,
+      sourceFeature = "agent-builder",
+    },
     { dispatch, getState },
   ) => {
     const instanceId = generateInstanceId();
     const state = getState() as RootState;
 
-    // Read agent snapshot ONCE — last time agentId is used
     const snapshot = readAgentSnapshot(state, agentId);
     const resolvedAgentType = agentType ?? snapshot.agentType;
 
-    // 1. Create instance shell
     dispatch(
       createInstance({
         instanceId,
         agentId,
         agentType: resolvedAgentType,
         origin: "test" as InstanceOrigin,
+        sourceFeature,
       }),
     );
 
-    // 2. Initialize sibling slices with snapshotted data
     dispatch(
       initInstanceOverrides({
         instanceId,
@@ -353,7 +326,6 @@ export const createTestInstance = createAsyncThunk<
     );
     dispatch(initInstanceHistory({ instanceId }));
 
-    // 3. Apply pre-configured values
     if (variables && Object.keys(variables).length > 0) {
       dispatch(setUserVariableValues({ instanceId, values: variables }));
     }
@@ -373,19 +345,14 @@ export const createTestInstance = createAsyncThunk<
 // =============================================================================
 
 interface CreateManualInstanceNoAgentArgs {
-  /** An identifier for display/tracking only — not used to look up any Redux state */
   label?: string;
   agentType?: AgentType;
   variableDefinitions?: VariableDefinition[];
   baseSettings?: Partial<LLMParams>;
   userInput?: string;
+  sourceFeature?: SourceFeature;
 }
 
-/**
- * Create an instance without a source agent.
- * Use this for direct chat, custom tool invocations, or any flow
- * where you want full control over the configuration from the start.
- */
 export const createManualInstanceNoAgent = createAsyncThunk<
   string,
   CreateManualInstanceNoAgentArgs
@@ -397,18 +364,19 @@ export const createManualInstanceNoAgent = createAsyncThunk<
       variableDefinitions = [],
       baseSettings = {},
       userInput,
+      sourceFeature = "chat",
     },
     { dispatch },
   ) => {
     const instanceId = generateInstanceId();
 
-    // No agentId — create shell without one, using a placeholder
     dispatch(
       createInstance({
         instanceId,
         agentId: "",
         agentType,
         origin: "manual" as InstanceOrigin,
+        sourceFeature,
       }),
     );
 
@@ -458,7 +426,7 @@ export const recreateManualInstance = createAsyncThunk<string, string>(
       throw new Error(`Instance ${currentInstanceId} not found`);
     }
 
-    const { agentId } = instance;
+    const { agentId, sourceFeature } = instance;
     const currentUIState =
       state.instanceUIState.byInstanceId[currentInstanceId];
 
@@ -471,6 +439,7 @@ export const recreateManualInstance = createAsyncThunk<string, string>(
         agentId,
         agentType: snapshot?.agentType ?? instance.agentType,
         origin: instance.origin as InstanceOrigin,
+        sourceFeature: sourceFeature as SourceFeature,
       }),
     );
 
@@ -573,10 +542,8 @@ export const reInstanceAndExecute = createAsyncThunk<
     if (!instance) {
       throw new Error(`Instance ${currentInstanceId} not found`);
     }
-    const { agentId, origin } = instance;
+    const { agentId, origin, sourceFeature } = instance;
 
-    // Create a fresh instance, re-snapshotting the latest agent definition
-    // (captures any unsaved builder edits since the last instance was created)
     const newInstanceId = generateInstanceId();
     const snapshot = agentId ? readAgentSnapshot(state, agentId) : null;
 
@@ -586,6 +553,7 @@ export const reInstanceAndExecute = createAsyncThunk<
         agentId,
         agentType: snapshot?.agentType ?? instance.agentType,
         origin: origin as InstanceOrigin,
+        sourceFeature: sourceFeature as SourceFeature,
       }),
     );
 

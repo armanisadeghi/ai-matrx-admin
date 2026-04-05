@@ -206,6 +206,9 @@ export function assembleChatRequest(
     ? selectLatestConversationId(instanceId)(state)
     : undefined;
 
+  // Source tracking
+  const { sourceApp, sourceFeature } = instance;
+
   // Assemble the flat payload
   const request: Partial<ChatRequestPayload> = {
     ai_model_id,
@@ -228,6 +231,8 @@ export function assembleChatRequest(
   if (structuredSystemInstruction)
     request.system_instruction =
       structuredSystemInstruction as unknown as string;
+  if (sourceApp) request.source_app = sourceApp;
+  if (sourceFeature) request.source_feature = sourceFeature;
 
   return request;
 }

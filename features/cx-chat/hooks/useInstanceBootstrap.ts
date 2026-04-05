@@ -50,7 +50,7 @@ import {
   isChatListStale,
   fetchAgentExecutionMinimal,
 } from "@/features/agents/redux/agent-definition/thunks";
-import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
+import { launchAgentExecution } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
 import { fetchConversationHistory } from "@/features/cx-chat/redux/thunks";
 import { DEFAULT_AGENT_ID } from "@/features/cx-chat/components/agent/local-agents";
 import type { RootState } from "@/lib/redux/store";
@@ -164,9 +164,16 @@ export function useInstanceBootstrap() {
 
       // Create a fresh instance when nothing is reusable.
       if (!resolvedId) {
-        const result = await dispatch(createManualInstance({ agentId }));
-        if (createManualInstance.fulfilled.match(result)) {
-          resolvedId = result.payload;
+        const result = await dispatch(
+          launchAgentExecution({
+            agentId,
+            sourceFeature: "chat",
+            autoRun: false,
+            displayMode: "chat-bubble",
+          }),
+        );
+        if (launchAgentExecution.fulfilled.match(result)) {
+          resolvedId = result.payload.instanceId;
           instanceByAgentId.current.set(agentId, resolvedId);
         }
       }

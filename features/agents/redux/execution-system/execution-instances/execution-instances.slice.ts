@@ -13,7 +13,9 @@ import type {
   ExecutionInstance,
   InstanceStatus,
   InstanceOrigin,
+  SourceFeature,
 } from "@/features/agents/types";
+import { SOURCE_APP } from "@/features/agents/types/instance.types";
 import { generateInstanceId } from "../utils";
 import { AgentType } from "@/features/agents/types/agent-definition.types";
 
@@ -53,6 +55,7 @@ const executionInstancesSlice = createSlice({
         origin: InstanceOrigin;
         shortcutId?: string;
         status?: InstanceStatus;
+        sourceFeature?: SourceFeature;
       }>,
     ) {
       const {
@@ -62,6 +65,7 @@ const executionInstancesSlice = createSlice({
         origin,
         shortcutId = null,
         status = "draft",
+        sourceFeature = "agent-runner",
       } = action.payload;
 
       const now = new Date().toISOString();
@@ -73,6 +77,8 @@ const executionInstancesSlice = createSlice({
         origin,
         shortcutId,
         status,
+        sourceApp: SOURCE_APP,
+        sourceFeature,
         createdAt: now,
         updatedAt: now,
       };

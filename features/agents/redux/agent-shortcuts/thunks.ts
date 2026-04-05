@@ -125,7 +125,7 @@ export const buildAgentShortcutMenu = createAsyncThunk<
   const placementTypes =
     arg && "placementTypes" in arg && arg.placementTypes
       ? arg.placementTypes
-      : ["chat", "notes", "tasks", "general"];
+      : ["ai-action"];
 
   const { data, error } = await supabase.rpc("agx_build_shortcut_menu", {
     p_placement_types: placementTypes,
@@ -255,6 +255,9 @@ export const fetchShortcutsForContext = createAsyncThunk<
         p_task_id: taskId ?? null,
       },
     );
+
+    console.log("data", data);
+    console.log("error", error);
 
     if (error) throw error;
 

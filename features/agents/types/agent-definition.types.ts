@@ -72,12 +72,12 @@ export interface ModelTiers {
 // ---------------------------------------------------------------------------
 // AgentDefinition — single unified type for both live agents and version snapshots.
 //
-// Live agents (agents table):
+// Live agents (agx_agent table):
 //   isVersion = false, parentAgentId = null, versionNumber = current live version
 //
-// Version snapshots (agent_versions table):
-//   isVersion = true, parentAgentId = agents.id, versionNumber = the snapshot number
-//   id = agent_versions.id (used as resolved_id for execution)
+// Version snapshots (agx_version table):
+//   isVersion = true, parentAgentId = agx_agent.id, versionNumber = the snapshot number
+//   id = agx_version.id (used as resolved_id for execution)
 //   Some fields that only exist on live agents will be null on version records:
 //   isPublic, isArchived, isFavorite, userId, organizationId, workspaceId,
 //   projectId, taskId, sourceAgentId, sourceSnapshotAt, createdAt, updatedAt
@@ -88,7 +88,7 @@ export interface ModelTiers {
 
 export interface AgentDefinition {
   // Identity
-  id: string; // agents.id for live agents; agent_versions.id for snapshots
+  id: string; // agx_agent.id for live agents; agx_version.id for snapshots
   name: string;
   description: string | null;
   category: string | null;
@@ -96,11 +96,11 @@ export interface AgentDefinition {
   agentType: AgentType;
 
   // Version identity — null on live agents, set on snapshots
-  isVersion: boolean; // true = this record is from agent_versions
-  parentAgentId: string | null; // FK → agents.id, only set when isVersion = true
+  isVersion: boolean; // true = this record is from agx_version
+  parentAgentId: string | null; // FK → agx_agent.id, only set when isVersion = true
   versionNumber: number | null; // the snapshot's version_number (or live agents.version)
-  changedAt: string | null; // agent_versions.changed_at, null for live agents
-  changeNote: string | null; // agent_versions.change_note, null for live agents
+  changedAt: string | null; // agx_version.changed_at, null for live agents
+  changeNote: string | null; // agx_version.change_note, null for live agents
 
   // Live-agent-only flags (null on version records)
   isActive: boolean;
@@ -310,7 +310,7 @@ true satisfies typeof _agentReference;
  *   "execution"      — minimal execution fields: variableDefinitions + contextSlots
  *   "customExecution"— execution + settings, tools, customTools, modelId (pre-run overrides)
  *   "full"           — complete agents table row; marks record clean
- *   "versionSnapshot"— full content from agent_versions; marks record clean
+ *   "versionSnapshot"— full content from agx_version; marks record clean
  *
  * "execution" and "customExecution" are parallel tracks that do NOT override each other —
  * a record may have both if fetchAgentExecutionMinimal ran before fetchAgentExecutionFull.
@@ -397,7 +397,7 @@ export interface AgentDefinitionRecord extends AgentDefinition {
 
 export interface AgentDefinitionSliceState {
   // Single registry — keyed by id.
-  // Live agents use agents.id. Version snapshots use agent_versions.id.
+  // Live agents use agx_agent.id. Version snapshots use agx_version.id.
   // Distinguish with record.isVersion.
   agents: Record<string, AgentDefinitionRecord>;
 

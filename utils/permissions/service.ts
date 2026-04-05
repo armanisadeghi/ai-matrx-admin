@@ -551,7 +551,7 @@ function getTableName(resourceType: ResourceType): TableName {
     message: 'messages',
     organization: 'organizations',
     scrape_domain: 'scrape_domains',
-    agent: 'agents',
+    agent: "agx_agent",
   };
   return (legacyMap[resourceType] ?? (resourceType as TableName)) as TableName;
 }

@@ -489,6 +489,8 @@ export interface AssembledAgentStartRequest {
   workspace_id?: string;
   project_id?: string;
   task_id?: string;
+  source_app?: string;
+  source_feature?: string;
   stream?: boolean;
   debug?: boolean;
 }

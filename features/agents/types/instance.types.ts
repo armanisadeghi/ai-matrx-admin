@@ -51,6 +51,17 @@ export type InstanceOrigin =
   | "test" // Created as part of parallel testing
   | "sub-agent"; // Spawned by a parent request
 
+export type SourceFeature =
+  | "agent-builder"
+  | "agent-runner"
+  | "chat"
+  | "context-menu"
+  | "prompt-app"
+  | "research"
+  | "code-editor";
+
+export const SOURCE_APP = "matrx-admin" as const;
+
 export interface ExecutionInstance {
   instanceId: string;
   agentId: string;
@@ -58,6 +69,8 @@ export interface ExecutionInstance {
   origin: InstanceOrigin;
   shortcutId: string | null;
   status: InstanceStatus;
+  sourceApp: string;
+  sourceFeature: SourceFeature;
   createdAt: string;
   updatedAt: string;
 }
@@ -197,8 +210,12 @@ export type ResultDisplayMode =
   | "modal-compact"
   | "chat-bubble"
   | "inline"
+  | "sidebar"
+  | "flexible-panel"
   | "panel"
-  | "toast";
+  | "toast"
+  | "direct"
+  | "background";
 
 /**
  * Transient builder/test settings sent to the chat endpoint on each call.

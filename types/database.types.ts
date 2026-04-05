@@ -3892,6 +3892,8 @@ export type Database = {
           overrides: Json
           parent_conversation_id: string | null
           project_id: string | null
+          source_app: string
+          source_feature: string
           status: string
           system_instruction: string | null
           task_id: string | null
@@ -3918,6 +3920,8 @@ export type Database = {
           overrides?: Json
           parent_conversation_id?: string | null
           project_id?: string | null
+          source_app?: string
+          source_feature?: string
           status?: string
           system_instruction?: string | null
           task_id?: string | null
@@ -3944,6 +3948,8 @@ export type Database = {
           overrides?: Json
           parent_conversation_id?: string | null
           project_id?: string | null
+          source_app?: string
+          source_feature?: string
           status?: string
           system_instruction?: string | null
           task_id?: string | null
@@ -4366,6 +4372,8 @@ export type Database = {
           metadata: Json
           result_end_position: number | null
           result_start_position: number | null
+          source_app: string
+          source_feature: string
           status: string
           tool_duration_ms: number | null
           total_cached_tokens: number
@@ -4391,6 +4399,8 @@ export type Database = {
           metadata?: Json
           result_end_position?: number | null
           result_start_position?: number | null
+          source_app?: string
+          source_feature?: string
           status?: string
           tool_duration_ms?: number | null
           total_cached_tokens?: number
@@ -4416,6 +4426,8 @@ export type Database = {
           metadata?: Json
           result_end_position?: number | null
           result_start_position?: number | null
+          source_app?: string
+          source_feature?: string
           status?: string
           tool_duration_ms?: number | null
           total_cached_tokens?: number

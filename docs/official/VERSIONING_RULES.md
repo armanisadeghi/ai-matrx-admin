@@ -6,7 +6,7 @@
 
 | entity_type | Live Table | Versions Table | Parent FK Column |
 |---|---|---|---|
-| `agent` | `agents` | `agent_versions` | `agent_id` |
+| `agent` | `agx_agent` | `agx_version` | `agent_id` |
 | `prompt` | `prompts` | `prompt_versions` | `prompt_id` |
 | `builtin` | `prompt_builtins` | `prompt_builtin_versions` | `builtin_id` |
 | `prompt_app` | `prompt_apps` | `prompt_app_versions` | `app_id` |
@@ -26,7 +26,7 @@ Just UPDATE the live row. The BEFORE UPDATE trigger snapshots the OLD state and 
 Never set `version` in an INSERT or UPDATE payload. The trigger manages it. INSERT → `version = 1`. UPDATE → auto-incremented.
 
 ### 4. Never join `_versions` in bulk queries
-Fetching all agents for a user? Query `agents` only. The `version` integer on the live row is all you need for list views. Only query `_versions` when showing a specific entity's history panel.
+Fetching all agents for a user? Query `agx_agent` only. The `version` integer on the live row is all you need for list views. Only query `_versions` when showing a specific entity's history panel.
 
 ### 5. Use the shared RPCs for all version operations
 

@@ -362,7 +362,7 @@ export const fetchAgentVersionHistory = createAsyncThunk<
 
 /**
  * Fetches a full version snapshot for diff/preview.
- * Stores it in the agents map with isVersion = true, keyed by agent_versions.id.
+ * Stores it in the agents map with isVersion = true, keyed by agx_version.id.
  * Same record shape — no special handling needed in selectors or UI.
  */
 export const fetchAgentVersionSnapshot = createAsyncThunk<

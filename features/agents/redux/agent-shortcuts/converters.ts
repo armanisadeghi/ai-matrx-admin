@@ -8,7 +8,7 @@
  * DB-managed fields excluded from ALL write payloads:
  *  - id          — DB generates on insert
  *  - created_at  — DB trigger
- *  - updated_at  — DB trigger (set_agent_shortcuts_updated_at)
+ *  - updated_at  — DB trigger (set_agx_shortcut_updated_at)
  */
 
 import type { Database } from "@/types/database.types";

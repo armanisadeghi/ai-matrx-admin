@@ -10,7 +10,7 @@ export async function generateMetadata({
   const { id } = await params;
   const supabase = await createClient();
   const { data } = await supabase
-    .from("agents")
+    .from("agx_agent")
     .select("name")
     .eq("id", id)
     .single();

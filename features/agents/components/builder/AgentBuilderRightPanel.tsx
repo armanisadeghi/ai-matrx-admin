@@ -13,8 +13,8 @@
 
 import { useEffect, useState } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
+import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { AgentConversationDisplay } from "../run/AgentConversationDisplay";
 import { CreatorRunPanel } from "../run-controls/CreatorRunPanel";
 import { SmartAgentInput } from "../smart";
@@ -27,22 +27,23 @@ export function AgentBuilderRightPanel({
   agentId,
 }: AgentBuilderRightPanelProps) {
   const dispatch = useAppDispatch();
+  const { launchAgent } = useAgentLauncher();
   const [instanceId, setInstanceId] = useState<string | null>(null);
 
   useEffect(() => {
     let createdId: string | null = null;
 
-    dispatch(
-      createManualInstance({
-        agentId,
-        autoClearConversation: true,
-        mode: "chat",
-      }),
-    )
-      .unwrap()
-      .then((id) => {
-        createdId = id;
-        setInstanceId(id);
+    launchAgent(agentId, {
+      sourceFeature: "agent-builder",
+      autoRun: false,
+      displayMode: "panel",
+      useChat: true,
+      autoClearConversation: true,
+      conversationMode: "chat",
+    })
+      .then((result) => {
+        createdId = result.instanceId;
+        setInstanceId(result.instanceId);
       })
       .catch((err) => console.error("Failed to create test instance:", err));
 

@@ -23,7 +23,7 @@ export default async function AgentIdLayout({
 
   const [agentResult, availableTools] = await Promise.all([
     supabase
-      .from("agents")
+      .from("agx_agent")
       .select("id, name, description")
       .eq("id", id)
       .single(),

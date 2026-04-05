@@ -24,23 +24,37 @@ import {
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
+import {
+  buildAgentShortcutMenu,
+  fetchShortcutsForContext,
+} from "@/features/agents/redux/agent-shortcuts/thunks";
 import type { NoteSummary } from "../layout";
 import NotesSidebarToolbar from "./NotesSidebarToolbar";
 import NewNoteButton from "./NewNoteButton";
+import ContextSwitcher from "./ContextSwitcher";
 
 // Context menus and rename dialog — loaded only on first right-click
 const SidebarNoteContextMenu = dynamic(
-  () => import("./SidebarContextMenus").then(m => ({ default: m.SidebarNoteContextMenu })),
+  () =>
+    import("./SidebarContextMenus").then((m) => ({
+      default: m.SidebarNoteContextMenu,
+    })),
   { ssr: false },
 );
 const SidebarFolderContextMenu = dynamic(
-  () => import("./SidebarContextMenus").then(m => ({ default: m.SidebarFolderContextMenu })),
+  () =>
+    import("./SidebarContextMenus").then((m) => ({
+      default: m.SidebarFolderContextMenu,
+    })),
   { ssr: false },
 );
 const RenameFolderDialog = dynamic(
-  () => import("./SidebarContextMenus").then(m => ({ default: m.RenameFolderDialog })),
+  () =>
+    import("./SidebarContextMenus").then((m) => ({
+      default: m.RenameFolderDialog,
+    })),
   { ssr: false },
 );
 
@@ -53,7 +67,13 @@ const FOLDER_ICONS: Record<string, typeof FileText> = {
   Scratch: FileText,
 };
 
-const DEFAULT_FOLDER_ORDER = ["Draft", "Personal", "Business", "Prompts", "Scratch"];
+const DEFAULT_FOLDER_ORDER = [
+  "Draft",
+  "Personal",
+  "Business",
+  "Prompts",
+  "Scratch",
+];
 const ALL_FOLDERS = [...DEFAULT_FOLDER_ORDER];
 
 type SortField = "updated_at" | "label" | "created_at";
@@ -64,31 +84,51 @@ interface SidebarClientProps {
   allTags?: string[];
 }
 
-export default function SidebarClient({ notes: initialNotes = [], folderCounts: initialFolderCounts = {}, allTags: initialAllTags = [] }: SidebarClientProps) {
+export default function SidebarClient({
+  notes: initialNotes = [],
+  folderCounts: initialFolderCounts = {},
+  allTags: initialAllTags = [],
+}: SidebarClientProps) {
   const [serverNotes, setServerNotes] = useState<NoteSummary[]>(initialNotes);
-  const [folderCounts, setFolderCounts] = useState<Record<string, number>>(initialFolderCounts);
+  const [folderCounts, setFolderCounts] =
+    useState<Record<string, number>>(initialFolderCounts);
   const [allTags, setAllTags] = useState<string[]>(initialAllTags);
   const { id: userId } = useAppSelector(selectUser);
   const userIdRef = useRef<string | null>(null);
+  const dispatch = useAppDispatch();
 
   // Fetch notes after mount — use userId from Redux (set by DeferredShellData), no redundant getUser() call
   useEffect(() => {
     if (!userId) return;
+
+    // TEMPORARY ------ -JUST FOR TESTING
+    dispatch(buildAgentShortcutMenu());
+
+    dispatch(
+      fetchShortcutsForContext({
+        workspaceId: null,
+        projectId: null,
+        taskId: null,
+      }),
+    );
+
+    //==================================================== -END TEMPORARY
+
     userIdRef.current = userId;
     supabase
-      .from('notes')
-      .select('id, label, folder_name, tags, updated_at, position')
-      .eq('user_id', userId)
-      .eq('is_deleted', false)
-      .order('updated_at', { ascending: false })
+      .from("notes")
+      .select("id, label, folder_name, tags, updated_at, position")
+      .eq("user_id", userId)
+      .eq("is_deleted", false)
+      .order("updated_at", { ascending: false })
       .then(({ data }) => {
         if (!data) return;
-        const fetched: NoteSummary[] = data.map(n => ({
+        const fetched: NoteSummary[] = data.map((n) => ({
           id: n.id,
-          label: n.label ?? 'Untitled',
-          folder_name: n.folder_name ?? 'Draft',
+          label: n.label ?? "Untitled",
+          folder_name: n.folder_name ?? "Draft",
           tags: n.tags ?? [],
-          updated_at: n.updated_at ?? '',
+          updated_at: n.updated_at ?? "",
           position: n.position ?? 0,
         }));
         setServerNotes(fetched);
@@ -97,15 +137,19 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
           counts[note.folder_name] = (counts[note.folder_name] ?? 0) + 1;
         }
         setFolderCounts(counts);
-        setAllTags(Array.from(new Set(fetched.flatMap(n => n.tags))).sort());
+        setAllTags(Array.from(new Set(fetched.flatMap((n) => n.tags))).sort());
       });
   }, [userId]);
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   // ── Local state overlays for live sync with workspace ─────────────────
-  const [labelOverrides, setLabelOverrides] = useState<Record<string, string>>({});
-  const [folderOverrides, setFolderOverrides] = useState<Record<string, string>>({});
+  const [labelOverrides, setLabelOverrides] = useState<Record<string, string>>(
+    {},
+  );
+  const [folderOverrides, setFolderOverrides] = useState<
+    Record<string, string>
+  >({});
   const [localNotes, setLocalNotes] = useState<NoteSummary[]>([]);
   const [deletedIds, setDeletedIds] = useState<Set<string>>(() => new Set());
 
@@ -194,7 +238,7 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
 
   // Active note from URL path
   const activeNoteId = pathname.startsWith("/ssr/notes/")
-    ? pathname.split("/ssr/notes/")[1]?.split("/")[0] ?? ""
+    ? (pathname.split("/ssr/notes/")[1]?.split("/")[0] ?? "")
     : "";
 
   // ── Folder expand/collapse state ──────────────────────────────────────
@@ -203,8 +247,8 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
     return notes.find((n) => n.id === activeNoteId)?.folder_name ?? null;
   }, [activeNoteId, notes]);
 
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
-    () => activeNoteFolder ? new Set([activeNoteFolder]) : new Set(),
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(() =>
+    activeNoteFolder ? new Set([activeNoteFolder]) : new Set(),
   );
 
   const toggleFolder = useCallback((folder: string) => {
@@ -231,7 +275,9 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
     }
 
     requestAnimationFrame(() => {
-      const el = treeRef.current?.querySelector(`[data-note-id="${activeNoteId}"]`);
+      const el = treeRef.current?.querySelector(
+        `[data-note-id="${activeNoteId}"]`,
+      );
       el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
     });
   }, [activeNoteId, activeNoteFolder, expandedFolders]);
@@ -269,7 +315,11 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
         params.set("tabs", tabs.join(","));
       }
       const qs = params.toString();
-      window.history.pushState({}, "", `/ssr/notes/${noteId}${qs ? `?${qs}` : ""}`);
+      window.history.pushState(
+        {},
+        "",
+        `/ssr/notes/${noteId}${qs ? `?${qs}` : ""}`,
+      );
     },
     [searchParams],
   );
@@ -391,30 +441,27 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
     [navigateToNote, userId],
   );
 
-  const renameFolder = useCallback(
-    async (oldName: string, newName: string) => {
-      if (!newName.trim() || newName === oldName) return;
-      await supabase
-        .from("notes")
-        .update({ folder_name: newName.trim() })
-        .eq("folder_name", oldName)
-        .eq("user_id", userIdRef.current ?? "");
+  const renameFolder = useCallback(async (oldName: string, newName: string) => {
+    if (!newName.trim() || newName === oldName) return;
+    await supabase
+      .from("notes")
+      .update({ folder_name: newName.trim() })
+      .eq("folder_name", oldName)
+      .eq("user_id", userIdRef.current ?? "");
 
-      // Update local state
-      setServerNotes((prev) =>
-        prev.map((n) =>
-          n.folder_name === oldName ? { ...n, folder_name: newName.trim() } : n,
-        ),
-      );
-      setLocalNotes((prev) =>
-        prev.map((n) =>
-          n.folder_name === oldName ? { ...n, folder_name: newName.trim() } : n,
-        ),
-      );
-      setRenamingFolder(null);
-    },
-    [],
-  );
+    // Update local state
+    setServerNotes((prev) =>
+      prev.map((n) =>
+        n.folder_name === oldName ? { ...n, folder_name: newName.trim() } : n,
+      ),
+    );
+    setLocalNotes((prev) =>
+      prev.map((n) =>
+        n.folder_name === oldName ? { ...n, folder_name: newName.trim() } : n,
+      ),
+    );
+    setRenamingFolder(null);
+  }, []);
 
   const deleteFolderNotes = useCallback(
     async (folder: string) => {
@@ -425,7 +472,9 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
         .eq("user_id", userIdRef.current ?? "");
 
       // Mark all notes in folder as deleted
-      const ids = notes.filter((n) => n.folder_name === folder).map((n) => n.id);
+      const ids = notes
+        .filter((n) => n.folder_name === folder)
+        .map((n) => n.id);
       setDeletedIds((prev) => {
         const next = new Set(prev);
         for (const id of ids) next.add(id);
@@ -464,17 +513,14 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
   }, [allExpanded, orderedFolders]);
 
   // Move note to folder
-  const moveToFolder = useCallback(
-    async (noteId: string, folder: string) => {
-      const { supabase: sb } = await import("@/utils/supabase/client");
-      await sb.from("notes").update({ folder_name: folder }).eq("id", noteId);
-      window.dispatchEvent(
-        new CustomEvent("notes:moved", { detail: { noteId, folder } }),
-      );
-      setContextMenu(null);
-    },
-    [],
-  );
+  const moveToFolder = useCallback(async (noteId: string, folder: string) => {
+    const { supabase: sb } = await import("@/utils/supabase/client");
+    await sb.from("notes").update({ folder_name: folder }).eq("id", noteId);
+    window.dispatchEvent(
+      new CustomEvent("notes:moved", { detail: { noteId, folder } }),
+    );
+    setContextMenu(null);
+  }, []);
 
   return (
     <>
@@ -486,7 +532,9 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
         allExpanded={allExpanded}
         onSearchChange={(v) => updateParams({ q: v || null })}
         onCycleSortField={cycleSortField}
-        onToggleSortOrder={() => updateParams({ order: sortOrder === "desc" ? "asc" : "desc" })}
+        onToggleSortOrder={() =>
+          updateParams({ order: sortOrder === "desc" ? "asc" : "desc" })
+        }
         onToggleAll={toggleAll}
         newNoteSlot={<NewNoteButton />}
       />
@@ -528,9 +576,15 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
                 ) : (
                   <ChevronRight className="w-3.5! h-3.5! opacity-60" />
                 )}
-                {isExpanded ? <FolderOpen className="opacity-70" /> : <Icon className="opacity-70" />}
+                {isExpanded ? (
+                  <FolderOpen className="opacity-70" />
+                ) : (
+                  <Icon className="opacity-70" />
+                )}
                 <span className="flex-1 text-left truncate">{folder}</span>
-                <span className="text-[0.625rem] font-normal opacity-50 tabular-nums">{count}</span>
+                <span className="text-[0.625rem] font-normal opacity-50 tabular-nums">
+                  {count}
+                </span>
               </button>
 
               {/* Notes within folder */}
@@ -556,7 +610,11 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
                           onClick={() => navigateToNote(note.id)}
                           onContextMenu={(e) => {
                             e.preventDefault();
-                            setContextMenu({ x: e.clientX, y: e.clientY, noteId: note.id });
+                            setContextMenu({
+                              x: e.clientX,
+                              y: e.clientY,
+                              noteId: note.id,
+                            });
                           }}
                         >
                           <FileText className="w-3.5 h-3.5 shrink-0 opacity-50" />
@@ -609,7 +667,9 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
                 ? "bg-accent text-foreground font-medium"
                 : "text-muted-foreground hover:bg-accent/50",
             )}
-            onClick={() => updateParams({ folder: mobileFolder === f ? null : f })}
+            onClick={() =>
+              updateParams({ folder: mobileFolder === f ? null : f })
+            }
           >
             {f}
           </button>
@@ -622,7 +682,9 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
           x={contextMenu.x}
           y={contextMenu.y}
           noteId={contextMenu.noteId}
-          noteFolder={notes.find((n) => n.id === contextMenu.noteId)?.folder_name}
+          noteFolder={
+            notes.find((n) => n.id === contextMenu.noteId)?.folder_name
+          }
           orderedFolders={orderedFolders}
           onOpen={() => navigateToNote(contextMenu.noteId)}
           onDuplicate={() => navigateToNote(contextMenu.noteId)}
@@ -630,8 +692,15 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
           onMove={(folder) => moveToFolder(contextMenu.noteId, folder)}
           onDelete={async () => {
             const { supabase: sb } = await import("@/utils/supabase/client");
-            await sb.from("notes").update({ is_deleted: true }).eq("id", contextMenu.noteId);
-            window.dispatchEvent(new CustomEvent("notes:deleted", { detail: { noteId: contextMenu.noteId } }));
+            await sb
+              .from("notes")
+              .update({ is_deleted: true })
+              .eq("id", contextMenu.noteId);
+            window.dispatchEvent(
+              new CustomEvent("notes:deleted", {
+                detail: { noteId: contextMenu.noteId },
+              }),
+            );
           }}
           onClose={() => setContextMenu(null)}
         />
@@ -643,10 +712,15 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
           x={folderContextMenu.x}
           y={folderContextMenu.y}
           folder={folderContextMenu.folder}
-          isDefaultFolder={DEFAULT_FOLDER_ORDER.includes(folderContextMenu.folder)}
+          isDefaultFolder={DEFAULT_FOLDER_ORDER.includes(
+            folderContextMenu.folder,
+          )}
           isExpanded={expandedFolders.has(folderContextMenu.folder)}
           onNewNote={() => createNoteInFolder(folderContextMenu.folder)}
-          onRename={() => { setRenamingFolder(folderContextMenu.folder); setRenameValue(folderContextMenu.folder); }}
+          onRename={() => {
+            setRenamingFolder(folderContextMenu.folder);
+            setRenameValue(folderContextMenu.folder);
+          }}
           onToggle={() => toggleFolder(folderContextMenu.folder)}
           onDeleteAll={() => deleteFolderNotes(folderContextMenu.folder)}
           onClose={() => setFolderContextMenu(null)}
@@ -664,7 +738,11 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
         />
       )}
 
-      {/* ── Create folder button (bottom of sidebar) ─────────────────────── */}
+      {/* ── Context switcher + Create folder (bottom of sidebar) ────────── */}
+      <div className="shrink-0 px-2 py-1.5 border-t border-border/30 hidden lg:block">
+        <ContextSwitcher />
+      </div>
+
       <div className="shrink-0 px-2 py-1.5 border-t border-border/30 hidden lg:block">
         {showCreateFolder ? (
           <div className="flex items-center gap-1.5">
@@ -675,7 +753,10 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
               onChange={(e) => setNewFolderName(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") createFolder(newFolderName);
-                if (e.key === "Escape") { setShowCreateFolder(false); setNewFolderName(""); }
+                if (e.key === "Escape") {
+                  setShowCreateFolder(false);
+                  setNewFolderName("");
+                }
               }}
               autoFocus
             />

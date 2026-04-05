@@ -10,7 +10,7 @@
  * DB-managed fields — excluded from ALL write payloads (Insert + Update):
  *  - id                 — DB generates on insert
  *  - created_at         — DB trigger
- *  - updated_at         — DB trigger (set_agents_updated_at)
+ *  - updated_at         — DB trigger (set_agx_agent_updated_at)
  *  - source_agent_id    — set only by agx_duplicate_agent() RPC, never by direct writes
  *  - source_snapshot_at — set only by agx_duplicate_agent() RPC, never by direct writes
  *

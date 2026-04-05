@@ -7,7 +7,7 @@ import type { DbRpcRow } from "@/types/supabase-rpc";
 export type { ResultDisplay, ShortcutContext };
 
 // ---------------------------------------------------------------------------
-// Domain type — mirrors the agent_shortcuts table (26 columns)
+// Domain type — mirrors the agx_shortcut table (26 columns)
 // ---------------------------------------------------------------------------
 
 export interface AgentShortcut {
@@ -22,7 +22,7 @@ export interface AgentShortcut {
 
   // Universal version reference pattern
   agentId: string | null; // FK → agents (stable identity / display)
-  agentVersionId: string | null; // FK → agent_versions (pinned snapshot)
+  agentVersionId: string | null; // FK → agx_version (pinned snapshot)
   useLatest: boolean; // true = always resolve to live agent
 
   // Context & scope
@@ -63,7 +63,7 @@ export interface AgentShortcut {
  *
  * The RPC resolves the version reference and returns:
  *   resolved_id  — ONE uuid to pass to the backend for execution
- *   is_version   — false = resolved_id is an agents.id, true = agent_versions.id
+ *   is_version   — false = resolved_id is an agx_agent.id, true = agx_version.id
  *   is_behind    — true = a newer version of the agent exists (drift indicator)
  *
  * Resolution logic (handled inside the RPC):
@@ -82,7 +82,7 @@ export interface AgentShortcutInitialRow {
 
   // Resolved version reference
   resolved_id: string | null; // single uuid for execution
-  is_version: boolean; // false = agents table, true = agent_versions table
+  is_version: boolean; // false = agx_agent row, true = agx_version row
   is_behind: boolean; // true = newer version exists
 
   // Raw reference data (for drift UI and editing the shortcut itself)

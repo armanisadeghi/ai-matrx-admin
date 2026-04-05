@@ -22,7 +22,7 @@
  *   Previously used initializeAgents() + fetchAgentOperational() from the
  *   legacy agentCacheSlice / agentFetchThunks system. Both now point to the
  *   new features/agents/redux/agent-definition system, which fetches directly
- *   from the `agents` table (agents have replaced prompts).
+ *   from the `agx_agent` table (agents have replaced prompts).
  */
 
 import { useEffect, useRef } from "react";

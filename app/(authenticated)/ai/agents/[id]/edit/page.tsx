@@ -18,7 +18,7 @@ export async function generateMetadata({
   const { id } = await params;
   const supabase = await createClient();
   const { data } = await supabase
-    .from("agents")
+    .from("agx_agent")
     .select("name, description")
     .eq("id", id)
     .single();
@@ -37,7 +37,7 @@ export default async function EditAgentPage({
   const supabase = await createClient();
 
   const [agentResult, availableTools] = await Promise.all([
-    supabase.from("agents").select("id, name").eq("id", id).single(),
+    supabase.from("agx_agent").select("id, name").eq("id", id).single(),
     serverToolsService.fetchTools(),
   ]);
 

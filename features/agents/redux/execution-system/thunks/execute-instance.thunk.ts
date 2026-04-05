@@ -112,6 +112,9 @@ export function assembleRequest(
   const project_id = selectProjectId(state) ?? undefined;
   const task_id = selectTaskId(state) ?? undefined;
 
+  // Source tracking
+  const { sourceApp, sourceFeature } = instance;
+
   // Assemble snake_case body
   const request: AssembledAgentStartRequest = { stream: true };
 
@@ -124,6 +127,8 @@ export function assembleRequest(
   if (workspace_id) request.workspace_id = workspace_id;
   if (project_id) request.project_id = project_id;
   if (task_id) request.task_id = task_id;
+  if (sourceApp) request.source_app = sourceApp;
+  if (sourceFeature) request.source_feature = sourceFeature;
 
   return request;
 }

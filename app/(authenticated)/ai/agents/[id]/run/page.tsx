@@ -14,7 +14,7 @@ export async function generateMetadata({
   const { id } = await params;
   const supabase = await createClient();
   const { data } = await supabase
-    .from("agents")
+    .from("agx_agent")
     .select("name, description")
     .eq("id", id)
     .single();
@@ -33,7 +33,7 @@ export default async function RunAgentPage({
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("agents")
+    .from("agx_agent")
     .select("id, name")
     .eq("id", id)
     .single();

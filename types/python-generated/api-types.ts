@@ -2092,6 +2092,10 @@ export interface components {
             project_id?: string | null;
             /** Task Id */
             task_id?: string | null;
+            /** Source App */
+            source_app?: string | null;
+            /** Source Feature */
+            source_feature?: string | null;
             /** User Input */
             user_input?: string | {
                 [key: string]: unknown;
@@ -2364,6 +2368,10 @@ export interface components {
             project_id?: string | null;
             /** Task Id */
             task_id?: string | null;
+            /** Source App */
+            source_app?: string | null;
+            /** Source Feature */
+            source_feature?: string | null;
             /** Ai Model Id */
             ai_model_id: string;
             /** Messages */
@@ -2490,6 +2498,10 @@ export interface components {
             project_id?: string | null;
             /** Task Id */
             task_id?: string | null;
+            /** Source App */
+            source_app?: string | null;
+            /** Source Feature */
+            source_feature?: string | null;
             /** User Input */
             user_input: string | {
                 [key: string]: unknown;
@@ -2978,6 +2990,10 @@ export interface components {
             project_id?: string | null;
             /** Task Id */
             task_id?: string | null;
+            /** Source App */
+            source_app?: string | null;
+            /** Source Feature */
+            source_feature?: string | null;
             /** User Input */
             user_input?: string | {
                 [key: string]: unknown;

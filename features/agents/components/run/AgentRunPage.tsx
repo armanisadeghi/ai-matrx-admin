@@ -22,11 +22,9 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
 import { selectAgentExecutionPayload } from "@/features/agents/redux/agent-definition/selectors";
-import {
-  createManualInstance,
-  recreateManualInstance,
-} from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
+import { recreateManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
+import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { AgentConversationDisplay } from "./AgentConversationDisplay";
 import { AgentRunsSidebar } from "./AgentRunsSidebar";
 import { CreatorRunPanel } from "../run-controls/CreatorRunPanel";
@@ -46,6 +44,7 @@ export function AgentRunPage({ agentId, agentName }: AgentRunPageProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
+  const { launchAgent } = useAgentLauncher();
 
   const executionPayload = useAppSelector((state) =>
     selectAgentExecutionPayload(state, agentId),
@@ -85,11 +84,14 @@ export function AgentRunPage({ agentId, agentName }: AgentRunPageProps) {
 
     let createdId: string | null = null;
 
-    dispatch(createManualInstance({ agentId }))
-      .unwrap()
-      .then((id) => {
-        createdId = id;
-        setInstanceId(id);
+    launchAgent(agentId, {
+      sourceFeature: "agent-runner",
+      autoRun: false,
+      displayMode: "modal-full",
+    })
+      .then((result) => {
+        createdId = result.instanceId;
+        setInstanceId(result.instanceId);
       })
       .catch((err) => {
         console.error("Failed to create instance:", err);

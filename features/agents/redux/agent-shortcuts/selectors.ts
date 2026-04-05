@@ -97,7 +97,7 @@ export const selectShortcutAgentId = createSelector(
 /**
  * Returns the version reference config fields for editing the shortcut.
  *   agentId        — FK → agents (display identity)
- *   agentVersionId — FK → agent_versions (the pinned version, if any)
+ *   agentVersionId — FK → agx_version (the pinned version, if any)
  *   useLatest      — true = always resolve to live agent
  */
 export const selectShortcutVersionRef = createSelector(
@@ -323,7 +323,7 @@ export const selectShortcutsByAgentId = createSelector(
 );
 
 /**
- * Shortcuts that are pinned to a specific agent_versions.id.
+ * Shortcuts that are pinned to a specific agx_version.id.
  * Useful for showing which shortcuts would be affected by a version change.
  */
 export const selectShortcutsByVersionId = createSelector(
