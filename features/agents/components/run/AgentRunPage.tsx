@@ -27,6 +27,7 @@ import { destroyInstance } from "@/features/agents/redux/execution-system/execut
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { AgentConversationDisplay } from "./AgentConversationDisplay";
 import { AgentRunsSidebar } from "./AgentRunsSidebar";
+import { AgentLauncherSidebarTester } from "../run-controls/AgentLauncherSidebarTester";
 import { CreatorRunPanel } from "../run-controls/CreatorRunPanel";
 import { SmartAgentInput } from "../smart";
 import { Loader2, PanelLeft } from "lucide-react";
@@ -139,6 +140,10 @@ export function AgentRunPage({ agentId, agentName }: AgentRunPageProps) {
             onNewRun={handleNewRun}
             onClose={() => setSidebarOpen(false)}
           />
+          {/* Display mode tester — pinned to bottom of sidebar */}
+          <div className="shrink-0 border-t border-border">
+            <AgentLauncherSidebarTester instanceId={instanceId} />
+          </div>
         </div>
       )}
 

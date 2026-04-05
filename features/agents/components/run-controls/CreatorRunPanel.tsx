@@ -62,6 +62,7 @@ import { StreamDebugFloating } from "../debug/StreamDebugFloating";
 import { openStreamDebug } from "@/lib/redux/slices/overlaySlice";
 import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
 import { StreamDebugPanel } from "../debug/StreamDebugPanel";
+import { AgentLauncherSidebarTester } from "./AgentLauncherSidebarTester";
 
 // =============================================================================
 // Tab type
@@ -73,7 +74,8 @@ type TabId =
   | "sysprompt"
   | "last"
   | "session"
-  | "client";
+  | "client"
+  | "test";
 
 // =============================================================================
 // Helpers
@@ -822,6 +824,7 @@ function CollapsedStatsPills({
 
 const ALL_TABS: TabId[] = [
   "actions",
+  "test",
   "settings",
   "sysprompt",
   "last",
@@ -973,6 +976,7 @@ export function CreatorRunPanel({
 
   const allTabDefs: Array<{ id: TabId; label: string }> = [
     { id: "actions", label: "Actions" },
+    { id: "test", label: "Test" },
     { id: "settings", label: "Run" },
     { id: "sysprompt", label: "System" },
     { id: "last", label: "Request" },
@@ -1030,6 +1034,9 @@ export function CreatorRunPanel({
               onOpenStreamDebugWindow={openStreamDebugWindow}
               onOpenRunSettingsWindow={openRunSettingsWindow}
             />
+          )}
+          {activeTab === "test" && (
+            <AgentLauncherSidebarTester instanceId={instanceId} />
           )}
           {activeTab === "settings" && (
             <RunSettingsTab instanceId={instanceId} />

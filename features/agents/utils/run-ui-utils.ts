@@ -8,17 +8,20 @@
 // Result Display Types
 // ============================================================================
 
-export type ResultDisplay =
-  | "modal-full" // Full modal with chat interface (PromptRunnerModal)
-  | "modal-compact" // Compact modal with essential controls only
-  | "inline" // Minimal overlay with replace/insert/cancel (VSCode-style)
-  | "sidebar" // Sidebar panel using FloatingSheet component
-  | "flexible-panel" // Advanced resizable panel with position controls (MatrxDynamicPanel)
-  | "toast" // Toast notification for simple responses
-  | "direct" // Streams directly to target location (no intermediate UI)
-  | "background"; // Silent execution, state-only updates (automation)
+import type { ResultDisplayMode } from "@/features/agents/types/instance.types";
 
-export const RESULT_DISPLAY_META = {
+export type ResultDisplay = ResultDisplayMode;
+
+export interface DisplayModeMeta {
+  label: string;
+  description: string;
+  icon: string;
+  color: string;
+  useCases: readonly string[];
+  testMode: boolean;
+}
+
+export const RESULT_DISPLAY_META: Record<ResultDisplayMode, DisplayModeMeta> = {
   "modal-full": {
     label: "Full Modal",
     description: "Full-featured modal dialog with chat interface and history",
@@ -37,6 +40,14 @@ export const RESULT_DISPLAY_META = {
     icon: "RectangleVertical",
     color: "text-blue-600 dark:text-blue-400",
     useCases: ["Quick edits", "Single responses", "Simple previews"],
+    testMode: false,
+  },
+  "chat-bubble": {
+    label: "Chat Bubble",
+    description: "Persistent floating chat bubble for conversational agents",
+    icon: "MessageCircle",
+    color: "text-violet-600 dark:text-violet-400",
+    useCases: ["Conversational AI", "Help assistant", "Persistent chat"],
     testMode: false,
   },
   inline: {
@@ -75,6 +86,14 @@ export const RESULT_DISPLAY_META = {
     ],
     testMode: false,
   },
+  panel: {
+    label: "Panel",
+    description: "Embedded panel within the current layout, no overlay",
+    icon: "LayoutDashboard",
+    color: "text-indigo-600 dark:text-indigo-400",
+    useCases: ["Builder test panel", "Embedded agent", "Side-by-side work"],
+    testMode: false,
+  },
   toast: {
     label: "Toast",
     description: "Brief notification with result summary or confirmation",
@@ -100,7 +119,7 @@ export const RESULT_DISPLAY_META = {
     useCases: ["Automation", "Batch processing", "Pre-computation"],
     testMode: true,
   },
-} as const;
+};
 
 export const hasVisibleUI = (display: ResultDisplay): boolean => {
   return display !== "background" && display !== "direct";

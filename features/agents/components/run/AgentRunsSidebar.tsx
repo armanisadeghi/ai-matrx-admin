@@ -113,7 +113,7 @@ export function AgentRunsSidebar({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1 min-h-0">
       {/* Sidebar header — toggle + label + new button, all compact */}
       <div className="flex items-center gap-1 px-1 py-1 border-b border-border shrink-0">
         <Button

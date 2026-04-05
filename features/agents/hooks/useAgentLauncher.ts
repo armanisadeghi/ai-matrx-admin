@@ -60,6 +60,7 @@ export interface LaunchAgentOverrides {
   autoRun?: boolean;
   allowChat?: boolean;
   showVariables?: boolean;
+  usePreExecutionInput?: boolean;
   autoClearConversation?: boolean;
   conversationMode?: "agent" | "conversation" | "chat";
   userInput?: string;
@@ -111,6 +112,7 @@ export function useAgentLauncher(): UseAgentLauncherReturn {
         autoRun: options?.autoRun,
         allowChat: options?.allowChat,
         showVariables: options?.showVariables,
+        usePreExecutionInput: options?.usePreExecutionInput,
         autoClearConversation: options?.autoClearConversation,
         conversationMode: options?.conversationMode,
         userInput: options?.userInput,
