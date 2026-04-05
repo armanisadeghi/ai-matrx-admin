@@ -65,58 +65,27 @@ export interface SearchAndScrapeLimitedRequest extends ScrapeOptions {
 }
 
 // ============================================================================
-// RESPONSE TYPES (Streaming Events)
+// RESPONSE TYPES (V2 Stream Events)
 // ============================================================================
-
-export type ScraperStreamEvent =
-  | ScraperStatusUpdateEvent
-  | ScraperDataEvent
-  | ScraperErrorEvent
-  | ScraperEndEvent;
-
-export interface ScraperStatusUpdateEvent {
-  event: "status_update";
-  data: {
-    status: "connected" | "processing" | "warning";
-    system_message?: string;
-    user_message?: string;
-    /** @deprecated Use user_message. Kept for backward compatibility. */
-    user_visible_message?: string;
-    metadata?: Record<string, unknown>;
-  };
-}
+//
+// The scraper backend now emits the unified V2 stream event protocol.
+// Event types used:
+//   - "phase"  (was "status_update") — PhasePayload with .phase field
+//   - "data"   — TypedDataPayload with .type discriminator
+//               (e.g. "fetch_results", "search_results", "scrape_batch_complete")
+//   - "error"  — ErrorPayload
+//   - "end"    — EndPayload
+//   - "info"   — InfoPayload (user-facing status messages)
+//   - "warning" — WarningPayload
+//
+// Import V2 types from @/lib/api/types or @/lib/api/index for consumption.
+// The `consumeStream()` function from @/lib/api/stream-parser is the
+// canonical stream consumer — scraper hooks should use it with callbacks.
 
 export interface ScrapedResultsEnvelope {
-  response_type: "fetch_results";
-  metadata: { execution_time_ms: number };
+  type: "fetch_results";
+  metadata?: { execution_time_ms?: number; [key: string]: unknown };
   results: ScrapedResult[];
-}
-
-export interface ScraperDataEvent {
-  event: "data";
-  data:
-    | ScrapedResultsEnvelope
-    | ScrapedResult
-    | SearchResult
-    | Record<string, unknown>;
-}
-
-export interface ScraperErrorEvent {
-  event: "error";
-  data: {
-    type: string;
-    message: string;
-    user_message?: string;
-    /** @deprecated Use user_message. Kept for backward compatibility. */
-    user_visible_message?: string;
-    code?: string;
-    details?: unknown;
-  };
-}
-
-export interface ScraperEndEvent {
-  event: "end";
-  data: true;
 }
 
 // ============================================================================

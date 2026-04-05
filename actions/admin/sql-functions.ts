@@ -3,11 +3,15 @@
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import {
+  mapGetDatabaseFunctionsRows,
+  type SqlFunction,
+} from "@/types/sql-functions";
 
 /**
  * Fetches all SQL functions from the database
  */
-export async function getSqlFunctions() {
+export async function getSqlFunctions(): Promise<SqlFunction[]> {
   try {
     const supabase = await createClient();
 
@@ -15,7 +19,7 @@ export async function getSqlFunctions() {
 
     if (error) throw error;
 
-    return data;
+    return mapGetDatabaseFunctionsRows(data ?? []);
   } catch (error) {
     console.error("Error fetching SQL functions:", error);
     throw new Error("Failed to fetch SQL functions");
@@ -53,7 +57,7 @@ export async function searchSqlFunctions({
   schema?: string;
   name?: string;
   returnType?: string;
-}) {
+}): Promise<SqlFunction[]> {
   try {
     const supabase = await createClient();
 
@@ -67,7 +71,7 @@ export async function searchSqlFunctions({
     if (error) throw error;
 
     // Apply filters
-    let filteredData = data;
+    let filteredData = data ?? [];
 
     if (schema) {
       filteredData = filteredData.filter((func) =>
@@ -87,7 +91,7 @@ export async function searchSqlFunctions({
       );
     }
 
-    return filteredData;
+    return mapGetDatabaseFunctionsRows(filteredData);
   } catch (error) {
     console.error("Error searching SQL functions:", error);
     throw new Error("Failed to search SQL functions");

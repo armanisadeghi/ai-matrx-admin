@@ -3,6 +3,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/client";
 import {
+  unwrapGetUserTableComplete,
+  unwrapUserTableMutation,
+} from "@/utils/user-tables-rpc";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -27,6 +31,18 @@ interface TableSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+}
+
+function tableRecordToTableInfo(
+  table: Record<string, unknown>,
+  fallbackId: string,
+): TableInfo {
+  return {
+    id: typeof table.id === "string" ? table.id : fallbackId,
+    table_name: typeof table.table_name === "string" ? table.table_name : "",
+    description: typeof table.description === "string" ? table.description : "",
+    is_public: typeof table.is_public === "boolean" ? table.is_public : false,
+  };
 }
 
 export default function TableSettingsModal({
@@ -57,13 +73,14 @@ export default function TableSettingsModal({
         });
 
         if (error) throw error;
-        if (!data.success)
-          throw new Error(data.error || "Failed to load table info");
-
-        setTableInfo(data.table);
-        setTableName(data.table.table_name);
-        setDescription(data.table.description || "");
-        setIsPublic(data.table.is_public);
+        const u = unwrapGetUserTableComplete(data ?? null);
+        const info = tableRecordToTableInfo(u.table, tableId);
+        setTableInfo(info);
+        setTableName(info.table_name);
+        setDescription(info.description || "");
+        setIsPublic(info.is_public);
+        const ar = u.table.authenticated_read;
+        setAuthenticatedRead(typeof ar === "boolean" ? ar : false);
       } catch (err) {
         console.error("Error loading table info:", err);
         setError(
@@ -96,11 +113,11 @@ export default function TableSettingsModal({
         p_table_name: tableName,
         p_description: description,
         p_is_public: isPublic,
+        p_authenticated_read: authenticatedRead,
       });
 
       if (error) throw error;
-      if (!data.success)
-        throw new Error(data.error || "Failed to update table settings");
+      unwrapUserTableMutation(data ?? null);
 
       onSuccess();
       onClose();

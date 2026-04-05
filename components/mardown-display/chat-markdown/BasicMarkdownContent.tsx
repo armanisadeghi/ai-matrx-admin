@@ -133,9 +133,39 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
   const preprocessContent = (rawContent: string): string => {
     let processed = rawContent;
 
-    // Escape all angle-bracket tags to plain text so the markdown parser never
-    // treats them as HTML blocks (which eats newlines and destroys structure).
-    processed = processed.replace(/<(\/?[\w][\w-]*)([^>]*?)>/g, "&lt;$1$2&gt;");
+    // ── DISABLED 2026-04-04 ────────────────────────────────────────────────────
+    // WHAT IT WAS:
+    //   processed = processed.replace(/<(\/?[\w][\w-]*)([^>]*?)>/g, "&lt;$1$2&gt;");
+    //
+    // WHAT IT DID:
+    //   Pre-escaped every <Tag> and </Tag> pattern to HTML entities before
+    //   handing the string to react-markdown.
+    //
+    // ORIGINAL INTENT:
+    //   Prevent angle-bracket tokens from being interpreted as raw HTML blocks
+    //   by the markdown parser, which could eat surrounding newlines and destroy
+    //   document structure.
+    //
+    // WHY IT WAS WRONG:
+    //   react-markdown does NOT execute arbitrary HTML unless the rehype-raw
+    //   plugin is explicitly added — and we do not use rehype-raw here. Without
+    //   it, react-markdown already treats unknown tags (e.g. <Admin>, <Resource>)
+    //   as literal text, so no pre-escaping is needed.
+    //
+    //   The pre-escaping turned <Admin> into &lt;Admin&gt; *before* the parser
+    //   saw it, so the parser faithfully output the literal characters
+    //   "&lt;Admin&gt;" on screen instead of "<Admin>".
+    //
+    // SYMPTOM:
+    //   Any angle-bracket token in AI-generated text — e.g. component names like
+    //   <Admin>, <Resource>, or type annotations like <T> — was rendered as the
+    //   escaped HTML entity string rather than the intended character sequence.
+    //
+    // FIX:
+    //   Line commented out. react-markdown handles this safely on its own.
+    //   Re-enable ONLY if you observe actual raw-HTML injection issues AND
+    //   confirm rehype-raw has been added to the rehypePlugins array.
+    // ──────────────────────────────────────────────────────────────────────────
 
     // Replace leading spaces on each line with non-breaking spaces so HTML
     // doesn't collapse them — this preserves indentation visually.

@@ -9,7 +9,7 @@ export type {
   StreamEvent,
   EventType,
   ChunkPayload,
-  StatusUpdatePayload,
+  PhasePayload,
   ErrorPayload,
   ToolEventPayload,
   BrokerPayload,

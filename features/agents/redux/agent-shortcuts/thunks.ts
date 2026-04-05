@@ -30,6 +30,41 @@ import type {
 } from "./types";
 import type { ResultDisplay } from "@/features/agents/utils/run-ui-utils";
 import type { ShortcutContext } from "@/features/agents/utils/shortcut-context-utils";
+import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
+import type { ContextSlot } from "@/features/agents/types/agent-api-types";
+
+function parseScopeMappings(raw: unknown): Record<string, string> | null {
+  if (raw === null || raw === undefined) return null;
+  if (typeof raw !== "object" || Array.isArray(raw)) return null;
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof v === "string") out[k] = v;
+  }
+  return out;
+}
+
+function parseVariableDefinitions(raw: unknown): VariableDefinition[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (item): item is VariableDefinition =>
+      item !== null &&
+      typeof item === "object" &&
+      "name" in item &&
+      typeof (item as { name?: unknown }).name === "string",
+  );
+}
+
+function parseContextSlots(raw: unknown): ContextSlot[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (item): item is ContextSlot =>
+      item !== null &&
+      typeof item === "object" &&
+      "key" in item &&
+      typeof (item as { key?: unknown }).key === "string" &&
+      "type" in item,
+  );
+}
 import {
   upsertShortcut,
   upsertShortcuts,
@@ -93,7 +128,7 @@ export const buildAgentShortcutMenu = createAsyncThunk<
       : ["chat", "notes", "tasks", "general"];
 
   const { data, error } = await supabase.rpc("build_agent_shortcut_menu", {
-    placement_types: placementTypes,
+    p_placement_types: placementTypes,
   });
 
   if (error) {
@@ -129,7 +164,7 @@ export const buildAgentShortcutMenu = createAsyncThunk<
           useLatest: item.use_latest,
 
           enabledContexts: item.enabled_contexts as ShortcutContext[],
-          scopeMappings: item.scope_mappings,
+          scopeMappings: parseScopeMappings(item.scope_mappings),
 
           resultDisplay: item.result_display as ResultDisplay,
           allowChat: item.allow_chat,
@@ -159,8 +194,9 @@ export const buildAgentShortcutMenu = createAsyncThunk<
             mergePartialAgent({
               id: item.resolved_id,
               name,
-              variableDefinitions: variable_definitions,
-              contextSlots: context_slots ?? [],
+              variableDefinitions:
+                parseVariableDefinitions(variable_definitions),
+              contextSlots: parseContextSlots(context_slots),
               isVersion,
               parentAgentId: isVersion ? (item.agent_id ?? null) : null,
             }),
@@ -214,9 +250,9 @@ export const fetchShortcutsForContext = createAsyncThunk<
     const { data, error } = await supabase.rpc(
       "get_agent_shortcuts_for_context",
       {
-        workspace_id: workspaceId ?? null,
-        project_id: projectId ?? null,
-        task_id: taskId ?? null,
+        p_workspace_id: workspaceId ?? null,
+        p_project_id: projectId ?? null,
+        p_task_id: taskId ?? null,
       },
     );
 
@@ -245,7 +281,7 @@ export const fetchShortcutsForContext = createAsyncThunk<
         useLatest: row.use_latest,
 
         enabledContexts: row.enabled_contexts as ShortcutContext[],
-        scopeMappings: row.scope_mappings,
+        scopeMappings: parseScopeMappings(row.scope_mappings),
 
         resultDisplay: row.result_display as ResultDisplay,
         allowChat: row.allow_chat,
@@ -272,8 +308,10 @@ export const fetchShortcutsForContext = createAsyncThunk<
         dispatch(
           mergePartialAgent({
             id: row.resolved_id,
-            variableDefinitions: row.agent_variable_definitions,
-            contextSlots: row.agent_context_slots ?? [],
+            variableDefinitions: parseVariableDefinitions(
+              row.agent_variable_definitions,
+            ),
+            contextSlots: parseContextSlots(row.agent_context_slots),
             isVersion,
             parentAgentId: isVersion ? (row.agent_id ?? null) : null,
           }),

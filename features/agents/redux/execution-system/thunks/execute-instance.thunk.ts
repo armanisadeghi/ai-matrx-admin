@@ -228,8 +228,8 @@ export const executeInstance = createAsyncThunk<
       let routedPayload: Record<string, unknown>;
 
       if (existingConversationId) {
-        // Turn 2+: POST /api/ai/conversations/{conversationId}
-        url = `${baseUrl}/api/ai/conversations/${existingConversationId}`;
+        // Turn 2+: POST /ai/conversations/{conversationId}
+        url = `${baseUrl}/ai/conversations/${existingConversationId}`;
         // Continuation only needs user_input, config_overrides, context, client_tools, stream
         routedPayload = {
           user_input: payload.user_input,
@@ -242,8 +242,8 @@ export const executeInstance = createAsyncThunk<
           ...(debug && { debug: true }),
         };
       } else {
-        // Turn 1: POST /api/ai/agents/{agentId}
-        url = `${baseUrl}/api/ai/agents/${instance.agentId}`;
+        // Turn 1: POST /ai/agents/{agentId}
+        url = `${baseUrl}/ai/agents/${instance.agentId}`;
         routedPayload = payload as unknown as Record<string, unknown>;
       }
 
@@ -379,7 +379,7 @@ export const submitToolResults = createAsyncThunk<void, SubmitToolResultsArgs>(
       }));
 
       const response = await fetch(
-        `${baseUrl}/api/ai/conversations/${request.conversationId}/tool_results`,
+        `${baseUrl}/ai/conversations/${request.conversationId}/tool_results`,
         {
           method: "POST",
           headers,

@@ -22,6 +22,7 @@ import {
   useScraperApi,
   ScraperResult,
 } from "@/features/scraper/hooks/useScraperApi";
+import { ScrapedContentPretty } from "@/features/scraper/parts/ScrapedContentPretty";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -143,13 +144,16 @@ function DetailPanel({ result }: { result: ScraperResult }) {
   const chars = contentLength(result);
 
   return (
-    <Tabs defaultValue="overview" className="h-full flex flex-col">
+    <Tabs defaultValue="pretty" className="h-full flex flex-col">
       <TabsList className="w-full justify-start rounded-none border-b border-border h-10 px-3 shrink-0">
+        <TabsTrigger value="pretty" className="text-xs">
+          Pretty
+        </TabsTrigger>
         <TabsTrigger value="overview" className="text-xs">
           Overview
         </TabsTrigger>
         <TabsTrigger value="text" className="text-xs">
-          Text
+          Plain text
           {!chars && (
             <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
           )}
@@ -158,6 +162,12 @@ function DetailPanel({ result }: { result: ScraperResult }) {
           Raw
         </TabsTrigger>
       </TabsList>
+
+      <TabsContent value="pretty" className="flex-1 overflow-auto p-4 m-0">
+        <div className="max-w-2xl rounded-lg border border-border">
+          <ScrapedContentPretty markdown={result.markdownRenderable ?? ""} />
+        </div>
+      </TabsContent>
 
       <TabsContent value="overview" className="flex-1 overflow-auto p-4 m-0">
         <div className="space-y-4 max-w-2xl">
@@ -214,9 +224,9 @@ function DetailPanel({ result }: { result: ScraperResult }) {
 
       <TabsContent value="text" className="flex-1 overflow-auto m-0">
         <div className="p-4">
-          {result.textContent ? (
+          {result.plainTextContent ? (
             <pre className="whitespace-pre-wrap text-sm font-sans text-foreground bg-muted p-4 rounded-lg leading-relaxed">
-              {result.textContent}
+              {result.plainTextContent}
             </pre>
           ) : (
             <div className="flex flex-col items-center justify-center h-40 gap-3 text-center">
@@ -318,6 +328,7 @@ export default function SearchAndScrapeDemoPage() {
     isLoading,
     hasError,
     error,
+    errorDiagnostics,
     statusMessage,
     reset,
   } = useScraperApi();
@@ -488,6 +499,7 @@ export default function SearchAndScrapeDemoPage() {
         data={responseData}
         isLoading={isLoading}
         error={hasError ? error : null}
+        errorDiagnostics={hasError ? errorDiagnostics : undefined}
         title="Search & Scrape Results"
         renderContent={() => (
           <RenderedContent

@@ -20,7 +20,7 @@ import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectLatestAccumulatedText,
-  selectLatestStatusMessage,
+  selectLatestCurrentPhase,
   selectLatestError,
   selectStreamPhase,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
@@ -49,7 +49,7 @@ export function AgentStreamingMessage({
 }: AgentStreamingMessageProps) {
   const phase = useAppSelector(selectStreamPhase(instanceId));
   const streamingText = useAppSelector(selectLatestAccumulatedText(instanceId));
-  const statusMessage = useAppSelector(selectLatestStatusMessage(instanceId));
+  const currentPhase = useAppSelector(selectLatestCurrentPhase(instanceId));
   const error = useAppSelector(selectLatestError(instanceId));
 
   switch (phase) {
@@ -57,7 +57,7 @@ export function AgentStreamingMessage({
       return <AgentPlanningIndicator compact={compact} />;
 
     case "pre_token":
-      return <AgentStatusIndicator message={statusMessage} compact={compact} />;
+      return <AgentStatusIndicator message={currentPhase} compact={compact} />;
 
     case "text_streaming":
       return (
@@ -78,7 +78,7 @@ export function AgentStreamingMessage({
             isStreamActive
             compact={compact}
           />
-          <AgentStatusIndicator message={statusMessage} compact={compact} />
+          <AgentStatusIndicator message={currentPhase} compact={compact} />
         </div>
       );
 

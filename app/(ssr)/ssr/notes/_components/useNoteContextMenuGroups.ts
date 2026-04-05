@@ -15,25 +15,39 @@ import type { ContextMenuCacheState } from "@/lib/redux/slices/contextMenuCacheS
 export interface NoteContextMenuGroups {
   aiGroups: CategoryGroup[];
   contentBlockGroups: CategoryGroup[];
+  organizationToolGroups: CategoryGroup[];
+  userToolGroups: CategoryGroup[];
   loading: boolean;
 }
 
-const PLACEMENT_TYPES = ["ai-action", "content-block"] as const;
+/** Matches UnifiedContextMenu DB sections (excludes quick-action; that is local). */
+const PLACEMENT_TYPES = [
+  "ai-action",
+  "content-block",
+  "organization-tool",
+  "user-tool",
+] as const;
 
 export function useNoteContextMenuGroups(): NoteContextMenuGroups {
   const cachedRows = useAppSelector(
     (state) =>
       (state as unknown as { contextMenuCache: ContextMenuCacheState })
-        .contextMenuCache?.rows ?? []
+        .contextMenuCache?.rows ?? [],
   );
   const isHydrated = useAppSelector(
     (state) =>
       (state as unknown as { contextMenuCache: ContextMenuCacheState })
-        .contextMenuCache?.hydrated ?? false
+        .contextMenuCache?.hydrated ?? false,
   );
 
   const [aiGroups, setAiGroups] = useState<CategoryGroup[]>([]);
-  const [contentBlockGroups, setContentBlockGroups] = useState<CategoryGroup[]>([]);
+  const [contentBlockGroups, setContentBlockGroups] = useState<CategoryGroup[]>(
+    [],
+  );
+  const [organizationToolGroups, setOrganizationToolGroups] = useState<
+    CategoryGroup[]
+  >([]);
+  const [userToolGroups, setUserToolGroups] = useState<CategoryGroup[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,19 +58,37 @@ export function useNoteContextMenuGroups(): NoteContextMenuGroups {
         .flatMap((r) =>
           buildCategoryHierarchy(
             r.categories_flat as Parameters<typeof buildCategoryHierarchy>[0],
-            undefined
-          )
+            undefined,
+          ),
         );
       const cb = cachedRows
         .filter((r) => r.placement_type === "content-block")
         .flatMap((r) =>
           buildCategoryHierarchy(
             r.categories_flat as Parameters<typeof buildCategoryHierarchy>[0],
-            undefined
-          )
+            undefined,
+          ),
+        );
+      const org = cachedRows
+        .filter((r) => r.placement_type === "organization-tool")
+        .flatMap((r) =>
+          buildCategoryHierarchy(
+            r.categories_flat as Parameters<typeof buildCategoryHierarchy>[0],
+            undefined,
+          ),
+        );
+      const userT = cachedRows
+        .filter((r) => r.placement_type === "user-tool")
+        .flatMap((r) =>
+          buildCategoryHierarchy(
+            r.categories_flat as Parameters<typeof buildCategoryHierarchy>[0],
+            undefined,
+          ),
         );
       setAiGroups(ai);
       setContentBlockGroups(cb);
+      setOrganizationToolGroups(org);
+      setUserToolGroups(userT);
       setLoading(false);
       return;
     }
@@ -75,27 +107,48 @@ export function useNoteContextMenuGroups(): NoteContextMenuGroups {
           return;
         }
 
-        const rows = data as { placement_type: string; categories_flat: unknown[] }[];
+        const rows = data as {
+          placement_type: string;
+          categories_flat: unknown[];
+        }[];
 
         const ai = rows
           .filter((r) => r.placement_type === "ai-action")
           .flatMap((r) =>
             buildCategoryHierarchy(
               r.categories_flat as Parameters<typeof buildCategoryHierarchy>[0],
-              undefined
-            )
+              undefined,
+            ),
           );
         const cb = rows
           .filter((r) => r.placement_type === "content-block")
           .flatMap((r) =>
             buildCategoryHierarchy(
               r.categories_flat as Parameters<typeof buildCategoryHierarchy>[0],
-              undefined
-            )
+              undefined,
+            ),
+          );
+        const org = rows
+          .filter((r) => r.placement_type === "organization-tool")
+          .flatMap((r) =>
+            buildCategoryHierarchy(
+              r.categories_flat as Parameters<typeof buildCategoryHierarchy>[0],
+              undefined,
+            ),
+          );
+        const userT = rows
+          .filter((r) => r.placement_type === "user-tool")
+          .flatMap((r) =>
+            buildCategoryHierarchy(
+              r.categories_flat as Parameters<typeof buildCategoryHierarchy>[0],
+              undefined,
+            ),
           );
 
         setAiGroups(ai);
         setContentBlockGroups(cb);
+        setOrganizationToolGroups(org);
+        setUserToolGroups(userT);
       } catch (err) {
         console.error("[useNoteContextMenuGroups] Unexpected error:", err);
       } finally {
@@ -104,5 +157,11 @@ export function useNoteContextMenuGroups(): NoteContextMenuGroups {
     })();
   }, [isHydrated, cachedRows.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { aiGroups, contentBlockGroups, loading };
+  return {
+    aiGroups,
+    contentBlockGroups,
+    organizationToolGroups,
+    userToolGroups,
+    loading,
+  };
 }

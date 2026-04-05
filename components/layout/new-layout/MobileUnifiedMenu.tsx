@@ -28,14 +28,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/hooks/useTheme";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/store";
+import { openFeedbackDialog } from "@/lib/redux/slices/overlaySlice";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
 import { Notification } from "@/types/notification.types";
 import { useQuickActions } from "@/features/quick-actions/hooks/useQuickActions";
-import FeedbackButton from "@/features/feedback/FeedbackButton";
-
 export function MobileUnifiedMenu() {
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const user = useAppSelector((state: RootState) => state.user);
@@ -45,8 +45,6 @@ export function MobileUnifiedMenu() {
     user.email?.split("@")[0] ||
     "User";
   const profilePhoto = user.userMetadata.picture || null;
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
-
   const userIsCreator = useAppSelector((state) =>
     brokerSelectors.selectValue(state, "APPLET_USER_IS_ADMIN"),
   );
@@ -71,7 +69,7 @@ export function MobileUnifiedMenu() {
   };
 
   const handleFeedbackClick = () => {
-    setFeedbackOpen(true);
+    dispatch(openFeedbackDialog());
   };
 
   return (
@@ -259,14 +257,6 @@ export function MobileUnifiedMenu() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-
-      {/* Hidden FeedbackButton for mobile menu trigger */}
-      <div className="hidden">
-        <FeedbackButton
-          triggerOpen={feedbackOpen}
-          onOpenChange={setFeedbackOpen}
-        />
-      </div>
     </>
   );
 }

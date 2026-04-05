@@ -14,7 +14,7 @@ const ReactMarkdown = dynamic(() => import("react-markdown"), {
 
 interface MarkdownRendererProps {
   content: string;
-  type: "flashcard" | "message";
+  type?: "flashcard" | "message" | "markdown";
   fontSize?: number;
   role?: "user" | "assistant";
   className?: string;
@@ -22,7 +22,7 @@ interface MarkdownRendererProps {
 
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   content,
-  type,
+  type = "markdown",
   fontSize = 16,
   role = "assistant",
   className,

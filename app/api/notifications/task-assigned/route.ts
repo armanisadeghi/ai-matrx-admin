@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     if (!user) {
       return NextResponse.json(
         { success: false, msg: "Unauthorized" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -25,8 +25,11 @@ export async function POST(request: Request) {
 
     if (!assigneeId || !taskTitle || !taskId) {
       return NextResponse.json(
-        { success: false, msg: "assigneeId, taskTitle, and taskId are required" },
-        { status: 400 }
+        {
+          success: false,
+          msg: "assigneeId, taskTitle, and taskId are required",
+        },
+        { status: 400 },
       );
     }
 
@@ -41,15 +44,16 @@ export async function POST(request: Request) {
 
     // Get assigner's name
     const { data: assignerProfile } = await supabase
-      .from("user_profiles")
-      .select("display_name, full_name")
-      .eq("user_id", user.id)
+      .from("profiles")
+      .select("display_name")
+      .eq("id", user.id)
       .single();
 
     const assignerName =
       assignerProfile?.display_name ||
-      assignerProfile?.full_name ||
-      user.user_metadata?.name ||
+      (typeof user.user_metadata?.name === "string"
+        ? user.user_metadata.name
+        : null) ||
       "Someone";
 
     const result = await sendTaskAssignmentEmail({
@@ -70,13 +74,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       { success: false, msg: result.message, error: result.error },
-      { status: 500 }
+      { status: 500 },
     );
   } catch (error) {
     console.error("Error in POST /api/notifications/task-assigned:", error);
     return NextResponse.json(
       { success: false, msg: "Failed to send notification" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

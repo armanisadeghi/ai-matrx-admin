@@ -25,7 +25,7 @@ import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
 import type {
   ChunkPayload,
   ErrorPayload,
-  StatusUpdatePayload,
+  PhasePayload,
   StreamEvent,
 } from '@/types/python-generated/stream-events';
 import type { ChatRequestBody } from '@/lib/api/types';
@@ -337,15 +337,13 @@ export const submitChatFastAPI = createAsyncThunk<
             break;
           }
 
-          case 'status_update': {
-            const statusData = event.data as unknown as StatusUpdatePayload;
+          case 'phase': {
+            const phaseData = event.data as unknown as PhasePayload;
             dispatch(updateInfoResponse({
               listenerId,
               info: {
-                status: statusData.status === 'complete' ? 'confirm' : 'processing',
-                system_message: statusData.system_message || statusData.status,
-                user_message: statusData.user_message || undefined,
-                metadata: statusData.metadata,
+                status: phaseData.phase === 'complete' ? 'confirm' : 'processing',
+                system_message: phaseData.phase,
               },
             }));
             break;

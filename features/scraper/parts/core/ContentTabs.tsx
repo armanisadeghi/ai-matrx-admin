@@ -34,6 +34,7 @@ const ContentTabs = ({ activeTab, setActiveTab }) => {
         ref={tabsRef}
         className="flex gap-1 overflow-x-auto scrollbar-hide py-1 px-6 md:px-0 rounded-t-none bg-slate-800 rounded-b-lg shadow-md border-b border-slate-700"
       >
+        <TabsTrigger value="pretty">Pretty</TabsTrigger>
         <TabsTrigger value="reader">Reader</TabsTrigger>
         <TabsTrigger value="organized">Content</TabsTrigger>
         <TabsTrigger value="structured">Structured</TabsTrigger>

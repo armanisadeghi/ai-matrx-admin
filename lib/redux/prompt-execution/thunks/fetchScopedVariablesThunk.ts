@@ -22,6 +22,18 @@ import {
   setScopedVariables,
 } from '../slice';
 import { createClient } from '@/utils/supabase/client';
+import type { Json } from '@/types/database.types';
+
+function contextVariableValueToString(value: Json): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return '';
+  }
+}
 
 export const fetchScopedVariables = createAsyncThunk<
   void,
@@ -55,55 +67,63 @@ export const fetchScopedVariables = createAsyncThunk<
       // Create fresh client to pick up current auth session
       const supabase = createClient();
 
-      // Fetch user variables
+      // Fetch user-scoped context variables (exactly this scope — no org/project/workspace/task)
       let userVariables: Record<string, string> = {};
       if (userId) {
         const { data: userData, error: userError } = await supabase
-          .from('user_variables')
+          .from('context_variables')
           .select('key, value')
-          .eq('user_id', userId);
+          .eq('user_id', userId)
+          .is('organization_id', null)
+          .is('project_id', null)
+          .is('workspace_id', null)
+          .is('task_id', null);
 
         if (userError) {
           console.error('Error fetching user variables:', userError);
         } else if (userData) {
-          userVariables = userData.reduce((acc, { key, value }) => {
-            acc[key] = value;
+          userVariables = userData.reduce((acc, row) => {
+            acc[row.key] = contextVariableValueToString(row.value);
             return acc;
           }, {} as Record<string, string>);
         }
       }
 
-      // Fetch org variables
+      // Fetch org-scoped variables (organization set; not project/workspace/task)
       let orgVariables: Record<string, string> = {};
       if (orgId) {
         const { data: orgData, error: orgError } = await supabase
-          .from('org_variables')
+          .from('context_variables')
           .select('key, value')
-          .eq('org_id', orgId);
+          .eq('organization_id', orgId)
+          .is('project_id', null)
+          .is('workspace_id', null)
+          .is('task_id', null);
 
         if (orgError) {
           console.error('Error fetching org variables:', orgError);
         } else if (orgData) {
-          orgVariables = orgData.reduce((acc, { key, value }) => {
-            acc[key] = value;
+          orgVariables = orgData.reduce((acc, row) => {
+            acc[row.key] = contextVariableValueToString(row.value);
             return acc;
           }, {} as Record<string, string>);
         }
       }
 
-      // Fetch project variables
+      // Fetch project-scoped variables
       let projectVariables: Record<string, string> = {};
       if (projectId) {
         const { data: projectData, error: projectError } = await supabase
-          .from('project_variables')
+          .from('context_variables')
           .select('key, value')
-          .eq('project_id', projectId);
+          .eq('project_id', projectId)
+          .is('task_id', null);
 
         if (projectError) {
           console.error('Error fetching project variables:', projectError);
         } else if (projectData) {
-          projectVariables = projectData.reduce((acc, { key, value }) => {
-            acc[key] = value;
+          projectVariables = projectData.reduce((acc, row) => {
+            acc[row.key] = contextVariableValueToString(row.value);
             return acc;
           }, {} as Record<string, string>);
         }

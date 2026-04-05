@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
@@ -14,16 +14,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { navigationLinks } from "@/constants/navigation-links";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/store";
+import { openFeedbackDialog } from "@/lib/redux/slices/overlaySlice";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { selectResponseTextByListenerId } from "@/lib/redux/socket-io";
 import AdminMenu from "./AdminMenu";
 import CreatorMenu from "./CreatorMenu";
 import { useMenuAnimations } from "./useMenuAnimations";
-import FeedbackButton from "@/features/feedback/FeedbackButton";
-
 interface NavigationItem {
   label: string;
   icon: React.ReactNode;
@@ -67,6 +66,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
   enableAnimations = true,
   animationTrigger = null,
 }) => {
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const isMobile = useIsMobile();
   const { theme, setTheme } = useTheme();
@@ -77,8 +77,6 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
     user.email?.split("@")[0] ||
     "User";
   const profilePhoto = user.userMetadata.picture || null;
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
-
   // Creator and admin status
   const userIsCreator = useAppSelector((state) =>
     brokerSelectors.selectValue(state, "APPLET_USER_IS_ADMIN"),
@@ -92,7 +90,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
   };
 
   const handleFeedbackClick = () => {
-    setFeedbackOpen(true);
+    dispatch(openFeedbackDialog());
   };
 
   // Get current task information from redux state (only for applet-specific animations)
@@ -313,16 +311,6 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
-
-      {/* Hidden FeedbackButton for mobile menu trigger - rendered outside dropdown to avoid conflicts */}
-      {isMobile && (
-        <div className="hidden">
-          <FeedbackButton
-            triggerOpen={feedbackOpen}
-            onOpenChange={setFeedbackOpen}
-          />
-        </div>
-      )}
     </>
   );
 };

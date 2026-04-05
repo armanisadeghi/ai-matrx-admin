@@ -914,7 +914,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/scraper/compat/quick-scrape": {
+    "/scraper/batch": {
         parameters: {
             query?: never;
             header?: never;
@@ -923,8 +923,128 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Quick Scrape Compat */
-        post: operations["quick_scrape_compat_scraper_compat_quick_scrape_post"];
+        /** Batch Scrape */
+        post: operations["batch_scrape_scraper_batch_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/scraper/content/save": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Content Save */
+        post: operations["content_save_scraper_content_save_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/scraper/queue/pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Queue Pending */
+        get: operations["queue_pending_scraper_queue_pending_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/scraper/queue/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Queue Claim */
+        post: operations["queue_claim_scraper_queue_claim_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/scraper/queue/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Queue Submit */
+        post: operations["queue_submit_scraper_queue_submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/scraper/queue/fail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Queue Fail */
+        post: operations["queue_fail_scraper_queue_fail_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/scraper/queue/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Queue Stats */
+        get: operations["queue_stats_scraper_queue_stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/scraper/config/domains": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Domains */
+        get: operations["list_domains_scraper_config_domains_get"];
+        put?: never;
+        /** Upsert Domain */
+        post: operations["upsert_domain_scraper_config_domains_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1949,6 +2069,14 @@ export interface components {
         };
         /** AgentStartRequest */
         AgentStartRequest: {
+            /** Organization Id */
+            organization_id?: string | null;
+            /** Workspace Id */
+            workspace_id?: string | null;
+            /** Project Id */
+            project_id?: string | null;
+            /** Task Id */
+            task_id?: string | null;
             /** User Input */
             user_input?: string | {
                 [key: string]: unknown;
@@ -1988,14 +2116,6 @@ export interface components {
             context: {
                 [key: string]: unknown;
             };
-            /** Organization Id */
-            organization_id?: string | null;
-            /** Workspace Id */
-            workspace_id?: string | null;
-            /** Project Id */
-            project_id?: string | null;
-            /** Task Id */
-            task_id?: string | null;
         };
         /** AnalyzeBulkRequest */
         AnalyzeBulkRequest: {
@@ -2046,6 +2166,32 @@ export interface components {
          * @enum {string}
          */
         AudioStyle: "Podcast Interview" | "Educational Podcast" | "پادکست خبری ایران";
+        /** BatchScrapeRequest */
+        BatchScrapeRequest: {
+            /** Urls */
+            urls: string[];
+            /**
+             * Use Proxy
+             * @default true
+             */
+            use_proxy: boolean;
+            /**
+             * Fast
+             * @default false
+             */
+            fast: boolean;
+        };
+        /** BatchScrapeResponse */
+        BatchScrapeResponse: {
+            /** Status */
+            status: string;
+            /** Execution Time Ms */
+            execution_time_ms: number;
+            /** Results */
+            results: {
+                [key: string]: unknown;
+            }[];
+        };
         /** Body_compress_pdf_utilities_pdf_compress_post */
         Body_compress_pdf_utilities_pdf_compress_post: {
             /**
@@ -2195,6 +2341,14 @@ export interface components {
             image_loras?: unknown[] | null;
             /** Disable Safety Checker */
             disable_safety_checker?: boolean | null;
+            /** Organization Id */
+            organization_id?: string | null;
+            /** Workspace Id */
+            workspace_id?: string | null;
+            /** Project Id */
+            project_id?: string | null;
+            /** Task Id */
+            task_id?: string | null;
             /** Ai Model Id */
             ai_model_id: string;
             /** Messages */
@@ -2223,11 +2377,22 @@ export interface components {
             /** Tools */
             tools?: string[] | null;
             config_overrides?: components["schemas"]["LLMParams"] | null;
+            /** Variables */
+            variables?: {
+                [key: string]: unknown;
+            } | null;
             /**
              * Client Tools
              * @default []
              */
             client_tools: string[];
+            /**
+             * Custom Tools
+             * @default []
+             */
+            custom_tools: {
+                [key: string]: unknown;
+            }[];
             ide_state?: components["schemas"]["IdeState"] | null;
             /**
              * Context
@@ -2279,8 +2444,37 @@ export interface components {
              */
             content_type: string;
         };
+        /** ContentSaveRequest */
+        ContentSaveRequest: {
+            /** Url */
+            url: string;
+            /** Page Name */
+            page_name: string;
+            /** Content */
+            content: {
+                [key: string]: unknown;
+            };
+            /**
+             * Content Type
+             * @default html
+             */
+            content_type: string;
+            /**
+             * Char Count
+             * @default 0
+             */
+            char_count: number;
+        };
         /** ConversationContinueRequest */
         ConversationContinueRequest: {
+            /** Organization Id */
+            organization_id?: string | null;
+            /** Workspace Id */
+            workspace_id?: string | null;
+            /** Project Id */
+            project_id?: string | null;
+            /** Task Id */
+            task_id?: string | null;
             /** User Input */
             user_input: string | {
                 [key: string]: unknown;
@@ -2316,14 +2510,6 @@ export interface components {
             context: {
                 [key: string]: unknown;
             };
-            /** Organization Id */
-            organization_id?: string | null;
-            /** Workspace Id */
-            workspace_id?: string | null;
-            /** Project Id */
-            project_id?: string | null;
-            /** Task Id */
-            task_id?: string | null;
         };
         /** DirectChatRequest */
         DirectChatRequest: {
@@ -2336,6 +2522,28 @@ export interface components {
             };
         } & {
             [key: string]: unknown;
+        };
+        /** DomainUpsertRequest */
+        DomainUpsertRequest: {
+            /** Url */
+            url: string;
+            /** Common Name */
+            common_name?: string | null;
+            /**
+             * Scrape Allowed
+             * @default true
+             */
+            scrape_allowed: boolean;
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /**
+             * Proxy Type
+             * @default datacenter
+             */
+            proxy_type: string;
         };
         /** ExtensionContentSubmit */
         ExtensionContentSubmit: {
@@ -2745,91 +2953,6 @@ export interface components {
                 [key: string]: unknown;
             }[];
         };
-        /** QuickScrapeCompatRequest */
-        QuickScrapeCompatRequest: {
-            /**
-             * Urls
-             * @description List of URLs to scrape.
-             */
-            urls: string[];
-            /**
-             * Use Cache
-             * @default true
-             */
-            use_cache: boolean;
-            /**
-             * Stream
-             * @default false
-             */
-            stream: boolean;
-            /**
-             * Get Organized Data
-             * @default false
-             */
-            get_organized_data: boolean;
-            /**
-             * Get Structured Data
-             * @default false
-             */
-            get_structured_data: boolean;
-            /**
-             * Get Overview
-             * @default false
-             */
-            get_overview: boolean;
-            /**
-             * Get Text Data
-             * @default true
-             */
-            get_text_data: boolean;
-            /**
-             * Get Main Image
-             * @default false
-             */
-            get_main_image: boolean;
-            /**
-             * Get Links
-             * @default false
-             */
-            get_links: boolean;
-            /**
-             * Get Content Filter Removal Details
-             * @default false
-             */
-            get_content_filter_removal_details: boolean;
-            /**
-             * Include Highlighting Markers
-             * @default true
-             */
-            include_highlighting_markers: boolean;
-            /**
-             * Include Media
-             * @default true
-             */
-            include_media: boolean;
-            /**
-             * Include Media Links
-             * @default true
-             */
-            include_media_links: boolean;
-            /**
-             * Include Media Description
-             * @default true
-             */
-            include_media_description: boolean;
-            /**
-             * Include Anchors
-             * @default true
-             */
-            include_anchors: boolean;
-            /**
-             * Anchor Size
-             * @default 100
-             */
-            anchor_size: number;
-        } & {
-            [key: string]: unknown;
-        };
         /** QuickScrapeRequest */
         QuickScrapeRequest: {
             /**
@@ -2909,6 +3032,35 @@ export interface components {
              * @default false
              */
             stream: boolean;
+        };
+        /** RetryClaimRequest */
+        RetryClaimRequest: {
+            /** Item Ids */
+            item_ids: string[];
+            /** Client Id */
+            client_id: string;
+            /**
+             * Claim Ttl Minutes
+             * @default 10
+             */
+            claim_ttl_minutes: number;
+        };
+        /** RetryFailRequest */
+        RetryFailRequest: {
+            /** Queue Item Id */
+            queue_item_id: string;
+            /** Error */
+            error: string;
+            /**
+             * Promote To Extension
+             * @default false
+             */
+            promote_to_extension: boolean;
+        };
+        /** RetrySubmitRequest */
+        RetrySubmitRequest: {
+            /** Queue Item Id */
+            queue_item_id: string;
         };
         /** RunPipelineRequest */
         RunPipelineRequest: Record<string, never>;
@@ -4639,7 +4791,7 @@ export interface operations {
             };
         };
     };
-    quick_scrape_compat_scraper_compat_quick_scrape_post: {
+    batch_scrape_scraper_batch_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -4648,7 +4800,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["QuickScrapeCompatRequest"];
+                "application/json": components["schemas"]["BatchScrapeRequest"];
             };
         };
         responses: {
@@ -4658,7 +4810,261 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["BatchScrapeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    content_save_scraper_content_save_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContentSaveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    queue_pending_scraper_queue_pending_get: {
+        parameters: {
+            query?: {
+                tier?: string;
+                limit?: number;
+                domain?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    queue_claim_scraper_queue_claim_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RetryClaimRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string[];
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    queue_submit_scraper_queue_submit_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RetrySubmitRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    queue_fail_scraper_queue_fail_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RetryFailRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    queue_stats_scraper_queue_stats_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    list_domains_scraper_config_domains_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    upsert_domain_scraper_config_domains_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DomainUpsertRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Validation Error */

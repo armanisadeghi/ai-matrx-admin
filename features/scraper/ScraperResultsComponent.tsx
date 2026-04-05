@@ -32,7 +32,7 @@ const ScraperResultsComponent = ({ taskId }: ScraperResultsComponentProps) => {
   const isLoading = taskStatus === "submitted" && !isTaskCompleted;
 
   const [activePageIndex, setActivePageIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState("reader");
+  const [activeTab, setActiveTab] = useState("pretty");
   
   // Process responses using the new ScraperDataUtils system
   const processedData = useMemo(() => {

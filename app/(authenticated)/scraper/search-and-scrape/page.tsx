@@ -7,13 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useScraperApi,
   ScraperResult,
 } from "@/features/scraper/hooks/useScraperApi";
 import ScraperDataUtils from "@/features/scraper/utils/data-utils";
 import PageContent from "@/features/scraper/parts/core/PageContent";
+import { ScraperHookErrorDetails } from "@/features/scraper/parts/ScraperHookErrorDetails";
 
 export default function ScraperSearchAndScrapePage() {
   const [keyword, setKeyword] = useState("");
@@ -24,13 +24,14 @@ export default function ScraperSearchAndScrapePage() {
     isLoading,
     hasError,
     error,
+    errorDiagnostics,
     statusMessage,
     reset,
   } = useScraperApi();
 
   const [allResults, setAllResults] = useState<ScraperResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState("reader");
+  const [activeTab, setActiveTab] = useState("pretty");
 
   const selectedResult = allResults[selectedIndex] ?? null;
 
@@ -47,7 +48,8 @@ export default function ScraperSearchAndScrapePage() {
             overview: selectedResult.overview,
             structured_data: selectedResult.structuredData,
             organized_data: selectedResult.organizedData,
-            text_data: selectedResult.textContent,
+            text_data: selectedResult.plainTextContent,
+            markdown_renderable: selectedResult.markdownRenderable ?? undefined,
             main_image: selectedResult.mainImage,
             hashes: null,
             content_filter_removal_details: [],
@@ -173,7 +175,10 @@ export default function ScraperSearchAndScrapePage() {
         </div>
         {hasError && (
           <Alert variant="destructive" className="mt-2 py-2">
-            <AlertDescription className="text-xs">{error}</AlertDescription>
+            <AlertDescription className="text-xs">
+              {error}
+              <ScraperHookErrorDetails diagnostics={errorDiagnostics} />
+            </AlertDescription>
           </Alert>
         )}
       </div>
@@ -194,7 +199,7 @@ export default function ScraperSearchAndScrapePage() {
                   key={index}
                   onClick={() => {
                     setSelectedIndex(index);
-                    setActiveTab("reader");
+                    setActiveTab("pretty");
                   }}
                   className={`w-full text-left px-3 py-2.5 hover:bg-accent transition-colors ${
                     selectedIndex === index

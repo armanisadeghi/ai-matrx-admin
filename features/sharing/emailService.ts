@@ -1,8 +1,8 @@
 // features/sharing/emailService.ts
 // Email service for sharing notifications
 
-import { sendEmail, emailTemplates } from '@/lib/email/client';
-import { createClient } from '@/utils/supabase/client';
+import { sendEmail, emailTemplates } from "@/lib/email/client";
+import { createClient } from "@/utils/supabase/client";
 
 interface SendSharingNotificationOptions {
   recipientUserId: string;
@@ -22,68 +22,68 @@ interface ResourceDetails {
  */
 async function getResourceDetails(
   resourceType: string,
-  resourceId: string
+  resourceId: string,
 ): Promise<ResourceDetails | null> {
   const supabase = createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.aimatrx.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.aimatrx.com";
 
   try {
     switch (resourceType) {
-      case 'prompt': {
+      case "prompt": {
         const { data } = await supabase
-          .from('prompts')
-          .select('title')
-          .eq('id', resourceId)
+          .from("prompts")
+          .select("name")
+          .eq("id", resourceId)
           .single();
-        
+
         return data
           ? {
-              title: data.title || 'Untitled Prompt',
+              title: data.name ?? "Untitled Prompt",
               url: `${siteUrl}/prompts/${resourceId}`,
             }
           : null;
       }
 
-      case 'canvas': {
+      case "canvas": {
         const { data } = await supabase
-          .from('canvases')
-          .select('title')
-          .eq('id', resourceId)
+          .from("canvas_items")
+          .select("title")
+          .eq("id", resourceId)
           .single();
-        
+
         return data
           ? {
-              title: data.title || 'Untitled Canvas',
+              title: data.title ?? "Untitled Canvas",
               url: `${siteUrl}/canvases/${resourceId}`,
             }
           : null;
       }
 
-      case 'collection': {
+      case "collection": {
         const { data } = await supabase
-          .from('collections')
-          .select('name')
-          .eq('id', resourceId)
+          .from("user_lists")
+          .select("list_name")
+          .eq("id", resourceId)
           .single();
-        
+
         return data
           ? {
-              title: data.name || 'Untitled Collection',
+              title: data.list_name ?? "Untitled Collection",
               url: `${siteUrl}/collections/${resourceId}`,
             }
           : null;
       }
 
-      case 'note': {
+      case "note": {
         const { data } = await supabase
-          .from('notes')
-          .select('title')
-          .eq('id', resourceId)
+          .from("notes")
+          .select("label")
+          .eq("id", resourceId)
           .single();
-        
+
         return data
           ? {
-              title: data.title || 'Untitled Note',
+              title: data.label || "Untitled Note",
               url: `${siteUrl}/notes/${resourceId}`,
             }
           : null;
@@ -96,7 +96,7 @@ async function getResourceDetails(
         };
     }
   } catch (error) {
-    console.error('Error fetching resource details:', error);
+    console.error("Error fetching resource details:", error);
     return null;
   }
 }
@@ -109,15 +109,15 @@ async function checkEmailPreferences(userId: string): Promise<boolean> {
 
   try {
     const { data } = await supabase
-      .from('user_email_preferences')
-      .select('sharing_notifications')
-      .eq('user_id', userId)
+      .from("user_email_preferences")
+      .select("sharing_notifications")
+      .eq("user_id", userId)
       .single();
 
     // Default to true if no preferences found
     return data?.sharing_notifications !== false;
   } catch (error) {
-    console.error('Error checking email preferences:', error);
+    console.error("Error checking email preferences:", error);
     return true; // Default to sending if error
   }
 }
@@ -126,9 +126,10 @@ async function checkEmailPreferences(userId: string): Promise<boolean> {
  * Send sharing notification email
  */
 export async function sendSharingNotification(
-  options: SendSharingNotificationOptions
-): Promise<{ success: boolean; error?: any }> {
-  const { recipientUserId, resourceType, resourceId, sharerName, message } = options;
+  options: SendSharingNotificationOptions,
+): Promise<{ success: boolean; error?: unknown }> {
+  const { recipientUserId, resourceType, resourceId, sharerName, message } =
+    options;
 
   try {
     const supabase = createClient();
@@ -140,12 +141,19 @@ export async function sendSharingNotification(
     }
 
     // Get recipient email using RPC function (securely accesses auth.users)
-    const { data: usersData, error: userError } = await supabase
-      .rpc('get_user_emails_by_ids', { user_ids: [recipientUserId] });
+    const { data: usersData, error: userError } = await supabase.rpc(
+      "get_user_emails_by_ids",
+      { user_ids: [recipientUserId] },
+    );
 
-    if (userError || !usersData || usersData.length === 0 || !usersData[0]?.email) {
-      console.warn('No email found for user:', recipientUserId);
-      return { success: false, error: 'User email not found' };
+    if (
+      userError ||
+      !usersData ||
+      usersData.length === 0 ||
+      !usersData[0]?.email
+    ) {
+      console.warn("No email found for user:", recipientUserId);
+      return { success: false, error: "User email not found" };
     }
 
     const userData = usersData[0];
@@ -153,8 +161,11 @@ export async function sendSharingNotification(
     // Get resource details
     const resourceDetails = await getResourceDetails(resourceType, resourceId);
     if (!resourceDetails) {
-      console.warn('Could not fetch resource details:', { resourceType, resourceId });
-      return { success: false, error: 'Resource details not found' };
+      console.warn("Could not fetch resource details:", {
+        resourceType,
+        resourceId,
+      });
+      return { success: false, error: "Resource details not found" };
     }
 
     // Send email
@@ -163,7 +174,7 @@ export async function sendSharingNotification(
       resourceType,
       resourceDetails.title,
       resourceDetails.url,
-      message
+      message,
     );
 
     const result = await sendEmail({
@@ -174,7 +185,7 @@ export async function sendSharingNotification(
 
     return result;
   } catch (error) {
-    console.error('Error sending sharing notification:', error);
+    console.error("Error sending sharing notification:", error);
     return { success: false, error };
   }
 }
@@ -187,7 +198,7 @@ export async function sendBatchSharingNotifications(
   resourceType: string,
   resourceId: string,
   sharerName: string,
-  message?: string
+  message?: string,
 ): Promise<{ successful: number; failed: number }> {
   const results = await Promise.allSettled(
     recipientUserIds.map((userId) =>
@@ -197,12 +208,12 @@ export async function sendBatchSharingNotifications(
         resourceId,
         sharerName,
         message,
-      })
-    )
+      }),
+    ),
   );
 
   const successful = results.filter(
-    (r) => r.status === 'fulfilled' && r.value.success
+    (r) => r.status === "fulfilled" && r.value.success,
   ).length;
   const failed = results.length - successful;
 

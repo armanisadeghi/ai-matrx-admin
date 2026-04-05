@@ -10,18 +10,25 @@ import type {
   AiRunsListResponse,
   RunMessage,
 } from "@/features/ai-runs/types";
+import {
+  mapAiRunRow,
+  mapAiTaskRow,
+  runMessagesFromJson,
+} from "@/features/ai-runs/utils/db-row-mappers";
 
 /**
  * AI Runs Server Actions
- * 
+ *
  * Server-side operations for ai_runs table.
  * These actions run on the server and respect RLS policies.
  */
 
 export async function createAiRun(input: CreateAiRunInput): Promise<AiRun> {
   const supabase = await createClient();
-  
-  const { data: { user } } = await supabase.auth.getUser();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) throw new Error("User not authenticated");
 
   const { data, error } = await supabase
@@ -43,7 +50,7 @@ export async function createAiRun(input: CreateAiRunInput): Promise<AiRun> {
     .single();
 
   if (error) throw error;
-  return data;
+  return mapAiRunRow(data);
 }
 
 export async function getAiRun(runId: string): Promise<AiRun | null> {
@@ -60,10 +67,12 @@ export async function getAiRun(runId: string): Promise<AiRun | null> {
     throw error;
   }
 
-  return data;
+  return mapAiRunRow(data);
 }
 
-export async function getAiRunWithTasks(runId: string): Promise<AiRunWithTasks | null> {
+export async function getAiRunWithTasks(
+  runId: string,
+): Promise<AiRunWithTasks | null> {
   const supabase = await createClient();
 
   // Get run
@@ -88,14 +97,16 @@ export async function getAiRunWithTasks(runId: string): Promise<AiRunWithTasks |
   if (tasksError) throw tasksError;
 
   return {
-    ...run,
-    tasks: tasks || [],
+    ...mapAiRunRow(run),
+    tasks: (tasks || []).map(mapAiTaskRow),
   };
 }
 
-export async function listAiRuns(filters: AiRunsListFilters = {}): Promise<AiRunsListResponse> {
+export async function listAiRuns(
+  filters: AiRunsListFilters = {},
+): Promise<AiRunsListResponse> {
   const supabase = await createClient();
-  
+
   const {
     source_type,
     source_id,
@@ -108,15 +119,13 @@ export async function listAiRuns(filters: AiRunsListFilters = {}): Promise<AiRun
     order_direction = "desc",
   } = filters;
 
-  let query = supabase
-    .from("ai_runs")
-    .select("*", { count: "exact" });
+  let query = supabase.from("ai_runs").select("*", { count: "exact" });
 
   if (source_type) query = query.eq("source_type", source_type);
   if (source_id) query = query.eq("source_id", source_id);
   if (status) query = query.eq("status", status);
   if (starred !== undefined) query = query.eq("is_starred", starred);
-  
+
   if (search) {
     query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
   }
@@ -129,13 +138,16 @@ export async function listAiRuns(filters: AiRunsListFilters = {}): Promise<AiRun
   if (error) throw error;
 
   return {
-    runs: data || [],
+    runs: (data || []).map(mapAiRunRow),
     total: count || 0,
     hasMore: (count || 0) > offset + limit,
   };
 }
 
-export async function updateAiRun(runId: string, input: UpdateAiRunInput): Promise<AiRun> {
+export async function updateAiRun(
+  runId: string,
+  input: UpdateAiRunInput,
+): Promise<AiRun> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -146,7 +158,7 @@ export async function updateAiRun(runId: string, input: UpdateAiRunInput): Promi
     .single();
 
   if (error) throw error;
-  return data;
+  return mapAiRunRow(data);
 }
 
 export async function deleteAiRun(runId: string): Promise<void> {
@@ -179,10 +191,13 @@ export async function toggleAiRunStar(runId: string): Promise<AiRun> {
     .single();
 
   if (error) throw error;
-  return data;
+  return mapAiRunRow(data);
 }
 
-export async function addMessageToRun(runId: string, message: RunMessage): Promise<AiRun> {
+export async function addMessageToRun(
+  runId: string,
+  message: RunMessage,
+): Promise<AiRun> {
   const supabase = await createClient();
 
   const { data: current, error: getError } = await supabase
@@ -193,7 +208,7 @@ export async function addMessageToRun(runId: string, message: RunMessage): Promi
 
   if (getError) throw getError;
 
-  const updatedMessages = [...(current.messages || []), message];
+  const updatedMessages = [...runMessagesFromJson(current.messages), message];
 
   const { data, error } = await supabase
     .from("ai_runs")
@@ -203,7 +218,7 @@ export async function addMessageToRun(runId: string, message: RunMessage): Promi
     .single();
 
   if (error) throw error;
-  return data;
+  return mapAiRunRow(data);
 }
 
 export async function archiveAiRun(runId: string): Promise<AiRun> {
@@ -217,7 +232,7 @@ export async function archiveAiRun(runId: string): Promise<AiRun> {
     .single();
 
   if (error) throw error;
-  return data;
+  return mapAiRunRow(data);
 }
 
 export async function restoreAiRun(runId: string): Promise<AiRun> {
@@ -231,6 +246,5 @@ export async function restoreAiRun(runId: string): Promise<AiRun> {
     .single();
 
   if (error) throw error;
-  return data;
+  return mapAiRunRow(data);
 }
-

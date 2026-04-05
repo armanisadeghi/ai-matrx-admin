@@ -25,6 +25,11 @@ import {
   Layers,
   Activity,
   BarChart3,
+  Brain,
+  Info,
+  ShieldAlert,
+  BookmarkPlus,
+  RefreshCw,
 } from "lucide-react";
 import type {
   ActiveRequest,
@@ -34,7 +39,7 @@ import type {
   RawStreamEvent,
 } from "@/features/agents/types/request.types";
 import type {
-  StatusUpdatePayload,
+  Phase,
   ContentBlockPayload,
   CompletionPayload,
 } from "@/types/python-generated/stream-events";
@@ -89,12 +94,15 @@ function JsonView({
   data,
   label,
   id,
+  defaultExpanded = true,
 }: {
   data: unknown;
   label?: string;
   id: string;
+  /** False for very large blobs (e.g. full request dump) so the panel stays scannable. */
+  defaultExpanded?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultExpanded);
   const json = JSON.stringify(data, null, 2);
   if (data === null || data === undefined) return null;
   const isSimple =
@@ -151,7 +159,11 @@ function JsonView({
 
 const EVENT_COLORS: Record<string, string> = {
   chunk: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  status_update: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+  reasoning_chunk: "bg-violet-500/20 text-violet-400 border-violet-500/30",
+  phase: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+  init: "bg-sky-500/20 text-sky-400 border-sky-500/30",
+  warning: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  info: "bg-sky-500/20 text-sky-400 border-sky-500/30",
   data: "bg-purple-500/20 text-purple-400 border-purple-500/30",
   completion: "bg-green-500/20 text-green-400 border-green-500/30",
   error: "bg-red-500/20 text-red-400 border-red-500/30",
@@ -160,11 +172,17 @@ const EVENT_COLORS: Record<string, string> = {
   heartbeat: "bg-gray-500/20 text-gray-400 border-gray-500/30",
   end: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
   content_block: "bg-pink-500/20 text-pink-400 border-pink-500/30",
+  record_reserved: "bg-teal-500/20 text-teal-400 border-teal-500/30",
+  record_update: "bg-teal-500/20 text-teal-400 border-teal-500/30",
 };
 
 const EVENT_ICONS: Record<string, React.ReactNode> = {
   chunk: <FileText className="h-2.5 w-2.5" />,
-  status_update: <Activity className="h-2.5 w-2.5" />,
+  reasoning_chunk: <Brain className="h-2.5 w-2.5" />,
+  phase: <Activity className="h-2.5 w-2.5" />,
+  init: <Zap className="h-2.5 w-2.5" />,
+  warning: <ShieldAlert className="h-2.5 w-2.5" />,
+  info: <Info className="h-2.5 w-2.5" />,
   data: <Database className="h-2.5 w-2.5" />,
   completion: <BarChart3 className="h-2.5 w-2.5" />,
   error: <AlertTriangle className="h-2.5 w-2.5" />,
@@ -173,6 +191,8 @@ const EVENT_ICONS: Record<string, React.ReactNode> = {
   heartbeat: <Heart className="h-2.5 w-2.5" />,
   end: <Square className="h-2.5 w-2.5" />,
   content_block: <Layers className="h-2.5 w-2.5" />,
+  record_reserved: <BookmarkPlus className="h-2.5 w-2.5" />,
+  record_update: <RefreshCw className="h-2.5 w-2.5" />,
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -234,14 +254,14 @@ function StatusBar({
           </Badge>
         </>
       )}
-      {request.currentStatus && (
+      {request.currentPhase && (
         <>
           <span className="text-[10px] text-muted-foreground">|</span>
           <Badge
             variant="outline"
             className="text-[10px] px-1.5 py-0 h-5 bg-yellow-500/10 text-yellow-400"
           >
-            {request.currentStatus.user_message ?? request.currentStatus.status}
+            {request.currentPhase}
           </Badge>
         </>
       )}
@@ -293,9 +313,21 @@ function MetricsBar({ metrics }: { metrics: ClientMetrics }) {
         {metrics.totalEvents}
       </span>
       <span className="text-[9px] text-muted-foreground/60">
-        (chunk:{metrics.chunkEvents} status:{metrics.statusUpdateEvents} tool:
+        (chunk:{metrics.chunkEvents}
+        {metrics.reasoningChunkEvents > 0 &&
+          ` reason:${metrics.reasoningChunkEvents}`}{" "}
+        phase:{metrics.phaseEvents}
+        {metrics.initEvents > 0 && ` init:${metrics.initEvents}`}
+        {metrics.completionEvents > 0 && ` comp:${metrics.completionEvents}`}
+        {metrics.warningEvents > 0 && ` warn:${metrics.warningEvents}`}
+        {metrics.infoEvents > 0 && ` info:${metrics.infoEvents}`} tool:
         {metrics.toolEvents} data:{metrics.dataEvents} block:
-        {metrics.contentBlockEvents} other:{metrics.otherEvents})
+        {metrics.contentBlockEvents}
+        {metrics.recordReservedEvents > 0 &&
+          ` reserved:${metrics.recordReservedEvents}`}
+        {metrics.recordUpdateEvents > 0 &&
+          ` updated:${metrics.recordUpdateEvents}`}{" "}
+        other:{metrics.otherEvents})
       </span>
     </div>
   );
@@ -305,7 +337,12 @@ function getTimelineColor(kind: TimelineEntry["kind"]): string {
   const map: Record<string, string> = {
     text_start: EVENT_COLORS.chunk,
     text_end: EVENT_COLORS.chunk,
-    status_update: EVENT_COLORS.status_update,
+    reasoning_start: EVENT_COLORS.reasoning_chunk,
+    reasoning_end: EVENT_COLORS.reasoning_chunk,
+    phase: EVENT_COLORS.phase,
+    init: EVENT_COLORS.init,
+    warning: EVENT_COLORS.warning,
+    info: EVENT_COLORS.info,
     tool_event: EVENT_COLORS.tool_event,
     content_block: EVENT_COLORS.content_block,
     data: EVENT_COLORS.data,
@@ -314,6 +351,8 @@ function getTimelineColor(kind: TimelineEntry["kind"]): string {
     end: EVENT_COLORS.end,
     broker: EVENT_COLORS.broker,
     heartbeat: EVENT_COLORS.heartbeat,
+    record_reserved: EVENT_COLORS.record_reserved,
+    record_update: EVENT_COLORS.record_update,
     unknown: "bg-red-600/30 text-red-300 border-red-500/50 font-semibold",
   };
   return map[kind] ?? "bg-gray-500/20 text-gray-400 border-gray-500/30";
@@ -323,7 +362,12 @@ function getTimelineIcon(kind: TimelineEntry["kind"]): React.ReactNode {
   const map: Record<string, React.ReactNode> = {
     text_start: EVENT_ICONS.chunk,
     text_end: EVENT_ICONS.chunk,
-    status_update: EVENT_ICONS.status_update,
+    reasoning_start: EVENT_ICONS.reasoning_chunk,
+    reasoning_end: EVENT_ICONS.reasoning_chunk,
+    phase: EVENT_ICONS.phase,
+    init: EVENT_ICONS.init,
+    warning: EVENT_ICONS.warning,
+    info: EVENT_ICONS.info,
     tool_event: EVENT_ICONS.tool_event,
     content_block: EVENT_ICONS.content_block,
     data: EVENT_ICONS.data,
@@ -332,12 +376,18 @@ function getTimelineIcon(kind: TimelineEntry["kind"]): React.ReactNode {
     end: EVENT_ICONS.end,
     broker: EVENT_ICONS.broker,
     heartbeat: EVENT_ICONS.heartbeat,
+    record_reserved: EVENT_ICONS.record_reserved,
+    record_update: EVENT_ICONS.record_update,
     unknown: <AlertTriangle className="h-2.5 w-2.5" />,
   };
   return map[kind] ?? <CircleDot className="h-2.5 w-2.5" />;
 }
 
-function timelineSummary(entry: TimelineEntry, textChunks: string[]): string {
+function timelineSummary(
+  entry: TimelineEntry,
+  textChunks: string[],
+  reasoningChunks?: string[],
+): string {
   switch (entry.kind) {
     case "text_start":
       return `text streaming started (chunk idx ${entry.chunkStartIndex})`;
@@ -348,8 +398,24 @@ function timelineSummary(entry: TimelineEntry, textChunks: string[]): string {
       const preview = slice.length > 80 ? slice.slice(0, 80) + "..." : slice;
       return `${entry.chunkCount} chunks: "${preview}"`;
     }
-    case "status_update":
-      return entry.data.user_message ?? entry.data.status;
+    case "reasoning_start":
+      return `reasoning started (chunk idx ${entry.chunkStartIndex})`;
+    case "reasoning_end": {
+      const rSlice = (reasoningChunks ?? [])
+        .slice(entry.chunkStartIndex, entry.chunkEndIndex)
+        .join("");
+      const rPreview =
+        rSlice.length > 80 ? rSlice.slice(0, 80) + "..." : rSlice;
+      return `${entry.chunkCount} reasoning chunks: "${rPreview}"`;
+    }
+    case "phase":
+      return `Phase → ${entry.phase}`;
+    case "init":
+      return `Init: ${entry.operation} (${entry.operationId.slice(0, 8)}…)`;
+    case "warning":
+      return `[${entry.code}] ${entry.level}${!entry.recoverable ? " UNRECOVERABLE" : ""}: ${entry.userMessage ?? entry.systemMessage}`;
+    case "info":
+      return `[${entry.code}] ${entry.userMessage ?? entry.systemMessage}`;
     case "tool_event":
       return `${entry.subEvent} — ${entry.toolName} (${entry.callId.slice(0, 8)})`;
     case "content_block":
@@ -357,7 +423,7 @@ function timelineSummary(entry: TimelineEntry, textChunks: string[]): string {
     case "data":
       return JSON.stringify(entry.data).slice(0, 80);
     case "completion":
-      return "stream completed";
+      return `Completion: ${entry.operation} → ${entry.status} (${entry.operationId.slice(0, 8)}…)`;
     case "error":
       return `${entry.isFatal ? "FATAL" : "ERR"}: ${entry.message.slice(0, 80)}`;
     case "end":
@@ -366,6 +432,10 @@ function timelineSummary(entry: TimelineEntry, textChunks: string[]): string {
       return `broker: ${entry.brokerId}`;
     case "heartbeat":
       return "heartbeat";
+    case "record_reserved":
+      return `${entry.table} reserved: ${entry.recordId.slice(0, 8)}… [${entry.dbProject}]`;
+    case "record_update":
+      return `${entry.table} → ${entry.status}: ${entry.recordId.slice(0, 8)}…`;
     case "unknown":
       return `UNRECOGNIZED (${entry.originalEvent}): ${JSON.stringify(entry.rawData).slice(0, 100)}`;
     default:
@@ -377,11 +447,13 @@ function TimelineRow({
   entry,
   baseTime,
   textChunks,
+  reasoningChunks,
   forceExpanded = false,
 }: {
   entry: TimelineEntry;
   baseTime: number;
   textChunks: string[];
+  reasoningChunks?: string[];
   forceExpanded?: boolean;
 }) {
   const [localExpanded, setLocalExpanded] = useState(false);
@@ -390,7 +462,7 @@ function TimelineRow({
   const colorClass = getTimelineColor(entry.kind);
   const icon = getTimelineIcon(entry.kind);
   const json = JSON.stringify(entry, null, 2);
-  const summary = timelineSummary(entry, textChunks);
+  const summary = timelineSummary(entry, textChunks, reasoningChunks);
 
   return (
     <div
@@ -600,13 +672,7 @@ function ContentBlockRow({ block }: { block: ContentBlockPayload }) {
   );
 }
 
-function StatusHistoryRow({
-  entry,
-  idx,
-}: {
-  entry: StatusUpdatePayload;
-  idx: number;
-}) {
+function PhaseHistoryRow({ phase, idx }: { phase: Phase; idx: number }) {
   return (
     <div className="border-b border-border/20 px-1.5 py-0.5 flex items-center gap-1">
       <span className="text-[9px] font-mono text-muted-foreground/60 w-4 text-right">
@@ -616,23 +682,9 @@ function StatusHistoryRow({
         variant="outline"
         className="text-[9px] px-1 py-0 h-4 bg-yellow-500/10 text-yellow-400"
       >
-        {entry.status}
+        {phase}
       </Badge>
-      {entry.user_message && (
-        <span className="text-[9px] text-foreground/70">
-          {entry.user_message}
-        </span>
-      )}
-      {entry.system_message && (
-        <span className="text-[9px] text-muted-foreground italic">
-          {entry.system_message}
-        </span>
-      )}
-      <CopyBtn
-        text={JSON.stringify(entry, null, 2)}
-        id={`status-${idx}`}
-        className="ml-auto"
-      />
+      <CopyBtn text={phase} id={`phase-${idx}`} className="ml-auto" />
     </div>
   );
 }
@@ -644,7 +696,12 @@ function StatusHistoryRow({
 const ALL_TIMELINE_KINDS: TimelineEntry["kind"][] = [
   "text_start",
   "text_end",
-  "status_update",
+  "reasoning_start",
+  "reasoning_end",
+  "phase",
+  "init",
+  "warning",
+  "info",
   "tool_event",
   "content_block",
   "data",
@@ -653,6 +710,8 @@ const ALL_TIMELINE_KINDS: TimelineEntry["kind"][] = [
   "end",
   "broker",
   "heartbeat",
+  "record_reserved",
+  "record_update",
   "unknown",
 ];
 
@@ -793,6 +852,7 @@ function TimelineTab({ request }: { request: ActiveRequest }) {
             entry={entry}
             baseTime={baseTime}
             textChunks={request.textChunks}
+            reasoningChunks={request.reasoningChunks}
             forceExpanded={allExpanded}
           />
         ))}
@@ -862,30 +922,35 @@ function StatusTab({ request }: { request: ActiveRequest }) {
     <ScrollArea className="h-full">
       <div className="px-1.5 py-1 border-b border-border/30">
         <span className="text-[9px] text-muted-foreground font-medium">
-          Current Status
+          Current Phase
         </span>
-        {request.currentStatus ? (
+        {request.currentPhase ? (
           <div className="ml-2">
-            <JsonView data={request.currentStatus} id="cur-status" />
+            <Badge
+              variant="outline"
+              className="text-[9px] px-1 py-0 h-4 bg-yellow-500/10 text-yellow-400"
+            >
+              {request.currentPhase}
+            </Badge>
           </div>
         ) : (
           <div className="text-[9px] text-muted-foreground/50 ml-2">
-            No status updates received
+            No phase updates received
           </div>
         )}
       </div>
       <div className="px-1.5 py-0.5">
         <span className="text-[9px] text-muted-foreground font-medium">
-          History ({request.statusHistory.length})
+          History ({request.phaseHistory.length})
         </span>
       </div>
-      {request.statusHistory.length === 0 && (
+      {request.phaseHistory.length === 0 && (
         <div className="text-[10px] text-muted-foreground/60 text-center py-4">
-          No status updates
+          No phase updates
         </div>
       )}
-      {request.statusHistory.map((entry, idx) => (
-        <StatusHistoryRow key={idx} entry={entry} idx={idx} />
+      {request.phaseHistory.map((phase, idx) => (
+        <PhaseHistoryRow key={idx} phase={phase} idx={idx} />
       ))}
     </ScrollArea>
   );
@@ -914,14 +979,38 @@ function TextTab({ request }: { request: ActiveRequest }) {
     request.textChunks.length > 0
       ? request.textChunks.join("")
       : request.accumulatedText;
+  const reasoning =
+    request.reasoningChunks.length > 0
+      ? request.reasoningChunks.join("")
+      : request.accumulatedReasoning;
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-1 px-1.5 py-0.5 border-b border-border/30 text-[9px] text-muted-foreground">
         <span>{request.textChunks.length} chunks</span>
         <span className="text-muted-foreground/40">|</span>
         <span>{new TextEncoder().encode(text).length} bytes</span>
+        {request.reasoningChunks.length > 0 && (
+          <>
+            <span className="text-muted-foreground/40">|</span>
+            <span className="text-violet-400">
+              {request.reasoningChunks.length} reasoning chunks
+            </span>
+          </>
+        )}
         <CopyBtn text={text} id="full-text" className="ml-auto" />
       </div>
+      {reasoning && (
+        <div className="border-b border-border/30">
+          <div className="flex items-center gap-1 px-1.5 py-0.5 text-[9px] text-violet-400/80 bg-violet-500/5">
+            <Brain className="h-2.5 w-2.5" />
+            <span>Reasoning ({request.reasoningChunks.length} chunks)</span>
+            <CopyBtn text={reasoning} id="full-reasoning" className="ml-auto" />
+          </div>
+          <pre className="text-[10px] font-mono whitespace-pre-wrap break-all p-1.5 text-violet-400/70 max-h-40 overflow-y-auto">
+            {reasoning}
+          </pre>
+        </div>
+      )}
       <ScrollArea className="flex-1 min-h-0">
         <pre className="text-[10px] font-mono whitespace-pre-wrap break-all p-1.5 text-foreground/80">
           {text || (
@@ -999,6 +1088,31 @@ function CompletionTab({ request }: { request: ActiveRequest }) {
             Warnings ({request.warnings.length})
           </span>
           <JsonView data={request.warnings} id="warnings" />
+        </div>
+      )}
+      {request.infoEvents.length > 0 && (
+        <div className="p-1.5 border-t border-border/30">
+          <span className="text-[9px] text-muted-foreground font-medium">
+            Info Events ({request.infoEvents.length})
+          </span>
+          <JsonView data={request.infoEvents} id="info-events" />
+        </div>
+      )}
+      {Object.keys(request.reservations).length > 0 && (
+        <div className="p-1.5 border-t border-border/30">
+          <span className="text-[9px] text-muted-foreground font-medium">
+            Record Reservations ({Object.keys(request.reservations).length})
+          </span>
+          <JsonView data={request.reservations} id="reservations" />
+        </div>
+      )}
+      {Object.keys(request.completedOperations).length > 0 && (
+        <div className="p-1.5 border-t border-border/30">
+          <div className="text-[10px] text-sky-400 font-medium flex items-center gap-1">
+            <Zap className="h-2.5 w-2.5" /> Completed Operations (
+            {Object.keys(request.completedOperations).length})
+          </div>
+          <JsonView data={request.completedOperations} id="completed-ops" />
         </div>
       )}
     </ScrollArea>
@@ -1114,8 +1228,18 @@ function StateSnapshotTab({
           <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 ml-2 text-[9px] mt-0.5">
             <span className="text-muted-foreground">textChunks:</span>
             <span className="font-mono">{request.textChunks.length}</span>
-            <span className="text-muted-foreground">statusHistory:</span>
-            <span className="font-mono">{request.statusHistory.length}</span>
+            <span className="text-muted-foreground">reasoningChunks:</span>
+            <span className="font-mono">{request.reasoningChunks.length}</span>
+            <span className="text-muted-foreground">phaseHistory:</span>
+            <span className="font-mono">{request.phaseHistory.length}</span>
+            <span className="text-muted-foreground">activeOperations:</span>
+            <span className="font-mono">
+              {Object.keys(request.activeOperations).length}
+            </span>
+            <span className="text-muted-foreground">completedOperations:</span>
+            <span className="font-mono">
+              {Object.keys(request.completedOperations).length}
+            </span>
             <span className="text-muted-foreground">contentBlocks:</span>
             <span className="font-mono">
               {request.contentBlockOrder.length}
@@ -1132,6 +1256,12 @@ function StateSnapshotTab({
             <span className="font-mono">{request.timeline.length}</span>
             <span className="text-muted-foreground">warnings:</span>
             <span className="font-mono">{request.warnings.length}</span>
+            <span className="text-muted-foreground">infoEvents:</span>
+            <span className="font-mono">{request.infoEvents.length}</span>
+            <span className="text-muted-foreground">reservations:</span>
+            <span className="font-mono">
+              {Object.keys(request.reservations).length}
+            </span>
           </div>
         </div>
 
@@ -1144,7 +1274,12 @@ function StateSnapshotTab({
             id="full-dump"
             className="ml-1"
           />
-          <JsonView data={request} label="ActiveRequest" id="full-state" />
+          <JsonView
+            data={request}
+            label="ActiveRequest"
+            id="full-state"
+            defaultExpanded={false}
+          />
         </div>
       </div>
     </ScrollArea>

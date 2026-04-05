@@ -1,12 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import type { QuizState } from '@/components/mardown-display/blocks/quiz/quiz-types';
+import { useState, useEffect, useCallback, useRef } from "react";
+import type { QuizState } from "@/components/mardown-display/blocks/quiz/quiz-types";
+import type { Json } from "@/types/database.types";
 import {
   createQuizSession,
   updateQuizSession,
   getQuizSession,
   findExistingQuizByHash,
-  type QuizSession
-} from '@/actions/quiz.actions';
+  type QuizSession,
+} from "@/actions/quiz.actions";
 
 export type QuizPersistenceOptions = {
   autoSave?: boolean;
@@ -15,12 +16,12 @@ export type QuizPersistenceOptions = {
   title?: string; // Quiz title
   category?: string; // Quiz category
   contentHash?: string; // Quiz content hash for duplicate detection
-  metadata?: Record<string, any>; // Additional custom metadata (empty for now, reserved for future use)
+  metadata?: Json;
 };
 
 export function useQuizPersistence(
   quizState: QuizState,
-  options: QuizPersistenceOptions = {}
+  options: QuizPersistenceOptions = {},
 ) {
   const {
     autoSave = true,
@@ -29,10 +30,12 @@ export function useQuizPersistence(
     title,
     category,
     contentHash,
-    metadata
+    metadata,
   } = options;
 
-  const [sessionId, setSessionId] = useState<string | null>(initialSessionId || null);
+  const [sessionId, setSessionId] = useState<string | null>(
+    initialSessionId || null,
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -47,46 +50,55 @@ export function useQuizPersistence(
   /**
    * Save the current quiz state to database
    */
-  const saveQuizState = useCallback(async (state: QuizState) => {
-    // Prevent rapid-fire saves
-    const now = Date.now();
-    if (now - lastSaveAttempt.current < 1000) {
-      return;
-    }
-    lastSaveAttempt.current = now;
-
-    setIsSaving(true);
-    setSaveError(null);
-
-    try {
-      if (sessionId) {
-        // Update existing session
-        const result = await updateQuizSession(sessionId, state);
-        if (result.success) {
-          setLastSaved(new Date());
-        } else {
-          setSaveError(result.error || 'Failed to save quiz');
-        }
-      } else {
-        // Create new session (duplicate check already done at initialization)
-        const result = await createQuizSession(state, title, category, contentHash, metadata);
-        if (result.success && result.data) {
-          setSessionId(result.data.id);
-          setLastSaved(new Date());
-          
-          // Update the quizId in the state to match the database ID
-          state.quizId = result.data.id;
-        } else {
-          setSaveError(result.error || 'Failed to create quiz session');
-        }
+  const saveQuizState = useCallback(
+    async (state: QuizState) => {
+      // Prevent rapid-fire saves
+      const now = Date.now();
+      if (now - lastSaveAttempt.current < 1000) {
+        return;
       }
-    } catch (error) {
-      console.error('Error saving quiz:', error);
-      setSaveError('Unexpected error saving quiz');
-    } finally {
-      setIsSaving(false);
-    }
-  }, [sessionId, title, category, contentHash, metadata]);
+      lastSaveAttempt.current = now;
+
+      setIsSaving(true);
+      setSaveError(null);
+
+      try {
+        if (sessionId) {
+          // Update existing session
+          const result = await updateQuizSession(sessionId, state);
+          if (result.success) {
+            setLastSaved(new Date());
+          } else {
+            setSaveError(result.error || "Failed to save quiz");
+          }
+        } else {
+          // Create new session (duplicate check already done at initialization)
+          const result = await createQuizSession(
+            state,
+            title,
+            category,
+            contentHash,
+            metadata,
+          );
+          if (result.success && result.data) {
+            setSessionId(result.data.id);
+            setLastSaved(new Date());
+
+            // Update the quizId in the state to match the database ID
+            state.quizId = result.data.id;
+          } else {
+            setSaveError(result.error || "Failed to create quiz session");
+          }
+        }
+      } catch (error) {
+        console.error("Error saving quiz:", error);
+        setSaveError("Unexpected error saving quiz");
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [sessionId, title, category, contentHash, metadata],
+  );
 
   /**
    * Load a quiz session from database (background operation)
@@ -102,12 +114,12 @@ export function useQuizPersistence(
         setSessionId(result.data.id);
         return result.data;
       } else {
-        setSaveError(result.error || 'Failed to load quiz session');
+        setSaveError(result.error || "Failed to load quiz session");
         return null;
       }
     } catch (error) {
-      console.error('Error loading quiz:', error);
-      setSaveError('Unexpected error loading quiz');
+      console.error("Error loading quiz:", error);
+      setSaveError("Unexpected error loading quiz");
       return null;
     }
   }, []);
@@ -129,7 +141,7 @@ export function useQuizPersistence(
     const currentStateSerialized = JSON.stringify({
       progress: quizState.progress,
       results: quizState.results,
-      mode: quizState.mode
+      mode: quizState.mode,
     });
 
     // Skip if state hasn't actually changed
@@ -147,8 +159,8 @@ export function useQuizPersistence(
     // Schedule save with debounce - don't save too frequently
     saveTimeoutRef.current = setTimeout(() => {
       // Fire and forget - truly background save
-      saveQuizState(quizState).catch(err => {
-        console.error('Background save failed:', err);
+      saveQuizState(quizState).catch((err) => {
+        console.error("Background save failed:", err);
       });
     }, autoSaveInterval);
 
@@ -191,7 +203,7 @@ export function useQuizPersistence(
           setSessionId(result.data.id);
         }
       } catch (error) {
-        console.error('Error checking for duplicate:', error);
+        console.error("Error checking for duplicate:", error);
       }
       // No finally block - we don't need to update loading state
     };
@@ -206,8 +218,8 @@ export function useQuizPersistence(
   useEffect(() => {
     if (initialSessionId && !loadedSession) {
       // Load in background without blocking
-      loadQuizSession(initialSessionId).catch(err => {
-        console.error('Failed to load quiz session:', err);
+      loadQuizSession(initialSessionId).catch((err) => {
+        console.error("Failed to load quiz session:", err);
       });
     }
   }, [initialSessionId, loadedSession, loadQuizSession]);
@@ -220,7 +232,6 @@ export function useQuizPersistence(
     isLoading,
     loadedSession,
     saveNow,
-    loadQuizSession
+    loadQuizSession,
   };
 }
-

@@ -1,18 +1,8 @@
-// Database types for task management
-// Matching the ACTUAL database schema
+// Database types for task management — aligned with `types/database.types.ts`
 
-export interface DatabaseProject {
-  id: string;
-  name: string;
-  slug: string | null;
-  description: string | null;
-  created_by: string;
-  organization_id: string | null;
-  is_personal: boolean;
-  settings: Record<string, unknown>;
-  created_at: string;
-  updated_at: string;
-}
+import type { Database } from "@/types/database.types";
+
+export type DatabaseProject = Database["public"]["Tables"]["projects"]["Row"];
 
 export interface DatabaseTask {
   id: string;
@@ -21,7 +11,7 @@ export interface DatabaseTask {
   project_id: string | null;
   parent_task_id: string | null;
   status: string; // 'incomplete' | 'completed'
-  priority: 'low' | 'medium' | 'high' | null;
+  priority: "low" | "medium" | "high" | null;
   assignee_id: string | null;
   due_date: string | null;
   user_id: string | null;
@@ -72,7 +62,7 @@ export interface CreateTaskInput {
   project_id?: string | null;
   parent_task_id?: string | null; // For creating subtasks
   due_date?: string | null;
-  priority?: 'low' | 'medium' | 'high' | null;
+  priority?: "low" | "medium" | "high" | null;
   assignee_id?: string | null;
   status?: string;
   user_id?: string | null;

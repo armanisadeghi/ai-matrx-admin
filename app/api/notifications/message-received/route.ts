@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     if (!user) {
       return NextResponse.json(
         { success: false, msg: "Unauthorized" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -25,8 +25,11 @@ export async function POST(request: Request) {
 
     if (!recipientId || !messagePreview || !conversationId) {
       return NextResponse.json(
-        { success: false, msg: "recipientId, messagePreview, and conversationId are required" },
-        { status: 400 }
+        {
+          success: false,
+          msg: "recipientId, messagePreview, and conversationId are required",
+        },
+        { status: 400 },
       );
     }
 
@@ -41,15 +44,16 @@ export async function POST(request: Request) {
 
     // Get sender's name
     const { data: senderProfile } = await supabase
-      .from("user_profiles")
-      .select("display_name, full_name")
-      .eq("user_id", user.id)
+      .from("profiles")
+      .select("display_name")
+      .eq("id", user.id)
       .single();
 
     const senderName =
       senderProfile?.display_name ||
-      senderProfile?.full_name ||
-      user.user_metadata?.name ||
+      (typeof user.user_metadata?.name === "string"
+        ? user.user_metadata.name
+        : null) ||
       "Someone";
 
     const result = await sendMessageNotificationEmail({
@@ -69,13 +73,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       { success: false, msg: result.message, error: result.error },
-      { status: 500 }
+      { status: 500 },
     );
   } catch (error) {
     console.error("Error in POST /api/notifications/message-received:", error);
     return NextResponse.json(
       { success: false, msg: "Failed to send notification" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

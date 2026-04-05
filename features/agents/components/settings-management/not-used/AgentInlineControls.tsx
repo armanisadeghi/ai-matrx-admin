@@ -20,14 +20,11 @@ import { selectAgentModelId } from "../../../redux/agent-definition/selectors";
 import { useCallback } from "react";
 import { SmartModelSelect } from "@/features/ai-models/components/smart/SmartModelSelect";
 import { Label } from "@/components/ui/label";
+import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 interface AgentInlineControlsProps {
   agentId: string;
-  availableTools?: Array<{
-    name: string;
-    description?: string;
-    [key: string]: unknown;
-  }>;
+  availableTools?: DatabaseTool[];
 }
 
 export function AgentInlineControls({

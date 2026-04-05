@@ -1,6 +1,6 @@
 /**
  * Extension Authentication Helper
- * 
+ *
  * Utilities for generating and managing extension auth codes.
  * Can be used in both client and server contexts.
  */
@@ -28,13 +28,13 @@ export interface ExtensionAuthSession {
  * Generate an extension auth code (client-side)
  */
 export async function generateExtensionAuthCode(): Promise<ExtensionAuthCode> {
-  const response = await fetch('/api/auth/extension/generate-code', {
-    method: 'POST',
+  const response = await fetch("/api/auth/extension/generate-code", {
+    method: "POST",
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to generate code');
+    throw new Error(error.error || "Failed to generate code");
   }
 
   return response.json();
@@ -45,19 +45,19 @@ export async function generateExtensionAuthCode(): Promise<ExtensionAuthCode> {
  */
 export async function exchangeExtensionAuthCode(
   code: string,
-  apiBase: string = ''
+  apiBase: string = "",
 ): Promise<ExtensionAuthSession> {
-  const response = await fetch(`${apiBase}/api/auth/extension/exchange`, {
-    method: 'POST',
+  const response = await fetch(`${apiBase}/auth/extension/exchange`, {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ code }),
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to exchange code');
+    throw new Error(error.error || "Failed to exchange code");
   }
 
   return response.json();
@@ -67,7 +67,7 @@ export async function exchangeExtensionAuthCode(
  * Format a code for display (adds spaces every 4 characters)
  */
 export function formatAuthCode(code: string): string {
-  return code.match(/.{1,4}/g)?.join(' ') || code;
+  return code.match(/.{1,4}/g)?.join(" ") || code;
 }
 
 /**
@@ -75,7 +75,7 @@ export function formatAuthCode(code: string): string {
  */
 export function isValidAuthCode(code: string): boolean {
   // Remove spaces and check if it's a valid 32-character hex string
-  const cleaned = code.replace(/\s/g, '').toUpperCase();
+  const cleaned = code.replace(/\s/g, "").toUpperCase();
   return /^[A-F0-9]{32}$/.test(cleaned);
 }
 
@@ -83,7 +83,7 @@ export function isValidAuthCode(code: string): boolean {
  * Clean a code (remove spaces, uppercase)
  */
 export function cleanAuthCode(code: string): string {
-  return code.replace(/\s/g, '').toUpperCase();
+  return code.replace(/\s/g, "").toUpperCase();
 }
 
 /**
@@ -97,7 +97,7 @@ export function getTimeRemaining(expiresAt: string): {
   const now = new Date();
   const expires = new Date(expiresAt);
   const diffMs = expires.getTime() - now.getTime();
-  
+
   if (diffMs <= 0) {
     return { minutes: 0, seconds: 0, expired: true };
   }
@@ -114,11 +114,10 @@ export function getTimeRemaining(expiresAt: string): {
  */
 export function formatTimeRemaining(expiresAt: string): string {
   const { minutes, seconds, expired } = getTimeRemaining(expiresAt);
-  
+
   if (expired) {
-    return 'Expired';
+    return "Expired";
   }
 
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
-

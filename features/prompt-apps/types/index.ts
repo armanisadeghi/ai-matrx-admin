@@ -4,7 +4,9 @@
 // Public shareable AI-powered mini-apps with custom UIs
 // ============================================================================
 
-export type AppStatus = 'draft' | 'published' | 'archived' | 'suspended';
+import type { Database, Json } from "@/types/database.types";
+
+export type AppStatus = "draft" | "published" | "archived" | "suspended";
 
 // ============================================================================
 // App Display Mode — Controls the UI pattern for prompt app rendering
@@ -24,38 +26,38 @@ export type AppStatus = 'draft' | 'published' | 'archived' | 'suspended';
  *                        Only shows history for authenticated users.
  */
 export type AppDisplayMode =
-  | 'form'
-  | 'form-to-chat'
-  | 'chat'
-  | 'centered-input'
-  | 'chat-with-history';
+  | "form"
+  | "form-to-chat"
+  | "chat"
+  | "centered-input"
+  | "chat-with-history";
 
 // Component languages for syntax highlighting
 // Note: 'react' is legacy (mapped to 'tsx' for backward compatibility)
-export type ComponentLanguage = 
-  | 'tsx'        // TypeScript + JSX (React) - PREFERRED
-  | 'jsx'        // JavaScript + JSX (React)
-  | 'typescript' // Pure TypeScript
-  | 'javascript' // Pure JavaScript
-  | 'html'       // HTML
-  | 'react';     // LEGACY - use 'tsx' instead (kept for backward compatibility)
+export type ComponentLanguage =
+  | "tsx" // TypeScript + JSX (React) - PREFERRED
+  | "jsx" // JavaScript + JSX (React)
+  | "typescript" // Pure TypeScript
+  | "javascript" // Pure JavaScript
+  | "html" // HTML
+  | "react"; // LEGACY - use 'tsx' instead (kept for backward compatibility)
 
 export type ErrorType =
-  | 'missing_variable'
-  | 'extra_variable'
-  | 'invalid_variable_type'
-  | 'component_render_error'
-  | 'api_error'
-  | 'rate_limit'
-  | 'other';
+  | "missing_variable"
+  | "extra_variable"
+  | "invalid_variable_type"
+  | "component_render_error"
+  | "api_error"
+  | "rate_limit"
+  | "other";
 
 export type ExecutionErrorType =
-  | 'missing_variables'
-  | 'invalid_variables'
-  | 'rate_limit_exceeded'
-  | 'execution_error'
-  | 'timeout'
-  | 'cost_limit_exceeded';
+  | "missing_variables"
+  | "invalid_variables"
+  | "rate_limit_exceeded"
+  | "execution_error"
+  | "timeout"
+  | "cost_limit_exceeded";
 
 // ============================================================================
 // Auto-Create Types
@@ -74,90 +76,20 @@ export interface AppMetadata {
 // Core Types
 // ============================================================================
 
-export interface PromptApp {
-  id: string;
-  user_id: string;
-  prompt_id: string;
-  
-  // Versioning
-  version: number;
-  prompt_source_type?: 'prompt' | 'builtin';
-  prompt_version_id?: string;
-  pinned_version?: number;
-  
-  // Public Identity
-  slug: string;
-  name: string;
-  tagline?: string;
-  description?: string;
-  category?: string;
-  tags: string[];
-  
-  // Visual Assets
-  preview_image_url?: string;
-  favicon_url?: string;
-  
-  // Component Code
-  component_code: string;
-  component_language: ComponentLanguage;
-  
-  // Variable Contract
-  variable_schema: VariableSchemaItem[];
-  
-  // Security
-  allowed_imports: string[];
-  
-  // Configuration
-  layout_config: LayoutConfig;
-  styling_config: StylingConfig;
-  
-  // Publishing & Status
-  status: AppStatus;
-  is_verified: boolean;
-  is_featured: boolean;
-  
-  // Rate Limiting
-  rate_limit_per_ip: number;
-  rate_limit_window_hours: number;
-  rate_limit_authenticated: number;
-  
-  // Usage Statistics
-  total_executions: number;
-  unique_users_count: number;
-  success_rate: number;
-  avg_execution_time_ms?: number;
-  
-  // Cost Tracking
-  total_tokens_used: number;
-  total_cost: number;
-  
-  // Metadata
-  metadata: Record<string, any>;
-  
-  // Full-text search (generated column - not included in inserts/updates)
-  // search_tsv?: string; // Auto-generated, don't set manually
-  
-  // Timestamps
-  created_at: string;
-  updated_at: string;
-  published_at?: string;
-  last_execution_at?: string;
-  
-  // OPTIMIZATION: Embedded prompt data (from get_published_app_with_prompt function)
-  // This allows client-side variable resolution and config building
+export type PromptAppRow = Database["public"]["Tables"]["prompt_apps"]["Row"];
+
+/** Single source of truth: `prompt_apps` row, plus optional embedded prompt from RPCs. */
+export type PromptApp = PromptAppRow & {
   prompt?: {
-    messages: any[];
-    settings: {
-      model_id: string;
-      [key: string]: any;
-    };
-    variable_defaults?: Record<string, any>;
+    messages: Json;
+    settings: Record<string, Json | undefined> & { model_id?: string };
+    variable_defaults?: Record<string, Json | undefined>;
   };
-}
+};
 
 export interface VariableSchemaItem {
   name: string;
-  type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+  type: "string" | "number" | "boolean" | "object" | "array";
   required: boolean;
   default?: any;
   description?: string;
@@ -170,7 +102,7 @@ export interface VariableSchemaItem {
 }
 
 export interface LayoutConfig {
-  theme?: 'light' | 'dark' | 'auto';
+  theme?: "light" | "dark" | "auto";
   maxWidth?: string;
   showBranding?: boolean;
   showCredit?: boolean;
@@ -195,31 +127,31 @@ export interface PromptAppExecution {
   id: string;
   app_id: string;
   user_id?: string;
-  
+
   // Anonymous Tracking
   fingerprint?: string;
   ip_address?: string;
   user_agent?: string;
-  
+
   // Execution Details
   task_id: string;
   variables_provided: Record<string, any>;
   variables_used: Record<string, any>;
-  
+
   // Results
   success: boolean;
   error_type?: ExecutionErrorType;
   error_message?: string;
-  
+
   // Performance
   execution_time_ms?: number;
   tokens_used?: number;
   cost?: number;
-  
+
   // Metadata
   referer?: string;
   metadata: Record<string, any>;
-  
+
   created_at: string;
 }
 
@@ -227,22 +159,22 @@ export interface PromptAppError {
   id: string;
   app_id: string;
   execution_id?: string;
-  
+
   error_type: ErrorType;
   error_code?: string;
   error_message?: string;
   error_details: Record<string, any>;
-  
+
   // Context
   variables_sent: Record<string, any>;
   expected_variables: Record<string, any>;
-  
+
   // Resolution
   resolved: boolean;
   resolved_at?: string;
   resolved_by?: string;
   resolution_notes?: string;
-  
+
   created_at: string;
 }
 
@@ -259,16 +191,16 @@ export interface RateLimitRecord {
   user_id?: string;
   fingerprint?: string;
   ip_address?: string;
-  
+
   execution_count: number;
   first_execution_at: string;
   last_execution_at: string;
   window_start_at: string;
-  
+
   is_blocked: boolean;
   blocked_until?: string;
   blocked_reason?: string;
-  
+
   created_at: string;
   updated_at: string;
 }
@@ -284,31 +216,31 @@ export interface PromptAppAnalytics {
   creator_id: string;
   status: AppStatus;
   total_executions: number;
-  
+
   // Time-based metrics
   executions_24h: number;
   executions_7d: number;
   executions_30d: number;
-  
+
   // User metrics
   unique_anonymous_users: number;
   unique_authenticated_users: number;
-  
+
   // Success metrics
   successful_executions: number;
   failed_executions: number;
   success_rate_percent: number;
-  
+
   // Performance metrics
   avg_execution_time_ms: number;
   median_execution_time_ms: number;
   p95_execution_time_ms: number;
-  
+
   // Cost metrics
   total_tokens: number;
   total_cost: number;
   avg_cost_per_execution: number;
-  
+
   // Timestamps
   first_execution_at?: string;
   last_execution_at?: string;
@@ -338,7 +270,7 @@ export interface ExecuteAppResponse {
 export interface CreateAppInput {
   prompt_id: string;
   prompt_version_id?: string;
-  prompt_source_type?: 'prompt' | 'builtin';
+  prompt_source_type?: "prompt" | "builtin";
   slug: string;
   name: string;
   tagline?: string;
@@ -378,7 +310,10 @@ export interface UpdateAppInput {
 
 export interface PromptAppComponentProps {
   // Execution function — call with variables for initial run, or with userInput for chat follow-ups
-  onExecute: (variables: Record<string, any>, userInput?: string) => Promise<void>;
+  onExecute: (
+    variables: Record<string, any>,
+    userInput?: string,
+  ) => Promise<void>;
 
   // Real-time streaming response
   response: string;
@@ -421,7 +356,7 @@ export interface ValidationResult {
 export interface ValidationError {
   field: string;
   message: string;
-  type: 'missing' | 'invalid_type' | 'invalid_format' | 'out_of_range';
+  type: "missing" | "invalid_type" | "invalid_format" | "out_of_range";
   expected?: any;
   received?: any;
 }
@@ -445,8 +380,8 @@ export interface PromptAppsListFilters {
   verified?: boolean;
   limit?: number;
   offset?: number;
-  sort_by?: 'created_at' | 'total_executions' | 'name' | 'last_execution_at';
-  sort_direction?: 'asc' | 'desc';
+  sort_by?: "created_at" | "total_executions" | "name" | "last_execution_at";
+  sort_direction?: "asc" | "desc";
 }
 
 export interface PromptAppsListResponse {
@@ -468,16 +403,15 @@ export interface PublicPromptApp {
   category?: string;
   tags: string[];
   preview_image_url?: string;
-  
+
   // Only expose what's needed for execution
   variable_schema: VariableSchemaItem[];
   layout_config: LayoutConfig;
   styling_config: StylingConfig;
-  
+
   // Stats (no cost info)
   total_executions: number;
   success_rate: number;
-  
+
   // NO component_code, prompt_id, or sensitive data
 }
-

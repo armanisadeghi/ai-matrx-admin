@@ -1,6 +1,6 @@
 import { supabase } from "@/utils/supabase/client";
-import { parseNdjsonStream } from "@/lib/api/stream-parser";
-import type { CompletionPayload, EndPayload } from "@/types/python-generated/stream-events";
+import { consumeStream } from "@/lib/api/stream-parser";
+import type { StreamCallbacks } from "@/lib/api/stream-parser";
 import type {
   StreamEventHandlers,
   ToolStreamEvent,
@@ -12,7 +12,7 @@ import type {
 /**
  * Execute a tool test via the Python backend streaming endpoint.
  * Sends the full TestContext (conversation_id + optional scope) in the request body.
- * Uses the shared NDJSON parser and dispatches to typed handlers.
+ * Uses the universal `consumeStream` callback API with V2 event types.
  */
 export async function executeToolTest(
   baseUrl: string,
@@ -35,7 +35,7 @@ export async function executeToolTest(
     if (context.task_id) body.task_id = context.task_id;
   }
 
-  const response = await fetch(`${baseUrl}/api/tools/test/execute`, {
+  const response = await fetch(`${baseUrl}/tools/test/execute`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -52,55 +52,45 @@ export async function executeToolTest(
     );
   }
 
-  const { events } = parseNdjsonStream(response, abortSignal);
+  const callbacks: StreamCallbacks = {
+    onEvent(event) {
+      handlers.onRawEvent?.(event);
+    },
 
-  console.log('[ToolTest:stream] Starting for-await loop');
-  let eventCount = 0;
-  for await (const event of events) {
-    eventCount++;
-    console.log(`[ToolTest:stream] Event #${eventCount}:`, event.event, JSON.stringify(event.data).slice(0, 80));
-    handlers.onRawLine?.(event);
-
-    switch (event.event) {
-      case "status_update": {
-        const statusData = event.data as Record<string, unknown>;
-        handlers.onStatusUpdate?.(statusData);
-        // The tool-test endpoint sends the final result as a status_update with
-        // status === "complete" — treat it as the final payload too.
-        if (statusData.status === "complete" && statusData.output) {
-          handlers.onFinalResult?.(statusData as unknown as FinalPayload);
-        }
-        break;
+    onPhase(data) {
+      handlers.onPhase?.(data);
+      if (data.phase === "complete") {
+        handlers.onFinalResult?.({ status: "complete" } as FinalPayload);
       }
+    },
 
-      case "tool_event":
-        handlers.onToolEvent?.(event.data as unknown as ToolStreamEvent);
-        break;
+    onToolEvent(data) {
+      handlers.onToolEvent?.(data as unknown as ToolStreamEvent);
+    },
 
-      case "completion":
-        handlers.onCompletion?.(event.data as unknown as CompletionPayload);
-        handlers.onFinalResult?.(event.data as unknown as FinalPayload);
-        break;
+    onCompletion(data) {
+      handlers.onCompletion?.(data);
+      handlers.onFinalResult?.(data as unknown as FinalPayload);
+    },
 
-      case "data": {
-        const dataPayload = event.data as unknown as FinalPayload;
-        handlers.onFinalResult?.(dataPayload);
-        break;
-      }
+    onData(data) {
+      handlers.onFinalResult?.(data as unknown as FinalPayload);
+    },
 
-      case "error":
-        handlers.onError?.(event.data as Record<string, unknown>);
-        break;
+    onError(data) {
+      handlers.onError?.(data);
+    },
 
-      case "heartbeat":
-        handlers.onHeartbeat?.();
-        break;
+    onHeartbeat() {
+      handlers.onHeartbeat?.();
+    },
 
-      case "end":
-        handlers.onEnd?.(event.data as unknown as EndPayload);
-        break;
-    }
-  }
+    onEnd(data) {
+      handlers.onEnd?.(data);
+    },
+  };
+
+  await consumeStream(response, callbacks, abortSignal);
 }
 
 /**
@@ -119,5 +109,5 @@ export async function fetchToolsFromDatabase(): Promise<ToolDefinition[]> {
     throw new Error(`Failed to load tools: ${error.message}`);
   }
 
-  return (data ?? []) as ToolDefinition[];
+  return (data ?? []) as unknown as ToolDefinition[];
 }

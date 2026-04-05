@@ -46,9 +46,9 @@ export interface StreamAwareChatMarkdownProps extends Omit<ChatMarkdownDisplayPr
   onError?: (error: string) => void;
   
   /**
-   * Callback when status updates are received
+   * Callback when phase events are received
    */
-  onStatusUpdate?: (status: string, message?: string) => void;
+  onPhaseUpdate?: (phase: string) => void;
 
   /**
    * Pre-processed blocks from the server (new content_block protocol).
@@ -74,7 +74,7 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
   content,
   events,
   onError,
-  onStatusUpdate,
+  onPhaseUpdate,
   serverProcessedBlocks: serverBlocksProp,
   ...restProps
 }) => {
@@ -91,7 +91,7 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
 
   // Use refs to always have the latest callbacks without triggering rerenders
   const onErrorRef = React.useRef(onError);
-  const onStatusUpdateRef = React.useRef(onStatusUpdate);
+  const onPhaseUpdateRef = React.useRef(onPhaseUpdate);
 
   // Track which events we've already processed (by index)
   const lastProcessedIndexRef = React.useRef(-1);
@@ -111,8 +111,8 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
 
   useEffect(() => {
     onErrorRef.current = onError;
-    onStatusUpdateRef.current = onStatusUpdate;
-  }, [onError, onStatusUpdate]);
+    onPhaseUpdateRef.current = onPhaseUpdate;
+  }, [onError, onPhaseUpdate]);
 
   // Cleanup RAF on unmount
   useEffect(() => {
@@ -185,10 +185,10 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
           break;
         }
 
-        case 'status_update': {
-          const statusData = event.data as Record<string, unknown>;
-          console.log('[STREAM] status_update:', JSON.stringify(statusData, null, 2));
-          onStatusUpdateRef.current?.(statusData?.status as string, (statusData?.user_message as string) || (statusData?.system_message as string));
+        case 'phase': {
+          const phaseData = event.data as Record<string, unknown>;
+          console.log('[STREAM] phase:', JSON.stringify(phaseData, null, 2));
+          onPhaseUpdateRef.current?.(phaseData?.phase as string);
           break;
         }
 

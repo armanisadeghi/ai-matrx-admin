@@ -3,6 +3,7 @@
 import React, { useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { LucideIcon } from "lucide-react";
 import {
   ChevronRight,
   List,
@@ -64,7 +65,7 @@ interface TreeNodeProps {
   onInfo?: (node: TreeNodeData) => void;
 }
 
-const NODE_ICONS: Record<TreeNodeType, React.ElementType> = {
+const NODE_ICONS: Record<TreeNodeType, LucideIcon> = {
   list: List,
   group: Tag,
   item: FileText,

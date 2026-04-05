@@ -1,10 +1,10 @@
 /**
  * User Search Utilities
- * 
- * Functions to search for users in the auth.users table
+ *
+ * Resolves users by email via the `lookup_user_by_email` RPC (not `profiles.email`).
  */
 
-import { supabase } from '@/utils/supabase/client';
+import { supabase } from "@/utils/supabase/client";
 
 export interface UserSearchResult {
   id: string;
@@ -13,38 +13,36 @@ export interface UserSearchResult {
 }
 
 /**
- * Search for a user by email in auth.users
- * @param email Email to search for
- * @returns User info if found, or indication that user doesn't exist
+ * Search for a user by email.
  */
-export async function searchUserByEmail(email: string): Promise<UserSearchResult> {
+export async function searchUserByEmail(
+  email: string,
+): Promise<UserSearchResult> {
+  const normalized = email.toLowerCase().trim();
   try {
-    // Query auth.users table (requires service role or RLS policy)
-    // Note: This might need to be done server-side if auth.users isn't accessible
-    const { data, error } = await supabase
-      .from('profiles') // Or whatever table has user info
-      .select('id, email')
-      .eq('email', email.toLowerCase().trim())
-      .single();
+    const { data, error } = await supabase.rpc("lookup_user_by_email", {
+      lookup_email: normalized,
+    });
 
-    if (error || !data) {
+    if (error || !data?.length) {
       return {
-        id: '',
-        email: email.toLowerCase().trim(),
+        id: "",
+        email: normalized,
         exists: false,
       };
     }
 
+    const row = data[0];
     return {
-      id: data.id,
-      email: data.email,
+      id: row.user_id,
+      email: row.user_email,
       exists: true,
     };
   } catch (error) {
-    console.error('Error searching for user:', error);
+    console.error("Error searching for user:", error);
     return {
-      id: '',
-      email: email.toLowerCase().trim(),
+      id: "",
+      email: normalized,
       exists: false,
     };
   }
@@ -52,11 +50,8 @@ export async function searchUserByEmail(email: string): Promise<UserSearchResult
 
 /**
  * Check if a user exists in the system
- * @param email Email to check
- * @returns True if user exists
  */
 export async function userExists(email: string): Promise<boolean> {
   const result = await searchUserByEmail(email);
   return result.exists;
 }
-

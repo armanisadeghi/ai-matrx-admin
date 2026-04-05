@@ -3,9 +3,9 @@
  * update-api-types — Single command to sync Python backend types + verify alignment.
  *
  * Usage:
- *   pnpm update-api-types               # default: live server (https://server.app.matrxserver.com/api)
- *   pnpm update-api-types --local       # use local backend (http://localhost:8000/api)
- *   pnpm update-api-types --url https://custom.server.com/api
+ *   pnpm update-api-types               # default: live server (https://server.app.matrxserver.com)
+ *   pnpm update-api-types --local       # use local backend (http://localhost:8000)
+ *   pnpm update-api-types --url https://custom.server.com
  *
  * Steps:
  *   1. Fetch schema bundles from the Python backend via sync-types.mjs
@@ -33,9 +33,9 @@ function getArg(name, fallback) {
 const skipTypeCheck = args.includes('--skip-typecheck');
 const useLocal = args.includes('--local');
 const LIVE_BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL
-    ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`
-    : 'https://server.app.matrxserver.com/api';
-const LOCAL_BACKEND_URL = 'http://localhost:8000/api';
+    ? `${process.env.NEXT_PUBLIC_BACKEND_URL}`
+    : 'https://server.app.matrxserver.com';
+const LOCAL_BACKEND_URL = 'http://localhost:8000';
 const backendUrl = getArg('--url', useLocal ? LOCAL_BACKEND_URL : LIVE_BACKEND_URL);
 const outDir = resolve(PROJECT_ROOT, 'types/python-generated');
 

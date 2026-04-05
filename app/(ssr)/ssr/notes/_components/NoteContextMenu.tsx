@@ -1,43 +1,60 @@
 "use client";
 
-// NoteContextMenu — Thin trigger shell. Only ContextMenu + ContextMenuTrigger
-// land in the initial bundle (~1KB). The heavy content (icons, hooks, Redux
-// selectors, AI execution, find/replace) is lazy-loaded as soon as a note
-// is displayed — not deferred until the first right-click, which would leave
-// Radix with no ContextMenuContent node on the initial open and cause errors.
+// Static shell: ContextMenu + Trigger always wrap `children` (small bundle).
+// Heavy logic (AI, Redux, Sparkles, modals) loads on demand via next/dynamic.
 
+import dynamic from "next/dynamic";
+import { useRef, type ReactNode } from "react";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import dynamic from "next/dynamic";
+import {
+  NoteContextMenuBridgeContext,
+  type NoteContextMenuBridgeHandlers,
+} from "./noteContextMenuBridge";
 import type { NoteContextMenuContentProps } from "./NoteContextMenuContent";
 
-const NoteContextMenuContent = dynamic(
-  () => import("./NoteContextMenuContent"),
+export type NoteContextMenuProps = NoteContextMenuContentProps & {
+  children: ReactNode;
+};
+
+const NoteContextMenuHeavy = dynamic(
+  () =>
+    import("./NoteContextMenuContent").then((m) => ({
+      default: m.NoteContextMenuHeavy,
+    })),
   {
     ssr: false,
-    // Provide an empty-but-valid ContextMenuContent so Radix always sees a
-    // content node, even on very slow connections before the chunk arrives.
     loading: () => (
-      <ContextMenuContent className="w-0 h-0 p-0 overflow-hidden" />
+      <ContextMenuContent className="w-0 h-0 p-0 overflow-hidden border-0 shadow-none pointer-events-none" />
     ),
   },
 );
 
-export interface NoteContextMenuProps extends NoteContextMenuContentProps {
-  children: React.ReactNode;
-}
-
 export default function NoteContextMenu({
   children,
-  ...contentProps
+  ...props
 }: NoteContextMenuProps) {
+  const bridgeRef = useRef<NoteContextMenuBridgeHandlers | null>(null);
+
   return (
-    <ContextMenu>
-      <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
-      <NoteContextMenuContent {...contentProps} />
-    </ContextMenu>
+    <NoteContextMenuBridgeContext.Provider value={bridgeRef}>
+      <ContextMenu
+        onOpenChange={(open) => {
+          bridgeRef.current?.onContextMenuOpenChange(open);
+        }}
+      >
+        <ContextMenuTrigger
+          asChild
+          onMouseDown={(e) => bridgeRef.current?.onMouseDown(e)}
+          onContextMenu={(e) => bridgeRef.current?.onContextMenu(e)}
+        >
+          {children}
+        </ContextMenuTrigger>
+        <NoteContextMenuHeavy {...props} />
+      </ContextMenu>
+    </NoteContextMenuBridgeContext.Provider>
   );
 }

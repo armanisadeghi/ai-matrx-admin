@@ -1,28 +1,45 @@
-'use client';
+"use client";
 
-import React, { useState, useMemo } from 'react';
-import { useSqlFunctions } from '@/lib/hooks/useSqlFunctions';
-import { SqlFunction } from '@/types/sql-functions';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { Search, RefreshCw, Plus, X } from 'lucide-react';
-import SqlFunctionsList from './SqlFunctionsList';
-import SqlFunctionDetail from './SqlFunctionDetail';
-import SqlFunctionForm from './SqlFunctionForm';
+import React, { useState, useMemo } from "react";
+import { useSqlFunctions } from "@/lib/hooks/useSqlFunctions";
+import { SqlFunction } from "@/types/sql-functions";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Search, RefreshCw, Plus, X } from "lucide-react";
+import SqlFunctionsList from "./SqlFunctionsList";
+import SqlFunctionDetail from "./SqlFunctionDetail";
+import SqlFunctionForm from "./SqlFunctionForm";
 
 interface SqlFunctionsContainerProps {
   initialFunctions?: SqlFunction[];
 }
 
-export default function SqlFunctionsContainer({ initialFunctions = [] }: SqlFunctionsContainerProps) {
+export default function SqlFunctionsContainer({
+  initialFunctions = [],
+}: SqlFunctionsContainerProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [activeTab, setActiveTab] = useState<'list' | 'create' | 'edit'>('list');
+  const [activeTab, setActiveTab] = useState<"list" | "create" | "edit">(
+    "list",
+  );
   const [customSchemaSearch, setCustomSchemaSearch] = useState(false);
-  const [nameSearch, setNameSearch] = useState('');
+  const [nameSearch, setNameSearch] = useState("");
 
   const {
     functions,
@@ -41,12 +58,14 @@ export default function SqlFunctionsContainer({ initialFunctions = [] }: SqlFunc
     updateSort,
   } = useSqlFunctions({
     initialData: initialFunctions,
-    defaultFilter: { schema: 'public' },
+    defaultFilter: { schema: "public" },
   });
 
   const uniqueSchemas = useMemo(() => {
     const schemas = new Set<string>();
-    functions.forEach(func => { if (func.schema) schemas.add(func.schema); });
+    functions.forEach((func) => {
+      if (func.schema) schemas.add(func.schema);
+    });
     return Array.from(schemas).sort();
   }, [functions]);
 
@@ -57,17 +76,24 @@ export default function SqlFunctionsContainer({ initialFunctions = [] }: SqlFunc
 
   const handleCreateFunction = async (definition: string) => {
     const success = await createFunction(definition);
-    if (success) setActiveTab('list');
+    if (success) setActiveTab("list");
     return success;
   };
 
   const handleUpdateFunction = async (definition: string) => {
     const success = await updateFunction(definition);
-    if (success) { setActiveTab('list'); selectFunction(null); }
+    if (success) {
+      setActiveTab("list");
+      selectFunction(null);
+    }
     return success;
   };
 
-  const handleDeleteFunction = async (schema: string, name: string, argumentTypes: string) => {
+  const handleDeleteFunction = async (
+    schema: string,
+    name: string,
+    argumentTypes: string,
+  ) => {
     const success = await deleteFunction(schema, name, argumentTypes);
     if (success) selectFunction(null);
     return success;
@@ -75,26 +101,26 @@ export default function SqlFunctionsContainer({ initialFunctions = [] }: SqlFunc
 
   const handleEditFunction = (func: SqlFunction) => {
     selectFunction(func);
-    setActiveTab('edit');
+    setActiveTab("edit");
   };
 
   const handleNewFunction = () => {
     selectFunction(null);
-    setActiveTab('create');
+    setActiveTab("create");
   };
 
   const handleBackToList = () => {
-    setActiveTab('list');
+    setActiveTab("list");
     selectFunction(null);
   };
 
   const handleSchemaChange = (value: string) => {
-    if (value === 'custom') {
+    if (value === "custom") {
       setCustomSchemaSearch(true);
-      updateFilter({ schema: '' });
+      updateFilter({ schema: "" });
     } else {
       setCustomSchemaSearch(false);
-      updateFilter({ schema: value === 'all' ? undefined : value });
+      updateFilter({ schema: value === "all" ? undefined : value });
     }
   };
 
@@ -112,35 +138,52 @@ export default function SqlFunctionsContainer({ initialFunctions = [] }: SqlFunc
   const maxVisiblePages = 5;
   let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
   let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-  if (endPage - startPage + 1 < maxVisiblePages) startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  if (endPage - startPage + 1 < maxVisiblePages)
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
   for (let i = startPage; i <= endPage; i++) pageNumbers.push(i);
 
   return (
     <div className="flex flex-col h-full w-full bg-white dark:bg-slate-900 overflow-hidden">
       <Tabs
         value={activeTab}
-        onValueChange={(value) => setActiveTab(value as 'list' | 'create' | 'edit')}
+        onValueChange={(value) =>
+          setActiveTab(value as "list" | "create" | "edit")
+        }
         className="flex flex-col h-full overflow-hidden"
       >
         {/* Tab bar */}
         <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 shrink-0">
           <TabsList className="bg-slate-100 dark:bg-slate-700 h-7">
-            <TabsTrigger value="list" className="text-xs h-6 px-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900">
+            <TabsTrigger
+              value="list"
+              className="text-xs h-6 px-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900"
+            >
               Function List
             </TabsTrigger>
-            {activeTab === 'create' && (
-              <TabsTrigger value="create" className="text-xs h-6 px-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900">
+            {activeTab === "create" && (
+              <TabsTrigger
+                value="create"
+                className="text-xs h-6 px-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900"
+              >
                 Create Function
               </TabsTrigger>
             )}
-            {activeTab === 'edit' && selectedFunction && (
-              <TabsTrigger value="edit" className="text-xs h-6 px-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900">
+            {activeTab === "edit" && selectedFunction && (
+              <TabsTrigger
+                value="edit"
+                className="text-xs h-6 px-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900"
+              >
                 Edit: {selectedFunction.name}
               </TabsTrigger>
             )}
           </TabsList>
-          {activeTab !== 'list' && (
-            <Button onClick={handleBackToList} variant="outline" size="sm" className="h-7 text-xs border-slate-300 dark:border-slate-700">
+          {activeTab !== "list" && (
+            <Button
+              onClick={handleBackToList}
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs border-slate-300 dark:border-slate-700"
+            >
               Back to List
             </Button>
           )}
@@ -148,13 +191,17 @@ export default function SqlFunctionsContainer({ initialFunctions = [] }: SqlFunc
 
         {/* Tab contents — each fills remaining height */}
         <div className="flex-1 min-h-0 overflow-hidden">
-
           {/* LIST TAB */}
-          <TabsContent value="list" className="h-full mt-0 flex flex-col overflow-hidden">
-
+          <TabsContent
+            value="list"
+            className="h-full mt-0 flex flex-col overflow-hidden"
+          >
             {/* Search/filter toolbar */}
             <div className="flex flex-wrap items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0">
-              <form onSubmit={handleSearch} className="flex items-center gap-1.5">
+              <form
+                onSubmit={handleSearch}
+                className="flex items-center gap-1.5"
+              >
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
                   <Input
@@ -165,63 +212,113 @@ export default function SqlFunctionsContainer({ initialFunctions = [] }: SqlFunc
                     className="pl-8 h-8 w-52 text-sm border-slate-300 dark:border-slate-700"
                   />
                 </div>
-                <Button type="submit" size="icon" className="h-8 w-8 bg-slate-700 hover:bg-slate-600 text-white shrink-0">
+                <Button
+                  type="submit"
+                  size="icon"
+                  className="h-8 w-8 bg-slate-700 hover:bg-slate-600 text-white shrink-0"
+                >
                   <Search className="h-3.5 w-3.5" />
                 </Button>
-                <Button type="button" onClick={handleNewFunction} size="icon" className="h-8 w-8 bg-slate-700 hover:bg-slate-600 text-white shrink-0">
+                <Button
+                  type="button"
+                  onClick={handleNewFunction}
+                  size="icon"
+                  className="h-8 w-8 bg-slate-700 hover:bg-slate-600 text-white shrink-0"
+                >
                   <Plus className="h-3.5 w-3.5" />
                 </Button>
-                <Button type="button" onClick={refreshFunctions} disabled={isRefreshing || loading} size="icon" className="h-8 w-8 bg-slate-700 hover:bg-slate-600 text-white shrink-0">
-                  <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <Button
+                  type="button"
+                  onClick={refreshFunctions}
+                  disabled={isRefreshing || loading}
+                  size="icon"
+                  className="h-8 w-8 bg-slate-700 hover:bg-slate-600 text-white shrink-0"
+                >
+                  <RefreshCw
+                    className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`}
+                  />
                 </Button>
               </form>
 
               <div className="flex items-center gap-4 ml-auto flex-wrap">
                 <div className="flex items-center gap-1.5">
-                  <label className="text-xs font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap">Schema:</label>
+                  <label className="text-xs font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                    Schema:
+                  </label>
                   <div className="w-36">
                     {customSchemaSearch ? (
                       <div className="relative">
                         <Input
                           type="text"
                           placeholder="Enter schema..."
-                          value={filter.schema || ''}
-                          onChange={(e) => updateFilter({ schema: e.target.value })}
+                          value={filter.schema || ""}
+                          onChange={(e) =>
+                            updateFilter({ schema: e.target.value })
+                          }
                           className="h-8 pr-7 text-sm border-slate-300 dark:border-slate-700"
                         />
-                        <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-2 text-slate-400 hover:text-slate-700" onClick={() => setCustomSchemaSearch(false)}>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-2 text-slate-400 hover:text-slate-700"
+                          onClick={() => setCustomSchemaSearch(false)}
+                        >
                           <X className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                     ) : (
-                      <Select value={filter.schema || 'all'} onValueChange={handleSchemaChange}>
+                      <Select
+                        value={filter.schema || "all"}
+                        onValueChange={handleSchemaChange}
+                      >
                         <SelectTrigger className="h-8 text-sm border-slate-300 dark:border-slate-700">
                           <SelectValue placeholder="Schema" />
                         </SelectTrigger>
                         <SelectContent className="max-h-[300px]">
                           <SelectItem value="all">All Schemas</SelectItem>
-                          {uniqueSchemas.map(schema => (
-                            <SelectItem key={schema} value={schema}>{schema}</SelectItem>
+                          {uniqueSchemas.map((schema) => (
+                            <SelectItem key={schema} value={schema}>
+                              {schema}
+                            </SelectItem>
                           ))}
-                          <SelectItem value="custom">Custom Search...</SelectItem>
+                          <SelectItem value="custom">
+                            Custom Search...
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <label className="text-xs font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap">Return:</label>
+                  <label className="text-xs font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                    Return:
+                  </label>
                   <Input
                     type="text"
                     placeholder="Filter by return type..."
-                    value={filter.returnType || ''}
-                    onChange={(e) => updateFilter({ returnType: e.target.value })}
+                    value={filter.returnType || ""}
+                    onChange={(e) =>
+                      updateFilter({ returnType: e.target.value })
+                    }
                     className="h-8 w-44 text-sm border-slate-300 dark:border-slate-700"
                   />
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <label className="text-xs font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap">Security:</label>
-                  <Select value={filter.securityType || 'any'} onValueChange={(v) => updateFilter({ securityType: v === 'any' ? undefined : v as 'SECURITY DEFINER' | 'SECURITY INVOKER' })}>
+                  <label className="text-xs font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                    Security:
+                  </label>
+                  <Select
+                    value={filter.securityType || "any"}
+                    onValueChange={(v) =>
+                      updateFilter({
+                        securityType:
+                          v === "any"
+                            ? undefined
+                            : (v as "SECURITY DEFINER" | "SECURITY INVOKER"),
+                      })
+                    }
+                  >
                     <SelectTrigger className="h-8 w-32 text-sm border-slate-300 dark:border-slate-700">
                       <SelectValue placeholder="Any" />
                     </SelectTrigger>
@@ -240,7 +337,10 @@ export default function SqlFunctionsContainer({ initialFunctions = [] }: SqlFunc
               /* When a function is selected: list shrinks to content (capped), detail fills the rest */
               <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
                 {/* List — natural content height, capped so detail always has room */}
-                <div className="shrink-0 overflow-auto" style={{ maxHeight: '260px' }}>
+                <div
+                  className="shrink-0 overflow-auto"
+                  style={{ maxHeight: "260px" }}
+                >
                   {error ? (
                     <div className="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-3 m-2 text-red-800 dark:text-red-300 text-sm">
                       {error.message}
@@ -260,7 +360,7 @@ export default function SqlFunctionsContainer({ initialFunctions = [] }: SqlFunc
                 </div>
 
                 {/* Divider */}
-                <div className="shrink-0 border-t-2 border-slate-300 dark:border-slate-600" />
+                <div className="shrink-0 border-t-2 border-slate-200 dark:border-slate-700" />
 
                 {/* Detail panel — fills remaining space */}
                 <div className="flex-1 min-h-0 overflow-hidden">
@@ -268,7 +368,13 @@ export default function SqlFunctionsContainer({ initialFunctions = [] }: SqlFunc
                     func={selectedFunction}
                     onClose={() => selectFunction(null)}
                     onEdit={() => handleEditFunction(selectedFunction)}
-                    onDelete={() => handleDeleteFunction(selectedFunction.schema, selectedFunction.name, selectedFunction.arguments)}
+                    onDelete={() =>
+                      handleDeleteFunction(
+                        selectedFunction.schema,
+                        selectedFunction.name,
+                        selectedFunction.arguments,
+                      )
+                    }
                   />
                 </div>
               </div>
@@ -303,34 +409,83 @@ export default function SqlFunctionsContainer({ initialFunctions = [] }: SqlFunc
                       <Pagination>
                         <PaginationContent>
                           <PaginationItem>
-                            <PaginationPrevious onClick={() => setCurrentPage(p => Math.max(1, p - 1))} className={`cursor-pointer ${currentPage === 1 ? 'pointer-events-none opacity-50' : ''}`} />
+                            <PaginationPrevious
+                              onClick={() =>
+                                setCurrentPage((p) => Math.max(1, p - 1))
+                              }
+                              className={`cursor-pointer ${currentPage === 1 ? "pointer-events-none opacity-50" : ""}`}
+                            />
                           </PaginationItem>
                           {startPage > 1 && (
                             <>
-                              <PaginationItem><PaginationLink onClick={() => setCurrentPage(1)} className="cursor-pointer">1</PaginationLink></PaginationItem>
-                              {startPage > 2 && <PaginationItem><span className="px-2 text-slate-400">...</span></PaginationItem>}
+                              <PaginationItem>
+                                <PaginationLink
+                                  onClick={() => setCurrentPage(1)}
+                                  className="cursor-pointer"
+                                >
+                                  1
+                                </PaginationLink>
+                              </PaginationItem>
+                              {startPage > 2 && (
+                                <PaginationItem>
+                                  <span className="px-2 text-slate-400">
+                                    ...
+                                  </span>
+                                </PaginationItem>
+                              )}
                             </>
                           )}
-                          {pageNumbers.map(page => (
+                          {pageNumbers.map((page) => (
                             <PaginationItem key={page}>
-                              <PaginationLink onClick={() => setCurrentPage(page)} isActive={currentPage === page} className="cursor-pointer">{page}</PaginationLink>
+                              <PaginationLink
+                                onClick={() => setCurrentPage(page)}
+                                isActive={currentPage === page}
+                                className="cursor-pointer"
+                              >
+                                {page}
+                              </PaginationLink>
                             </PaginationItem>
                           ))}
                           {endPage < totalPages && (
                             <>
-                              {endPage < totalPages - 1 && <PaginationItem><span className="px-2 text-slate-400">...</span></PaginationItem>}
-                              <PaginationItem><PaginationLink onClick={() => setCurrentPage(totalPages)} className="cursor-pointer">{totalPages}</PaginationLink></PaginationItem>
+                              {endPage < totalPages - 1 && (
+                                <PaginationItem>
+                                  <span className="px-2 text-slate-400">
+                                    ...
+                                  </span>
+                                </PaginationItem>
+                              )}
+                              <PaginationItem>
+                                <PaginationLink
+                                  onClick={() => setCurrentPage(totalPages)}
+                                  className="cursor-pointer"
+                                >
+                                  {totalPages}
+                                </PaginationLink>
+                              </PaginationItem>
                             </>
                           )}
                           <PaginationItem>
-                            <PaginationNext onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} className={`cursor-pointer ${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}`} />
+                            <PaginationNext
+                              onClick={() =>
+                                setCurrentPage((p) =>
+                                  Math.min(totalPages, p + 1),
+                                )
+                              }
+                              className={`cursor-pointer ${currentPage === totalPages ? "pointer-events-none opacity-50" : ""}`}
+                            />
                           </PaginationItem>
                         </PaginationContent>
                       </Pagination>
                     </div>
                     <div className="flex items-center justify-end gap-2">
-                      <span className="text-xs text-slate-500 dark:text-slate-400">Rows:</span>
-                      <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                        Rows:
+                      </span>
+                      <Select
+                        value={itemsPerPage.toString()}
+                        onValueChange={handleItemsPerPageChange}
+                      >
                         <SelectTrigger className="h-7 w-16 text-xs border-slate-300 dark:border-slate-700">
                           <SelectValue />
                         </SelectTrigger>
@@ -366,7 +521,6 @@ export default function SqlFunctionsContainer({ initialFunctions = [] }: SqlFunc
               />
             )}
           </TabsContent>
-
         </div>
       </Tabs>
     </div>

@@ -17,28 +17,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import IconInputWithValidation from "@/components/official/IconInputWithValidation";
 import { useIsMobile } from "@/hooks/use-mobile";
+import type { Database } from "@/types/database.types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface Tool {
-    id: string;
-    name: string;
-    description: string;
-    parameters: Record<string, unknown>;
-    output_schema?: Record<string, unknown>;
-    annotations?: unknown[];
-    function_path: string;
-    category?: string;
-    tags?: string[];
-    icon?: string;
-    is_active?: boolean;
-    version?: string;
-    created_at?: string;
-    updated_at?: string;
-}
+type ToolRow = Database["public"]["Tables"]["tools"]["Row"];
 
 interface Props {
-    tool: Tool;
+    tool: ToolRow;
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -49,7 +35,7 @@ export function ToolEditPage({ tool }: Props) {
     const { toast } = useToast();
     const isMobile = useIsMobile();
 
-    const [editedTool, setEditedTool] = useState<Tool>({ ...tool });
+    const [editedTool, setEditedTool] = useState<ToolRow>({ ...tool });
     const [activeTab, setActiveTab] = useState("basic");
     const [isSaving, setIsSaving] = useState(false);
     const [jsonErrors, setJsonErrors] = useState<Record<string, string>>({});
@@ -167,9 +153,15 @@ export function ToolEditPage({ tool }: Props) {
                 <div className="space-y-1.5">
                     <Label>Version</Label>
                     <Input
-                        value={editedTool.version || ""}
-                        onChange={e => setField("version", e.target.value)}
-                        placeholder="1.0.0"
+                        value={String(editedTool.version)}
+                        onChange={e => {
+                            const n = Number(e.target.value);
+                            setEditedTool(prev => ({
+                                ...prev,
+                                version: Number.isFinite(n) ? n : prev.version,
+                            }));
+                        }}
+                        placeholder="1"
                         style={{ fontSize: "16px" }}
                     />
                 </div>

@@ -1,10 +1,15 @@
 "use client";
 
-// NoteContextMenuContent — Heavy content chunk for the notes context menu.
-// Lazy-loaded on first right-click via NoteContextMenu (the thin trigger shell).
-// Owns all logic: clipboard, find/replace, AI execution, Redux selectors, DB fetch.
+// SSR notes editor context menu — parity with UnifiedContextMenu for selection,
+// floating Sparkles menu, admin debug, and prompt execution.
 
-import { useState, useCallback } from "react";
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from "react";
 import {
   ContextMenuContent,
   ContextMenuItem,
@@ -12,7 +17,20 @@ import {
   ContextMenuSub,
   ContextMenuSubContent,
   ContextMenuSubTrigger,
+  ContextMenuLabel,
 } from "@/components/ui/context-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import { formatEditorSurroundContext } from "@/utils/format-editor-surround-context";
 import {
   Save,
   Copy,
@@ -35,26 +53,67 @@ import {
   Database,
   FolderOpen,
   Loader2,
+  Building,
+  User,
+  Type,
+  Eye,
+  EyeOff,
+  Bug,
+  Mic,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { getIconComponent } from "@/components/official/IconResolver";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
-import { selectIsDebugMode, toggleDebugMode } from "@/lib/redux/slices/adminDebugSlice";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import type { CategoryGroup, ShortcutItem, ContentBlockItem } from "@/features/prompt-builtins/types/menu";
+import {
+  selectIsDebugMode,
+  toggleDebugMode,
+  showPromptDebugIndicator,
+} from "@/lib/redux/slices/adminDebugSlice";
+import {
+  toggleOverlay,
+  selectIsOverlayOpen,
+} from "@/lib/redux/slices/overlaySlice";
+import type {
+  CategoryGroup,
+  ShortcutItem,
+  ContentBlockItem,
+} from "@/features/prompt-builtins/types/menu";
 import { mapScopeToVariables } from "@/features/prompt-builtins/utils/execution";
 import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
 import { insertTextAtTextareaCursor } from "@/features/prompts/utils/textareaInsertUtils";
 import { toast } from "@/components/ui/use-toast";
+import { useQuickActions } from "@/features/quick-actions/hooks/useQuickActions";
+import { getPlacementTypeMeta } from "@/features/prompt-builtins/constants";
 import { useNoteContextMenuGroups } from "./useNoteContextMenuGroups";
+import { useNoteContextMenuBridge } from "./noteContextMenuBridge";
 
-const FindReplaceModal = dynamic(
-  () => import("@/components/modals/FindReplaceModal").then((m) => m.FindReplaceModal),
-  { ssr: false, loading: () => null }
+const ContextDebugModal = dynamic(
+  () =>
+    import("@/components/debug/ContextDebugModal").then((m) => ({
+      default: m.ContextDebugModal,
+    })),
+  { ssr: false, loading: () => null },
 );
 
-// ── Types ────────────────────────────────────────────────────────────────────
+const FindReplaceModal = dynamic(
+  () =>
+    import("@/components/modals/FindReplaceModal").then(
+      (m) => m.FindReplaceModal,
+    ),
+  { ssr: false, loading: () => null },
+);
+
+// ── Shared menu primitives (ContextMenu + DropdownMenu) ─────────────────────
+
+type MenuKit = {
+  Item: typeof ContextMenuItem | typeof DropdownMenuItem;
+  Separator: typeof ContextMenuSeparator | typeof DropdownMenuSeparator;
+  Sub: typeof ContextMenuSub | typeof DropdownMenuSub;
+  SubTrigger: typeof ContextMenuSubTrigger | typeof DropdownMenuSubTrigger;
+  SubContent: typeof ContextMenuSubContent | typeof DropdownMenuSubContent;
+  Label: typeof ContextMenuLabel | typeof DropdownMenuLabel;
+};
 
 export interface NoteContextMenuContentProps {
   noteId: string;
@@ -62,7 +121,6 @@ export interface NoteContextMenuContentProps {
   allFolders: string[];
   currentFolder: string | undefined;
   noteContent: string;
-  /** Ref to the textarea for clipboard ops and find/replace */
   textareaRef?: React.RefObject<HTMLTextAreaElement | null>;
   onSave: () => void;
   onDuplicate: () => void;
@@ -76,95 +134,19 @@ export interface NoteContextMenuContentProps {
   onDelete: () => void;
 }
 
-// ── Category group rendering helpers ─────────────────────────────────────────
-
-function CategoryItems({
-  group,
-  depth = 0,
-  onExecute,
-  onInsertBlock,
-}: {
-  group: CategoryGroup;
-  depth?: number;
-  onExecute: (item: ShortcutItem) => void;
-  onInsertBlock: (item: ContentBlockItem) => void;
-}) {
-  const shortcuts = group.items.filter(
-    (item): item is ShortcutItem => item.type === "prompt_shortcut"
-  );
-  const contentBlocks = group.items.filter(
-    (item): item is ContentBlockItem => item.type === "content_block"
-  );
-  const hasChildren = group.children && group.children.length > 0;
-  const hasItems = shortcuts.length > 0 || contentBlocks.length > 0;
-
-  if (!hasItems && !hasChildren) return null;
-
-  // Every category always renders as a flyout submenu — matches UnifiedContextMenu behaviour
-  return (
-    <ContextMenuSub>
-      <ContextMenuSubTrigger className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5">
-        <GroupIcon iconName={group.category.icon_name} />
-        {group.category.label}
-      </ContextMenuSubTrigger>
-      <ContextMenuSubContent className="min-w-[200px] max-h-[70vh] overflow-y-auto" avoidCollisions collisionPadding={8}>
-        {shortcuts.map((item) => (
-          <ShortcutMenuItem key={item.id} item={item} onExecute={onExecute} />
-        ))}
-        {contentBlocks.map((item) => (
-          <ContentBlockMenuItem key={item.id} item={item} onInsert={onInsertBlock} />
-        ))}
-        {hasItems && hasChildren && <ContextMenuSeparator />}
-        {group.children!?.map((child) => (
-          <CategoryItems
-            key={child.category.id}
-            group={child}
-            depth={depth + 1}
-            onExecute={onExecute}
-            onInsertBlock={onInsertBlock}
-          />
-        ))}
-      </ContextMenuSubContent>
-    </ContextMenuSub>
-  );
-}
-
-function ShortcutMenuItem({
-  item,
-  onExecute,
-}: {
-  item: ShortcutItem;
-  onExecute: (item: ShortcutItem) => void;
-}) {
-  const Icon = item.icon_name ? getIconComponent(item.icon_name, "Sparkles") : Sparkles;
-  return (
-    <ContextMenuItem
-      className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-      onSelect={() => onExecute(item)}
-    >
-      <Icon />
-      {item.label}
-    </ContextMenuItem>
-  );
-}
-
-function ContentBlockMenuItem({
-  item,
-  onInsert,
-}: {
-  item: ContentBlockItem;
-  onInsert: (item: ContentBlockItem) => void;
-}) {
-  const Icon = item.icon_name ? getIconComponent(item.icon_name, "FileText") : FileText;
-  return (
-    <ContextMenuItem
-      className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-      onSelect={() => onInsert(item)}
-    >
-      <Icon />
-      {item.label}
-    </ContextMenuItem>
-  );
+function resolveActiveTextarea(
+  target: EventTarget | null,
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>,
+): HTMLTextAreaElement | null {
+  const ta = textareaRef?.current;
+  if (!ta) return null;
+  const el = target as Node | null;
+  if (!el) return ta;
+  if (el === ta) return ta;
+  if (el instanceof Text && el.parentElement && ta.contains(el.parentElement))
+    return ta;
+  if (el instanceof HTMLElement && ta.contains(el)) return ta;
+  return ta;
 }
 
 function GroupIcon({ iconName }: { iconName: string | null }) {
@@ -173,9 +155,123 @@ function GroupIcon({ iconName }: { iconName: string | null }) {
   return <Icon className="w-3 h-3 shrink-0" />;
 }
 
-// ── Main component ───────────────────────────────────────────────────────────
+function ShortcutMenuItem({
+  item,
+  onExecute,
+  Item,
+}: {
+  item: ShortcutItem;
+  onExecute: (item: ShortcutItem) => void;
+  Item: MenuKit["Item"];
+}) {
+  const Icon = item.icon_name
+    ? getIconComponent(item.icon_name, "Sparkles")
+    : Sparkles;
+  return (
+    <Item
+      className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+      onSelect={() => onExecute(item)}
+    >
+      <Icon />
+      {item.label}
+    </Item>
+  );
+}
 
-export default function NoteContextMenuContent({
+function ContentBlockMenuItem({
+  item,
+  onInsert,
+  Item,
+}: {
+  item: ContentBlockItem;
+  onInsert: (item: ContentBlockItem) => void;
+  Item: MenuKit["Item"];
+}) {
+  const Icon = item.icon_name
+    ? getIconComponent(item.icon_name, "FileText")
+    : FileText;
+  return (
+    <Item
+      className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+      onSelect={() => onInsert(item)}
+    >
+      <Icon />
+      {item.label}
+    </Item>
+  );
+}
+
+function CategoryItems({
+  group,
+  depth = 0,
+  menu,
+  onExecute,
+  onInsertBlock,
+}: {
+  group: CategoryGroup;
+  depth?: number;
+  menu: MenuKit;
+  onExecute: (item: ShortcutItem) => void;
+  onInsertBlock: (item: ContentBlockItem) => void;
+}) {
+  const { Item, Separator, Sub, SubTrigger, SubContent } = menu;
+  const shortcuts = group.items.filter(
+    (item): item is ShortcutItem => item.type === "prompt_shortcut",
+  );
+  const contentBlocks = group.items.filter(
+    (item): item is ContentBlockItem => item.type === "content_block",
+  );
+  const hasChildren = group.children && group.children.length > 0;
+  const hasItems = shortcuts.length > 0 || contentBlocks.length > 0;
+
+  if (!hasItems && !hasChildren) return null;
+
+  return (
+    <Sub>
+      <SubTrigger className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5">
+        <GroupIcon iconName={group.category.icon_name} />
+        {group.category.label}
+      </SubTrigger>
+      <SubContent
+        className="min-w-[200px] max-h-[70vh] overflow-y-auto"
+        avoidCollisions
+        collisionPadding={8}
+      >
+        {shortcuts.map((item) => (
+          <ShortcutMenuItem
+            key={item.id}
+            item={item}
+            onExecute={onExecute}
+            Item={Item}
+          />
+        ))}
+        {contentBlocks.map((item) => (
+          <ContentBlockMenuItem
+            key={item.id}
+            item={item}
+            onInsert={onInsertBlock}
+            Item={Item}
+          />
+        ))}
+        {hasItems && hasChildren && <Separator />}
+        {group.children!?.map((child) => (
+          <CategoryItems
+            key={child.category.id}
+            group={child}
+            depth={depth + 1}
+            menu={menu}
+            onExecute={onExecute}
+            onInsertBlock={onInsertBlock}
+          />
+        ))}
+      </SubContent>
+    </Sub>
+  );
+}
+
+// ── Heavy chunk: menu panels + Sparkles (loaded via next/dynamic from NoteContextMenu) ───
+
+export function NoteContextMenuHeavy({
   noteId,
   isDirty,
   allFolders,
@@ -193,94 +289,345 @@ export default function NoteContextMenuContent({
   onCloseAllTabs,
   onDelete,
 }: NoteContextMenuContentProps) {
+  const bridgeRef = useNoteContextMenuBridge();
   const dispatch = useAppDispatch();
   const isAdmin = useAppSelector(selectIsAdmin);
   const isDebugMode = useAppSelector(selectIsDebugMode);
+  const isAdminIndicatorOpen = useAppSelector((state) =>
+    selectIsOverlayOpen(state, "adminIndicator"),
+  );
 
-  // DB-driven menu groups
-  const { aiGroups, contentBlockGroups, loading: groupsLoading } = useNoteContextMenuGroups();
+  const {
+    aiGroups,
+    contentBlockGroups,
+    organizationToolGroups,
+    userToolGroups,
+    loading: groupsLoading,
+  } = useNoteContextMenuGroups();
 
-  // Unified AI execution — routes through the full orchestration system
+  const {
+    openQuickNotes,
+    openQuickTasks,
+    openQuickChat,
+    openQuickData,
+    openQuickFiles,
+    openVoicePad,
+  } = useQuickActions();
+
   const { openPrompt } = usePromptRunner();
 
-  // Find/Replace modal
   const [findReplaceOpen, setFindReplaceOpen] = useState(false);
+  const [skipSelectionRestore, setSkipSelectionRestore] = useState(false);
+  const findReplaceOpenRef = useRef(false);
+  const [contextDebugOpen, setContextDebugOpen] = useState(false);
 
-  // ── Clipboard operations ──────────────────────────────────────────────────
+  const capturedSelection = useRef<{
+    text: string;
+    selection: Selection | null;
+    range: Range | null;
+  } | null>(null);
+  const selectionLocked = useRef(false);
+  const lastMousePos = useRef<{ x: number; y: number } | null>(null);
 
-  const handleCopy = useCallback(() => {
-    const ta = textareaRef?.current;
-    if (ta) {
-      const sel = ta.value.substring(ta.selectionStart, ta.selectionEnd);
-      if (sel) {
-        navigator.clipboard.writeText(sel);
-        return;
-      }
-    }
-    document.execCommand("copy");
-  }, [textareaRef]);
+  const [selectedText, setSelectedText] = useState("");
+  const [selectionRange, setSelectionRange] = useState<{
+    type: "editable";
+    element: HTMLTextAreaElement;
+    start: number;
+    end: number;
+  } | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  const handleCut = useCallback(() => {
-    const ta = textareaRef?.current;
-    if (ta) {
-      const start = ta.selectionStart;
-      const end = ta.selectionEnd;
-      if (start !== end) {
-        const sel = ta.value.substring(start, end);
-        navigator.clipboard.writeText(sel);
-        // Remove from textarea by triggering an input event
-        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-          window.HTMLTextAreaElement.prototype,
-          "value"
-        )?.set;
-        const newVal = ta.value.substring(0, start) + ta.value.substring(end);
-        nativeInputValueSetter?.call(ta, newVal);
-        ta.dispatchEvent(new Event("input", { bubbles: true }));
-        ta.setSelectionRange(start, start);
-        return;
-      }
-    }
-    document.execCommand("cut");
-  }, [textareaRef]);
+  const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showFloatingIcon, setShowFloatingIcon] = useState(false);
 
-  const handlePaste = useCallback(async () => {
-    try {
-      const text = await navigator.clipboard.readText();
+  useEffect(() => {
+    findReplaceOpenRef.current = findReplaceOpen;
+  }, [findReplaceOpen]);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      lastMousePos.current = { x: e.clientX, y: e.clientY };
+    };
+    document.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => document.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  useEffect(() => {
+    const handleSelection = () => {
+      if (selectionLocked.current) return;
       const ta = textareaRef?.current;
-      if (ta && text) {
-        const start = ta.selectionStart;
-        const end = ta.selectionEnd;
-        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-          window.HTMLTextAreaElement.prototype,
-          "value"
-        )?.set;
-        const newVal = ta.value.substring(0, start) + text + ta.value.substring(end);
-        nativeInputValueSetter?.call(ta, newVal);
-        ta.dispatchEvent(new Event("input", { bubbles: true }));
-        ta.setSelectionRange(start + text.length, start + text.length);
-        ta.focus();
+      if (ta && document.activeElement === ta) {
+        const t = ta.value.slice(ta.selectionStart, ta.selectionEnd);
+        setSelectedText(t);
+        if (t && window.getSelection()?.rangeCount) {
+          try {
+            const range = window.getSelection()!.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) setSelectionRect(rect);
+          } catch {
+            setSelectionRect(null);
+          }
+        } else if (!t) {
+          setSelectionRect(null);
+        }
         return;
       }
-    } catch {
-      // Fallback
-    }
-    document.execCommand("paste");
+      const selection = window.getSelection();
+      const text = selection?.toString() ?? "";
+      setSelectedText(text);
+      if (text && selection?.rangeCount) {
+        try {
+          const range = selection.getRangeAt(0);
+          const rect = range.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) setSelectionRect(rect);
+          else if (lastMousePos.current) {
+            const fake = {
+              left: lastMousePos.current.x - 50,
+              right: lastMousePos.current.x + 50,
+              top: lastMousePos.current.y - 10,
+              bottom: lastMousePos.current.y + 10,
+              width: 100,
+              height: 20,
+              x: lastMousePos.current.x - 50,
+              y: lastMousePos.current.y - 10,
+              toJSON: () => ({}),
+            } as DOMRect;
+            setSelectionRect(fake);
+          }
+        } catch {
+          setSelectionRect(null);
+        }
+      } else {
+        setSelectionRect(null);
+      }
+    };
+    document.addEventListener("selectionchange", handleSelection);
+    return () =>
+      document.removeEventListener("selectionchange", handleSelection);
   }, [textareaRef]);
 
-  const handleSelectAll = useCallback(() => {
-    const ta = textareaRef?.current;
-    if (ta) {
-      ta.focus();
-      ta.setSelectionRange(0, ta.value.length);
+  useLayoutEffect(() => {
+    const shouldShow =
+      selectedText.length > 0 &&
+      selectionRect !== null &&
+      !menuOpen &&
+      !dropdownOpen;
+    const t = setTimeout(() => setShowFloatingIcon(shouldShow), 200);
+    return () => clearTimeout(t);
+  }, [selectedText, selectionRect, menuOpen, dropdownOpen]);
+
+  useEffect(() => {
+    if (!showFloatingIcon) return;
+    const handleScroll = () => {
+      setShowFloatingIcon(false);
+      setSelectionRect(null);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [showFloatingIcon]);
+
+  const captureTextareaSelection = useCallback((ta: HTMLTextAreaElement) => {
+    const start = ta.selectionStart || 0;
+    const end = ta.selectionEnd || 0;
+    const text = ta.value.substring(start, end);
+    capturedSelection.current = {
+      text,
+      selection: null,
+      range: null,
+    };
+    setSelectedText(text);
+    if (text && window.getSelection()?.rangeCount) {
+      try {
+        const range = window.getSelection()!.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) setSelectionRect(rect);
+        else if (lastMousePos.current) {
+          setSelectionRect({
+            left: lastMousePos.current.x - 50,
+            right: lastMousePos.current.x + 50,
+            top: lastMousePos.current.y - 10,
+            bottom: lastMousePos.current.y + 10,
+            width: 100,
+            height: 20,
+            x: lastMousePos.current.x - 50,
+            y: lastMousePos.current.y - 10,
+            toJSON: () => ({}),
+          } as DOMRect);
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+  }, []);
+
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.button !== 2) return;
+      const ta = resolveActiveTextarea(
+        e.target,
+        textareaRef ?? { current: null },
+      );
+      if (!ta) return;
+      selectionLocked.current = true;
+      captureTextareaSelection(ta);
+    },
+    [textareaRef, captureTextareaSelection],
+  );
+
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      const ta = resolveActiveTextarea(
+        e.target,
+        textareaRef ?? { current: null },
+      );
+      if (!ta) return;
+
+      let captured = capturedSelection.current;
+      if (!captured || !captured.text) {
+        const start = ta.selectionStart || 0;
+        const end = ta.selectionEnd || 0;
+        const text = ta.value.substring(start, end);
+        captured = { text, selection: null, range: null };
+        capturedSelection.current = captured;
+        selectionLocked.current = true;
+      }
+
+      const start = ta.selectionStart || 0;
+      const end = ta.selectionEnd || 0;
+      const text = captured?.text ?? "";
+      setSelectedText(text);
+      setSelectionRange({
+        type: "editable",
+        element: ta,
+        start,
+        end,
+      });
+      setMenuOpen(true);
+    },
+    [textareaRef],
+  );
+
+  const handleMenuClose = useCallback(() => {
+    setMenuOpen(false);
+    selectionLocked.current = false;
+    capturedSelection.current = null;
+
+    if (skipSelectionRestore) {
+      setSkipSelectionRestore(false);
       return;
     }
-    document.execCommand("selectAll");
-  }, [textareaRef]);
+    if (findReplaceOpen) return;
+    if (!selectionRange) return;
 
-  // ── AI prompt execution — routes through the full orchestration system ───────
+    const { element, start, end } = selectionRange;
+    setTimeout(() => {
+      if (findReplaceOpenRef.current) return;
+      element.focus();
+      element.setSelectionRange(start, end);
+    }, 150);
+  }, [skipSelectionRestore, findReplaceOpen, selectionRange]);
+
+  const handleDropdownClose = useCallback((open: boolean) => {
+    setDropdownOpen(open);
+    if (!open) {
+      selectionLocked.current = false;
+      capturedSelection.current = null;
+      setTimeout(() => {
+        setShowFloatingIcon(false);
+        setSelectionRect(null);
+      }, 100);
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    bridgeRef.current = {
+      onMouseDown: handleMouseDown,
+      onContextMenu: handleContextMenu,
+      onContextMenuOpenChange: (open: boolean) => {
+        if (open) {
+          setMenuOpen(true);
+        } else {
+          handleMenuClose();
+        }
+      },
+    };
+    return () => {
+      bridgeRef.current = null;
+    };
+  }, [bridgeRef, handleMouseDown, handleContextMenu, handleMenuClose]);
+
+  const nativeSetValue = (ta: HTMLTextAreaElement, value: string) => {
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLTextAreaElement.prototype,
+      "value",
+    )?.set;
+    nativeInputValueSetter?.call(ta, value);
+    ta.dispatchEvent(new Event("input", { bubbles: true }));
+  };
+
+  const handleCopy = useCallback(async () => {
+    const t = capturedSelection.current?.text || selectedText;
+    if (t) {
+      try {
+        await navigator.clipboard.writeText(t);
+      } catch (err) {
+        console.error("Failed to copy:", err);
+      }
+    }
+  }, [selectedText]);
+
+  const handleCut = useCallback(async () => {
+    if (!selectionRange) return;
+    const element = selectionRange.element;
+    const { start, end } = selectionRange;
+    const cutText = element.value.substring(start, end);
+    try {
+      await navigator.clipboard.writeText(cutText);
+      const newValue =
+        element.value.substring(0, start) + element.value.substring(end);
+      nativeSetValue(element, newValue);
+      element.setSelectionRange(start, start);
+      setSelectionRange(null);
+    } catch (err) {
+      console.error("Failed to cut:", err);
+    }
+  }, [selectionRange]);
+
+  const handlePaste = useCallback(async () => {
+    if (!selectionRange) return;
+    const element = selectionRange.element;
+    try {
+      const text = await navigator.clipboard.readText();
+      const { start, end } = selectionRange;
+      const newValue =
+        element.value.substring(0, start) + text + element.value.substring(end);
+      nativeSetValue(element, newValue);
+      element.setSelectionRange(start + text.length, start + text.length);
+    } catch (err) {
+      console.error("Failed to paste:", err);
+    }
+  }, [selectionRange]);
+
+  const handleSelectAll = useCallback(() => {
+    if (!selectionRange) return;
+    const element = selectionRange.element;
+    setSelectionRange(null);
+    requestAnimationFrame(() => {
+      element.focus();
+      element.select();
+    });
+  }, [selectionRange]);
+
+  const handleFind = useCallback(() => {
+    setSkipSelectionRestore(true);
+    setFindReplaceOpen(true);
+    findReplaceOpenRef.current = true;
+  }, []);
 
   const executeAction = useCallback(
-    async (item: ShortcutItem) => {
+    async (item: ShortcutItem, placementType: string = "ai-action") => {
       if (!item.prompt_builtin) {
         toast({
           title: "Prompt Not Connected",
@@ -292,29 +639,61 @@ export default function NoteContextMenuContent({
 
       const builtin = item.prompt_builtin;
       const ta = textareaRef?.current;
-      const selectionText = ta ? ta.value.substring(ta.selectionStart, ta.selectionEnd) : "";
+      const selectionText =
+        capturedSelection.current?.text ||
+        (ta ? ta.value.substring(ta.selectionStart, ta.selectionEnd) : "");
+
+      const contextPayload = ta
+        ? formatEditorSurroundContext(ta.value, {
+            selectionStart: ta.selectionStart,
+            selectionEnd: ta.selectionEnd,
+          })
+        : formatEditorSurroundContext(noteContent, {
+            selectionStart: 0,
+            selectionEnd: 0,
+          });
 
       const applicationScope = {
         selection: selectionText,
         content: noteContent,
-        context: noteContent,
+        context: contextPayload,
       };
 
       const variables = mapScopeToVariables(
         applicationScope,
         item.scope_mappings ?? {},
-        builtin.variableDefaults ?? []
+        builtin.variableDefaults ?? [],
       );
 
-      const resultDisplay = item.result_display ?? "modal-full";
+      if (isDebugMode) {
+        dispatch(
+          showPromptDebugIndicator({
+            promptName: item.label,
+            placementType,
+            selectedText: selectionText,
+            availableContext: applicationScope,
+            resolvedVariables: variables,
+            canResolve: {
+              canResolve: true,
+              missingVariables: [],
+              resolvedVariables: Object.keys(variables),
+            },
+            metadata: {
+              scopeMappings: item.scope_mappings ?? {},
+              availableScopes: item.available_scopes ?? undefined,
+            },
+          }),
+        );
+      }
 
+      const resultDisplay = item.result_display ?? "modal-full";
       const executionConfig = {
         auto_run: item.auto_run ?? true,
         allow_chat: item.allow_chat ?? true,
         show_variables: item.show_variables ?? false,
         apply_variables: item.apply_variables ?? true,
         track_in_runs: true,
-        use_pre_execution_input: false,
+        use_pre_execution_input: item.use_pre_execution_input ?? false,
       };
 
       try {
@@ -331,15 +710,16 @@ export default function NoteContextMenuContent({
         console.error("[NoteContextMenu] AI execution error:", error);
         toast({
           title: "Execution Failed",
-          description: error instanceof Error ? error.message : "An unknown error occurred.",
+          description:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred.",
           variant: "destructive",
         });
       }
     },
-    [noteContent, textareaRef, openPrompt]
+    [dispatch, isDebugMode, noteContent, textareaRef, openPrompt],
   );
-
-  // ── Content block insertion — inserts template text at textarea cursor ───────
 
   const insertBlock = useCallback(
     (item: ContentBlockItem) => {
@@ -354,279 +734,579 @@ export default function NoteContextMenuContent({
       }
       insertTextAtTextareaCursor(ta, item.template);
     },
-    [textareaRef]
+    [textareaRef],
   );
 
-  // ── Quick Actions (dispatch overlays — works with LiteStore) ─────────────
+  const buildContextDebugPayload = useCallback(() => {
+    const ta = textareaRef?.current;
+    const selection =
+      capturedSelection.current?.text ||
+      (ta ? ta.value.slice(ta.selectionStart, ta.selectionEnd) : "");
+    const contextXml = ta
+      ? formatEditorSurroundContext(ta.value, {
+          selectionStart: ta.selectionStart,
+          selectionEnd: ta.selectionEnd,
+        })
+      : formatEditorSurroundContext(noteContent, {
+          selectionStart: 0,
+          selectionEnd: 0,
+        });
+    return {
+      selection,
+      content: noteContent,
+      context: contextXml,
+      noteId,
+    };
+  }, [textareaRef, noteContent, noteId]);
 
-  const openQuickNotes = useCallback(() => dispatch(openOverlay({ overlayId: "quickNotes" })), [dispatch]);
-  const openQuickTasks = useCallback(() => dispatch(openOverlay({ overlayId: "quickTasks" })), [dispatch]);
-  const openQuickChat = useCallback(() => dispatch(openOverlay({ overlayId: "quickChat" })), [dispatch]);
-  const openQuickFiles = useCallback(() => dispatch(openOverlay({ overlayId: "quickFiles" })), [dispatch]);
+  const [debugPayload, setDebugPayload] = useState(() =>
+    buildContextDebugPayload(),
+  );
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (contextDebugOpen) {
+      setDebugPayload(buildContextDebugPayload());
+    }
+  }, [contextDebugOpen, buildContextDebugPayload]);
 
-  return (
-    <>
-      <ContextMenuContent className="min-w-[220px] max-w-[280px]" avoidCollisions collisionPadding={8}>
+  const renderFloatingSelectionIcon = () => {
+    const shouldRender = (showFloatingIcon || dropdownOpen) && selectionRect;
+    if (!shouldRender) return null;
+    if (selectionRect.width <= 0 || selectionRect.height <= 0) return null;
 
-          {/* ── Clipboard ── */}
-          <ContextMenuItem
+    const isMobile =
+      typeof window !== "undefined" &&
+      ("ontouchstart" in window ||
+        navigator.maxTouchPoints > 0 ||
+        window.innerWidth < 768);
+
+    const iconWidth = isMobile ? 48 : 40;
+    const iconHeight = isMobile ? 48 : 40;
+    const offsetAbove = isMobile ? 12 : 8;
+    const centerX = selectionRect.left + selectionRect.width / 2;
+    let left = centerX - iconWidth / 2;
+    let top = selectionRect.top - iconHeight - offsetAbove;
+    const shouldPositionBelow = top < 10;
+    const finalTop = shouldPositionBelow
+      ? selectionRect.bottom + offsetAbove
+      : top;
+    const horizontalPadding = isMobile ? 16 : 10;
+    const finalLeft = Math.max(
+      horizontalPadding,
+      Math.min(left, window.innerWidth - iconWidth - horizontalPadding),
+    );
+
+    const handleOpen = (
+      e: React.MouseEvent | React.TouchEvent | React.KeyboardEvent,
+    ) => {
+      e.preventDefault();
+      e.stopPropagation();
+      selectionLocked.current = true;
+      const ta = textareaRef?.current;
+      if (ta) {
+        captureTextareaSelection(ta);
+        setSelectionRange({
+          type: "editable",
+          element: ta,
+          start: ta.selectionStart,
+          end: ta.selectionEnd,
+        });
+      }
+      setDropdownOpen(true);
+    };
+
+    return (
+      <button
+        type="button"
+        onClick={handleOpen}
+        onTouchEnd={(e) => {
+          e.preventDefault();
+          handleOpen(e);
+        }}
+        className={`fixed z-[9999] flex items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all duration-200 ${
+          dropdownOpen
+            ? "opacity-0 pointer-events-none"
+            : "hover:shadow-xl hover:scale-110 active:scale-95 animate-in fade-in slide-in-from-top-2"
+        } ${isMobile ? "w-12 h-12" : "w-10 h-10"}`}
+        style={{
+          left: `${finalLeft}px`,
+          top: `${finalTop}px`,
+          touchAction: "manipulation",
+        }}
+        aria-label="Open text actions menu"
+        role="button"
+        tabIndex={dropdownOpen ? -1 : 0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") handleOpen(e);
+          if (e.key === "Escape") setShowFloatingIcon(false);
+        }}
+      >
+        <Sparkles className={isMobile ? "h-6 w-6" : "h-5 w-5"} />
+      </button>
+    );
+  };
+
+  const renderMenuContent = (M: MenuKit) => {
+    const { Item, Separator, Sub, SubTrigger, SubContent, Label } = M;
+    const selectionHeader = selectedText ? (
+      <div className="px-2 py-2 border-b border-border bg-primary/5">
+        <div className="flex items-start gap-2">
+          <Type className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-medium text-primary mb-0.5">
+              Selected ({selectedText.length} char
+              {selectedText.length !== 1 ? "s" : ""})
+            </div>
+            <div className="text-xs text-muted-foreground font-mono break-all leading-tight">
+              {selectedText.length <= 50
+                ? `"${selectedText}"`
+                : `"${selectedText.slice(0, 20)}...${selectedText.slice(-20)}"`}
+            </div>
+          </div>
+        </div>
+      </div>
+    ) : null;
+
+    return (
+      <>
+        {groupsLoading && (
+          <Label className="text-xs text-muted-foreground">Loading...</Label>
+        )}
+        {selectionHeader}
+
+        <Item
+          className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+          onSelect={handleCopy}
+          disabled={!selectedText}
+        >
+          <Copy /> Copy
+        </Item>
+        <Item
+          className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+          onSelect={handleCut}
+          disabled={!selectedText}
+        >
+          <Scissors /> Cut
+        </Item>
+        <Item
+          className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+          onSelect={handlePaste}
+        >
+          <Clipboard /> Paste
+        </Item>
+        <Item
+          className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+          onSelect={handleSelectAll}
+        >
+          <FileText /> Select All
+        </Item>
+
+        <Separator />
+
+        <Item
+          className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+          onSelect={handleFind}
+        >
+          <Search /> Find & Replace
+        </Item>
+
+        <Separator />
+
+        {isDirty && (
+          <Item
             className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-            onSelect={handleCopy}
+            onSelect={onSave}
           >
-            <Copy /> Copy
-          </ContextMenuItem>
-          <ContextMenuItem
-            className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-            onSelect={handleCut}
-          >
-            <Scissors /> Cut
-          </ContextMenuItem>
-          <ContextMenuItem
-            className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-            onSelect={handlePaste}
-          >
-            <Clipboard /> Paste
-          </ContextMenuItem>
-          <ContextMenuItem
-            className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-            onSelect={handleSelectAll}
-          >
-            <FileText /> Select All
-          </ContextMenuItem>
+            <Save /> Save
+          </Item>
+        )}
+        <Item
+          className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+          onSelect={onDuplicate}
+        >
+          <Copy /> Duplicate
+        </Item>
+        <Item
+          className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+          onSelect={onExport}
+        >
+          <Download /> Export as Markdown
+        </Item>
+        <Item
+          className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+          onSelect={onShareLink}
+        >
+          <Link2 /> Share Link
+        </Item>
+        <Item
+          className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+          onSelect={onShareClipboard}
+        >
+          <Share2 /> Copy to Clipboard
+        </Item>
 
-          <ContextMenuSeparator />
+        <Separator />
 
-          {/* ── Find & Replace ── */}
-          <ContextMenuItem
-            className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-            onSelect={() => setFindReplaceOpen(true)}
+        <Sub>
+          <SubTrigger className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5">
+            <FolderInput /> Move to Folder
+          </SubTrigger>
+          <SubContent
+            className="min-w-[180px] max-h-[70vh] overflow-y-auto"
+            avoidCollisions
+            collisionPadding={8}
           >
-            <Search /> Find & Replace
-          </ContextMenuItem>
+            {allFolders.map((folder) => {
+              const isCurrent = currentFolder === folder;
+              return (
+                <Item
+                  key={folder}
+                  className={`flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5 ${
+                    isCurrent ? "text-amber-600 dark:text-amber-400" : ""
+                  }`}
+                  onSelect={() => !isCurrent && onMove(folder)}
+                  disabled={isCurrent}
+                >
+                  <FolderInput />
+                  {folder}
+                  {isCurrent && (
+                    <span className="ml-auto text-[0.625rem] opacity-50">
+                      current
+                    </span>
+                  )}
+                </Item>
+              );
+            })}
+          </SubContent>
+        </Sub>
 
-          <ContextMenuSeparator />
+        <Separator />
 
-          {/* ── Note actions ── */}
-          {isDirty && (
-            <ContextMenuItem
-              className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-              onSelect={onSave}
+        <Sub>
+          <SubTrigger className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5 text-purple-600 dark:text-purple-400 [&_svg]:text-purple-500">
+            <Sparkles /> AI Actions
+            {groupsLoading && (
+              <Loader2 className="w-3 h-3 animate-spin ml-auto opacity-50" />
+            )}
+          </SubTrigger>
+          <SubContent
+            className="min-w-[220px] max-h-[70vh] overflow-y-auto"
+            avoidCollisions
+            collisionPadding={8}
+          >
+            {groupsLoading ? (
+              <div className="flex items-center gap-1.5 px-2 py-2 text-xs text-muted-foreground">
+                <Loader2 className="w-3 h-3 animate-spin" /> Loading...
+              </div>
+            ) : aiGroups.length === 0 ? (
+              <div className="px-2 py-2 text-xs text-muted-foreground italic">
+                No AI actions available
+              </div>
+            ) : (
+              aiGroups.map((group) => (
+                <CategoryItems
+                  key={group.category.id}
+                  group={group}
+                  menu={M}
+                  onExecute={(item) =>
+                    executeAction(item, group.category.placement_type)
+                  }
+                  onInsertBlock={insertBlock}
+                />
+              ))
+            )}
+          </SubContent>
+        </Sub>
+
+        {contentBlockGroups.length > 0 && (
+          <Sub>
+            <SubTrigger className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5">
+              <FileText /> Content Blocks
+            </SubTrigger>
+            <SubContent
+              className="min-w-[220px] max-h-[70vh] overflow-y-auto"
+              avoidCollisions
+              collisionPadding={8}
             >
-              <Save /> Save
-            </ContextMenuItem>
-          )}
-          <ContextMenuItem
-            className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-            onSelect={onDuplicate}
+              {contentBlockGroups.map((group) => (
+                <CategoryItems
+                  key={group.category.id}
+                  group={group}
+                  menu={M}
+                  onExecute={(item) =>
+                    executeAction(item, group.category.placement_type)
+                  }
+                  onInsertBlock={insertBlock}
+                />
+              ))}
+            </SubContent>
+          </Sub>
+        )}
+
+        {organizationToolGroups.length > 0 && (
+          <Sub>
+            <SubTrigger className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5">
+              <Building />
+              {getPlacementTypeMeta("organization-tool").label}
+            </SubTrigger>
+            <SubContent
+              className="min-w-[220px] max-h-[70vh] overflow-y-auto"
+              avoidCollisions
+              collisionPadding={8}
+            >
+              {organizationToolGroups.map((group) => (
+                <CategoryItems
+                  key={group.category.id}
+                  group={group}
+                  menu={M}
+                  onExecute={(item) =>
+                    executeAction(item, group.category.placement_type)
+                  }
+                  onInsertBlock={insertBlock}
+                />
+              ))}
+            </SubContent>
+          </Sub>
+        )}
+
+        {userToolGroups.length > 0 && (
+          <Sub>
+            <SubTrigger className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5">
+              <User /> {getPlacementTypeMeta("user-tool").label}
+            </SubTrigger>
+            <SubContent
+              className="min-w-[220px] max-h-[70vh] overflow-y-auto"
+              avoidCollisions
+              collisionPadding={8}
+            >
+              {userToolGroups.map((group) => (
+                <CategoryItems
+                  key={group.category.id}
+                  group={group}
+                  menu={M}
+                  onExecute={(item) =>
+                    executeAction(item, group.category.placement_type)
+                  }
+                  onInsertBlock={insertBlock}
+                />
+              ))}
+            </SubContent>
+          </Sub>
+        )}
+
+        <Sub>
+          <SubTrigger className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5">
+            <Zap /> Quick Actions
+          </SubTrigger>
+          <SubContent
+            className="min-w-[200px]"
+            avoidCollisions
+            collisionPadding={8}
           >
-            <Copy /> Duplicate
-          </ContextMenuItem>
-          <ContextMenuItem
-            className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-            onSelect={onExport}
-          >
-            <Download /> Export as Markdown
-          </ContextMenuItem>
-          <ContextMenuItem
-            className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-            onSelect={onShareLink}
-          >
-            <Link2 /> Share Link
-          </ContextMenuItem>
-          <ContextMenuItem
-            className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-            onSelect={onShareClipboard}
-          >
-            <Share2 /> Copy to Clipboard
-          </ContextMenuItem>
+            <Item
+              className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+              onSelect={openQuickNotes}
+            >
+              <StickyNote /> Quick Notes
+            </Item>
+            <Item
+              className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+              onSelect={openQuickTasks}
+            >
+              <CheckSquare /> Quick Tasks
+            </Item>
+            <Item
+              className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+              onSelect={openQuickChat}
+            >
+              <MessageSquare /> Quick Chat
+            </Item>
+            <Item
+              className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+              onSelect={openQuickData}
+            >
+              <Database /> Quick Data
+            </Item>
+            <Item
+              className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+              onSelect={openQuickFiles}
+            >
+              <FolderOpen /> Quick Files
+            </Item>
+            <Item
+              className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+              onSelect={openVoicePad}
+            >
+              <Mic /> Voice Input
+            </Item>
+          </SubContent>
+        </Sub>
 
-          <ContextMenuSeparator />
-
-          {/* ── Move to Folder ── */}
-          <ContextMenuSub>
-            <ContextMenuSubTrigger className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5">
-              <FolderInput /> Move to Folder
-            </ContextMenuSubTrigger>
-            <ContextMenuSubContent className="min-w-[180px] max-h-[70vh] overflow-y-auto" avoidCollisions collisionPadding={8}>
-              {allFolders.map((folder) => {
-                const isCurrent = currentFolder === folder;
-                return (
-                  <ContextMenuItem
-                    key={folder}
-                    className={`flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5 ${
-                      isCurrent ? "text-amber-600 dark:text-amber-400" : ""
-                    }`}
-                    onSelect={() => !isCurrent && onMove(folder)}
-                    disabled={isCurrent}
-                  >
-                    <FolderInput />
-                    {folder}
-                    {isCurrent && (
-                      <span className="ml-auto text-[0.625rem] opacity-50">current</span>
-                    )}
-                  </ContextMenuItem>
-                );
-              })}
-            </ContextMenuSubContent>
-          </ContextMenuSub>
-
-          <ContextMenuSeparator />
-
-          {/* ── AI Actions ── */}
-          <ContextMenuSub>
-            <ContextMenuSubTrigger className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5 text-purple-600 dark:text-purple-400 [&_svg]:text-purple-500">
-              <Sparkles /> AI Actions
-              {groupsLoading && <Loader2 className="w-3 h-3 animate-spin ml-auto opacity-50" />}
-            </ContextMenuSubTrigger>
-            <ContextMenuSubContent className="min-w-[220px] max-h-[70vh] overflow-y-auto" avoidCollisions collisionPadding={8}>
-              {groupsLoading ? (
-                <div className="flex items-center gap-1.5 px-2 py-2 text-xs text-muted-foreground">
-                  <Loader2 className="w-3 h-3 animate-spin" /> Loading...
-                </div>
-              ) : aiGroups.length === 0 ? (
-                <div className="px-2 py-2 text-xs text-muted-foreground italic">
-                  No AI actions available
-                </div>
-              ) : (
-                aiGroups.map((group) => (
-                  <CategoryItems
-                    key={group.category.id}
-                    group={group}
-                    onExecute={executeAction}
-                    onInsertBlock={insertBlock}
-                  />
-                ))
-              )}
-            </ContextMenuSubContent>
-          </ContextMenuSub>
-
-          {/* ── Content Blocks ── */}
-          {contentBlockGroups.length > 0 && (
-            <ContextMenuSub>
-              <ContextMenuSubTrigger className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5">
-                <FileText /> Content Blocks
-              </ContextMenuSubTrigger>
-              <ContextMenuSubContent className="min-w-[220px] max-h-[70vh] overflow-y-auto" avoidCollisions collisionPadding={8}>
-                {contentBlockGroups.map((group) => (
-                  <CategoryItems
-                    key={group.category.id}
-                    group={group}
-                    onExecute={executeAction}
-                    onInsertBlock={insertBlock}
-                  />
-                ))}
-              </ContextMenuSubContent>
-            </ContextMenuSub>
-          )}
-
-          {/* ── Quick Actions ── */}
-          <ContextMenuSub>
-            <ContextMenuSubTrigger className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5">
-              <Zap /> Quick Actions
-            </ContextMenuSubTrigger>
-            <ContextMenuSubContent className="min-w-[200px]" avoidCollisions collisionPadding={8}>
-              <ContextMenuItem
-                className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-                onSelect={openQuickNotes}
-              >
-                <StickyNote /> Quick Notes
-              </ContextMenuItem>
-              <ContextMenuItem
-                className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-                onSelect={openQuickTasks}
-              >
-                <CheckSquare /> Quick Tasks
-              </ContextMenuItem>
-              <ContextMenuItem
-                className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-                onSelect={openQuickChat}
-              >
-                <MessageSquare /> Quick Chat
-              </ContextMenuItem>
-              <ContextMenuItem
-                className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-                onSelect={openQuickFiles}
-              >
-                <FolderOpen /> Quick Files
-              </ContextMenuItem>
-            </ContextMenuSubContent>
-          </ContextMenuSub>
-
-          {/* ── Admin Tools (admin-only) ── */}
-          {isAdmin && (
-            <ContextMenuSub>
-              <ContextMenuSubTrigger className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5 text-amber-600 dark:text-amber-400">
+        {isAdmin && (
+          <>
+            <Separator />
+            <Sub>
+              <SubTrigger className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5 text-amber-600 dark:text-amber-400">
                 <Shield /> Admin Tools
-              </ContextMenuSubTrigger>
-              <ContextMenuSubContent className="min-w-[200px]" avoidCollisions collisionPadding={8}>
-                <ContextMenuItem
+              </SubTrigger>
+              <SubContent
+                className="min-w-[200px]"
+                avoidCollisions
+                collisionPadding={8}
+              >
+                <Item
                   className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
                   onSelect={() => dispatch(toggleDebugMode())}
                 >
-                  <Database />
-                  {isDebugMode ? "Disable Debug Mode" : "Enable Debug Mode"}
-                </ContextMenuItem>
-                <ContextMenuItem
+                  {isDebugMode ? (
+                    <EyeOff className="text-amber-600 dark:text-amber-400" />
+                  ) : (
+                    <Eye />
+                  )}
+                  <div className="flex flex-col">
+                    <span>{isDebugMode ? "Disable" : "Enable"} Debug Mode</span>
+                    <span className="text-xs text-muted-foreground">
+                      {isDebugMode ? "Hide debug info" : "Show debug info"}
+                    </span>
+                  </div>
+                </Item>
+                {isDebugMode && (
+                  <Item
+                    className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 [&_svg]:w-3.5 [&_svg]:h-3.5"
+                    onSelect={() => setContextDebugOpen(true)}
+                  >
+                    <Bug />
+                    <div className="flex flex-col">
+                      <span>Inspect Context</span>
+                      <span className="text-xs text-muted-foreground">
+                        View selection &amp; scopes
+                      </span>
+                    </div>
+                  </Item>
+                )}
+                <Separator />
+                <Item
                   className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-                  onSelect={() => console.log("[Admin] Note ID:", noteId)}
+                  onSelect={() =>
+                    dispatch(toggleOverlay({ overlayId: "adminIndicator" }))
+                  }
                 >
-                  <FileText /> Log Note ID
-                </ContextMenuItem>
-              </ContextMenuSubContent>
-            </ContextMenuSub>
-          )}
+                  {isAdminIndicatorOpen ? (
+                    <Eye className="text-green-600 dark:text-green-400" />
+                  ) : (
+                    <EyeOff />
+                  )}
+                  <div className="flex flex-col">
+                    <span>
+                      {isAdminIndicatorOpen ? "Hide" : "Show"} Admin Indicator
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      Floating debug overlay
+                    </span>
+                  </div>
+                </Item>
+              </SubContent>
+            </Sub>
+          </>
+        )}
 
-          <ContextMenuSeparator />
+        <Separator />
 
-          {/* ── Tab management ── */}
-          <ContextMenuItem
-            className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-            onSelect={onCloseTab}
-          >
-            <X /> Close Tab
-          </ContextMenuItem>
-          <ContextMenuItem
-            className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-            onSelect={onCloseOtherTabs}
-          >
-            <X /> Close Other Tabs
-          </ContextMenuItem>
-          <ContextMenuItem
-            className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
-            onSelect={onCloseAllTabs}
-          >
-            <X /> Close All Tabs
-          </ContextMenuItem>
+        <Item
+          className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+          onSelect={onCloseTab}
+        >
+          <X /> Close Tab
+        </Item>
+        <Item
+          className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+          onSelect={onCloseOtherTabs}
+        >
+          <X /> Close Other Tabs
+        </Item>
+        <Item
+          className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+          onSelect={onCloseAllTabs}
+        >
+          <X /> Close All Tabs
+        </Item>
 
-          <ContextMenuSeparator />
+        <Separator />
 
-          {/* ── Destructive ── */}
-          <ContextMenuItem
-            className="flex items-center gap-2 text-xs text-destructive focus:text-destructive [&_svg]:w-3.5 [&_svg]:h-3.5"
-            onSelect={onDelete}
-          >
-            <Trash2 /> Delete Note
-          </ContextMenuItem>
+        <Item
+          className="flex items-center gap-2 text-xs text-destructive focus:text-destructive [&_svg]:w-3.5 [&_svg]:h-3.5"
+          onSelect={onDelete}
+        >
+          <Trash2 /> Delete Note
+        </Item>
+      </>
+    );
+  };
 
+  const contextMenuKit: MenuKit = {
+    Item: ContextMenuItem,
+    Separator: ContextMenuSeparator,
+    Sub: ContextMenuSub,
+    SubTrigger: ContextMenuSubTrigger,
+    SubContent: ContextMenuSubContent,
+    Label: ContextMenuLabel,
+  };
+
+  const dropdownMenuKit: MenuKit = {
+    Item: DropdownMenuItem,
+    Separator: DropdownMenuSeparator,
+    Sub: DropdownMenuSub,
+    SubTrigger: DropdownMenuSubTrigger,
+    SubContent: DropdownMenuSubContent,
+    Label: DropdownMenuLabel,
+  };
+
+  return (
+    <>
+      <ContextMenuContent
+        className="min-w-[220px] max-w-[280px]"
+        avoidCollisions
+        collisionPadding={8}
+      >
+        {renderMenuContent(contextMenuKit)}
       </ContextMenuContent>
 
-      {/* Find & Replace modal — portaled, no z-index issues */}
+      <DropdownMenu open={dropdownOpen} onOpenChange={handleDropdownClose}>
+        <DropdownMenuTrigger asChild>
+          {renderFloatingSelectionIcon() || (
+            <div style={{ display: "none" }} aria-hidden />
+          )}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          className="w-64 max-h-[70vh] overflow-y-auto"
+          align="center"
+          side="bottom"
+          sideOffset={5}
+        >
+          {renderMenuContent(dropdownMenuKit)}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {isDebugMode && (
+        <ContextDebugModal
+          isOpen={contextDebugOpen}
+          onClose={() => setContextDebugOpen(false)}
+          contextData={debugPayload}
+        />
+      )}
+
       {findReplaceOpen && (
         <FindReplaceModal
           isOpen={findReplaceOpen}
-          onClose={() => setFindReplaceOpen(false)}
+          onClose={() => {
+            setFindReplaceOpen(false);
+            findReplaceOpenRef.current = false;
+          }}
           targetElement={textareaRef?.current}
           onReplace={(newText) => {
             const ta = textareaRef?.current;
             if (!ta) return;
-            const nativeSet = Object.getOwnPropertyDescriptor(
-              window.HTMLTextAreaElement.prototype,
-              "value"
-            )?.set;
-            nativeSet?.call(ta, newText);
-            ta.dispatchEvent(new Event("input", { bubbles: true }));
+            nativeSetValue(ta, newText);
           }}
         />
       )}

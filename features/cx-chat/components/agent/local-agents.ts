@@ -8,7 +8,7 @@ import {
   Newspaper,
   Lightbulb,
 } from "lucide-react";
-import type { PromptVariable } from "@/lib/types/agent-chat";
+import type { PromptVariable } from "@/features/prompts/types/core";
 
 export interface AgentOption {
   id: string;

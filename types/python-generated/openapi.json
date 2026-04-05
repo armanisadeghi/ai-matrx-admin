@@ -1668,18 +1668,18 @@
         }
       }
     },
-    "/scraper/compat/quick-scrape": {
+    "/scraper/batch": {
       "post": {
         "tags": [
           "Scraper"
         ],
-        "summary": "Quick Scrape Compat",
-        "operationId": "quick_scrape_compat_scraper_compat_quick_scrape_post",
+        "summary": "Batch Scrape",
+        "operationId": "batch_scrape_scraper_batch_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/QuickScrapeCompatRequest"
+                "$ref": "#/components/schemas/BatchScrapeRequest"
               }
             }
           },
@@ -1690,7 +1690,350 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/BatchScrapeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scraper/content/save": {
+      "post": {
+        "tags": [
+          "Scraper"
+        ],
+        "summary": "Content Save",
+        "operationId": "content_save_scraper_content_save_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentSaveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Content Save Scraper Content Save Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scraper/queue/pending": {
+      "get": {
+        "tags": [
+          "Scraper"
+        ],
+        "summary": "Queue Pending",
+        "operationId": "queue_pending_scraper_queue_pending_get",
+        "parameters": [
+          {
+            "name": "tier",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "desktop",
+              "title": "Tier"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Domain"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Queue Pending Scraper Queue Pending Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scraper/queue/claim": {
+      "post": {
+        "tags": [
+          "Scraper"
+        ],
+        "summary": "Queue Claim",
+        "operationId": "queue_claim_scraper_queue_claim_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetryClaimRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "type": "object",
+                  "title": "Response Queue Claim Scraper Queue Claim Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scraper/queue/submit": {
+      "post": {
+        "tags": [
+          "Scraper"
+        ],
+        "summary": "Queue Submit",
+        "operationId": "queue_submit_scraper_queue_submit_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetrySubmitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "type": "object",
+                  "title": "Response Queue Submit Scraper Queue Submit Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scraper/queue/fail": {
+      "post": {
+        "tags": [
+          "Scraper"
+        ],
+        "summary": "Queue Fail",
+        "operationId": "queue_fail_scraper_queue_fail_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetryFailRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "type": "object",
+                  "title": "Response Queue Fail Scraper Queue Fail Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scraper/queue/stats": {
+      "get": {
+        "tags": [
+          "Scraper"
+        ],
+        "summary": "Queue Stats",
+        "operationId": "queue_stats_scraper_queue_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Queue Stats Scraper Queue Stats Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scraper/config/domains": {
+      "get": {
+        "tags": [
+          "Scraper"
+        ],
+        "summary": "List Domains",
+        "operationId": "list_domains_scraper_config_domains_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response List Domains Scraper Config Domains Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Scraper"
+        ],
+        "summary": "Upsert Domain",
+        "operationId": "upsert_domain_scraper_config_domains_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DomainUpsertRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Upsert Domain Scraper Config Domains Post"
+                }
               }
             }
           },
@@ -4841,6 +5184,50 @@
       },
       "AgentStartRequest": {
         "properties": {
+          "organization_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Id"
+          },
+          "workspace_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workspace Id"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
           "user_input": {
             "anyOf": [
               {
@@ -4923,50 +5310,6 @@
             "type": "object",
             "title": "Context",
             "default": {}
-          },
-          "organization_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Organization Id"
-          },
-          "workspace_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Workspace Id"
-          },
-          "project_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Project Id"
-          },
-          "task_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Task Id"
           }
         },
         "type": "object",
@@ -5094,6 +5437,61 @@
           "پادکست خبری ایران"
         ],
         "title": "AudioStyle"
+      },
+      "BatchScrapeRequest": {
+        "properties": {
+          "urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Urls"
+          },
+          "use_proxy": {
+            "type": "boolean",
+            "title": "Use Proxy",
+            "default": true
+          },
+          "fast": {
+            "type": "boolean",
+            "title": "Fast",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "urls"
+        ],
+        "title": "BatchScrapeRequest"
+      },
+      "BatchScrapeResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "execution_time_ms": {
+            "type": "number",
+            "title": "Execution Time Ms"
+          },
+          "results": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "execution_time_ms",
+          "results"
+        ],
+        "title": "BatchScrapeResponse"
       },
       "Body_compress_pdf_utilities_pdf_compress_post": {
         "properties": {
@@ -5707,6 +6105,50 @@
             ],
             "title": "Disable Safety Checker"
           },
+          "organization_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Id"
+          },
+          "workspace_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workspace Id"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
           "ai_model_id": {
             "type": "string",
             "title": "Ai Model Id"
@@ -5780,12 +6222,33 @@
               }
             ]
           },
+          "variables": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variables"
+          },
           "client_tools": {
             "items": {
               "type": "string"
             },
             "type": "array",
             "title": "Client Tools",
+            "default": []
+          },
+          "custom_tools": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Custom Tools",
             "default": []
           },
           "ide_state": {
@@ -5904,8 +6367,86 @@
         ],
         "title": "ContentPasteRequest"
       },
+      "ContentSaveRequest": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "page_name": {
+            "type": "string",
+            "title": "Page Name"
+          },
+          "content": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Content"
+          },
+          "content_type": {
+            "type": "string",
+            "title": "Content Type",
+            "default": "html"
+          },
+          "char_count": {
+            "type": "integer",
+            "title": "Char Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "url",
+          "page_name",
+          "content"
+        ],
+        "title": "ContentSaveRequest"
+      },
       "ConversationContinueRequest": {
         "properties": {
+          "organization_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Id"
+          },
+          "workspace_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workspace Id"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
           "user_input": {
             "anyOf": [
               {
@@ -5973,50 +6514,6 @@
             "type": "object",
             "title": "Context",
             "default": {}
-          },
-          "organization_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Organization Id"
-          },
-          "workspace_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Workspace Id"
-          },
-          "project_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Project Id"
-          },
-          "task_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Task Id"
           }
         },
         "type": "object",
@@ -6040,6 +6537,45 @@
           "chat_config"
         ],
         "title": "DirectChatRequest"
+      },
+      "DomainUpsertRequest": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "common_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Common Name"
+          },
+          "scrape_allowed": {
+            "type": "boolean",
+            "title": "Scrape Allowed",
+            "default": true
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "proxy_type": {
+            "type": "string",
+            "title": "Proxy Type",
+            "default": "datacenter"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "title": "DomainUpsertRequest"
       },
       "ExtensionContentSubmit": {
         "properties": {
@@ -7304,99 +7840,6 @@
         ],
         "title": "ProcessBlocksResponse"
       },
-      "QuickScrapeCompatRequest": {
-        "properties": {
-          "urls": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Urls",
-            "description": "List of URLs to scrape."
-          },
-          "use_cache": {
-            "type": "boolean",
-            "title": "Use Cache",
-            "default": true
-          },
-          "stream": {
-            "type": "boolean",
-            "title": "Stream",
-            "default": false
-          },
-          "get_organized_data": {
-            "type": "boolean",
-            "title": "Get Organized Data",
-            "default": false
-          },
-          "get_structured_data": {
-            "type": "boolean",
-            "title": "Get Structured Data",
-            "default": false
-          },
-          "get_overview": {
-            "type": "boolean",
-            "title": "Get Overview",
-            "default": false
-          },
-          "get_text_data": {
-            "type": "boolean",
-            "title": "Get Text Data",
-            "default": true
-          },
-          "get_main_image": {
-            "type": "boolean",
-            "title": "Get Main Image",
-            "default": false
-          },
-          "get_links": {
-            "type": "boolean",
-            "title": "Get Links",
-            "default": false
-          },
-          "get_content_filter_removal_details": {
-            "type": "boolean",
-            "title": "Get Content Filter Removal Details",
-            "default": false
-          },
-          "include_highlighting_markers": {
-            "type": "boolean",
-            "title": "Include Highlighting Markers",
-            "default": true
-          },
-          "include_media": {
-            "type": "boolean",
-            "title": "Include Media",
-            "default": true
-          },
-          "include_media_links": {
-            "type": "boolean",
-            "title": "Include Media Links",
-            "default": true
-          },
-          "include_media_description": {
-            "type": "boolean",
-            "title": "Include Media Description",
-            "default": true
-          },
-          "include_anchors": {
-            "type": "boolean",
-            "title": "Include Anchors",
-            "default": true
-          },
-          "anchor_size": {
-            "type": "integer",
-            "title": "Anchor Size",
-            "default": 100
-          }
-        },
-        "additionalProperties": true,
-        "type": "object",
-        "required": [
-          "urls"
-        ],
-        "title": "QuickScrapeCompatRequest"
-      },
       "QuickScrapeRequest": {
         "properties": {
           "get_organized_data": {
@@ -7489,6 +7932,68 @@
           "urls"
         ],
         "title": "QuickScrapeRequest"
+      },
+      "RetryClaimRequest": {
+        "properties": {
+          "item_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Item Ids"
+          },
+          "client_id": {
+            "type": "string",
+            "title": "Client Id"
+          },
+          "claim_ttl_minutes": {
+            "type": "integer",
+            "title": "Claim Ttl Minutes",
+            "default": 10
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_ids",
+          "client_id"
+        ],
+        "title": "RetryClaimRequest"
+      },
+      "RetryFailRequest": {
+        "properties": {
+          "queue_item_id": {
+            "type": "string",
+            "title": "Queue Item Id"
+          },
+          "error": {
+            "type": "string",
+            "title": "Error"
+          },
+          "promote_to_extension": {
+            "type": "boolean",
+            "title": "Promote To Extension",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "queue_item_id",
+          "error"
+        ],
+        "title": "RetryFailRequest"
+      },
+      "RetrySubmitRequest": {
+        "properties": {
+          "queue_item_id": {
+            "type": "string",
+            "title": "Queue Item Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "queue_item_id"
+        ],
+        "title": "RetrySubmitRequest"
       },
       "RunPipelineRequest": {
         "properties": {},

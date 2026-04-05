@@ -80,7 +80,7 @@ export function ModelSelectorRow({
           value={effectiveModelId}
           onValueChange={handleModelChange}
           placeholder="Select model…"
-          triggerClassName="h-7 text-xs flex-1"
+          className="h-7 text-xs flex-1 min-w-0"
         />
 
         <Button

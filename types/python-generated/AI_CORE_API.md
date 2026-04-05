@@ -26,7 +26,7 @@ A valid auth also causes guest activity to be logged automatically (fire-and-for
 
 ---
 
-## Streaming Response Format
+## Streaming Response Format (V2)
 
 All three main endpoints return **NDJSON** (`application/x-ndjson`) — one JSON object per line.
 
@@ -38,38 +38,60 @@ All three main endpoints return **NDJSON** (`application/x-ndjson`) — one JSON
 
 ```
 // 1. Connection confirmed
-{"event":"status_update","data":{"status":"connected","system_message":"Stream established","user_message":"..."}}
+{"event":"phase","data":{"phase":"connected"}}
 
 // 2. Conversation ID (redundant with the header, same value)
-{"event":"data","data":{"event":"conversation_id","conversation_id":"<uuid>"}}
+{"event":"data","data":{"type":"conversation_id","conversation_id":"<uuid>"}}
 
-// 3+. Ongoing events until stream ends
+// 3. Record reservations (database rows pre-created with stable UUIDs)
+{"event":"record_reserved","data":{"db_project":"matrx","table":"cx_conversation","record_id":"<uuid>","status":"pending",...}}
+{"event":"record_reserved","data":{"db_project":"matrx","table":"cx_user_request","record_id":"<uuid>","status":"pending",...}}
+
+// 4. Processing begins
+{"event":"phase","data":{"phase":"processing"}}
+{"event":"init","data":{"operation":"user_request","operation_id":"<uuid>"}}
+
+// 5. LLM streaming
 {"event":"chunk","data":{"text":"Hello"}}
 {"event":"chunk","data":{"text":" world"}}
-{"event":"content_block","data":{"blockId":"...","blockIndex":0,"type":"text","status":"streaming","content":"Hello world"}}
-{"event":"content_block","data":{"blockId":"...","blockIndex":0,"type":"text","status":"complete","content":"Hello world"}}
-{"event":"tool_event","data":{"event":"tool_started","call_id":"...","tool_name":"..."}}
-{"event":"tool_event","data":{"event":"tool_completed","call_id":"...","tool_name":"..."}}
-{"event":"completion","data":{"status":"complete","iterations":1,"total_usage":{...}}}
-{"event":"end","data":{}}
+
+// 6. Tool calls (if any)
+{"event":"tool_event","data":{"event":"tool_started","call_id":"...","tool_name":"...","data":{"arguments":{...}}}}
+{"event":"tool_event","data":{"event":"tool_completed","call_id":"...","tool_name":"...","data":{"result":{...}}}}
+
+// 7. Persistence confirmations
+{"event":"record_update","data":{"db_project":"matrx","table":"cx_conversation","record_id":"<uuid>","status":"active",...}}
+{"event":"record_update","data":{"db_project":"matrx","table":"cx_user_request","record_id":"<uuid>","status":"completed",...}}
+
+// 8. Completion + end
+{"event":"completion","data":{"operation":"user_request","operation_id":"<uuid>","status":"success","result":{...}}}
+{"event":"end","data":{"reason":"complete"}}
 ```
 
 **All event types** (from `stream-events.ts`):
 
-| `event` | Payload type | When |
-|---------|-------------|------|
-| `status_update` | `StatusUpdatePayload` | Connection status, progress milestones |
-| `chunk` | `ChunkPayload` | Raw token-by-token text (`data.text`) |
-| `content_block` | `ContentBlockPayload` | Structured blocks (text, code, table, diagram, etc.) |
-| `tool_event` | `ToolEventPayload` | Tool lifecycle: started → progress → completed/error |
-| `broker` | `BrokerPayload` | Broker variable updates |
-| `data` | varies | Named sub-events (e.g. `conversation_id`) |
-| `completion` | `CompletionPayload` | Final summary after all iterations finish |
+| `event` | Payload | Purpose |
+|---------|---------|---------|
+| `phase` | `PhasePayload` | State machine transition: `connected`, `processing`, `generating`, `using_tools`, `persisting`, `searching`, `scraping`, `analyzing`, `synthesizing`, `retrying`, `executing`, `complete` |
+| `chunk` | `ChunkPayload` | Token-by-token LLM response text (`data.text`) |
+| `reasoning_chunk` | `ReasoningChunkPayload` | Token-by-token LLM reasoning/thinking text (`data.text`) |
+| `init` | `InitPayload` | Operation started — `operation` + `operation_id` identify what and which |
+| `completion` | `CompletionPayload` | Operation finished — same `operation_id` as the matching `init`, with `status` and typed `result` |
+| `data` | `TypedDataPayload` | Typed structured payload — switch on `data.type` (e.g. `conversation_id`, `audio_output`, `conversation_labeled`) |
+| `warning` | `WarningPayload` | Non-fatal issue with `code`, `level` (`low`/`medium`/`high`), `recoverable` flag |
+| `info` | `InfoPayload` | Lightweight FYI — ignorable. Has `code` and optional `user_message` |
+| `tool_event` | `ToolEventPayload` | Tool lifecycle: `tool_started` → `tool_progress` → `tool_completed`/`tool_error`. Sub-typed `data` per sub-event |
+| `error` | `ErrorPayload` | Fatal error — stream ends after this |
+| `content_block` | `ContentBlockPayload` | Structured block streaming (text, code, table, diagram). See `content-blocks.ts` |
+| `record_reserved` | `RecordReservedPayload` | Database row pre-created with `pending` status — `db_project`, `table`, `record_id`, `parent_refs` |
+| `record_update` | `RecordUpdatePayload` | Previously reserved record changed status to `active`, `completed`, or `failed` |
+| `broker` | `BrokerPayload` | Direct UI state update (frozen — no new usage) |
 | `heartbeat` | `HeartbeatPayload` | Keep-alive ping on long runs |
-| `error` | `ErrorPayload` | Non-fatal or fatal errors |
-| `end` | `EndPayload` | Stream is done — last line |
+| `end` | `EndPayload` | Stream is done — always the last line |
 
-Use the **type guards** in `stream-events.ts` (`isChunkEvent`, `isContentBlockEvent`, etc.) to narrow events safely.
+**V2 breaking changes:** `status_update` is removed (replaced by `phase` + `info`). `completion` is redesigned as a paired lifecycle with `init`. `data` events now require a `type` discriminator field. Full migration details in `record_reservation_frontend_guide.md`.
+
+Use the **type guards** in `stream-events.ts` (`isChunkEvent`, `isPhaseEvent`, `isInitEvent`, `isCompletionEvent`, `isTypedDataEvent`, etc.) to narrow events safely.
 
 ---
 
@@ -182,7 +204,7 @@ If the user refreshes the page you can reconstruct the full conversation from th
 
 The server **always generates** a new UUID. It is never taken from the request body. You get it from:
 - `X-Conversation-ID` response header (available immediately)
-- The second NDJSON line (the `conversation_id` data event)
+- The `data` event with `type: "conversation_id"` (early in the stream)
 
 **Store this ID.** Every subsequent turn uses it via the conversation endpoint.
 

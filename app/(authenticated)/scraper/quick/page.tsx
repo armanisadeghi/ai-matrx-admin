@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useScraperApi } from "@/features/scraper/hooks/useScraperApi";
 import ScraperDataUtils from "@/features/scraper/utils/data-utils";
 import PageContent from "@/features/scraper/parts/core/PageContent";
+import { ScraperHookErrorDetails } from "@/features/scraper/parts/ScraperHookErrorDetails";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,6 +18,8 @@ import {
   ScanSearch,
   Zap,
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrapedContentPretty } from "@/features/scraper/parts/ScrapedContentPretty";
 
 function normalizeUrl(raw: string): string | null {
   const trimmed = raw.trim();
@@ -34,8 +37,16 @@ function normalizeUrl(raw: string): string | null {
 
 export default function QuickScrapePage() {
   const searchParams = useSearchParams();
-  const { scrapeUrl, data, isLoading, hasError, error, statusMessage, reset } =
-    useScraperApi();
+  const {
+    scrapeUrl,
+    data,
+    isLoading,
+    hasError,
+    error,
+    errorDiagnostics,
+    statusMessage,
+    reset,
+  } = useScraperApi();
   const fullScrapeApi = useScraperApi();
 
   const [url, setUrl] = useState(searchParams.get("url") ?? "");
@@ -44,7 +55,8 @@ export default function QuickScrapePage() {
   const [fullResult, setFullResult] = useState<ReturnType<
     typeof ScraperDataUtils.processFullData
   > | null>(null);
-  const [activeTab, setActiveTab] = useState("reader");
+  const [activeTab, setActiveTab] = useState("pretty");
+  const [quickContentTab, setQuickContentTab] = useState("pretty");
   const [viewMode, setViewMode] = useState<"quick" | "full">("quick");
 
   // Auto-scrape when arriving with a ?url= param
@@ -80,6 +92,7 @@ export default function QuickScrapePage() {
     setUrl(normalized);
     setFullResult(null);
     setViewMode("quick");
+    setQuickContentTab("pretty");
     reset();
     try {
       await scrapeUrl(normalized);
@@ -109,7 +122,8 @@ export default function QuickScrapePage() {
               overview: result.overview,
               structured_data: result.structuredData,
               organized_data: result.organizedData,
-              text_data: result.textContent,
+              text_data: result.plainTextContent,
+              markdown_renderable: result.markdownRenderable ?? undefined,
               main_image: result.mainImage,
               hashes: null,
               content_filter_removal_details: [],
@@ -119,7 +133,7 @@ export default function QuickScrapePage() {
           ],
         };
         setFullResult(ScraperDataUtils.processFullData(envelope));
-        setActiveTab("reader");
+        setActiveTab("pretty");
       }
     } catch (err) {
       console.error("Full scrape failed:", err);
@@ -147,6 +161,8 @@ export default function QuickScrapePage() {
     setUrl("");
     setUrlError(null);
     setViewMode("quick");
+    setQuickContentTab("pretty");
+    setActiveTab("pretty");
   };
 
   const isAnyLoading = isLoading || fullScrapeApi.isLoading;
@@ -219,6 +235,11 @@ export default function QuickScrapePage() {
           <Alert variant="destructive" className="mt-2 max-w-5xl mx-auto py-2">
             <AlertDescription className="text-xs">
               {error || fullScrapeApi.error}
+              <ScraperHookErrorDetails
+                diagnostics={
+                  hasError ? errorDiagnostics : fullScrapeApi.errorDiagnostics
+                }
+              />
             </AlertDescription>
           </Alert>
         )}
@@ -343,14 +364,34 @@ export default function QuickScrapePage() {
 
                 <Card>
                   <CardContent className="pt-6">
-                    <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
-                      Extracted Content
-                    </h3>
-                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border-border">
-                      <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-mono leading-relaxed">
-                        {data.textContent}
-                      </pre>
-                    </div>
+                    <Tabs
+                      value={quickContentTab}
+                      onValueChange={setQuickContentTab}
+                      className="w-full"
+                    >
+                      <TabsList className="mb-3 h-9">
+                        <TabsTrigger value="pretty" className="text-xs">
+                          Pretty
+                        </TabsTrigger>
+                        <TabsTrigger value="text" className="text-xs">
+                          Plain text
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="pretty" className="mt-0">
+                        <div className="rounded-lg border border-border">
+                          <ScrapedContentPretty
+                            markdown={data.markdownRenderable ?? ""}
+                          />
+                        </div>
+                      </TabsContent>
+                      <TabsContent value="text" className="mt-0">
+                        <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border-border">
+                          <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-mono leading-relaxed">
+                            {data.plainTextContent}
+                          </pre>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
                   </CardContent>
                 </Card>
               </div>

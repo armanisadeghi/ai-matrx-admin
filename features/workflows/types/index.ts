@@ -18,75 +18,97 @@ export * from "./userInputNodeTypes";
 export * from "./relaynodeTypes";
 export * from "./edgeTypes";
 
-export type PythonDataType = "int" | "float" | "str" | "bool" | "list" | "tuple" | "dict" | "set";
+export type PythonDataType =
+  | "int"
+  | "float"
+  | "str"
+  | "bool"
+  | "list"
+  | "tuple"
+  | "dict"
+  | "set";
 
 export interface ReactFlowUIMetadata {
-    position: XYPosition;
-    type?: string;
-    sourcePosition?: Position;
-    targetPosition?: Position;
-    hidden?: boolean;
-    draggable?: boolean;
-    selectable?: boolean;
-    connectable?: boolean;
-    deletable?: boolean;
-    dragHandle?: string;
-    parentId?: string;
-    zIndex?: number;
-    extent?: "parent" | CoordinateExtent;
-    expandParent?: boolean;
-    ariaLabel?: string;
-    focusable?: boolean;
-    style?: React.CSSProperties;
-    className?: string;
+  position: XYPosition;
+  type?: string;
+  sourcePosition?: Position;
+  targetPosition?: Position;
+  hidden?: boolean;
+  draggable?: boolean;
+  selectable?: boolean;
+  connectable?: boolean;
+  deletable?: boolean;
+  dragHandle?: string;
+  parentId?: string;
+  zIndex?: number;
+  extent?: "parent" | CoordinateExtent;
+  expandParent?: boolean;
+  ariaLabel?: string;
+  focusable?: boolean;
+  style?: React.CSSProperties;
+  className?: string;
 }
 
 export interface DbCompleteWorkflow {
-    workflow: DbWorkflow;
-    functionNodes: DbFunctionNode[];
-    userInputs: DbUserInput[];
-    relays: DbBrokerRelayData[];
-    edges: DbWorkflowEdge[];
+  workflow: DbWorkflow;
+  functionNodes: DbFunctionNode[];
+  userInputs: DbUserInput[];
+  relays: DbBrokerRelayData[];
+  edges: DbWorkflowEdge[];
 }
 
 export interface ConvertedWorkflowData {
-    workflow: DbWorkflow;
-    functionNodes: FunctionNode[];
-    userInputs: UserInputNode[];
-    relays: BrokerRelayNode[];
-    edges: WorkflowEdge[];
-    allNodes: Node[];
+  workflow: DbWorkflow;
+  functionNodes: FunctionNode[];
+  userInputs: UserInputNode[];
+  relays: BrokerRelayNode[];
+  edges: WorkflowEdge[];
+  allNodes: Node[];
 }
 
 export type DbNodeData = DbFunctionNode | DbUserInput | DbBrokerRelayData;
 
 export type WorkflowNode = FunctionNode | UserInputNode | BrokerRelayNode;
 
+function uiNodeDataType(ui_node_data: unknown): string | undefined {
+  if (
+    ui_node_data &&
+    typeof ui_node_data === "object" &&
+    ui_node_data !== null &&
+    "type" in ui_node_data
+  ) {
+    const t = (ui_node_data as { type?: unknown }).type;
+    return typeof t === "string" ? t : undefined;
+  }
+  return undefined;
+}
+
 export interface TabComponentProps {
-    nodeData: DbFunctionNode;
-    onNodeUpdate: (nodeData: DbFunctionNode) => void;
-    enrichedBrokers: EnrichedBroker[];
+  nodeData: DbFunctionNode;
+  onNodeUpdate: (nodeData: DbFunctionNode) => void;
+  enrichedBrokers: EnrichedBroker[];
 }
 
 export function isUserInputNode(data: DbNodeData): data is DbUserInput {
-    return data.ui_node_data?.type === "userInput";
+  return uiNodeDataType(data.ui_node_data) === "userInput";
 }
 
 /**
  * Type guard to check if a node is a BrokerRelay node
  */
 export function isBrokerRelayNode(data: DbNodeData): data is DbBrokerRelayData {
-    return data.ui_node_data?.type === "brokerRelay";
+  return uiNodeDataType(data.ui_node_data) === "brokerRelay";
 }
 
 /**
  * Type guard to check if a node is a BaseNode (workflow function node)
  */
 export function isBaseFunctionNode(data: DbNodeData): data is DbFunctionNode {
-    return (
-        data.ui_node_data?.type === "functionNode" ||
-        data.ui_node_data?.type === "recipeNode" ||
-        data.ui_node_data?.type === "registeredFunction" ||
-        data.ui_node_data?.type === "workflowNode"
-    );
+  const t = uiNodeDataType(data.ui_node_data);
+  return (
+    t === "functionNode" ||
+    t === "recipeNode" ||
+    t === "registeredFunction" ||
+    t === "workflowNode"
+  );
 }

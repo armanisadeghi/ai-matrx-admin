@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/client";
 import { requireUserId } from "@/utils/auth/getUserId";
+import { mapAiTaskRow } from "@/features/ai-runs/utils/db-row-mappers";
 import type {
   AiTask,
   CreateAiTaskInput,
@@ -40,7 +41,7 @@ export const aiTasksService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return mapAiTaskRow(data);
   },
 
   /**
@@ -60,7 +61,7 @@ export const aiTasksService = {
       throw error;
     }
 
-    return data;
+    return mapAiTaskRow(data);
   },
 
   /**
@@ -80,7 +81,7 @@ export const aiTasksService = {
       throw error;
     }
 
-    return data;
+    return mapAiTaskRow(data);
   },
 
   /**
@@ -96,7 +97,7 @@ export const aiTasksService = {
       .order("created_at", { ascending: true });
 
     if (error) throw error;
-    return data || [];
+    return (data ?? []).map(mapAiTaskRow);
   },
 
   /**
@@ -140,7 +141,7 @@ export const aiTasksService = {
 
     if (error) throw error;
 
-    const tasks = data || [];
+    const tasks = (data ?? []).map(mapAiTaskRow);
     const total = count || 0;
     const hasMore = offset + limit < total;
 
@@ -161,7 +162,7 @@ export const aiTasksService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return mapAiTaskRow(data);
   },
 
   /**
@@ -178,7 +179,7 @@ export const aiTasksService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return mapAiTaskRow(data);
   },
 
   /**
@@ -212,7 +213,7 @@ export const aiTasksService = {
     if (error) throw error;
     
     // Database triggers will automatically update the parent run's aggregates
-    return data;
+    return mapAiTaskRow(data);
   },
 
   /**
@@ -233,7 +234,7 @@ export const aiTasksService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return mapAiTaskRow(data);
   },
 
   /**
@@ -253,7 +254,7 @@ export const aiTasksService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return mapAiTaskRow(data);
   },
 
   /**
@@ -284,7 +285,7 @@ export const aiTasksService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return mapAiTaskRow(data);
   },
 
   /**
@@ -320,7 +321,7 @@ export const aiTasksService = {
       throw error;
     }
 
-    return data;
+    return mapAiTaskRow(data);
   },
 };
 

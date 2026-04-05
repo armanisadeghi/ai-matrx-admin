@@ -1,13 +1,15 @@
 /**
- * Shared Stream Processor
+ * Shared Stream Processor — V2 Event System
  *
  * Extracts the NDJSON stream processing logic used by both executeInstance
  * and executeChatInstance into a single reusable function.
  *
- * Handles:
- *  - Event dispatch for all stream event types (chunk, status, data, tool, content_block, etc.)
- *  - Client-side event counters and timing metrics
- *  - Post-stream finalization (accumulated text, assistant turn commit, input clear)
+ * V2 changes from V1:
+ *  - `status_update` → `phase` (closed-enum state machine transitions)
+ *  - `data` events now use `type` discriminator (not `event` key)
+ *  - `completion` events are part of init/completion pairs with operation/operation_id
+ *  - New `init` event for operation start tracking
+ *  - Old CompletionStats replaced with UserRequestResult from completion.result
  */
 
 import type { RootState } from "@/lib/redux/store";
@@ -17,29 +19,46 @@ import type { ToolLifecycleStatus } from "@/features/agents/types/request.types"
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import {
   isChunkEvent,
-  isToolEventEvent,
-  isEndEvent,
-  isErrorEvent,
-  isStatusUpdateEvent,
-  isDataEvent,
+  isReasoningChunkEvent,
+  isPhaseEvent,
+  isInitEvent,
   isCompletionEvent,
+  isTypedDataEvent,
+  isToolEventEvent,
+  isWarningEvent,
+  isInfoEvent,
+  isErrorEvent,
+  isEndEvent,
   isContentBlockEvent,
   isHeartbeatEvent,
   isBrokerEvent,
+  isRecordReservedEvent,
+  isRecordUpdateEvent,
+  type ConversationIdData,
+  type ConversationLabeledData,
 } from "@/types/python-generated/stream-events";
 import {
   addPendingToolCall,
   appendChunk,
+  appendReasoningChunk,
   appendDataPayload,
   appendTimeline,
   appendRawEvent,
   markTextStreamStart,
   closeTextRun,
+  markReasoningStreamStart,
+  closeReasoningRun,
   finalizeAccumulatedText,
+  finalizeAccumulatedReasoning,
   finalizeClientMetrics,
   setConversationId,
   setRequestStatus,
-  setCurrentStatus,
+  setCurrentPhase,
+  trackOperationInit,
+  trackOperationCompletion,
+  addWarning,
+  addInfoEvent,
+  upsertReservation,
   upsertContentBlock,
   upsertToolLifecycle,
   setCompletion,
@@ -99,16 +118,23 @@ export async function processStream({
   let clientFirstChunkAt: number | null = null;
   let totalEvents = 0;
   let chunkEvents = 0;
+  let reasoningChunkEvents = 0;
+  let phaseEvents = 0;
+  let initEvents = 0;
+  let completionEvents = 0;
   let dataEvents = 0;
   let toolEvents = 0;
   let contentBlockEvents = 0;
-  let statusUpdateEvents = 0;
+  let warningEvents = 0;
+  let infoEvents = 0;
+  let recordReservedEvents = 0;
+  let recordUpdateEvents = 0;
   let otherEvents = 0;
   let totalPayloadBytes = 0;
 
   let isInTextRun = false;
+  let isInReasoningRun = false;
   let unknownEvents = 0;
-  // seq is assigned by the reducer (request.timeline.length) — pass 0 as placeholder
 
   const encoder = new TextEncoder();
   for await (const event of events) {
@@ -133,56 +159,150 @@ export async function processStream({
       const text = event.data.text;
       totalPayloadBytes += encoder.encode(text).length;
 
+      if (isInReasoningRun) {
+        isInReasoningRun = false;
+        dispatch(closeReasoningRun({ requestId, timestamp: now }));
+      }
+
       if (!isInTextRun) {
         isInTextRun = true;
         dispatch(markTextStreamStart({ requestId, timestamp: now }));
       }
 
       dispatch(appendChunk({ requestId, content: text }));
-    } else {
+    } else if (isReasoningChunkEvent(event)) {
+      reasoningChunkEvents++;
+      const text = event.data.text;
+      totalPayloadBytes += encoder.encode(text).length;
+
       if (isInTextRun) {
         isInTextRun = false;
       }
 
-      if (isStatusUpdateEvent(event)) {
-        statusUpdateEvents++;
-        dispatch(setCurrentStatus({ requestId, status: event.data }));
+      if (!isInReasoningRun) {
+        isInReasoningRun = true;
+        dispatch(markReasoningStreamStart({ requestId, timestamp: now }));
+      }
+
+      dispatch(appendReasoningChunk({ requestId, content: text }));
+    } else {
+      if (isInTextRun) {
+        isInTextRun = false;
+      }
+      if (isInReasoningRun) {
+        isInReasoningRun = false;
+        dispatch(closeReasoningRun({ requestId, timestamp: now }));
+      }
+
+      if (isPhaseEvent(event)) {
+        phaseEvents++;
+        dispatch(setCurrentPhase({ requestId, phase: event.data.phase }));
         dispatch(
           appendTimeline({
             requestId,
             entry: {
-              kind: "status_update",
+              kind: "phase",
               seq: 0,
               timestamp: now,
-              data: event.data,
+              phase: event.data.phase,
             },
           }),
         );
-      } else if (isDataEvent(event)) {
+      } else if (isInitEvent(event)) {
+        initEvents++;
+        const d = event.data;
+        dispatch(
+          trackOperationInit({
+            requestId,
+            operationId: d.operation_id,
+            operation: d.operation,
+            parentOperationId: d.parent_operation_id,
+            timestamp: now,
+          }),
+        );
+        dispatch(
+          appendTimeline({
+            requestId,
+            entry: {
+              kind: "init",
+              seq: 0,
+              timestamp: now,
+              operation: d.operation,
+              operationId: d.operation_id,
+              parentOperationId: d.parent_operation_id ?? null,
+            },
+          }),
+        );
+      } else if (isCompletionEvent(event)) {
+        completionEvents++;
+        const d = event.data;
+        const result = (d.result ?? {}) as Record<string, unknown>;
+
+        dispatch(
+          trackOperationCompletion({
+            requestId,
+            operationId: d.operation_id,
+            operation: d.operation,
+            status: d.status,
+            result,
+            timestamp: now,
+          }),
+        );
+
+        if (d.operation === "user_request") {
+          dispatch(setCompletion({ requestId, data: d }));
+
+          completionStats = result as CompletionStats;
+
+          const totals = completionStats.total_usage?.total;
+          if (totals) {
+            tokenUsage = {
+              input: totals.input_tokens ?? 0,
+              output: totals.output_tokens ?? 0,
+              total: totals.total_tokens ?? 0,
+            };
+          }
+          finishReason = completionStats.finish_reason ?? undefined;
+        }
+
+        dispatch(
+          appendTimeline({
+            requestId,
+            entry: {
+              kind: "completion",
+              seq: 0,
+              timestamp: now,
+              operation: d.operation,
+              operationId: d.operation_id,
+              status: d.status,
+            },
+          }),
+        );
+      } else if (isTypedDataEvent(event)) {
         dataEvents++;
-        const data = event.data as Record<string, unknown>;
-        if (
-          data.event === "conversation_id" &&
-          typeof data.conversation_id === "string" &&
-          !conversationId
-        ) {
-          conversationId = data.conversation_id;
-          dispatch(setConversationId({ requestId, conversationId }));
-        } else if (
-          data.event === "conversation_labeled" &&
-          typeof data.title === "string"
-        ) {
+        const d = event.data as Record<string, unknown>;
+        const dataType = (d.type as string) ?? "unknown";
+
+        if (dataType === "conversation_id") {
+          const cid = (d as unknown as ConversationIdData).conversation_id;
+          if (cid && !conversationId) {
+            conversationId = cid;
+            dispatch(setConversationId({ requestId, conversationId }));
+          }
+        } else if (dataType === "conversation_labeled") {
+          const labeled = d as unknown as ConversationLabeledData;
           dispatch(
             setConversationLabel({
               instanceId,
-              title: data.title,
-              description: (data.description as string | null) ?? null,
-              keywords: (data.keywords as string[] | null) ?? null,
+              title: labeled.title,
+              description: labeled.description ?? null,
+              keywords: labeled.keywords ?? null,
             }),
           );
         } else {
-          dispatch(appendDataPayload({ requestId, data }));
+          dispatch(appendDataPayload({ requestId, data: d }));
         }
+
         dispatch(
           appendTimeline({
             requestId,
@@ -190,7 +310,8 @@ export async function processStream({
               kind: "data",
               seq: 0,
               timestamp: now,
-              data,
+              dataType,
+              data: d,
             },
           }),
         );
@@ -285,65 +406,97 @@ export async function processStream({
             },
           }),
         );
-      } else if (isCompletionEvent(event)) {
-        otherEvents++;
-        const d = event.data as Record<string, unknown>;
-
-        completionStats = {
-          status: (d.status as string) ?? "complete",
-          iterations: (d.iterations as number) ?? 1,
-          finish_reason: (d.finish_reason as string) ?? "stop",
-          total_usage: (d.total_usage as CompletionStats["total_usage"]) ?? {
-            by_model: {},
-            total: {
-              input_tokens: 0,
-              output_tokens: 0,
-              cached_input_tokens: 0,
-              total_tokens: 0,
-              total_requests: 0,
-              unique_models: 0,
-              total_cost: 0,
+      } else if (isWarningEvent(event)) {
+        warningEvents++;
+        dispatch(addWarning({ requestId, warning: event.data }));
+        dispatch(
+          appendTimeline({
+            requestId,
+            entry: {
+              kind: "warning",
+              seq: 0,
+              timestamp: now,
+              code: event.data.code,
+              level: event.data.level ?? "medium",
+              recoverable: event.data.recoverable ?? true,
+              userMessage: event.data.user_message ?? null,
+              systemMessage: event.data.system_message,
             },
-          },
-          timing_stats: (d.timing_stats as CompletionStats["timing_stats"]) ?? {
-            total_duration: 0,
-            api_duration: 0,
-            tool_duration: 0,
-            iterations: 1,
-            avg_iteration_duration: 0,
-          },
-          tool_call_stats:
-            (d.tool_call_stats as CompletionStats["tool_call_stats"]) ?? {
-              total_tool_calls: 0,
-              iterations_with_tools: 0,
-              by_tool: {},
+          }),
+        );
+      } else if (isInfoEvent(event)) {
+        infoEvents++;
+        dispatch(addInfoEvent({ requestId, info: event.data }));
+        dispatch(
+          appendTimeline({
+            requestId,
+            entry: {
+              kind: "info",
+              seq: 0,
+              timestamp: now,
+              code: event.data.code,
+              userMessage: event.data.user_message ?? null,
+              systemMessage: event.data.system_message,
             },
-          metadata: d.metadata ?? null,
-        };
+          }),
+        );
+      } else if (isRecordReservedEvent(event)) {
+        recordReservedEvents++;
+        const d = event.data;
+        dispatch(
+          upsertReservation({
+            requestId,
+            recordId: d.record_id,
+            dbProject: d.db_project,
+            table: d.table,
+            status: "pending",
+            parentRefs: d.parent_refs,
+            metadata: d.metadata,
+          }),
+        );
 
-        const totalUsage = completionStats.total_usage?.total;
-        if (totalUsage) {
-          tokenUsage = {
-            input: totalUsage.input_tokens,
-            output: totalUsage.output_tokens,
-            total: totalUsage.total_tokens,
-          };
+        if (d.table === "cx_conversation" && !conversationId) {
+          conversationId = d.record_id;
+          dispatch(setConversationId({ requestId, conversationId }));
         }
-        finishReason = completionStats.finish_reason;
 
         dispatch(
-          setCompletion({
+          appendTimeline({
             requestId,
-            data: event.data,
+            entry: {
+              kind: "record_reserved",
+              seq: 0,
+              timestamp: now,
+              table: d.table,
+              recordId: d.record_id,
+              dbProject: d.db_project,
+              parentRefs: d.parent_refs ?? {},
+            },
+          }),
+        );
+      } else if (isRecordUpdateEvent(event)) {
+        recordUpdateEvents++;
+        const d = event.data;
+        dispatch(
+          upsertReservation({
+            requestId,
+            recordId: d.record_id,
+            dbProject: d.db_project,
+            table: d.table,
+            status: d.status,
+            metadata: d.metadata,
           }),
         );
         dispatch(
           appendTimeline({
             requestId,
             entry: {
-              kind: "completion",
+              kind: "record_update",
               seq: 0,
               timestamp: now,
+              table: d.table,
+              recordId: d.record_id,
+              status: d.status,
             },
           }),
         );
@@ -383,9 +536,7 @@ export async function processStream({
               kind: "end",
               seq: 0,
               timestamp: now,
-              reason: (event.data as Record<string, unknown>)?.reason as
-                | string
-                | undefined,
+              reason: event.data.reason,
             },
           }),
         );
@@ -452,6 +603,9 @@ export async function processStream({
   if (isInTextRun) {
     dispatch(closeTextRun({ requestId, timestamp: performance.now() }));
   }
+  if (isInReasoningRun) {
+    dispatch(closeReasoningRun({ requestId, timestamp: performance.now() }));
+  }
 
   const postLoopState = getState();
   const postLoopRequest = postLoopState.activeRequests.byRequestId[requestId];
@@ -467,6 +621,7 @@ export async function processStream({
   const streamEndAt = performance.now();
 
   dispatch(finalizeAccumulatedText({ requestId }));
+  dispatch(finalizeAccumulatedReasoning({ requestId }));
 
   const finalState = getState();
   const completedText =
@@ -516,10 +671,17 @@ export async function processStream({
     totalClientDurationMs,
     totalEvents,
     chunkEvents,
+    reasoningChunkEvents,
+    phaseEvents,
+    initEvents,
+    completionEvents,
     dataEvents,
     toolEvents,
     contentBlockEvents,
-    statusUpdateEvents,
+    warningEvents,
+    infoEvents,
+    recordReservedEvents,
+    recordUpdateEvents,
     otherEvents,
     accumulatedTextBytes,
     totalPayloadBytes,

@@ -12,11 +12,11 @@
  */
 
 // ── Hooks ────────────────────────────────────────────────────────────────────
-export { useConversationSession } from "../../hooks/useConversationSession";
+export { useConversationSession } from "@/features/cx-conversation/hooks/useConversationSession";
 export type {
   ConversationSessionConfig,
   ConversationSessionReturn,
-} from "../../hooks/useConversationSession";
+} from "@/features/cx-conversation/hooks/useConversationSession";
 
 // ── Types only (no component imports) ────────────────────────────────────────
 export type { ConversationShellProps } from "../core/ConversationShell";

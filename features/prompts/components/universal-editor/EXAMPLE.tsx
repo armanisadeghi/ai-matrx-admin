@@ -11,9 +11,45 @@
 
 import React, { useState, useEffect } from 'react';
 import { UniversalPromptEditor, normalizePromptData, UniversalPromptData } from './index';
+import type { UniversalPromptEditorProps } from './types';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import type { Database } from '@/types/database.types';
+import type { DatabaseTool } from '@/utils/supabase/tools-service';
+
+type AiModelRow = Database['public']['Tables']['ai_model']['Row'];
+
+async function fetchActiveAiModels(
+    supabase: ReturnType<typeof createClient>,
+): Promise<AiModelRow[]> {
+    const { data, error } = await supabase
+        .from('ai_model')
+        .select('*')
+        .or('is_deprecated.is.null,is_deprecated.eq.false')
+        .order('name');
+    if (error) throw error;
+    return data ?? [];
+}
+
+async function fetchEditorTools(): Promise<DatabaseTool[]> {
+    try {
+        const res = await fetch('/api/tools');
+        if (!res.ok) return [];
+        const body: unknown = await res.json();
+        if (
+            body &&
+            typeof body === 'object' &&
+            'tools' in body &&
+            Array.isArray((body as { tools: unknown }).tools)
+        ) {
+            return (body as { tools: DatabaseTool[] }).tools;
+        }
+        return [];
+    } catch {
+        return [];
+    }
+}
 
 /**
  * Example 1: Edit a Prompt from the prompts table
@@ -21,8 +57,8 @@ import { Button } from '@/components/ui/button';
 export function ExamplePromptEditor({ promptId }: { promptId: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [promptData, setPromptData] = useState<UniversalPromptData | null>(null);
-    const [models, setModels] = useState<any[]>([]);
-    const [tools, setTools] = useState<any[]>([]);
+    const [models, setModels] = useState<AiModelRow[]>([]);
+    const [tools, setTools] = useState<DatabaseTool[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const supabase = createClient();
 
@@ -32,20 +68,12 @@ export function ExamplePromptEditor({ promptId }: { promptId: string }) {
 
     async function loadData() {
         try {
-            // Load models
-            const { data: modelsData } = await supabase
-                .from('ai_models')
-                .select('*')
-                .eq('is_enabled', true)
-                .order('sort_order');
-            setModels(modelsData || []);
-
-            // Load tools
-            const { data: toolsData } = await supabase
-                .from('ai_tools')
-                .select('*')
-                .eq('is_active', true);
-            setTools(toolsData || []);
+            const [modelsData, toolsData] = await Promise.all([
+                fetchActiveAiModels(supabase),
+                fetchEditorTools(),
+            ]);
+            setModels(modelsData);
+            setTools(toolsData);
 
             // Load prompt
             const { data: promptRecord } = await supabase
@@ -119,7 +147,7 @@ export function ExamplePromptEditor({ promptId }: { promptId: string }) {
 export function ExampleTemplateEditor({ templateId }: { templateId: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [templateData, setTemplateData] = useState<UniversalPromptData | null>(null);
-    const [models, setModels] = useState<any[]>([]);
+    const [models, setModels] = useState<AiModelRow[]>([]);
     const supabase = createClient();
 
     useEffect(() => {
@@ -128,12 +156,8 @@ export function ExampleTemplateEditor({ templateId }: { templateId: string }) {
 
     async function loadData() {
         try {
-            // Load models
-            const { data: modelsData } = await supabase
-                .from('ai_models')
-                .select('*')
-                .eq('is_enabled', true);
-            setModels(modelsData || []);
+            const modelsData = await fetchActiveAiModels(supabase);
+            setModels(modelsData);
 
             // Load template
             const { data: templateRecord } = await supabase
@@ -201,8 +225,8 @@ export function ExampleTemplateEditor({ templateId }: { templateId: string }) {
 export function ExampleBuiltinEditor({ builtinId }: { builtinId: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [builtinData, setBuiltinData] = useState<UniversalPromptData | null>(null);
-    const [models, setModels] = useState<any[]>([]);
-    const [tools, setTools] = useState<any[]>([]);
+    const [models, setModels] = useState<AiModelRow[]>([]);
+    const [tools, setTools] = useState<DatabaseTool[]>([]);
     const supabase = createClient();
 
     useEffect(() => {
@@ -211,19 +235,12 @@ export function ExampleBuiltinEditor({ builtinId }: { builtinId: string }) {
 
     async function loadData() {
         try {
-            // Load models
-            const { data: modelsData } = await supabase
-                .from('ai_models')
-                .select('*')
-                .eq('is_enabled', true);
-            setModels(modelsData || []);
-
-            // Load tools
-            const { data: toolsData } = await supabase
-                .from('ai_tools')
-                .select('*')
-                .eq('is_active', true);
-            setTools(toolsData || []);
+            const [modelsData, toolsData] = await Promise.all([
+                fetchActiveAiModels(supabase),
+                fetchEditorTools(),
+            ]);
+            setModels(modelsData);
+            setTools(toolsData);
 
             // Load builtin
             const { data: builtinRecord } = await supabase
@@ -291,7 +308,7 @@ export function ExampleBuiltinEditor({ builtinId }: { builtinId: string }) {
  */
 export function ExampleCreatePrompt() {
     const [isOpen, setIsOpen] = useState(false);
-    const [models, setModels] = useState<any[]>([]);
+    const [models, setModels] = useState<AiModelRow[]>([]);
     const supabase = createClient();
 
     useEffect(() => {
@@ -299,11 +316,8 @@ export function ExampleCreatePrompt() {
     }, []);
 
     async function loadModels() {
-        const { data } = await supabase
-            .from('ai_models')
-            .select('*')
-            .eq('is_enabled', true);
-        setModels(data || []);
+        const rows = await fetchActiveAiModels(supabase);
+        setModels(rows);
     }
 
     // Create a blank prompt template
@@ -369,11 +383,13 @@ export function ExampleCreatePrompt() {
 export function ExampleAdvancedEditor({ promptId }: { promptId: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [promptData, setPromptData] = useState<UniversalPromptData | null>(null);
-    const [models, setModels] = useState<any[]>([]);
+    const [models] = useState<AiModelRow[]>([]);
     const supabase = createClient();
 
     // Open directly to the variables tab
-    const [initialSelection] = useState<any>({ type: 'variables' });
+    const [initialSelection] = useState<NonNullable<UniversalPromptEditorProps['initialSelection']>>({
+        type: 'variables',
+    });
 
     async function handleSave(updated: UniversalPromptData) {
         // Validation example

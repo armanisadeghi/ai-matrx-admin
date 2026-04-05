@@ -37,6 +37,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/utils/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
+import type { Json } from "@/types/database.types";
 import type { PromptApp, VariableSchemaItem } from "../types";
 import { requireUserId } from "@/utils/auth/getUserId";
 
@@ -115,11 +116,21 @@ function compareVariables(
   return { added, removed, changed };
 }
 
-function schemaToPromptVars(schema: VariableSchemaItem[]): PromptVariable[] {
-  return (schema || []).map((item) => ({
-    name: item.name,
-    defaultValue: item.default != null ? String(item.default) : "",
-  }));
+function schemaToPromptVars(
+  schema: VariableSchemaItem[] | Json | null | undefined,
+): PromptVariable[] {
+  if (!Array.isArray(schema)) return [];
+  const out: PromptVariable[] = [];
+  for (const item of schema) {
+    if (!item || typeof item !== "object" || !("name" in item)) continue;
+    const s = item as VariableSchemaItem;
+    if (typeof s.name !== "string") continue;
+    out.push({
+      name: s.name,
+      defaultValue: s.default != null ? String(s.default) : "",
+    });
+  }
+  return out;
 }
 
 export function UpdatePromptAppModal({

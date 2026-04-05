@@ -7,18 +7,21 @@ import type {
   UpdateAiTaskInput,
   CompleteAiTaskInput,
 } from "@/features/ai-runs/types";
+import { mapAiTaskRow } from "@/features/ai-runs/utils/db-row-mappers";
 
 /**
  * AI Tasks Server Actions
- * 
+ *
  * Server-side operations for ai_tasks table.
  * These actions run on the server and respect RLS policies.
  */
 
 export async function createAiTask(input: CreateAiTaskInput): Promise<AiTask> {
   const supabase = await createClient();
-  
-  const { data: { user } } = await supabase.auth.getUser();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) throw new Error("User not authenticated");
 
   const { data, error } = await supabase
@@ -40,7 +43,7 @@ export async function createAiTask(input: CreateAiTaskInput): Promise<AiTask> {
     .single();
 
   if (error) throw error;
-  return data;
+  return mapAiTaskRow(data);
 }
 
 export async function getAiTask(id: string): Promise<AiTask | null> {
@@ -57,10 +60,12 @@ export async function getAiTask(id: string): Promise<AiTask | null> {
     throw error;
   }
 
-  return data;
+  return mapAiTaskRow(data);
 }
 
-export async function getAiTaskByTaskId(taskId: string): Promise<AiTask | null> {
+export async function getAiTaskByTaskId(
+  taskId: string,
+): Promise<AiTask | null> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -74,7 +79,7 @@ export async function getAiTaskByTaskId(taskId: string): Promise<AiTask | null> 
     throw error;
   }
 
-  return data;
+  return mapAiTaskRow(data);
 }
 
 export async function listAiTasksForRun(runId: string): Promise<AiTask[]> {
@@ -87,10 +92,13 @@ export async function listAiTasksForRun(runId: string): Promise<AiTask[]> {
     .order("created_at", { ascending: true });
 
   if (error) throw error;
-  return data || [];
+  return (data || []).map(mapAiTaskRow);
 }
 
-export async function updateAiTask(taskId: string, input: UpdateAiTaskInput): Promise<AiTask> {
+export async function updateAiTask(
+  taskId: string,
+  input: UpdateAiTaskInput,
+): Promise<AiTask> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -101,10 +109,13 @@ export async function updateAiTask(taskId: string, input: UpdateAiTaskInput): Pr
     .single();
 
   if (error) throw error;
-  return data;
+  return mapAiTaskRow(data);
 }
 
-export async function completeAiTask(taskId: string, input: CompleteAiTaskInput): Promise<AiTask> {
+export async function completeAiTask(
+  taskId: string,
+  input: CompleteAiTaskInput,
+): Promise<AiTask> {
   const supabase = await createClient();
 
   const updateData: UpdateAiTaskInput = {
@@ -129,10 +140,13 @@ export async function completeAiTask(taskId: string, input: CompleteAiTaskInput)
     .single();
 
   if (error) throw error;
-  return data;
+  return mapAiTaskRow(data);
 }
 
-export async function failAiTask(taskId: string, errorData?: Record<string, any>): Promise<AiTask> {
+export async function failAiTask(
+  taskId: string,
+  errorData?: Record<string, any>,
+): Promise<AiTask> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -147,7 +161,7 @@ export async function failAiTask(taskId: string, errorData?: Record<string, any>
     .single();
 
   if (error) throw error;
-  return data;
+  return mapAiTaskRow(data);
 }
 
 export async function cancelAiTask(taskId: string): Promise<AiTask> {
@@ -164,6 +178,5 @@ export async function cancelAiTask(taskId: string): Promise<AiTask> {
     .single();
 
   if (error) throw error;
-  return data;
+  return mapAiTaskRow(data);
 }
-

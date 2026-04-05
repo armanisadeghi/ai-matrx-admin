@@ -59,7 +59,7 @@ interface StreamAnalyzerProps {
 function CategoryIcon({ category, className }: { category: EventCategory; className?: string }) {
   const cn = className ?? 'h-3.5 w-3.5';
   switch (category) {
-    case 'status_update': return <Radio className={cn} />;
+    case 'phase': return <Radio className={cn} />;
     case 'chunk': return <MessageSquareText className={cn} />;
     case 'tool_event': return <Wrench className={cn} />;
     case 'completion': return <BarChart3 className={cn} />;
@@ -75,7 +75,7 @@ function CategoryIcon({ category, className }: { category: EventCategory; classN
 // ─── Category ordering (controls tab display order) ──────────────────────────
 
 const CATEGORY_ORDER: EventCategory[] = [
-  'status_update',
+  'phase',
   'chunk',
   'tool_event',
   'completion',
@@ -412,7 +412,7 @@ function CategoryView({ category, events }: { category: EventCategory; events: T
       return <ChunkCategoryView events={events} />;
     case 'tool_event':
       return <ToolUpdateCategoryView events={events} />;
-    case 'status_update':
+    case 'phase':
       return <StatusUpdateCategoryView events={events} />;
     case 'data':
       return <DataCategoryView events={events} />;
@@ -627,8 +627,8 @@ function StatusUpdateCategoryView({ events }: { events: TimestampedEvent[] }) {
             <span className="flex-shrink-0 w-16 text-right tabular-nums text-muted-foreground">
               {formatDuration(evt.offsetMs)}
             </span>
-            <Badge variant="outline" className={`text-[10px] px-1.5 ${categoryColor('status_update')}`}>
-              {(data.status as string) ?? '?'}
+            <Badge variant="outline" className={`text-[10px] px-1.5 ${categoryColor('phase')}`}>
+              {(data.phase as string) ?? '?'}
             </Badge>
             <span className="text-muted-foreground">{data.system_message as string}</span>
             {(data.user_message) && (
@@ -1060,9 +1060,9 @@ function eventPreview(evt: TimestampedEvent): string {
       return clean.length > 80 ? clean.slice(0, 80) + '...' : clean || '(empty chunk)';
     }
 
-    case 'status_update': {
+    case 'phase': {
       const d = data as Record<string, unknown>;
-      return `[${d.status}] ${d.system_message ?? d.user_message ?? ''}`;
+      return `[${d.phase ?? '?'}]`;
     }
 
     case 'tool_event': {

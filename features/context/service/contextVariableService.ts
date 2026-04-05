@@ -1,30 +1,13 @@
-'use client';
+"use client";
 
-import { supabase } from '@/utils/supabase/client';
-import type { ContextScopeLevel } from '../types';
+import { supabase } from "@/utils/supabase/client";
+import type { ContextScopeLevel } from "../types";
+import type { Database } from "@/types/database.types";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
-export type ContextVariable = {
-  id: string;
-  user_id: string | null;
-  organization_id: string | null;
-  workspace_id: string | null;
-  project_id: string | null;
-  task_id: string | null;
-  key: string;
-  value: unknown;
-  value_type: string;
-  inject_as: string;
-  description: string | null;
-  is_system: boolean | null;
-  is_secret: boolean | null;
-  is_active: boolean | null;
-  tags: string[] | null;
-  created_at: string;
-  updated_at: string;
-  created_by: string | null;
-};
+export type ContextVariable =
+  Database["public"]["Tables"]["context_variables"]["Row"];
 
 export type ResolvedVariable = {
   value: unknown;
@@ -59,24 +42,37 @@ export type ContextVariableFormData = {
 
 // ─── Service ────────────────────────────────────────────────────────
 
-function scopeColumn(scopeType: ContextScopeLevel): string {
-  return scopeType === 'user' ? 'user_id'
-    : scopeType === 'organization' ? 'organization_id'
-    : scopeType === 'workspace' ? 'workspace_id'
-    : scopeType === 'project' ? 'project_id'
-    : 'task_id';
+type ScopeColumn =
+  | "user_id"
+  | "organization_id"
+  | "workspace_id"
+  | "project_id"
+  | "task_id";
+
+function scopeColumn(scopeType: ContextScopeLevel): ScopeColumn {
+  return scopeType === "user"
+    ? "user_id"
+    : scopeType === "organization"
+      ? "organization_id"
+      : scopeType === "workspace"
+        ? "workspace_id"
+        : scopeType === "project"
+          ? "project_id"
+          : "task_id";
 }
 
 export const contextVariableService = {
-
   // ─── Fetch variables defined at exactly this scope ────────────────
-  async fetchScopeVariables(scopeType: ContextScopeLevel, scopeId: string): Promise<ContextVariable[]> {
+  async fetchScopeVariables(
+    scopeType: ContextScopeLevel,
+    scopeId: string,
+  ): Promise<ContextVariable[]> {
     const col = scopeColumn(scopeType);
     const { data, error } = await supabase
-      .from('context_variables')
-      .select('*')
+      .from("context_variables")
+      .select("*")
       .eq(col, scopeId)
-      .order('key');
+      .order("key");
     if (error) throw error;
     return (data ?? []) as ContextVariable[];
   },
@@ -90,7 +86,7 @@ export const contextVariableService = {
     taskId?: string | null;
     injectAs?: string | null;
   }): Promise<ResolvedContext> {
-    const { data, error } = await supabase.rpc('resolve_context_variables', {
+    const { data, error } = await supabase.rpc("resolve_context_variables", {
       p_user_id: opts.userId,
       p_organization_id: opts.organizationId ?? null,
       p_workspace_id: opts.workspaceId ?? null,
@@ -104,10 +100,14 @@ export const contextVariableService = {
   },
 
   // ─── Create a variable at a scope ─────────────────────────────────
-  async createVariable(scopeType: ContextScopeLevel, scopeId: string, formData: ContextVariableFormData): Promise<ContextVariable> {
+  async createVariable(
+    scopeType: ContextScopeLevel,
+    scopeId: string,
+    formData: ContextVariableFormData,
+  ): Promise<ContextVariable> {
     const col = scopeColumn(scopeType);
     const { data, error } = await supabase
-      .from('context_variables')
+      .from("context_variables")
       .insert({
         [col]: scopeId,
         key: formData.key,
@@ -126,11 +126,14 @@ export const contextVariableService = {
   },
 
   // ─── Update a variable ────────────────────────────────────────────
-  async updateVariable(id: string, updates: Partial<ContextVariableFormData>): Promise<ContextVariable> {
+  async updateVariable(
+    id: string,
+    updates: Partial<ContextVariableFormData>,
+  ): Promise<ContextVariable> {
     const { data, error } = await supabase
-      .from('context_variables')
+      .from("context_variables")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
     if (error) throw error;
@@ -140,9 +143,9 @@ export const contextVariableService = {
   // ─── Delete a variable ────────────────────────────────────────────
   async deleteVariable(id: string): Promise<void> {
     const { error } = await supabase
-      .from('context_variables')
+      .from("context_variables")
       .delete()
-      .eq('id', id);
+      .eq("id", id);
     if (error) throw error;
   },
 };

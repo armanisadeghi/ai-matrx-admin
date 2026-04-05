@@ -39,8 +39,20 @@ function getEventIcon(eventType: string) {
       return <CheckCircle className="h-3 w-3 text-success" />;
     case 'tool_error':
       return <XCircle className="h-3 w-3 text-destructive" />;
-    case 'status_update':
+    case 'phase':
       return <Wifi className="h-3 w-3 text-muted-foreground" />;
+    case 'reasoning_chunk':
+      return <Loader2 className="h-3 w-3 text-info" />;
+    case 'warning':
+      return <AlertTriangle className="h-3 w-3 text-warning" />;
+    case 'info':
+      return <ArrowRight className="h-3 w-3 text-info" />;
+    case 'init':
+      return <Play className="h-3 w-3 text-primary" />;
+    case 'record_reserved':
+      return <ArrowRight className="h-3 w-3 text-muted-foreground" />;
+    case 'record_update':
+      return <ArrowRight className="h-3 w-3 text-muted-foreground" />;
     case 'error':
       return <AlertTriangle className="h-3 w-3 text-destructive" />;
     default:

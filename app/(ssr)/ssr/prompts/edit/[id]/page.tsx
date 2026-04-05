@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
+import type React from "react";
 import { Card } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -69,7 +70,7 @@ export default async function EditPromptPage({
 
   // Transform access data
   let accessInfo: PromptAccessInfo | undefined;
-  if (accessData && Array.isArray(accessData) && accessData.length > 0) {
+  if (accessData && accessData.length > 0) {
     const access = accessData[0];
     accessInfo = {
       isOwner: access.is_owner,
@@ -78,16 +79,6 @@ export default async function EditPromptPage({
       ownerEmail: access.owner_email,
       canEdit: access.can_edit,
       canDelete: access.can_delete,
-    };
-  } else if (accessData && !Array.isArray(accessData)) {
-    // Single row returned directly
-    accessInfo = {
-      isOwner: accessData.is_owner,
-      permissionLevel:
-        accessData.permission_level as PromptAccessInfo["permissionLevel"],
-      ownerEmail: accessData.owner_email,
-      canEdit: accessData.can_edit,
-      canDelete: accessData.can_delete,
     };
   }
 

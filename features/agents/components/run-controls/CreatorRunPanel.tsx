@@ -15,13 +15,11 @@ import { useState, useCallback, useRef } from "react";
 import {
   Clock,
   Zap,
-  DollarSign,
   ChevronDown,
   ChevronUp,
   CheckCircle,
   AlertCircle,
   Cpu,
-  Wrench,
   BarChart2,
   Radio,
   Database,
@@ -81,22 +79,10 @@ type TabId =
 // Helpers
 // =============================================================================
 
-function fmtDuration(seconds: number): string {
-  if (seconds < 1) return `${Math.round(seconds * 1000)}ms`;
-  return `${seconds.toFixed(1)}s`;
-}
-
 function fmtTokens(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
   return String(n);
-}
-
-function fmtCost(cost: number): string {
-  if (cost === 0) return "$0.00";
-  if (cost < 0.001) return `$${cost.toFixed(6)}`;
-  if (cost < 0.01) return `$${cost.toFixed(4)}`;
-  return `$${cost.toFixed(4)}`;
 }
 
 function fmtMs(ms: number | null | undefined): string {
@@ -346,52 +332,37 @@ function LastRequestPanel({ stats }: { stats: CompletionStats | undefined }) {
     );
   }
 
-  const total = stats.total_usage?.total;
-  const byModel = stats.total_usage?.by_model ?? {};
+  const totals = stats.total_usage?.total;
   const timing = stats.timing_stats;
   const tools = stats.tool_call_stats;
+  const tokensIn = totals?.input_tokens ?? 0;
+  const tokensOut = totals?.output_tokens ?? 0;
+  const totalTokens = totals?.total_tokens ?? tokensIn + tokensOut;
 
   return (
     <div className="divide-y divide-border">
       <div className="flex items-center gap-4 px-3 py-2 bg-muted/10 text-xs flex-wrap">
-        {timing && (
+        {timing?.total_duration != null && (
           <span className="flex items-center gap-1 text-foreground">
             <Clock className="w-3 h-3 text-muted-foreground" />
             <span className="font-mono font-semibold">
-              {fmtDuration(timing.total_duration)}
+              {fmtMs(timing.total_duration * 1000)}
             </span>
             <span className="text-muted-foreground">total</span>
           </span>
         )}
-        {total && (
-          <>
-            <span className="flex items-center gap-1 text-foreground">
-              <Zap className="w-3 h-3 text-muted-foreground" />
-              <span className="font-mono font-semibold">
-                {fmtTokens(total.total_tokens)}
-              </span>
-              <span className="text-muted-foreground">
-                tokens ({fmtTokens(total.input_tokens)} in /{" "}
-                {fmtTokens(total.output_tokens)} out
-                {total.cached_input_tokens > 0
-                  ? ` / ${fmtTokens(total.cached_input_tokens)} cached`
-                  : ""}
-                )
-              </span>
-            </span>
-            {total.total_cost > 0 && (
-              <span className="flex items-center gap-1 text-foreground">
-                <DollarSign className="w-3 h-3 text-muted-foreground" />
-                <span className="font-mono font-semibold">
-                  {fmtCost(total.total_cost)}
-                </span>
-              </span>
-            )}
-          </>
-        )}
+        <span className="flex items-center gap-1 text-foreground">
+          <Zap className="w-3 h-3 text-muted-foreground" />
+          <span className="font-mono font-semibold">
+            {fmtTokens(totalTokens)}
+          </span>
+          <span className="text-muted-foreground">
+            tokens ({fmtTokens(tokensIn)} in / {fmtTokens(tokensOut)} out)
+          </span>
+        </span>
         <span className="ml-auto flex items-center gap-2">
           <FinishBadge reason={stats.finish_reason} />
-          {stats.iterations > 1 && (
+          {(stats.iterations ?? 0) > 1 && (
             <span className="text-muted-foreground">
               {stats.iterations} iter
             </span>
@@ -399,111 +370,57 @@ function LastRequestPanel({ stats }: { stats: CompletionStats | undefined }) {
         </span>
       </div>
 
-      {timing && (
-        <TableSection icon={<Clock className="w-3 h-3" />} title="Timing">
-          <tbody>
-            {[
-              {
-                label: "Total duration",
-                value: fmtDuration(timing.total_duration),
-              },
-              {
-                label: "API duration",
-                value: fmtDuration(timing.api_duration),
-              },
-              {
-                label: "Tool duration",
-                value: fmtDuration(timing.tool_duration),
-              },
-            ].map(({ label, value }, i) => (
-              <TR key={label} idx={i} label={label} value={value} mono />
-            ))}
-          </tbody>
-        </TableSection>
-      )}
-
-      {Object.keys(byModel).length > 0 && (
-        <div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/30 border-b border-border">
-            <Cpu className="w-3 h-3 text-muted-foreground" />
-            <span className="text-xs font-semibold text-foreground/80 uppercase tracking-wide">
-              Models
-            </span>
-          </div>
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="bg-muted/40">
-                <th className="px-3 py-1 text-left font-medium text-muted-foreground">
-                  Model
-                </th>
-                <th className="px-3 py-1 text-left font-medium text-muted-foreground">
-                  API
-                </th>
-                <th className="px-3 py-1 text-right font-medium text-muted-foreground">
-                  Tokens
-                </th>
-                <th className="px-3 py-1 text-right font-medium text-muted-foreground">
-                  Cost
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(byModel).map(([modelName, usage], i) => (
-                <tr
-                  key={modelName}
-                  className={i % 2 === 0 ? "bg-muted/20" : ""}
-                >
-                  <td className="px-3 py-1 font-mono text-foreground/80 truncate max-w-[160px]">
-                    {modelName}
-                  </td>
-                  <td className="px-3 py-1 text-muted-foreground">
-                    {usage.api}
-                  </td>
-                  <td className="px-3 py-1 text-right font-mono tabular-nums">
-                    {fmtTokens(usage.total_tokens)}
-                  </td>
-                  <td className="px-3 py-1 text-right font-mono tabular-nums text-muted-foreground">
-                    {usage.cost > 0 ? fmtCost(usage.cost) : "—"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {tools && tools.total_tool_calls > 0 && (
-        <TableSection icon={<Wrench className="w-3 h-3" />} title="Tool Calls">
-          <tbody>
-            <TR
-              idx={0}
-              label="Total calls"
-              value={tools.total_tool_calls}
-              mono
-            />
-            <TR
-              idx={1}
-              label="Iterations with tools"
-              value={tools.iterations_with_tools}
-              mono
-            />
-            {Object.entries(tools.by_tool).map(([name, info], i) => (
-              <TR
-                key={name}
-                idx={i + 2}
-                label={name}
-                value={
-                  typeof info === "object" && info !== null
-                    ? JSON.stringify(info)
-                    : String(info)
-                }
-                mono
-                dim
-              />
-            ))}
-          </tbody>
-        </TableSection>
-      )}
+      <TableSection icon={<Clock className="w-3 h-3" />} title="Summary">
+        <tbody>
+          {[
+            {
+              label: "Total duration",
+              value:
+                timing?.total_duration != null
+                  ? fmtMs(timing.total_duration * 1000)
+                  : "—",
+            },
+            {
+              label: "API duration",
+              value:
+                timing?.api_duration != null
+                  ? fmtMs(timing.api_duration * 1000)
+                  : "—",
+            },
+            {
+              label: "Tool duration",
+              value:
+                timing?.tool_duration != null
+                  ? fmtMs(timing.tool_duration * 1000)
+                  : "—",
+            },
+            { label: "Tokens in", value: fmtTokens(tokensIn) },
+            { label: "Tokens out", value: fmtTokens(tokensOut) },
+            { label: "Total tokens", value: fmtTokens(totalTokens) },
+            {
+              label: "Cost",
+              value:
+                totals?.total_cost != null
+                  ? `$${totals.total_cost.toFixed(5)}`
+                  : "—",
+            },
+            {
+              label: "Iterations",
+              value: String(stats.iterations ?? 1),
+            },
+            {
+              label: "Tool calls",
+              value: String(tools?.total_tool_calls ?? 0),
+            },
+            {
+              label: "Finish reason",
+              value: stats.finish_reason ?? "—",
+            },
+          ].map(({ label, value }, i) => (
+            <TR key={label} idx={i} label={label} value={value} mono />
+          ))}
+        </tbody>
+      </TableSection>
     </div>
   );
 }
@@ -542,21 +459,22 @@ function SessionPanel({ instanceId }: { instanceId: string }) {
           </span>
           <span className="text-muted-foreground">tokens</span>
         </span>
-        {aggregate.totalCost > 0 && (
-          <span className="flex items-center gap-1">
-            <DollarSign className="w-3 h-3 text-muted-foreground" />
-            <span className="font-mono font-semibold text-foreground">
-              {fmtCost(aggregate.totalCost)}
-            </span>
-          </span>
-        )}
         <span className="flex items-center gap-1">
           <Clock className="w-3 h-3 text-muted-foreground" />
           <span className="font-mono font-semibold text-foreground">
-            {fmtDuration(aggregate.totalDuration)}
+            {fmtMs(aggregate.totalDurationMs)}
           </span>
           <span className="text-muted-foreground">total time</span>
         </span>
+        {aggregate.totalIterations > 0 && (
+          <span className="flex items-center gap-1">
+            <Cpu className="w-3 h-3 text-muted-foreground" />
+            <span className="font-mono font-semibold text-foreground">
+              {aggregate.totalIterations}
+            </span>
+            <span className="text-muted-foreground">iterations</span>
+          </span>
+        )}
       </div>
 
       {assistantTurns.length > 0 && (
@@ -583,7 +501,7 @@ function SessionPanel({ instanceId }: { instanceId: string }) {
                   In / Out
                 </th>
                 <th className="px-3 py-1 text-right font-medium text-muted-foreground">
-                  Cost
+                  Iterations
                 </th>
                 <th className="px-3 py-1 text-center font-medium text-muted-foreground">
                   Result
@@ -594,6 +512,9 @@ function SessionPanel({ instanceId }: { instanceId: string }) {
               {assistantTurns.map((turn, idx) => {
                 const s = turn.completionStats;
                 const t = s?.total_usage?.total;
+                const tokensTotal =
+                  t?.total_tokens ??
+                  (t?.input_tokens ?? 0) + (t?.output_tokens ?? 0);
                 return (
                   <tr
                     key={turn.turnId}
@@ -603,20 +524,20 @@ function SessionPanel({ instanceId }: { instanceId: string }) {
                       {idx + 1}
                     </td>
                     <td className="px-3 py-1 text-right font-mono tabular-nums">
-                      {s
-                        ? fmtDuration(s.timing_stats?.total_duration ?? 0)
+                      {s?.timing_stats?.total_duration != null
+                        ? fmtMs(s.timing_stats.total_duration * 1000)
                         : "—"}
                     </td>
                     <td className="px-3 py-1 text-right font-mono tabular-nums">
-                      {t ? fmtTokens(t.total_tokens) : "—"}
+                      {t ? fmtTokens(tokensTotal) : "—"}
                     </td>
                     <td className="px-3 py-1 text-right font-mono tabular-nums text-muted-foreground text-[11px]">
                       {t
-                        ? `${fmtTokens(t.input_tokens)} / ${fmtTokens(t.output_tokens)}`
+                        ? `${fmtTokens(t.input_tokens ?? 0)} / ${fmtTokens(t.output_tokens ?? 0)}`
                         : "—"}
                     </td>
                     <td className="px-3 py-1 text-right font-mono tabular-nums text-muted-foreground">
-                      {t && t.total_cost > 0 ? fmtCost(t.total_cost) : "—"}
+                      {s ? `${s.iterations ?? 1} iter` : "—"}
                     </td>
                     <td className="px-3 py-1 text-center">
                       {s ? (
@@ -732,7 +653,7 @@ function ClientPanel({
         { label: "Data events", value: String(metrics.dataEvents) },
         { label: "Tool events", value: String(metrics.toolEvents) },
         { label: "Block events", value: String(metrics.contentBlockEvents) },
-        { label: "Status events", value: String(metrics.statusUpdateEvents) },
+        { label: "Phase events", value: String(metrics.phaseEvents) },
         { label: "Other events", value: String(metrics.otherEvents) },
       ]
     : [];
@@ -740,8 +661,8 @@ function ClientPanel({
   const timelineRows = timelineTiming
     ? [
         {
-          label: "Time to first status",
-          value: fmtMs(timelineTiming.timeToFirstStatusMs),
+          label: "Time to first phase",
+          value: fmtMs(timelineTiming.timeToFirstPhaseMs),
         },
         {
           label: "Time to first text",
@@ -861,15 +782,18 @@ function CollapsedStatsPills({
   stats: CompletionStats;
   clientMetrics: ClientMetrics | undefined;
 }) {
-  const total = stats.total_usage?.total;
+  const totals = stats.total_usage?.total;
   const timing = stats.timing_stats;
+  const totalTokens =
+    totals?.total_tokens ??
+    (totals?.input_tokens ?? 0) + (totals?.output_tokens ?? 0);
 
   return (
     <>
-      {timing && (
+      {timing?.total_duration != null && (
         <span className="flex items-center gap-1">
           <Clock className="w-3 h-3" />
-          {fmtDuration(timing.total_duration)}
+          {fmtMs(timing.total_duration * 1000)}
         </span>
       )}
       {clientMetrics?.ttftMs != null && (
@@ -881,16 +805,10 @@ function CollapsedStatsPills({
           {fmtMs(clientMetrics.ttftMs)} ttft
         </span>
       )}
-      {total && (
+      {totalTokens > 0 && (
         <span className="flex items-center gap-1">
           <Zap className="w-3 h-3" />
-          {fmtTokens(total.total_tokens)} tok
-        </span>
-      )}
-      {total && total.total_cost > 0 && (
-        <span className="flex items-center gap-1">
-          <DollarSign className="w-3 h-3" />
-          {fmtCost(total.total_cost)}
+          {fmtTokens(totalTokens)} tok
         </span>
       )}
       <FinishBadge reason={stats.finish_reason} />
@@ -1002,7 +920,7 @@ export function CreatorRunPanel({
         <WindowPanel
           id={streamDebugId}
           title="Stream Debug"
-          initialRect={{ width: 680, height: 520 }}
+          initialRect={{ width: 680, height: 720 }}
           onClose={() => setStreamDebugWindowOpen(false)}
         >
           <StreamDebugPanel instanceId={instanceId} />

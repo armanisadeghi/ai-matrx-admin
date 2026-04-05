@@ -1,27 +1,30 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Bug, ChevronRight, X } from 'lucide-react';
-import { SystemPromptDebugModal } from './SystemPromptDebugModal';
-import type { DebugData } from './SystemPromptDebugModal';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import React, { useState, useRef, useEffect } from "react";
+import { Bug, ChevronRight, X } from "lucide-react";
+import { SystemPromptDebugModal } from "./SystemPromptDebugModal";
+import type { DebugData } from "./SystemPromptDebugModal";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 interface DebugIndicatorProps {
   debugData: DebugData | null;
   onClose: () => void;
 }
 
-type IndicatorSize = 'small' | 'large';
+type IndicatorSize = "small" | "large";
 
 interface Position {
   x: number;
   y: number;
 }
 
-export const DebugIndicator: React.FC<DebugIndicatorProps> = ({ debugData, onClose }) => {
-  const [size, setSize] = useState<IndicatorSize>('small');
+export const DebugIndicator: React.FC<DebugIndicatorProps> = ({
+  debugData,
+  onClose,
+}) => {
+  const [size, setSize] = useState<IndicatorSize>("small");
   const [position, setPosition] = useState<Position>({ x: 50, y: 45 }); // Below admin indicator
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
@@ -31,7 +34,7 @@ export const DebugIndicator: React.FC<DebugIndicatorProps> = ({ debugData, onClo
   const handleMouseDown = (e: React.MouseEvent) => {
     // Don't drag if clicking on buttons or interactive elements
     const target = e.target as HTMLElement;
-    if (target.tagName === 'BUTTON' || target.closest('button')) {
+    if (target.tagName === "BUTTON" || target.closest("button")) {
       return;
     }
 
@@ -61,44 +64,44 @@ export const DebugIndicator: React.FC<DebugIndicatorProps> = ({ debugData, onClo
 
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
     } else {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     }
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isDragging]);
 
   // Small indicator
-  if (size === 'small') {
+  if (size === "small") {
     return (
       <div
         ref={indicatorRef}
         style={{
-          position: 'fixed',
+          position: "fixed",
           left: `${position.x}px`,
           top: `${position.y}px`,
           zIndex: 9999,
-          userSelect: 'none',
-          cursor: isDragging ? 'grabbing' : 'move',
-          transition: isDragging ? 'none' : 'all 0.2s ease',
-          filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25))',
+          userSelect: "none",
+          cursor: isDragging ? "grabbing" : "move",
+          transition: isDragging ? "none" : "all 0.2s ease",
+          filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25))",
         }}
         onMouseDown={handleMouseDown}
       >
         <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-amber-600 text-white shadow-lg">
           <Bug size={14} />
           <span className="text-xs font-semibold">DEBUG</span>
-          
+
           {/* Expand button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setSize('large');
+              setSize("large");
             }}
             className="p-0 rounded hover:bg-amber-700"
             title="Expand debug info"
@@ -127,12 +130,12 @@ export const DebugIndicator: React.FC<DebugIndicatorProps> = ({ debugData, onClo
     <div
       ref={indicatorRef}
       style={{
-        position: 'fixed',
+        position: "fixed",
         left: `${position.x}px`,
         top: `${position.y}px`,
         zIndex: 9999,
-        userSelect: 'none',
-        transition: isDragging ? 'none' : 'all 0.2s ease',
+        userSelect: "none",
+        transition: isDragging ? "none" : "all 0.2s ease",
       }}
     >
       <Card className="w-[600px] max-h-[80vh] shadow-2xl">
@@ -144,12 +147,12 @@ export const DebugIndicator: React.FC<DebugIndicatorProps> = ({ debugData, onClo
           <div className="flex items-center gap-2">
             <Bug className="h-5 w-5 text-amber-600" />
             <h3 className="font-semibold">
-              Debug: {debugData?.promptName || 'Unknown'}
+              Debug: {debugData?.promptName || "Unknown"}
             </h3>
           </div>
           <div className="flex items-center gap-1">
             <button
-              onClick={() => setSize('small')}
+              onClick={() => setSize("small")}
               className="p-1 rounded hover:bg-muted"
               title="Minimize"
             >
@@ -175,7 +178,9 @@ export const DebugIndicator: React.FC<DebugIndicatorProps> = ({ debugData, onClo
                   <div>
                     <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
                       Selected Text
-                      <Badge variant="secondary">{debugData.selectedText.length} chars</Badge>
+                      <Badge variant="secondary">
+                        {debugData.selectedText.length} chars
+                      </Badge>
                     </h4>
                     <div className="bg-muted p-3 rounded-lg text-sm font-mono whitespace-pre-wrap max-h-24 overflow-y-auto">
                       {debugData.selectedText}
@@ -185,7 +190,9 @@ export const DebugIndicator: React.FC<DebugIndicatorProps> = ({ debugData, onClo
 
                 {/* Available Context */}
                 <div>
-                  <h4 className="text-sm font-semibold mb-2">Available Context</h4>
+                  <h4 className="text-sm font-semibold mb-2">
+                    Available Context
+                  </h4>
                   <div className="bg-muted p-3 rounded-lg">
                     <pre className="text-xs font-mono overflow-x-auto">
                       {JSON.stringify(debugData.availableContext, null, 2)}
@@ -197,26 +204,37 @@ export const DebugIndicator: React.FC<DebugIndicatorProps> = ({ debugData, onClo
                 <div>
                   <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
                     Resolved Variables
-                    <Badge>{Object.keys(debugData.resolvedVariables).length} variables</Badge>
+                    <Badge>
+                      {Object.keys(debugData.resolvedVariables).length}{" "}
+                      variables
+                    </Badge>
                   </h4>
                   <div className="space-y-2">
-                    {Object.entries(debugData.resolvedVariables).map(([key, value]) => (
-                      <div key={key} className="border rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-1">
-                          <code className="text-sm font-semibold text-primary">
-                            {'{{' + key + '}}'}
-                          </code>
-                          <Badge variant="outline" className="text-xs">
-                            {typeof value === 'string' ? `${value.length} chars` : typeof value}
-                          </Badge>
+                    {Object.entries(debugData.resolvedVariables).map(
+                      ([key, value]) => (
+                        <div key={key} className="border rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <code className="text-sm font-semibold text-primary">
+                              {"{{" + key + "}}"}
+                            </code>
+                            <Badge variant="outline" className="text-xs">
+                              {typeof value === "string"
+                                ? `${value.length} chars`
+                                : typeof value}
+                            </Badge>
+                          </div>
+                          <div className="bg-muted p-2 rounded text-xs font-mono max-h-24 overflow-y-auto whitespace-pre-wrap">
+                            {typeof value === "string"
+                              ? value
+                              : JSON.stringify(value, null, 2)}
+                          </div>
                         </div>
-                        <div className="bg-muted p-2 rounded text-xs font-mono max-h-24 overflow-y-auto whitespace-pre-wrap">
-                          {typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
-                        </div>
-                      </div>
-                    ))}
+                      ),
+                    )}
                     {Object.keys(debugData.resolvedVariables).length === 0 && (
-                      <div className="text-sm text-muted-foreground italic">No variables resolved</div>
+                      <div className="text-sm text-muted-foreground italic">
+                        No variables resolved
+                      </div>
                     )}
                   </div>
                 </div>
@@ -234,7 +252,9 @@ export const DebugIndicator: React.FC<DebugIndicatorProps> = ({ debugData, onClo
                 )}
               </>
             ) : (
-              <div className="text-sm text-muted-foreground italic">No debug data available</div>
+              <div className="text-sm text-muted-foreground italic">
+                No debug data available
+              </div>
             )}
           </div>
         </ScrollArea>
@@ -242,4 +262,3 @@ export const DebugIndicator: React.FC<DebugIndicatorProps> = ({ debugData, onClo
     </div>
   );
 };
-

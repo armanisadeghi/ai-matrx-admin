@@ -24,7 +24,7 @@ import type {
   TimelineEntry,
 } from "@/features/agents/types/request.types";
 import type {
-  StatusUpdatePayload,
+  Phase,
   ContentBlockPayload,
   CompletionPayload,
 } from "@/types/python-generated/stream-events";
@@ -551,37 +551,23 @@ export const selectActivePanelInstanceIds = createSelector(
 );
 
 // =============================================================================
-// Instance-Level Bridges — Status Updates
+// Instance-Level Bridges — Phase (V2 — replaces status updates)
 // =============================================================================
 
 /**
- * The latest status update for this instance's most recent request.
- * Drives the "thinking...", "processing...", "waiting..." indicator.
- * Returns null when no status updates have arrived yet.
+ * The latest phase for this instance's most recent request.
+ * Drives the progress indicator (connected, processing, generating, etc.).
+ * Returns null when no phase events have arrived yet.
  */
-export const selectLatestCurrentStatus =
+export const selectLatestCurrentPhase =
   (instanceId: string) =>
-  (state: RootState): StatusUpdatePayload | null => {
+  (state: RootState): Phase | null => {
     const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return null;
     return (
-      state.activeRequests.byRequestId[ids[ids.length - 1]]?.currentStatus ??
+      state.activeRequests.byRequestId[ids[ids.length - 1]]?.currentPhase ??
       null
     );
-  };
-
-/**
- * Just the user-facing message string from the latest status update.
- * Falls back to the raw status field if no user_message is set.
- */
-export const selectLatestStatusMessage =
-  (instanceId: string) =>
-  (state: RootState): string | null => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
-    if (ids.length === 0) return null;
-    const current =
-      state.activeRequests.byRequestId[ids[ids.length - 1]]?.currentStatus;
-    return current?.user_message ?? current?.status ?? null;
   };
 
 // =============================================================================
@@ -732,6 +718,47 @@ export const selectIsInTextRun =
     );
   };
 
+/** Whether reasoning tokens are currently streaming for the latest request. */
+export const selectIsReasoningStreaming =
+  (instanceId: string) =>
+  (state: RootState): boolean => {
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return false;
+    return (
+      state.activeRequests.byRequestId[ids[ids.length - 1]]
+        ?.isReasoningStreaming ?? false
+    );
+  };
+
+/** Accumulated reasoning text for the latest request. */
+export const selectLatestAccumulatedReasoning =
+  (instanceId: string) =>
+  (state: RootState): string => {
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return "";
+    const latest = state.activeRequests.byRequestId[ids[ids.length - 1]];
+    if (!latest) return "";
+    if (latest.reasoningChunks.length > 0)
+      return latest.reasoningChunks.join("");
+    return latest.accumulatedReasoning || "";
+  };
+
+/** Record reservations for the latest request. */
+export const selectLatestReservations =
+  (instanceId: string) =>
+  (
+    state: RootState,
+  ): Record<
+    string,
+    import("@/features/agents/types/request.types").ReservationRecord
+  > => {
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return {};
+    return (
+      state.activeRequests.byRequestId[ids[ids.length - 1]]?.reservations ?? {}
+    );
+  };
+
 // =============================================================================
 // Stream Phase — unified rendering state
 // =============================================================================
@@ -742,6 +769,7 @@ export const selectIsInTextRun =
  * - idle: no active request
  * - connecting: HTTP request in flight, no server events yet
  * - pre_token: server events arriving (status updates, data) but no text yet
+ * - reasoning: reasoning/thinking tokens streaming
  * - text_streaming: text chunks actively flowing
  * - interstitial: between text runs (tools, status updates, more planning)
  * - complete: stream finished
@@ -751,6 +779,7 @@ export type StreamPhase =
   | "idle"
   | "connecting"
   | "pre_token"
+  | "reasoning"
   | "text_streaming"
   | "interstitial"
   | "complete"
@@ -778,6 +807,7 @@ export const selectStreamPhase =
     if (request.status === "complete") return "complete";
     if (request.status === "connecting") return "connecting";
 
+    if (request.isReasoningStreaming) return "reasoning";
     if (request.isTextStreaming) return "text_streaming";
 
     if (request.textChunks.length > 0 && request.status === "streaming") {

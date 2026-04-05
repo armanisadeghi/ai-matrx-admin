@@ -211,20 +211,9 @@ export default function ToolTestingClient() {
         selectedTool.name,
         cleanedArgs,
         {
-          onStatusUpdate: (data) => {
-            // "complete" status_update carries the final result payload
-            if ((data as Record<string, unknown>).status === "complete") {
-              const payload = data as unknown as FinalPayload;
-              setFinalPayload(payload);
-              if (payload.output?.full_result?.success === false) {
-                setErrorMessage(
-                  payload.output.full_result.error?.message ??
-                    "Tool returned error",
-                );
-                setExecutionStatus("error");
-              } else {
-                setExecutionStatus("complete");
-              }
+          onPhase: (data) => {
+            if (data.phase === "complete") {
+              setExecutionStatus("complete");
             } else {
               setExecutionStatus("running");
             }
@@ -250,9 +239,7 @@ export default function ToolTestingClient() {
           },
           onError: (error) => {
             setErrorMessage(
-              (error.user_message as string) ??
-                (error.message as string) ??
-                "Stream error",
+              error.user_message ?? error.message ?? "Stream error",
             );
             setExecutionStatus("error");
           },
@@ -261,10 +248,10 @@ export default function ToolTestingClient() {
               prev === "running" || prev === "connecting" ? "complete" : prev,
             );
           },
-          onRawLine: (line) => {
-            setRawLines((prev) => [...prev, line]);
+          onRawEvent: (event) => {
+            setRawLines((prev) => [...prev, event]);
             setRawJsonLog(
-              (prev) => prev + JSON.stringify(line, null, 2) + "\n\n",
+              (prev) => prev + JSON.stringify(event, null, 2) + "\n\n",
             );
           },
         },

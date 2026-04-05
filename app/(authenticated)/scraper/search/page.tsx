@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useScraperApi } from "@/features/scraper/hooks/useScraperApi";
+import { ScraperHookErrorDetails } from "@/features/scraper/parts/ScraperHookErrorDetails";
 import type { SearchResult } from "@/features/scraper/types/scraper-api";
 
 interface SearchResultItem {
@@ -25,6 +26,7 @@ export default function ScraperSearchPage() {
     isLoading,
     hasError,
     error,
+    errorDiagnostics,
     statusMessage,
     reset,
   } = useScraperApi();
@@ -110,7 +112,10 @@ export default function ScraperSearchPage() {
         </div>
         {hasError && (
           <Alert variant="destructive" className="mt-2 max-w-5xl mx-auto py-2">
-            <AlertDescription className="text-xs">{error}</AlertDescription>
+            <AlertDescription className="text-xs">
+              {error}
+              <ScraperHookErrorDetails diagnostics={errorDiagnostics} />
+            </AlertDescription>
           </Alert>
         )}
       </div>

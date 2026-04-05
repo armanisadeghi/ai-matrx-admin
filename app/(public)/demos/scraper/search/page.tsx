@@ -16,16 +16,16 @@ function RenderedContent({ items }: { items: SearchResultItem[] }) {
       <div className="flex flex-col items-center justify-center h-full text-center p-8">
         <Search className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
         <p className="text-muted-foreground text-sm">No search results found</p>
-        <p className="text-muted-foreground/60 text-xs mt-1">Try a different keyword</p>
+        <p className="text-muted-foreground/60 text-xs mt-1">
+          Try a different keyword
+        </p>
       </div>
     );
   }
 
   return (
     <div className="p-4 space-y-3 overflow-auto">
-      <p className="text-xs text-muted-foreground">
-        {items.length} results
-      </p>
+      <p className="text-xs text-muted-foreground">{items.length} results</p>
       {items.map((item, index) => (
         <div
           key={index}
@@ -40,8 +40,7 @@ function RenderedContent({ items }: { items: SearchResultItem[] }) {
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).style.display = "none";
-                  (e.currentTarget.parentElement!).innerHTML =
-                    `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted-foreground"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`;
+                  e.currentTarget.parentElement!.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted-foreground"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`;
                 }}
               />
             ) : (
@@ -100,6 +99,7 @@ export default function SearchDemoPage() {
     isLoading,
     hasError,
     error,
+    errorDiagnostics,
     statusMessage,
     reset,
   } = useScraperApi();
@@ -120,7 +120,10 @@ export default function SearchDemoPage() {
   const inputSection = (
     <div className="flex gap-3 items-end flex-wrap">
       <div className="flex-1 min-w-[200px]">
-        <Label htmlFor="keywords" className="text-xs text-muted-foreground mb-1 block">
+        <Label
+          htmlFor="keywords"
+          className="text-xs text-muted-foreground mb-1 block"
+        >
           Keywords
         </Label>
         <Input
@@ -135,7 +138,10 @@ export default function SearchDemoPage() {
         />
       </div>
       <div className="w-24">
-        <Label htmlFor="maxResults" className="text-xs text-muted-foreground mb-1 block">
+        <Label
+          htmlFor="maxResults"
+          className="text-xs text-muted-foreground mb-1 block"
+        >
           Max Results
         </Label>
         <Input
@@ -182,6 +188,7 @@ export default function SearchDemoPage() {
         data={responseData}
         isLoading={isLoading}
         error={hasError ? error : null}
+        errorDiagnostics={hasError ? errorDiagnostics : undefined}
         title="Search Results"
         renderContent={() => <RenderedContent items={searchItems} />}
       />

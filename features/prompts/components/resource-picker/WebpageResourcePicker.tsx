@@ -18,7 +18,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrapedContentPretty } from "@/features/scraper/parts/ScrapedContentPretty";
 import { useScraperApi } from "@/features/scraper/hooks";
+import { ScraperHookErrorDetails } from "@/features/scraper/parts/ScraperHookErrorDetails";
 
 interface WebpageContent {
   url: string;
@@ -109,8 +112,16 @@ export function WebpageResourcePicker({
     "youtube" | "image_url" | "file_url" | null
   >(null);
   const [editedContent, setEditedContent] = useState<string>("");
-  const { scrapeUrl, data, isLoading, hasError, error, reset } =
-    useScraperApi();
+  const [previewTab, setPreviewTab] = useState("pretty");
+  const {
+    scrapeUrl,
+    data,
+    isLoading,
+    hasError,
+    error,
+    errorDiagnostics,
+    reset,
+  } = useScraperApi();
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Auto-focus the input on mount (preventScroll to avoid auto-scroll)
@@ -160,6 +171,7 @@ export function WebpageResourcePicker({
 
     try {
       await scrapeUrl(normalized);
+      setPreviewTab("pretty");
       setShowPreview(true);
     } catch {
       // Error is already captured in hook state (hasError / error)
@@ -186,6 +198,7 @@ export function WebpageResourcePicker({
 
   const handleClosePreview = () => {
     setShowPreview(false);
+    setPreviewTab("pretty");
     reset();
     setEditedContent("");
   };
@@ -293,11 +306,14 @@ export function WebpageResourcePicker({
 
               {/* Error Display */}
               {hasError && (
-                <div className="flex items-start gap-2 p-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded">
-                  <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-red-700 dark:text-red-400">
-                    {error || "Failed to scrape webpage"}
-                  </p>
+                <div className="flex flex-col gap-2 p-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-red-700 dark:text-red-400">
+                      {error || "Failed to scrape webpage"}
+                    </p>
+                  </div>
+                  <ScraperHookErrorDetails diagnostics={errorDiagnostics} />
                 </div>
               )}
 
@@ -430,27 +446,56 @@ export function WebpageResourcePicker({
                 </div>
               </div>
 
-              {/* Content Preview - Editable */}
-              <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-                <div className="flex items-center justify-between px-6 py-2 bg-gray-100 dark:bg-zinc-800 border-b border-border flex-shrink-0">
-                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                    Content (Editable)
-                  </span>
-                  {editedContent !== data.textContent && (
-                    <button
-                      onClick={() => setEditedContent(data.textContent)}
-                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-                    >
-                      Reset to original
-                    </button>
-                  )}
-                </div>
-                <textarea
-                  value={editedContent}
-                  onChange={(e) => setEditedContent(e.target.value)}
-                  className="flex-1 px-6 py-4 bg-white dark:bg-zinc-900 text-xs text-gray-900 dark:text-gray-100 font-mono leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:focus:ring-blue-600 min-h-0"
-                  placeholder="Edit the scraped content here..."
-                />
+              <div className="flex-1 flex flex-col overflow-hidden min-h-0 border-t border-border">
+                <Tabs
+                  value={previewTab}
+                  onValueChange={setPreviewTab}
+                  className="flex-1 flex flex-col overflow-hidden min-h-0"
+                >
+                  <TabsList className="mx-6 mt-2 h-9 w-fit shrink-0">
+                    <TabsTrigger value="pretty" className="text-xs">
+                      Pretty
+                    </TabsTrigger>
+                    <TabsTrigger value="edit" className="text-xs">
+                      Edit text
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent
+                    value="pretty"
+                    className="flex-1 overflow-auto mt-0 px-6 pb-2 min-h-0 data-[state=inactive]:hidden"
+                  >
+                    <div className="max-h-[min(50dvh,24rem)] overflow-auto rounded-lg border border-border">
+                      <ScrapedContentPretty
+                        markdown={data.markdownRenderable ?? ""}
+                      />
+                    </div>
+                  </TabsContent>
+                  <TabsContent
+                    value="edit"
+                    className="flex-1 flex flex-col overflow-hidden min-h-0 mt-0 data-[state=inactive]:hidden"
+                  >
+                    <div className="flex items-center justify-between px-6 py-2 bg-gray-100 dark:bg-zinc-800 border-b border-border flex-shrink-0">
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                        Content (editable — sent on confirm)
+                      </span>
+                      {editedContent !== data.textContent && (
+                        <button
+                          type="button"
+                          onClick={() => setEditedContent(data.textContent)}
+                          className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                        >
+                          Reset to original
+                        </button>
+                      )}
+                    </div>
+                    <textarea
+                      value={editedContent}
+                      onChange={(e) => setEditedContent(e.target.value)}
+                      className="flex-1 px-6 py-4 bg-white dark:bg-zinc-900 text-xs text-gray-900 dark:text-gray-100 font-mono leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:focus:ring-blue-600 min-h-0"
+                      placeholder="Edit the scraped content here..."
+                    />
+                  </TabsContent>
+                </Tabs>
               </div>
 
               {/* Actions */}
@@ -461,7 +506,7 @@ export function WebpageResourcePicker({
                       ✏️ Content has been edited
                     </span>
                   ) : (
-                    "Edit content above before adding"
+                    "Review Pretty view or edit text before adding"
                   )}
                 </div>
                 <div className="flex gap-2">

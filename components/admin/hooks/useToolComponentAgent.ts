@@ -5,8 +5,7 @@ import { useSelector } from 'react-redux';
 import { useApiAuth } from '@/hooks/useApiAuth';
 import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
 import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
-import { parseNdjsonStream } from '@/lib/api/stream-parser';
-import type { ChunkPayload, ErrorPayload } from '@/types/python-generated/stream-events';
+import { consumeStream } from '@/lib/api/stream-parser';
 import type { RootState } from '@/lib/redux/store';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -114,30 +113,24 @@ export function useToolComponentAgent(): UseToolComponentAgentReturn {
 
             if (!response.body) throw new Error('No response body from Agent API');
 
-            const { events } = parseNdjsonStream(response, abortControllerRef.current.signal);
-
-            for await (const event of events) {
-                switch (event.event) {
-                    case 'chunk': {
-                        const chunkData = event.data as unknown as ChunkPayload;
-                        if (chunkData?.text) {
-                            accumulatedRef.current += chunkData.text;
+            const { accumulatedText: finalText } = await consumeStream(
+                response,
+                {
+                    onChunk: (chunk) => {
+                        if (chunk.text) {
+                            accumulatedRef.current += chunk.text;
                             setAccumulatedText(accumulatedRef.current);
                         }
-                        break;
-                    }
-                    case 'error': {
-                        const errData = event.data as unknown as ErrorPayload;
-                        const message = errData?.user_message || errData?.message || 'Stream error';
+                    },
+                    onError: (err) => {
+                        const message = err.user_message || err.message || 'Stream error';
                         setError(String(message));
-                        break;
-                    }
-                    default:
-                        break;
-                }
-            }
+                    },
+                },
+                abortControllerRef.current.signal,
+            );
 
-            return accumulatedRef.current;
+            return finalText || accumulatedRef.current;
         } catch (err: unknown) {
             const e = err as Error;
             if (e.name === 'AbortError') {

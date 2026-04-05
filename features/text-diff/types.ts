@@ -2,7 +2,8 @@
  * Text Diff Feature Types
  */
 
-import { TextDiff } from './lib/parseDiff';
+import { TextDiff } from "./lib/parseDiff";
+import type { Database } from "@/types/database.types";
 
 // ============================================================================
 // Diff State Types
@@ -10,7 +11,7 @@ import { TextDiff } from './lib/parseDiff';
 
 export interface DiffState {
   sourceId: string | null; // ID of source (e.g., note ID)
-  sourceType: 'note' | 'custom'; // Type of source
+  sourceType: "note" | "custom"; // Type of source
   originalText: string;
   currentText: string;
   pendingDiffs: PendingDiff[];
@@ -30,7 +31,7 @@ export interface PendingDiff {
     after: string;
     lineRange?: { start: number; end: number };
   };
-  status: 'pending';
+  status: "pending";
   createdAt: string; // ISO timestamp
 }
 
@@ -52,18 +53,7 @@ export interface RejectedDiff {
 // Version History Types
 // ============================================================================
 
-export interface NoteVersion {
-  id: string;
-  note_id: string;
-  user_id: string;
-  content: string;
-  label: string;
-  version_number: number;
-  change_source: 'user' | 'ai' | 'system';
-  change_type: string | null;
-  diff_metadata: Record<string, any>;
-  created_at: string;
-}
+export type NoteVersion = Database["public"]["Tables"]["note_versions"]["Row"];
 
 export interface VersionHistoryState {
   versions: Record<string, NoteVersion[]>; // Keyed by note_id
@@ -77,7 +67,7 @@ export interface VersionHistoryState {
 
 export interface CreateVersionOptions {
   note_id: string;
-  change_source?: 'user' | 'ai' | 'system';
+  change_source?: "user" | "ai" | "system";
   change_type?: string;
   diff_metadata?: Record<string, any>;
 }
@@ -89,4 +79,3 @@ export interface RestoreVersionOptions {
 
 // Note: Component props are exported from their respective component files
 // and available through the main index.ts barrel export
-

@@ -50,6 +50,19 @@ interface UserTable {
   user_id?: string;
 }
 
+/** User-table RPCs return `{ success: boolean, error?: string, ... }` as `Json` — validate before reading fields. */
+function assertRpcSuccessEnvelope(
+  data: unknown
+): asserts data is { success: boolean; error?: string } {
+  if (
+    typeof data !== 'object' ||
+    data === null ||
+    typeof (data as { success?: unknown }).success !== 'boolean'
+  ) {
+    throw new Error('Invalid table RPC response');
+  }
+}
+
 interface UserTableViewerProps {
   tableId: string;
   showTableSelector?: boolean;
@@ -200,6 +213,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       });
       
       if (error) throw error;
+      assertRpcSuccessEnvelope(data);
       if (!data.success) throw new Error(data.error || 'Failed to update row');
       
       // Clear sorted data cache when data is modified
@@ -222,9 +236,11 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       const { data, error } = await supabase.rpc('get_user_tables');
       
       if (error) throw error;
+      assertRpcSuccessEnvelope(data);
       if (!data.success) throw new Error(data.error || 'Failed to load tables');
       
-      setTables(data.tables || []);
+      const listUnknown = (data as { tables?: unknown }).tables;
+      setTables(Array.isArray(listUnknown) ? (listUnknown as UserTable[]) : []);
     } catch (err) {
       console.error('Error fetching tables:', err);
     } finally {
@@ -254,15 +270,21 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
           .rpc('get_user_table_complete', { p_table_id: tableId });
           
         if (tableError) throw tableError;
+        assertRpcSuccessEnvelope(tableData);
         if (!tableData.success) throw new Error(tableData.error || 'Failed to load table');
+
+        const complete = tableData as typeof tableData & {
+          table: unknown;
+          fields: unknown[];
+          row_count: number;
+        };
+        currentTableInfo = complete.table;
+        currentFields = complete.fields;
         
-        currentTableInfo = tableData.table;
-        currentFields = tableData.fields;
-        
-        setTableInfo(tableData.table);
-        setFields(tableData.fields);
-        setTotalCount(tableData.row_count);
-        setTotalPages(Math.ceil(tableData.row_count / pageLimit));
+        setTableInfo(complete.table);
+        setFields(complete.fields);
+        setTotalCount(complete.row_count);
+        setTotalPages(Math.ceil(complete.row_count / pageLimit));
         
         // Apply saved default sort on initial load (when no sort is specified)
         if (!sort && currentTableInfo?.row_ordering_config?.default_sort) {
@@ -293,14 +315,19 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
         });
         
       if (paginatedError) throw paginatedError;
+      assertRpcSuccessEnvelope(paginatedData);
       if (!paginatedData.success) throw new Error(paginatedData.error || 'Failed to load data');
-      
-      let processedData = paginatedData.data;
+
+      const pagePayload = paginatedData as typeof paginatedData & {
+        data: unknown[];
+        pagination: { total_count: number; page_count: number; current_page: number };
+      };
+      let processedData = pagePayload.data;
       
       // Apply row ordering if enabled and no other sorting is active
       if (currentTableInfo?.row_ordering_config?.enabled && currentTableInfo.row_ordering_config.order && !effectiveSort) {
         const orderConfig = currentTableInfo.row_ordering_config.order;
-        processedData = [...paginatedData.data].sort((a, b) => {
+        processedData = [...pagePayload.data].sort((a, b) => {
           const aIndex = orderConfig.indexOf(a.id);
           const bIndex = orderConfig.indexOf(b.id);
           
@@ -319,7 +346,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       }
       
       // Apply client-side sorting if we have a sort field and conditions are right for client-side sorting
-      if (effectiveSort && !search && page === 1 && pageLimit >= paginatedData.pagination.total_count) {
+      if (effectiveSort && !search && page === 1 && pageLimit >= pagePayload.pagination.total_count) {
         // Use currentFields (local variable) since state might not be updated yet
         const fieldDef = currentFields.find((f: any) => f.field_name === effectiveSort);
         const fieldDataType = fieldDef?.data_type;
@@ -327,12 +354,12 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       }
 
       setData(processedData);
-      setTotalCount(paginatedData.pagination.total_count);
-      setTotalPages(paginatedData.pagination.page_count);
-      setCurrentPage(paginatedData.pagination.current_page);
+      setTotalCount(pagePayload.pagination.total_count);
+      setTotalPages(pagePayload.pagination.page_count);
+      setCurrentPage(pagePayload.pagination.current_page);
     } catch (err) {
       console.error('Error loading table data:', err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Failed to load table');
     } finally {
       setLoading(false);
     }
@@ -501,10 +528,12 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
         });
         
         if (error) throw error;
+        assertRpcSuccessEnvelope(allData);
         if (!allData.success) throw new Error(allData.error || 'Failed to load data');
         
+        const allPayload = allData as typeof allData & { data: unknown[] };
         // Sort all data client-side with type awareness
-        const sortedData = smartSort(allData.data, field, newDirection, fieldDataType);
+        const sortedData = smartSort(allPayload.data, field, newDirection, fieldDataType);
         setAllSortedData(sortedData);
         
         // Show the appropriate page slice
@@ -590,6 +619,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       });
       
       if (error) throw error;
+      assertRpcSuccessEnvelope(data);
       if (!data.success) throw new Error(data.error || 'Failed to update row');
       
       // Clear sorted data cache when data is modified
@@ -643,6 +673,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       });
       
       if (error) throw error;
+      assertRpcSuccessEnvelope(data);
       if (!data.success) throw new Error(data.error || 'Failed to update row order');
       
       // Clear sorted data cache when row ordering changes
@@ -677,6 +708,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       });
       
       if (error) throw error;
+      assertRpcSuccessEnvelope(data);
       if (!data.success) throw new Error(data.error || 'Failed to disable row ordering');
       
       // Clear sorted data cache when row ordering changes
@@ -705,6 +737,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       });
       
       if (error) throw error;
+      assertRpcSuccessEnvelope(data);
       if (!data.success) throw new Error(data.error || 'Failed to save sort preference');
       
       // Update saved sort state
@@ -741,6 +774,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       });
       
       if (error) throw error;
+      assertRpcSuccessEnvelope(data);
       if (!data.success) throw new Error(data.error || 'Failed to clear sort preference');
       
       // Clear saved sort state
@@ -837,6 +871,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
             });
             
             if (error) throw error;
+            assertRpcSuccessEnvelope(result);
             if (!result.success) throw new Error(result.error || 'Failed to update row');
             
             processedCount++;

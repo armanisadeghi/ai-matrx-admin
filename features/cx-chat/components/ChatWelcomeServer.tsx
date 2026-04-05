@@ -4,11 +4,14 @@
 // which creates the instance and renders ChatWelcomeClient.
 
 import { ChatInstanceManager } from "./ChatInstanceManager";
+import type { PromptVariable } from "@/features/prompts/types/core";
 
 export interface WelcomeAgent {
   promptId: string;
   name: string;
   description?: string;
+  /** SSR seed variables — client may still hydrate from DB. */
+  variableDefaults?: PromptVariable[];
 }
 
 interface ChatWelcomeServerProps {

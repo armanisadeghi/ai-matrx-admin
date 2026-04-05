@@ -26,6 +26,7 @@
  */
 
 import { supabase } from '@/utils/supabase/client';
+import type { Database, Json } from '@/types/database.types';
 import {
   Permission,
   PermissionWithDetails,
@@ -41,6 +42,39 @@ import {
   ShareActionResult,
   satisfiesPermissionLevel,
 } from './types';
+
+type TableName = keyof Database['public']['Tables'];
+type RpcPermissionRow = Database['public']['Functions']['get_resource_permissions']['Returns'][number];
+type PermissionsTableRow = Database['public']['Tables']['permissions']['Row'];
+
+function errMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as { message: unknown }).message === 'string'
+  ) {
+    return (error as { message: string }).message;
+  }
+  return 'Unknown error';
+}
+
+/** Share / visibility RPCs return `Json` — narrow without assuming shape beyond optional success/error/message. */
+function parseShareRpcResult(data: Json | null | undefined): {
+  success: boolean;
+  error?: string;
+  message?: string;
+} {
+  if (data === null || data === undefined || typeof data !== 'object' || Array.isArray(data)) {
+    return { success: false, error: 'Invalid response' };
+  }
+  const o = data as Record<string, unknown>;
+  const success = o.success === true;
+  const err = typeof o.error === 'string' ? o.error : undefined;
+  const message = typeof o.message === 'string' ? o.message : undefined;
+  return { success, error: err, message };
+}
 
 // ============================================================================
 // Resource Visibility (is_public lives on the resource row)
@@ -64,7 +98,7 @@ export async function getResourceVisibility(
       .from(tableName)
       .select('is_public')
       .eq('id', resourceId)
-      .maybeSingle();
+      .maybeSingle<{ is_public: boolean | null }>();
 
     if (error || !data) return { isPublic: false };
 
@@ -94,7 +128,8 @@ export async function shareWithUser(options: ShareWithUserOptions): Promise<Shar
     });
 
     if (error) throw error;
-    if (!data?.success) return { success: false, error: data?.error || 'Failed to share with user' };
+    const parsed = parseShareRpcResult(data);
+    if (!parsed.success) return { success: false, error: parsed.error || 'Failed to share with user' };
 
     // Fire-and-forget notification — failure doesn't affect the grant
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -109,10 +144,10 @@ export async function shareWithUser(options: ShareWithUserOptions): Promise<Shar
       }
     });
 
-    return { success: true, message: data.message || 'Successfully shared with user' };
-  } catch (error: any) {
+    return { success: true, message: parsed.message || 'Successfully shared with user' };
+  } catch (error: unknown) {
     console.error('shareWithUser error:', error);
-    return { success: false, error: error.message || 'Failed to share with user' };
+    return { success: false, error: errMessage(error) || 'Failed to share with user' };
   }
 }
 
@@ -133,12 +168,13 @@ export async function shareWithOrg(options: ShareWithOrgOptions): Promise<ShareA
     });
 
     if (error) throw error;
-    if (!data?.success) return { success: false, error: data?.error || 'Failed to share with organization' };
+    const parsed = parseShareRpcResult(data);
+    if (!parsed.success) return { success: false, error: parsed.error || 'Failed to share with organization' };
 
-    return { success: true, message: data.message || 'Successfully shared with organization' };
-  } catch (error: any) {
+    return { success: true, message: parsed.message || 'Successfully shared with organization' };
+  } catch (error: unknown) {
     console.error('shareWithOrg error:', error);
-    return { success: false, error: error.message || 'Failed to share with organization' };
+    return { success: false, error: errMessage(error) || 'Failed to share with organization' };
   }
 }
 
@@ -157,12 +193,13 @@ export async function makePublic(options: MakePublicOptions): Promise<ShareActio
     });
 
     if (error) throw error;
-    if (!data?.success) return { success: false, error: data?.error || 'Failed to make public' };
+    const parsed = parseShareRpcResult(data);
+    if (!parsed.success) return { success: false, error: parsed.error || 'Failed to make public' };
 
     return { success: true, message: 'Resource is now public' };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('makePublic error:', error);
-    return { success: false, error: error.message || 'Failed to make public' };
+    return { success: false, error: errMessage(error) || 'Failed to make public' };
   }
 }
 
@@ -181,12 +218,13 @@ export async function makePrivate(
     });
 
     if (error) throw error;
-    if (!data?.success) return { success: false, error: data?.error || 'Failed to make private' };
+    const parsed = parseShareRpcResult(data);
+    if (!parsed.success) return { success: false, error: parsed.error || 'Failed to make private' };
 
     return { success: true, message: 'Resource is now private' };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('makePrivate error:', error);
-    return { success: false, error: error.message || 'Failed to make private' };
+    return { success: false, error: errMessage(error) || 'Failed to make private' };
   }
 }
 
@@ -211,12 +249,13 @@ export async function revokeUserAccess(
     });
 
     if (error) throw error;
-    if (!data?.success) return { success: false, error: data?.error || 'Failed to revoke access' };
+    const parsed = parseShareRpcResult(data);
+    if (!parsed.success) return { success: false, error: parsed.error || 'Failed to revoke access' };
 
     return { success: true, message: 'Access revoked' };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('revokeUserAccess error:', error);
-    return { success: false, error: error.message || 'Failed to revoke user access' };
+    return { success: false, error: errMessage(error) || 'Failed to revoke user access' };
   }
 }
 
@@ -237,12 +276,13 @@ export async function revokeOrgAccess(
     });
 
     if (error) throw error;
-    if (!data?.success) return { success: false, error: data?.error || 'Failed to revoke org access' };
+    const parsed = parseShareRpcResult(data);
+    if (!parsed.success) return { success: false, error: parsed.error || 'Failed to revoke org access' };
 
     return { success: true, message: 'Organization access revoked' };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('revokeOrgAccess error:', error);
-    return { success: false, error: error.message || 'Failed to revoke org access' };
+    return { success: false, error: errMessage(error) || 'Failed to revoke org access' };
   }
 }
 
@@ -296,12 +336,13 @@ export async function updatePermissionLevel(
     });
 
     if (error) throw error;
-    if (!data?.success) return { success: false, error: data?.error || 'Failed to update permission level' };
+    const parsed = parseShareRpcResult(data);
+    if (!parsed.success) return { success: false, error: parsed.error || 'Failed to update permission level' };
 
-    return { success: true, message: data.message || 'Permission level updated' };
-  } catch (error: any) {
+    return { success: true, message: parsed.message || 'Permission level updated' };
+  } catch (error: unknown) {
     console.error('updatePermissionLevel error:', error);
-    return { success: false, error: error.message || 'Failed to update permission level' };
+    return { success: false, error: errMessage(error) || 'Failed to update permission level' };
   }
 }
 
@@ -328,8 +369,8 @@ export async function listPermissions(
 
     if (error) throw error;
 
-    return (data || []).map(transformPermissionFromDb);
-  } catch (error: any) {
+    return (data || []).map(transformPermissionFromRpcRow);
+  } catch (error: unknown) {
     console.error('listPermissions error:', error);
     return [];
   }
@@ -349,7 +390,11 @@ export async function isResourceOwner(
   try {
     const tableName = getTableName(resourceType);
     const [{ data: row }, { data: { user } }] = await Promise.all([
-      supabase.from(tableName).select('user_id').eq('id', resourceId).maybeSingle(),
+      supabase
+        .from(tableName)
+        .select('user_id')
+        .eq('id', resourceId)
+        .maybeSingle<{ user_id: string | null }>(),
       supabase.auth.getUser(),
     ]);
 
@@ -379,7 +424,7 @@ export async function getSharedWithMe(resourceType?: ResourceType): Promise<Perm
     const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throw error;
 
-    return (data || []).map(transformPermissionFromDb);
+    return (data || []).map(transformPermissionFromTableRow);
   } catch (error) {
     console.error('getSharedWithMe error:', error);
     return [];
@@ -435,33 +480,57 @@ export async function batchShareWithUsers(
 // Internal Helpers
 // ============================================================================
 
-function transformPermissionFromDb(dbRecord: any): PermissionWithDetails {
+function parseNestedUser(j: Json): PermissionWithDetails['grantedToUser'] | undefined {
+  if (j === null || j === undefined || typeof j !== 'object' || Array.isArray(j)) return undefined;
+  const o = j as Record<string, unknown>;
+  if (typeof o.id !== 'string' || typeof o.email !== 'string') return undefined;
   return {
-    id: dbRecord.id,
-    resourceType: dbRecord.resource_type,
-    resourceId: dbRecord.resource_id,
-    grantedToUserId: dbRecord.granted_to_user_id,
-    grantedToOrganizationId: dbRecord.granted_to_organization_id,
-    isPublic: dbRecord.is_public,
-    permissionLevel: dbRecord.permission_level,
-    createdAt: dbRecord.created_at ? new Date(dbRecord.created_at) : undefined,
-    createdBy: dbRecord.created_by,
-    grantedToUser: dbRecord.granted_to_user
-      ? {
-          id: dbRecord.granted_to_user.id,
-          email: dbRecord.granted_to_user.email,
-          displayName: dbRecord.granted_to_user.displayName,
-          avatarUrl: dbRecord.granted_to_user.avatarUrl,
-        }
-      : undefined,
-    grantedToOrganization: dbRecord.granted_to_organization
-      ? {
-          id: dbRecord.granted_to_organization.id,
-          name: dbRecord.granted_to_organization.name,
-          slug: dbRecord.granted_to_organization.slug,
-          logoUrl: dbRecord.granted_to_organization.logoUrl,
-        }
-      : undefined,
+    id: o.id,
+    email: o.email,
+    displayName: typeof o.displayName === 'string' ? o.displayName : undefined,
+    avatarUrl: typeof o.avatarUrl === 'string' ? o.avatarUrl : undefined,
+  };
+}
+
+function parseNestedOrg(j: Json): PermissionWithDetails['grantedToOrganization'] | undefined {
+  if (j === null || j === undefined || typeof j !== 'object' || Array.isArray(j)) return undefined;
+  const o = j as Record<string, unknown>;
+  if (typeof o.id !== 'string' || typeof o.name !== 'string') return undefined;
+  return {
+    id: o.id,
+    name: o.name,
+    slug: typeof o.slug === 'string' ? o.slug : undefined,
+    logoUrl: typeof o.logoUrl === 'string' ? o.logoUrl : undefined,
+  };
+}
+
+function transformPermissionFromRpcRow(row: RpcPermissionRow): PermissionWithDetails {
+  return {
+    id: row.id,
+    resourceType: row.resource_type as ResourceType,
+    resourceId: row.resource_id,
+    grantedToUserId: row.granted_to_user_id || undefined,
+    grantedToOrganizationId: row.granted_to_organization_id || undefined,
+    isPublic: row.is_public,
+    permissionLevel: row.permission_level as PermissionLevel,
+    createdAt: row.created_at ? new Date(row.created_at) : undefined,
+    createdBy: undefined,
+    grantedToUser: parseNestedUser(row.granted_to_user),
+    grantedToOrganization: parseNestedOrg(row.granted_to_organization),
+  };
+}
+
+function transformPermissionFromTableRow(row: PermissionsTableRow): Permission {
+  return {
+    id: row.id,
+    resourceType: row.resource_type as ResourceType,
+    resourceId: row.resource_id,
+    grantedToUserId: row.granted_to_user_id,
+    grantedToOrganizationId: row.granted_to_organization_id,
+    isPublic: row.is_public ?? undefined,
+    permissionLevel: row.permission_level as PermissionLevel,
+    createdAt: row.created_at ? new Date(row.created_at) : undefined,
+    createdBy: row.created_by ?? undefined,
   };
 }
 
@@ -469,8 +538,8 @@ function transformPermissionFromDb(dbRecord: any): PermissionWithDetails {
  * Maps legacy singular resource type names to their actual Postgres table names.
  * New resource types should use the table name directly (e.g. 'cx_conversations').
  */
-function getTableName(resourceType: ResourceType): string {
-  const legacyMap: Partial<Record<ResourceType, string>> = {
+function getTableName(resourceType: ResourceType): TableName {
+  const legacyMap: Partial<Record<ResourceType, TableName>> = {
     prompt: 'prompts',
     workflow: 'workflows',
     note: 'notes',
@@ -482,6 +551,7 @@ function getTableName(resourceType: ResourceType): string {
     message: 'messages',
     organization: 'organizations',
     scrape_domain: 'scrape_domains',
+    agent: 'agents',
   };
-  return legacyMap[resourceType] ?? resourceType;
+  return (legacyMap[resourceType] ?? (resourceType as TableName)) as TableName;
 }

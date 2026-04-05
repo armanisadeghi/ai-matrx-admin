@@ -42,10 +42,10 @@ import type {
   CompletionPayload,
   ErrorPayload,
   EndPayload,
-  StatusUpdatePayload,
+  PhasePayload,
 } from '@/types/python-generated/stream-events';
 
-export type { StreamEvent, ToolEventPayload, CompletionPayload, ErrorPayload, EndPayload, StatusUpdatePayload };
+export type { StreamEvent, ToolEventPayload, CompletionPayload, ErrorPayload, EndPayload, PhasePayload };
 
 // Tool-testing specific enriched types
 export interface ToolStreamEvent {
@@ -132,14 +132,14 @@ export interface TestContext {
 // ─── Streaming Client Types ─────────────────────────────────────────────────
 
 export interface StreamEventHandlers {
-  onStatusUpdate?: (data: Record<string, unknown>) => void;
+  onPhase?: (data: PhasePayload) => void;
   onToolEvent?: (event: ToolStreamEvent) => void;
   onFinalResult?: (payload: FinalPayload) => void;
   onCompletion?: (data: CompletionPayload) => void;
-  onError?: (error: Record<string, unknown>) => void;
+  onError?: (error: ErrorPayload) => void;
   onEnd?: (data: EndPayload) => void;
   onHeartbeat?: () => void;
-  onRawLine?: (line: StreamEvent) => void;
+  onRawEvent?: (event: StreamEvent) => void;
 }
 
 // ─── Execution State ────────────────────────────────────────────────────────

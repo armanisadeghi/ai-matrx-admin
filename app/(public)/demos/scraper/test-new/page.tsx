@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScraperApi } from "@/features/scraper/hooks/useScraperApi";
+import { ScraperHookErrorDetails } from "@/features/scraper/parts/ScraperHookErrorDetails";
+import { ScrapedContentPretty } from "@/features/scraper/parts/ScrapedContentPretty";
 
 function normalizeUrl(raw: string): string | null {
   const trimmed = raw.trim();
@@ -28,8 +31,17 @@ function normalizeUrl(raw: string): string | null {
  */
 export default function TestNewScraperPage() {
   const [url, setUrl] = useState("");
-  const { scrapeUrl, data, isLoading, hasError, error, statusMessage, reset } =
-    useScraperApi();
+  const [contentTab, setContentTab] = useState("pretty");
+  const {
+    scrapeUrl,
+    data,
+    isLoading,
+    hasError,
+    error,
+    errorDiagnostics,
+    statusMessage,
+    reset,
+  } = useScraperApi();
 
   const handleScrape = async () => {
     const normalized = normalizeUrl(url);
@@ -46,6 +58,7 @@ export default function TestNewScraperPage() {
   const handleReset = () => {
     reset();
     setUrl("");
+    setContentTab("pretty");
   };
 
   return (
@@ -92,7 +105,10 @@ export default function TestNewScraperPage() {
           </div>
           {hasError && (
             <Alert variant="destructive" className="mt-3">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>
+                {error}
+                <ScraperHookErrorDetails diagnostics={errorDiagnostics} />
+              </AlertDescription>
             </Alert>
           )}
           {statusMessage && !hasError && (
@@ -155,16 +171,36 @@ export default function TestNewScraperPage() {
                   </div>
                 ))}
               </div>
-              {data.textContent && (
+              {(data.markdownRenderable || data.plainTextContent) && (
                 <div className="mt-4">
-                  <h3 className="text-sm font-medium mb-2 text-foreground">
-                    Text Content
-                  </h3>
-                  <div className="bg-muted rounded-lg p-4 max-h-96 overflow-auto">
-                    <pre className="text-sm text-foreground whitespace-pre-wrap font-mono">
-                      {data.textContent}
-                    </pre>
-                  </div>
+                  <Tabs
+                    value={contentTab}
+                    onValueChange={setContentTab}
+                    className="w-full"
+                  >
+                    <TabsList className="h-9">
+                      <TabsTrigger value="pretty" className="text-xs">
+                        Pretty
+                      </TabsTrigger>
+                      <TabsTrigger value="text" className="text-xs">
+                        Plain text
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="pretty" className="mt-3">
+                      <div className="max-h-[min(28rem,55dvh)] overflow-auto rounded-lg border border-border">
+                        <ScrapedContentPretty
+                          markdown={data.markdownRenderable ?? ""}
+                        />
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="text" className="mt-3">
+                      <div className="bg-muted rounded-lg p-4 max-h-96 overflow-auto">
+                        <pre className="text-sm text-foreground whitespace-pre-wrap font-mono">
+                          {data.plainTextContent}
+                        </pre>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </div>
               )}
             </div>

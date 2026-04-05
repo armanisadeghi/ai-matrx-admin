@@ -5,61 +5,44 @@
  * These flashcard sets are auto-generated from chat and linked to cx_message/cx_conversation.
  */
 
+import type { Database } from "@/types/database.types";
+
 // ============================================================================
 // Card & Review primitives
 // ============================================================================
 
 export interface FlashcardCard {
-    front: string;
-    back: string;
+  front: string;
+  back: string;
 }
 
-export type ReviewResult = 'correct' | 'partial' | 'incorrect';
+export type ReviewResult = "correct" | "partial" | "incorrect";
 
 // ============================================================================
 // Database row types
 // ============================================================================
 
-export interface FlashcardSetRow {
-    id: string;
-    user_id: string;
-    conversation_id: string | null;
-    message_id: string | null;
-    title: string;
-    cards: FlashcardCard[];
-    card_count: number;
-    tags: string[];
-    is_archived: boolean;
-    last_studied_at: string | null;
-    created_at: string;
-    updated_at: string;
-}
-
-export interface FlashcardReviewRow {
-    id: string;
-    user_id: string;
-    set_id: string;
-    card_index: number;
-    result: ReviewResult;
-    reviewed_at: string;
-}
+export type FlashcardSetRow =
+  Database["public"]["Tables"]["user_flashcard_sets"]["Row"];
+export type FlashcardReviewRow =
+  Database["public"]["Tables"]["user_flashcard_reviews"]["Row"];
 
 // ============================================================================
 // Insert types
 // ============================================================================
 
 export interface FlashcardSetInsert {
-    conversation_id?: string;
-    message_id?: string;
-    title?: string;
-    cards: FlashcardCard[];
-    tags?: string[];
+  conversation_id?: string;
+  message_id?: string;
+  title?: string;
+  cards: FlashcardCard[];
+  tags?: string[];
 }
 
 export interface FlashcardReviewInsert {
-    set_id: string;
-    card_index: number;
-    result: ReviewResult;
+  set_id: string;
+  card_index: number;
+  result: ReviewResult;
 }
 
 // ============================================================================
@@ -67,19 +50,19 @@ export interface FlashcardReviewInsert {
 // ============================================================================
 
 export interface CardReviewStats {
-    cardIndex: number;
-    correct: number;
-    partial: number;
-    incorrect: number;
-    totalReviews: number;
-    lastReviewedAt: string | null;
-    lastResult: ReviewResult | null;
+  cardIndex: number;
+  correct: number;
+  partial: number;
+  incorrect: number;
+  totalReviews: number;
+  lastReviewedAt: string | null;
+  lastResult: ReviewResult | null;
 }
 
 export interface FlashcardSetWithStats extends FlashcardSetRow {
-    cardStats: CardReviewStats[];
-    totalReviews: number;
-    masteryPercent: number; // 0-100
+  cardStats: CardReviewStats[];
+  totalReviews: number;
+  masteryPercent: number; // 0-100
 }
 
 // ============================================================================
@@ -89,9 +72,9 @@ export interface FlashcardSetWithStats extends FlashcardSetRow {
 export type LeitnerBox = 1 | 2 | 3;
 
 export interface CardStudyState {
-    cardIndex: number;
-    box: LeitnerBox;
-    isDue: boolean;
-    lastReviewedAt: string | null;
-    lastResult: ReviewResult | null;
+  cardIndex: number;
+  box: LeitnerBox;
+  isDue: boolean;
+  lastReviewedAt: string | null;
+  lastResult: ReviewResult | null;
 }

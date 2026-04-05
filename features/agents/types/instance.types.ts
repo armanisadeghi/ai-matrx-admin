@@ -15,49 +15,22 @@ import { ContextObjectType, LLMParams } from "./agent-api-types";
 import type { SystemInstruction } from "./agent-api-types";
 
 // =============================================================================
-// Completion Stats — full payload from the server's completion stream event
+// Completion Stats — re-exported from auto-generated stream-events.ts
+//
+// NEVER hand-write these types. The auto-generated UserRequestResult and its
+// nested types (AggregatedUsageResult, TimingStatsResult, ToolCallStatsResult)
+// are the single source of truth.
 // =============================================================================
 
-export interface ModelUsage {
-  input_tokens: number;
-  output_tokens: number;
-  cached_input_tokens: number;
-  total_tokens: number;
-  api: string;
-  request_count: number;
-  cost: number;
-}
-
-export interface CompletionStats {
-  status: string;
-  iterations: number;
-  finish_reason: string;
-  total_usage: {
-    by_model: Record<string, ModelUsage>;
-    total: {
-      input_tokens: number;
-      output_tokens: number;
-      cached_input_tokens: number;
-      total_tokens: number;
-      total_requests: number;
-      unique_models: number;
-      total_cost: number;
-    };
-  };
-  timing_stats: {
-    total_duration: number;
-    api_duration: number;
-    tool_duration: number;
-    iterations: number;
-    avg_iteration_duration: number;
-  };
-  tool_call_stats: {
-    total_tool_calls: number;
-    iterations_with_tools: number;
-    by_tool: Record<string, unknown>;
-  };
-  metadata: unknown;
-}
+export type { UserRequestResult as CompletionStats } from "@/types/python-generated/stream-events";
+export type {
+  AggregatedUsageResult,
+  ModelUsageSummary,
+  UsageTotals,
+  TimingStatsResult,
+  ToolCallStatsResult,
+  ToolCallByTool,
+} from "@/types/python-generated/stream-events";
 
 // =============================================================================
 // Instance Shell

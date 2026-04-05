@@ -49,6 +49,8 @@ interface ScrapedPageItem {
   structured_data: object | null;
   organized_data: object | null;
   text_data: string | null;
+  /** Full markdown with links/images — render with ScrapedContentPretty */
+  markdown_renderable?: string | null;
   main_image: string | null;
   hashes: ScrapedResultHashes | null;
   content_filter_removal_details: RemovalDetail[] | null;
@@ -165,6 +167,7 @@ class ScraperDataUtils {
       structured_data: result.structured_data,
       organized_data: result.organized_data,
       text_data: result.text_data,
+      markdown_renderable: result.markdown_renderable ?? null,
       main_image: result.main_image,
       hashes: result.hashes ?? null,
       content_filter_removal_details: result.content_filter_removal_details,
@@ -634,6 +637,7 @@ class ScraperDataUtils {
       structured_data: object;
       organized_data: object;
       text_data: string;
+      markdown_renderable?: string | null;
       main_image: string | null;
       hashes: ScrapedResultHashes | null;
       content_filter_removal_details: RemovalDetail[];
@@ -653,6 +657,7 @@ class ScraperDataUtils {
       structured_data: this.getStructuredData(result.structured_data),
       organized_data: this.getOrganizedData(result.organized_data),
       text_data: this.getTextData(result.text_data),
+      markdown_renderable: result.markdown_renderable ?? null,
       links: this.getLinks(result.links),
       content_filter_removal_details: this.getContentFilterRemovalDetails(
         result.content_filter_removal_details,

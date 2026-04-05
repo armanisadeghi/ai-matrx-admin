@@ -45,7 +45,8 @@ export async function getEnumByName(
 
     if (error) throw error;
 
-    return data;
+    const row = data?.[0];
+    return row ?? null;
   } catch (error) {
     console.error("Error fetching enum:", error);
     throw new Error("Failed to fetch enum");
@@ -246,7 +247,11 @@ export async function getEnumUsage(
 
     if (error) throw error;
 
-    return data || [];
+    return (data || []).map((u) => ({
+      schema: u.table_schema,
+      table_name: u.table_name,
+      column_name: u.column_name,
+    }));
   } catch (error) {
     console.error("Error fetching enum usage:", error);
     throw new Error("Failed to fetch enum usage");

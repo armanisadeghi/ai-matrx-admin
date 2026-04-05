@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,20 +11,24 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { 
-  TableIcon, 
-  Search, 
-  ExternalLink, 
-  Loader, 
+import {
+  TableIcon,
+  Search,
+  ExternalLink,
+  Loader,
   Calendar,
   Database,
   Columns,
-  Rows
-} from 'lucide-react';
-import { supabase } from '@/utils/supabase/client';
-import { format } from 'date-fns';
-import TableReferenceOverlay from './TableReferenceOverlay';
-import { UserDataReference } from '@/components/user-generated-table-data/tableReferences';
+  Rows,
+} from "lucide-react";
+import { supabase } from "@/utils/supabase/client";
+import {
+  unwrapGetUserTableComplete,
+  unwrapGetUserTables,
+} from "@/utils/user-tables-rpc";
+import { format } from "date-fns";
+import TableReferenceOverlay from "./TableReferenceOverlay";
+import { UserDataReference } from "@/components/user-generated-table-data/tableReferences";
 
 interface UserTable {
   id: string;
@@ -63,19 +67,23 @@ export default function TableSelectionModal({
   onClose,
   onReferenceSelect,
   title = "Select Table for Reference",
-  description = "Choose a table to create references for workflows"
+  description = "Choose a table to create references for workflows",
 }: TableSelectionModalProps) {
   const [tables, setTables] = useState<UserTable[]>([]);
   const [filteredTables, setFilteredTables] = useState<UserTable[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  
+  const [searchTerm, setSearchTerm] = useState("");
+
   // Reference overlay state
   const [showReferenceOverlay, setShowReferenceOverlay] = useState(false);
   const [selectedTable, setSelectedTable] = useState<UserTable | null>(null);
-  const [selectedTableFields, setSelectedTableFields] = useState<TableField[]>([]);
-  const [selectedTableInfo, setSelectedTableInfo] = useState<TableInfo | null>(null);
+  const [selectedTableFields, setSelectedTableFields] = useState<TableField[]>(
+    [],
+  );
+  const [selectedTableInfo, setSelectedTableInfo] = useState<TableInfo | null>(
+    null,
+  );
 
   // Fetch tables when modal opens
   useEffect(() => {
@@ -83,7 +91,7 @@ export default function TableSelectionModal({
       fetchTables();
     } else {
       // Reset state when modal closes
-      setSearchTerm('');
+      setSearchTerm("");
       setSelectedTable(null);
       setShowReferenceOverlay(false);
     }
@@ -94,9 +102,11 @@ export default function TableSelectionModal({
     if (!searchTerm.trim()) {
       setFilteredTables(tables);
     } else {
-      const filtered = tables.filter(table => 
-        table.table_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (table.description && table.description.toLowerCase().includes(searchTerm.toLowerCase()))
+      const filtered = tables.filter(
+        (table) =>
+          table.table_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (table.description &&
+            table.description.toLowerCase().includes(searchTerm.toLowerCase())),
       );
       setFilteredTables(filtered);
     }
@@ -106,16 +116,14 @@ export default function TableSelectionModal({
     try {
       setLoading(true);
       setError(null);
-      
-      const { data, error } = await supabase.rpc('get_user_tables');
-      
+
+      const { data, error } = await supabase.rpc("get_user_tables");
+
       if (error) throw error;
-      if (!data.success) throw new Error(data.error || 'Failed to load tables');
-      
-      setTables(data.tables || []);
+      setTables(unwrapGetUserTables(data ?? null) as UserTable[]);
     } catch (err) {
-      console.error('Error fetching tables:', err);
-      setError('Failed to load your tables');
+      console.error("Error fetching tables:", err);
+      setError("Failed to load your tables");
     } finally {
       setLoading(false);
     }
@@ -124,38 +132,38 @@ export default function TableSelectionModal({
   const handleTableSelect = async (table: UserTable) => {
     try {
       setLoading(true);
-      
+
       // Fetch table details including fields
-      const { data, error } = await supabase
-        .rpc('get_user_table_complete', { p_table_id: table.id });
-        
+      const { data, error } = await supabase.rpc("get_user_table_complete", {
+        p_table_id: table.id,
+      });
+
       if (error) throw error;
-      if (!data.success) throw new Error(data.error || 'Failed to load table details');
-      
+      const u = unwrapGetUserTableComplete(data ?? null);
       setSelectedTable(table);
-      setSelectedTableFields(data.fields || []);
+      setSelectedTableFields(u.fields as TableField[]);
       setSelectedTableInfo({
         table_name: table.table_name,
-        description: table.description
+        description: table.description,
       });
       setShowReferenceOverlay(true);
     } catch (err) {
-      console.error('Error loading table details:', err);
-      setError('Failed to load table details');
+      console.error("Error loading table details:", err);
+      setError("Failed to load table details");
     } finally {
       setLoading(false);
     }
   };
 
   const openTableInNewTab = (tableId: string) => {
-    window.open(`/data/${tableId}`, '_blank');
+    window.open(`/data/${tableId}`, "_blank");
   };
 
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'MMM d, yyyy');
+      return format(new Date(dateString), "MMM d, yyyy");
     } catch (err) {
-      return 'Unknown date';
+      return "Unknown date";
     }
   };
 
@@ -179,7 +187,7 @@ export default function TableSelectionModal({
               {description}
             </p>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             {/* Search */}
             <div className="relative">
@@ -210,14 +218,16 @@ export default function TableSelectionModal({
                 <div className="text-center py-8">
                   <TableIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                   <p className="text-gray-500">
-                    {searchTerm ? 'No tables match your search' : 'No tables found'}
+                    {searchTerm
+                      ? "No tables match your search"
+                      : "No tables found"}
                   </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {filteredTables.map((table) => (
-                    <Card 
-                      key={table.id} 
+                    <Card
+                      key={table.id}
                       className="hover:shadow-md transition-all cursor-pointer border-2 hover:border-blue-300 dark:hover:border-blue-700"
                     >
                       <CardContent className="p-4">
@@ -227,7 +237,7 @@ export default function TableSelectionModal({
                               {table.table_name}
                             </h3>
                             <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
-                              {table.description || 'No description'}
+                              {table.description || "No description"}
                             </p>
                           </div>
                           <div className="flex items-center space-x-1 ml-2">
@@ -283,7 +293,7 @@ export default function TableSelectionModal({
                         </div>
 
                         {/* Select Button */}
-                        <Button 
+                        <Button
                           className="w-full mt-3"
                           onClick={() => handleTableSelect(table)}
                           disabled={loading}
@@ -311,9 +321,11 @@ export default function TableSelectionModal({
           tableId={selectedTable.id}
           tableInfo={selectedTableInfo}
           fields={selectedTableFields}
-          onReferenceGenerated={onReferenceSelect ? handleReferenceCreated : undefined}
+          onReferenceGenerated={
+            onReferenceSelect ? handleReferenceCreated : undefined
+          }
         />
       )}
     </>
   );
-} 
+}

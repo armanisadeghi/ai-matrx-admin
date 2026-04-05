@@ -10,6 +10,7 @@ import {
 } from "@/features/scraper/hooks/useScraperApi";
 import ScraperDataUtils from "@/features/scraper/utils/data-utils";
 import PageContent from "@/features/scraper/parts/core/PageContent";
+import { ScraperHookErrorDetails } from "@/features/scraper/parts/ScraperHookErrorDetails";
 
 function normalizeUrl(raw: string): string | null {
   const trimmed = raw.trim();
@@ -54,14 +55,20 @@ const MODES = [
 
 export default function Page() {
   const router = useRouter();
-  const { scrapeUrl: fullScrape } = useScraperApi();
+  const {
+    scrapeUrl: fullScrape,
+    error: hookScrapeError,
+    errorDiagnostics,
+    hasError: hookScrapeHasError,
+    reset: resetScraper,
+  } = useScraperApi();
   const [url, setUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isFullScraping, setIsFullScraping] = useState(false);
   const [result, setResult] = useState<ReturnType<
     typeof ScraperDataUtils.processFullData
   > | null>(null);
-  const [activeTab, setActiveTab] = useState("reader");
+  const [activeTab, setActiveTab] = useState("pretty");
 
   const validate = (raw: string) => {
     const n = normalizeUrl(raw);
@@ -89,6 +96,7 @@ export default function Page() {
     if (!normalized) return;
     setUrl(normalized);
     setResult(null);
+    resetScraper();
     setIsFullScraping(true);
     try {
       const scraperResult = await fullScrape(normalized);
@@ -105,7 +113,9 @@ export default function Page() {
                 overview: scraperResult.overview,
                 structured_data: scraperResult.structuredData,
                 organized_data: scraperResult.organizedData,
-                text_data: scraperResult.textContent,
+                text_data: scraperResult.plainTextContent,
+                markdown_renderable:
+                  scraperResult.markdownRenderable ?? undefined,
                 main_image: scraperResult.mainImage,
                 hashes: null,
                 content_filter_removal_details: [],
@@ -115,10 +125,9 @@ export default function Page() {
             ],
           }),
         );
-        setActiveTab("reader");
-      } else {
-        setError("Scraping returned no data");
+        setActiveTab("pretty");
       }
+      // On failure, useScraperApi already sets hookScrapeError + errorDiagnostics
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to scrape");
     } finally {
@@ -185,8 +194,13 @@ export default function Page() {
               <span className="hidden sm:inline">Full Scrape</span>
             </Button>
           </div>
-          {error && (
-            <p className="text-xs text-destructive mt-1 text-center">{error}</p>
+          {(error || hookScrapeHasError) && (
+            <div className="mt-1 max-w-5xl mx-auto text-center">
+              <p className="text-xs text-destructive">
+                {error || hookScrapeError}
+              </p>
+              <ScraperHookErrorDetails diagnostics={errorDiagnostics} />
+            </div>
           )}
         </div>
         <div className="flex-1 min-h-0 overflow-hidden">
@@ -232,8 +246,13 @@ export default function Page() {
             inputMode="url"
             autoComplete="url"
           />
-          {error && (
-            <p className="text-xs text-destructive mt-2 text-center">{error}</p>
+          {(error || hookScrapeHasError) && (
+            <div className="mt-2 text-center w-full">
+              <p className="text-xs text-destructive">
+                {error || hookScrapeError}
+              </p>
+              <ScraperHookErrorDetails diagnostics={errorDiagnostics} />
+            </div>
           )}
         </div>
 

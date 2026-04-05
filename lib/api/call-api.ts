@@ -465,8 +465,8 @@ function resolveBaseUrl(
  * Build the full URL for the request.
  *
  * - Substitutes path parameters (e.g. {agent_id} → actual ID)
+ * - Strips any leading /api prefix (backend no longer requires it)
  * - Appends query string when provided
- * - Prepends /api prefix (the FastAPI backend routes all live under /api/*)
  */
 function buildUrl(
   baseUrl: string,
@@ -485,11 +485,11 @@ function buildUrl(
     }
   }
 
-  // The FastAPI backend mounts all routes under /api — the generated schema
-  // uses paths without the /api prefix (e.g. /ai/agents/{agent_id}).
+  // Strip the /api prefix — the backend routes no longer live under /api/*.
+  // Both legacy paths (starting with /api/) and new paths (without it) are handled correctly.
   const fullPath = resolvedPath.startsWith("/api/")
-    ? resolvedPath
-    : `/api${resolvedPath}`;
+    ? resolvedPath.slice(4)
+    : resolvedPath;
 
   const url = `${baseUrl}${fullPath}`;
 
@@ -558,6 +558,17 @@ function resolveScope(
 // ============================================================================
 
 /**
+ * UI-only fields that must never be sent to the Python backend.
+ * These are capability flags used internally by the frontend to determine
+ * which input types to show — the backend's UnifiedConfig rejects them.
+ */
+const UI_ONLY_BODY_FIELDS = new Set<string>([
+  "youtube_videos",
+  "file_urls",
+  "image_urls",
+]);
+
+/**
  * Assemble the final request body, injecting scope fields automatically.
  *
  * The backend accepts scope fields (organization_id, workspace_id, project_id,
@@ -569,9 +580,20 @@ function resolveScope(
  *   - user_id   → resolved from the auth header (JWT sub claim), never the body
  *   - conversation_id → either a path parameter or an explicit body field
  *     managed by the caller
+ *
+ * UI-only capability flags (youtube_videos, file_urls, image_urls) are always
+ * stripped — they are internal frontend signals and are not part of the backend schema.
  */
 function buildRequestBody(body: unknown, scope: CallScope): unknown {
-  const base = (body ?? {}) as Record<string, unknown>;
+  const raw = (body ?? {}) as Record<string, unknown>;
+
+  // Strip UI-only fields before sending to the backend
+  const base: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(raw)) {
+    if (!UI_ONLY_BODY_FIELDS.has(key)) {
+      base[key] = value;
+    }
+  }
 
   // Only inject fields that have an actual value — undefined keys are omitted
   // from JSON.stringify, so endpoints that don't declare these fields are unaffected.

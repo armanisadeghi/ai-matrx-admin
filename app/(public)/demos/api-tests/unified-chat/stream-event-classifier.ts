@@ -26,7 +26,7 @@ export interface TimestampedEvent {
 }
 
 export type EventCategory =
-  | 'status_update'
+  | 'phase'
   | 'chunk'
   | 'tool_event'
   | 'completion'
@@ -66,20 +66,22 @@ function classifyToolEvent(data: Record<string, unknown>): string {
   }
 }
 
-/** Determine the sub-type of a `status_update` event */
-function classifyStatusUpdate(data: Record<string, unknown>): string {
-  const status = data.status as string | undefined;
-  switch (status) {
+/** Determine the sub-type of a `phase` event */
+function classifyPhaseEvent(data: Record<string, unknown>): string {
+  const phase = data.phase as string | undefined;
+  switch (phase) {
     case 'connected':
-      return 'status_connected';
+      return 'phase_connected';
     case 'processing':
-      return data.metadata ? 'status_iteration' : 'status_processing';
+      return 'phase_processing';
+    case 'generating':
+      return 'phase_generating';
+    case 'using_tools':
+      return 'phase_using_tools';
     case 'complete':
-      return 'status_complete';
-    case 'error':
-      return 'status_error';
+      return 'phase_complete';
     default:
-      return status ? `status_${status}` : 'status_generic';
+      return phase ? `phase_${phase}` : 'phase_generic';
   }
 }
 
@@ -113,9 +115,9 @@ export function classifyEvent(
         : 'chunk_content';
       break;
 
-    case 'status_update':
-      category = 'status_update';
-      subType = classifyStatusUpdate(data);
+    case 'phase':
+      category = 'phase';
+      subType = classifyPhaseEvent(data);
       break;
 
     case 'tool_event':
@@ -201,7 +203,7 @@ export const groupToolUpdatesById = groupToolEventsById;
 /** Human-friendly label for a category */
 export function categoryLabel(cat: EventCategory): string {
   switch (cat) {
-    case 'status_update': return 'Status Updates';
+    case 'phase': return 'Phase Updates';
     case 'chunk': return 'Text Chunks';
     case 'tool_event': return 'Tool Events';
     case 'completion': return 'Completion';
@@ -217,13 +219,13 @@ export function categoryLabel(cat: EventCategory): string {
 /** Human-friendly label for a sub-type */
 export function subTypeLabel(subType: string): string {
   const labels: Record<string, string> = {
-    // Status
-    status_connected: 'Connected',
-    status_processing: 'Processing',
-    status_iteration: 'Iteration Update',
-    status_complete: 'Complete',
-    status_error: 'Error',
-    status_generic: 'Generic',
+    // Phase
+    phase_connected: 'Connected',
+    phase_processing: 'Processing',
+    phase_generating: 'Generating',
+    phase_using_tools: 'Using Tools',
+    phase_complete: 'Complete',
+    phase_generic: 'Generic',
     // Chunks
     chunk_reasoning: 'Reasoning',
     chunk_content: 'Content',
@@ -251,7 +253,7 @@ export function subTypeLabel(subType: string): string {
 /** Badge color class for a category */
 export function categoryColor(cat: EventCategory): string {
   switch (cat) {
-    case 'status_update': return 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/25';
+    case 'phase': return 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/25';
     case 'chunk': return 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/25';
     case 'tool_event': return 'bg-violet-500/15 text-violet-700 dark:text-violet-400 border-violet-500/25';
     case 'completion': return 'bg-teal-500/15 text-teal-700 dark:text-teal-400 border-teal-500/25';

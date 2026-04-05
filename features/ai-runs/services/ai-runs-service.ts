@@ -1,5 +1,10 @@
 import { createClient } from "@/utils/supabase/client";
 import { requireUserId } from "@/utils/auth/getUserId";
+import {
+  mapAiRunRow,
+  mapAiTaskRow,
+  runMessagesFromJson,
+} from "@/features/ai-runs/utils/db-row-mappers";
 import type {
   AiRun,
   AiRunWithTasks,
@@ -45,7 +50,7 @@ export const aiRunsService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return mapAiRunRow(data);
   },
 
   /**
@@ -65,7 +70,7 @@ export const aiRunsService = {
       throw error;
     }
 
-    return data;
+    return mapAiRunRow(data);
   },
 
   /**
@@ -96,8 +101,8 @@ export const aiRunsService = {
     if (tasksError) throw tasksError;
 
     return {
-      ...run,
-      tasks: tasks || [],
+      ...mapAiRunRow(run),
+      tasks: (tasks ?? []).map(mapAiTaskRow),
     };
   },
 
@@ -141,7 +146,7 @@ export const aiRunsService = {
     if (error) throw error;
 
     return {
-      runs: data || [],
+      runs: (data ?? []).map(mapAiRunRow),
       total: count || 0,
       hasMore: (count || 0) > offset + limit,
     };
@@ -161,7 +166,7 @@ export const aiRunsService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return mapAiRunRow(data);
   },
 
   /**
@@ -213,7 +218,7 @@ export const aiRunsService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return mapAiRunRow(data);
   },
 
   /**
@@ -232,7 +237,7 @@ export const aiRunsService = {
     if (getError) throw getError;
 
     // Append new message
-    const updatedMessages = [...(current.messages || []), message];
+    const updatedMessages = [...runMessagesFromJson(current.messages), message];
 
     // Update
     const { data, error } = await supabase
@@ -243,7 +248,7 @@ export const aiRunsService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return mapAiRunRow(data);
   },
 
   /**
@@ -260,7 +265,7 @@ export const aiRunsService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return mapAiRunRow(data);
   },
 
   /**
@@ -277,7 +282,7 @@ export const aiRunsService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return mapAiRunRow(data);
   },
 
   /**
@@ -294,6 +299,6 @@ export const aiRunsService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return mapAiRunRow(data);
   },
 };

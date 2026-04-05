@@ -1,5 +1,5 @@
 // types/reduxTypes.ts
-import { Database } from "@/types/matrixDb.types";
+import { Database } from "@/types/database.types";
 import { TestDirectory } from "@/utils/directoryStructure";
 import { UserData } from "@/utils/userDataMapper";
 import { GlobalCacheState } from "@/lib/redux/schema/globalCacheSlice";
@@ -11,6 +11,11 @@ export interface InitialReduxState {
   testRoutes: TestDirectory[];
   userPreferences: Record<string, any>;
   globalCache: GlobalCacheState;
+  // Optional SSR pre-population.
+  // contextMenuCache shape matches ContextMenuCacheState exactly — safe as preloaded state.
+  // modelRegistry and sms need action-based hydration (their shapes don't match raw arrays)
+  // so they are handled by SsrShellHydrator client island, not preloaded state.
+  contextMenuCache?: { rows: ContextMenuRow[]; hydrated: boolean };
 }
 
 /**

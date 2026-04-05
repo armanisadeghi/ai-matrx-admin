@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import {
-  Globe,
   Loader2,
   Send,
   ExternalLink,
@@ -16,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DemoPageLayout } from "../_components/DemoPageLayout";
 import { ResponseViewer } from "../_components/ResponseViewer";
 import { useScraperApi } from "@/features/scraper/hooks/useScraperApi";
+import { ScrapedContentPretty } from "@/features/scraper/parts/ScrapedContentPretty";
 
 function normalizeUrl(raw: string): string | null {
   const trimmed = raw.trim();
@@ -59,14 +59,27 @@ function charCount(s: string | undefined): string {
   return `${s.length.toLocaleString()} chars`;
 }
 
+/** Plain extracts for secondary tab (no markdown-first ordering) */
+function pickPlainTextFromRaw(raw: Record<string, unknown>): string {
+  return (
+    (raw.text_data as string) ||
+    (raw.ai_content as string) ||
+    (raw.ai_research_content as string) ||
+    (raw.ai_research_with_images as string) ||
+    ""
+  );
+}
+
 // ─── main rendered content ────────────────────────────────────────────────────
 
 function RenderedContent({ raw }: { raw: Record<string, unknown> }) {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("pretty");
 
   const overview = (raw.overview as Record<string, unknown>) ?? {};
   const links = (raw.links as Record<string, string[]>) ?? {};
   const images = (raw.images as string[]) ?? (links.images as string[]) ?? [];
+  const markdownRenderable = (raw.markdown_renderable as string) ?? "";
+  const plainBody = pickPlainTextFromRaw(raw);
 
   // All text variants exactly as returned by the API
   const textVariants: { key: string; label: string; description: string }[] = [
@@ -105,9 +118,16 @@ function RenderedContent({ raw }: { raw: Record<string, unknown> }) {
         className="flex-1 flex flex-col overflow-hidden"
       >
         <TabsList className="w-full justify-start rounded-none border-b border-border h-10 px-2 shrink-0 gap-0.5 overflow-x-auto">
+          <TabsTrigger value="pretty" className="text-xs shrink-0">
+            Pretty
+          </TabsTrigger>
+          <TabsTrigger value="plain" className="text-xs shrink-0">
+            Plain text
+          </TabsTrigger>
           <TabsTrigger value="overview" className="text-xs shrink-0">
             Overview
           </TabsTrigger>
+
           {textVariants.map(({ key, label }) => {
             const val = raw[key] as string | undefined;
             const isEmpty = !val;
@@ -134,6 +154,35 @@ function RenderedContent({ raw }: { raw: Record<string, unknown> }) {
             Structured
           </TabsTrigger>
         </TabsList>
+
+        {/* ── Pretty (markdown) ───────────────────────────────────────────── */}
+        <TabsContent value="pretty" className="flex-1 overflow-auto m-0">
+          <div className="max-w-3xl space-y-4 p-4">
+            <ScrapedContentPretty markdown={markdownRenderable} />
+          </div>
+        </TabsContent>
+
+        {/* ── Plain text (secondary) ───────────────────────────────────────── */}
+        <TabsContent value="plain" className="flex-1 overflow-auto p-4 m-0">
+          <div className="space-y-3 max-w-3xl">
+            <p className="text-xs text-muted-foreground">
+              Plain extract: <code className="font-mono">text_data</code>,{" "}
+              <code className="font-mono">ai_content</code>, etc. (not
+              markdown-first).
+            </p>
+            {plainBody ? (
+              <TextBlock content={plainBody} label="plain text" />
+            ) : markdownRenderable.trim() ? (
+              <p className="text-sm text-muted-foreground">
+                No separate plain fields — only{" "}
+                <code className="font-mono text-xs">markdown_renderable</code>.
+                Use the <strong>Pretty</strong> tab for rendered markdown.
+              </p>
+            ) : (
+              <TextBlock content="" label="plain text" />
+            )}
+          </div>
+        </TabsContent>
 
         {/* ── Overview ─────────────────────────────────────────────────────── */}
         <TabsContent value="overview" className="flex-1 overflow-auto p-4 m-0">
@@ -259,7 +308,6 @@ function RenderedContent({ raw }: { raw: Record<string, unknown> }) {
             )}
           </div>
         </TabsContent>
-
         {/* ── Text variant tabs ─────────────────────────────────────────────── */}
         {textVariants.map(({ key, label, description }) => (
           <TabsContent
@@ -396,6 +444,7 @@ export default function QuickScrapeDemoPage() {
     isLoading,
     hasError,
     error,
+    errorDiagnostics,
     statusMessage,
     reset,
   } = useScraperApi();
@@ -454,6 +503,7 @@ export default function QuickScrapeDemoPage() {
         data={rawData}
         isLoading={isLoading}
         error={hasError ? error : null}
+        errorDiagnostics={hasError ? errorDiagnostics : undefined}
         title="Scrape Results"
         renderContent={(d) => (
           <RenderedContent raw={d as Record<string, unknown>} />

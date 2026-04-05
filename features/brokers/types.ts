@@ -1,113 +1,86 @@
 import type { DbRpcRow } from "@/types/supabase-rpc";
+import type { Database } from "@/types/database.types";
+import { Constants } from "@/types/database.types";
 
-// Enums matching your database types
-export enum DataType {
-  STR = 'str',
-  INT = 'int',
-  FLOAT = 'float',
-  BOOL = 'bool',
-  DATE = 'date',
-  DATETIME = 'datetime',
-  JSON = 'json',
-  ARRAY = 'array',
-}
+/** Canonical broker row — matches `public.data_broker`. */
+export type DataBroker = Database["public"]["Tables"]["data_broker"]["Row"];
+export type CreateBrokerInput =
+  Database["public"]["Tables"]["data_broker"]["Insert"];
+export type UpdateBrokerInput =
+  Database["public"]["Tables"]["data_broker"]["Update"];
 
-export enum Color {
-  BLUE = 'blue',
-  RED = 'red',
-  GREEN = 'green',
-  YELLOW = 'yellow',
-  PURPLE = 'purple',
-  PINK = 'pink',
-  ORANGE = 'orange',
-  GRAY = 'gray',
-}
+export type DataType = Database["public"]["Enums"]["data_type"];
+export type Color = Database["public"]["Enums"]["color"];
+
+export const DATA_TYPES: DataType[] = [...Constants.public.Enums.data_type];
+export const COLORS: Color[] = [...Constants.public.Enums.color];
 
 export enum TaskStatus {
-  INCOMPLETE = 'incomplete',
-  COMPLETED = 'completed',
+  INCOMPLETE = "incomplete",
+  COMPLETED = "completed",
 }
 
 export enum AIRunStatus {
-  ACTIVE = 'active',
-  ARCHIVED = 'archived',
-  DELETED = 'deleted',
+  ACTIVE = "active",
+  ARCHIVED = "archived",
+  DELETED = "deleted",
 }
 
 export enum AIRunSourceType {
-  PROMPT = 'prompt',
-  CHAT = 'chat',
-  APPLET = 'applet',
-  COCKPIT = 'cockpit',
-  WORKFLOW = 'workflow',
-  CUSTOM = 'custom',
+  PROMPT = "prompt",
+  CHAT = "chat",
+  APPLET = "applet",
+  COCKPIT = "cockpit",
+  WORKFLOW = "workflow",
+  CUSTOM = "custom",
 }
 
 export enum AITaskStatus {
-  PENDING = 'pending',
-  STREAMING = 'streaming',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  CANCELLED = 'cancelled',
+  PENDING = "pending",
+  STREAMING = "streaming",
+  COMPLETED = "completed",
+  FAILED = "failed",
+  CANCELLED = "cancelled",
 }
-  
-// Core entity types
-export interface DataBroker {
+
+export interface Organization {
   id: string;
   name: string;
-  data_type: DataType;
-  default_value?: string | null;
-  color?: Color | null;
-  output_component?: string | null;
-  field_component_id?: string | null;
-  user_id?: string | null;
+  slug: string;
+  description?: string | null;
+  logo_url?: string | null;
+  website?: string | null;
   created_at: string;
   updated_at: string;
-  is_public?: boolean;
-  authenticated_read?: boolean;
-  public_read?: boolean;
-  default_scope?: string | null;
-  description?: string | null;
+  created_by?: string | null;
+  is_personal?: boolean;
+  settings?: Record<string, any>;
 }
-  
-  export interface Organization {
-    id: string;
-    name: string;
-    slug: string;
-    description?: string | null;
-    logo_url?: string | null;
-    website?: string | null;
-    created_at: string;
-    updated_at: string;
-    created_by?: string | null;
-    is_personal?: boolean;
-    settings?: Record<string, any>;
-  }
-  
-  export interface Workspace {
-    id: string;
-    organization_id: string;
-    parent_workspace_id?: string | null;
-    name: string;
-    description?: string | null;
-    settings?: Record<string, any>;
-    created_at: string;
-    updated_at: string;
-    created_by?: string | null;
-  }
-  
-  export interface Project {
-    id: string;
-    workspace_id?: string | null;
-    organization_id: string;
-    name: string;
-    description?: string | null;
-    created_at: string;
-    updated_at: string;
-    created_by?: string | null;
-    // Add other project fields as needed
-  }
-  
+
+export interface Workspace {
+  id: string;
+  organization_id: string;
+  parent_workspace_id?: string | null;
+  name: string;
+  description?: string | null;
+  settings?: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+}
+
+export interface Project {
+  id: string;
+  workspace_id?: string | null;
+  organization_id: string;
+  name: string;
+  description?: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+  // Add other project fields as needed
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -123,7 +96,7 @@ export interface Task {
   priority?: string | null; // task_priority enum - type not defined in schema
   assignee_id?: string | null;
 }
-  
+
 export interface AIRun {
   id: string;
   user_id: string;
@@ -148,7 +121,7 @@ export interface AIRun {
   updated_at: string;
   last_message_at: string;
 }
-  
+
 export interface AITask {
   id: string;
   run_id: string;
@@ -179,160 +152,137 @@ export interface AITask {
   updated_at: string;
   completed_at?: string | null;
 }
-  
+
 // Broker Value types
-export type ScopeLevel = 
-  | 'global' 
-  | 'user' 
-  | 'organization' 
-  | 'workspace' 
-  | 'project' 
-  | 'task' 
-  | 'ai_run' 
-  | 'ai_task';
+export type ScopeLevel =
+  | "global"
+  | "user"
+  | "organization"
+  | "workspace"
+  | "project"
+  | "task"
+  | "ai_run"
+  | "ai_task";
 
 // Enum value arrays for iteration and mapping
-export const DATA_TYPES = Object.values(DataType);
-export const COLORS = Object.values(Color);
 export const TASK_STATUSES = Object.values(TaskStatus);
 export const AI_RUN_STATUSES = Object.values(AIRunStatus);
 export const AI_RUN_SOURCE_TYPES = Object.values(AIRunSourceType);
 export const AI_TASK_STATUSES = Object.values(AITaskStatus);
 export const SCOPE_LEVELS: ScopeLevel[] = [
-  'global',
-  'user',
-  'organization',
-  'workspace',
-  'project',
-  'task',
-  'ai_run',
-  'ai_task'
+  "global",
+  "user",
+  "organization",
+  "workspace",
+  "project",
+  "task",
+  "ai_run",
+  "ai_task",
 ];
-  
-  export interface BrokerValue {
-    id: string;
-    broker_id: string;
-    is_global: boolean;
-    user_id?: string | null;
-    organization_id?: string | null;
-    workspace_id?: string | null;
-    project_id?: string | null;
-    task_id?: string | null;
-    ai_runs_id?: string | null;
-    ai_tasks_id?: string | null;
-    value: any; // JSONB - can be any valid JSON
-    created_at: string;
-    updated_at: string;
-    created_by?: string | null;
-  }
-  
-  // Function result types
-  export interface ResolvedBrokerValue {
-    broker_id: string;
-    value: any;
-    scope_level: ScopeLevel;
-    scope_id: string | null;
-  }
-type _CheckResolvedBrokerValue = ResolvedBrokerValue extends DbRpcRow<"get_broker_values_for_context"> ? true : false;
+
+export interface BrokerValue {
+  id: string;
+  broker_id: string;
+  is_global: boolean;
+  user_id?: string | null;
+  organization_id?: string | null;
+  workspace_id?: string | null;
+  project_id?: string | null;
+  task_id?: string | null;
+  ai_runs_id?: string | null;
+  ai_tasks_id?: string | null;
+  value: any; // JSONB - can be any valid JSON
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+}
+
+// Function result types
+export interface ResolvedBrokerValue {
+  broker_id: string;
+  value: any;
+  scope_level: ScopeLevel;
+  scope_id: string | null;
+}
+type _CheckResolvedBrokerValue =
+  ResolvedBrokerValue extends DbRpcRow<"get_broker_values_for_context">
+    ? true
+    : false;
 declare const _resolvedBrokerValue: _CheckResolvedBrokerValue;
 true satisfies typeof _resolvedBrokerValue;
 
-  export interface CompleteBrokerData {
-    broker_id: string;
-    broker_name: string;
-    data_type: string;
-    value: any | null;
-    has_value: boolean;
-    scope_level: ScopeLevel | null;
-    scope_id: string | null;
-    default_value: string | null;
-    description: string | null;
-  }
-type _CheckCompleteBrokerData = CompleteBrokerData extends DbRpcRow<"get_complete_broker_data_for_context"> ? true : false;
+export interface CompleteBrokerData {
+  broker_id: string;
+  broker_name: string;
+  data_type: string;
+  value: any | null;
+  has_value: boolean;
+  scope_level: ScopeLevel | null;
+  scope_id: string | null;
+  default_value: string | null;
+  description: string | null;
+}
+type _CheckCompleteBrokerData =
+  CompleteBrokerData extends DbRpcRow<"get_complete_broker_data_for_context">
+    ? true
+    : false;
 declare const _completeBrokerData: _CheckCompleteBrokerData;
 true satisfies typeof _completeBrokerData;
-  
-  // Context for broker resolution
-  export interface BrokerContext {
-    user_id?: string;
-    organization_id?: string;
-    workspace_id?: string;
-    project_id?: string;
-    task_id?: string;
-    ai_runs_id?: string;
-    ai_tasks_id?: string;
-  }
-  
-// Input types for creating/updating
-export interface CreateBrokerInput {
-  name: string;
-  data_type?: DataType;
-  default_value?: string | null;
-  color?: Color | null;
-  output_component?: string | null;
-  field_component_id?: string | null;
-  user_id?: string | null;
-  is_public?: boolean;
-  authenticated_read?: boolean;
-  public_read?: boolean;
-  default_scope?: string | null;
-  description?: string | null;
+
+// Context for broker resolution
+export interface BrokerContext {
+  user_id?: string;
+  organization_id?: string;
+  workspace_id?: string;
+  project_id?: string;
+  task_id?: string;
+  ai_runs_id?: string;
+  ai_tasks_id?: string;
 }
 
-export interface UpdateBrokerInput {
-  name?: string;
-  data_type?: DataType;
-  default_value?: string | null;
-  color?: Color | null;
-  output_component?: string | null;
-  field_component_id?: string | null;
-  is_public?: boolean;
-  authenticated_read?: boolean;
-  public_read?: boolean;
-  default_scope?: string | null;
-  description?: string | null;
+export interface CreateBrokerValueInput {
+  broker_id: string;
+  value: any;
+  is_global?: boolean;
+  user_id?: string | null;
+  organization_id?: string | null;
+  workspace_id?: string | null;
+  project_id?: string | null;
+  task_id?: string | null;
+  ai_runs_id?: string | null;
+  ai_tasks_id?: string | null;
+  created_by?: string | null;
 }
-  
-  export interface CreateBrokerValueInput {
-    broker_id: string;
-    value: any;
-    is_global?: boolean;
-    user_id?: string | null;
-    organization_id?: string | null;
-    workspace_id?: string | null;
-    project_id?: string | null;
-    task_id?: string | null;
-    ai_runs_id?: string | null;
-    ai_tasks_id?: string | null;
-    created_by?: string | null;
-  }
-  
-  export interface BulkBrokerValueInput {
-    broker_id: string;
-    value: any;
-  }
+
+export interface BulkBrokerValueInput {
+  broker_id: string;
+  value: any;
+}
 
 export interface BulkUpsertBrokerResult {
   broker_id: string;
   broker_value_id: string;
   success: boolean;
 }
-type _CheckBulkUpsertBrokerResult = BulkUpsertBrokerResult extends DbRpcRow<"bulk_upsert_broker_values"> ? true : false;
+type _CheckBulkUpsertBrokerResult =
+  BulkUpsertBrokerResult extends DbRpcRow<"bulk_upsert_broker_values">
+    ? true
+    : false;
 declare const _bulkUpsertBrokerResult: _CheckBulkUpsertBrokerResult;
 true satisfies typeof _bulkUpsertBrokerResult;
 
-  export interface CreateWorkspaceInput {
-    organization_id: string;
-    parent_workspace_id?: string | null;
-    name: string;
-    description?: string | null;
-    settings?: Record<string, any>;
-    created_by?: string | null;
-  }
-  
-  export interface UpdateWorkspaceInput {
-    name?: string;
-    description?: string | null;
-    settings?: Record<string, any>;
-    parent_workspace_id?: string | null;
-  }
+export interface CreateWorkspaceInput {
+  organization_id: string;
+  parent_workspace_id?: string | null;
+  name: string;
+  description?: string | null;
+  settings?: Record<string, any>;
+  created_by?: string | null;
+}
+
+export interface UpdateWorkspaceInput {
+  name?: string;
+  description?: string | null;
+  settings?: Record<string, any>;
+  parent_workspace_id?: string | null;
+}

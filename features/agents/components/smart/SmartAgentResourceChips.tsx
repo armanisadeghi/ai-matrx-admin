@@ -8,7 +8,7 @@
  * No prop callbacks needed — instanceId is the only prop.
  */
 
-import { useCallback } from "react";
+import { useCallback, createElement } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   X,
@@ -29,7 +29,10 @@ import {
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectInstanceResources } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.selectors";
 import { removeResource } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.slice";
-import type { ManagedResource, ResourceBlockType } from "@/features/agents/types";
+import type {
+  ManagedResource,
+  ResourceBlockType,
+} from "@/features/agents/types";
 
 function getBlockTypeDisplay(blockType: ResourceBlockType) {
   const map: Record<
@@ -149,7 +152,8 @@ function ResourceChip({ resource, onRemove }: ResourceChipProps) {
   const display = getBlockTypeDisplay(resource.blockType);
   const Icon = display.icon;
   const label = truncate(getResourceLabel(resource));
-  const isPending = resource.status === "pending" || resource.status === "resolving";
+  const isPending =
+    resource.status === "pending" || resource.status === "resolving";
   const isError = resource.status === "error";
 
   return (
@@ -164,7 +168,7 @@ function ResourceChip({ resource, onRemove }: ResourceChipProps) {
       ) : isError ? (
         <AlertCircle className="w-3 h-3 text-destructive" />
       ) : (
-        <Icon className={`w-3 h-3 ${display.color}`} />
+        createElement(Icon, { className: `w-3 h-3 ${display.color}` })
       )}
       <span className="text-foreground select-none">{label}</span>
       <button

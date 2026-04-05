@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/client';
+import type { Json } from '@/types/database.types';
 import type { ResearchTemplate } from '../types';
 import type { PromptBuiltinRef, TemplateFormData, AgentConfigKey } from './types';
 
@@ -152,7 +153,7 @@ export async function fetchResearchTopics(): Promise<Array<{
     name: string;
     status: string;
     template_id: string | null;
-    agent_config: Record<string, unknown> | null;
+    agent_config: Json;
     autonomy_level: string;
     created_at: string;
 }>> {

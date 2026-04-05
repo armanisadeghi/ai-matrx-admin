@@ -64,21 +64,14 @@ export const selectLatestCompletionStats =
   };
 
 export interface AggregateStats {
-  /** Total turns in the session (user + assistant) */
   turnCount: number;
-  /** Number of completed assistant turns (= number of requests) */
   requestCount: number;
-  /** Sum of all input tokens across all assistant turns */
   totalInputTokens: number;
-  /** Sum of all output tokens across all assistant turns */
   totalOutputTokens: number;
-  /** Sum of input + output tokens */
   totalTokens: number;
-  /** Sum of all costs across all assistant turns */
+  totalDurationMs: number;
+  totalIterations: number;
   totalCost: number;
-  /** Sum of all wall-clock durations across all assistant turns */
-  totalDuration: number;
-  /** Total tool calls across all turns */
   totalToolCalls: number;
 }
 
@@ -88,14 +81,16 @@ const EMPTY_AGGREGATE: AggregateStats = {
   totalInputTokens: 0,
   totalOutputTokens: 0,
   totalTokens: 0,
+  totalDurationMs: 0,
+  totalIterations: 0,
   totalCost: 0,
-  totalDuration: 0,
   totalToolCalls: 0,
 };
 
 /**
  * Aggregated stats across all completed assistant turns.
- * Memoized — only recomputes when the turns array changes.
+ * Reads from UserRequestResult (aliased as CompletionStats) using the real
+ * deeply-typed fields from the auto-generated stream-events.ts.
  */
 export const selectAggregateStats = (instanceId: string) =>
   createSelector(
@@ -108,8 +103,9 @@ export const selectAggregateStats = (instanceId: string) =>
       let totalInputTokens = 0;
       let totalOutputTokens = 0;
       let totalTokens = 0;
+      let totalDurationMs = 0;
+      let totalIterations = 0;
       let totalCost = 0;
-      let totalDuration = 0;
       let totalToolCalls = 0;
 
       for (const turn of turns) {
@@ -119,15 +115,16 @@ export const selectAggregateStats = (instanceId: string) =>
         const stats = turn.completionStats;
         if (!stats) continue;
 
-        const t = stats.total_usage?.total;
-        if (t) {
-          totalInputTokens += t.input_tokens ?? 0;
-          totalOutputTokens += t.output_tokens ?? 0;
-          totalTokens += t.total_tokens ?? 0;
-          totalCost += t.total_cost ?? 0;
+        const totals = stats.total_usage?.total;
+        if (totals) {
+          totalInputTokens += totals.input_tokens ?? 0;
+          totalOutputTokens += totals.output_tokens ?? 0;
+          totalTokens += totals.total_tokens ?? 0;
+          totalCost += totals.total_cost ?? 0;
         }
 
-        totalDuration += stats.timing_stats?.total_duration ?? 0;
+        totalDurationMs += (stats.timing_stats?.total_duration ?? 0) * 1000;
+        totalIterations += stats.iterations ?? 0;
         totalToolCalls += stats.tool_call_stats?.total_tool_calls ?? 0;
       }
 
@@ -137,8 +134,9 @@ export const selectAggregateStats = (instanceId: string) =>
         totalInputTokens,
         totalOutputTokens,
         totalTokens,
+        totalDurationMs,
+        totalIterations,
         totalCost,
-        totalDuration,
         totalToolCalls,
       };
     },

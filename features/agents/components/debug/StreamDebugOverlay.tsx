@@ -77,15 +77,14 @@ function OverlaySharedHeader({
             </Badge>
           </>
         )}
-        {request.currentStatus && (
+        {request.currentPhase && (
           <>
             <span className="text-xs text-muted-foreground">|</span>
             <Badge
               variant="outline"
               className="text-xs px-2 py-0.5 h-6 bg-yellow-500/10 text-yellow-400"
             >
-              {request.currentStatus.user_message ??
-                request.currentStatus.status}
+              {request.currentPhase}
             </Badge>
           </>
         )}

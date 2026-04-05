@@ -422,6 +422,8 @@ export const fetchAgentVersionSnapshot = createAsyncThunk<
         modelTiers: row.model_tiers,
         outputSchema: row.output_schema,
         customTools: row.custom_tools ?? [],
+        // Version snapshot RPC does not return MCP server IDs — treat as none.
+        mcpServers: [],
 
         // Access metadata not available from the version snapshot RPC
         isOwner: null,
@@ -566,6 +568,7 @@ export const createAgent = createAsyncThunk<
     modelTiers: partial.modelTiers ?? null,
     outputSchema: partial.outputSchema ?? null,
     customTools: partial.customTools ?? [],
+    mcpServers: partial.mcpServers ?? [],
     userId,
     organizationId: partial.organizationId ?? null,
     workspaceId: partial.workspaceId ?? null,

@@ -13,14 +13,60 @@
     "title": "ChunkPayload",
     "type": "object"
   },
-  "StatusUpdatePayload": {
+  "ReasoningChunkPayload": {
     "additionalProperties": false,
     "properties": {
-      "status": {
-        "title": "Status",
+      "text": {
+        "title": "Text",
+        "type": "string"
+      }
+    },
+    "required": [
+      "text"
+    ],
+    "title": "ReasoningChunkPayload",
+    "type": "object"
+  },
+  "PhasePayload": {
+    "additionalProperties": false,
+    "properties": {
+      "phase": {
+        "enum": [
+          "connected",
+          "processing",
+          "generating",
+          "using_tools",
+          "persisting",
+          "searching",
+          "scraping",
+          "analyzing",
+          "synthesizing",
+          "retrying",
+          "executing",
+          "complete"
+        ],
+        "title": "Phase",
+        "type": "string"
+      }
+    },
+    "required": [
+      "phase"
+    ],
+    "title": "PhasePayload",
+    "type": "object"
+  },
+  "WarningPayload": {
+    "additionalProperties": false,
+    "properties": {
+      "code": {
+        "title": "Code",
         "type": "string"
       },
       "system_message": {
+        "title": "System Message",
+        "type": "string"
+      },
+      "user_message": {
         "anyOf": [
           {
             "type": "string"
@@ -30,7 +76,46 @@
           }
         ],
         "default": null,
-        "title": "System Message"
+        "title": "User Message"
+      },
+      "level": {
+        "default": "medium",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "title": "Level",
+        "type": "string"
+      },
+      "recoverable": {
+        "default": true,
+        "title": "Recoverable",
+        "type": "boolean"
+      },
+      "metadata": {
+        "additionalProperties": true,
+        "title": "Metadata",
+        "type": "object"
+      }
+    },
+    "required": [
+      "code",
+      "system_message"
+    ],
+    "title": "WarningPayload",
+    "type": "object"
+  },
+  "InfoPayload": {
+    "additionalProperties": false,
+    "properties": {
+      "code": {
+        "title": "Code",
+        "type": "string"
+      },
+      "system_message": {
+        "title": "System Message",
+        "type": "string"
       },
       "user_message": {
         "anyOf": [
@@ -45,100 +130,51 @@
         "title": "User Message"
       },
       "metadata": {
-        "anyOf": [
-          {
-            "additionalProperties": true,
-            "type": "object"
-          },
-          {
-            "type": "null"
-          }
-        ],
-        "default": null,
-        "title": "Metadata"
+        "additionalProperties": true,
+        "title": "Metadata",
+        "type": "object"
       }
     },
     "required": [
-      "status"
+      "code",
+      "system_message"
     ],
-    "title": "StatusUpdatePayload",
+    "title": "InfoPayload",
     "type": "object"
   },
   "DataPayload": {
-    "additionalProperties": true,
-    "properties": {},
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "title": "Type",
+        "type": "string"
+      }
+    },
+    "required": [
+      "type"
+    ],
     "title": "DataPayload",
     "type": "object"
   },
-  "CompletionPayload": {
+  "InitPayload": {
     "additionalProperties": false,
     "properties": {
-      "status": {
-        "default": "complete",
+      "operation": {
         "enum": [
-          "complete",
-          "failed",
-          "max_iterations_exceeded"
+          "llm_request",
+          "tool_execution",
+          "user_request",
+          "sub_agent",
+          "persistence"
         ],
-        "title": "Status",
+        "title": "Operation",
         "type": "string"
       },
-      "output": {
-        "default": null,
-        "title": "Output"
+      "operation_id": {
+        "title": "Operation Id",
+        "type": "string"
       },
-      "iterations": {
-        "anyOf": [
-          {
-            "type": "integer"
-          },
-          {
-            "type": "null"
-          }
-        ],
-        "default": null,
-        "title": "Iterations"
-      },
-      "total_usage": {
-        "anyOf": [
-          {
-            "additionalProperties": true,
-            "type": "object"
-          },
-          {
-            "type": "null"
-          }
-        ],
-        "default": null,
-        "title": "Total Usage"
-      },
-      "timing_stats": {
-        "anyOf": [
-          {
-            "additionalProperties": true,
-            "type": "object"
-          },
-          {
-            "type": "null"
-          }
-        ],
-        "default": null,
-        "title": "Timing Stats"
-      },
-      "tool_call_stats": {
-        "anyOf": [
-          {
-            "additionalProperties": true,
-            "type": "object"
-          },
-          {
-            "type": "null"
-          }
-        ],
-        "default": null,
-        "title": "Tool Call Stats"
-      },
-      "finish_reason": {
+      "parent_operation_id": {
         "anyOf": [
           {
             "type": "string"
@@ -148,22 +184,59 @@
           }
         ],
         "default": null,
-        "title": "Finish Reason"
+        "title": "Parent Operation Id"
       },
       "metadata": {
-        "anyOf": [
-          {
-            "additionalProperties": true,
-            "type": "object"
-          },
-          {
-            "type": "null"
-          }
-        ],
-        "default": null,
-        "title": "Metadata"
+        "additionalProperties": true,
+        "title": "Metadata",
+        "type": "object"
       }
     },
+    "required": [
+      "operation",
+      "operation_id"
+    ],
+    "title": "InitPayload",
+    "type": "object"
+  },
+  "CompletionPayload": {
+    "additionalProperties": false,
+    "properties": {
+      "operation": {
+        "enum": [
+          "llm_request",
+          "tool_execution",
+          "user_request",
+          "sub_agent",
+          "persistence"
+        ],
+        "title": "Operation",
+        "type": "string"
+      },
+      "operation_id": {
+        "title": "Operation Id",
+        "type": "string"
+      },
+      "status": {
+        "enum": [
+          "success",
+          "failed",
+          "cancelled"
+        ],
+        "title": "Status",
+        "type": "string"
+      },
+      "result": {
+        "additionalProperties": true,
+        "title": "Result",
+        "type": "object"
+      }
+    },
+    "required": [
+      "operation",
+      "operation_id",
+      "status"
+    ],
     "title": "CompletionPayload",
     "type": "object"
   },
@@ -411,20 +484,1425 @@
     "title": "ContentBlockPayload",
     "type": "object"
   },
+  "RecordReservedPayload": {
+    "additionalProperties": false,
+    "properties": {
+      "db_project": {
+        "title": "Db Project",
+        "type": "string"
+      },
+      "table": {
+        "title": "Table",
+        "type": "string"
+      },
+      "record_id": {
+        "title": "Record Id",
+        "type": "string"
+      },
+      "status": {
+        "const": "pending",
+        "default": "pending",
+        "title": "Status",
+        "type": "string"
+      },
+      "parent_refs": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "title": "Parent Refs",
+        "type": "object"
+      },
+      "metadata": {
+        "additionalProperties": true,
+        "title": "Metadata",
+        "type": "object"
+      }
+    },
+    "required": [
+      "db_project",
+      "table",
+      "record_id"
+    ],
+    "title": "RecordReservedPayload",
+    "type": "object"
+  },
+  "RecordUpdatePayload": {
+    "additionalProperties": false,
+    "properties": {
+      "db_project": {
+        "title": "Db Project",
+        "type": "string"
+      },
+      "table": {
+        "title": "Table",
+        "type": "string"
+      },
+      "record_id": {
+        "title": "Record Id",
+        "type": "string"
+      },
+      "status": {
+        "enum": [
+          "active",
+          "completed",
+          "failed"
+        ],
+        "title": "Status",
+        "type": "string"
+      },
+      "metadata": {
+        "additionalProperties": true,
+        "title": "Metadata",
+        "type": "object"
+      }
+    },
+    "required": [
+      "db_project",
+      "table",
+      "record_id",
+      "status"
+    ],
+    "title": "RecordUpdatePayload",
+    "type": "object"
+  },
+  "LlmRequestResult": {
+    "additionalProperties": false,
+    "properties": {
+      "tokens_in": {
+        "default": 0,
+        "title": "Tokens In",
+        "type": "integer"
+      },
+      "tokens_out": {
+        "default": 0,
+        "title": "Tokens Out",
+        "type": "integer"
+      },
+      "duration_ms": {
+        "default": 0,
+        "title": "Duration Ms",
+        "type": "integer"
+      },
+      "finish_reason": {
+        "default": "",
+        "title": "Finish Reason",
+        "type": "string"
+      },
+      "model": {
+        "default": "",
+        "title": "Model",
+        "type": "string"
+      }
+    },
+    "title": "LlmRequestResult",
+    "type": "object"
+  },
+  "ToolExecutionResult": {
+    "additionalProperties": false,
+    "properties": {
+      "success": {
+        "default": true,
+        "title": "Success",
+        "type": "boolean"
+      },
+      "duration_ms": {
+        "default": 0,
+        "title": "Duration Ms",
+        "type": "integer"
+      },
+      "error": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Error"
+      }
+    },
+    "title": "ToolExecutionResult",
+    "type": "object"
+  },
+  "UserRequestResult": {
+    "$defs": {
+      "AggregatedUsageResult": {
+        "additionalProperties": false,
+        "properties": {
+          "by_model": {
+            "additionalProperties": {
+              "$ref": "#/$defs/ModelUsageSummary"
+            },
+            "title": "By Model",
+            "type": "object"
+          },
+          "total": {
+            "$ref": "#/$defs/UsageTotals"
+          }
+        },
+        "title": "AggregatedUsageResult",
+        "type": "object"
+      },
+      "ModelUsageSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "input_tokens": {
+            "default": 0,
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "output_tokens": {
+            "default": 0,
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "cached_input_tokens": {
+            "default": 0,
+            "title": "Cached Input Tokens",
+            "type": "integer"
+          },
+          "total_tokens": {
+            "default": 0,
+            "title": "Total Tokens",
+            "type": "integer"
+          },
+          "api": {
+            "default": "",
+            "title": "Api",
+            "type": "string"
+          },
+          "request_count": {
+            "default": 0,
+            "title": "Request Count",
+            "type": "integer"
+          },
+          "cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 0,
+            "title": "Cost"
+          }
+        },
+        "title": "ModelUsageSummary",
+        "type": "object"
+      },
+      "TimingStatsResult": {
+        "additionalProperties": false,
+        "properties": {
+          "total_duration": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total Duration"
+          },
+          "sum_duration": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Sum Duration"
+          },
+          "api_duration": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Api Duration"
+          },
+          "tool_duration": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Tool Duration"
+          },
+          "processing_duration": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Processing Duration"
+          },
+          "iterations": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Iterations"
+          },
+          "avg_iteration_duration": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Avg Iteration Duration"
+          }
+        },
+        "title": "TimingStatsResult",
+        "type": "object"
+      },
+      "ToolCallByTool": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "default": 0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "success": {
+            "default": 0,
+            "title": "Success",
+            "type": "integer"
+          },
+          "error": {
+            "default": 0,
+            "title": "Error",
+            "type": "integer"
+          }
+        },
+        "title": "ToolCallByTool",
+        "type": "object"
+      },
+      "ToolCallStatsResult": {
+        "additionalProperties": false,
+        "properties": {
+          "total_tool_calls": {
+            "default": 0,
+            "title": "Total Tool Calls",
+            "type": "integer"
+          },
+          "iterations_with_tools": {
+            "default": 0,
+            "title": "Iterations With Tools",
+            "type": "integer"
+          },
+          "by_tool": {
+            "additionalProperties": {
+              "$ref": "#/$defs/ToolCallByTool"
+            },
+            "title": "By Tool",
+            "type": "object"
+          }
+        },
+        "title": "ToolCallStatsResult",
+        "type": "object"
+      },
+      "UsageTotals": {
+        "additionalProperties": false,
+        "properties": {
+          "input_tokens": {
+            "default": 0,
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "output_tokens": {
+            "default": 0,
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "cached_input_tokens": {
+            "default": 0,
+            "title": "Cached Input Tokens",
+            "type": "integer"
+          },
+          "total_tokens": {
+            "default": 0,
+            "title": "Total Tokens",
+            "type": "integer"
+          },
+          "total_requests": {
+            "default": 0,
+            "title": "Total Requests",
+            "type": "integer"
+          },
+          "unique_models": {
+            "default": 0,
+            "title": "Unique Models",
+            "type": "integer"
+          },
+          "total_cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total Cost"
+          }
+        },
+        "title": "UsageTotals",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "status": {
+        "default": "complete",
+        "title": "Status",
+        "type": "string"
+      },
+      "output": {
+        "default": null,
+        "title": "Output"
+      },
+      "iterations": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Iterations"
+      },
+      "total_usage": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/AggregatedUsageResult"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "timing_stats": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/TimingStatsResult"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "tool_call_stats": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/ToolCallStatsResult"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "finish_reason": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Finish Reason"
+      },
+      "metadata": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Metadata"
+      }
+    },
+    "title": "UserRequestResult",
+    "type": "object"
+  },
+  "AggregatedUsageResult": {
+    "additionalProperties": false,
+    "properties": {
+      "by_model": {
+        "additionalProperties": {
+          "$ref": "#/$defs/ModelUsageSummary"
+        },
+        "title": "By Model",
+        "type": "object"
+      },
+      "total": {
+        "$ref": "#/$defs/UsageTotals"
+      }
+    },
+    "title": "AggregatedUsageResult",
+    "type": "object"
+  },
+  "ModelUsageSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "input_tokens": {
+        "default": 0,
+        "title": "Input Tokens",
+        "type": "integer"
+      },
+      "output_tokens": {
+        "default": 0,
+        "title": "Output Tokens",
+        "type": "integer"
+      },
+      "cached_input_tokens": {
+        "default": 0,
+        "title": "Cached Input Tokens",
+        "type": "integer"
+      },
+      "total_tokens": {
+        "default": 0,
+        "title": "Total Tokens",
+        "type": "integer"
+      },
+      "api": {
+        "default": "",
+        "title": "Api",
+        "type": "string"
+      },
+      "request_count": {
+        "default": 0,
+        "title": "Request Count",
+        "type": "integer"
+      },
+      "cost": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": 0,
+        "title": "Cost"
+      }
+    },
+    "title": "ModelUsageSummary",
+    "type": "object"
+  },
+  "TimingStatsResult": {
+    "additionalProperties": false,
+    "properties": {
+      "total_duration": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Total Duration"
+      },
+      "sum_duration": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Sum Duration"
+      },
+      "api_duration": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Api Duration"
+      },
+      "tool_duration": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Tool Duration"
+      },
+      "processing_duration": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Processing Duration"
+      },
+      "iterations": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Iterations"
+      },
+      "avg_iteration_duration": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Avg Iteration Duration"
+      }
+    },
+    "title": "TimingStatsResult",
+    "type": "object"
+  },
+  "ToolCallByTool": {
+    "additionalProperties": false,
+    "properties": {
+      "count": {
+        "default": 0,
+        "title": "Count",
+        "type": "integer"
+      },
+      "success": {
+        "default": 0,
+        "title": "Success",
+        "type": "integer"
+      },
+      "error": {
+        "default": 0,
+        "title": "Error",
+        "type": "integer"
+      }
+    },
+    "title": "ToolCallByTool",
+    "type": "object"
+  },
+  "ToolCallStatsResult": {
+    "additionalProperties": false,
+    "properties": {
+      "total_tool_calls": {
+        "default": 0,
+        "title": "Total Tool Calls",
+        "type": "integer"
+      },
+      "iterations_with_tools": {
+        "default": 0,
+        "title": "Iterations With Tools",
+        "type": "integer"
+      },
+      "by_tool": {
+        "additionalProperties": {
+          "$ref": "#/$defs/ToolCallByTool"
+        },
+        "title": "By Tool",
+        "type": "object"
+      }
+    },
+    "title": "ToolCallStatsResult",
+    "type": "object"
+  },
+  "UsageTotals": {
+    "additionalProperties": false,
+    "properties": {
+      "input_tokens": {
+        "default": 0,
+        "title": "Input Tokens",
+        "type": "integer"
+      },
+      "output_tokens": {
+        "default": 0,
+        "title": "Output Tokens",
+        "type": "integer"
+      },
+      "cached_input_tokens": {
+        "default": 0,
+        "title": "Cached Input Tokens",
+        "type": "integer"
+      },
+      "total_tokens": {
+        "default": 0,
+        "title": "Total Tokens",
+        "type": "integer"
+      },
+      "total_requests": {
+        "default": 0,
+        "title": "Total Requests",
+        "type": "integer"
+      },
+      "unique_models": {
+        "default": 0,
+        "title": "Unique Models",
+        "type": "integer"
+      },
+      "total_cost": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Total Cost"
+      }
+    },
+    "title": "UsageTotals",
+    "type": "object"
+  },
+  "SubAgentResult": {
+    "additionalProperties": false,
+    "properties": {
+      "agent_name": {
+        "default": "",
+        "title": "Agent Name",
+        "type": "string"
+      },
+      "success": {
+        "default": true,
+        "title": "Success",
+        "type": "boolean"
+      },
+      "error": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Error"
+      }
+    },
+    "title": "SubAgentResult",
+    "type": "object"
+  },
+  "PersistenceResult": {
+    "additionalProperties": false,
+    "properties": {
+      "records_written": {
+        "default": 0,
+        "title": "Records Written",
+        "type": "integer"
+      },
+      "duration_ms": {
+        "default": 0,
+        "title": "Duration Ms",
+        "type": "integer"
+      }
+    },
+    "title": "PersistenceResult",
+    "type": "object"
+  },
+  "ConversationIdData": {
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "const": "conversation_id",
+        "default": "conversation_id",
+        "title": "Type",
+        "type": "string"
+      },
+      "conversation_id": {
+        "title": "Conversation Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "conversation_id"
+    ],
+    "title": "ConversationIdData",
+    "type": "object"
+  },
+  "AudioOutputData": {
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "const": "audio_output",
+        "default": "audio_output",
+        "title": "Type",
+        "type": "string"
+      },
+      "url": {
+        "title": "Url",
+        "type": "string"
+      },
+      "mime_type": {
+        "title": "Mime Type",
+        "type": "string"
+      }
+    },
+    "required": [
+      "url",
+      "mime_type"
+    ],
+    "title": "AudioOutputData",
+    "type": "object"
+  },
+  "ImageOutputData": {
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "const": "image_output",
+        "default": "image_output",
+        "title": "Type",
+        "type": "string"
+      },
+      "url": {
+        "title": "Url",
+        "type": "string"
+      },
+      "mime_type": {
+        "title": "Mime Type",
+        "type": "string"
+      }
+    },
+    "required": [
+      "url",
+      "mime_type"
+    ],
+    "title": "ImageOutputData",
+    "type": "object"
+  },
+  "VideoOutputData": {
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "const": "video_output",
+        "default": "video_output",
+        "title": "Type",
+        "type": "string"
+      },
+      "url": {
+        "title": "Url",
+        "type": "string"
+      },
+      "mime_type": {
+        "title": "Mime Type",
+        "type": "string"
+      }
+    },
+    "required": [
+      "url",
+      "mime_type"
+    ],
+    "title": "VideoOutputData",
+    "type": "object"
+  },
+  "ConversationLabeledData": {
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "const": "conversation_labeled",
+        "default": "conversation_labeled",
+        "title": "Type",
+        "type": "string"
+      },
+      "conversation_id": {
+        "title": "Conversation Id",
+        "type": "string"
+      },
+      "title": {
+        "title": "Title",
+        "type": "string"
+      },
+      "description": {
+        "default": "",
+        "title": "Description",
+        "type": "string"
+      },
+      "keywords": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Keywords",
+        "type": "array"
+      }
+    },
+    "required": [
+      "conversation_id",
+      "title"
+    ],
+    "title": "ConversationLabeledData",
+    "type": "object"
+  },
+  "StructuredInputWarningData": {
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "const": "structured_input_warning",
+        "default": "structured_input_warning",
+        "title": "Type",
+        "type": "string"
+      },
+      "block_type": {
+        "title": "Block Type",
+        "type": "string"
+      },
+      "failures": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Failures",
+        "type": "array"
+      }
+    },
+    "required": [
+      "block_type"
+    ],
+    "title": "StructuredInputWarningData",
+    "type": "object"
+  },
+  "CategorizationResultData": {
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "const": "categorization_result",
+        "default": "categorization_result",
+        "title": "Type",
+        "type": "string"
+      },
+      "prompt_id": {
+        "title": "Prompt Id",
+        "type": "string"
+      },
+      "category": {
+        "title": "Category",
+        "type": "string"
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Tags",
+        "type": "array"
+      },
+      "description": {
+        "default": "",
+        "title": "Description",
+        "type": "string"
+      },
+      "dry_run": {
+        "default": false,
+        "title": "Dry Run",
+        "type": "boolean"
+      },
+      "metadata": {
+        "additionalProperties": true,
+        "title": "Metadata",
+        "type": "object"
+      }
+    },
+    "required": [
+      "prompt_id",
+      "category"
+    ],
+    "title": "CategorizationResultData",
+    "type": "object"
+  },
+  "PodcastStageData": {
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "const": "podcast_stage",
+        "default": "podcast_stage",
+        "title": "Type",
+        "type": "string"
+      },
+      "stage": {
+        "title": "Stage",
+        "type": "string"
+      },
+      "success": {
+        "title": "Success",
+        "type": "boolean"
+      },
+      "error": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Error"
+      },
+      "result_keys": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Result Keys",
+        "type": "array"
+      }
+    },
+    "required": [
+      "stage",
+      "success"
+    ],
+    "title": "PodcastStageData",
+    "type": "object"
+  },
+  "PodcastCompleteData": {
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "const": "podcast_complete",
+        "default": "podcast_complete",
+        "title": "Type",
+        "type": "string"
+      },
+      "show_id": {
+        "title": "Show Id",
+        "type": "string"
+      },
+      "success": {
+        "title": "Success",
+        "type": "boolean"
+      },
+      "episode_count": {
+        "default": 0,
+        "title": "Episode Count",
+        "type": "integer"
+      },
+      "error": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Error"
+      }
+    },
+    "required": [
+      "show_id",
+      "success"
+    ],
+    "title": "PodcastCompleteData",
+    "type": "object"
+  },
+  "WorkflowStepData": {
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "const": "workflow_step",
+        "default": "workflow_step",
+        "title": "Type",
+        "type": "string"
+      },
+      "step_name": {
+        "title": "Step Name",
+        "type": "string"
+      },
+      "status": {
+        "title": "Status",
+        "type": "string"
+      },
+      "data": {
+        "additionalProperties": true,
+        "title": "Data",
+        "type": "object"
+      }
+    },
+    "required": [
+      "step_name",
+      "status"
+    ],
+    "title": "WorkflowStepData",
+    "type": "object"
+  },
+  "FunctionResultData": {
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "const": "function_result",
+        "default": "function_result",
+        "title": "Type",
+        "type": "string"
+      },
+      "function_name": {
+        "title": "Function Name",
+        "type": "string"
+      },
+      "success": {
+        "title": "Success",
+        "type": "boolean"
+      },
+      "result": {
+        "default": null,
+        "title": "Result"
+      },
+      "error": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Error"
+      },
+      "duration_ms": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Duration Ms"
+      }
+    },
+    "required": [
+      "function_name",
+      "success"
+    ],
+    "title": "FunctionResultData",
+    "type": "object"
+  },
+  "QuestionnaireDisplayData": {
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "const": "display_questionnaire",
+        "default": "display_questionnaire",
+        "title": "Type",
+        "type": "string"
+      },
+      "introduction": {
+        "title": "Introduction",
+        "type": "string"
+      },
+      "questions": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Questions",
+        "type": "array"
+      }
+    },
+    "required": [
+      "introduction"
+    ],
+    "title": "QuestionnaireDisplayData",
+    "type": "object"
+  },
+  "ScrapeBatchCompleteData": {
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "const": "scrape_batch_complete",
+        "default": "scrape_batch_complete",
+        "title": "Type",
+        "type": "string"
+      },
+      "total_scraped": {
+        "title": "Total Scraped",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "total_scraped"
+    ],
+    "title": "ScrapeBatchCompleteData",
+    "type": "object"
+  },
+  "FetchResultsData": {
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "const": "fetch_results",
+        "default": "fetch_results",
+        "title": "Type",
+        "type": "string"
+      },
+      "metadata": {
+        "additionalProperties": true,
+        "title": "Metadata",
+        "type": "object"
+      },
+      "results": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Results",
+        "type": "array"
+      }
+    },
+    "title": "FetchResultsData",
+    "type": "object"
+  },
+  "SearchResultsData": {
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "const": "search_results",
+        "default": "search_results",
+        "title": "Type",
+        "type": "string"
+      },
+      "metadata": {
+        "additionalProperties": true,
+        "title": "Metadata",
+        "type": "object"
+      },
+      "results": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Results",
+        "type": "array"
+      }
+    },
+    "title": "SearchResultsData",
+    "type": "object"
+  },
+  "SearchErrorData": {
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "const": "search_error",
+        "default": "search_error",
+        "title": "Type",
+        "type": "string"
+      },
+      "metadata": {
+        "additionalProperties": true,
+        "title": "Metadata",
+        "type": "object"
+      },
+      "error": {
+        "title": "Error",
+        "type": "string"
+      }
+    },
+    "required": [
+      "error"
+    ],
+    "title": "SearchErrorData",
+    "type": "object"
+  },
+  "ToolStartedData": {
+    "additionalProperties": false,
+    "properties": {
+      "arguments": {
+        "additionalProperties": true,
+        "title": "Arguments",
+        "type": "object"
+      }
+    },
+    "title": "ToolStartedData",
+    "type": "object"
+  },
+  "ToolProgressData": {
+    "additionalProperties": false,
+    "properties": {
+      "percent": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Percent"
+      },
+      "metadata": {
+        "additionalProperties": true,
+        "title": "Metadata",
+        "type": "object"
+      }
+    },
+    "title": "ToolProgressData",
+    "type": "object"
+  },
+  "ToolStepData": {
+    "additionalProperties": false,
+    "properties": {
+      "step": {
+        "title": "Step",
+        "type": "string"
+      },
+      "metadata": {
+        "additionalProperties": true,
+        "title": "Metadata",
+        "type": "object"
+      }
+    },
+    "required": [
+      "step"
+    ],
+    "title": "ToolStepData",
+    "type": "object"
+  },
+  "ToolResultPreviewData": {
+    "additionalProperties": false,
+    "properties": {
+      "preview": {
+        "title": "Preview",
+        "type": "string"
+      }
+    },
+    "required": [
+      "preview"
+    ],
+    "title": "ToolResultPreviewData",
+    "type": "object"
+  },
+  "ToolCompletedData": {
+    "additionalProperties": false,
+    "properties": {
+      "result": {
+        "default": null,
+        "title": "Result"
+      }
+    },
+    "title": "ToolCompletedData",
+    "type": "object"
+  },
+  "ToolErrorData": {
+    "additionalProperties": false,
+    "properties": {
+      "error_type": {
+        "title": "Error Type",
+        "type": "string"
+      },
+      "detail": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Detail"
+      }
+    },
+    "required": [
+      "error_type"
+    ],
+    "title": "ToolErrorData",
+    "type": "object"
+  },
+  "ToolDelegatedData": {
+    "additionalProperties": false,
+    "properties": {
+      "arguments": {
+        "additionalProperties": true,
+        "title": "Arguments",
+        "type": "object"
+      }
+    },
+    "title": "ToolDelegatedData",
+    "type": "object"
+  },
   "StreamEvent": {
     "$defs": {
       "EventType": {
         "enum": [
           "chunk",
-          "status_update",
+          "reasoning_chunk",
+          "phase",
+          "warning",
+          "info",
           "data",
+          "init",
           "completion",
           "error",
           "tool_event",
           "broker",
           "heartbeat",
           "end",
-          "content_block"
+          "content_block",
+          "record_reserved",
+          "record_update"
         ],
         "title": "EventType",
         "type": "string"
@@ -451,15 +1929,21 @@
   "EventType": {
     "enum": [
       "chunk",
-      "status_update",
+      "reasoning_chunk",
+      "phase",
+      "warning",
+      "info",
       "data",
+      "init",
       "completion",
       "error",
       "tool_event",
       "broker",
       "heartbeat",
       "end",
-      "content_block"
+      "content_block",
+      "record_reserved",
+      "record_update"
     ]
   }
 }

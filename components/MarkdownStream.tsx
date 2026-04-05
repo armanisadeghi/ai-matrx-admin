@@ -46,8 +46,8 @@ export interface MarkdownStreamProps {
   toolUpdates?: ToolCallObject[];
   /** Callback when an error event is received (new mode) */
   onError?: (error: string) => void;
-  /** Callback when status updates are received (new mode) */
-  onStatusUpdate?: (status: string, message?: string) => void;
+  /** Callback when phase events are received (new mode) */
+  onPhaseUpdate?: (phase: string) => void;
   /**
    * Strict server-data mode — for testing/debugging only.
    * When true, structured blocks will NOT fall back to client-side parsing

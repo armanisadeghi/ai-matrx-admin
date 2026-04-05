@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { consumeStream } from '@/lib/api/stream-parser';
-import type { StatusUpdatePayload, EndPayload, CompletionPayload, ToolEventPayload } from '@/lib/api/types';
+import type { PhasePayload, EndPayload, CompletionPayload, ToolEventPayload } from '@/lib/api/types';
 import type { StreamEvent } from '@/types/python-generated/stream-events';
 import type { ResearchStreamStep, ResearchDataEvent, ResearchStreamCallbacks } from '../types';
 
@@ -68,33 +68,30 @@ export function useResearchStream(
 
         try {
             await consumeStream(response, {
-                onRawLine: (event: StreamEvent) => {
+                onEvent: (event: StreamEvent) => {
                     setRawEvents(prev => [...prev, event]);
-                },
-
-                onChunk: (text: string) => {
-                    setStreamingText(prev => prev + text);
-                    callbacks?.onChunk?.(text);
-                },
-
-                onStatusUpdate: (data: StatusUpdatePayload) => {
-                    const step = (data.status as ResearchStreamStep) || 'searching';
-                    setCurrentStep(step);
-                    if (data.user_message) {
-                        addMessage(step, data.user_message);
+                    const handled = ['chunk', 'phase', 'data', 'completion', 'tool_event', 'error', 'heartbeat', 'end'];
+                    if (!handled.includes(event.event)) {
+                        callbacks?.onUnknownEvent?.(event as { event: string; data: unknown });
                     }
-                    callbacks?.onStatusUpdate?.(
-                        step,
-                        data.user_message ?? data.system_message ?? '',
-                        data.metadata ?? undefined,
-                    );
                 },
 
-                onData: (data: Record<string, unknown>) => {
-                    // Backend uses `data.event` as the discriminator (not `data.type`)
-                    // e.g. {"event":"data","data":{"event":"scrape_complete","source_id":"...",...}}
-                    if (data.event && typeof data.event === 'string') {
-                        callbacks?.onData?.(data as unknown as ResearchDataEvent);
+                onChunk: (data) => {
+                    setStreamingText(prev => prev + data.text);
+                    callbacks?.onChunk?.(data.text);
+                },
+
+                onPhase: (data: PhasePayload) => {
+                    const step = (data.phase as ResearchStreamStep) || 'searching';
+                    setCurrentStep(step);
+                    addMessage(step, data.phase);
+                    callbacks?.onStatusUpdate?.(step, data.phase);
+                },
+
+                onData: (data) => {
+                    const record = data as unknown as Record<string, unknown>;
+                    if (record.event && typeof record.event === 'string') {
+                        callbacks?.onData?.(record as unknown as ResearchDataEvent);
                     }
                 },
 
@@ -107,9 +104,7 @@ export function useResearchStream(
                 },
 
                 onError: (err) => {
-                    const msg = (err as unknown as { user_message?: string; message?: string }).user_message
-                        ?? (err as unknown as { message?: string }).message
-                        ?? 'An error occurred';
+                    const msg = err.user_message ?? err.message ?? 'An error occurred';
                     setError(msg);
                     setCurrentStep('error');
                     callbacks?.onError?.(msg);
@@ -119,14 +114,6 @@ export function useResearchStream(
                     setCurrentStep('complete');
                     callbacks?.onEnd?.();
                     onComplete?.();
-                },
-
-                onEvent: (event: StreamEvent) => {
-                    // Forward unhandled event types to the debug callback
-                    const handled = ['chunk', 'status_update', 'data', 'completion', 'tool_event', 'error', 'heartbeat', 'end'];
-                    if (!handled.includes(event.event)) {
-                        callbacks?.onUnknownEvent?.(event as { event: string; data: unknown });
-                    }
                 },
             }, controller.signal);
         } catch (err) {

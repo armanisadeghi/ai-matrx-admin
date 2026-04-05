@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/client";
+import { unwrapUserTableMutation } from "@/utils/user-tables-rpc";
 import {
   Dialog,
   DialogContent,
@@ -80,9 +81,11 @@ export default function EditTableModal({
         throw error;
       }
 
-      if (!data || !data.success) {
+      try {
+        unwrapUserTableMutation(data ?? null);
+      } catch (e) {
         console.error("API response error:", data);
-        throw new Error(data?.error || "Failed to update table");
+        throw e instanceof Error ? e : new Error("Failed to update table");
       }
 
       // Call success callback
@@ -175,7 +178,6 @@ export default function EditTableModal({
                 onCheckedChange={setIsPublic}
               />
             </div>
-
           </div>
 
           <DialogFooter>

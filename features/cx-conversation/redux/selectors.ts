@@ -1,5 +1,6 @@
 import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "../../../lib/redux/store";
+import { selectActiveModels } from "@/features/ai-models/redux/modelRegistrySlice";
 import {
   EMPTY_MESSAGES,
   EMPTY_RESOURCES,
@@ -345,12 +346,12 @@ export const selectEffectiveModelLabel = createSelector(
     (state: RootState, sessionId: string) =>
       state.chatConversations.uiState[sessionId]?.modelOverride ?? null,
     (state: RootState) => state.activeChat.modelOverride,
-    (state: RootState) => state.modelRegistry.availableModels,
+    (state: RootState) => selectActiveModels(state),
   ],
-  (sessionOverride, agentDefaultModelId, availableModels): string | null => {
+  (sessionOverride, agentDefaultModelId, activeModels): string | null => {
     const modelId = sessionOverride ?? agentDefaultModelId;
     if (!modelId) return null;
-    const model = availableModels.find((m) => m.id === modelId);
+    const model = activeModels.find((m) => m.id === modelId);
     if (!model) return null;
     return model.common_name || model.name || model.id;
   },

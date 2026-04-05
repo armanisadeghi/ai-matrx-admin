@@ -23,6 +23,41 @@ import { supabase } from "@/utils/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ZipCodeData } from "../page";
 
+function isUserTablesRpcResult(
+  data: unknown,
+): data is { success: boolean; error?: string; tables?: UserTable[] } {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    "success" in data &&
+    typeof (data as { success: unknown }).success === "boolean"
+  );
+}
+
+function isUserTableCompleteRpcResult(
+  data: unknown,
+): data is { success: boolean; error?: string; fields?: TableField[] } {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    "success" in data &&
+    typeof (data as { success: unknown }).success === "boolean"
+  );
+}
+
+type PaginatedRow = { data: Record<string, unknown> };
+
+function isUserTableDataPaginatedResult(
+  data: unknown,
+): data is { success: boolean; error?: string; data?: PaginatedRow[] } {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    "success" in data &&
+    typeof (data as { success: unknown }).success === "boolean"
+  );
+}
+
 interface UserTable {
   id: string;
   table_name: string;
@@ -75,6 +110,9 @@ export default function TableDataSource({
       const { data, error } = await supabase.rpc("get_user_tables");
 
       if (error) throw error;
+      if (!isUserTablesRpcResult(data)) {
+        throw new Error("Invalid response from get_user_tables");
+      }
       if (!data.success) throw new Error(data.error || "Failed to load tables");
 
       setTables(data.tables || []);
@@ -105,6 +143,9 @@ export default function TableDataSource({
       });
 
       if (error) throw error;
+      if (!isUserTableCompleteRpcResult(data)) {
+        throw new Error("Invalid response from get_user_table_complete");
+      }
       if (!data.success) throw new Error(data.error || "Failed to load table");
 
       const tableFields = data.fields || [];
@@ -182,6 +223,9 @@ export default function TableDataSource({
       );
 
       if (rowsError) throw rowsError;
+      if (!isUserTableDataPaginatedResult(rowsData)) {
+        throw new Error("Invalid response from get_user_table_data_paginated");
+      }
       if (!rowsData.success)
         throw new Error(rowsData.error || "Failed to load data");
 
@@ -189,8 +233,8 @@ export default function TableDataSource({
 
       // Transform rows into ZipCodeData format
       const zipData: ZipCodeData[] = rows
-        .map((row: any) => {
-          const zipCode = String(row.data[zipCodeColumn] || "").trim();
+        .map((row: PaginatedRow) => {
+          const zipCode = String(row.data[zipCodeColumn] ?? "").trim();
           const count = Number(row.data[countColumn]) || 0;
 
           if (!zipCode || isNaN(count)) {

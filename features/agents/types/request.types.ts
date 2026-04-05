@@ -15,9 +15,15 @@
  */
 
 import type {
-  StatusUpdatePayload,
-  ContentBlockPayload,
+  Phase,
+  Operation,
+  InitCompletionStatus,
+  PhasePayload,
+  InitPayload,
   CompletionPayload,
+  ContentBlockPayload,
+  WarningPayload,
+  InfoPayload,
 } from "@/types/python-generated/stream-events";
 
 // =============================================================================
@@ -64,10 +70,17 @@ export interface ClientMetrics {
 
   totalEvents: number;
   chunkEvents: number;
+  reasoningChunkEvents: number;
+  phaseEvents: number;
+  initEvents: number;
+  completionEvents: number;
   dataEvents: number;
   toolEvents: number;
   contentBlockEvents: number;
-  statusUpdateEvents: number;
+  warningEvents: number;
+  infoEvents: number;
+  recordReservedEvents: number;
+  recordUpdateEvents: number;
   otherEvents: number;
   accumulatedTextBytes: number;
   totalPayloadBytes: number;
@@ -137,11 +150,25 @@ export interface ActiveRequest {
   textChunks: string[];
   accumulatedText: string;
 
-  // ── Status Updates ───────────────────────────────────────────
-  /** The most recent status update — overwrites on each new event */
-  currentStatus: StatusUpdatePayload | null;
-  /** Full history for debugging / timeline display */
-  statusHistory: StatusUpdatePayload[];
+  // ── Reasoning Chunks ────────────────────────────────────────
+  /** Same pattern as textChunks — O(1) push, joined lazily in selectors */
+  reasoningChunks: string[];
+  accumulatedReasoning: string;
+  /** Tracks whether we're inside a reasoning-streaming run (mirrors isTextStreaming) */
+  isReasoningStreaming: boolean;
+  reasoningRunChunkStart: number;
+
+  // ── Phase (state machine transitions) ────────────────────────
+  /** The most recent phase — overwrites on each phase event */
+  currentPhase: Phase | null;
+  /** Full phase history for debugging / timeline display */
+  phaseHistory: Phase[];
+
+  // ── Operation Tracking (init/completion pairs) ──────────────
+  /** Active operations keyed by operation_id */
+  activeOperations: Record<string, OperationEntry>;
+  /** Completed operations keyed by operation_id */
+  completedOperations: Record<string, CompletedOperationEntry>;
 
   // ── Content Blocks ───────────────────────────────────────────
   /** Keyed by blockId for O(1) lookup. Each block upserted in place. */
@@ -156,14 +183,29 @@ export interface ActiveRequest {
   toolLifecycle: Record<string, ToolLifecycleEntry>;
 
   // ── Completion ───────────────────────────────────────────────
-  /** Exactly one per request. null until the completion event fires. */
+  /**
+   * The user_request completion — null until the completion event
+   * with operation="user_request" fires. This is the primary
+   * "is this request done?" signal.
+   */
   completion: CompletionPayload | null;
 
   // ── Errors & Warnings ────────────────────────────────────────
   errorMessage: string | null;
   /** Whether the error was fatal (stream killed) or non-fatal (stream continues) */
   errorIsFatal: boolean;
-  warnings: StreamWarning[];
+  /** Structured warnings with severity and machine-readable codes */
+  warnings: WarningPayload[];
+  /** Lightweight info notifications */
+  infoEvents: InfoPayload[];
+
+  // ── Record Reservations ─────────────────────────────────────
+  /**
+   * Keyed by record_id. Tracks database rows reserved by the server.
+   * Status flows: pending → active/completed/failed.
+   * This is the client-side mirror of what the server persisted.
+   */
+  reservations: Record<string, ReservationRecord>;
 
   // ── Data Events (genuine catch-all) ──────────────────────────
   /** ONLY for unstructured data events — NOT status/tools/blocks/completion */
@@ -226,6 +268,24 @@ export interface RawStreamEvent {
 }
 
 // =============================================================================
+// Operation Tracking (init/completion pairs)
+// =============================================================================
+
+export interface OperationEntry {
+  operationId: string;
+  operation: Operation;
+  parentOperationId: string | null;
+  startedAt: number;
+}
+
+export interface CompletedOperationEntry extends OperationEntry {
+  status: InitCompletionStatus;
+  result: Record<string, unknown>;
+  completedAt: number;
+  durationMs: number;
+}
+
+// =============================================================================
 // Event Timeline — first-class sequential record
 // =============================================================================
 
@@ -237,15 +297,22 @@ export interface RawStreamEvent {
 export type TimelineEntry =
   | TimelineTextStart
   | TimelineTextEnd
-  | TimelineStatusUpdate
+  | TimelineReasoningStart
+  | TimelineReasoningEnd
+  | TimelinePhase
+  | TimelineInit
+  | TimelineCompletion
+  | TimelineWarning
+  | TimelineInfo
   | TimelineToolEvent
   | TimelineContentBlock
   | TimelineDataEvent
-  | TimelineCompletion
   | TimelineError
   | TimelineEnd
   | TimelineBroker
   | TimelineHeartbeat
+  | TimelineRecordReserved
+  | TimelineRecordUpdate
   | TimelineUnknown;
 
 interface TimelineBase {
@@ -265,9 +332,59 @@ export interface TimelineTextEnd extends TimelineBase {
   chunkCount: number;
 }
 
-export interface TimelineStatusUpdate extends TimelineBase {
-  kind: "status_update";
-  data: StatusUpdatePayload;
+export interface TimelineReasoningStart extends TimelineBase {
+  kind: "reasoning_start";
+  chunkStartIndex: number;
+}
+
+export interface TimelineReasoningEnd extends TimelineBase {
+  kind: "reasoning_end";
+  chunkStartIndex: number;
+  chunkEndIndex: number;
+  chunkCount: number;
+}
+
+export interface TimelineWarning extends TimelineBase {
+  kind: "warning";
+  code: string;
+  level: "low" | "medium" | "high";
+  recoverable: boolean;
+  userMessage: string | null;
+  systemMessage: string;
+}
+
+export interface TimelineInfo extends TimelineBase {
+  kind: "info";
+  code: string;
+  userMessage: string | null;
+  systemMessage: string;
+}
+
+export interface TimelineRecordReserved extends TimelineBase {
+  kind: "record_reserved";
+  table: string;
+  recordId: string;
+  dbProject: string;
+  parentRefs: Record<string, string>;
+}
+
+export interface TimelineRecordUpdate extends TimelineBase {
+  kind: "record_update";
+  table: string;
+  recordId: string;
+  status: "active" | "completed" | "failed";
+}
+
+export interface TimelinePhase extends TimelineBase {
+  kind: "phase";
+  phase: Phase;
+}
+
+export interface TimelineInit extends TimelineBase {
+  kind: "init";
+  operation: Operation;
+  operationId: string;
+  parentOperationId: string | null;
 }
 
 export interface TimelineToolEvent extends TimelineBase {
@@ -287,11 +404,15 @@ export interface TimelineContentBlock extends TimelineBase {
 
 export interface TimelineDataEvent extends TimelineBase {
   kind: "data";
+  dataType: string;
   data: Record<string, unknown>;
 }
 
 export interface TimelineCompletion extends TimelineBase {
   kind: "completion";
+  operation: Operation;
+  operationId: string;
+  status: InitCompletionStatus;
 }
 
 export interface TimelineError extends TimelineBase {
@@ -322,6 +443,21 @@ export interface TimelineUnknown extends TimelineBase {
 }
 
 // =============================================================================
+// Record Reservation
+// =============================================================================
+
+export type ReservationStatus = "pending" | "active" | "completed" | "failed";
+
+export interface ReservationRecord {
+  dbProject: string;
+  table: string;
+  recordId: string;
+  status: ReservationStatus;
+  parentRefs: Record<string, string>;
+  metadata: Record<string, unknown>;
+}
+
+// =============================================================================
 // Tool Delegation
 // =============================================================================
 
@@ -332,18 +468,6 @@ export interface PendingToolCall {
   receivedAt: string;
   deadlineAt: string;
   resolved: boolean;
-}
-
-// =============================================================================
-// Stream Warning
-// =============================================================================
-
-export interface StreamWarning {
-  type: string;
-  failures: Array<{
-    url?: string;
-    reason: string;
-  }>;
 }
 
 // =============================================================================

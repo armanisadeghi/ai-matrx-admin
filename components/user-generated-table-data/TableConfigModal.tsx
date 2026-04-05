@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/utils/supabase/client';
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/utils/supabase/client";
+import { unwrapUserTableMutation } from "@/utils/user-tables-rpc";
 import {
   Dialog,
   DialogContent,
@@ -24,17 +25,20 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { 
-  GripVertical, 
-  Settings, 
-  Type, 
-  Eye, 
-  EyeOff, 
+import {
+  GripVertical,
+  Settings,
+  Type,
+  Eye,
+  EyeOff,
   AlertTriangle,
   Save,
-  X
-} from 'lucide-react';
-import { sanitizeFieldName, validateFieldName } from '@/utils/user-table-utls/field-name-sanitizer';
+  X,
+} from "lucide-react";
+import {
+  sanitizeFieldName,
+  validateFieldName,
+} from "@/utils/user-table-utls/field-name-sanitizer";
 
 interface TableField {
   id: string;
@@ -66,14 +70,14 @@ interface TableConfigModalProps {
 }
 
 const DATA_TYPES = [
-  { value: 'string', label: 'Text', description: 'Any text content' },
-  { value: 'number', label: 'Number', description: 'Decimal numbers' },
-  { value: 'integer', label: 'Integer', description: 'Whole numbers only' },
-  { value: 'boolean', label: 'Boolean', description: 'True/False values' },
-  { value: 'date', label: 'Date', description: 'Date values' },
-  { value: 'datetime', label: 'DateTime', description: 'Date and time values' },
-  { value: 'json', label: 'JSON', description: 'Structured data' },
-  { value: 'array', label: 'Array', description: 'List of values' },
+  { value: "string", label: "Text", description: "Any text content" },
+  { value: "number", label: "Number", description: "Decimal numbers" },
+  { value: "integer", label: "Integer", description: "Whole numbers only" },
+  { value: "boolean", label: "Boolean", description: "True/False values" },
+  { value: "date", label: "Date", description: "Date values" },
+  { value: "datetime", label: "DateTime", description: "Date and time values" },
+  { value: "json", label: "JSON", description: "Structured data" },
+  { value: "array", label: "Array", description: "List of values" },
 ];
 
 export default function TableConfigModal({
@@ -82,26 +86,30 @@ export default function TableConfigModal({
   tableId,
   tableInfo: initialTableInfo,
   fields: initialFields,
-  onSuccess
+  onSuccess,
 }: TableConfigModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Table metadata state
   const [tableInfo, setTableInfo] = useState<TableInfo>(initialTableInfo);
-  
+
   // Fields state
   const [fields, setFields] = useState<TableField[]>([]);
   const [draggedField, setDraggedField] = useState<string | null>(null);
-  
+
   // Track changes
   const [hasChanges, setHasChanges] = useState(false);
-  const [dataTypeChanges, setDataTypeChanges] = useState<Record<string, string>>({});
+  const [dataTypeChanges, setDataTypeChanges] = useState<
+    Record<string, string>
+  >({});
 
   // Initialize fields when modal opens
   useEffect(() => {
     if (isOpen && initialFields) {
-      const sortedFields = [...initialFields].sort((a, b) => a.field_order - b.field_order);
+      const sortedFields = [...initialFields].sort(
+        (a, b) => a.field_order - b.field_order,
+      );
       setFields(sortedFields);
       setTableInfo(initialTableInfo);
       setHasChanges(false);
@@ -112,66 +120,70 @@ export default function TableConfigModal({
 
   // Handle table info changes
   const handleTableInfoChange = (key: keyof TableInfo, value: any) => {
-    setTableInfo(prev => ({ ...prev, [key]: value }));
+    setTableInfo((prev) => ({ ...prev, [key]: value }));
     setHasChanges(true);
   };
 
   // Handle field changes
-  const handleFieldChange = (fieldId: string, key: keyof TableField, value: any) => {
-    setFields(prev => prev.map(field => 
-      field.id === fieldId 
-        ? { ...field, [key]: value }
-        : field
-    ));
-    
+  const handleFieldChange = (
+    fieldId: string,
+    key: keyof TableField,
+    value: any,
+  ) => {
+    setFields((prev) =>
+      prev.map((field) =>
+        field.id === fieldId ? { ...field, [key]: value } : field,
+      ),
+    );
+
     // Track data type changes specifically
-    if (key === 'data_type') {
-      const originalField = initialFields.find(f => f.id === fieldId);
+    if (key === "data_type") {
+      const originalField = initialFields.find((f) => f.id === fieldId);
       if (originalField && originalField.data_type !== value) {
-        setDataTypeChanges(prev => ({ ...prev, [fieldId]: value }));
+        setDataTypeChanges((prev) => ({ ...prev, [fieldId]: value }));
       } else {
-        setDataTypeChanges(prev => {
+        setDataTypeChanges((prev) => {
           const updated = { ...prev };
           delete updated[fieldId];
           return updated;
         });
       }
     }
-    
+
     setHasChanges(true);
   };
 
   // Handle drag and drop for field reordering
   const handleDragStart = (e: React.DragEvent, fieldId: string) => {
     setDraggedField(fieldId);
-    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.effectAllowed = "move";
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+    e.dataTransfer.dropEffect = "move";
   };
 
   const handleDrop = (e: React.DragEvent, targetFieldId: string) => {
     e.preventDefault();
-    
+
     if (!draggedField || draggedField === targetFieldId) return;
 
-    const draggedIndex = fields.findIndex(f => f.id === draggedField);
-    const targetIndex = fields.findIndex(f => f.id === targetFieldId);
-    
+    const draggedIndex = fields.findIndex((f) => f.id === draggedField);
+    const targetIndex = fields.findIndex((f) => f.id === targetFieldId);
+
     if (draggedIndex === -1 || targetIndex === -1) return;
 
     const newFields = [...fields];
     const [draggedItem] = newFields.splice(draggedIndex, 1);
     newFields.splice(targetIndex, 0, draggedItem);
-    
+
     // Update field orders
     const updatedFields = newFields.map((field, index) => ({
       ...field,
-      field_order: index + 1
+      field_order: index + 1,
     }));
-    
+
     setFields(updatedFields);
     setDraggedField(null);
     setHasChanges(true);
@@ -190,49 +202,71 @@ export default function TableConfigModal({
 
       // Prepare table updates
       const tableUpdates = {
-        table_name: tableInfo.table_name !== initialTableInfo.table_name ? tableInfo.table_name : undefined,
-        description: tableInfo.description !== initialTableInfo.description ? tableInfo.description : undefined,
-        is_public: tableInfo.is_public !== initialTableInfo.is_public ? tableInfo.is_public : undefined,
+        table_name:
+          tableInfo.table_name !== initialTableInfo.table_name
+            ? tableInfo.table_name
+            : undefined,
+        description:
+          tableInfo.description !== initialTableInfo.description
+            ? tableInfo.description
+            : undefined,
+        is_public:
+          tableInfo.is_public !== initialTableInfo.is_public
+            ? tableInfo.is_public
+            : undefined,
       };
 
       // Remove undefined values
       const cleanTableUpdates = Object.fromEntries(
-        Object.entries(tableUpdates).filter(([_, value]) => value !== undefined)
+        Object.entries(tableUpdates).filter(
+          ([_, value]) => value !== undefined,
+        ),
       );
 
       // Prepare field updates
-      const fieldUpdates = fields.map(field => {
-        const originalField = initialFields.find(f => f.id === field.id);
-        if (!originalField) return null;
+      const fieldUpdates = fields
+        .map((field) => {
+          const originalField = initialFields.find((f) => f.id === field.id);
+          if (!originalField) return null;
 
-        const updates: any = { id: field.id };
-        
-        // CRITICAL: Sanitize field_name before allowing updates
-        if (field.field_name !== originalField.field_name) {
-          const sanitizedFieldName = sanitizeFieldName(field.field_name);
-          
-          // Validate the sanitized field name
-          if (!validateFieldName(sanitizedFieldName)) {
-            throw new Error(`Invalid field name: "${field.field_name}". Field names must start with a lowercase letter and contain only lowercase letters, numbers, and underscores.`);
-          }
-          
-          // Log warning if field name was modified during sanitization
-          if (field.field_name !== sanitizedFieldName) {
-            console.warn(`Field name "${field.field_name}" was sanitized to "${sanitizedFieldName}"`);
-          }
-          
-          updates.field_name = sanitizedFieldName;
-        }
-        
-        if (field.display_name !== originalField.display_name) updates.display_name = field.display_name;
-        if (field.data_type !== originalField.data_type) updates.data_type = field.data_type;
-        if (field.field_order !== originalField.field_order) updates.field_order = field.field_order;
-        if (field.is_required !== originalField.is_required) updates.is_required = field.is_required;
-        if (field.is_public !== originalField.is_public) updates.is_public = field.is_public;
+          const updates: any = { id: field.id };
 
-        // Only return if there are actual changes
-        return Object.keys(updates).length > 1 ? updates : null;
-      }).filter(Boolean);
+          // CRITICAL: Sanitize field_name before allowing updates
+          if (field.field_name !== originalField.field_name) {
+            const sanitizedFieldName = sanitizeFieldName(field.field_name);
+
+            // Validate the sanitized field name
+            if (!validateFieldName(sanitizedFieldName)) {
+              throw new Error(
+                `Invalid field name: "${field.field_name}". Field names must start with a lowercase letter and contain only lowercase letters, numbers, and underscores.`,
+              );
+            }
+
+            // Log warning if field name was modified during sanitization
+            if (field.field_name !== sanitizedFieldName) {
+              console.warn(
+                `Field name "${field.field_name}" was sanitized to "${sanitizedFieldName}"`,
+              );
+            }
+
+            updates.field_name = sanitizedFieldName;
+          }
+
+          if (field.display_name !== originalField.display_name)
+            updates.display_name = field.display_name;
+          if (field.data_type !== originalField.data_type)
+            updates.data_type = field.data_type;
+          if (field.field_order !== originalField.field_order)
+            updates.field_order = field.field_order;
+          if (field.is_required !== originalField.is_required)
+            updates.is_required = field.is_required;
+          if (field.is_public !== originalField.is_public)
+            updates.is_public = field.is_public;
+
+          // Only return if there are actual changes
+          return Object.keys(updates).length > 1 ? updates : null;
+        })
+        .filter(Boolean);
 
       // Call the RPC function
       const rpcParams: any = { p_table_id: tableId };
@@ -243,17 +277,23 @@ export default function TableConfigModal({
         rpcParams.p_field_updates = fieldUpdates;
       }
 
-      const { data, error: rpcError } = await supabase.rpc('update_user_table_config', rpcParams);
+      const { data, error: rpcError } = await supabase.rpc(
+        "update_user_table_config",
+        rpcParams,
+      );
 
       if (rpcError) throw rpcError;
-      if (!data.success) throw new Error(data.error || 'Failed to update table configuration');
+      unwrapUserTableMutation(data ?? null);
 
       onSuccess();
       onClose();
-
     } catch (err) {
-      console.error('Error updating table configuration:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update table configuration');
+      console.error("Error updating table configuration:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to update table configuration",
+      );
     } finally {
       setLoading(false);
     }
@@ -261,14 +301,18 @@ export default function TableConfigModal({
 
   const getDataTypeColor = (dataType: string) => {
     const colors = {
-      string: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      number: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      integer: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      boolean: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-      date: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-      datetime: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-      json: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
-      array: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
+      string: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      number:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      integer:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      boolean:
+        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+      date: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+      datetime:
+        "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+      json: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
+      array: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
     };
     return colors[dataType] || colors.string;
   };
@@ -296,20 +340,23 @@ export default function TableConfigModal({
                 <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
                   <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
                     <AlertTriangle className="h-4 w-4" />
-                    <span className="font-medium">Data Type Changes Detected</span>
+                    <span className="font-medium">
+                      Data Type Changes Detected
+                    </span>
                   </div>
                   <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                    Changing data types will attempt to convert existing data. Some conversions may fail.
+                    Changing data types will attempt to convert existing data.
+                    Some conversions may fail.
                   </p>
                 </div>
               )}
 
               {fields.map((field, index) => (
-                <Card 
+                <Card
                   key={field.id}
                   className={`cursor-move transition-all ${
-                    draggedField === field.id ? 'opacity-50 scale-95' : ''
-                  } ${dataTypeChanges[field.id] ? 'ring-2 ring-amber-400' : ''}`}
+                    draggedField === field.id ? "opacity-50 scale-95" : ""
+                  } ${dataTypeChanges[field.id] ? "ring-2 ring-amber-400" : ""}`}
                   draggable
                   onDragStart={(e) => handleDragStart(e, field.id)}
                   onDragOver={handleDragOver}
@@ -320,9 +367,12 @@ export default function TableConfigModal({
                       <div className="flex items-center gap-3">
                         <GripVertical className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <CardTitle className="text-sm">{field.display_name}</CardTitle>
+                          <CardTitle className="text-sm">
+                            {field.display_name}
+                          </CardTitle>
                           <p className="text-xs text-muted-foreground">
-                            Order: {field.field_order} • Field: {field.field_name}
+                            Order: {field.field_order} • Field:{" "}
+                            {field.field_name}
                           </p>
                         </div>
                       </div>
@@ -331,7 +381,10 @@ export default function TableConfigModal({
                           {field.data_type}
                         </Badge>
                         {dataTypeChanges[field.id] && (
-                          <Badge variant="outline" className="text-amber-600 border-amber-400">
+                          <Badge
+                            variant="outline"
+                            className="text-amber-600 border-amber-400"
+                          >
                             Will convert
                           </Badge>
                         )}
@@ -344,7 +397,13 @@ export default function TableConfigModal({
                         <Label className="text-xs">Display Name</Label>
                         <Input
                           value={field.display_name}
-                          onChange={(e) => handleFieldChange(field.id, 'display_name', e.target.value)}
+                          onChange={(e) =>
+                            handleFieldChange(
+                              field.id,
+                              "display_name",
+                              e.target.value,
+                            )
+                          }
                           className="h-8"
                         />
                       </div>
@@ -352,7 +411,9 @@ export default function TableConfigModal({
                         <Label className="text-xs">Data Type</Label>
                         <Select
                           value={field.data_type}
-                          onValueChange={(value) => handleFieldChange(field.id, 'data_type', value)}
+                          onValueChange={(value) =>
+                            handleFieldChange(field.id, "data_type", value)
+                          }
                         >
                           <SelectTrigger className="h-8">
                             <SelectValue />
@@ -361,8 +422,12 @@ export default function TableConfigModal({
                             {DATA_TYPES.map((type) => (
                               <SelectItem key={type.value} value={type.value}>
                                 <div>
-                                  <div className="font-medium">{type.label}</div>
-                                  <div className="text-xs text-muted-foreground">{type.description}</div>
+                                  <div className="font-medium">
+                                    {type.label}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {type.description}
+                                  </div>
                                 </div>
                               </SelectItem>
                             ))}
@@ -370,23 +435,37 @@ export default function TableConfigModal({
                         </Select>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-4 text-sm">
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id={`required-${field.id}`}
                           checked={field.is_required}
-                          onCheckedChange={(checked) => handleFieldChange(field.id, 'is_required', checked)}
+                          onCheckedChange={(checked) =>
+                            handleFieldChange(field.id, "is_required", checked)
+                          }
                         />
-                        <Label htmlFor={`required-${field.id}`} className="text-xs">Required</Label>
+                        <Label
+                          htmlFor={`required-${field.id}`}
+                          className="text-xs"
+                        >
+                          Required
+                        </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id={`public-${field.id}`}
                           checked={field.is_public}
-                          onCheckedChange={(checked) => handleFieldChange(field.id, 'is_public', checked)}
+                          onCheckedChange={(checked) =>
+                            handleFieldChange(field.id, "is_public", checked)
+                          }
                         />
-                        <Label htmlFor={`public-${field.id}`} className="text-xs">Public</Label>
+                        <Label
+                          htmlFor={`public-${field.id}`}
+                          className="text-xs"
+                        >
+                          Public
+                        </Label>
                       </div>
                     </div>
                   </CardContent>
@@ -403,17 +482,21 @@ export default function TableConfigModal({
                   <Input
                     id="table-name"
                     value={tableInfo.table_name}
-                    onChange={(e) => handleTableInfoChange('table_name', e.target.value)}
+                    onChange={(e) =>
+                      handleTableInfoChange("table_name", e.target.value)
+                    }
                     placeholder="Enter table name"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="table-description">Description</Label>
                   <Textarea
                     id="table-description"
-                    value={tableInfo.description || ''}
-                    onChange={(e) => handleTableInfoChange('description', e.target.value)}
+                    value={tableInfo.description || ""}
+                    onChange={(e) =>
+                      handleTableInfoChange("description", e.target.value)
+                    }
                     placeholder="Describe what this table contains..."
                     rows={3}
                   />
@@ -439,10 +522,11 @@ export default function TableConfigModal({
                     </div>
                     <Checkbox
                       checked={tableInfo.is_public}
-                      onCheckedChange={(checked) => handleTableInfoChange('is_public', checked)}
+                      onCheckedChange={(checked) =>
+                        handleTableInfoChange("is_public", checked)
+                      }
                     />
                   </div>
-                  
                 </div>
               </div>
             </div>
@@ -458,7 +542,7 @@ export default function TableConfigModal({
         <DialogFooter>
           <div className="flex justify-between items-center w-full">
             <div className="text-sm text-muted-foreground">
-              {hasChanges ? 'You have unsaved changes' : 'No changes made'}
+              {hasChanges ? "You have unsaved changes" : "No changes made"}
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={onClose} disabled={loading}>
@@ -467,7 +551,7 @@ export default function TableConfigModal({
               </Button>
               <Button onClick={handleSave} disabled={loading || !hasChanges}>
                 <Save className="h-4 w-4 mr-2" />
-                {loading ? 'Saving...' : 'Save Changes'}
+                {loading ? "Saving..." : "Save Changes"}
               </Button>
             </div>
           </div>
@@ -475,4 +559,4 @@ export default function TableConfigModal({
       </DialogContent>
     </Dialog>
   );
-} 
+}

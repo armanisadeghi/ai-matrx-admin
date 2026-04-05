@@ -3,6 +3,7 @@
 import React, {
   useState,
   useCallback,
+  useEffect,
   ErrorInfo,
   ReactNode,
   Component,
@@ -20,20 +21,28 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatScraperDiagnosticsJson } from "@/utils/scraper-diagnostics-json";
 
 // =============================================================================
 // ERROR BOUNDARY
 // =============================================================================
 
+interface RenderErrorBoundaryFallbackContext {
+  error: Error;
+  /** Populated after componentDidCatch runs */
+  componentStack: string | null;
+}
+
 interface ErrorBoundaryProps {
   children: ReactNode;
-  fallback: ReactNode;
+  fallback: (ctx: RenderErrorBoundaryFallbackContext) => ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
+  componentStack: string | null;
 }
 
 class RenderErrorBoundary extends Component<
@@ -42,21 +51,25 @@ class RenderErrorBoundary extends Component<
 > {
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, componentStack: null };
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error };
+    return { hasError: true, error, componentStack: null };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("ResponseViewer render error:", error, errorInfo);
+    this.setState({ componentStack: errorInfo.componentStack ?? null });
     this.props.onError?.(error, errorInfo);
   }
 
   render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
+    if (this.state.hasError && this.state.error) {
+      return this.props.fallback({
+        error: this.state.error,
+        componentStack: this.state.componentStack,
+      });
     }
     return this.props.children;
   }
@@ -265,6 +278,8 @@ interface ResponseViewerProps {
   data: unknown;
   isLoading?: boolean;
   error?: string | null;
+  /** Full structured failure payload (e.g. useScraperApi.errorDiagnostics) */
+  errorDiagnostics?: unknown;
   renderContent?: (data: unknown) => ReactNode;
   title?: string;
   className?: string;
@@ -274,6 +289,7 @@ export function ResponseViewer({
   data,
   isLoading,
   error,
+  errorDiagnostics,
   renderContent,
   title = "Response",
   className,
@@ -281,12 +297,41 @@ export function ResponseViewer({
   const [activeTab, setActiveTab] = useState<string>(
     renderContent ? "rendered" : "explorer",
   );
-  const [renderError, setRenderError] = useState<Error | null>(null);
+  const [renderFailure, setRenderFailure] = useState<{
+    message: string;
+    stack?: string;
+    componentStack?: string;
+  } | null>(null);
+  const [diagnosticsCopied, setDiagnosticsCopied] = useState(false);
 
-  const handleRenderError = useCallback((err: Error) => {
-    setRenderError(err);
+  const diagnosticsText =
+    errorDiagnostics != null
+      ? formatScraperDiagnosticsJson(errorDiagnostics)
+      : "";
+
+  const copyDiagnostics = useCallback(async () => {
+    if (!diagnosticsText) return;
+    try {
+      await navigator.clipboard.writeText(diagnosticsText);
+      setDiagnosticsCopied(true);
+      setTimeout(() => setDiagnosticsCopied(false), 2000);
+    } catch {
+      /* ignore */
+    }
+  }, [diagnosticsText]);
+
+  const handleRenderError = useCallback((err: Error, info: ErrorInfo) => {
+    setRenderFailure({
+      message: err.message,
+      stack: err.stack,
+      componentStack: info.componentStack,
+    });
     setActiveTab("explorer");
   }, []);
+
+  useEffect(() => {
+    setRenderFailure(null);
+  }, [data]);
 
   // Loading state
   if (isLoading) {
@@ -310,15 +355,48 @@ export function ResponseViewer({
     return (
       <div
         className={cn(
-          "h-full flex items-center justify-center bg-card rounded-lg border border-destructive/40",
+          "h-full flex flex-col min-h-0 bg-card rounded-lg border border-destructive/40 overflow-hidden",
           className,
         )}
       >
-        <div className="text-center space-y-3 max-w-md p-6">
-          <AlertTriangle className="w-10 h-10 mx-auto text-destructive" />
-          <h3 className="font-semibold text-destructive">Error</h3>
-          <p className="text-sm text-muted-foreground">{error}</p>
+        <div className="shrink-0 p-4 border-b border-destructive/30 space-y-2">
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="w-5 h-5 shrink-0" />
+            <h3 className="font-semibold text-sm">Request / pipeline failed</h3>
+          </div>
+          <p className="text-sm text-foreground">{error}</p>
+          {errorDiagnostics != null && (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <p className="text-xs text-muted-foreground flex-1">
+                Full stream payloads are under{" "}
+                <span className="font-mono">received.streamEventLog</span> →{" "}
+                <span className="font-mono">parsed</span>. Use{" "}
+                <span className="font-mono">stage</span> and{" "}
+                <span className="font-mono">operation</span> for the failure
+                step.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 shrink-0 gap-1.5"
+                onClick={copyDiagnostics}
+              >
+                {diagnosticsCopied ? (
+                  <Check className="w-3.5 h-3.5 text-green-600" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" />
+                )}
+                {diagnosticsCopied ? "Copied" : "Copy JSON"}
+              </Button>
+            </div>
+          )}
         </div>
+        {errorDiagnostics != null && (
+          <pre className="flex-1 min-h-0 overflow-auto p-4 text-xs font-mono text-foreground bg-muted/50 whitespace-pre-wrap border-t border-border">
+            {diagnosticsText}
+          </pre>
+        )}
       </div>
     );
   }
@@ -361,10 +439,12 @@ export function ResponseViewer({
       <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted shrink-0">
         <h3 className="text-sm font-medium text-foreground">{title}</h3>
 
-        {renderError && (
+        {renderFailure && (
           <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 text-xs">
             <AlertTriangle className="w-3.5 h-3.5" />
-            <span>Render failed - showing JSON</span>
+            <span>
+              Render failed — see Explorer tab for data; fault detail below
+            </span>
           </div>
         )}
       </div>
@@ -391,14 +471,34 @@ export function ResponseViewer({
         {renderContent && (
           <TabsContent value="rendered" className="flex-1 overflow-auto m-0">
             <RenderErrorBoundary
-              fallback={
-                <div className="p-4 text-center">
-                  <AlertTriangle className="w-8 h-8 mx-auto text-amber-500 mb-2" />
-                  <p className="text-sm text-amber-600">
-                    Render error - see Explorer tab
-                  </p>
+              fallback={({ error: renderErr, componentStack }) => (
+                <div className="p-4 space-y-3 overflow-auto max-h-full">
+                  <div className="flex items-start gap-2 text-amber-600 dark:text-amber-400">
+                    <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+                    <div className="space-y-1 min-w-0">
+                      <p className="text-sm font-medium">
+                        Render error in{" "}
+                        <span className="font-mono">renderContent()</span>{" "}
+                        (React child tree)
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Open the Explorer tab for the full response payload.
+                        This block records the exception and the React component
+                        stack (after one paint).
+                      </p>
+                    </div>
+                  </div>
+                  <pre className="text-xs font-mono bg-muted text-foreground p-3 rounded-lg overflow-auto whitespace-pre-wrap border border-border">
+                    {formatScraperDiagnosticsJson({
+                      where:
+                        "ResponseViewer → renderContent prop → child component render",
+                      errorMessage: renderErr.message,
+                      errorStack: renderErr.stack,
+                      reactComponentStack: componentStack,
+                    })}
+                  </pre>
                 </div>
-              }
+              )}
               onError={handleRenderError}
             >
               {renderContent(data)}
@@ -407,7 +507,18 @@ export function ResponseViewer({
         )}
 
         <TabsContent value="explorer" className="flex-1 overflow-hidden m-0">
-          <JsonExplorer data={data} />
+          <div className="h-full flex flex-col min-h-0">
+            {renderFailure && (
+              <div className="shrink-0 border-b border-border p-2 bg-amber-950/20">
+                <p className="text-[10px] font-mono text-amber-700 dark:text-amber-300 break-all">
+                  Render fault: {renderFailure.message}
+                </p>
+              </div>
+            )}
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <JsonExplorer data={data} />
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="raw" className="flex-1 overflow-hidden m-0">

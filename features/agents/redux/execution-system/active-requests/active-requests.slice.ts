@@ -1,23 +1,27 @@
 /**
- * Active Requests Slice
+ * Active Requests Slice — V2 Event System
  *
  * Tracks everything that happens after an API call fires.
  * Each semantically distinct server event type gets its own dedicated
  * storage field — no untyped catch-all bags.
  *
- * Keyed by requestId (not instanceId) because one instance can spawn
- * multiple requests via multi-turn conversations.
- *
- * Storage map:
- *   chunk events       → textChunks (O(1) push) + lazy join in selectors
- *   status_update      → currentStatus + statusHistory
+ * V2 Storage map:
+ *   chunk              → textChunks (O(1) push) + lazy join in selectors
+ *   reasoning_chunk    → reasoningChunks (same pattern)
+ *   phase              → currentPhase + phaseHistory
+ *   init               → activeOperations (keyed by operation_id)
+ *   completion         → completedOperations + completion (user_request)
  *   content_block      → contentBlocks (Record by blockId) + contentBlockOrder
  *   tool_event         → toolLifecycle (Record by callId) + pendingToolCalls
- *   completion         → completion (single object)
+ *   data (typed)       → dataPayloads (typed, with `type` discriminator)
+ *   warning            → warnings
+ *   info               → infoEvents
+ *   record_reserved    → reservations
+ *   record_update      → reservations (status update)
  *   error              → errorMessage + errorIsFatal + status change
- *   data               → dataPayloads (genuine catch-all, small)
  *   heartbeat          → dropped (no storage)
  *   end                → status change only
+ *   broker             → dataPayloads (frozen — no new usage)
  */
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
@@ -25,17 +29,22 @@ import type {
   ActiveRequest,
   RequestStatus,
   PendingToolCall,
-  StreamWarning,
   ClientMetrics,
   ToolLifecycleEntry,
   ToolLifecycleStatus,
   TimelineEntry,
   RawStreamEvent,
+  ReservationRecord,
+  ReservationStatus,
 } from "@/features/agents/types/request.types";
 import type {
-  StatusUpdatePayload,
+  Phase,
+  Operation,
+  InitCompletionStatus,
   ContentBlockPayload,
   CompletionPayload,
+  WarningPayload,
+  InfoPayload,
 } from "@/types/python-generated/stream-events";
 import { generateRequestId } from "../utils";
 import { destroyInstance } from "../execution-instances/execution-instances.slice";
@@ -86,8 +95,14 @@ const activeRequestsSlice = createSlice({
         status: "pending",
         textChunks: [],
         accumulatedText: "",
-        currentStatus: null,
-        statusHistory: [],
+        reasoningChunks: [],
+        accumulatedReasoning: "",
+        isReasoningStreaming: false,
+        reasoningRunChunkStart: 0,
+        currentPhase: null,
+        phaseHistory: [],
+        activeOperations: {},
+        completedOperations: {},
         contentBlocks: {},
         contentBlockOrder: [],
         toolLifecycle: {},
@@ -96,6 +111,8 @@ const activeRequestsSlice = createSlice({
         errorMessage: null,
         errorIsFatal: false,
         warnings: [],
+        infoEvents: [],
+        reservations: {},
         dataPayloads: [],
         timeline: [],
         rawEvents: [],
@@ -181,20 +198,133 @@ const activeRequestsSlice = createSlice({
       }
     },
 
-    // ── Status Updates ─────────────────────────────────────────
+    // ── Reasoning Chunks ─────────────────────────────────────────
 
-    setCurrentStatus(
+    appendReasoningChunk(
+      state,
+      action: PayloadAction<{ requestId: string; content: string }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (request) {
+        request.reasoningChunks.push(action.payload.content);
+      }
+    },
+
+    finalizeAccumulatedReasoning(
+      state,
+      action: PayloadAction<{ requestId: string }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (request && request.reasoningChunks.length > 0) {
+        request.accumulatedReasoning = request.reasoningChunks.join("");
+      }
+    },
+
+    markReasoningStreamStart(
+      state,
+      action: PayloadAction<{ requestId: string; timestamp: number }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (!request) return;
+
+      request.isReasoningStreaming = true;
+      request.reasoningRunChunkStart = request.reasoningChunks.length;
+
+      request.timeline.push({
+        kind: "reasoning_start",
+        seq: request.timeline.length,
+        timestamp: action.payload.timestamp,
+        chunkStartIndex: request.reasoningChunks.length,
+      });
+    },
+
+    closeReasoningRun(
+      state,
+      action: PayloadAction<{ requestId: string; timestamp: number }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (!request || !request.isReasoningStreaming) return;
+
+      request.timeline.push({
+        kind: "reasoning_end",
+        seq: request.timeline.length,
+        timestamp: action.payload.timestamp,
+        chunkStartIndex: request.reasoningRunChunkStart,
+        chunkEndIndex: request.reasoningChunks.length,
+        chunkCount:
+          request.reasoningChunks.length - request.reasoningRunChunkStart,
+      });
+      request.isReasoningStreaming = false;
+    },
+
+    // ── Phase (replaces status_update) ──────────────────────────
+
+    setCurrentPhase(
       state,
       action: PayloadAction<{
         requestId: string;
-        status: StatusUpdatePayload;
+        phase: Phase;
       }>,
     ) {
       const request = state.byRequestId[action.payload.requestId];
       if (request) {
-        request.currentStatus = action.payload.status;
-        request.statusHistory.push(action.payload.status);
+        request.currentPhase = action.payload.phase;
+        request.phaseHistory.push(action.payload.phase);
       }
+    },
+
+    // ── Operation Tracking (init/completion pairs) ────────────
+
+    trackOperationInit(
+      state,
+      action: PayloadAction<{
+        requestId: string;
+        operationId: string;
+        operation: Operation;
+        parentOperationId?: string | null;
+        timestamp: number;
+      }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (!request) return;
+
+      request.activeOperations[action.payload.operationId] = {
+        operationId: action.payload.operationId,
+        operation: action.payload.operation,
+        parentOperationId: action.payload.parentOperationId ?? null,
+        startedAt: action.payload.timestamp,
+      };
+    },
+
+    trackOperationCompletion(
+      state,
+      action: PayloadAction<{
+        requestId: string;
+        operationId: string;
+        operation: Operation;
+        status: InitCompletionStatus;
+        result: Record<string, unknown>;
+        timestamp: number;
+      }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (!request) return;
+
+      const active = request.activeOperations[action.payload.operationId];
+      const startedAt = active?.startedAt ?? action.payload.timestamp;
+
+      request.completedOperations[action.payload.operationId] = {
+        operationId: action.payload.operationId,
+        operation: action.payload.operation,
+        parentOperationId: active?.parentOperationId ?? null,
+        startedAt,
+        status: action.payload.status,
+        result: action.payload.result,
+        completedAt: action.payload.timestamp,
+        durationMs: action.payload.timestamp - startedAt,
+      };
+
+      delete request.activeOperations[action.payload.operationId];
     },
 
     // ── Content Blocks ─────────────────────────────────────────
@@ -367,18 +497,67 @@ const activeRequestsSlice = createSlice({
       }
     },
 
-    // ── Warnings ───────────────────────────────────────────────
+    // ── Warnings & Info ────────────────────────────────────────
 
     addWarning(
       state,
       action: PayloadAction<{
         requestId: string;
-        warning: StreamWarning;
+        warning: WarningPayload;
       }>,
     ) {
       const request = state.byRequestId[action.payload.requestId];
       if (request) {
         request.warnings.push(action.payload.warning);
+      }
+    },
+
+    addInfoEvent(
+      state,
+      action: PayloadAction<{
+        requestId: string;
+        info: InfoPayload;
+      }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (request) {
+        request.infoEvents.push(action.payload.info);
+      }
+    },
+
+    // ── Record Reservations ──────────────────────────────────────
+
+    upsertReservation(
+      state,
+      action: PayloadAction<{
+        requestId: string;
+        recordId: string;
+        dbProject: string;
+        table: string;
+        status: ReservationStatus;
+        parentRefs?: Record<string, string>;
+        metadata?: Record<string, unknown>;
+      }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (!request) return;
+
+      const { recordId, dbProject, table, status, parentRefs, metadata } =
+        action.payload;
+
+      const existing = request.reservations[recordId];
+      if (existing) {
+        existing.status = status;
+        if (metadata) Object.assign(existing.metadata, metadata);
+      } else {
+        request.reservations[recordId] = {
+          dbProject,
+          table,
+          recordId,
+          status,
+          parentRefs: parentRefs ?? {},
+          metadata: metadata ?? {},
+        };
       }
     },
 
@@ -408,6 +587,19 @@ const activeRequestsSlice = createSlice({
           chunkCount: request.textChunks.length - request.textRunChunkStart,
         });
         request.isTextStreaming = false;
+      }
+
+      if (request.isReasoningStreaming) {
+        request.timeline.push({
+          kind: "reasoning_end",
+          seq: request.timeline.length,
+          timestamp: action.payload.entry.timestamp,
+          chunkStartIndex: request.reasoningRunChunkStart,
+          chunkEndIndex: request.reasoningChunks.length,
+          chunkCount:
+            request.reasoningChunks.length - request.reasoningRunChunkStart,
+        });
+        request.isReasoningStreaming = false;
       }
 
       const entry = { ...action.payload.entry, seq: request.timeline.length };
@@ -529,7 +721,13 @@ export const {
   setConversationId,
   appendChunk,
   finalizeAccumulatedText,
-  setCurrentStatus,
+  appendReasoningChunk,
+  finalizeAccumulatedReasoning,
+  markReasoningStreamStart,
+  closeReasoningRun,
+  setCurrentPhase,
+  trackOperationInit,
+  trackOperationCompletion,
   upsertContentBlock,
   upsertToolLifecycle,
   addPendingToolCall,
@@ -537,6 +735,8 @@ export const {
   setCompletion,
   appendDataPayload,
   addWarning,
+  addInfoEvent,
+  upsertReservation,
   appendTimeline,
   appendRawEvent,
   markTextStreamStart,

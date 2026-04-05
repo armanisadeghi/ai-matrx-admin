@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { emailTableExport } from "@/lib/email/exportService";
+import {
+  unwrapGetUserTableComplete,
+  isTableFieldExportRow,
+} from "@/utils/user-tables-rpc";
 
 /**
  * POST /api/export/email-table
@@ -16,7 +20,7 @@ export async function POST(request: Request) {
     if (!user?.email) {
       return NextResponse.json(
         { success: false, msg: "Unauthorized or no email on account" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -26,14 +30,17 @@ export async function POST(request: Request) {
     if (!tableId || !tableName || !format) {
       return NextResponse.json(
         { success: false, msg: "tableId, tableName, and format are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!["csv", "json", "markdown"].includes(format)) {
       return NextResponse.json(
-        { success: false, msg: "Invalid format. Must be csv, json, or markdown" },
-        { status: 400 }
+        {
+          success: false,
+          msg: "Invalid format. Must be csv, json, or markdown",
+        },
+        { status: 400 },
       );
     }
 
@@ -50,7 +57,7 @@ export async function POST(request: Request) {
         console.error("Error exporting table as CSV:", error);
         return NextResponse.json(
           { success: false, msg: "Failed to export table" },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
@@ -63,40 +70,59 @@ export async function POST(request: Request) {
         p_table_id: tableId,
       });
 
-      if (error || !data.success) {
-        console.error("Error fetching table data:", error || data.error);
+      if (error) {
+        console.error("Error fetching table data:", error);
         return NextResponse.json(
           { success: false, msg: "Failed to fetch table data" },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
-      rowCount = data.data?.length;
+      let complete: ReturnType<typeof unwrapGetUserTableComplete>;
+      try {
+        complete = unwrapGetUserTableComplete(data ?? null);
+      } catch (e) {
+        console.error("Error fetching table data:", e);
+        return NextResponse.json(
+          { success: false, msg: "Failed to fetch table data" },
+          { status: 500 },
+        );
+      }
+
+      const exportFields = complete.fields.filter(isTableFieldExportRow);
+
+      rowCount = complete.data.length;
 
       if (format === "json") {
         // Convert to simple JSON format
-        const simpleData = data.data.map((row: any) => {
-          const rowObj: Record<string, any> = {};
-          data.fields.forEach((field: any) => {
-            rowObj[field.display_name] = row.data[field.field_name];
-          });
+        const simpleData = complete.data.map((row: unknown) => {
+          const rowObj: Record<string, unknown> = {};
+          const r = row as { data?: Record<string, unknown> };
+          const cells = r.data ?? {};
+          for (const field of exportFields) {
+            rowObj[field.display_name] = cells[field.field_name];
+          }
           return rowObj;
         });
         content = JSON.stringify(simpleData, null, 2);
       } else {
         // Convert to markdown
-        const headers = data.fields.map((field: any) => field.display_name);
+        const headers = exportFields.map((field) => field.display_name);
         let markdown = `# ${tableName}\n\n`;
         markdown += `| ${headers.join(" | ")} |\n`;
         markdown += `| ${headers.map(() => "---").join(" | ")} |\n`;
 
-        data.data.forEach((row: any) => {
-          const rowValues = data.fields.map((field: any) => {
-            const value = row.data[field.field_name];
-            return value !== null ? String(value).replace(/\|/g, "\\|") : "";
+        for (const row of complete.data) {
+          const r = row as { data?: Record<string, unknown> };
+          const cells = r.data ?? {};
+          const rowValues = exportFields.map((field) => {
+            const value = cells[field.field_name];
+            return value !== null && value !== undefined
+              ? String(value).replace(/\|/g, "\\|")
+              : "";
           });
           markdown += `| ${rowValues.join(" | ")} |\n`;
-        });
+        }
 
         content = markdown;
       }
@@ -119,13 +145,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       { success: false, msg: result.message, error: result.error },
-      { status: 500 }
+      { status: 500 },
     );
   } catch (error) {
     console.error("Error in POST /api/export/email-table:", error);
     return NextResponse.json(
       { success: false, msg: "Failed to send email" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

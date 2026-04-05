@@ -15,12 +15,43 @@ import type {
   ToolLifecycleEntry,
   TimelineEntry,
   RawStreamEvent,
+  ReservationRecord,
 } from "@/features/agents/types/request.types";
 import type {
-  StatusUpdatePayload,
+  Phase,
+  Operation,
+  InitCompletionStatus,
   ContentBlockPayload,
   CompletionPayload,
+  WarningPayload,
+  InfoPayload,
+  UserRequestResult,
+  LlmRequestResult,
+  ToolExecutionResult,
+  SubAgentResult,
+  PersistenceResult,
+  TypedDataPayload,
+  AudioOutputData,
+  CategorizationResultData,
+  ConversationIdData,
+  ConversationLabeledData,
+  FetchResultsData,
+  FunctionResultData,
+  ImageOutputData,
+  PodcastCompleteData,
+  PodcastStageData,
+  QuestionnaireDisplayData,
+  ScrapeBatchCompleteData,
+  SearchErrorData,
+  SearchResultsData,
+  StructuredInputWarningData,
+  VideoOutputData,
+  WorkflowStepData,
 } from "@/types/python-generated/stream-events";
+import type {
+  OperationEntry,
+  CompletedOperationEntry,
+} from "@/features/agents/types/request.types";
 
 // =============================================================================
 // Core Request Selectors
@@ -75,29 +106,69 @@ export const selectHasActiveRequests = (state: RootState): boolean =>
   );
 
 // =============================================================================
-// Status Update Selectors
+// Phase Selectors (V2 — replaces status_update)
 // =============================================================================
 
-/** The most recent status update for a request. Primitive — safe for useAppSelector. */
-export const selectCurrentStatus =
+/** The most recent phase for a request. Primitive — safe for useAppSelector. */
+export const selectCurrentPhase =
   (requestId: string) =>
-  (state: RootState): StatusUpdatePayload | null =>
-    state.activeRequests.byRequestId[requestId]?.currentStatus ?? null;
+  (state: RootState): Phase | null =>
+    state.activeRequests.byRequestId[requestId]?.currentPhase ?? null;
 
-/** Just the user-facing message from the latest status update. */
-export const selectCurrentStatusMessage =
-  (requestId: string) =>
-  (state: RootState): string | null =>
-    state.activeRequests.byRequestId[requestId]?.currentStatus?.user_message ??
-    state.activeRequests.byRequestId[requestId]?.currentStatus?.status ??
-    null;
-
-/** Full status history — for timeline / debug views. Memoized. */
-export const selectStatusHistory = (requestId: string) =>
+/** Full phase history — for timeline / debug views. Memoized. */
+export const selectPhaseHistory = (requestId: string) =>
   createSelector(
     (state: RootState) => state.activeRequests.byRequestId[requestId],
-    (request): StatusUpdatePayload[] => request?.statusHistory ?? [],
+    (request): Phase[] => request?.phaseHistory ?? [],
   );
+
+// =============================================================================
+// Operation Tracking Selectors (init/completion pairs)
+// =============================================================================
+
+/** All currently active (in-flight) operations. */
+export const selectActiveOperations =
+  (requestId: string) =>
+  (state: RootState): Record<string, OperationEntry> =>
+    state.activeRequests.byRequestId[requestId]?.activeOperations ?? {};
+
+/** All completed operations. */
+export const selectCompletedOperations =
+  (requestId: string) =>
+  (state: RootState): Record<string, CompletedOperationEntry> =>
+    state.activeRequests.byRequestId[requestId]?.completedOperations ?? {};
+
+/** Whether any operations are currently in-flight. Primitive. */
+export const selectHasActiveOperations =
+  (requestId: string) =>
+  (state: RootState): boolean =>
+    Object.keys(
+      state.activeRequests.byRequestId[requestId]?.activeOperations ?? {},
+    ).length > 0;
+
+/** Completed operations filtered by operation type. Memoized. */
+export const selectCompletedOperationsByType = (
+  requestId: string,
+  operation: Operation,
+) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.completedOperations,
+    (ops): CompletedOperationEntry[] => {
+      if (!ops) return [];
+      return Object.values(ops).filter((o) => o.operation === operation);
+    },
+  );
+
+/** The user_request completion entry (the primary one). */
+export const selectUserRequestCompletion =
+  (requestId: string) =>
+  (state: RootState): CompletedOperationEntry | undefined => {
+    const ops =
+      state.activeRequests.byRequestId[requestId]?.completedOperations;
+    if (!ops) return undefined;
+    return Object.values(ops).find((o) => o.operation === "user_request");
+  };
 
 // =============================================================================
 // Content Block Selectors
@@ -265,6 +336,305 @@ export const selectCompletion =
     state.activeRequests.byRequestId[requestId]?.completion ?? null;
 
 // =============================================================================
+// Typed Completion Result Selectors
+//
+// Each operation type has a known result shape from the auto-generated types.
+// These selectors narrow the untyped Record<string, unknown> to the correct
+// interface so components never need to cast.
+// =============================================================================
+
+type OperationResultMap = {
+  user_request: UserRequestResult;
+  llm_request: LlmRequestResult;
+  tool_execution: ToolExecutionResult;
+  sub_agent: SubAgentResult;
+  persistence: PersistenceResult;
+};
+
+function getTypedResult<T extends Operation>(
+  ops: Record<string, CompletedOperationEntry> | undefined,
+  operation: T,
+): OperationResultMap[T] | undefined {
+  if (!ops) return undefined;
+  const entry = Object.values(ops).find((o) => o.operation === operation);
+  return entry?.result as OperationResultMap[T] | undefined;
+}
+
+function getAllTypedResults<T extends Operation>(
+  ops: Record<string, CompletedOperationEntry> | undefined,
+  operation: T,
+): OperationResultMap[T][] {
+  if (!ops) return [];
+  return Object.values(ops)
+    .filter((o) => o.operation === operation)
+    .map((o) => o.result as OperationResultMap[T]);
+}
+
+/** The user_request result with full usage, timing, and tool call stats. */
+export const selectUserRequestResult =
+  (requestId: string) =>
+  (state: RootState): UserRequestResult | undefined =>
+    getTypedResult(
+      state.activeRequests.byRequestId[requestId]?.completedOperations,
+      "user_request",
+    );
+
+/** All LLM request results (one per iteration). */
+export const selectLlmRequestResults = (requestId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.completedOperations,
+    (ops): LlmRequestResult[] => getAllTypedResults(ops, "llm_request"),
+  );
+
+/** All tool execution results. */
+export const selectToolExecutionResults = (requestId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.completedOperations,
+    (ops): ToolExecutionResult[] => getAllTypedResults(ops, "tool_execution"),
+  );
+
+/** All sub-agent results. */
+export const selectSubAgentResults = (requestId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.completedOperations,
+    (ops): SubAgentResult[] => getAllTypedResults(ops, "sub_agent"),
+  );
+
+/** All persistence results. */
+export const selectPersistenceResults = (requestId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.completedOperations,
+    (ops): PersistenceResult[] => getAllTypedResults(ops, "persistence"),
+  );
+
+// =============================================================================
+// Typed Data Payload Selectors
+//
+// Data events carry a `type` discriminator. These selectors narrow the
+// untyped dataPayloads array to the correct TypedDataPayload interface.
+// =============================================================================
+
+type DataTypeMap = {
+  audio_output: AudioOutputData;
+  categorization_result: CategorizationResultData;
+  conversation_id: ConversationIdData;
+  conversation_labeled: ConversationLabeledData;
+  display_questionnaire: QuestionnaireDisplayData;
+  fetch_results: FetchResultsData;
+  function_result: FunctionResultData;
+  image_output: ImageOutputData;
+  podcast_complete: PodcastCompleteData;
+  podcast_stage: PodcastStageData;
+  scrape_batch_complete: ScrapeBatchCompleteData;
+  search_error: SearchErrorData;
+  search_results: SearchResultsData;
+  structured_input_warning: StructuredInputWarningData;
+  video_output: VideoOutputData;
+  workflow_step: WorkflowStepData;
+};
+
+type DataTypeName = keyof DataTypeMap;
+
+/**
+ * Generic typed data selector factory. Returns all data payloads matching
+ * the given type discriminator, narrowed to the correct interface.
+ *
+ * Usage: const results = useAppSelector(selectTypedDataPayloads(requestId, "search_results"));
+ *        // results is SearchResultsData[]
+ */
+export const selectTypedDataPayloads = <T extends DataTypeName>(
+  requestId: string,
+  dataType: T,
+) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.dataPayloads,
+    (payloads): DataTypeMap[T][] => {
+      if (!payloads) return [];
+      return payloads.filter(
+        (p) => (p as Record<string, unknown>).type === dataType,
+      ) as unknown as DataTypeMap[T][];
+    },
+  );
+
+/** First data payload of the given type, or undefined. */
+export const selectFirstTypedDataPayload =
+  <T extends DataTypeName>(requestId: string, dataType: T) =>
+  (state: RootState): DataTypeMap[T] | undefined => {
+    const payloads = state.activeRequests.byRequestId[requestId]?.dataPayloads;
+    if (!payloads) return undefined;
+    return payloads.find(
+      (p) => (p as Record<string, unknown>).type === dataType,
+    ) as unknown as DataTypeMap[T] | undefined;
+  };
+
+/** All data payloads as a typed union. Memoized. */
+export const selectAllTypedDataPayloads = (requestId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.dataPayloads,
+    (payloads): TypedDataPayload[] => {
+      if (!payloads) return [];
+      return payloads.filter(
+        (p) => typeof (p as Record<string, unknown>).type === "string",
+      ) as TypedDataPayload[];
+    },
+  );
+
+/** Distinct data types received for this request. Memoized. */
+export const selectReceivedDataTypes = (requestId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.dataPayloads,
+    (payloads): string[] => {
+      if (!payloads) return [];
+      const types = new Set<string>();
+      for (const p of payloads) {
+        const t = (p as Record<string, unknown>).type;
+        if (typeof t === "string") types.add(t);
+      }
+      return Array.from(types);
+    },
+  );
+
+// =============================================================================
+// Reasoning Selectors
+// =============================================================================
+
+/** Accumulated reasoning text (joined lazily like text chunks). */
+export const selectAccumulatedReasoning =
+  (requestId: string) =>
+  (state: RootState): string => {
+    const request = state.activeRequests.byRequestId[requestId];
+    if (!request) return "";
+    if (request.reasoningChunks.length > 0)
+      return request.reasoningChunks.join("");
+    return request.accumulatedReasoning || "";
+  };
+
+/** Whether reasoning tokens are currently streaming. Primitive. */
+export const selectIsReasoningStreaming =
+  (requestId: string) =>
+  (state: RootState): boolean =>
+    state.activeRequests.byRequestId[requestId]?.isReasoningStreaming ?? false;
+
+/** Whether any reasoning content exists for this request. Primitive. */
+export const selectHasReasoning =
+  (requestId: string) =>
+  (state: RootState): boolean =>
+    (state.activeRequests.byRequestId[requestId]?.reasoningChunks.length ?? 0) >
+    0;
+
+// =============================================================================
+// Warning Selectors
+// =============================================================================
+
+/** All structured warnings for a request. Stable ref — only grows. */
+export const selectWarnings =
+  (requestId: string) =>
+  (state: RootState): WarningPayload[] =>
+    state.activeRequests.byRequestId[requestId]?.warnings ?? [];
+
+/** Warning count. Primitive. */
+export const selectWarningCount =
+  (requestId: string) =>
+  (state: RootState): number =>
+    state.activeRequests.byRequestId[requestId]?.warnings.length ?? 0;
+
+/** High-severity warnings only. Memoized. */
+export const selectHighWarnings = (requestId: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byRequestId[requestId]?.warnings,
+    (warnings): WarningPayload[] => {
+      if (!warnings) return [];
+      return warnings.filter((w) => w.level === "high");
+    },
+  );
+
+// =============================================================================
+// Info Event Selectors
+// =============================================================================
+
+/** All info events for a request. Stable ref — only grows. */
+export const selectInfoEvents =
+  (requestId: string) =>
+  (state: RootState): InfoPayload[] =>
+    state.activeRequests.byRequestId[requestId]?.infoEvents ?? [];
+
+// =============================================================================
+// Record Reservation Selectors
+// =============================================================================
+
+/** All reservations for a request. Stable ref. */
+export const selectReservations =
+  (requestId: string) =>
+  (state: RootState): Record<string, ReservationRecord> =>
+    state.activeRequests.byRequestId[requestId]?.reservations ?? {};
+
+/** A single reservation by record_id. */
+export const selectReservation =
+  (requestId: string, recordId: string) =>
+  (state: RootState): ReservationRecord | undefined =>
+    state.activeRequests.byRequestId[requestId]?.reservations[recordId];
+
+/** Reservations filtered by table name. Memoized. */
+export const selectReservationsByTable = (requestId: string, table: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.reservations,
+    (reservations): ReservationRecord[] => {
+      if (!reservations) return [];
+      return Object.values(reservations).filter((r) => r.table === table);
+    },
+  );
+
+/** Reservations still in pending status. Memoized. */
+export const selectPendingReservations = (requestId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.reservations,
+    (reservations): ReservationRecord[] => {
+      if (!reservations) return [];
+      return Object.values(reservations).filter((r) => r.status === "pending");
+    },
+  );
+
+/** Reservations that have failed. Memoized. */
+export const selectFailedReservations = (requestId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.reservations,
+    (reservations): ReservationRecord[] => {
+      if (!reservations) return [];
+      return Object.values(reservations).filter((r) => r.status === "failed");
+    },
+  );
+
+/** Total count of reservations. Primitive. */
+export const selectReservationCount =
+  (requestId: string) =>
+  (state: RootState): number =>
+    Object.keys(state.activeRequests.byRequestId[requestId]?.reservations ?? {})
+      .length;
+
+/** The conversation_id from the cx_conversation reservation, if available. */
+export const selectReservedConversationId =
+  (requestId: string) =>
+  (state: RootState): string | null => {
+    const reservations =
+      state.activeRequests.byRequestId[requestId]?.reservations;
+    if (!reservations) return null;
+    const conv = Object.values(reservations).find(
+      (r) => r.table === "cx_conversation",
+    );
+    return conv?.recordId ?? null;
+  };
+
+// =============================================================================
 // Error Selectors
 // =============================================================================
 
@@ -365,12 +735,18 @@ export const selectTimelineKindCounts = (requestId: string) =>
 // =============================================================================
 
 export interface TimelineDerivedTiming {
-  /** Delta from request start (timeline[0]) to first status_update */
-  timeToFirstStatusMs: number | null;
+  /** Delta from request start (timeline[0]) to first phase event */
+  timeToFirstPhaseMs: number | null;
   /** Delta from request start to first text_start */
   timeToFirstTextMs: number | null;
+  /** Delta from request start to first reasoning_start */
+  timeToFirstReasoningMs: number | null;
+  /** Delta from request start to first init event */
+  timeToFirstInitMs: number | null;
   /** Sum of all text_start→text_end durations */
   textStreamingDurationMs: number;
+  /** Sum of all reasoning_start→reasoning_end durations */
+  reasoningStreamingDurationMs: number;
   /** Sum of all tool_started→tool_completed durations (by callId) */
   toolExecutionDurationMs: number;
   /** Total stream time minus text streaming time minus tool time */
@@ -379,19 +755,34 @@ export interface TimelineDerivedTiming {
   totalTimelineDurationMs: number | null;
   /** Number of distinct text runs */
   textRunCount: number;
+  /** Number of distinct reasoning runs */
+  reasoningRunCount: number;
   /** Number of distinct tool calls tracked */
   toolCallCount: number;
+  /** Number of record_reserved events */
+  reservationCount: number;
+  /** Number of warning events */
+  warningCount: number;
+  /** Number of info events */
+  infoCount: number;
 }
 
 const EMPTY_TIMING: TimelineDerivedTiming = {
-  timeToFirstStatusMs: null,
+  timeToFirstPhaseMs: null,
   timeToFirstTextMs: null,
+  timeToFirstReasoningMs: null,
+  timeToFirstInitMs: null,
   textStreamingDurationMs: 0,
+  reasoningStreamingDurationMs: 0,
   toolExecutionDurationMs: 0,
   interstitialDurationMs: null,
   totalTimelineDurationMs: null,
   textRunCount: 0,
+  reasoningRunCount: 0,
   toolCallCount: 0,
+  reservationCount: 0,
+  warningCount: 0,
+  infoCount: 0,
 };
 
 /**
@@ -405,22 +796,36 @@ export const selectTimelineDerivedTiming = (requestId: string) =>
       if (!timeline || timeline.length === 0) return EMPTY_TIMING;
 
       const origin = timeline[0].timestamp;
-      let timeToFirstStatusMs: number | null = null;
+      let timeToFirstPhaseMs: number | null = null;
       let timeToFirstTextMs: number | null = null;
+      let timeToFirstReasoningMs: number | null = null;
+      let timeToFirstInitMs: number | null = null;
       let textStreamingDurationMs = 0;
+      let reasoningStreamingDurationMs = 0;
       let textRunCount = 0;
+      let reasoningRunCount = 0;
 
       let currentTextRunStart: number | null = null;
+      let currentReasoningRunStart: number | null = null;
 
       const toolStarts = new Map<string, number>();
       let toolExecutionDurationMs = 0;
       let toolCallCount = 0;
+      let reservationCount = 0;
+      let warningCount = 0;
+      let infoCount = 0;
 
       for (const entry of timeline) {
         switch (entry.kind) {
-          case "status_update":
-            if (timeToFirstStatusMs === null) {
-              timeToFirstStatusMs = entry.timestamp - origin;
+          case "phase":
+            if (timeToFirstPhaseMs === null) {
+              timeToFirstPhaseMs = entry.timestamp - origin;
+            }
+            break;
+
+          case "init":
+            if (timeToFirstInitMs === null) {
+              timeToFirstInitMs = entry.timestamp - origin;
             }
             break;
 
@@ -439,6 +844,22 @@ export const selectTimelineDerivedTiming = (requestId: string) =>
             }
             break;
 
+          case "reasoning_start":
+            if (timeToFirstReasoningMs === null) {
+              timeToFirstReasoningMs = entry.timestamp - origin;
+            }
+            currentReasoningRunStart = entry.timestamp;
+            reasoningRunCount++;
+            break;
+
+          case "reasoning_end":
+            if (currentReasoningRunStart !== null) {
+              reasoningStreamingDurationMs +=
+                entry.timestamp - currentReasoningRunStart;
+              currentReasoningRunStart = null;
+            }
+            break;
+
           case "tool_event":
             if (entry.subEvent === "tool_started") {
               toolStarts.set(entry.callId, entry.timestamp);
@@ -454,6 +875,18 @@ export const selectTimelineDerivedTiming = (requestId: string) =>
               }
             }
             break;
+
+          case "record_reserved":
+            reservationCount++;
+            break;
+
+          case "warning":
+            warningCount++;
+            break;
+
+          case "info":
+            infoCount++;
+            break;
         }
       }
 
@@ -464,18 +897,26 @@ export const selectTimelineDerivedTiming = (requestId: string) =>
         totalTimelineDurationMs > 0
           ? totalTimelineDurationMs -
             textStreamingDurationMs -
+            reasoningStreamingDurationMs -
             toolExecutionDurationMs
           : null;
 
       return {
-        timeToFirstStatusMs,
+        timeToFirstPhaseMs,
         timeToFirstTextMs,
+        timeToFirstReasoningMs,
+        timeToFirstInitMs,
         textStreamingDurationMs,
+        reasoningStreamingDurationMs,
         toolExecutionDurationMs,
         interstitialDurationMs,
         totalTimelineDurationMs,
         textRunCount,
+        reasoningRunCount,
         toolCallCount,
+        reservationCount,
+        warningCount,
+        infoCount,
       };
     },
   );
