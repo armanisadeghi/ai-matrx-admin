@@ -6,7 +6,19 @@ import {ImageEditorSchema} from "@/types/imageEditorTypes";
 import {
     aiAudioConfig,
 } from "@/features/audio/voice/aiVoiceModuleConfig";
-export type ModuleName = 'aiAudio' | 'aiChat' | 'imageEditor';
+export type ModuleName = 'aiAudio' | 'aiChat' | 'imageEditor' | 'systemComponents';
+
+export interface SystemComponentsSchema {
+    moduleName: 'systemComponents';
+    initiated: boolean;
+    configs: Record<string, any>;
+    userPreferences: Record<string, any>;
+    data: Record<string, any>;
+    loading: boolean;
+    error: string | null;
+    staleTime: number;
+}
+
 
 export interface BaseModuleSchema<C, U, D> {
     moduleName: ModuleName;
@@ -19,7 +31,7 @@ export interface BaseModuleSchema<C, U, D> {
     staleTime: number;
 }
 
-export type ModuleSchema = AiAudioSchema | AiChatSchema | ImageEditorSchema;
+export type ModuleSchema = AiAudioSchema | AiChatSchema | ImageEditorSchema | SystemComponentsSchema;
 
 
 export const moduleSystemDefaults = {
@@ -88,6 +100,16 @@ export const moduleSchemas: Record<ModuleName, ModuleSchema> = {
     },
     imageEditor: {
         moduleName: "imageEditor",
+        initiated: moduleSystemDefaults.initiated,
+        configs: {},
+        userPreferences: {},
+        data: {},
+        loading: moduleSystemDefaults.loading,
+        error: moduleSystemDefaults.error,
+        staleTime: moduleSystemDefaults.staleTime,
+    },
+    systemComponents: {
+        moduleName: "systemComponents",
         initiated: moduleSystemDefaults.initiated,
         configs: {},
         userPreferences: {},
