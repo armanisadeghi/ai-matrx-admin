@@ -7,53 +7,31 @@
  * its display mode. Mounted by the OverlayController for every instance
  * whose displayMode is NOT "direct" or "background".
  *
- * Display mode → component mapping:
- *   modal-full      → Large dialog with conversation + input
- *   modal-compact   → Smaller dialog with compact view
- *   chat-bubble     → Compact floating bubble that expands into a chat
- *   inline          → Minimal floating overlay for quick text operations
- *   sidebar         → FloatingSheet (right-side panel)
- *   flexible-panel  → Draggable/resizable FloatingPanel
- *   panel           → FloatingSheet with narrower width
- *   toast           → Fixed-position notification with live preview
+ * Each shell is a thin layout wrapper. ALL execution logic, visibility
+ * filtering, pre-execution gating, auto-run, and input control live inside
+ * AgentRunner — the single inner component used by every shell.
  */
 
 import { useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectDisplayMode,
-  selectAllowChat,
+  selectInstanceTitle,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import {
   selectLatestAccumulatedText,
   selectIsExecuting,
-  selectIsStreaming,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
-import { selectInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
-import { AgentConversationDisplay } from "../run/AgentConversationDisplay";
-import { SmartAgentInput } from "../smart";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { AgentRunner } from "../smart/AgentRunner";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import {
-  X,
-  MessageSquare,
-  Maximize2,
-  Minimize2,
-  CornerDownLeft,
-  ArrowLeftToLine,
-  ArrowRightFromLine,
-} from "lucide-react";
+import { X, MessageSquare, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FloatingSheet from "@/components/official/FloatingSheet";
 import { FloatingPanel } from "@/components/official-candidate/FloatingPanel";
 
 // =============================================================================
-// Full Modal — large dialog with full conversation + input
+// Full Modal
 // =============================================================================
 
 function AgentFullModal({
@@ -63,41 +41,27 @@ function AgentFullModal({
   instanceId: string;
   onClose: () => void;
 }) {
+  const title = useAppSelector(selectInstanceTitle(instanceId));
+
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-3xl h-[85vh] flex flex-col p-0 gap-0">
         <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
-          <span className="text-sm font-medium text-foreground">
-            Agent Execution
+          <span className="text-sm font-medium text-foreground truncate">
+            {title ?? "Agent Execution"}
           </span>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={onClose}
-          >
-            <X className="w-4 h-4" />
-          </Button>
         </div>
-
-        <div className="flex-1 overflow-y-auto min-h-0">
-          <AgentConversationDisplay instanceId={instanceId} />
-        </div>
-
-        <div className="shrink-0 border-t border-border">
-          <SmartAgentInput
-            instanceId={instanceId}
-            sendButtonVariant="blue"
-            showSubmitOnEnterToggle
-          />
-        </div>
+        <AgentRunner
+          instanceId={instanceId}
+          className="flex-1 min-h-0 bg-background"
+        />
       </DialogContent>
     </Dialog>
   );
 }
 
 // =============================================================================
-// Compact Modal — smaller dialog
+// Compact Modal
 // =============================================================================
 
 function AgentCompactModal({
@@ -107,31 +71,28 @@ function AgentCompactModal({
   instanceId: string;
   onClose: () => void;
 }) {
+  const title = useAppSelector(selectInstanceTitle(instanceId));
+
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-xl max-h-[70vh] flex flex-col p-0 gap-0">
-        <DialogHeader className="px-4 py-2 border-b border-border shrink-0">
-          <DialogTitle className="text-sm">Agent</DialogTitle>
-        </DialogHeader>
-
-        <div className="flex-1 overflow-y-auto min-h-0 px-1">
-          <AgentConversationDisplay instanceId={instanceId} />
+        <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
+          <span className="text-sm font-medium text-foreground truncate">
+            {title ?? "Agent"}
+          </span>
         </div>
-
-        <div className="shrink-0 border-t border-border">
-          <SmartAgentInput
-            instanceId={instanceId}
-            sendButtonVariant="blue"
-            compact
-          />
-        </div>
+        <AgentRunner
+          instanceId={instanceId}
+          compact
+          className="flex-1 min-h-0 bg-background"
+        />
       </DialogContent>
     </Dialog>
   );
 }
 
 // =============================================================================
-// Chat Bubble — compact floating bubble that expands into a mini chat
+// Chat Bubble
 // =============================================================================
 
 function AgentChatBubble({
@@ -142,7 +103,6 @@ function AgentChatBubble({
   onClose: () => void;
 }) {
   const [expanded, setExpanded] = useState(true);
-  const text = useAppSelector(selectLatestAccumulatedText(instanceId));
   const isExecuting = useAppSelector(selectIsExecuting(instanceId));
 
   if (!expanded) {
@@ -185,18 +145,7 @@ function AgentChatBubble({
           </Button>
         </div>
       </div>
-
-      <div className="flex-1 overflow-y-auto min-h-0">
-        <AgentConversationDisplay instanceId={instanceId} />
-      </div>
-
-      <div className="shrink-0 border-t border-border">
-        <SmartAgentInput
-          instanceId={instanceId}
-          sendButtonVariant="blue"
-          compact
-        />
-      </div>
+      <AgentRunner instanceId={instanceId} compact className="flex-1 min-h-0" />
     </div>
   );
 }
@@ -212,20 +161,11 @@ function AgentInlineOverlay({
   instanceId: string;
   onClose: () => void;
 }) {
-  const text = useAppSelector(selectLatestAccumulatedText(instanceId));
-  const isStreaming = useAppSelector(selectIsStreaming(instanceId));
-  const allowChat = useAppSelector(selectAllowChat(instanceId));
-
   return (
-    <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-50 w-[600px] bg-card border border-border rounded-lg shadow-2xl overflow-hidden">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-muted/30 border-b border-border">
+    <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-50 w-[600px] max-h-[60vh] bg-card border border-border rounded-lg shadow-2xl overflow-hidden flex flex-col">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-muted/30 border-b border-border shrink-0">
         <span className="text-xs font-medium text-muted-foreground">
           Agent Result
-          {isStreaming && (
-            <Badge variant="secondary" className="ml-2 text-[9px] h-4 px-1">
-              Streaming
-            </Badge>
-          )}
         </span>
         <Button
           variant="ghost"
@@ -236,65 +176,11 @@ function AgentInlineOverlay({
           <X className="w-3 h-3" />
         </Button>
       </div>
-
-      <div className="px-3 py-2 max-h-48 overflow-y-auto">
-        {text ? (
-          <p className="text-sm text-foreground whitespace-pre-wrap">{text}</p>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            Waiting for response...
-          </p>
-        )}
-      </div>
-
-      <div className="flex items-center gap-1.5 px-3 py-2 border-t border-border bg-muted/20">
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 text-xs gap-1"
-          onClick={onClose}
-        >
-          <CornerDownLeft className="w-3 h-3" />
-          Replace
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 text-xs gap-1"
-          onClick={onClose}
-        >
-          <ArrowLeftToLine className="w-3 h-3" />
-          Insert Before
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 text-xs gap-1"
-          onClick={onClose}
-        >
-          <ArrowRightFromLine className="w-3 h-3" />
-          Insert After
-        </Button>
-        <div className="flex-1" />
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 text-xs"
-          onClick={onClose}
-        >
-          Dismiss
-        </Button>
-      </div>
-
-      {allowChat && (
-        <div className="shrink-0 border-t border-border">
-          <SmartAgentInput
-            instanceId={instanceId}
-            sendButtonVariant="blue"
-            compact
-          />
-        </div>
-      )}
+      <AgentRunner
+        instanceId={instanceId}
+        compact
+        className="flex-1 min-h-0 bg-background"
+      />
     </div>
   );
 }
@@ -310,11 +196,13 @@ function AgentSidebarOverlay({
   instanceId: string;
   onClose: () => void;
 }) {
+  const title = useAppSelector(selectInstanceTitle(instanceId));
+
   return (
     <FloatingSheet
       isOpen={true}
       onClose={onClose}
-      title="Agent"
+      title={title ?? "Agent"}
       position="right"
       width="2xl"
       height="full"
@@ -324,14 +212,7 @@ function AgentSidebarOverlay({
       contentClassName="p-0"
       lockScroll={false}
     >
-      <div className="h-full flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-y-auto min-h-0">
-          <AgentConversationDisplay instanceId={instanceId} />
-        </div>
-        <div className="shrink-0 border-t border-border">
-          <SmartAgentInput instanceId={instanceId} sendButtonVariant="blue" />
-        </div>
-      </div>
+      <AgentRunner instanceId={instanceId} className="h-full bg-background" />
     </FloatingSheet>
   );
 }
@@ -347,27 +228,21 @@ function AgentFlexiblePanelOverlay({
   instanceId: string;
   onClose: () => void;
 }) {
+  const title = useAppSelector(selectInstanceTitle(instanceId));
+
   return (
     <div className="fixed inset-0 z-50 pointer-events-none">
       <div className="absolute top-16 right-4 pointer-events-auto">
         <FloatingPanel
-          title="Agent"
+          title={title ?? "Agent"}
           size="2xl"
           onClose={onClose}
           bodyClassName="p-0"
         >
-          <div className="flex flex-col h-[500px] overflow-hidden">
-            <div className="flex-1 overflow-y-auto min-h-0">
-              <AgentConversationDisplay instanceId={instanceId} />
-            </div>
-            <div className="shrink-0 border-t border-border">
-              <SmartAgentInput
-                instanceId={instanceId}
-                sendButtonVariant="blue"
-                compact
-              />
-            </div>
-          </div>
+          <AgentRunner
+            instanceId={instanceId}
+            className="h-[500px] bg-background"
+          />
         </FloatingPanel>
       </div>
     </div>
@@ -385,11 +260,13 @@ function AgentPanelOverlay({
   instanceId: string;
   onClose: () => void;
 }) {
+  const title = useAppSelector(selectInstanceTitle(instanceId));
+
   return (
     <FloatingSheet
       isOpen={true}
       onClose={onClose}
-      title="Agent"
+      title={title ?? "Agent"}
       position="right"
       width="lg"
       height="full"
@@ -399,18 +276,7 @@ function AgentPanelOverlay({
       contentClassName="p-0"
       lockScroll={false}
     >
-      <div className="h-full flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-y-auto min-h-0">
-          <AgentConversationDisplay instanceId={instanceId} />
-        </div>
-        <div className="shrink-0 border-t border-border">
-          <SmartAgentInput
-            instanceId={instanceId}
-            sendButtonVariant="blue"
-            compact
-          />
-        </div>
-      </div>
+      <AgentRunner instanceId={instanceId} className="h-full bg-background" />
     </FloatingSheet>
   );
 }
@@ -464,11 +330,11 @@ function AgentToastOverlay({
             </Button>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto min-h-0 px-3 py-2">
-          <p className="text-sm text-foreground whitespace-pre-wrap">
-            {text || "Waiting..."}
-          </p>
-        </div>
+        <AgentRunner
+          instanceId={instanceId}
+          compact
+          className="flex-1 min-h-0 bg-background"
+        />
       </div>
     );
   }

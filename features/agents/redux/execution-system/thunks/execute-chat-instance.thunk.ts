@@ -111,6 +111,17 @@ export function assembleChatRequest(
   const instance = state.executionInstances.byInstanceId[instanceId];
   if (!instance) return null;
 
+  const preExecState = state.instanceUIState.byInstanceId[instanceId];
+  if (
+    preExecState?.usePreExecutionInput &&
+    !preExecState.preExecutionSatisfied
+  ) {
+    console.error(
+      `[assembleChatRequest] BLOCKED: instance ${instanceId} requires pre-execution input that has not been satisfied.`,
+    );
+    return null;
+  }
+
   const { agentId } = instance;
   const agent = state.agentDefinition.agents?.[agentId];
   if (!agent) return null;

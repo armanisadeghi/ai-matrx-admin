@@ -65,6 +65,14 @@ export function assembleRequest(
   const instance = state.executionInstances.byInstanceId[instanceId];
   if (!instance) return null;
 
+  const uiState = state.instanceUIState.byInstanceId[instanceId];
+  if (uiState?.usePreExecutionInput && !uiState.preExecutionSatisfied) {
+    console.error(
+      `[assembleRequest] BLOCKED: instance ${instanceId} requires pre-execution input that has not been satisfied.`,
+    );
+    return null;
+  }
+
   // User input
   const userInputState = state.instanceUserInput.byInstanceId[instanceId];
   const textInput = userInputState?.text?.trim() ?? "";

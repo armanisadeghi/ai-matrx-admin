@@ -1,17 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { IconChevronRight, IconList } from "@tabler/icons-react";
+import { IconChevronRight, IconList, IconSearch } from "@tabler/icons-react";
 import FeatureSectionLinkComponent from "@/components/animated/my-custom-demos/feature-section-link-component";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { adminCategories } from "@/app/(authenticated)/(admin-auth)/administration/categories";
+import { Input } from "@/components/ui/input";
 
 // IMPORTANT: All features and routes are defined in: app\(authenticated)\(admin-auth)\administration\categories.tsx
 // The top navigation menu automatically extracts routes from categories.tsx via config.ts
 
 const AdminPage = () => {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
 
     const router = useRouter();
 
@@ -74,6 +76,41 @@ const AdminPage = () => {
         };
         return colorMap[iconColor || "text-blue-600"] || "bg-blue-500 dark:bg-blue-600";
     };
+
+    const normalizedQuery = searchQuery.toLowerCase().trim();
+
+    const filteredCategories = React.useMemo(() => {
+        if (!normalizedQuery) return adminCategories;
+
+        return adminCategories.map(category => {
+            const filteredFeatures = category.features.filter(f => 
+                f.title.toLowerCase().includes(normalizedQuery) || 
+                f.description?.toLowerCase().includes(normalizedQuery)
+            );
+
+            if (filteredFeatures.length > 0) {
+                return {
+                    ...category,
+                    features: filteredFeatures
+                };
+            }
+            
+            if (category.name.toLowerCase().includes(normalizedQuery)) {
+                 return category;
+            }
+
+            return null;
+        }).filter(Boolean) as typeof adminCategories;
+    }, [normalizedQuery]);
+
+    const matchingFeatures = React.useMemo(() => {
+        if (!normalizedQuery) return [];
+        return adminCategories.flatMap(cat => cat.features).filter(f => 
+            f.title.toLowerCase().includes(normalizedQuery) || 
+            f.description?.toLowerCase().includes(normalizedQuery)
+        );
+    }, [normalizedQuery]);
+
     if (selectedCategory) {
         const category = adminCategories.find((c) => c.name === selectedCategory);
         return (
@@ -103,18 +140,55 @@ const AdminPage = () => {
         <div className="h-full w-full overflow-y-auto">
             <div className="py-4 bg-neutral-100 dark:bg-neutral-900 w-full">
                 <div className="w-full px-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <h1 className="text-xl font-bold">Admin Dashboard Home</h1>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                        <h1 className="text-xl font-bold whitespace-nowrap">Admin Dashboard Home</h1>
+                        
+                        <div className="flex-1 max-w-2xl w-full mx-0 sm:mx-4 relative">
+                            <div className="relative">
+                                <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <Input 
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search admin routes, tools, and categories..." 
+                                    className="w-full pl-9 bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 shadow-sm focus-visible:ring-blue-500"
+                                />
+                            </div>
+                        </div>
+
                         <Link
                             href="/administration/all-routes"
-                            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+                            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors whitespace-nowrap shrink-0"
                         >
                             <IconList className="w-4 h-4" />
                             <span>All Routes</span>
                         </Link>
                     </div>
+
+                    {normalizedQuery && matchingFeatures.length > 0 && (
+                        <div className="mb-8">
+                            <h2 className="text-lg font-semibold mb-4 text-neutral-700 dark:text-neutral-300">Matching Routes</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {matchingFeatures.map((feature, index) => (
+                                    <FeatureSectionLinkComponent
+                                        key={feature.title}
+                                        title={feature.title}
+                                        description={feature.description}
+                                        icon={feature.icon}
+                                        index={index}
+                                        link={feature.link}
+                                        isNew={feature.isNew}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {normalizedQuery && filteredCategories.length > 0 && matchingFeatures.length > 0 && (
+                        <h2 className="text-lg font-semibold mb-4 text-neutral-700 dark:text-neutral-300">Matching Categories</h2>
+                    )}
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {adminCategories.map((category, index) => (
+                        {filteredCategories.map((category, index) => (
                             <div
                                 key={category.name}
                                 onClick={() => handleSelectCategory(category.name)}
@@ -167,6 +241,12 @@ const AdminPage = () => {
                             </div>
                         ))}
                     </div>
+
+                    {normalizedQuery && filteredCategories.length === 0 && matchingFeatures.length === 0 && (
+                        <div className="text-center py-12 text-muted-foreground">
+                            No results found for "{searchQuery}"
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

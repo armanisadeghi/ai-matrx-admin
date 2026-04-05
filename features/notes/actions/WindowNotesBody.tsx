@@ -8,6 +8,7 @@ import { NotesProvider, useNotesContext } from "../context/NotesContext";
 import { useAutoSave } from "../hooks/useAutoSave";
 import { useAutoLabel } from "../hooks/useAutoLabel";
 import { NotesTreeView } from "./NotesTreeView";
+import { NoteEditorWithChrome } from "../components/NoteEditorWithChrome";
 import type { Note } from "../types";
 
 function WindowNotesInner({ className }: { className?: string }) {
@@ -165,14 +166,24 @@ function WindowNotesInner({ className }: { className?: string }) {
         style={{ fontSize: "16px" }}
       />
 
-      {/* ── Content textarea ────────────────────────────────── */}
-      <textarea
-        ref={textareaRef}
-        value={localContent}
-        onChange={handleContentChange}
+      {/* ── Content editor with context menu + status bar ──── */}
+      <NoteEditorWithChrome
+        noteId={activeNote?.id ?? ""}
+        content={localContent}
+        onChange={(val) => {
+          setLocalContent(val);
+          updateWithAutoSave({ content: val });
+        }}
+        editorMode="plain"
+        textareaRef={textareaRef}
+        isDirty={isDirty}
+        saveState={isSaving ? "saving" : isDirty ? "dirty" : "saved"}
+        lastUpdatedAt={activeNote?.updated_at ?? undefined}
+        onSave={() => forceSave()}
         placeholder="Start typing..."
-        className="flex-1 w-full resize-none bg-transparent px-3 py-2 text-sm text-foreground/90 focus:outline-none placeholder:text-muted-foreground/40 min-h-0"
-        style={{ fontSize: "16px" }}
+        className="flex-1 min-h-0"
+        textareaClassName="px-3 py-2 text-sm"
+        showVoiceButton={false}
       />
     </div>
   );

@@ -28,18 +28,19 @@ import { cn } from '@/lib/utils';
 export type MicVariant = 'icon-only' | 'inline-expand' | 'modal-controls';
 
 export interface MicrophoneIconButtonProps {
+  id?: string;
   onTranscriptionComplete: (text: string) => void;
   onLiveTranscript?: (text: string) => void;
   onError?: (error: string, code?: string) => void;
   variant?: MicVariant;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   className?: string;
   disabled?: boolean;
 }
 
 // ── Size maps (static — no imports needed) ───────────────────────────────────
-const buttonSizeMap = { sm: 'h-7 w-7', md: 'h-8 w-8', lg: 'h-9 w-9' } as const;
-const iconSizeMap   = { sm: 'h-3 w-3', md: 'h-4 w-4', lg: 'h-5 w-5' } as const;
+const buttonSizeMap = { xs: 'h-6 w-6', sm: 'h-7 w-7', md: 'h-8 w-8', lg: 'h-9 w-9' } as const;
+const iconSizeMap   = { xs: 'h-3.5 w-3.5', sm: 'h-3 w-3', md: 'h-4 w-4', lg: 'h-5 w-5' } as const;
 
 // ── Lazy-loaded core — zero cost until first engagement ───────────────────────
 const MicrophoneIconButtonCore = lazy(() => import('./MicrophoneIconButtonCore'));
@@ -49,7 +50,7 @@ function MicLoadingFallback({
   size,
   className,
 }: {
-  size: 'sm' | 'md' | 'lg';
+  size: 'xs' | 'sm' | 'md' | 'lg';
   className?: string;
 }) {
   return (
@@ -74,6 +75,7 @@ function MicLoadingFallback({
 
 // ── Shell component ───────────────────────────────────────────────────────────
 export function MicrophoneIconButton({
+  id,
   onTranscriptionComplete,
   onLiveTranscript,
   onError,
@@ -92,6 +94,7 @@ export function MicrophoneIconButton({
   if (!engaged) {
     return (
       <button
+        id={id}
         type="button"
         onClick={handleClick}
         disabled={disabled}
@@ -115,6 +118,7 @@ export function MicrophoneIconButton({
   return (
     <Suspense fallback={<MicLoadingFallback size={size} className={className} />}>
       <MicrophoneIconButtonCore
+        id={id}
         onTranscriptionComplete={onTranscriptionComplete}
         onLiveTranscript={onLiveTranscript}
         onError={onError}

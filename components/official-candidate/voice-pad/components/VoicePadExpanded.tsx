@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useRef, useCallback } from "react";
-import { Copy, StickyNote, Trash2, X } from "lucide-react";
+import React, { useRef, useCallback, useState } from "react";
+import { Copy, StickyNote, Trash2, X, History, Mic, Plus, Minus, Type } from "lucide-react";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
+import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
+import { VoicePadHistorySidebar } from "./VoicePadHistorySidebar";
 
 interface TranscriptEntry {
   id: string;
@@ -46,6 +48,20 @@ export default function VoicePadExpanded({
   const allText = entries.map((e) => e.text).join("\n\n");
   const baseText = draftText || allText;
   const displayText = liveTranscript ? (baseText ? baseText + "\n\n" + liveTranscript : liveTranscript) : baseText;
+
+  const [showHistory, setShowHistory] = useState(false);
+  const [isEngaged, setIsEngaged] = useState(false);
+  const [fontSize, setFontSize] = useState(11);
+
+  const handleSelectHistoryItem = useCallback((text: string) => {
+    onDraftChange((draftText ? draftText + "\n\n" : "") + text);
+    setShowHistory(false);
+  }, [draftText, onDraftChange]);
+
+  const handleStartRecording = () => {
+    setIsEngaged(true);
+    document.getElementById("voice-pad-header-mic")?.click();
+  };
 
   const handleSaveToNotes = useCallback(() => {
     const text = draftText || allText;
@@ -86,9 +102,9 @@ export default function VoicePadExpanded({
   const hasContent = entries.length > 0 || draftText.trim().length > 0 || (!!liveTranscript && liveTranscript.trim().length > 0);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-        {hasContent ? (
+    <div className="flex min-h-0 flex-1 flex-row overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col relative w-full">
+        <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
           <textarea
             ref={textareaRef}
             value={displayText}
@@ -97,28 +113,36 @@ export default function VoicePadExpanded({
             className={cn(
               "min-h-0 w-full flex-1 resize-none rounded-md",
               "bg-background/50 border border-border/50 px-2 py-1.5",
-              "text-[13px] leading-snug text-foreground placeholder:text-muted-foreground",
+              "leading-snug text-foreground placeholder:text-muted-foreground",
               "focus:outline-none focus:ring-1 focus:ring-ring",
+              !hasContent && "hidden"
             )}
+            style={{ fontSize: `${fontSize}px` }}
           />
-        ) : (
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-center py-4 text-center">
-            <div className="rounded-full bg-primary/10 p-3 mb-2">
-              <MicrophoneIconButton
-                onTranscriptionComplete={onTranscriptionComplete}
-                onLiveTranscript={onLiveTranscript}
-                variant="icon-only"
-                size="lg"
-              />
-            </div>
+
+          <div className={cn("flex min-h-0 flex-1 flex-col items-center justify-center py-4 text-center", hasContent && "hidden")}>
+            <button
+              type="button"
+              onClick={handleStartRecording}
+              disabled={isEngaged}
+              className={cn(
+                "rounded-full p-4 mb-3 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring relative flex items-center justify-center",
+                isEngaged ? "bg-primary/20 scale-110" : "bg-primary/10 hover:bg-primary/20"
+              )}
+              title="Start recording"
+            >
+              {isEngaged && (
+                <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping" style={{ animationDuration: '1.5s' }} />
+              )}
+              <Mic className={cn("h-6 w-6 border-0 relative z-10", isEngaged ? "text-primary" : "text-muted-foreground")} />
+            </button>
             <p className="text-[11px] text-muted-foreground">
-              Tap the mic to start recording
+              {isEngaged ? "Listening..." : "Tap the mic to start recording"}
             </p>
             <p className="text-[10px] text-muted-foreground/60 mt-0.5">
               Transcriptions persist across page navigation
             </p>
           </div>
-        )}
 
         {entries.length > 1 && (
           <div className="max-h-[100px] shrink-0 overflow-y-auto border border-border/40 rounded-md px-2 py-1">
@@ -150,42 +174,75 @@ export default function VoicePadExpanded({
         )}
       </div>
 
-      <div className="flex shrink-0 items-center gap-1 border-t border-border/50 bg-muted/20 px-2 py-1.5">
+      <div className="flex shrink-0 items-center gap-1 border-t border-border/50 bg-muted/20 px-2 py-1.5 flex-wrap">
         <Button
           type="button"
           variant="ghost"
-          size="sm"
+          size="icon"
+          onClick={() => setShowHistory((prev) => !prev)}
+          className={cn("h-7 w-7 text-muted-foreground", showHistory && "bg-accent text-accent-foreground")}
+          title="History"
+        >
+          <History className="h-4 w-4" />
+        </Button>
+        <ActionFeedbackButton
+          icon={<Copy className="h-4 w-4" />}
+          tooltip="Copy"
           onClick={handleCopyAll}
-          className="h-6 px-2 text-[11px] gap-1"
-        >
-          <Copy className="h-3 w-3" />
-          Copy
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
+          className="text-muted-foreground"
+        />
+        <ActionFeedbackButton
+          icon={<StickyNote className="h-4 w-4" />}
+          tooltip="Save to Notes"
           onClick={handleSaveToNotes}
-          className="h-6 px-2 text-[11px] gap-1"
-        >
-          <StickyNote className="h-3 w-3" />
-          Notes
-        </Button>
+          className="text-muted-foreground"
+        />
+        <ActionFeedbackButton
+          icon={<Trash2 className="h-4 w-4" />}
+          tooltip="Clear"
+          onClick={onClearAll}
+          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+        />
+        
+        <div className="mx-1 h-4 w-px bg-border/50" />
+
         <Button
           type="button"
           variant="ghost"
-          size="sm"
-          onClick={onClearAll}
-          className="h-6 px-2 text-[11px] gap-1 text-destructive hover:text-destructive"
+          size="icon"
+          onClick={() => setFontSize(prev => Math.max(9, prev - 1))}
+          className="h-7 w-7 text-muted-foreground"
+          title="Decrease font size"
         >
-          <Trash2 className="h-3 w-3" />
-          Clear
+          <Minus className="h-3 w-3" />
         </Button>
+        <div className="flex items-center justify-center min-w-[20px]">
+          <Type className="h-3 w-3 text-muted-foreground/70" />
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => setFontSize(prev => Math.min(24, prev + 1))}
+          className="h-7 w-7 text-muted-foreground"
+          title="Increase font size"
+        >
+          <Plus className="h-3 w-3" />
+        </Button>
+
         <div className="flex-1" />
         <span className="text-[11px] text-muted-foreground/60 tabular-nums">
           {entries.length} {entries.length === 1 ? "entry" : "entries"}
         </span>
       </div>
+      </div>
+      
+      {showHistory && (
+        <VoicePadHistorySidebar 
+          onClose={() => setShowHistory(false)} 
+          onSelectTranscript={handleSelectHistoryItem} 
+        />
+      )}
     </div>
   );
 }

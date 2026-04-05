@@ -140,6 +140,11 @@ interface SmartAgentInputProps {
    * submit. The parent should update its local instanceId state with the new id.
    */
   onNewInstance?: (newInstanceId: string) => void;
+  /**
+   * When true, the send button is hidden and Enter does not trigger execution.
+   * Used inside AgentPreExecutionInput where the parent manages the submit flow.
+   */
+  disableSend?: boolean;
 }
 
 // =============================================================================
@@ -157,6 +162,7 @@ export function SmartAgentInput({
   enablePasteImages = true,
   compact = false,
   onNewInstance,
+  disableSend = false,
 }: SmartAgentInputProps) {
   const dispatch = useAppDispatch();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -321,7 +327,8 @@ export function SmartAgentInput({
   // ── Send logic ──────────────────────────────────────────────────────────────
   // Only block when not initialized or already executing.
   // hasContent is NOT a gate — agents run on variables/context without user text.
-  const isSendDisabled = !instanceId || isExecuting;
+  // disableSend suppresses the entire send flow (used in pre-execution input gate).
+  const isSendDisabled = !instanceId || isExecuting || disableSend;
 
   const handleSend = useCallback(() => {
     if (!instanceId || isSendDisabled) return;

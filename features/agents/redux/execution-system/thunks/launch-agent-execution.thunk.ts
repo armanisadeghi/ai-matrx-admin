@@ -354,28 +354,28 @@ export const launchAgentExecution = createAsyncThunk<
   }
 
   // =========================================================================
-  // Step 3: Route by display mode
+  // Step 3: Decide whether to execute now or defer to the UI
+  //
+  // Two hard gates prevent immediate execution:
+  //   1. autoRun is false → user must manually submit
+  //   2. usePreExecutionInput is true → user must complete the pre-exec gate
+  //      first. The AgentRunner component handles executing after that.
+  //
+  // When either gate is active, we return the instanceId without executing.
   // =========================================================================
 
-  if (isInteractive(resolvedDisplayMode) || resolvedDisplayMode === "toast") {
-    if (autoRun && (userInput || shortcutId)) {
-      const executeThunk = useChat ? executeChatInstance : executeInstance;
-      const result = await dispatch(executeThunk({ instanceId })).unwrap();
+  if (!autoRun) {
+    return { instanceId };
+  }
 
-      return {
-        instanceId,
-        requestId: result.requestId,
-        conversationId: result.conversationId,
-      };
-    }
-
+  if (usePreExecutionInput) {
     return { instanceId };
   }
 
   if (
-    resolvedDisplayMode === "inline" ||
     resolvedDisplayMode === "direct" ||
-    resolvedDisplayMode === "background"
+    resolvedDisplayMode === "background" ||
+    resolvedDisplayMode === "inline"
   ) {
     const executeThunk = useChat ? executeChatInstance : executeInstance;
     const result = await dispatch(executeThunk({ instanceId })).unwrap();
@@ -392,6 +392,17 @@ export const launchAgentExecution = createAsyncThunk<
     onComplete?.(launchResult);
 
     return launchResult;
+  }
+
+  if (isInteractive(resolvedDisplayMode) || resolvedDisplayMode === "toast") {
+    const executeThunk = useChat ? executeChatInstance : executeInstance;
+    const result = await dispatch(executeThunk({ instanceId })).unwrap();
+
+    return {
+      instanceId,
+      requestId: result.requestId,
+      conversationId: result.conversationId,
+    };
   }
 
   return { instanceId };

@@ -20,14 +20,10 @@ import { NotesProvider, useNotesContext } from "../context/NotesContext";
 import { useAutoSave } from "../hooks/useAutoSave";
 import { useAutoLabel } from "../hooks/useAutoLabel";
 import { NotesTreeView } from "./NotesTreeView";
+import { NoteEditorWithChrome } from "../components/NoteEditorWithChrome";
 import type { Note } from "../types";
 
-const MarkdownStream = dynamic(() => import("@/components/MarkdownStream"), {
-  ssr: false,
-  loading: () => (
-    <div className="p-3 text-xs text-muted-foreground">Loading preview...</div>
-  ),
-});
+// MarkdownStream is now handled internally by NoteEditorWithChrome
 
 const activeNoteMemo = new Map<string, string>();
 
@@ -295,26 +291,26 @@ function NotesWindowShell({
             className="shrink-0 px-3 py-1 text-[11px] font-medium bg-transparent border-b border-border/30 focus:outline-none focus:border-primary/40 text-foreground placeholder:text-muted-foreground/40"
           />
 
-          {previewMode ? (
-            <div className="flex-1 overflow-auto px-3 py-2 min-h-0">
-              {localContent.trim() ? (
-                <MarkdownStream content={localContent} />
-              ) : (
-                <p className="text-xs text-muted-foreground/50 italic pt-1">
-                  No content to preview
-                </p>
-              )}
-            </div>
-          ) : (
-            <textarea
-              ref={textareaRef}
-              value={localContent}
-              onChange={handleContentChange}
-              placeholder="Start typing..."
-              className="flex-1 w-full resize-none bg-transparent px-3 py-2 text-sm text-foreground/90 focus:outline-none placeholder:text-muted-foreground/40 min-h-0"
-              style={{ fontSize: "16px" }}
-            />
-          )}
+          <NoteEditorWithChrome
+            noteId={activeNote?.id ?? ""}
+            content={localContent}
+            onChange={(val) => {
+              setLocalContent(val);
+              updateWithAutoSave({ content: val });
+            }}
+            editorMode={previewMode ? "preview" : "plain"}
+            textareaRef={textareaRef}
+            isDirty={isDirty}
+            saveState={isSaving ? "saving" : isDirty ? "dirty" : "saved"}
+            lastUpdatedAt={activeNote?.updated_at ?? undefined}
+            allFolders={[...new Set(notes.map((n) => n.folder_name || "Draft"))]}
+            currentFolder={activeNote?.folder_name ?? "Draft"}
+            onSave={() => forceSave()}
+            showVoiceButton={!previewMode}
+            placeholder="Start typing..."
+            className="flex-1 min-h-0"
+            textareaClassName="px-3 py-2 text-sm"
+          />
         </div>
       </div>
     </WindowPanel>

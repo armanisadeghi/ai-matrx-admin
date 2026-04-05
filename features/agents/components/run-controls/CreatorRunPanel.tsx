@@ -63,6 +63,10 @@ import { openStreamDebug } from "@/lib/redux/slices/overlaySlice";
 import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
 import { StreamDebugPanel } from "../debug/StreamDebugPanel";
 import { AgentLauncherSidebarTester } from "./AgentLauncherSidebarTester";
+import { AgentExecutionTestModal } from "./AgentExecutionTestModal";
+import * as LucideIcons from "lucide-react";
+import { getAllDisplayTypes, getDisplayMeta } from "@/features/agents/utils/run-ui-utils";
+import { useAgentLauncherTester } from "@/features/agents/hooks/useAgentLauncherTester";
 
 // =============================================================================
 // Tab type
@@ -75,7 +79,8 @@ type TabId =
   | "last"
   | "session"
   | "client"
-  | "test";
+  | "test"
+  | "test_displays";
 
 // =============================================================================
 // Helpers
@@ -209,56 +214,44 @@ function ActionsTab({
     dispatch(openStreamDebug({ instanceId }));
   }, [dispatch, instanceId]);
 
+  const ActionButton = ({ onClick, icon: Icon, label }: { onClick: () => void, icon: React.ElementType, label: React.ReactNode }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex flex-col items-center justify-center gap-1.5 p-2 aspect-square text-muted-foreground hover:text-foreground bg-muted/10 hover:bg-muted/30 border border-transparent hover:border-border rounded-xl transition-all"
+    >
+      <Icon className="w-5 h-5" />
+      <span className="text-[9px] text-center leading-tight font-medium">{label}</span>
+    </button>
+  );
+
   return (
-    <div className="px-3 py-2 space-y-1">
-      <button
-        type="button"
+    <div className="p-3 grid grid-cols-5 sm:grid-cols-7 gap-2">
+      <ActionButton
         onClick={handleReset}
-        className="flex items-center gap-2 w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded transition-colors"
-      >
-        <RotateCcw className="w-3 h-3 shrink-0" />
-        Reset conversation
-      </button>
-
-      <div className="pt-1 pb-0.5 px-2 text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wide">
-        Stream Debug
-      </div>
-      <button
-        type="button"
+        icon={RotateCcw}
+        label={<>Reset<br/>Conversation</>}
+      />
+      <ActionButton
         onClick={onOpenStreamDebugFloating}
-        className="flex items-center gap-2 w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded transition-colors"
-      >
-        <PictureInPicture2 className="w-3 h-3 shrink-0" />
-        Floating panel (legacy)
-      </button>
-      <button
-        type="button"
+        icon={PictureInPicture2}
+        label={<>Debug<br/>Floating</>}
+      />
+      <ActionButton
         onClick={onOpenStreamDebugWindow}
-        className="flex items-center gap-2 w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded transition-colors"
-      >
-        <AppWindow className="w-3 h-3 shrink-0" />
-        Window panel
-      </button>
-      <button
-        type="button"
+        icon={AppWindow}
+        label={<>Debug<br/>Window</>}
+      />
+      <ActionButton
         onClick={handleOpenStreamDebugOverlay}
-        className="flex items-center gap-2 w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded transition-colors"
-      >
-        <Maximize2 className="w-3 h-3 shrink-0" />
-        Fullscreen overlay
-      </button>
-
-      <div className="pt-1 pb-0.5 px-2 text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wide">
-        Tools
-      </div>
-      <button
-        type="button"
+        icon={Maximize2}
+        label={<>Debug<br/>Overlay</>}
+      />
+      <ActionButton
         onClick={onOpenRunSettingsWindow}
-        className="flex items-center gap-2 w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded transition-colors"
-      >
-        <SlidersHorizontal className="w-3 h-3 shrink-0" />
-        Run settings — window panel
-      </button>
+        icon={SlidersHorizontal}
+        label={<>Run<br/>Settings</>}
+      />
     </div>
   );
 }
@@ -819,6 +812,89 @@ function CollapsedStatsPills({
 }
 
 // =============================================================================
+// Tab 8: Test Displays
+// =============================================================================
+
+function TestDisplaysTab({ instanceId }: { instanceId: string }) {
+  const tester = useAgentLauncherTester(instanceId);
+  
+  const displayTypes = getAllDisplayTypes().map((displayMode) => {
+    const meta = getDisplayMeta(displayMode);
+    const IconComponent = (LucideIcons as any)[meta.icon];
+    return { name: meta.label, icon: IconComponent, color: meta.color, displayMode, note: meta.description, testMode: meta.testMode };
+  });
+
+  return (
+    <div className="flex h-full w-full">
+      {/* Left sidebar for configurations */}
+      <div className="w-1/3 min-w-[170px] max-w-[210px] border-r border-border p-3 space-y-4 overflow-y-auto">
+        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+          Configurations
+        </div>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-[11px] cursor-pointer">Auto Run</Label>
+            <Switch checked={tester.autoRun} onCheckedChange={tester.setAutoRun} className="scale-75" />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-[11px] cursor-pointer">Allow Chat</Label>
+            <Switch checked={tester.allowChat} onCheckedChange={tester.setAllowChat} className="scale-75" />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-[11px] cursor-pointer">Show Variables</Label>
+            <Switch checked={tester.showVariables} onCheckedChange={tester.setShowVariables} className="scale-75" />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-[11px] cursor-pointer">Apply Variables</Label>
+            <Switch checked={tester.applyVariables} onCheckedChange={tester.setApplyVariables} className="scale-75" />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-[11px] cursor-pointer">Use Pre-Exec Input</Label>
+            <Switch checked={tester.usePreExecutionInput} onCheckedChange={tester.setUsePreExecutionInput} className="scale-75" />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-[11px] cursor-pointer">Use Chat Endpoint</Label>
+            <Switch checked={tester.useChat} onCheckedChange={tester.setUseChat} className="scale-75" />
+          </div>
+        </div>
+      </div>
+      
+      {/* Right side for icons */}
+      <div className="flex-1 p-3 grid grid-cols-4 sm:grid-cols-5 gap-2 overflow-y-auto content-start">
+        {displayTypes.map(display => (
+           <button 
+             key={display.displayMode} 
+             onClick={() => tester.openWithDisplayType(display.displayMode)}
+             title={display.note}
+             className="flex flex-col items-center justify-center gap-1.5 p-2 aspect-square bg-muted/10 hover:bg-muted/30 border border-transparent hover:border-border rounded-xl transition-all"
+           >
+             {display.icon && <display.icon className={`w-5 h-5 ${display.color}`} />}
+             <span className="text-[9px] text-center leading-tight truncate w-full px-1">{display.name}</span>
+           </button>
+        ))}
+      </div>
+      
+      {tester.instance && (
+        <AgentExecutionTestModal
+          isOpen={tester.testModalOpen}
+          onClose={() => tester.setTestModalOpen(false)}
+          testType={tester.testModalType}
+          agentId={tester.instance.agentId}
+          sourceInstanceId={instanceId}
+          autoRun={tester.autoRun}
+          allowChat={tester.allowChat}
+          showVariables={tester.showVariables}
+          applyVariables={tester.applyVariables}
+          useChat={tester.useChat}
+          variables={tester.applyVariables ? tester.currentVariables : {}}
+          userInput={tester.currentInput || ""}
+        />
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
 // Main component
 // =============================================================================
 
@@ -830,6 +906,7 @@ const ALL_TABS: TabId[] = [
   "last",
   "session",
   "client",
+  "test_displays",
 ];
 
 interface CreatorRunPanelProps {
@@ -988,6 +1065,7 @@ export function CreatorRunPanel({
           : "Session",
     },
     { id: "client", label: "Client" },
+    { id: "test_displays", label: "Test Displays" },
   ];
 
   const tabs = allTabDefs.filter((t) => visibleTabIds.includes(t.id));
@@ -996,8 +1074,8 @@ export function CreatorRunPanel({
     <>
       <div className="border-t border-border bg-card">
         {/* Tab header */}
-        <div className="flex items-center justify-between px-2 py-0 border-b border-border">
-          <div className="flex items-center gap-0 overflow-x-auto">
+        <div className="flex items-center px-2 py-0 border-b border-border">
+          <div className="flex items-center gap-0 overflow-x-auto shrink-0">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -1014,10 +1092,17 @@ export function CreatorRunPanel({
             ))}
           </div>
 
+          {/* Clickable space that expands to fill remaining width */}
+          <div 
+            className="flex-1 self-stretch cursor-pointer"
+            onClick={handleCollapse}
+            title="Collapse panel"
+          />
+
           <button
             type="button"
             onClick={handleCollapse}
-            className="p-1 text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            className="p-1 ml-1 text-muted-foreground hover:text-foreground transition-colors shrink-0"
             title="Collapse"
           >
             <ChevronUp className="w-3.5 h-3.5" />
@@ -1052,6 +1137,9 @@ export function CreatorRunPanel({
               aggregateClient={aggregateClientMetrics}
               timelineTiming={timelineTiming}
             />
+          )}
+          {activeTab === "test_displays" && (
+            <TestDisplaysTab instanceId={instanceId} />
           )}
         </div>
       </div>

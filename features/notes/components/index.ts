@@ -1,5 +1,11 @@
 // features/notes/components/index.ts
 
+// Core Editor (unified)
+export { NoteEditorCore } from "./NoteEditorCore";
+export { NoteEditorWithChrome } from "./NoteEditorWithChrome";
+export type { EditorMode, NoteEditorCoreProps } from "./NoteEditorCore";
+export type { NoteEditorChromeProps } from "./NoteEditorWithChrome";
+
 // Main Components
 export { NotesLayout } from "./NotesLayout";
 export { NotesSidebar } from "./NotesSidebar";

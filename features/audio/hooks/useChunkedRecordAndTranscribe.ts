@@ -70,6 +70,8 @@ export function useChunkedRecordAndTranscribe({
   const failedIndicesRef   = useRef<number[]>([]);
   const allChunkBlobsRef   = useRef<Blob[]>([]);
   const userIdRef          = useRef<string>('');
+  const transcriptsMapRef  = useRef<Map<number, string>>(new Map());
+  const scheduleNextRotationRef = useRef<(() => void) | null>(null);
 
   const onTranscriptionCompleteRef = useRef(onTranscriptionComplete);
   const onChunkTranscribedRef      = useRef(onChunkTranscribed);
@@ -83,7 +85,7 @@ export function useChunkedRecordAndTranscribe({
   useEffect(() => { transcriptionOptionsRef.current = transcriptionOptions; }, [transcriptionOptions]);
 
   const cleanup = useCallback(() => {
-    if (rotationTimerRef.current)  { clearInterval(rotationTimerRef.current);  rotationTimerRef.current  = null; }
+    if (rotationTimerRef.current)  { clearTimeout(rotationTimerRef.current as any);  rotationTimerRef.current  = null; }
     if (durationTimerRef.current)  { clearInterval(durationTimerRef.current);  durationTimerRef.current  = null; }
     if (rafRef.current)            { cancelAnimationFrame(rafRef.current);      rafRef.current            = null; }
     if (audioCtxRef.current?.state !== 'closed') {
@@ -157,7 +159,30 @@ export function useChunkedRecordAndTranscribe({
     }
 
     onTranscriptionCompleteRef.current?.({ success: true, text: finalText });
-  }, [runFallbackTranscription, persistText]);
+
+    // Auto-persist into transcripts system silently
+    if (finalText) {
+      import('@/utils/auth/getUserId').then(({ getUserId }) => {
+        if (getUserId()) {
+          import('@/features/transcripts/service/transcriptsService').then(({ saveDraftTranscript }) => {
+            saveDraftTranscript({
+              title: 'Voice Pad Recording',
+              segments: [{
+                id: Date.now().toString(),
+                text: finalText,
+                seconds: duration,
+                timecode: '0:00'
+              }],
+              source_type: 'audio',
+              folder_name: 'Recordings'
+            }).catch((err) => {
+              console.warn('[chunked-transcription] Failed to auto-persist transcript:', err);
+            });
+          });
+        }
+      });
+    }
+  }, [runFallbackTranscription, persistText, duration]);
 
   const transcribeBlob = useCallback(async (blob: Blob, idx: number) => {
     if (blob.size < AUDIO_LIMITS.MIN_CHUNK_BYTES) {
@@ -171,14 +196,23 @@ export function useChunkedRecordAndTranscribe({
       try { await audioSafetyStore.saveChunk(safetyIdRef.current, blob); } catch {}
     }
 
+    let blobToSend = blob;
+    let isCombo = false;
+
+    // At idx 2 (the 6-10s mark), we combine clumps 0, 1, and 2 into a single full 10-second chunk
+    if (idx === 2) {
+      blobToSend = new Blob(allChunkBlobsRef.current.slice(0, 3), { type: mimeTypeRef.current });
+      isCombo = true;
+    }
+
     pendingRef.current += 1;
     setIsTranscribing(true);
 
     try {
       const opts = transcriptionOptionsRef.current;
-      const ext  = blob.type.includes('webm') ? 'webm' : 'wav';
+      const ext  = blobToSend.type.includes('webm') ? 'webm' : 'wav';
       const form = new FormData();
-      form.append('file', new File([blob], `chunk.${ext}`, { type: blob.type }));
+      form.append('file', new File([blobToSend], `chunk.${ext}`, { type: blobToSend.type }));
       if (opts?.language) form.append('language', opts.language);
       if (opts?.prompt)   form.append('prompt',   opts.prompt);
 
@@ -191,9 +225,27 @@ export function useChunkedRecordAndTranscribe({
 
       if (data.success && data.text?.trim()) {
         const snippet = (data.text as string).trim();
-        const sep     = accumulatedRef.current.length > 0 ? ' ' : '';
-        accumulatedRef.current += sep + snippet;
-        const full = accumulatedRef.current;
+        
+        if (isCombo) {
+          transcriptsMapRef.current.set(0, '');
+          transcriptsMapRef.current.set(1, '');
+          transcriptsMapRef.current.set(2, snippet);
+        } else {
+          // If we receive late responses for 0 or 1 after 2 has already eclipsed them, ignore them
+          if ((idx === 0 || idx === 1) && transcriptsMapRef.current.has(2)) {
+            // Ignored
+          } else {
+            transcriptsMapRef.current.set(idx, snippet);
+          }
+        }
+
+        const full = Array.from(transcriptsMapRef.current.entries())
+            .sort((a,b) => a[0] - b[0])
+            .map(e => e[1])
+            .filter(Boolean)
+            .join(' ');
+
+        accumulatedRef.current = full;
         setLiveTranscript(full);
         await persistText(full);
         onChunkTranscribedRef.current?.(snippet, full);
@@ -212,7 +264,7 @@ export function useChunkedRecordAndTranscribe({
       await logClientError({
         errorCode: 'CHUNK_FAILED',
         errorMessage: msg,
-        fileSizeBytes: blob.size,
+        fileSizeBytes: blobToSend.size,
         chunkIndex: idx,
         apiRoute: AUDIO_API_ROUTES.TRANSCRIBE,
       });
@@ -268,6 +320,20 @@ export function useChunkedRecordAndTranscribe({
     }, 100);
   }, []);
 
+  scheduleNextRotationRef.current = () => {
+    if (isStoppingRef.current) return;
+    const currentIdx = chunkIndexRef.current;
+    let delay = 10000;
+    if (currentIdx === 1) delay = 3000;
+    else if (currentIdx === 2) delay = 3000;
+    else if (currentIdx === 3) delay = 4000;
+
+    rotationTimerRef.current = setTimeout(() => {
+      rotateChunk();
+      scheduleNextRotationRef.current?.();
+    }, delay) as any;
+  };
+
   const startRecording = useCallback(async () => {
     try {
       isStoppingRef.current  = false;
@@ -276,6 +342,7 @@ export function useChunkedRecordAndTranscribe({
       chunkIndexRef.current  = 0;
       failedIndicesRef.current = [];
       allChunkBlobsRef.current = [];
+      transcriptsMapRef.current.clear();
       setLiveTranscript('');
       setFailedChunkCount(0);
 
@@ -320,18 +387,18 @@ export function useChunkedRecordAndTranscribe({
 
       startDurationTimer();
 
-      rotationTimerRef.current = setInterval(rotateChunk, chunkDurationMs);
+      scheduleNextRotationRef.current?.();
     } catch (err) {
       const sol = getErrorSolution(err);
       onErrorRef.current?.(sol.message, sol.code);
       cleanup();
     }
-  }, [cleanup, startAudioAnalysis, startDurationTimer, createRecorder, rotateChunk, chunkDurationMs]);
+  }, [cleanup, startAudioAnalysis, startDurationTimer, createRecorder, rotateChunk]);
 
   const stopRecording = useCallback(() => {
     isStoppingRef.current = true;
 
-    if (rotationTimerRef.current)  { clearInterval(rotationTimerRef.current);   rotationTimerRef.current  = null; }
+    if (rotationTimerRef.current)  { clearTimeout(rotationTimerRef.current as any);   rotationTimerRef.current  = null; }
     if (durationTimerRef.current)  { clearInterval(durationTimerRef.current);   durationTimerRef.current  = null; }
     if (rafRef.current)            { cancelAnimationFrame(rafRef.current);       rafRef.current            = null; }
     if (audioCtxRef.current?.state !== 'closed') {
@@ -368,7 +435,7 @@ export function useChunkedRecordAndTranscribe({
   const pauseRecording = useCallback(() => {
     if (!mediaRecorderRef.current || mediaRecorderRef.current.state !== 'recording') return;
 
-    if (rotationTimerRef.current) { clearInterval(rotationTimerRef.current); rotationTimerRef.current = null; }
+    if (rotationTimerRef.current) { clearTimeout(rotationTimerRef.current as any); rotationTimerRef.current = null; }
     if (durationTimerRef.current) { clearInterval(durationTimerRef.current); durationTimerRef.current = null; }
     if (rafRef.current)           { cancelAnimationFrame(rafRef.current);    rafRef.current = null; }
 
@@ -388,9 +455,9 @@ export function useChunkedRecordAndTranscribe({
 
     startAudioAnalysis();
     startDurationTimer();
-    rotationTimerRef.current = setInterval(rotateChunk, chunkDurationMs);
+    scheduleNextRotationRef.current?.();
     setIsPaused(false);
-  }, [createRecorder, startAudioAnalysis, startDurationTimer, rotateChunk, chunkDurationMs]);
+  }, [createRecorder, startAudioAnalysis, startDurationTimer, rotateChunk]);
 
   const reset = useCallback(() => {
     cleanup();
@@ -405,6 +472,7 @@ export function useChunkedRecordAndTranscribe({
     chunkIndexRef.current    = 0;
     failedIndicesRef.current = [];
     allChunkBlobsRef.current = [];
+    transcriptsMapRef.current.clear();
   }, [cleanup]);
 
   return {

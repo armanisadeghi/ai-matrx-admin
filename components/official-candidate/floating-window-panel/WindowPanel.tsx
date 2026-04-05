@@ -22,16 +22,10 @@ import {
   Maximize2,
   Minimize2,
   X,
-  RectangleHorizontal,
   RectangleVertical,
-  LayoutTemplate,
-  Columns2,
-  Rows2,
-  Grid2x2,
-  AlignRight,
-  AlignLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LayoutIcon, LayoutIconButton, type LayoutIconType } from "./components/LayoutIcon";
 import {
   useWindowPanel,
   type UseWindowPanelOptions,
@@ -692,7 +686,6 @@ function GreenTrafficLight({
   };
 
   const handleAction = (fn: () => void) => {
-    setDropdownOpen(false);
     fn();
   };
 
@@ -749,81 +742,43 @@ function GreenTrafficLight({
               <div className="px-3 pt-1.5 pb-1 text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
                 Move &amp; Resize
               </div>
-              <div className="grid grid-cols-4 gap-1 px-2 pb-2">
-                <SnapButton
-                  label="Left half"
-                  icon={
-                    <Columns2
-                      className="w-4 h-4"
-                      style={{ transform: "scaleX(-1)" }}
-                    />
-                  }
-                  onClick={() => handleAction(snapLeft)}
-                />
-                <SnapButton
-                  label="Right half"
-                  icon={<Columns2 className="w-4 h-4" />}
-                  onClick={() => handleAction(snapRight)}
-                />
-                <SnapButton
-                  label="Top half"
-                  icon={
-                    <Rows2
-                      className="w-4 h-4"
-                      style={{ transform: "scaleY(-1)" }}
-                    />
-                  }
-                  onClick={() => handleAction(snapTop)}
-                />
-                <SnapButton
-                  label="Bottom half"
-                  icon={<Rows2 className="w-4 h-4" />}
-                  onClick={() => handleAction(snapBottom)}
-                />
-                <SnapButton
-                  label="Centre"
-                  icon={<LayoutTemplate className="w-4 h-4" />}
-                  onClick={() => handleAction(snapCentre)}
-                  wide
-                />
-                <SnapButton
-                  label="Fill screen"
-                  icon={<RectangleHorizontal className="w-4 h-4" />}
-                  onClick={() => handleAction(onToggleMaximize)}
-                  wide
-                />
+              <div className="flex flex-col gap-1 px-2 pb-2">
+                <div className="flex gap-1 justify-center">
+                  <LayoutIconButton onClick={() => handleAction(snapLeft)} type="left-half" />
+                  <LayoutIconButton onClick={() => handleAction(snapRight)} type="right-half" />
+                  <LayoutIconButton onClick={() => handleAction(snapTop)} type="top-half" />
+                  <LayoutIconButton onClick={() => handleAction(snapBottom)} type="bottom-half" />
+                </div>
+                <div className="flex gap-1 justify-center">
+                  <LayoutIconButton onClick={() => handleAction(snapCentre)} type="centre" />
+                  <LayoutIconButton onClick={() => handleAction(onToggleMaximize)} type="full" />
+                </div>
               </div>
               <div className="border-t border-border/50 my-1" />
 
               <div className="px-3 pt-1.5 pb-1 text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
                 Arrange All
               </div>
-              <div className="grid grid-cols-4 gap-1 px-2 pb-2">
-                <SnapButton
-                  label="Grid 4"
-                  icon={<Grid2x2 className="w-4 h-4" />}
-                  onClick={() => handleAction(() => arrangeAll("grid4"))}
-                />
-                <SnapButton
-                  label="Grid 6"
-                  icon={<Grid2x2 className="w-4 h-4" />}
-                  onClick={() => handleAction(() => arrangeAll("grid6"))}
-                />
-                <SnapButton
-                  label="Grid 8"
-                  icon={<Grid2x2 className="w-4 h-4" />}
-                  onClick={() => handleAction(() => arrangeAll("grid8"))}
-                />
-                <SnapButton
-                  label="Stack Right"
-                  icon={<AlignRight className="w-4 h-4" />}
-                  onClick={() => handleAction(() => arrangeAll("stackRight2"))}
-                />
-                <SnapButton
-                  label="Stack Left"
-                  icon={<AlignLeft className="w-4 h-4" />}
-                  onClick={() => handleAction(() => arrangeAll("stackLeft2"))}
-                />
+              <div className="flex flex-col gap-1 px-2 pb-2">
+                <div className="flex gap-1 justify-center">
+                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("grid4"))} type="grid4" />
+                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("grid6"))} type="grid6" />
+                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("grid8"))} type="grid8" />
+                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("grid9"))} type="grid9" />
+                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("grid12"))} type="grid12" />
+                </div>
+                <div className="flex gap-1 justify-center">
+                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("stackRight2"))} type="stackRight2" />
+                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("stackRight3"))} type="stackRight3" />
+                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("stackRight4"))} type="stackRight4" />
+                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("stackRight5"))} type="stackRight5" />
+                </div>
+                <div className="flex gap-1 justify-center">
+                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("stackLeft2"))} type="stackLeft2" />
+                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("stackLeft3"))} type="stackLeft3" />
+                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("stackLeft4"))} type="stackLeft4" />
+                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("stackLeft5"))} type="stackLeft5" />
+                </div>
               </div>
               <div className="border-t border-border/50 my-1" />
             </>

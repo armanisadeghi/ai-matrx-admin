@@ -9,6 +9,12 @@ import {
   Minimize2,
   Maximize2,
   ChevronRight,
+  ArrowRight,
+  ArrowLeft,
+  ArrowDown,
+  ArrowUp,
+  Columns3,
+  Rows3
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -22,7 +28,9 @@ import {
   selectAllWindows,
   selectAllMinimized,
   type WindowState,
+  arrangeActiveWindows,
 } from "@/lib/redux/slices/windowManagerSlice";
+import { LayoutIconButton } from "@/components/official-candidate/floating-window-panel/components/LayoutIcon";
 
 // ─── State dot colours ────────────────────────────────────────────────────────
 
@@ -48,6 +56,10 @@ export default function SidebarWindowToggle() {
   const hasWindows = windows.length > 0;
 
   const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"visibility" | "layout">("visibility");
+  const [layoutDirX, setLayoutDirX] = useState<"ltr" | "rtl">("rtl");
+  const [layoutDirY, setLayoutDirY] = useState<"ttb" | "btt">("ttb");
+  const [layoutPrimary, setLayoutPrimary] = useState<"horizontal" | "vertical">("vertical");
   const [pos, setPos] = useState({ x: 0, bottom: 0 });
   const [mounted, setMounted] = useState(false);
 
@@ -135,101 +147,372 @@ export default function SidebarWindowToggle() {
             ref={menuRef}
             role="menu"
             className={cn(
-              "fixed z-[10000]",
-              "w-60 rounded-xl overflow-hidden",
+              "fixed z-[10000] flex flex-col",
+              "w-[260px] min-h-[380px] rounded-xl overflow-hidden",
               "bg-card/97 backdrop-blur-xl border border-border shadow-2xl",
               "py-1 text-sm",
             )}
             style={{ left: pos.x, bottom: pos.bottom }}
           >
-            {/* ── Visibility ───────────────────────────────────────────────── */}
-            <MenuSection label="Visibility" />
-            <MenuItem
-              icon={
-                hidden ? (
-                  <Eye className="w-3.5 h-3.5" />
+            {/* ── Tabs Header ──────────────────────────────────────────────── */}
+            <div className="flex items-center px-2 py-1 mb-1 border-b border-border/50 gap-1 overflow-x-auto">
+              <button
+                type="button"
+                className={cn(
+                  "px-2 py-1 text-[11px] font-medium uppercase tracking-wider rounded-md transition-colors",
+                  activeTab === "visibility"
+                    ? "bg-accent/80 text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
+                )}
+                onClick={() => setActiveTab("visibility")}
+              >
+                Visibility
+              </button>
+              <button
+                type="button"
+                className={cn(
+                  "px-2 py-1 text-[11px] font-medium uppercase tracking-wider rounded-md transition-colors",
+                  activeTab === "layout"
+                    ? "bg-accent/80 text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
+                )}
+                onClick={() => setActiveTab("layout")}
+              >
+                Layout
+              </button>
+            </div>
+
+            {/* ── Tab Content: Visibility ──────────────────────────────────── */}
+            {activeTab === "visibility" && (
+              <div className="flex-1 flex flex-col">
+                <MenuItem
+                  icon={
+                    hidden ? (
+                      <Eye className="w-3.5 h-3.5" />
+                    ) : (
+                      <EyeOff className="w-3.5 h-3.5" />
+                    )
+                  }
+                  label={hidden ? "Show All Windows" : "Hide All Windows"}
+                  description={
+                    hidden
+                      ? "Make all windows visible again"
+                      : "Keep windows running, hide from view"
+                  }
+                  onClick={() => act(() => dispatch(toggleWindowsHidden()))}
+                  disabled={!hasWindows}
+                />
+
+                {/* ── Per-window list ───────────────────────────────────────────── */}
+                {hasWindows ? (
+                  <>
+                    <MenuDivider />
+                    <MenuSection label="Windows" />
+                    <div className="max-h-60 overflow-y-auto">
+                      {windows.map((win) => (
+                        <button
+                          key={win.id}
+                          type="button"
+                          role="menuitem"
+                          className="flex items-center gap-2.5 w-full px-3 py-1.5 hover:bg-accent transition-colors text-left text-foreground/80"
+                          onClick={() =>
+                            act(() => {
+                              if (win.state === "minimized")
+                                dispatch(restoreWindow(win.id));
+                              dispatch(focusWindow(win.id));
+                              if (hidden) dispatch(toggleWindowsHidden());
+                            })
+                          }
+                        >
+                          <span
+                            className={cn(
+                              "w-2 h-2 rounded-full shrink-0",
+                              STATE_DOT[win.state],
+                            )}
+                            title={STATE_LABEL[win.state]}
+                          />
+                          <span className="flex-1 truncate text-xs font-medium">
+                            {win.title}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground/50 shrink-0">
+                            {STATE_LABEL[win.state]}
+                          </span>
+                          <ChevronRight className="w-3 h-3 text-muted-foreground/30 shrink-0" />
+                        </button>
+                      ))}
+                    </div>
+                  </>
                 ) : (
-                  <EyeOff className="w-3.5 h-3.5" />
-                )
-              }
-              label={hidden ? "Show All Windows" : "Hide All Windows"}
-              description={
-                hidden
-                  ? "Make all windows visible again"
-                  : "Keep windows running, hide from view"
-              }
-              onClick={() => act(() => dispatch(toggleWindowsHidden()))}
-              disabled={!hasWindows}
-            />
-
-            {/* ── Arrange ──────────────────────────────────────────────────── */}
-            <MenuDivider />
-            <MenuSection label="Arrange" />
-            <MenuItem
-              icon={<Minimize2 className="w-3.5 h-3.5" />}
-              label="Minimize All"
-              description="Collapse all open windows to the tray"
-              onClick={() =>
-                act(() =>
-                  dispatch(
-                    minimizeAll({
-                      viewportWidth: window.innerWidth,
-                      viewportHeight: window.innerHeight,
-                    }),
-                  ),
-                )
-              }
-              disabled={!hasWindows || allMinimized}
-            />
-            <MenuItem
-              icon={<Maximize2 className="w-3.5 h-3.5" />}
-              label="Restore All"
-              description="Return all windows to their last size"
-              onClick={() => act(() => dispatch(restoreAll()))}
-              disabled={!hasWindows || !allMinimized}
-            />
-
-            {/* ── Per-window list ───────────────────────────────────────────── */}
-            {hasWindows ? (
-              <>
-                <MenuDivider />
-                <MenuSection label="Windows" />
-                {windows.map((win) => (
-                  <button
-                    key={win.id}
-                    type="button"
-                    role="menuitem"
-                    className="flex items-center gap-2.5 w-full px-3 py-1.5 hover:bg-accent transition-colors text-left text-foreground/80"
+                  <p className="px-3 py-2 text-xs text-muted-foreground/50 italic">
+                    No windows open
+                  </p>
+                )}
+                <div className="mt-auto">
+                  <MenuDivider />
+                  <MenuSection label="Window Controls" />
+                  <MenuItem
+                    icon={<Minimize2 className="w-3.5 h-3.5" />}
+                    label="Minimize All"
+                    description="Collapse all open windows to the tray"
                     onClick={() =>
-                      act(() => {
-                        if (win.state === "minimized")
-                          dispatch(restoreWindow(win.id));
-                        dispatch(focusWindow(win.id));
-                        if (hidden) dispatch(toggleWindowsHidden());
-                      })
+                      act(() =>
+                        dispatch(
+                          minimizeAll({
+                            viewportWidth: window.innerWidth,
+                            viewportHeight: window.innerHeight,
+                          })
+                        )
+                      )
                     }
+                    disabled={!hasWindows || allMinimized}
+                  />
+                  <MenuItem
+                    icon={<Maximize2 className="w-3.5 h-3.5" />}
+                    label="Restore All"
+                    description="Return all windows to their last size"
+                    onClick={() => act(() => dispatch(restoreAll()))}
+                    disabled={!hasWindows || !allMinimized}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* ── Tab Content: Layout ──────────────────────────────────────── */}
+            {activeTab === "layout" && (
+              <div className="flex-1 flex flex-col">
+                <MenuSection label="Progression" />
+                <div className="flex justify-center items-center gap-1.5 px-2 py-1.5 bg-accent/30 rounded-md mx-2 mb-2">
+                  <button
+                    onClick={() => setLayoutDirX(d => d === "ltr" ? "rtl" : "ltr")}
+                    className="flex-1 flex justify-center items-center gap-1 py-1 rounded transition-colors bg-card hover:bg-accent border border-border/50 text-foreground shadow-sm"
+                    title="Toggle Horizontal Progression"
                   >
-                    <span
-                      className={cn(
-                        "w-2 h-2 rounded-full shrink-0",
-                        STATE_DOT[win.state],
-                      )}
-                      title={STATE_LABEL[win.state]}
-                    />
-                    <span className="flex-1 truncate text-xs font-medium">
-                      {win.title}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground/50 shrink-0">
-                      {STATE_LABEL[win.state]}
-                    </span>
-                    <ChevronRight className="w-3 h-3 text-muted-foreground/30 shrink-0" />
+                    {layoutDirX === "rtl" ? <ArrowLeft className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
+                    <span className="text-[10px] font-medium leading-none tracking-wide">{layoutDirX === "rtl" ? "R→L" : "L→R"}</span>
                   </button>
-                ))}
-              </>
-            ) : (
-              <p className="px-3 py-2 text-xs text-muted-foreground/50 italic">
-                No windows open
-              </p>
+                  <button
+                    onClick={() => setLayoutDirY(d => d === "ttb" ? "btt" : "ttb")}
+                    className="flex-1 flex justify-center items-center gap-1 py-1 rounded transition-colors bg-card hover:bg-accent border border-border/50 text-foreground shadow-sm"
+                    title="Toggle Vertical Progression"
+                  >
+                    {layoutDirY === "btt" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
+                    <span className="text-[10px] font-medium leading-none tracking-wide">{layoutDirY === "btt" ? "B↑T" : "T↓B"}</span>
+                  </button>
+                  <button
+                    onClick={() => setLayoutPrimary(p => p === "horizontal" ? "vertical" : "horizontal")}
+                    className="flex-1 flex justify-center items-center gap-1 py-1 rounded transition-colors bg-card hover:bg-accent border border-border/50 text-foreground shadow-sm"
+                    title="Toggle Primary Flow Direction"
+                  >
+                    {layoutPrimary === "horizontal" ? <Rows3 className="w-3.5 h-3.5" /> : <Columns3 className="w-3.5 h-3.5" />}
+                    <span className="text-[10px] font-medium leading-none tracking-wide">{layoutPrimary === "horizontal" ? "HORZ" : "VERT"}</span>
+                  </button>
+                </div>
+
+                <MenuSection label="Arrange All" />
+                <div className="flex flex-col gap-1 px-2 pb-2">
+                  <div className="flex gap-1 justify-center">
+                    <LayoutIconButton
+                      type="grid4"
+                      onClick={() =>
+                        dispatch(
+                          arrangeActiveWindows({
+                            layout: "grid4",
+                            viewportWidth: window.innerWidth,
+                            viewportHeight: window.innerHeight,
+                            dirX: layoutDirX,
+                            dirY: layoutDirY,
+                            primary: layoutPrimary,
+                          })
+                        )
+                      }
+                    />
+                    <LayoutIconButton
+                      type="grid6"
+                      onClick={() =>
+                        dispatch(
+                          arrangeActiveWindows({
+                            layout: "grid6",
+                            viewportWidth: window.innerWidth,
+                            viewportHeight: window.innerHeight,
+                            dirX: layoutDirX,
+                            dirY: layoutDirY,
+                            primary: layoutPrimary,
+                          })
+                        )
+                      }
+                    />
+                    <LayoutIconButton
+                      type="grid8"
+                      onClick={() =>
+                        dispatch(
+                          arrangeActiveWindows({
+                            layout: "grid8",
+                            viewportWidth: window.innerWidth,
+                            viewportHeight: window.innerHeight,
+                            dirX: layoutDirX,
+                            dirY: layoutDirY,
+                            primary: layoutPrimary,
+                          })
+                        )
+                      }
+                    />
+                    <LayoutIconButton
+                      type="grid9"
+                      onClick={() =>
+                        dispatch(
+                          arrangeActiveWindows({
+                            layout: "grid9",
+                            viewportWidth: window.innerWidth,
+                            viewportHeight: window.innerHeight,
+                            dirX: layoutDirX,
+                            dirY: layoutDirY,
+                            primary: layoutPrimary,
+                          })
+                        )
+                      }
+                    />
+                    <LayoutIconButton
+                      type="grid12"
+                      onClick={() =>
+                        dispatch(
+                          arrangeActiveWindows({
+                            layout: "grid12",
+                            viewportWidth: window.innerWidth,
+                            viewportHeight: window.innerHeight,
+                            dirX: layoutDirX,
+                            dirY: layoutDirY,
+                            primary: layoutPrimary,
+                          })
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="flex gap-1 justify-center">
+                    <LayoutIconButton
+                      type="stackRight2"
+                      onClick={() =>
+                        dispatch(
+                          arrangeActiveWindows({
+                            layout: "stackRight2",
+                            viewportWidth: window.innerWidth,
+                            viewportHeight: window.innerHeight,
+                            dirX: layoutDirX,
+                            dirY: layoutDirY,
+                            primary: layoutPrimary,
+                          })
+                        )
+                      }
+                    />
+                    <LayoutIconButton
+                      type="stackRight3"
+                      onClick={() =>
+                        dispatch(
+                          arrangeActiveWindows({
+                            layout: "stackRight3",
+                            viewportWidth: window.innerWidth,
+                            viewportHeight: window.innerHeight,
+                            dirX: layoutDirX,
+                            dirY: layoutDirY,
+                            primary: layoutPrimary,
+                          })
+                        )
+                      }
+                    />
+                    <LayoutIconButton
+                      type="stackRight4"
+                      onClick={() =>
+                        dispatch(
+                          arrangeActiveWindows({
+                            layout: "stackRight4",
+                            viewportWidth: window.innerWidth,
+                            viewportHeight: window.innerHeight,
+                            dirX: layoutDirX,
+                            dirY: layoutDirY,
+                            primary: layoutPrimary,
+                          })
+                        )
+                      }
+                    />
+                    <LayoutIconButton
+                      type="stackRight5"
+                      onClick={() =>
+                        dispatch(
+                          arrangeActiveWindows({
+                            layout: "stackRight5",
+                            viewportWidth: window.innerWidth,
+                            viewportHeight: window.innerHeight,
+                            dirX: layoutDirX,
+                            dirY: layoutDirY,
+                            primary: layoutPrimary,
+                          })
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="flex gap-1 justify-center">
+                    <LayoutIconButton
+                      type="stackLeft2"
+                      onClick={() =>
+                        dispatch(
+                          arrangeActiveWindows({
+                            layout: "stackLeft2",
+                            viewportWidth: window.innerWidth,
+                            viewportHeight: window.innerHeight,
+                            dirX: layoutDirX,
+                            dirY: layoutDirY,
+                            primary: layoutPrimary,
+                          })
+                        )
+                      }
+                    />
+                    <LayoutIconButton
+                      type="stackLeft3"
+                      onClick={() =>
+                        dispatch(
+                          arrangeActiveWindows({
+                            layout: "stackLeft3",
+                            viewportWidth: window.innerWidth,
+                            viewportHeight: window.innerHeight,
+                            dirX: layoutDirX,
+                            dirY: layoutDirY,
+                            primary: layoutPrimary,
+                          })
+                        )
+                      }
+                    />
+                    <LayoutIconButton
+                      type="stackLeft4"
+                      onClick={() =>
+                        dispatch(
+                          arrangeActiveWindows({
+                            layout: "stackLeft4",
+                            viewportWidth: window.innerWidth,
+                            viewportHeight: window.innerHeight,
+                            dirX: layoutDirX,
+                            dirY: layoutDirY,
+                            primary: layoutPrimary,
+                          })
+                        )
+                      }
+                    />
+                    <LayoutIconButton
+                      type="stackLeft5"
+                      onClick={() =>
+                        dispatch(
+                          arrangeActiveWindows({
+                            layout: "stackLeft5",
+                            viewportWidth: window.innerWidth,
+                            viewportHeight: window.innerHeight,
+                            dirX: layoutDirX,
+                            dirY: layoutDirY,
+                            primary: layoutPrimary,
+                          })
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
             )}
           </div>,
           document.body,

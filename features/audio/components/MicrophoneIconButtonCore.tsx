@@ -27,23 +27,25 @@ import { toast } from 'sonner';
 export type MicVariant = 'icon-only' | 'inline-expand' | 'modal-controls';
 
 export interface MicrophoneIconButtonCoreProps {
+  id?: string;
   onTranscriptionComplete: (text: string) => void;
   onLiveTranscript?: (text: string) => void;
   onError?: (error: string, code?: string) => void;
   variant?: MicVariant;
   /** When true the component starts recording as soon as it mounts. */
   autoStart?: boolean;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   className?: string;
   disabled?: boolean;
 }
 
 // ── Size maps ───────────────────────────────────────────────────────────────
-const buttonSizeMap = { sm: 'h-7 w-7', md: 'h-8 w-8', lg: 'h-9 w-9' } as const;
-const iconSizeMap   = { sm: 'h-3 w-3', md: 'h-4 w-4', lg: 'h-5 w-5' } as const;
+const buttonSizeMap = { xs: 'h-6 w-6', sm: 'h-7 w-7', md: 'h-8 w-8', lg: 'h-9 w-9' } as const;
+const iconSizeMap   = { xs: 'h-3.5 w-3.5', sm: 'h-3 w-3', md: 'h-4 w-4', lg: 'h-5 w-5' } as const;
 
 // Default export required by React.lazy()
 export default function MicrophoneIconButtonCore({
+  id,
   onTranscriptionComplete,
   onLiveTranscript,
   onError,
@@ -210,6 +212,7 @@ export default function MicrophoneIconButtonCore({
     return (
       <>
         <button
+          id={id}
           type="button"
           onClick={handleClick}
           disabled={disabled || (isTranscribing && !isRecording)}
@@ -219,8 +222,8 @@ export default function MicrophoneIconButtonCore({
             : 'Start recording'
           }
           className={cn(
-            'relative inline-flex items-center justify-center',
-            'h-12 w-12 rounded-full',
+            'relative inline-flex items-center justify-center rounded-full',
+            buttonSizeMap[size],
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
             disabled && 'cursor-not-allowed opacity-50',
             isActive && 'cursor-pointer',
@@ -244,7 +247,7 @@ export default function MicrophoneIconButtonCore({
           <span
             className={cn(
               'relative z-10 inline-flex items-center justify-center rounded-full',
-              'h-8 w-8 transition-all duration-200',
+              'h-full w-full transition-all duration-200',
               isActive
                 ? 'bg-primary/15 dark:bg-primary/10 backdrop-blur-md shadow-md hover:bg-primary/25'
                 : 'bg-white/10 dark:bg-white/5 backdrop-blur-md shadow-sm hover:bg-accent',
@@ -278,7 +281,7 @@ export default function MicrophoneIconButtonCore({
     if (isTranscribing && !isRecording) {
       return (
         <>
-          <TranscriptionLoader duration={duration} size={size} />
+          <TranscriptionLoader duration={duration} size={size as any} />
           <VoiceTroubleshootingModal
             isOpen={showTroubleshooting}
             onClose={() => setShowTroubleshooting(false)}
@@ -297,7 +300,7 @@ export default function MicrophoneIconButtonCore({
               <RecordingIndicator
                 duration={duration}
                 audioLevel={audioLevel}
-                size={size}
+                size={size as any}
                 color="blue"
               />
               <Button
@@ -330,6 +333,7 @@ export default function MicrophoneIconButtonCore({
     return (
       <>
         <button
+          id={id}
           type="button"
           onClick={handleClick}
           disabled={disabled}
@@ -357,6 +361,7 @@ export default function MicrophoneIconButtonCore({
   return (
     <>
       <button
+        id={id}
         type="button"
         onClick={handleClick}
         disabled={disabled}

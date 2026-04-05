@@ -31,6 +31,7 @@ import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { selectInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
 import { selectResolvedVariables } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 import { selectUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
+import { selectAgentName } from "@/features/agents/redux/agent-definition/selectors";
 
 import type { ResultDisplayMode } from "@/features/agents/types/instance.types";
 import {
@@ -49,9 +50,24 @@ import {
   Minimize2,
   Layers,
   FolderOpen,
+  Copy,
+  Check,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { AgentExecutionTestModal } from "./AgentExecutionTestModal";
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid grid-cols-[auto_1fr] items-baseline gap-x-2 min-w-0">
+      <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+        {label}
+      </span>
+      <span className="text-[10px] font-medium text-foreground truncate">
+        {value}
+      </span>
+    </div>
+  );
+}
 
 interface AgentLauncherSidebarTesterProps {
   instanceId: string;
@@ -74,9 +90,21 @@ export function AgentLauncherSidebarTester({
   const [usePreExecutionInput, setUsePreExecutionInput] = useState(false);
   const [useChat, setUseChat] = useState(false);
 
+  const [copiedId, setCopiedId] = useState(false);
+
   const instance = useAppSelector(selectInstance(instanceId));
+  const agentName = useAppSelector((state) =>
+    instance?.agentId ? selectAgentName(state, instance.agentId) : undefined,
+  );
   const currentVariables = useAppSelector(selectResolvedVariables(instanceId));
   const currentInput = useAppSelector(selectUserInputText(instanceId));
+
+  const copyAgentId = () => {
+    if (!instance?.agentId) return;
+    navigator.clipboard.writeText(instance.agentId);
+    setCopiedId(true);
+    setTimeout(() => setCopiedId(false), 1500);
+  };
 
   const openWithDisplayType = async (displayMode: ResultDisplayMode) => {
     if (!instance) {
@@ -97,6 +125,7 @@ export function AgentLauncherSidebarTester({
         autoRun,
         allowChat,
         showVariables,
+        usePreExecutionInput,
         useChat,
         variables: applyVariables ? currentVariables : undefined,
         userInput: currentInput || undefined,
@@ -127,8 +156,8 @@ export function AgentLauncherSidebarTester({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="p-2 space-y-2">
-        <CollapsibleTrigger asChild>
+      <CollapsibleTrigger asChild>
+        <div className="border-b border-border">
           <Button
             variant="ghost"
             size="sm"
@@ -142,161 +171,174 @@ export function AgentLauncherSidebarTester({
               className={`w-3 h-3 transition-transform ${isOpen ? "rotate-180" : ""}`}
             />
           </Button>
-        </CollapsibleTrigger>
+        </div>
+      </CollapsibleTrigger>
 
-        <CollapsibleContent className="space-y-2">
-          {/* Pre-Execution Input Toggle */}
-          <div className="space-y-2 pr-2 pl-4 pb-2">
-            <div className="flex items-center justify-between">
-              <Label
-                htmlFor="use-pre-execution"
-                className="flex items-center gap-1.5 text-xs cursor-pointer"
-              >
-                <Minimize2 className="w-3.5 h-3.5" />
-                Use Pre-Execution Input
-              </Label>
-              <Switch
-                id="use-pre-execution"
-                checked={usePreExecutionInput}
-                onCheckedChange={setUsePreExecutionInput}
-              />
-            </div>
-          </div>
+      <CollapsibleContent className="space-y-2 py-1">
+        <Separator />
 
-          <Separator />
-
-          {/* Execution Config Toggles */}
-          <div className="space-y-2 pr-2 pl-4">
-            <div className="flex items-center justify-between">
-              <Label
-                htmlFor="auto-run"
-                className="flex items-center gap-1.5 text-xs cursor-pointer"
-              >
-                <Play className="w-3.5 h-3.5" />
-                Auto Run
-              </Label>
-              <Switch
-                id="auto-run"
-                checked={autoRun}
-                onCheckedChange={setAutoRun}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label
-                htmlFor="allow-chat"
-                className="flex items-center gap-1.5 text-xs cursor-pointer"
-              >
-                <Zap className="w-3.5 h-3.5" />
-                Allow Chat
-              </Label>
-              <Switch
-                id="allow-chat"
-                checked={allowChat}
-                onCheckedChange={setAllowChat}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label
-                htmlFor="show-variables"
-                className="flex items-center gap-1.5 text-xs cursor-pointer"
-              >
-                <Eye className="w-3.5 h-3.5" />
-                Show Variables
-              </Label>
-              <Switch
-                id="show-variables"
-                checked={showVariables}
-                onCheckedChange={setShowVariables}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label
-                htmlFor="apply-variables"
-                className="flex items-center gap-1.5 text-xs cursor-pointer"
-              >
-                <Settings className="w-3.5 h-3.5" />
-                Apply Variables
-              </Label>
-              <Switch
-                id="apply-variables"
-                checked={applyVariables}
-                onCheckedChange={setApplyVariables}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label
-                htmlFor="use-chat-endpoint"
-                className="flex items-center gap-1.5 text-xs cursor-pointer"
-              >
-                <Layers className="w-3.5 h-3.5" />
-                Use Chat Endpoint
-              </Label>
-              <Switch
-                id="use-chat-endpoint"
-                checked={useChat}
-                onCheckedChange={setUseChat}
-              />
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Context & Resources Info */}
-          {instance && (
-            <div className="px-4 py-1.5 space-y-1">
-              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                <FolderOpen className="w-3 h-3" />
-                <span>
-                  Source: {instance.sourceApp} / {instance.sourceFeature}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                <Database className="w-3 h-3" />
-                <span>
-                  Agent: {instance.agentId || "(no agent)"} | Origin:{" "}
-                  {instance.origin}
-                </span>
-              </div>
-            </div>
-          )}
-
-          <Separator />
-
-          {/* Display Type Buttons */}
-          <div className="space-y-1">
-            <div className="space-y-0 px-1">
-              {displayTypes.map((display) => (
-                <Button
-                  key={display.displayMode}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => openWithDisplayType(display.displayMode)}
-                  className="w-full justify-start h-8 px-2 text-xs hover:bg-accent"
-                  title={display.note}
-                >
-                  {display.icon && (
-                    <display.icon
-                      className={`w-3.5 h-3.5 mr-2 flex-shrink-0 ${display.color}`}
-                    />
-                  )}
-                  <span className="flex-1 text-left font-medium">
-                    {display.name}
+        {/* Context & Resources Info */}
+        {instance && (
+          <div className="px-2 py-1 space-y-1.5">
+            <InfoRow label="Source App" value={instance.sourceApp || "—"} />
+            <InfoRow
+              label="Source Feature"
+              value={instance.sourceFeature || "—"}
+            />
+            <InfoRow label="Execution Style" value={instance.origin || "—"} />
+            <div className="space-y-0.5 min-w-0">
+              <span className="text-[10px] text-muted-foreground">Agent</span>
+              {agentName && (
+                <div className="text-[10px] font-medium text-foreground truncate">
+                  {agentName}
+                </div>
+              )}
+              {instance.agentId && (
+                <div className="flex items-center gap-1 min-w-0">
+                  <span className="text-[9px] text-muted-foreground font-mono truncate">
+                    {instance.agentId}
                   </span>
-                  {display.testMode && (
-                    <Badge variant="outline" className="text-[8px] h-4 px-1">
-                      <TestTube className="w-2.5 h-2.5" />
-                    </Badge>
-                  )}
-                </Button>
-              ))}
+                  <button
+                    onClick={copyAgentId}
+                    className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                    title="Copy agent ID"
+                  >
+                    {copiedId ? (
+                      <Check className="w-2.5 h-2.5 text-green-500" />
+                    ) : (
+                      <Copy className="w-2.5 h-2.5" />
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
-        </CollapsibleContent>
-      </div>
+        )}
+        {/* Execution Config Toggles */}
+        <div className="space-y-2 p-2">
+          <div className="flex items-center justify-between">
+            <Label
+              htmlFor="use-pre-execution"
+              className="flex items-center gap-1.5 text-xs cursor-pointer"
+            >
+              <Minimize2 className="w-3.5 h-3.5" />
+              Use Pre-Execution Input
+            </Label>
+            <Switch
+              id="use-pre-execution"
+              checked={usePreExecutionInput}
+              onCheckedChange={setUsePreExecutionInput}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <Label
+              htmlFor="auto-run"
+              className="flex items-center gap-1.5 text-xs cursor-pointer"
+            >
+              <Play className="w-3.5 h-3.5" />
+              Auto Run
+            </Label>
+            <Switch
+              id="auto-run"
+              checked={autoRun}
+              onCheckedChange={setAutoRun}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <Label
+              htmlFor="allow-chat"
+              className="flex items-center gap-1.5 text-xs cursor-pointer"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              Allow Chat
+            </Label>
+            <Switch
+              id="allow-chat"
+              checked={allowChat}
+              onCheckedChange={setAllowChat}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <Label
+              htmlFor="show-variables"
+              className="flex items-center gap-1.5 text-xs cursor-pointer"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              Show Variables
+            </Label>
+            <Switch
+              id="show-variables"
+              checked={showVariables}
+              onCheckedChange={setShowVariables}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <Label
+              htmlFor="apply-variables"
+              className="flex items-center gap-1.5 text-xs cursor-pointer"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              Apply Variables
+            </Label>
+            <Switch
+              id="apply-variables"
+              checked={applyVariables}
+              onCheckedChange={setApplyVariables}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <Label
+              htmlFor="use-chat-endpoint"
+              className="flex items-center gap-1.5 text-xs cursor-pointer"
+            >
+              <Layers className="w-3.5 h-3.5" />
+              Use Chat Endpoint
+            </Label>
+            <Switch
+              id="use-chat-endpoint"
+              checked={useChat}
+              onCheckedChange={setUseChat}
+            />
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Display Type Buttons */}
+        <div className="space-y-1">
+          <div className="space-y-0 px-1">
+            {displayTypes.map((display) => (
+              <Button
+                key={display.displayMode}
+                variant="ghost"
+                size="sm"
+                onClick={() => openWithDisplayType(display.displayMode)}
+                className="w-full justify-start h-8 px-2 text-xs hover:bg-accent"
+                title={display.note}
+              >
+                {display.icon && (
+                  <display.icon
+                    className={`w-3.5 h-3.5 mr-2 flex-shrink-0 ${display.color}`}
+                  />
+                )}
+                <span className="flex-1 text-left font-medium">
+                  {display.name}
+                </span>
+                {display.testMode && (
+                  <Badge variant="outline" className="text-[8px] h-4 px-1">
+                    <TestTube className="w-2.5 h-2.5" />
+                  </Badge>
+                )}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </CollapsibleContent>
 
       {/* Test Modal for Direct/Inline/Background */}
       {instance && (
