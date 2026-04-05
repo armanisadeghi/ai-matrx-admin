@@ -2,11 +2,11 @@
 
 /**
  * DiffHistory Component
- * 
+ *
  * Timeline view of note version history with restore functionality
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   fetchNoteVersions,
@@ -14,14 +14,21 @@ import {
   selectNoteVersions,
   selectNoteVersionsLoading,
   selectNoteVersionsError,
-} from '@/lib/redux/slices/noteVersionsSlice';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { History, RotateCcw, User, Sparkles, Settings, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useToastManager } from '@/hooks/useToastManager';
+} from "@/lib/redux/slices/noteVersionsSlice";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  History,
+  RotateCcw,
+  User,
+  Sparkles,
+  Settings,
+  Loader2,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useToastManager } from "@/hooks/useToastManager";
 
 export interface DiffHistoryProps {
   noteId: string;
@@ -29,10 +36,14 @@ export interface DiffHistoryProps {
   className?: string;
 }
 
-export function DiffHistory({ noteId, onRestoreVersion, className }: DiffHistoryProps) {
+export function DiffHistory({
+  noteId,
+  onRestoreVersion,
+  className,
+}: DiffHistoryProps) {
   const dispatch = useAppDispatch();
-  const toast = useToastManager('diff-history');
-  
+  const toast = useToastManager("diff-history");
+
   const versionsRaw = useAppSelector(selectNoteVersions(noteId));
   const versions = versionsRaw ?? [];
   const loading = useAppSelector(selectNoteVersionsLoading(noteId));
@@ -47,23 +58,25 @@ export function DiffHistory({ noteId, onRestoreVersion, className }: DiffHistory
   const handleRestore = async (versionNumber: number) => {
     try {
       await dispatch(restoreNoteVersion({ noteId, versionNumber })).unwrap();
-      
+
       toast.success(`Version ${versionNumber} restored successfully`);
-      
+
       onRestoreVersion?.(versionNumber);
-      
+
       // Refresh versions
       dispatch(fetchNoteVersions(noteId));
     } catch (err) {
-      toast.error(`Failed to restore version: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      toast.error(
+        `Failed to restore version: ${err instanceof Error ? err.message : "Unknown error"}`,
+      );
     }
   };
 
   const getSourceIcon = (source: string) => {
     switch (source) {
-      case 'ai':
+      case "ai":
         return <Sparkles className="h-3.5 w-3.5 text-purple-500" />;
-      case 'system':
+      case "system":
         return <Settings className="h-3.5 w-3.5 text-blue-500" />;
       default:
         return <User className="h-3.5 w-3.5 text-gray-500" />;
@@ -72,18 +85,18 @@ export function DiffHistory({ noteId, onRestoreVersion, className }: DiffHistory
 
   const getSourceColor = (source: string) => {
     switch (source) {
-      case 'ai':
-        return 'bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/30';
-      case 'system':
-        return 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/30';
+      case "ai":
+        return "bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/30";
+      case "system":
+        return "bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/30";
       default:
-        return 'bg-gray-50 text-gray-700 border-gray-300 dark:bg-gray-950/30';
+        return "bg-gray-50 text-gray-700 border-gray-300 dark:bg-gray-950/30";
     }
   };
 
   if (loading && versions.length === 0) {
     return (
-      <Card className={cn('p-6', className)}>
+      <Card className={cn("p-6", className)}>
         <div className="flex items-center justify-center gap-2 text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span className="text-sm">Loading version history...</span>
@@ -94,7 +107,7 @@ export function DiffHistory({ noteId, onRestoreVersion, className }: DiffHistory
 
   if (error) {
     return (
-      <Card className={cn('p-6', className)}>
+      <Card className={cn("p-6", className)}>
         <div className="text-center text-red-600 text-sm">
           Error loading versions: {error}
         </div>
@@ -104,24 +117,26 @@ export function DiffHistory({ noteId, onRestoreVersion, className }: DiffHistory
 
   if (versions.length === 0) {
     return (
-      <Card className={cn('p-6', className)}>
+      <Card className={cn("p-6", className)}>
         <div className="text-center text-muted-foreground">
           <History className="h-8 w-8 mx-auto mb-2 opacity-50" />
           <p className="text-sm">No version history yet</p>
-          <p className="text-xs mt-1">Versions are created automatically when you save changes</p>
+          <p className="text-xs mt-1">
+            Versions are created automatically when you save changes
+          </p>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className={cn('p-4', className)}>
+    <Card className={cn("p-4", className)}>
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <History className="h-4 w-4 text-primary" />
         <h3 className="text-sm font-semibold">Version History</h3>
         <Badge variant="outline" className="text-xs">
-          {versions.length} version{versions.length !== 1 ? 's' : ''}
+          {versions.length} version{versions.length !== 1 ? "s" : ""}
         </Badge>
       </div>
 
@@ -132,8 +147,9 @@ export function DiffHistory({ noteId, onRestoreVersion, className }: DiffHistory
             <div
               key={version.id}
               className={cn(
-                'relative pl-6 pb-3',
-                index !== versions.length - 1 && 'border-l-2 border-gray-200 dark:border-gray-700'
+                "relative pl-6 pb-3",
+                index !== versions.length - 1 &&
+                  "border-l-2 border-gray-200 dark:border-gray-700",
               )}
             >
               {/* Timeline dot */}
@@ -148,8 +164,16 @@ export function DiffHistory({ noteId, onRestoreVersion, className }: DiffHistory
                       <Badge variant="outline" className="text-xs font-mono">
                         v{version.version_number}
                       </Badge>
-                      <Badge variant="outline" className={cn('text-xs', getSourceColor(version.change_source))}>
-                        <span className="mr-1">{getSourceIcon(version.change_source)}</span>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-xs",
+                          getSourceColor(version.change_source),
+                        )}
+                      >
+                        <span className="mr-1">
+                          {getSourceIcon(version.change_source)}
+                        </span>
                         {version.change_source}
                       </Badge>
                       {version.change_type && (
@@ -162,7 +186,7 @@ export function DiffHistory({ noteId, onRestoreVersion, className }: DiffHistory
                       {version.label}
                     </div>
                   </div>
-                  
+
                   <Button
                     size="sm"
                     variant="ghost"
@@ -184,7 +208,7 @@ export function DiffHistory({ noteId, onRestoreVersion, className }: DiffHistory
                   <div className="text-xs bg-background rounded p-2 max-h-20 overflow-hidden">
                     <div className="line-clamp-3 text-muted-foreground">
                       {version.content.substring(0, 200)}
-                      {version.content.length > 200 && '...'}
+                      {version.content.length > 200 && "..."}
                     </div>
                   </div>
                 )}
@@ -196,4 +220,3 @@ export function DiffHistory({ noteId, onRestoreVersion, className }: DiffHistory
     </Card>
   );
 }
-
