@@ -107,7 +107,7 @@ interface SharedSlimRow {
   permission_level: string;
   owner_email: string;
 }
-type _CheckSharedSlimRow = SharedSlimRow extends DbRpcRow<"get_shared_agents_for_chat"> ? true : false;
+type _CheckSharedSlimRow = SharedSlimRow extends DbRpcRow<"agx_get_shared_for_chat"> ? true : false;
 declare const _sharedSlimRow: _CheckSharedSlimRow;
 true satisfies typeof _sharedSlimRow;
 
@@ -201,7 +201,7 @@ function mapOperationalRow(row: OperationalRow): AgentRecord {
 /**
  * Fetch slim agent list (Layer 1) for owned prompts + builtins, or shared.
  * For owned/builtins: calls get_agents_for_chat()
- * For shared:         calls get_shared_agents_for_chat()
+ * For shared:         calls agx_get_shared_for_chat()
  */
 export const fetchAgentSlimList = createAsyncThunk<
   void,
@@ -255,7 +255,7 @@ export const fetchAgentSlimList = createAsyncThunk<
         setAgentLastFetchedAt({ source: "builtins", timestamp: Date.now() }),
       );
     } else {
-      const { data, error } = await supabase.rpc("get_shared_agents_for_chat");
+      const { data, error } = await supabase.rpc("agx_get_shared_for_chat");
       if (error) throw error;
 
       const sharedRows = ((data ?? []) as unknown as SharedSlimRow[]).map(

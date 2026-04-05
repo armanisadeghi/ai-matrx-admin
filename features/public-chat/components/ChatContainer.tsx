@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/lib/redux/slices/userSlice";
-import { selectIsUsingLocalhost } from "@/lib/redux/slices/adminPreferencesSlice";
+import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
+import { BACKEND_URLS } from "@/lib/api/endpoints";
 import { useChatContext } from "../context/DEPRECATED-ChatContext";
 import { useLayoutAgent } from "../context/LayoutAgentContext";
 import { sidebarEvents } from "../events/sidebarEvents";
@@ -70,7 +71,11 @@ export function ChatContainer({ className = "" }: ChatContainerProps) {
 
   const user = useSelector(selectUser);
   const isAuthenticated = !!user?.id;
-  const useLocalhost = useSelector(selectIsUsingLocalhost);
+  const resolvedBaseUrl = useSelector(
+    selectResolvedBaseUrl as (state: unknown) => string | undefined,
+  );
+  const useLocalhost =
+    resolvedBaseUrl === (BACKEND_URLS.localhost ?? "http://localhost:8000");
 
   const { sendMessage, isStreaming, isExecuting, messages, conversationId } =
     useAgentChat({

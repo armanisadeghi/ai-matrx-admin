@@ -159,12 +159,18 @@ export async function saveWorkflowUserInput(
     if (error) throw new Error(`Failed to update user input: ${error.message}`);
     return userInput;
   } else {
+    const brokerId = inputData.broker_id;
+    if (!brokerId) {
+      throw new Error("broker_id is required to create a workflow user input");
+    }
+
     const { data: userInput, error } = await supabase
       .from("workflow_user_input")
       .insert({
         ...inputData,
         workflow_id: workflowId,
         user_id: userId,
+        broker_id: brokerId,
       })
       .select()
       .single();

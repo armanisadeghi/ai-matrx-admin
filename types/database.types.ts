@@ -244,231 +244,7 @@ export type Database = {
           },
         ]
       }
-      agent_shortcuts: {
-        Row: {
-          agent_id: string | null
-          agent_version_id: string | null
-          allow_chat: boolean | null
-          apply_variables: boolean | null
-          auto_run: boolean | null
-          category_id: string
-          created_at: string
-          description: string | null
-          enabled_contexts: Json | null
-          icon_name: string | null
-          id: string
-          is_active: boolean
-          keyboard_shortcut: string | null
-          label: string
-          organization_id: string | null
-          project_id: string | null
-          result_display: string | null
-          scope_mappings: Json | null
-          show_variables: boolean | null
-          sort_order: number
-          task_id: string | null
-          updated_at: string
-          use_latest: boolean
-          use_pre_execution_input: boolean | null
-          user_id: string | null
-          workspace_id: string | null
-        }
-        Insert: {
-          agent_id?: string | null
-          agent_version_id?: string | null
-          allow_chat?: boolean | null
-          apply_variables?: boolean | null
-          auto_run?: boolean | null
-          category_id: string
-          created_at?: string
-          description?: string | null
-          enabled_contexts?: Json | null
-          icon_name?: string | null
-          id?: string
-          is_active?: boolean
-          keyboard_shortcut?: string | null
-          label: string
-          organization_id?: string | null
-          project_id?: string | null
-          result_display?: string | null
-          scope_mappings?: Json | null
-          show_variables?: boolean | null
-          sort_order?: number
-          task_id?: string | null
-          updated_at?: string
-          use_latest?: boolean
-          use_pre_execution_input?: boolean | null
-          user_id?: string | null
-          workspace_id?: string | null
-        }
-        Update: {
-          agent_id?: string | null
-          agent_version_id?: string | null
-          allow_chat?: boolean | null
-          apply_variables?: boolean | null
-          auto_run?: boolean | null
-          category_id?: string
-          created_at?: string
-          description?: string | null
-          enabled_contexts?: Json | null
-          icon_name?: string | null
-          id?: string
-          is_active?: boolean
-          keyboard_shortcut?: string | null
-          label?: string
-          organization_id?: string | null
-          project_id?: string | null
-          result_display?: string | null
-          scope_mappings?: Json | null
-          show_variables?: boolean | null
-          sort_order?: number
-          task_id?: string | null
-          updated_at?: string
-          use_latest?: boolean
-          use_pre_execution_input?: boolean | null
-          user_id?: string | null
-          workspace_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "agent_shortcuts_agent_fk"
-            columns: ["agent_id"]
-            isOneToOne: false
-            referencedRelation: "agents"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "agent_shortcuts_category_fk"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "shortcut_categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "agent_shortcuts_category_fk"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "shortcuts_by_placement_view"
-            referencedColumns: ["category_id"]
-          },
-          {
-            foreignKeyName: "agent_shortcuts_org_fk"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "agent_shortcuts_project_fk"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "agent_shortcuts_task_fk"
-            columns: ["task_id"]
-            isOneToOne: false
-            referencedRelation: "tasks"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "agent_shortcuts_version_fk"
-            columns: ["agent_version_id"]
-            isOneToOne: false
-            referencedRelation: "agent_versions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "agent_shortcuts_workspace_fk"
-            columns: ["workspace_id"]
-            isOneToOne: false
-            referencedRelation: "workspaces"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      agent_versions: {
-        Row: {
-          agent_id: string
-          agent_type: string | null
-          category: string | null
-          change_note: string | null
-          changed_at: string
-          context_slots: Json | null
-          custom_tools: Json | null
-          description: string | null
-          id: string
-          is_active: boolean | null
-          mcp_servers: string[]
-          messages: Json | null
-          model_id: string | null
-          model_tiers: Json | null
-          name: string | null
-          output_schema: Json | null
-          settings: Json | null
-          tags: string[] | null
-          tools: string[] | null
-          variable_definitions: Json | null
-          version_number: number
-        }
-        Insert: {
-          agent_id: string
-          agent_type?: string | null
-          category?: string | null
-          change_note?: string | null
-          changed_at?: string
-          context_slots?: Json | null
-          custom_tools?: Json | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          mcp_servers?: string[]
-          messages?: Json | null
-          model_id?: string | null
-          model_tiers?: Json | null
-          name?: string | null
-          output_schema?: Json | null
-          settings?: Json | null
-          tags?: string[] | null
-          tools?: string[] | null
-          variable_definitions?: Json | null
-          version_number: number
-        }
-        Update: {
-          agent_id?: string
-          agent_type?: string | null
-          category?: string | null
-          change_note?: string | null
-          changed_at?: string
-          context_slots?: Json | null
-          custom_tools?: Json | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          mcp_servers?: string[]
-          messages?: Json | null
-          model_id?: string | null
-          model_tiers?: Json | null
-          name?: string | null
-          output_schema?: Json | null
-          settings?: Json | null
-          tags?: string[] | null
-          tools?: string[] | null
-          variable_definitions?: Json | null
-          version_number?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "agent_versions_agent_fk"
-            columns: ["agent_id"]
-            isOneToOne: false
-            referencedRelation: "agents"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      agents: {
+      agx_agent: {
         Row: {
           agent_type: string
           category: string | null
@@ -567,45 +343,269 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "agents_model_fk"
+            foreignKeyName: "agx_agent_model_fk"
             columns: ["model_id"]
             isOneToOne: false
             referencedRelation: "ai_model"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "agents_org_fk"
+            foreignKeyName: "agx_agent_org_fk"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "agents_project_fk"
+            foreignKeyName: "agx_agent_project_fk"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "agents_source_fk"
+            foreignKeyName: "agx_agent_source_fk"
             columns: ["source_agent_id"]
             isOneToOne: false
-            referencedRelation: "agents"
+            referencedRelation: "agx_agent"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "agents_task_fk"
+            foreignKeyName: "agx_agent_task_fk"
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "tasks"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "agents_workspace_fk"
+            foreignKeyName: "agx_agent_workspace_fk"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agx_shortcut: {
+        Row: {
+          agent_id: string | null
+          agent_version_id: string | null
+          allow_chat: boolean | null
+          apply_variables: boolean | null
+          auto_run: boolean | null
+          category_id: string
+          created_at: string
+          description: string | null
+          enabled_contexts: Json | null
+          icon_name: string | null
+          id: string
+          is_active: boolean
+          keyboard_shortcut: string | null
+          label: string
+          organization_id: string | null
+          project_id: string | null
+          result_display: string | null
+          scope_mappings: Json | null
+          show_variables: boolean | null
+          sort_order: number
+          task_id: string | null
+          updated_at: string
+          use_latest: boolean
+          use_pre_execution_input: boolean | null
+          user_id: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          agent_version_id?: string | null
+          allow_chat?: boolean | null
+          apply_variables?: boolean | null
+          auto_run?: boolean | null
+          category_id: string
+          created_at?: string
+          description?: string | null
+          enabled_contexts?: Json | null
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean
+          keyboard_shortcut?: string | null
+          label: string
+          organization_id?: string | null
+          project_id?: string | null
+          result_display?: string | null
+          scope_mappings?: Json | null
+          show_variables?: boolean | null
+          sort_order?: number
+          task_id?: string | null
+          updated_at?: string
+          use_latest?: boolean
+          use_pre_execution_input?: boolean | null
+          user_id?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          agent_version_id?: string | null
+          allow_chat?: boolean | null
+          apply_variables?: boolean | null
+          auto_run?: boolean | null
+          category_id?: string
+          created_at?: string
+          description?: string | null
+          enabled_contexts?: Json | null
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean
+          keyboard_shortcut?: string | null
+          label?: string
+          organization_id?: string | null
+          project_id?: string | null
+          result_display?: string | null
+          scope_mappings?: Json | null
+          show_variables?: boolean | null
+          sort_order?: number
+          task_id?: string | null
+          updated_at?: string
+          use_latest?: boolean
+          use_pre_execution_input?: boolean | null
+          user_id?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agx_shortcut_agent_fk"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agx_agent"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agx_shortcut_category_fk"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "shortcut_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agx_shortcut_category_fk"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "shortcuts_by_placement_view"
+            referencedColumns: ["category_id"]
+          },
+          {
+            foreignKeyName: "agx_shortcut_org_fk"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agx_shortcut_project_fk"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agx_shortcut_task_fk"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agx_shortcut_version_fk"
+            columns: ["agent_version_id"]
+            isOneToOne: false
+            referencedRelation: "agx_version"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agx_shortcut_workspace_fk"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agx_version: {
+        Row: {
+          agent_id: string
+          agent_type: string | null
+          category: string | null
+          change_note: string | null
+          changed_at: string
+          context_slots: Json | null
+          custom_tools: Json | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          mcp_servers: string[]
+          messages: Json | null
+          model_id: string | null
+          model_tiers: Json | null
+          name: string | null
+          output_schema: Json | null
+          settings: Json | null
+          tags: string[] | null
+          tools: string[] | null
+          variable_definitions: Json | null
+          version_number: number
+        }
+        Insert: {
+          agent_id: string
+          agent_type?: string | null
+          category?: string | null
+          change_note?: string | null
+          changed_at?: string
+          context_slots?: Json | null
+          custom_tools?: Json | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          mcp_servers?: string[]
+          messages?: Json | null
+          model_id?: string | null
+          model_tiers?: Json | null
+          name?: string | null
+          output_schema?: Json | null
+          settings?: Json | null
+          tags?: string[] | null
+          tools?: string[] | null
+          variable_definitions?: Json | null
+          version_number: number
+        }
+        Update: {
+          agent_id?: string
+          agent_type?: string | null
+          category?: string | null
+          change_note?: string | null
+          changed_at?: string
+          context_slots?: Json | null
+          custom_tools?: Json | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          mcp_servers?: string[]
+          messages?: Json | null
+          model_id?: string | null
+          model_tiers?: Json | null
+          name?: string | null
+          output_schema?: Json | null
+          settings?: Json | null
+          tags?: string[] | null
+          tools?: string[] | null
+          variable_definitions?: Json | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agx_version_agent_fk"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agx_agent"
             referencedColumns: ["id"]
           },
         ]
@@ -4109,10 +4109,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "cx_message_agent_id_fkey"
+            foreignKeyName: "cx_message_agx_agent_fk"
             columns: ["agent_id"]
             isOneToOne: false
-            referencedRelation: "agents"
+            referencedRelation: "agx_agent"
             referencedColumns: ["id"]
           },
           {
@@ -15324,10 +15324,6 @@ export type Database = {
       }
     }
     Functions: {
-      accept_agent_version: {
-        Args: { p_reference_id: string; p_reference_type: string }
-        Returns: Json
-      }
       accept_organization_invitation: {
         Args: { accepting_user_id: string; invitation_token: string }
         Returns: string
@@ -15904,6 +15900,316 @@ export type Database = {
             }
             Returns: Json
           }
+      agx_accept_version: {
+        Args: { p_reference_id: string; p_reference_type: string }
+        Returns: Json
+      }
+      agx_build_shortcut_menu: {
+        Args: { p_placement_types: string[] }
+        Returns: {
+          menu_data: Json
+          placement_type: string
+        }[]
+      }
+      agx_check_drift: {
+        Args: { p_agent_id?: string }
+        Returns: {
+          agent_id: string
+          agent_name: string
+          current_version: number
+          reference_id: string
+          reference_name: string
+          reference_type: string
+          version_pinned_to: number
+          versions_behind: number
+        }[]
+      }
+      agx_check_references: {
+        Args: { p_agent_id: string }
+        Returns: {
+          is_behind: boolean
+          reference_id: string
+          reference_name: string
+          reference_type: string
+          use_latest: boolean
+        }[]
+      }
+      agx_create_shortcut: {
+        Args: {
+          p_agent_id: string
+          p_category_id: string
+          p_label: string
+          p_organization_id?: string
+          p_project_id?: string
+          p_task_id?: string
+          p_use_latest?: boolean
+          p_user_id?: string
+          p_workspace_id?: string
+        }
+        Returns: string
+      }
+      agx_duplicate_agent: { Args: { p_agent_id: string }; Returns: string }
+      agx_duplicate_shortcut: {
+        Args: { p_shortcut_id: string }
+        Returns: string
+      }
+      agx_get_access_level: {
+        Args: { p_agent_id: string }
+        Returns: {
+          access_level: string
+          agent_id: string
+          agent_name: string
+          is_owner: boolean
+          owner_email: string
+          owner_id: string
+        }[]
+      }
+      agx_get_execution_full: {
+        Args: { p_agent_id: string }
+        Returns: {
+          context_slots: Json
+          custom_tools: Json
+          id: string
+          model_id: string
+          settings: Json
+          tools: string[]
+          variable_definitions: Json
+        }[]
+      }
+      agx_get_execution_minimal: {
+        Args: { p_agent_id: string }
+        Returns: {
+          context_slots: Json
+          id: string
+          variable_definitions: Json
+        }[]
+      }
+      agx_get_list: {
+        Args: never
+        Returns: {
+          access_level: string
+          agent_type: string
+          category: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          is_archived: boolean
+          is_favorite: boolean
+          is_owner: boolean
+          model_id: string
+          name: string
+          organization_id: string
+          project_id: string
+          shared_by_email: string
+          source_agent_id: string
+          tags: string[]
+          task_id: string
+          updated_at: string
+          user_id: string
+          workspace_id: string
+        }[]
+      }
+      agx_get_list_full: {
+        Args: never
+        Returns: {
+          access_level: string
+          agent_type: string
+          category: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          is_archived: boolean
+          is_favorite: boolean
+          is_owner: boolean
+          model_id: string
+          name: string
+          organization_id: string
+          project_id: string
+          shared_by_email: string
+          source_agent_id: string
+          tags: string[]
+          task_id: string
+          updated_at: string
+          user_id: string
+          workspace_id: string
+        }[]
+      }
+      agx_get_shared_for_chat: {
+        Args: never
+        Returns: {
+          id: string
+          name: string
+          owner_email: string
+          permission_level: string
+        }[]
+      }
+      agx_get_shared_with_me: {
+        Args: never
+        Returns: {
+          agent_type: string
+          category: string
+          created_at: string
+          description: string
+          id: string
+          name: string
+          owner_email: string
+          owner_id: string
+          permission_level: string
+          tags: string[]
+          updated_at: string
+        }[]
+      }
+      agx_get_shortcuts_for_context: {
+        Args: {
+          p_project_id?: string
+          p_task_id?: string
+          p_workspace_id?: string
+        }
+        Returns: {
+          agent_context_slots: Json
+          agent_id: string
+          agent_name: string
+          agent_variable_definitions: Json
+          agent_version_id: string
+          allow_chat: boolean
+          apply_variables: boolean
+          auto_run: boolean
+          category_id: string
+          current_version: number
+          description: string
+          enabled_contexts: Json
+          icon_name: string
+          is_behind: boolean
+          is_version: boolean
+          keyboard_shortcut: string
+          label: string
+          resolved_id: string
+          result_display: string
+          scope_mappings: Json
+          shortcut_id: string
+          shortcut_org_id: string
+          shortcut_project_id: string
+          shortcut_task_id: string
+          shortcut_user_id: string
+          shortcut_workspace_id: string
+          show_variables: boolean
+          sort_order: number
+          use_latest: boolean
+          use_pre_execution_input: boolean
+        }[]
+      }
+      agx_get_shortcuts_initial: {
+        Args: never
+        Returns: {
+          agent_context_slots: Json
+          agent_id: string
+          agent_name: string
+          agent_variable_definitions: Json
+          agent_version_id: string
+          allow_chat: boolean
+          apply_variables: boolean
+          auto_run: boolean
+          category_id: string
+          current_version: number
+          description: string
+          enabled_contexts: Json
+          icon_name: string
+          is_behind: boolean
+          is_version: boolean
+          keyboard_shortcut: string
+          label: string
+          resolved_id: string
+          result_display: string
+          scope_mappings: Json
+          shortcut_id: string
+          shortcut_org_id: string
+          shortcut_user_id: string
+          show_variables: boolean
+          sort_order: number
+          use_latest: boolean
+          use_pre_execution_input: boolean
+        }[]
+      }
+      agx_get_user_shortcuts: {
+        Args: never
+        Returns: {
+          agent_id: string
+          agent_name: string
+          agent_version_id: string
+          allow_chat: boolean
+          apply_variables: boolean
+          auto_run: boolean
+          category_id: string
+          category_label: string
+          created_at: string
+          description: string
+          enabled_contexts: Json
+          icon_name: string
+          id: string
+          is_active: boolean
+          keyboard_shortcut: string
+          label: string
+          organization_id: string
+          project_id: string
+          result_display: string
+          scope_mappings: Json
+          scope_name: string
+          scope_type: string
+          show_variables: boolean
+          sort_order: number
+          task_id: string
+          updated_at: string
+          use_latest: boolean
+          use_pre_execution_input: boolean
+          user_id: string
+          workspace_id: string
+        }[]
+      }
+      agx_get_version_history: {
+        Args: { p_agent_id: string; p_limit?: number; p_offset?: number }
+        Returns: {
+          change_note: string
+          changed_at: string
+          name: string
+          version_id: string
+          version_number: number
+        }[]
+      }
+      agx_get_version_snapshot: {
+        Args: { p_agent_id: string; p_version_number: number }
+        Returns: {
+          agent_type: string
+          category: string
+          change_note: string
+          changed_at: string
+          context_slots: Json
+          custom_tools: Json
+          description: string
+          is_active: boolean
+          messages: Json
+          model_id: string
+          model_tiers: Json
+          name: string
+          output_schema: Json
+          settings: Json
+          tags: string[]
+          tools: string[]
+          variable_definitions: Json
+          version_id: string
+          version_number: number
+        }[]
+      }
+      agx_promote_version: {
+        Args: { p_agent_id: string; p_version_number: number }
+        Returns: Json
+      }
+      agx_purge_versions: {
+        Args: { p_agent_id: string; p_keep_count?: number }
+        Returns: Json
+      }
+      agx_update_from_source: { Args: { p_agent_id: string }; Returns: Json }
       assign_random_colors_to_node_all_nodes: {
         Args: never
         Returns: undefined
@@ -15949,13 +16255,6 @@ export type Database = {
         Args: { p_table_id: string; p_updates: Json }
         Returns: Json
       }
-      build_agent_shortcut_menu: {
-        Args: { p_placement_types: string[] }
-        Returns: {
-          menu_data: Json
-          placement_type: string
-        }[]
-      }
       build_category_hierarchy: {
         Args: { p_placement_types: string[] }
         Returns: {
@@ -15995,29 +16294,6 @@ export type Database = {
           p_view_count: number
         }
         Returns: number
-      }
-      check_agent_drift: {
-        Args: { p_agent_id?: string }
-        Returns: {
-          agent_id: string
-          agent_name: string
-          current_version: number
-          reference_id: string
-          reference_name: string
-          reference_type: string
-          version_pinned_to: number
-          versions_behind: number
-        }[]
-      }
-      check_agent_references: {
-        Args: { p_agent_id: string }
-        Returns: {
-          is_behind: boolean
-          reference_id: string
-          reference_name: string
-          reference_type: string
-          use_latest: boolean
-        }[]
       }
       check_builtin_drift: {
         Args: { p_builtin_id?: string }
@@ -16345,20 +16621,6 @@ export type Database = {
         Returns: string
       }
       create_related_records: { Args: { input_data: Json }; Returns: Json }
-      create_shortcut_for_agent: {
-        Args: {
-          p_agent_id: string
-          p_category_id: string
-          p_label: string
-          p_organization_id?: string
-          p_project_id?: string
-          p_task_id?: string
-          p_use_latest?: boolean
-          p_user_id?: string
-          p_workspace_id?: string
-        }
-        Returns: string
-      }
       create_user_list: {
         Args: {
           p_authenticated_read?: boolean
@@ -16774,7 +17036,6 @@ export type Database = {
         Args: { p_server_id: string }
         Returns: undefined
       }
-      duplicate_agent: { Args: { p_agent_id: string }; Returns: string }
       duplicate_row: {
         Args: {
           p_excluded_columns?: string[]
@@ -16783,7 +17044,6 @@ export type Database = {
         }
         Returns: Json
       }
-      duplicate_shortcut: { Args: { p_shortcut_id: string }; Returns: string }
       dynamic_search: {
         Args: {
           p_page_number?: number
@@ -17518,17 +17778,6 @@ export type Database = {
       }
       generate_invitation_code: { Args: never; Returns: string }
       generate_invitation_token: { Args: never; Returns: string }
-      get_agent_access_level: {
-        Args: { p_agent_id: string }
-        Returns: {
-          access_level: string
-          agent_id: string
-          agent_name: string
-          is_owner: boolean
-          owner_email: string
-          owner_id: string
-        }[]
-      }
       get_agent_core_batch: {
         Args: { p_ids: string[]; p_sources: string[] }
         Returns: {
@@ -17547,26 +17796,6 @@ export type Database = {
           version: number
         }[]
       }
-      get_agent_execution_full: {
-        Args: { p_agent_id: string }
-        Returns: {
-          context_slots: Json
-          custom_tools: Json
-          id: string
-          model_id: string
-          settings: Json
-          tools: string[]
-          variable_definitions: Json
-        }[]
-      }
-      get_agent_execution_minimal: {
-        Args: { p_agent_id: string }
-        Returns: {
-          context_slots: Json
-          id: string
-          variable_definitions: Json
-        }[]
-      }
       get_agent_operational: {
         Args: { p_id: string; p_source: string }
         Returns: {
@@ -17575,111 +17804,6 @@ export type Database = {
           settings: Json
           source: string
           variable_defaults: Json
-        }[]
-      }
-      get_agent_shortcuts_for_context: {
-        Args: {
-          p_project_id?: string
-          p_task_id?: string
-          p_workspace_id?: string
-        }
-        Returns: {
-          agent_context_slots: Json
-          agent_id: string
-          agent_name: string
-          agent_variable_definitions: Json
-          agent_version_id: string
-          allow_chat: boolean
-          apply_variables: boolean
-          auto_run: boolean
-          category_id: string
-          current_version: number
-          description: string
-          enabled_contexts: Json
-          icon_name: string
-          is_behind: boolean
-          is_version: boolean
-          keyboard_shortcut: string
-          label: string
-          resolved_id: string
-          result_display: string
-          scope_mappings: Json
-          shortcut_id: string
-          shortcut_org_id: string
-          shortcut_project_id: string
-          shortcut_task_id: string
-          shortcut_user_id: string
-          shortcut_workspace_id: string
-          show_variables: boolean
-          sort_order: number
-          use_latest: boolean
-          use_pre_execution_input: boolean
-        }[]
-      }
-      get_agent_shortcuts_initial: {
-        Args: never
-        Returns: {
-          agent_context_slots: Json
-          agent_id: string
-          agent_name: string
-          agent_variable_definitions: Json
-          agent_version_id: string
-          allow_chat: boolean
-          apply_variables: boolean
-          auto_run: boolean
-          category_id: string
-          current_version: number
-          description: string
-          enabled_contexts: Json
-          icon_name: string
-          is_behind: boolean
-          is_version: boolean
-          keyboard_shortcut: string
-          label: string
-          resolved_id: string
-          result_display: string
-          scope_mappings: Json
-          shortcut_id: string
-          shortcut_org_id: string
-          shortcut_user_id: string
-          show_variables: boolean
-          sort_order: number
-          use_latest: boolean
-          use_pre_execution_input: boolean
-        }[]
-      }
-      get_agent_version_history: {
-        Args: { p_agent_id: string; p_limit?: number; p_offset?: number }
-        Returns: {
-          change_note: string
-          changed_at: string
-          name: string
-          version_id: string
-          version_number: number
-        }[]
-      }
-      get_agent_version_snapshot: {
-        Args: { p_agent_id: string; p_version_number: number }
-        Returns: {
-          agent_type: string
-          category: string
-          change_note: string
-          changed_at: string
-          context_slots: Json
-          custom_tools: Json
-          description: string
-          is_active: boolean
-          messages: Json
-          model_id: string
-          model_tiers: Json
-          name: string
-          output_schema: Json
-          settings: Json
-          tags: string[]
-          tools: string[]
-          variable_definitions: Json
-          version_id: string
-          version_number: number
         }[]
       }
       get_agent_work_queue: {
@@ -17730,74 +17854,6 @@ export type Database = {
           id: string
           name: string
           source: string
-        }[]
-      }
-      get_agents_list: {
-        Args: never
-        Returns: {
-          access_level: string
-          agent_type: string
-          category: string
-          created_at: string
-          description: string
-          id: string
-          is_active: boolean
-          is_archived: boolean
-          is_favorite: boolean
-          is_owner: boolean
-          model_id: string
-          name: string
-          organization_id: string
-          project_id: string
-          shared_by_email: string
-          source_agent_id: string
-          tags: string[]
-          task_id: string
-          updated_at: string
-          user_id: string
-          workspace_id: string
-        }[]
-      }
-      get_agents_list_full: {
-        Args: never
-        Returns: {
-          access_level: string
-          agent_type: string
-          category: string
-          created_at: string
-          description: string
-          id: string
-          is_active: boolean
-          is_archived: boolean
-          is_favorite: boolean
-          is_owner: boolean
-          model_id: string
-          name: string
-          organization_id: string
-          project_id: string
-          shared_by_email: string
-          source_agent_id: string
-          tags: string[]
-          task_id: string
-          updated_at: string
-          user_id: string
-          workspace_id: string
-        }[]
-      }
-      get_agents_shared_with_me: {
-        Args: never
-        Returns: {
-          agent_type: string
-          category: string
-          created_at: string
-          description: string
-          id: string
-          name: string
-          owner_email: string
-          owner_id: string
-          permission_level: string
-          tags: string[]
-          updated_at: string
         }[]
       }
       get_applet_with_recipe: {
@@ -18551,15 +18607,6 @@ export type Database = {
         }[]
       }
       get_schema: { Args: never; Returns: Json }
-      get_shared_agents_for_chat: {
-        Args: never
-        Returns: {
-          id: string
-          name: string
-          owner_email: string
-          permission_level: string
-        }[]
-      }
       get_ssr_shell_data: { Args: { p_user_id: string }; Returns: Json }
       get_storage_object: {
         Args: { p_bucket_id: string; p_name: string }
@@ -18790,41 +18837,6 @@ export type Database = {
           preferences_exists: boolean
         }[]
       }
-      get_user_shortcuts: {
-        Args: never
-        Returns: {
-          agent_id: string
-          agent_name: string
-          agent_version_id: string
-          allow_chat: boolean
-          apply_variables: boolean
-          auto_run: boolean
-          category_id: string
-          category_label: string
-          created_at: string
-          description: string
-          enabled_contexts: Json
-          icon_name: string
-          id: string
-          is_active: boolean
-          keyboard_shortcut: string
-          label: string
-          organization_id: string
-          project_id: string
-          result_display: string
-          scope_mappings: Json
-          scope_name: string
-          scope_type: string
-          show_variables: boolean
-          sort_order: number
-          task_id: string
-          updated_at: string
-          use_latest: boolean
-          use_pre_execution_input: boolean
-          user_id: string
-          workspace_id: string
-        }[]
-      }
       get_user_stats: { Args: { p_user_id: string }; Returns: Json }
       get_user_table_complete: {
         Args: {
@@ -18975,16 +18987,8 @@ export type Database = {
         Args: { p_app_id: string; p_version_id: string }
         Returns: Json
       }
-      promote_agent_version: {
-        Args: { p_agent_id: string; p_version_number: number }
-        Returns: Json
-      }
       promote_version: {
         Args: { p_entity_id: string; p_entity_type: string; p_version: number }
-        Returns: Json
-      }
-      purge_agent_versions: {
-        Args: { p_agent_id: string; p_keep_count?: number }
         Returns: Json
       }
       purge_old_versions: {
@@ -19511,7 +19515,6 @@ export type Database = {
               isSetofReturn: false
             }
           }
-      update_agent_from_source: { Args: { p_agent_id: string }; Returns: Json }
       update_all_bucket_tree_structures: { Args: never; Returns: Json }
       update_all_trending_scores: { Args: never; Returns: undefined }
       update_arg: {

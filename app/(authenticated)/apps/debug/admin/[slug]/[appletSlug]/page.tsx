@@ -1,7 +1,13 @@
 // app/(authenticated)/apps/custom/[slug]/[appletSlug]/page.tsx
-import { fetchAppAndAppletConfig } from "@/utils/supabase/fetchAppAndAppletConfig";
+import {
+  fetchAppAndAppletConfig,
+  fetchAppletBySlug,
+} from "@/utils/supabase/fetchAppAndAppletConfig";
 import { Metadata, ResolvingMetadata } from "next";
-import { AppletConfigViewer } from "@/components/admin";
+import {
+  AppletConfigViewer,
+  customAppletConfigToAppletViewerConfig,
+} from "@/components/admin";
 
 type Params = Promise<{ slug: string; appletSlug: string }>;
 
@@ -86,6 +92,26 @@ export default async function AppletPage({
       </div>
     );
   }
+
+  let appletForViewer;
+  try {
+    const fullApplet = await fetchAppletBySlug(appletSlug);
+    appletForViewer = customAppletConfigToAppletViewerConfig(fullApplet);
+  } catch {
+    return (
+      <div className="p-4">
+        <h1 className="text-2xl font-bold text-red-600">Applet Not Found</h1>
+        <p>Could not load the full applet configuration.</p>
+        <a
+          href={`/apps/custom/${slug}`}
+          className="mt-4 inline-block text-blue-600 hover:underline"
+        >
+          ← Back to {appConfig.name}
+        </a>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4">
       <div className="mb-4">
@@ -109,7 +135,7 @@ export default async function AppletPage({
         data-applet-id={currentApplet.id}
       >
         <AppletConfigViewer
-          applet={currentApplet}
+          applet={appletForViewer}
           searchParams={searchParams}
         />
       </div>

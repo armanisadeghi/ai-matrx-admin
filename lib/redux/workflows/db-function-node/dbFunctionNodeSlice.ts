@@ -1,13 +1,27 @@
-import { DbFunctionNode, ReactFlowUIMetadata, WorkflowDependency, ArgumentMapping, ArgumentOverride } from '@/features/workflows/types';
+import {
+    DbFunctionNode,
+    ReactFlowUIMetadata,
+    WorkflowDependency,
+    ArgumentMapping,
+    ArgumentOverride,
+} from '@/features/workflows/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {
+    asArgumentMappings,
+    asArgumentOverrides,
+    asStringArray,
+    asWorkflowDependencies,
+} from '@/features/workflows/utils/workflow-json-fields';
 
 
 // Initial state for a single node
 const initialNodeState: DbFunctionNode = {
     id: '',
+    created_at: new Date(0).toISOString(),
+    updated_at: null,
     user_id: null,
-    workflow_id: '',
-    function_id: '',
+    workflow_id: null,
+    function_id: null,
     function_type: 'registered_function',
     step_name: 'Unnamed Step',
     node_type: 'functionNode',
@@ -18,6 +32,8 @@ const initialNodeState: DbFunctionNode = {
     return_broker_overrides: [],
     arg_overrides: [],
     metadata: {},
+    is_public: null,
+    public_read: null,
     ui_node_data: {
         position: { x: 0, y: 0 },
         type: 'functionNode',
@@ -83,9 +99,6 @@ const dbFunctionNodeSlice = createSlice({
         updateIsPublic: (state, action: PayloadAction<{ id: string; is_public: boolean }>) => {
             state.nodes[action.payload.id].is_public = action.payload.is_public;
         },
-        updateAuthenticatedRead: (state, action: PayloadAction<{ id: string; authenticated_read: boolean }>) => {
-            state.nodes[action.payload.id].authenticated_read = action.payload.authenticated_read;
-        },
         updatePublicRead: (state, action: PayloadAction<{ id: string; public_read: boolean }>) => {
             state.nodes[action.payload.id].public_read = action.payload.public_read;
         },
@@ -98,54 +111,74 @@ const dbFunctionNodeSlice = createSlice({
 
         // Array field actions: additional_dependencies
         updateAdditionalDependencies: (state, action: PayloadAction<{ id: string; dependencies: WorkflowDependency[] }>) => {
-            state.nodes[action.payload.id].additional_dependencies = action.payload.dependencies;
+            const node = state.nodes[action.payload.id];
+            node.additional_dependencies = action.payload.dependencies as DbFunctionNode['additional_dependencies'];
         },
         addAdditionalDependency: (state, action: PayloadAction<{ id: string; dependency: WorkflowDependency }>) => {
-            state.nodes[action.payload.id].additional_dependencies.push(action.payload.dependency);
+            const node = state.nodes[action.payload.id];
+            const next = [...asWorkflowDependencies(node.additional_dependencies), action.payload.dependency];
+            node.additional_dependencies = next as DbFunctionNode['additional_dependencies'];
         },
         removeAdditionalDependency: (state, action: PayloadAction<{ id: string; source_broker_id: string }>) => {
-            state.nodes[action.payload.id].additional_dependencies = state.nodes[action.payload.id].additional_dependencies.filter(
+            const node = state.nodes[action.payload.id];
+            const filtered = asWorkflowDependencies(node.additional_dependencies).filter(
                 dep => dep.source_broker_id !== action.payload.source_broker_id
             );
+            node.additional_dependencies = filtered as DbFunctionNode['additional_dependencies'];
         },
 
         // Array field actions: arg_mapping
         updateArgMapping: (state, action: PayloadAction<{ id: string; mappings: ArgumentMapping[] }>) => {
-            state.nodes[action.payload.id].arg_mapping = action.payload.mappings;
+            const node = state.nodes[action.payload.id];
+            node.arg_mapping = action.payload.mappings as DbFunctionNode['arg_mapping'];
         },
         addArgMapping: (state, action: PayloadAction<{ id: string; mapping: ArgumentMapping }>) => {
-            state.nodes[action.payload.id].arg_mapping.push(action.payload.mapping);
+            const node = state.nodes[action.payload.id];
+            const next = [...asArgumentMappings(node.arg_mapping), action.payload.mapping];
+            node.arg_mapping = next as DbFunctionNode['arg_mapping'];
         },
         removeArgMapping: (state, action: PayloadAction<{ id: string; source_broker_id: string; target_arg_name: string }>) => {
-            state.nodes[action.payload.id].arg_mapping = state.nodes[action.payload.id].arg_mapping.filter(
+            const node = state.nodes[action.payload.id];
+            const filtered = asArgumentMappings(node.arg_mapping).filter(
                 map => !(map.source_broker_id === action.payload.source_broker_id && map.target_arg_name === action.payload.target_arg_name)
             );
+            node.arg_mapping = filtered as DbFunctionNode['arg_mapping'];
         },
 
         // Array field actions: return_broker_overrides
         updateReturnBrokerOverrides: (state, action: PayloadAction<{ id: string; overrides: string[] }>) => {
-            state.nodes[action.payload.id].return_broker_overrides = action.payload.overrides;
+            const node = state.nodes[action.payload.id];
+            node.return_broker_overrides = action.payload.overrides as DbFunctionNode['return_broker_overrides'];
         },
         addReturnBrokerOverride: (state, action: PayloadAction<{ id: string; override: string }>) => {
-            state.nodes[action.payload.id].return_broker_overrides.push(action.payload.override);
+            const node = state.nodes[action.payload.id];
+            const next = [...asStringArray(node.return_broker_overrides), action.payload.override];
+            node.return_broker_overrides = next as DbFunctionNode['return_broker_overrides'];
         },
         removeReturnBrokerOverride: (state, action: PayloadAction<{ id: string; override: string }>) => {
-            state.nodes[action.payload.id].return_broker_overrides = state.nodes[action.payload.id].return_broker_overrides.filter(
+            const node = state.nodes[action.payload.id];
+            const filtered = asStringArray(node.return_broker_overrides).filter(
                 ov => ov !== action.payload.override
             );
+            node.return_broker_overrides = filtered as DbFunctionNode['return_broker_overrides'];
         },
 
         // Array field actions: arg_overrides
         updateArgOverrides: (state, action: PayloadAction<{ id: string; overrides: ArgumentOverride[] }>) => {
-            state.nodes[action.payload.id].arg_overrides = action.payload.overrides;
+            const node = state.nodes[action.payload.id];
+            node.arg_overrides = action.payload.overrides as DbFunctionNode['arg_overrides'];
         },
         addArgOverride: (state, action: PayloadAction<{ id: string; override: ArgumentOverride }>) => {
-            state.nodes[action.payload.id].arg_overrides.push(action.payload.override);
+            const node = state.nodes[action.payload.id];
+            const next = [...asArgumentOverrides(node.arg_overrides), action.payload.override];
+            node.arg_overrides = next as DbFunctionNode['arg_overrides'];
         },
         removeArgOverride: (state, action: PayloadAction<{ id: string; name: string }>) => {
-            state.nodes[action.payload.id].arg_overrides = state.nodes[action.payload.id].arg_overrides.filter(
+            const node = state.nodes[action.payload.id];
+            const filtered = asArgumentOverrides(node.arg_overrides).filter(
                 ov => ov.name !== action.payload.name
             );
+            node.arg_overrides = filtered as DbFunctionNode['arg_overrides'];
         },
     },
 });
@@ -163,7 +196,6 @@ export const {
     updateExecutionRequired,
     updateStatus,
     updateIsPublic,
-    updateAuthenticatedRead,
     updatePublicRead,
     updateMetadata,
     updateUiNodeData,

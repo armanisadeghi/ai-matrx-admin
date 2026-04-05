@@ -123,6 +123,7 @@ export const normalizeCustomAppletConfig = (
     layoutType: config.layoutType || "flat",
     containers: config.containers || [],
     dataSourceConfig: config.dataSourceConfig || null,
+    dataDestinationConfig: config.dataDestinationConfig ?? null,
     resultComponentConfig: config.resultComponentConfig || null,
     nextStepConfig: config.nextStepConfig || null,
     compiledRecipeId: config.compiledRecipeId || null,
@@ -130,6 +131,7 @@ export const normalizeCustomAppletConfig = (
     imageUrl: config.imageUrl || null,
     appId: config.appId || null,
     brokerMap: config.brokerMap || [],
+    overviewLabel: config.overviewLabel,
   };
 };
 
@@ -154,8 +156,10 @@ export const appletConfigToDBFormat = async (
     layout_type: config.layoutType || null,
     containers: config.containers || null,
     data_source_config: config.dataSourceConfig || null,
+    data_destination_config: config.dataDestinationConfig ?? null,
     result_component_config: config.resultComponentConfig || null,
     next_step_config: config.nextStepConfig || null,
+    overview_label: config.overviewLabel ?? null,
     user_id: userId,
     is_public: false,
     public_read: false,
@@ -186,6 +190,7 @@ export const dbToAppletConfig = (
     layoutType: parseLayoutType(dbRecord.layout_type),
     containers: parseContainersJson(dbRecord.containers),
     dataSourceConfig: dbRecord.data_source_config as AppletSourceConfig | null,
+    dataDestinationConfig: dbRecord.data_destination_config,
     resultComponentConfig: dbRecord.result_component_config,
     nextStepConfig: dbRecord.next_step_config,
     compiledRecipeId: dbRecord.compiled_recipe_id,
@@ -193,6 +198,7 @@ export const dbToAppletConfig = (
     imageUrl: dbRecord.image_url,
     appId: dbRecord.app_id,
     brokerMap: parseBrokerMapJson(dbRecord.broker_map),
+    overviewLabel: dbRecord.overview_label ?? undefined,
   });
 };
 

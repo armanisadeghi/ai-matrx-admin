@@ -4,6 +4,7 @@ import {
   ShortcutCategory,
   PromptBuiltin,
   PromptShortcut,
+  ScopeMapping,
   CreateShortcutCategoryInput,
   UpdateShortcutCategoryInput,
   CreatePromptBuiltinInput,
@@ -15,6 +16,84 @@ import {
 import { ContentBlockDB, UpdateContentBlockInput } from '@/types/content-blocks-db';
 import { logDetailedError } from '../utils/error-handler';
 import { createClient } from '@/utils/supabase/client';
+import type { Database, Json } from '@/types/database.types';
+import type { DbRpcRow } from '@/types/supabase-rpc';
+import {
+  normalizePromptMessagesFromDb,
+  normalizePromptSettingsFromDb,
+  normalizePromptVariablesFromDb,
+} from '@/features/prompts/utils/normalize-prompt-db-json';
+import { PLACEMENT_TYPES, type PlacementType } from '../constants';
+
+type ShortcutCategoryRow = Database['public']['Tables']['shortcut_categories']['Row'];
+
+function isPlacementType(value: string): value is PlacementType {
+  return (Object.values(PLACEMENT_TYPES) as string[]).includes(value);
+}
+
+function parseScopeMappingFromJson(value: unknown): ScopeMapping {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const out: ScopeMapping = {};
+  for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+    if (typeof v === 'string') out[k] = v;
+  }
+  return out;
+}
+
+function parseShortcutCategoryMetadata(value: Json | null): Record<string, unknown> | null {
+  if (value === null) return null;
+  if (typeof value === 'object' && !Array.isArray(value)) return value as Record<string, unknown>;
+  return null;
+}
+
+function parseEnabledContexts(value: Json | null): string[] | null {
+  if (value === null) return null;
+  if (!Array.isArray(value)) return null;
+  const strings = value.filter((item): item is string => typeof item === 'string');
+  return strings.length > 0 ? strings : null;
+}
+
+function mapShortcutCategoryFromDb(row: ShortcutCategoryRow): ShortcutCategory {
+  const placement_type: PlacementType =
+    typeof row.placement_type === 'string' && isPlacementType(row.placement_type)
+      ? row.placement_type
+      : PLACEMENT_TYPES.AI_ACTION;
+
+  return {
+    id: row.id,
+    placement_type,
+    parent_category_id: row.parent_category_id,
+    label: row.label,
+    description: row.description,
+    icon_name: row.icon_name,
+    color: row.color ?? 'zinc',
+    sort_order: row.sort_order ?? 999,
+    is_active: row.is_active ?? true,
+    metadata: parseShortcutCategoryMetadata(row.metadata),
+    enabled_contexts: parseEnabledContexts(row.enabled_contexts),
+  };
+}
+
+function normalizeExecutionTools(value: unknown): unknown[] | null {
+  if (value == null) return null;
+  if (!Array.isArray(value)) return null;
+  return value;
+}
+
+function mapRpcRowToPromptExecutionData(row: DbRpcRow<'get_prompt_execution_data'>): PromptExecutionData {
+  return {
+    shortcut_id: row.shortcut_id,
+    shortcut_label: row.shortcut_label,
+    scope_mappings: parseScopeMappingFromJson(row.scope_mappings),
+    available_scopes: row.available_scopes,
+    prompt_builtin_id: row.prompt_builtin_id,
+    prompt_name: row.prompt_name,
+    messages: normalizePromptMessagesFromDb(row.messages as Json),
+    variableDefaults: normalizePromptVariablesFromDb(row.variable_defaults as Json),
+    tools: normalizeExecutionTools(row.tools) as PromptExecutionData['tools'],
+    settings: normalizePromptSettingsFromDb(row.settings as Json) as PromptExecutionData['settings'],
+  };
+}
 
 // Helper to get the right client based on context.
 // On the server (API routes), use the admin client so writes to admin-only tables
@@ -757,7 +836,7 @@ export async function getPromptExecutionData(shortcutId: string): Promise<Prompt
     return null;
   }
 
-  return data[0] as PromptExecutionData;
+  return mapRpcRowToPromptExecutionData(data[0] as DbRpcRow<'get_prompt_execution_data'>);
 }
 
 // ============================================================================
@@ -795,7 +874,7 @@ export async function fetchShortcutsWithRelations(filters?: {
     .select('*')
     .in('id', builtinIds);
 
-  const categoryMap = new Map((categories || []).map(c => [c.id, c]));
+  const categoryMap = new Map((categories || []).map(c => [c.id, mapShortcutCategoryFromDb(c)]));
   // Transform builtins from DB format to UI format
   const builtinMap = new Map((builtins || []).map(b => [b.id, transformBuiltinFromDB(b)]));
 
@@ -967,7 +1046,7 @@ export async function fetchCategoryItemsWithRelations(filters?: {
     ? await supabase.from('shortcut_categories').select('*').in('id', categoryIds)
     : { data: [] };
 
-  const categoryMap = new Map((categories || []).map(c => [c.id, c]));
+  const categoryMap = new Map((categories || []).map(c => [c.id, mapShortcutCategoryFromDb(c)]));
 
   // Transform content blocks to include item_type and category
   const contentBlockItems: CategoryItem[] = contentBlocks.map(cb => ({

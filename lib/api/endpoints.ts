@@ -56,6 +56,21 @@ export const ENDPOINTS = {
     agentWarm: (agentId: string) => `/ai/agents/${agentId}/warm` as const,
 
     /**
+     * POST — Start a new prompt conversation (Guest OK)
+     * POST /ai/prompts/{promptId}
+     * Body: PromptStartRequest — user_input, variables, stream, debug, client_tools, etc.
+     * Never send conversation_id — the server generates it and returns it in the stream.
+     */
+    promptStart: (promptId: string) => `/ai/prompts/${promptId}` as const,
+
+    /**
+     * POST — Pre-warm a prompt's server cache. No auth. (public endpoint)
+     * POST /ai/prompts/{promptId}/warm
+     * Optional body: `{ source: string | null }`
+     */
+    promptWarm: (promptId: string) => `/ai/prompts/${promptId}/warm` as const,
+
+    /**
      * POST — Start a new block-streaming agent session (Guest OK)
      * POST /ai/agents-blocks/{agentId}
      * Same as agentStart but emits 'content_block' NDJSON events instead of raw 'chunk' events.

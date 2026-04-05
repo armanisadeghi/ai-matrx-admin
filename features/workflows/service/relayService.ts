@@ -129,12 +129,20 @@ export async function saveWorkflowRelay(
     if (error) throw new Error(`Failed to update relay: ${error.message}`);
     return relay;
   } else {
+    const sourceBrokerId = relayData.source_broker_id;
+    if (!sourceBrokerId) {
+      throw new Error(
+        "source_broker_id is required to create a workflow relay",
+      );
+    }
+
     const { data: relay, error } = await supabase
       .from("workflow_relay")
       .insert({
         ...relayData,
         workflow_id: workflowId,
         user_id: userId,
+        source_broker_id: sourceBrokerId,
       })
       .select()
       .single();

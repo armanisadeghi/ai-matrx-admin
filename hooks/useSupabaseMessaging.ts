@@ -1,8 +1,8 @@
 /**
  * React Hooks for Supabase Direct Messaging
- * 
+ *
  * Uses dm_ prefixed tables and auth.users.id UUIDs
- * 
+ *
  * Provides hooks for:
  * - useMessages: Message state, loading, send, pagination
  * - useTypingIndicator: Who's typing + set typing
@@ -11,11 +11,11 @@
  * - useConversations: List and manage conversations
  */
 
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { getMessagingService } from '@/lib/supabase/messaging';
-import { createClient } from '@/utils/supabase/client';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { getMessagingService } from "@/lib/supabase/messaging";
+import { createClient } from "@/utils/supabase/client";
 import type {
   Message,
   MessageWithSender,
@@ -26,7 +26,7 @@ import type {
   UseTypingIndicatorReturn,
   UseChatReturn,
   UseConversationsReturn,
-} from '@/features/messaging/types';
+} from "@/features/messaging/types";
 
 // ============================================
 // useMessages Hook
@@ -40,16 +40,16 @@ interface UseMessagesOptions {
 export function useMessages(
   conversationId: string | null,
   userId: string | null,
-  options: UseMessagesOptions = {}
+  options: UseMessagesOptions = {},
 ): UseMessagesReturn {
   const { initialPageSize = 50, autoMarkAsRead = true } = options;
-  
+
   const [messages, setMessages] = useState<MessageWithSender[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
-  
+
   const mountedRef = useRef(true);
   const messagingService = getMessagingService();
   // Use ref to avoid recreating supabase client on every render
@@ -74,11 +74,11 @@ export function useMessages(
       try {
         // Fetch the most recent messages (descending to get newest first, then reverse for display)
         const { data: rawData, error: fetchError } = await supabase
-          .from('dm_messages')
-          .select('*')
-          .eq('conversation_id', conversationId)
-          .is('deleted_at', null)
-          .order('created_at', { ascending: false })
+          .from("dm_messages")
+          .select("*")
+          .eq("conversation_id", conversationId)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false })
           .limit(initialPageSize);
 
         if (!mountedRef.current) return;
@@ -96,8 +96,9 @@ export function useMessages(
         const senderInfoMap = new Map<string, UserBasicInfo>();
 
         for (const senderId of senderIds) {
-          const { data: userInfo } = await supabase
-            .rpc('get_dm_user_info', { p_user_id: senderId });
+          const { data: userInfo } = await supabase.rpc("get_dm_user_info", {
+            p_user_id: senderId,
+          });
           if (userInfo && userInfo[0]) {
             senderInfoMap.set(senderId, userInfo[0]);
           }
@@ -120,7 +121,9 @@ export function useMessages(
         }
       } catch (err) {
         if (!mountedRef.current) return;
-        setError(err instanceof Error ? err.message : 'Failed to load messages');
+        setError(
+          err instanceof Error ? err.message : "Failed to load messages",
+        );
       } finally {
         if (mountedRef.current) {
           setIsLoading(false);
@@ -136,8 +139,9 @@ export function useMessages(
 
       // Fetch sender info for the new message
       let senderInfo: UserBasicInfo | undefined;
-      const { data: userInfo } = await supabase
-        .rpc('get_dm_user_info', { p_user_id: newMessage.sender_id });
+      const { data: userInfo } = await supabase.rpc("get_dm_user_info", {
+        p_user_id: newMessage.sender_id,
+      });
       if (userInfo && userInfo[0]) {
         senderInfo = userInfo[0];
       }
@@ -145,27 +149,48 @@ export function useMessages(
       setMessages((prev) => {
         // Deduplication: Check by id and client_message_id
         const existsByMsgId = prev.some((m) => m.id === newMessage.id);
-        const existsByClientId = newMessage.client_message_id && prev.some(
-          (m) => m.client_message_id && m.client_message_id === newMessage.client_message_id
-        );
+        const existsByClientId =
+          newMessage.client_message_id &&
+          prev.some(
+            (m) =>
+              m.client_message_id &&
+              m.client_message_id === newMessage.client_message_id,
+          );
 
         if (existsByMsgId || existsByClientId) {
           // Update existing message (might be status change)
           return prev.map((m) => {
             if (m.id === newMessage.id) {
               // Message confirmed in DB - mark as delivered
-              return { ...m, ...newMessage, status: 'delivered' as const, sender: senderInfo || m.sender };
+              return {
+                ...m,
+                ...newMessage,
+                status: "delivered" as const,
+                sender: senderInfo || m.sender,
+              };
             }
-            if (m.client_message_id && m.client_message_id === newMessage.client_message_id) {
+            if (
+              m.client_message_id &&
+              m.client_message_id === newMessage.client_message_id
+            ) {
               // Replace optimistic message with real one - mark as delivered
-              return { ...m, ...newMessage, id: newMessage.id, status: 'delivered' as const, sender: senderInfo || m.sender };
+              return {
+                ...m,
+                ...newMessage,
+                id: newMessage.id,
+                status: "delivered" as const,
+                sender: senderInfo || m.sender,
+              };
             }
             return m;
           });
         }
 
         // Add new message (from other user, so no status needed)
-        return [...prev, { ...newMessage, sender: senderInfo } as MessageWithSender];
+        return [
+          ...prev,
+          { ...newMessage, sender: senderInfo } as MessageWithSender,
+        ];
       });
 
       // Auto-mark as read when receiving messages
@@ -174,7 +199,10 @@ export function useMessages(
       }
     };
 
-    unsubscribe = messagingService.subscribeToMessages(conversationId, handleNewMessage);
+    unsubscribe = messagingService.subscribeToMessages(
+      conversationId,
+      handleNewMessage,
+    );
 
     return () => {
       mountedRef.current = false;
@@ -182,88 +210,97 @@ export function useMessages(
         unsubscribe();
       }
     };
-  }, [conversationId, userId, initialPageSize, autoMarkAsRead, messagingService]);
+  }, [
+    conversationId,
+    userId,
+    initialPageSize,
+    autoMarkAsRead,
+    messagingService,
+  ]);
 
   // Send message
-  const sendMessage = useCallback(async (
-    content: string,
-    options?: Partial<SendMessageRequest>
-  ) => {
-    if (!conversationId || !userId || !content.trim()) return;
+  const sendMessage = useCallback(
+    async (content: string, options?: Partial<SendMessageRequest>) => {
+      if (!conversationId || !userId || !content.trim()) return;
 
-    const clientMessageId = options?.client_message_id ||
-      `${userId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const clientMessageId =
+        options?.client_message_id ||
+        `${userId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // Optimistic update
-    const optimisticMessage: MessageWithSender = {
-      id: `optimistic-${clientMessageId}`,
-      conversation_id: conversationId,
-      sender_id: userId,
-      content: content.trim(),
-      message_type: options?.message_type || 'text',
-      media_url: options?.media_url || null,
-      media_thumbnail_url: options?.media_thumbnail_url || null,
-      media_metadata: options?.media_metadata || null,
-      status: 'sending',
-      reply_to_id: options?.reply_to_id || null,
-      deleted_at: null,
-      deleted_for_everyone: false,
-      created_at: new Date().toISOString(),
-      edited_at: null,
-      client_message_id: clientMessageId,
-    };
+      // Optimistic update
+      const optimisticMessage: MessageWithSender = {
+        id: `optimistic-${clientMessageId}`,
+        conversation_id: conversationId,
+        sender_id: userId,
+        content: content.trim(),
+        message_type: options?.message_type || "text",
+        media_url: options?.media_url || null,
+        media_thumbnail_url: options?.media_thumbnail_url || null,
+        media_metadata: options?.media_metadata || null,
+        status: "sending",
+        reply_to_id: options?.reply_to_id || null,
+        deleted_at: null,
+        deleted_for_everyone: false,
+        created_at: new Date().toISOString(),
+        edited_at: null,
+        client_message_id: clientMessageId,
+      };
 
-    setMessages((prev) => [...prev, optimisticMessage]);
-    setIsSending(true);
-    setError(null);
+      setMessages((prev) => [...prev, optimisticMessage]);
+      setIsSending(true);
+      setError(null);
 
-    try {
-      // Send the actual message with the SAME clientMessageId for matching
-      const sentMessage = await messagingService.sendMessage(
-        conversationId,
-        userId,
-        content,
-        {
-          messageType: options?.message_type,
-          mediaUrl: options?.media_url,
-          mediaThumbnailUrl: options?.media_thumbnail_url,
-          mediaMetadata: options?.media_metadata,
-          replyToId: options?.reply_to_id,
-          clientMessageId,
+      try {
+        // Send the actual message with the SAME clientMessageId for matching
+        const sentMessage = await messagingService.sendMessage(
+          conversationId,
+          userId,
+          content,
+          {
+            messageType: options?.message_type,
+            mediaUrl: options?.media_url,
+            mediaThumbnailUrl: options?.media_thumbnail_url,
+            mediaMetadata: options?.media_metadata,
+            replyToId: options?.reply_to_id,
+            clientMessageId,
+          },
+        );
+
+        // Immediately update the optimistic message with the real one
+        // This ensures the update happens even if realtime is delayed
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.client_message_id === clientMessageId
+              ? { ...m, ...sentMessage, status: "sent" as const }
+              : m,
+          ),
+        );
+
+        // Sending a message is the strongest signal you've read everything
+        // Mark the conversation as read in the database to ensure consistency
+        if (autoMarkAsRead) {
+          messagingService
+            .markConversationAsRead(conversationId, userId)
+            .catch(() => {
+              // Non-critical -- swallow errors from mark-as-read
+            });
         }
-      );
-
-      // Immediately update the optimistic message with the real one
-      // This ensures the update happens even if realtime is delayed
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.client_message_id === clientMessageId
-            ? { ...m, ...sentMessage, status: 'sent' as const }
-            : m
-        )
-      );
-      
-      // Sending a message is the strongest signal you've read everything
-      // Mark the conversation as read in the database to ensure consistency
-      if (autoMarkAsRead) {
-        messagingService.markConversationAsRead(conversationId, userId).catch(() => {
-          // Non-critical -- swallow errors from mark-as-read
-        });
+      } catch (err) {
+        // Update optimistic message to failed status
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.client_message_id === clientMessageId
+              ? { ...m, status: "failed" as const }
+              : m,
+          ),
+        );
+        setError(err instanceof Error ? err.message : "Failed to send message");
+      } finally {
+        setIsSending(false);
       }
-    } catch (err) {
-      // Update optimistic message to failed status
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.client_message_id === clientMessageId
-            ? { ...m, status: 'failed' as const }
-            : m
-        )
-      );
-      setError(err instanceof Error ? err.message : 'Failed to send message');
-    } finally {
-      setIsSending(false);
-    }
-  }, [conversationId, userId, messagingService, autoMarkAsRead]);
+    },
+    [conversationId, userId, messagingService, autoMarkAsRead],
+  );
 
   // Load more messages (pagination)
   const loadMoreMessages = useCallback(async () => {
@@ -276,12 +313,12 @@ export function useMessages(
 
     try {
       const { data, error: fetchError } = await supabase
-        .from('dm_messages')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .is('deleted_at', null)
-        .lt('created_at', oldestMessage.created_at)
-        .order('created_at', { ascending: false })
+        .from("dm_messages")
+        .select("*")
+        .eq("conversation_id", conversationId)
+        .is("deleted_at", null)
+        .lt("created_at", oldestMessage.created_at)
+        .order("created_at", { ascending: false })
         .limit(initialPageSize);
 
       if (!mountedRef.current) return;
@@ -296,8 +333,9 @@ export function useMessages(
       const senderInfoMap = new Map<string, UserBasicInfo>();
 
       for (const senderId of senderIds) {
-        const { data: userInfo } = await supabase
-          .rpc('get_dm_user_info', { p_user_id: senderId });
+        const { data: userInfo } = await supabase.rpc("get_dm_user_info", {
+          p_user_id: senderId,
+        });
         if (userInfo && userInfo[0]) {
           senderInfoMap.set(senderId, userInfo[0]);
         }
@@ -313,7 +351,9 @@ export function useMessages(
       setHasMore(data?.length === initialPageSize);
     } catch (err) {
       if (!mountedRef.current) return;
-      setError(err instanceof Error ? err.message : 'Failed to load more messages');
+      setError(
+        err instanceof Error ? err.message : "Failed to load more messages",
+      );
     } finally {
       if (mountedRef.current) {
         setIsLoading(false);
@@ -354,7 +394,7 @@ interface TypingUserInternal {
 export function useTypingIndicator(
   conversationId: string | null,
   userId: string | null,
-  displayName: string
+  displayName: string,
 ): UseTypingIndicatorReturn {
   const [typingUsers, setTypingUsers] = useState<TypingUserInternal[]>([]);
   const setTypingRef = useRef<((isTyping: boolean) => void) | null>(null);
@@ -370,7 +410,7 @@ export function useTypingIndicator(
       conversationId,
       userId,
       displayName,
-      setTypingUsers
+      setTypingUsers,
     );
 
     setTypingRef.current = setTyping;
@@ -424,7 +464,7 @@ export function useTypingIndicator(
 export function useOnlinePresence(
   conversationId: string | null,
   userId: string | null,
-  displayName: string
+  displayName: string,
 ): { onlineUsers: UserBasicInfo[] } {
   const [onlineUsers, setOnlineUsers] = useState<UserBasicInfo[]>([]);
   const messagingService = getMessagingService();
@@ -447,7 +487,7 @@ export function useOnlinePresence(
           avatar_url: null,
         }));
         setOnlineUsers(users);
-      }
+      },
     );
 
     return () => {
@@ -466,7 +506,7 @@ export function useChat(
   conversationId: string | null,
   userId: string | null,
   displayName: string,
-  options?: UseMessagesOptions
+  options?: UseMessagesOptions,
 ): UseChatReturn {
   const messagesHook = useMessages(conversationId, userId, options);
   const typingHook = useTypingIndicator(conversationId, userId, displayName);
@@ -483,8 +523,12 @@ export function useChat(
 // useConversations Hook
 // ============================================
 
-export function useConversations(userId: string | null): UseConversationsReturn {
-  const [conversations, setConversations] = useState<ConversationWithDetails[]>([]);
+export function useConversations(
+  userId: string | null,
+): UseConversationsReturn {
+  const [conversations, setConversations] = useState<ConversationWithDetails[]>(
+    [],
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalUnreadCount, setTotalUnreadCount] = useState(0);
@@ -507,13 +551,18 @@ export function useConversations(userId: string | null): UseConversationsReturn 
 
     try {
       // Use the database function for efficient loading
-      const { data, error: fetchError } = await supabase
-        .rpc('get_dm_conversations_with_details', { p_user_id: userId });
+      const { data, error: fetchError } = await supabase.rpc(
+        "get_dm_conversations_with_details",
+        { p_user_id: userId },
+      );
 
       if (!mountedRef.current) return;
 
       if (fetchError) {
-        console.error('[Messaging] Error loading conversations:', fetchError.message);
+        console.error(
+          "[Messaging] Error loading conversations:",
+          fetchError.message,
+        );
         setError(fetchError.message);
         return;
       }
@@ -521,30 +570,41 @@ export function useConversations(userId: string | null): UseConversationsReturn 
       // Fetch participants for each conversation
       const conversationsWithParticipants = await Promise.all(
         (data || []).map(async (conv: Record<string, unknown>) => {
+          const conversationId = conv.conversation_id;
+          if (typeof conversationId !== "string") {
+            console.warn(
+              "[Messaging] Skipping row with invalid conversation_id",
+              conv,
+            );
+            return null;
+          }
+
           const { data: participants } = await supabase
-            .from('dm_conversation_participants')
-            .select('*')
-            .eq('conversation_id', conv.conversation_id);
+            .from("dm_conversation_participants")
+            .select("*")
+            .eq("conversation_id", conversationId);
 
           // Fetch user info for each participant
           const participantsWithUser = await Promise.all(
             (participants || []).map(async (p) => {
-              const { data: userInfo } = await supabase
-                .rpc('get_dm_user_info', { p_user_id: p.user_id });
+              const { data: userInfo } = await supabase.rpc(
+                "get_dm_user_info",
+                { p_user_id: p.user_id },
+              );
               return {
                 ...p,
                 user: userInfo?.[0] || null,
               };
-            })
+            }),
           );
 
           // For direct chats, compute display name/image from the other participant
           const otherParticipant = participantsWithUser.find(
-            (p) => p.user_id !== userId
+            (p) => p.user_id !== userId,
           );
 
           return {
-            id: conv.conversation_id,
+            id: conversationId,
             type: conv.conversation_type,
             group_name: conv.group_name,
             group_image_url: conv.group_image_url,
@@ -552,48 +612,60 @@ export function useConversations(userId: string | null): UseConversationsReturn 
             created_at: conv.conversation_created_at,
             updated_at: conv.conversation_updated_at,
             participants: participantsWithUser || [],
-            last_message: conv.last_message_content ? {
-              id: '',
-              conversation_id: conv.conversation_id as string,
-              sender_id: conv.last_message_sender_id as string,
-              content: conv.last_message_content as string,
-              message_type: 'text' as const,
-              media_url: null,
-              media_thumbnail_url: null,
-              media_metadata: null,
-              status: 'sent' as const,
-              reply_to_id: null,
-              deleted_at: null,
-              deleted_for_everyone: false,
-              created_at: conv.last_message_at as string,
-              edited_at: null,
-              client_message_id: null,
-            } : null,
+            last_message: conv.last_message_content
+              ? {
+                  id: "",
+                  conversation_id: conversationId,
+                  sender_id: conv.last_message_sender_id as string,
+                  content: conv.last_message_content as string,
+                  message_type: "text" as const,
+                  media_url: null,
+                  media_thumbnail_url: null,
+                  media_metadata: null,
+                  status: "sent" as const,
+                  reply_to_id: null,
+                  deleted_at: null,
+                  deleted_for_everyone: false,
+                  created_at: conv.last_message_at as string,
+                  edited_at: null,
+                  client_message_id: null,
+                }
+              : null,
             unread_count: conv.unread_count as number,
-            display_name: conv.conversation_type === 'direct' && otherParticipant
-              ? otherParticipant.user?.display_name || otherParticipant.user?.email || 'Unknown'
-              : conv.group_name || 'Group Chat',
-            display_image: conv.conversation_type === 'direct' && otherParticipant
-              ? otherParticipant.user?.avatar_url
-              : conv.group_image_url,
+            display_name:
+              conv.conversation_type === "direct" && otherParticipant
+                ? otherParticipant.user?.display_name ||
+                  otherParticipant.user?.email ||
+                  "Unknown"
+                : conv.group_name || "Group Chat",
+            display_image:
+              conv.conversation_type === "direct" && otherParticipant
+                ? otherParticipant.user?.avatar_url
+                : conv.group_image_url,
           } as ConversationWithDetails;
-        })
+        }),
+      );
+
+      const validConversations = conversationsWithParticipants.filter(
+        (c): c is ConversationWithDetails => c != null,
       );
 
       if (!mountedRef.current) return;
 
-      setConversations(conversationsWithParticipants);
-      
+      setConversations(validConversations);
+
       // Calculate total unread
-      const total = conversationsWithParticipants.reduce(
+      const total = validConversations.reduce(
         (sum, conv) => sum + (conv.unread_count || 0),
-        0
+        0,
       );
       setTotalUnreadCount(total);
     } catch (err) {
       if (!mountedRef.current) return;
-      console.error('[Messaging] Failed to load conversations:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load conversations');
+      console.error("[Messaging] Failed to load conversations:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to load conversations",
+      );
     } finally {
       if (mountedRef.current) {
         setIsLoading(false);
@@ -619,35 +691,35 @@ export function useConversations(userId: string | null): UseConversationsReturn 
 
     // 1. Listen for NEW messages - updates last_message and unread_count
     channel.on(
-      'postgres_changes',
+      "postgres_changes",
       {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'dm_messages',
+        event: "INSERT",
+        schema: "public",
+        table: "dm_messages",
       },
       async () => {
         await loadConversations();
-      }
+      },
     );
 
     // 2. Listen for messages marked as READ - updates unread_count
     channel.on(
-      'postgres_changes',
+      "postgres_changes",
       {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'dm_conversation_participants',
+        event: "UPDATE",
+        schema: "public",
+        table: "dm_conversation_participants",
         filter: `user_id=eq.${userId}`,
       },
       async (payload) => {
         const oldData = payload.old as { last_read_at: string | null };
         const newData = payload.new as { last_read_at: string | null };
-        
+
         // Only refresh if last_read_at changed
         if (oldData.last_read_at !== newData.last_read_at) {
           await loadConversations();
         }
-      }
+      },
     );
 
     channel.subscribe();
@@ -658,47 +730,56 @@ export function useConversations(userId: string | null): UseConversationsReturn 
   }, [userId, supabase, loadConversations]);
 
   // Create or find existing conversation
-  const createConversation = useCallback(async (participantId: string): Promise<string> => {
-    if (!userId) throw new Error('User not authenticated');
+  const createConversation = useCallback(
+    async (participantId: string): Promise<string> => {
+      if (!userId) throw new Error("User not authenticated");
 
-    // First check if conversation already exists
-    const { data: existingConv } = await supabase
-      .rpc('find_dm_direct_conversation', {
-        p_user1_id: userId,
-        p_user2_id: participantId,
-      });
+      // First check if conversation already exists
+      const { data: existingConv } = await supabase.rpc(
+        "find_dm_direct_conversation",
+        {
+          p_user1_id: userId,
+          p_user2_id: participantId,
+        },
+      );
 
-    if (existingConv) {
-      return existingConv;
-    }
+      if (existingConv) {
+        return existingConv;
+      }
 
-    // Create new conversation
-    const { data: newConv, error: createError } = await supabase
-      .from('dm_conversations')
-      .insert({
-        type: 'direct',
-        created_by: userId,
-      })
-      .select()
-      .single();
+      // Create new conversation
+      const { data: newConv, error: createError } = await supabase
+        .from("dm_conversations")
+        .insert({
+          type: "direct",
+          created_by: userId,
+        })
+        .select()
+        .single();
 
-    if (createError) throw createError;
+      if (createError) throw createError;
 
-    // Add both participants
-    const { error: participantError } = await supabase
-      .from('dm_conversation_participants')
-      .insert([
-        { conversation_id: newConv.id, user_id: userId, role: 'owner' },
-        { conversation_id: newConv.id, user_id: participantId, role: 'member' },
-      ]);
+      // Add both participants
+      const { error: participantError } = await supabase
+        .from("dm_conversation_participants")
+        .insert([
+          { conversation_id: newConv.id, user_id: userId, role: "owner" },
+          {
+            conversation_id: newConv.id,
+            user_id: participantId,
+            role: "member",
+          },
+        ]);
 
-    if (participantError) throw participantError;
+      if (participantError) throw participantError;
 
-    // Refresh conversations list
-    await loadConversations();
+      // Refresh conversations list
+      await loadConversations();
 
-    return newConv.id;
-  }, [userId, loadConversations]); // supabase is a stable ref
+      return newConv.id;
+    },
+    [userId, loadConversations],
+  ); // supabase is a stable ref
 
   return {
     conversations,

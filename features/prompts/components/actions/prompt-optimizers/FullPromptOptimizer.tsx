@@ -1,27 +1,48 @@
 /**
  * Full Prompt Optimizer Component
- * 
+ *
  * EXPERIMENTAL: Provides AI-powered optimization of the entire prompt object
  * including messages, variables, settings, and metadata.
  */
 
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { submitChatFastAPI as createAndSubmitTask } from '@/lib/redux/socket-io/thunks/submitChatFastAPI';
-import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
-import { supabase } from '@/utils/supabase/client';
-import { v4 as uuidv4 } from 'uuid';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Sparkles, Check, X, Loader2, Copy, AlertTriangle, Info } from 'lucide-react';
-import { toast } from 'sonner';
-import MarkdownStream from '@/components/MarkdownStream';
-import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
-import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
+import { submitChatFastAPI as createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitChatFastAPI";
+import {
+  selectPrimaryResponseTextByTaskId,
+  selectPrimaryResponseEndedByTaskId,
+} from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { supabase } from "@/utils/supabase/client";
+import { v4 as uuidv4 } from "uuid";
+import {
+  normalizePromptMessagesFromDb,
+  normalizePromptSettingsFromDb,
+} from "@/features/prompts/utils/normalize-prompt-db-json";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Sparkles,
+  Check,
+  X,
+  Loader2,
+  Copy,
+  AlertTriangle,
+  Info,
+} from "lucide-react";
+import { toast } from "sonner";
+import MarkdownStream from "@/components/MarkdownStream";
+import CodeBlock from "@/features/code-editor/components/code-block/CodeBlock";
+import { extractJsonFromText } from "@/features/prompts/utils/json-extraction";
 
 interface FullPromptOptimizerProps {
   isOpen: boolean;
@@ -31,30 +52,34 @@ interface FullPromptOptimizerProps {
   onAcceptAsCopy?: (optimizedObject: any) => void;
 }
 
-const FULL_OPTIMIZER_PROMPT_ID = '8b7a674a-07ba-43fc-a750-f189c242e70b';
+const FULL_OPTIMIZER_PROMPT_ID = "8b7a674a-07ba-43fc-a750-f189c242e70b";
 
 export function FullPromptOptimizer({
   isOpen,
   onClose,
   currentPromptObject,
   onAccept,
-  onAcceptAsCopy
+  onAcceptAsCopy,
 }: FullPromptOptimizerProps) {
   const dispatch = useAppDispatch();
-  const [additionalGuidance, setAdditionalGuidance] = useState('');
+  const [additionalGuidance, setAdditionalGuidance] = useState("");
   const [showGuidanceInput, setShowGuidanceInput] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
   const [extractedJson, setExtractedJson] = useState<any>(null);
   const [extractionError, setExtractionError] = useState<string | null>(null);
-  
+
   // Watch streaming text
-  const streamingText = useAppSelector(state => 
-    currentTaskId ? selectPrimaryResponseTextByTaskId(currentTaskId)(state) : ''
+  const streamingText = useAppSelector((state) =>
+    currentTaskId
+      ? selectPrimaryResponseTextByTaskId(currentTaskId)(state)
+      : "",
   );
-  
-  const isResponseEnded = useAppSelector(state =>
-    currentTaskId ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state) : false
+
+  const isResponseEnded = useAppSelector((state) =>
+    currentTaskId
+      ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state)
+      : false,
   );
 
   // Format current prompt object for display
@@ -66,21 +91,24 @@ export function FullPromptOptimizer({
   useEffect(() => {
     if (isResponseEnded && streamingText && isOptimizing) {
       setIsOptimizing(false);
-      
+
       // Use the safe extraction utility - it never throws
       const result = extractJsonFromText(streamingText);
-      
+
       if (result.success && result.data) {
         setExtractedJson(result.data);
         setExtractionError(null);
-        toast.success('Optimization complete', {
-          description: 'Review the changes and click Accept to apply'
+        toast.success("Optimization complete", {
+          description: "Review the changes and click Accept to apply",
         });
       } else {
         // Extraction failed, but we still have the raw text visible
-        setExtractionError(result.error || 'Could not extract JSON from response');
-        toast.error('Could not extract JSON', {
-          description: 'The raw response is still available below. You may need to manually extract the JSON.',
+        setExtractionError(
+          result.error || "Could not extract JSON from response",
+        );
+        toast.error("Could not extract JSON", {
+          description:
+            "The raw response is still available below. You may need to manually extract the JSON.",
           duration: 5000,
         });
       }
@@ -89,70 +117,80 @@ export function FullPromptOptimizer({
 
   const handleOptimize = async () => {
     if (!currentPromptObject) {
-      toast.error('No prompt object to optimize');
+      toast.error("No prompt object to optimize");
       return;
     }
 
     setIsOptimizing(true);
     setExtractedJson(null);
     setExtractionError(null);
-    
+
     try {
       // 1. Fetch prompt
       const { data: prompt, error: promptError } = await supabase
-        .from('prompts')
-        .select('*')
-        .eq('id', FULL_OPTIMIZER_PROMPT_ID)
+        .from("prompts")
+        .select("*")
+        .eq("id", FULL_OPTIMIZER_PROMPT_ID)
         .single();
 
       if (promptError || !prompt) {
-        throw new Error('Full optimizer prompt not found');
+        throw new Error("Full optimizer prompt not found");
       }
+
+      const templateMessages = normalizePromptMessagesFromDb(prompt.messages);
+      const templateSettings = normalizePromptSettingsFromDb(prompt.settings);
 
       // 2. Prepare the current prompt object as a string
       const promptObjectString = JSON.stringify(currentPromptObject, null, 2);
 
       // 3. Replace variables in messages
-      const messages = prompt.messages.map((msg: any) => {
+      const messages = templateMessages.map((msg) => {
         let content = msg.content;
-        content = content.replace(/{{current_prompt_object}}/g, promptObjectString);
+        content = content.replace(
+          /{{current_prompt_object}}/g,
+          promptObjectString,
+        );
         if (additionalGuidance.trim()) {
-          content = content.replace(/{{additional_guidance}}/g, additionalGuidance);
+          content = content.replace(
+            /{{additional_guidance}}/g,
+            additionalGuidance,
+          );
         }
         return {
           role: msg.role,
-          content
+          content,
         };
       });
 
       // 4. Build chat config
-      const modelId = prompt.settings?.model_id;
+      const modelId = templateSettings.model_id;
       if (!modelId) {
-        throw new Error('No model specified in prompt');
+        throw new Error("No model specified in prompt");
       }
 
       const chatConfig = {
         model_id: modelId,
         messages,
         stream: true,
-        ...prompt.settings
+        ...templateSettings,
       };
 
       // 5. Submit task — set taskId BEFORE dispatch so streaming UI mounts immediately
       const taskId = uuidv4();
       setCurrentTaskId(taskId);
 
-      await dispatch(createAndSubmitTask({
-        service: 'chat_service',
-        taskName: 'direct_chat',
-        taskData: { chat_config: chatConfig },
-        customTaskId: taskId
-      })).unwrap();
-      
+      await dispatch(
+        createAndSubmitTask({
+          service: "chat_service",
+          taskName: "direct_chat",
+          taskData: { chat_config: chatConfig },
+          customTaskId: taskId,
+        }),
+      ).unwrap();
     } catch (error) {
-      console.error('Optimization error:', error);
-      toast.error('Failed to optimize', {
-        description: error instanceof Error ? error.message : 'Unknown error'
+      console.error("Optimization error:", error);
+      toast.error("Failed to optimize", {
+        description: error instanceof Error ? error.message : "Unknown error",
       });
       setIsOptimizing(false);
       setCurrentTaskId(null);
@@ -163,8 +201,8 @@ export function FullPromptOptimizer({
     if (extractedJson) {
       onAccept(extractedJson);
       handleClose();
-      toast.success('Prompt updated', {
-        description: 'The optimized version has been applied'
+      toast.success("Prompt updated", {
+        description: "The optimized version has been applied",
       });
     }
   };
@@ -173,15 +211,15 @@ export function FullPromptOptimizer({
     if (extractedJson && onAcceptAsCopy) {
       onAcceptAsCopy(extractedJson);
       handleClose();
-      toast.success('Creating new prompt...', {
-        description: 'Saving optimized version as a new prompt'
+      toast.success("Creating new prompt...", {
+        description: "Saving optimized version as a new prompt",
       });
     }
   };
 
   const handleClose = () => {
     setCurrentTaskId(null);
-    setAdditionalGuidance('');
+    setAdditionalGuidance("");
     setShowGuidanceInput(false);
     setIsOptimizing(false);
     setExtractedJson(null);
@@ -191,19 +229,19 @@ export function FullPromptOptimizer({
 
   const handleCopyOriginal = () => {
     navigator.clipboard.writeText(currentPromptJson);
-    toast.success('Copied original to clipboard');
+    toast.success("Copied original to clipboard");
   };
 
   const handleCopyOptimized = () => {
     if (extractedJson) {
       navigator.clipboard.writeText(JSON.stringify(extractedJson, null, 2));
-      toast.success('Copied extracted JSON to clipboard');
+      toast.success("Copied extracted JSON to clipboard");
     }
   };
 
   const handleCopyRawResponse = () => {
     navigator.clipboard.writeText(streamingText);
-    toast.success('Copied raw response to clipboard');
+    toast.success("Copied raw response to clipboard");
   };
 
   const hasOptimizedObject = extractedJson !== null;
@@ -225,7 +263,9 @@ export function FullPromptOptimizer({
           {/* Original Prompt Object */}
           <div className="flex flex-col min-h-0">
             <div className="flex items-center justify-between mb-2">
-              <Label className="text-sm font-medium">Current Prompt Object</Label>
+              <Label className="text-sm font-medium">
+                Current Prompt Object
+              </Label>
               <Button
                 variant="ghost"
                 size="sm"
@@ -270,13 +310,17 @@ export function FullPromptOptimizer({
                 <div className="p-6 space-y-4 h-full flex flex-col">
                   <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    <span className="text-sm font-medium">Analyzing and optimizing your prompt...</span>
+                    <span className="text-sm font-medium">
+                      Analyzing and optimizing your prompt...
+                    </span>
                   </div>
-                  
+
                   {streamingText && (
                     <div className="flex-1 bg-white/50 dark:bg-gray-900/50 rounded-lg overflow-hidden flex flex-col">
                       <div className="p-3 border-b border-border bg-gray-50/50 dark:bg-gray-900/50">
-                        <p className="text-xs text-gray-600 dark:text-gray-400">Live Response:</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                          Live Response:
+                        </p>
                       </div>
                       <div className="flex-1 overflow-y-auto p-4">
                         <MarkdownStream
@@ -287,7 +331,7 @@ export function FullPromptOptimizer({
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
                     <Loader2 className="h-3 w-3 animate-spin" />
                     <span>Streaming response...</span>
@@ -300,19 +344,25 @@ export function FullPromptOptimizer({
                     <div className="p-3 bg-amber-100 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 flex items-start gap-2">
                       <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                       <div className="flex-1 text-xs text-amber-700 dark:text-amber-300">
-                        <strong>JSON Extraction Failed:</strong> {extractionError}
+                        <strong>JSON Extraction Failed:</strong>{" "}
+                        {extractionError}
                         <br />
-                        <span className="text-amber-600 dark:text-amber-400">The full AI response is displayed below. You can copy it and manually extract the JSON if needed.</span>
+                        <span className="text-amber-600 dark:text-amber-400">
+                          The full AI response is displayed below. You can copy
+                          it and manually extract the JSON if needed.
+                        </span>
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Show success status if extraction worked */}
                   {hasOptimizedObject && !extractionError && (
                     <div className="p-3 bg-green-100 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800 flex items-center gap-2">
                       <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                       <span className="text-xs text-green-700 dark:text-green-300">
-                        JSON successfully extracted. Scroll down to see the extracted data or click "Accept & Replace" to apply changes.
+                        JSON successfully extracted. Scroll down to see the
+                        extracted data or click "Accept & Replace" to apply
+                        changes.
                       </span>
                       <Button
                         variant="ghost"
@@ -325,7 +375,7 @@ export function FullPromptOptimizer({
                       </Button>
                     </div>
                   )}
-                  
+
                   {/* Always show the full raw response */}
                   <div className="flex-1 overflow-y-auto p-4 bg-white/50 dark:bg-gray-900/50">
                     <MarkdownStream
@@ -399,13 +449,10 @@ export function FullPromptOptimizer({
               <X className="h-4 w-4 mr-2" />
               Cancel
             </Button>
-            
+
             {hasOptimizedObject && !isOptimizing ? (
               <>
-                <Button
-                  variant="outline"
-                  onClick={handleOptimize}
-                >
+                <Button variant="outline" onClick={handleOptimize}>
                   <Sparkles className="h-4 w-4 mr-2" />
                   Re-optimize
                 </Button>
@@ -452,4 +499,3 @@ export function FullPromptOptimizer({
     </Dialog>
   );
 }
-

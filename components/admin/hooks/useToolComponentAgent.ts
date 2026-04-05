@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useApiAuth } from '@/hooks/useApiAuth';
-import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
+import { selectResolvedBaseUrl } from '@/lib/redux/slices/apiConfigSlice';
 import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
 import { consumeStream } from '@/lib/api/stream-parser';
 import type { RootState } from '@/lib/redux/store';
@@ -31,14 +31,14 @@ interface UseToolComponentAgentReturn {
  * Lightweight agent execution hook for the Tool UI Component Generator.
  *
  * Bypasses ChatContext entirely — uses simple local state for streaming.
- * Streams from POST /api/ai/agents/{agentId} via NDJSON, accumulates chunks,
+ * Streams from POST /ai/prompts/{promptId} via NDJSON, accumulates chunks,
  * and returns the full text on completion.
  *
  * Pattern mirrors useAgentChat but without any message management or context deps.
  */
 export function useToolComponentAgent(): UseToolComponentAgentReturn {
-    const { getHeaders, waitForAuth, isAdmin } = useApiAuth();
-    const useLocalhost = useSelector((state: RootState) => selectIsUsingLocalhost(state));
+    const { getHeaders, waitForAuth } = useApiAuth();
+    const resolvedBaseUrl = useSelector((state: RootState) => selectResolvedBaseUrl(state as any));
 
     const [isStreaming, setIsStreaming] = useState(false);
     const [accumulatedText, setAccumulatedText] = useState('');
@@ -48,9 +48,8 @@ export function useToolComponentAgent(): UseToolComponentAgentReturn {
     const accumulatedRef = useRef('');
 
     const getBackendUrl = useCallback(() => {
-        if (isAdmin && useLocalhost) return BACKEND_URLS.localhost;
-        return BACKEND_URLS.production;
-    }, [isAdmin, useLocalhost]);
+        return resolvedBaseUrl ?? BACKEND_URLS.production;
+    }, [resolvedBaseUrl]);
 
     const reset = useCallback(() => {
         setAccumulatedText('');
@@ -80,7 +79,7 @@ export function useToolComponentAgent(): UseToolComponentAgentReturn {
         try {
             const BACKEND_URL = getBackendUrl();
             const headers = getHeaders();
-            const executeUrl = `${BACKEND_URL}${ENDPOINTS.ai.agentStart(agentId)}`;
+            const executeUrl = `${BACKEND_URL}${ENDPOINTS.ai.promptStart(agentId)}`;
 
             const response = await fetch(executeUrl, {
                 method: 'POST',

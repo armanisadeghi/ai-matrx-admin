@@ -19,18 +19,18 @@
  *
  *   // In thunks.ts or types.ts, next to the interface:
  *   export interface AgentVersionHistoryItem
- *     extends DbRpcRow<"get_agent_version_history"> {
+ *     extends DbRpcRow<"agx_get_version_history"> {
  *     // No body needed — the extends IS the check.
  *     // Add fields here only when you need to narrow a type beyond what the DB returns.
  *   }
  *
  *   // OR use satisfies for interfaces that already exist:
  *   export interface AgentExecutionFull { ... }
- *   true satisfies AgentExecutionFull extends DbRpcRow<"get_agent_execution_full"> ? true : false;
+ *   true satisfies AgentExecutionFull extends DbRpcRow<"agx_get_execution_full"> ? true : false;
  *
  * Casting in thunks — zero runtime code:
  *
- *   const row = (data as unknown[])[0] as DbRpcRow<"get_agent_execution_full">;
+ *   const row = (data as unknown[])[0] as DbRpcRow<"agx_get_execution_full">;
  *   // or directly as your interface since it extends DbRpcRow:
  *   const row = (data as unknown[])[0] as AgentExecutionFull;
  */

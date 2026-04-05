@@ -1,7 +1,11 @@
 'use client';
 
 // Import components from applet-admin
-import { AppletConfigViewer, AppConfigViewer } from './applet-admin';
+import {
+  AppletConfigViewer,
+  AppConfigViewer,
+  customAppletConfigToAppletViewerConfig,
+} from './applet-admin';
 
 // Import admin components
 import AppBuilderDebugOverlay from './AppBuilderDebugOverlay';
@@ -16,6 +20,7 @@ import {
 // Export all components
 export {
   AppletConfigViewer,
+  customAppletConfigToAppletViewerConfig,
   AppConfigViewer,
   AppBuilderDebugOverlay,
   ClientDebugWrapper,

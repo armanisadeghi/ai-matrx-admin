@@ -23,6 +23,14 @@ import type {
   CxToolCallContent,
 } from "@/features/cx-chat/types/cx-tables";
 import type { ToolCallObject } from "@/lib/api/tool-call.types";
+import type { Json } from "@/types/database.types";
+
+function toolCallArgumentsToRecord(value: Json): Record<string, unknown> {
+  if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+  return {};
+}
 
 // ============================================================================
 // Types for the converter output
@@ -271,7 +279,7 @@ function buildToolUpdatesFromToolCall(tc: CxToolCall): ToolCallObject[] {
     type: "mcp_input",
     mcp_input: {
       name: tc.tool_name,
-      arguments: tc.arguments,
+      arguments: toolCallArgumentsToRecord(tc.arguments),
     },
     phase: isError ? "error" : "complete",
   });

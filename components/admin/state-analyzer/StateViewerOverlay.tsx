@@ -47,6 +47,16 @@ const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({
       ),
     },
     {
+      id: "agentShortcuts",
+      label: "Agent Shortcuts",
+      content: (
+        <GenericSliceViewer
+          sliceKey="agentShortcuts"
+          state={completeState.agentShortcut}
+        />
+      ),
+    },
+    {
       id: "activeRequests",
       label: "Active Requests",
       content: (

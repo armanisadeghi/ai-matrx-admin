@@ -1231,6 +1231,28 @@ function PromptBuilderInner({
     }
   };
 
+  const settingsModalInitialData = initialData
+    ? {
+        id: initialData.id,
+        name: initialData.name,
+        messages: normalizePromptMessagesFromDb(initialData.messages),
+        variableDefaults: normalizePromptVariablesFromDb(
+          initialData.variableDefaults,
+        ),
+        settings: normalizePromptSettingsFromDb(initialData.settings) as Record<
+          string,
+          any
+        >,
+        tags: initialData.tags,
+        category: initialData.category,
+        isFavorite: initialData.isFavorite,
+        isArchived: initialData.isArchived,
+        modelId: initialData.modelId,
+        outputFormat: initialData.outputFormat,
+        outputSchema: initialData.outputSchema,
+      }
+    : undefined;
+
   // Build shared props object
   const sharedProps = {
     // Header
@@ -1400,7 +1422,7 @@ function PromptBuilderInner({
     },
 
     // Settings modal
-    initialData,
+    initialData: settingsModalInitialData,
     promptDescription,
     handleSettingsUpdate,
     handleLocalStateUpdate,

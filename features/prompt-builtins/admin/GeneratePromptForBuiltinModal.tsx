@@ -1,23 +1,40 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { submitChatFastAPI as createAndSubmitTask } from '@/lib/redux/socket-io/thunks/submitChatFastAPI';
-import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
-import { createClient } from '@/utils/supabase/client';
-import { v4 as uuidv4 } from 'uuid';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Textarea, CopyTextarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Sparkles, Check, X, Loader2, Copy, AlertTriangle, Wand2 } from 'lucide-react';
-import { toast } from 'sonner';
-import MarkdownStream from '@/components/MarkdownStream';
-import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
-import { VoiceInputButton } from '@/features/audio';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import { submitChatFastAPI as createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitChatFastAPI";
+import {
+  selectPrimaryResponseTextByTaskId,
+  selectPrimaryResponseEndedByTaskId,
+} from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { createClient } from "@/utils/supabase/client";
+import { v4 as uuidv4 } from "uuid";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea, CopyTextarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Sparkles,
+  Check,
+  X,
+  Loader2,
+  Copy,
+  AlertTriangle,
+  Wand2,
+} from "lucide-react";
+import { toast } from "sonner";
+import MarkdownStream from "@/components/MarkdownStream";
+import { extractJsonFromText } from "@/features/prompts/utils/json-extraction";
+import { VoiceInputButton } from "@/features/audio";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import type { Json } from "@/types/database.types";
 
 interface GeneratePromptForBuiltinModalProps {
   isOpen: boolean;
@@ -30,34 +47,65 @@ interface GeneratePromptForBuiltinModalProps {
   onSuccess: (builtinId: string) => void;
 }
 
-const PROMPT_GENERATOR_PROMPT_ID = 'fbdb6b57-8b4e-44fe-8354-6286251f638a';
+const PROMPT_GENERATOR_PROMPT_ID = "fbdb6b57-8b4e-44fe-8354-6286251f638a";
+
+function jsonToGeneratorMessageList(
+  raw: Json | null,
+): Array<{ role: string; content: string }> {
+  if (raw === null || !Array.isArray(raw)) {
+    throw new Error("Invalid prompt messages");
+  }
+  const out: Array<{ role: string; content: string }> = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      throw new Error("Invalid message in prompt template");
+    }
+    const rec = item as Record<string, unknown>;
+    if (typeof rec.role !== "string" || typeof rec.content !== "string") {
+      throw new Error("Invalid message shape in prompt template");
+    }
+    out.push({ role: rec.role, content: rec.content });
+  }
+  return out;
+}
+
+function jsonToSettingsObject(raw: Json | null): Record<string, unknown> {
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new Error("Invalid prompt settings");
+  }
+  return raw as Record<string, unknown>;
+}
 
 export function GeneratePromptForBuiltinModal({
   isOpen,
   onClose,
   shortcutId,
   shortcutData,
-  onSuccess
+  onSuccess,
 }: GeneratePromptForBuiltinModalProps) {
   const dispatch = useAppDispatch();
   const supabase = createClient();
-  
-  const [promptPurpose, setPromptPurpose] = useState('');
-  const [additionalContext, setAdditionalContext] = useState('');
-  const [promptName, setPromptName] = useState('');
+
+  const [promptPurpose, setPromptPurpose] = useState("");
+  const [additionalContext, setAdditionalContext] = useState("");
+  const [promptName, setPromptName] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
   const [extractedJson, setExtractedJson] = useState<any>(null);
   const [extractionError, setExtractionError] = useState<string | null>(null);
-  
+
   // Watch streaming text
-  const streamingText = useAppSelector(state => 
-    currentTaskId ? selectPrimaryResponseTextByTaskId(currentTaskId)(state) : ''
+  const streamingText = useAppSelector((state) =>
+    currentTaskId
+      ? selectPrimaryResponseTextByTaskId(currentTaskId)(state)
+      : "",
   );
-  
-  const isResponseEnded = useAppSelector(state =>
-    currentTaskId ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state) : false
+
+  const isResponseEnded = useAppSelector((state) =>
+    currentTaskId
+      ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state)
+      : false,
   );
 
   // Initialize with shortcut context if provided
@@ -65,8 +113,11 @@ export function GeneratePromptForBuiltinModal({
     if (isOpen && shortcutData) {
       let context = `**Shortcut Details:**\n`;
       context += `- Name: ${shortcutData.label}\n`;
-      
-      if (shortcutData.available_scopes && shortcutData.available_scopes.length > 0) {
+
+      if (
+        shortcutData.available_scopes &&
+        shortcutData.available_scopes.length > 0
+      ) {
         context += `\n**Available Scopes (for variable mapping):**\n`;
         shortcutData.available_scopes.forEach((scope) => {
           context += `- ${scope}\n`;
@@ -83,20 +134,23 @@ export function GeneratePromptForBuiltinModal({
   useEffect(() => {
     if (isResponseEnded && streamingText && isGenerating) {
       setIsGenerating(false);
-      
+
       const result = extractJsonFromText(streamingText);
-      
+
       if (result.success && result.data) {
         setExtractedJson(result.data);
         setExtractionError(null);
-        
-        toast.success('Prompt generated successfully', {
-          description: 'Review and click "Create Builtin" to save'
+
+        toast.success("Prompt generated successfully", {
+          description: 'Review and click "Create Builtin" to save',
         });
       } else {
-        setExtractionError(result.error || 'Could not extract JSON from response');
-        toast.error('Could not extract JSON', {
-          description: 'The raw response is still available. You may need to manually extract the JSON.',
+        setExtractionError(
+          result.error || "Could not extract JSON from response",
+        );
+        toast.error("Could not extract JSON", {
+          description:
+            "The raw response is still available. You may need to manually extract the JSON.",
           duration: 5000,
         });
       }
@@ -105,71 +159,73 @@ export function GeneratePromptForBuiltinModal({
 
   const handleGenerate = async () => {
     if (!promptPurpose.trim()) {
-      toast.error('Please describe the purpose of your prompt');
+      toast.error("Please describe the purpose of your prompt");
       return;
     }
 
     setIsGenerating(true);
     setExtractedJson(null);
     setExtractionError(null);
-    
+
     try {
       // Fetch prompt template
       const { data: prompt, error: promptError } = await supabase
-        .from('prompts')
-        .select('*')
-        .eq('id', PROMPT_GENERATOR_PROMPT_ID)
+        .from("prompts")
+        .select("*")
+        .eq("id", PROMPT_GENERATOR_PROMPT_ID)
         .single();
 
       if (promptError || !prompt) {
-        throw new Error('Prompt generator template not found');
+        throw new Error("Prompt generator template not found");
       }
 
       // Build the full prompt_purpose value
       let fullPurpose = `**Primary Purpose:**\n${promptPurpose}`;
-      
+
       if (additionalContext.trim()) {
         fullPurpose += `\n\n**Additional Context & Requirements:**\n${additionalContext}`;
       }
 
-      // Replace variables in messages
-      const messages = prompt.messages.map((msg: any) => {
-        let content = msg.content;
+      // Replace variables in messages (JSONB columns are `Json` at the type level)
+      const messageList = jsonToGeneratorMessageList(prompt.messages);
+      const messages = messageList.map((msg) => {
+        let { content } = msg;
         content = content.replace(/{{prompt_purpose}}/g, fullPurpose);
         return {
           role: msg.role,
-          content
+          content,
         };
       });
 
-      // Build chat config
-      const modelId = prompt.settings?.model_id;
-      if (!modelId) {
-        throw new Error('No model specified in prompt');
+      const settings = jsonToSettingsObject(prompt.settings);
+      const modelId = settings.model_id;
+      if (typeof modelId !== "string" || !modelId) {
+        throw new Error("No model specified in prompt");
       }
 
       const chatConfig = {
         model_id: modelId,
         messages,
         stream: true,
-        ...prompt.settings
+        ...settings,
       };
 
       // Submit task — set taskId BEFORE dispatch so streaming UI mounts immediately
       const taskId = uuidv4();
       setCurrentTaskId(taskId);
 
-      await dispatch(createAndSubmitTask({
-        service: 'chat_service',
-        taskName: 'direct_chat',
-        taskData: { chat_config: chatConfig },
-        customTaskId: taskId
-      })).unwrap();
-      
+      await dispatch(
+        createAndSubmitTask({
+          service: "chat_service",
+          taskName: "direct_chat",
+          taskData: { chat_config: chatConfig },
+          customTaskId: taskId,
+        }),
+      ).unwrap();
     } catch (error) {
-      console.error('Generation error:', error);
-      toast.error('Failed to generate prompt', {
-        description: error instanceof Error ? error.message : 'Unknown error'
+      console.error("Generation error:", error);
+      toast.error("Failed to generate prompt", {
+        description: error instanceof Error ? error.message : "Unknown error",
       });
       setIsGenerating(false);
       setCurrentTaskId(null);
@@ -178,53 +234,58 @@ export function GeneratePromptForBuiltinModal({
 
   const handleCreateBuiltin = async () => {
     if (!extractedJson) {
-      toast.error('No generated prompt to save');
+      toast.error("No generated prompt to save");
       return;
     }
 
     if (!promptName.trim()) {
-      toast.error('Please enter a name for your builtin');
+      toast.error("Please enter a name for your builtin");
       return;
     }
 
     setIsSaving(true);
-    
+
     try {
       // Create builtin via API
-      const response = await fetch('/api/admin/prompt-builtins/create-from-ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: promptName.trim(),
-          description: extractedJson.description || null,
-          messages: extractedJson.messages || [],
-          variable_defaults: extractedJson.variableDefaults || extractedJson.variables || [],
-          tools: extractedJson.tools || null,
-          settings: extractedJson.settings || {},
-          shortcut_id: shortcutId || null,
-        })
-      });
+      const response = await fetch(
+        "/api/admin/prompt-builtins/create-from-ai",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: promptName.trim(),
+            description: extractedJson.description || null,
+            messages: extractedJson.messages || [],
+            variable_defaults:
+              extractedJson.variableDefaults || extractedJson.variables || [],
+            tools: extractedJson.tools || null,
+            settings: extractedJson.settings || {},
+            shortcut_id: shortcutId || null,
+          }),
+        },
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.details || errorData.error || 'Failed to create builtin');
+        throw new Error(
+          errorData.details || errorData.error || "Failed to create builtin",
+        );
       }
 
       const result = await response.json();
-      
+
       toast.success(
-        shortcutId ? 'Builtin created and linked!' : 'Builtin created!',
-        { description: result.message }
+        shortcutId ? "Builtin created and linked!" : "Builtin created!",
+        { description: result.message },
       );
-      
+
       onSuccess(result.builtin_id);
       handleClose();
-      
     } catch (error) {
-      console.error('Error creating builtin:', error);
-      toast.error('Failed to create builtin', {
-        description: error instanceof Error ? error.message : 'Unknown error',
-        duration: 8000
+      console.error("Error creating builtin:", error);
+      toast.error("Failed to create builtin", {
+        description: error instanceof Error ? error.message : "Unknown error",
+        duration: 8000,
       });
     } finally {
       setIsSaving(false);
@@ -233,9 +294,9 @@ export function GeneratePromptForBuiltinModal({
 
   const handleClose = () => {
     setCurrentTaskId(null);
-    setPromptPurpose('');
-    setAdditionalContext('');
-    setPromptName('');
+    setPromptPurpose("");
+    setAdditionalContext("");
+    setPromptName("");
     setIsGenerating(false);
     setIsSaving(false);
     setExtractedJson(null);
@@ -246,13 +307,13 @@ export function GeneratePromptForBuiltinModal({
   const handleCopyGenerated = () => {
     if (extractedJson) {
       navigator.clipboard.writeText(JSON.stringify(extractedJson, null, 2));
-      toast.success('Copied generated prompt to clipboard');
+      toast.success("Copied generated prompt to clipboard");
     }
   };
 
   const handleCopyRawResponse = () => {
     navigator.clipboard.writeText(streamingText);
-    toast.success('Copied raw response to clipboard');
+    toast.success("Copied raw response to clipboard");
   };
 
   const hasGeneratedPrompt = extractedJson !== null;
@@ -264,30 +325,33 @@ export function GeneratePromptForBuiltinModal({
         <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Wand2 className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
-            Generate Prompt Builtin{shortcutData ? ` for "${shortcutData.label}"` : ''}
+            Generate Prompt Builtin
+            {shortcutData ? ` for "${shortcutData.label}"` : ""}
           </DialogTitle>
         </DialogHeader>
 
         {/* Context Info Banner */}
-        {shortcutData?.available_scopes && shortcutData.available_scopes.length > 0 && (
-          <Card className="mx-4 sm:mx-6 mt-3 p-3 bg-primary/5 border-primary/20">
-            <div className="space-y-2 text-sm">
-              <div>
-                <span className="font-semibold">Available Scopes:</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {shortcutData.available_scopes.map(scope => (
-                    <Badge key={scope} variant="default" className="text-xs">
-                      {scope}
-                    </Badge>
-                  ))}
+        {shortcutData?.available_scopes &&
+          shortcutData.available_scopes.length > 0 && (
+            <Card className="mx-4 sm:mx-6 mt-3 p-3 bg-primary/5 border-primary/20">
+              <div className="space-y-2 text-sm">
+                <div>
+                  <span className="font-semibold">Available Scopes:</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {shortcutData.available_scopes.map((scope) => (
+                      <Badge key={scope} variant="default" className="text-xs">
+                        {scope}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Create variables that you'll map to these scope keys after
+                    generation
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Create variables that you'll map to these scope keys after generation
-                </p>
               </div>
-            </div>
-          </Card>
-        )}
+            </Card>
+          )}
 
         <div className="flex-1 flex flex-col lg:grid lg:grid-cols-[40%_60%] gap-3 sm:gap-4 px-4 sm:px-6 overflow-y-auto lg:overflow-hidden min-h-0 py-3 sm:py-4">
           {/* Input Section */}
@@ -305,12 +369,14 @@ export function GeneratePromptForBuiltinModal({
                       buttonText="Voice"
                       size="sm"
                       onTranscriptionComplete={(text) => {
-                        const newText = promptPurpose ? `${promptPurpose}\n${text}` : text;
+                        const newText = promptPurpose
+                          ? `${promptPurpose}\n${text}`
+                          : text;
                         setPromptPurpose(newText);
-                        toast.success('Voice explanation added');
+                        toast.success("Voice explanation added");
                       }}
                       onError={(error) => {
-                        toast.error('Voice input failed', {
+                        toast.error("Voice input failed", {
                           description: error,
                         });
                       }}
@@ -322,11 +388,12 @@ export function GeneratePromptForBuiltinModal({
                   onChange={(e) => setPromptPurpose(e.target.value)}
                   placeholder="Describe the specific behavior and instructions for this prompt..."
                   className="min-h-[120px] sm:min-h-[180px] text-base"
-                  style={{ fontSize: '16px' }}
+                  style={{ fontSize: "16px" }}
                   disabled={isGenerating || hasGeneratedPrompt}
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Be specific about how this prompt should work and what it should accomplish
+                  Be specific about how this prompt should work and what it
+                  should accomplish
                 </p>
               </div>
 
@@ -334,7 +401,9 @@ export function GeneratePromptForBuiltinModal({
                 <div className="flex items-center justify-between gap-2">
                   <Label className="text-xs sm:text-sm font-medium">
                     Additional Context
-                    <span className="text-xs text-gray-500 ml-1">(Optional)</span>
+                    <span className="text-xs text-gray-500 ml-1">
+                      (Optional)
+                    </span>
                   </Label>
                   {!isGenerating && !hasGeneratedPrompt && (
                     <VoiceInputButton
@@ -342,12 +411,14 @@ export function GeneratePromptForBuiltinModal({
                       buttonText="Voice"
                       size="sm"
                       onTranscriptionComplete={(text) => {
-                        const newText = additionalContext ? `${additionalContext}\n${text}` : text;
+                        const newText = additionalContext
+                          ? `${additionalContext}\n${text}`
+                          : text;
                         setAdditionalContext(newText);
-                        toast.success('Voice context added');
+                        toast.success("Voice context added");
                       }}
                       onError={(error) => {
-                        toast.error('Voice input failed', {
+                        toast.error("Voice input failed", {
                           description: error,
                         });
                       }}
@@ -359,7 +430,7 @@ export function GeneratePromptForBuiltinModal({
                   onChange={(e) => setAdditionalContext(e.target.value)}
                   placeholder="Additional requirements and constraints..."
                   className="min-h-[120px] sm:min-h-[180px] text-base font-mono"
-                  style={{ fontSize: '14px' }}
+                  style={{ fontSize: "14px" }}
                   disabled={isGenerating || hasGeneratedPrompt}
                 />
               </div>
@@ -375,7 +446,7 @@ export function GeneratePromptForBuiltinModal({
                     onChange={(e) => setPromptName(e.target.value)}
                     placeholder="Enter a name for your builtin"
                     className="text-base"
-                    style={{ fontSize: '16px' }}
+                    style={{ fontSize: "16px" }}
                     disabled={isSaving}
                   />
                 </div>
@@ -386,7 +457,9 @@ export function GeneratePromptForBuiltinModal({
           {/* AI Response Section */}
           <div className="flex flex-col min-h-0 flex-1 lg:flex-initial">
             <div className="flex items-center justify-between mb-2 flex-shrink-0">
-              <Label className="text-xs sm:text-sm font-medium">Generated Prompt</Label>
+              <Label className="text-xs sm:text-sm font-medium">
+                Generated Prompt
+              </Label>
               {streamingText && !isGenerating && (
                 <div className="flex gap-1">
                   {hasGeneratedPrompt && (
@@ -419,7 +492,9 @@ export function GeneratePromptForBuiltinModal({
                 <div className="h-full flex flex-col">
                   <div className="flex-none flex items-center gap-2 p-2 border-b border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/30">
                     <Loader2 className="h-4 w-4 animate-spin text-purple-600 dark:text-purple-400" />
-                    <span className="text-xs font-medium text-purple-700 dark:text-purple-300">Generating your prompt...</span>
+                    <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
+                      Generating your prompt...
+                    </span>
                   </div>
                   <div className="flex-1 overflow-y-auto p-2">
                     {streamingText ? (
@@ -437,11 +512,12 @@ export function GeneratePromptForBuiltinModal({
                     <div className="flex-none p-2 bg-amber-100 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 flex items-start gap-2">
                       <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                       <span className="text-xs text-amber-700 dark:text-amber-300">
-                        <strong>JSON Extraction Failed:</strong> {extractionError}
+                        <strong>JSON Extraction Failed:</strong>{" "}
+                        {extractionError}
                       </span>
                     </div>
                   )}
-                  
+
                   {hasGeneratedPrompt && !extractionError && (
                     <div className="flex-none p-2 bg-green-100 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800 flex items-center gap-2">
                       <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
@@ -450,7 +526,7 @@ export function GeneratePromptForBuiltinModal({
                       </span>
                     </div>
                   )}
-                  
+
                   <div className="flex-1 overflow-y-auto p-2">
                     <MarkdownStream
                       content={streamingText}
@@ -466,7 +542,8 @@ export function GeneratePromptForBuiltinModal({
                     Ready to generate
                   </p>
                   <p className="text-xs text-gray-400 dark:text-gray-500 max-w-md">
-                    Describe the prompt purpose and click "Generate" to create a new prompt builtin
+                    Describe the prompt purpose and click "Generate" to create a
+                    new prompt builtin
                   </p>
                 </div>
               )}
@@ -498,16 +575,16 @@ export function GeneratePromptForBuiltinModal({
               className="flex-1 sm:flex-initial"
             >
               <X className="h-4 w-4 mr-2" />
-              {hasGeneratedPrompt ? 'Discard' : 'Cancel'}
+              {hasGeneratedPrompt ? "Discard" : "Cancel"}
             </Button>
-            
+
             {hasGeneratedPrompt && !isGenerating ? (
               <>
                 <Button
                   variant="outline"
                   onClick={() => {
                     setExtractedJson(null);
-                    setPromptName('');
+                    setPromptName("");
                   }}
                   disabled={isSaving}
                   className="flex-1 sm:flex-initial"
@@ -558,4 +635,3 @@ export function GeneratePromptForBuiltinModal({
     </Dialog>
   );
 }
-

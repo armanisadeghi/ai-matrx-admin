@@ -9,7 +9,7 @@
  *
  *   Catalogue (Tier 1+):
  *     Dispatches initializeChatAgents() on mount — fetches owned + shared +
- *     builtins via get_agents_list_full(). TTL-guarded (15 min). Also wired
+ *     builtins via agx_get_list_full(). TTL-guarded (15 min). Also wired
  *     to tab-visibility stale-while-revalidate (4-hour threshold).
  *
  *   Execution fetch (Tier 2):

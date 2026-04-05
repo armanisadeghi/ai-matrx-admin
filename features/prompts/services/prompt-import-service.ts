@@ -12,6 +12,11 @@ import type {
   PromptBatchImportResult,
 } from "../types/prompt-json";
 import { PromptData, PromptsBatchData } from "@/features/prompts/types/core";
+import {
+  normalizePromptMessagesFromDb,
+  normalizePromptSettingsFromDb,
+  normalizePromptVariablesFromDb,
+} from "../utils/normalize-prompt-db-json";
 
 /**
  * Extract variable names from messages
@@ -227,9 +232,11 @@ export async function exportPromptAsJSON(
       id: prompt.id,
       name: prompt.name,
       description: prompt.description,
-      messages: prompt.messages,
-      variableDefaults: prompt.variable_defaults, // Convert snake_case to camelCase
-      settings: prompt.settings,
+      messages: normalizePromptMessagesFromDb(prompt.messages),
+      variableDefaults: normalizePromptVariablesFromDb(
+        prompt.variable_defaults,
+      ),
+      settings: normalizePromptSettingsFromDb(prompt.settings),
       tags: prompt.tags ?? undefined,
       category: prompt.category ?? undefined,
       modelId: prompt.model_id ?? undefined,

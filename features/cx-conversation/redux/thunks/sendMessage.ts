@@ -15,7 +15,7 @@
  *   - backend URL        → callApi (apiConfigSlice — selectResolvedBaseUrl, all 6 environments)
  *
  * Routing logic (agent mode):
- *   - no conversationId  → POST /ai/agents/{agentId}  or /ai/agents-blocks/{agentId}
+ *   - no conversationId  → POST /ai/prompts/{agentId}  or /ai/agents-blocks/{agentId} (block mode only)
  *   - has conversationId → POST /ai/conversations/{conversationId}  (auto-upgrades)
  *
  * The X-Conversation-ID response header is captured via onStreamStart and
@@ -344,7 +344,7 @@ export const sendMessage = createAsyncThunk<
             //
             // agent mode (auto-routing):
             //   - has conversationId → POST /ai/conversations/{id}  (continue)
-            //   - no conversationId  → POST /ai/agents/{id}  or  /ai/agents-blocks/{id}
+            //   - no conversationId  → POST /ai/prompts/{id}  or  /ai/agents-blocks/{id} (block mode only)
             // conversation mode:
             //   - always POST /ai/conversations/{id}  (requires pre-existing conversationId)
             // chat mode:
@@ -408,14 +408,13 @@ export const sendMessage = createAsyncThunk<
                     }));
                 } else {
                     result = await dispatch(callApi({
-                        path: '/ai/agents/{agent_id}',
+                        path: '/ai/prompts/{prompt_id}',
                         method: 'POST',
-                        pathParams: { agent_id: agentId },
+                        pathParams: { prompt_id: agentId },
                         body: {
                             user_input: content,
                             variables: Object.keys(variables).length > 0 ? variables : undefined,
                             config_overrides: Object.keys(configOverrides).length > 0 ? configOverrides : undefined,
-                            resources: resources.length > 0 ? resources : undefined,
                             stream: true,
                             debug: true,
                             client_tools: [],

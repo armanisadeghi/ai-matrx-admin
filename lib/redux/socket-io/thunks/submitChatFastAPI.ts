@@ -16,19 +16,19 @@
  *   import { submitChatFastAPI as createAndSubmitTask } from '@/lib/redux/socket-io/thunks/submitChatFastAPI';
  */
 
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { v4 as uuidv4 } from 'uuid';
-import type { RootState } from '../../store';
-import { parseNdjsonStream } from '@/lib/api/stream-parser';
-import { parseHttpError } from '@/lib/api/errors';
-import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { v4 as uuidv4 } from "uuid";
+import type { RootState } from "../../store";
+import { parseNdjsonStream } from "@/lib/api/stream-parser";
+import { parseHttpError } from "@/lib/api/errors";
+import { ENDPOINTS, BACKEND_URLS } from "@/lib/api/endpoints";
 import type {
   ChunkPayload,
   ErrorPayload,
   PhasePayload,
   StreamEvent,
-} from '@/types/python-generated/stream-events';
-import type { ChatRequestBody } from '@/lib/api/types';
+} from "@/types/python-generated/stream-events";
+import type { ChatRequestBody } from "@/lib/api/types";
 
 import {
   addResponse,
@@ -38,7 +38,7 @@ import {
   updateErrorResponse,
   appendRawToolEvent,
   markResponseEnd,
-} from '../slices/socketResponseSlice';
+} from "../slices/socketResponseSlice";
 
 import {
   initializeTask,
@@ -46,10 +46,10 @@ import {
   setTaskStreaming,
   completeTask,
   setTaskError,
-} from '../slices/socketTasksSlice';
+} from "../slices/socketTasksSlice";
 
-import { selectAccessToken, selectIsAdmin } from '../../slices/userSlice';
-import { selectIsUsingLocalhost } from '../../slices/adminPreferencesSlice';
+import { selectAccessToken } from "../../slices/userSlice";
+import { selectResolvedBaseUrl } from "../../slices/apiConfigSlice";
 
 interface SubmitChatPayload {
   service: string;
@@ -68,55 +68,55 @@ interface SubmitChatPayload {
  * valid ChatRequestBody key.
  */
 const CHAT_REQUEST_FIELDS = [
-  'ai_model_id',
-  'messages',
-  'conversation_id',
-  'stream',
-  'debug',
-  'max_iterations',
-  'max_retries_per_iteration',
-  'system_instruction',
-  'max_output_tokens',
-  'temperature',
-  'top_p',
-  'top_k',
-  'tools',
-  'tool_choice',
-  'parallel_tool_calls',
-  'reasoning_effort',
-  'reasoning_summary',
-  'thinking_level',
-  'include_thoughts',
-  'thinking_budget',
-  'response_format',
-  'stop_sequences',
-  'internal_web_search',
-  'internal_url_context',
-  'store',
-  'metadata',
-  'tts_voice',
-  'audio_format',
-  'model',
-  'verbosity',
-  'size',
-  'quality',
-  'count',
-  'seconds',
-  'fps',
-  'steps',
-  'seed',
-  'guidance_scale',
-  'output_quality',
-  'negative_prompt',
-  'output_format',
-  'width',
-  'height',
-  'frame_images',
-  'reference_images',
-  'disable_safety_checker',
-  'config_overrides',
-  'client_tools',
-  'ide_state',
+  "ai_model_id",
+  "messages",
+  "conversation_id",
+  "stream",
+  "debug",
+  "max_iterations",
+  "max_retries_per_iteration",
+  "system_instruction",
+  "max_output_tokens",
+  "temperature",
+  "top_p",
+  "top_k",
+  "tools",
+  "tool_choice",
+  "parallel_tool_calls",
+  "reasoning_effort",
+  "reasoning_summary",
+  "thinking_level",
+  "include_thoughts",
+  "thinking_budget",
+  "response_format",
+  "stop_sequences",
+  "internal_web_search",
+  "internal_url_context",
+  "store",
+  "metadata",
+  "tts_voice",
+  "audio_format",
+  "model",
+  "verbosity",
+  "size",
+  "quality",
+  "count",
+  "seconds",
+  "fps",
+  "steps",
+  "seed",
+  "guidance_scale",
+  "output_quality",
+  "negative_prompt",
+  "output_format",
+  "width",
+  "height",
+  "frame_images",
+  "reference_images",
+  "disable_safety_checker",
+  "config_overrides",
+  "client_tools",
+  "ide_state",
 ] as const satisfies readonly (keyof ChatRequestBody)[];
 
 const UNIFIED_API_ALLOWED_FIELDS = new Set<string>(CHAT_REQUEST_FIELDS);
@@ -127,17 +127,19 @@ const UNIFIED_API_ALLOWED_FIELDS = new Set<string>(CHAT_REQUEST_FIELDS);
  * This converts string values to the proper dict format or strips them if
  * they represent the default behavior (no need to send "text").
  */
-function normalizeResponseFormat(value: unknown): Record<string, unknown> | null {
+function normalizeResponseFormat(
+  value: unknown,
+): Record<string, unknown> | null {
   if (value === undefined || value === null) return null;
 
   // Already a dict — pass through
-  if (typeof value === 'object' && !Array.isArray(value)) {
+  if (typeof value === "object" && !Array.isArray(value)) {
     return value as Record<string, unknown>;
   }
 
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     // "text" is the default — no need to send it at all
-    if (value === 'text' || value === '') return null;
+    if (value === "text" || value === "") return null;
     // Convert known string shorthand to proper dict
     return { type: value };
   }
@@ -168,7 +170,7 @@ function transformChatConfigToUnifiedBody(
   if (chatConfig.model_id !== undefined) {
     console.warn(
       `%c⚠️ FASTAPI MIGRATION [${callerContext}]: Caller is passing "model_id" — rename to "ai_model_id" at the source.`,
-      'font-weight: bold; color: orange; font-size: 14px;',
+      "font-weight: bold; color: orange; font-size: 14px;",
     );
     body.ai_model_id = chatConfig.model_id;
   } else if (chatConfig.ai_model_id !== undefined) {
@@ -177,14 +179,18 @@ function transformChatConfigToUnifiedBody(
 
   // Safety net: normalizer should have already converted these at the Redux boundary.
   if (chatConfig.max_tokens !== undefined) {
-    console.debug(`[${callerContext}] Legacy "max_tokens" detected — converting to "max_output_tokens"`);
+    console.debug(
+      `[${callerContext}] Legacy "max_tokens" detected — converting to "max_output_tokens"`,
+    );
     body.max_output_tokens = chatConfig.max_tokens;
   }
 
   const rawFormat = chatConfig.output_format ?? chatConfig.response_format;
   if (rawFormat !== undefined) {
     if (chatConfig.output_format !== undefined) {
-      console.debug(`[${callerContext}] Legacy "output_format" detected — converting to "response_format"`);
+      console.debug(
+        `[${callerContext}] Legacy "output_format" detected — converting to "response_format"`,
+      );
     }
     const normalized = normalizeResponseFormat(rawFormat);
     if (normalized !== null) {
@@ -195,8 +201,14 @@ function transformChatConfigToUnifiedBody(
   // Copy all other allowed fields directly.
   // conversation_id is now allowed in the body (pass-through). is_new_conversation is gone.
   const skipFields = new Set([
-    'messages', 'stream', 'model_id', 'ai_model_id', 'max_tokens',
-    'output_format', 'response_format', 'is_new_conversation',
+    "messages",
+    "stream",
+    "model_id",
+    "ai_model_id",
+    "max_tokens",
+    "output_format",
+    "response_format",
+    "is_new_conversation",
   ]);
   const droppedFields: string[] = [];
 
@@ -213,8 +225,8 @@ function transformChatConfigToUnifiedBody(
 
   if (droppedFields.length > 0) {
     console.warn(
-      `%c⚠️ FASTAPI MIGRATION [${callerContext}]: Stripped ${droppedFields.length} fields not accepted by /api/ai/chat: ${droppedFields.join(', ')}`,
-      'font-weight: bold; color: #ff9800; font-size: 12px;',
+      `%c⚠️ FASTAPI MIGRATION [${callerContext}]: Stripped ${droppedFields.length} fields not accepted by /api/ai/chat: ${droppedFields.join(", ")}`,
+      "font-weight: bold; color: #ff9800; font-size: 12px;",
     );
   }
 
@@ -226,72 +238,78 @@ export const submitChatFastAPI = createAsyncThunk<
   SubmitChatPayload,
   { state: RootState }
 >(
-  'socketTasks/submitChatFastAPI',
-  async ({ service, taskName, taskData, customTaskId }, { dispatch, getState }) => {
+  "socketTasks/submitChatFastAPI",
+  async (
+    { service, taskName, taskData, customTaskId },
+    { dispatch, getState },
+  ) => {
     const state = getState();
     const accessToken = selectAccessToken(state);
-    const isLocalhost = selectIsUsingLocalhost(state);
-    const isAdmin = selectIsAdmin(state);
-
-    const BACKEND_URL = (isAdmin && isLocalhost)
-      ? BACKEND_URLS.localhost
-      : BACKEND_URLS.production;
+    const BACKEND_URL =
+      selectResolvedBaseUrl(state as any) ?? BACKEND_URLS.production;
 
     const taskId = customTaskId || uuidv4();
     const listenerId = taskId;
     const callerContext = `${service}.${taskName}`;
 
-    console.log(
-      `[submitChatFastAPI] isAdmin=${isAdmin}, isLocalhost=${isLocalhost}, BACKEND_URL=${BACKEND_URL}`,
-    );
+    console.log(`[submitChatFastAPI] BACKEND_URL=${BACKEND_URL}`);
 
     console.warn(
       `%c🔄 FASTAPI MIGRATION [${callerContext}]: This call flows through submitChatFastAPI → POST /api/ai/chat. ` +
-      `The calling component should be updated to call the conversation API directly and pass the new field names (ai_model_id, max_output_tokens, response_format, tts_voice, audio_format). ` +
-      `This bridge thunk will be removed once all callers are updated.`,
-      'font-weight: bold; color: #ff9800; font-size: 12px;',
+        `The calling component should be updated to call the conversation API directly and pass the new field names (ai_model_id, max_output_tokens, response_format, tts_voice, audio_format). ` +
+        `This bridge thunk will be removed once all callers are updated.`,
+      "font-weight: bold; color: #ff9800; font-size: 12px;",
     );
 
-    dispatch(initializeTask({
-      taskId,
-      service,
-      taskName,
-      connectionId: 'fastapi',
-    }));
+    dispatch(
+      initializeTask({
+        taskId,
+        service,
+        taskName,
+        connectionId: "fastapi",
+      }),
+    );
     dispatch(addResponse({ listenerId, taskId }));
     dispatch(setTaskListenerIds({ taskId, listenerIds: [listenerId] }));
 
-    const chatConfig = (taskData as { chat_config?: Record<string, unknown> }).chat_config || taskData;
+    const chatConfig =
+      (taskData as { chat_config?: Record<string, unknown> }).chat_config ||
+      taskData;
     const requestBody = transformChatConfigToUnifiedBody(
       chatConfig as Record<string, unknown>,
       callerContext,
     );
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
     if (accessToken) {
-      headers['Authorization'] = `Bearer ${accessToken}`;
+      headers["Authorization"] = `Bearer ${accessToken}`;
     }
 
     console.log(
-      '[submitChatFastAPI] Final request body keys:', Object.keys(requestBody),
-      '\n[submitChatFastAPI] Full body:', JSON.stringify(requestBody, null, 2),
+      "[submitChatFastAPI] Final request body keys:",
+      Object.keys(requestBody),
+      "\n[submitChatFastAPI] Full body:",
+      JSON.stringify(requestBody, null, 2),
     );
 
     let response: Response;
     try {
       response = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.chat}`, {
-        method: 'POST',
+        method: "POST",
         headers,
         body: JSON.stringify(requestBody),
       });
     } catch (networkError) {
-      const errMsg = networkError instanceof Error ? networkError.message : 'Network error';
-      dispatch(updateErrorResponse({
-        listenerId,
-        error: { message: errMsg, type: 'network_error' },
-      }));
+      const errMsg =
+        networkError instanceof Error ? networkError.message : "Network error";
+      dispatch(
+        updateErrorResponse({
+          listenerId,
+          error: { message: errMsg, type: "network_error" },
+        }),
+      );
       dispatch(markResponseEnd(listenerId));
       dispatch(setTaskError({ taskId, error: errMsg }));
       throw new Error(errMsg);
@@ -301,21 +319,26 @@ export const submitChatFastAPI = createAsyncThunk<
       let rawErrorBody: string | undefined;
       try {
         rawErrorBody = await response.clone().text();
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
       console.error(
         `[submitChatFastAPI] HTTP ${response.status} from ${BACKEND_URL}${ENDPOINTS.ai.chat}`,
-        '\nResponse body:', rawErrorBody,
+        "\nResponse body:",
+        rawErrorBody,
       );
 
       const apiError = await parseHttpError(response);
-      dispatch(updateErrorResponse({
-        listenerId,
-        error: {
-          message: apiError.detail,
-          type: apiError.code,
-          user_message: apiError.userMessage,
-        },
-      }));
+      dispatch(
+        updateErrorResponse({
+          listenerId,
+          error: {
+            message: apiError.detail,
+            type: apiError.code,
+            user_message: apiError.userMessage,
+          },
+        }),
+      );
       dispatch(markResponseEnd(listenerId));
       dispatch(setTaskError({ taskId, error: apiError.userMessage }));
       throw apiError;
@@ -327,7 +350,7 @@ export const submitChatFastAPI = createAsyncThunk<
     try {
       for await (const event of events) {
         switch (event.event) {
-          case 'chunk': {
+          case "chunk": {
             if (isFirstChunk) {
               dispatch(setTaskStreaming({ taskId, isStreaming: true }));
               isFirstChunk = false;
@@ -337,73 +360,84 @@ export const submitChatFastAPI = createAsyncThunk<
             break;
           }
 
-          case 'phase': {
+          case "phase": {
             const phaseData = event.data as unknown as PhasePayload;
-            dispatch(updateInfoResponse({
-              listenerId,
-              info: {
-                status: phaseData.phase === 'complete' ? 'confirm' : 'processing',
-                system_message: phaseData.phase,
-              },
-            }));
+            dispatch(
+              updateInfoResponse({
+                listenerId,
+                info: {
+                  status:
+                    phaseData.phase === "complete" ? "confirm" : "processing",
+                  system_message: phaseData.phase,
+                },
+              }),
+            );
             break;
           }
 
-          case 'tool_event': {
+          case "tool_event": {
             // Store the raw StreamEvent so buildCanonicalBlocks can derive ToolCallBlock[]
             // with correct phase tracking. The canonical selector handles all rendering.
             dispatch(appendRawToolEvent({ listenerId, event }));
             break;
           }
 
-          case 'error': {
+          case "error": {
             const errData = event.data as unknown as ErrorPayload;
-            dispatch(updateErrorResponse({
-              listenerId,
-              error: {
-                message: errData.message,
-                type: errData.error_type,
-                user_message: errData.user_message,
-                code: errData.code || undefined,
-                details: errData.details,
-              },
-            }));
+            dispatch(
+              updateErrorResponse({
+                listenerId,
+                error: {
+                  message: errData.message,
+                  type: errData.error_type,
+                  user_message: errData.user_message,
+                  code: errData.code || undefined,
+                  details: errData.details,
+                },
+              }),
+            );
             break;
           }
 
-          case 'data': {
+          case "data": {
             const dataPayload = event.data as Record<string, unknown> | null;
-            if (dataPayload && dataPayload.type === 'audio_output') {
-              dispatch(updateDataResponse({
-                listenerId,
-                data: {
-                  type: 'audio_output',
-                  url: dataPayload.url as string,
-                  mime_type: dataPayload.mime_type as string,
-                },
-              }));
+            if (dataPayload && dataPayload.type === "audio_output") {
+              dispatch(
+                updateDataResponse({
+                  listenerId,
+                  data: {
+                    type: "audio_output",
+                    url: dataPayload.url as string,
+                    mime_type: dataPayload.mime_type as string,
+                  },
+                }),
+              );
             } else {
-              dispatch(updateDataResponse({
-                listenerId,
-                data: event.data,
-              }));
+              dispatch(
+                updateDataResponse({
+                  listenerId,
+                  data: event.data,
+                }),
+              );
             }
             break;
           }
 
-          case 'completion':
-          case 'heartbeat':
-          case 'end':
+          case "completion":
+          case "heartbeat":
+          case "end":
             break;
         }
       }
     } catch (streamError) {
-      if (streamError instanceof Error && streamError.name !== 'AbortError') {
+      if (streamError instanceof Error && streamError.name !== "AbortError") {
         const errMsg = streamError.message;
-        dispatch(updateErrorResponse({
-          listenerId,
-          error: { message: errMsg, type: 'stream_error' },
-        }));
+        dispatch(
+          updateErrorResponse({
+            listenerId,
+            error: { message: errMsg, type: "stream_error" },
+          }),
+        );
       }
     }
 
@@ -412,5 +446,5 @@ export const submitChatFastAPI = createAsyncThunk<
     dispatch(completeTask(taskId));
 
     return { taskId, submitResult: [listenerId] };
-  }
+  },
 );

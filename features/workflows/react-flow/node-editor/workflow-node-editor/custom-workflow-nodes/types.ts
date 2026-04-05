@@ -1,6 +1,12 @@
 'use client';
 
-import { DbFunctionNode, ArgumentOverride, ArgumentMapping, WorkflowDependency } from '@/features/workflows/types';
+import {
+  DbFunctionNode,
+  WorkflowNodeInsert,
+  ArgumentOverride,
+  ArgumentMapping,
+  WorkflowDependency,
+} from '@/features/workflows/types';
 import { NodeDefinitionType } from './custom-nodes/custom-node-definitions';
 import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
@@ -47,7 +53,7 @@ export interface NodeDataMethods {
   // Utility methods
   validateNode: () => boolean;
   resetNode: () => void;
-  getNodeSnapshot: () => DbFunctionNode;
+  getNodeSnapshot: () => WorkflowNodeInsert;
   hasUnsavedChanges: () => boolean;
   
   // Computed properties helpers

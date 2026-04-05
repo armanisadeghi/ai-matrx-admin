@@ -15,7 +15,7 @@
 // Key differences from prompts:
 //   - Agents have access metadata (isOwner, accessLevel, sharedByEmail)
 //   - Agents have isVersion / parentAgentId (version snapshots vs live agents)
-//   - The list search is over get_agents_list() fields ONLY — not messages or
+//   - The list search is over agx_get_list() fields ONLY — not messages or
 //     variableDefinitions. Those fields are excluded from the basic search to
 //     avoid false positives. An advanced search thunk handles message content.
 //   - System / builtin agents (agentType = 'builtin') are separated from user agents.
@@ -44,7 +44,7 @@ export const AGENT_LIST_ITEMS_PER_PAGE = 20;
  * Compute a relevance score for an agent against a lower-cased query.
  * Higher = more relevant.
  *
- * Only searches fields returned by get_agents_list():
+ * Only searches fields returned by agx_get_list():
  *   name, description, category, tags, modelId, id, agentType
  *
  * Does NOT search messages or variableDefinitions — those are not loaded

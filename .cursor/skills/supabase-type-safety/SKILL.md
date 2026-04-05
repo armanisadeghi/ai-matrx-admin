@@ -68,10 +68,10 @@ The Supabase-typed response still says `Json` for those fields. TypeScript rejec
 Check `types/database.types.ts`:
 ```ts
 // Typed rows — Returns: { field: string, other: Json }[]
-get_agents_list, get_agent_execution_full, check_agent_drift, etc.
+agx_get_list, agx_get_execution_full, agx_check_drift, etc.
 
 // Json directly — Returns: Json
-promote_agent_version, purge_agent_versions, accept_agent_version, update_agent_from_source
+agx_promote_version, agx_purge_versions, agx_accept_version, agx_update_from_source
 ```
 For Json-direct RPCs: no DB guard possible; cast with `data as unknown as MyResult`.
 
@@ -82,17 +82,17 @@ For Json-direct RPCs: no DB guard possible; cast with `data as unknown as MyResu
 ```ts
 import type { Database } from "@/types/database.types";
 
-type AgentRow = Database["public"]["Tables"]["agents"]["Row"];
-type AgentInsert = Database["public"]["Tables"]["agents"]["Insert"];
-type AgentUpdate = Database["public"]["Tables"]["agents"]["Update"];
+type AgentRow = Database["public"]["Tables"]["agx_agent"]["Row"];
+type AgentInsert = Database["public"]["Tables"]["agx_agent"]["Insert"];
+type AgentUpdate = Database["public"]["Tables"]["agx_agent"]["Update"];
 
 // Query:
-const { data, error } = await supabase.from("agents").select("*");
+const { data, error } = await supabase.from("agx_agent").select("*");
 const rows = (data ?? []) as AgentRow[];  // single cast works — no Json in table rows
 
 // Insert:
 const insert: AgentInsert = { name: "...", ... };
-await supabase.from("agents").insert(insert);
+await supabase.from("agx_agent").insert(insert);
 ```
 
 For table queries with `.select("id, name, settings")` (partial selects), use:

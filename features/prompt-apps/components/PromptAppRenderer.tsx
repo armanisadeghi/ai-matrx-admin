@@ -5,7 +5,7 @@ import { transform } from "@babel/standalone";
 import { v4 as uuidv4 } from "uuid";
 import { useApiAuth } from "@/hooks/useApiAuth";
 import { useSelector } from "react-redux";
-import { selectIsUsingLocalhost } from "@/lib/redux/slices/adminPreferencesSlice";
+import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import {
   buildComponentScope,
   getScopeFunctionParameters,
@@ -55,7 +55,9 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const { getHeaders, waitForAuth, isAdmin, fingerprintId } = useApiAuth();
-  const useLocalhost = useSelector(selectIsUsingLocalhost);
+  const resolvedBaseUrl = useSelector(
+    selectResolvedBaseUrl as (state: unknown) => string | undefined,
+  );
 
   // Cleanup abort controller on unmount
   useEffect(() => {
@@ -92,10 +94,7 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
           return;
         }
 
-        const BACKEND_URL =
-          isAdmin && useLocalhost
-            ? BACKEND_URLS.localhost
-            : BACKEND_URLS.production;
+        const BACKEND_URL = resolvedBaseUrl ?? BACKEND_URLS.production;
 
         const headers = getHeaders();
 
@@ -214,7 +213,7 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
       app,
       slug,
       isAdmin,
-      useLocalhost,
+      resolvedBaseUrl,
       fingerprintId,
       waitForAuth,
       getHeaders,

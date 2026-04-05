@@ -1,12 +1,12 @@
 /**
  * submitAppletAgentThunk
  *
- * Executes a custom applet via the FastAPI agent endpoint.
+ * Executes a custom applet via the FastAPI prompt endpoint.
  * Replaces the Socket.IO `run_recipe_to_chat` path when ?fx=1 is active.
  *
  * Flow:
- *   1. useAppletRecipeFastAPI converts the recipe → agentId (once, then cached)
- *   2. This thunk calls POST /api/ai/agents/{agentId} with broker values as variables
+ *   1. useAppletRecipeFastAPI converts the recipe → promptId (once, then cached)
+ *   2. This thunk calls POST /ai/prompts/{promptId} with broker values as variables
  *   3. Parses NDJSON stream → dispatches to the same socketResponseSlice used by all other paths
  *   4. ResponseLayoutManager reads taskId as normal — no rendering changes needed
  *
@@ -49,7 +49,7 @@ import {
 } from '../slices/socketTasksSlice';
 
 import { selectAccessToken, selectIsAdmin } from '../../slices/userSlice';
-import { selectIsUsingLocalhost } from '../../slices/adminPreferencesSlice';
+import { selectResolvedBaseUrl } from '../../slices/apiConfigSlice';
 
 export interface SubmitAppletAgentPayload {
     /** The agent/prompt ID returned by convert_compiled_recipe_to_prompt */
@@ -78,17 +78,13 @@ export const submitAppletAgentThunk = createAsyncThunk<
     async ({ agentId, variables, userInput = '', taskId }, { dispatch, getState }) => {
         const state = getState();
         const accessToken = selectAccessToken(state);
-        const isLocalhost = selectIsUsingLocalhost(state);
         const isAdmin = selectIsAdmin(state);
-
-        const BACKEND_URL = (isAdmin && isLocalhost)
-            ? BACKEND_URLS.localhost
-            : BACKEND_URLS.production;
+        const BACKEND_URL = selectResolvedBaseUrl(state as any) ?? BACKEND_URLS.production;
 
         const listenerId = taskId;
 
         console.log(
-            `[submitAppletAgentThunk] agentId=${agentId}, isAdmin=${isAdmin}, isLocalhost=${isLocalhost}, BACKEND_URL=${BACKEND_URL}`,
+            `[submitAppletAgentThunk] agentId=${agentId}, isAdmin=${isAdmin}, BACKEND_URL=${BACKEND_URL}`,
         );
 
         dispatch(initializeTask({
@@ -121,7 +117,7 @@ export const submitAppletAgentThunk = createAsyncThunk<
         );
 
         let response: Response;
-        const endpoint = `${BACKEND_URL}${ENDPOINTS.ai.agentStart(agentId)}`;
+        const endpoint = `${BACKEND_URL}${ENDPOINTS.ai.promptStart(agentId)}`;
 
         try {
             response = await fetch(endpoint, {

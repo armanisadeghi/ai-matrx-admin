@@ -99,7 +99,7 @@ type ThunkApi = { dispatch: AppDispatch; state: RootState };
 // ---------------------------------------------------------------------------
 
 /**
- * Called once at app load. Calls `build_agent_shortcut_menu(placement_types[])`.
+ * Called once at app load. Calls `agx_build_shortcut_menu(placement_types[])`.
  *
  * On completion:
  *   1. All shortcuts are upserted into the shortcut slice (system shortcuts,
@@ -127,7 +127,7 @@ export const buildAgentShortcutMenu = createAsyncThunk<
       ? arg.placementTypes
       : ["chat", "notes", "tasks", "general"];
 
-  const { data, error } = await supabase.rpc("build_agent_shortcut_menu", {
+  const { data, error } = await supabase.rpc("agx_build_shortcut_menu", {
     p_placement_types: placementTypes,
   });
 
@@ -248,7 +248,7 @@ export const fetchShortcutsForContext = createAsyncThunk<
     if (selectIsContextLoaded(getState(), contextKey)) return;
 
     const { data, error } = await supabase.rpc(
-      "get_agent_shortcuts_for_context",
+      "agx_get_shortcuts_for_context",
       {
         p_workspace_id: workspaceId ?? null,
         p_project_id: projectId ?? null,
@@ -338,7 +338,7 @@ export const fetchFullShortcut = createAsyncThunk<void, string, ThunkApi>(
     dispatch(setShortcutLoading({ id: shortcutId, loading: true }));
 
     const { data, error } = await supabase
-      .from("agent_shortcuts")
+      .from("agx_shortcut")
       .select("*")
       .eq("id", shortcutId)
       .single();
@@ -375,7 +375,7 @@ export const saveShortcut = createAsyncThunk<void, string, ThunkApi>(
     dispatch(setShortcutLoading({ id: shortcutId, loading: true }));
 
     const { error } = await supabase
-      .from("agent_shortcuts")
+      .from("agx_shortcut")
       .update(agentShortcutToUpdate(dirtyPartial))
       .eq("id", shortcutId);
 
@@ -413,7 +413,7 @@ export const saveShortcutField = createAsyncThunk<
     dispatch(setShortcutField({ id: shortcutId, field, value }));
 
     const { error } = await supabase
-      .from("agent_shortcuts")
+      .from("agx_shortcut")
       .update(
         agentShortcutToUpdate({ [field]: value } as Partial<AgentShortcut>),
       )
@@ -451,7 +451,7 @@ export const createShortcut = createAsyncThunk<
   };
 
   const { data, error } = await supabase
-    .from("agent_shortcuts")
+    .from("agx_shortcut")
     .insert(agentShortcutToInsert(draft))
     .select()
     .single();
@@ -470,7 +470,7 @@ export const deleteShortcut = createAsyncThunk<void, string, ThunkApi>(
   "agentShortcut/delete",
   async (shortcutId, { dispatch }) => {
     const { error } = await supabase
-      .from("agent_shortcuts")
+      .from("agx_shortcut")
       .delete()
       .eq("id", shortcutId);
 
@@ -498,7 +498,7 @@ export const fetchUserShortcuts = createAsyncThunk<
   void,
   ThunkApi
 >("agentShortcut/fetchUserShortcuts", async () => {
-  const { data, error } = await supabase.rpc("get_user_shortcuts");
+  const { data, error } = await supabase.rpc("agx_get_user_shortcuts");
 
   if (error) throw error;
 
@@ -506,7 +506,7 @@ export const fetchUserShortcuts = createAsyncThunk<
 });
 
 /**
- * Duplicates a shortcut via the `duplicate_shortcut` RPC.
+ * Duplicates a shortcut via the `agx_duplicate_shortcut` RPC.
  * The copy is personal (owned by current user, no hierarchy).
  * Agent reference is preserved. Keyboard shortcut is cleared. Label gets "(Copy)".
  * Returns the new shortcut id, and loads the copy into the slice.
@@ -514,7 +514,7 @@ export const fetchUserShortcuts = createAsyncThunk<
 export const duplicateShortcut = createAsyncThunk<string, string, ThunkApi>(
   "agentShortcut/duplicate",
   async (shortcutId, { dispatch }) => {
-    const { data, error } = await supabase.rpc("duplicate_shortcut", {
+    const { data, error } = await supabase.rpc("agx_duplicate_shortcut", {
       p_shortcut_id: shortcutId,
     });
 
@@ -555,10 +555,7 @@ export const createShortcutForAgent = createAsyncThunk<
         : null),
   };
 
-  const { data, error } = await supabase.rpc(
-    "create_shortcut_for_agent",
-    rpcParams,
-  );
+  const { data, error } = await supabase.rpc("agx_create_shortcut", rpcParams);
 
   if (error) throw error;
 

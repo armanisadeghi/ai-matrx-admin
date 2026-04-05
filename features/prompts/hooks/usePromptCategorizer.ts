@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useApiAuth } from '@/hooks/useApiAuth';
-import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
+import { selectResolvedBaseUrl } from '@/lib/redux/slices/apiConfigSlice';
 import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
 
 export interface CategorizationResult {
@@ -33,14 +33,12 @@ export function usePromptCategorizer(): UsePromptCategorizerReturn {
     const [error, setError] = useState<string | null>(null);
     const abortRef = useRef<AbortController | null>(null);
 
-    const { getHeaders, waitForAuth, isAdmin } = useApiAuth();
-    const useLocalhost = useSelector(selectIsUsingLocalhost);
+    const { getHeaders, waitForAuth } = useApiAuth();
+    const resolvedBaseUrl = useSelector(selectResolvedBaseUrl as (state: unknown) => string | undefined);
 
     const getBackendUrl = useCallback(() => {
-        return isAdmin && useLocalhost
-            ? BACKEND_URLS.localhost
-            : BACKEND_URLS.production;
-    }, [isAdmin, useLocalhost]);
+        return resolvedBaseUrl ?? BACKEND_URLS.production;
+    }, [resolvedBaseUrl]);
 
     const categorize = useCallback(async (promptId: string): Promise<CategorizationResult | null> => {
         abortRef.current?.abort();

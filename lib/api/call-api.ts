@@ -894,6 +894,9 @@ export function callApi<
 /** Body type for POST /ai/agents/{agent_id} */
 export type AgentStartBody = components["schemas"]["AgentStartRequest"];
 
+/** Body type for POST /ai/prompts/{prompt_id} */
+export type PromptStartBody = components["schemas"]["PromptStartRequest"];
+
 /** Body type for POST /ai/agents-blocks/{agent_id} */
 export type AgentBlocksStartBody =
   components["schemas"]["AgentBlocksStartRequest"];
@@ -1058,6 +1061,46 @@ export function callWarmApp(appId: string) {
     path: "/ai/apps/{app_id}/warm",
     method: "POST",
     pathParams: { app_id: appId },
+    stream: false,
+  });
+}
+
+// ─── Prompt: Start new conversation ──────────────────────────────────────────
+
+export interface CallPromptStartOptions {
+  promptId: string;
+  body: PromptStartBody;
+  signal?: AbortSignal;
+  scopeOverrides?: Partial<CallScope>;
+  onStreamStart?: (requestId: string | null, conversationId: string | null) => void;
+  onStreamEvent?: (event: StreamEvent) => void;
+  onStreamComplete?: (requestId: string | null, conversationId: string | null) => void;
+  onStreamError?: (error: ApiCallError) => void;
+  _testOverrides?: TestOverrides;
+}
+
+export function callPromptStart(options: CallPromptStartOptions) {
+  return callApi({
+    path: "/ai/prompts/{prompt_id}",
+    method: "POST",
+    pathParams: { prompt_id: options.promptId },
+    body: options.body,
+    stream: true,
+    signal: options.signal,
+    scopeOverrides: options.scopeOverrides,
+    onStreamStart: options.onStreamStart,
+    onStreamEvent: options.onStreamEvent,
+    onStreamComplete: options.onStreamComplete,
+    onStreamError: options.onStreamError,
+    _testOverrides: options._testOverrides,
+  });
+}
+
+export function callWarmPrompt(promptId: string) {
+  return callApi({
+    path: "/ai/prompts/{prompt_id}/warm",
+    method: "POST",
+    pathParams: { prompt_id: promptId },
     stream: false,
   });
 }

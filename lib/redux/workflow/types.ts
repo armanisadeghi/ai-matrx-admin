@@ -3,6 +3,7 @@
 import { UserDataReference } from "@/components/user-generated-table-data/tableReferences";
 import { BrokerMapEntry } from "../brokerSlice";
 import { Viewport } from "@xyflow/react";
+import type { Database } from "@/types/database.types";
 
 export type NodeInputType =
   | "unused"
@@ -130,34 +131,16 @@ export interface BrokerSourceConfig<
 }
 
 export interface WorkflowMetadata {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
-export interface Workflow {
-  id: string;
-  name: string;
-  description: string | null;
-  workflow_type: string | null;
-  inputs: InputMapping[] | null;
-  outputs: Output[] | null;
-  dependencies: Dependency[] | null;
-  sources: BrokerSourceConfig[] | null;
-  destinations: BrokerDestination[] | null;
-  actions: any | null; // TODO: Define proper type for workflow actions
-  category: string | null;
-  tags: string[] | null;
-  is_active: boolean | null;
-  is_deleted: boolean | null;
-  auto_execute: boolean | null;
-  metadata: WorkflowMetadata | null;
-  viewport: Viewport | null;
-  user_id: string | null;
-  version: number | null;
-  is_public: boolean | null;
-  public_read: boolean | null;
-  created_at: string | null;
-  updated_at: string | null;
-}
+export type Workflow = Database["public"]["Tables"]["workflow_data"]["Row"];
+
+export type WorkflowCreateInput =
+  Database["public"]["Tables"]["workflow_data"]["Insert"];
+
+export type WorkflowUpdateInput =
+  Database["public"]["Tables"]["workflow_data"]["Update"];
 
 export interface WorkflowState {
   entities: Record<string, Workflow>;
@@ -171,10 +154,3 @@ export interface WorkflowState {
   dataFetched: boolean;
 }
 
-export type WorkflowCreateInput = Omit<
-  Workflow,
-  "id" | "created_at" | "updated_at" | "user_id" | "version"
->;
-export type WorkflowUpdateInput = Partial<
-  Omit<Workflow, "id" | "created_at" | "updated_at" | "user_id" | "version">
->;

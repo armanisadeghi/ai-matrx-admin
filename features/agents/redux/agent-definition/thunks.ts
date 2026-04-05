@@ -23,8 +23,8 @@
  *   purgeAgentVersions           — delete old versions, keep N most recent
  *
  * RPC action thunks:
- *   duplicateAgent               — calls duplicate_agent(), loads copy into state
- *   promoteAgentVersion          — calls promote_agent_version(), reloads live row
+ *   duplicateAgent               — calls agx_duplicate_agent(), loads copy into state
+ *   promoteAgentVersion          — calls agx_promote_version(), reloads live row
  *   acceptAgentVersion           — accept latest for a shortcut/app/derived ref
  *   updateAgentFromSource        — reset derived agent to its source agent's data
  */
@@ -85,7 +85,7 @@ export const fetchAgentsList = createAsyncThunk<void, void, ThunkApi>(
   async (_, { dispatch }) => {
     dispatch(setAgentsStatus("loading"));
 
-    const { data, error } = await supabase.rpc("get_agents_list");
+    const { data, error } = await supabase.rpc("agx_get_list");
 
     if (error) {
       dispatch(setAgentsError(error.message));
@@ -131,7 +131,7 @@ export const fetchAgentsList = createAsyncThunk<void, void, ThunkApi>(
 
 /**
  * Fetches the full agent list for pickers and dropdowns.
- * Returns everything from get_agents_list() PLUS all active builtin agents.
+ * Returns everything from agx_get_list() PLUS all active builtin agents.
  * Builtins arrive with accessLevel = 'system' so the UI can group them separately.
  *
  * Use this for any picker/dropdown that needs the complete agent catalogue.
@@ -140,7 +140,7 @@ export const fetchAgentsList = createAsyncThunk<void, void, ThunkApi>(
 export const fetchAgentsListFull = createAsyncThunk<void, void, ThunkApi>(
   "agentDefinition/fetchListFull",
   async (_, { dispatch }) => {
-    const { data, error } = await supabase.rpc("get_agents_list_full");
+    const { data, error } = await supabase.rpc("agx_get_list_full");
 
     if (error) throw error;
 
@@ -195,7 +195,7 @@ export const fetchAgentExecutionMinimal = createAsyncThunk<
 
     dispatch(setAgentLoading({ id: agentId, loading: true }));
 
-    const { data, error } = await supabase.rpc("get_agent_execution_minimal", {
+    const { data, error } = await supabase.rpc("agx_get_execution_minimal", {
       p_agent_id: agentId,
     });
 
@@ -234,7 +234,7 @@ export const fetchAgentExecutionFull = createAsyncThunk<void, string, ThunkApi>(
 
     dispatch(setAgentLoading({ id: agentId, loading: true }));
 
-    const { data, error } = await supabase.rpc("get_agent_execution_full", {
+    const { data, error } = await supabase.rpc("agx_get_execution_full", {
       p_agent_id: agentId,
     });
 
@@ -275,7 +275,7 @@ export const fetchFullAgent = createAsyncThunk<void, string, ThunkApi>(
     dispatch(setAgentLoading({ id: agentId, loading: true }));
 
     const { data, error } = await supabase
-      .from("agents")
+      .from("agx_agent")
       .select("*")
       .eq("id", agentId)
       .single();
@@ -303,7 +303,7 @@ export interface AgentVersionHistoryItem {
   change_note: string | null;
 }
 type _Check_AgentVersionHistoryItem =
-  AgentVersionHistoryItem extends DbRpcRow<"get_agent_version_history">
+  AgentVersionHistoryItem extends DbRpcRow<"agx_get_version_history">
     ? true
     : false;
 declare const _agentVersionHistoryItem: _Check_AgentVersionHistoryItem;
@@ -331,7 +331,7 @@ export interface AgentVersionSnapshot {
   change_note: string | null;
 }
 type _Check_AgentVersionSnapshot =
-  AgentVersionSnapshot extends DbRpcRow<"get_agent_version_snapshot">
+  AgentVersionSnapshot extends DbRpcRow<"agx_get_version_snapshot">
     ? true
     : false;
 declare const _agentVersionSnapshot: _Check_AgentVersionSnapshot;
@@ -348,7 +348,7 @@ export const fetchAgentVersionHistory = createAsyncThunk<
 >(
   "agentDefinition/fetchVersionHistory",
   async ({ agentId, limit = 50, offset = 0 }) => {
-    const { data, error } = await supabase.rpc("get_agent_version_history", {
+    const { data, error } = await supabase.rpc("agx_get_version_history", {
       p_agent_id: agentId,
       p_limit: limit,
       p_offset: offset,
@@ -372,7 +372,7 @@ export const fetchAgentVersionSnapshot = createAsyncThunk<
 >(
   "agentDefinition/fetchVersionSnapshot",
   async ({ agentId, versionNumber }, { dispatch }) => {
-    const { data, error } = await supabase.rpc("get_agent_version_snapshot", {
+    const { data, error } = await supabase.rpc("agx_get_version_snapshot", {
       p_agent_id: agentId,
       p_version_number: versionNumber,
     });
@@ -461,7 +461,7 @@ export const saveAgentField = createAsyncThunk<
     dispatch(setAgentField({ id: agentId, field, value }));
 
     const { error } = await supabase
-      .from("agents")
+      .from("agx_agent")
       .update(
         agentDefinitionToUpdate({ [field]: value } as Partial<AgentDefinition>),
       )
@@ -500,7 +500,7 @@ export const saveAgent = createAsyncThunk<void, string, ThunkApi>(
     dispatch(setAgentLoading({ id: agentId, loading: true }));
 
     const { error } = await supabase
-      .from("agents")
+      .from("agx_agent")
       .update(agentDefinitionToUpdate(dirtyPartial))
       .eq("id", agentId);
 
@@ -586,7 +586,7 @@ export const createAgent = createAsyncThunk<
   };
 
   const { data, error } = await supabase
-    .from("agents")
+    .from("agx_agent")
     .insert(agentDefinitionToInsert(draft))
     .select()
     .single();
@@ -604,7 +604,7 @@ export const createAgent = createAsyncThunk<
 export const deleteAgent = createAsyncThunk<void, string, ThunkApi>(
   "agentDefinition/delete",
   async (agentId, { dispatch }) => {
-    const { error } = await supabase.from("agents").delete().eq("id", agentId);
+    const { error } = await supabase.from("agx_agent").delete().eq("id", agentId);
 
     if (error) throw error;
 
@@ -617,13 +617,13 @@ export const deleteAgent = createAsyncThunk<void, string, ThunkApi>(
 // ---------------------------------------------------------------------------
 
 /**
- * Duplicates an agent via the `duplicate_agent` RPC and loads the copy into state.
+ * Duplicates an agent via the `agx_duplicate_agent` RPC and loads the copy into state.
  * Returns the new agent's id.
  */
 export const duplicateAgent = createAsyncThunk<string, string, ThunkApi>(
   "agentDefinition/duplicate",
   async (agentId, { dispatch }) => {
-    const { data, error } = await supabase.rpc("duplicate_agent", {
+    const { data, error } = await supabase.rpc("agx_duplicate_agent", {
       p_agent_id: agentId,
     });
 
@@ -636,7 +636,7 @@ export const duplicateAgent = createAsyncThunk<string, string, ThunkApi>(
 );
 
 /**
- * Promotes a past version to be the live agent via `promote_agent_version`.
+ * Promotes a past version to be the live agent via `agx_promote_version`.
  * Reloads the live agents row after promotion so state reflects the promoted data.
  */
 export const promoteAgentVersion = createAsyncThunk<
@@ -646,7 +646,7 @@ export const promoteAgentVersion = createAsyncThunk<
 >(
   "agentDefinition/promoteVersion",
   async ({ agentId, versionNumber }, { dispatch }) => {
-    const { data, error } = await supabase.rpc("promote_agent_version", {
+    const { data, error } = await supabase.rpc("agx_promote_version", {
       p_agent_id: agentId,
       p_version_number: versionNumber,
     });
@@ -691,7 +691,7 @@ export interface SharedAgentForChat {
 /**
  * Fetches all agents shared with the current user (not owned by them).
  *
- * @deprecated get_agents_list() now returns both owned and shared agents in one
+ * @deprecated agx_get_list() now returns both owned and shared agents in one
  * call with full access metadata. Prefer fetchAgentsList() instead.
  * This thunk is kept for cases where only the shared subset is needed
  * (e.g. a targeted refresh of the "Shared with me" tab without re-fetching owned agents).
@@ -701,7 +701,7 @@ export const fetchSharedAgents = createAsyncThunk<
   void,
   ThunkApi
 >("agentDefinition/fetchShared", async (_, { dispatch }) => {
-  const { data, error } = await supabase.rpc("get_agents_shared_with_me");
+  const { data, error } = await supabase.rpc("agx_get_shared_with_me");
 
   if (error) throw error;
 
@@ -740,7 +740,7 @@ export const fetchSharedAgentsForChat = createAsyncThunk<
   void,
   ThunkApi
 >("agentDefinition/fetchSharedForChat", async () => {
-  const { data, error } = await supabase.rpc("get_shared_agents_for_chat");
+  const { data, error } = await supabase.rpc("agx_get_shared_for_chat");
 
   if (error) throw error;
 
@@ -760,7 +760,7 @@ export interface AgentAccessLevel {
   is_owner: boolean;
 }
 type _Check_AgentAccessLevel =
-  AgentAccessLevel extends DbRpcRow<"get_agent_access_level"> ? true : false;
+  AgentAccessLevel extends DbRpcRow<"agx_get_access_level"> ? true : false;
 declare const _agentAccessLevel: _Check_AgentAccessLevel;
 true satisfies typeof _agentAccessLevel;
 
@@ -776,7 +776,7 @@ export const fetchAgentAccessLevel = createAsyncThunk<
   string,
   ThunkApi
 >("agentDefinition/fetchAccessLevel", async (agentId, { dispatch }) => {
-  const { data, error } = await supabase.rpc("get_agent_access_level", {
+  const { data, error } = await supabase.rpc("agx_get_access_level", {
     p_agent_id: agentId,
   });
 
@@ -814,7 +814,7 @@ export const checkAgentDrift = createAsyncThunk<
   ThunkApi
 >("agentDefinition/checkDrift", async (agentId) => {
   const params = agentId ? { p_agent_id: agentId } : {};
-  const { data, error } = await supabase.rpc("check_agent_drift", params);
+  const { data, error } = await supabase.rpc("agx_check_drift", params);
 
   if (error) throw error;
 
@@ -831,7 +831,7 @@ export const checkAgentReferences = createAsyncThunk<
   string,
   ThunkApi
 >("agentDefinition/checkReferences", async (agentId) => {
-  const { data, error } = await supabase.rpc("check_agent_references", {
+  const { data, error } = await supabase.rpc("agx_check_references", {
     p_agent_id: agentId,
   });
 
@@ -850,7 +850,7 @@ export interface PurgeVersionsResult {
   deleted_count?: number;
   kept_count?: number;
 }
-// purge_agent_versions returns Json directly — no DB row schema to check.
+// agx_purge_versions returns Json directly — no DB row schema to check.
 
 /**
  * Deletes old versions for an agent, keeping the N most recent.
@@ -869,7 +869,7 @@ export const purgeAgentVersions = createAsyncThunk<
   };
   if (keepCount !== undefined) params.p_keep_count = keepCount;
 
-  const { data, error } = await supabase.rpc("purge_agent_versions", params);
+  const { data, error } = await supabase.rpc("agx_purge_versions", params);
 
   if (error) throw error;
 
@@ -892,7 +892,7 @@ export const acceptAgentVersion = createAsyncThunk<
   { type: "shortcut" | "app" | "derived_agent"; refId: string },
   ThunkApi
 >("agentDefinition/acceptVersion", async ({ type, refId }) => {
-  const { data, error } = await supabase.rpc("accept_agent_version", {
+  const { data, error } = await supabase.rpc("agx_accept_version", {
     p_reference_type: type,
     p_reference_id: refId,
   });
@@ -968,7 +968,7 @@ export const updateAgentFromSource = createAsyncThunk<
   string,
   ThunkApi
 >("agentDefinition/updateFromSource", async (agentId, { dispatch }) => {
-  const { data, error } = await supabase.rpc("update_agent_from_source", {
+  const { data, error } = await supabase.rpc("agx_update_from_source", {
     p_agent_id: agentId,
   });
 

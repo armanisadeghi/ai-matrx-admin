@@ -1,10 +1,18 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DbFunctionNode } from '@/features/workflows/types';
-import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { DbFunctionNode } from "@/features/workflows/types";
+import { EnrichedBroker } from "@/features/workflows/utils/data-flow-manager";
+import { asWorkflowDependencies } from "@/features/workflows/utils/workflow-json-fields";
 
 interface DependenciesSectionProps {
   nodeData: DbFunctionNode;
@@ -15,8 +23,11 @@ interface DependenciesSectionProps {
 /**
  * DependenciesSection - Displays the dependencies table
  */
-const DependenciesSection: React.FC<DependenciesSectionProps> = ({ nodeData, enrichedBrokers }) => {
-  const dependencies = nodeData.additional_dependencies || [];
+const DependenciesSection: React.FC<DependenciesSectionProps> = ({
+  nodeData,
+  enrichedBrokers,
+}) => {
+  const dependencies = asWorkflowDependencies(nodeData.additional_dependencies);
 
   // Don't render if no dependencies
   if (dependencies.length === 0) {
@@ -37,8 +48,12 @@ const DependenciesSection: React.FC<DependenciesSectionProps> = ({ nodeData, enr
           <TableBody>
             {dependencies.map((dependency, index) => (
               <TableRow key={index} className="text-xs">
-                <TableCell className="py-2 font-mono">{dependency.source_broker_id}</TableCell>
-                <TableCell className="py-2 font-mono">{dependency.target_broker_id}</TableCell>
+                <TableCell className="py-2 font-mono">
+                  {dependency.source_broker_id}
+                </TableCell>
+                <TableCell className="py-2 font-mono">
+                  {dependency.target_broker_id}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -48,4 +63,4 @@ const DependenciesSection: React.FC<DependenciesSectionProps> = ({ nodeData, enr
   );
 };
 
-export default DependenciesSection; 
+export default DependenciesSection;

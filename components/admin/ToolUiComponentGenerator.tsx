@@ -66,7 +66,8 @@ interface GeneratorProps {
     tags?: string[];
     icon?: string;
     is_active?: boolean;
-    version?: string;
+    /** Matches `tools.version` in the database (integer). */
+    version?: number;
   }>;
   onComplete?: () => void;
   /** When provided, skips step 1 and pre-selects this tool automatically */

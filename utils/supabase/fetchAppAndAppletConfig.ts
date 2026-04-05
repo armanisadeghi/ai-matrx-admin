@@ -6,7 +6,10 @@ import {
   CustomAppConfig,
   CustomAppletConfig,
   AppLayoutOptions,
+  AppletLayoutOption,
+  AppletContainer,
 } from "@/types/customAppTypes";
+import type { BrokerMapping } from "@/types/customAppTypes";
 
 /** Normalized `fetch_app_and_applet_config` RPC payload (DB returns `Json`). */
 export interface AppAndAppletRpcPayload {
@@ -129,15 +132,17 @@ export async function fetchAppletBySlug(
     name: data.name,
     description: data.description,
     slug: data.slug,
+    userId: data.user_id,
+    publicRead: data.public_read,
     appletIcon: data.applet_icon,
     appletSubmitText: data.applet_submit_text,
     creator: data.creator,
     primaryColor: data.primary_color,
     accentColor: data.accent_color,
-    layoutType: data.layout_type,
-    containers: data.containers,
+    layoutType: data.layout_type as AppletLayoutOption,
+    containers: data.containers as AppletContainer[],
     dataSourceConfig: data.data_source_config,
-    brokerMap: data.broker_map,
+    brokerMap: data.broker_map as BrokerMapping[],
     resultComponentConfig: data.result_component_config,
     nextStepConfig: data.next_step_config,
     compiledRecipeId: data.compiled_recipe_id,

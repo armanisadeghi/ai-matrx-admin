@@ -4,6 +4,8 @@ import {
   DbFunctionNode,
   FunctionNode,
   FunctionNodeData,
+  WorkflowNodeInsert,
+  WorkflowNodePersistShape,
 } from "@/features/workflows/types/functionNodeTypes";
 import { ReactFlowUIMetadata } from "@/features/workflows/types";
 
@@ -36,8 +38,8 @@ const DEFAULT_UI_DATA: Partial<ReactFlowUIMetadata> = {
 
 export function reactFlowToDatabase(
   reactFlowNode: FunctionNode,
-  additionalDbFields?: Partial<DbFunctionNode>,
-): DbFunctionNode {
+  additionalDbFields?: Partial<WorkflowNodeInsert>,
+): WorkflowNodeInsert {
   const workflowData = reactFlowNode.data;
 
   // Build metadata object with all ReactFlow UI fields
@@ -68,7 +70,7 @@ export function reactFlowToDatabase(
   ) as ReactFlowUIMetadata;
 
   // Build database storage node - omit created_at and updated_at, let database handle them
-  const dbNode: DbFunctionNode = {
+  const dbNode: WorkflowNodeInsert = {
     id: reactFlowNode.id,
     user_id: workflowData.user_id || null,
     workflow_id: workflowData.workflow_id || null,
@@ -161,14 +163,14 @@ export function extractExecutionData(
  */
 export function batchReactFlowToDatabase(
   reactFlowNodes: FunctionNode[],
-  commonDbFields?: Partial<DbFunctionNode>,
-): DbFunctionNode[] {
+  commonDbFields?: Partial<WorkflowNodeInsert>,
+): WorkflowNodeInsert[] {
   return reactFlowNodes.map((node) =>
     reactFlowToDatabase(node, commonDbFields),
   );
 }
 
-export function databaseToReactFlow(dbNode: DbFunctionNode): FunctionNode {
+export function databaseToReactFlow(dbNode: WorkflowNodePersistShape): FunctionNode {
   const nodeData = (dbNode.ui_node_data || {}) as Partial<ReactFlowUIMetadata>;
 
   const additionalDeps = dbNode.additional_dependencies as

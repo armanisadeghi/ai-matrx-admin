@@ -1,5 +1,6 @@
 import {
   DbFunctionNode,
+  WorkflowNodePersistShape,
   ArgumentOverride,
   ArgumentMapping,
   WorkflowDependency,
@@ -64,7 +65,7 @@ export function getNormalizedRegisteredFunctionNode(
   return node;
 }
 
-export function validateNodeUpdate(node: DbFunctionNode): boolean {
+export function validateNodeUpdate(node: WorkflowNodePersistShape): boolean {
   // Ensure function_id exists and is valid
   if (!node.function_id) {
     throw new Error("Node must have a valid function_id");

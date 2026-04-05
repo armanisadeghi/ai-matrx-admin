@@ -26,7 +26,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { formatText } from "@/utils/text/text-case-converter";
 import { mapIcon } from "@/utils/icons/icon-mapper";
 import { ToolTestSamplesViewer } from "@/components/admin/ToolTestSamplesViewer";
-import type { Database } from "@/types/database.types";
+import type { Database, Json } from "@/types/database.types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -34,6 +34,14 @@ type ToolRow = Database["public"]["Tables"]["tools"]["Row"];
 
 interface Props {
   tool: ToolRow;
+}
+
+function toolAnnotationsToArray(
+  annotations: Json | null,
+): unknown[] | undefined {
+  if (annotations === null) return undefined;
+  if (!Array.isArray(annotations)) return undefined;
+  return annotations;
 }
 
 // ─── JSON Display ─────────────────────────────────────────────────────────────
@@ -268,7 +276,9 @@ export function ToolViewPage({ tool }: Props) {
 
   const hasOutputSchema =
     tool.output_schema && Object.keys(tool.output_schema).length > 0;
-  const hasAnnotations = tool.annotations && tool.annotations.length > 0;
+  const annotationList = toolAnnotationsToArray(tool.annotations);
+  const hasAnnotations =
+    annotationList !== undefined && annotationList.length > 0;
 
   return (
     <div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden">
@@ -386,7 +396,7 @@ export function ToolViewPage({ tool }: Props) {
                     variant="secondary"
                     className="text-[10px] h-4 px-1 ml-0.5"
                   >
-                    {(tool.annotations as unknown[]).length}
+                    {annotationList.length}
                   </Badge>
                 )}
               </TabsTrigger>
@@ -417,7 +427,7 @@ export function ToolViewPage({ tool }: Props) {
             </TabsContent>
 
             <TabsContent value="annotations" className="p-6 m-0 h-full">
-              <AnnotationsTab annotations={tool.annotations} />
+              <AnnotationsTab annotations={annotationList} />
             </TabsContent>
 
             <TabsContent

@@ -317,6 +317,85 @@ export interface TokenUsage {
   estimated_cost?: number;
 }
 
+/** Narrow DB `Json` (unknown) token_usage payloads for UI. */
+export function tokenUsageFromJson(
+  raw: Json | null | undefined,
+): TokenUsage | null {
+  if (raw == null || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const o = raw as Record<string, unknown>;
+  const out: TokenUsage = {};
+  if (typeof o.input_tokens === "number") out.input_tokens = o.input_tokens;
+  if (typeof o.output_tokens === "number") out.output_tokens = o.output_tokens;
+  if (typeof o.total_tokens === "number") out.total_tokens = o.total_tokens;
+  if (typeof o.model === "string") out.model = o.model;
+  if (typeof o.estimated_cost === "number")
+    out.estimated_cost = o.estimated_cost;
+  return Object.keys(out).length > 0 ? out : null;
+}
+
+/** `rs_template.keyword_templates` — expect string[] in JSONB. */
+export function keywordTemplatesFromJson(
+  raw: Json | null | undefined,
+): string[] {
+  if (raw == null || !Array.isArray(raw)) return [];
+  return raw.filter((item): item is string => typeof item === "string");
+}
+
+/** `extra_snippets` JSONB — string snippets for display. */
+export function stringArrayFromJson(raw: Json | null | undefined): string[] {
+  return keywordTemplatesFromJson(raw);
+}
+
+/** True length for JSONB columns stored as arrays (e.g. extracted_links). */
+export function jsonArrayLength(raw: Json | null | undefined): number {
+  return Array.isArray(raw) ? raw.length : 0;
+}
+
+const AUTONOMY_LEVELS = new Set<string>(["auto", "semi", "manual"]);
+const SEARCH_PROVIDERS = new Set<string>(["brave", "google"]);
+const TOPIC_STATUSES = new Set<string>([
+  "draft",
+  "searching",
+  "scraping",
+  "curating",
+  "analyzing",
+  "complete",
+]);
+
+export function autonomyLevelFromDb(value: string): AutonomyLevel {
+  return AUTONOMY_LEVELS.has(value) ? (value as AutonomyLevel) : "manual";
+}
+
+export function searchProviderFromDb(value: string): SearchProvider {
+  return SEARCH_PROVIDERS.has(value) ? (value as SearchProvider) : "brave";
+}
+
+export function topicStatusFromDb(value: string): TopicStatus {
+  return TOPIC_STATUSES.has(value) ? (value as TopicStatus) : "draft";
+}
+
+const SOURCE_TYPES_SET = new Set<string>([
+  "web",
+  "youtube",
+  "pdf",
+  "file",
+  "manual",
+]);
+const SOURCE_ORIGINS_SET = new Set<string>([
+  "search",
+  "manual",
+  "link_extraction",
+  "file_upload",
+]);
+
+export function sourceTypeFromDb(value: string): SourceType {
+  return SOURCE_TYPES_SET.has(value) ? (value as SourceType) : "web";
+}
+
+export function sourceOriginFromDb(value: string): SourceOrigin {
+  return SOURCE_ORIGINS_SET.has(value) ? (value as SourceOrigin) : "search";
+}
+
 export interface CostBreakdown {
   category: string;
   calls: number;

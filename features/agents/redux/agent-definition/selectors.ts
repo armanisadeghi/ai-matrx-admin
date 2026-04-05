@@ -173,7 +173,7 @@ export const selectAgentCanExecute = createSelector(
  * Minimal execution payload.
  * Works for both live agents (isVersion = false) and version snapshots (isVersion = true).
  * The backend uses resolvedId + isVersion to know which table to query.
- * isReady: false → thunk must call get_agent_execution_minimal first.
+ * isReady: false → thunk must call fetchAgentExecutionMinimal (agx_get_execution_minimal) first.
  */
 export const selectAgentExecutionPayload = createSelector(
   [selectAgentById],
@@ -203,7 +203,7 @@ export const selectAgentExecutionPayload = createSelector(
 /**
  * Custom execution payload — adds settings, tools, model for pre-run overrides.
  * Works for both live agents and version snapshots.
- * isReady: false → thunk must call get_agent_execution_full first.
+ * isReady: false → thunk must call fetchAgentExecutionFull (agx_get_execution_full) first.
  */
 export const selectAgentCustomExecutionPayload = createSelector(
   [selectAgentById],

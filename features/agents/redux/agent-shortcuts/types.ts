@@ -59,7 +59,7 @@ export interface AgentShortcut {
 // ---------------------------------------------------------------------------
 
 /**
- * Returned by `get_agent_shortcuts_initial()` and `get_agent_shortcuts_for_context()`.
+ * Returned by `agx_get_shortcuts_initial()` and `agx_get_shortcuts_for_context()`.
  *
  * The RPC resolves the version reference and returns:
  *   resolved_id  — ONE uuid to pass to the backend for execution
@@ -111,14 +111,14 @@ export interface AgentShortcutInitialRow {
   agent_context_slots: ContextSlot[] | null;
 }
 type _CheckAgentShortcutInitialRow =
-  AgentShortcutInitialRow extends DbRpcRow<"get_agent_shortcuts_initial">
+  AgentShortcutInitialRow extends DbRpcRow<"agx_get_shortcuts_initial">
     ? true
     : false;
 declare const _agentShortcutInitialRow: _CheckAgentShortcutInitialRow;
 true satisfies typeof _agentShortcutInitialRow;
 
 /**
- * Returned by `get_agent_shortcuts_for_context(workspace_id?, project_id?, task_id?)`.
+ * Returned by `agx_get_shortcuts_for_context(workspace_id?, project_id?, task_id?)`.
  * Extends initial with hierarchy ids. Overlapping shortcut ids overwrite phase-1 data.
  */
 export interface AgentShortcutContextRow extends AgentShortcutInitialRow {
@@ -127,21 +127,21 @@ export interface AgentShortcutContextRow extends AgentShortcutInitialRow {
   shortcut_task_id: string | null;
 }
 type _CheckAgentShortcutContextRow =
-  AgentShortcutContextRow extends DbRpcRow<"get_agent_shortcuts_for_context">
+  AgentShortcutContextRow extends DbRpcRow<"agx_get_shortcuts_for_context">
     ? true
     : false;
 declare const _agentShortcutContextRow: _CheckAgentShortcutContextRow;
 true satisfies typeof _agentShortcutContextRow;
 
 /**
- * Menu item shape from `build_agent_shortcut_menu(placement_types[])`.
+ * Menu item shape from `agx_build_shortcut_menu(placement_types[])`.
  */
 export interface AgentShortcutMenuResult {
   placement_type: string;
   menu_data: AgentShortcutCategory[];
 }
 type _CheckAgentShortcutMenuResult =
-  AgentShortcutMenuResult extends DbRpcRow<"build_agent_shortcut_menu">
+  AgentShortcutMenuResult extends DbRpcRow<"agx_build_shortcut_menu">
     ? true
     : false;
 declare const _agentShortcutMenuResult: _CheckAgentShortcutMenuResult;
@@ -189,11 +189,11 @@ export interface AgentShortcutMenuItem {
 }
 
 // ---------------------------------------------------------------------------
-// RPC — get_user_shortcuts()
+// RPC — agx_get_user_shortcuts()
 // ---------------------------------------------------------------------------
 
 /**
- * Returned by `get_user_shortcuts()`.
+ * Returned by `agx_get_user_shortcuts()`.
  * All shortcuts the current user owns or can admin, across all scopes.
  * Used by the management page to display and group shortcuts.
  */
@@ -246,11 +246,11 @@ export interface UserShortcutItem {
 }
 
 // ---------------------------------------------------------------------------
-// RPC — create_shortcut_for_agent(...)
+// RPC — agx_create_shortcut(...)
 // ---------------------------------------------------------------------------
 
 /**
- * Input for `create_shortcut_for_agent(...)`.
+ * Input for `agx_create_shortcut(...)`.
  * Quick-create from the agent page or a picker.
  * Automatically pins to the agent's current version unless use_latest = true.
  * Returns the new shortcut UUID.

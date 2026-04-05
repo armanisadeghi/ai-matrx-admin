@@ -1,59 +1,54 @@
 import { defaultTableRules } from "@/features/applet/constants/field-constants";
 import { FieldBuilder } from "@/lib/redux/app-builder/types";
+import type { Json } from "@/types/database.types";
 import { ReactNode } from "react";
 
+export type ComponentType =
+  | "input"
+  | "textarea"
+  | "buttonSelection"
+  | "buttonColumn"
+  | "draggableTable"
+  | "draggableEditableTable"
+  | "dragEditModifyTable"
+  | "dragTableRowAndColumn"
+  | "select"
+  | "multiselect"
+  | "radio"
+  | "checkbox"
+  | "slider"
+  | "number"
+  | "date"
+  | "switch"
+  | "rangeSlider"
+  | "numberInput"
+  | "numberPicker"
+  | "jsonField"
+  | "fileUpload"
+  | "searchableSelect"
+  | "directMultiSelect"
+  | "multiDate"
+  | "simpleNumber"
+  | "sortable"
+  | "tagInput"
+  | "dependentDropdown"
+  | "addressBlock"
+  | "starRating"
+  | "phoneNumber"
+  | "stepperNumber"
+  | "multiSearchableSelect"
+  | "conceptBrokerOptions";
 
-export type ComponentType = 
-  | 'input' 
-  | 'textarea' 
-  | 'buttonSelection'
-  | 'buttonColumn'
-  | 'draggableTable'
-  | 'draggableEditableTable'
-  | 'dragEditModifyTable'
-  | 'dragTableRowAndColumn'
-
-  | 'select' 
-  | 'multiselect' 
-  | 'radio' 
-  | 'checkbox' 
-  | 'slider' 
-  | 'number' 
-  | 'date'
-  | 'switch'
-  | 'rangeSlider'
-  | 'numberInput'
-  | 'numberPicker'
-  | 'jsonField'
-  | 'fileUpload'
-  | 'searchableSelect'
-  | 'directMultiSelect'
-  | 'multiDate'
-  | 'simpleNumber'
-  | 'sortable'
-  | 'tagInput'
-  | 'dependentDropdown'
-  | 'addressBlock'
-  | 'starRating'
-  | 'phoneNumber'
-  | 'stepperNumber'
-  | 'multiSearchableSelect'
-  | 'conceptBrokerOptions'
-
-
-
-
-  export interface TableRules {
-    canAddRows?: boolean;
-    canDeleteRows?: boolean;
-    canAddColumns?: boolean;
-    canDeleteColumns?: boolean;
-    canEditCells?: boolean;
-    canRenameColumns?: boolean; // For column headers
-    canSortRows?: boolean;
-    canSortColumns?: boolean;
+export interface TableRules {
+  canAddRows?: boolean;
+  canDeleteRows?: boolean;
+  canAddColumns?: boolean;
+  canDeleteColumns?: boolean;
+  canEditCells?: boolean;
+  canRenameColumns?: boolean; // For column headers
+  canSortRows?: boolean;
+  canSortColumns?: boolean;
 }
-
 
 export interface FieldOption {
   id: string; // Typically used for the value of the option.
@@ -64,11 +59,8 @@ export interface FieldOption {
   parentId?: string; // Used to create a hierarchy of options.
   metadata?: any; // Used to store any additional data for the option.
   order?: number; // Used to sort the options.
-  [key: string]: any;       // Extensibility for future needs
+  [key: string]: any; // Extensibility for future needs
 }
-
-
-
 
 export interface FieldOptionsRuntime extends FieldOption {
   isSelected: boolean; // Used to determine if the option is selected.
@@ -129,7 +121,6 @@ export type AppletContainer = {
   fields: FieldDefinition[];
 };
 
-
 export interface WorkflowSourceConfig {
   sourceType: "workflow";
   id: string;
@@ -180,10 +171,22 @@ export interface RecipeSourceConfig {
 }
 
 export interface AppletSourceConfig {
-  sourceType?: "recipe" | "workflow" | "api" | "database" | "prompt" | "other" | string;
-  config?: RecipeSourceConfig | WorkflowSourceConfig | ApiSourceConfig | DatabaseSourceConfig | PromptSourceConfig | OtherSourceConfig;
+  sourceType?:
+    | "recipe"
+    | "workflow"
+    | "api"
+    | "database"
+    | "prompt"
+    | "other"
+    | string;
+  config?:
+    | RecipeSourceConfig
+    | WorkflowSourceConfig
+    | ApiSourceConfig
+    | DatabaseSourceConfig
+    | PromptSourceConfig
+    | OtherSourceConfig;
 }
-
 
 export interface Broker {
   id: string;
@@ -200,49 +203,45 @@ export interface BrokerMapping {
   brokerId: string;
 }
 
-
 export type AppletLayoutOption =
-    | "horizontal"
-    | "vertical"
-    | "stepper"
-    | "flat"
-    | "open"
-    | "oneColumn"
-    | "twoColumn"
-    | "threeColumn"
-    | "fourColumn"
-    | "tabs"
-    | "accordion"
-    | "minimalist"
-    | "floatingCard"
-    | "sidebar"
-    | "carousel"
-    | "cardStack"
-    | "contextual"
-    | "chat"
-    | "mapBased"
-    | "fullWidthSidebar"
-    | "stepper-field"
-    | "flat-accordion";
+  | "horizontal"
+  | "vertical"
+  | "stepper"
+  | "flat"
+  | "open"
+  | "oneColumn"
+  | "twoColumn"
+  | "threeColumn"
+  | "fourColumn"
+  | "tabs"
+  | "accordion"
+  | "minimalist"
+  | "floatingCard"
+  | "sidebar"
+  | "carousel"
+  | "cardStack"
+  | "contextual"
+  | "chat"
+  | "mapBased"
+  | "fullWidthSidebar"
+  | "stepper-field"
+  | "flat-accordion";
 
+export type AppLayoutOptions =
+  | "tabbedApplets"
+  | "singleDropdown"
+  | "multiDropdown"
+  | "singleDropdownWithSearch"
+  | "icons";
 
-export type AppLayoutOptions = "tabbedApplets" | "singleDropdown" | "multiDropdown" | "singleDropdownWithSearch" | "icons";
-
-export type KnownMethod = "renderChat" | "changeApplet" | "renderModal" | "renderSampleApplet" | "none";
+export type KnownMethod =
+  | "renderChat"
+  | "changeApplet"
+  | "renderModal"
+  | "renderSampleApplet"
+  | "none";
 
 export interface HeaderExtraButtonsConfig {
-    label: string;
-    icon?: ReactNode;
-    actionType?: "button" | "link" | "redux" | "none";
-    onClick?: () => void;
-    route?: string;
-    reduxAction?: string;
-    knownMethod?: KnownMethod;
-}
-
-
-
-export type CustomActionButton = {
   label: string;
   icon?: ReactNode;
   actionType?: "button" | "link" | "redux" | "none";
@@ -252,13 +251,21 @@ export type CustomActionButton = {
   knownMethod?: KnownMethod;
 }
 
+export type CustomActionButton = {
+  label: string;
+  icon?: ReactNode;
+  actionType?: "button" | "link" | "redux" | "none";
+  onClick?: () => void;
+  route?: string;
+  reduxAction?: string;
+  knownMethod?: KnownMethod;
+};
 
 export type AppletListItemConfig = {
   appletId: string;
   label: string;
   slug: string;
-}
-
+};
 
 export type CustomAppConfig = {
   id?: string;
@@ -287,6 +294,10 @@ export type CustomAppletConfig = {
   name: string;
   description?: string;
   slug: string;
+  /** From `custom_applet_configs.user_id` when loaded via `fetchAppletBySlug`. */
+  userId?: string | null;
+  /** From `custom_applet_configs.public_read` when loaded via `fetchAppletBySlug`. */
+  publicRead?: boolean | null;
   appletIcon?: string;
   appletSubmitText?: string;
   creator?: string;
@@ -295,6 +306,7 @@ export type CustomAppletConfig = {
   layoutType?: AppletLayoutOption;
   containers?: AppletContainer[];
   dataSourceConfig?: AppletSourceConfig;
+  dataDestinationConfig?: Json | null;
   resultComponentConfig?: any;
   nextStepConfig?: any;
   compiledRecipeId?: string;
@@ -302,57 +314,57 @@ export type CustomAppletConfig = {
   imageUrl?: string;
   appId?: string;
   brokerMap?: BrokerMapping[];
-  overviewLabel?: string;  // "This will replace the message for Minimalist Layout as well as show after submission if things are put together. (eg. What are you looking for?)"
+  overviewLabel?: string; // "This will replace the message for Minimalist Layout as well as show after submission if things are put together. (eg. What are you looking for?)"
 };
 
-
-
-export function normalizeFieldDefinition(field: Partial<FieldDefinition> | Partial<FieldBuilder>): FieldDefinition {
-  const componentType = field.component || 'textarea';
+export function normalizeFieldDefinition(
+  field: Partial<FieldDefinition> | Partial<FieldBuilder>,
+): FieldDefinition {
+  const componentType = field.component || "textarea";
   const defaultComponentProps: ComponentProps = {
     min: 0,
     max: 100,
     step: 1,
     rows: 3,
-    minDate: '',
-    maxDate: '',
-    onLabel: 'Yes',
-    offLabel: 'No',
+    minDate: "",
+    maxDate: "",
+    onLabel: "Yes",
+    offLabel: "No",
     multiSelect: false,
     maxItems: undefined,
     minItems: 0,
     gridCols: "grid-cols-1",
-    autoComplete: 'off',
-    direction: 'vertical',
+    autoComplete: "off",
+    direction: "vertical",
     customContent: undefined,
     showSelectAll: false,
-    width: 'w-full',
-    valuePrefix: '',
-    valueSuffix: '',
+    width: "w-full",
+    valuePrefix: "",
+    valueSuffix: "",
     maxLength: undefined,
     spellCheck: false,
-    tableRules: defaultTableRules
+    tableRules: defaultTableRules,
   };
-  
+
   const mergedComponentProps = {
     ...defaultComponentProps,
-    ...(field.componentProps || {})
+    ...(field.componentProps || {}),
   };
-  
+
   return {
-    id: field.id || 'temp-id',
-    label: field.label || 'Untitled Field',
-    description: field.description || '',
-    helpText: field.helpText || '',
-    group: field.group || 'default',
-    iconName: field.iconName || '',
+    id: field.id || "temp-id",
+    label: field.label || "Untitled Field",
+    description: field.description || "",
+    helpText: field.helpText || "",
+    group: field.group || "default",
+    iconName: field.iconName || "",
     component: componentType,
     required: field.required !== undefined ? field.required : false,
-    placeholder: field.placeholder || '',
-    defaultValue: field.defaultValue !== undefined ? field.defaultValue : '',
+    placeholder: field.placeholder || "",
+    defaultValue: field.defaultValue !== undefined ? field.defaultValue : "",
     options: field.options || [],
     componentProps: mergedComponentProps,
-    includeOther: field.includeOther !== undefined ? field.includeOther : false
+    includeOther: field.includeOther !== undefined ? field.includeOther : false,
   };
 }
 
@@ -361,6 +373,3 @@ export type ComponentGroup = AppletContainer & {
   authenticatedRead?: boolean;
   publicRead?: boolean;
 };
-
-
-

@@ -56,12 +56,20 @@ export async function GET(request: Request) {
  * POST /api/cx-chat/request
  *
  * Create a new conversation.
- * Body: { title?, system_instruction?, ai_model_id?, config?, metadata? }
+ * Body: { title?, system_instruction?, last_model_id?, config?, metadata? }
  */
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { title, system_instruction, ai_model_id, config, metadata } = body;
+        const {
+            title,
+            system_instruction,
+            last_model_id,
+            /** @deprecated Prefer `last_model_id` (matches `cx_conversation.last_model_id`). */
+            ai_model_id,
+            config,
+            metadata,
+        } = body;
 
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
@@ -73,11 +81,13 @@ export async function POST(request: Request) {
             );
         }
 
+        const modelId = last_model_id ?? ai_model_id;
+
         const newConversation = await createCxConversation({
             user_id: user.id,
             title: title || null,
             system_instruction: system_instruction || null,
-            ai_model_id: ai_model_id || null,
+            last_model_id: modelId || null,
             config: config || {},
             metadata: metadata || {},
         });

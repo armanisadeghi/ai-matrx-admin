@@ -166,6 +166,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
           stream: true,
           debug: true,
           client_tools: [] as string[],
+          custom_tools: [],
           context: {},
         } satisfies ConversationContinueRequestBody;
         console.log("[useAgentChat] CONTINUE conversation →", executeUrl);
@@ -173,7 +174,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
       } else {
         const startEndpoint = blockMode
           ? ENDPOINTS.ai.agentBlocksStart(promptId)
-          : ENDPOINTS.ai.agentStart(promptId);
+          : ENDPOINTS.ai.promptStart(promptId);
         executeUrl = `${BACKEND_URL}${startEndpoint}`;
         requestBody = {
           user_input: userInput,
@@ -185,6 +186,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
           stream: true,
           debug: true,
           client_tools: [] as string[],
+          custom_tools: [],
           context: {},
         } satisfies AgentStartRequestBody;
         console.log(

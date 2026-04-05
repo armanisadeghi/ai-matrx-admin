@@ -1,7 +1,7 @@
-import { Suspense } from 'react';
-import ChatContainer from '@/features/public-chat/components/ChatContainer';
-import ChatLoading from '../../loading';
-import { BACKEND_URLS, ENDPOINTS } from '@/lib/api/endpoints';
+import { Suspense } from "react";
+import ChatContainer from "@/features/public-chat/components/ChatContainer";
+import ChatLoading from "../../loading";
+import { BACKEND_URLS, ENDPOINTS } from "@/lib/api/endpoints";
 
 /**
  * Agent-Direct Route — /p/chat/a/[id]
@@ -12,21 +12,21 @@ import { BACKEND_URLS, ENDPOINTS } from '@/lib/api/endpoints';
  * before the client even loads.
  */
 export default async function AgentPage({
-    params,
+  params,
 }: {
-    params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>;
 }) {
-    const { id } = await params;
+  const { id } = await params;
 
-    // Fire-and-forget: warm the agent on the Python backend (server → server)
-    const warmUrl = `${BACKEND_URLS.production}${ENDPOINTS.ai.agentWarm(id)}`;
-    fetch(warmUrl, { method: 'POST' }).catch(() => {});
+  // Fire-and-forget: warm the agent on the Python backend (server → server)
+  const warmUrl = `${BACKEND_URLS.production}${ENDPOINTS.ai.agentWarm(id)}`;
+  fetch(warmUrl, { method: "POST" }).catch(() => {});
 
-    return (
-        <div className="h-full w-full bg-textured">
-            <Suspense fallback={<ChatLoading />}>
-                <ChatContainer className="h-full" />
-            </Suspense>
-        </div>
-    );
+  return (
+    <div className="h-full w-full bg-textured">
+      <Suspense fallback={<ChatLoading />}>
+        <ChatContainer className="h-full" />
+      </Suspense>
+    </div>
+  );
 }

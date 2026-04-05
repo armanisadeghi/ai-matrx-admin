@@ -16,6 +16,10 @@ import {
 import { supabase } from "@/utils/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 import {
+  normalizePromptMessagesFromDb,
+  normalizePromptSettingsFromDb,
+} from "@/features/prompts/utils/normalize-prompt-db-json";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -186,15 +190,18 @@ export function PromptGenerator({ isOpen, onClose }: PromptGeneratorProps) {
         throw new Error("Full Prompt Structure Builder not found");
       }
 
+      const templateMessages = normalizePromptMessagesFromDb(prompt.messages);
+      const templateSettings = normalizePromptSettingsFromDb(prompt.settings);
+
       // 2. Find the last user message index
-      const lastUserIndex = prompt.messages.reduce(
-        (lastIdx: number, msg: any, idx: number) =>
+      const lastUserIndex = templateMessages.reduce(
+        (lastIdx: number, msg, idx: number) =>
           msg.role === "user" ? idx : lastIdx,
         -1,
       );
 
       // 3. Replace variables and append context to last user message
-      const messages = prompt.messages.map((msg: any, idx: number) => {
+      const messages = templateMessages.map((msg, idx: number) => {
         let content = msg.content;
 
         // Directly replace prompt_purpose variable
@@ -212,7 +219,7 @@ export function PromptGenerator({ isOpen, onClose }: PromptGeneratorProps) {
       });
 
       // 4. Build chat config
-      const modelId = prompt.settings?.model_id;
+      const modelId = templateSettings.model_id;
       if (!modelId) {
         throw new Error("No model specified in prompt");
       }
@@ -221,7 +228,7 @@ export function PromptGenerator({ isOpen, onClose }: PromptGeneratorProps) {
         model_id: modelId,
         messages,
         stream: true,
-        ...prompt.settings,
+        ...templateSettings,
       };
 
       // 5. Submit task — set taskId BEFORE dispatch so streaming UI mounts immediately

@@ -37,7 +37,7 @@ export interface VariableCustomComponent {
  * Permission level for the current user on any given agent.
  * 'system'  — builtin agent; not owned or shared, read-only for everyone
  * 'public'  — agent is public, no specific share grant
- * 'none'    — no access (returned by get_agent_access_level when the user
+ * 'none'    — no access (returned by agx_get_access_level when the user
  *             somehow calls it on an agent they can't see)
  */
 export type AccessLevel =
@@ -127,7 +127,7 @@ export interface AgentDefinition {
   projectId: string | null;
   taskId: string | null;
 
-  // Lineage (read-only — managed by DB triggers / duplicate_agent RPC)
+  // Lineage (read-only — managed by DB triggers / agx_duplicate_agent RPC)
   // null on version records
   sourceAgentId: string | null;
   sourceSnapshotAt: string | null;
@@ -135,7 +135,7 @@ export interface AgentDefinition {
   updatedAt: string;
 
   // Access metadata — current user's relationship to this record.
-  // Populated by get_agents_list() and get_agent_access_level().
+  // Populated by agx_get_list() and agx_get_access_level().
   // null when not yet fetched (e.g. record arrived via a shortcut RPC).
   isOwner: boolean | null;
   accessLevel: AccessLevel | null;
@@ -147,7 +147,7 @@ export interface AgentDefinition {
 // ---------------------------------------------------------------------------
 
 /**
- * Returned by `get_agents_list()`.
+ * Returned by `agx_get_list()`.
  * Returns the current user's own agents PLUS everything shared with them
  * (direct user shares and org-level shares), deduplicated.
  * Does NOT include system/builtin agents.
@@ -178,13 +178,13 @@ export interface AgentListRow {
   shared_by_email: string | null;
 }
 
-/** Input for `duplicate_agent(agent_id)`. Returns the new agent's UUID. */
+/** Input for `agx_duplicate_agent(agent_id)`. Returns the new agent's UUID. */
 export interface DuplicateAgentParams {
   agent_id: string;
 }
 export type DuplicateAgentResult = string; // new agent UUID
 
-/** Input for `promote_agent_version(agent_id, version_number)`. */
+/** Input for `agx_promote_version(agent_id, version_number)`. */
 export interface PromoteVersionParams {
   agent_id: string;
   version_number: number;
@@ -196,14 +196,14 @@ export interface PromoteVersionResult {
   agent_id?: string;
 }
 
-/** Returned by `get_agent_execution_minimal(agent_id)`. */
+/** Returned by `agx_get_execution_minimal(agent_id)`. */
 export interface AgentExecutionMinimal {
   id: string;
   variable_definitions: VariableDefinition[] | null;
   context_slots: ContextSlot[] | null;
 }
 
-/** Returned by `get_agent_execution_full(agent_id)`. */
+/** Returned by `agx_get_execution_full(agent_id)`. */
 export interface AgentExecutionFull {
   id: string;
   variable_definitions: VariableDefinition[] | null;
@@ -214,7 +214,7 @@ export interface AgentExecutionFull {
   context_slots: ContextSlot[] | null;
 }
 
-/** Returned by `check_agent_drift(agent_id?)`. */
+/** Returned by `agx_check_drift(agent_id?)`. */
 export interface AgentDriftItem {
   reference_type: "shortcut" | "app" | "derived_agent";
   reference_id: string;
@@ -226,7 +226,7 @@ export interface AgentDriftItem {
   versions_behind: number;
 }
 
-/** Returned by `check_agent_references(agent_id)`. */
+/** Returned by `agx_check_references(agent_id)`. */
 export interface AgentReference {
   reference_type: "shortcut" | "app" | "derived_agent";
   reference_id: string;
@@ -235,7 +235,7 @@ export interface AgentReference {
   is_behind: boolean;
 }
 
-/** Returned by `accept_agent_version(type, ref_id)`. */
+/** Returned by `agx_accept_version(type, ref_id)`. */
 export interface AcceptVersionResult {
   success: boolean;
   error?: string;
@@ -244,7 +244,7 @@ export interface AcceptVersionResult {
   accepted_version?: number;
 }
 
-/** Returned by `update_agent_from_source(agent_id)`. */
+/** Returned by `agx_update_from_source(agent_id)`. */
 export interface UpdateFromSourceResult {
   success: boolean;
   error?: string;
@@ -269,31 +269,29 @@ export interface UpdateFromSourceResult {
 // ---------------------------------------------------------------------------
 
 type _Check_AgentListRow =
-  AgentListRow extends DbRpcRow<"get_agents_list"> ? true : false;
+  AgentListRow extends DbRpcRow<"agx_get_list"> ? true : false;
 declare const _agentListRow: _Check_AgentListRow;
 true satisfies typeof _agentListRow;
 
 type _Check_AgentExecutionMinimal =
-  AgentExecutionMinimal extends DbRpcRow<"get_agent_execution_minimal">
+  AgentExecutionMinimal extends DbRpcRow<"agx_get_execution_minimal">
     ? true
     : false;
 declare const _agentExecutionMinimal: _Check_AgentExecutionMinimal;
 true satisfies typeof _agentExecutionMinimal;
 
 type _Check_AgentExecutionFull =
-  AgentExecutionFull extends DbRpcRow<"get_agent_execution_full">
-    ? true
-    : false;
+  AgentExecutionFull extends DbRpcRow<"agx_get_execution_full"> ? true : false;
 declare const _agentExecutionFull: _Check_AgentExecutionFull;
 true satisfies typeof _agentExecutionFull;
 
 type _Check_AgentDriftItem =
-  AgentDriftItem extends DbRpcRow<"check_agent_drift"> ? true : false;
+  AgentDriftItem extends DbRpcRow<"agx_check_drift"> ? true : false;
 declare const _agentDriftItem: _Check_AgentDriftItem;
 true satisfies typeof _agentDriftItem;
 
 type _Check_AgentReference =
-  AgentReference extends DbRpcRow<"check_agent_references"> ? true : false;
+  AgentReference extends DbRpcRow<"agx_check_references"> ? true : false;
 declare const _agentReference: _Check_AgentReference;
 true satisfies typeof _agentReference;
 

@@ -181,15 +181,25 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Warm Agent
-         * @description Pre-load an agent definition into the PromptManager cache.
-         *
-         *     Optional ``source`` in the request body tells the warm endpoint exactly
-         *     which table to query (e.g. "prompt_version", "builtin_version"). When
-         *     omitted the fallback chain (prompts -> builtins) is used.
-         */
+        /** Warm Agent */
         post: operations["warm_agent_ai_agents__agent_id__warm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/prompts/{prompt_id}/warm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Warm Prompt */
+        post: operations["warm_prompt_ai_prompts__prompt_id__warm_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -442,20 +452,25 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Start Agent
-         * @description Start a new agent conversation.
-         *
-         *     Resolves the agent's UnifiedConfig (with variables/overrides applied),
-         *     then hands off to the AI engine. A new conversation_id is generated here
-         *     and set on AppContext so execution and persistence use the same ID.
-         *
-         *     Optional fields (all default to no-op when absent):
-         *     - ``client_tools``: tool names the client will execute instead of the server.
-         *     - ``ide_state``: current editor snapshot (active file, diagnostics, git, workspace)
-         *       serialized into the system prompt so the AI can reason about the user's environment.
-         */
+        /** Start Agent */
         post: operations["start_agent_ai_agents__agent_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/prompts/{prompt_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start Prompt */
+        post: operations["start_prompt_ai_prompts__prompt_id__post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2953,6 +2968,61 @@ export interface components {
                 [key: string]: unknown;
             }[];
         };
+        /** PromptStartRequest */
+        PromptStartRequest: {
+            /** Organization Id */
+            organization_id?: string | null;
+            /** Workspace Id */
+            workspace_id?: string | null;
+            /** Project Id */
+            project_id?: string | null;
+            /** Task Id */
+            task_id?: string | null;
+            /** User Input */
+            user_input?: string | {
+                [key: string]: unknown;
+            }[] | null;
+            /** Variables */
+            variables?: {
+                [key: string]: unknown;
+            } | null;
+            config_overrides?: components["schemas"]["LLMParams"] | null;
+            /**
+             * Stream
+             * @default true
+             */
+            stream: boolean;
+            /**
+             * Debug
+             * @default false
+             */
+            debug: boolean;
+            /**
+             * Client Tools
+             * @default []
+             */
+            client_tools: string[];
+            /**
+             * Custom Tools
+             * @default []
+             */
+            custom_tools: {
+                [key: string]: unknown;
+            }[];
+            ide_state?: components["schemas"]["IdeState"] | null;
+            /**
+             * Context
+             * @default {}
+             */
+            context: {
+                [key: string]: unknown;
+            };
+        };
+        /** PromptWarmRequest */
+        PromptWarmRequest: {
+            /** Source */
+            source?: string | null;
+        };
         /** QuickScrapeRequest */
         QuickScrapeRequest: {
             /**
@@ -3455,7 +3525,15 @@ export interface components {
             ctx?: Record<string, never>;
         };
         /** WarmRequest */
-        WarmRequest: {
+        aidream__api__routers__agents__WarmRequest: {
+            /**
+             * Is Version
+             * @default false
+             */
+            is_version: boolean;
+        };
+        /** WarmRequest */
+        aidream__api__routers__agents_blocks__WarmRequest: {
             /** Source */
             source?: string | null;
         };
@@ -3654,7 +3732,42 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["WarmRequest"] | null;
+                "application/json": components["schemas"]["aidream__api__routers__agents__WarmRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    warm_prompt_ai_prompts__prompt_id__warm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                prompt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PromptWarmRequest"] | null;
             };
         };
         responses: {
@@ -3689,7 +3802,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["WarmRequest"] | null;
+                "application/json": components["schemas"]["aidream__api__routers__agents_blocks__WarmRequest"] | null;
             };
         };
         responses: {
@@ -4021,7 +4134,9 @@ export interface operations {
     };
     start_agent_ai_agents__agent_id__post: {
         parameters: {
-            query?: never;
+            query?: {
+                is_version?: boolean;
+            };
             header?: never;
             path: {
                 agent_id: string;
@@ -4031,6 +4146,41 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AgentStartRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_prompt_ai_prompts__prompt_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                prompt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromptStartRequest"];
             };
         };
         responses: {

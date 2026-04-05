@@ -4,6 +4,11 @@ import Image from 'next/image';
 import { LayoutTemplate, ChevronDown, ChevronRight, Tag, Check, HelpCircle } from 'lucide-react';
 import * as SiIcons from 'lucide-react';
 import { redirect } from 'next/navigation';
+import type {
+    CustomAppletConfig,
+    AppletContainer,
+    FieldDefinition,
+} from "@/types/customAppTypes";
 
 // Type definitions
 type AppletConfig = {
@@ -117,6 +122,81 @@ type AppletConfigViewerProps = {
       container?: string;
     };
 };
+
+function mapFieldDefinitionToContainerField(f: FieldDefinition): ContainerField {
+    return {
+        id: f.id,
+        label: f.label,
+        component: f.component,
+        description: f.description ?? "",
+        placeholder: f.placeholder ?? "",
+        helpText: f.helpText ?? "",
+        required: f.required,
+        group: f.group ?? "",
+        isDirty: false,
+        disabled: false,
+        iconName: f.iconName ?? "",
+        defaultValue:
+            f.defaultValue === undefined || f.defaultValue === null
+                ? ""
+                : String(f.defaultValue),
+        includeOther: f.includeOther,
+        componentProps: f.componentProps,
+        options: f.options?.map((o) => ({
+            id: o.id,
+            label: o.label,
+            description: o.description,
+            helpText: o.helpText,
+        })),
+    };
+}
+
+function mapAppletContainerToViewerContainer(c: AppletContainer): Container {
+    return {
+        id: c.id,
+        label: c.label,
+        shortLabel: c.shortLabel ?? "",
+        description: c.description ?? "",
+        fields: c.fields.map(mapFieldDefinitionToContainerField),
+        helpText: c.helpText ?? "",
+        hideDescription: c.hideDescription ?? false,
+    };
+}
+
+/** Builds the full viewer model from a `CustomAppletConfig` loaded via `fetchAppletBySlug`. */
+export function customAppletConfigToAppletViewerConfig(
+    c: CustomAppletConfig,
+): AppletConfig {
+    const containers = (c.containers ?? []).map(mapAppletContainerToViewerContainer);
+    const brokerMap = c.brokerMap ?? [];
+    return {
+        id: c.id,
+        user_id: c.userId ?? "",
+        public_read: c.publicRead ?? false,
+        name: c.name,
+        description: c.description ?? "",
+        slug: c.slug,
+        applet_icon: c.appletIcon ?? "",
+        applet_submit_text: c.appletSubmitText ?? null,
+        creator: c.creator ?? "",
+        primary_color: c.primaryColor ?? "",
+        accent_color: c.accentColor ?? "",
+        layout_type: c.layoutType ?? "",
+        containers,
+        data_source_config: c.dataSourceConfig ?? {},
+        result_component_config: c.resultComponentConfig ?? {},
+        next_step_config: c.nextStepConfig ?? {},
+        compiled_recipe_id: c.compiledRecipeId ?? "",
+        subcategory_id: c.subcategoryId ?? null,
+        image_url: c.imageUrl ?? "",
+        app_id: c.appId ?? "",
+        broker_map: brokerMap.map((b) => ({
+            fieldId: b.fieldId,
+            appletId: b.appletId,
+            brokerId: b.brokerId,
+        })),
+    };
+}
     
 const AppletConfigViewer = ({ applet, searchParams }: AppletConfigViewerProps) => {
     // Get tab from URL query parameter with default to "info"

@@ -11,8 +11,8 @@
  *  - id                 — DB generates on insert
  *  - created_at         — DB trigger
  *  - updated_at         — DB trigger (set_agents_updated_at)
- *  - source_agent_id    — set only by duplicate_agent() RPC, never by direct writes
- *  - source_snapshot_at — set only by duplicate_agent() RPC, never by direct writes
+ *  - source_agent_id    — set only by agx_duplicate_agent() RPC, never by direct writes
+ *  - source_snapshot_at — set only by agx_duplicate_agent() RPC, never by direct writes
  *
  * Version-specific frontend fields (isVersion, parentAgentId, versionNumber,
  * changedAt, changeNote) are frontend-only runtime fields — never written to DB.
@@ -30,13 +30,13 @@ import type {
 // Supabase row types (derived from generated types)
 // ---------------------------------------------------------------------------
 
-type AgentRow = Database["public"]["Tables"]["agents"]["Row"];
+type AgentRow = Database["public"]["Tables"]["agx_agent"]["Row"];
 type AgentInsert = Omit<
-  Database["public"]["Tables"]["agents"]["Insert"],
+  Database["public"]["Tables"]["agx_agent"]["Insert"],
   "id" | "created_at" | "updated_at" | "source_agent_id" | "source_snapshot_at"
 >;
 type AgentUpdate = Omit<
-  Database["public"]["Tables"]["agents"]["Update"],
+  Database["public"]["Tables"]["agx_agent"]["Update"],
   "id" | "created_at" | "updated_at" | "source_agent_id" | "source_snapshot_at"
 >;
 
@@ -133,22 +133,22 @@ export function agentDefinitionToInsert(agent: AgentDefinition): AgentInsert {
 
     model_id: agent.modelId,
     messages:
-      agent.messages as unknown as Database["public"]["Tables"]["agents"]["Insert"]["messages"],
+      agent.messages as unknown as Database["public"]["Tables"]["agx_agent"]["Insert"]["messages"],
     variable_definitions:
-      agent.variableDefinitions as unknown as Database["public"]["Tables"]["agents"]["Insert"]["variable_definitions"],
+      agent.variableDefinitions as unknown as Database["public"]["Tables"]["agx_agent"]["Insert"]["variable_definitions"],
     settings:
-      agent.settings as unknown as Database["public"]["Tables"]["agents"]["Insert"]["settings"],
+      agent.settings as unknown as Database["public"]["Tables"]["agx_agent"]["Insert"]["settings"],
     tools: agent.tools,
 
     context_slots:
-      agent.contextSlots as unknown as Database["public"]["Tables"]["agents"]["Insert"]["context_slots"],
+      agent.contextSlots as unknown as Database["public"]["Tables"]["agx_agent"]["Insert"]["context_slots"],
 
     model_tiers:
-      agent.modelTiers as unknown as Database["public"]["Tables"]["agents"]["Insert"]["model_tiers"],
+      agent.modelTiers as unknown as Database["public"]["Tables"]["agx_agent"]["Insert"]["model_tiers"],
     output_schema:
-      agent.outputSchema as unknown as Database["public"]["Tables"]["agents"]["Insert"]["output_schema"],
+      agent.outputSchema as unknown as Database["public"]["Tables"]["agx_agent"]["Insert"]["output_schema"],
     custom_tools:
-      agent.customTools as unknown as Database["public"]["Tables"]["agents"]["Insert"]["custom_tools"],
+      agent.customTools as unknown as Database["public"]["Tables"]["agx_agent"]["Insert"]["custom_tools"],
     mcp_servers: agent.mcpServers,
 
     user_id: agent.userId,
@@ -187,28 +187,28 @@ export function agentDefinitionToUpdate(
   if (partial.modelId !== undefined) update.model_id = partial.modelId;
   if (partial.messages !== undefined)
     update.messages =
-      partial.messages as unknown as Database["public"]["Tables"]["agents"]["Update"]["messages"];
+      partial.messages as unknown as Database["public"]["Tables"]["agx_agent"]["Update"]["messages"];
   if (partial.variableDefinitions !== undefined)
     update.variable_definitions =
-      partial.variableDefinitions as unknown as Database["public"]["Tables"]["agents"]["Update"]["variable_definitions"];
+      partial.variableDefinitions as unknown as Database["public"]["Tables"]["agx_agent"]["Update"]["variable_definitions"];
   if (partial.settings !== undefined)
     update.settings =
-      partial.settings as unknown as Database["public"]["Tables"]["agents"]["Update"]["settings"];
+      partial.settings as unknown as Database["public"]["Tables"]["agx_agent"]["Update"]["settings"];
   if (partial.tools !== undefined) update.tools = partial.tools;
 
   if (partial.contextSlots !== undefined)
     update.context_slots =
-      partial.contextSlots as unknown as Database["public"]["Tables"]["agents"]["Update"]["context_slots"];
+      partial.contextSlots as unknown as Database["public"]["Tables"]["agx_agent"]["Update"]["context_slots"];
 
   if (partial.modelTiers !== undefined)
     update.model_tiers =
-      partial.modelTiers as unknown as Database["public"]["Tables"]["agents"]["Update"]["model_tiers"];
+      partial.modelTiers as unknown as Database["public"]["Tables"]["agx_agent"]["Update"]["model_tiers"];
   if (partial.outputSchema !== undefined)
     update.output_schema =
-      partial.outputSchema as unknown as Database["public"]["Tables"]["agents"]["Update"]["output_schema"];
+      partial.outputSchema as unknown as Database["public"]["Tables"]["agx_agent"]["Update"]["output_schema"];
   if (partial.customTools !== undefined)
     update.custom_tools =
-      partial.customTools as unknown as Database["public"]["Tables"]["agents"]["Update"]["custom_tools"];
+      partial.customTools as unknown as Database["public"]["Tables"]["agx_agent"]["Update"]["custom_tools"];
   if (partial.mcpServers !== undefined) update.mcp_servers = partial.mcpServers;
 
   if (partial.userId !== undefined) update.user_id = partial.userId;

@@ -30,6 +30,7 @@ import {
 } from "@/features/workflows/service";
 import type { WorkflowEdge } from "@/features/workflows/types";
 import { EnrichedBroker } from "@/features/workflows/utils/data-flow-manager";
+import { recordFromJson } from "@/features/workflows/utils/jsonFromDb";
 
 interface EdgeDetailOverlayProps {
   edge: Edge | null;
@@ -115,8 +116,9 @@ export function EdgeDetailOverlay({
       if (isVirtualEdge) {
         // Convert virtual edge to saved edge
         const savedEdgeData = convertVirtualToSaved(edge, workflowId);
+        const prevVirtualMeta = recordFromJson(savedEdgeData.metadata);
         savedEdgeData.metadata = {
-          ...savedEdgeData.metadata,
+          ...prevVirtualMeta,
           label: labelValue,
         };
         await saveWorkflowEdge(workflowId, savedEdgeData);

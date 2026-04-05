@@ -201,7 +201,6 @@
           "AI"
         ],
         "summary": "Warm Agent",
-        "description": "Pre-load an agent definition into the PromptManager cache.\n\nOptional ``source`` in the request body tells the warm endpoint exactly\nwhich table to query (e.g. \"prompt_version\", \"builtin_version\"). When\nomitted the fallback chain (prompts -> builtins) is used.",
         "operationId": "warm_agent_ai_agents__agent_id__warm_post",
         "parameters": [
           {
@@ -220,7 +219,64 @@
               "schema": {
                 "anyOf": [
                   {
-                    "$ref": "#/components/schemas/WarmRequest"
+                    "$ref": "#/components/schemas/aidream__api__routers__agents__WarmRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Request"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/prompts/{prompt_id}/warm": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Warm Prompt",
+        "operationId": "warm_prompt_ai_prompts__prompt_id__warm_post",
+        "parameters": [
+          {
+            "name": "prompt_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Prompt Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/PromptWarmRequest"
                   },
                   {
                     "type": "null"
@@ -278,7 +334,7 @@
               "schema": {
                 "anyOf": [
                   {
-                    "$ref": "#/components/schemas/WarmRequest"
+                    "$ref": "#/components/schemas/aidream__api__routers__agents_blocks__WarmRequest"
                   },
                   {
                     "type": "null"
@@ -673,7 +729,6 @@
           "AI"
         ],
         "summary": "Start Agent",
-        "description": "Start a new agent conversation.\n\nResolves the agent's UnifiedConfig (with variables/overrides applied),\nthen hands off to the AI engine. A new conversation_id is generated here\nand set on AppContext so execution and persistence use the same ID.\n\nOptional fields (all default to no-op when absent):\n- ``client_tools``: tool names the client will execute instead of the server.\n- ``ide_state``: current editor snapshot (active file, diagnostics, git, workspace)\n  serialized into the system prompt so the AI can reason about the user's environment.",
         "operationId": "start_agent_ai_agents__agent_id__post",
         "parameters": [
           {
@@ -684,6 +739,16 @@
               "type": "string",
               "title": "Agent Id"
             }
+          },
+          {
+            "name": "is_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Is Version"
+            }
           }
         ],
         "requestBody": {
@@ -692,6 +757,56 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/AgentStartRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/prompts/{prompt_id}": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Start Prompt",
+        "operationId": "start_prompt_ai_prompts__prompt_id__post",
+        "parameters": [
+          {
+            "name": "prompt_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Prompt Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromptStartRequest"
               }
             }
           }
@@ -7840,6 +7955,156 @@
         ],
         "title": "ProcessBlocksResponse"
       },
+      "PromptStartRequest": {
+        "properties": {
+          "organization_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Id"
+          },
+          "workspace_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workspace Id"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "user_input": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Input"
+          },
+          "variables": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variables"
+          },
+          "config_overrides": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LLMParams"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stream": {
+            "type": "boolean",
+            "title": "Stream",
+            "default": true
+          },
+          "debug": {
+            "type": "boolean",
+            "title": "Debug",
+            "default": false
+          },
+          "client_tools": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Client Tools",
+            "default": []
+          },
+          "custom_tools": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Custom Tools",
+            "default": []
+          },
+          "ide_state": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdeState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "context": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Context",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "title": "PromptStartRequest"
+      },
+      "PromptWarmRequest": {
+        "properties": {
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "title": "PromptWarmRequest"
+      },
       "QuickScrapeRequest": {
         "properties": {
           "get_organized_data": {
@@ -8812,7 +9077,18 @@
         ],
         "title": "ValidationError"
       },
-      "WarmRequest": {
+      "aidream__api__routers__agents__WarmRequest": {
+        "properties": {
+          "is_version": {
+            "type": "boolean",
+            "title": "Is Version",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "WarmRequest"
+      },
+      "aidream__api__routers__agents_blocks__WarmRequest": {
         "properties": {
           "source": {
             "anyOf": [

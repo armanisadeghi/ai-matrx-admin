@@ -1,17 +1,28 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { ConvertedWorkflowData, DbBrokerRelayData, DbCompleteWorkflow } from '@/features/workflows/types';
+import React, { useState, useEffect } from "react";
+import {
+  ConvertedWorkflowData,
+  DbBrokerRelayData,
+  DbCompleteWorkflow,
+} from "@/features/workflows/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRightLeft, Plus, Trash2, Copy } from "lucide-react";
 import { BrokerSelect } from "@/components/ui/broker-select";
 import { useBrokerData } from "@/features/workflows/hooks/useBrokerData";
-import { CustomFieldLabelAndHelpText } from '@/constants/app-builder-help-text';
-import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
+import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";
+import { EnrichedBroker } from "@/features/workflows/utils/data-flow-manager";
+import { asStringArray } from "@/features/workflows/utils/workflow-json-fields";
 
 interface BrokerRelayEditorProps {
   nodeData: DbBrokerRelayData | null;
@@ -23,16 +34,18 @@ interface BrokerRelayEditorProps {
   enrichedBrokers: EnrichedBroker[];
 }
 
-const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({ 
-  nodeData, 
-  onSave, 
+const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({
+  nodeData,
+  onSave,
   onClose,
   open,
   readOnly = false,
   completeWorkflowData,
-  enrichedBrokers
+  enrichedBrokers,
 }) => {
-  const [editingNode, setEditingNode] = useState<DbBrokerRelayData | null>(nodeData);
+  const [editingNode, setEditingNode] = useState<DbBrokerRelayData | null>(
+    nodeData,
+  );
   const [cancelClicked, setCancelClicked] = useState(false);
 
   // Get broker data for the workflow
@@ -44,6 +57,8 @@ const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({
   }, [nodeData]);
 
   if (!editingNode) return null;
+
+  const targetBrokerIds = asStringArray(editingNode.target_broker_ids);
 
   const handleSave = () => {
     if (editingNode) {
@@ -70,29 +85,29 @@ const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({
   const addTarget = () => {
     setEditingNode({
       ...editingNode,
-      target_broker_ids: [...editingNode.target_broker_ids, '']
+      target_broker_ids: [...targetBrokerIds, ""],
     });
   };
 
   const updateTarget = (index: number, value: string) => {
-    const newTargets = [...editingNode.target_broker_ids];
+    const newTargets = [...targetBrokerIds];
     newTargets[index] = value;
     setEditingNode({
       ...editingNode,
-      target_broker_ids: newTargets
+      target_broker_ids: newTargets,
     });
   };
 
   const removeTarget = (index: number) => {
-    const newTargets = editingNode.target_broker_ids.filter((_, i) => i !== index);
+    const newTargets = targetBrokerIds.filter((_, i) => i !== index);
     setEditingNode({
       ...editingNode,
-      target_broker_ids: newTargets
+      target_broker_ids: newTargets,
     });
   };
 
   const copyAllTargets = () => {
-    const targetsText = editingNode.target_broker_ids.join('\n');
+    const targetsText = targetBrokerIds.join("\n");
     navigator.clipboard.writeText(targetsText);
   };
 
@@ -102,7 +117,7 @@ const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <ArrowRightLeft className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            Edit Broker Relay: {editingNode.label || 'Unnamed Relay'}
+            Edit Broker Relay: {editingNode.label || "Unnamed Relay"}
           </DialogTitle>
         </DialogHeader>
 
@@ -120,8 +135,10 @@ const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({
                 />
                 <Input
                   id="relay-label"
-                  value={editingNode.label || ''}
-                  onChange={(e) => setEditingNode({ ...editingNode, label: e.target.value })}
+                  value={editingNode.label || ""}
+                  onChange={(e) =>
+                    setEditingNode({ ...editingNode, label: e.target.value })
+                  }
                   placeholder="Enter a descriptive name for this relay"
                   disabled={readOnly}
                 />
@@ -136,7 +153,9 @@ const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({
                 label="Source Broker ID"
                 description="The broker ID that provides data to this relay"
                 value={editingNode.source_broker_id}
-                onValueChange={(value) => setEditingNode({ ...editingNode, source_broker_id: value })}
+                onValueChange={(value) =>
+                  setEditingNode({ ...editingNode, source_broker_id: value })
+                }
                 brokers={producerBrokers}
                 showProducersOnly={true}
                 placeholder="Select source broker..."
@@ -163,9 +182,9 @@ const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({
               </div>
             </CardHeader>
             <CardContent>
-              {editingNode.target_broker_ids.length > 0 ? (
+              {targetBrokerIds.length > 0 ? (
                 <div className="space-y-3">
-                  {editingNode.target_broker_ids.map((target, index) => (
+                  {targetBrokerIds.map((target, index) => (
                     <Card key={index} className="border-border">
                       <CardContent className="p-4">
                         <div className="flex items-start gap-4">
@@ -173,7 +192,9 @@ const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({
                             <BrokerSelect
                               label={`Target ${index + 1}`}
                               value={target}
-                              onValueChange={(value) => updateTarget(index, value)}
+                              onValueChange={(value) =>
+                                updateTarget(index, value)
+                              }
                               brokers={allBrokers}
                               placeholder="Select or enter target broker ID..."
                               disabled={readOnly}
@@ -195,7 +216,8 @@ const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
-                  No target brokers configured. Click "Add Target" to get started.
+                  No target brokers configured. Click "Add Target" to get
+                  started.
                 </div>
               )}
             </CardContent>
@@ -211,28 +233,32 @@ const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="bg-blue-100 dark:bg-blue-900/50 px-3 py-2 rounded text-sm font-mono">
-                      {editingNode.source_broker_id || 'source_broker_id'}
+                      {editingNode.source_broker_id || "source_broker_id"}
                     </div>
                     <ArrowRightLeft className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     <div className="text-sm font-medium">
-                      {editingNode.label || 'Relay'}
+                      {editingNode.label || "Relay"}
                     </div>
                     <ArrowRightLeft className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     <div className="text-sm text-muted-foreground">
-                      {editingNode.target_broker_ids.length} target{editingNode.target_broker_ids.length !== 1 ? 's' : ''}
+                      {targetBrokerIds.length} target
+                      {targetBrokerIds.length !== 1 ? "s" : ""}
                     </div>
                   </div>
-                  
-                  {editingNode.target_broker_ids.length > 0 && (
+
+                  {targetBrokerIds.length > 0 && (
                     <div className="ml-8 space-y-1">
-                      {editingNode.target_broker_ids.slice(0, 5).map((target, index) => (
-                        <div key={index} className="bg-green-100 dark:bg-green-900/50 px-2 py-1 rounded text-xs font-mono">
+                      {targetBrokerIds.slice(0, 5).map((target, index) => (
+                        <div
+                          key={index}
+                          className="bg-green-100 dark:bg-green-900/50 px-2 py-1 rounded text-xs font-mono"
+                        >
                           → {target || `target_${index + 1}`}
                         </div>
                       ))}
-                      {editingNode.target_broker_ids.length > 5 && (
+                      {targetBrokerIds.length > 5 && (
                         <div className="text-xs text-muted-foreground px-2">
-                          +{editingNode.target_broker_ids.length - 5} more targets...
+                          +{targetBrokerIds.length - 5} more targets...
                         </div>
                       )}
                     </div>
@@ -251,19 +277,25 @@ const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">Label</p>
-                  <p className="font-medium">{editingNode.label || 'Unnamed Relay'}</p>
+                  <p className="font-medium">
+                    {editingNode.label || "Unnamed Relay"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Source</p>
-                  <p className="font-mono text-xs">{editingNode.source_broker_id || 'Not set'}</p>
+                  <p className="font-mono text-xs">
+                    {editingNode.source_broker_id || "Not set"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Target Count</p>
-                  <p className="font-medium">{editingNode.target_broker_ids.length}</p>
+                  <p className="font-medium">{targetBrokerIds.length}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Valid Targets</p>
-                  <p className="font-medium">{editingNode.target_broker_ids.filter(t => t.trim()).length}</p>
+                  <p className="font-medium">
+                    {targetBrokerIds.filter((t) => t.trim()).length}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -274,13 +306,11 @@ const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({
           <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>
-            Save Changes
-          </Button>
+          <Button onClick={handleSave}>Save Changes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 };
 
-export default BrokerRelayEditor; 
+export default BrokerRelayEditor;

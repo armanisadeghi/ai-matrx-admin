@@ -20,13 +20,13 @@ import type { ShortcutContext } from "@/features/agents/utils/shortcut-context-u
 // Supabase row types
 // ---------------------------------------------------------------------------
 
-type ShortcutRow = Database["public"]["Tables"]["agent_shortcuts"]["Row"];
+type ShortcutRow = Database["public"]["Tables"]["agx_shortcut"]["Row"];
 type ShortcutInsert = Omit<
-  Database["public"]["Tables"]["agent_shortcuts"]["Insert"],
+  Database["public"]["Tables"]["agx_shortcut"]["Insert"],
   "id" | "created_at" | "updated_at"
 >;
 type ShortcutUpdate = Omit<
-  Database["public"]["Tables"]["agent_shortcuts"]["Update"],
+  Database["public"]["Tables"]["agx_shortcut"]["Update"],
   "id" | "created_at" | "updated_at"
 >;
 
@@ -91,8 +91,8 @@ export function agentShortcutToInsert(shortcut: AgentShortcut): ShortcutInsert {
     agent_version_id: shortcut.agentVersionId,
     use_latest: shortcut.useLatest,
 
-    enabled_contexts: shortcut.enabledContexts as unknown as Database["public"]["Tables"]["agent_shortcuts"]["Insert"]["enabled_contexts"],
-    scope_mappings: shortcut.scopeMappings as unknown as Database["public"]["Tables"]["agent_shortcuts"]["Insert"]["scope_mappings"],
+    enabled_contexts: shortcut.enabledContexts as unknown as Database["public"]["Tables"]["agx_shortcut"]["Insert"]["enabled_contexts"],
+    scope_mappings: shortcut.scopeMappings as unknown as Database["public"]["Tables"]["agx_shortcut"]["Insert"]["scope_mappings"],
 
     result_display: shortcut.resultDisplay,
     allow_chat: shortcut.allowChat,
@@ -132,9 +132,9 @@ export function agentShortcutToUpdate(
   if (partial.useLatest !== undefined) update.use_latest = partial.useLatest;
 
   if (partial.enabledContexts !== undefined)
-    update.enabled_contexts = partial.enabledContexts as unknown as Database["public"]["Tables"]["agent_shortcuts"]["Update"]["enabled_contexts"];
+    update.enabled_contexts = partial.enabledContexts as unknown as Database["public"]["Tables"]["agx_shortcut"]["Update"]["enabled_contexts"];
   if (partial.scopeMappings !== undefined)
-    update.scope_mappings = partial.scopeMappings as unknown as Database["public"]["Tables"]["agent_shortcuts"]["Update"]["scope_mappings"];
+    update.scope_mappings = partial.scopeMappings as unknown as Database["public"]["Tables"]["agx_shortcut"]["Update"]["scope_mappings"];
 
   if (partial.resultDisplay !== undefined) update.result_display = partial.resultDisplay;
   if (partial.allowChat !== undefined) update.allow_chat = partial.allowChat;
