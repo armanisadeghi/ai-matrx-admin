@@ -28,7 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, MessageSquare, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FloatingSheet from "@/components/official/FloatingSheet";
-import { FloatingPanel } from "@/components/official-candidate/FloatingPanel";
+import { FloatingPanel } from "@/components/official-candidate/floating-window-panel/FloatingPanel";
 
 // =============================================================================
 // Full Modal
@@ -75,7 +75,7 @@ function AgentCompactModal({
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-xl max-h-[70vh] flex flex-col p-0 gap-0">
+      <DialogContent className="max-w-xl h-[60vh] max-h-[70vh] flex flex-col p-0 gap-0">
         <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
           <span className="text-sm font-medium text-foreground truncate">
             {title ?? "Agent"}

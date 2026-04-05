@@ -167,11 +167,51 @@ export const selectShouldShowInput =
     return false;
   };
 
-// ── Instance title (cross-slice derived) ─────────────────────────────────────
+// ── Instance identity (simple primitive lookups) ─────────────────────────────
+
+export const selectInstanceAgentId =
+  (instanceId: string) =>
+  (state: RootState): string | undefined =>
+    state.executionInstances.byInstanceId[instanceId]?.agentId || undefined;
+
+export const selectInstanceShortcutId =
+  (instanceId: string) =>
+  (state: RootState): string | null =>
+    state.executionInstances.byInstanceId[instanceId]?.shortcutId ?? null;
+
+export const selectInstanceOrigin =
+  (instanceId: string) =>
+  (state: RootState): string | undefined =>
+    state.executionInstances.byInstanceId[instanceId]?.origin;
 
 /**
- * Derives a display title for the instance by checking agent definitions
- * and shortcut labels. Returns undefined if no title can be determined.
+ * Agent name — reads agentId from the instance, then looks up the name
+ * from the agent definition slice. Two simple primitive reads, no new objects.
+ */
+export const selectInstanceAgentName =
+  (instanceId: string) =>
+  (state: RootState): string | undefined => {
+    const agentId =
+      state.executionInstances.byInstanceId[instanceId]?.agentId;
+    if (!agentId) return undefined;
+    return state.agentDefinition.agents?.[agentId]?.name || undefined;
+  };
+
+/**
+ * Shortcut label — only available when the instance was created from a shortcut.
+ */
+export const selectInstanceShortcutLabel =
+  (instanceId: string) =>
+  (state: RootState): string | undefined => {
+    const shortcutId =
+      state.executionInstances.byInstanceId[instanceId]?.shortcutId;
+    if (!shortcutId) return undefined;
+    return state.agentShortcut?.[shortcutId]?.label || undefined;
+  };
+
+/**
+ * Display title: shortcut label (if from shortcut) → agent name → undefined.
+ * All primitive reads — no object construction, stable by value.
  */
 export const selectInstanceTitle =
   (instanceId: string) =>
@@ -180,13 +220,13 @@ export const selectInstanceTitle =
     if (!instance) return undefined;
 
     if (instance.shortcutId) {
-      const shortcut = state.agentShortcut?.[instance.shortcutId];
-      if (shortcut?.label) return shortcut.label;
+      const label = state.agentShortcut?.[instance.shortcutId]?.label;
+      if (label) return label;
     }
 
     if (instance.agentId) {
-      const agent = state.agentDefinition.agents?.[instance.agentId];
-      if (agent?.name) return agent.name;
+      const name = state.agentDefinition.agents?.[instance.agentId]?.name;
+      if (name) return name;
     }
 
     return undefined;

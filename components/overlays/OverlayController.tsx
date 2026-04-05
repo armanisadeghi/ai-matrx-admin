@@ -294,7 +294,7 @@ const PreExecutionInputModalContainer = dynamic(
 
 const AgentExecutionOverlay = dynamic(
   () =>
-    import("@/features/agents/components/overlays/AgentExecutionOverlay").then(
+    import("@/features/agents/components/run-results/AgentExecutionOverlay").then(
       (mod) => ({ default: mod.AgentExecutionOverlay }),
     ),
   { ssr: false },

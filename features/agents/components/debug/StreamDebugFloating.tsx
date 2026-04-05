@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback } from "react";
-import { FloatingPanel } from "@/components/official-candidate/FloatingPanel";
+import { FloatingPanel } from "@/components/official-candidate/floating-window-panel/FloatingPanel";
 import { StreamDebugPanel } from "./StreamDebugPanel";
 import { Maximize2, Minimize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
