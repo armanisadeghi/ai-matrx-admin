@@ -39,6 +39,8 @@ import {
   removeToast,
 } from "@/lib/redux/slices/promptRunnerSlice";
 import { selectPrimaryResponseTextByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectOverlayInstancesByDisplayMode } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
 import dynamic from "next/dynamic";
 import type { ResourceType } from "@/utils/permissions";
 import { updateOverlayData } from "@/lib/redux/slices/overlayDataSlice";
@@ -278,14 +280,22 @@ const PromptFlexiblePanel = dynamic(
 );
 
 const PromptToast = dynamic(
-  () => import("@/features/prompts/components/toast/PromptToast"),
+  () => import("@/features/prompts/components/results-display/PromptToast"),
   { ssr: false },
 );
 
 const PreExecutionInputModalContainer = dynamic(
   () =>
-    import("@/features/prompts/components/modals/PreExecutionInputModalContainer").then(
+    import("@/features/prompts/components/results-display/PreExecutionInputModalContainer").then(
       (mod) => ({ default: mod.PreExecutionInputModalContainer }),
+    ),
+  { ssr: false },
+);
+
+const AgentExecutionOverlay = dynamic(
+  () =>
+    import("@/features/agents/components/overlays/AgentExecutionOverlay").then(
+      (mod) => ({ default: mod.AgentExecutionOverlay }),
     ),
   { ssr: false },
 );
@@ -417,6 +427,11 @@ export const OverlayController: React.FC = () => {
   const promptModalTaskId = useAppSelector(selectPromptModalTaskId);
   const sidebarTaskId = useAppSelector(selectSidebarTaskId);
   const flexiblePanelTaskId = useAppSelector(selectFlexiblePanelTaskId);
+
+  // ── Agent Execution selectors ───────────────────────────────────────────
+  const agentInstancesByMode = useAppSelector(
+    selectOverlayInstancesByDisplayMode,
+  );
 
   const promptModalResponseText = useAppSelector((s) =>
     promptModalTaskId
@@ -948,6 +963,22 @@ export const OverlayController: React.FC = () => {
           />
         </div>
       ))}
+
+      {/* ── Agent Execution Overlays ─────────────────────────────────────── */}
+      {/* Renders UI for all overlay-managed agent instances.                */}
+      {/* The selector already excludes direct/background modes.             */}
+      {agentInstancesByMode &&
+        Object.entries(agentInstancesByMode).map(([mode, instanceIds]) => {
+          if (!instanceIds) return null;
+          return instanceIds.map((instanceId, idx) => (
+            <AgentExecutionOverlay
+              key={instanceId}
+              instanceId={instanceId}
+              index={idx}
+              onClose={() => dispatch(destroyInstance(instanceId))}
+            />
+          ));
+        })}
     </>
   );
 };

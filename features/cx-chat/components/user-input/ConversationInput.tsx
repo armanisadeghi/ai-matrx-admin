@@ -232,7 +232,8 @@ export function ConversationInput({
   const resources = useAppSelector(selectInstanceResources(instanceId));
   const isExecuting = useAppSelector(selectIsExecuting(instanceId));
   const hasVariables = useAppSelector(selectShouldShowVariables(instanceId));
-  const settingsForDialog = useAppSelector(selectCurrentSettings(instanceId));
+  const settingsForDialogRaw = useAppSelector(selectCurrentSettings(instanceId));
+  const settingsForDialog = settingsForDialogRaw ?? {};
 
   // ── Admin / debug ──────────────────────────────────────────────────────────
   const isAdmin = useAppSelector(selectIsAdmin);

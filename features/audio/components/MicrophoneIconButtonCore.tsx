@@ -28,6 +28,7 @@ export type MicVariant = 'icon-only' | 'inline-expand' | 'modal-controls';
 
 export interface MicrophoneIconButtonCoreProps {
   onTranscriptionComplete: (text: string) => void;
+  onLiveTranscript?: (text: string) => void;
   onError?: (error: string, code?: string) => void;
   variant?: MicVariant;
   /** When true the component starts recording as soon as it mounts. */
@@ -44,6 +45,7 @@ const iconSizeMap   = { sm: 'h-3 w-3', md: 'h-4 w-4', lg: 'h-5 w-5' } as const;
 // Default export required by React.lazy()
 export default function MicrophoneIconButtonCore({
   onTranscriptionComplete,
+  onLiveTranscript,
   onError,
   variant = 'icon-only',
   autoStart = false,
@@ -113,6 +115,9 @@ export default function MicrophoneIconButtonCore({
     reset,
   } = useChunkedRecordAndTranscribe({
     onTranscriptionComplete: handleTranscriptionComplete,
+    onChunkTranscribed: (chunk, accumulated) => {
+      onLiveTranscript?.(accumulated);
+    },
     onError: handleError,
   });
 

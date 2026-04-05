@@ -1,6 +1,8 @@
 // lib/redux/slices/promptRunnerSlice.ts
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+const EMPTY_TOAST_QUEUE: never[] = [];
 import type { RootState } from '@/lib/redux/store';
 import { PromptRunnerModalConfig } from '@/features/prompts/types/modal';
 
@@ -569,7 +571,7 @@ export const selectFlexiblePanelTaskId = (state: RootState) =>
 
 // Toast
 export const selectToastQueue = (state: RootState) =>
-  state.promptRunner?.toastQueue || [];
+  state.promptRunner?.toastQueue ?? EMPTY_TOAST_QUEUE;
 export const selectHasActiveToasts = (state: RootState) =>
   (state.promptRunner?.toastQueue?.length || 0) > 0;
 

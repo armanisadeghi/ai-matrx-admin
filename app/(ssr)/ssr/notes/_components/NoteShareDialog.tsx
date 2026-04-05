@@ -10,7 +10,7 @@ interface NoteShareDialogProps {
 }
 
 function generateShareLink(noteId: string) {
-  return `${window.location.origin}/notes/share/${noteId}`;
+  return `${window.location.origin}/ssr/notes/share/${noteId}`;
 }
 
 export default function NoteShareDialog({ noteId, onClose }: NoteShareDialogProps) {

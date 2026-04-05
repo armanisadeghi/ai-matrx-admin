@@ -14,8 +14,6 @@
 import type {
   CxContentBlock,
   CxMessage,
-  CxMessageRole,
-  CxMessageDbStatus,
   CxToolCall,
   CxTextContent,
   CxThinkingContent,
@@ -50,7 +48,7 @@ export interface ProcessedChatMessage {
   /** Display role mapped from DB role — use this for rendering */
   role: "user" | "assistant" | "system";
   /** Raw DB role before display mapping (e.g. 'output', 'tool') — preserved for full fidelity */
-  dbRole: CxMessageRole;
+  dbRole: string;
   /** Flat markdown string for the rendering pipeline */
   content: string;
   /** Original content blocks from DB before any conversion — preserved for full fidelity */
@@ -60,17 +58,23 @@ export interface ProcessedChatMessage {
   toolUpdates: ToolCallObject[];
   /** Whether this message was condensed (out of context window) */
   isCondensed: boolean;
-  // ── Preserved DB fields ──────────────────────────────────────────────
+  // ── Preserved DB fields (1:1 with public.cx_message where applicable) ─
+  agentId: string | null;
   /** DB conversation_id this message belongs to */
   conversationId: string;
   /** Message position in the conversation (0-based) */
   position: number;
   /** Raw DB status field before display mapping */
-  dbStatus: CxMessageDbStatus;
-  /** Raw metadata JSON from DB */
+  dbStatus: string;
+  /** cx_message.source */
+  source: string;
+  isVisibleToModel: boolean;
+  isVisibleToUser: boolean;
+  /** Normalized metadata object from DB */
   dbMetadata: Record<string, unknown>;
   /** Content version history from DB */
   contentHistory: unknown | null;
+  userContent: Json | null;
   /** ISO creation timestamp from DB */
   createdAt: string;
   /** Soft-delete timestamp from DB, null if active */
@@ -417,7 +421,7 @@ export function processDbMessagesForDisplay(
         break;
       default:
         console.error(
-          `[processDbMessagesForDisplay] Unknown DB role "${msg.role}" on message ${msg.id} (position ${msg.position}) — defaulting to "assistant". Add this role to CxMessageRole and update the role mapping.`,
+          `[processDbMessagesForDisplay] Unknown DB role "${msg.role}" on message ${msg.id} (position ${msg.position}) — defaulting to "assistant". Extend role mapping if this is valid.`,
           { id: msg.id, role: msg.role, position: msg.position },
         );
         displayRole = "assistant";
@@ -428,17 +432,24 @@ export function processDbMessagesForDisplay(
       role: displayRole,
       dbRole: msg.role,
       content,
-      rawContent: Array.isArray(msg.content) ? [...msg.content] : [],
+      rawContent: Array.isArray(msg.content)
+        ? ([...msg.content] as CxContentBlock[])
+        : [],
       status: "complete",
       timestamp: new Date(msg.created_at),
       toolUpdates,
       rawToolCalls,
       isCondensed,
+      agentId: msg.agent_id,
       conversationId: msg.conversation_id,
       position: msg.position,
       dbStatus: msg.status,
-      dbMetadata: msg.metadata,
+      source: msg.source,
+      isVisibleToModel: msg.is_visible_to_model,
+      isVisibleToUser: msg.is_visible_to_user,
+      dbMetadata: toRecord(msg.metadata),
       contentHistory: msg.content_history,
+      userContent: msg.user_content,
       createdAt: msg.created_at,
       deletedAt: msg.deleted_at,
     });

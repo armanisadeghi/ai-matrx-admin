@@ -1,13 +1,18 @@
+import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import type { InstanceContextEntry } from "@/features/agents/types";
 
-export const selectInstanceContextEntries =
-  (instanceId: string) =>
-  (state: RootState): InstanceContextEntry[] => {
-    const context = state.instanceContext.byInstanceId[instanceId];
-    if (!context) return [];
-    return Object.values(context);
-  };
+const EMPTY_CONTEXT_ENTRIES: InstanceContextEntry[] = [];
+
+export const selectInstanceContextEntries = (instanceId: string) =>
+  createSelector(
+    (state: RootState) => state.instanceContext.byInstanceId[instanceId],
+    (context): InstanceContextEntry[] => {
+      if (!context) return EMPTY_CONTEXT_ENTRIES;
+      const values = Object.values(context);
+      return values.length === 0 ? EMPTY_CONTEXT_ENTRIES : values;
+    },
+  );
 
 export const selectInstanceContextEntry =
   (instanceId: string, key: string) =>
@@ -17,24 +22,28 @@ export const selectInstanceContextEntry =
 /**
  * Context entries that match agent-defined slots.
  */
-export const selectSlotMatchedContext =
-  (instanceId: string) =>
-  (state: RootState): InstanceContextEntry[] => {
-    const context = state.instanceContext.byInstanceId[instanceId];
-    if (!context) return [];
-    return Object.values(context).filter((e) => e.slotMatched);
-  };
+export const selectSlotMatchedContext = (instanceId: string) =>
+  createSelector(
+    (state: RootState) => state.instanceContext.byInstanceId[instanceId],
+    (context): InstanceContextEntry[] => {
+      if (!context) return EMPTY_CONTEXT_ENTRIES;
+      const filtered = Object.values(context).filter((e) => e.slotMatched);
+      return filtered.length === 0 ? EMPTY_CONTEXT_ENTRIES : filtered;
+    },
+  );
 
 /**
  * Ad-hoc context entries (not matching any slot).
  */
-export const selectAdHocContext =
-  (instanceId: string) =>
-  (state: RootState): InstanceContextEntry[] => {
-    const context = state.instanceContext.byInstanceId[instanceId];
-    if (!context) return [];
-    return Object.values(context).filter((e) => !e.slotMatched);
-  };
+export const selectAdHocContext = (instanceId: string) =>
+  createSelector(
+    (state: RootState) => state.instanceContext.byInstanceId[instanceId],
+    (context): InstanceContextEntry[] => {
+      if (!context) return EMPTY_CONTEXT_ENTRIES;
+      const filtered = Object.values(context).filter((e) => !e.slotMatched);
+      return filtered.length === 0 ? EMPTY_CONTEXT_ENTRIES : filtered;
+    },
+  );
 
 /**
  * Build the context dict for the API payload.

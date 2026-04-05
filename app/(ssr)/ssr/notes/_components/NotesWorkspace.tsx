@@ -39,6 +39,9 @@ import {
   MoreHorizontal,
   Plus,
   Share2,
+  PilcrowRight,
+  Columns,
+  History,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
@@ -47,18 +50,7 @@ import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIcon
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
 import type { NoteSummary } from "../layout";
-import type { MarkdownStreamProps } from "@/components/MarkdownStream";
-import { MatrxSplit } from "@/components/matrx/MatrxSplit";
-
-const MarkdownStream = dynamic<MarkdownStreamProps>(
-  () => import("@/components/MarkdownStream"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="notes-preview-empty">Loading preview...</div>
-    ),
-  },
-);
+import { NoteEditorCore, type EditorMode as CoreEditorMode } from "@/features/notes/components/NoteEditorCore";
 
 const NoteShareDialog = dynamic(() => import("./NoteShareDialog"), {
   ssr: false,
@@ -66,6 +58,7 @@ const NoteShareDialog = dynamic(() => import("./NoteShareDialog"), {
 });
 
 import NoteContextMenu from "./NoteContextMenu";
+import { NoteVersionHistory } from "./NoteVersionHistory";
 
 const NoteOptionsSheet = dynamic(() => import("./NoteOptionsSheet"), {
   ssr: false,
@@ -85,7 +78,7 @@ export interface NoteData {
 }
 
 type SaveState = "saved" | "dirty" | "saving" | "conflict";
-type EditorMode = "plain" | "preview" | "split";
+type EditorMode = "plain" | "preview" | "split" | "wysiwyg" | "markdown-split";
 
 interface CachedNote {
   data: NoteData;
@@ -289,8 +282,16 @@ export default function NotesWorkspace({
   const [noteCache, setNoteCache] = useState<Map<string, CachedNote>>(
     () => new Map(),
   );
-  const [editorMode, setEditorMode] = useState<EditorMode>("plain");
+  const [editorMode, _setEditorMode] = useState<EditorMode>("plain");
   const [showNoteOptions, setShowNoteOptions] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [draggedTab, setDraggedTab] = useState<string | null>(null);
+  const [dragOverTab, setDragOverTab] = useState<string | null>(null);
+  const [tabContextMenu, setTabContextMenu] = useState<{
+    x: number;
+    y: number;
+    tabId: string;
+  } | null>(null);
 
   // Portal root for overlays that need to escape the notes z-index stacking context
   const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
@@ -301,6 +302,10 @@ export default function NotesWorkspace({
   const saveTimerRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
     new Map(),
   );
+
+  // Echo suppression: track note IDs currently being saved so we don't
+  // treat our own writes as external conflicts (realtime or background refresh).
+  const savingNoteIdsRef = useRef<Set<string>>(new Set());
   const labelMap = useMemo(() => {
     const m: Record<string, string> = {};
     for (const n of notes) m[n.id] = n.label;
@@ -323,6 +328,58 @@ export default function NotesWorkspace({
       .sort();
     return [...defaults, ...custom];
   }, [notes, noteCache]);
+
+  // ── Editor mode persistence ─────────────────────────────────────────────
+
+  const setEditorMode = useCallback(
+    (mode: EditorMode) => {
+      _setEditorMode(mode);
+
+      // Persist to the active note's metadata
+      if (!activeNoteId) return;
+      const cached = noteCache.get(activeNoteId);
+      if (!cached) return;
+
+      const updatedMetadata = { ...cached.data.metadata, lastEditorMode: mode };
+
+      // Update local cache immediately
+      setNoteCache((prev) => {
+        const next = new Map(prev);
+        const c = next.get(activeNoteId);
+        if (!c) return prev;
+        next.set(activeNoteId, {
+          ...c,
+          data: { ...c.data, metadata: updatedMetadata },
+        });
+        return next;
+      });
+
+      // Persist to Supabase (fire-and-forget)
+      supabase
+        .from("notes")
+        .update({ metadata: updatedMetadata })
+        .eq("id", activeNoteId)
+        .then(({ error }) => {
+          if (error) console.error("Failed to save editor mode:", error);
+        });
+    },
+    [activeNoteId, noteCache],
+  );
+
+  // Restore editor mode when switching notes
+  useEffect(() => {
+    if (!activeNoteId) return;
+    const cached = noteCache.get(activeNoteId);
+    if (!cached) return;
+    const saved = cached.data.metadata?.lastEditorMode;
+    if (saved && typeof saved === "string") {
+      _setEditorMode(saved as EditorMode);
+    } else {
+      _setEditorMode("plain");
+    }
+    // Only run when the active note changes, not on every cache update
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeNoteId]);
 
   // ── Fetch note content ──────────────────────────────────────────────────
 
@@ -350,12 +407,15 @@ export default function NotesWorkspace({
       const next = new Map(prev);
       const existing = next.get(noteId);
 
-      // If we have local edits, don't overwrite — detect conflict instead
+      // If we have local edits, don't overwrite — detect conflict instead.
+      // BUT: skip conflict detection if we just saved this note (echo suppression)
+      // to avoid false "updated in another tab" warnings from our own save.
       if (existing?.localEdits) {
+        const isOwnEcho = savingNoteIdsRef.current.has(noteId);
         const serverChanged =
           noteData.content !== existing.data.content ||
           noteData.label !== existing.data.label;
-        if (serverChanged) {
+        if (serverChanged && !isOwnEcho) {
           next.set(noteId, {
             ...existing,
             data: noteData,
@@ -393,8 +453,16 @@ export default function NotesWorkspace({
 
     const cached = noteCache.get(activeNoteId);
     if (!cached) {
-      // First time opening — fetch
-      fetchNote(activeNoteId);
+      // First time opening — fetch, then restore editor mode from metadata
+      fetchNote(activeNoteId).then((noteData) => {
+        if (!noteData) return;
+        const saved = noteData.metadata?.lastEditorMode;
+        if (saved && typeof saved === "string") {
+          _setEditorMode(saved as EditorMode);
+        } else {
+          _setEditorMode("plain");
+        }
+      });
     } else {
       // Already cached — background refresh if stale (>30s)
       const age = Date.now() - cached.fetchedAt;
@@ -403,6 +471,158 @@ export default function NotesWorkspace({
       }
     }
   }, [activeNoteId, fetchNote]); // intentionally NOT including noteCache to avoid loop
+
+  // ── Supabase Realtime subscription ──────────────────────────────────────
+  // Listens for INSERT/UPDATE/DELETE on the notes table scoped to this user.
+  // Uses echo suppression (savingNoteIdsRef) to ignore our own writes.
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel(`notes-realtime:${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notes",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const eventType = payload.eventType;
+          const newRecord = payload.new as Record<string, unknown> | undefined;
+          const oldRecord = payload.old as Record<string, unknown> | undefined;
+
+          console.log("[Notes Realtime] Event:", eventType, "noteId:", (newRecord?.id || oldRecord?.id));
+
+          if (eventType === "UPDATE" && newRecord) {
+            const noteId = newRecord.id as string;
+
+            // Echo suppression — skip if this is our own save bouncing back
+            if (savingNoteIdsRef.current.has(noteId)) {
+              console.log("[Notes Realtime] Suppressing own echo for", noteId);
+              return;
+            }
+
+            // Skip soft-deleted notes
+            if (newRecord.is_deleted) return;
+
+            // Update the cache if this note is open
+            setNoteCache((prev) => {
+              const cached = prev.get(noteId);
+              if (!cached) return prev; // Not open — sidebar will pick it up
+
+              const serverContent = (newRecord.content as string) ?? "";
+              const serverLabel = (newRecord.label as string) ?? "";
+              const serverFolder = (newRecord.folder_name as string) ?? "Draft";
+              const serverTags = (newRecord.tags as string[]) ?? [];
+              const serverMeta = (newRecord.metadata as Record<string, unknown>) ?? {};
+              const serverUpdatedAt = (newRecord.updated_at as string) ?? "";
+
+              const updatedData: NoteData = {
+                ...cached.data,
+                content: serverContent,
+                label: serverLabel,
+                folder_name: serverFolder,
+                tags: serverTags,
+                metadata: serverMeta,
+                updated_at: serverUpdatedAt,
+              };
+
+              // If user has local edits, mark as conflict
+              if (cached.localEdits) {
+                const hasRealChange =
+                  serverContent !== cached.data.content ||
+                  serverLabel !== cached.data.label;
+                if (hasRealChange) {
+                  const next = new Map(prev);
+                  next.set(noteId, {
+                    ...cached,
+                    data: updatedData,
+                    saveState: "conflict",
+                    fetchedAt: Date.now(),
+                  });
+                  return next;
+                }
+              }
+
+              // No local edits — silently update
+              const next = new Map(prev);
+              next.set(noteId, {
+                data: updatedData,
+                localEdits: null,
+                saveState: "saved",
+                fetchedAt: Date.now(),
+              });
+              return next;
+            });
+
+            // Notify sidebar of label/folder changes
+            if (newRecord.label) {
+              window.dispatchEvent(
+                new CustomEvent("notes:labelChange", {
+                  detail: { noteId, label: newRecord.label },
+                }),
+              );
+            }
+            if (newRecord.folder_name) {
+              window.dispatchEvent(
+                new CustomEvent("notes:moved", {
+                  detail: { noteId, folder: newRecord.folder_name },
+                }),
+              );
+            }
+          }
+
+          if (eventType === "INSERT" && newRecord) {
+            if (newRecord.is_deleted) return;
+            // Notify sidebar to add the new note
+            window.dispatchEvent(
+              new CustomEvent("notes:created", {
+                detail: {
+                  id: newRecord.id,
+                  label: newRecord.label ?? "New Note",
+                  folder_name: newRecord.folder_name ?? "Draft",
+                  tags: newRecord.tags ?? [],
+                  updated_at: newRecord.updated_at ?? new Date().toISOString(),
+                },
+              }),
+            );
+          }
+
+          if (eventType === "DELETE" && oldRecord) {
+            const noteId = oldRecord.id as string;
+            // Remove from cache and notify sidebar
+            setNoteCache((prev) => {
+              if (!prev.has(noteId)) return prev;
+              const next = new Map(prev);
+              next.delete(noteId);
+              return next;
+            });
+            window.dispatchEvent(
+              new CustomEvent("notes:deleted", { detail: { noteId } }),
+            );
+          }
+        },
+      )
+      .subscribe((status, err) => {
+        if (status === "SUBSCRIBED") {
+          console.log("[Notes Realtime] Connected — listening for changes");
+        } else if (status === "CHANNEL_ERROR") {
+          console.error("[Notes Realtime] Channel error:", err);
+        } else if (status === "TIMED_OUT") {
+          console.warn("[Notes Realtime] Subscription timed out");
+        } else {
+          console.log("[Notes Realtime] Status:", status);
+        }
+      });
+
+    return () => {
+      console.log("[Notes Realtime] Cleaning up channel");
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
 
   // ── URL management via pushState ──────────────────────────────────────
 
@@ -479,10 +699,30 @@ export default function NotesWorkspace({
     window.history.pushState({}, "", buildNotesUrl(null, params));
   }, [searchParams]);
 
+  /** Reorder tabs by moving `dragId` before `dropId` in the URL param */
+  const reorderTabs = useCallback(
+    (dragId: string, dropId: string) => {
+      if (dragId === dropId) return;
+      const params = new URLSearchParams(searchParams.toString());
+      const tabs = params.get("tabs")?.split(",").filter(Boolean) ?? [];
+      const filtered = tabs.filter((t) => t !== dragId);
+      const dropIdx = filtered.indexOf(dropId);
+      if (dropIdx === -1) return;
+      filtered.splice(dropIdx, 0, dragId);
+      params.set("tabs", filtered.join(","));
+      window.history.pushState(
+        {},
+        "",
+        buildNotesUrl(activeNoteId || null, params),
+      );
+    },
+    [searchParams, activeNoteId],
+  );
+
   // ── Auto-save with sidebar sync ──────────────────────────────────────
 
   const scheduleSave = useCallback(
-    (noteId: string, label: string, content: string) => {
+    (noteId: string, label: string, content: string, skipConcurrencyCheck = false) => {
       // Clear existing timer
       const timers = saveTimerRef.current;
       const existing = timers.get(noteId);
@@ -539,12 +779,71 @@ export default function NotesWorkspace({
             return;
           }
 
+          // ── Optimistic concurrency: fetch server version first ──────
+          // Before saving, check if the note has been modified externally
+          // since we last fetched/saved it. This prevents silent overwrites.
+          if (!skipConcurrencyCheck) {
+            const lastKnownUpdatedAt = cached.data.updated_at;
+
+            const { data: serverCheck, error: checkErr } = await supabase
+              .from("notes")
+              .select("updated_at, content, label")
+              .eq("id", noteId)
+              .single();
+
+            if (!checkErr && serverCheck) {
+              const serverUpdatedAt = serverCheck.updated_at as string;
+              // If server has a newer version than what we last saw, it's a conflict
+              if (
+                lastKnownUpdatedAt &&
+                serverUpdatedAt &&
+                serverUpdatedAt !== lastKnownUpdatedAt &&
+                new Date(serverUpdatedAt) > new Date(lastKnownUpdatedAt)
+              ) {
+                console.warn(
+                  "[Notes Save] Conflict detected! Server updated_at:",
+                  serverUpdatedAt,
+                  "Local:",
+                  lastKnownUpdatedAt,
+                );
+                // Update cache with server data but preserve local edits for user choice
+                setNoteCache((prev) => {
+                  const next = new Map(prev);
+                  const c = next.get(noteId);
+                  if (!c) return prev;
+                  next.set(noteId, {
+                    ...c,
+                    data: {
+                      ...c.data,
+                      content: serverCheck.content as string ?? c.data.content,
+                      label: serverCheck.label as string ?? c.data.label,
+                      updated_at: serverUpdatedAt,
+                    },
+                    saveState: "conflict",
+                    fetchedAt: Date.now(),
+                  });
+                  return next;
+                });
+                return; // Don't save — let user resolve the conflict
+              }
+            }
+          }
+
+          // Mark as "saving" for echo suppression — realtime and background
+          // refresh will skip conflict detection while this note is in flight.
+          savingNoteIdsRef.current.add(noteId);
+
           const { data, error } = await supabase
             .from("notes")
             .update(updates)
             .eq("id", noteId)
             .select("updated_at")
             .single();
+
+          // Clear echo suppression after a short window to absorb realtime echo
+          setTimeout(() => {
+            savingNoteIdsRef.current.delete(noteId);
+          }, 3000);
 
           if (error) {
             console.error("Auto-save failed:", error);
@@ -606,10 +905,11 @@ export default function NotesWorkspace({
   // ── Force save ──────────────────────────────────────────────────────────
 
   const forceSave = useCallback(
-    async (noteId: string) => {
+    (noteId: string) => {
       const cached = noteCache.get(noteId);
       if (!cached?.localEdits) return;
 
+      // Cancel any pending debounced save
       const timers = saveTimerRef.current;
       const t = timers.get(noteId);
       if (t) {
@@ -617,62 +917,10 @@ export default function NotesWorkspace({
         timers.delete(noteId);
       }
 
-      setNoteCache((prev) => {
-        const next = new Map(prev);
-        const c = next.get(noteId);
-        if (!c) return prev;
-        next.set(noteId, { ...c, saveState: "saving" });
-        return next;
-      });
-
-      const { label, content } = cached.localEdits;
-      const { data, error } = await supabase
-        .from("notes")
-        .update({ label, content })
-        .eq("id", noteId)
-        .select("updated_at")
-        .single();
-
-      if (error) {
-        setNoteCache((prev) => {
-          const next = new Map(prev);
-          const c = next.get(noteId);
-          if (!c) return prev;
-          next.set(noteId, { ...c, saveState: "dirty" });
-          return next;
-        });
-        return;
-      }
-
-      if (label !== cached.data.label) {
-        window.dispatchEvent(
-          new CustomEvent("notes:labelChange", {
-            detail: { noteId, label },
-          }),
-        );
-      }
-
-      setNoteCache((prev) => {
-        const next = new Map(prev);
-        const c = next.get(noteId);
-        if (!c) return prev;
-        const editsStillMatch =
-          c.localEdits?.content === content && c.localEdits?.label === label;
-        next.set(noteId, {
-          data: {
-            ...c.data,
-            label,
-            content,
-            updated_at: data?.updated_at ?? c.data.updated_at,
-          },
-          localEdits: editsStillMatch ? null : c.localEdits,
-          saveState: editsStillMatch ? "saved" : c.saveState,
-          fetchedAt: Date.now(),
-        });
-        return next;
-      });
+      // Use scheduleSave with 0 delay (it debounces internally but clears first)
+      scheduleSave(noteId, cached.localEdits.label, cached.localEdits.content);
     },
-    [noteCache],
+    [noteCache, scheduleSave],
   );
 
   // ── Note CRUD ─────────────────────────────────────────────────────────
@@ -929,15 +1177,17 @@ export default function NotesWorkspace({
             saveState: "saved",
           });
         } else {
-          // Keep local edits, save them
-          next.set(noteId, { ...cached, saveState: "dirty" });
-          if (cached.localEdits) {
-            scheduleSave(
-              noteId,
-              cached.localEdits.label,
-              cached.localEdits.content,
-            );
-          }
+          // Keep local edits — force save (skip concurrency check since user chose "mine")
+          next.set(noteId, {
+            ...cached,
+            saveState: "dirty",
+          });
+          const localLabel = cached.localEdits?.label ?? cached.data.label;
+          const localContent = cached.localEdits?.content ?? cached.data.content;
+          // Use skipConcurrencyCheck=true since user explicitly chose to overwrite
+          setTimeout(() => {
+            scheduleSave(noteId, localLabel, localContent, true);
+          }, 100);
         }
         return next;
       });
@@ -1026,6 +1276,16 @@ export default function NotesWorkspace({
 
     scheduleSave(activeNoteId, label, newContent);
   };
+
+  /** String-based content change handler for NoteEditorCore */
+  const handleEditorCoreChange = useCallback(
+    (newContent: string) => {
+      handleContentChange({
+        target: { value: newContent },
+      } as ChangeEvent<HTMLTextAreaElement>);
+    },
+    [handleContentChange],
+  );
 
   const handleTranscription = useCallback(
     (text: string) => {
@@ -1134,6 +1394,32 @@ export default function NotesWorkspace({
               className={cn(
                 "flex items-center gap-1 px-2.5 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer",
                 "[&_svg]:w-3.5 [&_svg]:h-3.5",
+                "max-lg:hidden",
+                editorMode === "wysiwyg"
+                  ? "bg-[var(--shell-glass-bg-active)] text-[var(--shell-nav-text-hover)]"
+                  : "text-[var(--shell-nav-text)] hover:text-[var(--shell-nav-text-hover)]",
+              )}
+              onClick={() => setEditorMode("wysiwyg")}
+            >
+              <PilcrowRight /> Rich
+            </button>
+            <button
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer",
+                "[&_svg]:w-3.5 [&_svg]:h-3.5",
+                "max-lg:hidden",
+                editorMode === "markdown-split"
+                  ? "bg-[var(--shell-glass-bg-active)] text-[var(--shell-nav-text-hover)]"
+                  : "text-[var(--shell-nav-text)] hover:text-[var(--shell-nav-text-hover)]",
+              )}
+              onClick={() => setEditorMode("markdown-split")}
+            >
+              <Columns /> MD Split
+            </button>
+            <button
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer",
+                "[&_svg]:w-3.5 [&_svg]:h-3.5",
                 editorMode === "preview"
                   ? "bg-[var(--shell-glass-bg-active)] text-[var(--shell-nav-text-hover)]"
                   : "text-[var(--shell-nav-text)] hover:text-[var(--shell-nav-text-hover)]",
@@ -1169,16 +1455,47 @@ export default function NotesWorkspace({
               return (
                 <div
                   key={id}
+                  draggable
+                  onDragStart={(e) => {
+                    setDraggedTab(id);
+                    e.dataTransfer.effectAllowed = "move";
+                    e.dataTransfer.setData("text/plain", id);
+                  }}
+                  onDragEnd={() => {
+                    setDraggedTab(null);
+                    setDragOverTab(null);
+                  }}
+                  onDragOver={(e) => {
+                    if (!draggedTab || draggedTab === id) return;
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    setDragOverTab(id);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const fromId = e.dataTransfer.getData("text/plain");
+                    if (fromId && fromId !== id) {
+                      reorderTabs(fromId, id);
+                    }
+                    setDraggedTab(null);
+                    setDragOverTab(null);
+                  }}
                   className={cn(
                     "group flex items-center gap-0 px-[6px] text-[0.6875rem] font-medium whitespace-nowrap min-w-0 shrink-0 transition-colors",
                     isActive
                       ? "max-w-[340px] bg-accent/60 text-foreground"
                       : "max-w-[160px] bg-transparent text-muted-foreground hover:bg-accent/30 cursor-pointer",
+                    draggedTab === id && "opacity-40",
+                    dragOverTab === id && "border-l-2 border-primary",
                   )}
                   role="tab"
                   data-active={isActive ? "true" : undefined}
                   aria-selected={isActive}
                   onClick={() => !isActive && switchTab(id)}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setTabContextMenu({ x: e.clientX, y: e.clientY, tabId: id });
+                  }}
                 >
                   {isDirty && (
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
@@ -1260,6 +1577,13 @@ export default function NotesWorkspace({
                       >
                         <Trash2 />
                       </button>
+                      <button
+                        className={cn(actionBtnClass, showVersionHistory && "text-primary")}
+                        onClick={() => setShowVersionHistory((v) => !v)}
+                        title="Version History"
+                      >
+                        <History />
+                      </button>
                       <MicrophoneIconButton
                         onTranscriptionComplete={handleTranscription}
                         variant="icon-only"
@@ -1297,6 +1621,8 @@ export default function NotesWorkspace({
 
       {/* ── Editor or Empty State ──────────────────────────────────── */}
       {activeNoteId && activeCached ? (
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+        <div className="flex-1 flex flex-col min-w-0 min-h-0">
         <NoteContextMenu
           noteId={activeNoteId}
           isDirty={activeCached.saveState === "dirty"}
@@ -1314,6 +1640,7 @@ export default function NotesWorkspace({
           onCloseOtherTabs={() => closeOtherTabs(activeNoteId)}
           onCloseAllTabs={closeAllTabs}
           onDelete={() => deleteNote(activeNoteId)}
+          onVersionHistory={() => setShowVersionHistory((v) => !v)}
         >
           <div className="flex-1 flex flex-col overflow-hidden note-detail-active">
             {/* ── Conflict Banner ──────────────────────────────────────── */}
@@ -1401,46 +1728,17 @@ export default function NotesWorkspace({
                 portalRoot,
               )}
 
-            {/* ── Editor Content ─────────────────────────────────────── */}
-            {editorMode === "plain" && (
-              <textarea
-                ref={textareaRef}
-                className="notes-editor-textarea scrollbar-thin-auto flex-1 min-h-0 w-full py-2 px-5 text-sm leading-[1.7] font-[inherit] text-foreground bg-transparent border-none outline-none resize-none overflow-y-auto placeholder:text-muted-foreground"
-                value={activeContent}
-                onChange={handleContentChange}
-                placeholder="Start writing..."
-                aria-label="Note content"
-              />
-            )}
-
-            {editorMode === "preview" && (
-              <div className="notes-preview-wrapper scrollbar-thin-auto flex-1 min-h-0 overflow-y-auto py-2 px-5">
-                {activeContent ? (
-                  <MarkdownStream
-                    content={activeContent}
-                    type="text"
-                    role="assistant"
-                    hideCopyButton
-                  />
-                ) : (
-                  <p className="notes-preview-empty">Nothing to preview</p>
-                )}
-              </div>
-            )}
-
-            {editorMode === "split" && (
-              <MatrxSplit
-                value={activeContent}
-                onChange={(val) =>
-                  handleContentChange({
-                    target: { value: val },
-                  } as React.ChangeEvent<HTMLTextAreaElement>)
-                }
-                textareaRef={textareaRef}
-                placeholder="Start writing..."
-                className="flex-1 min-h-0"
-              />
-            )}
+            {/* ── Editor Content (via NoteEditorCore) ──────────────── */}
+            <NoteEditorCore
+              content={activeContent}
+              onChange={handleEditorCoreChange}
+              editorMode={editorMode as CoreEditorMode}
+              textareaRef={textareaRef}
+              onVoiceTranscription={handleTranscription}
+              placeholder="Start writing..."
+              className="flex-1 min-h-0"
+              textareaClassName="notes-editor-textarea scrollbar-thin-auto py-2 px-5 text-sm leading-[1.7] font-[inherit]"
+            />
 
             {/* ── Tags & Folder Bar (deep hydration — renders shell immediately) */}
             <div className="flex items-center gap-2 py-1 px-4 border-t border-border/20 shrink-0 overflow-hidden min-h-[1.625rem]">
@@ -1554,6 +1852,22 @@ export default function NotesWorkspace({
             </div>
           </div>
         </NoteContextMenu>
+        </div>
+
+        {/* ── Version History Side Panel ────────────────────────────── */}
+        {showVersionHistory && (
+          <NoteVersionHistory
+            noteId={activeNoteId}
+            onClose={() => setShowVersionHistory(false)}
+            onVersionRestored={() => {
+              // Refetch the note to load the restored version
+              fetchNote(activeNoteId);
+              setShowVersionHistory(false);
+            }}
+            className="w-[360px] shrink-0 max-lg:hidden"
+          />
+        )}
+        </div>
       ) : activeNoteId ? (
         /* Loading state */
         <div className="flex-1 flex flex-col overflow-hidden note-detail-active">
@@ -1589,6 +1903,60 @@ export default function NotesWorkspace({
             noteId={shareDialogNoteId}
             onClose={() => setShareDialogNoteId(null)}
           />,
+          portalRoot,
+        )}
+      {/* ── Tab Context Menu (portaled) ──────────────────────────── */}
+      {tabContextMenu &&
+        portalRoot &&
+        createPortal(
+          <>
+            <div
+              className="fixed inset-0 z-110"
+              onClick={() => setTabContextMenu(null)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                setTabContextMenu(null);
+              }}
+            />
+            <div
+              className="fixed z-120 min-w-[160px] py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg"
+              style={{ left: tabContextMenu.x, top: tabContextMenu.y }}
+            >
+              {[
+                { icon: <Save className="w-3 h-3" />, label: "Save", fn: () => forceSave(tabContextMenu.tabId) },
+                { icon: <Copy className="w-3 h-3" />, label: "Duplicate", fn: () => duplicateNote(tabContextMenu.tabId) },
+                { icon: <Share2 className="w-3 h-3" />, label: "Share Link", fn: () => setShareDialogNoteId(tabContextMenu.tabId) },
+                { icon: <FileText className="w-3 h-3" />, label: "Export as Markdown", fn: () => exportNote(tabContextMenu.tabId) },
+                null,
+                { icon: <X className="w-3 h-3" />, label: "Close Tab", fn: () => closeTab(tabContextMenu.tabId) },
+                { icon: <X className="w-3 h-3" />, label: "Close Other Tabs", fn: () => closeOtherTabs(tabContextMenu.tabId) },
+                { icon: <X className="w-3 h-3" />, label: "Close All Tabs", fn: () => closeAllTabs() },
+                null,
+                { icon: <Trash2 className="w-3 h-3" />, label: "Delete Note", fn: () => deleteNote(tabContextMenu.tabId), destructive: true },
+              ].map((item, i) =>
+                item === null ? (
+                  <div key={`sep-${i}`} className="h-px bg-border/50 my-1" />
+                ) : (
+                  <button
+                    key={item.label}
+                    className={cn(
+                      "flex items-center gap-2 w-full px-3 py-1.5 text-xs transition-colors cursor-pointer",
+                      (item as any).destructive
+                        ? "text-destructive hover:bg-destructive/10"
+                        : "text-foreground hover:bg-accent",
+                    )}
+                    onClick={() => {
+                      item.fn();
+                      setTabContextMenu(null);
+                    }}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </button>
+                ),
+              )}
+            </div>
+          </>,
           portalRoot,
         )}
     </>

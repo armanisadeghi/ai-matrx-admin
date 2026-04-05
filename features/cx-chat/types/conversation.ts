@@ -11,6 +11,7 @@
 
 import type { StreamEvent } from "@/types/python-generated/stream-events";
 import type { LLMParams } from "@/lib/api/types";
+import type { Json } from "@/types/database.types";
 import type {
   CxToolCall,
   CxContentBlock,
@@ -57,6 +58,14 @@ export interface ConversationMessage {
   conversationId?: string;
   /** Message ordering position in the conversation (0-based) */
   position?: number;
+  /** cx_message.agent_id */
+  agentId?: string | null;
+  /** cx_message.source */
+  source?: string;
+  isVisibleToModel?: boolean;
+  isVisibleToUser?: boolean;
+  /** cx_message.user_content */
+  userContent?: Json | null;
   /** Raw metadata JSON from DB */
   dbMetadata?: Record<string, unknown>;
   /** Content version history — array of previous content snapshots, auto-managed by cx_message_edit RPC */

@@ -36,7 +36,7 @@ export function AgentBuilderRightPanel({
     launchAgent(agentId, {
       sourceFeature: "agent-builder",
       autoRun: false,
-      displayMode: "panel",
+      displayMode: "direct",
       useChat: true,
       autoClearConversation: true,
       conversationMode: "chat",

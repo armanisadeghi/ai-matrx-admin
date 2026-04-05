@@ -157,7 +157,7 @@ export const selectShortcutKeyboardShortcut = createSelector(
 
 export const selectShortcutEnabledContexts = createSelector(
   [selectShortcutById],
-  (record) => record?.enabledContexts ?? [],
+  (record) => record?.enabledContexts,
 );
 
 export const selectShortcutScopeMappings = createSelector(
@@ -186,17 +186,17 @@ export const selectShortcutIsDirty = createSelector(
 
 export const selectShortcutDirtyFields = createSelector(
   [selectShortcutById],
-  (record): Set<keyof AgentShortcut> => record?._dirtyFields ?? new Set(),
+  (record): Set<keyof AgentShortcut> | undefined => record?._dirtyFields,
 );
 
 export const selectShortcutFieldHistory = createSelector(
   [selectShortcutById],
-  (record) => record?._fieldHistory ?? {},
+  (record) => record?._fieldHistory,
 );
 
 export const selectShortcutLoadedFields = createSelector(
   [selectShortcutById],
-  (record): Set<keyof AgentShortcut> => record?._loadedFields ?? new Set(),
+  (record): Set<keyof AgentShortcut> | undefined => record?._loadedFields,
 );
 
 export const selectShortcutIsLoading = createSelector(

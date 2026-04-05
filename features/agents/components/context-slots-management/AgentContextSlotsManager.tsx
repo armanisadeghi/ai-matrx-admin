@@ -178,9 +178,10 @@ export function AgentContextSlotsManager({
 }: AgentContextSlotsManagerProps) {
   const dispatch = useAppDispatch();
   const isMobile = useIsMobile();
-  const slots = useAppSelector((state) =>
+  const slotsRaw = useAppSelector((state) =>
     selectAgentContextSlots(state, agentId),
   );
+  const slots = slotsRaw ?? [];
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [editIndex, setEditIndex] = useState<number | null>(null);

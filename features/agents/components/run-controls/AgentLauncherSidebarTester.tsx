@@ -63,9 +63,9 @@ export function AgentLauncherSidebarTester({
   const { launchAgent } = useAgentLauncher();
   const [isOpen, setIsOpen] = useState(false);
   const [testModalOpen, setTestModalOpen] = useState(false);
-  const [testModalType, setTestModalType] = useState<
-    "direct" | "inline" | "background"
-  >("direct");
+  const [testModalType, setTestModalType] = useState<"direct" | "background">(
+    "direct",
+  );
 
   const [autoRun, setAutoRun] = useState(true);
   const [allowChat, setAllowChat] = useState(true);
@@ -84,11 +84,7 @@ export function AgentLauncherSidebarTester({
       return;
     }
 
-    if (
-      displayMode === "direct" ||
-      displayMode === "inline" ||
-      displayMode === "background"
-    ) {
+    if (displayMode === "direct" || displayMode === "background") {
       setTestModalType(displayMode);
       setTestModalOpen(true);
       return;

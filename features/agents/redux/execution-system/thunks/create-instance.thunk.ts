@@ -89,69 +89,89 @@ interface CreateManualInstanceArgs {
   autoClearConversation?: boolean;
   mode?: ConversationMode;
   sourceFeature?: SourceFeature;
+  autoRun?: boolean;
+  allowChat?: boolean;
+  usePreExecutionInput?: boolean;
+  showVariablePanel?: boolean;
+  showDefinitionMessages?: boolean;
+  showDefinitionMessageContent?: boolean;
+  displayMode?: ResultDisplayMode;
+  callbackGroupId?: string | null;
 }
 
 export const createManualInstance = createAsyncThunk<
   string,
   CreateManualInstanceArgs
->(
-  "instances/createManual",
-  async (
-    {
+>("instances/createManual", async (args, { dispatch, getState }) => {
+  const {
+    agentId,
+    agentType,
+    autoClearConversation = false,
+    mode = "agent",
+    sourceFeature = "agent-runner",
+    autoRun,
+    allowChat,
+    usePreExecutionInput,
+    showVariablePanel,
+    showDefinitionMessages,
+    showDefinitionMessageContent,
+    displayMode,
+    callbackGroupId,
+  } = args;
+
+  const instanceId = generateInstanceId();
+  const state = getState() as RootState;
+
+  const snapshot = readAgentSnapshot(state, agentId);
+  const resolvedAgentType = agentType ?? snapshot.agentType;
+
+  dispatch(
+    createInstance({
+      instanceId,
       agentId,
-      agentType,
-      autoClearConversation = false,
-      mode = "agent",
-      sourceFeature = "agent-runner",
-    },
-    { dispatch, getState },
-  ) => {
-    const instanceId = generateInstanceId();
-    const state = getState() as RootState;
+      agentType: resolvedAgentType,
+      origin: "manual" as InstanceOrigin,
+      sourceFeature,
+    }),
+  );
 
-    const snapshot = readAgentSnapshot(state, agentId);
-    const resolvedAgentType = agentType ?? snapshot.agentType;
+  dispatch(
+    initInstanceOverrides({
+      instanceId,
+      baseSettings: snapshot.baseSettings,
+    }),
+  );
+  dispatch(
+    initInstanceVariables({
+      instanceId,
+      definitions: snapshot.variableDefinitions,
+      scopeValues: {},
+    }),
+  );
+  dispatch(initInstanceResources({ instanceId }));
+  dispatch(initInstanceContext({ instanceId }));
+  dispatch(initInstanceUserInput({ instanceId }));
+  dispatch(initInstanceClientTools({ instanceId }));
+  dispatch(
+    initInstanceUIState({
+      instanceId,
+      displayMode,
+      isCreator: snapshot.isCreator,
+      autoClearConversation,
+      autoRun,
+      allowChat,
+      usePreExecutionInput,
+      showVariablePanel:
+        showVariablePanel ?? snapshot.variableDefinitions.length > 0,
+      showDefinitionMessages,
+      showDefinitionMessageContent,
+      callbackGroupId,
+    }),
+  );
+  dispatch(initInstanceHistory({ instanceId, mode }));
 
-    dispatch(
-      createInstance({
-        instanceId,
-        agentId,
-        agentType: resolvedAgentType,
-        origin: "manual" as InstanceOrigin,
-        sourceFeature,
-      }),
-    );
-
-    dispatch(
-      initInstanceOverrides({
-        instanceId,
-        baseSettings: snapshot.baseSettings,
-      }),
-    );
-    dispatch(
-      initInstanceVariables({
-        instanceId,
-        definitions: snapshot.variableDefinitions,
-        scopeValues: {},
-      }),
-    );
-    dispatch(initInstanceResources({ instanceId }));
-    dispatch(initInstanceContext({ instanceId }));
-    dispatch(initInstanceUserInput({ instanceId }));
-    dispatch(initInstanceClientTools({ instanceId }));
-    dispatch(
-      initInstanceUIState({
-        instanceId,
-        isCreator: snapshot.isCreator,
-        autoClearConversation,
-        showVariablePanel: snapshot.variableDefinitions.length > 0,
-      }),
-    );
-    dispatch(initInstanceHistory({ instanceId, mode }));
-
-    return instanceId;
-  },
-);
+  return instanceId;
+});
 
 // =============================================================================
 // Shortcut Instance Creation
@@ -162,98 +182,105 @@ interface CreateShortcutInstanceArgs {
   uiScopes: Record<string, unknown>;
   sourceFeature?: SourceFeature;
   displayMode?: ResultDisplayMode;
+  autoRun?: boolean;
   allowChat?: boolean;
-  showVariables?: boolean;
+  usePreExecutionInput?: boolean;
+  showVariablePanel?: boolean;
+  showDefinitionMessages?: boolean;
+  showDefinitionMessageContent?: boolean;
+  callbackGroupId?: string | null;
 }
 
 export const createInstanceFromShortcut = createAsyncThunk<
   string,
   CreateShortcutInstanceArgs
->(
-  "instances/createFromShortcut",
-  async (
-    {
+>("instances/createFromShortcut", async (args, { dispatch, getState }) => {
+  const {
+    shortcutId,
+    uiScopes,
+    sourceFeature = "context-menu",
+    displayMode,
+    autoRun,
+    allowChat,
+    usePreExecutionInput,
+    showVariablePanel,
+    showDefinitionMessages,
+    showDefinitionMessageContent,
+    callbackGroupId,
+  } = args;
+
+  const instanceId = generateInstanceId();
+  const state = getState() as RootState;
+  const shortcut = state.agentShortcut[shortcutId];
+
+  if (!shortcut) throw new Error(`Shortcut ${shortcutId} not found`);
+
+  const { agentId } = shortcut;
+
+  const snapshot = readAgentSnapshot(state, agentId);
+
+  dispatch(
+    createInstance({
+      instanceId,
+      agentId,
+      agentType: snapshot.agentType,
+      origin: "shortcut" as InstanceOrigin,
       shortcutId,
-      uiScopes,
-      sourceFeature = "context-menu",
-      displayMode,
-      allowChat,
-      showVariables,
-    },
-    { dispatch, getState },
-  ) => {
-    const instanceId = generateInstanceId();
-    const state = getState() as RootState;
-    const shortcut = state.agentShortcut[shortcutId];
+      sourceFeature,
+    }),
+  );
 
-    if (!shortcut) throw new Error(`Shortcut ${shortcutId} not found`);
+  dispatch(
+    initInstanceOverrides({
+      instanceId,
+      baseSettings: snapshot.baseSettings,
+    }),
+  );
+  dispatch(
+    initInstanceVariables({
+      instanceId,
+      definitions: snapshot.variableDefinitions,
+      scopeValues: {},
+    }),
+  );
+  dispatch(initInstanceResources({ instanceId }));
+  dispatch(initInstanceContext({ instanceId }));
+  dispatch(initInstanceUserInput({ instanceId }));
+  dispatch(initInstanceClientTools({ instanceId }));
+  dispatch(
+    initInstanceUIState({
+      instanceId,
+      displayMode: (displayMode ?? shortcut.resultDisplay) as ResultDisplayMode,
+      autoRun,
+      allowChat: allowChat ?? shortcut.allowChat,
+      usePreExecutionInput,
+      showVariablePanel: showVariablePanel ?? shortcut.showVariables,
+      showDefinitionMessages,
+      showDefinitionMessageContent,
+      callbackGroupId,
+      isCreator: snapshot.isCreator,
+    }),
+  );
 
-    const { agentId } = shortcut;
+  const { variableValues, contextEntries } = mapScopeToInstance(
+    uiScopes,
+    shortcut.scopeMappings,
+    snapshot.variableDefinitions,
+    snapshot.contextSlots,
+  );
 
-    const snapshot = readAgentSnapshot(state, agentId);
+  if (shortcut.applyVariables && Object.keys(variableValues).length > 0) {
+    dispatch(setUserVariableValues({ instanceId, values: variableValues }));
+  }
 
-    // 1. Create instance shell with source tracking
-    dispatch(
-      createInstance({
-        instanceId,
-        agentId,
-        agentType: snapshot.agentType,
-        origin: "shortcut" as InstanceOrigin,
-        shortcutId,
-        sourceFeature,
-      }),
-    );
+  if (contextEntries.length > 0) {
+    dispatch(setContextEntries({ instanceId, entries: contextEntries }));
+  }
 
-    // 2. Initialize sibling slices with snapshotted data
-    dispatch(
-      initInstanceOverrides({
-        instanceId,
-        baseSettings: snapshot.baseSettings,
-      }),
-    );
-    dispatch(
-      initInstanceVariables({
-        instanceId,
-        definitions: snapshot.variableDefinitions,
-        scopeValues: {},
-      }),
-    );
-    dispatch(initInstanceResources({ instanceId }));
-    dispatch(initInstanceContext({ instanceId }));
-    dispatch(initInstanceUserInput({ instanceId }));
-    dispatch(initInstanceClientTools({ instanceId }));
-    dispatch(
-      initInstanceUIState({
-        instanceId,
-        displayMode: (displayMode ??
-          shortcut.resultDisplay) as ResultDisplayMode,
-        allowChat: allowChat ?? shortcut.allowChat,
-        showVariablePanel: showVariables ?? shortcut.showVariables,
-        isCreator: snapshot.isCreator,
-      }),
-    );
+  dispatch(initInstanceHistory({ instanceId }));
 
-    // 3. Apply scope mappings via universal utility
-    const { variableValues, contextEntries } = mapScopeToInstance(
-      uiScopes,
-      shortcut.scopeMappings,
-      snapshot.variableDefinitions,
-      snapshot.contextSlots,
-    );
-
-    if (shortcut.applyVariables && Object.keys(variableValues).length > 0) {
-      dispatch(setUserVariableValues({ instanceId, values: variableValues }));
-    }
-
-    if (contextEntries.length > 0) {
-      dispatch(setContextEntries({ instanceId, entries: contextEntries }));
-    }
-
-    dispatch(initInstanceHistory({ instanceId }));
-
-    return instanceId;
-  },
-);
+  return instanceId;
+});
 
 // =============================================================================
 // Test Instance Creation (parallel testing)
@@ -463,11 +490,20 @@ export const recreateManualInstance = createAsyncThunk<string, string>(
     dispatch(
       initInstanceUIState({
         instanceId: newInstanceId,
+        displayMode: currentUIState?.displayMode,
         isCreator: snapshot?.isCreator ?? currentUIState?.isCreator ?? false,
         autoClearConversation: currentUIState?.autoClearConversation ?? true,
+        autoRun: currentUIState?.autoRun,
+        allowChat: currentUIState?.allowChat,
+        usePreExecutionInput: currentUIState?.usePreExecutionInput,
         showVariablePanel:
           (snapshot?.variableDefinitions.length ?? 0) > 0 ||
           (currentUIState?.showVariablePanel ?? false),
+        showDefinitionMessages: currentUIState?.showDefinitionMessages,
+        showDefinitionMessageContent:
+          currentUIState?.showDefinitionMessageContent,
+        hiddenMessageCount: currentUIState?.hiddenMessageCount,
+        callbackGroupId: currentUIState?.callbackGroupId,
       }),
     );
     dispatch(initInstanceHistory({ instanceId: newInstanceId, mode: "agent" }));
@@ -577,11 +613,20 @@ export const reInstanceAndExecute = createAsyncThunk<
     dispatch(
       initInstanceUIState({
         instanceId: newInstanceId,
+        displayMode: currentUIState?.displayMode,
         isCreator: snapshot?.isCreator ?? currentUIState?.isCreator ?? false,
         autoClearConversation: true,
+        autoRun: currentUIState?.autoRun,
+        allowChat: currentUIState?.allowChat,
+        usePreExecutionInput: currentUIState?.usePreExecutionInput,
         showVariablePanel:
           (snapshot?.variableDefinitions.length ?? 0) > 0 ||
           (currentUIState?.showVariablePanel ?? false),
+        showDefinitionMessages: currentUIState?.showDefinitionMessages,
+        showDefinitionMessageContent:
+          currentUIState?.showDefinitionMessageContent,
+        hiddenMessageCount: currentUIState?.hiddenMessageCount,
+        callbackGroupId: currentUIState?.callbackGroupId,
         submitOnEnter: currentUIState?.submitOnEnter ?? true,
         reuseConversationId: currentUIState?.reuseConversationId ?? false,
         builderAdvancedSettings: currentUIState?.builderAdvancedSettings,

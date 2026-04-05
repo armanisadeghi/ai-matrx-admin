@@ -169,13 +169,13 @@ export const { clearNoteVersions, clearAllVersions } = noteVersionsSlice.actions
 // ============================================================================
 
 export const selectNoteVersions = (noteId: string) => (state: RootState) =>
-  state.noteVersions.versions[noteId] || [];
+  state.noteVersions.versions[noteId];
 
 export const selectNoteVersionsLoading = (noteId: string) => (state: RootState) =>
-  state.noteVersions.loading[noteId] || false;
+  state.noteVersions.loading[noteId] ?? false;
 
 export const selectNoteVersionsError = (noteId: string) => (state: RootState) =>
-  state.noteVersions.error[noteId] || null;
+  state.noteVersions.error[noteId] ?? null;
 
 export const selectLatestVersion = (noteId: string) => (state: RootState) => {
   const versions = state.noteVersions.versions[noteId];

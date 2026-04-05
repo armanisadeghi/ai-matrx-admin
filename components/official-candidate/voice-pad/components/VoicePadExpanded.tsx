@@ -18,7 +18,9 @@ interface TranscriptEntry {
 interface VoicePadExpandedProps {
   entries: TranscriptEntry[];
   draftText: string;
+  liveTranscript?: string;
   onTranscriptionComplete: (text: string) => void;
+  onLiveTranscript?: (text: string) => void;
   onRemoveEntry: (id: string) => void;
   onClearAll: () => void;
   onDraftChange: (text: string) => void;
@@ -32,7 +34,9 @@ function formatTime(ts: number): string {
 export default function VoicePadExpanded({
   entries,
   draftText,
+  liveTranscript,
   onTranscriptionComplete,
+  onLiveTranscript,
   onRemoveEntry,
   onClearAll,
   onDraftChange,
@@ -40,7 +44,8 @@ export default function VoicePadExpanded({
   const dispatch = useAppDispatch();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const allText = entries.map((e) => e.text).join("\n\n");
-  const displayText = draftText || allText;
+  const baseText = draftText || allText;
+  const displayText = liveTranscript ? (baseText ? baseText + "\n\n" + liveTranscript : liveTranscript) : baseText;
 
   const handleSaveToNotes = useCallback(() => {
     const text = draftText || allText;
@@ -78,7 +83,7 @@ export default function VoicePadExpanded({
     [onDraftChange],
   );
 
-  const hasContent = entries.length > 0 || draftText.trim().length > 0;
+  const hasContent = entries.length > 0 || draftText.trim().length > 0 || (!!liveTranscript && liveTranscript.trim().length > 0);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -92,7 +97,7 @@ export default function VoicePadExpanded({
             className={cn(
               "min-h-0 w-full flex-1 resize-none rounded-md",
               "bg-background/50 border border-border/50 px-2 py-1.5",
-              "text-[15px] leading-snug text-foreground placeholder:text-muted-foreground",
+              "text-[13px] leading-snug text-foreground placeholder:text-muted-foreground",
               "focus:outline-none focus:ring-1 focus:ring-ring",
             )}
           />
@@ -101,6 +106,7 @@ export default function VoicePadExpanded({
             <div className="rounded-full bg-primary/10 p-3 mb-2">
               <MicrophoneIconButton
                 onTranscriptionComplete={onTranscriptionComplete}
+                onLiveTranscript={onLiveTranscript}
                 variant="icon-only"
                 size="lg"
               />

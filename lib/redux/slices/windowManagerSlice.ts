@@ -3,6 +3,7 @@ import {
   createSlice,
   type PayloadAction,
 } from "@reduxjs/toolkit";
+import { computeGlobalArrangement } from "@/components/official-candidate/floating-window-panel/utils/windowArrangements";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -268,6 +269,39 @@ const windowManagerSlice = createSlice({
       win.windowed = { ...win.windowed, ...action.payload.rect };
     },
 
+    /** Arranges all non-minimized windows globally */
+    arrangeActiveWindows(
+      state,
+      action: PayloadAction<{
+        layout: "grid4" | "grid6" | "grid8" | "stackRight2" | "stackRight3" | "stackLeft2" | "stackLeft3";
+        viewportWidth: number;
+        viewportHeight: number;
+      }>
+    ) {
+      const { layout, viewportWidth, viewportHeight } = action.payload;
+      
+      // Get all non-minimized windows, sorted by zIndex newest first
+      const eligibleWindows = Object.values(state.windows)
+        .filter((w) => w.state === "windowed")
+        .sort((a, b) => b.zIndex - a.zIndex)
+        .map((w) => w.id);
+
+      if (eligibleWindows.length === 0) return;
+
+      const updates = computeGlobalArrangement(
+        layout,
+        eligibleWindows,
+        viewportWidth,
+        viewportHeight
+      );
+
+      updates.forEach(({ id, rect }) => {
+        if (state.windows[id]) {
+          state.windows[id].windowed = { ...state.windows[id].windowed, ...rect };
+        }
+      });
+    },
+
     /**
      * Recompute tray positions for all minimized windows after a viewport
      * resize. Each window keeps its existing traySlot number — only x/y/w/h
@@ -356,6 +390,7 @@ export const {
   updateWindowTitle,
   toggleWindowsHidden,
   moveTraySlot,
+  arrangeActiveWindows,
 } = windowManagerSlice.actions;
 
 // ─── Selectors ────────────────────────────────────────────────────────────────

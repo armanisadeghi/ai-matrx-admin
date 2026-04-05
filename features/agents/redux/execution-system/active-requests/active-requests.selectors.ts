@@ -62,20 +62,23 @@ export const selectRequest =
   (state: RootState): ActiveRequest | undefined =>
     state.activeRequests.byRequestId[requestId];
 
-export const selectRequestsForInstance =
-  (instanceId: string) =>
-  (state: RootState): ActiveRequest[] => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? [];
-    return ids
-      .map((id) => state.activeRequests.byRequestId[id])
-      .filter((r): r is ActiveRequest => r != null);
-  };
+export const selectRequestsForInstance = (instanceId: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byInstanceId[instanceId],
+    (state: RootState) => state.activeRequests.byRequestId,
+    (ids, byRequestId): ActiveRequest[] => {
+      if (!ids || ids.length === 0) return [];
+      return ids
+        .map((id) => byRequestId[id])
+        .filter((r): r is ActiveRequest => r != null);
+    },
+  );
 
 export const selectPrimaryRequest =
   (instanceId: string) =>
   (state: RootState): ActiveRequest | undefined => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? [];
-    if (ids.length === 0) return undefined;
+    const ids = state.activeRequests.byInstanceId[instanceId];
+    if (!ids || ids.length === 0) return undefined;
     return state.activeRequests.byRequestId[ids[ids.length - 1]];
   };
 
@@ -129,14 +132,14 @@ export const selectPhaseHistory = (requestId: string) =>
 /** All currently active (in-flight) operations. */
 export const selectActiveOperations =
   (requestId: string) =>
-  (state: RootState): Record<string, OperationEntry> =>
-    state.activeRequests.byRequestId[requestId]?.activeOperations ?? {};
+  (state: RootState): Record<string, OperationEntry> | undefined =>
+    state.activeRequests.byRequestId[requestId]?.activeOperations;
 
 /** All completed operations. */
 export const selectCompletedOperations =
   (requestId: string) =>
-  (state: RootState): Record<string, CompletedOperationEntry> =>
-    state.activeRequests.byRequestId[requestId]?.completedOperations ?? {};
+  (state: RootState): Record<string, CompletedOperationEntry> | undefined =>
+    state.activeRequests.byRequestId[requestId]?.completedOperations;
 
 /** Whether any operations are currently in-flight. Primitive. */
 export const selectHasActiveOperations =
@@ -183,8 +186,8 @@ export const selectContentBlock =
 /** Ordered blockIds for rendering. Stable array ref until a new block arrives. */
 export const selectContentBlockOrder =
   (requestId: string) =>
-  (state: RootState): string[] =>
-    state.activeRequests.byRequestId[requestId]?.contentBlockOrder ?? [];
+  (state: RootState): string[] | undefined =>
+    state.activeRequests.byRequestId[requestId]?.contentBlockOrder;
 
 /** All content blocks in emission order. Memoized. */
 export const selectAllContentBlocks = (requestId: string) =>
@@ -317,13 +320,15 @@ export const selectActiveToolCount =
     ).length;
   };
 
-/** Pending tool calls that haven't been resolved yet. */
-export const selectUnresolvedToolCalls =
-  (requestId: string) => (state: RootState) => {
-    const request = state.activeRequests.byRequestId[requestId];
-    if (!request) return [];
-    return request.pendingToolCalls.filter((c) => !c.resolved);
-  };
+/** Pending tool calls that haven't been resolved yet. Memoized. */
+export const selectUnresolvedToolCalls = (requestId: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byRequestId[requestId],
+    (request) => {
+      if (!request) return undefined;
+      return request.pendingToolCalls.filter((c) => !c.resolved);
+    },
+  );
 
 // =============================================================================
 // Completion Selectors
@@ -536,8 +541,8 @@ export const selectHasReasoning =
 /** All structured warnings for a request. Stable ref — only grows. */
 export const selectWarnings =
   (requestId: string) =>
-  (state: RootState): WarningPayload[] =>
-    state.activeRequests.byRequestId[requestId]?.warnings ?? [];
+  (state: RootState): WarningPayload[] | undefined =>
+    state.activeRequests.byRequestId[requestId]?.warnings;
 
 /** Warning count. Primitive. */
 export const selectWarningCount =
@@ -562,8 +567,8 @@ export const selectHighWarnings = (requestId: string) =>
 /** All info events for a request. Stable ref — only grows. */
 export const selectInfoEvents =
   (requestId: string) =>
-  (state: RootState): InfoPayload[] =>
-    state.activeRequests.byRequestId[requestId]?.infoEvents ?? [];
+  (state: RootState): InfoPayload[] | undefined =>
+    state.activeRequests.byRequestId[requestId]?.infoEvents;
 
 // =============================================================================
 // Record Reservation Selectors
@@ -572,8 +577,8 @@ export const selectInfoEvents =
 /** All reservations for a request. Stable ref. */
 export const selectReservations =
   (requestId: string) =>
-  (state: RootState): Record<string, ReservationRecord> =>
-    state.activeRequests.byRequestId[requestId]?.reservations ?? {};
+  (state: RootState): Record<string, ReservationRecord> | undefined =>
+    state.activeRequests.byRequestId[requestId]?.reservations;
 
 /** A single reservation by record_id. */
 export const selectReservation =
@@ -648,32 +653,37 @@ export const selectErrorIsFatal =
 // Conversation Tree
 // =============================================================================
 
-export const selectConversationTree =
-  (instanceId: string) =>
-  (
-    state: RootState,
-  ): {
-    root: ActiveRequest | null;
-    children: Record<string, ActiveRequest[]>;
-  } => {
-    const requests = (state.activeRequests.byInstanceId[instanceId] ?? [])
-      .map((id) => state.activeRequests.byRequestId[id])
-      .filter((r): r is ActiveRequest => r != null);
+export const selectConversationTree = (instanceId: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byInstanceId[instanceId],
+    (state: RootState) => state.activeRequests.byRequestId,
+    (
+      ids,
+      byRequestId,
+    ): {
+      root: ActiveRequest | null;
+      children: Record<string, ActiveRequest[]>;
+    } => {
+      const requests = (ids ?? [])
+        .map((id) => byRequestId[id])
+        .filter((r): r is ActiveRequest => r != null);
 
-    const root = requests.find((r) => r.parentConversationId === null) ?? null;
-    const children: Record<string, ActiveRequest[]> = {};
+      const root =
+        requests.find((r) => r.parentConversationId === null) ?? null;
+      const children: Record<string, ActiveRequest[]> = {};
 
-    for (const req of requests) {
-      if (req.parentConversationId) {
-        if (!children[req.parentConversationId]) {
-          children[req.parentConversationId] = [];
+      for (const req of requests) {
+        if (req.parentConversationId) {
+          if (!children[req.parentConversationId]) {
+            children[req.parentConversationId] = [];
+          }
+          children[req.parentConversationId].push(req);
         }
-        children[req.parentConversationId].push(req);
       }
-    }
 
-    return { root, children };
-  };
+      return { root, children };
+    },
+  );
 
 // =============================================================================
 // Timeline Selectors
@@ -682,14 +692,14 @@ export const selectConversationTree =
 /** The full timeline for a request. Stable ref — only grows. */
 export const selectTimeline =
   (requestId: string) =>
-  (state: RootState): TimelineEntry[] =>
-    state.activeRequests.byRequestId[requestId]?.timeline ?? [];
+  (state: RootState): TimelineEntry[] | undefined =>
+    state.activeRequests.byRequestId[requestId]?.timeline;
 
 /** The raw event log — every event before processing. Stable ref — only grows. */
 export const selectRawEvents =
   (requestId: string) =>
-  (state: RootState): RawStreamEvent[] =>
-    state.activeRequests.byRequestId[requestId]?.rawEvents ?? [];
+  (state: RootState): RawStreamEvent[] | undefined =>
+    state.activeRequests.byRequestId[requestId]?.rawEvents;
 
 /** Timeline length. Primitive — safe for useAppSelector. */
 export const selectTimelineLength =

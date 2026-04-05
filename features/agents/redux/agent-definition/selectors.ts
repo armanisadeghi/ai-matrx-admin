@@ -314,7 +314,7 @@ export const selectAgentVariableDefinitions = createSelector(
 
 export const selectAgentContextSlots = createSelector(
   [selectAgentById],
-  (record) => record?.contextSlots ?? [],
+  (record) => record?.contextSlots,
 );
 
 export const selectAgentSettings = createSelector(
@@ -334,7 +334,7 @@ export const selectAgentCustomTools = createSelector(
 
 export const selectAgentMcpServers = createSelector(
   [selectAgentById],
-  (record) => record?.mcpServers ?? [],
+  (record) => record?.mcpServers,
 );
 
 export const selectAgentModelTiers = createSelector(
@@ -349,7 +349,7 @@ export const selectAgentOutputSchema = createSelector(
 
 export const selectAgentTags = createSelector(
   [selectAgentById],
-  (record) => record?.tags ?? [],
+  (record) => record?.tags,
 );
 
 export const selectAgentCategory = createSelector(
@@ -417,17 +417,17 @@ export const selectAgentIsDirty = createSelector(
 
 export const selectAgentDirtyFields = createSelector(
   [selectAgentById],
-  (record): Set<keyof AgentDefinition> => record?._dirtyFields ?? new Set(),
+  (record): Set<keyof AgentDefinition> | undefined => record?._dirtyFields,
 );
 
 export const selectAgentFieldHistory = createSelector(
   [selectAgentById],
-  (record) => record?._fieldHistory ?? {},
+  (record) => record?._fieldHistory,
 );
 
 export const selectAgentLoadedFields = createSelector(
   [selectAgentById],
-  (record): Set<keyof AgentDefinition> => record?._loadedFields ?? new Set(),
+  (record): Set<keyof AgentDefinition> | undefined => record?._loadedFields,
 );
 
 export const selectAgentIsLoading = createSelector(

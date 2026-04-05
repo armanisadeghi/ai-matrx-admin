@@ -58,7 +58,15 @@ const RenameFolderDialog = dynamic(
   { ssr: false },
 );
 
-// Folder icon mapping
+const CreateFolderDialog = dynamic(
+  () => import("./CreateFolderDialog"),
+  { ssr: false },
+);
+
+import { getCategoryIconAndColor } from "@/features/notes/constants/folderCategories";
+import { getIconComponent } from "@/components/official/IconResolver";
+
+// Folder icon mapping (defaults)
 const FOLDER_ICONS: Record<string, typeof FileText> = {
   Draft: Edit3,
   Personal: User,
@@ -221,6 +229,10 @@ export default function SidebarClient({
     y: number;
     folder: string;
   } | null>(null);
+
+  // ── Drag-and-drop state ─────────────────────────────────────────────
+  const [draggedNoteId, setDraggedNoteId] = useState<string | null>(null);
+  const [dragOverFolder, setDragOverFolder] = useState<string | null>(null);
 
   // ── Rename folder dialog state ──────────────────────────────────────
   const [renamingFolder, setRenamingFolder] = useState<string | null>(null);
@@ -549,19 +561,45 @@ export default function SidebarClient({
           const folderNotes = notesByFolder.get(folder) ?? [];
           const isExpanded = expandedFolders.has(folder);
           const Icon = FOLDER_ICONS[folder] ?? Folder;
+          const categoryMeta = getCategoryIconAndColor(folder);
+          const folderColor = categoryMeta?.color;
           const count = folderNotes.length;
 
           // When searching, hide folders with no matching notes
           if (searchQuery && count === 0) return null;
 
           return (
-            <div key={folder}>
+            <div
+              key={folder}
+              onDragOver={(e) => {
+                if (!draggedNoteId) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                setDragOverFolder(folder);
+              }}
+              onDragLeave={(e) => {
+                // Only clear if leaving the folder container entirely
+                if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) {
+                  setDragOverFolder(null);
+                }
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const noteId = e.dataTransfer.getData("text/plain");
+                if (noteId && dragOverFolder) {
+                  moveToFolder(noteId, dragOverFolder);
+                }
+                setDraggedNoteId(null);
+                setDragOverFolder(null);
+              }}
+            >
               {/* Folder header */}
               <button
                 className={cn(
                   "group flex items-center gap-1 w-full px-2 py-1 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer transition-colors",
                   "hover:text-foreground hover:bg-accent/50",
                   "[&_svg]:w-3 [&_svg]:h-3 [&_svg]:shrink-0",
+                  dragOverFolder === folder && "bg-primary/10 ring-1 ring-dashed ring-primary/40",
                 )}
                 onClick={() => toggleFolder(folder)}
                 onContextMenu={(e) => {
@@ -577,9 +615,9 @@ export default function SidebarClient({
                   <ChevronRight className="w-3.5! h-3.5! opacity-60" />
                 )}
                 {isExpanded ? (
-                  <FolderOpen className="opacity-70" />
+                  <FolderOpen className="opacity-70" style={folderColor ? { color: folderColor } : undefined} />
                 ) : (
-                  <Icon className="opacity-70" />
+                  <Icon className="opacity-70" style={folderColor ? { color: folderColor } : undefined} />
                 )}
                 <span className="flex-1 text-left truncate">{folder}</span>
                 <span className="text-[0.625rem] font-normal opacity-50 tabular-nums">
@@ -601,11 +639,22 @@ export default function SidebarClient({
                         <button
                           key={note.id}
                           data-note-id={note.id}
+                          draggable
+                          onDragStart={(e) => {
+                            setDraggedNoteId(note.id);
+                            e.dataTransfer.effectAllowed = "move";
+                            e.dataTransfer.setData("text/plain", note.id);
+                          }}
+                          onDragEnd={() => {
+                            setDraggedNoteId(null);
+                            setDragOverFolder(null);
+                          }}
                           className={cn(
                             "flex items-center gap-1.5 w-full text-left px-2 py-[3px] rounded-sm cursor-pointer transition-colors group/item",
                             isActive
                               ? "bg-accent text-foreground"
                               : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                            draggedNoteId === note.id && "opacity-40",
                           )}
                           onClick={() => navigateToNote(note.id)}
                           onContextMenu={(e) => {
@@ -744,38 +793,21 @@ export default function SidebarClient({
       </div>
 
       <div className="shrink-0 px-2 py-1.5 border-t border-border/30 hidden lg:block">
-        {showCreateFolder ? (
-          <div className="flex items-center gap-1.5">
-            <input
-              className="flex-1 h-7 px-2.5 text-xs bg-muted rounded-md border border-border outline-none min-w-0"
-              placeholder="Folder name..."
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") createFolder(newFolderName);
-                if (e.key === "Escape") {
-                  setShowCreateFolder(false);
-                  setNewFolderName("");
-                }
-              }}
-              autoFocus
-            />
-            <button
-              className="h-7 px-2 text-[0.625rem] font-medium rounded-md bg-primary text-primary-foreground cursor-pointer hover:bg-primary/90"
-              onClick={() => createFolder(newFolderName)}
-            >
-              Create
-            </button>
-          </div>
-        ) : (
-          <button
-            className="flex items-center gap-1.5 w-full px-2 py-1 text-[0.6875rem] text-muted-foreground cursor-pointer transition-colors hover:text-foreground hover:bg-accent/50 rounded-md [&_svg]:w-3 [&_svg]:h-3"
-            onClick={() => setShowCreateFolder(true)}
-          >
-            <FolderPlus /> New Folder
-          </button>
-        )}
+        <button
+          className="flex items-center gap-1.5 w-full px-2 py-1 text-[0.6875rem] text-muted-foreground cursor-pointer transition-colors hover:text-foreground hover:bg-accent/50 rounded-md [&_svg]:w-3 [&_svg]:h-3"
+          onClick={() => setShowCreateFolder(true)}
+        >
+          <FolderPlus /> New Folder
+        </button>
       </div>
+
+      {/* Create Folder Dialog with Category Picker */}
+      <CreateFolderDialog
+        open={showCreateFolder}
+        onOpenChange={setShowCreateFolder}
+        onCreateFolder={createFolder}
+        existingFolders={orderedFolders}
+      />
     </>
   );
 }

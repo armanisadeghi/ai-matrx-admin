@@ -3883,6 +3883,7 @@ export type Database = {
           forked_at_position: number | null
           forked_from_id: string | null
           id: string
+          is_ephemeral: boolean
           is_public: boolean
           keywords: string[] | null
           last_model_id: string | null
@@ -3911,6 +3912,7 @@ export type Database = {
           forked_at_position?: number | null
           forked_from_id?: string | null
           id?: string
+          is_ephemeral?: boolean
           is_public?: boolean
           keywords?: string[] | null
           last_model_id?: string | null
@@ -3939,6 +3941,7 @@ export type Database = {
           forked_at_position?: number | null
           forked_from_id?: string | null
           id?: string
+          is_ephemeral?: boolean
           is_public?: boolean
           keywords?: string[] | null
           last_model_id?: string | null
@@ -15976,6 +15979,13 @@ export type Database = {
           owner_id: string
         }[]
       }
+      agx_get_defined_data: {
+        Args: { p_agent_id: string }
+        Returns: {
+          definition_messages: number
+          variable_definition_count: number
+        }[]
+      }
       agx_get_execution_full: {
         Args: { p_agent_id: string }
         Returns: {
@@ -16144,6 +16154,7 @@ export type Database = {
           use_pre_execution_input: boolean
         }[]
       }
+      agx_get_user_context_tree: { Args: never; Returns: Json }
       agx_get_user_shortcuts: {
         Args: never
         Returns: {

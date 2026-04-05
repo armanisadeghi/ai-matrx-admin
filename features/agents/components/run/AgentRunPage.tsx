@@ -88,7 +88,7 @@ export function AgentRunPage({ agentId, agentName }: AgentRunPageProps) {
     launchAgent(agentId, {
       sourceFeature: "agent-runner",
       autoRun: false,
-      displayMode: "modal-full",
+      displayMode: "direct",
     })
       .then((result) => {
         createdId = result.instanceId;

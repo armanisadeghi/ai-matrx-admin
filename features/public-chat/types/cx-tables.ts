@@ -26,23 +26,18 @@ export type CxConversationStatus = "active" | "completed" | "archived";
 // cx_message - Individual messages within a conversation
 // ============================================================================
 
-/** One entry in cx_message.content_history — a snapshot of content before an edit */
+/** Canonical row shape — 1:1 with `public.cx_message` (see types/database.types.ts). */
+export type CxMessage = PublicSchema["Tables"]["cx_message"]["Row"];
+export type CxMessageInsert = PublicSchema["Tables"]["cx_message"]["Insert"];
+export type CxMessageUpdate = PublicSchema["Tables"]["cx_message"]["Update"];
+
+/**
+ * One entry in cx_message.content_history JSON — snapshot before an edit.
+ * At rest the column is Json; narrow when reading known-good rows.
+ */
 export interface CxContentHistoryEntry {
   content: CxContentBlock[];
   saved_at: string; // ISO timestamptz
-}
-
-export interface CxMessage {
-  id: string; // uuid PK
-  conversation_id: string; // uuid NOT NULL, FK to cx_conversation
-  role: CxMessageRole; // text NOT NULL
-  position: number; // smallint NOT NULL
-  status: CxMessageDbStatus; // text NOT NULL, default 'active'
-  content: CxContentBlock[]; // jsonb NOT NULL, default '[]' — array of content parts
-  created_at: string; // timestamptz NOT NULL
-  deleted_at: string | null; // timestamptz
-  metadata: Record<string, unknown>; // jsonb NOT NULL, default '{}'
-  content_history: CxContentHistoryEntry[] | null; // jsonb — previous content versions, auto-managed by cx_message_edit RPC
 }
 
 /**
@@ -160,16 +155,6 @@ export interface CxMessageContent {
   url?: string;
   language?: string;
   [key: string]: unknown;
-}
-
-export interface CxMessageInsert {
-  id?: string;
-  conversation_id: string;
-  role: CxMessageRole;
-  position: number;
-  status?: CxMessageDbStatus;
-  content: CxContentBlock[];
-  metadata?: Record<string, unknown>;
 }
 
 // ============================================================================

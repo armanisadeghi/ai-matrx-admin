@@ -28,9 +28,9 @@ export const selectInstanceOverrideState =
  */
 export const selectCurrentSettings =
   (instanceId: string) =>
-  (state: RootState): Partial<LLMParams> => {
+  (state: RootState): Partial<LLMParams> | undefined => {
     const overrideState = state.instanceModelOverrides.byInstanceId[instanceId];
-    if (!overrideState) return {};
+    if (!overrideState) return undefined;
 
     const merged: Record<string, unknown> = { ...overrideState.baseSettings };
 
@@ -93,12 +93,13 @@ export const selectHasOverrides =
 /**
  * Get the list of keys that have been explicitly changed or removed.
  * Useful for UI indicators showing "this setting is overridden."
+ * Returns undefined when no override state exists — guard in component.
  */
 export const selectOverriddenKeys =
   (instanceId: string) =>
-  (state: RootState): { changed: string[]; removed: string[] } => {
+  (state: RootState): { changed: string[]; removed: string[] } | undefined => {
     const entry = state.instanceModelOverrides.byInstanceId[instanceId];
-    if (!entry) return { changed: [], removed: [] };
+    if (!entry) return undefined;
     return {
       changed: Object.keys(entry.overrides),
       removed: [...entry.removals],

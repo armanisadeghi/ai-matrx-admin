@@ -1,5 +1,10 @@
 // CX Dashboard Types — derived from cx_ database tables
 
+export type {
+  CxMessage,
+  CxContentBlock as CxMessageContentBlock,
+} from "@/features/cx-chat/types/cx-tables";
+
 export type CxConversation = {
   id: string;
   user_id: string;
@@ -129,27 +134,6 @@ export type CxToolCall = {
   deleted_at: string | null;
 };
 
-export type CxMessage = {
-  id: string;
-  conversation_id: string;
-  role: "user" | "assistant" | "tool" | "system";
-  position: number;
-  status: string;
-  content: CxMessageContentBlock[];
-  created_at: string;
-  deleted_at: string | null;
-  metadata: Record<string, unknown>;
-};
-
-export type CxMessageContentBlock = {
-  type: string;
-  text?: string;
-  provider?: string;
-  signature?: string;
-  metadata?: Record<string, unknown>;
-  [key: string]: unknown;
-};
-
 export type CxMedia = {
   id: string;
   conversation_id: string | null;
@@ -183,8 +167,19 @@ export type CxOverviewKpis = {
   error_rate: number;
   pending_count: number;
   max_tokens_count: number;
-  models_used: { model_name: string; provider: string; count: number; total_cost: number }[];
-  tool_usage: { tool_name: string; count: number; error_count: number; avg_duration_ms: number; total_cost: number }[];
+  models_used: {
+    model_name: string;
+    provider: string;
+    count: number;
+    total_cost: number;
+  }[];
+  tool_usage: {
+    tool_name: string;
+    count: number;
+    error_count: number;
+    avg_duration_ms: number;
+    total_cost: number;
+  }[];
   daily_stats: {
     date: string;
     requests: number;

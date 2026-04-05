@@ -17,9 +17,9 @@
  *     Used when user scrolls or opens search.
  *
  *   Tier 3 — fetchConversationHistory(conversationId, instanceId)
- *     SELECT id, role, content, position, created_at, metadata
+ *     SELECT all cx_message columns (1:1 with public.cx_message)
  *     FROM cx_message WHERE conversation_id = $id ORDER BY position ASC
- *     → maps CxMessage[] → ConversationTurn[]
+ *     → maps rows → ConversationTurn[] (+ optional cx_* hydration fields)
  *     → stores into instanceConversationHistory via loadConversationHistory action
  *
  *   Privacy rule (Tier 3):
@@ -59,6 +59,13 @@ import {
 import type { CxConversationListItem } from "./types";
 
 type ThunkApi = { dispatch: AppDispatch; state: RootState };
+
+function jsonMetadataToRecord(meta: unknown): Record<string, unknown> {
+  if (meta !== null && typeof meta === "object" && !Array.isArray(meta)) {
+    return meta as Record<string, unknown>;
+  }
+  return {};
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -184,10 +191,12 @@ export const fetchConversationHistory = createAsyncThunk<
     // Ensure the history entry exists for this instance
     dispatch(initInstanceHistory({ instanceId, mode: "conversation" }));
 
-    // Fetch messages — never select system_instruction or agent-injected columns
+    // Fetch full cx_message rows (1:1 with DB). Never select cx_conversation.system_instruction.
     const { data, error } = await supabase
       .from("cx_message")
-      .select("id, role, content, position, created_at, metadata")
+      .select(
+        "agent_id, content, content_history, conversation_id, created_at, deleted_at, id, is_visible_to_model, is_visible_to_user, metadata, position, role, source, status, user_content",
+      )
       .eq("conversation_id", conversationId)
       .is("deleted_at", null)
       .order("position", { ascending: true });
@@ -221,12 +230,23 @@ export const fetchConversationHistory = createAsyncThunk<
 
         return {
           turnId: uuidv4(),
+          cxMessageId: row.id,
           role: row.role as "user" | "assistant",
           content: primaryText,
           ...(richBlocks.length > 0 && { contentBlocks: richBlocks }),
           timestamp: row.created_at,
           requestId: null,
           conversationId,
+          agentId: row.agent_id,
+          position: row.position,
+          contentHistory: row.content_history,
+          deletedAt: row.deleted_at,
+          isVisibleToModel: row.is_visible_to_model,
+          isVisibleToUser: row.is_visible_to_user,
+          messageMetadata: jsonMetadataToRecord(row.metadata),
+          source: row.source,
+          messageStatus: row.status,
+          userContent: row.user_content,
         };
       });
 

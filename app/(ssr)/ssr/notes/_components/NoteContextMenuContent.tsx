@@ -60,6 +60,8 @@ import {
   EyeOff,
   Bug,
   Mic,
+  Eraser,
+  History,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { getIconComponent } from "@/components/official/IconResolver";
@@ -132,6 +134,7 @@ export interface NoteContextMenuContentProps {
   onCloseOtherTabs: () => void;
   onCloseAllTabs: () => void;
   onDelete: () => void;
+  onVersionHistory?: () => void;
 }
 
 function resolveActiveTextarea(
@@ -288,6 +291,7 @@ export function NoteContextMenuHeavy({
   onCloseOtherTabs,
   onCloseAllTabs,
   onDelete,
+  onVersionHistory,
 }: NoteContextMenuContentProps) {
   const bridgeRef = useNoteContextMenuBridge();
   const dispatch = useAppDispatch();
@@ -626,6 +630,44 @@ export function NoteContextMenuHeavy({
     findReplaceOpenRef.current = true;
   }, []);
 
+  /** Cleanup text: collapse 2+ blank lines → 1, trim trailing whitespace per line.
+   *  Operates on selection if present, otherwise on the full note content.
+   *  Never alters actual words — only whitespace/empty-line cleanup. */
+  const handleCleanupText = useCallback(() => {
+    if (!selectionRange) return;
+    const element = selectionRange.element;
+    const hasSelection = selectedText && selectionRange.start !== selectionRange.end;
+    const start = hasSelection ? selectionRange.start : 0;
+    const end = hasSelection ? selectionRange.end : element.value.length;
+    const original = element.value.substring(start, end);
+
+    let cleaned = original;
+    // Trim trailing whitespace from each line (preserve leading indentation)
+    cleaned = cleaned.replace(/[^\S\n]+$/gm, "");
+    // Collapse 2+ consecutive blank lines into 1
+    cleaned = cleaned.replace(/\n{3,}/g, "\n\n");
+    // Remove leading blank lines at the very start
+    cleaned = cleaned.replace(/^\n+/, "");
+    // Remove trailing blank lines at the very end (leave one newline)
+    cleaned = cleaned.replace(/\n+$/, "\n");
+
+    if (cleaned === original) {
+      toast({ title: "Already clean", description: "No extra whitespace found." });
+      return;
+    }
+
+    const newValue =
+      element.value.substring(0, start) + cleaned + element.value.substring(end);
+    nativeSetValue(element, newValue);
+    element.setSelectionRange(start, start + cleaned.length);
+
+    const linesSaved = original.split("\n").length - cleaned.split("\n").length;
+    toast({
+      title: "Text cleaned up",
+      description: `Removed ${linesSaved} empty line${linesSaved !== 1 ? "s" : ""} and trimmed trailing whitespace.`,
+    });
+  }, [selectionRange, selectedText]);
+
   const executeAction = useCallback(
     async (item: ShortcutItem, placementType: string = "ai-action") => {
       if (!item.prompt_builtin) {
@@ -735,6 +777,50 @@ export function NoteContextMenuHeavy({
       insertTextAtTextareaCursor(ta, item.template);
     },
     [textareaRef],
+  );
+
+  /** Replace the current selection with new text */
+  const handleReplaceSelection = useCallback(
+    (newText: string) => {
+      if (!selectionRange) return;
+      const element = selectionRange.element;
+      const { start, end } = selectionRange;
+      const newValue =
+        element.value.substring(0, start) + newText + element.value.substring(end);
+      nativeSetValue(element, newValue);
+      element.setSelectionRange(start, start + newText.length);
+    },
+    [selectionRange],
+  );
+
+  /** Insert text before the current selection/cursor */
+  const handleInsertBefore = useCallback(
+    (text: string) => {
+      if (!selectionRange) return;
+      const element = selectionRange.element;
+      const { start } = selectionRange;
+      const insertText = text + "\n\n";
+      const newValue =
+        element.value.substring(0, start) + insertText + element.value.substring(start);
+      nativeSetValue(element, newValue);
+      element.setSelectionRange(start + insertText.length, start + insertText.length);
+    },
+    [selectionRange],
+  );
+
+  /** Insert text after the current selection/cursor */
+  const handleInsertAfter = useCallback(
+    (text: string) => {
+      if (!selectionRange) return;
+      const element = selectionRange.element;
+      const { end } = selectionRange;
+      const insertText = "\n\n" + text;
+      const newValue =
+        element.value.substring(0, end) + insertText + element.value.substring(end);
+      nativeSetValue(element, newValue);
+      element.setSelectionRange(end + insertText.length, end + insertText.length);
+    },
+    [selectionRange],
   );
 
   const buildContextDebugPayload = useCallback(() => {
@@ -909,6 +995,12 @@ export function NoteContextMenuHeavy({
         >
           <Search /> Find & Replace
         </Item>
+        <Item
+          className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+          onSelect={handleCleanupText}
+        >
+          <Eraser /> {selectedText ? "Cleanup Selection" : "Cleanup Text"}
+        </Item>
 
         <Separator />
 
@@ -932,6 +1024,14 @@ export function NoteContextMenuHeavy({
         >
           <Download /> Export as Markdown
         </Item>
+        {onVersionHistory && (
+          <Item
+            className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+            onSelect={onVersionHistory}
+          >
+            <History /> Version History
+          </Item>
+        )}
         <Item
           className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
           onSelect={onShareLink}
@@ -1239,6 +1339,24 @@ export function NoteContextMenuHeavy({
         >
           <Trash2 /> Delete Note
         </Item>
+        {isAdmin && (
+          <Item
+            className="flex items-center gap-2 text-xs text-destructive focus:text-destructive [&_svg]:w-3.5 [&_svg]:h-3.5"
+            onSelect={async () => {
+              if (!window.confirm("Permanently delete this note? This cannot be undone.")) return;
+              try {
+                const { permanentlyDeleteNote } = await import("@/features/notes/service/notesService");
+                await permanentlyDeleteNote(noteId);
+                onDelete();
+                toast({ title: "Note permanently deleted" });
+              } catch (err) {
+                toast({ title: "Failed to permanently delete", variant: "destructive" });
+              }
+            }}
+          >
+            <Trash2 /> Permanently Delete
+          </Item>
+        )}
       </>
     );
   };

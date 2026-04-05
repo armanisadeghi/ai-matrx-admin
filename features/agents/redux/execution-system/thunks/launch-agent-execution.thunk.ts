@@ -11,11 +11,11 @@
  *   3. Manual / no-agent → createManualInstanceNoAgent → execute
  *
  * Display routing:
- *   - Interactive (modal-full, modal-compact, sidebar, flexible-panel,
- *     panel, chat-bubble) → create instance, return instanceId, caller renders UI
- *   - Inline → execute first, poll, return result with callbacks
- *   - Toast → execute, return instanceId (toast component subscribes)
- *   - Direct / background → execute, poll, call onComplete, no UI
+ *   - direct / background → caller manages UI
+ *   - All others → OverlayController renders the component
+ *
+ * All settings (autoRun, showVariables, usePreExecutionInput, callbacks, etc.)
+ * are persisted to Redux so components can read them after creation.
  */
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
@@ -27,6 +27,8 @@ import type {
 } from "@/features/agents/types/instance.types";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
 import { mapScopeToInstance } from "@/features/agents/utils/scope-mapping";
+import { callbackManager } from "@/utils/callbackManager";
+import { resolveVisibilitySettings } from "../instance-ui-state/instance-ui-state.slice";
 import {
   createManualInstance,
   createInstanceFromShortcut,
@@ -39,6 +41,7 @@ import { setContextEntries } from "../instance-context/instance-context.slice";
 import { setUserInputText } from "../instance-user-input/instance-user-input.slice";
 import { setDisplayMode as setDisplayModeAction } from "../instance-ui-state/instance-ui-state.slice";
 import { selectRequest } from "../active-requests/active-requests.selectors";
+import { setInstanceStatus } from "../execution-instances/execution-instances.slice";
 
 // =============================================================================
 // Types
@@ -56,7 +59,19 @@ export interface LaunchAgentOptions {
   displayMode?: ResultDisplayMode;
   autoRun?: boolean;
   allowChat?: boolean;
+
+  /**
+   * Coarse-grained visibility config. When provided, resolves to fine-grained:
+   *   false → showVariablePanel: false, showDefinitionMessages: false
+   *   true  → showVariablePanel: true,  showDefinitionMessages: true, showDefinitionMessageContent: false
+   *
+   * Fine-grained overrides below take precedence over this.
+   */
   showVariables?: boolean;
+  showVariablePanel?: boolean;
+  showDefinitionMessages?: boolean;
+  showDefinitionMessageContent?: boolean;
+
   usePreExecutionInput?: boolean;
 
   /** When true, conversation history is wiped after each submit (builder/test mode). */
@@ -123,6 +138,53 @@ async function pollForCompletion(
   return "";
 }
 
+/**
+ * Registers lifecycle callbacks with CallbackManager and returns the group ID.
+ * Returns null if no callbacks are provided.
+ */
+function registerCallbacks(options: LaunchAgentOptions): string | null {
+  const { onComplete, onTextReplace, onTextInsertBefore, onTextInsertAfter } =
+    options;
+
+  if (
+    !onComplete &&
+    !onTextReplace &&
+    !onTextInsertBefore &&
+    !onTextInsertAfter
+  ) {
+    return null;
+  }
+
+  const groupId = callbackManager.createGroup();
+
+  if (onComplete) {
+    callbackManager.registerWithContext(onComplete, {
+      groupId,
+      context: { type: "complete" },
+    });
+  }
+  if (onTextReplace) {
+    callbackManager.registerWithContext(onTextReplace, {
+      groupId,
+      context: { type: "replace" },
+    });
+  }
+  if (onTextInsertBefore) {
+    callbackManager.registerWithContext(onTextInsertBefore, {
+      groupId,
+      context: { type: "insertBefore" },
+    });
+  }
+  if (onTextInsertAfter) {
+    callbackManager.registerWithContext(onTextInsertAfter, {
+      groupId,
+      context: { type: "insertAfter" },
+    });
+  }
+
+  return groupId;
+}
+
 // =============================================================================
 // Orchestrator Thunk
 // =============================================================================
@@ -141,6 +203,10 @@ export const launchAgentExecution = createAsyncThunk<
     autoRun = true,
     allowChat,
     showVariables,
+    showVariablePanel,
+    showDefinitionMessages,
+    showDefinitionMessageContent,
+    usePreExecutionInput,
     autoClearConversation,
     conversationMode,
     userInput,
@@ -148,6 +214,21 @@ export const launchAgentExecution = createAsyncThunk<
     useChat = false,
     onComplete,
   } = options;
+
+  // =========================================================================
+  // Step 0: Register callbacks and resolve visibility
+  // =========================================================================
+
+  const callbackGroupId = registerCallbacks(options);
+
+  const visibilityFromConfig = resolveVisibilitySettings(showVariables);
+  const resolvedShowVariablePanel =
+    showVariablePanel ?? visibilityFromConfig.showVariablePanel;
+  const resolvedShowDefinitionMessages =
+    showDefinitionMessages ?? visibilityFromConfig.showDefinitionMessages;
+  const resolvedShowDefinitionMessageContent =
+    showDefinitionMessageContent ??
+    visibilityFromConfig.showDefinitionMessageContent;
 
   let instanceId: string;
   let resolvedDisplayMode: ResultDisplayMode =
@@ -158,7 +239,6 @@ export const launchAgentExecution = createAsyncThunk<
   // =========================================================================
 
   if (shortcutId) {
-    // Path 2: Shortcut → Agent
     const state = getState() as RootState;
     const shortcut = state.agentShortcut[shortcutId];
 
@@ -177,27 +257,37 @@ export const launchAgentExecution = createAsyncThunk<
         uiScopes: applicationScope ?? {},
         sourceFeature,
         displayMode: resolvedDisplayMode,
+        autoRun,
         allowChat: allowChat ?? shortcut.allowChat,
-        showVariables: showVariables ?? shortcut.showVariables,
+        usePreExecutionInput,
+        showVariablePanel: resolvedShowVariablePanel,
+        showDefinitionMessages: resolvedShowDefinitionMessages,
+        showDefinitionMessageContent: resolvedShowDefinitionMessageContent,
+        callbackGroupId,
       }),
     ).unwrap();
 
-    // Apply user-provided variables on top of scope-mapped values
     if (variables && Object.keys(variables).length > 0) {
       dispatch(setUserVariableValues({ instanceId, values: variables }));
     }
   } else if (agentId) {
-    // Path 1: Known agent
     instanceId = await dispatch(
       createManualInstance({
         agentId,
         sourceFeature,
         autoClearConversation,
         mode: conversationMode,
+        displayMode: resolvedDisplayMode,
+        autoRun,
+        allowChat,
+        usePreExecutionInput,
+        showVariablePanel: resolvedShowVariablePanel,
+        showDefinitionMessages: resolvedShowDefinitionMessages,
+        showDefinitionMessageContent: resolvedShowDefinitionMessageContent,
+        callbackGroupId,
       }),
     ).unwrap();
 
-    // Apply scope data if provided
     if (applicationScope) {
       const agState = getState() as RootState;
       const agent = agState.agentDefinition.agents?.[agentId];
@@ -219,7 +309,6 @@ export const launchAgentExecution = createAsyncThunk<
       }
     }
 
-    // Apply explicit variable overrides
     if (variables && Object.keys(variables).length > 0) {
       dispatch(setUserVariableValues({ instanceId, values: variables }));
     }
@@ -228,7 +317,6 @@ export const launchAgentExecution = createAsyncThunk<
       dispatch(setDisplayModeAction({ instanceId, mode: resolvedDisplayMode }));
     }
   } else {
-    // Path 3: Manual / no-agent chat
     instanceId = await dispatch(
       createManualInstanceNoAgent({
         label: manual?.label,
@@ -247,6 +335,17 @@ export const launchAgentExecution = createAsyncThunk<
   }
 
   // =========================================================================
+  // Step 1b: Promote status to ready for overlay-managed modes
+  // =========================================================================
+
+  if (
+    resolvedDisplayMode !== "direct" &&
+    resolvedDisplayMode !== "background"
+  ) {
+    dispatch(setInstanceStatus({ instanceId, status: "ready" }));
+  }
+
+  // =========================================================================
   // Step 2: Set user input if provided
   // =========================================================================
 
@@ -259,7 +358,6 @@ export const launchAgentExecution = createAsyncThunk<
   // =========================================================================
 
   if (isInteractive(resolvedDisplayMode) || resolvedDisplayMode === "toast") {
-    // Interactive + toast: return instanceId, optionally auto-execute
     if (autoRun && (userInput || shortcutId)) {
       const executeThunk = useChat ? executeChatInstance : executeInstance;
       const result = await dispatch(executeThunk({ instanceId })).unwrap();
@@ -279,7 +377,6 @@ export const launchAgentExecution = createAsyncThunk<
     resolvedDisplayMode === "direct" ||
     resolvedDisplayMode === "background"
   ) {
-    // Non-interactive: always execute immediately, poll for result
     const executeThunk = useChat ? executeChatInstance : executeInstance;
     const result = await dispatch(executeThunk({ instanceId })).unwrap();
 
@@ -297,6 +394,5 @@ export const launchAgentExecution = createAsyncThunk<
     return launchResult;
   }
 
-  // Fallback — shouldn't reach here
   return { instanceId };
 });

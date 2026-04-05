@@ -29,6 +29,7 @@ export type MicVariant = 'icon-only' | 'inline-expand' | 'modal-controls';
 
 export interface MicrophoneIconButtonProps {
   onTranscriptionComplete: (text: string) => void;
+  onLiveTranscript?: (text: string) => void;
   onError?: (error: string, code?: string) => void;
   variant?: MicVariant;
   size?: 'sm' | 'md' | 'lg';
@@ -74,6 +75,7 @@ function MicLoadingFallback({
 // ── Shell component ───────────────────────────────────────────────────────────
 export function MicrophoneIconButton({
   onTranscriptionComplete,
+  onLiveTranscript,
   onError,
   variant = 'icon-only',
   size = 'md',
@@ -114,6 +116,7 @@ export function MicrophoneIconButton({
     <Suspense fallback={<MicLoadingFallback size={size} className={className} />}>
       <MicrophoneIconButtonCore
         onTranscriptionComplete={onTranscriptionComplete}
+        onLiveTranscript={onLiveTranscript}
         onError={onError}
         variant={variant}
         size={size}

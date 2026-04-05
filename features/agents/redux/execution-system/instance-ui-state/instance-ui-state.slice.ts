@@ -4,6 +4,10 @@
  * Manages per-instance UI configuration and display state.
  * Controls how the instance's results are rendered (modal, chat bubble,
  * inline, panel, toast) and tracks display-mode-specific state.
+ *
+ * Philosophy: Fine-grained state, coarse-grained config.
+ * Each field controls exactly one behavior. Launch options / shortcut configs
+ * flip multiple fields at once via helpers (e.g. resolveVisibilitySettings).
  */
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
@@ -14,6 +18,33 @@ import type {
 } from "@/features/agents/types";
 import { DEFAULT_BUILDER_ADVANCED_SETTINGS } from "@/features/agents/types/instance.types";
 import { destroyInstance } from "../execution-instances/execution-instances.slice";
+import { callbackManager } from "@/utils/callbackManager";
+
+// =============================================================================
+// Visibility helper — maps coarse showVariables config to fine-grained state
+// =============================================================================
+
+export function resolveVisibilitySettings(showVariables?: boolean): {
+  showVariablePanel?: boolean;
+  showDefinitionMessages?: boolean;
+  showDefinitionMessageContent?: boolean;
+} {
+  if (showVariables === false) {
+    return {
+      showVariablePanel: false,
+      showDefinitionMessages: false,
+      showDefinitionMessageContent: false,
+    };
+  }
+  if (showVariables === true) {
+    return {
+      showVariablePanel: true,
+      showDefinitionMessages: true,
+      showDefinitionMessageContent: false,
+    };
+  }
+  return {};
+}
 
 // =============================================================================
 // State
@@ -39,6 +70,28 @@ const initialState: InstanceUIStateSlice = {
 };
 
 // =============================================================================
+// Init payload type
+// =============================================================================
+
+export interface InitInstanceUIStatePayload {
+  instanceId: string;
+  displayMode?: ResultDisplayMode;
+  autoRun?: boolean;
+  allowChat?: boolean;
+  usePreExecutionInput?: boolean;
+  showVariablePanel?: boolean;
+  showDefinitionMessages?: boolean;
+  showDefinitionMessageContent?: boolean;
+  hiddenMessageCount?: number;
+  callbackGroupId?: string | null;
+  isCreator?: boolean;
+  submitOnEnter?: boolean;
+  autoClearConversation?: boolean;
+  reuseConversationId?: boolean;
+  builderAdvancedSettings?: Partial<BuilderAdvancedSettings>;
+}
+
+// =============================================================================
 // Slice
 // =============================================================================
 
@@ -48,23 +101,19 @@ const instanceUIStateSlice = createSlice({
   reducers: {
     initInstanceUIState(
       state,
-      action: PayloadAction<{
-        instanceId: string;
-        displayMode?: ResultDisplayMode;
-        allowChat?: boolean;
-        showVariablePanel?: boolean;
-        isCreator?: boolean;
-        submitOnEnter?: boolean;
-        autoClearConversation?: boolean;
-        reuseConversationId?: boolean;
-        builderAdvancedSettings?: Partial<BuilderAdvancedSettings>;
-      }>,
+      action: PayloadAction<InitInstanceUIStatePayload>,
     ) {
       const {
         instanceId,
         displayMode = "modal-full",
+        autoRun = true,
         allowChat = true,
+        usePreExecutionInput = false,
         showVariablePanel = false,
+        showDefinitionMessages = true,
+        showDefinitionMessageContent = false,
+        hiddenMessageCount = 0,
+        callbackGroupId = null,
         isCreator = false,
         submitOnEnter = true,
         autoClearConversation = false,
@@ -75,8 +124,15 @@ const instanceUIStateSlice = createSlice({
       state.byInstanceId[instanceId] = {
         instanceId,
         displayMode,
+        autoRun,
         allowChat,
+        usePreExecutionInput,
+        preExecutionSatisfied: false,
         showVariablePanel,
+        showDefinitionMessages,
+        showDefinitionMessageContent,
+        hiddenMessageCount,
+        callbackGroupId,
         isExpanded: true,
         expandedVariableId: null,
         isCreator,
@@ -102,21 +158,17 @@ const instanceUIStateSlice = createSlice({
       const entry = state.byInstanceId[action.payload.instanceId];
       if (entry) {
         entry.displayMode = action.payload.mode;
-        entry.modeState = {}; // Reset mode-specific state on mode change
+        entry.modeState = {};
       }
     },
 
-    toggleExpanded(state, action: PayloadAction<string>) {
-      const entry = state.byInstanceId[action.payload];
+    setAutoRun(
+      state,
+      action: PayloadAction<{ instanceId: string; value: boolean }>,
+    ) {
+      const entry = state.byInstanceId[action.payload.instanceId];
       if (entry) {
-        entry.isExpanded = !entry.isExpanded;
-      }
-    },
-
-    toggleVariablePanel(state, action: PayloadAction<string>) {
-      const entry = state.byInstanceId[action.payload];
-      if (entry) {
-        entry.showVariablePanel = !entry.showVariablePanel;
+        entry.autoRun = action.payload.value;
       }
     },
 
@@ -130,10 +182,120 @@ const instanceUIStateSlice = createSlice({
       }
     },
 
+    setUsePreExecutionInput(
+      state,
+      action: PayloadAction<{ instanceId: string; value: boolean }>,
+    ) {
+      const entry = state.byInstanceId[action.payload.instanceId];
+      if (entry) {
+        entry.usePreExecutionInput = action.payload.value;
+      }
+    },
+
+    setPreExecutionSatisfied(
+      state,
+      action: PayloadAction<{ instanceId: string; value: boolean }>,
+    ) {
+      const entry = state.byInstanceId[action.payload.instanceId];
+      if (entry) {
+        entry.preExecutionSatisfied = action.payload.value;
+      }
+    },
+
+    // ── Visibility controls ──────────────────────────────────────────────────
+
+    toggleVariablePanel(state, action: PayloadAction<string>) {
+      const entry = state.byInstanceId[action.payload];
+      if (entry) {
+        entry.showVariablePanel = !entry.showVariablePanel;
+      }
+    },
+
+    setShowVariablePanel(
+      state,
+      action: PayloadAction<{ instanceId: string; value: boolean }>,
+    ) {
+      const entry = state.byInstanceId[action.payload.instanceId];
+      if (entry) {
+        entry.showVariablePanel = action.payload.value;
+      }
+    },
+
+    setShowDefinitionMessages(
+      state,
+      action: PayloadAction<{ instanceId: string; value: boolean }>,
+    ) {
+      const entry = state.byInstanceId[action.payload.instanceId];
+      if (entry) {
+        entry.showDefinitionMessages = action.payload.value;
+      }
+    },
+
+    setShowDefinitionMessageContent(
+      state,
+      action: PayloadAction<{ instanceId: string; value: boolean }>,
+    ) {
+      const entry = state.byInstanceId[action.payload.instanceId];
+      if (entry) {
+        entry.showDefinitionMessageContent = action.payload.value;
+      }
+    },
+
+    setHiddenMessageCount(
+      state,
+      action: PayloadAction<{ instanceId: string; count: number }>,
+    ) {
+      const entry = state.byInstanceId[action.payload.instanceId];
+      if (entry) {
+        entry.hiddenMessageCount = action.payload.count;
+      }
+    },
+
     /**
-     * Update arbitrary mode-specific state.
-     * E.g., scroll position, active tab, selected card.
+     * Coarse-grained action: apply a single showVariables boolean to flip
+     * all three fine-grained visibility fields at once.
+     * Used by shortcuts and launch options for convenience.
      */
+    applyShowVariablesConfig(
+      state,
+      action: PayloadAction<{ instanceId: string; showVariables: boolean }>,
+    ) {
+      const entry = state.byInstanceId[action.payload.instanceId];
+      if (entry) {
+        const resolved = resolveVisibilitySettings(
+          action.payload.showVariables,
+        );
+        if (resolved.showVariablePanel !== undefined)
+          entry.showVariablePanel = resolved.showVariablePanel;
+        if (resolved.showDefinitionMessages !== undefined)
+          entry.showDefinitionMessages = resolved.showDefinitionMessages;
+        if (resolved.showDefinitionMessageContent !== undefined)
+          entry.showDefinitionMessageContent =
+            resolved.showDefinitionMessageContent;
+      }
+    },
+
+    // ── Callback management ──────────────────────────────────────────────────
+
+    setCallbackGroupId(
+      state,
+      action: PayloadAction<{ instanceId: string; groupId: string | null }>,
+    ) {
+      const entry = state.byInstanceId[action.payload.instanceId];
+      if (entry) {
+        entry.callbackGroupId = action.payload.groupId;
+      }
+    },
+
+    // ── Layout & interaction ─────────────────────────────────────────────────
+
+    toggleExpanded(state, action: PayloadAction<string>) {
+      const entry = state.byInstanceId[action.payload];
+      if (entry) {
+        entry.isExpanded = !entry.isExpanded;
+      }
+    },
+
     updateModeState(
       state,
       action: PayloadAction<{
@@ -148,7 +310,6 @@ const instanceUIStateSlice = createSlice({
       }
     },
 
-    /** Open a variable's edit popover. Pass null to close all. */
     setExpandedVariableId(
       state,
       action: PayloadAction<{ instanceId: string; variableId: string | null }>,
@@ -245,11 +406,6 @@ const instanceUIStateSlice = createSlice({
       delete state.byInstanceId[action.payload];
     },
 
-    /**
-     * Toggle block mode for the chat route.
-     * Admin/pilot only — will move to userPreferencesSlice when promoted.
-     * Global display preference — not tied to any specific instance.
-     */
     setUseBlockMode(state, action: PayloadAction<boolean>) {
       state.useBlockMode = action.payload;
     },
@@ -257,7 +413,12 @@ const instanceUIStateSlice = createSlice({
 
   extraReducers: (builder) => {
     builder.addCase(destroyInstance, (state, action) => {
-      delete state.byInstanceId[action.payload];
+      const instanceId = action.payload;
+      const entry = state.byInstanceId[instanceId];
+      if (entry?.callbackGroupId) {
+        callbackManager.removeGroup(entry.callbackGroupId);
+      }
+      delete state.byInstanceId[instanceId];
     });
   },
 });
@@ -265,9 +426,18 @@ const instanceUIStateSlice = createSlice({
 export const {
   initInstanceUIState,
   setDisplayMode,
-  toggleExpanded,
-  toggleVariablePanel,
+  setAutoRun,
   setAllowChat,
+  setUsePreExecutionInput,
+  setPreExecutionSatisfied,
+  toggleVariablePanel,
+  setShowVariablePanel,
+  setShowDefinitionMessages,
+  setShowDefinitionMessageContent,
+  setHiddenMessageCount,
+  applyShowVariablesConfig,
+  setCallbackGroupId,
+  toggleExpanded,
   updateModeState,
   setExpandedVariableId,
   toggleCreatorDebug,

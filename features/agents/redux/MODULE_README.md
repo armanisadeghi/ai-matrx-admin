@@ -12,7 +12,7 @@ are overwritten each time the generator runs. Everything else is yours to edit f
 | Field | Value |
 |-------|-------|
 | Module | `features/agents/redux` |
-| Last generated | 2026-04-01 16:29 |
+| Last generated | 2026-04-05 09:18 |
 | Output file | `features/agents/redux/MODULE_README.md` |
 | Signature mode | `signatures` |
 
@@ -49,10 +49,11 @@ python utils/code_context/generate_module_readme.py features/agents/redux --mode
 <!-- AUTO:tree -->
 ## Directory Tree
 
-> Auto-generated. 49 files across 16 directories.
+> Auto-generated. 52 files across 18 directories.
 
 ```
 features/agents/redux/
+├── MODULE_README.md
 ├── agent-consumers/
 │   ├── selectors.ts
 │   ├── slice.ts
@@ -61,7 +62,6 @@ features/agents/redux/
 │   ├── selectors.ts
 │   ├── slice.ts
 │   ├── thunks.ts
-│   ├── types.ts
 ├── agent-shortcuts/
 │   ├── converters.ts
 │   ├── selectors.ts
@@ -111,15 +111,19 @@ features/agents/redux/
 │   │   ├── instance-variable-values.slice.ts
 │   ├── selectors/
 │   │   ├── aggregate.selectors.ts
-│   │   ├── instance-model-overrides.selectors.ts
 │   ├── thunks/
 │   │   ├── create-instance.thunk.ts
+│   │   ├── execute-chat-instance.thunk.ts
 │   │   ├── execute-instance.thunk.ts
+│   │   ├── launch-agent-execution.thunk.ts
+│   │   ├── process-stream.ts
 │   ├── utils/
 │   │   ├── ids.ts
 │   │   ├── index.ts
 │   │   ├── source-slice-helpers.ts
-# excluded: 1 .txt
+├── mcp/
+│   ├── mcp.slice.ts
+# excluded: 3 .md
 ```
 <!-- /AUTO:tree -->
 
@@ -130,6 +134,22 @@ features/agents/redux/
 > For full source, open the individual files directly.
 
 ```
+---
+Filepath: features/agents/redux/mcp/mcp.slice.ts  [typescript]
+
+  # Redux (slices / thunks / selectors)
+    const mcpSlice = createSlice(...)
+    const fetchCatalog = createAsyncThunk(...)
+    const connectServer = createAsyncThunk(...)
+    const disconnectServer = createAsyncThunk(...)
+    export const selectMcpCatalog
+    export const selectMcpCatalogStatus
+    export const selectMcpCatalogError
+    export const selectMcpConnectingServerId
+    export const selectMcpServerById
+    export const selectMcpCatalogByCategory
+
+
 ---
 Filepath: features/agents/redux/execution-system/instance-model-overrides/instance-model-overrides.slice.ts  [typescript]
 
@@ -220,15 +240,15 @@ Filepath: features/agents/redux/execution-system/instance-conversation-history/i
 
   # Interfaces
     export interface AggregateStats
-    # /** Total turns in the session (user + assistant) */
     # turnCount: number
-    # /** Number of completed assistant turns (= number of requests) */
     # requestCount: number
-    # /** Sum of all input tokens across all assistant turns */
     # totalInputTokens: number
-    # /** Sum of all output tokens across all assistant turns */
     # totalOutputTokens: number
-    # ... 8 more fields
+    # totalTokens: number
+    # totalDurationMs: number
+    # totalIterations: number
+    # totalCost: number
+    # ... 1 more fields
     export interface AggregateClientMetrics
     # totalRequests: number
     # totalEvents: number
@@ -250,6 +270,9 @@ Filepath: features/agents/redux/execution-system/instance-conversation-history/i
     export const selectAggregateStats
     export const selectLatestClientMetrics
     export const selectAggregateClientMetrics
+    export const selectConversationTitle
+    export const selectConversationDescription
+    export const selectConversationKeywords
 
 
 ---
@@ -276,7 +299,7 @@ Filepath: features/agents/redux/execution-system/instance-conversation-history/i
     # content: string
     # /** Optional multimodal content blocks (images, files, etc.) */
     # contentBlocks?: Array<Record<string, unknown>>
-    # ... 19 more fields
+    # ... 38 more fields
     export interface InstanceConversationHistoryEntry
     # instanceId: string
     # /**
@@ -286,7 +309,7 @@ Filepath: features/agents/redux/execution-system/instance-conversation-history/i
     # /** Ordered turn history */
     # turns: ConversationTurn[]
     # /** True if turns were loaded from a previous session (Supabase fetch) */
-    # ... 4 more fields
+    # ... 8 more fields
     export interface InstanceConversationHistoryState
     # byInstanceId: Record<string, InstanceConversationHistoryEntry>
   # Redux (slices / thunks / selectors)
@@ -302,6 +325,7 @@ Filepath: features/agents/redux/execution-system/execution-instances/execution-i
     export const selectInstancesByAgent
     export const selectInstanceStatus
     export const selectRunningInstances
+    export const selectAgentIdFromInstance
 
 
 ---
@@ -321,6 +345,29 @@ Filepath: features/agents/redux/execution-system/execution-instances/index.ts  [
 
 
 ---
+Filepath: features/agents/redux/execution-system/thunks/launch-agent-execution.thunk.ts  [typescript]
+
+  # Interfaces
+    export interface LaunchAgentOptions
+    # agentId?: string
+    # shortcutId?: string
+    # manual?: { label?: string; baseSettings?: Partial<LLMParams> }
+    # sourceFeature: SourceFeature
+    # applicationScope?: ApplicationScope
+    # displayMode?: ResultDisplayMode
+    # autoRun?: boolean
+    # allowChat?: boolean
+    # ... 15 more fields
+    export interface LaunchResult
+    # instanceId: string
+    # requestId?: string
+    # conversationId?: string | null
+    # responseText?: string
+  # Redux (slices / thunks / selectors)
+    const launchAgentExecution = createAsyncThunk(...)
+
+
+---
 Filepath: features/agents/redux/execution-system/thunks/create-instance.thunk.ts  [typescript]
 
   # Redux (slices / thunks / selectors)
@@ -328,6 +375,7 @@ Filepath: features/agents/redux/execution-system/thunks/create-instance.thunk.ts
     const createInstanceFromShortcut = createAsyncThunk(...)
     const createTestInstance = createAsyncThunk(...)
     const createManualInstanceNoAgent = createAsyncThunk(...)
+    const recreateManualInstance = createAsyncThunk(...)
     const reInstanceAndExecute = createAsyncThunk(...)
 
 
@@ -343,8 +391,41 @@ Filepath: features/agents/redux/execution-system/thunks/execute-instance.thunk.t
 
 
 ---
+Filepath: features/agents/redux/execution-system/thunks/execute-chat-instance.thunk.ts  [typescript]
+
+  # Redux (slices / thunks / selectors)
+    const executeChatInstance = createAsyncThunk(...)
+  # Functions
+    export function assembleChatRequest(state: RootState, instanceId: string,): Partial<ChatRequestPayload> | null
+
+
+---
+Filepath: features/agents/redux/execution-system/thunks/process-stream.ts  [typescript]
+
+  # Interfaces
+    export interface ProcessStreamResult
+    # conversationId: string | null
+    # completionStats: CompletionStats | undefined
+    # tokenUsage: { input: number; output: number; total: number } | undefined
+    # finishReason: string | undefined
+  # Functions
+    export async function processStream({ requestId, instanceId, response, submitAt, conversationIdAt, initialConversationId, dispatch, getState, }: ProcessStreamArgs): Promise<ProcessStreamResult>
+
+
+---
 Filepath: features/agents/redux/execution-system/active-requests/active-requests.selectors.ts  [typescript]
 
+  # Interfaces
+    export interface TimelineDerivedTiming
+    # /** Delta from request start (timeline[0]) to first phase event */
+    # timeToFirstPhaseMs: number | null
+    # /** Delta from request start to first text_start */
+    # timeToFirstTextMs: number | null
+    # /** Delta from request start to first reasoning_start */
+    # timeToFirstReasoningMs: number | null
+    # /** Delta from request start to first init event */
+    # timeToFirstInitMs: number | null
+    # ... 22 more fields
   # Redux (slices / thunks / selectors)
     export const selectRequest
     export const selectRequestsForInstance
@@ -352,9 +433,61 @@ Filepath: features/agents/redux/execution-system/active-requests/active-requests
     export const selectRequestStatus
     export const selectAccumulatedText
     export const selectRequestConversationId
-    export const selectUnresolvedToolCalls
-    export const selectConversationTree
     export const selectHasActiveRequests
+    export const selectCurrentPhase
+    export const selectPhaseHistory
+    export const selectActiveOperations
+    export const selectCompletedOperations
+    export const selectHasActiveOperations
+    export const selectCompletedOperationsByType
+    export const selectUserRequestCompletion
+    export const selectContentBlock
+    export const selectContentBlockOrder
+    export const selectAllContentBlocks
+    export const selectContentBlocksByType
+    export const selectStreamingBlocks
+    export const selectCompletedBlocks
+    export const selectContentBlockCount
+    export const selectToolLifecycle
+    export const selectAllToolLifecycles
+    export const selectActiveTools
+    export const selectCompletedTools
+    export const selectToolErrors
+    export const selectActiveToolCount
+    export const selectUnresolvedToolCalls
+    export const selectCompletion
+    export const selectUserRequestResult
+    export const selectLlmRequestResults
+    export const selectToolExecutionResults
+    export const selectSubAgentResults
+    export const selectPersistenceResults
+    export const selectTypedDataPayloads
+    export const selectFirstTypedDataPayload
+    export const selectAllTypedDataPayloads
+    export const selectReceivedDataTypes
+    export const selectAccumulatedReasoning
+    export const selectIsReasoningStreaming
+    export const selectHasReasoning
+    export const selectWarnings
+    export const selectWarningCount
+    export const selectHighWarnings
+    export const selectInfoEvents
+    export const selectReservations
+    export const selectReservation
+    export const selectReservationsByTable
+    export const selectPendingReservations
+    export const selectFailedReservations
+    export const selectReservationCount
+    export const selectReservedConversationId
+    export const selectErrorIsFatal
+    export const selectConversationTree
+    export const selectTimeline
+    export const selectRawEvents
+    export const selectTimelineLength
+    export const selectIsInTextRun
+    export const selectTimelineByKind
+    export const selectTimelineKindCounts
+    export const selectTimelineDerivedTiming
 
 
 ---
@@ -363,7 +496,6 @@ Filepath: features/agents/redux/execution-system/active-requests/active-requests
   # Interfaces
     export interface ActiveRequestsState
     # byRequestId: Record<string, ActiveRequest>
-    # /** Map instanceId → requestIds for quick lookup */
     # byInstanceId: Record<string, string[]>
   # Redux (slices / thunks / selectors)
     const activeRequestsSlice = createSlice(...)
@@ -498,6 +630,12 @@ Filepath: features/agents/redux/execution-system/instance-ui-state/instance-ui-s
     export const selectAutoClearConversation
     export const selectIsExpanded
     export const selectModeState
+    export const selectReuseConversationId
+    export const selectBuilderAdvancedSettings
+    export const selectBuilderDebug
+    export const selectUseStructuredSystemInstruction
+    export const selectStructuredInstruction
+    export const selectUseBlockMode
     export const selectInstanceIdsByMode
     export const selectModalInstanceIds
     export const selectPersistentInstanceIds
@@ -514,6 +652,8 @@ Filepath: features/agents/redux/execution-system/instance-ui-state/instance-ui-s
   # Interfaces
     export interface InstanceUIStateSlice
     # byInstanceId: Record<string, InstanceUIState>
+    # /**
+    # useBlockMode: boolean
   # Redux (slices / thunks / selectors)
     const instanceUIStateSlice = createSlice(...)
 
@@ -521,6 +661,8 @@ Filepath: features/agents/redux/execution-system/instance-ui-state/instance-ui-s
 ---
 Filepath: features/agents/redux/execution-system/selectors/aggregate.selectors.ts  [typescript]
 
+  # Types
+    export type StreamPhase = | "idle"
   # Redux (slices / thunks / selectors)
     export const selectIsExecuting
     export const selectIsStreaming
@@ -539,23 +681,28 @@ Filepath: features/agents/redux/execution-system/selectors/aggregate.selectors.t
     export const selectIsInstanceReady
     export const selectAssembledRequest
     export const selectInstanceSummary
+    export const selectShouldShowVariables
+    export const selectInstanceIdByConversationId
     export const selectActiveInstancesByDisplayMode
+    export const selectOverlayInstancesByDisplayMode
     export const selectActiveModalInstanceIds
     export const selectActivePanelInstanceIds
+    export const selectLatestCurrentPhase
+    export const selectLatestContentBlocks
+    export const selectLatestContentBlockCount
+    export const selectLatestActiveTools
+    export const selectLatestToolLifecycles
+    export const selectLatestCompletion
+    export const selectLatestErrorIsFatal
+    export const selectLatestTimeline
+    export const selectIsInTextRun
+    export const selectIsReasoningStreaming
+    export const selectLatestAccumulatedReasoning
+    export const selectLatestReservations
+    export const selectStreamPhase
     export const selectAvailableShortcuts
   # Functions
     export const makeSelectInstanceDisplaySnapshot = () =>
-
-
----
-Filepath: features/agents/redux/execution-system/selectors/instance-model-overrides.selectors.ts  [typescript]
-
-  # Redux (slices / thunks / selectors)
-    export const selectInstanceOverrideState
-    export const selectCurrentSettings
-    export const selectSettingsOverridesForApi
-    export const selectHasOverrides
-    export const selectOverriddenKeys
 
 
 ---
@@ -875,125 +1022,6 @@ Filepath: features/agents/redux/agent-definition/thunks.ts  [typescript]
 
 
 ---
-Filepath: features/agents/redux/agent-definition/types.ts  [typescript]
-
-  # Types
-    export type AgentType = "user" | "builtin"
-    export type VariableComponentType = | "textarea" // Default — multi-line text
-    export type AccessLevel = | "owner"
-    export type DuplicateAgentResult = string
-    export type AgentFetchStatus = | "list"
-    export type FieldSnapshot = {
-    export type LoadedFields = Set<keyof AgentDefinition>
-  # Interfaces
-    export interface VariableCustomComponent
-    # type: VariableComponentType
-    # options?: string[]
-    # allowOther?: boolean
-    # toggleValues?: [string, string]
-    # min?: number
-    # max?: number
-    # step?: number
-    export interface VariableDefinition
-    # name: string
-    # defaultValue: unknown
-    # helpText?: string
-    # required?: boolean
-    # /** Custom UI input component for collecting this variable's value. */
-    # customComponent?: VariableCustomComponent
-    export interface ModelTier
-    # modelId: string
-    # label?: string
-    export interface ModelTiers
-    # default: string
-    # flexible?: boolean
-    # tiers?: Record<string, ModelTier>
-    export interface AgentDefinition
-    # id: string; // agents.id for live agents; agent_versions.id for snapshots
-    # name: string
-    # description: string | null
-    # category: string | null
-    # tags: string[]
-    # agentType: AgentType
-    # isVersion: boolean; // true = this record is from agent_versions
-    # parentAgentId: string | null; // FK → agents.id, only set when isVersion = true
-    # ... 28 more fields
-    export interface AgentListRow
-    # id: string
-    # name: string
-    # description: string | null
-    # category: string | null
-    # tags: string[]
-    # agent_type: AgentType
-    # model_id: string | null
-    # is_active: boolean
-    # ... 13 more fields
-    export interface DuplicateAgentParams
-    # agent_id: string
-    export interface PromoteVersionParams
-    # agent_id: string
-    # version_number: number
-    export interface PromoteVersionResult
-    # success: boolean
-    # error?: string
-    # promoted_version?: number
-    # agent_id?: string
-    export interface AgentExecutionMinimal
-    # id: string
-    # variable_definitions: VariableDefinition[] | null
-    # context_slots: ContextSlot[] | null
-    export interface AgentExecutionFull
-    # id: string
-    # variable_definitions: VariableDefinition[] | null
-    # model_id: string | null
-    # settings: LLMParams
-    # tools: string[]
-    # custom_tools: CustomToolDefinition[]
-    # context_slots: ContextSlot[] | null
-    export interface AgentDriftItem
-    # reference_type: "shortcut" | "app" | "derived_agent"
-    # reference_id: string
-    # reference_name: string
-    # agent_id: string
-    # agent_name: string
-    # version_pinned_to: number
-    # current_version: number
-    # versions_behind: number
-    export interface AgentReference
-    # reference_type: "shortcut" | "app" | "derived_agent"
-    # reference_id: string
-    # reference_name: string
-    # use_latest: boolean
-    # is_behind: boolean
-    export interface AcceptVersionResult
-    # success: boolean
-    # error?: string
-    # reference_type?: string
-    # reference_id?: string
-    # accepted_version?: number
-    export interface UpdateFromSourceResult
-    # success: boolean
-    # error?: string
-    # source_version?: number
-    # agent_name?: string
-    export interface AgentDefinitionRecord extends AgentDefinition
-    # _dirty: boolean
-    # _dirtyFields: Set<keyof AgentDefinition>
-    # _fieldHistory: FieldSnapshot
-    # _loadedFields: LoadedFields
-    # _fetchStatus: AgentFetchStatus | null
-    # _loading: boolean
-    # _error: string | null
-    export interface AgentDefinitionSliceState
-    # agents: Record<string, AgentDefinitionRecord>
-    # activeAgentId: string | null
-    # status: "idle" | "loading" | "succeeded" | "failed"
-    # error: string | null
-  # Functions
-    export function shouldUpgradeFetchStatus(current: AgentFetchStatus | null, incoming: AgentFetchStatus,): boolean
-
-
----
 Filepath: features/agents/redux/agent-definition/selectors.ts  [typescript]
 
   # Redux (slices / thunks / selectors)
@@ -1025,6 +1053,7 @@ Filepath: features/agents/redux/agent-definition/selectors.ts  [typescript]
     export const selectAgentSettings
     export const selectAgentTools
     export const selectAgentCustomTools
+    export const selectAgentMcpServers
     export const selectAgentModelTiers
     export const selectAgentOutputSchema
     export const selectAgentTags
@@ -1033,6 +1062,10 @@ Filepath: features/agents/redux/agent-definition/selectors.ts  [typescript]
     export const selectAgentParentAgentId
     export const selectAgentVersionNumber
     export const selectAgentChangeNote
+    export const selectAgentCanUndo
+    export const selectAgentCanRedo
+    export const selectAgentUndoDepth
+    export const selectAgentRedoDepth
     export const selectAgentIsDirty
     export const selectAgentDirtyFields
     export const selectAgentFieldHistory

@@ -18,29 +18,19 @@ import type {
 } from "@/features/agents/types";
 import { DEFAULT_BUILDER_ADVANCED_SETTINGS } from "@/features/agents/types/instance.types";
 
-/**
- * Full UI state for an instance.
- * Returns the existing state object by reference — no new object created.
- * Returns undefined when the instance hasn't been initialized yet.
- */
+// ── Full state accessor ──────────────────────────────────────────────────────
+
 export const selectInstanceUIState =
   (instanceId: string) =>
   (state: RootState): InstanceUIState | undefined =>
     state.instanceUIState.byInstanceId[instanceId];
 
-/**
- * Current display mode.
- * Primitive — safe to use directly.
- * Returns undefined when instance not found (guard in component).
- */
+// ── Display mode ─────────────────────────────────────────────────────────────
+
 export const selectDisplayMode =
   (instanceId: string) =>
   (state: RootState): ResultDisplayMode | undefined =>
     state.instanceUIState.byInstanceId[instanceId]?.displayMode;
-
-// ── Display mode boolean helpers ─────────────────────────────────────────────
-// One selector per mode — each returns a stable boolean primitive.
-// Components use these to conditionally render layout variants.
 
 export const selectIsModalFull =
   (instanceId: string) =>
@@ -75,7 +65,6 @@ export const selectIsToast =
   (state: RootState): boolean =>
     state.instanceUIState.byInstanceId[instanceId]?.displayMode === "toast";
 
-/** Is the instance displayed in any modal variant (full or compact)? */
 export const selectIsAnyModal =
   (instanceId: string) =>
   (state: RootState): boolean => {
@@ -83,17 +72,127 @@ export const selectIsAnyModal =
     return mode === "modal-full" || mode === "modal-compact";
   };
 
-// ── Other primitives ─────────────────────────────────────────────────────────
+// ── Execution behavior ───────────────────────────────────────────────────────
+
+export const selectAutoRun =
+  (instanceId: string) =>
+  (state: RootState): boolean =>
+    state.instanceUIState.byInstanceId[instanceId]?.autoRun ?? true;
 
 export const selectAllowChat =
   (instanceId: string) =>
   (state: RootState): boolean =>
     state.instanceUIState.byInstanceId[instanceId]?.allowChat ?? true;
 
+// ── Pre-execution gate ───────────────────────────────────────────────────────
+
+export const selectUsePreExecutionInput =
+  (instanceId: string) =>
+  (state: RootState): boolean =>
+    state.instanceUIState.byInstanceId[instanceId]?.usePreExecutionInput ??
+    false;
+
+export const selectPreExecutionSatisfied =
+  (instanceId: string) =>
+  (state: RootState): boolean =>
+    state.instanceUIState.byInstanceId[instanceId]?.preExecutionSatisfied ??
+    false;
+
+/**
+ * Derived: Does this instance need pre-execution input that hasn't been provided yet?
+ * Components use this to gate between <AgentPreExecutionInput /> and main content.
+ */
+export const selectNeedsPreExecutionInput =
+  (instanceId: string) =>
+  (state: RootState): boolean => {
+    const entry = state.instanceUIState.byInstanceId[instanceId];
+    if (!entry) return false;
+    return entry.usePreExecutionInput && !entry.preExecutionSatisfied;
+  };
+
+// ── Visibility (fine-grained) ────────────────────────────────────────────────
+
 export const selectShowVariablePanel =
   (instanceId: string) =>
   (state: RootState): boolean =>
     state.instanceUIState.byInstanceId[instanceId]?.showVariablePanel ?? false;
+
+export const selectShowDefinitionMessages =
+  (instanceId: string) =>
+  (state: RootState): boolean =>
+    state.instanceUIState.byInstanceId[instanceId]?.showDefinitionMessages ??
+    true;
+
+export const selectShowDefinitionMessageContent =
+  (instanceId: string) =>
+  (state: RootState): boolean =>
+    state.instanceUIState.byInstanceId[instanceId]
+      ?.showDefinitionMessageContent ?? false;
+
+export const selectHiddenMessageCount =
+  (instanceId: string) =>
+  (state: RootState): number =>
+    state.instanceUIState.byInstanceId[instanceId]?.hiddenMessageCount ?? 0;
+
+// ── Callback integration ─────────────────────────────────────────────────────
+
+export const selectCallbackGroupId =
+  (instanceId: string) =>
+  (state: RootState): string | null =>
+    state.instanceUIState.byInstanceId[instanceId]?.callbackGroupId ?? null;
+
+// ── Derived: should input be visible ─────────────────────────────────────────
+
+/**
+ * Derived selector: should the text input component be visible?
+ * True when:
+ *   - allowChat is true (user can continue chatting), OR
+ *   - autoRun is false and instance is still in draft/ready (user needs to trigger execution)
+ */
+export const selectShouldShowInput =
+  (instanceId: string) =>
+  (state: RootState): boolean => {
+    const entry = state.instanceUIState.byInstanceId[instanceId];
+    if (!entry) return false;
+    if (entry.allowChat) return true;
+    if (!entry.autoRun) {
+      const instance = state.executionInstances.byInstanceId[instanceId];
+      if (
+        instance &&
+        (instance.status === "draft" || instance.status === "ready")
+      ) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+// ── Instance title (cross-slice derived) ─────────────────────────────────────
+
+/**
+ * Derives a display title for the instance by checking agent definitions
+ * and shortcut labels. Returns undefined if no title can be determined.
+ */
+export const selectInstanceTitle =
+  (instanceId: string) =>
+  (state: RootState): string | undefined => {
+    const instance = state.executionInstances.byInstanceId[instanceId];
+    if (!instance) return undefined;
+
+    if (instance.shortcutId) {
+      const shortcut = state.agentShortcut?.[instance.shortcutId];
+      if (shortcut?.label) return shortcut.label;
+    }
+
+    if (instance.agentId) {
+      const agent = state.agentDefinition.agents?.[instance.agentId];
+      if (agent?.name) return agent.name;
+    }
+
+    return undefined;
+  };
+
+// ── Layout & interaction (existing) ──────────────────────────────────────────
 
 export const selectSubmitOnEnter =
   (instanceId: string) =>
@@ -126,11 +225,6 @@ export const selectIsExpanded =
   (state: RootState): boolean =>
     state.instanceUIState.byInstanceId[instanceId]?.isExpanded ?? true;
 
-/**
- * Mode-specific state for a given instance.
- * Returns the existing object by reference — no new object constructed.
- * Returns undefined when instance not initialized.
- */
 export const selectModeState =
   (instanceId: string) =>
   (state: RootState): Record<string, unknown> | undefined =>
@@ -142,16 +236,10 @@ export const selectReuseConversationId =
     state.instanceUIState.byInstanceId[instanceId]?.reuseConversationId ??
     false;
 
-/**
- * Builder advanced settings for a chat-mode instance.
- * Returns the existing object by reference — no new object constructed.
- * Falls back to defaults when instance not initialized.
- */
 export const selectBuilderAdvancedSettings =
   (instanceId: string) =>
-  (state: RootState): BuilderAdvancedSettings =>
-    state.instanceUIState.byInstanceId[instanceId]?.builderAdvancedSettings ??
-    DEFAULT_BUILDER_ADVANCED_SETTINGS;
+  (state: RootState): BuilderAdvancedSettings | undefined =>
+    state.instanceUIState.byInstanceId[instanceId]?.builderAdvancedSettings;
 
 export const selectBuilderDebug =
   (instanceId: string) =>
@@ -159,17 +247,18 @@ export const selectBuilderDebug =
     state.instanceUIState.byInstanceId[instanceId]?.builderAdvancedSettings
       ?.debug ?? false;
 
+export const selectBuilderStore =
+  (instanceId: string) =>
+  (state: RootState): boolean =>
+    state.instanceUIState.byInstanceId[instanceId]?.builderAdvancedSettings
+      ?.store ?? false;
+
 export const selectUseStructuredSystemInstruction =
   (instanceId: string) =>
   (state: RootState): boolean =>
     state.instanceUIState.byInstanceId[instanceId]?.builderAdvancedSettings
       ?.useStructuredSystemInstruction ?? false;
 
-/**
- * Structured system instruction overrides configured via the modal.
- * Returns the existing object by reference — no new object constructed.
- * Returns undefined when not set (guard in component).
- */
 export const selectStructuredInstruction =
   (instanceId: string) => (state: RootState) =>
     state.instanceUIState.byInstanceId[instanceId]?.builderAdvancedSettings
@@ -177,27 +266,11 @@ export const selectStructuredInstruction =
 
 // ── Global preference selectors ───────────────────────────────────────────────
 
-/**
- * Whether the chat route is in block mode (admin/pilot feature).
- * Global display preference — not tied to any specific instance.
- * Read at execute time like apiBaseUrl.
- */
 export const selectUseBlockMode = (state: RootState): boolean =>
   state.instanceUIState.useBlockMode;
 
 // ── Global registry selectors (keyed by display mode) ────────────────────────
-// These are memoized because they build arrays from the full map.
-// Each returns a stable array — only recomputes when the map changes.
 
-/**
- * All instanceIds that are currently set to a given display mode.
- *
- * Usage:
- *   const modalIds = useAppSelector(selectInstanceIdsByMode("modal-full"));
- *
- * Memoized — stable array reference when nothing changes.
- * Returns undefined (not []) when no instances exist at all.
- */
 export const selectInstanceIdsByMode = (mode: ResultDisplayMode) =>
   createSelector(
     (state: RootState) => state.instanceUIState.byInstanceId,
@@ -209,10 +282,6 @@ export const selectInstanceIdsByMode = (mode: ResultDisplayMode) =>
     },
   );
 
-/**
- * All instanceIds that are in any modal variant (modal-full or modal-compact).
- * Memoized — stable array reference when nothing changes.
- */
 export const selectModalInstanceIds = createSelector(
   (state: RootState) => state.instanceUIState.byInstanceId,
   (byInstanceId): string[] | undefined => {
@@ -224,10 +293,6 @@ export const selectModalInstanceIds = createSelector(
   },
 );
 
-/**
- * All instanceIds that are in panel or chat-bubble mode.
- * Used to render persistent side panels without mounting/unmounting.
- */
 export const selectPersistentInstanceIds = createSelector(
   (state: RootState) => state.instanceUIState.byInstanceId,
   (byInstanceId): string[] | undefined => {

@@ -280,9 +280,13 @@ export const selectIsInstanceReady =
 
     // Check required variables — uses instance-owned definitions snapshot
     const varEntry = state.instanceVariableValues.byInstanceId[instanceId];
-    const definitions = varEntry?.definitions ?? [];
-    const userValues = varEntry?.userValues ?? {};
-    const scopeValues = varEntry?.scopeValues ?? {};
+    const definitions = varEntry?.definitions;
+    const userValues = varEntry?.userValues;
+    const scopeValues = varEntry?.scopeValues;
+
+    if (!definitions || !userValues || !scopeValues) {
+      return { ready: reasons.length === 0, reasons };
+    }
 
     for (const def of definitions) {
       if (!def.required) continue;
@@ -314,43 +318,45 @@ export const selectAssembledRequest =
 /**
  * Complete summary of an instance's current state.
  * Uses only instance-owned data — agentDefinition is never read here.
- * The instanceId is the only key needed.
+ * Memoized — only recomputes when any of the input slices change.
  */
-export const selectInstanceSummary =
-  (instanceId: string) => (state: RootState) => {
-    const instance = state.executionInstances.byInstanceId[instanceId];
-    if (!instance) return null;
+export const selectInstanceSummary = (instanceId: string) =>
+  createSelector(
+    (state: RootState) => state.executionInstances.byInstanceId[instanceId],
+    (state: RootState) => state.instanceModelOverrides.byInstanceId[instanceId],
+    (state: RootState) => state.instanceResources.byInstanceId[instanceId],
+    (state: RootState) => state.instanceContext.byInstanceId[instanceId],
+    (state: RootState) => state.instanceUserInput.byInstanceId[instanceId],
+    (state: RootState) => state.instanceUIState.byInstanceId[instanceId],
+    (state: RootState) => state.activeRequests.byInstanceId[instanceId],
+    (state: RootState) => state.activeRequests.byRequestId,
+    (instance, overrides, resources, context, userInput, uiState, requestIds, byRequestId) => {
+      if (!instance) return null;
 
-    const overrides = state.instanceModelOverrides.byInstanceId[instanceId];
-    const resources = state.instanceResources.byInstanceId[instanceId];
-    const context = state.instanceContext.byInstanceId[instanceId];
-    const userInput = state.instanceUserInput.byInstanceId[instanceId];
-    const uiState = state.instanceUIState.byInstanceId[instanceId];
-    const requestIds =
-      state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+      const ids = requestIds ?? EMPTY_IDS;
 
-    return {
-      instanceId,
-      agentId: instance.agentId,
-      origin: instance.origin,
-      status: instance.status,
-      overrideCount:
-        Object.keys(overrides?.overrides ?? {}).length +
-        (overrides?.removals.length ?? 0),
-      resourceCount: Object.keys(resources ?? {}).length,
-      contextCount: Object.keys(context ?? {}).length,
-      hasUserInput:
-        (userInput?.text?.trim().length ?? 0) > 0 ||
-        (userInput?.contentBlocks?.length ?? 0) > 0,
-      displayMode: uiState?.displayMode ?? "modal-full",
-      requestCount: requestIds.length,
-      latestRequestStatus:
-        requestIds.length > 0
-          ? state.activeRequests.byRequestId[requestIds[requestIds.length - 1]]
-              ?.status
-          : null,
-    };
-  };
+      return {
+        instanceId,
+        agentId: instance.agentId,
+        origin: instance.origin,
+        status: instance.status,
+        overrideCount:
+          Object.keys(overrides?.overrides ?? {}).length +
+          (overrides?.removals.length ?? 0),
+        resourceCount: Object.keys(resources ?? {}).length,
+        contextCount: Object.keys(context ?? {}).length,
+        hasUserInput:
+          (userInput?.text?.trim().length ?? 0) > 0 ||
+          (userInput?.contentBlocks?.length ?? 0) > 0,
+        displayMode: uiState?.displayMode ?? "modal-full",
+        requestCount: ids.length,
+        latestRequestStatus:
+          ids.length > 0
+            ? byRequestId[ids[ids.length - 1]]?.status ?? null
+            : null,
+      };
+    },
+  );
 
 // =============================================================================
 // Variable Display
@@ -502,6 +508,42 @@ export const selectActiveInstancesByDisplayMode = createSelector(
 
       const mode = byUIState[instanceId]?.displayMode;
       if (!mode) continue;
+
+      if (!result[mode]) result[mode] = [];
+      result[mode].push(instanceId);
+      hasAny = true;
+    }
+
+    return hasAny ? result : undefined;
+  },
+);
+
+/**
+ * Returns overlay-managed instances grouped by display mode.
+ *
+ * "direct" and "background" modes are excluded — those are rendered
+ * by their host component (AgentRunPage, builder, chat).
+ * Every other display mode is rendered centrally by the OverlayController.
+ *
+ * Excludes "draft" status since the instance isn't ready yet.
+ */
+export const selectOverlayInstancesByDisplayMode = createSelector(
+  (state: RootState) => state.executionInstances.byInstanceId,
+  (state: RootState) => state.instanceUIState.byInstanceId,
+  (byInstanceId, byUIState) => {
+    type DisplayModeMap = Record<string, string[]>;
+    const result: DisplayModeMap = {};
+    let hasAny = false;
+
+    for (const instanceId of Object.keys(byInstanceId)) {
+      const instance = byInstanceId[instanceId];
+      if (!instance) continue;
+
+      const { status } = instance;
+      if (status === "draft") continue;
+
+      const mode = byUIState[instanceId]?.displayMode;
+      if (!mode || mode === "direct" || mode === "background") continue;
 
       if (!result[mode]) result[mode] = [];
       result[mode].push(instanceId);
@@ -694,12 +736,10 @@ export const selectLatestErrorIsFatal =
  */
 export const selectLatestTimeline =
   (instanceId: string) =>
-  (state: RootState): TimelineEntry[] => {
+  (state: RootState): TimelineEntry[] | undefined => {
     const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
-    if (ids.length === 0) return [];
-    return (
-      state.activeRequests.byRequestId[ids[ids.length - 1]]?.timeline ?? []
-    );
+    if (ids.length === 0) return undefined;
+    return state.activeRequests.byRequestId[ids[ids.length - 1]]?.timeline;
   };
 
 /**
@@ -748,15 +788,15 @@ export const selectLatestReservations =
   (instanceId: string) =>
   (
     state: RootState,
-  ): Record<
-    string,
-    import("@/features/agents/types/request.types").ReservationRecord
-  > => {
+  ):
+    | Record<
+        string,
+        import("@/features/agents/types/request.types").ReservationRecord
+      >
+    | undefined => {
     const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
-    if (ids.length === 0) return {};
-    return (
-      state.activeRequests.byRequestId[ids[ids.length - 1]]?.reservations ?? {}
-    );
+    if (ids.length === 0) return undefined;
+    return state.activeRequests.byRequestId[ids[ids.length - 1]]?.reservations;
   };
 
 // =============================================================================
@@ -827,6 +867,22 @@ export const selectStreamPhase =
 
 /**
  * Get shortcuts available for the current UI context.
+ * Memoized — stable reference when shortcuts map hasn't changed.
+ */
+export const makeSelectAvailableShortcuts = (context: ShortcutContext) =>
+  createSelector(
+    (state: RootState) => state.agentShortcut.shortcuts,
+    (shortcuts) =>
+      Object.values(shortcuts)
+        .filter(
+          (s) => s != null && s.isActive && s.enabledContexts.includes(context),
+        )
+        .sort((a, b) => (a?.sortOrder ?? 0) - (b?.sortOrder ?? 0)),
+  );
+
+/**
+ * @deprecated Use makeSelectAvailableShortcuts(context) factory instead.
+ * This non-memoized version creates a new array on every call.
  */
 export const selectAvailableShortcuts =
   (context: ShortcutContext) => (state: RootState) => {

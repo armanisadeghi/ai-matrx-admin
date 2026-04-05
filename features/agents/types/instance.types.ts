@@ -261,8 +261,69 @@ export const DEFAULT_BUILDER_ADVANCED_SETTINGS: BuilderAdvancedSettings = {
 export interface InstanceUIState {
   instanceId: string;
   displayMode: ResultDisplayMode;
+
+  // ── Execution behavior ───────────────────────────────────────────────────
+  /**
+   * When true, execution starts automatically as soon as the instance has
+   * sufficient input (variables filled, user input set, etc.).
+   * When false, the user must explicitly trigger execution.
+   */
+  autoRun: boolean;
+
+  /** Whether the user can continue chatting after the first response. */
   allowChat: boolean;
+
+  // ── Pre-execution gate ───────────────────────────────────────────────────
+  /**
+   * When true, an intermediate input overlay is shown before the main display.
+   * The user enters text, clicks "Continue", and then the main component renders.
+   * Primarily for inline/toast/compact modes where the main display has no input.
+   */
+  usePreExecutionInput: boolean;
+
+  /**
+   * Flips to true after the user completes the pre-execution input step.
+   * Components check: if usePreExecutionInput && !preExecutionSatisfied → show gate.
+   */
+  preExecutionSatisfied: boolean;
+
+  // ── Variable & definition visibility (fine-grained) ──────────────────────
+  /** Whether the variable input panel is visible. Independent of message visibility. */
   showVariablePanel: boolean;
+
+  /**
+   * Whether definition-sourced conversation turns (fabricated user messages from
+   * the agent's priming definition) are visible at all. When false, the first N
+   * turns (where N = hiddenMessageCount) are completely hidden.
+   */
+  showDefinitionMessages: boolean;
+
+  /**
+   * When definition messages ARE shown, whether the "secret" template portion
+   * (system prompt instructions, variable placeholders in the raw form) is visible.
+   * When false, only user-entered values (variables, resources, attachments) render.
+   */
+  showDefinitionMessageContent: boolean;
+
+  /**
+   * Number of agent-definition messages to hide from the conversation display.
+   * Fetched from `agx_get_defined_data` RPC at instance creation time.
+   *
+   * ⚠️ TEMPORARY: This is a stopgap until the backend streams per-message
+   * visibility flags (is_visible_to_user / is_visible_to_model).
+   */
+  hiddenMessageCount: number;
+
+  // ── Callback integration ─────────────────────────────────────────────────
+  /**
+   * CallbackManager group ID for this instance's lifecycle callbacks
+   * (onComplete, onTextReplace, onTextInsertBefore, onTextInsertAfter, etc.).
+   * Stored as a string so Redux stays serializable. Actual function refs
+   * live in the CallbackManager singleton.
+   */
+  callbackGroupId: string | null;
+
+  // ── Layout & interaction ─────────────────────────────────────────────────
   isExpanded: boolean;
 
   /**
@@ -277,9 +338,7 @@ export interface InstanceUIState {
    */
   isCreator: boolean;
 
-  /**
-   * Show creator-only debug panels (request preview, variable provenance, etc.)
-   */
+  /** Show creator-only debug panels (request preview, variable provenance, etc.) */
   showCreatorDebug: boolean;
 
   /**

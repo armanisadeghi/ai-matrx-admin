@@ -169,7 +169,7 @@ export function useInstanceBootstrap() {
             agentId,
             sourceFeature: "chat",
             autoRun: false,
-            displayMode: "chat-bubble",
+            displayMode: "direct",
           }),
         );
         if (launchAgentExecution.fulfilled.match(result)) {

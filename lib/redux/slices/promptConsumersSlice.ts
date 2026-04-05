@@ -149,11 +149,13 @@ const promptConsumersSlice = createSlice({
 
 // ── Selectors ─────────────────────────────────────────────────────────────────
 
+const EMPTY_CONSUMERS: Record<string, PromptConsumerState> = {};
+
 export const selectConsumer = (state: RootState, consumerId: string): PromptConsumerState =>
     state.promptConsumers?.consumers[consumerId] ?? DEFAULT_CONSUMER_STATE;
 
 export const selectAllConsumers = (state: RootState) =>
-    state.promptConsumers?.consumers ?? {};
+    state.promptConsumers?.consumers ?? EMPTY_CONSUMERS;
 
 // ── Exports ───────────────────────────────────────────────────────────────────
 

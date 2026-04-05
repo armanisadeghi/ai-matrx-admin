@@ -279,6 +279,11 @@ export async function processStream({
           }),
         );
       } else if (isTypedDataEvent(event)) {
+        // Persistence / identity hooks: first-class `data` events with `type`
+        // (e.g. conversation_id, conversation_labeled) are handled below; any
+        // other `type` is stored on the active request via appendDataPayload for
+        // UI or future use (e.g. message_id, cx_message row metadata, flags).
+        // Add new discriminators next to conversation_id / conversation_labeled.
         dataEvents++;
         const d = event.data as Record<string, unknown>;
         const dataType = (d.type as string) ?? "unknown";

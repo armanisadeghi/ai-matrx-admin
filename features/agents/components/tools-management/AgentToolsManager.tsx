@@ -1229,9 +1229,10 @@ function McpToolsTab({ agentId }: { agentId: string }) {
   const catalogStatus = useAppSelector(selectMcpCatalogStatus);
   const catalogError = useAppSelector(selectMcpCatalogError);
   const connectingServerId = useAppSelector(selectMcpConnectingServerId);
-  const agentMcpServers = useAppSelector((state) =>
+  const agentMcpServersRaw = useAppSelector((state) =>
     selectAgentMcpServers(state, agentId),
   );
+  const agentMcpServers = agentMcpServersRaw ?? [];
   const [showCatalog, setShowCatalog] = useState(false);
   const [search, setSearch] = useState("");
   const [expandedServer, setExpandedServer] = useState<string | null>(null);

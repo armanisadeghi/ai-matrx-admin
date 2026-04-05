@@ -317,16 +317,25 @@ export const selectSharedPromptsListError = (state: RootState): string | null =>
 export const selectSharedPromptsIsLoading = (state: RootState): boolean =>
   state.promptCache?.sharedListStatus === "loading";
 
+const EMPTY_PROMPT_DATA: PromptData[] = [];
+const EMPTY_SHARED_RECORDS: SharedPromptRecord[] = [];
+const EMPTY_STRING_ARRAY: string[] = [];
+
 /**
  * Memoized — prompts the current user can edit (own + editor/admin shared).
  * Returns a stable object reference when neither list has changed.
  */
 export const selectEditablePrompts = createSelector(
   [selectAllPromptsRaw, selectSharedPromptsRaw],
-  (allPrompts, sharedPrompts) => ({
-    ownedPrompts: allPrompts ?? [],
-    sharedEditable: (sharedPrompts ?? []).filter((p) => p.canEdit),
-  }),
+  (allPrompts, sharedPrompts) => {
+    const owned = allPrompts ?? EMPTY_PROMPT_DATA;
+    const shared = sharedPrompts ?? EMPTY_SHARED_RECORDS;
+    const sharedEditable = shared.filter((p) => p.canEdit);
+    return {
+      ownedPrompts: owned,
+      sharedEditable: sharedEditable.length === 0 ? EMPTY_SHARED_RECORDS : sharedEditable,
+    };
+  },
 );
 
 /**
@@ -336,9 +345,11 @@ export const selectEditablePrompts = createSelector(
 export const selectAllAccessiblePromptIds = createSelector(
   [selectAllPromptsRaw, selectSharedPromptsRaw],
   (allPrompts, sharedPrompts): string[] => {
-    const ownedIds = (allPrompts ?? []).map((p) => p.id!);
-    const sharedIds = (sharedPrompts ?? []).map((p) => p.id);
-    return [...new Set([...ownedIds, ...sharedIds])];
+    if (!allPrompts && !sharedPrompts) return EMPTY_STRING_ARRAY;
+    const ownedIds = (allPrompts ?? EMPTY_PROMPT_DATA).map((p) => p.id!);
+    const sharedIds = (sharedPrompts ?? EMPTY_SHARED_RECORDS).map((p) => p.id);
+    const merged = [...new Set([...ownedIds, ...sharedIds])];
+    return merged.length === 0 ? EMPTY_STRING_ARRAY : merged;
   },
 );
 

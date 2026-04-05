@@ -53,8 +53,8 @@ export function AgentToolsModal({
   const hadCustomToolsDirtyOnOpen = useRef(false);
 
   const handleOpen = useCallback(() => {
-    hadToolsDirtyOnOpen.current = dirtyFields.has("tools");
-    hadCustomToolsDirtyOnOpen.current = dirtyFields.has("customTools");
+    hadToolsDirtyOnOpen.current = dirtyFields?.has("tools") ?? false;
+    hadCustomToolsDirtyOnOpen.current = dirtyFields?.has("customTools") ?? false;
     setOpen(true);
   }, [dirtyFields]);
 

@@ -27,6 +27,9 @@ import {
   LayoutTemplate,
   Columns2,
   Rows2,
+  Grid2x2,
+  AlignRight,
+  AlignLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -38,6 +41,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   updateWindowRect,
   selectWindowsHidden,
+  arrangeActiveWindows,
 } from "@/lib/redux/slices/windowManagerSlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 
@@ -215,6 +219,16 @@ export function WindowPanel({
     );
   }, [dispatch, id, rect.width, rect.height]);
 
+  const arrangeAll = useCallback((layout: any) => {
+    dispatch(
+      arrangeActiveWindows({
+        layout,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+      })
+    );
+  }, [dispatch]);
+
   const isMinimized = windowState === "minimized";
   const isMaximized = windowState === "maximized";
 
@@ -236,6 +250,7 @@ export function WindowPanel({
       snapTop={snapTop}
       snapBottom={snapBottom}
       snapCentre={snapCentre}
+      arrangeAll={arrangeAll}
     />
   );
 
@@ -423,6 +438,7 @@ interface WindowHeaderProps {
   snapTop: () => void;
   snapBottom: () => void;
   snapCentre: () => void;
+  arrangeAll: (layout: any) => void;
 }
 
 function WindowHeader({
@@ -441,6 +457,7 @@ function WindowHeader({
   snapTop,
   snapBottom,
   snapCentre,
+  arrangeAll,
 }: WindowHeaderProps) {
   return (
     <div
@@ -465,6 +482,7 @@ function WindowHeader({
         snapTop={snapTop}
         snapBottom={snapBottom}
         snapCentre={snapCentre}
+        arrangeAll={arrangeAll}
       />
 
       {/* Left action zone */}
@@ -510,6 +528,7 @@ interface TrafficLightGroupProps {
   snapTop: () => void;
   snapBottom: () => void;
   snapCentre: () => void;
+  arrangeAll: (layout: any) => void;
 }
 
 function TrafficLightGroup({
@@ -524,12 +543,13 @@ function TrafficLightGroup({
   snapTop,
   snapBottom,
   snapCentre,
+  arrangeAll,
 }: TrafficLightGroupProps) {
   const [groupHovered, setGroupHovered] = useState(false);
 
   return (
     <div
-      className="flex items-center gap-1 shrink-0"
+      className="flex items-center gap-1 shrink-0 py-2 pr-6 pl-1 -my-2 -ml-1 cursor-default"
       onMouseEnter={() => setGroupHovered(true)}
       onMouseLeave={() => setGroupHovered(false)}
       onMouseDown={(e) => e.stopPropagation()}
@@ -539,7 +559,7 @@ function TrafficLightGroup({
         color="red"
         showIcon={groupHovered}
         icon={
-          <X className="w-2.5 h-2.5 stroke-[3]" style={{ color: "#7f1d1d" }} />
+          <X className="w-[8px] h-[8px] stroke-[3]" style={{ color: "#7f1d1d" }} />
         }
         onClick={onClose ?? undefined}
         disabled={!onClose}
@@ -553,12 +573,12 @@ function TrafficLightGroup({
         icon={
           isMinimized ? (
             <Maximize2
-              className="w-2.5 h-2.5 stroke-[3]"
+              className="w-[8px] h-[8px] stroke-[3]"
               style={{ color: "#713f12" }}
             />
           ) : (
             <Minus
-              className="w-2.5 h-2.5 stroke-[3]"
+              className="w-[8px] h-[8px] stroke-[3]"
               style={{ color: "#713f12" }}
             />
           )
@@ -578,6 +598,7 @@ function TrafficLightGroup({
         snapTop={snapTop}
         snapBottom={snapBottom}
         snapCentre={snapCentre}
+        arrangeAll={arrangeAll}
       />
     </div>
   );
@@ -642,6 +663,7 @@ interface GreenTrafficLightProps {
   snapTop: () => void;
   snapBottom: () => void;
   snapCentre: () => void;
+  arrangeAll: (layout: any) => void;
 }
 
 function GreenTrafficLight({
@@ -654,6 +676,7 @@ function GreenTrafficLight({
   snapTop,
   snapBottom,
   snapCentre,
+  arrangeAll,
 }: GreenTrafficLightProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -691,17 +714,17 @@ function GreenTrafficLight({
         aria-label={isMaximized ? "Restore" : "Maximize"}
       >
         <span
-          className="transition-opacity duration-100"
+          className="transition-opacity duration-100 flex items-center justify-center relative w-full h-full"
           style={{ opacity: showIcon ? 1 : 0 }}
         >
           {isMaximized ? (
             <Minimize2
-              className="w-2.5 h-2.5 stroke-[3]"
+              className="w-[8px] h-[8px] stroke-[3] absolute"
               style={{ color: "#14532d" }}
             />
           ) : (
             <Maximize2
-              className="w-2.5 h-2.5 stroke-[3]"
+              className="w-[8px] h-[8px] stroke-[3] absolute"
               style={{ color: "#14532d" }}
             />
           )}
@@ -768,6 +791,38 @@ function GreenTrafficLight({
                   icon={<RectangleHorizontal className="w-4 h-4" />}
                   onClick={() => handleAction(onToggleMaximize)}
                   wide
+                />
+              </div>
+              <div className="border-t border-border/50 my-1" />
+
+              <div className="px-3 pt-1.5 pb-1 text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
+                Arrange All
+              </div>
+              <div className="grid grid-cols-4 gap-1 px-2 pb-2">
+                <SnapButton
+                  label="Grid 4"
+                  icon={<Grid2x2 className="w-4 h-4" />}
+                  onClick={() => handleAction(() => arrangeAll("grid4"))}
+                />
+                <SnapButton
+                  label="Grid 6"
+                  icon={<Grid2x2 className="w-4 h-4" />}
+                  onClick={() => handleAction(() => arrangeAll("grid6"))}
+                />
+                <SnapButton
+                  label="Grid 8"
+                  icon={<Grid2x2 className="w-4 h-4" />}
+                  onClick={() => handleAction(() => arrangeAll("grid8"))}
+                />
+                <SnapButton
+                  label="Stack Right"
+                  icon={<AlignRight className="w-4 h-4" />}
+                  onClick={() => handleAction(() => arrangeAll("stackRight2"))}
+                />
+                <SnapButton
+                  label="Stack Left"
+                  icon={<AlignLeft className="w-4 h-4" />}
+                  onClick={() => handleAction(() => arrangeAll("stackLeft2"))}
                 />
               </div>
               <div className="border-t border-border/50 my-1" />

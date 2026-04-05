@@ -26,6 +26,7 @@ import { v4 as uuidv4 } from "uuid";
 import { destroyInstance } from "../execution-instances/execution-instances.slice";
 import type { CompletionStats } from "@/features/agents/types/instance.types";
 import type { ClientMetrics } from "@/features/agents/types/request.types";
+import type { Json } from "@/types/database.types";
 
 // =============================================================================
 // Types
@@ -73,11 +74,38 @@ export interface ConversationTurn {
   /** Client-side performance metrics (timing, data volume) — assistant turns only */
   clientMetrics?: ClientMetrics;
 
+  /**
+   * True for turns fabricated from the agent definition (priming messages,
+   * auto-generated user messages with variable interpolation).
+   * Used by SmartAgentMessageList to hide these when showDefinitionMessages is false.
+   */
+  systemGenerated?: boolean;
+
   /** Editing / forking support (future) */
   isEdited?: boolean;
   originalContent?: string;
   isFork?: boolean;
   parentTurnId?: string | null;
+
+  /**
+   * Fields below mirror `public.cx_message` when a turn is loaded from Supabase
+   * or once the stream/API provides row ids and flags. Omitted for purely
+   * client-optimistic turns.
+   */
+  cxMessageId?: string;
+  agentId?: string | null;
+  position?: number;
+  contentHistory?: Json | null;
+  deletedAt?: string | null;
+  isVisibleToModel?: boolean;
+  isVisibleToUser?: boolean;
+  /** cx_message.metadata */
+  messageMetadata?: Record<string, unknown>;
+  /** cx_message.source */
+  source?: string;
+  /** cx_message.status */
+  messageStatus?: string;
+  userContent?: Json | null;
 }
 
 export interface InstanceConversationHistoryEntry {
@@ -162,6 +190,7 @@ const instanceConversationHistorySlice = createSlice({
         content: string;
         contentBlocks?: Array<Record<string, unknown>>;
         conversationId?: string | null;
+        systemGenerated?: boolean;
       }>,
     ) {
       const {
@@ -169,6 +198,7 @@ const instanceConversationHistorySlice = createSlice({
         content,
         contentBlocks,
         conversationId = null,
+        systemGenerated,
       } = action.payload;
 
       const entry = state.byInstanceId[instanceId];
@@ -182,6 +212,7 @@ const instanceConversationHistorySlice = createSlice({
         timestamp: new Date().toISOString(),
         requestId: null,
         conversationId,
+        ...(systemGenerated && { systemGenerated }),
       });
     },
 

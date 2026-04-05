@@ -33,7 +33,8 @@ export function DiffHistory({ noteId, onRestoreVersion, className }: DiffHistory
   const dispatch = useAppDispatch();
   const toast = useToastManager('diff-history');
   
-  const versions = useAppSelector(selectNoteVersions(noteId));
+  const versionsRaw = useAppSelector(selectNoteVersions(noteId));
+  const versions = versionsRaw ?? [];
   const loading = useAppSelector(selectNoteVersionsLoading(noteId));
   const error = useAppSelector(selectNoteVersionsError(noteId));
 

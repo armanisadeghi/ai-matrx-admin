@@ -1,6 +1,6 @@
 "use client";
 
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import { Mic } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
@@ -44,15 +44,21 @@ export default function VoicePad() {
   const dispatch = useAppDispatch();
   const entries = useAppSelector(selectVoicePadEntries);
   const draftText = useAppSelector(selectVoicePadDraftText);
+  const [liveTranscript, setLiveTranscript] = useState("");
 
   const handleClose = () => {
     dispatch(closeOverlay({ overlayId: "voicePad" }));
   };
 
   const handleTranscriptionComplete = (text: string) => {
+    setLiveTranscript("");
     if (text.trim()) {
       dispatch(addTranscriptEntry(text));
     }
+  };
+
+  const handleLiveTranscript = (text: string) => {
+    setLiveTranscript(text);
   };
 
   const handleRemoveEntry = (id: string) => {
@@ -79,6 +85,7 @@ export default function VoicePad() {
       actions={
         <MicrophoneIconButton
           onTranscriptionComplete={handleTranscriptionComplete}
+          onLiveTranscript={handleLiveTranscript}
           variant="icon-only"
           size="sm"
         />
@@ -88,7 +95,9 @@ export default function VoicePad() {
         <VoicePadExpanded
           entries={entries}
           draftText={draftText}
+          liveTranscript={liveTranscript}
           onTranscriptionComplete={handleTranscriptionComplete}
+          onLiveTranscript={handleLiveTranscript}
           onRemoveEntry={handleRemoveEntry}
           onClearAll={handleClearAll}
           onDraftChange={handleDraftChange}
