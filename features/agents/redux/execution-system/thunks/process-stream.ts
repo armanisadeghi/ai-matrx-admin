@@ -532,8 +532,12 @@ export async function processStream({
         );
       } else if (isEndEvent(event)) {
         otherEvents++;
-        dispatch(setRequestStatus({ requestId, status: "complete" }));
-        dispatch(setInstanceStatus({ instanceId, status: "complete" }));
+        const currentState = getState();
+        const currentRequest = currentState.activeRequests.byRequestId[requestId];
+        if (currentRequest?.status !== "error") {
+          dispatch(setRequestStatus({ requestId, status: "complete" }));
+          dispatch(setInstanceStatus({ instanceId, status: "complete" }));
+        }
         dispatch(
           appendTimeline({
             requestId,
@@ -629,11 +633,12 @@ export async function processStream({
   dispatch(finalizeAccumulatedReasoning({ requestId }));
 
   const finalState = getState();
-  const completedText =
-    finalState.activeRequests.byRequestId[requestId]?.accumulatedText ?? "";
+  const finalRequest = finalState.activeRequests.byRequestId[requestId];
+  const completedText = finalRequest?.accumulatedText ?? "";
   const finalConversationId =
-    finalState.activeRequests.byRequestId[requestId]?.conversationId ??
-    conversationId;
+    finalRequest?.conversationId ?? conversationId;
+  const finalErrorMessage =
+    finalRequest?.status === "error" ? (finalRequest.errorMessage ?? null) : null;
 
   dispatch(
     commitAssistantTurn({
@@ -644,6 +649,7 @@ export async function processStream({
       ...(tokenUsage && { tokenUsage }),
       ...(finishReason && { finishReason }),
       ...(completionStats && { completionStats }),
+      ...(finalErrorMessage && { errorMessage: finalErrorMessage }),
     }),
   );
 
