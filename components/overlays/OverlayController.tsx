@@ -67,26 +67,12 @@ const FullscreenBrokerState = dynamic(
   { ssr: false },
 );
 
-// QuickNotesSheet requires NotesProvider — wrap it so it works outside the notes page
+// QuickNotesSheet uses Redux — no provider wrapper needed
 const QuickNotesSheet = dynamic(
   () =>
-    Promise.all([
-      import("@/features/notes/actions/QuickNotesSheet"),
-      import("@/features/notes/context/NotesContext"),
-    ]).then(([sheetMod, ctxMod]) => {
-      const Sheet = sheetMod.QuickNotesSheet;
-      const Provider = ctxMod.NotesProvider;
-      function QuickNotesSheetWithProvider(
-        props: React.ComponentProps<typeof Sheet>,
-      ) {
-        return (
-          <Provider>
-            <Sheet {...props} />
-          </Provider>
-        );
-      }
-      return { default: QuickNotesSheetWithProvider };
-    }),
+    import("@/features/notes/actions/QuickNotesSheet").then((mod) => ({
+      default: mod.QuickNotesSheet,
+    })),
   { ssr: false },
 );
 
@@ -176,23 +162,9 @@ const AnnouncementsViewer = dynamic(
 // QuickSaveModal — wraps in NotesProvider so it works outside the notes page
 const QuickSaveModalWithProvider = dynamic(
   () =>
-    Promise.all([
-      import("@/features/notes/actions/QuickNoteSaveModal"),
-      import("@/features/notes/context/NotesContext"),
-    ]).then(([modalMod, ctxMod]) => {
-      const Modal = modalMod.QuickNoteSaveModal;
-      const Provider = ctxMod.NotesProvider;
-      function QuickSaveModalWithNotesProvider(
-        props: React.ComponentProps<typeof Modal>,
-      ) {
-        return (
-          <Provider>
-            <Modal {...props} />
-          </Provider>
-        );
-      }
-      return { default: QuickSaveModalWithNotesProvider };
-    }),
+    import("@/features/notes/actions/QuickNoteSaveModal").then((mod) => ({
+      default: mod.QuickNoteSaveModal,
+    })),
   { ssr: false },
 );
 
@@ -222,6 +194,16 @@ const FeedbackWindow = dynamic(
     import("@/features/feedback/FeedbackWindow").then((m) => ({
       default: m.FeedbackWindow,
     })),
+  { ssr: false },
+);
+
+const ImageViewerWindow = dynamic(
+  () =>
+    import("@/features/floating-window-panel/windows/ImageViewerWindow").then(
+      (m) => ({
+        default: m.ImageViewerWindow,
+      }),
+    ),
   { ssr: false },
 );
 
@@ -354,6 +336,22 @@ const ShareModalWindow = dynamic(
   { ssr: false },
 );
 
+const NotesWindow = dynamic(
+  () =>
+    import("@/features/floating-window-panel/windows/NotesWindow").then(
+      (m) => ({
+        default: m.NotesWindow,
+      }),
+    ),
+  { ssr: false },
+);
+
+const VoicePadAdvanced = dynamic(
+  () =>
+    import("@/components/official-candidate/voice-pad/components/VoicePadAdvanced"),
+  { ssr: false },
+);
+
 // ============================================================================
 // OVERLAY CONTROLLER
 // ============================================================================
@@ -480,7 +478,18 @@ export const OverlayController: React.FC = () => {
     selectOverlayData(s, "shareModalWindow"),
   );
 
+  const isNotesWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "notesWindow"),
+  );
+
+  const isVoicePadOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "voicePad"),
+  );
+
   // ── Instanced overlay selectors — returns all open instances ────────────
+  const imageViewerInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "imageViewer"),
+  );
   const htmlPreviewInstances = useAppSelector((s) =>
     selectOpenInstances(s, "htmlPreview"),
   );
@@ -846,8 +855,37 @@ export const OverlayController: React.FC = () => {
         />
       )}
 
+      {isNotesWindowOpen && (
+        <NotesWindow onClose={() => close("notesWindow")} />
+      )}
+
+      {isVoicePadOpen && <VoicePadAdvanced />}
+
       {/* ── Instanced overlays — .map() renders each open instance ─────── */}
       {/* Each instance gets a stable key so React correctly reconciles them. */}
+
+      {/* Image Viewer — multiple viewers can be open simultaneously */}
+      {imageViewerInstances.map(({ instanceId, data }) => {
+        const d = data as {
+          images: string[];
+          initialIndex?: number;
+          alts?: string[];
+          title?: string;
+        } | null;
+        if (!d?.images?.length) return null;
+        return (
+          <ImageViewerWindow
+            key={instanceId}
+            instanceId={instanceId}
+            isOpen={true}
+            onClose={() => close("imageViewer", instanceId)}
+            images={d.images}
+            initialIndex={d.initialIndex}
+            alts={d.alts}
+            title={d.title}
+          />
+        );
+      })}
 
       {/* HTML Preview — can have multiple simultaneous independent instances */}
       {htmlPreviewInstances.map(({ instanceId, data }) => (

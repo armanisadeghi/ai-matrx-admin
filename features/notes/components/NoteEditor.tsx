@@ -35,7 +35,7 @@ import { TagInput } from "./TagInput";
 import type { Note } from "../types";
 import { useAutoSave } from "../hooks/useAutoSave";
 import { useAllFolders } from "../utils/folderUtils";
-import { useNotesContext } from "../context/NotesContext";
+import { useNotesRedux } from "../hooks/useNotesRedux";
 import { cn } from "@/lib/utils";
 import { useToastManager } from "@/hooks/useToastManager";
 import MarkdownStream from "@/components/MarkdownStream";
@@ -91,7 +91,7 @@ export function NoteEditor({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const labelSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const toast = useToastManager("notes");
-  const { refreshNotes, setActiveNoteDirty } = useNotesContext();
+  const { refreshNotes, setActiveNoteDirty } = useNotesRedux();
 
   // Use refs to avoid callback dependencies
   const localContentRef = useRef(localContent);

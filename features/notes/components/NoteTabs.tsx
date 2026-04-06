@@ -3,7 +3,7 @@
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { X, FileText, Copy, Share2, Trash2, Plus, Save, PilcrowRight, Eye, SplitSquareHorizontal, XCircle, FolderInput, Edit3, Download, Columns } from 'lucide-react';
-import { useNotesContext } from '../context/NotesContext';
+import { useNotesRedux } from '../hooks/useNotesRedux';
 import { cn } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -33,7 +33,7 @@ export function NoteTabs({
     isDirty,
     isSaving
 }: NoteTabsProps) {
-    const { notes, openTabs, activeNote, openNoteInTab, closeTab, reorderTabs, closeAllTabs } = useNotesContext();
+    const { notes, openTabs, activeNote, openNoteInTab, closeTab, reorderTabs, closeAllTabs } = useNotesRedux();
     const activeTabRef = useRef<HTMLDivElement>(null);
     const [draggedTab, setDraggedTab] = useState<string | null>(null);
     const [dragOverTab, setDragOverTab] = useState<string | null>(null);

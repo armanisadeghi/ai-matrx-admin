@@ -4,14 +4,18 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  AlertCircle,
   Bug,
   Camera,
   Check,
   Clipboard,
   ExternalLink,
   HelpCircle,
+  ImageIcon,
   Lightbulb,
+  Loader2,
   MessageSquare,
+  Monitor,
   Plus,
   Send,
   X,
@@ -32,8 +36,15 @@ import {
 } from "@/components/ui/file-upload/FileUploadWithStorage";
 import type { FeedbackType } from "@/types/feedback.types";
 import { toast } from "sonner";
+import { useScreenCapture } from "@/hooks/useScreenCapture";
+import { openImageViewer } from "@/features/floating-window-panel/windows/ImageViewerWindow";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+type AttachmentSlot =
+  | { status: "pending"; id: string }
+  | { status: "error"; id: string; message: string }
+  | { status: "ready"; id: string; url: string };
 
 interface FeedbackStats {
   total: number;
@@ -93,6 +104,7 @@ export function FeedbackWindow({
 // ─── FeedbackWindowBody ───────────────────────────────────────────────────────
 
 function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
+  const dispatch = useAppDispatch();
   const pathname = usePathname();
   const reduxUser = useAppSelector(selectUser);
 
@@ -103,13 +115,19 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
 
   const [feedbackType, setFeedbackType] = useState<FeedbackType>("bug");
   const [description, setDescription] = useState("");
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [attachments, setAttachments] = useState<AttachmentSlot[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isPasting, setIsPasting] = useState(false);
-  const [isCapturing, setIsCapturing] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [stats, setStats] = useState<FeedbackStats | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Derive the final URL list for submission
+  const uploadedImages = attachments
+    .filter(
+      (a): a is Extract<AttachmentSlot, { status: "ready" }> =>
+        a.status === "ready",
+    )
+    .map((a) => a.url);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -123,22 +141,100 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
     "feedback-images",
   );
 
-  const uploadPastedImage = useCallback(
-    async (file: File) => {
-      setIsPasting(true);
+  const { captureTab, captureScreen, isCapturing } = useScreenCapture({
+    hideSelectors: [".feedback-window-panel"],
+  });
+
+  // Add a pending slot and return its id
+  const addPendingSlot = useCallback((): string => {
+    const id = `capture-${Date.now()}`;
+    setAttachments((prev) => [...prev, { status: "pending", id }]);
+    return id;
+  }, []);
+
+  const resolveSlot = useCallback((id: string, url: string) => {
+    setAttachments((prev) =>
+      prev.map((a) => (a.id === id ? { status: "ready", id, url } : a)),
+    );
+  }, []);
+
+  const errorSlot = useCallback((id: string, message: string) => {
+    setAttachments((prev) =>
+      prev.map((a) => (a.id === id ? { status: "error", id, message } : a)),
+    );
+  }, []);
+
+  const uploadFile = useCallback(
+    async (file: File, slotId: string) => {
       try {
         const result = await uploadToPublicUserAssets(file);
         if (result?.url) {
-          setUploadedImages((prev) => [...prev, result.url]);
-          toast.success("Image pasted and uploaded");
+          resolveSlot(slotId, result.url);
+          toast.success("Screenshot attached!");
+        } else {
+          errorSlot(slotId, "Upload failed");
+          toast.error("Screenshot captured but upload failed");
         }
       } catch {
-        toast.error("Failed to upload pasted image");
-      } finally {
-        setIsPasting(false);
+        errorSlot(slotId, "Upload failed");
+        toast.error("Failed to upload screenshot");
       }
     },
-    [uploadToPublicUserAssets],
+    [uploadToPublicUserAssets, resolveSlot, errorSlot],
+  );
+
+  const handleTabCapture = useCallback(async () => {
+    const slotId = addPendingSlot();
+    try {
+      const { file } = await captureTab({
+        ignoreSelector: ".feedback-window-panel",
+      });
+      await uploadFile(file, slotId);
+    } catch (err) {
+      const name = err instanceof Error ? err.name : "";
+      if (name === "NotAllowedError" || name === "AbortError") {
+        // User cancelled — remove the pending slot silently
+        setAttachments((prev) => prev.filter((a) => a.id !== slotId));
+      } else {
+        errorSlot(slotId, "Capture failed");
+        toast.error("Tab capture failed — try Screen Capture instead");
+      }
+    }
+  }, [addPendingSlot, captureTab, uploadFile, errorSlot]);
+
+  const handleScreenCapture = useCallback(async () => {
+    const slotId = addPendingSlot();
+    try {
+      const { file } = await captureScreen();
+      await uploadFile(file, slotId);
+    } catch (err) {
+      const name = err instanceof Error ? err.name : "";
+      if (name === "NotAllowedError" || name === "AbortError") {
+        setAttachments((prev) => prev.filter((a) => a.id !== slotId));
+      } else {
+        errorSlot(slotId, "Capture failed");
+        toast.error("Screen capture failed");
+      }
+    }
+  }, [addPendingSlot, captureScreen, uploadFile, errorSlot]);
+
+  const uploadPastedImage = useCallback(
+    async (file: File) => {
+      const slotId = addPendingSlot();
+      try {
+        const result = await uploadToPublicUserAssets(file);
+        if (result?.url) {
+          resolveSlot(slotId, result.url);
+          toast.success("Image pasted and uploaded");
+        } else {
+          errorSlot(slotId, "Upload failed");
+        }
+      } catch {
+        errorSlot(slotId, "Upload failed");
+        toast.error("Failed to upload pasted image");
+      }
+    },
+    [addPendingSlot, uploadToPublicUserAssets, resolveSlot, errorSlot],
   );
 
   // Ctrl+V paste handler
@@ -166,11 +262,18 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
   }, [uploadPastedImage]);
 
   const handleUploadComplete = useCallback((results: UploadedFileResult[]) => {
-    setUploadedImages((prev) => [...prev, ...results.map((r) => r.url)]);
+    setAttachments((prev) => [
+      ...prev,
+      ...results.map((r) => ({
+        status: "ready" as const,
+        id: `upload-${Date.now()}-${Math.random()}`,
+        url: r.url,
+      })),
+    ]);
   }, []);
 
-  const removeImage = useCallback((index: number) => {
-    setUploadedImages((prev) => prev.filter((_, i) => i !== index));
+  const removeAttachment = useCallback((id: string) => {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
   }, []);
 
   const handlePasteButton = useCallback(async () => {
@@ -198,82 +301,6 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
     }
   }, [uploadPastedImage]);
 
-  const handleScreenshot = useCallback(async () => {
-    setIsCapturing(true);
-
-    // Hide the feedback panel so it doesn't appear in the capture
-    const feedbackEls = Array.from(
-      document.querySelectorAll<HTMLElement>(".feedback-window-panel"),
-    );
-    const prevVisibility = feedbackEls.map((el) => el.style.visibility);
-    feedbackEls.forEach((el) => {
-      el.style.visibility = "hidden";
-    });
-
-    try {
-      // Use the Screen Capture API — works perfectly with all CSS including
-      // backdrop-filter, CSS variables, and complex layouts.
-      // html2canvas v1.x fails silently on modern CSS.
-      if (!navigator.mediaDevices?.getDisplayMedia) {
-        toast.error("Screen capture is not supported in this browser");
-        return;
-      }
-
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { frameRate: 1 },
-        audio: false,
-      });
-
-      // Wait one frame for the browser to actually hide the panel before grabbing
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-
-      // Capture one frame by playing the stream in an offscreen video element
-      const video = document.createElement("video");
-      video.srcObject = stream;
-      video.muted = true;
-      await video.play();
-
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(video, 0, 0);
-
-      video.pause();
-      video.srcObject = null;
-      stream.getTracks().forEach((t) => t.stop());
-
-      const blob = await new Promise<Blob>((res, rej) => {
-        canvas.toBlob(
-          (b) => (b ? res(b) : rej(new Error("canvas.toBlob failed"))),
-          "image/png",
-        );
-      });
-
-      const file = new File([blob], `screenshot-${Date.now()}.png`, {
-        type: "image/png",
-      });
-      const result = await uploadToPublicUserAssets(file);
-      if (result?.url) {
-        setUploadedImages((prev) => [...prev, result.url]);
-        toast.success("Screenshot captured!");
-      } else {
-        toast.error("Screenshot captured but upload failed");
-      }
-    } catch (err) {
-      // User cancelled the screen picker — don't show an error
-      const name = err instanceof Error ? err.name : "";
-      if (name !== "NotAllowedError" && name !== "AbortError") {
-        toast.error("Failed to capture screenshot");
-      }
-    } finally {
-      feedbackEls.forEach((el, i) => {
-        el.style.visibility = prevVisibility[i];
-      });
-      setIsCapturing(false);
-    }
-  }, [uploadToPublicUserAssets]);
-
   // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = useCallback(async () => {
     if (!description.trim() || isSubmitting) return;
@@ -292,7 +319,7 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
     if (result.success) {
       setSubmitted(true);
       setDescription("");
-      setUploadedImages([]);
+      setAttachments([]);
       // Fetch stats (non-blocking)
       getUserFeedback()
         .then((res) => {
@@ -328,7 +355,7 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
     setStats(null);
     setFeedbackType("bug");
     setDescription("");
-    setUploadedImages([]);
+    setAttachments([]);
     setError(null);
     setTimeout(() => textareaRef.current?.focus(), 50);
   }, []);
@@ -467,50 +494,56 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
             maxHeight="120px"
           />
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               type="button"
               onClick={handlePasteButton}
-              disabled={isSubmitting || isPasting}
+              disabled={isSubmitting}
               className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md border border-border bg-background hover:bg-accent text-foreground transition-colors disabled:opacity-50"
             >
               <Clipboard className="w-3 h-3" />
-              {isPasting ? "Pasting..." : "Paste Image"}
+              Paste Image
             </button>
             <button
               type="button"
-              onClick={handleScreenshot}
+              onClick={handleTabCapture}
               disabled={isSubmitting || isCapturing}
+              title="Capture this tab's content instantly (no picker)"
               className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md border border-border bg-background hover:bg-accent text-foreground transition-colors disabled:opacity-50"
             >
               <Camera className="w-3 h-3" />
-              {isCapturing ? "Capturing..." : "Screenshot"}
+              Tab Capture
+            </button>
+            <button
+              type="button"
+              onClick={handleScreenCapture}
+              disabled={isSubmitting || isCapturing}
+              title="Select any window or screen to capture (browser picker)"
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md border border-border bg-background hover:bg-accent text-foreground transition-colors disabled:opacity-50"
+            >
+              <Monitor className="w-3 h-3" />
+              Screen Capture
             </button>
           </div>
 
-          {/* Image thumbnails */}
-          {uploadedImages.length > 0 && (
+          {/* Attachment thumbnails — pending / error / ready */}
+          {attachments.length > 0 && (
             <div className="flex flex-wrap gap-2 pt-1">
-              {uploadedImages.map((url, i) => (
-                <div
-                  key={`img-${i}`}
-                  className="relative group w-14 h-14 rounded-md overflow-hidden border border-border bg-muted"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={url}
-                    alt={`Attachment ${i + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(i)}
-                    className="absolute top-0 right-0 p-0.5 bg-black/60 text-white rounded-bl-md opacity-0 group-hover:opacity-100 transition-opacity"
-                    aria-label={`Remove image ${i + 1}`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
+              {attachments.map((slot) => (
+                <AttachmentThumbnail
+                  key={slot.id}
+                  slot={slot}
+                  readyImages={uploadedImages}
+                  onView={(idx) =>
+                    openImageViewer(dispatch, {
+                      images: uploadedImages,
+                      initialIndex: idx,
+                      title: "Feedback Attachments",
+                      instanceId: "feedback",
+                    })
+                  }
+                  onRemove={() => removeAttachment(slot.id)}
+                />
               ))}
             </div>
           )}
@@ -574,6 +607,80 @@ function StatPill({
         {value}
       </span>
       <span className="text-[10px] text-muted-foreground">{label}</span>
+    </div>
+  );
+}
+
+function AttachmentThumbnail({
+  slot,
+  readyImages,
+  onView,
+  onRemove,
+}: {
+  slot: AttachmentSlot;
+  /** All currently ready URLs (used to compute the correct viewer index). */
+  readyImages: string[];
+  onView: (readyIndex: number) => void;
+  onRemove: () => void;
+}) {
+  const isReady = slot.status === "ready";
+  const isPending = slot.status === "pending";
+  const isError = slot.status === "error";
+
+  // Index within the ready-only list so the viewer opens the right image
+  const readyIndex = isReady ? readyImages.indexOf(slot.url) : -1;
+
+  return (
+    <div className="relative group w-14 h-14 rounded-md overflow-hidden border border-border bg-muted shrink-0">
+      {isPending && (
+        <div className="flex flex-col items-center justify-center w-full h-full gap-1 bg-muted animate-pulse">
+          <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+          <span className="text-[9px] text-muted-foreground leading-none">
+            saving…
+          </span>
+        </div>
+      )}
+
+      {isError && (
+        <div
+          className="flex flex-col items-center justify-center w-full h-full gap-1 bg-destructive/10 cursor-default"
+          title={slot.message}
+        >
+          <AlertCircle className="w-4 h-4 text-destructive" />
+          <span className="text-[9px] text-destructive leading-none">
+            failed
+          </span>
+        </div>
+      )}
+
+      {isReady && (
+        <button
+          type="button"
+          onClick={() => onView(readyIndex)}
+          className="block w-full h-full"
+          aria-label="View image fullsize"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={slot.url}
+            alt="Attachment"
+            className="w-full h-full object-cover group-hover:brightness-90 transition-[filter]"
+          />
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
+            <ImageIcon className="w-4 h-4 text-white drop-shadow" />
+          </div>
+        </button>
+      )}
+
+      {/* Remove button — always shown on hover */}
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute top-0 right-0 p-0.5 bg-black/60 text-white rounded-bl-md opacity-0 group-hover:opacity-100 transition-opacity z-10"
+        aria-label="Remove attachment"
+      >
+        <X className="w-3 h-3" />
+      </button>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/ButtonMine";
 import { cn } from "@/lib/utils";
-import { NotesProvider, useNotesContext } from "../context/NotesContext";
+import { useNotesRedux } from "../hooks/useNotesRedux";
 import { useAutoSave } from "../hooks/useAutoSave";
 import { useAutoLabel } from "../hooks/useAutoLabel";
 import { NotesTreeView } from "./NotesTreeView";
@@ -19,7 +19,7 @@ function WindowNotesInner({ className }: { className?: string }) {
     refreshNotes,
     findOrCreateEmptyNote,
     setActiveNoteDirty,
-  } = useNotesContext();
+  } = useNotesRedux();
 
   const [localContent, setLocalContent] = useState("");
   const [localLabel, setLocalLabel] = useState("");
@@ -194,9 +194,5 @@ export interface WindowNotesBodyProps {
 }
 
 export function WindowNotesBody({ className }: WindowNotesBodyProps) {
-  return (
-    <NotesProvider>
-      <WindowNotesInner className={className} />
-    </NotesProvider>
-  );
+  return <WindowNotesInner className={className} />;
 }

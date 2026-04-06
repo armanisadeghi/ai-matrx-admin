@@ -18,7 +18,7 @@ export function ClientAdminLayout({
         moduleHome={MODULE_HOME}
         moduleName={MODULE_NAME}
       />
-      <main className="w-full flex-1 min-h-0 bg-textured overflow-hidden">
+      <main className="w-full flex-1 min-h-0 bg-textured overflow-y-auto">
         {children}
       </main>
     </div>

@@ -4,10 +4,12 @@
 export * from "./components";
 export * from "./actions";
 
-// Context
-export { NotesProvider, useNotesContext } from "./context/NotesContext";
+// Redux (primary state management)
+export * from "./redux";
 
 // Hooks
+export { useNotesRedux } from "./hooks/useNotesRedux";
+export { useNoteUndoRedo } from "./hooks/useNoteUndoRedo";
 export { useNotes } from "./hooks/useNotes";
 export { useAutoSave } from "./hooks/useAutoSave";
 export { useActiveNote } from "./hooks/useActiveNote";

@@ -2,7 +2,7 @@
 // Shows personalized greeting with user info
 
 import Image from "next/image";
-import ShellIcon from "@/features/ssr-trials/components/ShellIcon";
+import ShellIcon from "@/features/shell/components/ShellIcon";
 
 interface WelcomeCardProps {
   user: {

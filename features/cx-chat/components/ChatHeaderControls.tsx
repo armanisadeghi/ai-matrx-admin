@@ -13,8 +13,8 @@
 import { useState } from "react";
 import { Share2, Blocks } from "lucide-react";
 import dynamic from "next/dynamic";
-import PageHeaderPortal from "@/features/ssr-trials/components/PageHeaderPortal";
-import IconButton from "@/features/ssr-trials/components/IconButton";
+import PageHeaderPortal from "@/features/shell/components/header/PageHeaderPortal";
+import IconButton from "@/features/shell/components/IconButton";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectIsAuthenticated,

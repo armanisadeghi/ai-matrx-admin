@@ -3,7 +3,7 @@
 
 import React, { useCallback, useMemo, useEffect, useState } from "react";
 import { NoteEditor } from "../components/NoteEditor";
-import { useNotesContext } from "../context/NotesContext";
+import { useNotesRedux } from "../hooks/useNotesRedux";
 import { useAllFolders } from "../utils/folderUtils";
 import type { Note } from "../types";
 import {
@@ -48,7 +48,7 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
     updateNote,
     refreshNotes,
     findOrCreateEmptyNote,
-  } = useNotesContext();
+  } = useNotesRedux();
   const toast = useToastManager("notes");
   const [shareNoteId, setShareNoteId] = useState<string | null>(null);
 

@@ -1,149 +1,148 @@
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
+/**
+ * useScreenshot
+ *
+ * Backward-compatible wrapper around useScreenCapture.
+ * Preserves the original API surface (captureScreen, isCapturing, error, lastCapture)
+ * used by useContextCollection and the official-components demos.
+ *
+ * Previously used html2canvas; now delegates to html-to-image via useScreenCapture
+ * which actually works with backdrop-filter and CSS custom properties.
+ */
+
+import { useState, useCallback } from "react";
+import { captureTabViaCanvas } from "./useScreenCapture";
+import {
+  compressImage,
+  generateThumbnail,
+} from "@/utils/image/imageCompression";
 import type {
-    UseScreenshotOptions,
-    UseScreenshotReturn,
-    ScreenshotMetadata,
-    ProcessedScreenshotData,
-    ImageDataForAPI
-} from '@/types/screenshot';
-import { compressImage, generateThumbnail } from '@/utils/image/imageCompression';
+  UseScreenshotOptions,
+  UseScreenshotReturn,
+  ScreenshotMetadata,
+  ProcessedScreenshotData,
+} from "@/types/screenshot";
 
-export const useScreenshot = (options: UseScreenshotOptions = {}): UseScreenshotReturn => {
-    const {
-        quality = 0.95,
-        format = 'image/png',
-        excludeSelectors = [],
-        autoCompress = true
-    } = options;
+export const useScreenshot = (
+  options: UseScreenshotOptions = {},
+): UseScreenshotReturn => {
+  const {
+    quality = 0.95,
+    format = "image/png",
+    excludeSelectors = [],
+    autoCompress = true,
+  } = options;
 
-    const [isCapturing, setIsCapturing] = useState(false);
-    const [error, setError] = useState<Error | null>(null);
-    const [lastCapture, setLastCapture] = useState<ProcessedScreenshotData | null>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [lastCapture, setLastCapture] =
+    useState<ProcessedScreenshotData | null>(null);
 
-    const getMetadata = (): ScreenshotMetadata => ({
-        timestamp: new Date().toISOString(),
-        viewportWidth: window.innerWidth,
-        viewportHeight: window.innerHeight,
-        pathName: window.location.pathname,
-        url: window.location.href
-    });
+  const getMetadata = (): ScreenshotMetadata => ({
+    timestamp: new Date().toISOString(),
+    viewportWidth: window.innerWidth,
+    viewportHeight: window.innerHeight,
+    pathName: window.location.pathname,
+    url: window.location.href,
+  });
 
-    const processScreenshot = async (
-        originalImage: string,
-        metadata: ScreenshotMetadata
-    ): Promise<ProcessedScreenshotData> => {
-        try {
-            const [compressed, thumbnail] = await Promise.all([
-                compressImage(originalImage, {
-                    maxWidth: 1920,
-                    maxHeight: 1080,
-                    quality: 0.8,
-                    type: 'image/jpeg'
-                }),
-                generateThumbnail(originalImage)
-            ]);
+  const processScreenshot = async (
+    rawDataUrl: string,
+    metadata: ScreenshotMetadata,
+  ): Promise<ProcessedScreenshotData> => {
+    try {
+      const [compressed, thumbnail] = autoCompress
+        ? await Promise.all([
+            compressImage(rawDataUrl, {
+              maxWidth: 1920,
+              maxHeight: 1080,
+              quality: 0.8,
+              type: "image/jpeg",
+            }),
+            generateThumbnail(rawDataUrl),
+          ])
+        : [rawDataUrl, rawDataUrl];
 
-            const base64Data = originalImage.replace(/^data:image\/\w+;base64,/, '');
-            const mimeTypeMatch = originalImage.match(/^data:(image\/\w+);base64,/);
-            const mimeType = mimeTypeMatch ? mimeTypeMatch[1] : 'image/png';
+      const base64Data = rawDataUrl.replace(/^data:image\/\w+;base64,/, "");
+      const mimeTypeMatch = rawDataUrl.match(/^data:(image\/\w+);base64,/);
+      const mimeType = mimeTypeMatch ? mimeTypeMatch[1] : "image/png";
 
-            const imageDataForAPI: ImageDataForAPI = {
-                type: 'image',
-                source: {
-                    type: 'base64',
-                    media_type: mimeType,
-                    data: base64Data,
-                },
-            };
+      return {
+        fullSize: rawDataUrl,
+        compressed,
+        thumbnail,
+        metadata,
+        imageDataForAPI: {
+          type: "image",
+          source: { type: "base64", media_type: mimeType, data: base64Data },
+        },
+      };
+    } catch {
+      const base64Data = rawDataUrl.replace(/^data:image\/\w+;base64,/, "");
+      const mimeTypeMatch = rawDataUrl.match(/^data:(image\/\w+);base64,/);
+      const mimeType = mimeTypeMatch ? mimeTypeMatch[1] : "image/png";
+      return {
+        fullSize: rawDataUrl,
+        compressed: rawDataUrl,
+        thumbnail: rawDataUrl,
+        metadata,
+        imageDataForAPI: {
+          type: "image",
+          source: { type: "base64", media_type: mimeType, data: base64Data },
+        },
+      };
+    }
+  };
 
-            return {
-                fullSize: originalImage,
-                compressed,
-                thumbnail,
-                metadata,
-                imageDataForAPI
-            };
-        } catch (error) {
-            console.error('Error processing screenshot:', error);
-            const base64Data = originalImage.replace(/^data:image\/\w+;base64,/, '');
-            const mimeTypeMatch = originalImage.match(/^data:(image\/\w+);base64,/);
-            const mimeType = mimeTypeMatch ? mimeTypeMatch[1] : 'image/png';
+  const captureScreen =
+    useCallback(async (): Promise<ProcessedScreenshotData> => {
+      try {
+        setIsCapturing(true);
+        setError(null);
 
-            const imageDataForAPI: ImageDataForAPI = {
-                type: 'image',
-                source: {
-                    type: 'base64',
-                    media_type: mimeType,
-                    data: base64Data,
-                },
-            };
-
-            return {
-                fullSize: originalImage,
-                compressed: originalImage,
-                thumbnail: originalImage,
-                metadata,
-                imageDataForAPI
-            };
-        }
-    };
-
-    const hideExcludedElements = () => {
-        const elements = excludeSelectors.flatMap(selector =>
-            Array.from(document.querySelectorAll<HTMLElement>(selector))
+        // Hide excluded elements before capturing
+        const elements = excludeSelectors.flatMap((sel) =>
+          Array.from(document.querySelectorAll<HTMLElement>(sel)),
         );
-        const originalVisibilities = elements.map(el => el.style.visibility);
-        elements.forEach(el => {
-            el.style.visibility = 'hidden';
+        const originalVisibilities = elements.map((el) => el.style.visibility);
+        elements.forEach((el) => {
+          el.style.visibility = "hidden";
         });
-        return { elements, originalVisibilities };
-    };
 
-    const showExcludedElements = (elements: HTMLElement[], originalVisibilities: string[]) => {
-        elements.forEach((el, index) => {
-            el.style.visibility = originalVisibilities[index];
-        });
-    };
+        // Two rAF cycles so the browser repaints before capturing
+        await new Promise((r) =>
+          requestAnimationFrame(() => requestAnimationFrame(r)),
+        );
 
-    const captureScreen = useCallback(async (): Promise<ProcessedScreenshotData> => {
+        let rawDataUrl: string;
         try {
-            setIsCapturing(true);
-            setError(null);
-
-            const { elements, originalVisibilities } = hideExcludedElements();
-
-            const { default: html2canvas } = await import('html2canvas');
-            const canvas = await html2canvas(document.body, {
-                logging: false,
-                useCORS: true,
-                allowTaint: false,
-                scale: window.devicePixelRatio,
-            });
-
-            showExcludedElements(elements, originalVisibilities);
-
-            const rawImageData = canvas.toDataURL(format, quality);
-            const metadata = getMetadata();
-
-            const processedData = await processScreenshot(rawImageData, metadata);
-            setLastCapture(processedData);
-            return processedData;
-
-        } catch (err) {
-            const error = err instanceof Error ? err : new Error('Failed to capture screenshot');
-            setError(error);
-            throw error;
+          const result = await captureTabViaCanvas({
+            filename: `screenshot-${Date.now()}.png`,
+          });
+          rawDataUrl = result.dataUrl;
         } finally {
-            setIsCapturing(false);
+          elements.forEach((el, i) => {
+            el.style.visibility = originalVisibilities[i];
+          });
         }
-    }, [quality, format, excludeSelectors]);
 
-    return {
-        captureScreen,
-        isCapturing,
-        error,
-        lastCapture
-    };
+        const metadata = getMetadata();
+        const processedData = await processScreenshot(rawDataUrl, metadata);
+        setLastCapture(processedData);
+        return processedData;
+      } catch (err) {
+        const e =
+          err instanceof Error
+            ? err
+            : new Error("Failed to capture screenshot");
+        setError(e);
+        throw e;
+      } finally {
+        setIsCapturing(false);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [quality, format, excludeSelectors, autoCompress]);
+
+  return { captureScreen, isCapturing, error, lastCapture };
 };

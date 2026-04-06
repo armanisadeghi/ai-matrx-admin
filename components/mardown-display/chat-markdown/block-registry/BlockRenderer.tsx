@@ -587,6 +587,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                     serverData={block.serverData}
                     isStreamActive={isStreamActive}
                     messageId={messageId}
+                    taskId={taskId}
                 />
             );
 

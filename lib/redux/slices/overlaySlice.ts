@@ -72,6 +72,8 @@ const initialState: OverlayState = {
     undoHistory: makeDefaultInstance(),
     streamDebug: makeDefaultInstance(),
     jsonTruncator: makeDefaultInstance(),
+    // Image viewer — instanced so multiple can be open at once
+    imageViewer: makeDefaultInstance(),
     // Window panel specific components
     adminStateAnalyzerWindow: makeDefaultInstance(),
     markdownEditorWindow: makeDefaultInstance(),

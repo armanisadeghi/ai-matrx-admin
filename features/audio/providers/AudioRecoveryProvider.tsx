@@ -5,10 +5,10 @@
  * a recovery UI so the user can retrieve their lost audio/text.
  */
 
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { audioSafetyStore, SafetyRecord } from '../services/audioSafetyStore';
+import React, { createContext, useContext, useState, useCallback } from "react";
+import { audioSafetyStore, SafetyRecord } from "../services/audioSafetyStore";
 
 interface AudioRecoveryContextValue {
   hasRecoveredData: boolean;
@@ -17,6 +17,7 @@ interface AudioRecoveryContextValue {
   dismissAll: () => Promise<void>;
   getAudioBlob: (id: string) => Promise<Blob | null>;
   refreshRecovery: () => Promise<void>;
+  initialize: () => void;
 }
 
 const AudioRecoveryContext = createContext<AudioRecoveryContextValue>({
@@ -26,36 +27,43 @@ const AudioRecoveryContext = createContext<AudioRecoveryContextValue>({
   dismissAll: async () => {},
   getAudioBlob: async () => null,
   refreshRecovery: async () => {},
+  initialize: () => {},
 });
 
 export function useAudioRecovery() {
   return useContext(AudioRecoveryContext);
 }
 
-export function AudioRecoveryProvider({ children }: { children: React.ReactNode }) {
+export function AudioRecoveryProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [recoveredItems, setRecoveredItems] = useState<SafetyRecord[]>([]);
+  const [initialized, setInitialized] = useState(false);
 
   const checkForOrphans = useCallback(async () => {
     try {
-      if (typeof window === 'undefined' || !window.indexedDB) return;
+      if (typeof window === "undefined" || !window.indexedDB) return;
       const orphans = await audioSafetyStore.getOrphaned();
       setRecoveredItems(orphans);
     } catch (err) {
-      console.warn('[AudioRecoveryProvider] Failed to check IndexedDB:', err);
+      console.warn("[AudioRecoveryProvider] Failed to check IndexedDB:", err);
     }
   }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(checkForOrphans, 2000);
-    return () => clearTimeout(timer);
-  }, [checkForOrphans]);
+  const initialize = useCallback(() => {
+    if (initialized) return;
+    setInitialized(true);
+    checkForOrphans();
+  }, [initialized, checkForOrphans]);
 
   const dismissItem = useCallback(async (id: string) => {
     try {
       await audioSafetyStore.deleteEntry(id);
-      setRecoveredItems(prev => prev.filter(item => item.id !== id));
+      setRecoveredItems((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
-      console.error('[AudioRecoveryProvider] Failed to delete entry:', err);
+      console.error("[AudioRecoveryProvider] Failed to delete entry:", err);
     }
   }, []);
 
@@ -66,7 +74,10 @@ export function AudioRecoveryProvider({ children }: { children: React.ReactNode 
       }
       setRecoveredItems([]);
     } catch (err) {
-      console.error('[AudioRecoveryProvider] Failed to clear all entries:', err);
+      console.error(
+        "[AudioRecoveryProvider] Failed to clear all entries:",
+        err,
+      );
     }
   }, [recoveredItems]);
 
@@ -85,6 +96,7 @@ export function AudioRecoveryProvider({ children }: { children: React.ReactNode 
     dismissAll,
     getAudioBlob,
     refreshRecovery: checkForOrphans,
+    initialize,
   };
 
   return (

@@ -1,4 +1,4 @@
-import "./shell.css";
+import "@/styles/shell.css";
 import { headers } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { Providers } from "@/app/Providers";
@@ -10,24 +10,13 @@ import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
 import type { Json } from "@/types/database.types";
 import { initializeUserPreferencesState } from "@/lib/redux/slices/userPreferencesSlice";
 import { setGlobalUserIdAndToken } from "@/lib/globalState";
-import Sidebar from "@/features/ssr-trials/components/Sidebar";
-import Header from "@/features/ssr-trials/components/Header";
-import MobileDock from "@/features/ssr-trials/components/MobileDock";
-import MobileSideSheet from "@/features/ssr-trials/components/MobileSideSheet";
-import DevPerfOverlayIsland from "@/features/ssr-trials/components/DevPerfOverlayIsland";
-import GlassPortal from "@/features/ssr-trials/components/GlassPortal";
-import NavActiveSync from "@/features/ssr-trials/components/NavActiveSync";
-import VisualViewportSync from "@/features/ssr-trials/components/VisualViewportSync";
-import AdminIndicatorIsland from "@/features/ssr-trials/components/AdminIndicatorIsland";
-import AdminNavInjector from "@/features/ssr-trials/components/AdminNavInjector";
-import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
-import AppleKeyExpiryBanner from "@/components/admin/AppleKeyExpiryBanner";
-import { DebugIndicatorManager } from "@/components/debug/DebugIndicatorManager";
-import { CanvasSideSheet } from "@/features/canvas/core/CanvasSideSheet";
-import LazyMessagingIsland from "@/features/ssr-trials/components/LazyMessagingIsland";
-import VoicePadIsland from "@/features/ssr-trials/components/VoicePadIsland";
-import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
-import { DynamicWindowTraySync } from "@/app/(authenticated)/dynamic-imports/DynamicWindowTraySync";
+import Sidebar from "@/features/shell/components/sidebar/Sidebar";
+import Header from "@/features/shell/components/header/Header";
+import MobileDock from "@/features/shell/components/dock/MobileDock";
+import MobileSideSheet from "@/features/shell/components/mobile-sheet/MobileSideSheet";
+import GlassPortal from "@/features/shell/components/GlassPortal";
+import NavActiveSync from "@/features/shell/components/NavActiveSync";
+import VisualViewportSync from "@/features/shell/components/VisualViewportSync";
 
 const emptyGlobalCache = getEmptyGlobalCache();
 
@@ -116,12 +105,6 @@ export default async function SSRLayout({
 
   return (
     <Providers initialReduxState={initialReduxState}>
-      <AuthSessionWatcher />
-      {/* LazySocketInitializer disabled — server no longer supports socket.io */}
-      <AnnouncementProvider />
-      <AppleKeyExpiryBanner />
-      <AdminNavInjector />
-
       <div className="shell-root" data-pathname={pathname}>
         <input type="checkbox" id="shell-sidebar-toggle" aria-hidden="true" />
         <input type="checkbox" id="shell-mobile-menu" aria-hidden="true" />
@@ -143,14 +126,6 @@ export default async function SSRLayout({
 
       <NavActiveSync />
       <VisualViewportSync />
-      <DevPerfOverlayIsland />
-      <AdminIndicatorIsland />
-      <VoicePadIsland />
-      <DebugIndicatorManager />
-      <CanvasSideSheet />
-      <LazyMessagingIsland />
-      {/* Reposition minimized windows on viewport resize */}
-      <DynamicWindowTraySync />
     </Providers>
   );
 }

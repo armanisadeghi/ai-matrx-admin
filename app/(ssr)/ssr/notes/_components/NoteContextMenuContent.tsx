@@ -62,6 +62,8 @@ import {
   Mic,
   Eraser,
   History,
+  Undo2,
+  Redo2,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { getIconComponent } from "@/components/official/IconResolver";
@@ -89,6 +91,7 @@ import { useQuickActions } from "@/features/quick-actions/hooks/useQuickActions"
 import { getPlacementTypeMeta } from "@/features/prompt-builtins/constants";
 import { useNoteContextMenuGroups } from "./useNoteContextMenuGroups";
 import { useNoteContextMenuBridge } from "./noteContextMenuBridge";
+import { useNoteUndoRedo } from "@/features/notes/hooks/useNoteUndoRedo";
 
 const ContextDebugModal = dynamic(
   () =>
@@ -297,6 +300,8 @@ export function NoteContextMenuHeavy({
   const dispatch = useAppDispatch();
   const isAdmin = useAppSelector(selectIsAdmin);
   const isDebugMode = useAppSelector(selectIsDebugMode);
+  const { canUndo, canRedo, undo, redo, undoHint, redoHint } =
+    useNoteUndoRedo({ noteId });
   const isAdminIndicatorOpen = useAppSelector((state) =>
     selectIsOverlayOpen(state, "adminIndicator"),
   );
@@ -985,6 +990,22 @@ export function NoteContextMenuHeavy({
           onSelect={handleSelectAll}
         >
           <FileText /> Select All
+        </Item>
+        <Item
+          className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+          onSelect={undo}
+          disabled={!canUndo}
+        >
+          <Undo2 /> Undo
+          <span className="ml-auto text-[0.6rem] text-muted-foreground">{undoHint}</span>
+        </Item>
+        <Item
+          className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
+          onSelect={redo}
+          disabled={!canRedo}
+        >
+          <Redo2 /> Redo
+          <span className="ml-auto text-[0.6rem] text-muted-foreground">{redoHint}</span>
         </Item>
 
         <Separator />

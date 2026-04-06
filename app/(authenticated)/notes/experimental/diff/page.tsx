@@ -15,7 +15,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { useNotesContext } from '@/features/notes/context/NotesContext';
+import { useNotesRedux } from '@/features/notes/hooks/useNotesRedux';
 import {
   initializeDiffSession,
   addPendingDiffs,
@@ -68,7 +68,7 @@ export default function DiffExperimentalPage() {
   const dispatch = useAppDispatch();
   const toast = useToastManager('diff-experimental');
   
-  const { notes, activeNote, setActiveNote, updateNote } = useNotesContext();
+  const { notes, activeNote, setActiveNote, updateNote } = useNotesRedux();
   
   const diffState = useAppSelector(selectDiffState);
   const pendingDiffs = useAppSelector(selectPendingDiffs);

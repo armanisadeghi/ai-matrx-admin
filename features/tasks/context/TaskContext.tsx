@@ -36,7 +36,8 @@ export function TaskProvider({ children }: TaskProviderProps) {
     ProjectWithTasks[]
   >([]);
   const [sharedTasks, setSharedTasks] = useState<DatabaseTask[]>([]);
-  const [loading, setLoading] = useState(true); // Start as true, will be set false after initial load
+  const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   // Operation states for feedback
   const [isCreatingProject, setIsCreatingProject] = useState(false);
@@ -155,49 +156,45 @@ export function TaskProvider({ children }: TaskProviderProps) {
     [toast],
   ); // ONLY toast as dependency - nothing else!
 
-  // Initial load and real-time subscription - FIXED to prevent infinite loop
-  useEffect(() => {
-    let isSubscribed = true;
+  const channelRef = React.useRef<ReturnType<typeof supabase.channel> | null>(
+    null,
+  );
 
-    // Initial load
+  const initialize = useCallback(() => {
+    if (initialized) return;
+    setInitialized(true);
+    setLoading(true);
+
     loadProjectsWithTasks();
 
-    // Subscribe to real-time changes - with proper cleanup
     const channel = supabase
-      .channel("task-manager-changes-" + Date.now()) // Unique channel name
+      .channel("task-manager-changes-" + Date.now())
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "projects",
-        },
+        { event: "*", schema: "public", table: "projects" },
         () => {
-          if (isSubscribed) {
-            loadProjectsWithTasks(true);
-          }
+          loadProjectsWithTasks(true);
         },
       )
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "tasks",
-        },
+        { event: "*", schema: "public", table: "tasks" },
         () => {
-          if (isSubscribed) {
-            loadProjectsWithTasks(true);
-          }
+          loadProjectsWithTasks(true);
         },
       )
       .subscribe();
 
+    channelRef.current = channel;
+  }, [initialized, loadProjectsWithTasks]);
+
+  useEffect(() => {
     return () => {
-      isSubscribed = false;
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+      }
     };
-  }, []); // EMPTY array - only run once on mount!
+  }, []);
 
   // Toggle project expansion
   const toggleProjectExpand = (projectId: string) => {
@@ -1160,6 +1157,8 @@ export function TaskProvider({ children }: TaskProviderProps) {
     getTaskComments,
     createTaskComment,
     refresh: loadProjectsWithTasks,
+    initialize,
+    initialized,
   };
 
   return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>;

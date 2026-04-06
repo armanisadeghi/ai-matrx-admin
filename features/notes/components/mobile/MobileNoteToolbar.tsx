@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { FolderOpen, Tag as TagIcon, X, Plus } from 'lucide-react';
-import { useNotesContext } from '@/features/notes/context/NotesContext';
+import { useNotesRedux } from '../../hooks/useNotesRedux';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +23,7 @@ export default function MobileNoteToolbar({
   onTagsChange,
   onClose,
 }: MobileNoteToolbarProps) {
-  const { notes } = useNotesContext();
+  const { notes } = useNotesRedux();
   const [newTag, setNewTag] = useState('');
   const [showFolders, setShowFolders] = useState(true);
 

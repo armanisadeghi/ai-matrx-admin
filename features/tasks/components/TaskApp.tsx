@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
-import Sidebar from '@/features/tasks/components/Sidebar';
-import TaskContentNew from '@/features/tasks/components/TaskContentNew';
-import { TaskProvider, useTaskContext } from '@/features/tasks/context/TaskContext';
+import React, { useEffect } from "react";
+import Sidebar from "@/features/tasks/components/Sidebar";
+import TaskContentNew from "@/features/tasks/components/TaskContentNew";
+import { useTaskContext } from "@/features/tasks/context/TaskContext";
 
 export default function TaskApp() {
+  const { initialize } = useTaskContext();
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
   return (
-    <TaskProvider>
-      <div className="flex h-full w-full bg-textured text-foreground">
-        <Sidebar />
-        <TaskContentNew />
-      </div>
-    </TaskProvider>
+    <div className="flex h-full w-full bg-textured text-foreground">
+      <Sidebar />
+      <TaskContentNew />
+    </div>
   );
 }

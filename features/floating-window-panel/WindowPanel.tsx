@@ -17,14 +17,22 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import type { PanelImperativeHandle } from "react-resizable-panels";
 import {
   Minus,
   Maximize2,
   Minimize2,
   X,
   RectangleVertical,
+  PanelLeftClose,
+  PanelLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 import {
   LayoutIcon,
   LayoutIconButton,
@@ -100,6 +108,16 @@ export interface WindowPanelProps extends UseWindowPanelOptions {
   urlSyncKey?: string;
   urlSyncId?: string;
   urlSyncArgs?: Record<string, string>;
+  /** Content to render in a collapsible left sidebar panel */
+  sidebar?: React.ReactNode;
+  /** Default percentage width for the sidebar (default: 25) */
+  sidebarDefaultSize?: number;
+  /** Minimum percentage width before the sidebar collapses (default: 10) */
+  sidebarMinSize?: number;
+  /** Whether the sidebar starts open (default: true) */
+  defaultSidebarOpen?: boolean;
+  /** Class name applied to the sidebar panel content wrapper */
+  sidebarClassName?: string;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -118,6 +136,11 @@ export function WindowPanel({
   urlSyncKey,
   urlSyncId,
   urlSyncArgs,
+  sidebar,
+  sidebarDefaultSize = 25,
+  sidebarMinSize = 10,
+  defaultSidebarOpen = true,
+  sidebarClassName,
   ...hookOpts
 }: WindowPanelProps) {
   // Pass title into hook so it reaches Redux
@@ -140,6 +163,28 @@ export function WindowPanel({
   const isDebugMode = useAppSelector(selectIsDebugMode);
 
   useUrlSync(urlSyncKey, urlSyncId, urlSyncArgs);
+
+  // ── Sidebar state ─────────────────────────────────────────────────────────
+  const hasSidebar = !!sidebar;
+  const [sidebarOpen, setSidebarOpen] = useState(defaultSidebarOpen);
+  const sidebarPanelRef = useRef<PanelImperativeHandle>(null);
+
+  const toggleSidebar = useCallback(() => {
+    const panel = sidebarPanelRef.current;
+    if (!panel) return;
+    if (sidebarOpen) {
+      panel.collapse();
+    } else {
+      panel.expand();
+    }
+  }, [sidebarOpen]);
+
+  const handleSidebarResize = useCallback(
+    (panelSize: { asPercentage: number; inPixels: number }) => {
+      setSidebarOpen(panelSize.asPercentage > 0);
+    },
+    [],
+  );
 
   // ── Portal target (client-only) ──────────────────────────────────────────
   const [portalTarget, setPortalTarget] = useState<Element | null>(null);
@@ -261,12 +306,44 @@ export function WindowPanel({
       snapBottom={snapBottom}
       snapCentre={snapCentre}
       arrangeAll={arrangeAll}
+      hasSidebar={hasSidebar}
+      sidebarOpen={sidebarOpen}
+      onToggleSidebar={toggleSidebar}
     />
   );
 
   // ────────────────────────────────────────────────────────────────────────
   // MAXIMIZED — portalled to body so it covers the full viewport
   // ────────────────────────────────────────────────────────────────────────
+  const bodyContent = hasSidebar ? (
+    <ResizablePanelGroup orientation="horizontal" className="h-full min-h-0">
+      <ResizablePanel
+        panelRef={sidebarPanelRef}
+        defaultSize={sidebarDefaultSize}
+        minSize={sidebarMinSize}
+        collapsible
+        collapsedSize={0}
+        onResize={handleSidebarResize}
+        style={{ overflow: "hidden" }}
+      >
+        <div
+          className={cn(
+            "h-full flex flex-col min-h-0 overflow-hidden",
+            sidebarClassName,
+          )}
+        >
+          {sidebar}
+        </div>
+      </ResizablePanel>
+      <ResizableHandle />
+      <ResizablePanel defaultSize={100 - sidebarDefaultSize} minSize={40}>
+        {children}
+      </ResizablePanel>
+    </ResizablePanelGroup>
+  ) : (
+    children
+  );
+
   if (isMaximized) {
     const el = (
       <div
@@ -281,7 +358,7 @@ export function WindowPanel({
       >
         {header}
         <div className={cn("flex-1 overflow-auto", bodyClassName)}>
-          {children}
+          {bodyContent}
         </div>
       </div>
     );
@@ -331,7 +408,7 @@ export function WindowPanel({
 
       {!isMinimized && (
         <div className={cn("flex-1 overflow-auto min-h-0", bodyClassName)}>
-          {children}
+          {bodyContent}
         </div>
       )}
     </div>
@@ -450,6 +527,9 @@ interface WindowHeaderProps {
   snapBottom: () => void;
   snapCentre: () => void;
   arrangeAll: (layout: any) => void;
+  hasSidebar: boolean;
+  sidebarOpen: boolean;
+  onToggleSidebar: () => void;
 }
 
 function WindowHeader({
@@ -469,6 +549,9 @@ function WindowHeader({
   snapBottom,
   snapCentre,
   arrangeAll,
+  hasSidebar,
+  sidebarOpen,
+  onToggleSidebar,
 }: WindowHeaderProps) {
   return (
     <div
@@ -481,7 +564,7 @@ function WindowHeader({
       onMouseDown={isMaximized ? undefined : onDragStart}
     >
       <div className="flex items-center gap-1 z-10 shrink-0">
-        {/* Traffic-light controls */}
+        {/* Traffic-light controls + optional sidebar toggle */}
         <TrafficLightGroup
           isMinimized={isMinimized}
           isMaximized={isMaximized}
@@ -495,6 +578,9 @@ function WindowHeader({
           snapBottom={snapBottom}
           snapCentre={snapCentre}
           arrangeAll={arrangeAll}
+          hasSidebar={hasSidebar}
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={onToggleSidebar}
         />
 
         {/* Left action zone */}
@@ -546,6 +632,9 @@ interface TrafficLightGroupProps {
   snapBottom: () => void;
   snapCentre: () => void;
   arrangeAll: (layout: any) => void;
+  hasSidebar: boolean;
+  sidebarOpen: boolean;
+  onToggleSidebar: () => void;
 }
 
 function TrafficLightGroup({
@@ -561,12 +650,18 @@ function TrafficLightGroup({
   snapBottom,
   snapCentre,
   arrangeAll,
+  hasSidebar,
+  sidebarOpen,
+  onToggleSidebar,
 }: TrafficLightGroupProps) {
   const [groupHovered, setGroupHovered] = useState(false);
 
   return (
     <div
-      className="flex items-center gap-1 shrink-0 py-2 pr-6 pl-1 -my-2 -ml-1 cursor-default"
+      className={cn(
+        "flex items-center gap-1.5 shrink-0 py-0.5 pl-1 -my-0.5 -ml-1 cursor-default",
+        hasSidebar ? "pr-1" : "pr-6",
+      )}
       onMouseEnter={() => setGroupHovered(true)}
       onMouseLeave={() => setGroupHovered(false)}
       onMouseDown={(e) => e.stopPropagation()}
@@ -576,10 +671,7 @@ function TrafficLightGroup({
         color="red"
         showIcon={groupHovered}
         icon={
-          <X
-            className="w-[8px] h-[8px] stroke-[3]"
-            style={{ color: "#7f1d1d" }}
-          />
+          <X className="w-2 h-2 stroke-[3.5]" style={{ color: "#000000" }} />
         }
         onClick={onClose ?? undefined}
         disabled={!onClose}
@@ -593,13 +685,13 @@ function TrafficLightGroup({
         icon={
           isMinimized ? (
             <Maximize2
-              className="w-[8px] h-[8px] stroke-[3]"
-              style={{ color: "#713f12" }}
+              className="w-2 h-2 stroke-[3.5]"
+              style={{ color: "#000000" }}
             />
           ) : (
             <Minus
-              className="w-[8px] h-[8px] stroke-[3]"
-              style={{ color: "#713f12" }}
+              className="w-2 h-2 stroke-[3.5]"
+              style={{ color: "#000000" }}
             />
           )
         }
@@ -620,6 +712,23 @@ function TrafficLightGroup({
         snapCentre={snapCentre}
         arrangeAll={arrangeAll}
       />
+
+      {/* Sidebar toggle — sits tight next to the traffic lights */}
+      {hasSidebar && !isMinimized && (
+        <button
+          type="button"
+          className="ml-0.5 p-0.5 rounded hover:bg-accent/60 transition-colors text-foreground/60 hover:text-foreground/90"
+          onClick={onToggleSidebar}
+          title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+          aria-label={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+        >
+          {sidebarOpen ? (
+            <PanelLeftClose className="w-3.5 h-3.5" />
+          ) : (
+            <PanelLeft className="w-3.5 h-3.5" />
+          )}
+        </button>
+      )}
     </div>
   );
 }
@@ -644,7 +753,7 @@ function TrafficLight({
   "aria-label": label,
 }: TrafficLightProps) {
   const base =
-    "w-3 h-3 rounded-full flex items-center justify-center transition-colors shrink-0 relative";
+    "w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors shrink-0 relative";
   const colours =
     color === "red"
       ? disabled
@@ -725,7 +834,7 @@ function GreenTrafficLight({
       <button
         type="button"
         className={cn(
-          "w-3 h-3 rounded-full flex items-center justify-center transition-colors shrink-0",
+          "w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors shrink-0",
           "bg-green-500 hover:bg-green-400 cursor-pointer",
         )}
         onClick={() => handleAction(onToggleMaximize)}
@@ -738,13 +847,13 @@ function GreenTrafficLight({
         >
           {isMaximized ? (
             <Minimize2
-              className="w-[8px] h-[8px] stroke-[3] absolute"
-              style={{ color: "#14532d" }}
+              className="w-2 h-2 stroke-[3.5] absolute"
+              style={{ color: "#000000" }}
             />
           ) : (
             <Maximize2
-              className="w-[8px] h-[8px] stroke-[3] absolute"
-              style={{ color: "#14532d" }}
+              className="w-2 h-2 stroke-[3.5] absolute"
+              style={{ color: "#000000" }}
             />
           )}
         </span>

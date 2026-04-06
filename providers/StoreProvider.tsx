@@ -1,36 +1,28 @@
 // app/StoreProvider.tsx
 
-'use client';
+"use client";
 
-import {AppStore, makeStore} from '@/lib/redux/store';
-import {useRef, useEffect} from 'react';
-import {Provider} from 'react-redux';
-import {loadPreferences} from '@/lib/redux/middleware/preferencesMiddleware';
-import {InitialReduxState} from '@/types/reduxTypes';
+import { AppStore, makeStore } from "@/lib/redux/store";
+import { useRef } from "react";
+import { Provider } from "react-redux";
+import { InitialReduxState } from "@/types/reduxTypes";
 
-export default function StoreProvider(
-    {
-        children,
-        initialState,
-    }: {
-        children: React.ReactNode;
-        initialState?: InitialReduxState;
-    }) {
-    const storeRef = useRef<AppStore | null>(null);
+export default function StoreProvider({
+  children,
+  initialState,
+}: {
+  children: React.ReactNode;
+  initialState?: InitialReduxState;
+}) {
+  const storeRef = useRef<AppStore | null>(null);
 
-    if (!storeRef.current) {
-        storeRef.current = makeStore(initialState);
-    }
+  if (!storeRef.current) {
+    storeRef.current = makeStore(initialState);
+  }
 
-    useEffect(() => {
-        if (storeRef.current) {
-            storeRef.current.dispatch(loadPreferences());
-        }
-    }, []);
+  if (!storeRef.current) {
+    throw new Error("Redux store failed to initialize");
+  }
 
-    if (!storeRef.current) {
-        throw new Error('Redux store failed to initialize');
-    }
-
-    return <Provider store={storeRef.current}>{children}</Provider>;
+  return <Provider store={storeRef.current}>{children}</Provider>;
 }

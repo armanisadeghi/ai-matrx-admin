@@ -15,7 +15,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useNotesContext } from "../context/NotesContext";
+import { useNotesRedux } from "../hooks/useNotesRedux";
 import { useAllFolders, getFolderIconAndColor } from "../utils/folderUtils";
 import { NotesAPI } from "../service/notesApi";
 import type { Note } from "../types";
@@ -33,7 +33,7 @@ export function NotesTreeView({
   activeNoteId,
   className,
 }: NotesTreeViewProps) {
-  const { notes, isLoading, findOrCreateEmptyNote } = useNotesContext();
+  const { notes, isLoading, findOrCreateEmptyNote } = useNotesRedux();
   const allFolders = useAllFolders(notes);
   const [expandedFolder, setExpandedFolder] = useState<string | null>(null);
   const [creatingNoteIn, setCreatingNoteIn] = useState<string | null>(null);

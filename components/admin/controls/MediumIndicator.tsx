@@ -18,7 +18,7 @@ import { PiPathFill } from "react-icons/pi";
 import { usePathname } from "next/navigation";
 import { debugModules } from "@/components/admin/debug/debugModuleRegistry";
 import DebugModulePanel from "@/components/admin/debug/DebugModulePanel";
-import DevPerfOverlayIsland from "@/features/ssr-trials/components/DevPerfOverlayIsland";
+import DevPerfOverlayIsland from "@/features/shell/islands/DevPerfOverlayIsland";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   toggleDebugMode,

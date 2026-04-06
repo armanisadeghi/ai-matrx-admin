@@ -1,6 +1,6 @@
 "use client";
 
-import PageHeaderPortal from "@/features/ssr-trials/components/PageHeaderPortal";
+import PageHeaderPortal from "@/features/shell/components/header/PageHeaderPortal";
 import { FaIndent } from "react-icons/fa6";
 
 export default function PromptsSSRHeader() {

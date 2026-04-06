@@ -127,6 +127,8 @@ export interface TaskContextType {
   getTaskComments: (taskId: string) => Promise<any[]>;
   createTaskComment: (taskId: string, content: string) => Promise<void>;
   refresh: () => Promise<void>;
+  initialize: () => void;
+  initialized: boolean;
 }
 
 export interface TaskProviderProps {

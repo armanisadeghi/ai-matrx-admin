@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUrlSyncEntries, setHydrated, selectIsUrlHydrated } from "@/lib/redux/slices/urlSyncSlice";
 import { getHydrator } from "./UrlPanelRegistry";
 import { initUrlHydration } from "./initUrlHydration";
+import { usePanelPersistence } from "../hooks/usePanelPersistence";
 
 export function serializeParams(entries: ReturnType<typeof selectUrlSyncEntries>): string {
     return Object.values(entries).map(entry => {
@@ -42,6 +43,7 @@ export function parseParams(paramString: string | null) {
  * 2. Monitors `urlSyncSlice` for active panels, and updates ?panels= to ensure persistence links work.
  */
 export function UrlPanelManager() {
+    usePanelPersistence();
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();

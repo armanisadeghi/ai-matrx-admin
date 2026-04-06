@@ -19,7 +19,7 @@ import {
     ChevronLeft,
     Menu
 } from 'lucide-react';
-import { useNotesContext } from '../context/NotesContext';
+import { useNotesRedux } from '../hooks/useNotesRedux';
 import type { Note } from '../types';
 import { toast } from 'sonner';
 import { getFolderIconAndColor } from '../utils/folderUtils';
@@ -51,7 +51,7 @@ export function CategoryNotesModal({
     title,
     description,
 }: CategoryNotesModalProps) {
-    const { notes, createNote, updateNote, deleteNote, isLoading } = useNotesContext();
+    const { notes, createNote, updateNote, deleteNote, isLoading } = useNotesRedux();
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState<'list' | 'create' | 'edit' | 'import'>('list');
     const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);

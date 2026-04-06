@@ -1,6 +1,6 @@
 # TODO: Artifact Frontend Integration (matrx-admin)
 
-> **Status:** Block parsing and rendering complete. Persistence and message-level integration needed.
+> **Status:** Block parsing, rendering, and canvas integration complete. Persistence and message-level integration needed.
 > **Depends on:** Python server streaming pipeline (aidream) and Supabase RPC functions (already deployed).
 
 ---
@@ -8,8 +8,13 @@
 ## What's Already Done
 
 - [x] `<artifact>` tag detection in `content-splitter-v2.ts` (attribute-bearing XML, like `<decision>`)
-- [x] `ArtifactBlock` component: renders inline preview with "Open in Canvas" button
-- [x] `BlockRenderer` routes `type: "artifact"` to `ArtifactBlock`
+- [x] `ArtifactBlock` component: **routes content to REAL renderers by type** (iframe, code, flashcards, quiz, diagram, timeline, research, etc.)
+- [x] For markdown types (timeline, research, recipes, etc.): dynamically imports parsers and renders with parsed data
+- [x] For JSON types (quiz, diagram, comparison, etc.): parses JSON and renders with structured data
+- [x] For direct types (html, iframe, code, image): renders natively
+- [x] "Open in Canvas" button passes correctly structured data per type (parsed JSON for quiz/diagram, raw string for html/code/flashcards)
+- [x] Canvas deduplication uses `artifact:{artifactId}` as sourceTaskId
+- [x] `BlockRenderer` routes `type: "artifact"` to `ArtifactBlock` with `taskId` forwarded
 - [x] `BlockComponentRegistry` lazy-loads `ArtifactBlock`
 - [x] Metadata extraction: `artifactId`, `artifactIndex`, `artifactType`, `artifactTitle`
 - [x] Mid-line artifact detection (e.g., prose followed by `<artifact ...>` on same line)

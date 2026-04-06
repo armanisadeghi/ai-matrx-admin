@@ -3,11 +3,11 @@
 // Desktop: larger icons via CSS breakpoint in shell.css
 
 import Link from "next/link";
-import ShellIcon from "@/features/ssr-trials/components/ShellIcon";
+import ShellIcon from "@/features/shell/components/ShellIcon";
 import {
   primaryNavItems,
   iconColorMap,
-} from "@/features/ssr-trials/constants/nav-data";
+} from "@/features/shell/constants/nav-data";
 
 export default function DashboardGrid() {
   return (

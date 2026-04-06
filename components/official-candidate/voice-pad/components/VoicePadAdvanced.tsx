@@ -1,7 +1,7 @@
 "use client";
 
 import React, { lazy, Suspense, useState, useCallback } from "react";
-import { Mic, PanelLeftClose, PanelLeft } from "lucide-react";
+import { Mic } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
 import {
@@ -14,7 +14,6 @@ import {
 } from "@/lib/redux/slices/voicePadSlice";
 import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
-import { Button } from "@/components/ui/ButtonMine";
 import { VoicePadHistorySidebar } from "./VoicePadHistorySidebar";
 
 const VoicePadExpanded = lazy(() => import("./VoicePadExpanded"));
@@ -47,7 +46,6 @@ export default function VoicePadAdvanced() {
   const entries = useAppSelector(selectVoicePadEntries);
   const draftText = useAppSelector(selectVoicePadDraftText);
   const [liveTranscript, setLiveTranscript] = useState("");
-  const [showHistory, setShowHistory] = useState(false);
 
   const handleClose = () => {
     dispatch(closeOverlay({ overlayId: "voicePad" }));

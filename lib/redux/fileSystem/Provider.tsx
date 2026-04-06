@@ -15,7 +15,7 @@ import { availableBuckets } from "../rootReducer";
 
 // Validation helper
 const validateAndFilterBuckets = (
-  bucketsToValidate: readonly AvailableBuckets[]
+  bucketsToValidate: readonly AvailableBuckets[],
 ) => {
   const validBuckets: AvailableBuckets[] = [];
   bucketsToValidate.forEach((bucket) => {
@@ -24,7 +24,7 @@ const validateAndFilterBuckets = (
     } else {
       console.error(
         `Invalid bucket provided: ${bucket}. Must be one of:`,
-        availableBuckets
+        availableBuckets,
       );
     }
   });
@@ -48,6 +48,7 @@ interface FileSystemContextValue {
   isInitialized: boolean;
   isLoading: boolean;
   error: string | null;
+  initialize: () => void;
   setActiveBucket: (bucket: AvailableBuckets) => Promise<void>;
   getHooksForBucket: (bucket: AvailableBuckets) => {
     useTreeTraversal: () => ReturnType<
@@ -63,13 +64,13 @@ interface FileSystemContextValue {
       ReturnType<typeof createFileSystemHooks>["useSelection"]
     >;
     useNodeOps: (
-      nodeId: NodeItemId
+      nodeId: NodeItemId,
     ) => ReturnType<ReturnType<typeof createFileSystemHooks>["useNodeOps"]>;
     useNode: (
-      nodeId: NodeItemId
+      nodeId: NodeItemId,
     ) => ReturnType<ReturnType<typeof createFileSystemHooks>["useNode"]>;
     useFolderContents: (
-      nodeId?: NodeItemId | null
+      nodeId?: NodeItemId | null,
     ) => ReturnType<
       ReturnType<typeof createFileSystemHooks>["useFolderContents"]
     >;
@@ -115,7 +116,7 @@ export function FileSystemProvider({
 
   // Get all state in the component body
   const fileSystemState = useAppSelector(
-    (state) => state.fileSystem[activeBucket]
+    (state) => state.fileSystem[activeBucket],
   );
   const { isInitialized, isLoading, error } = fileSystemState;
 
@@ -130,7 +131,7 @@ export function FileSystemProvider({
     if (!availableBucketsList.includes(initialBucket)) {
       console.error(
         `Invalid initial bucket: ${initialBucket}. Must be one of:`,
-        availableBucketsList
+        availableBucketsList,
       );
     }
   }, [initialBucket, availableBucketsList]);
@@ -150,7 +151,7 @@ export function FileSystemProvider({
         }
       }
     },
-    [dispatch]
+    [dispatch],
   );
 
   const setActiveBucket = useCallback(
@@ -158,7 +159,7 @@ export function FileSystemProvider({
       console.log("Setting active bucket:", bucket);
       if (!availableBucketsList.includes(bucket)) {
         const error = `Invalid bucket: ${bucket}. Must be one of: ${availableBucketsList.join(
-          ", "
+          ", ",
         )}`;
         console.error(error);
         throw new Error(error);
@@ -173,7 +174,7 @@ export function FileSystemProvider({
         throw error;
       }
     },
-    [initializeBucket, availableBucketsList]
+    [initializeBucket, availableBucketsList],
   );
 
   const getHooksForBucket = useCallback((bucket: AvailableBuckets) => {
@@ -184,13 +185,12 @@ export function FileSystemProvider({
     return hooks;
   }, []);
 
-  // Initialize initial bucket on mount
-  useEffect(() => {
-    // console.log("Provider mount - initializing initial bucket:", initialBucket);
+  const initialize = useCallback(() => {
+    if (isInitialized) return;
     initializeBucket(initialBucket).catch((error) =>
-      console.error("Error in initial bucket setup:", error)
+      console.error("Error in initial bucket setup:", error),
     );
-  }, [initialBucket, initializeBucket]);
+  }, [initialBucket, initializeBucket, isInitialized]);
 
   const value = useMemo(
     () => ({
@@ -201,6 +201,7 @@ export function FileSystemProvider({
       error,
       setActiveBucket,
       getHooksForBucket,
+      initialize,
     }),
     [
       availableBucketsList,
@@ -210,7 +211,8 @@ export function FileSystemProvider({
       error,
       setActiveBucket,
       getHooksForBucket,
-    ]
+      initialize,
+    ],
   );
 
   return (

@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { FileText } from "lucide-react";
-import { NotesWindow } from "./NotesWindow";
+import { NotesWindow } from "../../floating-window-panel/windows/NotesWindow";
 
 const NOTES_WINDOW_ID = "sidebar-notes-window";
 

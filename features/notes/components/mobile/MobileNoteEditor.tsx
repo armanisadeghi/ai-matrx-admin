@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { Loader2 } from 'lucide-react';
-import { useNotesContext } from '@/features/notes/context/NotesContext';
+import { useNotesRedux } from '../../hooks/useNotesRedux';
 import { NoteEditorDock } from './NoteEditorDock';
 import { useToastManager } from '@/hooks/useToastManager';
 import MarkdownStream from '@/components/MarkdownStream';
@@ -31,7 +31,7 @@ interface MobileNoteEditorProps {
 }
 
 export default function MobileNoteEditor({ note, editorMode, onBack }: MobileNoteEditorProps) {
-  const { updateNote, deleteNote, copyNote, setActiveNoteDirty } = useNotesContext();
+  const { updateNote, deleteNote, copyNote, setActiveNoteDirty } = useNotesRedux();
   const toast = useToastManager('notes');
 
   const [localLabel, setLocalLabel] = useState(note.label || '');

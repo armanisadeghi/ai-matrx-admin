@@ -5,17 +5,21 @@
  * Clicking opens the AudioRecoveryModal for detailed recovery options.
  */
 
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Mic, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { cn } from '@/lib/utils';
-import { useAudioRecovery } from '../providers/AudioRecoveryProvider';
-import { AudioRecoveryModal } from './AudioRecoveryModal';
+import React, { useState, useEffect } from "react";
+import { Mic, X } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { cn } from "@/lib/utils";
+import { useAudioRecovery } from "../providers/AudioRecoveryProvider";
+import { AudioRecoveryModal } from "./AudioRecoveryModal";
 
 export function AudioRecoveryToast() {
-  const { hasRecoveredData, recoveredItems, dismissAll } = useAudioRecovery();
+  const { hasRecoveredData, recoveredItems, dismissAll, initialize } =
+    useAudioRecovery();
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
   const [showModal, setShowModal] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
@@ -32,10 +36,10 @@ export function AudioRecoveryToast() {
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           transition={{ duration: 0.3 }}
           className={cn(
-            'fixed bottom-6 right-6 z-50 max-w-sm',
-            'bg-card border border-border rounded-lg shadow-lg',
-            'p-4 cursor-pointer',
-            'hover:shadow-xl transition-shadow duration-200',
+            "fixed bottom-6 right-6 z-50 max-w-sm",
+            "bg-card border border-border rounded-lg shadow-lg",
+            "p-4 cursor-pointer",
+            "hover:shadow-xl transition-shadow duration-200",
           )}
           onClick={() => setShowModal(true)}
         >
@@ -48,8 +52,8 @@ export function AudioRecoveryToast() {
                 Recovered Audio Data
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {count} recording{count !== 1 ? 's' : ''} recovered from a previous session.
-                Tap to review.
+                {count} recording{count !== 1 ? "s" : ""} recovered from a
+                previous session. Tap to review.
               </p>
             </div>
             <button

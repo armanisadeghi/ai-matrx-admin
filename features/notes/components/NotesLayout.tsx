@@ -8,7 +8,7 @@ import { NoteTabs } from './NoteTabs';
 import { CreateFolderDialog } from './CreateFolderDialog';
 import { ShareNoteDialog } from './ShareNoteDialog';
 import { NotesHeader } from '@/components/layout/new-layout/PageSpecificHeader';
-import { useNotesContext } from '../context/NotesContext';
+import { useNotesRedux } from '../hooks/useNotesRedux';
 import { useAllFolders } from '../utils/folderUtils';
 import type { Note } from '../types';
 import { cn } from '@/lib/utils';
@@ -58,7 +58,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
         openNoteInTab,
         openTabs,
         closeTab,
-    } = useNotesContext();
+    } = useNotesRedux();
 
     const [sidebarWidth, setSidebarWidth] = useState(280);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);

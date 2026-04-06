@@ -12,6 +12,7 @@ import {
   useMoveProject,
   useMoveTask,
 } from '../hooks/useHierarchy';
+import { hierarchyService } from '../service/hierarchyService';
 import type { HierarchyNode, HierarchyNodeType } from '../service/hierarchyService';
 
 const ICONS: Record<HierarchyNodeType, React.ComponentType<{ className?: string }>> = {
@@ -82,22 +83,46 @@ export function HierarchyMoveModal({ nodeToMove, tree, onClose }: Props) {
         }
       }, { onSuccess: onClose });
     } else if (nodeToMove.type === 'project') {
-      const orgId = targetNode.type === 'organization' ? targetNode.id : (targetNode.meta?.organization_id as string);
-      moveProj.mutate({
-        projectId: nodeToMove.id,
-        target: {
-          organization_id: targetNode.type === 'organization' ? targetNode.id : null, // wait, projects have both organization_id and workspace_id? Actually, hierarchyService moveProject sets the target as provided.
-          workspace_id: targetNode.type === 'workspace' ? targetNode.id : null,
-        }
-      }, { onSuccess: onClose });
+      if (targetNode.type === 'organization') {
+        const orgId = targetNode.id;
+        // User drops project on Organization -> Auto create 'General Workspace'
+        hierarchyService.createWorkspace({
+          name: 'General Workspace',
+          organization_id: orgId,
+          description: 'Auto-generated workspace for assigned projects without a workspace.'
+        }).then(newWs => {
+          moveProj.mutate({
+            projectId: nodeToMove.id,
+            target: {
+              organization_id: orgId,
+              workspace_id: newWs.id,
+            }
+          }, { onSuccess: onClose });
+        }).catch(() => {
+          // Fallback if workspace creation fails (e.g., General Workspace already exists)
+          moveProj.mutate({
+            projectId: nodeToMove.id,
+            target: {
+              organization_id: orgId,
+              workspace_id: null,
+            }
+          }, { onSuccess: onClose });
+        });
+      } else {
+        const orgId = targetNode.meta?.organization_id as string;
+        moveProj.mutate({
+          projectId: nodeToMove.id,
+          target: {
+            organization_id: orgId,
+            workspace_id: targetNode.id,
+          }
+        }, { onSuccess: onClose });
+      }
     } else if (nodeToMove.type === 'task') {
-      let projectId = targetNode.type === 'project' ? targetNode.id : (targetNode.meta?.project_id as string); // Wait, task might not have project_id in meta but it is in DTO. 
-      // If we move task to task, we should use the parent task's project ID if available. But for simplicity, we can just look it up or let supabase handle it if we pass project_id.
-      // Actually `targetNode.type === 'project' ? targetNode.id : ...`
       moveTask.mutate({
         taskId: nodeToMove.id,
         target: {
-          project_id: targetNode.type === 'project' ? targetNode.id : null, // We might need correct project_id if it's a child task.
+          project_id: targetNode.type === 'project' ? targetNode.id : null, 
           parent_task_id: targetNode.type === 'task' ? targetNode.id : null,
         }
       }, { onSuccess: onClose });

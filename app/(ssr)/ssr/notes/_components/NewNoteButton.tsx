@@ -11,7 +11,7 @@ import { Plus } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
-import IconButton from "@/features/ssr-trials/components/IconButton";
+import IconButton from "@/features/shell/components/IconButton";
 
 export default function NewNoteButton() {
   const searchParams = useSearchParams();

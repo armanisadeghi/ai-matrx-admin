@@ -16,18 +16,6 @@ import { setGlobalUserIdAndToken } from "@/lib/globalState";
 import ResponsiveLayout from "@/components/layout/new-layout/ResponsiveLayout";
 import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
 import { initializeUserPreferencesState } from "@/lib/redux/slices/userPreferencesSlice";
-import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
-import { CanvasSideSheet } from "@/features/canvas/core/CanvasSideSheet";
-import { DynamicAdminIndicatorWrapper } from "@/app/(authenticated)/dynamic-imports/DynamicAdminIndicatorWrapper";
-import { DynamicDebugIndicatorManager } from "@/app/(authenticated)/dynamic-imports/DynamicDebugIndicatorManager";
-import { DynamicAnnouncementProvider } from "@/app/(authenticated)/dynamic-imports/DynamicAnnouncementProvider";
-import {
-  DynamicMessagingInitializer,
-  DynamicMessagingSideSheet,
-} from "@/app/(authenticated)/dynamic-imports/DynamicMessaging";
-import { DynamicAppleKeyExpiryBanner } from "@/app/(authenticated)/dynamic-imports/DynamicAppleKeyExpiryBanner";
-import { DynamicVoicePad } from "@/app/(authenticated)/dynamic-imports/DynamicVoicePad";
-import { DynamicWindowTraySync } from "@/app/(authenticated)/dynamic-imports/DynamicWindowTraySync";
 
 const emptyGlobalCache = getEmptyGlobalCache();
 
@@ -115,24 +103,10 @@ export default async function AuthenticatedLayout({
 
   return (
     <Providers initialReduxState={initialReduxState}>
-      <DynamicAppleKeyExpiryBanner />
-      <AuthSessionWatcher />
-      {/* DynamicSocketInitializer disabled — server no longer supports socket.io */}
-      <DynamicAnnouncementProvider />
       <ResponsiveLayout {...layoutProps}>
         <NavigationLoader />
         {children}
-        <DynamicAdminIndicatorWrapper />
-        <DynamicDebugIndicatorManager />
-        <DynamicVoicePad />
       </ResponsiveLayout>
-      {/* Global Canvas Side Sheet - Available everywhere (routes, modals, sheets) */}
-      <CanvasSideSheet />
-      {/* Global Messaging System - Side Sheet + Data Loader */}
-      <DynamicMessagingInitializer />
-      <DynamicMessagingSideSheet />
-      {/* Reposition minimized windows on viewport resize */}
-      <DynamicWindowTraySync />
     </Providers>
   );
 }

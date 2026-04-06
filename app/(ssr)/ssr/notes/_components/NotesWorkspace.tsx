@@ -23,7 +23,7 @@ import {
   type ChangeEvent,
 } from "react";
 import { createPortal } from "react-dom";
-import PageHeader from "@/features/ssr-trials/components/PageHeader";
+import PageHeader from "@/features/shell/components/header/PageHeader";
 import {
   X,
   NotebookPen,
@@ -50,7 +50,10 @@ import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIcon
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
 import type { NoteSummary } from "../layout";
-import { NoteEditorCore, type EditorMode as CoreEditorMode } from "@/features/notes/components/NoteEditorCore";
+import {
+  NoteEditorCore,
+  type EditorMode as CoreEditorMode,
+} from "@/features/notes/components/NoteEditorCore";
 
 const NoteShareDialog = dynamic(() => import("./NoteShareDialog"), {
   ssr: false,
@@ -494,7 +497,12 @@ export default function NotesWorkspace({
           const newRecord = payload.new as Record<string, unknown> | undefined;
           const oldRecord = payload.old as Record<string, unknown> | undefined;
 
-          console.log("[Notes Realtime] Event:", eventType, "noteId:", (newRecord?.id || oldRecord?.id));
+          console.log(
+            "[Notes Realtime] Event:",
+            eventType,
+            "noteId:",
+            newRecord?.id || oldRecord?.id,
+          );
 
           if (eventType === "UPDATE" && newRecord) {
             const noteId = newRecord.id as string;
@@ -517,7 +525,8 @@ export default function NotesWorkspace({
               const serverLabel = (newRecord.label as string) ?? "";
               const serverFolder = (newRecord.folder_name as string) ?? "Draft";
               const serverTags = (newRecord.tags as string[]) ?? [];
-              const serverMeta = (newRecord.metadata as Record<string, unknown>) ?? {};
+              const serverMeta =
+                (newRecord.metadata as Record<string, unknown>) ?? {};
               const serverUpdatedAt = (newRecord.updated_at as string) ?? "";
 
               const updatedData: NoteData = {
@@ -722,7 +731,12 @@ export default function NotesWorkspace({
   // ── Auto-save with sidebar sync ──────────────────────────────────────
 
   const scheduleSave = useCallback(
-    (noteId: string, label: string, content: string, skipConcurrencyCheck = false) => {
+    (
+      noteId: string,
+      label: string,
+      content: string,
+      skipConcurrencyCheck = false,
+    ) => {
       // Clear existing timer
       const timers = saveTimerRef.current;
       const existing = timers.get(noteId);
@@ -815,8 +829,9 @@ export default function NotesWorkspace({
                     ...c,
                     data: {
                       ...c.data,
-                      content: serverCheck.content as string ?? c.data.content,
-                      label: serverCheck.label as string ?? c.data.label,
+                      content:
+                        (serverCheck.content as string) ?? c.data.content,
+                      label: (serverCheck.label as string) ?? c.data.label,
                       updated_at: serverUpdatedAt,
                     },
                     saveState: "conflict",
@@ -1183,7 +1198,8 @@ export default function NotesWorkspace({
             saveState: "dirty",
           });
           const localLabel = cached.localEdits?.label ?? cached.data.label;
-          const localContent = cached.localEdits?.content ?? cached.data.content;
+          const localContent =
+            cached.localEdits?.content ?? cached.data.content;
           // Use skipConcurrencyCheck=true since user explicitly chose to overwrite
           setTimeout(() => {
             scheduleSave(noteId, localLabel, localContent, true);
@@ -1483,7 +1499,11 @@ export default function NotesWorkspace({
                   onClick={() => !isActive && switchTab(id)}
                   onContextMenu={(e) => {
                     e.preventDefault();
-                    setTabContextMenu({ x: e.clientX, y: e.clientY, tabId: id });
+                    setTabContextMenu({
+                      x: e.clientX,
+                      y: e.clientY,
+                      tabId: id,
+                    });
                   }}
                 >
                   {isDirty && (
@@ -1567,7 +1587,10 @@ export default function NotesWorkspace({
                         <Trash2 />
                       </button>
                       <button
-                        className={cn(actionBtnClass, showVersionHistory && "text-primary")}
+                        className={cn(
+                          actionBtnClass,
+                          showVersionHistory && "text-primary",
+                        )}
                         onClick={() => setShowVersionHistory((v) => !v)}
                         title="Version History"
                       >
@@ -1611,251 +1634,253 @@ export default function NotesWorkspace({
       {/* ── Editor or Empty State ──────────────────────────────────── */}
       {activeNoteId && activeCached ? (
         <div className="flex flex-1 min-h-0 overflow-hidden">
-        <div className="flex-1 flex flex-col min-w-0 min-h-0">
-        <NoteContextMenu
-          noteId={activeNoteId}
-          isDirty={activeCached.saveState === "dirty"}
-          allFolders={allFolders}
-          currentFolder={activeCached.data.folder_name}
-          noteContent={activeContent}
-          textareaRef={textareaRef}
-          onSave={() => forceSave(activeNoteId)}
-          onDuplicate={() => duplicateNote(activeNoteId)}
-          onExport={() => exportNote(activeNoteId)}
-          onShareLink={() => setShareDialogNoteId(activeNoteId)}
-          onShareClipboard={() => shareNote(activeNoteId)}
-          onMove={(folder) => moveNote(activeNoteId, folder)}
-          onCloseTab={() => closeTab(activeNoteId)}
-          onCloseOtherTabs={() => closeOtherTabs(activeNoteId)}
-          onCloseAllTabs={closeAllTabs}
-          onDelete={() => deleteNote(activeNoteId)}
-          onVersionHistory={() => setShowVersionHistory((v) => !v)}
-        >
-          <div className="flex-1 flex flex-col overflow-hidden note-detail-active">
-            {/* ── Conflict Banner ──────────────────────────────────────── */}
-            {saveState === "conflict" && (
-              <div className="flex items-center gap-3 py-1.5 px-4 text-xs text-foreground bg-destructive/10 border-b border-destructive/20 shrink-0">
-                <span className="flex-1">
-                  Modified externally. Keep yours or use server version?
-                </span>
-                <button
-                  className="px-2 py-0.5 text-xs font-medium rounded bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 cursor-pointer"
-                  onClick={() => resolveConflict(activeNoteId, "local")}
-                >
-                  Keep Mine
-                </button>
-                <button
-                  className="px-2 py-0.5 text-xs font-medium rounded border border-border bg-background text-muted-foreground cursor-pointer"
-                  onClick={() => resolveConflict(activeNoteId, "server")}
-                >
-                  Use Server
-                </button>
-              </div>
-            )}
-
-            {/* ── Note header bar — mobile only (desktop uses editable tab) ─ */}
-            <div className="notes-search-bar notes-note-header lg:hidden">
-              {/* Chevron back — mobile only, same tap target as sidebar icon buttons */}
-              <div className="notes-search-tap lg:hidden">
-                <button
-                  className="flex items-center justify-center w-[1.875rem] h-[1.875rem] rounded-full shell-glass shell-tactile text-muted-foreground cursor-pointer hover:text-foreground [&_svg]:w-3.5 [&_svg]:h-3.5"
-                  onClick={goBack}
-                  aria-label="Back to notes"
-                >
-                  <ChevronLeft />
-                </button>
-              </div>
-
-              {/* Title input — fills remaining space, same glass pill as search input */}
-              <div className="notes-search-input-wrap">
-                <input
-                  className="notes-title-input w-full h-[1.875rem] px-3 shell-glass rounded-full placeholder:text-muted-foreground/60 outline-none transition-colors min-w-0 truncate"
-                  style={{ fontSize: "16px" }}
-                  type="text"
-                  value={activeLabel}
-                  onChange={handleTitleChange}
-                  placeholder="Note title..."
-                  aria-label="Note title"
-                />
-              </div>
-
-              {/* More options — opens bottom sheet with all note actions */}
-              <div className="notes-search-tap">
-                <button
-                  className={cn(
-                    "flex items-center justify-center w-[1.875rem] h-[1.875rem] rounded-full shell-glass shell-tactile text-muted-foreground cursor-pointer hover:text-foreground [&_svg]:w-3.5 [&_svg]:h-3.5",
-                    showNoteOptions &&
-                      "bg-(--shell-glass-bg-active)! text-foreground",
-                  )}
-                  onClick={() => setShowNoteOptions((v) => !v)}
-                  aria-label="Note options"
-                >
-                  <MoreHorizontal />
-                </button>
-              </div>
-            </div>
-
-            {/* ── Note Options Bottom Sheet (mobile, portaled for z-index) ──── */}
-            {showNoteOptions &&
-              activeNoteId &&
-              activeCached &&
-              portalRoot &&
-              createPortal(
-                <NoteOptionsSheet
-                  currentFolder={activeCached.data.folder_name ?? "Draft"}
-                  allFolders={allFolders}
-                  saveState={saveState}
-                  onSave={() => forceSave(activeNoteId)}
-                  onDuplicate={() => duplicateNote(activeNoteId)}
-                  onShareLink={() => setShareDialogNoteId(activeNoteId)}
-                  onShareClipboard={() => shareNote(activeNoteId)}
-                  onExport={() => exportNote(activeNoteId)}
-                  onMove={(folder) => moveNote(activeNoteId, folder)}
-                  onDelete={() => deleteNote(activeNoteId)}
-                  onClose={() => setShowNoteOptions(false)}
-                />,
-                portalRoot,
-              )}
-
-            {/* ── Editor Content (via NoteEditorCore) ──────────────── */}
-            <NoteEditorCore
-              content={activeContent}
-              onChange={handleEditorCoreChange}
-              editorMode={editorMode as CoreEditorMode}
+          <div className="flex-1 flex flex-col min-w-0 min-h-0">
+            <NoteContextMenu
+              noteId={activeNoteId}
+              isDirty={activeCached.saveState === "dirty"}
+              allFolders={allFolders}
+              currentFolder={activeCached.data.folder_name}
+              noteContent={activeContent}
               textareaRef={textareaRef}
-              onVoiceTranscription={handleTranscription}
-              placeholder="Start writing..."
-              className="flex-1 min-h-0"
-              textareaClassName="notes-editor-textarea scrollbar-thin-auto py-2 px-5 text-sm leading-[1.7] font-[inherit]"
-            />
-
-            {/* ── Tags & Folder Bar (deep hydration — renders shell immediately) */}
-            <div className="flex items-center gap-2 py-1 px-4 border-t border-border/20 shrink-0 overflow-hidden min-h-[1.625rem]">
-              {/* Folder selector — button that opens inline dropdown */}
-              <div className="shrink-0">
-                <button
-                  ref={bottomFolderBtnRef}
-                  className="flex items-center gap-1 text-[0.625rem] text-muted-foreground hover:text-foreground cursor-pointer transition-colors [&_svg]:w-3 [&_svg]:h-3"
-                  onClick={() => setShowFolderSelect((v) => !v)}
-                >
-                  <Folder />
-                  <span className="max-w-[80px] truncate">
-                    {activeCached.data.folder_name}
-                  </span>
-                </button>
-                {showFolderSelect && (
-                  <FolderDropdown
-                    triggerRef={bottomFolderBtnRef}
-                    folders={allFolders}
-                    currentFolder={activeCached.data.folder_name}
-                    onSelect={(f) => {
-                      moveNote(activeNoteId, f);
-                      setShowFolderSelect(false);
-                    }}
-                    onClose={() => setShowFolderSelect(false)}
-                    anchor="above"
-                  />
-                )}
-              </div>
-
-              <span className="text-border">|</span>
-
-              {/* Tags — renders badges immediately, add input hydrates on interaction */}
-              <div className="flex items-center gap-1 flex-1 overflow-x-auto scrollbar-thin-auto min-w-0">
-                {activeCached.data.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-0.5 text-[0.625rem] px-1.5 py-0 rounded-full border border-border text-muted-foreground shrink-0"
-                  >
-                    {tag}
+              onSave={() => forceSave(activeNoteId)}
+              onDuplicate={() => duplicateNote(activeNoteId)}
+              onExport={() => exportNote(activeNoteId)}
+              onShareLink={() => setShareDialogNoteId(activeNoteId)}
+              onShareClipboard={() => shareNote(activeNoteId)}
+              onMove={(folder) => moveNote(activeNoteId, folder)}
+              onCloseTab={() => closeTab(activeNoteId)}
+              onCloseOtherTabs={() => closeOtherTabs(activeNoteId)}
+              onCloseAllTabs={closeAllTabs}
+              onDelete={() => deleteNote(activeNoteId)}
+              onVersionHistory={() => setShowVersionHistory((v) => !v)}
+            >
+              <div className="flex-1 flex flex-col overflow-hidden note-detail-active">
+                {/* ── Conflict Banner ──────────────────────────────────────── */}
+                {saveState === "conflict" && (
+                  <div className="flex items-center gap-3 py-1.5 px-4 text-xs text-foreground bg-destructive/10 border-b border-destructive/20 shrink-0">
+                    <span className="flex-1">
+                      Modified externally. Keep yours or use server version?
+                    </span>
                     <button
-                      className="hover:text-foreground cursor-pointer [&_svg]:w-2.5 [&_svg]:h-2.5"
-                      onClick={() => removeTag(activeNoteId, tag)}
+                      className="px-2 py-0.5 text-xs font-medium rounded bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 cursor-pointer"
+                      onClick={() => resolveConflict(activeNoteId, "local")}
                     >
-                      <X />
+                      Keep Mine
                     </button>
-                  </span>
-                ))}
-                {editingTags ? (
-                  <input
-                    className="h-5 text-[0.625rem] px-1.5 min-w-[5rem] w-20 bg-muted rounded-md border border-border outline-none shrink-0"
-                    placeholder="Tag..."
-                    value={tagInputValue}
-                    onChange={(e) => setTagInputValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        const v = tagInputValue.trim();
-                        if (v) {
-                          addTag(activeNoteId, v);
+                    <button
+                      className="px-2 py-0.5 text-xs font-medium rounded border border-border bg-background text-muted-foreground cursor-pointer"
+                      onClick={() => resolveConflict(activeNoteId, "server")}
+                    >
+                      Use Server
+                    </button>
+                  </div>
+                )}
+
+                {/* ── Note header bar — mobile only (desktop uses editable tab) ─ */}
+                <div className="notes-search-bar notes-note-header lg:hidden">
+                  {/* Chevron back — mobile only, same tap target as sidebar icon buttons */}
+                  <div className="notes-search-tap lg:hidden">
+                    <button
+                      className="flex items-center justify-center w-[1.875rem] h-[1.875rem] rounded-full shell-glass shell-tactile text-muted-foreground cursor-pointer hover:text-foreground [&_svg]:w-3.5 [&_svg]:h-3.5"
+                      onClick={goBack}
+                      aria-label="Back to notes"
+                    >
+                      <ChevronLeft />
+                    </button>
+                  </div>
+
+                  {/* Title input — fills remaining space, same glass pill as search input */}
+                  <div className="notes-search-input-wrap">
+                    <input
+                      className="notes-title-input w-full h-[1.875rem] px-3 shell-glass rounded-full placeholder:text-muted-foreground/60 outline-none transition-colors min-w-0 truncate"
+                      style={{ fontSize: "16px" }}
+                      type="text"
+                      value={activeLabel}
+                      onChange={handleTitleChange}
+                      placeholder="Note title..."
+                      aria-label="Note title"
+                    />
+                  </div>
+
+                  {/* More options — opens bottom sheet with all note actions */}
+                  <div className="notes-search-tap">
+                    <button
+                      className={cn(
+                        "flex items-center justify-center w-[1.875rem] h-[1.875rem] rounded-full shell-glass shell-tactile text-muted-foreground cursor-pointer hover:text-foreground [&_svg]:w-3.5 [&_svg]:h-3.5",
+                        showNoteOptions &&
+                          "bg-(--shell-glass-bg-active)! text-foreground",
+                      )}
+                      onClick={() => setShowNoteOptions((v) => !v)}
+                      aria-label="Note options"
+                    >
+                      <MoreHorizontal />
+                    </button>
+                  </div>
+                </div>
+
+                {/* ── Note Options Bottom Sheet (mobile, portaled for z-index) ──── */}
+                {showNoteOptions &&
+                  activeNoteId &&
+                  activeCached &&
+                  portalRoot &&
+                  createPortal(
+                    <NoteOptionsSheet
+                      currentFolder={activeCached.data.folder_name ?? "Draft"}
+                      allFolders={allFolders}
+                      saveState={saveState}
+                      onSave={() => forceSave(activeNoteId)}
+                      onDuplicate={() => duplicateNote(activeNoteId)}
+                      onShareLink={() => setShareDialogNoteId(activeNoteId)}
+                      onShareClipboard={() => shareNote(activeNoteId)}
+                      onExport={() => exportNote(activeNoteId)}
+                      onMove={(folder) => moveNote(activeNoteId, folder)}
+                      onDelete={() => deleteNote(activeNoteId)}
+                      onClose={() => setShowNoteOptions(false)}
+                    />,
+                    portalRoot,
+                  )}
+
+                {/* ── Editor Content (via NoteEditorCore) ──────────────── */}
+                <NoteEditorCore
+                  content={activeContent}
+                  onChange={handleEditorCoreChange}
+                  editorMode={editorMode as CoreEditorMode}
+                  textareaRef={textareaRef}
+                  onVoiceTranscription={handleTranscription}
+                  placeholder="Start writing..."
+                  className="flex-1 min-h-0"
+                  textareaClassName="notes-editor-textarea scrollbar-thin-auto py-2 px-5 text-sm leading-[1.7] font-[inherit]"
+                />
+
+                {/* ── Tags & Folder Bar (deep hydration — renders shell immediately) */}
+                <div className="flex items-center gap-2 py-1 px-4 border-t border-border/20 shrink-0 overflow-hidden min-h-[1.625rem]">
+                  {/* Folder selector — button that opens inline dropdown */}
+                  <div className="shrink-0">
+                    <button
+                      ref={bottomFolderBtnRef}
+                      className="flex items-center gap-1 text-[0.625rem] text-muted-foreground hover:text-foreground cursor-pointer transition-colors [&_svg]:w-3 [&_svg]:h-3"
+                      onClick={() => setShowFolderSelect((v) => !v)}
+                    >
+                      <Folder />
+                      <span className="max-w-[80px] truncate">
+                        {activeCached.data.folder_name}
+                      </span>
+                    </button>
+                    {showFolderSelect && (
+                      <FolderDropdown
+                        triggerRef={bottomFolderBtnRef}
+                        folders={allFolders}
+                        currentFolder={activeCached.data.folder_name}
+                        onSelect={(f) => {
+                          moveNote(activeNoteId, f);
+                          setShowFolderSelect(false);
+                        }}
+                        onClose={() => setShowFolderSelect(false)}
+                        anchor="above"
+                      />
+                    )}
+                  </div>
+
+                  <span className="text-border">|</span>
+
+                  {/* Tags — renders badges immediately, add input hydrates on interaction */}
+                  <div className="flex items-center gap-1 flex-1 overflow-x-auto scrollbar-thin-auto min-w-0">
+                    {activeCached.data.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center gap-0.5 text-[0.625rem] px-1.5 py-0 rounded-full border border-border text-muted-foreground shrink-0"
+                      >
+                        {tag}
+                        <button
+                          className="hover:text-foreground cursor-pointer [&_svg]:w-2.5 [&_svg]:h-2.5"
+                          onClick={() => removeTag(activeNoteId, tag)}
+                        >
+                          <X />
+                        </button>
+                      </span>
+                    ))}
+                    {editingTags ? (
+                      <input
+                        className="h-5 text-[0.625rem] px-1.5 min-w-[5rem] w-20 bg-muted rounded-md border border-border outline-none shrink-0"
+                        placeholder="Tag..."
+                        value={tagInputValue}
+                        onChange={(e) => setTagInputValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            const v = tagInputValue.trim();
+                            if (v) {
+                              addTag(activeNoteId, v);
+                              setTagInputValue("");
+                            }
+                          }
+                          if (e.key === "Escape") {
+                            setEditingTags(false);
+                            setTagInputValue("");
+                          }
+                        }}
+                        onBlur={() => {
+                          const v = tagInputValue.trim();
+                          if (v) addTag(activeNoteId, v);
+                          setEditingTags(false);
                           setTagInputValue("");
-                        }
-                      }
-                      if (e.key === "Escape") {
-                        setEditingTags(false);
-                        setTagInputValue("");
-                      }
-                    }}
-                    onBlur={() => {
-                      const v = tagInputValue.trim();
-                      if (v) addTag(activeNoteId, v);
-                      setEditingTags(false);
-                      setTagInputValue("");
-                    }}
-                    autoFocus
+                        }}
+                        autoFocus
+                      />
+                    ) : (
+                      <button
+                        className="flex items-center gap-0.5 text-[0.625rem] text-muted-foreground hover:text-foreground cursor-pointer shrink-0 [&_svg]:w-2.5 [&_svg]:h-2.5"
+                        onClick={() => setEditingTags(true)}
+                      >
+                        <Plus /> Tag
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* ── Status Bar — appears on hover only ─────────────────── */}
+                <div className="notes-status-bar flex items-center gap-3 py-1 px-4 text-[0.625rem] text-muted-foreground opacity-0 h-0 overflow-hidden transition-all duration-200">
+                  <span
+                    className={cn(
+                      "w-1.5 h-1.5 rounded-full",
+                      saveState === "saved" && "bg-green-500",
+                      saveState === "saving" &&
+                        "bg-yellow-500 ssr-status-pulse",
+                      saveState === "dirty" && "bg-amber-500",
+                      saveState === "conflict" &&
+                        "bg-red-500 ssr-conflict-pulse",
+                    )}
                   />
-                ) : (
-                  <button
-                    className="flex items-center gap-0.5 text-[0.625rem] text-muted-foreground hover:text-foreground cursor-pointer shrink-0 [&_svg]:w-2.5 [&_svg]:h-2.5"
-                    onClick={() => setEditingTags(true)}
-                  >
-                    <Plus /> Tag
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* ── Status Bar — appears on hover only ─────────────────── */}
-            <div className="notes-status-bar flex items-center gap-3 py-1 px-4 text-[0.625rem] text-muted-foreground opacity-0 h-0 overflow-hidden transition-all duration-200">
-              <span
-                className={cn(
-                  "w-1.5 h-1.5 rounded-full",
-                  saveState === "saved" && "bg-green-500",
-                  saveState === "saving" && "bg-yellow-500 ssr-status-pulse",
-                  saveState === "dirty" && "bg-amber-500",
-                  saveState === "conflict" && "bg-red-500 ssr-conflict-pulse",
-                )}
-              />
-              <span>{statusLabel}</span>
-              <span>&middot;</span>
-              <span>{wordCount} words</span>
-              <span>&middot;</span>
-              <span>{activeContent.length} chars</span>
-              {activeCached.data.updated_at && (
-                <>
+                  <span>{statusLabel}</span>
                   <span>&middot;</span>
-                  <span>
-                    Updated {formatTime(activeCached.data.updated_at)}
-                  </span>
-                </>
-              )}
-            </div>
+                  <span>{wordCount} words</span>
+                  <span>&middot;</span>
+                  <span>{activeContent.length} chars</span>
+                  {activeCached.data.updated_at && (
+                    <>
+                      <span>&middot;</span>
+                      <span>
+                        Updated {formatTime(activeCached.data.updated_at)}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </NoteContextMenu>
           </div>
-        </NoteContextMenu>
-        </div>
 
-        {/* ── Version History Side Panel ────────────────────────────── */}
-        {showVersionHistory && (
-          <NoteVersionHistory
-            noteId={activeNoteId}
-            onClose={() => setShowVersionHistory(false)}
-            onVersionRestored={() => {
-              // Refetch the note to load the restored version
-              fetchNote(activeNoteId);
-              setShowVersionHistory(false);
-            }}
-            className="w-[360px] shrink-0 max-lg:hidden"
-          />
-        )}
+          {/* ── Version History Side Panel ────────────────────────────── */}
+          {showVersionHistory && (
+            <NoteVersionHistory
+              noteId={activeNoteId}
+              onClose={() => setShowVersionHistory(false)}
+              onVersionRestored={() => {
+                // Refetch the note to load the restored version
+                fetchNote(activeNoteId);
+                setShowVersionHistory(false);
+              }}
+              className="w-[360px] shrink-0 max-lg:hidden"
+            />
+          )}
         </div>
       ) : activeNoteId ? (
         /* Loading state */
@@ -1912,16 +1937,49 @@ export default function NotesWorkspace({
               style={{ left: tabContextMenu.x, top: tabContextMenu.y }}
             >
               {[
-                { icon: <Save className="w-3 h-3" />, label: "Save", fn: () => forceSave(tabContextMenu.tabId) },
-                { icon: <Copy className="w-3 h-3" />, label: "Duplicate", fn: () => duplicateNote(tabContextMenu.tabId) },
-                { icon: <Share2 className="w-3 h-3" />, label: "Share Link", fn: () => setShareDialogNoteId(tabContextMenu.tabId) },
-                { icon: <FileText className="w-3 h-3" />, label: "Export as Markdown", fn: () => exportNote(tabContextMenu.tabId) },
+                {
+                  icon: <Save className="w-3 h-3" />,
+                  label: "Save",
+                  fn: () => forceSave(tabContextMenu.tabId),
+                },
+                {
+                  icon: <Copy className="w-3 h-3" />,
+                  label: "Duplicate",
+                  fn: () => duplicateNote(tabContextMenu.tabId),
+                },
+                {
+                  icon: <Share2 className="w-3 h-3" />,
+                  label: "Share Link",
+                  fn: () => setShareDialogNoteId(tabContextMenu.tabId),
+                },
+                {
+                  icon: <FileText className="w-3 h-3" />,
+                  label: "Export as Markdown",
+                  fn: () => exportNote(tabContextMenu.tabId),
+                },
                 null,
-                { icon: <X className="w-3 h-3" />, label: "Close Tab", fn: () => closeTab(tabContextMenu.tabId) },
-                { icon: <X className="w-3 h-3" />, label: "Close Other Tabs", fn: () => closeOtherTabs(tabContextMenu.tabId) },
-                { icon: <X className="w-3 h-3" />, label: "Close All Tabs", fn: () => closeAllTabs() },
+                {
+                  icon: <X className="w-3 h-3" />,
+                  label: "Close Tab",
+                  fn: () => closeTab(tabContextMenu.tabId),
+                },
+                {
+                  icon: <X className="w-3 h-3" />,
+                  label: "Close Other Tabs",
+                  fn: () => closeOtherTabs(tabContextMenu.tabId),
+                },
+                {
+                  icon: <X className="w-3 h-3" />,
+                  label: "Close All Tabs",
+                  fn: () => closeAllTabs(),
+                },
                 null,
-                { icon: <Trash2 className="w-3 h-3" />, label: "Delete Note", fn: () => deleteNote(tabContextMenu.tabId), destructive: true },
+                {
+                  icon: <Trash2 className="w-3 h-3" />,
+                  label: "Delete Note",
+                  fn: () => deleteNote(tabContextMenu.tabId),
+                  destructive: true,
+                },
               ].map((item, i) =>
                 item === null ? (
                   <div key={`sep-${i}`} className="h-px bg-border/50 my-1" />

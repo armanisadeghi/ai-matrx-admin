@@ -7,7 +7,7 @@ import {
   ChevronRight, ChevronDown, Plus, Search, Loader2,
   Pencil, Trash2, MoreHorizontal, Calendar, Tag,
   ArrowRightFromLine, Check, X, AlertCircle, Clock,
-  FolderOpen, TreePine, MoveRight,
+  FolderOpen, TreePine, MoveRight, RefreshCw,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -182,20 +182,25 @@ export function HierarchyTreePage() {
   }
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="flex flex-col md:flex-row h-full overflow-hidden">
       {/* ─── Left: Tree ──────────────────────────────────────── */}
-      <div className="w-[380px] shrink-0 border-r border-border/50 flex flex-col overflow-hidden bg-card/30">
+      <div className="w-full md:w-[380px] shrink-0 border-b md:border-b-0 md:border-r border-border/50 flex flex-col overflow-hidden bg-card/30 h-[40vh] md:h-full">
         {/* Toolbar */}
         <div className="p-2 border-b border-border/50 space-y-2">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Search everything..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="h-8 pl-8 text-xs"
-            />
+          {/* Search + Refresh */}
+          <div className="flex gap-2 items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Search everything..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="h-8 pl-8 text-xs"
+              />
+            </div>
+            <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => refetch()} title="Refresh Hierarchy">
+              <RefreshCw className="h-3.5 w-3.5" />
+            </Button>
           </div>
 
           {/* Filter pills + expand/collapse */}
@@ -450,37 +455,48 @@ function TreeBranch({
           className="flex items-center gap-1.5 flex-1 min-w-0 py-1"
           onClick={() => {
             onSelect(node);
-            if (hasChildren && !isExpanded) onToggle(node.id);
+            if (hasChildren || isVirtual) onToggle(node.id);
           }}
         >
           <Icon className={`h-3.5 w-3.5 shrink-0 ${isSelected ? 'text-primary' : accent}`} />
-          <span className={`text-xs truncate ${isSelected ? 'font-semibold text-primary' : ''}`}>
-            {node.name}
-          </span>
+          <div className="flex-1 min-w-[80px] truncate">
+            <span className={`text-xs ${isSelected ? 'font-semibold text-primary' : ''}`}>
+              {node.name}
+            </span>
+          </div>
 
-          {/* Count badge */}
-          {hasChildren && (
-            <Badge variant="secondary" className="h-4 text-[9px] px-1 ml-auto shrink-0 opacity-50 font-mono">
-              {totalDescendants}
-            </Badge>
-          )}
+          <div className="flex items-center justify-end gap-1.5 w-[6.5rem] shrink-0">
+            {/* Count badge */}
+            {hasChildren ? (
+              <Badge variant="secondary" className="h-4 text-[9px] px-1 opacity-50 font-mono min-w-[1.25rem] justify-center">
+                {totalDescendants}
+              </Badge>
+            ) : (
+              <div className="min-w-[1.25rem]" />
+            )}
 
-          {/* Task status dot */}
-          {node.type === 'task' && node.meta?.status && (
-            <span className={`h-2 w-2 rounded-full shrink-0 ${
-              TASK_STATUS_CONFIG[node.meta.status as string]?.color ?? 'bg-gray-400'
-            }`} />
-          )}
-
-          {/* Task priority */}
-          {node.type === 'task' && node.meta?.priority && node.meta.priority !== 'medium' && (
-            <Badge
-              variant={node.meta.priority === 'high' || node.meta.priority === 'urgent' ? 'destructive' : 'outline'}
-              className="h-3.5 text-[8px] px-1 shrink-0"
-            >
-              {(node.meta.priority as string).slice(0, 1).toUpperCase()}
-            </Badge>
-          )}
+            {node.type === 'task' ? (
+              <div className="flex items-center gap-1.5 w-16 justify-end">
+                {node.meta?.status && (
+                  <span className={`h-2 w-2 rounded-full shrink-0 ${
+                    TASK_STATUS_CONFIG[node.meta.status as string]?.color ?? 'bg-gray-400'
+                  }`} title={String(node.meta.status)} />
+                )}
+                {node.meta?.priority && node.meta.priority !== 'medium' && (
+                  <Badge
+                    variant={node.meta.priority === 'high' || node.meta.priority === 'urgent' ? 'destructive' : 'outline'}
+                    className="h-3.5 text-[8px] px-1 shrink-0"
+                  >
+                    {(node.meta.priority as string).slice(0, 1).toUpperCase()}
+                  </Badge>
+                )}
+              </div>
+            ) : (
+              <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded w-16 text-center truncate shrink-0 ${ACCENT_BG[node.type]}`}>
+                {node.type}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Action buttons */}

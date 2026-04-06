@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { FolderOpen, Clock, Tag, Plus } from 'lucide-react';
-import { useNotesContext } from '@/features/notes/context/NotesContext';
+import { useNotesRedux } from '../../hooks/useNotesRedux';
 import { MobileActionBar } from '@/components/official/mobile-action-bar';
 import NotesFilterSheet, { NotesFilterState } from './NotesFilterSheet';
 import type { Note } from '@/features/notes/types';
@@ -14,7 +14,7 @@ interface MobileNotesListProps {
 }
 
 export default function MobileNotesList({ onNoteSelect, filters, onFiltersChange }: MobileNotesListProps) {
-  const { notes, findOrCreateEmptyNote, isLoading } = useNotesContext();
+  const { notes, findOrCreateEmptyNote, isLoading } = useNotesRedux();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);

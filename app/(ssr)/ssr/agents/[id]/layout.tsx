@@ -6,7 +6,7 @@ import Link from "next/link";
 import { serverToolsService } from "@/utils/supabase/server-tools-service";
 import { AgentPageProvider } from "@/features/agents/components/shared/AgentPageContext";
 import { AgentSharedHeader } from "@/features/agents/components/shared/AgentSharedHeader";
-import PageHeader from "@/features/ssr-trials/components/PageHeader";
+import PageHeader from "@/features/shell/components/header/PageHeader";
 import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 export const revalidate = 43200;

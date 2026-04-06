@@ -10,7 +10,7 @@ import {
   Type,
   RefreshCw,
 } from 'lucide-react';
-import { useNotesContext } from '@/features/notes/context/NotesContext';
+import { useNotesRedux } from '../../hooks/useNotesRedux';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -26,7 +26,7 @@ import {
 import { useToastManager } from '@/hooks/useToastManager';
 
 export default function MobileActionsMenu() {
-  const { refreshNotes, findOrCreateEmptyNote } = useNotesContext();
+  const { refreshNotes, findOrCreateEmptyNote } = useNotesRedux();
   const toast = useToastManager('notes');
 
   const handleCreateFolder = async () => {

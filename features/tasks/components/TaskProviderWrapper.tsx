@@ -1,12 +1,21 @@
-'use client';
+"use client";
 
-import { TaskProvider } from '@/features/tasks/context/TaskContext';
+import { useEffect } from "react";
+import { useTaskContext } from "@/features/tasks/context/TaskContext";
 
 /**
- * Client-side wrapper for TaskProvider
- * Separated from layout.tsx to allow the layout to remain a server component
+ * Triggers task data initialization when mounted.
+ * The global TaskProvider is already in the tree — this just tells it to fetch.
  */
-export function TaskProviderWrapper({ children }: { children: React.ReactNode }) {
-  return <TaskProvider>{children}</TaskProvider>;
-}
+export function TaskProviderWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { initialize } = useTaskContext();
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
 
+  return <>{children}</>;
+}

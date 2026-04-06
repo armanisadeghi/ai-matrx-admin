@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import PageHeader from "@/features/ssr-trials/components/PageHeader";
+import PageHeader from "@/features/shell/components/header/PageHeader";
 import {
   HeaderStructured,
   HeaderToggle,

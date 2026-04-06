@@ -2,13 +2,11 @@
 
 "use client";
 
-import React, { useEffect } from "react";
-import { identifyUser } from "@/providers/PostHogProvider";
+import React from "react";
 import { SchemaProvider } from "@/providers/SchemaProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/styles/themes/ThemeProvider";
 import StoreProvider from "@/providers/StoreProvider";
-import { GlobalBrokerRegistration } from "@/providers/GlobalBrokerRegistration";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { InitialReduxState } from "@/types/reduxTypes";
 import { RefProvider } from "@/lib/refs";
@@ -20,23 +18,15 @@ import { FileSystemProvider as OldFileSystemProvider } from "@/providers/FileSys
 import { ContextMenuProvider } from "@/providers/ContextMenuProvider";
 import { FileSystemProvider } from "@/lib/redux/fileSystem/Provider";
 import { FilePreviewProvider } from "@/components/file-system/preview";
-import { PreferenceSyncProvider } from "@/providers/usePreferenceSync";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { PersistentComponentProvider } from "@/providers/persistance/PersistentComponentProvider";
-import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMConnector";
 import { SelectedImagesProvider } from "@/components/image/context/SelectedImagesProvider";
 import { UniformHeightProvider } from "@/features/applet/runner/layouts/core/UniformHeightWrapper";
-import { GlobalBrokersInitializer } from "@/components/broker/UserBrokerInitializer";
-import OverlayController from "@/components/overlays/OverlayController";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
-import { NotesProvider } from "@/features/notes/context/NotesContext";
+// NotesProvider removed — notes now use Redux (features/notes/redux/)
 import { TaskProvider } from "@/features/tasks/context/TaskContext";
 import { TranscriptsProvider } from "@/features/transcripts/context/TranscriptsContext";
 import { AudioRecoveryProvider } from "@/features/audio/providers/AudioRecoveryProvider";
-import { AudioRecoveryToast } from "@/features/audio/components/AudioRecoveryToast";
-
-// CURRENTLY UNUSED SO DISABLED - do not remove from here
-// import GoogleAPIProvider from "@/providers/google-provider/GoogleApiProvider";
+import DeferredSingletons from "./DeferredSingletons";
 
 const allowedBuckets = [
   "userContent",
@@ -62,71 +52,51 @@ interface ProvidersProps {
 
 export function Providers({ children, initialReduxState }: ProvidersProps) {
   setGlobalUserId(initialReduxState.user.id);
-  const isMobile = useIsMobile();
-
-  useEffect(() => {
-    if (initialReduxState.user.id) {
-      identifyUser(initialReduxState.user.id, {
-        email: initialReduxState.user.email,
-      });
-    }
-  }, [initialReduxState.user.id, initialReduxState.user.email]);
 
   return (
     <SchemaProvider initialSchema={initialReduxState?.globalCache}>
       <ReactQueryProvider>
         <StoreProvider initialState={initialReduxState}>
-          <GlobalBrokerRegistration>
-            <GlobalBrokersInitializer user={initialReduxState.user} />
-            <ThemeProvider>
-              <PersistentComponentProvider>
-                <EntityProvider>
-                  <ContextMenuProvider>
-                    <ToastProvider>
-                      <PreferenceSyncProvider>
-                        <RefProvider>
-                          <FileSystemProvider
-                            initialBucket="Audio"
-                            allowedBuckets={allowedBuckets}
-                          >
-                            <FilePreviewProvider>
-                              <OldFileSystemProvider>
-                                <TooltipProvider delayDuration={200}>
-                                  <AudioModalProvider>
-                                    <ModuleHeaderProvider>
-                                      {/* <GoogleAPIProvider> */}
-                                      <UniformHeightProvider>
-                                        <SelectedImagesProvider>
-                                          <NotesProvider>
-                                            <TaskProvider>
-                                              <TranscriptsProvider>
-                                                <AudioRecoveryProvider>
-                                                  <PersistentDOMConnector />
-                                                  <OverlayController />
-                                                  <AudioRecoveryToast />
-                                                  {children}
-                                                </AudioRecoveryProvider>
-                                              </TranscriptsProvider>
-                                            </TaskProvider>
-                                          </NotesProvider>
-                                        </SelectedImagesProvider>
-                                      </UniformHeightProvider>
-                                      {/* </GoogleAPIProvider> */}
-                                    </ModuleHeaderProvider>
-                                    <Toaster />
-                                  </AudioModalProvider>
-                                </TooltipProvider>
-                              </OldFileSystemProvider>
-                            </FilePreviewProvider>
-                          </FileSystemProvider>
-                        </RefProvider>
-                      </PreferenceSyncProvider>
-                    </ToastProvider>
-                  </ContextMenuProvider>
-                </EntityProvider>
-              </PersistentComponentProvider>
-            </ThemeProvider>
-          </GlobalBrokerRegistration>
+          <ThemeProvider>
+            <PersistentComponentProvider>
+              <EntityProvider>
+                <ContextMenuProvider>
+                  <ToastProvider>
+                    <RefProvider>
+                      <FileSystemProvider
+                        initialBucket="Audio"
+                        allowedBuckets={allowedBuckets}
+                      >
+                        <FilePreviewProvider>
+                          <OldFileSystemProvider>
+                            <TooltipProvider delayDuration={200}>
+                              <AudioModalProvider>
+                                <ModuleHeaderProvider>
+                                  <UniformHeightProvider>
+                                    <SelectedImagesProvider>
+                                        <TaskProvider>
+                                          <TranscriptsProvider>
+                                            <AudioRecoveryProvider>
+                                              {children}
+                                              <DeferredSingletons />
+                                            </AudioRecoveryProvider>
+                                          </TranscriptsProvider>
+                                        </TaskProvider>
+                                    </SelectedImagesProvider>
+                                  </UniformHeightProvider>
+                                </ModuleHeaderProvider>
+                                <Toaster />
+                              </AudioModalProvider>
+                            </TooltipProvider>
+                          </OldFileSystemProvider>
+                        </FilePreviewProvider>
+                      </FileSystemProvider>
+                    </RefProvider>
+                  </ToastProvider>
+                </ContextMenuProvider>
+              </EntityProvider>
+            </PersistentComponentProvider>
+          </ThemeProvider>
         </StoreProvider>
       </ReactQueryProvider>
     </SchemaProvider>

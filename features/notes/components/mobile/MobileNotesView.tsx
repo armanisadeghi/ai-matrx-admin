@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { ChevronLeft, FileText, PilcrowRight, Eye, Save, Loader2, Check, FolderOpen, Layers, ChevronDown } from 'lucide-react';
-import { useNotesContext } from '@/features/notes/context/NotesContext';
+import { useNotesRedux } from '../../hooks/useNotesRedux';
 import { PageSpecificHeader } from '@/components/layout/new-layout/PageSpecificHeader';
 import { cn } from '@/lib/utils';
 import MobileNotesList from './MobileNotesList';
@@ -19,7 +19,7 @@ const VIEW_MODES: { mode: MobileEditorMode; icon: React.ReactNode; label: string
 ];
 
 export default function MobileNotesView() {
-  const { notes } = useNotesContext();
+  const { notes } = useNotesRedux();
 
   const [currentView, setCurrentView] = useState<MobileView>('list');
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
