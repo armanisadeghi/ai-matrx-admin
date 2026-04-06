@@ -1,7 +1,7 @@
 "use client";
 
 import React, { lazy, Suspense, useState, useCallback } from "react";
-import { Mic } from "lucide-react";
+import { Mic, PanelLeftClose, PanelLeft } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
 import {
@@ -14,10 +14,12 @@ import {
 } from "@/lib/redux/slices/voicePadSlice";
 import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
+import { Button } from "@/components/ui/ButtonMine";
+import { VoicePadHistorySidebar } from "./VoicePadHistorySidebar";
 
 const VoicePadExpanded = lazy(() => import("./VoicePadExpanded"));
 
-const VOICE_PAD_WINDOW_ID = "voice-pad";
+const VOICE_PAD_ADVANCED_WINDOW_ID = "voice-pad-advanced";
 
 function ExpandedLoadingFallback() {
   return (
@@ -40,11 +42,12 @@ function getInitialRect() {
   };
 }
 
-export default function VoicePad() {
+export default function VoicePadAdvanced() {
   const dispatch = useAppDispatch();
   const entries = useAppSelector(selectVoicePadEntries);
   const draftText = useAppSelector(selectVoicePadDraftText);
   const [liveTranscript, setLiveTranscript] = useState("");
+  const [showHistory, setShowHistory] = useState(false);
 
   const handleClose = () => {
     dispatch(closeOverlay({ overlayId: "voicePad" }));
@@ -73,10 +76,35 @@ export default function VoicePad() {
     dispatch(setDraftText(text));
   };
 
+  const handleSelectHistoryItem = useCallback(
+    (text: string) => {
+      handleClearAll();
+      handleDraftChange(text);
+    },
+    [handleDraftChange],
+  );
+
+  const leftActions = (
+    <Button
+      type="button"
+      variant="ghost"
+      size="xs"
+      onClick={() => setShowHistory((v) => !v)}
+      title={showHistory ? "Hide history" : "Show history"}
+      className="h-5 w-5 p-0"
+    >
+      {showHistory ? (
+        <PanelLeftClose className="h-3 w-3" />
+      ) : (
+        <PanelLeft className="h-3 w-3" />
+      )}
+    </Button>
+  );
+
   return (
     <WindowPanel
-      id={VOICE_PAD_WINDOW_ID}
-      title="Voice Pad"
+      id={VOICE_PAD_ADVANCED_WINDOW_ID}
+      title="Advanced Voice Pad"
       initialRect={getInitialRect()}
       minWidth={280}
       minHeight={200}
@@ -84,20 +112,39 @@ export default function VoicePad() {
       onClose={handleClose}
       urlSyncKey="voice"
       urlSyncId="default"
-      actions={<MicrophoneIconButton id="voice-pad-header-mic" onTranscriptionComplete={handleTranscriptionComplete} onLiveTranscript={handleLiveTranscript} variant="icon-only" size="xs" />}
-    >
-      <Suspense fallback={<ExpandedLoadingFallback />}>
-        <VoicePadExpanded
-          entries={entries}
-          draftText={draftText}
-          liveTranscript={liveTranscript}
+      actionsLeft={leftActions}
+      actionsRight={
+        <MicrophoneIconButton
+          id="voice-pad-header-mic"
           onTranscriptionComplete={handleTranscriptionComplete}
           onLiveTranscript={handleLiveTranscript}
-          onRemoveEntry={handleRemoveEntry}
-          onClearAll={handleClearAll}
-          onDraftChange={handleDraftChange}
+          variant="icon-only"
+          size="xs"
         />
-      </Suspense>
+      }
+    >
+      <div className="flex bg-background h-full w-full min-h-0">
+        {showHistory && (
+          <VoicePadHistorySidebar
+            onClose={() => setShowHistory(false)}
+            onSelectTranscript={handleSelectHistoryItem}
+          />
+        )}
+        <div className="flex-1 min-w-0 flex flex-col min-h-0">
+          <Suspense fallback={<ExpandedLoadingFallback />}>
+            <VoicePadExpanded
+              entries={entries}
+              draftText={draftText}
+              liveTranscript={liveTranscript}
+              onTranscriptionComplete={handleTranscriptionComplete}
+              onLiveTranscript={handleLiveTranscript}
+              onRemoveEntry={handleRemoveEntry}
+              onClearAll={handleClearAll}
+              onDraftChange={handleDraftChange}
+            />
+          </Suspense>
+        </div>
+      </div>
     </WindowPanel>
   );
 }

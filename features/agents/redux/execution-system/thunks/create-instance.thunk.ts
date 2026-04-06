@@ -515,7 +515,7 @@ export const recreateManualInstance = createAsyncThunk<string, string>(
         allowChat: currentUIState?.allowChat,
         usePreExecutionInput: currentUIState?.usePreExecutionInput,
         showVariablePanel:
-          (snapshot?.variableDefinitions.length ?? 0) > 0 ||
+          (snapshot?.variableDefinitions?.length ?? 0) > 0 ||
           (currentUIState?.showVariablePanel ?? false),
         showDefinitionMessages: currentUIState?.showDefinitionMessages,
         showDefinitionMessageContent:
@@ -641,7 +641,7 @@ export const reInstanceAndExecute = createAsyncThunk<
         allowChat: currentUIState?.allowChat,
         usePreExecutionInput: currentUIState?.usePreExecutionInput,
         showVariablePanel:
-          (snapshot?.variableDefinitions.length ?? 0) > 0 ||
+          (snapshot?.variableDefinitions?.length ?? 0) > 0 ||
           (currentUIState?.showVariablePanel ?? false),
         showDefinitionMessages: currentUIState?.showDefinitionMessages,
         showDefinitionMessageContent:

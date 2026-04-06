@@ -4,7 +4,7 @@ import { RefObject } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentConversationMessageIndices } from "@/features/agents/redux/agent-definition/selectors";
-import { MessageItem } from "@/features/agents/components/messages/MessageItem";
+import { MessageItem } from "@/features/agents/components/builder/message-builders/MessageItem";
 
 interface MessagesProps {
   agentId: string;

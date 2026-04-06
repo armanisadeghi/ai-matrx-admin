@@ -16,7 +16,7 @@ import {
   selectReuseConversationId,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { DEFAULT_BUILDER_ADVANCED_SETTINGS } from "@/features/agents/types/instance.types";
-import { SystemInstructionModal } from "../system-instructions/SystemInstructionModal";
+import { SystemInstructionModal } from "../builder/message-builders/system-instructions/SystemInstructionModal";
 import { NumberStepper } from "@/components/official-candidate/NumberStepper";
 
 interface RunSettingsEditorProps {
@@ -54,7 +54,9 @@ function SettingRow({
 
 export function RunSettingsEditor({ instanceId }: RunSettingsEditorProps) {
   const dispatch = useAppDispatch();
-  const settings = useAppSelector(selectBuilderAdvancedSettings(instanceId)) ?? DEFAULT_BUILDER_ADVANCED_SETTINGS;
+  const settings =
+    useAppSelector(selectBuilderAdvancedSettings(instanceId)) ??
+    DEFAULT_BUILDER_ADVANCED_SETTINGS;
   const reuseConversationId = useAppSelector(
     selectReuseConversationId(instanceId),
   );

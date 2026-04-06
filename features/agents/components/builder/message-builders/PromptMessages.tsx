@@ -35,8 +35,8 @@ import { UnifiedContextMenu } from "@/features/context-menu";
 import { TemplateSelector } from "@/features/content-templates/components/TemplateSelector";
 
 // Module Shared Components
-import { HighlightedText } from "../variables-management/HighlightedText";
-import { VariableSelector } from "../variables-management/VariableSelector";
+import { HighlightedText } from "../../variables-management/HighlightedText";
+import { VariableSelector } from "../../variables-management/VariableSelector";
 
 interface PromptMessagesProps {
   // Messages

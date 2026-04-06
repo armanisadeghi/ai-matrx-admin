@@ -15,7 +15,7 @@ import {
 import {
   AddBlockTrigger,
   BlockType,
-} from "@/features/agents/components/messages/AddBlockButton";
+} from "@/features/agents/components/builder/message-builders/AddBlockButton";
 import {
   Tooltip,
   TooltipContent,

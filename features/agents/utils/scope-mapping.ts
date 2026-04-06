@@ -46,15 +46,20 @@ function inferContextType(value: unknown): ContextObjectType {
 export function mapScopeToInstance(
   applicationScope: ApplicationScope,
   scopeMappings: Record<string, string> | null,
-  variableDefinitions: VariableDefinition[],
-  contextSlots: Array<{
-    key: string;
-    type?: ContextObjectType;
-    label?: string;
-  }>,
+  variableDefinitions: VariableDefinition[] | null | undefined,
+  contextSlots:
+    | Array<{
+        key: string;
+        type?: ContextObjectType;
+        label?: string;
+      }>
+    | null
+    | undefined,
 ): ScopeMappingResult {
-  const variableNames = new Set(variableDefinitions.map((v) => v.name));
-  const slotMap = new Map(contextSlots.map((s) => [s.key, s]));
+  const defs = variableDefinitions ?? [];
+  const slots = contextSlots ?? [];
+  const variableNames = new Set(defs.map((v) => v.name));
+  const slotMap = new Map(slots.map((s) => [s.key, s]));
 
   const variableValues: Record<string, unknown> = {};
   const contextEntries: InstanceContextEntry[] = [];

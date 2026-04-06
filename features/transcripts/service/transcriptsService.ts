@@ -81,6 +81,28 @@ export async function fetchTranscripts(): Promise<Transcript[]> {
 }
 
 /**
+ * Fetch paginated transcripts for the current user (excluding deleted)
+ */
+export async function fetchTranscriptsPaginated(
+  limit: number = 20,
+  offset: number = 0
+): Promise<Transcript[]> {
+  const { data, error } = await supabase
+    .from("transcripts")
+    .select("*")
+    .eq("is_deleted", false)
+    .order("updated_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (error) {
+    console.error("Error fetching paginated transcripts:", error);
+    throw error;
+  }
+
+  return (data ?? []).map(mapTranscriptRow);
+}
+
+/**
  * Fetch a single transcript by ID
  */
 export async function fetchTranscriptById(

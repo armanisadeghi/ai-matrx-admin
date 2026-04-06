@@ -60,7 +60,7 @@ import {
   type TimelineDerivedTiming,
 } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
 import { selectAllInstanceIds } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
-import { SystemInstructionEditor } from "../system-instructions/SystemInstructionEditor";
+import { SystemInstructionEditor } from "../builder/message-builders/system-instructions/SystemInstructionEditor";
 import { StreamDebugFloating } from "../debug/StreamDebugFloating";
 import { openStreamDebug } from "@/lib/redux/slices/overlaySlice";
 import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";

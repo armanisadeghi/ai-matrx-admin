@@ -35,10 +35,8 @@ import {
 import { selectHasUserInput } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
 import { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
-// import { SmartAgentMessageList } from "./SmartAgentMessageList";
 import { SmartAgentInput } from "./SmartAgentInput";
 import { AgentPreExecutionInput } from "./AgentPreExecutionInput";
-import { Messages } from "../messages/Messages";
 import { AgentConversationDisplay } from "../run/AgentConversationDisplay";
 
 interface AgentRunnerProps {

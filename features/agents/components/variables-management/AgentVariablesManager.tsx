@@ -47,7 +47,7 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
   // {{variable}} references in any string field (url, mimeType, alt, etc.).
   const allText = (messages ?? [])
     .flatMap((m) =>
-      m.content.flatMap((b) => {
+      (m.content ?? []).flatMap((b) => {
         const block = b as unknown as Record<string, unknown>;
         if (b.type === "text") {
           return [(block.text as string) ?? ""];

@@ -18,7 +18,7 @@ import {
   selectAgentMessages,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { setAgentMessages } from "@/features/agents/redux/agent-definition/slice";
-import { MessageContentItemRenderer } from "../../builder/MessageContentItemRenderer";
+import { MessageContentItemRenderer } from "../../MessageContentItemRenderer";
 import type { AgentDefinitionMessage } from "@/features/agents/types/agent-message-types";
 
 interface AgentMessageItemProps {

@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Terminal } from "lucide-react";
-import { MessageContentItemRenderer } from "../../builder/MessageContentItemRenderer";
+import { MessageContentItemRenderer } from "../../MessageContentItemRenderer";
 import type { AgentDefinitionMessage } from "@/features/agents/types/agent-message-types";
 
 interface AgentSystemMessageProps {

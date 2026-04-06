@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { History, X } from "lucide-react";
-import { getDraftTranscripts } from "@/features/transcripts/service/transcriptsService";
+import { fetchTranscriptsPaginated } from "@/features/transcripts/service/transcriptsService";
 import { Transcript } from "@/features/transcripts/types";
 
 export function VoicePadHistorySidebar({
@@ -14,7 +14,7 @@ export function VoicePadHistorySidebar({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getDraftTranscripts(20)
+    fetchTranscriptsPaginated(20)
       .then(data => {
         setTranscripts(data);
         setLoading(false);

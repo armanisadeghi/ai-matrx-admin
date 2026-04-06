@@ -789,6 +789,38 @@ export const OverlayController: React.FC = () => {
         />
       )}
 
+      {isAdminStateAnalyzerWindowOpen && (
+        <StateViewerWindow isOpen={true} onClose={() => close("adminStateAnalyzerWindow")} />
+      )}
+
+      {isMarkdownEditorWindowOpen && (
+        <MarkdownEditorWindow isOpen={true} onClose={() => close("markdownEditorWindow")} />
+      )}
+
+      {isUserPreferencesWindowOpen && (
+        <UserPreferencesWindow isOpen={true} onClose={() => close("userPreferencesWindow")} />
+      )}
+
+      {isQuickTasksWindowOpen && (
+        <QuickTasksWindow isOpen={true} onClose={() => close("quickTasksWindow")} />
+      )}
+
+      {isQuickDataWindowOpen && (
+        <QuickDataWindow isOpen={true} onClose={() => close("quickDataWindow")} />
+      )}
+
+      {isQuickFilesWindowOpen && (
+        <QuickFilesWindow isOpen={true} onClose={() => close("quickFilesWindow")} />
+      )}
+
+      {isEmailDialogWindowOpen && (
+        <EmailDialogWindow isOpen={true} onClose={() => close("emailDialogWindow")} {...(emailDialogWindowData as any)} />
+      )}
+
+      {isShareModalWindowOpen && (
+        <ShareModalWindow isOpen={true} onClose={() => close("shareModalWindow")} {...(shareModalWindowData as any)} />
+      )}
+
       {/* ── Instanced overlays — .map() renders each open instance ─────── */}
       {/* Each instance gets a stable key so React correctly reconciles them. */}
 

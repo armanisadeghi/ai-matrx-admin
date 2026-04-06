@@ -26,11 +26,11 @@ import {
 import { setAgentMessages } from "@/features/agents/redux/agent-definition/slice";
 import { UnifiedContextMenu } from "@/features/context-menu";
 import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
-import { MessageItemButtons } from "@/features/agents/components/messages/MessageItemButtons";
+import { MessageItemButtons } from "@/features/agents/components/builder/message-builders/MessageItemButtons";
 import {
   BlockList,
   BlockType,
-} from "@/features/agents/components/messages/AddBlockButton";
+} from "@/features/agents/components/builder/message-builders/AddBlockButton";
 import type { AgentDefinitionMessage } from "@/features/agents/types/agent-message-types";
 import { useAgentUndoRedo } from "@/features/agents/hooks/useAgentUndoRedo";
 import { openUndoHistory } from "@/lib/redux/slices/overlaySlice";
@@ -87,8 +87,9 @@ export function MessageItem({
     dispatch(openUndoHistory({ agentId }));
   }, [dispatch, agentId]);
 
-  const variableNames = variableDefinitions.map((v) => v.name);
-  const hasVariableSupport = variableDefinitions.length > 0;
+  const hasVariableSupport =
+    variableDefinitions != null && variableDefinitions.length > 0;
+  const variableNames = variableDefinitions?.map((v) => v.name) ?? [];
 
   // Derive content from blocks
   const rawBlocks: Record<string, unknown>[] = message

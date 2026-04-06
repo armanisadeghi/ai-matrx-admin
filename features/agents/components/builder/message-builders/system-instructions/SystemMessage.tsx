@@ -17,11 +17,11 @@ import type { AgentDefinitionMessage } from "@/features/agents/types/agent-messa
 
 // Module Shared Components
 import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
-import { SystemMessageButtons } from "@/features/agents/components/system-instructions/SystemMessageButtons";
+import { SystemMessageButtons } from "@/features/agents/components/builder/message-builders/system-instructions/SystemMessageButtons";
 import {
   BlockList,
   BlockType,
-} from "@/features/agents/components/messages/AddBlockButton";
+} from "@/features/agents/components/builder/message-builders/AddBlockButton";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAgentMessages,
@@ -29,7 +29,7 @@ import {
   selectAgentVariableDefinitions,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { selectAgentSystemMessage } from "@/features/agents/redux/agent-definition/selectors";
-import { setAgentMessages } from "../../redux/agent-definition/slice";
+import { setAgentMessages } from "../../../../redux/agent-definition/slice";
 import { useAgentUndoRedo } from "@/features/agents/hooks/useAgentUndoRedo";
 import { openUndoHistory } from "@/lib/redux/slices/overlaySlice";
 import { Terminal } from "lucide-react";
@@ -265,10 +265,13 @@ export function SystemMessage({
   >(undefined);
 
   // Check if variable insertion is enabled
-  const hasVariableSupport = variableDefinitions.length > 0;
+  const hasVariableSupport =
+    variableDefinitions && variableDefinitions.length > 0;
 
   // Derive variable names from variableDefaults
-  const variableNames = variableDefinitions.map((v) => v.name);
+  const variableNames = variableDefinitions
+    ? variableDefinitions.map((v) => v.name)
+    : [];
 
   const handleOptimizedAccept = (optimizedText: string) => {
     handleTextChange(optimizedText);
