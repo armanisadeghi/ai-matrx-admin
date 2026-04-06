@@ -27,7 +27,7 @@ import { X, MessageSquare, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FloatingSheet from "@/components/official/FloatingSheet";
 import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
-import { AgentFloatingChat } from "../overlays/AgentFloatingChat";
+import { AgentFloatingChat } from "./AgentFloatingChat";
 
 // =============================================================================
 // Full Modal

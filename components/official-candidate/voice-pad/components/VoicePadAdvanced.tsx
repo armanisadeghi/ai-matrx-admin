@@ -17,6 +17,7 @@ import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIcon
 import { VoicePadHistorySidebar } from "./VoicePadHistorySidebar";
 
 const VoicePadExpanded = lazy(() => import("./VoicePadExpanded"));
+import { VoicePadFooterLeft, VoicePadFooterRight } from "./VoicePadExpanded";
 
 const VOICE_PAD_ADVANCED_WINDOW_ID = "voice-pad-advanced";
 
@@ -46,6 +47,7 @@ export default function VoicePadAdvanced() {
   const entries = useAppSelector(selectVoicePadEntries);
   const draftText = useAppSelector(selectVoicePadDraftText);
   const [liveTranscript, setLiveTranscript] = useState("");
+  const [fontSize, setFontSize] = useState(11);
 
   const handleClose = () => {
     dispatch(closeOverlay({ overlayId: "voicePad" }));
@@ -104,6 +106,16 @@ export default function VoicePadAdvanced() {
       sidebarDefaultSize={35}
       sidebarMinSize={15}
       defaultSidebarOpen={false}
+      footerLeft={<VoicePadFooterLeft entries={entries} />}
+      footerRight={
+        <VoicePadFooterRight
+          entries={entries}
+          draftText={draftText}
+          onClearAll={handleClearAll}
+          fontSize={fontSize}
+          onFontSizeChange={setFontSize}
+        />
+      }
       actionsRight={
         <MicrophoneIconButton
           id="voice-pad-header-mic"
@@ -125,6 +137,7 @@ export default function VoicePadAdvanced() {
             onRemoveEntry={handleRemoveEntry}
             onClearAll={handleClearAll}
             onDraftChange={handleDraftChange}
+            fontSize={fontSize}
           />
         </Suspense>
       </div>

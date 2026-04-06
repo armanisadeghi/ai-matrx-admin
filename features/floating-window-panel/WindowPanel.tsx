@@ -118,6 +118,14 @@ export interface WindowPanelProps extends UseWindowPanelOptions {
   defaultSidebarOpen?: boolean;
   /** Class name applied to the sidebar panel content wrapper */
   sidebarClassName?: string;
+  /** Content rendered in a full-width footer bar below the body. Renders as a single flex row. For zoned layout, use footerLeft/footerCenter/footerRight instead. */
+  footer?: React.ReactNode;
+  /** Left-aligned footer content (use instead of `footer` for zoned layout) */
+  footerLeft?: React.ReactNode;
+  /** Center-aligned footer content */
+  footerCenter?: React.ReactNode;
+  /** Right-aligned footer content */
+  footerRight?: React.ReactNode;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -141,6 +149,10 @@ export function WindowPanel({
   sidebarMinSize = 10,
   defaultSidebarOpen = true,
   sidebarClassName,
+  footer,
+  footerLeft,
+  footerCenter,
+  footerRight,
   ...hookOpts
 }: WindowPanelProps) {
   // Pass title into hook so it reaches Redux
@@ -328,7 +340,7 @@ export function WindowPanel({
       >
         <div
           className={cn(
-            "h-full flex flex-col min-h-0 overflow-hidden",
+            "h-full flex flex-col min-h-0 overflow-y-auto scrollbar-thin",
             sidebarClassName,
           )}
         >
@@ -343,6 +355,26 @@ export function WindowPanel({
   ) : (
     children
   );
+
+  const hasZonedFooter = footerLeft || footerCenter || footerRight;
+  const hasFooter = footer || hasZonedFooter;
+
+  const footerBar = hasFooter ? (
+    <div
+      className="shrink-0 flex items-center gap-1 px-2 py-1.5 border-t border-border/50 bg-muted/40 select-none text-xs [&_svg]:h-3 [&_svg]:w-3 [&_button]:h-5 [&_button]:text-xs"
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      {footer ?? (
+        <>
+          <div className="flex items-center gap-1 shrink-0">{footerLeft}</div>
+          <div className="flex-1 flex items-center justify-center gap-1">
+            {footerCenter}
+          </div>
+          <div className="flex items-center gap-1 shrink-0">{footerRight}</div>
+        </>
+      )}
+    </div>
+  ) : null;
 
   if (isMaximized) {
     const el = (
@@ -360,6 +392,7 @@ export function WindowPanel({
         <div className={cn("flex-1 overflow-auto", bodyClassName)}>
           {bodyContent}
         </div>
+        {footerBar}
       </div>
     );
     return portalTarget ? createPortal(el, portalTarget) : null;
@@ -411,6 +444,7 @@ export function WindowPanel({
           {bodyContent}
         </div>
       )}
+      {!isMinimized && footerBar}
     </div>
   );
 
@@ -553,6 +587,8 @@ function WindowHeader({
   sidebarOpen,
   onToggleSidebar,
 }: WindowHeaderProps) {
+  const [groupHovered, setGroupHovered] = useState(false);
+
   return (
     <div
       className={cn(
@@ -563,9 +599,20 @@ function WindowHeader({
       )}
       onMouseDown={isMaximized ? undefined : onDragStart}
     >
+      {/* macOS-style invisible hot zone — covers the full left side of the
+          header so traffic lights reveal their icons before the cursor reaches
+          the tiny dots.  Also blocks drag initiation over this region. */}
+      <div
+        className="absolute top-0 left-0 bottom-0 z-30"
+        style={{ width: hasSidebar ? 110 : 90 }}
+        onMouseEnter={() => setGroupHovered(true)}
+        onMouseLeave={() => setGroupHovered(false)}
+        onMouseDown={(e) => e.stopPropagation()}
+      />
+
       <div className="flex items-center gap-1 z-10 shrink-0">
-        {/* Traffic-light controls + optional sidebar toggle */}
         <TrafficLightGroup
+          groupHovered={groupHovered}
           isMinimized={isMinimized}
           isMaximized={isMaximized}
           onClose={onClose}
@@ -617,9 +664,10 @@ function WindowHeader({
 }
 
 // ─── TrafficLightGroup ────────────────────────────────────────────────────────
-// Hover state lives here — all three dots reveal their icons together.
+// Hover state is owned by the header's invisible hot zone and passed down.
 
 interface TrafficLightGroupProps {
+  groupHovered: boolean;
   isMinimized: boolean;
   isMaximized: boolean;
   onClose?: () => void;
@@ -638,6 +686,7 @@ interface TrafficLightGroupProps {
 }
 
 function TrafficLightGroup({
+  groupHovered,
   isMinimized,
   isMaximized,
   onClose,
@@ -654,16 +703,12 @@ function TrafficLightGroup({
   sidebarOpen,
   onToggleSidebar,
 }: TrafficLightGroupProps) {
-  const [groupHovered, setGroupHovered] = useState(false);
-
   return (
     <div
       className={cn(
         "flex items-center gap-1.5 shrink-0 py-0.5 pl-1 -my-0.5 -ml-1 cursor-default",
         hasSidebar ? "pr-1" : "pr-6",
       )}
-      onMouseEnter={() => setGroupHovered(true)}
-      onMouseLeave={() => setGroupHovered(false)}
       onMouseDown={(e) => e.stopPropagation()}
     >
       {/* Red — Close */}

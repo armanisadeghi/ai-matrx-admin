@@ -23,7 +23,6 @@ import {
   Save,
   RotateCcw,
   Check,
-  Menu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -224,7 +223,6 @@ export default function UserPreferencesWindow({
 }: UserPreferencesWindowProps) {
   const dispatch = useAppDispatch();
   const [activeTab, setActiveTab] = useState<PreferenceTab>(initialTab);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const preferences = useSelector(
     (state: RootState) => state.userPreferences as UserPreferencesState,
   );
@@ -247,85 +245,48 @@ export default function UserPreferencesWindow({
   const activeCategory = categories.find((c) => c.value === activeTab);
   const ActiveComponent = tabComponents[activeTab];
 
+  const sidebarContent = (
+    <ScrollArea className="flex-1 w-full">
+      <div className="py-2">
+        {categories.map((cat) => {
+          const Icon = cat.icon as React.FC<{ className?: string }>;
+          const isActive = cat.value === activeTab;
+          return (
+            <button
+              key={cat.value}
+              onClick={() => setActiveTab(cat.value)}
+              className={cn(
+                "w-full flex items-center gap-2.5 px-3 py-2 text-left text-xs transition-colors",
+                isActive
+                  ? "bg-primary/10 text-primary border-r-2 border-primary"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+              )}
+            >
+              <Icon className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{cat.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </ScrollArea>
+  );
+
   return (
     <WindowPanel
       title="User Preferences"
       initialRect={{ width: 900, height: 650, x: 150, y: 150 }}
       urlSyncKey="user_preferences"
       onClose={onClose}
-    >
-      <div className="flex flex-col h-full w-full overflow-hidden bg-background">
-        <div className="flex flex-1 min-h-0 overflow-hidden">
-          {/* Collapsible Sidebar */}
-          <div
-            className={`flex-shrink-0 transition-all duration-300 ease-in-out border-r border-border bg-muted/20 flex flex-col ${
-              sidebarOpen ? "w-52" : "w-0 overflow-hidden border-r-0"
-            }`}
-          >
-            {sidebarOpen && (
-              <ScrollArea className="flex-1 w-full">
-                <div className="py-2">
-                  {categories.map((cat) => {
-                    const Icon = cat.icon as React.FC<{ className?: string }>;
-                    const isActive = cat.value === activeTab;
-                    return (
-                      <button
-                        key={cat.value}
-                        onClick={() => setActiveTab(cat.value)}
-                        className={cn(
-                          "w-full flex items-center gap-2.5 px-3 py-2 text-left text-xs transition-colors",
-                          isActive
-                            ? "bg-primary/10 text-primary border-r-2 border-primary"
-                            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
-                        )}
-                      >
-                        <Icon className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">{cat.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
-            )}
-          </div>
-
-          <div className="flex-1 flex flex-col min-w-0">
-            <div className="flex items-center p-2 border-b border-border bg-muted/40 shrink-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="h-8 w-8 mr-2"
-                title="Toggle Sidebar"
-              >
-                <Menu className="h-4 w-4" />
-              </Button>
-              {activeCategory && (
-                <div className="flex items-center text-sm font-medium">
-                  {React.createElement(activeCategory.icon, {
-                    className: "h-4 w-4 mr-2 text-muted-foreground",
-                  })}
-                  {activeCategory.label}
-                </div>
-              )}
-            </div>
-
-            <ScrollArea className="flex-1">
-              <div className="p-5">
-                <Suspense fallback={<LoadingFallback />}>
-                  <ActiveComponent />
-                </Suspense>
-              </div>
-            </ScrollArea>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between border-t border-border bg-sidebar px-4 py-2.5 shrink-0">
-          <div className="text-xs text-muted-foreground">
+      sidebar={sidebarContent}
+      sidebarDefaultSize={22}
+      sidebarMinSize={12}
+      sidebarClassName="bg-muted/20"
+      footer={
+        <>
+          <div className="text-muted-foreground">
             {meta.isLoading && (
               <span className="flex items-center gap-1.5">
-                <Loader2 className="h-3 w-3 animate-spin" />
+                <Loader2 className="animate-spin" />
                 Saving...
               </span>
             )}
@@ -334,36 +295,56 @@ export default function UserPreferencesWindow({
             )}
             {meta.lastSaved && !meta.hasUnsavedChanges && !meta.isLoading && (
               <span className="text-green-600 dark:text-green-400 flex items-center gap-1">
-                <Check className="h-3 w-3" />
+                <Check />
                 Saved
               </span>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex-1" />
+          <div className="flex gap-1.5">
             <Button
               variant="outline"
               size="sm"
               onClick={handleReset}
               disabled={!meta.hasUnsavedChanges || meta.isLoading}
-              className="h-7 text-xs gap-1.5"
+              className="h-5 text-xs gap-1 px-2"
             >
-              <RotateCcw className="h-3 w-3" />
+              <RotateCcw />
               Reset
             </Button>
             <Button
               size="sm"
               onClick={handleSave}
               disabled={!meta.hasUnsavedChanges || meta.isLoading}
-              className="h-7 text-xs gap-1.5"
+              className="h-5 text-xs gap-1 px-2"
             >
-              {meta.isLoading ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Save className="h-3 w-3" />
-              )}
+              {meta.isLoading ? <Loader2 className="animate-spin" /> : <Save />}
               Save
             </Button>
           </div>
+        </>
+      }
+    >
+      <div className="flex flex-col h-full w-full overflow-hidden bg-background">
+        <div className="flex-1 flex flex-col min-w-0 min-h-0">
+          {activeCategory && (
+            <div className="flex items-center px-3 py-1.5 border-b border-border bg-muted/40 shrink-0">
+              <div className="flex items-center text-sm font-medium">
+                {React.createElement(activeCategory.icon, {
+                  className: "h-4 w-4 mr-2 text-muted-foreground",
+                })}
+                {activeCategory.label}
+              </div>
+            </div>
+          )}
+
+          <ScrollArea className="flex-1">
+            <div className="p-5">
+              <Suspense fallback={<LoadingFallback />}>
+                <ActiveComponent />
+              </Suspense>
+            </div>
+          </ScrollArea>
         </div>
       </div>
     </WindowPanel>

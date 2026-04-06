@@ -25,6 +25,93 @@ A high-performance, Redux-backed OS-style window manager for React. This system 
 *   **Window Manager Slice**: Governs *Spatial Data* (Positions, State).
 *   **System Components Module**: Governs *Internal Component State* (Arbitrary UI data inside the panel).
 
+## Built-in Collapsible Sidebar
+
+WindowPanel has first-class support for a resizable, collapsible left sidebar panel. When enabled, a toggle icon appears in the traffic light area (next to the close/minimize/maximize dots) — no extra header space consumed.
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `sidebar` | `ReactNode` | — | Content for the collapsible left panel. Omit to disable. |
+| `sidebarDefaultSize` | `number` | `25` | Initial width as a percentage of the window. |
+| `sidebarMinSize` | `number` | `10` | Minimum percentage before the panel collapses. |
+| `defaultSidebarOpen` | `boolean` | `true` | Whether the sidebar starts expanded. |
+| `sidebarClassName` | `string` | — | Class name for the sidebar content wrapper. |
+
+### Usage
+
+```tsx
+<WindowPanel
+  title="My Window"
+  sidebar={<MySidebarNav />}
+  sidebarDefaultSize={25}
+  sidebarMinSize={10}
+  sidebarClassName="bg-muted/20"
+  onClose={handleClose}
+>
+  <MainContent />
+</WindowPanel>
+```
+
+The sidebar is internally wired with `ResizablePanelGroup` / `ResizablePanel` / `ResizableHandle` — consumers don't manage any sidebar state, refs, or toggle logic. The toggle button is rendered inside the traffic light group and appears automatically when `sidebar` is provided.
+
+### Sidebar Scrolling
+
+The sidebar wrapper automatically applies `overflow-y-auto` with a thin scrollbar (`scrollbar-thin`). Sidebar content that exceeds the available height will scroll without any extra work from the consumer.
+
+**Rules for sidebar content components:**
+
+1. **Do NOT set `overflow-y-auto` or `overflow-hidden` on your sidebar root** — the WindowPanel wrapper handles it.
+2. **Do NOT use `shrink-0`** on the sidebar root — it prevents the container from constraining to the available height.
+3. **DO use `h-full min-h-0 flex flex-col`** on your sidebar root so it fills the available space and allows flex children to shrink.
+4. Use `flex-1 min-h-0` on the scrollable content area inside your sidebar.
+
+```tsx
+// Correct sidebar content pattern
+function MySidebar() {
+  return (
+    <div className="flex flex-col min-h-0 h-full">
+      {/* Optional fixed header */}
+      <div className="px-2 py-1 border-b text-xs font-medium">Header</div>
+      {/* Scrollable list — no overflow needed, parent handles it */}
+      <div className="flex-1 min-h-0 p-1.5 space-y-1">
+        {items.map(item => <Item key={item.id} />)}
+      </div>
+    </div>
+  );
+}
+```
+
+## Built-in Footer
+
+WindowPanel supports a `footer` prop that renders a full-width bar below the body (including below the sidebar). It matches the header's density — same padding (`px-2 py-1.5`), background, and border treatment. Icons and buttons inside the footer are automatically sized to match the header (`[&_svg]:h-3 [&_svg]:w-3`, `[&_button]:h-5`).
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `footer` | `ReactNode` | — | Content for the footer bar. Omit to disable. |
+
+### Usage
+
+```tsx
+<WindowPanel
+  title="My Window"
+  footer={
+    <>
+      <span className="text-muted-foreground">Status text</span>
+      <div className="flex-1" />
+      <Button size="sm" className="h-5 text-xs px-2">Save</Button>
+    </>
+  }
+>
+  <MainContent />
+</WindowPanel>
+```
+
+The footer content is wrapped in a flex row — use `<div className="flex-1" />` spacers for alignment. When combined with `sidebar`, the footer spans the full window width (it sits outside the sidebar split).
+
 ## Specialized Components
 
 ### `FloatingPanel.tsx` (Unmanaged Wrapper)

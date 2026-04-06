@@ -16,7 +16,6 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
-import { Button } from "@/components/ui/button";
 
 interface TranscriptEntry {
   id: string;
@@ -33,6 +32,15 @@ interface VoicePadExpandedProps {
   onRemoveEntry: (id: string) => void;
   onClearAll: () => void;
   onDraftChange: (text: string) => void;
+  fontSize?: number;
+}
+
+export interface VoicePadFooterProps {
+  entries: TranscriptEntry[];
+  draftText: string;
+  onClearAll: () => void;
+  fontSize: number;
+  onFontSizeChange: (size: number) => void;
 }
 
 function formatTime(ts: number): string {
@@ -40,31 +48,25 @@ function formatTime(ts: number): string {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-export default function VoicePadExpanded({
+export function VoicePadFooterLeft({
+  entries,
+}: Pick<VoicePadFooterProps, "entries">) {
+  return (
+    <span className="text-[10px] text-muted-foreground/60 tabular-nums">
+      {entries.length} {entries.length === 1 ? "entry" : "entries"}
+    </span>
+  );
+}
+
+export function VoicePadFooterRight({
   entries,
   draftText,
-  liveTranscript,
-  onRemoveEntry,
   onClearAll,
-  onDraftChange,
-}: VoicePadExpandedProps) {
+  fontSize,
+  onFontSizeChange,
+}: VoicePadFooterProps) {
   const dispatch = useAppDispatch();
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const allText = entries.map((e) => e.text).join("\n\n");
-  const baseText = draftText || allText;
-  const displayText = liveTranscript
-    ? baseText
-      ? baseText + "\n\n" + liveTranscript
-      : liveTranscript
-    : baseText;
-
-  const [isEngaged, setIsEngaged] = useState(false);
-  const [fontSize, setFontSize] = useState(11);
-
-  const handleStartRecording = () => {
-    setIsEngaged(true);
-    document.getElementById("voice-pad-header-mic")?.click();
-  };
 
   const handleSaveToNotes = useCallback(() => {
     const text = draftText || allText;
@@ -94,6 +96,73 @@ export default function VoicePadExpanded({
       toast.error("Failed to copy");
     }
   }, [draftText, allText]);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => onFontSizeChange(Math.max(9, fontSize - 1))}
+        className="p-0.5 rounded hover:bg-accent/60 transition-colors text-muted-foreground"
+        title="Decrease font size"
+      >
+        <Minus />
+      </button>
+      <Type className="text-muted-foreground/70" />
+      <button
+        type="button"
+        onClick={() => onFontSizeChange(Math.min(24, fontSize + 1))}
+        className="p-0.5 rounded hover:bg-accent/60 transition-colors text-muted-foreground"
+        title="Increase font size"
+      >
+        <Plus />
+      </button>
+      <div className="mx-0.5 h-3 w-px bg-border/50" />
+      <ActionFeedbackButton
+        icon={<Copy />}
+        tooltip="Copy"
+        onClick={handleCopyAll}
+        className="text-muted-foreground"
+      />
+      <ActionFeedbackButton
+        icon={<StickyNote />}
+        tooltip="Save to Notes"
+        onClick={handleSaveToNotes}
+        className="text-muted-foreground"
+      />
+      <ActionFeedbackButton
+        icon={<Trash2 />}
+        tooltip="Clear"
+        onClick={onClearAll}
+        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+      />
+    </>
+  );
+}
+
+export default function VoicePadExpanded({
+  entries,
+  draftText,
+  liveTranscript,
+  onRemoveEntry,
+  onClearAll,
+  onDraftChange,
+  fontSize = 11,
+}: VoicePadExpandedProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const allText = entries.map((e) => e.text).join("\n\n");
+  const baseText = draftText || allText;
+  const displayText = liveTranscript
+    ? baseText
+      ? baseText + "\n\n" + liveTranscript
+      : liveTranscript
+    : baseText;
+
+  const [isEngaged, setIsEngaged] = useState(false);
+
+  const handleStartRecording = () => {
+    setIsEngaged(true);
+    document.getElementById("voice-pad-header-mic")?.click();
+  };
 
   const handleTextareaChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -192,58 +261,6 @@ export default function VoicePadExpanded({
             ))}
           </div>
         )}
-      </div>
-
-      <div className="flex shrink-0 flex-wrap items-center gap-1 border-t border-border/50 bg-muted/20 px-2 py-1.5">
-        <ActionFeedbackButton
-          icon={<Copy className="h-4 w-4" />}
-          tooltip="Copy"
-          onClick={handleCopyAll}
-          className="text-muted-foreground"
-        />
-        <ActionFeedbackButton
-          icon={<StickyNote className="h-4 w-4" />}
-          tooltip="Save to Notes"
-          onClick={handleSaveToNotes}
-          className="text-muted-foreground"
-        />
-        <ActionFeedbackButton
-          icon={<Trash2 className="h-4 w-4" />}
-          tooltip="Clear"
-          onClick={onClearAll}
-          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-        />
-
-        <div className="mx-1 h-4 w-px bg-border/50" />
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => setFontSize((prev) => Math.max(9, prev - 1))}
-          className="h-7 w-7 text-muted-foreground"
-          title="Decrease font size"
-        >
-          <Minus className="h-3 w-3" />
-        </Button>
-        <div className="flex items-center justify-center min-w-[20px]">
-          <Type className="h-3 w-3 text-muted-foreground/70" />
-        </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => setFontSize((prev) => Math.min(24, prev + 1))}
-          className="h-7 w-7 text-muted-foreground"
-          title="Increase font size"
-        >
-          <Plus className="h-3 w-3" />
-        </Button>
-
-        <div className="flex-1" />
-        <span className="text-[11px] text-muted-foreground/60 tabular-nums">
-          {entries.length} {entries.length === 1 ? "entry" : "entries"}
-        </span>
       </div>
     </div>
   );

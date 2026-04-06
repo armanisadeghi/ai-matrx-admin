@@ -1,49 +1,19 @@
-"use client";
-
-/**
- * AgentFloatingChat
- *
- * Two-phase floating agent execution:
- *
- * Phase 1 — Pre-execution gate (when usePreExecutionInput is active):
- *   Renders a compact, centered card with SmartAgentInput (variables,
- *   resources, audio) and Continue/Skip + Cancel icons. No WindowPanel chrome.
- *
- * Phase 2 — Full chat (after gate clears or when no gate):
- *   Renders inside a draggable/resizable WindowPanel at ~60vh.
- *   Title animates from agent name → conversation label.
- *
- * This split avoids the giant empty shell problem — the pre-execution
- * input is only as big as its content.
- */
-
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check, X } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import {
-  selectNeedsPreExecutionInput,
-  selectPreExecutionMessage,
-} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import { selectPreExecutionMessage } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { useInstanceTitle } from "@/features/agents/hooks/useInstanceTitle";
 import { selectConversationTitle } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import { selectHasUserInput } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { setPreExecutionSatisfied } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
-import { AgentRunner } from "../smart/AgentRunner";
 import { SmartAgentInput } from "../smart/SmartAgentInput";
-import { useUrlSync } from "@/features/floating-window-panel/url-sync/useUrlSync";
 import { cn } from "@/lib/utils";
-
-interface AgentFloatingChatProps {
-  instanceId: string;
-  onClose: () => void;
-}
 
 // ─── Animated title hook ──────────────────────────────────────────────────────
 
-function useAnimatedTitle(instanceId: string) {
+export function useAnimatedTitle(instanceId: string) {
   const resolvedTitle = useInstanceTitle(instanceId);
   const conversationTitle = useAppSelector(selectConversationTitle(instanceId));
 
@@ -68,7 +38,7 @@ function useAnimatedTitle(instanceId: string) {
 
 // ─── Pre-execution compact card (portalled, no WindowPanel) ──────────────────
 
-function PreExecutionCard({
+export function PreExecutionCard({
   instanceId,
   onClose,
 }: {
@@ -159,38 +129,38 @@ function PreExecutionCard({
   return portalTarget ? createPortal(card, portalTarget) : null;
 }
 
-// ─── Main export ─────────────────────────────────────────────────────────────
+// ─── Chat history sidebar placeholder ─────────────────────────────────────────
 
-export function AgentFloatingChat({
+export function AgentChatHistorySidebar({
   instanceId,
-  onClose,
-}: AgentFloatingChatProps) {
-  const displayTitle = useAnimatedTitle(instanceId);
-  const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(instanceId),
-  );
-
-  useUrlSync("agent", instanceId, { m: "fc" });
-
-  if (needsPreExecution) {
-    return <PreExecutionCard instanceId={instanceId} onClose={onClose} />;
-  }
-
+}: {
+  instanceId: string;
+}) {
   return (
-    <WindowPanel
-      title={displayTitle}
-      onClose={onClose}
-      initialRect={{
-        width: 420,
-        height: Math.round(
-          typeof window !== "undefined" ? window.innerHeight * 0.6 : 600,
-        ),
-      }}
-      minWidth={320}
-      minHeight={280}
-      bodyClassName="p-0"
-    >
-      <AgentRunner instanceId={instanceId} compact className="h-full" />
-    </WindowPanel>
+    <div className="h-full flex flex-col min-h-0 overflow-hidden">
+      <div className="px-3 py-2 border-b border-border/30 shrink-0">
+        <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
+          Prior Chats
+        </span>
+      </div>
+      <div className="flex-1 overflow-y-auto p-2">
+        <p className="text-[10px] text-muted-foreground/50 text-center py-6">
+          Chat history will appear here
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Footer placeholder ──────────────────────────────────────────────────────
+
+export function AgentChatFooter({ instanceId }: { instanceId: string }) {
+  return (
+    <>
+      <span className="text-muted-foreground/50">
+        {/* Status indicator placeholder */}
+      </span>
+      <div className="flex-1" />
+    </>
   );
 }
