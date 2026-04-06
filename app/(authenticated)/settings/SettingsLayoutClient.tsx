@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, Settings as SettingsIcon, Building2, Chrome, Mic, FileText, MessageSquareMore, type LucideIcon } from 'lucide-react';
+import { User, Settings as SettingsIcon, Building2, Chrome, Mic, FileText, MessageSquareMore, Plug, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MobileDock, type DockItem } from '@/components/navigation/MobileDock';
 
@@ -45,6 +45,13 @@ const settingsNavItems: SettingsNavItem[] = [
     icon: <Mic className="h-4 w-4" />,
     IconComp: Mic,
     description: 'Test and troubleshoot voice input',
+  },
+  {
+    title: 'Integrations',
+    href: '/settings/integrations',
+    icon: <Plug className="h-4 w-4" />,
+    IconComp: Plug,
+    description: 'Manage MCP server connections',
   },
   {
     title: 'Orgs',
