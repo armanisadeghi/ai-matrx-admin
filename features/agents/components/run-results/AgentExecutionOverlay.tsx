@@ -19,7 +19,7 @@ import {
   selectLatestAccumulatedText,
   selectIsExecuting,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
-import { useInstanceTitle } from "@/features/agents/hooks/useInstanceTitle";
+import { selectInstanceDisplayTitle } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { AgentRunner } from "../smart/AgentRunner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -40,7 +40,7 @@ function AgentFullModal({
   instanceId: string;
   onClose: () => void;
 }) {
-  const title = useInstanceTitle(instanceId);
+  const title = useAppSelector(selectInstanceDisplayTitle(instanceId));
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
@@ -70,7 +70,7 @@ function AgentCompactModal({
   instanceId: string;
   onClose: () => void;
 }) {
-  const title = useInstanceTitle(instanceId);
+  const title = useAppSelector(selectInstanceDisplayTitle(instanceId));
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
@@ -195,13 +195,13 @@ function AgentSidebarOverlay({
   instanceId: string;
   onClose: () => void;
 }) {
-  const title = useInstanceTitle(instanceId);
+  const title = useAppSelector(selectInstanceDisplayTitle(instanceId));
 
   return (
     <FloatingSheet
       isOpen={true}
       onClose={onClose}
-      title={title ?? "Agent"}
+      title={title}
       position="right"
       width="2xl"
       height="full"
@@ -227,14 +227,15 @@ function AgentFlexiblePanelOverlay({
   instanceId: string;
   onClose: () => void;
 }) {
-  const title = useInstanceTitle(instanceId);
+  const title = useAppSelector(selectInstanceDisplayTitle(instanceId));
 
   return (
     <WindowPanel
       id={`agent-${instanceId}`}
-      title={title ?? "Agent"}
+      title={title}
       onClose={onClose}
-      initialRect={{ width: 680, height: 500 }}
+      width={680}
+      height={500}
       minWidth={300}
       minHeight={250}
       bodyClassName="p-0"
@@ -258,13 +259,13 @@ function AgentPanelOverlay({
   instanceId: string;
   onClose: () => void;
 }) {
-  const title = useInstanceTitle(instanceId);
+  const title = useAppSelector(selectInstanceDisplayTitle(instanceId));
 
   return (
     <FloatingSheet
       isOpen={true}
       onClose={onClose}
-      title={title ?? "Agent"}
+      title={title}
       position="right"
       width="lg"
       height="full"

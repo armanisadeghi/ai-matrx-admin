@@ -6,7 +6,7 @@
 import React from 'react';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/styles/themes/ThemeProvider';
-import LiteStoreProvider from '@/providers/LiteStoreProvider';
+import StoreProvider from '@/providers/StoreProvider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { LiteInitialReduxState } from '@/types/reduxTypes';
 import { ToastProvider } from '@/providers/toast-context';
@@ -22,7 +22,7 @@ interface LiteProvidersProps {
  * 
  * Includes:
  * - ReactQueryProvider for data fetching
- * - LiteStoreProvider (Redux without entities/socket/sagas)
+ * - StoreProvider (same full Redux tree as the app shell)
  * - ThemeProvider for theming
  * - ToastProvider & Toaster for notifications
  * - TooltipProvider for tooltips
@@ -46,7 +46,7 @@ interface LiteProvidersProps {
 export function LiteProviders({ children, initialState }: LiteProvidersProps) {
     return (
         <ReactQueryProvider>
-            <LiteStoreProvider initialState={initialState}>
+            <StoreProvider initialState={initialState}>
                 <ThemeProvider>
                     <ToastProvider>
                         <TooltipProvider delayDuration={200}>
@@ -55,7 +55,7 @@ export function LiteProviders({ children, initialState }: LiteProvidersProps) {
                         </TooltipProvider>
                     </ToastProvider>
                 </ThemeProvider>
-            </LiteStoreProvider>
+            </StoreProvider>
         </ReactQueryProvider>
     );
 }

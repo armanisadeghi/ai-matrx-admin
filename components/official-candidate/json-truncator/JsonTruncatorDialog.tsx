@@ -14,14 +14,20 @@
  *   />
  */
 
-import { WindowPanel, type WindowPanelProps } from "@/features/floating-window-panel/WindowPanel";
+import {
+  WindowPanel,
+  type WindowPanelProps,
+} from "@/features/floating-window-panel/WindowPanel";
 import {
   JsonTruncator,
   type JsonTruncatorProps,
   type JsonTruncatorTab,
 } from "./JsonTruncator";
 
-export interface JsonTruncatorDialogProps extends JsonTruncatorProps, Omit<WindowPanelProps, "children" | "title" | "id"> {
+export interface JsonTruncatorDialogProps
+  extends
+    JsonTruncatorProps,
+    Omit<WindowPanelProps, "children" | "title" | "id"> {
   isOpen?: boolean;
   onClose: () => void;
   title?: string;
@@ -51,7 +57,8 @@ export function JsonTruncatorDialog({
       id={id}
       title={title}
       onClose={onClose}
-      initialRect={{ width: 800, height: 600 }}
+      width={800}
+      height={600}
       minWidth={400}
       minHeight={300}
       bodyClassName="p-0 overflow-hidden"

@@ -3883,6 +3883,8 @@ export type Database = {
           forked_at_position: number | null
           forked_from_id: string | null
           id: string
+          initial_agent_id: string | null
+          initial_agent_version_id: string | null
           is_ephemeral: boolean
           is_public: boolean
           keywords: string[] | null
@@ -3912,6 +3914,8 @@ export type Database = {
           forked_at_position?: number | null
           forked_from_id?: string | null
           id?: string
+          initial_agent_id?: string | null
+          initial_agent_version_id?: string | null
           is_ephemeral?: boolean
           is_public?: boolean
           keywords?: string[] | null
@@ -3941,6 +3945,8 @@ export type Database = {
           forked_at_position?: number | null
           forked_from_id?: string | null
           id?: string
+          initial_agent_id?: string | null
+          initial_agent_version_id?: string | null
           is_ephemeral?: boolean
           is_public?: boolean
           keywords?: string[] | null
@@ -3968,6 +3974,20 @@ export type Database = {
             columns: ["forked_from_id"]
             isOneToOne: false
             referencedRelation: "cx_conversation"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cx_conversation_initial_agent_fk"
+            columns: ["initial_agent_id"]
+            isOneToOne: false
+            referencedRelation: "agx_agent"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cx_conversation_initial_agent_version_fk"
+            columns: ["initial_agent_version_id"]
+            isOneToOne: false
+            referencedRelation: "agx_version"
             referencedColumns: ["id"]
           },
           {
@@ -4363,6 +4383,8 @@ export type Database = {
       }
       cx_user_request: {
         Row: {
+          agent_id: string | null
+          agent_version_id: string | null
           api_duration_ms: number | null
           completed_at: string | null
           conversation_id: string
@@ -4390,6 +4412,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          agent_id?: string | null
+          agent_version_id?: string | null
           api_duration_ms?: number | null
           completed_at?: string | null
           conversation_id: string
@@ -4417,6 +4441,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          agent_id?: string | null
+          agent_version_id?: string | null
           api_duration_ms?: number | null
           completed_at?: string | null
           conversation_id?: string
@@ -4444,6 +4470,20 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "cx_user_request_agent_fk"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agx_agent"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cx_user_request_agent_version_fk"
+            columns: ["agent_version_id"]
+            isOneToOne: false
+            referencedRelation: "agx_version"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cx_user_request_conversation_id_fkey"
             columns: ["conversation_id"]
@@ -17801,6 +17841,28 @@ export type Database = {
       }
       generate_invitation_code: { Args: never; Returns: string }
       generate_invitation_token: { Args: never; Returns: string }
+      get_agent_conversations: {
+        Args: {
+          p_agent_id: string
+          p_limit?: number
+          p_offset?: number
+          p_version_number?: number
+        }
+        Returns: {
+          agent_version_number: number
+          conversation_id: string
+          created_at: string
+          description: string
+          initial_agent_version_id: string
+          last_model_id: string
+          message_count: number
+          source_app: string
+          source_feature: string
+          status: string
+          title: string
+          updated_at: string
+        }[]
+      }
       get_agent_core_batch: {
         Args: { p_ids: string[]; p_sources: string[] }
         Returns: {
@@ -17827,6 +17889,20 @@ export type Database = {
           settings: Json
           source: string
           variable_defaults: Json
+        }[]
+      }
+      get_agent_usage_stats: {
+        Args: { p_agent_id: string; p_version_number?: number }
+        Returns: {
+          avg_duration_ms: number
+          first_used_at: string
+          last_used_at: string
+          total_conversations: number
+          total_cost: number
+          total_executions: number
+          total_input_tokens: number
+          total_output_tokens: number
+          total_tokens: number
         }[]
       }
       get_agent_work_queue: {

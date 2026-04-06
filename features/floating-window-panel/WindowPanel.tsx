@@ -181,6 +181,12 @@ export function WindowPanel({
   const [sidebarOpen, setSidebarOpen] = useState(defaultSidebarOpen);
   const sidebarPanelRef = useRef<PanelImperativeHandle>(null);
 
+  useEffect(() => {
+    if (!defaultSidebarOpen) {
+      sidebarPanelRef.current?.collapse();
+    }
+  }, [defaultSidebarOpen]);
+
   const toggleSidebar = useCallback(() => {
     const panel = sidebarPanelRef.current;
     if (!panel) return;
@@ -331,7 +337,7 @@ export function WindowPanel({
     <ResizablePanelGroup orientation="horizontal" className="h-full min-h-0">
       <ResizablePanel
         panelRef={sidebarPanelRef}
-        defaultSize={sidebarDefaultSize}
+        defaultSize={sidebarOpen ? sidebarDefaultSize : 0}
         minSize={sidebarMinSize}
         collapsible
         collapsedSize={0}
@@ -348,7 +354,10 @@ export function WindowPanel({
         </div>
       </ResizablePanel>
       <ResizableHandle />
-      <ResizablePanel defaultSize={100 - sidebarDefaultSize} minSize={40}>
+      <ResizablePanel
+        defaultSize={sidebarOpen ? 100 - sidebarDefaultSize : 100}
+        minSize={40}
+      >
         {children}
       </ResizablePanel>
     </ResizablePanelGroup>
@@ -587,53 +596,56 @@ function WindowHeader({
   sidebarOpen,
   onToggleSidebar,
 }: WindowHeaderProps) {
-  const [groupHovered, setGroupHovered] = useState(false);
-
   return (
     <div
       className={cn(
-        "relative flex items-center justify-between gap-1 px-2 py-1.5 z-20 shrink-0",
+        "relative flex items-center justify-between gap-1 px-2 py-1.5 min-h-[26px] z-20 shrink-0",
         "border-b border-border/50 bg-muted/40 select-none",
         isMaximized ? "cursor-default" : "cursor-grab active:cursor-grabbing",
         isMinimized && "border-b-0",
       )}
       onMouseDown={isMaximized ? undefined : onDragStart}
     >
-      {/* macOS-style invisible hot zone — covers the full left side of the
-          header so traffic lights reveal their icons before the cursor reaches
-          the tiny dots.  Also blocks drag initiation over this region. */}
+      {/* macOS-style hot zone: absolutely positioned to cover the full
+          left side of the header (top-to-bottom, no padding). The traffic
+          lights and sidebar toggle live inside it so CSS group-hover/tl
+          reveals all icons when the cursor enters the zone. */}
       <div
-        className="absolute top-0 left-0 bottom-0 z-30"
-        style={{ width: hasSidebar ? 110 : 90 }}
-        onMouseEnter={() => setGroupHovered(true)}
-        onMouseLeave={() => setGroupHovered(false)}
+        className={cn(
+          "group/tl absolute top-0 left-0 bottom-0 flex items-center z-20",
+          hasSidebar ? "w-28" : "w-24",
+        )}
         onMouseDown={(e) => e.stopPropagation()}
-      />
+      >
+        <div className="pl-2">
+          <TrafficLightGroup
+            isMinimized={isMinimized}
+            isMaximized={isMaximized}
+            onClose={onClose}
+            onMinimize={onMinimize}
+            onRestore={onRestore}
+            onToggleMaximize={onToggleMaximize}
+            snapLeft={snapLeft}
+            snapRight={snapRight}
+            snapTop={snapTop}
+            snapBottom={snapBottom}
+            snapCentre={snapCentre}
+            arrangeAll={arrangeAll}
+            hasSidebar={hasSidebar}
+            sidebarOpen={sidebarOpen}
+            onToggleSidebar={onToggleSidebar}
+          />
+        </div>
+      </div>
 
       <div className="flex items-center gap-1 z-10 shrink-0">
-        <TrafficLightGroup
-          groupHovered={groupHovered}
-          isMinimized={isMinimized}
-          isMaximized={isMaximized}
-          onClose={onClose}
-          onMinimize={onMinimize}
-          onRestore={onRestore}
-          onToggleMaximize={onToggleMaximize}
-          snapLeft={snapLeft}
-          snapRight={snapRight}
-          snapTop={snapTop}
-          snapBottom={snapBottom}
-          snapCentre={snapCentre}
-          arrangeAll={arrangeAll}
-          hasSidebar={hasSidebar}
-          sidebarOpen={sidebarOpen}
-          onToggleSidebar={onToggleSidebar}
-        />
+        {/* Spacer matching the hot zone width so left actions don't overlap */}
+        <div className={hasSidebar ? "w-28" : "w-24"} />
 
         {/* Left action zone */}
         {!isMinimized && actionsLeft && (
           <div
-            className="flex items-center gap-0.5 shrink-0 ml-1 text-foreground/80 [&_svg]:text-foreground/80"
+            className="flex items-center gap-0.5 shrink-0 text-foreground/80 [&_svg]:text-foreground/80"
             onMouseDown={(e) => e.stopPropagation()}
           >
             {actionsLeft}
@@ -664,10 +676,9 @@ function WindowHeader({
 }
 
 // ─── TrafficLightGroup ────────────────────────────────────────────────────────
-// Hover state is owned by the header's invisible hot zone and passed down.
+// Nested inside the group/tl hot zone — icon reveal uses CSS group-hover/tl.
 
 interface TrafficLightGroupProps {
-  groupHovered: boolean;
   isMinimized: boolean;
   isMaximized: boolean;
   onClose?: () => void;
@@ -686,7 +697,6 @@ interface TrafficLightGroupProps {
 }
 
 function TrafficLightGroup({
-  groupHovered,
   isMinimized,
   isMaximized,
   onClose,
@@ -704,17 +714,10 @@ function TrafficLightGroup({
   onToggleSidebar,
 }: TrafficLightGroupProps) {
   return (
-    <div
-      className={cn(
-        "flex items-center gap-1.5 shrink-0 py-0.5 pl-1 -my-0.5 -ml-1 cursor-default",
-        hasSidebar ? "pr-1" : "pr-6",
-      )}
-      onMouseDown={(e) => e.stopPropagation()}
-    >
+    <div className="flex items-center gap-1.5 shrink-0 cursor-default">
       {/* Red — Close */}
       <TrafficLight
         color="red"
-        showIcon={groupHovered}
         icon={
           <X className="w-2 h-2 stroke-[3.5]" style={{ color: "#000000" }} />
         }
@@ -726,7 +729,6 @@ function TrafficLightGroup({
       {/* Yellow — Minimize / restore */}
       <TrafficLight
         color="yellow"
-        showIcon={groupHovered}
         icon={
           isMinimized ? (
             <Maximize2
@@ -746,7 +748,6 @@ function TrafficLightGroup({
 
       {/* Green — Maximize / dropdown */}
       <GreenTrafficLight
-        showIcon={groupHovered}
         isMaximized={isMaximized}
         onToggleMaximize={onToggleMaximize}
         onRestore={onRestore}
@@ -762,7 +763,7 @@ function TrafficLightGroup({
       {hasSidebar && !isMinimized && (
         <button
           type="button"
-          className="ml-0.5 p-0.5 rounded hover:bg-accent/60 transition-colors text-foreground/60 hover:text-foreground/90"
+          className="ml-0.5 p-0.5 rounded hover:bg-accent/60 transition-colors text-foreground/60 group-hover/tl:text-foreground"
           onClick={onToggleSidebar}
           title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
           aria-label={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
@@ -783,7 +784,6 @@ function TrafficLightGroup({
 interface TrafficLightProps {
   color: "red" | "yellow";
   icon: React.ReactNode;
-  showIcon: boolean;
   onClick?: () => void;
   disabled?: boolean;
   "aria-label"?: string;
@@ -792,7 +792,6 @@ interface TrafficLightProps {
 function TrafficLight({
   color,
   icon,
-  showIcon,
   onClick,
   disabled,
   "aria-label": label,
@@ -816,8 +815,10 @@ function TrafficLight({
       disabled={disabled}
     >
       <span
-        className="transition-opacity duration-100"
-        style={{ opacity: showIcon && !disabled ? 1 : 0 }}
+        className={cn(
+          "opacity-0 transition-opacity duration-100",
+          !disabled && "group-hover/tl:opacity-100",
+        )}
       >
         {icon}
       </span>
@@ -828,7 +829,6 @@ function TrafficLight({
 // ─── GreenTrafficLight (with dropdown) ───────────────────────────────────────
 
 interface GreenTrafficLightProps {
-  showIcon: boolean;
   isMaximized: boolean;
   onToggleMaximize: () => void;
   onRestore: () => void;
@@ -841,7 +841,6 @@ interface GreenTrafficLightProps {
 }
 
 function GreenTrafficLight({
-  showIcon,
   isMaximized,
   onToggleMaximize,
   onRestore,
@@ -886,10 +885,7 @@ function GreenTrafficLight({
         onMouseDown={(e) => e.stopPropagation()}
         aria-label={isMaximized ? "Restore" : "Maximize"}
       >
-        <span
-          className="transition-opacity duration-100 flex items-center justify-center relative w-full h-full"
-          style={{ opacity: showIcon ? 1 : 0 }}
-        >
+        <span className="opacity-0 group-hover/tl:opacity-100 transition-opacity duration-100 flex items-center justify-center relative w-full h-full">
           {isMaximized ? (
             <Minimize2
               className="w-2 h-2 stroke-[3.5] absolute"

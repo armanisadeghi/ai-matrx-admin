@@ -1,5 +1,11 @@
-// lib/redux/liteRootReducer.ts
-// Lightweight root reducer for SSR and public routes — no entities, no sagas, no socket.io
+/**
+ * @deprecated Use `createRootReducer` from `@/lib/redux/rootReducer` with
+ * `resolveStoreBootstrapState()` / empty global cache — the app uses one Redux tree everywhere.
+ *
+ * This file is retained temporarily so any stale imports fail loudly in tooling; it is no
+ * longer referenced by the active store pipeline.
+ */
+// lib/redux/liteRootReducer.ts (deprecated)
 "use client";
 
 import { combineReducers } from "@reduxjs/toolkit";

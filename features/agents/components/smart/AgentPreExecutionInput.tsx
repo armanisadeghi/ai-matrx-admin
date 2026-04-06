@@ -23,7 +23,7 @@ import { setPreExecutionSatisfied } from "@/features/agents/redux/execution-syst
 import { selectPreExecutionMessage } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectHasUserInput } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
-import { useInstanceTitle } from "@/features/agents/hooks/useInstanceTitle";
+import { selectInstanceAgentName } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { SmartAgentInput } from "./SmartAgentInput";
 
 interface AgentPreExecutionInputProps {
@@ -34,7 +34,7 @@ export function AgentPreExecutionInput({
   instanceId,
 }: AgentPreExecutionInputProps) {
   const dispatch = useAppDispatch();
-  const title = useInstanceTitle(instanceId);
+  const title = useAppSelector(selectInstanceAgentName(instanceId));
 
   const hasInput = useAppSelector(selectHasUserInput(instanceId));
   const preExecutionMessage = useAppSelector(

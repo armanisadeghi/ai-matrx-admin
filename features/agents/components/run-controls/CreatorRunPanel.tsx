@@ -1244,7 +1244,8 @@ export function CreatorRunPanel({
         <WindowPanel
           id={streamDebugId}
           title="Stream Debug"
-          initialRect={{ width: 680, height: 720 }}
+          width={680}
+          height={720}
           onClose={() => setStreamDebugWindowOpen(false)}
           urlSyncKey="debug"
           urlSyncId={instanceId}
@@ -1256,7 +1257,8 @@ export function CreatorRunPanel({
         <WindowPanel
           id={runSettingsId}
           title="Run Settings"
-          initialRect={{ width: 420, height: 480 }}
+          width={420}
+          height={480}
           onClose={() => setRunSettingsWindowOpen(false)}
           urlSyncKey="run_settings"
           urlSyncId={instanceId}

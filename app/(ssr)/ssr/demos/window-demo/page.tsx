@@ -102,7 +102,9 @@ export default function WindowDemoPage() {
       {notesOpen && (
         <NotesWindow
           id={NOTES_WINDOW_ID}
-          initialRect={{ x: 560, y: 60, width: 520, height: 400 }}
+          width={520}
+          height={400}
+          initialRect={{ x: 560, y: 60 }}
           onClose={() => closeWindow(NOTES_WINDOW_ID)}
         />
       )}

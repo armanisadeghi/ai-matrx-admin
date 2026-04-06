@@ -77,7 +77,8 @@ export default function EmailDialogWindow({
   return (
     <WindowPanel
       title={title}
-      initialRect={{ width: 400, height: 280, x: 300, y: 200 }}
+      width={400}
+      height={280}
       urlSyncKey="email_dialog"
       onClose={handleClose}
     >

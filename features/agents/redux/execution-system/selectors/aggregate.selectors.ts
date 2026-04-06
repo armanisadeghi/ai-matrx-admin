@@ -41,7 +41,7 @@ const EMPTY_IDS: string[] = [];
 export const selectIsExecuting =
   (instanceId: string) =>
   (state: RootState): boolean => {
-    const status = state.executionInstances.byInstanceId[instanceId]?.status;
+    const status = state.executionInstances?.byInstanceId[instanceId]?.status;
     return status === "running" || status === "streaming";
   };
 
@@ -49,13 +49,13 @@ export const selectIsExecuting =
 export const selectIsStreaming =
   (instanceId: string) =>
   (state: RootState): boolean =>
-    state.executionInstances.byInstanceId[instanceId]?.status === "streaming";
+    state.executionInstances?.byInstanceId[instanceId]?.status === "streaming";
 
 /** Is this instance paused waiting for client tool results? */
 export const selectIsAwaitingTools =
   (instanceId: string) =>
   (state: RootState): boolean =>
-    state.executionInstances.byInstanceId[instanceId]?.status === "paused";
+    state.executionInstances?.byInstanceId[instanceId]?.status === "paused";
 
 // =============================================================================
 // Derived Request Selectors (instanceId → latest request data)
@@ -68,9 +68,9 @@ export const selectIsAwaitingTools =
 export const selectLatestAccumulatedText =
   (instanceId: string) =>
   (state: RootState): string => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return "";
-    const latest = state.activeRequests.byRequestId[ids[ids.length - 1]];
+    const latest = state.activeRequests?.byRequestId[ids[ids.length - 1]];
     if (!latest) return "";
     // Lazy join: textChunks accumulate via O(1) push during streaming,
     // joined here only when the selector is actually called by a subscriber.
@@ -88,21 +88,21 @@ export const selectLatestConversationId =
   (state: RootState): string | null => {
     // Prefer the history slice — it's the persistent record
     const historyConversationId =
-      state.instanceConversationHistory.byInstanceId[instanceId]
+      state.instanceConversationHistory?.byInstanceId[instanceId]
         ?.conversationId;
     if (historyConversationId) return historyConversationId;
 
     // Fallback to active request (useful mid-stream, before commitAssistantTurn fires)
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return null;
-    const latest = state.activeRequests.byRequestId[ids[ids.length - 1]];
+    const latest = state.activeRequests?.byRequestId[ids[ids.length - 1]];
     return latest?.conversationId ?? null;
   };
 
 /** The current conversation mode for this instance (agent | conversation | chat). */
 export const selectConversationMode =
   (instanceId: string) => (state: RootState) =>
-    state.instanceConversationHistory.byInstanceId[instanceId]?.mode ?? "agent";
+    state.instanceConversationHistory?.byInstanceId[instanceId]?.mode ?? "agent";
 
 /**
  * The requestId for the most recent request on this instance.
@@ -112,7 +112,7 @@ export const selectConversationMode =
 export const selectLatestRequestId =
   (instanceId: string) =>
   (state: RootState): string | undefined => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     return ids.length > 0 ? ids[ids.length - 1] : undefined;
   };
 
@@ -124,9 +124,9 @@ export const selectLatestRequestId =
 export const selectLatestRequestStatus =
   (instanceId: string) =>
   (state: RootState): RequestStatus | undefined => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return undefined;
-    return state.activeRequests.byRequestId[ids[ids.length - 1]]?.status;
+    return state.activeRequests?.byRequestId[ids[ids.length - 1]]?.status;
   };
 
 /**
@@ -137,10 +137,10 @@ export const selectLatestRequestStatus =
 export const selectIsConnecting =
   (instanceId: string) =>
   (state: RootState): boolean => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return false;
     return (
-      state.activeRequests.byRequestId[ids[ids.length - 1]]?.status ===
+      state.activeRequests?.byRequestId[ids[ids.length - 1]]?.status ===
       "connecting"
     );
   };
@@ -157,15 +157,15 @@ export const selectIsWaitingForFirstToken =
   (instanceId: string) =>
   (state: RootState): boolean => {
     const instanceStatus =
-      state.executionInstances.byInstanceId[instanceId]?.status;
+      state.executionInstances?.byInstanceId[instanceId]?.status;
     // Running = request in flight but no chunks yet
     if (instanceStatus === "running") return true;
 
     // Also cover the "connecting" request status (before even the HTTP response)
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return false;
     const latestStatus =
-      state.activeRequests.byRequestId[ids[ids.length - 1]]?.status;
+      state.activeRequests?.byRequestId[ids[ids.length - 1]]?.status;
     return latestStatus === "connecting";
   };
 
@@ -177,10 +177,10 @@ export const selectIsWaitingForFirstToken =
 export const selectLatestRequestStartedAt =
   (instanceId: string) =>
   (state: RootState): string | undefined => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return undefined;
     return (
-      state.activeRequests.byRequestId[ids[ids.length - 1]]?.startedAt ??
+      state.activeRequests?.byRequestId[ids[ids.length - 1]]?.startedAt ??
       undefined
     );
   };
@@ -193,10 +193,10 @@ export const selectLatestRequestStartedAt =
 export const selectLatestError =
   (instanceId: string) =>
   (state: RootState): string | undefined => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return undefined;
     return (
-      state.activeRequests.byRequestId[ids[ids.length - 1]]?.errorMessage ??
+      state.activeRequests?.byRequestId[ids[ids.length - 1]]?.errorMessage ??
       undefined
     );
   };
@@ -211,8 +211,8 @@ export const selectLatestError =
  */
 export const selectPendingToolCallsForInstance = (instanceId: string) =>
   createSelector(
-    (state: RootState) => state.activeRequests.byInstanceId[instanceId],
-    (state: RootState) => state.activeRequests.byRequestId,
+    (state: RootState) => state.activeRequests?.byInstanceId[instanceId],
+    (state: RootState) => state.activeRequests?.byRequestId,
     (instanceIds, byRequestId): PendingToolCall[] | undefined => {
       if (!instanceIds || instanceIds.length === 0) return undefined;
       const latest = byRequestId[instanceIds[instanceIds.length - 1]];
@@ -233,11 +233,11 @@ export const selectPendingToolCallsForInstance = (instanceId: string) =>
 export const selectHasAnyContent =
   (instanceId: string) =>
   (state: RootState): boolean => {
-    const userInput = state.instanceUserInput.byInstanceId[instanceId];
+    const userInput = state.instanceUserInput?.byInstanceId[instanceId];
     const hasText = (userInput?.text?.trim().length ?? 0) > 0;
     if (hasText) return true;
 
-    const resources = state.instanceResources.byInstanceId[instanceId];
+    const resources = state.instanceResources?.byInstanceId[instanceId];
     return resources != null && Object.keys(resources).length > 0;
   };
 
@@ -254,14 +254,14 @@ export const selectIsInstanceReady =
   (instanceId: string) =>
   (state: RootState): { ready: boolean; reasons: string[] } => {
     const reasons: string[] = [];
-    const instance = state.executionInstances.byInstanceId[instanceId];
+    const instance = state.executionInstances?.byInstanceId[instanceId];
 
     if (!instance) {
       return { ready: false, reasons: ["Instance not found"] };
     }
 
     // Check resources
-    const resources = state.instanceResources.byInstanceId[instanceId];
+    const resources = state.instanceResources?.byInstanceId[instanceId];
     if (resources) {
       const pending = Object.values(resources).filter(
         (r) => r.status === "pending" || r.status === "resolving",
@@ -279,7 +279,7 @@ export const selectIsInstanceReady =
     }
 
     // Check required variables — uses instance-owned definitions snapshot
-    const varEntry = state.instanceVariableValues.byInstanceId[instanceId];
+    const varEntry = state.instanceVariableValues?.byInstanceId[instanceId];
     const definitions = varEntry?.definitions;
     const userValues = varEntry?.userValues;
     const scopeValues = varEntry?.scopeValues;
@@ -322,14 +322,14 @@ export const selectAssembledRequest =
  */
 export const selectInstanceSummary = (instanceId: string) =>
   createSelector(
-    (state: RootState) => state.executionInstances.byInstanceId[instanceId],
-    (state: RootState) => state.instanceModelOverrides.byInstanceId[instanceId],
-    (state: RootState) => state.instanceResources.byInstanceId[instanceId],
-    (state: RootState) => state.instanceContext.byInstanceId[instanceId],
-    (state: RootState) => state.instanceUserInput.byInstanceId[instanceId],
-    (state: RootState) => state.instanceUIState.byInstanceId[instanceId],
-    (state: RootState) => state.activeRequests.byInstanceId[instanceId],
-    (state: RootState) => state.activeRequests.byRequestId,
+    (state: RootState) => state.executionInstances?.byInstanceId[instanceId],
+    (state: RootState) => state.instanceModelOverrides?.byInstanceId[instanceId],
+    (state: RootState) => state.instanceResources?.byInstanceId[instanceId],
+    (state: RootState) => state.instanceContext?.byInstanceId[instanceId],
+    (state: RootState) => state.instanceUserInput?.byInstanceId[instanceId],
+    (state: RootState) => state.instanceUIState?.byInstanceId[instanceId],
+    (state: RootState) => state.activeRequests?.byInstanceId[instanceId],
+    (state: RootState) => state.activeRequests?.byRequestId,
     (
       instance,
       overrides,
@@ -385,14 +385,14 @@ export const selectShouldShowVariables =
   (instanceId: string) =>
   (state: RootState): boolean => {
     const definitions =
-      state.instanceVariableValues.byInstanceId[instanceId]?.definitions;
+      state.instanceVariableValues?.byInstanceId[instanceId]?.definitions;
     if (!definitions || definitions.length === 0) return false;
 
     const turns =
-      state.instanceConversationHistory.byInstanceId[instanceId]?.turns;
+      state.instanceConversationHistory?.byInstanceId[instanceId]?.turns;
     if (turns && turns.length > 0) return false;
 
-    const status = state.executionInstances.byInstanceId[instanceId]?.status;
+    const status = state.executionInstances?.byInstanceId[instanceId]?.status;
     if (status === "running" || status === "streaming") return false;
 
     return true;
@@ -422,19 +422,19 @@ export const selectInstanceIdByConversationId =
   (conversationId: string) =>
   (state: RootState): string | null => {
     // 1. Primary: check instanceConversationHistory — authoritative after commitAssistantTurn
-    for (const instanceId of state.executionInstances.allInstanceIds) {
+    for (const instanceId of state.executionInstances?.allInstanceIds) {
       const historyEntry =
-        state.instanceConversationHistory.byInstanceId[instanceId];
+        state.instanceConversationHistory?.byInstanceId[instanceId];
       if (historyEntry?.conversationId === conversationId) return instanceId;
     }
 
     // 2. Fallback: check activeRequests — catches mid-stream before commit fires
-    for (const instanceId of state.executionInstances.allInstanceIds) {
+    for (const instanceId of state.executionInstances?.allInstanceIds) {
       const requestIds =
-        state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+        state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
       for (const requestId of requestIds) {
         if (
-          state.activeRequests.byRequestId[requestId]?.conversationId ===
+          state.activeRequests?.byRequestId[requestId]?.conversationId ===
           conversationId
         ) {
           return instanceId;
@@ -469,9 +469,9 @@ export const selectInstanceIdByConversationId =
 export const makeSelectInstanceDisplaySnapshot = () =>
   createSelector(
     (state: RootState, instanceId: string) =>
-      state.instanceUIState.byInstanceId[instanceId],
+      state.instanceUIState?.byInstanceId[instanceId],
     (state: RootState, instanceId: string) =>
-      state.executionInstances.byInstanceId[instanceId],
+      state.executionInstances?.byInstanceId[instanceId],
     (uiState, instance) => {
       if (!uiState || !instance) return undefined;
       return {
@@ -496,8 +496,8 @@ export const makeSelectInstanceDisplaySnapshot = () =>
  * Returns undefined (not {}) when there are no active instances.
  */
 export const selectActiveInstancesByDisplayMode = createSelector(
-  (state: RootState) => state.executionInstances.byInstanceId,
-  (state: RootState) => state.instanceUIState.byInstanceId,
+  (state: RootState) => state.executionInstances?.byInstanceId,
+  (state: RootState) => state.instanceUIState?.byInstanceId,
   (byInstanceId, byUIState) => {
     type DisplayModeMap = Record<string, string[]>;
     const result: DisplayModeMap = {};
@@ -537,8 +537,8 @@ export const selectActiveInstancesByDisplayMode = createSelector(
  * Excludes "draft" status since the instance isn't ready yet.
  */
 export const selectOverlayInstancesByDisplayMode = createSelector(
-  (state: RootState) => state.executionInstances.byInstanceId,
-  (state: RootState) => state.instanceUIState.byInstanceId,
+  (state: RootState) => state.executionInstances?.byInstanceId,
+  (state: RootState) => state.instanceUIState?.byInstanceId,
   (byInstanceId, byUIState) => {
     type DisplayModeMap = Record<string, string[]>;
     const result: DisplayModeMap = {};
@@ -569,8 +569,8 @@ export const selectOverlayInstancesByDisplayMode = createSelector(
  * Memoized.
  */
 export const selectActiveModalInstanceIds = createSelector(
-  (state: RootState) => state.executionInstances.byInstanceId,
-  (state: RootState) => state.instanceUIState.byInstanceId,
+  (state: RootState) => state.executionInstances?.byInstanceId,
+  (state: RootState) => state.instanceUIState?.byInstanceId,
   (byInstanceId, byUIState): string[] | undefined => {
     const ids = Object.keys(byInstanceId).filter((id) => {
       const status = byInstanceId[id]?.status;
@@ -588,8 +588,8 @@ export const selectActiveModalInstanceIds = createSelector(
  * Memoized.
  */
 export const selectActivePanelInstanceIds = createSelector(
-  (state: RootState) => state.executionInstances.byInstanceId,
-  (state: RootState) => state.instanceUIState.byInstanceId,
+  (state: RootState) => state.executionInstances?.byInstanceId,
+  (state: RootState) => state.instanceUIState?.byInstanceId,
   (byInstanceId, byUIState): string[] | undefined => {
     const ids = Object.keys(byInstanceId).filter((id) => {
       const status = byInstanceId[id]?.status;
@@ -613,10 +613,10 @@ export const selectActivePanelInstanceIds = createSelector(
 export const selectLatestCurrentPhase =
   (instanceId: string) =>
   (state: RootState): Phase | null => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return null;
     return (
-      state.activeRequests.byRequestId[ids[ids.length - 1]]?.currentPhase ??
+      state.activeRequests?.byRequestId[ids[ids.length - 1]]?.currentPhase ??
       null
     );
   };
@@ -629,9 +629,9 @@ export const selectLatestCurrentPhase =
 export const selectLatestInfoUserMessage =
   (instanceId: string) =>
   (state: RootState): string | null => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return null;
-    const request = state.activeRequests.byRequestId[ids[ids.length - 1]];
+    const request = state.activeRequests?.byRequestId[ids[ids.length - 1]];
     if (!request || request.infoEvents.length === 0) return null;
     return (
       request.infoEvents[request.infoEvents.length - 1]?.user_message ?? null
@@ -648,8 +648,8 @@ export const selectLatestInfoUserMessage =
  */
 export const selectLatestContentBlocks = (instanceId: string) =>
   createSelector(
-    (state: RootState) => state.activeRequests.byInstanceId[instanceId],
-    (state: RootState) => state.activeRequests.byRequestId,
+    (state: RootState) => state.activeRequests?.byInstanceId[instanceId],
+    (state: RootState) => state.activeRequests?.byRequestId,
     (instanceIds, byRequestId): ContentBlockPayload[] => {
       if (!instanceIds || instanceIds.length === 0) return [];
       const latest = byRequestId[instanceIds[instanceIds.length - 1]];
@@ -666,10 +666,10 @@ export const selectLatestContentBlocks = (instanceId: string) =>
 export const selectLatestContentBlockCount =
   (instanceId: string) =>
   (state: RootState): number => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return 0;
     return (
-      state.activeRequests.byRequestId[ids[ids.length - 1]]?.contentBlockOrder
+      state.activeRequests?.byRequestId[ids[ids.length - 1]]?.contentBlockOrder
         .length ?? 0
     );
   };
@@ -684,8 +684,8 @@ export const selectLatestContentBlockCount =
  */
 export const selectLatestActiveTools = (instanceId: string) =>
   createSelector(
-    (state: RootState) => state.activeRequests.byInstanceId[instanceId],
-    (state: RootState) => state.activeRequests.byRequestId,
+    (state: RootState) => state.activeRequests?.byInstanceId[instanceId],
+    (state: RootState) => state.activeRequests?.byRequestId,
     (instanceIds, byRequestId): ToolLifecycleEntry[] => {
       if (!instanceIds || instanceIds.length === 0) return [];
       const latest = byRequestId[instanceIds[instanceIds.length - 1]];
@@ -705,8 +705,8 @@ export const selectLatestActiveTools = (instanceId: string) =>
  */
 export const selectLatestToolLifecycles = (instanceId: string) =>
   createSelector(
-    (state: RootState) => state.activeRequests.byInstanceId[instanceId],
-    (state: RootState) => state.activeRequests.byRequestId,
+    (state: RootState) => state.activeRequests?.byInstanceId[instanceId],
+    (state: RootState) => state.activeRequests?.byRequestId,
     (instanceIds, byRequestId): ToolLifecycleEntry[] => {
       if (!instanceIds || instanceIds.length === 0) return [];
       const latest = byRequestId[instanceIds[instanceIds.length - 1]];
@@ -726,10 +726,10 @@ export const selectLatestToolLifecycles = (instanceId: string) =>
 export const selectLatestCompletion =
   (instanceId: string) =>
   (state: RootState): CompletionPayload | null => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return null;
     return (
-      state.activeRequests.byRequestId[ids[ids.length - 1]]?.completion ?? null
+      state.activeRequests?.byRequestId[ids[ids.length - 1]]?.completion ?? null
     );
   };
 
@@ -744,10 +744,10 @@ export const selectLatestCompletion =
 export const selectLatestErrorIsFatal =
   (instanceId: string) =>
   (state: RootState): boolean => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return false;
     return (
-      state.activeRequests.byRequestId[ids[ids.length - 1]]?.errorIsFatal ??
+      state.activeRequests?.byRequestId[ids[ids.length - 1]]?.errorIsFatal ??
       false
     );
   };
@@ -763,9 +763,9 @@ export const selectLatestErrorIsFatal =
 export const selectLatestTimeline =
   (instanceId: string) =>
   (state: RootState): TimelineEntry[] | undefined => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return undefined;
-    return state.activeRequests.byRequestId[ids[ids.length - 1]]?.timeline;
+    return state.activeRequests?.byRequestId[ids[ids.length - 1]]?.timeline;
   };
 
 /**
@@ -776,10 +776,10 @@ export const selectLatestTimeline =
 export const selectIsInTextRun =
   (instanceId: string) =>
   (state: RootState): boolean => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return false;
     return (
-      state.activeRequests.byRequestId[ids[ids.length - 1]]?.isTextStreaming ??
+      state.activeRequests?.byRequestId[ids[ids.length - 1]]?.isTextStreaming ??
       false
     );
   };
@@ -788,10 +788,10 @@ export const selectIsInTextRun =
 export const selectIsReasoningStreaming =
   (instanceId: string) =>
   (state: RootState): boolean => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return false;
     return (
-      state.activeRequests.byRequestId[ids[ids.length - 1]]
+      state.activeRequests?.byRequestId[ids[ids.length - 1]]
         ?.isReasoningStreaming ?? false
     );
   };
@@ -800,9 +800,9 @@ export const selectIsReasoningStreaming =
 export const selectLatestAccumulatedReasoning =
   (instanceId: string) =>
   (state: RootState): string => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return "";
-    const latest = state.activeRequests.byRequestId[ids[ids.length - 1]];
+    const latest = state.activeRequests?.byRequestId[ids[ids.length - 1]];
     if (!latest) return "";
     if (latest.reasoningChunks.length > 0)
       return latest.reasoningChunks.join("");
@@ -820,9 +820,9 @@ export const selectLatestReservations =
         import("@/features/agents/types/request.types").ReservationRecord
       >
     | undefined => {
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return undefined;
-    return state.activeRequests.byRequestId[ids[ids.length - 1]]?.reservations;
+    return state.activeRequests?.byRequestId[ids[ids.length - 1]]?.reservations;
   };
 
 // =============================================================================
@@ -854,7 +854,7 @@ export type StreamPhase =
 export const selectStreamPhase =
   (instanceId: string) =>
   (state: RootState): StreamPhase => {
-    const instance = state.executionInstances.byInstanceId[instanceId];
+    const instance = state.executionInstances?.byInstanceId[instanceId];
     if (!instance) return "idle";
 
     const instanceStatus = instance.status;
@@ -863,10 +863,10 @@ export const selectStreamPhase =
     if (instanceStatus === "complete") return "complete";
     if (instanceStatus === "error") return "error";
 
-    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    const ids = state.activeRequests?.byInstanceId[instanceId] ?? EMPTY_IDS;
     if (ids.length === 0) return "idle";
 
-    const request = state.activeRequests.byRequestId[ids[ids.length - 1]];
+    const request = state.activeRequests?.byRequestId[ids[ids.length - 1]];
     if (!request) return "idle";
 
     if (request.status === "error") return "error";

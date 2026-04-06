@@ -196,21 +196,21 @@ export const selectInstanceOrigin =
   (state: RootState): string | undefined =>
     state.executionInstances.byInstanceId[instanceId]?.origin;
 
-/**
- * Agent name — reads agentId from the instance, then looks up the name
- * from the agent definition slice. Two simple primitive reads, no new objects.
- */
-export const selectInstanceAgentName =
-  (instanceId: string) =>
-  (state: RootState): string | undefined => {
-    const agentId = state.executionInstances.byInstanceId[instanceId]?.agentId;
-    if (!agentId) return undefined;
-    return state.agentDefinition.agents?.[agentId]?.name || undefined;
-  };
+// ── Instance title selectors (three tiers) ───────────────────────────────────
+//
+// Three selectors with increasing priority, each returning a guaranteed string.
+// All reads are primitives — no new objects, no ?? [] traps, safe for bare
+// useAppSelector.
+//
+// Tier 1 — agent name only:       selectInstanceAgentName (string | undefined)
+// Tier 2 — shortcut label first:  selectInstanceTitle     (string | undefined)
+// Tier 3 — conversation override: selectInstanceDisplayTitle (always string)
+//
+// Use the lowest tier that satisfies your use case. Pre-execution UI that
+// specifically shows the agent name should use Tier 1. Any chrome that shows
+// the best available label should use Tier 2 or 3.
 
-/**
- * Shortcut label — only available when the instance was created from a shortcut.
- */
+/** Shortcut label — only available when the instance was created from a shortcut. */
 export const selectInstanceShortcutLabel =
   (instanceId: string) =>
   (state: RootState): string | undefined => {
@@ -221,8 +221,21 @@ export const selectInstanceShortcutLabel =
   };
 
 /**
- * Display title: shortcut label (if from shortcut) → agent name → undefined.
- * All primitive reads — no object construction, stable by value.
+ * Tier 1 — Agent name only.
+ * Returns the agent's name from the definition slice, or undefined.
+ * Use when you specifically want the agent name, not a shortcut or conversation label.
+ */
+export const selectInstanceAgentName =
+  (instanceId: string) =>
+  (state: RootState): string | undefined => {
+    const agentId = state.executionInstances.byInstanceId[instanceId]?.agentId;
+    if (!agentId) return undefined;
+    return state.agentDefinition.agents?.[agentId]?.name || undefined;
+  };
+
+/**
+ * Tier 2 — Static title: shortcut label → agent name → undefined.
+ * Use when you want the best static label but don't need conversation context.
  */
 export const selectInstanceTitle =
   (instanceId: string) =>
@@ -241,6 +254,36 @@ export const selectInstanceTitle =
     }
 
     return undefined;
+  };
+
+/**
+ * Tier 3 — Full display title: conversationTitle → shortcutLabel → agentName → "Agent".
+ *
+ * Always returns a string — the "Agent" fallback is inlined so the component
+ * never needs a null guard or ?? fallback. Use for any title bar or header
+ * that should show the best available label at all times.
+ */
+export const selectInstanceDisplayTitle =
+  (instanceId: string) =>
+  (state: RootState): string => {
+    const conversationTitle =
+      state.instanceConversationHistory.byInstanceId[instanceId]?.title;
+    if (conversationTitle) return conversationTitle;
+
+    const instance = state.executionInstances.byInstanceId[instanceId];
+    if (!instance) return "Agent";
+
+    if (instance.shortcutId) {
+      const label = state.agentShortcut?.[instance.shortcutId]?.label;
+      if (label) return label;
+    }
+
+    if (instance.agentId) {
+      const name = state.agentDefinition.agents?.[instance.agentId]?.name;
+      if (name) return name;
+    }
+
+    return "Agent";
   };
 
 // ── Layout & interaction (existing) ──────────────────────────────────────────

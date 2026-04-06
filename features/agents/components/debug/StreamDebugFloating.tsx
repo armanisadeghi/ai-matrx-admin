@@ -20,12 +20,9 @@ export function StreamDebugFloating({
       title="Stream Debug"
       id={`stream-debug-${instanceId}`}
       onClose={onClose}
-      initialRect={{
-        x: defaultPosition.x,
-        y: defaultPosition.y,
-        width: 600,
-        height: 500,
-      }}
+      width={600}
+      height={500}
+      initialRect={{ x: defaultPosition.x, y: defaultPosition.y }}
       minWidth={300}
       minHeight={200}
       bodyClassName="p-0"

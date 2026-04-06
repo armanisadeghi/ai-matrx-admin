@@ -3,7 +3,7 @@
 import React from "react";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import LiteStoreProvider from "@/providers/LiteStoreProvider";
+import StoreProvider from "@/providers/StoreProvider";
 import { LiteInitialReduxState } from "@/types/reduxTypes";
 import { PublicAuthSync } from "./PublicAuthSync";
 import OverlayController from "@/components/overlays/OverlayController";
@@ -30,7 +30,7 @@ export function PublicProviders({
 }: PublicProvidersProps) {
   return (
     <ReactQueryProvider>
-      <LiteStoreProvider initialState={initialState}>
+      <StoreProvider initialState={initialState}>
         <ThemeProvider>
           <TooltipProvider delayDuration={200}>
             <PublicAuthSync />
@@ -38,7 +38,7 @@ export function PublicProviders({
             {children}
           </TooltipProvider>
         </ThemeProvider>
-      </LiteStoreProvider>
+      </StoreProvider>
     </ReactQueryProvider>
   );
 }

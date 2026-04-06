@@ -39,6 +39,7 @@ export interface VoicePadFooterProps {
   entries: TranscriptEntry[];
   draftText: string;
   onClearAll: () => void;
+  onNewSession?: () => void;
   fontSize: number;
   onFontSizeChange: (size: number) => void;
 }
@@ -50,11 +51,20 @@ function formatTime(ts: number): string {
 
 export function VoicePadFooterLeft({
   entries,
-}: Pick<VoicePadFooterProps, "entries">) {
+  onNewSession,
+}: Pick<VoicePadFooterProps, "entries" | "onNewSession">) {
   return (
-    <span className="text-[10px] text-muted-foreground/60 tabular-nums">
-      {entries.length} {entries.length === 1 ? "entry" : "entries"}
-    </span>
+    <>
+      <ActionFeedbackButton
+        icon={<Plus />}
+        tooltip="New session"
+        onClick={onNewSession}
+        className="text-muted-foreground"
+      />
+      <span className="text-[10px] text-muted-foreground/60 tabular-nums">
+        {entries.length} {entries.length === 1 ? "entry" : "entries"}
+      </span>
+    </>
   );
 }
 
@@ -186,7 +196,7 @@ export default function VoicePadExpanded({
           placeholder="Transcribed text appears here..."
           className={cn(
             "min-h-0 w-full flex-1 resize-none rounded-md",
-            "bg-background/50 border border-border/50 px-2 py-1.5",
+            "border-none px-2 py-1.5",
             "leading-snug text-foreground placeholder:text-muted-foreground",
             "focus:outline-none focus:ring-1 focus:ring-ring",
             !hasContent && "hidden",

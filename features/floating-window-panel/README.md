@@ -13,6 +13,7 @@ A high-performance, Redux-backed OS-style window manager for React. This system 
 
 3. **Presentation Layer (`WindowPanel.tsx`)**
    - The UI shell. Consumes `useWindowPanel` properties and inline-styles an absolute `div` target portalled directly to `document.body`. Handles rendering traffic light controls, title injection, and dynamic resize handles (N, S, E, W, NE, NW, SE, SW).
+   - macOS-style invisible hot zone over the left header area — traffic light icons reveal before the cursor reaches the dots.
 
 4. **Multi-Instance State Backing (`withGlobalState.tsx`)**
    - Uses the Redux dynamic module slice paradigm. 
@@ -24,6 +25,30 @@ A high-performance, Redux-backed OS-style window manager for React. This system 
 ## Redux Topology
 *   **Window Manager Slice**: Governs *Spatial Data* (Positions, State).
 *   **System Components Module**: Governs *Internal Component State* (Arbitrary UI data inside the panel).
+
+## Sizing
+
+Pass `width` and `height` as simple numbers (pixels) or viewport-relative strings. The component handles all `window` checks internally — consumers never need `typeof window`.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `width` | `number \| string` | `320` | Initial width. Number = pixels, string = viewport unit (`"60vw"`). |
+| `height` | `number \| string` | `400` | Initial height. Number = pixels, string = viewport unit (`"60vh"`). |
+| `position` | `WindowPosition` | `"center"` | Placement hint: `"center"`, `"top-right"`, `"top-left"`, `"bottom-right"`, `"bottom-left"`. |
+| `minWidth` | `number` | `180` | Minimum resize width in pixels. |
+| `minHeight` | `number` | `80` | Minimum resize height in pixels. |
+
+```tsx
+<WindowPanel title="Chat" width={420} height="60vh" position="center">
+  <ChatBody />
+</WindowPanel>
+
+<WindowPanel title="Voice" width={320} height={420} position="top-right">
+  <VoicePad />
+</WindowPanel>
+```
+
+`initialRect` still exists for edge cases where you need a specific `x`/`y` pixel position (e.g., demo layouts). When `initialRect` provides `x`/`y`, those override the `position` prop. When it provides `width`/`height`, those override the `width`/`height` props. Prefer the simpler props for all standard usage.
 
 ## Built-in Collapsible Sidebar
 

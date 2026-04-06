@@ -18,7 +18,8 @@ export default function QuickDataWindow({
   return (
     <WindowPanel
       title="Quick Data"
-      initialRect={{ width: 800, height: 600, x: 300, y: 150 }}
+      width={800}
+      height={600}
       urlSyncKey="quick_data"
       onClose={onClose}
     >

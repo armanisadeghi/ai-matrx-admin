@@ -90,7 +90,8 @@ export function FeedbackWindow({
       onClose={onClose}
       minWidth={380}
       minHeight={320}
-      initialRect={{ width: 480, height: 580 }}
+      width={480}
+      height={580}
       urlSyncKey="feedback"
       urlSyncId="default"
       className="feedback-window-panel"

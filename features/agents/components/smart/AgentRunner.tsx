@@ -26,7 +26,7 @@ import {
   selectNeedsPreExecutionInput,
   selectShouldShowInput,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
-import { useInstanceTitle } from "@/features/agents/hooks/useInstanceTitle";
+import { selectInstanceDisplayTitle } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectInstanceStatus } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
 import {
   selectIsExecuting,
@@ -64,7 +64,7 @@ export function AgentRunner({
     selectNeedsPreExecutionInput(instanceId),
   );
   const shouldShowInput = useAppSelector(selectShouldShowInput(instanceId));
-  const title = useInstanceTitle(instanceId);
+  const title = useAppSelector(selectInstanceDisplayTitle(instanceId));
   const status = useAppSelector(selectInstanceStatus(instanceId));
   const isExecuting = useAppSelector(selectIsExecuting(instanceId));
   const hasUserInput = useAppSelector(selectHasUserInput(instanceId));
@@ -113,7 +113,7 @@ export function AgentRunner({
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto min-h-0 bg-background">
+      <div className="flex-1 overflow-y-auto min-h-0 bg-background pt-2">
         {/* <SmartAgentMessageList instanceId={instanceId} compact={compact} /> */}
         <AgentConversationDisplay instanceId={instanceId} compact={compact} />
       </div>

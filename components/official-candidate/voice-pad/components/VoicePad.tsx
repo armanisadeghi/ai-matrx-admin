@@ -28,18 +28,6 @@ function ExpandedLoadingFallback() {
   );
 }
 
-function getInitialRect() {
-  if (typeof window === "undefined") {
-    return { x: 0, y: 60, width: 320, height: 420 };
-  }
-  return {
-    x: Math.max(0, window.innerWidth - 340),
-    y: 60,
-    width: 320,
-    height: 420,
-  };
-}
-
 export default function VoicePad() {
   const dispatch = useAppDispatch();
   const entries = useAppSelector(selectVoicePadEntries);
@@ -77,14 +65,24 @@ export default function VoicePad() {
     <WindowPanel
       id={VOICE_PAD_WINDOW_ID}
       title="Voice Pad"
-      initialRect={getInitialRect()}
+      width={320}
+      height={420}
+      position="top-right"
       minWidth={280}
       minHeight={200}
       bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden p-0"
       onClose={handleClose}
       urlSyncKey="voice"
       urlSyncId="default"
-      actions={<MicrophoneIconButton id="voice-pad-header-mic" onTranscriptionComplete={handleTranscriptionComplete} onLiveTranscript={handleLiveTranscript} variant="icon-only" size="xs" />}
+      actions={
+        <MicrophoneIconButton
+          id="voice-pad-header-mic"
+          onTranscriptionComplete={handleTranscriptionComplete}
+          onLiveTranscript={handleLiveTranscript}
+          variant="icon-only"
+          size="xs"
+        />
+      }
     >
       <Suspense fallback={<ExpandedLoadingFallback />}>
         <VoicePadExpanded

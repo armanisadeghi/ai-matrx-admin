@@ -5,14 +5,14 @@
 import { AppStore, makeStore } from "@/lib/redux/store";
 import { useRef } from "react";
 import { Provider } from "react-redux";
-import { InitialReduxState } from "@/types/reduxTypes";
+import { InitialReduxState, LiteInitialReduxState } from "@/types/reduxTypes";
 
 export default function StoreProvider({
   children,
   initialState,
 }: {
   children: React.ReactNode;
-  initialState?: InitialReduxState;
+  initialState?: Partial<InitialReduxState> & LiteInitialReduxState;
 }) {
   const storeRef = useRef<AppStore | null>(null);
 

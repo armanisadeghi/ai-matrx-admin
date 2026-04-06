@@ -291,3 +291,114 @@ If you see *"Selector returned a different result when called with the same para
 1. Check for `??`, `||`, or default values in the selector — remove them.
 2. Check for `.filter()`, `.map()`, or object construction in input selectors — move to result function.
 3. Use `selector.recomputations()` and `selector.dependencyRecomputations()` to trace what's recalculating.
+
+---
+
+## Real-World Example: Replacing a Hook with Selectors
+
+### The Anti-Pattern: a hook that manages "derived display state"
+
+A common mistake is reaching for `useState` + `useEffect` when all you need is a selector. This hook existed to pick the best available title for an agent execution instance:
+
+```ts
+// ❌ WRONG — useEffect/useState for pure state derivation
+export function useAnimatedTitle(instanceId: string) {
+  const resolvedTitle = useInstanceTitle(instanceId);   // another hook
+  const conversationTitle = useAppSelector(selectConversationTitle(instanceId));
+
+  const [displayTitle, setDisplayTitle] = useState(resolvedTitle ?? "Agent");
+  const prevRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (conversationTitle && conversationTitle !== prevRef.current) {
+      prevRef.current = conversationTitle;
+      setDisplayTitle(conversationTitle);
+    }
+  }, [conversationTitle]);
+
+  useEffect(() => {
+    if (!conversationTitle && resolvedTitle) {
+      setDisplayTitle(resolvedTitle);
+    }
+  }, [resolvedTitle, conversationTitle]);
+
+  return displayTitle;
+}
+```
+
+Problems:
+- Two `useEffect` calls managing state that is already in Redux
+- `useRef` tracking a "previous value" that Redux already tracks
+- Every dispatch causes the outer selector to run, then maybe triggers a state update, causing a second render
+- `resolvedTitle ?? "Agent"` in `useState` initial value: if `resolvedTitle` is undefined on first render, `displayTitle` starts as `"Agent"` and stays there until the next effect fires — a stale render
+
+### The Correct Pattern: tiered inline selectors
+
+The same logic as a set of plain selectors — all primitive reads, no new references, single render per change:
+
+```ts
+// ✅ Tier 1 — agent name only (string | undefined)
+export const selectInstanceAgentName =
+  (instanceId: string) =>
+  (state: RootState): string | undefined => {
+    const agentId = state.executionInstances.byInstanceId[instanceId]?.agentId;
+    if (!agentId) return undefined;
+    return state.agentDefinition.agents?.[agentId]?.name || undefined;
+  };
+
+// ✅ Tier 2 — shortcut label → agent name → undefined
+export const selectInstanceTitle =
+  (instanceId: string) =>
+  (state: RootState): string | undefined => {
+    const instance = state.executionInstances.byInstanceId[instanceId];
+    if (!instance) return undefined;
+    if (instance.shortcutId) {
+      const label = state.agentShortcut?.[instance.shortcutId]?.label;
+      if (label) return label;
+    }
+    if (instance.agentId) {
+      const name = state.agentDefinition.agents?.[instance.agentId]?.name;
+      if (name) return name;
+    }
+    return undefined;
+  };
+
+// ✅ Tier 3 — conversationTitle → shortcutLabel → agentName → "Agent"
+// Always returns a string. Use for title bars that must never be empty.
+export const selectInstanceDisplayTitle =
+  (instanceId: string) =>
+  (state: RootState): string => {
+    const conversationTitle =
+      state.instanceConversationHistory.byInstanceId[instanceId]?.title;
+    if (conversationTitle) return conversationTitle;
+
+    const instance = state.executionInstances.byInstanceId[instanceId];
+    if (!instance) return "Agent";
+
+    if (instance.shortcutId) {
+      const label = state.agentShortcut?.[instance.shortcutId]?.label;
+      if (label) return label;
+    }
+    if (instance.agentId) {
+      const name = state.agentDefinition.agents?.[instance.agentId]?.name;
+      if (name) return name;
+    }
+    return "Agent";
+  };
+```
+
+**Why this works:**
+- Each read is a primitive string — `===` comparison catches all changes
+- The `"Agent"` fallback is a string literal, not a new reference — it's always `=== "Agent"`
+- No `useState`, no `useEffect`, no `useRef` — zero extra renders
+- Each tier is independently usable: pre-execution UI calls Tier 1 (agent name only), title bars call Tier 3
+
+**In the component:**
+
+```tsx
+// Before — hook with hidden re-render complexity
+const { displayTitle } = useAnimatedTitle(instanceId);
+
+// After — one selector call, one render per value change
+const displayTitle = useAppSelector(selectInstanceDisplayTitle(instanceId));
+```

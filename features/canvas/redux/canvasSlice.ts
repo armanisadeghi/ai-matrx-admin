@@ -254,7 +254,7 @@ export const {
 } = canvasSlice.actions;
 
 // Selectors — use optional chaining so these work safely with the lite Redux store
-// (public routes use LiteStoreProvider which doesn't include the canvas slice)
+// (public layout includes the full store; canvas state is available if the slice is registered)
 export const selectCanvasIsOpen = (state: RootState) =>
   state.canvas?.isOpen ?? false;
 export const selectCanvasItems = (state: RootState) =>

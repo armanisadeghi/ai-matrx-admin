@@ -24,7 +24,8 @@ export default function MarkdownEditorWindow({
   return (
     <WindowPanel
       title="Markdown Editor"
-      initialRect={{ width: 1000, height: 700, x: 100, y: 100 }}
+      width={1000}
+      height={700}
       urlSyncKey="markdown_editor"
       onClose={onClose}
     >

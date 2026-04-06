@@ -48,12 +48,80 @@ export type ResizeEdge =
   | "ne" // top-right
   | "nw"; // top-left
 
+/** Where to place the window when it first opens. */
+export type WindowPosition =
+  | "center"
+  | "top-right"
+  | "top-left"
+  | "bottom-right"
+  | "bottom-left";
+
+/**
+ * Resolve a dimension value to pixels.
+ * - number → pixels as-is
+ * - string ending in "vh" → percentage of viewport height
+ * - string ending in "vw" → percentage of viewport width
+ */
+function resolveSize(
+  value: number | string | undefined,
+  fallback: number,
+): number {
+  if (value === undefined) return fallback;
+  if (typeof value === "number") return value;
+  const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
+  const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+  if (value.endsWith("vh")) return Math.round((parseFloat(value) / 100) * vh);
+  if (value.endsWith("vw")) return Math.round((parseFloat(value) / 100) * vw);
+  return parseFloat(value) || fallback;
+}
+
+function resolvePosition(
+  pos: WindowPosition | undefined,
+  w: number,
+  h: number,
+): { x: number; y: number } {
+  const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
+  const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+  const pad = 40;
+  switch (pos) {
+    case "top-left":
+      return { x: pad, y: pad };
+    case "top-right":
+      return { x: Math.max(0, vw - w - pad), y: pad };
+    case "bottom-left":
+      return { x: pad, y: Math.max(0, vh - h - pad) };
+    case "bottom-right":
+      return { x: Math.max(0, vw - w - pad), y: Math.max(0, vh - h - pad) };
+    case "center":
+    default:
+      return {
+        x: Math.max(0, (vw - w) / 2),
+        y: Math.max(0, (vh - h) / 4),
+      };
+  }
+}
+
 export interface UseWindowPanelOptions {
   /** Stable, unique id. If omitted a React useId-based id is used. */
   id?: string;
   /** Title shown in the header and tray chip. */
   title?: string;
-  /** Initial position and size. Defaults to centred with 320×400. */
+  /**
+   * Initial width. Accepts pixels (number) or viewport strings ("60vw").
+   * Default: 320.
+   */
+  width?: number | string;
+  /**
+   * Initial height. Accepts pixels (number) or viewport strings ("60vh").
+   * Default: 400.
+   */
+  height?: number | string;
+  /** Where to place the window initially. Default: "center". */
+  position?: WindowPosition;
+  /**
+   * @deprecated Pass `width`, `height`, and `position` instead.
+   * Low-level initial rect — overrides width/height/position when provided.
+   */
   initialRect?: Partial<WindowRect>;
   /** Maximum width the user can resize to. */
   maxWidth?: number;
@@ -102,16 +170,17 @@ export function useWindowPanel(
 
   // ── Registration ────────────────────────────────────────────────────────────
   useEffect(() => {
-    const initial: WindowRect = {
-      x:
-        opts.initialRect?.x ??
-        Math.max(0, (window.innerWidth - DEFAULT_WIDTH) / 2),
-      y:
-        opts.initialRect?.y ??
-        Math.max(0, (window.innerHeight - DEFAULT_HEIGHT) / 4),
-      width: opts.initialRect?.width ?? DEFAULT_WIDTH,
-      height: opts.initialRect?.height ?? DEFAULT_HEIGHT,
-    };
+    const w = opts.initialRect?.width ?? resolveSize(opts.width, DEFAULT_WIDTH);
+    const h =
+      opts.initialRect?.height ?? resolveSize(opts.height, DEFAULT_HEIGHT);
+    const pos =
+      opts.initialRect?.x !== undefined || opts.initialRect?.y !== undefined
+        ? {
+            x: opts.initialRect?.x ?? Math.max(0, (window.innerWidth - w) / 2),
+            y: opts.initialRect?.y ?? Math.max(0, (window.innerHeight - h) / 4),
+          }
+        : resolvePosition(opts.position, w, h);
+    const initial: WindowRect = { ...pos, width: w, height: h };
     dispatch(registerWindow({ id, title: opts.title, initial }));
     return () => {
       dispatch(unregisterWindow(id));
@@ -243,8 +312,9 @@ export function useWindowPanel(
   const rect: WindowRect = entry?.windowed ?? {
     x: 0,
     y: 0,
-    width: opts.initialRect?.width ?? DEFAULT_WIDTH,
-    height: opts.initialRect?.height ?? DEFAULT_HEIGHT,
+    width: opts.initialRect?.width ?? resolveSize(opts.width, DEFAULT_WIDTH),
+    height:
+      opts.initialRect?.height ?? resolveSize(opts.height, DEFAULT_HEIGHT),
   };
 
   return {

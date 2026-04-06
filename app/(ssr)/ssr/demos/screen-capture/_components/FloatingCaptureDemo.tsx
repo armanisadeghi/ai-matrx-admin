@@ -193,7 +193,8 @@ export function FloatingCaptureDemo() {
           className={PANEL_CLASS}
           minWidth={300}
           minHeight={280}
-          initialRect={{ width: 360, height: 460 }}
+          width={360}
+          height={460}
         >
           <PanelBody />
         </WindowPanel>

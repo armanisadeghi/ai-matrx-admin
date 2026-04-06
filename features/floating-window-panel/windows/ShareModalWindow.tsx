@@ -140,7 +140,8 @@ export default function ShareModalWindow({
   return (
     <WindowPanel
       title={`Share ${resourceLabel}`}
-      initialRect={{ width: 650, height: 500, x: 250, y: 150 }}
+      width={650}
+      height={500}
       urlSyncKey="share_modal"
       onClose={onClose}
     >

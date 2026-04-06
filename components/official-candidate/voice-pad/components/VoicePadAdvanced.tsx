@@ -3,13 +3,14 @@
 import React, { lazy, Suspense, useState, useCallback } from "react";
 import { Mic } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
+import { closeOverlay, openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
 import {
   selectVoicePadEntries,
   selectVoicePadDraftText,
   addTranscriptEntry,
   removeTranscriptEntry,
   clearAllEntries,
+  startNewSession,
   setDraftText,
 } from "@/lib/redux/slices/voicePadSlice";
 import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
@@ -28,18 +29,6 @@ function ExpandedLoadingFallback() {
       <span>Loading voice pad...</span>
     </div>
   );
-}
-
-function getInitialRect() {
-  if (typeof window === "undefined") {
-    return { x: 0, y: 60, width: 320, height: 420 };
-  }
-  return {
-    x: Math.max(0, window.innerWidth - 340),
-    y: 60,
-    width: 320,
-    height: 420,
-  };
 }
 
 export default function VoicePadAdvanced() {
@@ -76,6 +65,21 @@ export default function VoicePadAdvanced() {
     dispatch(setDraftText(text));
   };
 
+  const handleNewSession = useCallback(() => {
+    const allText = entries.map((e) => e.text).join("\n\n");
+    const currentText = draftText || allText;
+    if (currentText.trim()) {
+      dispatch(
+        openSaveToNotes({
+          content: currentText,
+          defaultFolder: "transcripts",
+          instanceId: crypto.randomUUID(),
+        }),
+      );
+    }
+    dispatch(startNewSession());
+  }, [dispatch, entries, draftText]);
+
   const handleSelectHistoryItem = useCallback(
     (text: string) => {
       handleClearAll();
@@ -95,7 +99,9 @@ export default function VoicePadAdvanced() {
     <WindowPanel
       id={VOICE_PAD_ADVANCED_WINDOW_ID}
       title="Advanced Voice Pad"
-      initialRect={getInitialRect()}
+      width={320}
+      height={420}
+      position="top-right"
       minWidth={280}
       minHeight={200}
       bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden p-0"
@@ -106,7 +112,9 @@ export default function VoicePadAdvanced() {
       sidebarDefaultSize={35}
       sidebarMinSize={15}
       defaultSidebarOpen={false}
-      footerLeft={<VoicePadFooterLeft entries={entries} />}
+      footerLeft={
+        <VoicePadFooterLeft entries={entries} onNewSession={handleNewSession} />
+      }
       footerRight={
         <VoicePadFooterRight
           entries={entries}
@@ -126,7 +134,7 @@ export default function VoicePadAdvanced() {
         />
       }
     >
-      <div className="flex-1 min-w-0 flex flex-col min-h-0">
+      <div className="flex-1 min-w-0 flex flex-col h-full bg-background">
         <Suspense fallback={<ExpandedLoadingFallback />}>
           <VoicePadExpanded
             entries={entries}

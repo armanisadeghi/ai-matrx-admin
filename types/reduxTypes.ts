@@ -19,13 +19,10 @@ export interface InitialReduxState {
 }
 
 /**
- * Lightweight initial state for lite Redux store.
- * Does NOT require globalCache/schema - all fields are optional.
- * Use this for public routes or lite authenticated routes.
+ * Optional bootstrap fields for `StoreProvider` / `makeStore` on public routes.
  *
- * Extended fields (ai models, context menu, sms) are fetched server-side
- * via get_ssr_shell_data() RPC and passed here to pre-populate the store
- * at hydration time — zero client fetches needed for these on page load.
+ * @deprecated Prefer `Partial<InitialReduxState>` or explicit slice preload keys; the name
+ * "lite" referred to the removed lite store.
  */
 export interface LiteInitialReduxState {
   user?: Partial<UserData>;

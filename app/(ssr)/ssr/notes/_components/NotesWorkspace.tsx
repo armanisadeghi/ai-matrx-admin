@@ -768,12 +768,21 @@ export default function NotesWorkspace({
         });
 
         try {
-          const updates: Record<string, string> = {};
-          const cached = noteCache.get(noteId);
-          if (!cached) return;
+          // Read CURRENT cache via the setter callback to avoid stale closures.
+          // The scheduleSave closure captures noteCache at creation time, but by
+          // the time the setTimeout fires the cache may have been updated by a
+          // previous save. Reading through setNoteCache guarantees freshness.
+          let cachedData: NoteData | null = null;
+          setNoteCache((prev) => {
+            const c = prev.get(noteId);
+            if (c) cachedData = c.data;
+            return prev; // no mutation — just reading
+          });
+          if (!cachedData) return;
 
-          if (label !== cached.data.label) updates.label = label;
-          if (content !== cached.data.content) updates.content = content;
+          const updates: Record<string, string> = {};
+          if (label !== cachedData.label) updates.label = label;
+          if (content !== cachedData.content) updates.content = content;
 
           if (Object.keys(updates).length === 0) {
             setNoteCache((prev) => {
@@ -793,67 +802,61 @@ export default function NotesWorkspace({
             return;
           }
 
-          // ── Optimistic concurrency: fetch server version first ──────
-          // Before saving, check if the note has been modified externally
-          // since we last fetched/saved it. This prevents silent overwrites.
-          if (!skipConcurrencyCheck) {
-            const lastKnownUpdatedAt = cached.data.updated_at;
-
-            const { data: serverCheck, error: checkErr } = await supabase
-              .from("notes")
-              .select("updated_at, content, label")
-              .eq("id", noteId)
-              .single();
-
-            if (!checkErr && serverCheck) {
-              const serverUpdatedAt = serverCheck.updated_at as string;
-              // If server has a newer version than what we last saw, it's a conflict
-              if (
-                lastKnownUpdatedAt &&
-                serverUpdatedAt &&
-                serverUpdatedAt !== lastKnownUpdatedAt &&
-                new Date(serverUpdatedAt) > new Date(lastKnownUpdatedAt)
-              ) {
-                console.warn(
-                  "[Notes Save] Conflict detected! Server updated_at:",
-                  serverUpdatedAt,
-                  "Local:",
-                  lastKnownUpdatedAt,
-                );
-                // Update cache with server data but preserve local edits for user choice
-                setNoteCache((prev) => {
-                  const next = new Map(prev);
-                  const c = next.get(noteId);
-                  if (!c) return prev;
-                  next.set(noteId, {
-                    ...c,
-                    data: {
-                      ...c.data,
-                      content:
-                        (serverCheck.content as string) ?? c.data.content,
-                      label: (serverCheck.label as string) ?? c.data.label,
-                      updated_at: serverUpdatedAt,
-                    },
-                    saveState: "conflict",
-                    fetchedAt: Date.now(),
-                  });
-                  return next;
-                });
-                return; // Don't save — let user resolve the conflict
-              }
-            }
-          }
-
           // Mark as "saving" for echo suppression — realtime and background
           // refresh will skip conflict detection while this note is in flight.
           savingNoteIdsRef.current.add(noteId);
 
-          const { data, error } = await supabase
+          // Save with atomic concurrency check: the WHERE clause ensures we
+          // only update if nobody else has changed the note since we last saw it.
+          // This is immune to stale closures (we send the timestamp, not read it).
+          const lastKnownUpdatedAt = cachedData.updated_at;
+          let query = supabase
             .from("notes")
             .update(updates)
-            .eq("id", noteId)
+            .eq("id", noteId);
+
+          // Atomic concurrency: only update if server version matches what we know
+          if (!skipConcurrencyCheck && lastKnownUpdatedAt) {
+            query = query.eq("updated_at", lastKnownUpdatedAt);
+          }
+
+          const { data, error, count } = await query
             .select("updated_at")
             .single();
+
+          // If 0 rows matched, it means the server version changed — real conflict
+          if (error && error.code === "PGRST116" && !skipConcurrencyCheck) {
+            console.warn("[Notes Save] Real conflict — server version changed since last fetch");
+            savingNoteIdsRef.current.delete(noteId);
+
+            // Fetch the actual server content to show the user
+            const { data: serverData } = await supabase
+              .from("notes")
+              .select("content, label, updated_at")
+              .eq("id", noteId)
+              .single();
+
+            setNoteCache((prev) => {
+              const next = new Map(prev);
+              const c = next.get(noteId);
+              if (!c) return prev;
+              next.set(noteId, {
+                ...c,
+                data: {
+                  ...c.data,
+                  ...(serverData ? {
+                    content: serverData.content as string,
+                    label: serverData.label as string,
+                    updated_at: serverData.updated_at as string,
+                  } : {}),
+                },
+                saveState: "conflict",
+                fetchedAt: Date.now(),
+              });
+              return next;
+            });
+            return;
+          }
 
           // Clear echo suppression after a short window to absorb realtime echo
           setTimeout(() => {
@@ -914,7 +917,7 @@ export default function NotesWorkspace({
 
       timers.set(noteId, timer);
     },
-    [noteCache],
+    [], // No deps — reads current cache via setNoteCache callback, not closure
   );
 
   // ── Force save ──────────────────────────────────────────────────────────

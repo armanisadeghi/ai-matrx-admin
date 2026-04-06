@@ -10,7 +10,7 @@ interface AuthSyncWrapperProps {
 /**
  * Wrapper that syncs Supabase auth to Redux.
  * 
- * Must be rendered INSIDE LiteStoreProvider (needs Redux context).
+ * Must be rendered inside Redux `StoreProvider` (needs Redux context).
  * Runs auth check once after initial render, populates Redux user slice.
  * 
  * All child components can then read from Redux instead of making

@@ -37,7 +37,7 @@ const contextMenuCacheSlice = createSlice({
 
 export const { setContextMenuRows, clearContextMenuCache } = contextMenuCacheSlice.actions;
 
-// Selectors typed against a minimal shape — compatible with both LiteRootState
+// Selectors typed against a minimal shape — compatible with public/bootstrap state
 // and any state that includes contextMenuCache
 export const selectContextMenuRows = (state: { contextMenuCache: ContextMenuCacheState }) =>
   state.contextMenuCache.rows;

@@ -19,7 +19,8 @@
 //   dispatch(setOverlayData({ overlayId: 'htmlPreview', instanceId: 'uuid', type: 'htmlPreview', data: { ... } }));
 //   const entry = useAppSelector(state => selectOverlayData(state, 'htmlPreview', 'uuid'));
 //
-// This slice is registered in both rootReducer and liteRootReducer so it is
+// Registered in rootReducer (single app-wide store).
+// This slice was previously duplicated in the deprecated lite root reducer so it is
 // available in all routes (authenticated, SSR shell, and public).
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";

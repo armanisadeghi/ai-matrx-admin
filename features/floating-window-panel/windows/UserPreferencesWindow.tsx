@@ -274,7 +274,8 @@ export default function UserPreferencesWindow({
   return (
     <WindowPanel
       title="User Preferences"
-      initialRect={{ width: 900, height: 650, x: 150, y: 150 }}
+      width={900}
+      height={650}
       urlSyncKey="user_preferences"
       onClose={onClose}
       sidebar={sidebarContent}

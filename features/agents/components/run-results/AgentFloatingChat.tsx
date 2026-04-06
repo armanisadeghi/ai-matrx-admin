@@ -1,11 +1,13 @@
 "use client";
 
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectNeedsPreExecutionInput } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import {
+  selectNeedsPreExecutionInput,
+  selectInstanceDisplayTitle,
+} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
 import { AgentRunner } from "../smart/AgentRunner";
 import {
-  useAnimatedTitle,
   PreExecutionCard,
   AgentChatHistorySidebar,
   AgentChatFooter,
@@ -22,7 +24,7 @@ export function AgentFloatingChat({
   instanceId,
   onClose,
 }: AgentFloatingChatProps) {
-  const displayTitle = useAnimatedTitle(instanceId);
+  const displayTitle = useAppSelector(selectInstanceDisplayTitle(instanceId));
   const needsPreExecution = useAppSelector(
     selectNeedsPreExecutionInput(instanceId),
   );
@@ -35,12 +37,8 @@ export function AgentFloatingChat({
     <WindowPanel
       title={displayTitle}
       onClose={onClose}
-      initialRect={{
-        width: 420,
-        height: Math.round(
-          typeof window !== "undefined" ? window.innerHeight * 0.6 : 600,
-        ),
-      }}
+      width={420}
+      height="60vh"
       minWidth={320}
       minHeight={280}
       bodyClassName="p-0"

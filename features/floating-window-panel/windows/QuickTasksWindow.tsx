@@ -18,7 +18,8 @@ export default function QuickTasksWindow({
   return (
     <WindowPanel
       title="Quick Tasks"
-      initialRect={{ width: 800, height: 600, x: 200, y: 150 }}
+      width={800}
+      height={600}
       urlSyncKey="quick_tasks"
       onClose={onClose}
     >

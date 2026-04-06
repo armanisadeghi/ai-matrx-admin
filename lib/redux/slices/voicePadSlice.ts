@@ -48,6 +48,10 @@ const voicePadSlice = createSlice({
       state.entries = [];
       state.draftText = "";
     },
+    startNewSession(state) {
+      state.entries = [];
+      state.draftText = "";
+    },
     setDraftText(state, action: PayloadAction<string>) {
       state.draftText = action.payload;
     },
@@ -60,6 +64,7 @@ export const {
   addTranscriptEntry,
   removeTranscriptEntry,
   clearAllEntries,
+  startNewSession,
   setDraftText,
 } = voicePadSlice.actions;
 

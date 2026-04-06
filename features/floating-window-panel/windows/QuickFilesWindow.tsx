@@ -19,7 +19,8 @@ export default function QuickFilesWindow({
   return (
     <WindowPanel
       title="Quick Files"
-      initialRect={{ width: 900, height: 600, x: 250, y: 150 }}
+      width={900}
+      height={600}
       urlSyncKey="quick_files"
       onClose={onClose}
       sidebar={<FileManagerSidebar />}

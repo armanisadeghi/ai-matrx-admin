@@ -29,7 +29,9 @@ export default function SidebarNotesToggle() {
       {open && (
         <NotesWindow
           id={NOTES_WINDOW_ID}
-          initialRect={{ x: 80, y: 80, width: 520, height: 400 }}
+          width={520}
+          height={400}
+          initialRect={{ x: 80, y: 80 }}
           onClose={() => setOpen(false)}
         />
       )}

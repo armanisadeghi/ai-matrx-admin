@@ -1,40 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check, X } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectPreExecutionMessage } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
-import { useInstanceTitle } from "@/features/agents/hooks/useInstanceTitle";
-import { selectConversationTitle } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
+import { selectInstanceAgentName } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectHasUserInput } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { setPreExecutionSatisfied } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
 import { SmartAgentInput } from "../smart/SmartAgentInput";
 import { cn } from "@/lib/utils";
-
-// ─── Animated title hook ──────────────────────────────────────────────────────
-
-export function useAnimatedTitle(instanceId: string) {
-  const resolvedTitle = useInstanceTitle(instanceId);
-  const conversationTitle = useAppSelector(selectConversationTitle(instanceId));
-
-  const [displayTitle, setDisplayTitle] = useState(resolvedTitle ?? "Agent");
-  const prevRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (conversationTitle && conversationTitle !== prevRef.current) {
-      prevRef.current = conversationTitle;
-      setDisplayTitle(conversationTitle);
-    }
-  }, [conversationTitle]);
-
-  useEffect(() => {
-    if (!conversationTitle && resolvedTitle) {
-      setDisplayTitle(resolvedTitle);
-    }
-  }, [resolvedTitle, conversationTitle]);
-
-  return displayTitle;
-}
 
 // ─── Pre-execution compact card (portalled, no WindowPanel) ──────────────────
 
@@ -46,7 +20,7 @@ export function PreExecutionCard({
   onClose: () => void;
 }) {
   const dispatch = useAppDispatch();
-  const title = useInstanceTitle(instanceId);
+  const agentName = useAppSelector(selectInstanceAgentName(instanceId));
   const hasInput = useAppSelector(selectHasUserInput(instanceId));
   const preExecutionMessage = useAppSelector(
     selectPreExecutionMessage(instanceId),
@@ -82,7 +56,7 @@ export function PreExecutionCard({
       >
         <div className="flex items-center justify-between px-4 pt-3 pb-1">
           <p className="text-sm font-medium text-foreground truncate flex-1">
-            {title ?? "Please enter details..."}
+            {agentName ?? "Please enter details..."}
           </p>
           <div className="flex items-center gap-1 shrink-0 ml-2">
             <button

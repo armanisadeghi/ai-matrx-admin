@@ -83,10 +83,8 @@ export default function StateViewerWindow({
       title="State Analyzer"
       minWidth={800}
       minHeight={600}
-      initialRect={{
-        x: window.innerWidth / 2 - 400,
-        y: window.innerHeight / 2 - 300,
-      }}
+      width={800}
+      height={600}
       urlSyncKey="state_analyzer"
       onClose={onClose}
       sidebar={sidebarContent}

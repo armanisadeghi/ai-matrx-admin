@@ -1,58 +1,30 @@
-// lib/redux/liteStore.ts
-// Lightweight store for public/lite routes - no sagas, no socket.io, no entity system
-import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
-import { createLiteRootReducer, LiteRootState } from "@/lib/redux/liteRootReducer";
-import { socketMiddleware } from "@/lib/redux/socket-io/connection/socketMiddleware";
-import { enableMapSet } from "immer";
-import { LiteInitialReduxState } from "@/types/reduxTypes";
-
-// Store reference for utility access (separate from main store)
-let liteStoreInstance: LiteAppStore | null = null;
-
 /**
- * Creates a lightweight Redux store without:
- * - Redux Saga middleware
- * - Socket.io middleware  
- * - Entity saga middleware
- * - Logger middleware (removed for performance)
- * - Storage middleware
- * 
- * This store is ideal for:
- * - Public routes that need some Redux state
- * - Lite authenticated routes that don't need entity system
- * - Faster initial load times
- * 
- * @param initialState - Optional initial state (no schema required)
+ * @deprecated Lite Redux is deprecated — use `@/lib/redux/store` instead:
+ * - `makeStore` (replaces `makeLiteStore`)
+ * - `getStore` (replaces `getLiteStore`)
+ * - `RootState` (replaces `LiteRootState`)
+ * - `resolveStoreBootstrapState` for optional public/bootstrap state
  */
-export const makeLiteStore = (initialState?: LiteInitialReduxState) => {
-    const rootReducer = createLiteRootReducer();
+// lib/redux/liteStore.ts — re-exports only; retained for backward-compatible imports
+import {
+    makeStore,
+    getStore,
+    resolveStoreBootstrapState,
+    type AppStore,
+    type RootState,
+    type AppDispatch,
+    type AppThunk,
+} from "@/lib/redux/store";
 
-    const store = configureStore({
-        reducer: rootReducer,
-        preloadedState: initialState as unknown as Partial<LiteRootState>,
-        middleware: (getDefaultMiddleware) =>
-            getDefaultMiddleware({
-                serializableCheck: false,
-                immutableCheck: false,
-                actionCreatorCheck: false,
-            }).concat(socketMiddleware),
-        devTools: process.env.NODE_ENV !== "production",
-    });
+/** @deprecated Use `makeStore` from `@/lib/redux/store`. */
+export const makeLiteStore = makeStore;
 
-    // Keep reference for utility access
-    liteStoreInstance = store;
+/** @deprecated Use `getStore` from `@/lib/redux/store`. */
+export const getLiteStore = getStore;
 
-    return store;
-};
+export type LiteAppStore = AppStore;
+export type LiteRootState = RootState;
+export type LiteAppDispatch = AppDispatch;
+export type LiteAppThunk<ReturnType = void> = AppThunk<ReturnType>;
 
-export type LiteAppStore = ReturnType<typeof makeLiteStore>;
-export type LiteAppDispatch = LiteAppStore["dispatch"];
-export type LiteAppThunk<ReturnType = void> = ThunkAction<ReturnType, LiteRootState, unknown, Action>;
-
-// Re-export LiteRootState for convenience
-export type { LiteRootState };
-
-// Getter for utilities to access lite store
-export const getLiteStore = (): LiteAppStore | null => liteStoreInstance;
-
-enableMapSet();
+export { resolveStoreBootstrapState };

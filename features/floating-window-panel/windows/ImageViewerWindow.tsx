@@ -30,6 +30,10 @@ export interface ImageViewerProps {
   initialIndex?: number;
   /** Optional alt text per image. Falls back to "Image N". */
   alts?: string[];
+  /** Controlled index — when provided, the viewer uses this instead of internal state. */
+  activeIndex?: number;
+  /** Callback when the active index changes (for controlled mode). */
+  onIndexChange?: (index: number) => void;
 }
 
 export interface ImageViewerWindowProps extends ImageViewerProps {
@@ -47,8 +51,12 @@ export function ImageViewer({
   images,
   initialIndex = 0,
   alts,
+  activeIndex,
+  onIndexChange,
 }: ImageViewerProps) {
-  const [index, setIndex] = useState(initialIndex);
+  const [internalIndex, setInternalIndex] = useState(initialIndex);
+  const index = activeIndex ?? internalIndex;
+  const setIndex = onIndexChange ?? setInternalIndex;
   const [zoom, setZoom] = useState(1);
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -64,12 +72,12 @@ export function ImageViewer({
   }, [index]);
 
   const prev = useCallback(
-    () => setIndex((i) => (i - 1 + images.length) % images.length),
-    [images.length],
+    () => setIndex((index - 1 + images.length) % images.length),
+    [index, images.length, setIndex],
   );
   const next = useCallback(
-    () => setIndex((i) => (i + 1) % images.length),
-    [images.length],
+    () => setIndex((index + 1) % images.length),
+    [index, images.length, setIndex],
   );
   const zoomIn = useCallback(() => setZoom((z) => Math.min(z + 0.25, 4)), []);
   const zoomOut = useCallback(() => {
@@ -253,6 +261,49 @@ function ToolbarBtn({
   );
 }
 
+// ─── Thumbnail sidebar ────────────────────────────────────────────────────────
+
+function ThumbnailSidebar({
+  images,
+  alts,
+  activeIndex,
+  onSelect,
+}: {
+  images: string[];
+  alts?: string[];
+  activeIndex: number;
+  onSelect: (index: number) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1 p-1 h-full min-h-0">
+      {images.map((url, i) => (
+        <button
+          key={`${url}-${i}`}
+          type="button"
+          onClick={() => onSelect(i)}
+          className={cn(
+            "shrink-0 rounded overflow-hidden border-2 transition-all",
+            "hover:border-primary/60",
+            i === activeIndex
+              ? "border-primary ring-1 ring-primary/30"
+              : "border-transparent opacity-60 hover:opacity-100",
+          )}
+          title={alts?.[i] ?? `Image ${i + 1}`}
+          aria-label={alts?.[i] ?? `Image ${i + 1}`}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={url}
+            alt={alts?.[i] ?? `Image ${i + 1}`}
+            draggable={false}
+            className="w-full aspect-square object-cover"
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // ─── Window shell ─────────────────────────────────────────────────────────────
 
 export function ImageViewerWindow({
@@ -264,10 +315,13 @@ export function ImageViewerWindow({
   title,
   instanceId = "default",
 }: ImageViewerWindowProps) {
+  const [index, setIndex] = useState(initialIndex);
+  const hasMany = images.length > 1;
+
   if (!isOpen || images.length === 0) return null;
 
   const windowTitle =
-    title ?? (images.length > 1 ? `Images (${images.length})` : "Image Viewer");
+    title ?? (hasMany ? `Images (${images.length})` : "Image Viewer");
 
   return (
     <WindowPanel
@@ -276,9 +330,29 @@ export function ImageViewerWindow({
       onClose={onClose}
       minWidth={320}
       minHeight={240}
-      initialRect={{ width: 700, height: 520 }}
+      width={700}
+      height={520}
+      sidebar={
+        hasMany ? (
+          <ThumbnailSidebar
+            images={images}
+            alts={alts}
+            activeIndex={index}
+            onSelect={setIndex}
+          />
+        ) : undefined
+      }
+      sidebarDefaultSize={12}
+      sidebarMinSize={8}
+      defaultSidebarOpen={hasMany}
     >
-      <ImageViewer images={images} initialIndex={initialIndex} alts={alts} />
+      <ImageViewer
+        images={images}
+        initialIndex={initialIndex}
+        alts={alts}
+        activeIndex={index}
+        onIndexChange={setIndex}
+      />
     </WindowPanel>
   );
 }
