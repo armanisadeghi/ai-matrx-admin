@@ -5,15 +5,25 @@ import React from "react"
 import { Group, Panel, Separator } from "react-resizable-panels"
 import { cn } from "@/styles/themes/utils"
 
+/**
+ * react-resizable-panels v4 wrapper (matrx variant with configurable handle sizes)
+ *
+ * v4 breaking changes vs v1/v2:
+ * - `data-panel-group-direction` attribute removed → use `aria-orientation` on Separator
+ * - Numeric size props are PIXELS → use strings for percentages (e.g. "30%")
+ * - Group internally sets display:flex, flex-direction, overflow:hidden
+ * - Separator has aria-orientation="vertical" in horizontal groups, "horizontal" in vertical groups
+ */
+
 const handleSizes = {
-  xs: "w-1 data-[panel-group-direction=vertical]:h-1",
-  sm: "w-1.5 data-[panel-group-direction=vertical]:h-1.5",
-  md: "w-2 data-[panel-group-direction=vertical]:h-2",
-  lg: "w-3 data-[panel-group-direction=vertical]:h-3",
-  xl: "w-4 data-[panel-group-direction=vertical]:h-4",
-  "2xl": "w-6 data-[panel-group-direction=vertical]:h-6",
-  "3xl": "w-8 data-[panel-group-direction=vertical]:h-8",
-  "4xl": "w-10 data-[panel-group-direction=vertical]:h-10",
+  xs: "w-1 [&[aria-orientation=horizontal]]:w-auto [&[aria-orientation=horizontal]]:h-1",
+  sm: "w-1.5 [&[aria-orientation=horizontal]]:w-auto [&[aria-orientation=horizontal]]:h-1.5",
+  md: "w-2 [&[aria-orientation=horizontal]]:w-auto [&[aria-orientation=horizontal]]:h-2",
+  lg: "w-3 [&[aria-orientation=horizontal]]:w-auto [&[aria-orientation=horizontal]]:h-3",
+  xl: "w-4 [&[aria-orientation=horizontal]]:w-auto [&[aria-orientation=horizontal]]:h-4",
+  "2xl": "w-6 [&[aria-orientation=horizontal]]:w-auto [&[aria-orientation=horizontal]]:h-6",
+  "3xl": "w-8 [&[aria-orientation=horizontal]]:w-auto [&[aria-orientation=horizontal]]:h-8",
+  "4xl": "w-10 [&[aria-orientation=horizontal]]:w-auto [&[aria-orientation=horizontal]]:h-10",
 } as const
 
 type HandleSize = keyof typeof handleSizes
@@ -24,7 +34,7 @@ const ResizablePanelGroup = ({
                              }: React.ComponentProps<typeof Group>) => (
     <Group
         className={cn(
-            "flex h-full w-full data-[panel-group-direction=vertical]:flex-col",
+            "flex h-full w-full",
             className
         )}
         {...props}
@@ -46,9 +56,10 @@ const ResizableHandle = ({
                          }: ResizableHandleProps) => (
     <Separator
         className={cn(
-            "relative flex items-center justify-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1",
-            "data-[panel-group-direction=vertical]:w-full data-[panel-group-direction=vertical]:h-1.5",
-            "data-[panel-group-direction=horizontal]:w-1.5 data-[panel-group-direction=horizontal]:h-full",
+            "group/handle relative flex items-center justify-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1",
+            "[&[aria-orientation=horizontal]]:w-full [&[aria-orientation=horizontal]]:h-1.5",
+            "[&[aria-orientation=vertical]]:w-1.5 [&[aria-orientation=vertical]]:h-full",
+            handleSizes[size],
             className
         )}
         {...props}
@@ -57,12 +68,11 @@ const ResizableHandle = ({
           <div
               className={cn(
                   "z-10 flex items-center justify-center rounded-sm border bg-border",
-                  "data-[panel-group-direction=vertical]:h-4 data-[panel-group-direction=vertical]:w-8",
-                  "data-[panel-group-direction=horizontal]:h-8 data-[panel-group-direction=horizontal]:w-4",
-                  "[&[data-panel-group-direction=vertical]>div]:rotate-90"
+                  "h-8 w-4",
+                  "group-aria-[orientation=horizontal]/handle:h-4 group-aria-[orientation=horizontal]/handle:w-8"
               )}
           >
-            <DragHandleDots2Icon className="h-2.5 w-2.5" />
+            <DragHandleDots2Icon className="h-2.5 w-2.5 group-aria-[orientation=horizontal]/handle:rotate-90" />
           </div>
       )}
     </Separator>

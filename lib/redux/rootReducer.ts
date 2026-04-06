@@ -60,6 +60,7 @@ import adminPreferencesReducer from "./slices/adminPreferencesSlice";
 import apiConfigReducer from "./slices/apiConfigSlice";
 import activeChatReducer from "./slices/activeChatSlice";
 import entitySystemReducer from "./slices/entitySystemSlice";
+import urlSyncReducer from "./slices/urlSyncSlice";
 
 // Agent cache — unified slim/core/operational store for user prompts + builtins + shared
 import agentCacheReducer from "./slices/agentCacheSlice";
@@ -187,6 +188,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     overlayData: overlayDataReducer,
     voicePad: voicePadReducer,
     windowManager: windowManagerReducer,
+    urlSync: urlSyncReducer,
 
     // Canvas and Artifacts system ----------
     canvas: canvasReducer,

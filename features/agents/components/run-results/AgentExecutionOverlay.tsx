@@ -29,6 +29,7 @@ import { X, MessageSquare, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FloatingSheet from "@/components/official/FloatingSheet";
 import { FloatingPanel } from "@/components/official-candidate/floating-window-panel/FloatingPanel";
+import { AgentFloatingChat } from "../overlays/AgentFloatingChat";
 
 // =============================================================================
 // Full Modal
@@ -430,6 +431,8 @@ export function AgentExecutionOverlay({
           index={index}
         />
       );
+    case "floating-chat":
+      return <AgentFloatingChat instanceId={instanceId} onClose={onClose} />;
     default:
       return null;
   }

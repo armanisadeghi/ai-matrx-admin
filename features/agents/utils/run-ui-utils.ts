@@ -102,6 +102,19 @@ export const RESULT_DISPLAY_META: Record<ResultDisplayMode, DisplayModeMeta> = {
     useCases: ["Simple confirmations", "Status updates", "Quick answers"],
     testMode: false,
   },
+  "floating-chat": {
+    label: "Floating Chat",
+    description:
+      "Draggable, resizable OS-style window with full chat interface",
+    icon: "AppWindow",
+    color: "text-sky-600 dark:text-sky-400",
+    useCases: [
+      "Persistent conversation",
+      "Multitasking while chatting",
+      "Movable workspace",
+    ],
+    testMode: false,
+  },
   direct: {
     label: "Direct Stream",
     description:
@@ -129,7 +142,8 @@ export const isInteractive = (display: ResultDisplay): boolean => {
   return (
     display === "modal-full" ||
     display === "modal-compact" ||
-    display === "sidebar"
+    display === "sidebar" ||
+    display === "floating-chat"
   );
 };
 

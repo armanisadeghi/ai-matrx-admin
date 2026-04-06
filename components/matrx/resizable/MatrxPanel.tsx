@@ -8,7 +8,7 @@ import {Button} from '@/components/ui/button';
 import {ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Maximize2, Minimize2} from 'lucide-react';
 import {Card} from '@/components/ui/card';
 import {cn} from '@/lib/utils';
-import {GroupImperativeHandle, type Layout} from 'react-resizable-panels';
+import {type GroupImperativeHandle, type Layout} from 'react-resizable-panels';
 import type {CSSProperties} from 'react';
 
 type PanelPosition = 'left' | 'right' | 'top' | 'bottom';
@@ -54,7 +54,7 @@ const MatrxPanel: React.FC<MatrxPanelProps> = (
     const [panelKey, setPanelKey] = React.useState(0);
     const isExpanded = controlledExpanded ?? localExpanded;
 
-    const panelGroupRef = React.useRef<GroupImperativeHandle>(null);
+    const panelGroupRef = React.useRef<GroupImperativeHandle | null>(null);
 
     const isVertical = position === 'top' || position === 'bottom';
     const isStartPosition = position === 'left' || position === 'top';
@@ -82,24 +82,25 @@ const MatrxPanel: React.FC<MatrxPanelProps> = (
     };
 
     const handlePanelResize = (layout: Layout) => {
-        const sizeIndex = isStartPosition ? 0 : 1;
-        if (layout[sizeIndex] >= minSize && layout[sizeIndex] <= maxSize) {
-            setLastSize(layout[sizeIndex]);
+        const contentSize = layout["panel-content"];
+        if (contentSize != null && contentSize >= minSize && contentSize <= maxSize) {
+            setLastSize(contentSize);
         }
     };
 
     const getPanelSizes = () => {
+        // v4: numeric values = pixels, strings = percentages
         if (isFullScreen) {
             return {
                 contentPanel: {
-                    defaultSize: 100,
-                    minSize: 100,
-                    maxSize: 100,
+                    defaultSize: "100%",
+                    minSize: "100%",
+                    maxSize: "100%",
                 },
                 spacerPanel: {
-                    defaultSize: 0,
-                    minSize: 0,
-                    maxSize: 0,
+                    defaultSize: "0%",
+                    minSize: "0%",
+                    maxSize: "0%",
                 }
             };
         }
@@ -108,14 +109,14 @@ const MatrxPanel: React.FC<MatrxPanelProps> = (
 
         return {
             contentPanel: {
-                defaultSize: currentSize,
-                minSize,
-                maxSize,
+                defaultSize: `${currentSize}%`,
+                minSize: `${minSize}%`,
+                maxSize: `${maxSize}%`,
             },
             spacerPanel: {
-                defaultSize: 100 - currentSize,
-                minSize: 100 - maxSize,
-                maxSize: 100 - minSize,
+                defaultSize: `${100 - currentSize}%`,
+                minSize: `${100 - maxSize}%`,
+                maxSize: `${100 - minSize}%`,
             }
         };
     };
@@ -206,6 +207,7 @@ const MatrxPanel: React.FC<MatrxPanelProps> = (
     const panels = [
         <ResizablePanel
             key="spacer"
+            id="panel-spacer"
             {...panelSizes.spacerPanel}
             style={{visibility: isFullScreen ? 'hidden' : 'visible'}}
         >
@@ -226,8 +228,8 @@ const MatrxPanel: React.FC<MatrxPanelProps> = (
 
         <ResizablePanel
             key="content"
+            id="panel-content"
             {...panelSizes.contentPanel}
-            defaultSize={panelSizes.contentPanel.defaultSize}
         >
             <Card
                 className={cn("h-full shadow-lg", styles.border)}

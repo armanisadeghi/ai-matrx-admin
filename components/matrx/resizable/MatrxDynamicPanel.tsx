@@ -28,7 +28,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {cn} from '@/lib/utils';
-import {GroupImperativeHandle, type Layout} from 'react-resizable-panels';
+import {type GroupImperativeHandle, type Layout} from 'react-resizable-panels';
 import {useIsMobile} from '@/hooks/use-mobile';
 import type {CSSProperties} from 'react';
 
@@ -131,7 +131,7 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
     const isExpanded = controlledExpanded ?? localExpanded;
     const isMobile = useIsMobile();
 
-    const panelGroupRef = React.useRef<GroupImperativeHandle>(null);
+    const panelGroupRef = React.useRef<GroupImperativeHandle | null>(null);
     const isVertical = currentPosition === 'top' || currentPosition === 'bottom';
     const isStartPosition = currentPosition === 'left' || currentPosition === 'top';
 
@@ -160,25 +160,26 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
     };
 
     const handlePanelResize = (layout: Layout) => {
-        const sizeIndex = isStartPosition ? 0 : 1;
-        if (layout[sizeIndex] >= minSize && layout[sizeIndex] <= maxSize) {
-            setLastSize(layout[sizeIndex]);
+        const contentSize = layout["dynamic-content"];
+        if (contentSize != null && contentSize >= minSize && contentSize <= maxSize) {
+            setLastSize(contentSize);
         }
     };
 
     const getPanelSizes = () => {
         // Mobile is always full screen when expanded
+        // v4: numeric values = pixels, strings = percentages
         if (isFullScreen || isMobile) {
             return {
                 contentPanel: {
-                    defaultSize: 100,
-                    minSize: 100,
-                    maxSize: 100,
+                    defaultSize: "100%",
+                    minSize: "100%",
+                    maxSize: "100%",
                 },
                 spacerPanel: {
-                    defaultSize: 0,
-                    minSize: 0,
-                    maxSize: 0,
+                    defaultSize: "0%",
+                    minSize: "0%",
+                    maxSize: "0%",
                 }
             };
         }
@@ -187,14 +188,14 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
 
         return {
             contentPanel: {
-                defaultSize: currentSize,
-                minSize,
-                maxSize,
+                defaultSize: `${currentSize}%`,
+                minSize: `${minSize}%`,
+                maxSize: `${maxSize}%`,
             },
             spacerPanel: {
-                defaultSize: 100 - currentSize,
-                minSize: 100 - maxSize,
-                maxSize: 100 - minSize,
+                defaultSize: `${100 - currentSize}%`,
+                minSize: `${100 - maxSize}%`,
+                maxSize: `${100 - minSize}%`,
             }
         };
     };
@@ -295,6 +296,7 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
     const panels = [
         <ResizablePanel
             key="spacer"
+            id="dynamic-spacer"
             {...panelSizes.spacerPanel}
             style={{
                 visibility: (isFullScreen || isMobile) ? 'hidden' : 'visible',
@@ -319,8 +321,8 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
 
         <ResizablePanel
             key="content"
+            id="dynamic-content"
             {...panelSizes.contentPanel}
-            defaultSize={panelSizes.contentPanel.defaultSize}
         >
             <Card
                 className={cn(

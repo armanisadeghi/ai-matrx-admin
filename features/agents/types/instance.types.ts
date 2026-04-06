@@ -214,6 +214,7 @@ export type ResultDisplayMode =
   | "flexible-panel"
   | "panel"
   | "toast"
+  | "floating-chat"
   | "direct"
   | "background";
 
@@ -369,6 +370,19 @@ export interface InstanceUIState {
    * Ephemeral — not saved with the agent definition.
    */
   builderAdvancedSettings: BuilderAdvancedSettings;
+
+  // ── Content visibility ────────────────────────────────────────────────────
+  /** When true, reasoning/thinking blocks are not shown in the message list. */
+  hideReasoning: boolean;
+
+  /** When true, tool-call result blocks are not shown in the message list. */
+  hideToolResults: boolean;
+
+  /**
+   * Optional message shown in the pre-execution input gate.
+   * Used to give the user context about what the agent expects.
+   */
+  preExecutionMessage: string | null;
 
   /**
    * Arbitrary UI state specific to the display mode.

@@ -218,15 +218,15 @@ function ActionsTab({
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-center justify-center gap-1.5 p-2 aspect-square text-muted-foreground hover:text-foreground bg-muted/10 hover:bg-muted/30 border border-transparent hover:border-border rounded-xl transition-all"
+      className="flex flex-col items-center justify-center gap-1.5 w-[84px] h-[84px] text-muted-foreground hover:text-foreground bg-muted/10 hover:bg-muted/30 border border-transparent hover:border-border rounded-xl transition-all shrink-0"
     >
-      <Icon className="w-5 h-5" />
-      <span className="text-[9px] text-center leading-tight font-medium">{label}</span>
+      <Icon className="w-7 h-7" />
+      <span className="text-[10px] text-center leading-tight font-medium px-1">{label}</span>
     </button>
   );
 
   return (
-    <div className="p-3 grid grid-cols-5 sm:grid-cols-7 gap-2">
+    <div className="p-2 flex flex-wrap content-start gap-2 h-full overflow-y-auto">
       <ActionButton
         onClick={handleReset}
         icon={RotateCcw}
@@ -860,16 +860,16 @@ function TestDisplaysTab({ instanceId }: { instanceId: string }) {
       </div>
       
       {/* Right side for icons */}
-      <div className="flex-1 p-3 grid grid-cols-4 sm:grid-cols-5 gap-2 overflow-y-auto content-start">
+      <div className="flex-1 p-2 flex flex-wrap content-start gap-2 overflow-y-auto">
         {displayTypes.map(display => (
            <button 
              key={display.displayMode} 
              onClick={() => tester.openWithDisplayType(display.displayMode)}
              title={display.note}
-             className="flex flex-col items-center justify-center gap-1.5 p-2 aspect-square bg-muted/10 hover:bg-muted/30 border border-transparent hover:border-border rounded-xl transition-all"
+             className="flex flex-col items-center justify-center gap-1.5 w-[84px] h-[84px] bg-muted/10 hover:bg-muted/30 border border-transparent hover:border-border rounded-xl transition-all shrink-0"
            >
-             {display.icon && <display.icon className={`w-5 h-5 ${display.color}`} />}
-             <span className="text-[9px] text-center leading-tight truncate w-full px-1">{display.name}</span>
+             {display.icon && <display.icon className={`w-7 h-7 ${display.color}`} />}
+             <span className="text-[10px] text-center leading-tight truncate w-full px-1">{display.name}</span>
            </button>
         ))}
       </div>

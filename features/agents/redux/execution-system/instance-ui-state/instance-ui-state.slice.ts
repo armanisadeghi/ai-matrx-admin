@@ -89,6 +89,9 @@ export interface InitInstanceUIStatePayload {
   autoClearConversation?: boolean;
   reuseConversationId?: boolean;
   builderAdvancedSettings?: Partial<BuilderAdvancedSettings>;
+  hideReasoning?: boolean;
+  hideToolResults?: boolean;
+  preExecutionMessage?: string | null;
 }
 
 // =============================================================================
@@ -119,6 +122,9 @@ const instanceUIStateSlice = createSlice({
         autoClearConversation = false,
         reuseConversationId = false,
         builderAdvancedSettings,
+        hideReasoning = false,
+        hideToolResults = false,
+        preExecutionMessage = null,
       } = action.payload;
 
       state.byInstanceId[instanceId] = {
@@ -144,6 +150,9 @@ const instanceUIStateSlice = createSlice({
           ...DEFAULT_BUILDER_ADVANCED_SETTINGS,
           ...builderAdvancedSettings,
         },
+        hideReasoning,
+        hideToolResults,
+        preExecutionMessage,
         modeState: {},
       };
     },
@@ -402,6 +411,36 @@ const instanceUIStateSlice = createSlice({
       }
     },
 
+    setHideReasoning(
+      state,
+      action: PayloadAction<{ instanceId: string; value: boolean }>,
+    ) {
+      const entry = state.byInstanceId[action.payload.instanceId];
+      if (entry) {
+        entry.hideReasoning = action.payload.value;
+      }
+    },
+
+    setHideToolResults(
+      state,
+      action: PayloadAction<{ instanceId: string; value: boolean }>,
+    ) {
+      const entry = state.byInstanceId[action.payload.instanceId];
+      if (entry) {
+        entry.hideToolResults = action.payload.value;
+      }
+    },
+
+    setPreExecutionMessage(
+      state,
+      action: PayloadAction<{ instanceId: string; message: string | null }>,
+    ) {
+      const entry = state.byInstanceId[action.payload.instanceId];
+      if (entry) {
+        entry.preExecutionMessage = action.payload.message;
+      }
+    },
+
     removeInstanceUIState(state, action: PayloadAction<string>) {
       delete state.byInstanceId[action.payload];
     },
@@ -448,6 +487,9 @@ export const {
   resetBuilderAdvancedSettings,
   setStructuredInstruction,
   resetStructuredInstruction,
+  setHideReasoning,
+  setHideToolResults,
+  setPreExecutionMessage,
   removeInstanceUIState,
   setUseBlockMode,
 } = instanceUIStateSlice.actions;

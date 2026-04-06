@@ -3,27 +3,29 @@
 /**
  * AgentPreExecutionInput
  *
- * Gate component shown before the main display when usePreExecutionInput is true
- * and preExecutionSatisfied is false.
+ * Focused gate component — NOT a chat interface. Shown before the main display
+ * when usePreExecutionInput is true and preExecutionSatisfied is false.
  *
- * Uses the full SmartAgentInput so users get resources, voice, paste, etc.
- * The key difference: instead of executing on submit, it marks
- * preExecutionSatisfied = true and lets AgentRunner take over.
+ * Uses SmartAgentInput in compact mode with send disabled so the user gets
+ * full functionality (variables, resources, audio, paste) in a tight layout.
+ * Continue/Skip and Cancel buttons control the gate.
  *
  * Flow:
- *   1. User types/speaks/pastes into SmartAgentInput (writes to Redux in real-time)
- *   2. User clicks "Continue" (or "Skip")
- *   3. We dispatch setPreExecutionSatisfied(true)
- *   4. AgentRunner sees needsPreExecution flip to false → shows main display
- *   5. If autoRun is true, AgentRunner's auto-run effect fires with the input already in Redux
+ *   1. SmartAgentInput writes to Redux in real-time (text, variables, resources)
+ *   2. User clicks Continue / Skip → setPreExecutionSatisfied(true)
+ *   3. AgentRunner sees gate flip → renders the main display
+ *   4. If autoRun, execution fires immediately with everything already in Redux
  */
 
 import { ArrowRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { setPreExecutionSatisfied } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
-import { selectInstanceTitle } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
-import { selectUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
+import {
+  selectInstanceTitle,
+  selectPreExecutionMessage,
+} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import { selectHasUserInput } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
 import { SmartAgentInput } from "./SmartAgentInput";
 
@@ -36,7 +38,10 @@ export function AgentPreExecutionInput({
 }: AgentPreExecutionInputProps) {
   const dispatch = useAppDispatch();
   const title = useAppSelector(selectInstanceTitle(instanceId));
-  const inputText = useAppSelector(selectUserInputText(instanceId));
+  const hasInput = useAppSelector(selectHasUserInput(instanceId));
+  const preExecutionMessage = useAppSelector(
+    selectPreExecutionMessage(instanceId),
+  );
 
   const handleContinue = () => {
     dispatch(setPreExecutionSatisfied({ instanceId, value: true }));
@@ -47,45 +52,46 @@ export function AgentPreExecutionInput({
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
-        <div className="w-full max-w-md space-y-3">
+    <div className="flex flex-col">
+      {(title || preExecutionMessage) && (
+        <div className="px-3 pt-3 pb-1 space-y-0.5">
           {title && (
-            <p className="text-sm font-medium text-center text-foreground">
+            <p className="text-sm font-medium text-foreground truncate">
               {title}
             </p>
           )}
-          <p className="text-xs text-muted-foreground text-center">
-            Add an optional message before running
-          </p>
+          {preExecutionMessage && (
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {preExecutionMessage}
+            </p>
+          )}
         </div>
-      </div>
+      )}
 
-      <div className="shrink-0 px-3 pb-2">
+      <div className="px-3 pt-1 pb-1">
         <SmartAgentInput
           instanceId={instanceId}
           compact
-          placeholder="Type instructions, add files, record audio... (optional)"
+          placeholder="Additional instructions (optional)..."
           showSubmitOnEnterToggle={false}
           showAutoClearToggle={false}
-          sendButtonVariant="default"
           disableSend
         />
       </div>
 
-      <div className="shrink-0 flex items-center justify-center gap-2 px-3 pb-4">
+      <div className="flex items-center justify-center gap-2 px-3 pb-3 pt-1">
         <Button
           variant="ghost"
           size="sm"
           onClick={handleCancel}
-          className="text-muted-foreground"
+          className="text-muted-foreground h-7 text-xs"
         >
-          <X className="w-3.5 h-3.5 mr-1" />
+          <X className="w-3 h-3 mr-1" />
           Cancel
         </Button>
-        <Button size="sm" onClick={handleContinue}>
-          <ArrowRight className="w-3.5 h-3.5 mr-1" />
-          {inputText?.trim() ? "Continue" : "Skip"}
+        <Button size="sm" onClick={handleContinue} className="h-7 text-xs">
+          <ArrowRight className="w-3 h-3 mr-1" />
+          {hasInput ? "Continue" : "Skip"}
         </Button>
       </div>
     </div>

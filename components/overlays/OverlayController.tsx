@@ -44,6 +44,8 @@ import { destroyInstance } from "@/features/agents/redux/execution-system/execut
 import dynamic from "next/dynamic";
 import type { ResourceType } from "@/utils/permissions";
 import { updateOverlayData } from "@/lib/redux/slices/overlayDataSlice";
+import { Suspense } from "react";
+import { UrlPanelManager } from "@/components/official-candidate/floating-window-panel/url-sync/UrlPanelManager";
 
 // ============================================================================
 // DYNAMIC IMPORTS — all lazy, no SSR
@@ -464,6 +466,10 @@ export const OverlayController: React.FC = () => {
 
   return (
     <>
+      <Suspense fallback={null}>
+        <UrlPanelManager />
+      </Suspense>
+
       {/* ── Singleton overlays (always 0 or 1 instance) ────────────────── */}
 
       {isMarkdownEditorOpen && (

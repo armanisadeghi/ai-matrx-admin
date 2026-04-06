@@ -191,8 +191,7 @@ export const selectInstanceOrigin =
 export const selectInstanceAgentName =
   (instanceId: string) =>
   (state: RootState): string | undefined => {
-    const agentId =
-      state.executionInstances.byInstanceId[instanceId]?.agentId;
+    const agentId = state.executionInstances.byInstanceId[instanceId]?.agentId;
     if (!agentId) return undefined;
     return state.agentDefinition.agents?.[agentId]?.name || undefined;
   };
@@ -303,6 +302,23 @@ export const selectStructuredInstruction =
   (instanceId: string) => (state: RootState) =>
     state.instanceUIState.byInstanceId[instanceId]?.builderAdvancedSettings
       ?.structuredInstruction;
+
+// ── Content visibility selectors ──────────────────────────────────────────────
+
+export const selectHideReasoning =
+  (instanceId: string) =>
+  (state: RootState): boolean =>
+    state.instanceUIState.byInstanceId[instanceId]?.hideReasoning ?? false;
+
+export const selectHideToolResults =
+  (instanceId: string) =>
+  (state: RootState): boolean =>
+    state.instanceUIState.byInstanceId[instanceId]?.hideToolResults ?? false;
+
+export const selectPreExecutionMessage =
+  (instanceId: string) =>
+  (state: RootState): string | null =>
+    state.instanceUIState.byInstanceId[instanceId]?.preExecutionMessage ?? null;
 
 // ── Global preference selectors ───────────────────────────────────────────────
 

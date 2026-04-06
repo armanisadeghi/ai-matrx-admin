@@ -97,6 +97,9 @@ interface CreateManualInstanceArgs {
   showDefinitionMessageContent?: boolean;
   displayMode?: ResultDisplayMode;
   callbackGroupId?: string | null;
+  hideReasoning?: boolean;
+  hideToolResults?: boolean;
+  preExecutionMessage?: string | null;
 }
 
 export const createManualInstance = createAsyncThunk<
@@ -117,6 +120,9 @@ export const createManualInstance = createAsyncThunk<
     showDefinitionMessageContent,
     displayMode,
     callbackGroupId,
+    hideReasoning,
+    hideToolResults,
+    preExecutionMessage,
   } = args;
 
   const instanceId = generateInstanceId();
@@ -166,6 +172,9 @@ export const createManualInstance = createAsyncThunk<
       showDefinitionMessages,
       showDefinitionMessageContent,
       callbackGroupId,
+      hideReasoning,
+      hideToolResults,
+      preExecutionMessage,
     }),
   );
   dispatch(initInstanceHistory({ instanceId, mode }));
@@ -189,6 +198,9 @@ interface CreateShortcutInstanceArgs {
   showDefinitionMessages?: boolean;
   showDefinitionMessageContent?: boolean;
   callbackGroupId?: string | null;
+  hideReasoning?: boolean;
+  hideToolResults?: boolean;
+  preExecutionMessage?: string | null;
 }
 
 export const createInstanceFromShortcut = createAsyncThunk<
@@ -207,6 +219,9 @@ export const createInstanceFromShortcut = createAsyncThunk<
     showDefinitionMessages,
     showDefinitionMessageContent,
     callbackGroupId,
+    hideReasoning,
+    hideToolResults,
+    preExecutionMessage,
   } = args;
 
   const instanceId = generateInstanceId();
@@ -259,6 +274,9 @@ export const createInstanceFromShortcut = createAsyncThunk<
       showDefinitionMessageContent,
       callbackGroupId,
       isCreator: snapshot.isCreator,
+      hideReasoning,
+      hideToolResults,
+      preExecutionMessage,
     }),
   );
 
@@ -504,6 +522,9 @@ export const recreateManualInstance = createAsyncThunk<string, string>(
           currentUIState?.showDefinitionMessageContent,
         hiddenMessageCount: currentUIState?.hiddenMessageCount,
         callbackGroupId: currentUIState?.callbackGroupId,
+        hideReasoning: currentUIState?.hideReasoning,
+        hideToolResults: currentUIState?.hideToolResults,
+        preExecutionMessage: currentUIState?.preExecutionMessage,
       }),
     );
     dispatch(initInstanceHistory({ instanceId: newInstanceId, mode: "agent" }));
@@ -630,6 +651,9 @@ export const reInstanceAndExecute = createAsyncThunk<
         submitOnEnter: currentUIState?.submitOnEnter ?? true,
         reuseConversationId: currentUIState?.reuseConversationId ?? false,
         builderAdvancedSettings: currentUIState?.builderAdvancedSettings,
+        hideReasoning: currentUIState?.hideReasoning,
+        hideToolResults: currentUIState?.hideToolResults,
+        preExecutionMessage: currentUIState?.preExecutionMessage,
       }),
     );
     dispatch(

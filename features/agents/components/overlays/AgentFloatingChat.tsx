@@ -10,12 +10,13 @@
  *   - Title starts with the agent name, then animated-swaps to the
  *     conversation label once the server sends `conversation_labeled`.
  *   - Writes URL params (rcd, rci) for future deep-link restoration.
+ *     Multiple instances append indexed keys (rcd0/rci0, rcd1/rci1, ...).
  *   - Fully self-contained — receives only instanceId + onClose.
  *   - Renders AgentRunner inside for full execution lifecycle.
  */
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectInstanceAgentName,
@@ -27,49 +28,27 @@ import {
 } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
 import { AgentRunner } from "../smart/AgentRunner";
-import { cn } from "@/lib/utils";
+import { useUrlSync } from "@/components/official-candidate/floating-window-panel/url-sync/useUrlSync";
 
 interface AgentFloatingChatProps {
   instanceId: string;
   onClose: () => void;
 }
 
-export function AgentFloatingChat({
-  instanceId,
-  onClose,
-}: AgentFloatingChatProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
+function useAnimatedTitle(instanceId: string) {
   const agentName = useAppSelector(selectInstanceAgentName(instanceId));
-  const conversationTitle = useAppSelector(
-    selectConversationTitle(instanceId),
-  );
-  const conversationId = useAppSelector(
-    selectStoredConversationId(instanceId),
-  );
+  const conversationTitle = useAppSelector(selectConversationTitle(instanceId));
   const instanceTitle = useAppSelector(selectInstanceTitle(instanceId));
 
-  // ── Title animation ────────────────────────────────────────────────────────
   const [displayTitle, setDisplayTitle] = useState(
     instanceTitle ?? agentName ?? "Agent",
   );
-  const [isAnimating, setIsAnimating] = useState(false);
-  const prevConversationTitleRef = useRef<string | null>(null);
+  const prevRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (
-      conversationTitle &&
-      conversationTitle !== prevConversationTitleRef.current
-    ) {
-      prevConversationTitleRef.current = conversationTitle;
-      setIsAnimating(true);
-      const timer = setTimeout(() => {
-        setDisplayTitle(conversationTitle);
-        setIsAnimating(false);
-      }, 300);
-      return () => clearTimeout(timer);
+    if (conversationTitle && conversationTitle !== prevRef.current) {
+      prevRef.current = conversationTitle;
+      setDisplayTitle(conversationTitle);
     }
   }, [conversationTitle]);
 
@@ -79,65 +58,40 @@ export function AgentFloatingChat({
     }
   }, [instanceTitle, conversationTitle]);
 
-  // ── URL params (write-only for now) ────────────────────────────────────────
-  useEffect(() => {
-    if (!conversationId) return;
+  return displayTitle;
+}
 
-    const params = new URLSearchParams(searchParams.toString());
-    let changed = false;
 
-    if (params.get("rci") !== conversationId) {
-      params.set("rci", conversationId);
-      changed = true;
-    }
-    if (params.get("rcd") !== "fc") {
-      params.set("rcd", "fc");
-      changed = true;
-    }
+export function AgentFloatingChat({
+  instanceId,
+  onClose,
+}: AgentFloatingChatProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const displayTitle = useAnimatedTitle(instanceId);
 
-    if (changed) {
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    }
-  }, [conversationId, pathname, router, searchParams]);
+  // We use our centralized url-sync hook instead of manual slots
+  useUrlSync("agent", instanceId, { m: "fc" });
 
-  // Clean up URL params on close
   const handleClose = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("rcd");
-    params.delete("rci");
-    const qs = params.toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     onClose();
   };
 
   return (
     <WindowPanel
-      title=""
+      title={displayTitle}
       onClose={handleClose}
-      initialWidth={420}
-      initialHeight={Math.round(window.innerHeight * 0.6)}
+      initialRect={{
+        width: 420,
+        height: Math.round(
+          typeof window !== "undefined" ? window.innerHeight * 0.6 : 600,
+        ),
+      }}
       minWidth={320}
       minHeight={280}
       bodyClassName="p-0"
-      actionsLeft={
-        <div className="relative overflow-hidden h-5 flex items-center min-w-0">
-          <span
-            className={cn(
-              "text-xs font-medium text-foreground/80 truncate max-w-[240px] transition-all duration-300",
-              isAnimating &&
-                "translate-x-full opacity-0",
-            )}
-          >
-            {displayTitle}
-          </span>
-        </div>
-      }
     >
-      <AgentRunner
-        instanceId={instanceId}
-        compact
-        className="h-full"
-      />
+      <AgentRunner instanceId={instanceId} compact className="h-full" />
     </WindowPanel>
   );
 }
