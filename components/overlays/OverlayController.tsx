@@ -241,10 +241,10 @@ const UndoHistoryOverlay = dynamic(
   { ssr: false },
 );
 
-const StreamDebugOverlay = dynamic(
+const StreamDebugFloating = dynamic(
   () =>
-    import("@/features/agents/components/debug/StreamDebugOverlay").then(
-      (m) => ({ default: m.StreamDebugOverlay }),
+    import("@/features/agents/components/debug/StreamDebugFloating").then(
+      (m) => ({ default: m.StreamDebugFloating }),
     ),
   { ssr: false },
 );
@@ -764,10 +764,9 @@ export const OverlayController: React.FC = () => {
 
       {isStreamDebugOpen &&
         (streamDebugData as { instanceId?: string } | null)?.instanceId && (
-          <StreamDebugOverlay
-            isOpen={true}
-            onClose={() => close("streamDebug")}
+          <StreamDebugFloating
             instanceId={(streamDebugData as { instanceId: string }).instanceId}
+            onClose={() => close("streamDebug")}
           />
         )}
 
@@ -790,35 +789,61 @@ export const OverlayController: React.FC = () => {
       )}
 
       {isAdminStateAnalyzerWindowOpen && (
-        <StateViewerWindow isOpen={true} onClose={() => close("adminStateAnalyzerWindow")} />
+        <StateViewerWindow
+          isOpen={true}
+          onClose={() => close("adminStateAnalyzerWindow")}
+        />
       )}
 
       {isMarkdownEditorWindowOpen && (
-        <MarkdownEditorWindow isOpen={true} onClose={() => close("markdownEditorWindow")} />
+        <MarkdownEditorWindow
+          isOpen={true}
+          onClose={() => close("markdownEditorWindow")}
+        />
       )}
 
       {isUserPreferencesWindowOpen && (
-        <UserPreferencesWindow isOpen={true} onClose={() => close("userPreferencesWindow")} />
+        <UserPreferencesWindow
+          isOpen={true}
+          onClose={() => close("userPreferencesWindow")}
+        />
       )}
 
       {isQuickTasksWindowOpen && (
-        <QuickTasksWindow isOpen={true} onClose={() => close("quickTasksWindow")} />
+        <QuickTasksWindow
+          isOpen={true}
+          onClose={() => close("quickTasksWindow")}
+        />
       )}
 
       {isQuickDataWindowOpen && (
-        <QuickDataWindow isOpen={true} onClose={() => close("quickDataWindow")} />
+        <QuickDataWindow
+          isOpen={true}
+          onClose={() => close("quickDataWindow")}
+        />
       )}
 
       {isQuickFilesWindowOpen && (
-        <QuickFilesWindow isOpen={true} onClose={() => close("quickFilesWindow")} />
+        <QuickFilesWindow
+          isOpen={true}
+          onClose={() => close("quickFilesWindow")}
+        />
       )}
 
       {isEmailDialogWindowOpen && (
-        <EmailDialogWindow isOpen={true} onClose={() => close("emailDialogWindow")} {...(emailDialogWindowData as any)} />
+        <EmailDialogWindow
+          isOpen={true}
+          onClose={() => close("emailDialogWindow")}
+          {...(emailDialogWindowData as any)}
+        />
       )}
 
       {isShareModalWindowOpen && (
-        <ShareModalWindow isOpen={true} onClose={() => close("shareModalWindow")} {...(shareModalWindowData as any)} />
+        <ShareModalWindow
+          isOpen={true}
+          onClose={() => close("shareModalWindow")}
+          {...(shareModalWindowData as any)}
+        />
       )}
 
       {/* ── Instanced overlays — .map() renders each open instance ─────── */}

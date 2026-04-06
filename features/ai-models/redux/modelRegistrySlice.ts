@@ -18,7 +18,7 @@ export type AIModelRow = Database["public"]["Tables"]["ai_model"]["Row"];
 /**
  * What data this record currently holds.
  *
- * - 'options' → only id, name, common_name, provider, is_deprecated loaded
+ * - 'options' → only id, name, common_name, provider, model_class, is_deprecated loaded
  * - 'full'    → all columns loaded
  *
  * Status only upgrades — never downgrades. A 'full' record never becomes 'options'.
@@ -82,7 +82,7 @@ const initialState: ModelRegistryState = {
 
 type ModelOptionRow = Pick<
   AIModelRow,
-  "id" | "name" | "common_name" | "provider" | "is_deprecated"
+  "id" | "name" | "common_name" | "provider" | "model_class" | "is_deprecated"
 >;
 
 // ---------------------------------------------------------------------------
@@ -90,7 +90,7 @@ type ModelOptionRow = Pick<
 // ---------------------------------------------------------------------------
 
 /**
- * Fetch lightweight options (id, name, common_name, provider, is_deprecated) for
+ * Fetch lightweight options (id, name, common_name, provider, model_class, is_deprecated) for
  * all active models. Used to populate dropdowns without pulling the full schema.
  *
  * Each fetched record is stored with _fetchType:'options'.
@@ -108,7 +108,7 @@ export const fetchModelOptions = createAsyncThunk(
       const supabase = createClient();
       const { data, error } = await supabase
         .from("ai_model")
-        .select("id, name, common_name, provider, is_deprecated")
+        .select("id, name, common_name, provider, model_class, is_deprecated")
         .eq("is_deprecated", false)
         .order("common_name", { ascending: true, nullsFirst: false });
       if (error) throw error;

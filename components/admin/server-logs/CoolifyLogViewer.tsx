@@ -33,7 +33,6 @@ import {
   FileText,
   Copy,
   Check,
-  Scissors,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -199,64 +198,80 @@ const URGENCY_COLORS: Record<LogUrgency, string> = {
 
 interface LogLineProps {
   line: ParsedLogLine;
+  /** 1-based display index among visible lines */
+  displayIndex: number;
   selected: boolean;
-  copyStart: number | null;
-  copyEnd: number | null;
-  copyMode: boolean;
+  /** True if this line falls inside the current selection range */
+  inSelection: boolean;
+  /** True if this is the click-anchor (first clicked line) of the selection */
+  isAnchor: boolean;
   onSelect: (line: ParsedLogLine) => void;
-  onCopyMark: (lineIndex: number) => void;
+  /** lineIndex of the raw parsed line, shift = extend range */
+  onRangeClick: (lineIndex: number, shift: boolean) => void;
 }
 
 const LogLine = React.memo(function LogLine({
   line,
+  displayIndex,
   selected,
-  copyStart,
-  copyEnd,
-  copyMode,
+  inSelection,
+  isAnchor,
   onSelect,
-  onCopyMark,
+  onRangeClick,
 }: LogLineProps) {
   if (line.raw.trim() === "") {
-    return <div className="h-1.5" />;
+    return <div className="h-1" />;
   }
 
-  const isContinuation = line.isJsonContinuation;
-  const idx = line.lineIndex;
-
-  const inCopyRange =
-    copyStart !== null &&
-    copyEnd !== null &&
-    idx >= Math.min(copyStart, copyEnd) &&
-    idx <= Math.max(copyStart, copyEnd);
-
-  const isCopyStart = copyStart === idx;
-  const isCopyEnd = copyEnd === idx;
-
-  const handleClick = () => {
-    if (copyMode) {
-      onCopyMark(idx);
+  const handleClick = (e: React.MouseEvent) => {
+    if (e.shiftKey) {
+      onRangeClick(line.lineIndex, true);
     } else {
+      onRangeClick(line.lineIndex, false);
       onSelect(line);
     }
   };
 
-  const rangeHighlight = inCopyRange
-    ? "bg-blue-900/25 ring-1 ring-inset ring-blue-700/50"
-    : "";
-  const markerHighlight =
-    isCopyStart || isCopyEnd ? "ring-2 ring-inset ring-blue-400" : "";
+  // Background priority: anchor > in-range > selected-for-json > hover
+  const bgClass = isAnchor
+    ? "bg-blue-800/35 ring-1 ring-inset ring-blue-500"
+    : inSelection
+      ? "bg-blue-900/20 ring-1 ring-inset ring-blue-800/40"
+      : selected
+        ? "bg-blue-950/30"
+        : "hover:bg-white/5";
+
+  const gutterColor = isAnchor
+    ? "text-blue-400"
+    : inSelection
+      ? "text-blue-700"
+      : "text-neutral-700";
+
+  // Shared gutter style — fixed width so log text always starts at the same column
+  const gutter = (
+    <span
+      className={`select-none shrink-0 w-12 text-right pr-2 font-mono text-[10px] tabular-nums leading-5 border-r border-neutral-800 mr-2 ${gutterColor}`}
+    >
+      {displayIndex}
+    </span>
+  );
+
+  const isContinuation = line.isJsonContinuation;
 
   if (isContinuation) {
     return (
       <div
-        className={`
-          px-2 pl-6 py-0 cursor-pointer font-mono text-xs leading-5 transition-colors opacity-75
-          ${line.bgColor}
-          ${rangeHighlight || markerHighlight || (selected ? "ring-1 ring-inset ring-blue-500 bg-blue-950/30" : "hover:bg-white/5")}
-        `}
+        className={`flex items-start cursor-pointer transition-colors opacity-75 ${line.bgColor} ${bgClass}`}
         onClick={handleClick}
       >
-        <span className={`whitespace-pre-wrap break-all ${line.color}`}>
+        <span
+          className={`select-none shrink-0 w-12 text-right pr-2 font-mono text-[10px] tabular-nums leading-5 border-r border-neutral-800 mr-2 ${gutterColor}`}
+        >
+          {displayIndex}
+        </span>
+        <span
+          className={`flex-1 font-mono text-xs leading-5 whitespace-pre-wrap break-all py-0 ${line.color}`}
+        >
           {line.raw}
         </span>
       </div>
@@ -271,79 +286,73 @@ const LogLine = React.memo(function LogLine({
 
   return (
     <div
-      className={`
-        flex flex-col px-2 pt-1.5 pb-0.5 cursor-pointer transition-colors relative
-        ${line.bgColor}
-        ${rangeHighlight || markerHighlight || (selected ? "ring-1 ring-inset ring-blue-500 bg-blue-950/30" : "hover:bg-white/5")}
-      `}
+      className={`flex items-start cursor-pointer transition-colors ${line.bgColor} ${bgClass}`}
       onClick={handleClick}
     >
-      {/* Copy range markers */}
-      {(isCopyStart || isCopyEnd) && (
-        <span className="absolute right-2 top-1 text-[9px] text-blue-400 font-mono">
-          {isCopyStart && isCopyEnd
-            ? "START/END"
-            : isCopyStart
-              ? "START"
-              : "END"}
-        </span>
-      )}
+      {/* Line number gutter — aligned to first row of content */}
+      <span
+        className={`select-none shrink-0 w-12 text-right pr-2 font-mono text-[10px] tabular-nums border-r border-neutral-800 mr-2 ${gutterColor} ${hasMetadata ? "pt-1.5" : "leading-5"}`}
+      >
+        {displayIndex}
+      </span>
 
-      {hasMetadata && (
-        <div className="flex items-center gap-1.5 mb-0.5 font-sans">
-          {line.level !== "UNKNOWN" && (
-            <span
-              className={`text-[10px] px-1.5 py-px rounded font-medium tabular-nums ${LEVEL_COLORS[line.level]}`}
-            >
-              {LEVEL_DISPLAY[line.level]}
-            </span>
-          )}
-          {line.category !== "general" &&
-            line.category !== "unknown" &&
-            line.category !== "json-payload" && (
-              <span className={`text-[10px] font-medium ${line.color}`}>
-                {CATEGORY_LABELS[line.category]}
+      {/* Content column */}
+      <div className="flex flex-col flex-1 pt-1.5 pb-0.5 min-w-0">
+        {hasMetadata && (
+          <div className="flex flex-wrap items-center gap-1.5 mb-0.5 font-sans">
+            {line.level !== "UNKNOWN" && (
+              <span
+                className={`text-[10px] px-1.5 py-px rounded font-medium tabular-nums ${LEVEL_COLORS[line.level]}`}
+              >
+                {LEVEL_DISPLAY[line.level]}
               </span>
             )}
-          {line.module && (
-            <>
-              <span className="text-neutral-700 text-[10px]">·</span>
-              <span className="text-[10px] text-neutral-500">
-                {line.module}
-              </span>
-            </>
-          )}
-          {line.httpStatus != null && (
-            <>
-              <span className="text-neutral-700 text-[10px]">·</span>
-              <span
-                className={`text-[10px] px-1 rounded font-medium ${
-                  line.httpStatus >= 500
-                    ? "bg-red-900/60 text-red-300"
-                    : line.httpStatus >= 400
-                      ? "bg-amber-900/60 text-amber-300"
-                      : "bg-green-900/60 text-green-300"
-                }`}
-              >
-                {line.httpStatus}
-              </span>
-            </>
-          )}
-          {line.timestamp && (
-            <>
-              <span className="text-neutral-700 text-[10px]">·</span>
-              <span className="text-[10px] text-neutral-600 tabular-nums">
-                {line.timestamp}
-              </span>
-            </>
-          )}
+            {line.category !== "general" &&
+              line.category !== "unknown" &&
+              line.category !== "json-payload" && (
+                <span className={`text-[10px] font-medium ${line.color}`}>
+                  {CATEGORY_LABELS[line.category]}
+                </span>
+              )}
+            {line.module && (
+              <>
+                <span className="text-neutral-700 text-[10px]">·</span>
+                <span className="text-[10px] text-neutral-500">
+                  {line.module}
+                </span>
+              </>
+            )}
+            {line.httpStatus != null && (
+              <>
+                <span className="text-neutral-700 text-[10px]">·</span>
+                <span
+                  className={`text-[10px] px-1 rounded font-medium ${
+                    line.httpStatus >= 500
+                      ? "bg-red-900/60 text-red-300"
+                      : line.httpStatus >= 400
+                        ? "bg-amber-900/60 text-amber-300"
+                        : "bg-green-900/60 text-green-300"
+                  }`}
+                >
+                  {line.httpStatus}
+                </span>
+              </>
+            )}
+            {line.timestamp && (
+              <>
+                <span className="text-neutral-700 text-[10px]">·</span>
+                <span className="text-[10px] text-neutral-600 tabular-nums">
+                  {line.timestamp}
+                </span>
+              </>
+            )}
+          </div>
+        )}
+        <div
+          className={`font-mono text-xs leading-5 whitespace-pre-wrap break-all ${line.color}`}
+        >
+          {line.raw}
         </div>
-      )}
-
-      <div
-        className={`font-mono text-xs leading-5 whitespace-pre-wrap break-all ${line.color}`}
-      >
-        {line.raw}
       </div>
     </div>
   );
@@ -382,14 +391,14 @@ function ToggleGroup<T extends string>({
       </span>
       <button
         onClick={onAll}
-        className={`px-2 py-0.5 rounded text-[10px] font-medium transition-opacity border
+        className={`px-2 py-0.5 rounded text-[10px] font-medium border transition-all
           ${isAll ? "border-neutral-500 text-neutral-200 bg-white/10" : "border-neutral-700 text-neutral-600 hover:text-neutral-400"}`}
       >
         ALL
       </button>
       <button
         onClick={onClear}
-        className={`px-2 py-0.5 rounded text-[10px] font-medium transition-opacity border
+        className={`px-2 py-0.5 rounded text-[10px] font-medium border transition-all
           ${isClear ? "border-red-600 text-red-400 bg-red-950/30" : "border-neutral-700 text-neutral-600 hover:text-neutral-400"}`}
       >
         CLEAR
@@ -452,7 +461,6 @@ function FilterPanel({
 
   return (
     <div className="flex flex-col gap-2.5 px-3 py-2.5 bg-neutral-900 border-b border-neutral-800 text-xs">
-      {/* Search row */}
       <div className="flex items-center gap-2">
         <Search className="h-3.5 w-3.5 text-neutral-500 shrink-0" />
         <Input
@@ -477,7 +485,6 @@ function FilterPanel({
         )}
       </div>
 
-      {/* Level */}
       <ToggleGroup<LogLevel>
         label="Level"
         all={ALL_LEVELS}
@@ -493,7 +500,6 @@ function FilterPanel({
         onClear={() => setLevels(new Set())}
       />
 
-      {/* Category */}
       <ToggleGroup<LogCategory>
         label="Category"
         all={ALL_CATEGORIES}
@@ -508,7 +514,6 @@ function FilterPanel({
         onClear={() => setCats(new Set())}
       />
 
-      {/* Urgency */}
       <ToggleGroup<LogUrgency>
         label="Urgency"
         all={ALL_URGENCIES}
@@ -524,7 +529,6 @@ function FilterPanel({
         onClear={() => setUrgs(new Set())}
       />
 
-      {/* Module */}
       {availableModules.length > 0 &&
         (() => {
           const activeModules =
@@ -565,7 +569,6 @@ function FilterPanel({
           );
         })()}
 
-      {/* Endpoint */}
       {availableEndpoints.length > 0 &&
         (() => {
           const activeEndpoints =
@@ -604,88 +607,80 @@ function FilterPanel({
   );
 }
 
-// ─── Copy toolbar ─────────────────────────────────────────────────────────────
+// ─── Selection / copy status bar ─────────────────────────────────────────────
 
-interface CopyToolbarProps {
-  totalVisible: number;
-  copyStart: number | null;
-  copyEnd: number | null;
-  onClearRange: () => void;
-  onCopy: () => void;
-  onSelectAll: () => void;
+interface SelectionBarProps {
+  anchor: number | null;
+  tail: number | null;
+  selectedCount: number;
   copied: boolean;
+  onCopy: () => void;
+  onClear: () => void;
+  onSelectAll: () => void;
 }
 
-function CopyToolbar({
-  totalVisible,
-  copyStart,
-  copyEnd,
-  onClearRange,
-  onCopy,
-  onSelectAll,
+function SelectionBar({
+  anchor,
+  tail,
+  selectedCount,
   copied,
-}: CopyToolbarProps) {
-  const hasRange = copyStart !== null && copyEnd !== null;
-  const rangeCount = hasRange
-    ? Math.abs(copyEnd! - copyStart!) + 1
-    : totalVisible;
+  onCopy,
+  onClear,
+  onSelectAll,
+}: SelectionBarProps) {
+  const hasRange = anchor !== null && tail !== null;
 
   return (
-    <div className="shrink-0 flex items-center gap-2 px-3 py-2 bg-blue-950/40 border-b border-blue-800/60 text-xs">
-      <Scissors className="h-3.5 w-3.5 text-blue-400 shrink-0" />
-      <span className="text-blue-300 font-medium">Copy mode</span>
-      <span className="text-blue-500">—</span>
-      <span className="text-neutral-400">
-        Click a line to set <span className="text-blue-300">start</span>, click
-        another to set <span className="text-blue-300">end</span>. Copies only
-        lines in range that pass current filters.
+    <div className="shrink-0 flex items-center gap-2 px-3 py-1.5 bg-blue-950/50 border-b border-blue-800/50 text-xs">
+      <span className="text-blue-400 font-medium tabular-nums">
+        {hasRange
+          ? `${selectedCount} lines selected`
+          : anchor !== null
+            ? "Shift+click to extend range"
+            : ""}
       </span>
-      <div className="flex-1" />
-      {hasRange ? (
-        <span className="text-blue-300 tabular-nums">
-          {rangeCount} raw lines selected
-        </span>
-      ) : (
-        <span className="text-neutral-500 tabular-nums">
-          {totalVisible} visible lines (no range set)
-        </span>
+      {hasRange && (
+        <>
+          <span className="text-blue-700">·</span>
+          <span className="text-neutral-500 tabular-nums">
+            lines {Math.min(anchor!, tail!) + 1}–{Math.max(anchor!, tail!) + 1}
+          </span>
+        </>
       )}
-      <Button
-        variant="ghost"
-        size="sm"
+      <div className="flex-1" />
+      <button
         onClick={onSelectAll}
-        className="h-6 px-2 text-xs text-neutral-400 hover:text-white"
+        className="text-neutral-400 hover:text-white text-[10px] px-2 py-0.5 rounded border border-neutral-700 hover:border-neutral-500 transition-colors"
       >
         Select all visible
-      </Button>
-      {hasRange && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClearRange}
-          className="h-6 px-2 text-xs text-neutral-400 hover:text-red-400"
+      </button>
+      {anchor !== null && (
+        <button
+          onClick={onClear}
+          className="text-neutral-500 hover:text-red-400 text-[10px] px-2 py-0.5 rounded border border-neutral-700 hover:border-red-800 transition-colors"
         >
-          <X className="h-3 w-3 mr-1" />
-          Clear range
-        </Button>
+          <X className="h-2.5 w-2.5 inline mr-1" />
+          Clear
+        </button>
       )}
-      <Button
-        size="sm"
+      <button
         onClick={onCopy}
-        className={`h-6 px-3 text-xs ${copied ? "bg-green-700 hover:bg-green-600" : "bg-blue-700 hover:bg-blue-600"} text-white`}
+        className={`flex items-center gap-1 text-[10px] px-3 py-1 rounded font-medium transition-colors ${
+          copied
+            ? "bg-green-700 text-white"
+            : "bg-blue-700 hover:bg-blue-600 text-white"
+        }`}
       >
         {copied ? (
           <>
-            <Check className="h-3 w-3 mr-1" />
-            Copied!
+            <Check className="h-3 w-3" /> Copied!
           </>
         ) : (
           <>
-            <Copy className="h-3 w-3 mr-1" />
-            Copy {hasRange ? "range" : "all"}
+            <Copy className="h-3 w-3" /> Copy {hasRange ? "selection" : "all"}
           </>
         )}
-      </Button>
+      </button>
     </div>
   );
 }
@@ -715,11 +710,9 @@ function LineRangePanel({
 
   return (
     <div className="flex items-center gap-3 px-3 py-1.5 bg-neutral-900 border-b border-neutral-800 text-xs">
-      <ChevronDown className="h-3.5 w-3.5 text-neutral-500 shrink-0" />
       <span className="text-neutral-500 shrink-0">View range:</span>
-
       <div className="flex items-center gap-1.5">
-        <span className="text-neutral-600">Start line</span>
+        <span className="text-neutral-600">Start</span>
         <Input
           type="number"
           min={0}
@@ -735,9 +728,8 @@ function LineRangePanel({
           className="h-6 w-20 text-xs bg-neutral-800 border-neutral-700 text-center"
         />
       </div>
-
       <div className="flex items-center gap-1.5">
-        <span className="text-neutral-600">Show</span>
+        <span className="text-neutral-600">Count</span>
         <Input
           type="number"
           min={1}
@@ -746,34 +738,23 @@ function LineRangePanel({
           placeholder="all"
           onChange={(e) => {
             const raw = e.target.value.trim();
-            if (raw === "") {
-              onDisplayCount(null);
-            } else {
-              const v = Math.max(1, parseInt(raw) || 1);
-              onDisplayCount(v);
-            }
+            onDisplayCount(raw === "" ? null : Math.max(1, parseInt(raw) || 1));
           }}
           className="h-6 w-20 text-xs bg-neutral-800 border-neutral-700 text-center"
         />
-        <span className="text-neutral-600">lines</span>
       </div>
-
-      <span className="text-neutral-600">→</span>
-      <span className="text-neutral-400 tabular-nums">
-        {startOffset + 1}–{effectiveEnd} of {totalFetched}
+      <span className="text-neutral-600 tabular-nums">
+        → {startOffset + 1}–{effectiveEnd} of {totalFetched}
       </span>
-
-      <Button
-        variant="ghost"
-        size="sm"
+      <button
         onClick={() => {
           onStartOffset(0);
           onDisplayCount(null);
         }}
-        className="h-6 px-2 text-xs text-neutral-500 hover:text-white ml-auto"
+        className="ml-auto text-[10px] text-neutral-500 hover:text-white border border-neutral-700 hover:border-neutral-500 px-2 py-0.5 rounded transition-colors"
       >
         Reset
-      </Button>
+      </button>
     </div>
   );
 }
@@ -807,13 +788,13 @@ export default function CoolifyLogViewer({
   const [filters, setFilters] = useState<LogFilters>(defaultFilters());
   const [selectedLine, setSelectedLine] = useState<ParsedLogLine | null>(null);
 
-  // Copy mode
-  const [copyMode, setCopyMode] = useState(false);
-  const [copyStart, setCopyStart] = useState<number | null>(null);
-  const [copyEnd, setCopyEnd] = useState<number | null>(null);
+  // Selection state — anchor is first click, tail is shift-click endpoint
+  const [selAnchor, setSelAnchor] = useState<number | null>(null);
+  const [selTail, setSelTail] = useState<number | null>(null);
+  const [showSelectionBar, setShowSelectionBar] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // View range (applied before filters, on the parsed lines array)
+  // View range
   const [startOffset, setStartOffset] = useState(0);
   const [displayCount, setDisplayCount] = useState<number | null>(null);
 
@@ -832,7 +813,6 @@ export default function CoolifyLogViewer({
     [parsedLines],
   );
 
-  // Apply view range first, then filters
   const rangedLines = useMemo(() => {
     if (startOffset === 0 && displayCount === null) return parsedLines;
     const end =
@@ -851,6 +831,20 @@ export default function CoolifyLogViewer({
     () => (rawLogs ? rawLogs.split("\n").length : 0),
     [rawLogs],
   );
+
+  // Compute which filtered lines are inside the selection range
+  const selectionSet = useMemo(() => {
+    if (selAnchor === null) return new Set<number>();
+    const lo = selTail !== null ? Math.min(selAnchor, selTail) : selAnchor;
+    const hi = selTail !== null ? Math.max(selAnchor, selTail) : selAnchor;
+    return new Set(
+      filteredLines
+        .filter(
+          (l) => l.lineIndex >= lo && l.lineIndex <= hi && l.raw.trim() !== "",
+        )
+        .map((l) => l.lineIndex),
+    );
+  }, [selAnchor, selTail, filteredLines]);
 
   const jsonPanelData = useMemo(() => {
     if (!selectedLine) return null;
@@ -933,62 +927,54 @@ export default function CoolifyLogViewer({
     if (el) el.scrollTop = 0;
   }, [viewMode]);
 
-  // Copy mode handlers
-  const handleCopyMark = useCallback(
-    (lineIndex: number) => {
-      if (copyStart === null || (copyStart !== null && copyEnd !== null)) {
-        // First click — set start, clear end
-        setCopyStart(lineIndex);
-        setCopyEnd(null);
+  // Click on a line number gutter region — anchor click or shift-extend
+  const handleRangeClick = useCallback(
+    (lineIndex: number, shift: boolean) => {
+      if (shift && selAnchor !== null) {
+        setSelTail(lineIndex);
+        setShowSelectionBar(true);
       } else {
-        // Second click — set end
-        setCopyEnd(lineIndex);
+        setSelAnchor(lineIndex);
+        setSelTail(null);
+        setShowSelectionBar(true);
       }
     },
-    [copyStart, copyEnd],
+    [selAnchor],
   );
 
-  const handleCopyText = useCallback(() => {
-    // Build text from filtered lines, optionally restricted to the copy range
-    let linesToCopy = filteredLines;
+  const handleClearSelection = useCallback(() => {
+    setSelAnchor(null);
+    setSelTail(null);
+    setShowSelectionBar(false);
+    setCopied(false);
+  }, []);
 
-    if (copyStart !== null && copyEnd !== null) {
-      const lo = Math.min(copyStart, copyEnd);
-      const hi = Math.max(copyStart, copyEnd);
-      linesToCopy = filteredLines.filter(
-        (l) => l.lineIndex >= lo && l.lineIndex <= hi,
-      );
-    }
+  const handleSelectAllVisible = useCallback(() => {
+    const nonBlank = filteredLines.filter((l) => l.raw.trim() !== "");
+    if (nonBlank.length === 0) return;
+    setSelAnchor(nonBlank[0].lineIndex);
+    setSelTail(nonBlank[nonBlank.length - 1].lineIndex);
+    setShowSelectionBar(true);
+  }, [filteredLines]);
 
-    const text = linesToCopy
-      .filter((l) => l.raw.trim() !== "")
-      .map((l) => l.raw)
-      .join("\n");
+  const handleCopy = useCallback(() => {
+    const linesToCopy =
+      selectionSet.size > 0
+        ? filteredLines.filter((l) => selectionSet.has(l.lineIndex))
+        : filteredLines.filter((l) => l.raw.trim() !== "");
 
+    const text = linesToCopy.map((l) => l.raw).join("\n");
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
-  }, [filteredLines, copyStart, copyEnd]);
-
-  const handleSelectAllVisible = useCallback(() => {
-    if (filteredLines.length === 0) return;
-    const indices = filteredLines
-      .filter((l) => l.raw.trim() !== "")
-      .map((l) => l.lineIndex);
-    setCopyStart(indices[0]);
-    setCopyEnd(indices[indices.length - 1]);
-  }, [filteredLines]);
-
-  const exitCopyMode = useCallback(() => {
-    setCopyMode(false);
-    setCopyStart(null);
-    setCopyEnd(null);
-    setCopied(false);
-  }, []);
+  }, [filteredLines, selectionSet]);
 
   const appMeta = APPS.find((a) => a.key === selectedApp);
   const isLivePolling = pollInterval > 0;
+
+  // Count lines in the current selection (visible filtered lines within range)
+  const selectionCount = selectionSet.size;
 
   return (
     <div className="w-full h-full flex flex-col bg-neutral-950 overflow-hidden">
@@ -1030,7 +1016,6 @@ export default function CoolifyLogViewer({
           </Select>
         )}
 
-        {/* Lines */}
         <Select
           value={String(lineCount)}
           onValueChange={(v) => setLineCount(parseInt(v, 10))}
@@ -1047,7 +1032,6 @@ export default function CoolifyLogViewer({
           </SelectContent>
         </Select>
 
-        {/* Poll */}
         <Select
           value={String(pollInterval)}
           onValueChange={(v) => setPollInterval(parseInt(v, 10))}
@@ -1068,7 +1052,6 @@ export default function CoolifyLogViewer({
           </SelectContent>
         </Select>
 
-        {/* Refresh */}
         <Button
           onClick={fetchLogs}
           disabled={loading}
@@ -1109,12 +1092,12 @@ export default function CoolifyLogViewer({
           lines
         </span>
 
-        {/* Scroll */}
         <Button
           variant="ghost"
           size="sm"
           onClick={scrollToTop}
-          className="h-8 px-2 text-xs text-neutral-400 hover:text-white"
+          className="h-8 px-2 text-neutral-400 hover:text-white"
+          title="Scroll to top"
         >
           <ChevronUp className="h-3.5 w-3.5" />
         </Button>
@@ -1122,7 +1105,8 @@ export default function CoolifyLogViewer({
           variant="ghost"
           size="sm"
           onClick={scrollToBottom}
-          className="h-8 px-2 text-xs text-neutral-400 hover:text-white"
+          className="h-8 px-2 text-neutral-400 hover:text-white"
+          title="Scroll to bottom"
         >
           <ChevronDown className="h-3.5 w-3.5" />
         </Button>
@@ -1133,21 +1117,10 @@ export default function CoolifyLogViewer({
           size="sm"
           onClick={() => setShowRange((p) => !p)}
           className={`h-8 px-2 text-xs ${showRange ? "text-white bg-white/10" : "text-neutral-400 hover:text-white"}`}
-          title="Set view range (start line + count)"
+          title="Set view range"
         >
           <FileText className="h-3.5 w-3.5 mr-1" />
           Range
-        </Button>
-
-        {/* Copy mode toggle */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => (copyMode ? exitCopyMode() : setCopyMode(true))}
-          className={`h-8 px-2 text-xs ${copyMode ? "text-blue-300 bg-blue-900/40 ring-1 ring-blue-700" : "text-neutral-400 hover:text-white"}`}
-        >
-          <Copy className="h-3.5 w-3.5 mr-1" />
-          {copyMode ? "Exit copy" : "Copy"}
         </Button>
 
         {/* Filter toggle */}
@@ -1209,13 +1182,11 @@ export default function CoolifyLogViewer({
           displayCount={displayCount}
           onStartOffset={(n) => {
             setStartOffset(n);
-            setCopyStart(null);
-            setCopyEnd(null);
+            handleClearSelection();
           }}
           onDisplayCount={(n) => {
             setDisplayCount(n);
-            setCopyStart(null);
-            setCopyEnd(null);
+            handleClearSelection();
           }}
         />
       )}
@@ -1232,19 +1203,19 @@ export default function CoolifyLogViewer({
         />
       )}
 
-      {/* ── Copy toolbar ── */}
-      {copyMode && viewMode !== "raw" && (
-        <CopyToolbar
-          totalVisible={filteredLines.filter((l) => l.raw.trim() !== "").length}
-          copyStart={copyStart}
-          copyEnd={copyEnd}
-          onClearRange={() => {
-            setCopyStart(null);
-            setCopyEnd(null);
-          }}
-          onCopy={handleCopyText}
-          onSelectAll={handleSelectAllVisible}
+      {/* ── Selection / copy bar — shown whenever a selection exists ── */}
+      {showSelectionBar && viewMode !== "raw" && (
+        <SelectionBar
+          anchor={selAnchor}
+          tail={selTail}
+          selectedCount={
+            selectionCount ||
+            filteredLines.filter((l) => l.raw.trim() !== "").length
+          }
           copied={copied}
+          onCopy={handleCopy}
+          onClear={handleClearSelection}
+          onSelectAll={handleSelectAllVisible}
         />
       )}
 
@@ -1257,7 +1228,7 @@ export default function CoolifyLogViewer({
       )}
 
       {/* ── Info bar ── */}
-      <div className="shrink-0 flex items-center gap-2 px-3 py-1.5 border-b border-neutral-800 bg-neutral-900/50">
+      <div className="shrink-0 flex items-center gap-2 px-3 py-1 border-b border-neutral-800 bg-neutral-900/50">
         <Terminal className="h-3.5 w-3.5 text-green-500 shrink-0" />
         <span className="text-xs font-mono text-neutral-400">
           {appMeta?.label} ({appMeta?.env}) — last {lineCount} lines
@@ -1273,19 +1244,16 @@ export default function CoolifyLogViewer({
             raw mode — no filtering or parsing
           </span>
         )}
-        {copyMode && (
-          <span className="text-[10px] text-blue-400 ml-2">
-            {copyStart === null
-              ? "Click a line to set copy start"
-              : copyEnd === null
-                ? "Click another line to set copy end"
-                : `Range: lines ${Math.min(copyStart, copyEnd) + 1}–${Math.max(copyStart, copyEnd) + 1}`}
+        {viewMode !== "raw" && (
+          <span className="text-[10px] text-neutral-600 ml-auto">
+            Click any line to inspect · Shift+click to extend selection · Copy
+            button to copy
           </span>
         )}
-        {selectedLine && !copyMode && viewMode !== "raw" && (
+        {selectedLine && !showSelectionBar && viewMode !== "raw" && (
           <span className="ml-auto text-[10px] text-blue-400 flex items-center gap-1">
             <Info className="h-3 w-3" />
-            Line {selectedLine.lineIndex + 1} selected
+            Line {selectedLine.lineIndex + 1}
           </span>
         )}
       </div>
@@ -1327,19 +1295,19 @@ export default function CoolifyLogViewer({
                 No lines match the current filters.
               </div>
             ) : (
-              filteredLines.map((line) => (
+              filteredLines.map((line, i) => (
                 <LogLine
                   key={line.lineIndex}
                   line={line}
+                  displayIndex={i + 1}
                   selected={selectedLine?.lineIndex === line.lineIndex}
-                  copyMode={copyMode}
-                  copyStart={copyStart}
-                  copyEnd={copyEnd}
+                  inSelection={selectionSet.has(line.lineIndex)}
+                  isAnchor={selAnchor === line.lineIndex}
                   onSelect={(l) => {
                     setSelectedLine(l);
                     if (viewMode === "log-only") setViewMode("split");
                   }}
-                  onCopyMark={handleCopyMark}
+                  onRangeClick={handleRangeClick}
                 />
               ))
             )}

@@ -1,18 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import {
-  Loader2,
-  Search,
-  Sparkles,
-  type LucideIcon,
-  Check,
-  AlertCircle,
-} from "lucide-react";
+import { Loader2, Search, Check, X, Filter } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {
@@ -20,244 +16,299 @@ import {
   UserPreferencesState,
 } from "@/lib/redux/slices/userPreferencesSlice";
 import { useModels, type AIModel } from "@/features/ai-models/hooks/useModels";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+
+type FilterView = "all" | "active" | "inactive";
 
 const AiModelsPreferences = () => {
   const dispatch = useAppDispatch();
   const preferences = useSelector(
     (state: RootState) => state.userPreferences as UserPreferencesState,
   );
-  const { aiModels, _meta } = preferences;
-
+  const { aiModels } = preferences;
   const { models, isLoading: loading } = useModels();
-  const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const meta = _meta || {
-    isLoading: false,
-    error: null,
-    lastSaved: null,
-    hasUnsavedChanges: false,
-  };
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterView, setFilterView] = useState<FilterView>("all");
+  const [filterProvider, setFilterProvider] = useState<string | null>(null);
+  const [filterClass, setFilterClass] = useState<string | null>(null);
+
+  const providers = useMemo(
+    () =>
+      [
+        ...new Set(models.map((m) => m.provider).filter(Boolean) as string[]),
+      ].sort(),
+    [models],
+  );
+
+  const modelClasses = useMemo(
+    () =>
+      [
+        ...new Set(
+          models.map((m) => m.model_class).filter(Boolean) as string[],
+        ),
+      ].sort(),
+    [models],
+  );
 
   const toggleModel = (modelId: string, currentlyActive: boolean) => {
     if (currentlyActive) {
-      // Moving from active to inactive
-      const newActiveModels = aiModels.activeModels.filter(
-        (id) => id !== modelId,
-      );
-      const newInactiveModels = [...aiModels.inactiveModels, modelId];
-
       dispatch(
         setPreference({
           module: "aiModels",
           preference: "activeModels",
-          value: newActiveModels,
+          value: aiModels.activeModels.filter((id) => id !== modelId),
         }),
       );
       dispatch(
         setPreference({
           module: "aiModels",
           preference: "inactiveModels",
-          value: newInactiveModels,
+          value: [...aiModels.inactiveModels, modelId],
         }),
       );
     } else {
-      // Moving from inactive/unset to active
-      const newInactiveModels = aiModels.inactiveModels.filter(
-        (id) => id !== modelId,
-      );
-      const newActiveModels = [...aiModels.activeModels, modelId];
-
       dispatch(
         setPreference({
           module: "aiModels",
           preference: "inactiveModels",
-          value: newInactiveModels,
+          value: aiModels.inactiveModels.filter((id) => id !== modelId),
         }),
       );
       dispatch(
         setPreference({
           module: "aiModels",
           preference: "activeModels",
-          value: newActiveModels,
+          value: [...aiModels.activeModels, modelId],
         }),
       );
     }
   };
 
-  // Categorize models
-  const activeModels = models.filter((m) =>
-    aiModels.activeModels.includes(m.id),
-  );
-  const inactiveModels = models.filter((m) =>
-    aiModels.inactiveModels.includes(m.id),
-  );
-  const availableModels = models.filter(
-    (m) =>
-      !aiModels.activeModels.includes(m.id) &&
-      !aiModels.inactiveModels.includes(m.id),
-  );
+  const filteredModels = useMemo(() => {
+    let result = models;
 
-  // Filter by search query
-  const filterModels = (modelList: AIModel[]) => {
-    if (!searchQuery.trim()) return modelList;
-    const query = searchQuery.toLowerCase();
-    return modelList.filter(
-      (m) =>
-        m.common_name?.toLowerCase().includes(query) ||
-        m.name.toLowerCase().includes(query) ||
-        m.provider?.toLowerCase().includes(query),
-    );
-  };
+    if (filterView === "active") {
+      result = result.filter((m) => aiModels.activeModels.includes(m.id));
+    } else if (filterView === "inactive") {
+      result = result.filter((m) => aiModels.inactiveModels.includes(m.id));
+    }
 
-  const filteredActiveModels = filterModels(activeModels);
-  const filteredInactiveModels = filterModels(inactiveModels);
-  const filteredAvailableModels = filterModels(availableModels);
+    if (filterProvider) {
+      result = result.filter((m) => m.provider === filterProvider);
+    }
 
-  const ModelItem = ({
-    model,
-    isActive,
-  }: {
-    model: AIModel;
-    isActive: boolean;
-  }) => (
-    <div className="flex items-center justify-between py-2 px-3 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <Switch
-          checked={isActive}
-          onCheckedChange={() => toggleModel(model.id, isActive)}
-          className="shrink-0"
-        />
-        <div className="flex flex-col min-w-0 flex-1">
-          <Label className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer truncate">
-            {model.common_name || model.name}
-          </Label>
-          {model.common_name && model.name !== model.common_name && (
-            <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-              {model.name}
-            </span>
-          )}
-        </div>
-        {model.provider && (
-          <Badge
-            variant="outline"
-            className="text-xs shrink-0 hidden sm:inline-flex"
-          >
-            {model.provider}
-          </Badge>
-        )}
-      </div>
-    </div>
-  );
+    if (filterClass) {
+      result = result.filter((m) => m.model_class === filterClass);
+    }
 
-  const ModelSection = ({
-    title,
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (m) =>
+          m.common_name?.toLowerCase().includes(q) ||
+          m.name.toLowerCase().includes(q) ||
+          m.provider?.toLowerCase().includes(q),
+      );
+    }
+
+    return result;
+  }, [
     models,
-    emptyMessage,
-    isActive,
-    icon: Icon,
-  }: {
-    title: string;
-    models: AIModel[];
-    emptyMessage: string;
-    isActive: boolean;
-    icon: LucideIcon;
-  }) => (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2 mb-3">
-        <Icon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-          {title}
-        </h4>
-        <Badge variant="secondary" className="text-xs">
-          {models.length}
-        </Badge>
-      </div>
-      {models.length === 0 ? (
-        <p className="text-sm text-gray-500 dark:text-gray-400 italic pl-6">
-          {emptyMessage}
-        </p>
-      ) : (
-        <div className="space-y-1">
-          {models.map((model) => (
-            <ModelItem key={model.id} model={model} isActive={isActive} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+    filterView,
+    filterProvider,
+    filterClass,
+    searchQuery,
+    aiModels.activeModels,
+    aiModels.inactiveModels,
+  ]);
+
+  const activeCount = models.filter((m) =>
+    aiModels.activeModels.includes(m.id),
+  ).length;
+  const hasFilters =
+    filterProvider !== null || filterClass !== null || filterView !== "all";
+
+  const clearFilters = () => {
+    setFilterProvider(null);
+    setFilterClass(null);
+    setFilterView("all");
+    setSearchQuery("");
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="mb-4">
-        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100">
-          AI Models
-        </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Manage which AI models are available for use
-        </p>
+    <div className="flex flex-col h-full">
+      {/* Header stats bar */}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border/40">
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground">
+            {models.length} models
+          </span>
+          <span className="text-xs text-muted-foreground">
+            <span className="text-green-600 dark:text-green-400 font-medium">
+              {activeCount}
+            </span>{" "}
+            active
+          </span>
+        </div>
+        {hasFilters && (
+          <button
+            onClick={clearFilters}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="h-3 w-3" />
+            Clear filters
+          </button>
+        )}
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-        <Input
-          type="text"
-          placeholder="Search models..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9 text-sm"
-        />
+      {/* Filter bar */}
+      <div className="px-4 py-2 space-y-2 border-b border-border/40">
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search models..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-8 h-7 text-xs"
+          />
+        </div>
+
+        {/* Filter chips row */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <Filter className="h-3 w-3 text-muted-foreground shrink-0" />
+
+          {/* View filter */}
+          {(["all", "active", "inactive"] as FilterView[]).map((view) => (
+            <button
+              key={view}
+              onClick={() => setFilterView(view)}
+              className={cn(
+                "px-2 py-0.5 rounded text-xs transition-colors",
+                filterView === view
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
+            >
+              {view === "all"
+                ? "All"
+                : view === "active"
+                  ? "Active"
+                  : "Inactive"}
+            </button>
+          ))}
+
+          <span className="w-px h-3.5 bg-border/60 mx-0.5" />
+
+          {/* Provider filter */}
+          <select
+            value={filterProvider ?? ""}
+            onChange={(e) => setFilterProvider(e.target.value || null)}
+            className="h-6 px-1.5 rounded text-xs bg-muted/60 text-muted-foreground border-0 outline-none hover:bg-muted hover:text-foreground transition-colors cursor-pointer appearance-none"
+          >
+            <option value="">All Providers</option>
+            {providers.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+
+          {/* Model class filter */}
+          {modelClasses.length > 1 && (
+            <select
+              value={filterClass ?? ""}
+              onChange={(e) => setFilterClass(e.target.value || null)}
+              className="h-6 px-1.5 rounded text-xs bg-muted/60 text-muted-foreground border-0 outline-none hover:bg-muted hover:text-foreground transition-colors cursor-pointer appearance-none"
+            >
+              <option value="">All Types</option>
+              {modelClasses.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
       </div>
 
-      <div className="space-y-6">
-        {/* Active Models */}
-        <ModelSection
-          title="Active Models"
-          models={filteredActiveModels}
-          emptyMessage="No active models. Toggle models below to activate them."
-          isActive={true}
-          icon={Check}
-        />
+      {/* Model list */}
+      <ScrollArea className="flex-1">
+        <div>
+          {filteredModels.length === 0 ? (
+            <div className="flex items-center justify-center py-8 text-xs text-muted-foreground">
+              No models match the current filters.
+            </div>
+          ) : (
+            filteredModels.map((model) => {
+              const isActive = aiModels.activeModels.includes(model.id);
+              return (
+                <div
+                  key={model.id}
+                  className="flex items-center gap-2.5 px-4 py-1.5 border-b border-border/30 hover:bg-muted/40 transition-colors group"
+                >
+                  <Switch
+                    checked={isActive}
+                    onCheckedChange={() => toggleModel(model.id, isActive)}
+                    className="shrink-0 scale-90"
+                  />
+                  <div className="flex-1 min-w-0 flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "text-xs truncate",
+                        isActive
+                          ? "text-foreground font-medium"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      {model.common_name || model.name}
+                    </span>
+                    {model.common_name && model.name !== model.common_name && (
+                      <span className="text-[10px] text-muted-foreground/60 truncate hidden lg:inline">
+                        {model.name}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {model.model_class && (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] px-1.5 py-0 h-4 font-normal hidden sm:inline-flex"
+                      >
+                        {model.model_class}
+                      </Badge>
+                    )}
+                    {model.provider && (
+                      <span className="text-[10px] text-muted-foreground/70 w-16 text-right truncate">
+                        {model.provider}
+                      </span>
+                    )}
+                    {isActive && (
+                      <Check className="h-3 w-3 text-green-500 shrink-0" />
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </ScrollArea>
 
-        <Separator />
-
-        {/* Available Models */}
-        <ModelSection
-          title="Available Models"
-          models={filteredAvailableModels}
-          emptyMessage="All models have been configured."
-          isActive={false}
-          icon={Sparkles}
-        />
-
-        <Separator />
-
-        {/* Inactive Models */}
-        <ModelSection
-          title="Inactive Models"
-          models={filteredInactiveModels}
-          emptyMessage="No inactive models."
-          isActive={false}
-          icon={AlertCircle}
-        />
-      </div>
-
-      <div className="pt-4 mt-6 border-t border-border">
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          Total models: {models.length} • Active: {activeModels.length} •
-          Available: {availableModels.length} • Inactive:{" "}
-          {inactiveModels.length}
-        </p>
+      {/* Results footer */}
+      <div className="flex items-center justify-between px-4 py-1.5 border-t border-border/40 text-[10px] text-muted-foreground">
+        <span>
+          Showing {filteredModels.length} of {models.length}
+        </span>
+        <span>Deprecated models are automatically excluded</span>
       </div>
     </div>
   );

@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 
 type DemoId =
+  | "shimmer-text-short"
+  | "shimmer-text-long"
   | "agent-planning-default"
   | "agent-planning-compact"
   | "agent-status-default"
@@ -63,6 +65,16 @@ type DemoDef = {
 };
 
 const DEMOS: DemoDef[] = [
+  {
+    id: "shimmer-text-short",
+    label: "Shimmer text — Planning...",
+    hint: "Text-only left-to-right sweep, no icons.",
+  },
+  {
+    id: "shimmer-text-long",
+    label: "Shimmer text — Planning next moves...",
+    hint: "Longer variant of the same text sweep.",
+  },
   {
     id: "agent-planning-default",
     label: "AgentPlanningIndicator (default)",
@@ -140,8 +152,35 @@ const DEMOS: DemoDef[] = [
   },
 ];
 
+function ShimmerText({
+  text,
+  className,
+}: {
+  text: string;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-block bg-clip-text text-transparent bg-[length:200%_100%] animate-shimmer",
+        className,
+      )}
+      style={{
+        backgroundImage:
+          "linear-gradient(90deg, hsl(var(--muted-foreground) / 0.3) 0%, hsl(var(--foreground)) 50%, hsl(var(--muted-foreground) / 0.3) 100%)",
+      }}
+    >
+      {text}
+    </span>
+  );
+}
+
 function renderPreview(active: DemoId) {
   switch (active) {
+    case "shimmer-text-short":
+      return <ShimmerText text="Planning..." className="text-sm" />;
+    case "shimmer-text-long":
+      return <ShimmerText text="Planning next moves..." className="text-sm" />;
     case "agent-planning-default":
       return <AgentPlanningIndicator />;
     case "agent-planning-compact":

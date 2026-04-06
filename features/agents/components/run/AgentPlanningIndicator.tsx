@@ -5,11 +5,9 @@
  *
  * Shown between submit and first server event — covers the window where
  * the client is waiting for the server to accept the request, route it,
- * and begin processing. Professional animated indicator with shimmer bar
- * and a text sweep effect.
+ * and begin processing.
  */
 
-import { Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AgentPlanningIndicatorProps {
@@ -19,29 +17,15 @@ interface AgentPlanningIndicatorProps {
 export function AgentPlanningIndicator({
   compact = false,
 }: AgentPlanningIndicatorProps) {
-  if (compact) {
-    return (
-      <div className="flex items-center gap-2 py-1">
-        <AnimatedText text="Connecting" className="text-[11px]" />
-        <ShimmerBar className="w-14" />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex items-start gap-3 py-2">
-      <div className="shrink-0 w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
-        <Bot className="w-4 h-4 text-primary animate-pulse" />
-      </div>
-      <div className="flex flex-col gap-1.5 min-w-0">
-        <AnimatedText text="Connecting" className="text-sm font-medium" />
-        <ShimmerBar className="w-32" />
-      </div>
-    </div>
+    <ShimmerText
+      text="Planning..."
+      className={compact ? "text-[11px]" : "text-sm"}
+    />
   );
 }
 
-function AnimatedText({
+function ShimmerText({
   text,
   className,
 }: {
@@ -56,45 +40,10 @@ function AnimatedText({
       )}
       style={{
         backgroundImage:
-          "linear-gradient(90deg, hsl(var(--muted-foreground)) 0%, hsl(var(--primary)) 50%, hsl(var(--muted-foreground)) 100%)",
+          "linear-gradient(90deg, hsl(var(--muted-foreground) / 0.3) 0%, hsl(var(--foreground)) 50%, hsl(var(--muted-foreground) / 0.3) 100%)",
       }}
     >
       {text}
-      <PulsingDots />
     </span>
-  );
-}
-
-function PulsingDots() {
-  return (
-    <span className="inline-flex gap-[2px] ml-0.5 align-baseline" aria-hidden>
-      {[0, 150, 300].map((delay) => (
-        <span
-          key={delay}
-          className="inline-block w-[4px] h-[4px] rounded-full bg-current animate-bounce"
-          style={{ animationDelay: `${delay}ms` }}
-        />
-      ))}
-    </span>
-  );
-}
-
-function ShimmerBar({ className }: { className?: string }) {
-  return (
-    <div
-      className={cn(
-        "h-[3px] rounded-full overflow-hidden bg-primary/10",
-        className,
-      )}
-    >
-      <div
-        className="h-full rounded-full animate-shimmer"
-        style={{
-          backgroundSize: "200% 100%",
-          backgroundImage:
-            "linear-gradient(90deg, transparent 0%, hsl(var(--primary) / 0.6) 50%, transparent 100%)",
-        }}
-      />
-    </div>
   );
 }
