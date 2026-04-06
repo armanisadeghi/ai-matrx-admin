@@ -7,16 +7,29 @@ import {
   disconnectMcpServer as disconnectMcpServerService,
 } from "@/features/agents/services/mcp.service";
 import type { UpsertConnectionParams } from "@/features/agents/services/mcp.service";
+import type { McpToolSchema } from "@/features/agents/services/mcp-client";
 
 // ---------------------------------------------------------------------------
 // State
 // ---------------------------------------------------------------------------
+
+/** Discovered tools/resources/prompts for a single MCP server */
+export interface McpServerDiscovery {
+  tools: McpToolSchema[];
+  resources: Array<{ uri: string; name: string; description?: string; mimeType?: string }>;
+  prompts: Array<{ name: string; description?: string }>;
+  status: "idle" | "loading" | "succeeded" | "failed";
+  error: string | null;
+  discoveredAt: string | null;
+}
 
 interface McpSliceState {
   catalog: McpCatalogEntry[];
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   connectingServerId: string | null;
+  /** Per-server discovered capabilities, keyed by serverId */
+  discoveries: Record<string, McpServerDiscovery>;
 }
 
 const initialState: McpSliceState = {
@@ -24,6 +37,7 @@ const initialState: McpSliceState = {
   status: "idle",
   error: null,
   connectingServerId: null,
+  discoveries: {},
 };
 
 // ---------------------------------------------------------------------------
@@ -52,6 +66,43 @@ export const disconnectServer = createAsyncThunk(
   },
 );
 
+/** Discover tools/resources/prompts from a connected MCP server via the API route. */
+export const discoverServerTools = createAsyncThunk(
+  "mcp/discoverServerTools",
+  async (serverId: string) => {
+    const response = await fetch(`/api/mcp/servers/${serverId}/tools`);
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(
+        body.error ?? `Discovery failed (${response.status})`,
+      );
+    }
+    return (await response.json()) as {
+      serverId: string;
+      serverName: string;
+      serverSlug: string;
+      tools: McpToolSchema[];
+      resources: Array<{ uri: string; name: string; description?: string; mimeType?: string }>;
+      prompts: Array<{ name: string; description?: string }>;
+    };
+  },
+);
+
+/** Refresh the OAuth token for a server. */
+export const refreshServerToken = createAsyncThunk(
+  "mcp/refreshServerToken",
+  async (serverId: string) => {
+    const response = await fetch(`/api/mcp/servers/${serverId}/refresh`, {
+      method: "POST",
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.error ?? `Refresh failed (${response.status})`);
+    }
+    return serverId;
+  },
+);
+
 // ---------------------------------------------------------------------------
 // Slice
 // ---------------------------------------------------------------------------
@@ -76,6 +127,9 @@ const mcpSlice = createSlice({
       if (idx !== -1) {
         state.catalog[idx] = { ...state.catalog[idx], ...action.payload.patch };
       }
+    },
+    clearServerDiscovery(state, action: PayloadAction<string>) {
+      delete state.discoveries[action.payload];
     },
   },
   extraReducers: (builder) => {
@@ -113,11 +167,46 @@ const mcpSlice = createSlice({
             connectionId: null,
           };
         }
+        // Clear discovered tools when disconnecting
+        delete state.discoveries[action.payload];
+      })
+      // ── discoverServerTools ──
+      .addCase(discoverServerTools.pending, (state, action) => {
+        state.discoveries[action.meta.arg] = {
+          tools: [],
+          resources: [],
+          prompts: [],
+          status: "loading",
+          error: null,
+          discoveredAt: null,
+        };
+      })
+      .addCase(discoverServerTools.fulfilled, (state, action) => {
+        state.discoveries[action.meta.arg] = {
+          tools: action.payload.tools,
+          resources: action.payload.resources,
+          prompts: action.payload.prompts,
+          status: "succeeded",
+          error: null,
+          discoveredAt: new Date().toISOString(),
+        };
+      })
+      .addCase(discoverServerTools.rejected, (state, action) => {
+        const existing = state.discoveries[action.meta.arg];
+        state.discoveries[action.meta.arg] = {
+          tools: existing?.tools ?? [],
+          resources: existing?.resources ?? [],
+          prompts: existing?.prompts ?? [],
+          status: "failed",
+          error: action.error.message ?? "Discovery failed",
+          discoveredAt: existing?.discoveredAt ?? null,
+        };
       });
   },
 });
 
-export const { clearMcpError, updateCatalogEntry } = mcpSlice.actions;
+export const { clearMcpError, updateCatalogEntry, clearServerDiscovery } =
+  mcpSlice.actions;
 export default mcpSlice.reducer;
 
 // ---------------------------------------------------------------------------
@@ -149,4 +238,42 @@ export const selectMcpCatalogByCategory = (state: RootState) => {
     grouped[entry.category].push(entry);
   }
   return grouped;
+};
+
+// ── Discovery selectors ──
+
+export const selectMcpDiscoveries = (state: RootState) =>
+  selectMcpState(state).discoveries;
+
+export const selectMcpServerDiscovery = (
+  state: RootState,
+  serverId: string,
+) => selectMcpState(state).discoveries[serverId] ?? null;
+
+export const selectMcpServerTools = (state: RootState, serverId: string) =>
+  selectMcpState(state).discoveries[serverId]?.tools ?? [];
+
+export const selectMcpServerDiscoveryStatus = (
+  state: RootState,
+  serverId: string,
+) => selectMcpState(state).discoveries[serverId]?.status ?? "idle";
+
+/**
+ * Returns all discovered tools across all connected MCP servers,
+ * tagged with their server ID for routing.
+ */
+export const selectAllDiscoveredMcpTools = (state: RootState) => {
+  const discoveries = selectMcpState(state).discoveries;
+  const allTools: Array<McpToolSchema & { serverId: string; serverName: string }> = [];
+
+  for (const [serverId, discovery] of Object.entries(discoveries)) {
+    if (discovery.status !== "succeeded") continue;
+    const catalogEntry = state.mcp.catalog.find((e) => e.serverId === serverId);
+    const serverName = catalogEntry?.name ?? serverId;
+    for (const tool of discovery.tools) {
+      allTools.push({ ...tool, serverId, serverName });
+    }
+  }
+
+  return allTools;
 };
