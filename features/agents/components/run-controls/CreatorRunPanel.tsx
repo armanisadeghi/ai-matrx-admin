@@ -63,7 +63,7 @@ import { selectAllInstanceIds } from "@/features/agents/redux/execution-system/e
 import { SystemInstructionEditor } from "../system-instructions/SystemInstructionEditor";
 import { StreamDebugFloating } from "../debug/StreamDebugFloating";
 import { openStreamDebug } from "@/lib/redux/slices/overlaySlice";
-import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
 import { StreamDebugPanel } from "../debug/StreamDebugPanel";
 import { AgentLauncherSidebarTester } from "./AgentLauncherSidebarTester";
 import { AgentExecutionTestModal } from "./AgentExecutionTestModal";

@@ -1,18 +1,25 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Users, Building2, Globe, Mail, Loader2, CheckCircle } from 'lucide-react';
-import { useSharing, useIsOwner, useSharingStatus } from '@/utils/permissions';
-import type { ResourceType } from '@/utils/permissions';
-import { PermissionsList } from '@/features/sharing/components/PermissionsList';
-import { ShareWithUserTab } from '@/features/sharing/components/tabs/ShareWithUserTab';
-import { ShareWithOrgTab } from '@/features/sharing/components/tabs/ShareWithOrgTab';
-import { PublicAccessTab } from '@/features/sharing/components/tabs/PublicAccessTab';
-import { getResourceTypeLabel } from '@/utils/permissions';
-import { useToast } from '@/components/ui/use-toast';
-import { WindowPanel } from '@/components/official-candidate/floating-window-panel/WindowPanel';
+import React, { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import {
+  Users,
+  Building2,
+  Globe,
+  Mail,
+  Loader2,
+  CheckCircle,
+} from "lucide-react";
+import { useSharing, useIsOwner, useSharingStatus } from "@/utils/permissions";
+import type { ResourceType } from "@/utils/permissions";
+import { PermissionsList } from "@/features/sharing/components/PermissionsList";
+import { ShareWithUserTab } from "@/features/sharing/components/tabs/ShareWithUserTab";
+import { ShareWithOrgTab } from "@/features/sharing/components/tabs/ShareWithOrgTab";
+import { PublicAccessTab } from "@/features/sharing/components/tabs/PublicAccessTab";
+import { getResourceTypeLabel } from "@/utils/permissions";
+import { useToast } from "@/components/ui/use-toast";
+import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
 
 export interface ShareModalWindowProps {
   isOpen: boolean;
@@ -31,7 +38,9 @@ export default function ShareModalWindow({
   resourceName,
   isOwner,
 }: ShareModalWindowProps) {
-  const [activeTab, setActiveTab] = useState<'users' | 'organizations' | 'public'>('users');
+  const [activeTab, setActiveTab] = useState<
+    "users" | "organizations" | "public"
+  >("users");
   const [emailingLink, setEmailingLink] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const { toast } = useToast();
@@ -58,16 +67,17 @@ export default function ShareModalWindow({
       flashcard_data: `/flashcards/${resourceId}`,
       flashcard_sets: `/flashcards/sets/${resourceId}`,
     };
-    const path = resourcePaths[resourceType] || `/${resourceType}/${resourceId}`;
+    const path =
+      resourcePaths[resourceType] || `/${resourceType}/${resourceId}`;
     return `${baseUrl}${path}`;
   };
 
   const handleEmailLink = async () => {
     setEmailingLink(true);
     try {
-      const response = await fetch('/api/sharing/email-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/sharing/email-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           resourceType: getResourceTypeLabel(resourceType),
           resourceName,
@@ -76,26 +86,26 @@ export default function ShareModalWindow({
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         setEmailSent(true);
         toast({
-          title: 'Email sent',
-          description: 'Link has been emailed to you',
+          title: "Email sent",
+          description: "Link has been emailed to you",
         });
         setTimeout(() => setEmailSent(false), 3000);
       } else {
         toast({
-          title: 'Failed to send email',
-          description: data.msg || 'Please try again',
-          variant: 'destructive',
+          title: "Failed to send email",
+          description: data.msg || "Please try again",
+          variant: "destructive",
         });
       }
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to send email',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to send email",
+        variant: "destructive",
       });
     } finally {
       setEmailingLink(false);
@@ -114,7 +124,10 @@ export default function ShareModalWindow({
     refresh,
   } = useSharing(resourceType, resourceId, isOpen);
 
-  const { isPublic: resourceIsPublic } = useSharingStatus(resourceType, resourceId);
+  const { isPublic: resourceIsPublic } = useSharingStatus(
+    resourceType,
+    resourceId,
+  );
 
   const userPermissions = permissions.filter((p) => p.grantedToUserId);
   const orgPermissions = permissions.filter((p) => p.grantedToOrganizationId);
@@ -136,7 +149,9 @@ export default function ShareModalWindow({
         <div className="flex items-start justify-between gap-4 mb-4 flex-shrink-0">
           <div className="flex-1 min-w-0">
             <h2 className="text-lg font-semibold truncate">{resourceName}</h2>
-            <p className="text-sm text-muted-foreground">Manage access and permissions</p>
+            <p className="text-sm text-muted-foreground">
+              Manage access and permissions
+            </p>
           </div>
           <Button
             variant="outline"
@@ -153,7 +168,7 @@ export default function ShareModalWindow({
               <Mail className="h-4 w-4" />
             )}
             <span className="ml-1.5 hidden sm:inline">
-              {emailSent ? 'Sent!' : 'Email link'}
+              {emailSent ? "Sent!" : "Email link"}
             </span>
           </Button>
         </div>

@@ -23,7 +23,7 @@ import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
 import {
   WindowPanel,
   type WindowPanelProps,
-} from "@/components/official-candidate/floating-window-panel/WindowPanel";
+} from "@/features/floating-window-panel/WindowPanel";
 import { submitFeedback, getUserFeedback } from "@/actions/feedback.actions";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
 import {

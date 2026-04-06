@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
 import { StreamDebugPanel } from "./StreamDebugPanel";
 
 export interface StreamDebugFloatingProps {

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
 import MarkdownClassificationTester from "@/components/mardown-display/markdown-classification/MarkdownClassificationTester";
 
 interface MarkdownEditorWindowProps {
@@ -29,7 +29,7 @@ export default function MarkdownEditorWindow({
       onClose={onClose}
     >
       <div className="flex-1 overflow-hidden h-full">
-        <MarkdownClassificationTester 
+        <MarkdownClassificationTester
           initialMarkdown={initialMarkdown}
           showSelectors={showSampleSelector && showConfigSelector}
         />

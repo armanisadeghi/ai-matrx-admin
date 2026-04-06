@@ -578,6 +578,18 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
         }
 
+        case "artifact":
+            return (
+                <BlockComponents.ArtifactBlock
+                    key={index}
+                    content={block.content}
+                    metadata={block.metadata}
+                    serverData={block.serverData}
+                    isStreamActive={isStreamActive}
+                    messageId={messageId}
+                />
+            );
+
         case "text":
         case "info":
         case "task":

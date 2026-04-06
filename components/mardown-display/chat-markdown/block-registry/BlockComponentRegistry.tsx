@@ -40,6 +40,7 @@ const StreamingTableRenderer = lazy(() => import("../../blocks/table/StreamingTa
 const StreamingDiffBlock = lazy(() => import("../diff-blocks/StreamingDiffBlock").then(m => ({ default: m.StreamingDiffBlock })));
 const SearchReplaceBlock = lazy(() => import("../../blocks/search-replace/SearchReplaceBlock").then(m => ({ default: m.SearchReplaceBlock })));
 const InlineDecisionBlock = lazy(() => import("../../blocks/inline-decision/InlineDecisionBlock"));
+const ArtifactBlock = lazy(() => import("../../blocks/artifact/ArtifactBlock"));
 
 // Lazy load loading visualizations (lightweight but rarely all needed at once)
 const QuizLoadingVisualization = lazy(() => import("../../blocks/quiz/QuizLoadingVisualization"));
@@ -229,6 +230,11 @@ export const BlockComponents = {
     InlineDecisionBlock: (props: any) => (
         <LazyBlockWrapper>
             <InlineDecisionBlock {...props} />
+        </LazyBlockWrapper>
+    ),
+    ArtifactBlock: (props: any) => (
+        <LazyBlockWrapper>
+            <ArtifactBlock {...props} />
         </LazyBlockWrapper>
     ),
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
 import { QuickFilesSheet } from "@/features/quick-actions/components/QuickFilesSheet";
 import { FileManagerSidebar } from "@/app/(authenticated)/files/components/FileManagerSidebar";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,10 @@ interface QuickFilesWindowProps {
   onClose?: () => void;
 }
 
-export default function QuickFilesWindow({ isOpen, onClose }: QuickFilesWindowProps) {
+export default function QuickFilesWindow({
+  isOpen,
+  onClose,
+}: QuickFilesWindowProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [layoutMode, setLayoutMode] = useState<"side" | "below">("side");
 
@@ -25,15 +28,21 @@ export default function QuickFilesWindow({ isOpen, onClose }: QuickFilesWindowPr
       urlSyncKey="quick_files"
       onClose={onClose}
     >
-      <div className={`flex w-full h-full bg-background overflow-hidden ${layoutMode === "below" ? "flex-col" : "flex-row"}`}>
+      <div
+        className={`flex w-full h-full bg-background overflow-hidden ${layoutMode === "below" ? "flex-col" : "flex-row"}`}
+      >
         {/* Collapsible Sidebar */}
-        <div 
+        <div
           className={`flex-shrink-0 transition-all duration-300 ease-in-out border-border bg-muted/10 ${
             layoutMode === "below" ? "border-b" : "border-r"
           } ${
-            sidebarOpen 
-              ? (layoutMode === "side" ? "w-64" : "h-64") 
-              : (layoutMode === "side" ? "w-0 overflow-hidden border-r-0" : "h-0 overflow-hidden border-b-0")
+            sidebarOpen
+              ? layoutMode === "side"
+                ? "w-64"
+                : "h-64"
+              : layoutMode === "side"
+                ? "w-0 overflow-hidden border-r-0"
+                : "h-0 overflow-hidden border-b-0"
           }`}
         >
           {sidebarOpen && (
@@ -56,7 +65,7 @@ export default function QuickFilesWindow({ isOpen, onClose }: QuickFilesWindowPr
               <Menu className="h-4 w-4" />
             </Button>
             <span className="font-medium text-sm flex-1">Files</span>
-            
+
             <div className="flex items-center space-x-1">
               <Button
                 variant={layoutMode === "side" ? "secondary" : "ghost"}

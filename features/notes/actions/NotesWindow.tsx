@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/ButtonMine";
 import {
   WindowPanel,
   type WindowPanelProps,
-} from "@/components/official-candidate/floating-window-panel/WindowPanel";
+} from "@/features/floating-window-panel/WindowPanel";
 import { NotesProvider, useNotesContext } from "../context/NotesContext";
 import { useAutoSave } from "../hooks/useAutoSave";
 import { useAutoLabel } from "../hooks/useAutoLabel";
@@ -305,7 +305,9 @@ function NotesWindowShell({
             isDirty={isDirty}
             saveState={isSaving ? "saving" : isDirty ? "dirty" : "saved"}
             lastUpdatedAt={activeNote?.updated_at ?? undefined}
-            allFolders={[...new Set(notes.map((n) => n.folder_name || "Draft"))]}
+            allFolders={[
+              ...new Set(notes.map((n) => n.folder_name || "Draft")),
+            ]}
             currentFolder={activeNote?.folder_name ?? "Draft"}
             onSave={() => forceSave()}
             showVoiceButton={!previewMode}

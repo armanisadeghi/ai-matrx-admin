@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
-import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Loader2, Mail } from 'lucide-react';
+import React, { useState } from "react";
+import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, Mail } from "lucide-react";
 
 interface EmailDialogWindowProps {
   isOpen: boolean;
@@ -20,11 +20,11 @@ export default function EmailDialogWindow({
   isOpen,
   onClose,
   onSubmit,
-  title = 'Email to yourself',
-  description = 'Enter your email address to receive the content.',
-  submitLabel = 'Send Email',
+  title = "Email to yourself",
+  description = "Enter your email address to receive the content.",
+  submitLabel = "Send Email",
 }: EmailDialogWindowProps) {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,14 +36,14 @@ export default function EmailDialogWindow({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email.trim()) {
-      setError('Email is required');
+      setError("Email is required");
       return;
     }
 
     if (!isValidEmail(email)) {
-      setError('Please enter a valid email address');
+      setError("Please enter a valid email address");
       return;
     }
 
@@ -57,10 +57,10 @@ export default function EmailDialogWindow({
 
     try {
       await onSubmit(email);
-      setEmail('');
+      setEmail("");
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send email');
+      setError(err instanceof Error ? err.message : "Failed to send email");
     } finally {
       setLoading(false);
     }
@@ -68,7 +68,7 @@ export default function EmailDialogWindow({
 
   const handleClose = () => {
     if (!loading) {
-      setEmail('');
+      setEmail("");
       setError(null);
       onClose();
     }
@@ -81,7 +81,10 @@ export default function EmailDialogWindow({
       urlSyncKey="email_dialog"
       onClose={handleClose}
     >
-      <form onSubmit={handleSubmit} className="flex flex-col h-full bg-background">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col h-full bg-background"
+      >
         <div className="px-6 pt-6 pb-2">
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
@@ -102,9 +105,7 @@ export default function EmailDialogWindow({
               autoFocus
               className="text-base"
             />
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
+            {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
         </div>
 

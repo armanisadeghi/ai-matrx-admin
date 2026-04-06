@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
 import { QuickDataSheet } from "@/features/quick-actions/components/QuickDataSheet";
 
 interface QuickDataWindowProps {
@@ -9,7 +9,10 @@ interface QuickDataWindowProps {
   onClose?: () => void;
 }
 
-export default function QuickDataWindow({ isOpen, onClose }: QuickDataWindowProps) {
+export default function QuickDataWindow({
+  isOpen,
+  onClose,
+}: QuickDataWindowProps) {
   if (!isOpen) return null;
 
   return (

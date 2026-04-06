@@ -28,7 +28,7 @@ import {
   CheckSquare,
   Database,
   FolderSearch,
-  Wand2
+  Wand2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -45,7 +45,7 @@ import {
   arrangeActiveWindows,
 } from "@/lib/redux/slices/windowManagerSlice";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import { LayoutIconButton } from "@/components/official-candidate/floating-window-panel/components/LayoutIcon";
+import { LayoutIconButton } from "@/features/floating-window-panel/components/LayoutIcon";
 
 // ─── State dot colours ────────────────────────────────────────────────────────
 
@@ -71,10 +71,14 @@ export default function SidebarWindowToggle() {
   const hasWindows = windows.length > 0;
 
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"visibility" | "layout" | "tools">("visibility");
+  const [activeTab, setActiveTab] = useState<"visibility" | "layout" | "tools">(
+    "visibility",
+  );
   const [layoutDirX, setLayoutDirX] = useState<"ltr" | "rtl">("rtl");
   const [layoutDirY, setLayoutDirY] = useState<"ttb" | "btt">("ttb");
-  const [layoutPrimary, setLayoutPrimary] = useState<"horizontal" | "vertical">("vertical");
+  const [layoutPrimary, setLayoutPrimary] = useState<"horizontal" | "vertical">(
+    "vertical",
+  );
   const [pos, setPos] = useState({ x: 0, bottom: 0 });
   const [mounted, setMounted] = useState(false);
 
@@ -177,7 +181,7 @@ export default function SidebarWindowToggle() {
                   "px-2 py-1 text-[11px] font-medium uppercase tracking-wider rounded-md transition-colors",
                   activeTab === "visibility"
                     ? "bg-accent/80 text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/40",
                 )}
                 onClick={() => setActiveTab("visibility")}
               >
@@ -189,7 +193,7 @@ export default function SidebarWindowToggle() {
                   "px-2 py-1 text-[11px] font-medium uppercase tracking-wider rounded-md transition-colors",
                   activeTab === "layout"
                     ? "bg-accent/80 text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/40",
                 )}
                 onClick={() => setActiveTab("layout")}
               >
@@ -201,7 +205,7 @@ export default function SidebarWindowToggle() {
                   "px-2 py-1 text-[11px] font-medium uppercase tracking-wider rounded-md transition-colors",
                   activeTab === "tools"
                     ? "bg-accent/80 text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/40",
                 )}
                 onClick={() => setActiveTab("tools")}
               >
@@ -287,8 +291,8 @@ export default function SidebarWindowToggle() {
                           minimizeAll({
                             viewportWidth: window.innerWidth,
                             viewportHeight: window.innerHeight,
-                          })
-                        )
+                          }),
+                        ),
                       )
                     }
                     disabled={!hasWindows || allMinimized}
@@ -310,28 +314,54 @@ export default function SidebarWindowToggle() {
                 <MenuSection label="Progression" />
                 <div className="flex justify-center items-center gap-1.5 px-2 py-1.5 bg-accent/30 rounded-md mx-2 mb-2">
                   <button
-                    onClick={() => setLayoutDirX(d => d === "ltr" ? "rtl" : "ltr")}
+                    onClick={() =>
+                      setLayoutDirX((d) => (d === "ltr" ? "rtl" : "ltr"))
+                    }
                     className="flex-1 flex justify-center items-center gap-1 py-1 rounded transition-colors bg-card hover:bg-accent border border-border/50 text-foreground shadow-sm"
                     title="Toggle Horizontal Progression"
                   >
-                    {layoutDirX === "rtl" ? <ArrowLeft className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
-                    <span className="text-[10px] font-medium leading-none tracking-wide">{layoutDirX === "rtl" ? "R→L" : "L→R"}</span>
+                    {layoutDirX === "rtl" ? (
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                    ) : (
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    )}
+                    <span className="text-[10px] font-medium leading-none tracking-wide">
+                      {layoutDirX === "rtl" ? "R→L" : "L→R"}
+                    </span>
                   </button>
                   <button
-                    onClick={() => setLayoutDirY(d => d === "ttb" ? "btt" : "ttb")}
+                    onClick={() =>
+                      setLayoutDirY((d) => (d === "ttb" ? "btt" : "ttb"))
+                    }
                     className="flex-1 flex justify-center items-center gap-1 py-1 rounded transition-colors bg-card hover:bg-accent border border-border/50 text-foreground shadow-sm"
                     title="Toggle Vertical Progression"
                   >
-                    {layoutDirY === "btt" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
-                    <span className="text-[10px] font-medium leading-none tracking-wide">{layoutDirY === "btt" ? "B↑T" : "T↓B"}</span>
+                    {layoutDirY === "btt" ? (
+                      <ArrowUp className="w-3.5 h-3.5" />
+                    ) : (
+                      <ArrowDown className="w-3.5 h-3.5" />
+                    )}
+                    <span className="text-[10px] font-medium leading-none tracking-wide">
+                      {layoutDirY === "btt" ? "B↑T" : "T↓B"}
+                    </span>
                   </button>
                   <button
-                    onClick={() => setLayoutPrimary(p => p === "horizontal" ? "vertical" : "horizontal")}
+                    onClick={() =>
+                      setLayoutPrimary((p) =>
+                        p === "horizontal" ? "vertical" : "horizontal",
+                      )
+                    }
                     className="flex-1 flex justify-center items-center gap-1 py-1 rounded transition-colors bg-card hover:bg-accent border border-border/50 text-foreground shadow-sm"
                     title="Toggle Primary Flow Direction"
                   >
-                    {layoutPrimary === "horizontal" ? <Rows3 className="w-3.5 h-3.5" /> : <Columns3 className="w-3.5 h-3.5" />}
-                    <span className="text-[10px] font-medium leading-none tracking-wide">{layoutPrimary === "horizontal" ? "HORZ" : "VERT"}</span>
+                    {layoutPrimary === "horizontal" ? (
+                      <Rows3 className="w-3.5 h-3.5" />
+                    ) : (
+                      <Columns3 className="w-3.5 h-3.5" />
+                    )}
+                    <span className="text-[10px] font-medium leading-none tracking-wide">
+                      {layoutPrimary === "horizontal" ? "HORZ" : "VERT"}
+                    </span>
                   </button>
                 </div>
 
@@ -349,7 +379,7 @@ export default function SidebarWindowToggle() {
                             dirX: layoutDirX,
                             dirY: layoutDirY,
                             primary: layoutPrimary,
-                          })
+                          }),
                         )
                       }
                     />
@@ -364,7 +394,7 @@ export default function SidebarWindowToggle() {
                             dirX: layoutDirX,
                             dirY: layoutDirY,
                             primary: layoutPrimary,
-                          })
+                          }),
                         )
                       }
                     />
@@ -379,7 +409,7 @@ export default function SidebarWindowToggle() {
                             dirX: layoutDirX,
                             dirY: layoutDirY,
                             primary: layoutPrimary,
-                          })
+                          }),
                         )
                       }
                     />
@@ -394,7 +424,7 @@ export default function SidebarWindowToggle() {
                             dirX: layoutDirX,
                             dirY: layoutDirY,
                             primary: layoutPrimary,
-                          })
+                          }),
                         )
                       }
                     />
@@ -409,7 +439,7 @@ export default function SidebarWindowToggle() {
                             dirX: layoutDirX,
                             dirY: layoutDirY,
                             primary: layoutPrimary,
-                          })
+                          }),
                         )
                       }
                     />
@@ -426,7 +456,7 @@ export default function SidebarWindowToggle() {
                             dirX: layoutDirX,
                             dirY: layoutDirY,
                             primary: layoutPrimary,
-                          })
+                          }),
                         )
                       }
                     />
@@ -441,7 +471,7 @@ export default function SidebarWindowToggle() {
                             dirX: layoutDirX,
                             dirY: layoutDirY,
                             primary: layoutPrimary,
-                          })
+                          }),
                         )
                       }
                     />
@@ -456,7 +486,7 @@ export default function SidebarWindowToggle() {
                             dirX: layoutDirX,
                             dirY: layoutDirY,
                             primary: layoutPrimary,
-                          })
+                          }),
                         )
                       }
                     />
@@ -471,7 +501,7 @@ export default function SidebarWindowToggle() {
                             dirX: layoutDirX,
                             dirY: layoutDirY,
                             primary: layoutPrimary,
-                          })
+                          }),
                         )
                       }
                     />
@@ -488,7 +518,7 @@ export default function SidebarWindowToggle() {
                             dirX: layoutDirX,
                             dirY: layoutDirY,
                             primary: layoutPrimary,
-                          })
+                          }),
                         )
                       }
                     />
@@ -503,7 +533,7 @@ export default function SidebarWindowToggle() {
                             dirX: layoutDirX,
                             dirY: layoutDirY,
                             primary: layoutPrimary,
-                          })
+                          }),
                         )
                       }
                     />
@@ -518,7 +548,7 @@ export default function SidebarWindowToggle() {
                             dirX: layoutDirX,
                             dirY: layoutDirY,
                             primary: layoutPrimary,
-                          })
+                          }),
                         )
                       }
                     />
@@ -533,7 +563,7 @@ export default function SidebarWindowToggle() {
                             dirX: layoutDirX,
                             dirY: layoutDirY,
                             primary: layoutPrimary,
-                          })
+                          }),
                         )
                       }
                     />
@@ -551,7 +581,9 @@ export default function SidebarWindowToggle() {
                   label="JSON Truncator"
                   description="Analyze and truncate JSON data"
                   onClick={() => {
-                    act(() => dispatch(openOverlay({ overlayId: "jsonTruncator" })));
+                    act(() =>
+                      dispatch(openOverlay({ overlayId: "jsonTruncator" })),
+                    );
                   }}
                 />
                 <MenuItem
@@ -559,7 +591,9 @@ export default function SidebarWindowToggle() {
                   label="Notes"
                   description="Quick workspace notes"
                   onClick={() => {
-                    act(() => dispatch(openOverlay({ overlayId: "quickNotes" })));
+                    act(() =>
+                      dispatch(openOverlay({ overlayId: "quickNotes" })),
+                    );
                   }}
                 />
                 <MenuItem
@@ -575,7 +609,9 @@ export default function SidebarWindowToggle() {
                   label="Quick AI Results"
                   description="AI outputs and results"
                   onClick={() => {
-                    act(() => dispatch(openOverlay({ overlayId: "quickAIResults" })));
+                    act(() =>
+                      dispatch(openOverlay({ overlayId: "quickAIResults" })),
+                    );
                   }}
                 />
                 <MenuItem
@@ -584,7 +620,14 @@ export default function SidebarWindowToggle() {
                   description="Real-time execution streams"
                   onClick={() => {
                     // Defaults to fallback instance, users usually open via specific ID
-                    act(() => dispatch(openOverlay({ overlayId: "streamDebug", data: { instanceId: "default" } })));
+                    act(() =>
+                      dispatch(
+                        openOverlay({
+                          overlayId: "streamDebug",
+                          data: { instanceId: "default" },
+                        }),
+                      ),
+                    );
                   }}
                 />
                 <MenuItem
@@ -592,7 +635,9 @@ export default function SidebarWindowToggle() {
                   label="Feedback"
                   description="Submit feedback"
                   onClick={() => {
-                    act(() => dispatch(openOverlay({ overlayId: "feedbackDialog" })));
+                    act(() =>
+                      dispatch(openOverlay({ overlayId: "feedbackDialog" })),
+                    );
                   }}
                 />
                 <MenuItem
@@ -600,7 +645,11 @@ export default function SidebarWindowToggle() {
                   label="State Analyzer"
                   description="Redux state debugging"
                   onClick={() => {
-                    act(() => dispatch(openOverlay({ overlayId: "adminStateAnalyzerWindow" })));
+                    act(() =>
+                      dispatch(
+                        openOverlay({ overlayId: "adminStateAnalyzerWindow" }),
+                      ),
+                    );
                   }}
                 />
                 <MenuItem
@@ -608,7 +657,14 @@ export default function SidebarWindowToggle() {
                   label="Markdown Editor"
                   description="Full-screen markdown editor"
                   onClick={() => {
-                    act(() => dispatch(openOverlay({ overlayId: "markdownEditorWindow", data: { instanceId: "default" } })));
+                    act(() =>
+                      dispatch(
+                        openOverlay({
+                          overlayId: "markdownEditorWindow",
+                          data: { instanceId: "default" },
+                        }),
+                      ),
+                    );
                   }}
                 />
                 <MenuItem
@@ -616,7 +672,11 @@ export default function SidebarWindowToggle() {
                   label="User Preferences"
                   description="Edit profile and settings"
                   onClick={() => {
-                    act(() => dispatch(openOverlay({ overlayId: "userPreferencesWindow" })));
+                    act(() =>
+                      dispatch(
+                        openOverlay({ overlayId: "userPreferencesWindow" }),
+                      ),
+                    );
                   }}
                 />
                 <MenuItem
@@ -624,16 +684,24 @@ export default function SidebarWindowToggle() {
                   label="Email Dialog"
                   description="Send email overlay"
                   onClick={() => {
-                    act(() => dispatch(openOverlay({ overlayId: "emailDialogWindow", data: { 
-                      props: { 
-                        title: "Email Request", 
-                        description: "Enter email to receive requested info (Default testing behavior)" 
-                      }, 
-                      onSubmit: async (email: string) => { 
-                        console.log("Mock Email Sent to", email); 
-                        return Promise.resolve(); 
-                      } 
-                    } })));
+                    act(() =>
+                      dispatch(
+                        openOverlay({
+                          overlayId: "emailDialogWindow",
+                          data: {
+                            props: {
+                              title: "Email Request",
+                              description:
+                                "Enter email to receive requested info (Default testing behavior)",
+                            },
+                            onSubmit: async (email: string) => {
+                              console.log("Mock Email Sent to", email);
+                              return Promise.resolve();
+                            },
+                          },
+                        }),
+                      ),
+                    );
                   }}
                 />
                 <MenuItem
@@ -641,12 +709,19 @@ export default function SidebarWindowToggle() {
                   label="Share Modal"
                   description="Share resource overlay"
                   onClick={() => {
-                    act(() => dispatch(openOverlay({ overlayId: "shareModalWindow", data: {
-                      resourceType: "note",
-                      resourceId: "default",
-                      resourceName: "Sample Resource",
-                      isOwner: true
-                    } })));
+                    act(() =>
+                      dispatch(
+                        openOverlay({
+                          overlayId: "shareModalWindow",
+                          data: {
+                            resourceType: "note",
+                            resourceId: "default",
+                            resourceName: "Sample Resource",
+                            isOwner: true,
+                          },
+                        }),
+                      ),
+                    );
                   }}
                 />
                 <MenuItem
@@ -654,7 +729,9 @@ export default function SidebarWindowToggle() {
                   label="Quick Tasks"
                   description="Manage personal tasks"
                   onClick={() => {
-                    act(() => dispatch(openOverlay({ overlayId: "quickTasksWindow" })));
+                    act(() =>
+                      dispatch(openOverlay({ overlayId: "quickTasksWindow" })),
+                    );
                   }}
                 />
                 <MenuItem
@@ -662,7 +739,9 @@ export default function SidebarWindowToggle() {
                   label="Quick Data"
                   description="View application data tables"
                   onClick={() => {
-                    act(() => dispatch(openOverlay({ overlayId: "quickDataWindow" })));
+                    act(() =>
+                      dispatch(openOverlay({ overlayId: "quickDataWindow" })),
+                    );
                   }}
                 />
                 <MenuItem
@@ -670,7 +749,9 @@ export default function SidebarWindowToggle() {
                   label="Quick Files"
                   description="Browse system files"
                   onClick={() => {
-                    act(() => dispatch(openOverlay({ overlayId: "quickFilesWindow" })));
+                    act(() =>
+                      dispatch(openOverlay({ overlayId: "quickFilesWindow" })),
+                    );
                   }}
                 />
               </div>

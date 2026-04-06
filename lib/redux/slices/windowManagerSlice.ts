@@ -3,7 +3,10 @@ import {
   createSlice,
   type PayloadAction,
 } from "@reduxjs/toolkit";
-import { computeGlobalArrangement, GlobalLayoutType } from "@/components/official-candidate/floating-window-panel/utils/windowArrangements";
+import {
+  computeGlobalArrangement,
+  GlobalLayoutType,
+} from "@/features/floating-window-panel/utils/windowArrangements";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -279,10 +282,11 @@ const windowManagerSlice = createSlice({
         dirX?: "ltr" | "rtl";
         dirY?: "ttb" | "btt";
         primary?: "horizontal" | "vertical";
-      }>
+      }>,
     ) {
-      const { layout, viewportWidth, viewportHeight, dirX, dirY, primary } = action.payload;
-      
+      const { layout, viewportWidth, viewportHeight, dirX, dirY, primary } =
+        action.payload;
+
       // Get all non-minimized windows, sorted by zIndex newest first
       const eligibleWindows = Object.values(state.windows)
         .filter((w) => w.state === "windowed")
@@ -298,12 +302,15 @@ const windowManagerSlice = createSlice({
         viewportHeight,
         dirX,
         dirY,
-        primary
+        primary,
       );
 
       updates.forEach(({ id, rect }) => {
         if (state.windows[id]) {
-          state.windows[id].windowed = { ...state.windows[id].windowed, ...rect };
+          state.windows[id].windowed = {
+            ...state.windows[id].windowed,
+            ...rect,
+          };
         }
       });
     },

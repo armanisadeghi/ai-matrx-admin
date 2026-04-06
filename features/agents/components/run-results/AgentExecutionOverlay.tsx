@@ -28,7 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, MessageSquare, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FloatingSheet from "@/components/official/FloatingSheet";
-import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
 import { AgentFloatingChat } from "../overlays/AgentFloatingChat";
 
 // =============================================================================
@@ -244,10 +244,7 @@ function AgentFlexiblePanelOverlay({
       urlSyncId={instanceId}
       urlSyncArgs={{ m: "flexible-panel" }}
     >
-      <AgentRunner
-        instanceId={instanceId}
-        className="h-full bg-background"
-      />
+      <AgentRunner instanceId={instanceId} className="h-full bg-background" />
     </WindowPanel>
   );
 }

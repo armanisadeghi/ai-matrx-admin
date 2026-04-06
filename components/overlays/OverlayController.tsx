@@ -45,7 +45,7 @@ import dynamic from "next/dynamic";
 import type { ResourceType } from "@/utils/permissions";
 import { updateOverlayData } from "@/lib/redux/slices/overlayDataSlice";
 import { Suspense } from "react";
-import { UrlPanelManager } from "@/components/official-candidate/floating-window-panel/url-sync/UrlPanelManager";
+import { UrlPanelManager } from "@/features/floating-window-panel/url-sync/UrlPanelManager";
 
 // ============================================================================
 // DYNAMIC IMPORTS — all lazy, no SSR
@@ -319,38 +319,39 @@ const StateViewerWindow = dynamic(
 );
 
 const MarkdownEditorWindow = dynamic(
-  () => import("@/components/official-candidate/floating-window-panel/windows/MarkdownEditorWindow"),
-  { ssr: false }
+  () => import("@/features/floating-window-panel/windows/MarkdownEditorWindow"),
+  { ssr: false },
 );
 
 const UserPreferencesWindow = dynamic(
-  () => import("@/components/official-candidate/floating-window-panel/windows/UserPreferencesWindow"),
-  { ssr: false }
+  () =>
+    import("@/features/floating-window-panel/windows/UserPreferencesWindow"),
+  { ssr: false },
 );
 
 const QuickTasksWindow = dynamic(
-  () => import("@/components/official-candidate/floating-window-panel/windows/QuickTasksWindow"),
-  { ssr: false }
+  () => import("@/features/floating-window-panel/windows/QuickTasksWindow"),
+  { ssr: false },
 );
 
 const QuickFilesWindow = dynamic(
-  () => import("@/components/official-candidate/floating-window-panel/windows/QuickFilesWindow"),
-  { ssr: false }
+  () => import("@/features/floating-window-panel/windows/QuickFilesWindow"),
+  { ssr: false },
 );
 
 const QuickDataWindow = dynamic(
-  () => import("@/components/official-candidate/floating-window-panel/windows/QuickDataWindow"),
-  { ssr: false }
+  () => import("@/features/floating-window-panel/windows/QuickDataWindow"),
+  { ssr: false },
 );
 
 const EmailDialogWindow = dynamic(
-  () => import("@/components/official-candidate/floating-window-panel/windows/EmailDialogWindow"),
-  { ssr: false }
+  () => import("@/features/floating-window-panel/windows/EmailDialogWindow"),
+  { ssr: false },
 );
 
 const ShareModalWindow = dynamic(
-  () => import("@/components/official-candidate/floating-window-panel/windows/ShareModalWindow"),
-  { ssr: false }
+  () => import("@/features/floating-window-panel/windows/ShareModalWindow"),
+  { ssr: false },
 );
 
 // ============================================================================
@@ -437,24 +438,47 @@ export const OverlayController: React.FC = () => {
   );
 
   // ── Window Instances ────────────────────────
-  const isAdminStateAnalyzerWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "adminStateAnalyzerWindow"));
-  
-  const isMarkdownEditorWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "markdownEditorWindow"));
-  const markdownEditorWindowData = useAppSelector((s) => selectOverlayData(s, "markdownEditorWindow"));
+  const isAdminStateAnalyzerWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "adminStateAnalyzerWindow"),
+  );
 
-  const isUserPreferencesWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "userPreferencesWindow"));
-  const userPreferencesWindowData = useAppSelector((s) => selectOverlayData(s, "userPreferencesWindow"));
+  const isMarkdownEditorWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "markdownEditorWindow"),
+  );
+  const markdownEditorWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "markdownEditorWindow"),
+  );
 
-  const isQuickTasksWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "quickTasksWindow"));
-  const isQuickDataWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "quickDataWindow"));
-  const isQuickFilesWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "quickFilesWindow"));
-  
-  const isEmailDialogWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "emailDialogWindow"));
-  const emailDialogWindowData = useAppSelector((s) => selectOverlayData(s, "emailDialogWindow"));
+  const isUserPreferencesWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "userPreferencesWindow"),
+  );
+  const userPreferencesWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "userPreferencesWindow"),
+  );
 
-  const isShareModalWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "shareModalWindow"));
-  const shareModalWindowData = useAppSelector((s) => selectOverlayData(s, "shareModalWindow"));
+  const isQuickTasksWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "quickTasksWindow"),
+  );
+  const isQuickDataWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "quickDataWindow"),
+  );
+  const isQuickFilesWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "quickFilesWindow"),
+  );
 
+  const isEmailDialogWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "emailDialogWindow"),
+  );
+  const emailDialogWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "emailDialogWindow"),
+  );
+
+  const isShareModalWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "shareModalWindow"),
+  );
+  const shareModalWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "shareModalWindow"),
+  );
 
   // ── Instanced overlay selectors — returns all open instances ────────────
   const htmlPreviewInstances = useAppSelector((s) =>

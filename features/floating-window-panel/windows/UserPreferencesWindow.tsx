@@ -3,7 +3,7 @@
 import React, { useState, Suspense, lazy } from "react";
 import { useSelector } from "react-redux";
 import { cn } from "@/lib/utils";
-import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
 import {
   Monitor,
   MessageSquare,
@@ -36,21 +36,51 @@ import {
 } from "@/lib/redux/slices/userPreferencesSlice";
 import type { PreferenceTab } from "@/components/user-preferences/PreferencesPage";
 
-const DisplayPreferences = lazy(() => import("@/components/user-preferences/DisplayPreferences"));
-const PromptsPreferences = lazy(() => import("@/components/user-preferences/PromptsPreferences"));
-const VoicePreferences = lazy(() => import("@/components/user-preferences/VoicePreferences"));
-const TextToSpeechPreferences = lazy(() => import("@/components/user-preferences/TextToSpeechPreferences"));
-const AssistantPreferences = lazy(() => import("@/components/user-preferences/AssistantPreferences"));
-const EmailPreferences = lazy(() => import("@/components/user-preferences/EmailPreferences"));
-const VideoConferencePreferences = lazy(() => import("@/components/user-preferences/VideoConferencePreferences"));
-const PhotoEditingPreferences = lazy(() => import("@/components/user-preferences/PhotoEditingPreferences"));
-const ImageGenerationPreferences = lazy(() => import("@/components/user-preferences/ImageGenerationPreferences"));
-const TextGenerationPreferences = lazy(() => import("@/components/user-preferences/TextGenerationPreferences"));
-const CodingPreferences = lazy(() => import("@/components/user-preferences/CodingPreferences"));
-const FlashcardPreferences = lazy(() => import("@/components/user-preferences/FlashcardPreferences"));
-const PlaygroundPreferences = lazy(() => import("@/components/user-preferences/PlaygroundPreferences"));
-const AiModelsPreferences = lazy(() => import("@/components/user-preferences/AiModelsPreferences"));
-const MessagingPreferences = lazy(() => import("@/components/user-preferences/MessagingPreferences"));
+const DisplayPreferences = lazy(
+  () => import("@/components/user-preferences/DisplayPreferences"),
+);
+const PromptsPreferences = lazy(
+  () => import("@/components/user-preferences/PromptsPreferences"),
+);
+const VoicePreferences = lazy(
+  () => import("@/components/user-preferences/VoicePreferences"),
+);
+const TextToSpeechPreferences = lazy(
+  () => import("@/components/user-preferences/TextToSpeechPreferences"),
+);
+const AssistantPreferences = lazy(
+  () => import("@/components/user-preferences/AssistantPreferences"),
+);
+const EmailPreferences = lazy(
+  () => import("@/components/user-preferences/EmailPreferences"),
+);
+const VideoConferencePreferences = lazy(
+  () => import("@/components/user-preferences/VideoConferencePreferences"),
+);
+const PhotoEditingPreferences = lazy(
+  () => import("@/components/user-preferences/PhotoEditingPreferences"),
+);
+const ImageGenerationPreferences = lazy(
+  () => import("@/components/user-preferences/ImageGenerationPreferences"),
+);
+const TextGenerationPreferences = lazy(
+  () => import("@/components/user-preferences/TextGenerationPreferences"),
+);
+const CodingPreferences = lazy(
+  () => import("@/components/user-preferences/CodingPreferences"),
+);
+const FlashcardPreferences = lazy(
+  () => import("@/components/user-preferences/FlashcardPreferences"),
+);
+const PlaygroundPreferences = lazy(
+  () => import("@/components/user-preferences/PlaygroundPreferences"),
+);
+const AiModelsPreferences = lazy(
+  () => import("@/components/user-preferences/AiModelsPreferences"),
+);
+const MessagingPreferences = lazy(
+  () => import("@/components/user-preferences/MessagingPreferences"),
+);
 
 interface CategoryDef {
   value: PreferenceTab;
@@ -60,24 +90,102 @@ interface CategoryDef {
 }
 
 const categories: CategoryDef[] = [
-  { value: "display", label: "Display", icon: Monitor, description: "Theme, dark mode, layout" },
-  { value: "prompts", label: "Prompts", icon: Zap, description: "Default model, temperature" },
-  { value: "messaging", label: "Messaging", icon: MessageSquare, description: "Chat & message settings" },
-  { value: "voice", label: "Voice", icon: Mic, description: "Voice input & language" },
-  { value: "textToSpeech", label: "Text to Speech", icon: Volume2, description: "TTS voice & playback" },
-  { value: "assistant", label: "Assistant", icon: Bot, description: "AI assistant behaviour" },
-  { value: "aiModels", label: "AI Models", icon: Cpu, description: "Active models & providers" },
-  { value: "email", label: "Email", icon: Mail, description: "Email integration" },
-  { value: "videoConference", label: "Video", icon: Video, description: "Video conferencing" },
-  { value: "photoEditing", label: "Photo Editing", icon: ImageIcon, description: "Photo editing tools" },
-  { value: "imageGeneration", label: "Image Gen", icon: ImageIcon, description: "Image generation" },
-  { value: "textGeneration", label: "Text Gen", icon: Type, description: "Text generation" },
-  { value: "coding", label: "Coding", icon: Code, description: "Code editor preferences" },
-  { value: "flashcard", label: "Flashcards", icon: BookOpen, description: "Study settings" },
-  { value: "playground", label: "Playground", icon: Gamepad2, description: "Playground defaults" },
+  {
+    value: "display",
+    label: "Display",
+    icon: Monitor,
+    description: "Theme, dark mode, layout",
+  },
+  {
+    value: "prompts",
+    label: "Prompts",
+    icon: Zap,
+    description: "Default model, temperature",
+  },
+  {
+    value: "messaging",
+    label: "Messaging",
+    icon: MessageSquare,
+    description: "Chat & message settings",
+  },
+  {
+    value: "voice",
+    label: "Voice",
+    icon: Mic,
+    description: "Voice input & language",
+  },
+  {
+    value: "textToSpeech",
+    label: "Text to Speech",
+    icon: Volume2,
+    description: "TTS voice & playback",
+  },
+  {
+    value: "assistant",
+    label: "Assistant",
+    icon: Bot,
+    description: "AI assistant behaviour",
+  },
+  {
+    value: "aiModels",
+    label: "AI Models",
+    icon: Cpu,
+    description: "Active models & providers",
+  },
+  {
+    value: "email",
+    label: "Email",
+    icon: Mail,
+    description: "Email integration",
+  },
+  {
+    value: "videoConference",
+    label: "Video",
+    icon: Video,
+    description: "Video conferencing",
+  },
+  {
+    value: "photoEditing",
+    label: "Photo Editing",
+    icon: ImageIcon,
+    description: "Photo editing tools",
+  },
+  {
+    value: "imageGeneration",
+    label: "Image Gen",
+    icon: ImageIcon,
+    description: "Image generation",
+  },
+  {
+    value: "textGeneration",
+    label: "Text Gen",
+    icon: Type,
+    description: "Text generation",
+  },
+  {
+    value: "coding",
+    label: "Coding",
+    icon: Code,
+    description: "Code editor preferences",
+  },
+  {
+    value: "flashcard",
+    label: "Flashcards",
+    icon: BookOpen,
+    description: "Study settings",
+  },
+  {
+    value: "playground",
+    label: "Playground",
+    icon: Gamepad2,
+    description: "Playground defaults",
+  },
 ];
 
-const tabComponents: Record<PreferenceTab, React.LazyExoticComponent<React.ComponentType>> = {
+const tabComponents: Record<
+  PreferenceTab,
+  React.LazyExoticComponent<React.ComponentType>
+> = {
   display: DisplayPreferences,
   prompts: PromptsPreferences,
   voice: VoicePreferences,
@@ -117,8 +225,10 @@ export default function UserPreferencesWindow({
   const dispatch = useAppDispatch();
   const [activeTab, setActiveTab] = useState<PreferenceTab>(initialTab);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const preferences = useSelector((state: RootState) => state.userPreferences as UserPreferencesState);
-  
+  const preferences = useSelector(
+    (state: RootState) => state.userPreferences as UserPreferencesState,
+  );
+
   if (!isOpen) return null;
 
   const meta = preferences._meta ?? {
@@ -147,7 +257,7 @@ export default function UserPreferencesWindow({
       <div className="flex flex-col h-full w-full overflow-hidden bg-background">
         <div className="flex flex-1 min-h-0 overflow-hidden">
           {/* Collapsible Sidebar */}
-          <div 
+          <div
             className={`flex-shrink-0 transition-all duration-300 ease-in-out border-r border-border bg-muted/20 flex flex-col ${
               sidebarOpen ? "w-52" : "w-0 overflow-hidden border-r-0"
             }`}
@@ -178,7 +288,7 @@ export default function UserPreferencesWindow({
               </ScrollArea>
             )}
           </div>
-          
+
           <div className="flex-1 flex flex-col min-w-0">
             <div className="flex items-center p-2 border-b border-border bg-muted/40 shrink-0">
               <Button
@@ -192,12 +302,14 @@ export default function UserPreferencesWindow({
               </Button>
               {activeCategory && (
                 <div className="flex items-center text-sm font-medium">
-                  {React.createElement(activeCategory.icon, { className: "h-4 w-4 mr-2 text-muted-foreground" })}
+                  {React.createElement(activeCategory.icon, {
+                    className: "h-4 w-4 mr-2 text-muted-foreground",
+                  })}
                   {activeCategory.label}
                 </div>
               )}
             </div>
-            
+
             <ScrollArea className="flex-1">
               <div className="p-5">
                 <Suspense fallback={<LoadingFallback />}>
@@ -207,7 +319,7 @@ export default function UserPreferencesWindow({
             </ScrollArea>
           </div>
         </div>
-        
+
         {/* Footer */}
         <div className="flex items-center justify-between border-t border-border bg-sidebar px-4 py-2.5 shrink-0">
           <div className="text-xs text-muted-foreground">

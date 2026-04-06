@@ -26,9 +26,9 @@ import {
   selectConversationTitle,
   selectStoredConversationId,
 } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
-import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
 import { AgentRunner } from "../smart/AgentRunner";
-import { useUrlSync } from "@/components/official-candidate/floating-window-panel/url-sync/useUrlSync";
+import { useUrlSync } from "@/features/floating-window-panel/url-sync/useUrlSync";
 
 interface AgentFloatingChatProps {
   instanceId: string;
@@ -60,7 +60,6 @@ function useAnimatedTitle(instanceId: string) {
 
   return displayTitle;
 }
-
 
 export function AgentFloatingChat({
   instanceId,

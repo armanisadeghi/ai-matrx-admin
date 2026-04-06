@@ -53,6 +53,7 @@ export interface ContentBlock {
         | "diagram"
         | "math_problem"
         | "decision"
+        | "artifact"
         | string;
     content: string;
     language?: string;
@@ -252,7 +253,7 @@ const XML_TAG_BLOCKS = {
 // ATTRIBUTE-BEARING XML BLOCKS (tags with key="value" attributes)
 // ============================================================================
 
-const ATTRIBUTE_XML_BLOCKS = ['decision'] as const;
+const ATTRIBUTE_XML_BLOCKS = ['decision', 'artifact'] as const;
 type AttributeXmlBlockType = typeof ATTRIBUTE_XML_BLOCKS[number];
 
 /** Extracts key="value" pairs from an XML opening tag string. */
@@ -331,13 +332,14 @@ interface DecisionData {
 }
 
 /**
- * Extracts a `<decision ...>...</decision>` block starting at `startIndex`.
+ * Extracts an attribute-bearing XML block (e.g. `<decision ...>` or `<artifact ...>`)
+ * starting at `startIndex`.
  *
  * `rawXmlOverride` — when the opening tag was found mid-line, the caller
  * passes the original (un-split) source lines so that rawXml matches the
  * exact substring in the full content string (required for replaceBlockContent).
  */
-function extractDecisionBlock(
+function extractAttributeXmlBlock(
     detection: AttributeXmlDetection,
     startIndex: number,
     lines: string[],
@@ -406,6 +408,34 @@ function extractDecisionBlock(
 
     const innerContent = rawLines.join('\n');
 
+    // rawXml must exactly match the substring in the original content string so
+    // that replaceBlockContent(rawXml, chosenText) finds and replaces it correctly.
+    // For mid-line blocks an override is passed from the call site (step 5.5),
+    // because the synthetic lines in `lines` no longer match the original verbatim.
+    const fullXml = rawXmlOverride ?? consumedLines.join('\n');
+
+    // Type-specific metadata construction
+    if (detection.type === 'artifact') {
+        const artifactId = detection.attributes.id || `artifact-${startIndex}`;
+        const artifactIndex = artifactId.includes('_')
+            ? parseInt(artifactId.split('_').pop() || '0', 10)
+            : startIndex;
+
+        return {
+            content: innerContent,
+            nextIndex: i,
+            metadata: {
+                isComplete: foundClosingTag,
+                artifactId,
+                artifactIndex,
+                artifactType: detection.attributes.type || 'text',
+                artifactTitle: detection.attributes.title || '',
+                rawXml: fullXml,
+            },
+        };
+    }
+
+    // Default: decision block parsing
     const options: DecisionOption[] = [];
     const optionRegex = /<option\s+label="([^"]*)">([\s\S]*?)<\/option>/g;
     let optMatch: RegExpExecArray | null;
@@ -419,12 +449,6 @@ function extractDecisionBlock(
     }
 
     const prompt = detection.attributes.prompt || 'Make a selection';
-
-    // rawXml must exactly match the substring in the original content string so
-    // that replaceBlockContent(rawXml, chosenText) finds and replaces it correctly.
-    // For mid-line decisions an override is passed from the call site (step 5.5),
-    // because the synthetic lines in `lines` no longer match the original verbatim.
-    const fullXml = rawXmlOverride ?? consumedLines.join('\n');
 
     const decision: DecisionData = {
         id: `decision-${startIndex}`,
@@ -1062,7 +1086,7 @@ export const splitContentIntoBlocksV2 = (mdContent: string): ContentBlock[] => {
     let currentText = "";
     let i = 0;
     // Keyed by the synthetic tagAndRest string that was spliced into `lines`.
-    // Consumed once by step 3a so extractDecisionBlock gets the correct rawXml.
+    // Consumed once by step 3a so extractAttributeXmlBlock gets the correct rawXml.
     const pendingRawXmlOverrides = new Map<string, string>();
     
     while (i < lines.length) {
@@ -1167,7 +1191,7 @@ export const splitContentIntoBlocksV2 = (mdContent: string): ContentBlock[] => {
                 pendingRawXmlOverrides.delete(trimmedLine);
             }
 
-            const extraction = extractDecisionBlock(attrXmlMatch, i, lines, rawXmlOverride);
+            const extraction = extractAttributeXmlBlock(attrXmlMatch, i, lines, rawXmlOverride);
 
             blocks.push({
                 type: attrXmlMatch.type as any,

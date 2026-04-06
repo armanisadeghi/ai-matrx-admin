@@ -12,7 +12,7 @@ import {
   clearAllEntries,
   setDraftText,
 } from "@/lib/redux/slices/voicePadSlice";
-import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
 import { Button } from "@/components/ui/ButtonMine";
 import { VoicePadHistorySidebar } from "./VoicePadHistorySidebar";
@@ -76,9 +76,12 @@ export default function VoicePad() {
     dispatch(setDraftText(text));
   };
 
-  const handleSelectHistoryItem = useCallback((text: string) => {
-    handleDraftChange((draftText ? draftText + "\n\n" : "") + text);
-  }, [draftText, handleDraftChange]);
+  const handleSelectHistoryItem = useCallback(
+    (text: string) => {
+      handleDraftChange((draftText ? draftText + "\n\n" : "") + text);
+    },
+    [draftText, handleDraftChange],
+  );
 
   const leftActions = (
     <Button
@@ -109,13 +112,21 @@ export default function VoicePad() {
       urlSyncKey="voice"
       urlSyncId="default"
       actionsLeft={leftActions}
-      actionsRight={<MicrophoneIconButton id="voice-pad-header-mic" onTranscriptionComplete={handleTranscriptionComplete} onLiveTranscript={handleLiveTranscript} variant="icon-only" size="xs" />}
+      actionsRight={
+        <MicrophoneIconButton
+          id="voice-pad-header-mic"
+          onTranscriptionComplete={handleTranscriptionComplete}
+          onLiveTranscript={handleLiveTranscript}
+          variant="icon-only"
+          size="xs"
+        />
+      }
     >
       <div className="flex bg-background h-full w-full min-h-0">
         {showHistory && (
-          <VoicePadHistorySidebar 
-            onClose={() => setShowHistory(false)} 
-            onSelectTranscript={handleSelectHistoryItem} 
+          <VoicePadHistorySidebar
+            onClose={() => setShowHistory(false)}
+            onSelectTranscript={handleSelectHistoryItem}
           />
         )}
         <div className="flex-1 min-w-0 flex flex-col min-h-0">

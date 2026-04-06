@@ -14,7 +14,7 @@
  *   />
  */
 
-import { WindowPanel, type WindowPanelProps } from "@/components/official-candidate/floating-window-panel/WindowPanel";
+import { WindowPanel, type WindowPanelProps } from "@/features/floating-window-panel/WindowPanel";
 import {
   JsonTruncator,
   type JsonTruncatorProps,
