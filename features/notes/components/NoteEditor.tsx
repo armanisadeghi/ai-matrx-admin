@@ -332,29 +332,21 @@ export function NoteEditor({
     [updateWithAutoSave, onUpdate],
   );
 
+  // Voice transcription: ALWAYS append at end with blank line separator
   const handleTranscription = useCallback((text: string) => {
     if (!text.trim()) return;
+    const current = localContentRef.current;
+    const separator = current.length > 0 ? "\n\n" : "";
+    const newContent = current + separator + text;
+    handleContentChange(newContent);
+
     const textarea = textareaRef.current;
     if (textarea) {
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const before = localContentRef.current.slice(0, start);
-      const after = localContentRef.current.slice(end);
-      const separator =
-        before.length > 0 && !before.endsWith("\n") && !before.endsWith(" ")
-          ? " "
-          : "";
-      const newContent = before + separator + text + after;
-      handleContentChange(newContent);
       requestAnimationFrame(() => {
-        const newPos = start + separator.length + text.length;
-        textarea.selectionStart = newPos;
-        textarea.selectionEnd = newPos;
+        textarea.selectionStart = newContent.length;
+        textarea.selectionEnd = newContent.length;
         textarea.focus();
       });
-    } else {
-      const separator = localContentRef.current.length > 0 ? "\n\n" : "";
-      handleContentChange(localContentRef.current + separator + text);
     }
   }, []);
 

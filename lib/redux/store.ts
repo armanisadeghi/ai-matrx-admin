@@ -10,6 +10,7 @@ import { storageMiddleware } from "./storage/storageMiddleware";
 import { enableMapSet } from "immer";
 import { entitySagaMiddleware } from "./entity/entitySagaMiddleware";
 import { socketMiddleware } from "./socket-io/connection/socketMiddleware";
+import { notesRealtimeMiddleware } from "@/features/notes/redux/realtimeMiddleware";
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -31,7 +32,7 @@ export const makeStore = (initialState: any) => {
                 serializableCheck: false,
                 immutableCheck: false,
                 actionCreatorCheck: false,
-            }).concat(sagaMiddleware, loggerMiddleware, socketMiddleware, storageMiddleware, entitySagaMiddleware),
+            }).concat(sagaMiddleware, loggerMiddleware, socketMiddleware, storageMiddleware, entitySagaMiddleware, notesRealtimeMiddleware),
         devTools: process.env.NODE_ENV !== "production",
     });
 

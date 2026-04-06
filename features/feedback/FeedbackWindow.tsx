@@ -227,18 +227,21 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
       // Wait one frame for the browser to actually hide the panel before grabbing
       await new Promise((resolve) => requestAnimationFrame(resolve));
 
-      const track = stream.getVideoTracks()[0];
-      const imageCapture = new ImageCapture(track);
-      const bitmap = await imageCapture.grabFrame();
-      track.stop();
-      stream.getTracks().forEach((t) => t.stop());
+      // Capture one frame by playing the stream in an offscreen video element
+      const video = document.createElement("video");
+      video.srcObject = stream;
+      video.muted = true;
+      await video.play();
 
-      // Draw the frame to a canvas and export as PNG
       const canvas = document.createElement("canvas");
-      canvas.width = bitmap.width;
-      canvas.height = bitmap.height;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(bitmap, 0, 0);
+      ctx.drawImage(video, 0, 0);
+
+      video.pause();
+      video.srcObject = null;
+      stream.getTracks().forEach((t) => t.stop());
 
       const blob = await new Promise<Blob>((res, rej) => {
         canvas.toBlob(

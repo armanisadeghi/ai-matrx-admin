@@ -1287,40 +1287,29 @@ export default function NotesWorkspace({
     [handleContentChange],
   );
 
+  // Voice transcription: ALWAYS append at end with blank line separator
   const handleTranscription = useCallback(
     (text: string) => {
       if (!text.trim() || !activeNoteId) return;
+      const current =
+        activeCached?.localEdits?.content ?? activeCached?.data.content ?? "";
+      const sep = current.length > 0 ? "\n\n" : "";
+      const newContent = current + sep + text;
+      handleContentChange({
+        target: { value: newContent },
+      } as ChangeEvent<HTMLTextAreaElement>);
+
+      // Move cursor to end
       const textarea = textareaRef.current;
       if (textarea) {
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const current = textarea.value;
-        const before = current.slice(0, start);
-        const after = current.slice(end);
-        const sep =
-          before.length > 0 && !before.endsWith("\n") && !before.endsWith(" ")
-            ? " "
-            : "";
-        const newContent = before + sep + text + after;
-        handleContentChange({
-          target: { value: newContent },
-        } as ChangeEvent<HTMLTextAreaElement>);
         requestAnimationFrame(() => {
-          const newPos = start + sep.length + text.length;
-          textarea.selectionStart = newPos;
-          textarea.selectionEnd = newPos;
+          textarea.selectionStart = newContent.length;
+          textarea.selectionEnd = newContent.length;
           textarea.focus();
         });
-      } else {
-        const current =
-          activeCached?.localEdits?.content ?? activeCached?.data.content ?? "";
-        const sep = current.length > 0 ? "\n\n" : "";
-        handleContentChange({
-          target: { value: current + sep + text },
-        } as ChangeEvent<HTMLTextAreaElement>);
       }
     },
-    [activeNoteId, activeCached],
+    [activeNoteId, activeCached, handleContentChange],
   );
 
   const goBack = () => updateUrl(null);

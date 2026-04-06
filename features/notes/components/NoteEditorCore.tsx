@@ -124,7 +124,8 @@ export function NoteEditorCore({
     contentRef.current = content;
   }, [content]);
 
-  // Default voice transcription: insert at cursor position
+  // Voice transcription: ALWAYS append at the end with a blank line separator.
+  // Never insert inline at cursor — it disrupts the flow of existing content.
   const handleTranscription = useCallback(
     (text: string) => {
       if (!text.trim()) return;
@@ -134,28 +135,20 @@ export function NoteEditorCore({
         return;
       }
 
-      // Default behavior: insert at textarea cursor
+      // Always append at end with blank line
+      const current = contentRef.current;
+      const separator = current.length > 0 ? "\n\n" : "";
+      const newContent = current + separator + text;
+      onChange(newContent);
+
+      // Move cursor to end
       const textarea = textareaRef.current;
       if (textarea) {
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const before = contentRef.current.slice(0, start);
-        const after = contentRef.current.slice(end);
-        const separator =
-          before.length > 0 && !before.endsWith("\n") && !before.endsWith(" ")
-            ? " "
-            : "";
-        onChange(before + separator + text + after);
         requestAnimationFrame(() => {
-          const newPos = start + separator.length + text.length;
-          textarea.selectionStart = newPos;
-          textarea.selectionEnd = newPos;
+          textarea.selectionStart = newContent.length;
+          textarea.selectionEnd = newContent.length;
           textarea.focus();
         });
-      } else {
-        // No textarea (preview/TUI mode) — append
-        const separator = contentRef.current.length > 0 ? "\n\n" : "";
-        onChange(contentRef.current + separator + text);
       }
     },
     [onVoiceTranscription, onChange, textareaRef],

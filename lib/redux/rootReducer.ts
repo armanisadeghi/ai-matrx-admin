@@ -54,6 +54,7 @@ import workflowNodeSlice from "./workflow-nodes/slice";
 import canvasReducer from "@/features/canvas/redux/canvasSlice";
 import textDiffReducer from "./slices/textDiffSlice";
 import noteVersionsReducer from "./slices/noteVersionsSlice";
+import notesReducer from "@/features/notes/redux/slice";
 import messagingReducer from "@/features/messaging/redux/messagingSlice";
 import smsReducer from "@/features/sms/redux/smsSlice";
 import adminPreferencesReducer from "./slices/adminPreferencesSlice";
@@ -200,6 +201,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     // Text diff system
     textDiff: textDiffReducer,
     noteVersions: noteVersionsReducer,
+    notes: notesReducer,
     // SMS integration
     sms: smsReducer,
 
