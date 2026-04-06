@@ -82,21 +82,11 @@ export default function VoicePadAdvanced() {
     [handleDraftChange],
   );
 
-  const leftActions = (
-    <Button
-      type="button"
-      variant="ghost"
-      size="xs"
-      onClick={() => setShowHistory((v) => !v)}
-      title={showHistory ? "Hide history" : "Show history"}
-      className="h-5 w-5 p-0"
-    >
-      {showHistory ? (
-        <PanelLeftClose className="h-3 w-3" />
-      ) : (
-        <PanelLeft className="h-3 w-3" />
-      )}
-    </Button>
+  const sidebarContent = (
+    <VoicePadHistorySidebar
+      onClose={() => {}}
+      onSelectTranscript={handleSelectHistoryItem}
+    />
   );
 
   return (
@@ -110,7 +100,10 @@ export default function VoicePadAdvanced() {
       onClose={handleClose}
       urlSyncKey="voice"
       urlSyncId="default"
-      actionsLeft={leftActions}
+      sidebar={sidebarContent}
+      sidebarDefaultSize={35}
+      sidebarMinSize={15}
+      defaultSidebarOpen={false}
       actionsRight={
         <MicrophoneIconButton
           id="voice-pad-header-mic"
@@ -121,27 +114,19 @@ export default function VoicePadAdvanced() {
         />
       }
     >
-      <div className="flex bg-background h-full w-full min-h-0">
-        {showHistory && (
-          <VoicePadHistorySidebar
-            onClose={() => setShowHistory(false)}
-            onSelectTranscript={handleSelectHistoryItem}
+      <div className="flex-1 min-w-0 flex flex-col min-h-0">
+        <Suspense fallback={<ExpandedLoadingFallback />}>
+          <VoicePadExpanded
+            entries={entries}
+            draftText={draftText}
+            liveTranscript={liveTranscript}
+            onTranscriptionComplete={handleTranscriptionComplete}
+            onLiveTranscript={handleLiveTranscript}
+            onRemoveEntry={handleRemoveEntry}
+            onClearAll={handleClearAll}
+            onDraftChange={handleDraftChange}
           />
-        )}
-        <div className="flex-1 min-w-0 flex flex-col min-h-0">
-          <Suspense fallback={<ExpandedLoadingFallback />}>
-            <VoicePadExpanded
-              entries={entries}
-              draftText={draftText}
-              liveTranscript={liveTranscript}
-              onTranscriptionComplete={handleTranscriptionComplete}
-              onLiveTranscript={handleLiveTranscript}
-              onRemoveEntry={handleRemoveEntry}
-              onClearAll={handleClearAll}
-              onDraftChange={handleDraftChange}
-            />
-          </Suspense>
-        </div>
+        </Suspense>
       </div>
     </WindowPanel>
   );
