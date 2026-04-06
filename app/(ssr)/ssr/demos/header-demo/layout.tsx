@@ -1,7 +1,7 @@
 // app/(ssr)/ssr/header-demo/layout.tsx
 // Imports the header-variants CSS once for the entire demo route.
 
-import "@/features/ssr-trials/components/header-variants/header-variants.css";
+import "@/features/shell/components/header/variants/header-variants.css";
 
 export const metadata = {
   title: "Header Variants | AI Matrx",
