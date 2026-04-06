@@ -3,7 +3,7 @@
 // GlassButton — Header action button, delegates to IconButton.
 // Kept as a thin wrapper so all existing header variants need no changes.
 
-import IconButton from "../../../../shell/components/IconButton";
+import IconButton from "@/features/shell/components/IconButton";
 import LucideIcon from "./LucideIcon";
 
 interface GlassButtonProps {
