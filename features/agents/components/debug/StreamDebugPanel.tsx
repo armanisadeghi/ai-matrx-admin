@@ -1479,31 +1479,18 @@ const TAB_DEFS: { id: TabId; label: string; icon: React.ReactNode }[] = [
 ];
 
 // =============================================================================
-// Main Component
+// Single-Instance Debug View
 // =============================================================================
 
-export interface StreamDebugPanelProps {
-  instanceId: string;
-  className?: string;
-  /**
-   * When true, hides the StatusBar, MetricsBar, request selector, and internal tab bar.
-   * Used when the parent (e.g., FullScreenOverlay) provides its own chrome.
-   * In hideChrome mode, only the "events" (Timeline) tab content is rendered.
-   */
-  hideChrome?: boolean;
-  /**
-   * Override which requestId to display, bypassing the internal selector.
-   * Used by the overlay to synchronize request selection across tabs.
-   */
-  requestIdOverride?: string;
-}
-
-export function StreamDebugPanel({
+function InstanceDebugView({
   instanceId,
-  className,
-  hideChrome = false,
+  hideChrome,
   requestIdOverride,
-}: StreamDebugPanelProps) {
+}: {
+  instanceId: string;
+  hideChrome: boolean;
+  requestIdOverride?: string;
+}) {
   const [activeTab, setActiveTab] = useState<TabId>("events");
 
   const instanceStatus = useAppSelector(
@@ -1529,64 +1516,44 @@ export function StreamDebugPanel({
 
   if (!request) {
     return (
-      <div
-        className={cn(
-          "flex items-center justify-center text-[11px] text-muted-foreground/60 p-4",
-          className,
-        )}
-      >
-        No active request for this instance. Run the agent to begin debugging.
+      <div className="flex flex-col items-center justify-center h-full text-[11px] text-muted-foreground/60 p-4 gap-1">
+        <span>
+          No active request for this instance. Run the agent to begin debugging.
+        </span>
         {requestIds.length === 0 && (
-          <span className="block text-[10px] mt-1">(0 requests found)</span>
+          <span className="text-[10px]">(0 requests found)</span>
         )}
       </div>
     );
   }
 
   if (hideChrome) {
-    return (
-      <div
-        className={cn(
-          "flex flex-col h-full bg-background text-foreground",
-          className,
-        )}
-      >
-        <TimelineTab request={request} />
-      </div>
-    );
+    return <TimelineTab request={request} />;
   }
 
   return (
-    <div
-      className={cn(
-        "flex flex-col h-full bg-background text-foreground",
-        className,
-      )}
-    >
+    <div className="flex flex-col h-full">
       <StatusBar request={request} instanceStatus={instanceStatus} />
       {request.clientMetrics && <MetricsBar metrics={request.clientMetrics} />}
 
       {requestIds.length > 1 && (
         <div className="flex items-center gap-1.5 px-2 py-1 border-b border-border/30 text-[10px]">
           <span className="text-muted-foreground font-medium">Request:</span>
-          {requestIds.map((id, idx) => {
-            const req = requestIds[idx];
-            return (
-              <button
-                key={req}
-                type="button"
-                onClick={() => setSelectedRequestIdx(idx)}
-                className={cn(
-                  "px-2 py-0.5 h-5 rounded border text-[10px] font-mono",
-                  idx === effectiveIdx
-                    ? "bg-primary/20 text-primary border-primary/30"
-                    : "bg-muted/20 text-muted-foreground border-transparent hover:border-border/50",
-                )}
-              >
-                #{idx + 1}
-              </button>
-            );
-          })}
+          {requestIds.map((id, idx) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setSelectedRequestIdx(idx)}
+              className={cn(
+                "px-2 py-0.5 h-5 rounded border text-[10px] font-mono",
+                idx === effectiveIdx
+                  ? "bg-primary/20 text-primary border-primary/30"
+                  : "bg-muted/20 text-muted-foreground border-transparent hover:border-border/50",
+              )}
+            >
+              #{idx + 1}
+            </button>
+          ))}
           <span className="text-muted-foreground/60 text-[9px] ml-auto">
             {requestIds.length} total
           </span>
@@ -1626,6 +1593,198 @@ export function StreamDebugPanel({
         )}
       </div>
     </div>
+  );
+}
+
+// =============================================================================
+// Main Component
+// =============================================================================
+
+export interface StreamDebugPanelProps {
+  instanceId: string;
+  className?: string;
+  /**
+   * When true, hides the StatusBar, MetricsBar, request selector, and internal tab bar.
+   * Used when the parent (e.g., FullScreenOverlay) provides its own chrome.
+   * In hideChrome mode, only the "events" (Timeline) tab content is rendered.
+   */
+  hideChrome?: boolean;
+  /**
+   * Override which requestId to display, bypassing the internal selector.
+   * Used by the overlay to synchronize request selection across tabs.
+   */
+  requestIdOverride?: string;
+}
+
+export function StreamDebugPanel({
+  instanceId,
+  className,
+  hideChrome = false,
+  requestIdOverride,
+}: StreamDebugPanelProps) {
+  // All instances in Redux — so we can show tabs for each one
+  const allInstanceIds = useAppSelector(
+    (state) => state.executionInstances.allInstanceIds,
+    shallowEqual,
+  );
+
+  // When hideChrome, just render the focused instance's timeline
+  if (hideChrome) {
+    return (
+      <div
+        className={cn(
+          "flex flex-col h-full bg-background text-foreground",
+          className,
+        )}
+      >
+        <InstanceDebugView
+          instanceId={instanceId}
+          hideChrome
+          requestIdOverride={requestIdOverride}
+        />
+      </div>
+    );
+  }
+
+  // If there's only one instance (or none), skip the instance tab layer
+  if (allInstanceIds.length <= 1) {
+    return (
+      <div
+        className={cn(
+          "flex flex-col h-full bg-background text-foreground",
+          className,
+        )}
+      >
+        <InstanceDebugView
+          instanceId={instanceId}
+          hideChrome={false}
+          requestIdOverride={requestIdOverride}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <MultiInstanceDebugPanel
+      activeInstanceId={instanceId}
+      allInstanceIds={allInstanceIds}
+      className={className}
+      requestIdOverride={requestIdOverride}
+    />
+  );
+}
+
+// =============================================================================
+// Multi-instance wrapper — one top-level tab per instance
+// =============================================================================
+
+function MultiInstanceDebugPanel({
+  activeInstanceId,
+  allInstanceIds,
+  className,
+  requestIdOverride,
+}: {
+  activeInstanceId: string;
+  allInstanceIds: string[];
+  className?: string;
+  requestIdOverride?: string;
+}) {
+  const [selectedInstanceId, setSelectedInstanceId] =
+    useState(activeInstanceId);
+
+  // Keep selected tab valid if the list grows
+  const effectiveInstanceId = allInstanceIds.includes(selectedInstanceId)
+    ? selectedInstanceId
+    : (allInstanceIds[allInstanceIds.length - 1] ?? activeInstanceId);
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col h-full bg-background text-foreground",
+        className,
+      )}
+    >
+      {/* Instance selector strip */}
+      <div className="flex items-center gap-0 border-b border-border bg-muted/20 overflow-x-auto scrollbar-none shrink-0">
+        <span className="text-[9px] text-muted-foreground font-medium px-2 py-1.5 whitespace-nowrap border-r border-border/50 shrink-0">
+          INSTANCE
+        </span>
+        {allInstanceIds.map((id, idx) => (
+          <InstanceTab
+            key={id}
+            instanceId={id}
+            idx={idx}
+            isActive={id === effectiveInstanceId}
+            onSelect={() => setSelectedInstanceId(id)}
+          />
+        ))}
+      </div>
+
+      {/* Per-instance debug view */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <InstanceDebugView
+          instanceId={effectiveInstanceId}
+          hideChrome={false}
+          requestIdOverride={
+            effectiveInstanceId === activeInstanceId
+              ? requestIdOverride
+              : undefined
+          }
+        />
+      </div>
+    </div>
+  );
+}
+
+function InstanceTab({
+  instanceId,
+  idx,
+  isActive,
+  onSelect,
+}: {
+  instanceId: string;
+  idx: number;
+  isActive: boolean;
+  onSelect: () => void;
+}) {
+  const status = useAppSelector(
+    (state) => state.executionInstances.byInstanceId[instanceId]?.status,
+  );
+  const requestCount = useAppSelector(
+    (state) => (state.activeRequests.byInstanceId[instanceId] ?? []).length,
+  );
+
+  const statusDot = status
+    ? (INSTANCE_STATUS_COLORS[status] ?? "bg-gray-500/20 text-gray-400")
+    : "";
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        "inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] whitespace-nowrap border-b-2 border-r border-border/30 transition-colors cursor-pointer font-mono",
+        isActive
+          ? "border-b-primary text-primary bg-primary/5"
+          : "border-b-transparent text-muted-foreground hover:text-foreground hover:bg-muted/20",
+      )}
+    >
+      <span className="text-muted-foreground/60">#{idx + 1}</span>
+      <span className="max-w-[80px] truncate">{instanceId.slice(0, 8)}</span>
+      {status && (
+        <Badge
+          variant="outline"
+          className={cn("text-[8px] px-1 py-0 h-3.5 border-0", statusDot)}
+        >
+          {status}
+        </Badge>
+      )}
+      {requestCount > 0 && (
+        <span className="text-[9px] text-muted-foreground/60">
+          {requestCount}req
+        </span>
+      )}
+    </button>
   );
 }
 

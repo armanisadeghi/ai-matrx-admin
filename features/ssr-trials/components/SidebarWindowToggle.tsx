@@ -14,7 +14,21 @@ import {
   ArrowDown,
   ArrowUp,
   Columns3,
-  Rows3
+  Rows3,
+  FileJson,
+  StickyNote,
+  Mic,
+  Bug,
+  MessageSquare,
+  Activity,
+  FileCode2,
+  Settings,
+  Mail,
+  Share2,
+  CheckSquare,
+  Database,
+  FolderSearch,
+  Wand2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -30,6 +44,7 @@ import {
   type WindowState,
   arrangeActiveWindows,
 } from "@/lib/redux/slices/windowManagerSlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { LayoutIconButton } from "@/components/official-candidate/floating-window-panel/components/LayoutIcon";
 
 // ─── State dot colours ────────────────────────────────────────────────────────
@@ -56,7 +71,7 @@ export default function SidebarWindowToggle() {
   const hasWindows = windows.length > 0;
 
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"visibility" | "layout">("visibility");
+  const [activeTab, setActiveTab] = useState<"visibility" | "layout" | "tools">("visibility");
   const [layoutDirX, setLayoutDirX] = useState<"ltr" | "rtl">("rtl");
   const [layoutDirY, setLayoutDirY] = useState<"ttb" | "btt">("ttb");
   const [layoutPrimary, setLayoutPrimary] = useState<"horizontal" | "vertical">("vertical");
@@ -179,6 +194,18 @@ export default function SidebarWindowToggle() {
                 onClick={() => setActiveTab("layout")}
               >
                 Layout
+              </button>
+              <button
+                type="button"
+                className={cn(
+                  "px-2 py-1 text-[11px] font-medium uppercase tracking-wider rounded-md transition-colors",
+                  activeTab === "tools"
+                    ? "bg-accent/80 text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
+                )}
+                onClick={() => setActiveTab("tools")}
+              >
+                Tools
               </button>
             </div>
 
@@ -512,6 +539,140 @@ export default function SidebarWindowToggle() {
                     />
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* ── Tab Content: Tools ───────────────────────────────────────── */}
+            {activeTab === "tools" && (
+              <div className="flex-1 flex flex-col overflow-y-auto">
+                <MenuSection label="System Tools" />
+                <MenuItem
+                  icon={<FileJson className="w-3.5 h-3.5" />}
+                  label="JSON Truncator"
+                  description="Analyze and truncate JSON data"
+                  onClick={() => {
+                    act(() => dispatch(openOverlay({ overlayId: "jsonTruncator" })));
+                  }}
+                />
+                <MenuItem
+                  icon={<StickyNote className="w-3.5 h-3.5" />}
+                  label="Notes"
+                  description="Quick workspace notes"
+                  onClick={() => {
+                    act(() => dispatch(openOverlay({ overlayId: "quickNotes" })));
+                  }}
+                />
+                <MenuItem
+                  icon={<Mic className="w-3.5 h-3.5" />}
+                  label="Voice Pad"
+                  description="Audio transcription and dictation"
+                  onClick={() => {
+                    act(() => dispatch(openOverlay({ overlayId: "voicePad" })));
+                  }}
+                />
+                <MenuItem
+                  icon={<Wand2 className="w-3.5 h-3.5" />}
+                  label="Quick AI Results"
+                  description="AI outputs and results"
+                  onClick={() => {
+                    act(() => dispatch(openOverlay({ overlayId: "quickAIResults" })));
+                  }}
+                />
+                <MenuItem
+                  icon={<Bug className="w-3.5 h-3.5" />}
+                  label="Stream Debug"
+                  description="Real-time execution streams"
+                  onClick={() => {
+                    // Defaults to fallback instance, users usually open via specific ID
+                    act(() => dispatch(openOverlay({ overlayId: "streamDebug", data: { instanceId: "default" } })));
+                  }}
+                />
+                <MenuItem
+                  icon={<MessageSquare className="w-3.5 h-3.5" />}
+                  label="Feedback"
+                  description="Submit feedback"
+                  onClick={() => {
+                    act(() => dispatch(openOverlay({ overlayId: "feedbackDialog" })));
+                  }}
+                />
+                <MenuItem
+                  icon={<Activity className="w-3.5 h-3.5" />}
+                  label="State Analyzer"
+                  description="Redux state debugging"
+                  onClick={() => {
+                    act(() => dispatch(openOverlay({ overlayId: "adminStateAnalyzerWindow" })));
+                  }}
+                />
+                <MenuItem
+                  icon={<FileCode2 className="w-3.5 h-3.5" />}
+                  label="Markdown Editor"
+                  description="Full-screen markdown editor"
+                  onClick={() => {
+                    act(() => dispatch(openOverlay({ overlayId: "markdownEditorWindow", data: { instanceId: "default" } })));
+                  }}
+                />
+                <MenuItem
+                  icon={<Settings className="w-3.5 h-3.5" />}
+                  label="User Preferences"
+                  description="Edit profile and settings"
+                  onClick={() => {
+                    act(() => dispatch(openOverlay({ overlayId: "userPreferencesWindow" })));
+                  }}
+                />
+                <MenuItem
+                  icon={<Mail className="w-3.5 h-3.5" />}
+                  label="Email Dialog"
+                  description="Send email overlay"
+                  onClick={() => {
+                    act(() => dispatch(openOverlay({ overlayId: "emailDialogWindow", data: { 
+                      props: { 
+                        title: "Email Request", 
+                        description: "Enter email to receive requested info (Default testing behavior)" 
+                      }, 
+                      onSubmit: async (email: string) => { 
+                        console.log("Mock Email Sent to", email); 
+                        return Promise.resolve(); 
+                      } 
+                    } })));
+                  }}
+                />
+                <MenuItem
+                  icon={<Share2 className="w-3.5 h-3.5" />}
+                  label="Share Modal"
+                  description="Share resource overlay"
+                  onClick={() => {
+                    act(() => dispatch(openOverlay({ overlayId: "shareModalWindow", data: {
+                      resourceType: "note",
+                      resourceId: "default",
+                      resourceName: "Sample Resource",
+                      isOwner: true
+                    } })));
+                  }}
+                />
+                <MenuItem
+                  icon={<CheckSquare className="w-3.5 h-3.5" />}
+                  label="Quick Tasks"
+                  description="Manage personal tasks"
+                  onClick={() => {
+                    act(() => dispatch(openOverlay({ overlayId: "quickTasksWindow" })));
+                  }}
+                />
+                <MenuItem
+                  icon={<Database className="w-3.5 h-3.5" />}
+                  label="Quick Data"
+                  description="View application data tables"
+                  onClick={() => {
+                    act(() => dispatch(openOverlay({ overlayId: "quickDataWindow" })));
+                  }}
+                />
+                <MenuItem
+                  icon={<FolderSearch className="w-3.5 h-3.5" />}
+                  label="Quick Files"
+                  description="Browse system files"
+                  onClick={() => {
+                    act(() => dispatch(openOverlay({ overlayId: "quickFilesWindow" })));
+                  }}
+                />
               </div>
             )}
           </div>,

@@ -268,6 +268,8 @@ function NotesWindowShell({
       minHeight={220}
       actionsLeft={leftActions}
       actionsRight={rightActions}
+      urlSyncKey="notes"
+      urlSyncId="default"
       {...windowProps}
     >
       <div className="flex h-full min-h-0 bg-background">

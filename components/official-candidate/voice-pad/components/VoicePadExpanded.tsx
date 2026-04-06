@@ -1,15 +1,22 @@
 "use client";
 
 import React, { useRef, useCallback, useState } from "react";
-import { Copy, StickyNote, Trash2, X, History, Mic, Plus, Minus, Type } from "lucide-react";
-import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
+import {
+  Copy,
+  Mic,
+  Plus,
+  Minus,
+  Type,
+  Trash2,
+  X,
+  StickyNote,
+} from "lucide-react";
 import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
-import { VoicePadHistorySidebar } from "./VoicePadHistorySidebar";
+import { Button } from "@/components/ui/button";
 
 interface TranscriptEntry {
   id: string;
@@ -37,8 +44,6 @@ export default function VoicePadExpanded({
   entries,
   draftText,
   liveTranscript,
-  onTranscriptionComplete,
-  onLiveTranscript,
   onRemoveEntry,
   onClearAll,
   onDraftChange,
@@ -47,16 +52,14 @@ export default function VoicePadExpanded({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const allText = entries.map((e) => e.text).join("\n\n");
   const baseText = draftText || allText;
-  const displayText = liveTranscript ? (baseText ? baseText + "\n\n" + liveTranscript : liveTranscript) : baseText;
+  const displayText = liveTranscript
+    ? baseText
+      ? baseText + "\n\n" + liveTranscript
+      : liveTranscript
+    : baseText;
 
-  const [showHistory, setShowHistory] = useState(false);
   const [isEngaged, setIsEngaged] = useState(false);
   const [fontSize, setFontSize] = useState(11);
-
-  const handleSelectHistoryItem = useCallback((text: string) => {
-    onDraftChange((draftText ? draftText + "\n\n" : "") + text);
-    setShowHistory(false);
-  }, [draftText, onDraftChange]);
 
   const handleStartRecording = () => {
     setIsEngaged(true);
@@ -99,50 +102,67 @@ export default function VoicePadExpanded({
     [onDraftChange],
   );
 
-  const hasContent = entries.length > 0 || draftText.trim().length > 0 || (!!liveTranscript && liveTranscript.trim().length > 0);
+  const hasContent =
+    entries.length > 0 ||
+    draftText.trim().length > 0 ||
+    (!!liveTranscript && liveTranscript.trim().length > 0);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-row overflow-hidden">
-      <div className="flex min-h-0 flex-1 flex-col relative w-full">
-        <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-          <textarea
-            ref={textareaRef}
-            value={displayText}
-            onChange={handleTextareaChange}
-            placeholder="Transcribed text appears here..."
-            className={cn(
-              "min-h-0 w-full flex-1 resize-none rounded-md",
-              "bg-background/50 border border-border/50 px-2 py-1.5",
-              "leading-snug text-foreground placeholder:text-muted-foreground",
-              "focus:outline-none focus:ring-1 focus:ring-ring",
-              !hasContent && "hidden"
-            )}
-            style={{ fontSize: `${fontSize}px` }}
-          />
+    <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
+        <textarea
+          ref={textareaRef}
+          value={displayText}
+          onChange={handleTextareaChange}
+          placeholder="Transcribed text appears here..."
+          className={cn(
+            "min-h-0 w-full flex-1 resize-none rounded-md",
+            "bg-background/50 border border-border/50 px-2 py-1.5",
+            "leading-snug text-foreground placeholder:text-muted-foreground",
+            "focus:outline-none focus:ring-1 focus:ring-ring",
+            !hasContent && "hidden",
+          )}
+          style={{ fontSize: `${fontSize}px` }}
+        />
 
-          <div className={cn("flex min-h-0 flex-1 flex-col items-center justify-center py-4 text-center", hasContent && "hidden")}>
-            <button
-              type="button"
-              onClick={handleStartRecording}
-              disabled={isEngaged}
+        <div
+          className={cn(
+            "flex min-h-0 flex-1 flex-col items-center justify-center py-4 text-center",
+            hasContent && "hidden",
+          )}
+        >
+          <button
+            type="button"
+            onClick={handleStartRecording}
+            disabled={isEngaged}
+            className={cn(
+              "rounded-full p-4 mb-3 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring relative flex items-center justify-center",
+              isEngaged
+                ? "bg-primary/20 scale-110"
+                : "bg-primary/10 hover:bg-primary/20",
+            )}
+            title="Start recording"
+          >
+            {isEngaged && (
+              <span
+                className="absolute inset-0 rounded-full bg-primary/20 animate-ping"
+                style={{ animationDuration: "1.5s" }}
+              />
+            )}
+            <Mic
               className={cn(
-                "rounded-full p-4 mb-3 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring relative flex items-center justify-center",
-                isEngaged ? "bg-primary/20 scale-110" : "bg-primary/10 hover:bg-primary/20"
+                "h-6 w-6 border-0 relative z-10",
+                isEngaged ? "text-primary" : "text-muted-foreground",
               )}
-              title="Start recording"
-            >
-              {isEngaged && (
-                <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping" style={{ animationDuration: '1.5s' }} />
-              )}
-              <Mic className={cn("h-6 w-6 border-0 relative z-10", isEngaged ? "text-primary" : "text-muted-foreground")} />
-            </button>
-            <p className="text-[11px] text-muted-foreground">
-              {isEngaged ? "Listening..." : "Tap the mic to start recording"}
-            </p>
-            <p className="text-[10px] text-muted-foreground/60 mt-0.5">
-              Transcriptions persist across page navigation
-            </p>
-          </div>
+            />
+          </button>
+          <p className="text-[11px] text-muted-foreground">
+            {isEngaged ? "Listening..." : "Tap the mic to start recording"}
+          </p>
+          <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+            Transcriptions persist across page navigation
+          </p>
+        </div>
 
         {entries.length > 1 && (
           <div className="max-h-[100px] shrink-0 overflow-y-auto border border-border/40 rounded-md px-2 py-1">
@@ -174,17 +194,7 @@ export default function VoicePadExpanded({
         )}
       </div>
 
-      <div className="flex shrink-0 items-center gap-1 border-t border-border/50 bg-muted/20 px-2 py-1.5 flex-wrap">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => setShowHistory((prev) => !prev)}
-          className={cn("h-7 w-7 text-muted-foreground", showHistory && "bg-accent text-accent-foreground")}
-          title="History"
-        >
-          <History className="h-4 w-4" />
-        </Button>
+      <div className="flex shrink-0 flex-wrap items-center gap-1 border-t border-border/50 bg-muted/20 px-2 py-1.5">
         <ActionFeedbackButton
           icon={<Copy className="h-4 w-4" />}
           tooltip="Copy"
@@ -203,14 +213,14 @@ export default function VoicePadExpanded({
           onClick={onClearAll}
           className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
         />
-        
+
         <div className="mx-1 h-4 w-px bg-border/50" />
 
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          onClick={() => setFontSize(prev => Math.max(9, prev - 1))}
+          onClick={() => setFontSize((prev) => Math.max(9, prev - 1))}
           className="h-7 w-7 text-muted-foreground"
           title="Decrease font size"
         >
@@ -223,7 +233,7 @@ export default function VoicePadExpanded({
           type="button"
           variant="ghost"
           size="icon"
-          onClick={() => setFontSize(prev => Math.min(24, prev + 1))}
+          onClick={() => setFontSize((prev) => Math.min(24, prev + 1))}
           className="h-7 w-7 text-muted-foreground"
           title="Increase font size"
         >
@@ -235,14 +245,6 @@ export default function VoicePadExpanded({
           {entries.length} {entries.length === 1 ? "entry" : "entries"}
         </span>
       </div>
-      </div>
-      
-      {showHistory && (
-        <VoicePadHistorySidebar 
-          onClose={() => setShowHistory(false)} 
-          onSelectTranscript={handleSelectHistoryItem} 
-        />
-      )}
     </div>
   );
 }

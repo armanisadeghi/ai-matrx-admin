@@ -25,7 +25,11 @@ import {
   RectangleVertical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { LayoutIcon, LayoutIconButton, type LayoutIconType } from "./components/LayoutIcon";
+import {
+  LayoutIcon,
+  LayoutIconButton,
+  type LayoutIconType,
+} from "./components/LayoutIcon";
 import {
   useWindowPanel,
   type UseWindowPanelOptions,
@@ -38,6 +42,7 @@ import {
   arrangeActiveWindows,
 } from "@/lib/redux/slices/windowManagerSlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
+import { useUrlSync } from "./url-sync/useUrlSync";
 
 // ─── Resize handle descriptors ───────────────────────────────────────────────
 
@@ -92,6 +97,9 @@ export interface WindowPanelProps extends UseWindowPanelOptions {
   className?: string;
   minWidth?: number;
   minHeight?: number;
+  urlSyncKey?: string;
+  urlSyncId?: string;
+  urlSyncArgs?: Record<string, string>;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -107,6 +115,9 @@ export function WindowPanel({
   className,
   minWidth,
   minHeight,
+  urlSyncKey,
+  urlSyncId,
+  urlSyncArgs,
   ...hookOpts
 }: WindowPanelProps) {
   // Pass title into hook so it reaches Redux
@@ -127,6 +138,8 @@ export function WindowPanel({
   const dispatch = useAppDispatch();
   const windowsHidden = useAppSelector(selectWindowsHidden);
   const isDebugMode = useAppSelector(selectIsDebugMode);
+
+  useUrlSync(urlSyncKey, urlSyncId, urlSyncArgs);
 
   // ── Portal target (client-only) ──────────────────────────────────────────
   const [portalTarget, setPortalTarget] = useState<Element | null>(null);
@@ -213,15 +226,18 @@ export function WindowPanel({
     );
   }, [dispatch, id, rect.width, rect.height]);
 
-  const arrangeAll = useCallback((layout: any) => {
-    dispatch(
-      arrangeActiveWindows({
-        layout,
-        viewportWidth: window.innerWidth,
-        viewportHeight: window.innerHeight,
-      })
-    );
-  }, [dispatch]);
+  const arrangeAll = useCallback(
+    (layout: any) => {
+      dispatch(
+        arrangeActiveWindows({
+          layout,
+          viewportWidth: window.innerWidth,
+          viewportHeight: window.innerHeight,
+        }),
+      );
+    },
+    [dispatch],
+  );
 
   const isMinimized = windowState === "minimized";
   const isMaximized = windowState === "maximized";
@@ -258,6 +274,7 @@ export function WindowPanel({
           "fixed inset-0 flex flex-col",
           "bg-card/98 backdrop-blur-md border border-border shadow-2xl",
           "overflow-hidden",
+          className,
         )}
         style={{ zIndex, visibility: windowsHidden ? "hidden" : undefined }}
         onMouseDown={onFocus}
@@ -553,7 +570,10 @@ function TrafficLightGroup({
         color="red"
         showIcon={groupHovered}
         icon={
-          <X className="w-[8px] h-[8px] stroke-[3]" style={{ color: "#7f1d1d" }} />
+          <X
+            className="w-[8px] h-[8px] stroke-[3]"
+            style={{ color: "#7f1d1d" }}
+          />
         }
         onClick={onClose ?? undefined}
         disabled={!onClose}
@@ -744,14 +764,32 @@ function GreenTrafficLight({
               </div>
               <div className="flex flex-col gap-1 px-2 pb-2">
                 <div className="flex gap-1 justify-center">
-                  <LayoutIconButton onClick={() => handleAction(snapLeft)} type="left-half" />
-                  <LayoutIconButton onClick={() => handleAction(snapRight)} type="right-half" />
-                  <LayoutIconButton onClick={() => handleAction(snapTop)} type="top-half" />
-                  <LayoutIconButton onClick={() => handleAction(snapBottom)} type="bottom-half" />
+                  <LayoutIconButton
+                    onClick={() => handleAction(snapLeft)}
+                    type="left-half"
+                  />
+                  <LayoutIconButton
+                    onClick={() => handleAction(snapRight)}
+                    type="right-half"
+                  />
+                  <LayoutIconButton
+                    onClick={() => handleAction(snapTop)}
+                    type="top-half"
+                  />
+                  <LayoutIconButton
+                    onClick={() => handleAction(snapBottom)}
+                    type="bottom-half"
+                  />
                 </div>
                 <div className="flex gap-1 justify-center">
-                  <LayoutIconButton onClick={() => handleAction(snapCentre)} type="centre" />
-                  <LayoutIconButton onClick={() => handleAction(onToggleMaximize)} type="full" />
+                  <LayoutIconButton
+                    onClick={() => handleAction(snapCentre)}
+                    type="centre"
+                  />
+                  <LayoutIconButton
+                    onClick={() => handleAction(onToggleMaximize)}
+                    type="full"
+                  />
                 </div>
               </div>
               <div className="border-t border-border/50 my-1" />
@@ -761,23 +799,70 @@ function GreenTrafficLight({
               </div>
               <div className="flex flex-col gap-1 px-2 pb-2">
                 <div className="flex gap-1 justify-center">
-                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("grid4"))} type="grid4" />
-                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("grid6"))} type="grid6" />
-                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("grid8"))} type="grid8" />
-                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("grid9"))} type="grid9" />
-                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("grid12"))} type="grid12" />
+                  <LayoutIconButton
+                    onClick={() => handleAction(() => arrangeAll("grid4"))}
+                    type="grid4"
+                  />
+                  <LayoutIconButton
+                    onClick={() => handleAction(() => arrangeAll("grid6"))}
+                    type="grid6"
+                  />
+                  <LayoutIconButton
+                    onClick={() => handleAction(() => arrangeAll("grid8"))}
+                    type="grid8"
+                  />
+                  <LayoutIconButton
+                    onClick={() => handleAction(() => arrangeAll("grid9"))}
+                    type="grid9"
+                  />
+                  <LayoutIconButton
+                    onClick={() => handleAction(() => arrangeAll("grid12"))}
+                    type="grid12"
+                  />
                 </div>
                 <div className="flex gap-1 justify-center">
-                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("stackRight2"))} type="stackRight2" />
-                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("stackRight3"))} type="stackRight3" />
-                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("stackRight4"))} type="stackRight4" />
-                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("stackRight5"))} type="stackRight5" />
+                  <LayoutIconButton
+                    onClick={() =>
+                      handleAction(() => arrangeAll("stackRight2"))
+                    }
+                    type="stackRight2"
+                  />
+                  <LayoutIconButton
+                    onClick={() =>
+                      handleAction(() => arrangeAll("stackRight3"))
+                    }
+                    type="stackRight3"
+                  />
+                  <LayoutIconButton
+                    onClick={() =>
+                      handleAction(() => arrangeAll("stackRight4"))
+                    }
+                    type="stackRight4"
+                  />
+                  <LayoutIconButton
+                    onClick={() =>
+                      handleAction(() => arrangeAll("stackRight5"))
+                    }
+                    type="stackRight5"
+                  />
                 </div>
                 <div className="flex gap-1 justify-center">
-                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("stackLeft2"))} type="stackLeft2" />
-                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("stackLeft3"))} type="stackLeft3" />
-                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("stackLeft4"))} type="stackLeft4" />
-                  <LayoutIconButton onClick={() => handleAction(() => arrangeAll("stackLeft5"))} type="stackLeft5" />
+                  <LayoutIconButton
+                    onClick={() => handleAction(() => arrangeAll("stackLeft2"))}
+                    type="stackLeft2"
+                  />
+                  <LayoutIconButton
+                    onClick={() => handleAction(() => arrangeAll("stackLeft3"))}
+                    type="stackLeft3"
+                  />
+                  <LayoutIconButton
+                    onClick={() => handleAction(() => arrangeAll("stackLeft4"))}
+                    type="stackLeft4"
+                  />
+                  <LayoutIconButton
+                    onClick={() => handleAction(() => arrangeAll("stackLeft5"))}
+                    type="stackLeft5"
+                  />
                 </div>
               </div>
               <div className="border-t border-border/50 my-1" />

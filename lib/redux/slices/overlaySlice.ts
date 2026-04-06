@@ -71,6 +71,16 @@ const initialState: OverlayState = {
     voicePad: makeDefaultInstance(),
     undoHistory: makeDefaultInstance(),
     streamDebug: makeDefaultInstance(),
+    jsonTruncator: makeDefaultInstance(),
+    // Window panel specific components
+    adminStateAnalyzerWindow: makeDefaultInstance(),
+    markdownEditorWindow: makeDefaultInstance(),
+    userPreferencesWindow: makeDefaultInstance(),
+    quickTasksWindow: makeDefaultInstance(),
+    quickDataWindow: makeDefaultInstance(),
+    quickFilesWindow: makeDefaultInstance(),
+    emailDialogWindow: makeDefaultInstance(),
+    shareModalWindow: makeDefaultInstance(),
   },
 };
 

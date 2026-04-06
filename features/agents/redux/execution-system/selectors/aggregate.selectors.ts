@@ -330,7 +330,16 @@ export const selectInstanceSummary = (instanceId: string) =>
     (state: RootState) => state.instanceUIState.byInstanceId[instanceId],
     (state: RootState) => state.activeRequests.byInstanceId[instanceId],
     (state: RootState) => state.activeRequests.byRequestId,
-    (instance, overrides, resources, context, userInput, uiState, requestIds, byRequestId) => {
+    (
+      instance,
+      overrides,
+      resources,
+      context,
+      userInput,
+      uiState,
+      requestIds,
+      byRequestId,
+    ) => {
       if (!instance) return null;
 
       const ids = requestIds ?? EMPTY_IDS;
@@ -352,7 +361,7 @@ export const selectInstanceSummary = (instanceId: string) =>
         requestCount: ids.length,
         latestRequestStatus:
           ids.length > 0
-            ? byRequestId[ids[ids.length - 1]]?.status ?? null
+            ? (byRequestId[ids[ids.length - 1]]?.status ?? null)
             : null,
       };
     },
@@ -609,6 +618,23 @@ export const selectLatestCurrentPhase =
     return (
       state.activeRequests.byRequestId[ids[ids.length - 1]]?.currentPhase ??
       null
+    );
+  };
+
+/**
+ * The latest info event's userMessage for the most recent request.
+ * Used during interstitial phases to show the server's user-facing status
+ * (e.g. "Planning next steps...") instead of raw phase names.
+ */
+export const selectLatestInfoUserMessage =
+  (instanceId: string) =>
+  (state: RootState): string | null => {
+    const ids = state.activeRequests.byInstanceId[instanceId] ?? EMPTY_IDS;
+    if (ids.length === 0) return null;
+    const request = state.activeRequests.byRequestId[ids[ids.length - 1]];
+    if (!request || request.infoEvents.length === 0) return null;
+    return (
+      request.infoEvents[request.infoEvents.length - 1]?.user_message ?? null
     );
   };
 

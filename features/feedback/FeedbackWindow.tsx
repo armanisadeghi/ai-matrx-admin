@@ -80,6 +80,9 @@ export function FeedbackWindow({
       minWidth={380}
       minHeight={320}
       initialRect={{ width: 480, height: 580 }}
+      urlSyncKey="feedback"
+      urlSyncId="default"
+      className="feedback-window-panel"
       {...windowProps}
     >
       <FeedbackWindowBody onClose={onClose} />
@@ -197,24 +200,53 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
 
   const handleScreenshot = useCallback(async () => {
     setIsCapturing(true);
-    await new Promise((resolve) =>
-      requestAnimationFrame(() => requestAnimationFrame(resolve)),
+
+    // Hide the feedback panel so it doesn't appear in the capture
+    const feedbackEls = Array.from(
+      document.querySelectorAll<HTMLElement>(".feedback-window-panel"),
     );
+    const prevVisibility = feedbackEls.map((el) => el.style.visibility);
+    feedbackEls.forEach((el) => {
+      el.style.visibility = "hidden";
+    });
+
     try {
-      const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(document.body, {
-        logging: false,
-        useCORS: true,
-        allowTaint: false,
-        scale: window.devicePixelRatio || 1,
-        ignoreElements: (el) => el.hasAttribute("data-feedback-overlay"),
+      // Use the Screen Capture API — works perfectly with all CSS including
+      // backdrop-filter, CSS variables, and complex layouts.
+      // html2canvas v1.x fails silently on modern CSS.
+      if (!navigator.mediaDevices?.getDisplayMedia) {
+        toast.error("Screen capture is not supported in this browser");
+        return;
+      }
+
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: 1 },
+        audio: false,
       });
+
+      // Wait one frame for the browser to actually hide the panel before grabbing
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+
+      const track = stream.getVideoTracks()[0];
+      const imageCapture = new ImageCapture(track);
+      const bitmap = await imageCapture.grabFrame();
+      track.stop();
+      stream.getTracks().forEach((t) => t.stop());
+
+      // Draw the frame to a canvas and export as PNG
+      const canvas = document.createElement("canvas");
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(bitmap, 0, 0);
+
       const blob = await new Promise<Blob>((res, rej) => {
         canvas.toBlob(
           (b) => (b ? res(b) : rej(new Error("canvas.toBlob failed"))),
           "image/png",
         );
       });
+
       const file = new File([blob], `screenshot-${Date.now()}.png`, {
         type: "image/png",
       });
@@ -222,10 +254,19 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
       if (result?.url) {
         setUploadedImages((prev) => [...prev, result.url]);
         toast.success("Screenshot captured!");
+      } else {
+        toast.error("Screenshot captured but upload failed");
       }
-    } catch {
-      toast.error("Failed to capture screenshot");
+    } catch (err) {
+      // User cancelled the screen picker — don't show an error
+      const name = err instanceof Error ? err.name : "";
+      if (name !== "NotAllowedError" && name !== "AbortError") {
+        toast.error("Failed to capture screenshot");
+      }
     } finally {
+      feedbackEls.forEach((el, i) => {
+        el.style.visibility = prevVisibility[i];
+      });
       setIsCapturing(false);
     }
   }, [uploadToPublicUserAssets]);

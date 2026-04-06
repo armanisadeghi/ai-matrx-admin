@@ -12,11 +12,12 @@ import {
 } from "@/features/agents/services/mcp-oauth/pkce";
 
 const CALLBACK_PATH = "/api/mcp/oauth/callback";
+const CLIENT_METADATA_PATH = "/api/mcp/oauth/client-metadata";
 
-function getCallbackUrl(req: NextRequest): string {
+function getBaseUrl(req: NextRequest): string {
   const proto = req.headers.get("x-forwarded-proto") ?? "https";
   const host = req.headers.get("host") ?? "localhost:3000";
-  return `${proto}://${host}${CALLBACK_PATH}`;
+  return `${proto}://${host}`;
 }
 
 export async function GET(req: NextRequest) {
@@ -25,10 +26,7 @@ export async function GET(req: NextRequest) {
   const returnUrl = searchParams.get("return_url");
 
   if (!serverId) {
-    return NextResponse.json(
-      { error: "server_id is required" },
-      { status: 400 },
-    );
+    return errorRedirect(req, returnUrl, "server_id is required");
   }
 
   const supabase = await createClient();
@@ -36,65 +34,90 @@ export async function GET(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return errorRedirect(req, returnUrl, "Not authenticated — please sign in");
   }
 
   const { data: server, error: serverError } = await supabase
     .from("mcp_servers")
-    .select("endpoint_url, slug, auth_strategy")
+    .select("endpoint_url, slug, auth_strategy, name")
     .eq("id", serverId)
     .single();
 
   if (serverError || !server) {
-    return NextResponse.json(
-      { error: "MCP server not found" },
-      { status: 404 },
-    );
+    return errorRedirect(req, returnUrl, "MCP server not found in catalog");
   }
 
   if (server.auth_strategy !== "oauth_discovery") {
-    return NextResponse.json(
-      { error: "Server does not use OAuth discovery" },
-      { status: 400 },
+    return errorRedirect(
+      req,
+      returnUrl,
+      `${server.name} does not use OAuth — use the credential form instead`,
     );
   }
 
   if (!server.endpoint_url) {
-    return NextResponse.json(
-      { error: "Server has no endpoint URL" },
-      { status: 400 },
+    return errorRedirect(
+      req,
+      returnUrl,
+      `${server.name} has no endpoint URL configured yet. This integration may not be available.`,
     );
   }
 
-  try {
-    const { authServer } = await discoverOAuthEndpoints(server.endpoint_url);
+  const baseUrl = getBaseUrl(req);
+  const redirectUri = `${baseUrl}${CALLBACK_PATH}`;
+  const clientMetadataUrl = `${baseUrl}${CLIENT_METADATA_PATH}`;
 
-    const redirectUri = getCallbackUrl(req);
+  try {
+    console.log(
+      `[MCP OAuth] Starting discovery for ${server.slug} at ${server.endpoint_url}`,
+    );
+
+    const { authServer, protectedResource } = await discoverOAuthEndpoints(
+      server.endpoint_url,
+    );
+
+    console.log(`[MCP OAuth] Discovered auth server: ${authServer.issuer}`);
+    console.log(
+      `[MCP OAuth] Authorization endpoint: ${authServer.authorization_endpoint}`,
+    );
+    console.log(`[MCP OAuth] Token endpoint: ${authServer.token_endpoint}`);
+    console.log(
+      `[MCP OAuth] Registration endpoint: ${authServer.registration_endpoint ?? "none"}`,
+    );
 
     let clientId: string | undefined;
     let clientSecret: string | undefined;
 
+    // Strategy 1: Try Dynamic Client Registration if available
     if (authServer.registration_endpoint) {
-      const reg = await registerDynamicClient(
-        authServer.registration_endpoint,
-        {
-          redirectUri,
-          clientName: "AI Matrx",
-          scope: authServer.scopes_supported?.join(" "),
-        },
-      );
-      clientId = reg.client_id;
-      clientSecret = reg.client_secret;
+      try {
+        console.log(
+          `[MCP OAuth] Attempting DCR at ${authServer.registration_endpoint}`,
+        );
+        const reg = await registerDynamicClient(
+          authServer.registration_endpoint,
+          {
+            redirectUri,
+            clientName: "AI Matrx",
+            scope: protectedResource?.scopes_supported?.join(" "),
+          },
+        );
+        clientId = reg.client_id;
+        clientSecret = reg.client_secret;
+        console.log(`[MCP OAuth] DCR succeeded, got client_id: ${clientId}`);
+      } catch (dcrErr) {
+        console.warn(
+          `[MCP OAuth] DCR failed (will try CIMD fallback):`,
+          dcrErr instanceof Error ? dcrErr.message : dcrErr,
+        );
+      }
     }
 
+    // Strategy 2: Use CIMD (Client ID Metadata Document) — the modern MCP approach
+    // The client_id IS the URL to our metadata document
     if (!clientId) {
-      return NextResponse.json(
-        {
-          error:
-            "OAuth server does not support Dynamic Client Registration and no pre-registered client_id is configured",
-        },
-        { status: 400 },
-      );
+      clientId = clientMetadataUrl;
+      console.log(`[MCP OAuth] Using CIMD client_id: ${clientId}`);
     }
 
     const codeVerifier = generateCodeVerifier();
@@ -103,12 +126,14 @@ export async function GET(req: NextRequest) {
 
     const sessionPayload = JSON.stringify({
       serverId,
+      serverSlug: server.slug,
       codeVerifier,
       clientId,
       clientSecret: clientSecret ?? null,
       tokenEndpoint: authServer.token_endpoint,
       redirectUri,
       returnUrl: returnUrl ?? "/",
+      state,
     });
 
     const cookieStore = await cookies();
@@ -129,19 +154,40 @@ export async function GET(req: NextRequest) {
       state,
     });
 
-    if (authServer.scopes_supported?.length) {
-      params.set("scope", authServer.scopes_supported.join(" "));
+    // Only include scopes if the protected resource or auth server specifies them.
+    // Sending unsupported scopes causes failures (e.g., Supabase rejects OIDC scopes).
+    const scopes =
+      protectedResource?.scopes_supported ?? authServer.scopes_supported;
+    if (scopes?.length) {
+      params.set("scope", scopes.join(" "));
     }
 
     const authUrl = `${authServer.authorization_endpoint}?${params.toString()}`;
+    console.log(`[MCP OAuth] Redirecting to: ${authUrl}`);
 
     return NextResponse.redirect(authUrl);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[MCP OAuth Start]", message);
-    return NextResponse.json(
-      { error: `OAuth discovery failed: ${message}` },
-      { status: 502 },
+    console.error("[MCP OAuth Start] Error:", message);
+    return errorRedirect(
+      req,
+      returnUrl,
+      `OAuth discovery failed for ${server.name}: ${message}`,
     );
   }
+}
+
+/**
+ * Redirect to the complete page with error info.
+ * This page will post a message to the parent window and show the error.
+ */
+function errorRedirect(
+  req: NextRequest,
+  _returnUrl: string | null,
+  errorMessage: string,
+): NextResponse {
+  const baseUrl = getBaseUrl(req);
+  const target = new URL("/api/mcp/oauth/complete", baseUrl);
+  target.searchParams.set("mcp_error", errorMessage);
+  return NextResponse.redirect(target);
 }

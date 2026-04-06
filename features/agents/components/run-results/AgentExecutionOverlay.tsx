@@ -28,7 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, MessageSquare, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FloatingSheet from "@/components/official/FloatingSheet";
-import { FloatingPanel } from "@/components/official-candidate/floating-window-panel/FloatingPanel";
+import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
 import { AgentFloatingChat } from "../overlays/AgentFloatingChat";
 
 // =============================================================================
@@ -232,21 +232,23 @@ function AgentFlexiblePanelOverlay({
   const title = useAppSelector(selectInstanceTitle(instanceId));
 
   return (
-    <div className="fixed inset-0 z-50 pointer-events-none">
-      <div className="absolute top-16 right-4 pointer-events-auto">
-        <FloatingPanel
-          title={title ?? "Agent"}
-          size="2xl"
-          onClose={onClose}
-          bodyClassName="p-0"
-        >
-          <AgentRunner
-            instanceId={instanceId}
-            className="h-[500px] bg-background"
-          />
-        </FloatingPanel>
-      </div>
-    </div>
+    <WindowPanel
+      id={`agent-${instanceId}`}
+      title={title ?? "Agent"}
+      onClose={onClose}
+      initialRect={{ width: 680, height: 500 }}
+      minWidth={300}
+      minHeight={250}
+      bodyClassName="p-0"
+      urlSyncKey="agent"
+      urlSyncId={instanceId}
+      urlSyncArgs={{ m: "flexible-panel" }}
+    >
+      <AgentRunner
+        instanceId={instanceId}
+        className="h-full bg-background"
+      />
+    </WindowPanel>
   );
 }
 

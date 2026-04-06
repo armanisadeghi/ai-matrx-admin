@@ -163,20 +163,43 @@ export function useChunkedRecordAndTranscribe({
     // Auto-persist into transcripts system silently
     if (finalText) {
       import('@/utils/auth/getUserId').then(({ getUserId }) => {
-        if (getUserId()) {
+        const userId = getUserId();
+        if (userId) {
           import('@/features/transcripts/service/transcriptsService').then(({ saveDraftTranscript }) => {
-            saveDraftTranscript({
-              title: 'Voice Pad Recording',
-              segments: [{
-                id: Date.now().toString(),
-                text: finalText,
-                seconds: duration,
-                timecode: '0:00'
-              }],
-              source_type: 'audio',
-              folder_name: 'Recordings'
-            }).catch((err) => {
-              console.warn('[chunked-transcription] Failed to auto-persist transcript:', err);
+            const finalBlob = new Blob(allChunkBlobsRef.current, { type: mimeTypeRef.current });
+            import('@/features/transcripts/service/audioStorageService').then(({ saveAudioToStorage }) => {
+              saveAudioToStorage(finalBlob, userId, undefined, 3).then(uploadResult => {
+                saveDraftTranscript({
+                  title: 'Voice Pad Recording',
+                  segments: [{
+                    id: Date.now().toString(),
+                    text: finalText,
+                    seconds: duration,
+                    timecode: '0:00'
+                  }],
+                  source_type: 'audio',
+                  folder_name: 'Recordings',
+                  audio_file_path: uploadResult.path
+                }).catch((err) => {
+                  console.warn('[chunked-transcription] Failed to auto-persist transcript with audio:', err);
+                });
+              }).catch(uploadErr => {
+                console.warn('[chunked-transcription] Failed to save audio file to storage:', uploadErr);
+                // Fallback to saving draft transcript without audio
+                saveDraftTranscript({
+                  title: 'Voice Pad Recording',
+                  segments: [{
+                    id: Date.now().toString(),
+                    text: finalText,
+                    seconds: duration,
+                    timecode: '0:00'
+                  }],
+                  source_type: 'audio',
+                  folder_name: 'Recordings'
+                }).catch((err) => {
+                  console.warn('[chunked-transcription] Failed to auto-persist transcript:', err);
+                });
+              });
             });
           });
         }

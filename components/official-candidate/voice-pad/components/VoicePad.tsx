@@ -1,7 +1,7 @@
 "use client";
 
-import React, { lazy, Suspense, useState } from "react";
-import { Mic } from "lucide-react";
+import React, { lazy, Suspense, useState, useCallback } from "react";
+import { Mic, PanelLeftClose, PanelLeft } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
 import {
@@ -14,6 +14,8 @@ import {
 } from "@/lib/redux/slices/voicePadSlice";
 import { WindowPanel } from "@/components/official-candidate/floating-window-panel/WindowPanel";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
+import { Button } from "@/components/ui/ButtonMine";
+import { VoicePadHistorySidebar } from "./VoicePadHistorySidebar";
 
 const VoicePadExpanded = lazy(() => import("./VoicePadExpanded"));
 
@@ -45,6 +47,7 @@ export default function VoicePad() {
   const entries = useAppSelector(selectVoicePadEntries);
   const draftText = useAppSelector(selectVoicePadDraftText);
   const [liveTranscript, setLiveTranscript] = useState("");
+  const [showHistory, setShowHistory] = useState(false);
 
   const handleClose = () => {
     dispatch(closeOverlay({ overlayId: "voicePad" }));
@@ -73,6 +76,27 @@ export default function VoicePad() {
     dispatch(setDraftText(text));
   };
 
+  const handleSelectHistoryItem = useCallback((text: string) => {
+    handleDraftChange((draftText ? draftText + "\n\n" : "") + text);
+  }, [draftText, handleDraftChange]);
+
+  const leftActions = (
+    <Button
+      type="button"
+      variant="ghost"
+      size="xs"
+      onClick={() => setShowHistory((v) => !v)}
+      title={showHistory ? "Hide history" : "Show history"}
+      className="h-5 w-5 p-0"
+    >
+      {showHistory ? (
+        <PanelLeftClose className="h-3 w-3" />
+      ) : (
+        <PanelLeft className="h-3 w-3" />
+      )}
+    </Button>
+  );
+
   return (
     <WindowPanel
       id={VOICE_PAD_WINDOW_ID}
@@ -82,20 +106,33 @@ export default function VoicePad() {
       minHeight={200}
       bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden p-0"
       onClose={handleClose}
-      actions={<MicrophoneIconButton id="voice-pad-header-mic" onTranscriptionComplete={handleTranscriptionComplete} onLiveTranscript={handleLiveTranscript} variant="icon-only" size="xs" />}
+      urlSyncKey="voice"
+      urlSyncId="default"
+      actionsLeft={leftActions}
+      actionsRight={<MicrophoneIconButton id="voice-pad-header-mic" onTranscriptionComplete={handleTranscriptionComplete} onLiveTranscript={handleLiveTranscript} variant="icon-only" size="xs" />}
     >
-      <Suspense fallback={<ExpandedLoadingFallback />}>
-        <VoicePadExpanded
-          entries={entries}
-          draftText={draftText}
-          liveTranscript={liveTranscript}
-          onTranscriptionComplete={handleTranscriptionComplete}
-          onLiveTranscript={handleLiveTranscript}
-          onRemoveEntry={handleRemoveEntry}
-          onClearAll={handleClearAll}
-          onDraftChange={handleDraftChange}
-        />
-      </Suspense>
+      <div className="flex bg-background h-full w-full min-h-0">
+        {showHistory && (
+          <VoicePadHistorySidebar 
+            onClose={() => setShowHistory(false)} 
+            onSelectTranscript={handleSelectHistoryItem} 
+          />
+        )}
+        <div className="flex-1 min-w-0 flex flex-col min-h-0">
+          <Suspense fallback={<ExpandedLoadingFallback />}>
+            <VoicePadExpanded
+              entries={entries}
+              draftText={draftText}
+              liveTranscript={liveTranscript}
+              onTranscriptionComplete={handleTranscriptionComplete}
+              onLiveTranscript={handleLiveTranscript}
+              onRemoveEntry={handleRemoveEntry}
+              onClearAll={handleClearAll}
+              onDraftChange={handleDraftChange}
+            />
+          </Suspense>
+        </div>
+      </div>
     </WindowPanel>
   );
 }

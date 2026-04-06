@@ -16,19 +16,95 @@ export interface AuthServerMetadata {
   grant_types_supported?: string[];
 }
 
+/**
+ * Per RFC 9728, for a resource URL like https://mcp.example.com/v2/mcp,
+ * the well-known URI is:
+ *   https://mcp.example.com/.well-known/oauth-protected-resource/v2/mcp
+ *
+ * We try both the path-aware form and the root-only form as a fallback,
+ * since many servers only serve it at the root.
+ */
+function buildWellKnownUrls(
+  baseUrl: string,
+  wellKnownSuffix: string,
+): string[] {
+  const parsed = new URL(baseUrl);
+  const urls: string[] = [];
+
+  if (parsed.pathname && parsed.pathname !== "/") {
+    urls.push(
+      `${parsed.origin}/.well-known/${wellKnownSuffix}${parsed.pathname}`,
+    );
+  }
+
+  urls.push(`${parsed.origin}/.well-known/${wellKnownSuffix}`);
+
+  return urls;
+}
+
 export async function fetchProtectedResourceMetadata(
   mcpServerUrl: string,
 ): Promise<ProtectedResourceMetadata | null> {
-  const origin = new URL(mcpServerUrl).origin;
-  const url = `${origin}/.well-known/oauth-protected-resource`;
+  const urls = buildWellKnownUrls(mcpServerUrl, "oauth-protected-resource");
 
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (res.ok) {
+        return (await res.json()) as ProtectedResourceMetadata;
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Also try the 401 probe: hit the MCP endpoint directly with no auth.
+ * Many servers return a WWW-Authenticate header pointing to the auth server.
+ */
+export async function probeFor401(
+  mcpServerUrl: string,
+): Promise<{ authServerUrl: string; resource: string } | null> {
   try {
-    const res = await fetch(url, {
-      headers: { Accept: "application/json" },
+    const res = await fetch(mcpServerUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        method: "initialize",
+        id: 1,
+        params: {
+          protocolVersion: "2025-03-26",
+          capabilities: {},
+          clientInfo: { name: "AI Matrx", version: "1.0.0" },
+        },
+      }),
       signal: AbortSignal.timeout(10_000),
     });
-    if (!res.ok) return null;
-    return (await res.json()) as ProtectedResourceMetadata;
+
+    if (res.status === 401) {
+      const wwwAuth = res.headers.get("www-authenticate");
+      if (wwwAuth) {
+        const resourceMatch = wwwAuth.match(/resource_metadata="([^"]+)"/);
+        if (resourceMatch) {
+          return {
+            authServerUrl: resourceMatch[1],
+            resource: mcpServerUrl,
+          };
+        }
+      }
+    }
+
+    return null;
   } catch {
     return null;
   }
@@ -37,12 +113,21 @@ export async function fetchProtectedResourceMetadata(
 export async function fetchAuthServerMetadata(
   authServerUrl: string,
 ): Promise<AuthServerMetadata | null> {
-  const origin = new URL(authServerUrl).origin;
+  const parsed = new URL(authServerUrl);
 
-  const urls = [
-    `${origin}/.well-known/oauth-authorization-server`,
-    `${origin}/.well-known/openid-configuration`,
-  ];
+  const urls: string[] = [];
+
+  if (parsed.pathname && parsed.pathname !== "/") {
+    urls.push(
+      `${parsed.origin}/.well-known/oauth-authorization-server${parsed.pathname}`,
+    );
+    urls.push(
+      `${parsed.origin}/.well-known/openid-configuration${parsed.pathname}`,
+    );
+  }
+
+  urls.push(`${parsed.origin}/.well-known/oauth-authorization-server`);
+  urls.push(`${parsed.origin}/.well-known/openid-configuration`);
 
   for (const url of urls) {
     try {
@@ -62,23 +147,27 @@ export async function fetchAuthServerMetadata(
 }
 
 export interface DiscoveryResult {
-  protectedResource: ProtectedResourceMetadata;
+  protectedResource: ProtectedResourceMetadata | null;
   authServer: AuthServerMetadata;
 }
 
 export async function discoverOAuthEndpoints(
   mcpServerUrl: string,
 ): Promise<DiscoveryResult> {
-  const protectedResource = await fetchProtectedResourceMetadata(mcpServerUrl);
-  if (!protectedResource) {
-    throw new Error(
-      `No protected resource metadata at ${mcpServerUrl}. Server may not support OAuth discovery.`,
-    );
-  }
+  let protectedResource = await fetchProtectedResourceMetadata(mcpServerUrl);
 
-  const authServerUrls = protectedResource.authorization_servers ?? [
-    new URL(mcpServerUrl).origin,
-  ];
+  let authServerUrls: string[];
+
+  if (protectedResource?.authorization_servers?.length) {
+    authServerUrls = protectedResource.authorization_servers;
+  } else {
+    const probe = await probeFor401(mcpServerUrl);
+    if (probe) {
+      authServerUrls = [probe.authServerUrl];
+    } else {
+      authServerUrls = [new URL(mcpServerUrl).origin];
+    }
+  }
 
   let authServer: AuthServerMetadata | null = null;
   for (const serverUrl of authServerUrls) {
@@ -88,7 +177,8 @@ export async function discoverOAuthEndpoints(
 
   if (!authServer) {
     throw new Error(
-      `Could not discover auth server metadata for ${mcpServerUrl}`,
+      `Could not discover auth server metadata for ${mcpServerUrl}. ` +
+        `Tried protected resource metadata, 401 probe, and well-known endpoints.`,
     );
   }
 
@@ -112,14 +202,17 @@ export async function registerDynamicClient(
     scope?: string;
   },
 ): Promise<DynamicClientRegistrationResult> {
-  const body = {
+  const body: Record<string, unknown> = {
     redirect_uris: [params.redirectUri],
     client_name: params.clientName ?? "AI Matrx",
     grant_types: params.grantTypes ?? ["authorization_code", "refresh_token"],
     response_types: params.responseTypes ?? ["code"],
     token_endpoint_auth_method: "none",
-    scope: params.scope,
   };
+
+  if (params.scope) {
+    body.scope = params.scope;
+  }
 
   const res = await fetch(registrationEndpoint, {
     method: "POST",

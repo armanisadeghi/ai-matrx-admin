@@ -28,8 +28,10 @@ import {
   Maximize2,
   AppWindow,
   SlidersHorizontal,
+  Layers,
 } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { shallowEqual } from "react-redux";
 import {
   restoreWindow,
   focusWindow,
@@ -57,6 +59,7 @@ import {
   selectTimelineDerivedTiming,
   type TimelineDerivedTiming,
 } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
+import { selectAllInstanceIds } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
 import { SystemInstructionEditor } from "../system-instructions/SystemInstructionEditor";
 import { StreamDebugFloating } from "../debug/StreamDebugFloating";
 import { openStreamDebug } from "@/lib/redux/slices/overlaySlice";
@@ -65,7 +68,10 @@ import { StreamDebugPanel } from "../debug/StreamDebugPanel";
 import { AgentLauncherSidebarTester } from "./AgentLauncherSidebarTester";
 import { AgentExecutionTestModal } from "./AgentExecutionTestModal";
 import * as LucideIcons from "lucide-react";
-import { getAllDisplayTypes, getDisplayMeta } from "@/features/agents/utils/run-ui-utils";
+import {
+  getAllDisplayTypes,
+  getDisplayMeta,
+} from "@/features/agents/utils/run-ui-utils";
 import { useAgentLauncherTester } from "@/features/agents/hooks/useAgentLauncherTester";
 
 // =============================================================================
@@ -214,14 +220,24 @@ function ActionsTab({
     dispatch(openStreamDebug({ instanceId }));
   }, [dispatch, instanceId]);
 
-  const ActionButton = ({ onClick, icon: Icon, label }: { onClick: () => void, icon: React.ElementType, label: React.ReactNode }) => (
+  const ActionButton = ({
+    onClick,
+    icon: Icon,
+    label,
+  }: {
+    onClick: () => void;
+    icon: any;
+    label: React.ReactNode;
+  }) => (
     <button
       type="button"
       onClick={onClick}
       className="flex flex-col items-center justify-center gap-1.5 w-[84px] h-[84px] text-muted-foreground hover:text-foreground bg-muted/10 hover:bg-muted/30 border border-transparent hover:border-border rounded-xl transition-all shrink-0"
     >
       <Icon className="w-7 h-7" />
-      <span className="text-[10px] text-center leading-tight font-medium px-1">{label}</span>
+      <span className="text-[10px] text-center leading-tight font-medium px-1">
+        {label}
+      </span>
     </button>
   );
 
@@ -230,27 +246,57 @@ function ActionsTab({
       <ActionButton
         onClick={handleReset}
         icon={RotateCcw}
-        label={<>Reset<br/>Conversation</>}
+        label={
+          <>
+            Reset
+            <br />
+            Conversation
+          </>
+        }
       />
       <ActionButton
         onClick={onOpenStreamDebugFloating}
         icon={PictureInPicture2}
-        label={<>Debug<br/>Floating</>}
+        label={
+          <>
+            Debug
+            <br />
+            Floating
+          </>
+        }
       />
       <ActionButton
         onClick={onOpenStreamDebugWindow}
         icon={AppWindow}
-        label={<>Debug<br/>Window</>}
+        label={
+          <>
+            Debug
+            <br />
+            Window
+          </>
+        }
       />
       <ActionButton
         onClick={handleOpenStreamDebugOverlay}
         icon={Maximize2}
-        label={<>Debug<br/>Overlay</>}
+        label={
+          <>
+            Debug
+            <br />
+            Overlay
+          </>
+        }
       />
       <ActionButton
         onClick={onOpenRunSettingsWindow}
         icon={SlidersHorizontal}
-        label={<>Run<br/>Settings</>}
+        label={
+          <>
+            Run
+            <br />
+            Settings
+          </>
+        }
       />
     </div>
   );
@@ -318,7 +364,7 @@ function SystemPromptTab({ instanceId }: { instanceId: string }) {
 // Tab 4: Last Request
 // =============================================================================
 
-function LastRequestPanel({ stats }: { stats: CompletionStats | undefined }) {
+function LastRequestContent({ stats }: { stats: CompletionStats | undefined }) {
   if (!stats) {
     return (
       <div className="p-4 text-xs text-muted-foreground text-center">
@@ -420,19 +466,89 @@ function LastRequestPanel({ stats }: { stats: CompletionStats | undefined }) {
   );
 }
 
+function LastRequestPanel({ instanceId }: { instanceId: string }) {
+  const allInstanceIds = useAppSelector(selectAllInstanceIds, shallowEqual);
+  const [selectedId, setSelectedId] = useState(instanceId);
+  const effectiveId = allInstanceIds.includes(selectedId)
+    ? selectedId
+    : instanceId;
+
+  const stats = useAppSelector(selectLatestCompletionStats(effectiveId));
+
+  return (
+    <div className="flex flex-col h-full overflow-y-auto">
+      <InstancePicker
+        allInstanceIds={allInstanceIds}
+        selectedId={effectiveId}
+        onSelect={setSelectedId}
+        label="Instance"
+      />
+      <LastRequestContent stats={stats} />
+    </div>
+  );
+}
+
 // =============================================================================
-// Tab 5: Session
+// Instance picker — shared across Session / Last / Client tabs
 // =============================================================================
 
-function SessionPanel({ instanceId }: { instanceId: string }) {
+function InstancePicker({
+  allInstanceIds,
+  selectedId,
+  onSelect,
+  label,
+}: {
+  allInstanceIds: string[];
+  selectedId: string;
+  onSelect: (id: string) => void;
+  label?: string;
+}) {
+  if (allInstanceIds.length <= 1) return null;
+  return (
+    <div className="flex items-center gap-1.5 px-3 py-1 border-b border-border bg-muted/10 flex-wrap">
+      <Layers className="w-3 h-3 text-muted-foreground shrink-0" />
+      {label && (
+        <span className="text-[10px] text-muted-foreground font-medium shrink-0">
+          {label}:
+        </span>
+      )}
+      {allInstanceIds.map((id, idx) => (
+        <button
+          key={id}
+          type="button"
+          onClick={() => onSelect(id)}
+          className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-colors ${
+            id === selectedId
+              ? "bg-primary/20 text-primary border-primary/30"
+              : "bg-muted/20 text-muted-foreground border-transparent hover:border-border/50"
+          }`}
+        >
+          #{idx + 1} {id.slice(0, 8)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// =============================================================================
+// Tab 5: Session — shows ALL instances
+// =============================================================================
+
+function SingleInstanceSession({
+  instanceId,
+  instanceLabel,
+}: {
+  instanceId: string;
+  instanceLabel: string;
+}) {
   const aggregate = useAppSelector(selectAggregateStats(instanceId));
   const turns = useAppSelector(selectConversationTurns(instanceId));
   const assistantTurns = turns.filter((t) => t.role === "assistant");
 
   if (aggregate.requestCount === 0) {
     return (
-      <div className="p-4 text-xs text-muted-foreground text-center">
-        No session data yet.
+      <div className="px-3 py-2 text-xs text-muted-foreground/60">
+        No requests yet.
       </div>
     );
   }
@@ -478,6 +594,9 @@ function SessionPanel({ instanceId }: { instanceId: string }) {
             <BarChart2 className="w-3 h-3 text-muted-foreground" />
             <span className="text-xs font-semibold text-foreground/80 uppercase tracking-wide">
               Per-Request Breakdown
+            </span>
+            <span className="text-[10px] text-muted-foreground/60 ml-auto font-mono">
+              {instanceLabel}
             </span>
           </div>
           <table className="w-full text-xs">
@@ -552,6 +671,57 @@ function SessionPanel({ instanceId }: { instanceId: string }) {
   );
 }
 
+function SessionPanel({ instanceId }: { instanceId: string }) {
+  const allInstanceIds = useAppSelector(selectAllInstanceIds, shallowEqual);
+
+  if (allInstanceIds.length === 0) {
+    return (
+      <div className="p-4 text-xs text-muted-foreground text-center">
+        No session data yet.
+      </div>
+    );
+  }
+
+  const instancesWithData = allInstanceIds.filter(Boolean);
+
+  return (
+    <div className="divide-y divide-border">
+      {/* Cross-instance summary header */}
+      {allInstanceIds.length > 1 && (
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 border-b border-border">
+          <Layers className="w-3 h-3 text-muted-foreground" />
+          <span className="text-[11px] font-semibold text-foreground/70 uppercase tracking-wide">
+            All Instances ({allInstanceIds.length})
+          </span>
+        </div>
+      )}
+      {instancesWithData.map((id, idx) => (
+        <div key={id}>
+          {allInstanceIds.length > 1 && (
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-muted/20 border-b border-border/50">
+              <span className="text-[10px] font-mono text-muted-foreground/70">
+                Instance #{idx + 1}
+              </span>
+              <span className="text-[9px] font-mono text-muted-foreground/50">
+                {id.slice(0, 12)}
+              </span>
+              {id === instanceId && (
+                <span className="text-[9px] text-primary/70 ml-1">
+                  (current)
+                </span>
+              )}
+            </div>
+          )}
+          <SingleInstanceSession
+            instanceId={id}
+            instanceLabel={`#${idx + 1} ${id.slice(0, 8)}`}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // =============================================================================
 // Tab 6: Client Metrics
 // =============================================================================
@@ -591,7 +761,7 @@ function ClientTableCol({
   );
 }
 
-function ClientPanel({
+function ClientContent({
   metrics,
   aggregateClient,
   timelineTiming,
@@ -766,6 +936,41 @@ function ClientPanel({
   );
 }
 
+function ClientPanel({ instanceId }: { instanceId: string }) {
+  const allInstanceIds = useAppSelector(selectAllInstanceIds, shallowEqual);
+  const [selectedId, setSelectedId] = useState(instanceId);
+  const effectiveId = allInstanceIds.includes(selectedId)
+    ? selectedId
+    : instanceId;
+
+  const latestClientMetrics = useAppSelector(
+    selectLatestClientMetrics(effectiveId),
+  );
+  const aggregateClientMetrics = useAppSelector(
+    selectAggregateClientMetrics(effectiveId),
+  );
+  const latestReqId = useAppSelector(selectLatestRequestId(effectiveId));
+  const timelineTiming = useAppSelector(
+    latestReqId ? selectTimelineDerivedTiming(latestReqId) : () => undefined,
+  );
+
+  return (
+    <div className="flex flex-col h-full overflow-y-auto">
+      <InstancePicker
+        allInstanceIds={allInstanceIds}
+        selectedId={effectiveId}
+        onSelect={setSelectedId}
+        label="Instance"
+      />
+      <ClientContent
+        metrics={latestClientMetrics}
+        aggregateClient={aggregateClientMetrics}
+        timelineTiming={timelineTiming}
+      />
+    </div>
+  );
+}
+
 // =============================================================================
 // Collapsed stats pills
 // =============================================================================
@@ -817,11 +1022,18 @@ function CollapsedStatsPills({
 
 function TestDisplaysTab({ instanceId }: { instanceId: string }) {
   const tester = useAgentLauncherTester(instanceId);
-  
+
   const displayTypes = getAllDisplayTypes().map((displayMode) => {
     const meta = getDisplayMeta(displayMode);
     const IconComponent = (LucideIcons as any)[meta.icon];
-    return { name: meta.label, icon: IconComponent, color: meta.color, displayMode, note: meta.description, testMode: meta.testMode };
+    return {
+      name: meta.label,
+      icon: IconComponent,
+      color: meta.color,
+      displayMode,
+      note: meta.description,
+      testMode: meta.testMode,
+    };
   });
 
   return (
@@ -834,46 +1046,80 @@ function TestDisplaysTab({ instanceId }: { instanceId: string }) {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <Label className="text-[11px] cursor-pointer">Auto Run</Label>
-            <Switch checked={tester.autoRun} onCheckedChange={tester.setAutoRun} className="scale-75" />
+            <Switch
+              checked={tester.autoRun}
+              onCheckedChange={tester.setAutoRun}
+              className="scale-75"
+            />
           </div>
           <div className="flex items-center justify-between">
             <Label className="text-[11px] cursor-pointer">Allow Chat</Label>
-            <Switch checked={tester.allowChat} onCheckedChange={tester.setAllowChat} className="scale-75" />
+            <Switch
+              checked={tester.allowChat}
+              onCheckedChange={tester.setAllowChat}
+              className="scale-75"
+            />
           </div>
           <div className="flex items-center justify-between">
             <Label className="text-[11px] cursor-pointer">Show Variables</Label>
-            <Switch checked={tester.showVariables} onCheckedChange={tester.setShowVariables} className="scale-75" />
+            <Switch
+              checked={tester.showVariables}
+              onCheckedChange={tester.setShowVariables}
+              className="scale-75"
+            />
           </div>
           <div className="flex items-center justify-between">
-            <Label className="text-[11px] cursor-pointer">Apply Variables</Label>
-            <Switch checked={tester.applyVariables} onCheckedChange={tester.setApplyVariables} className="scale-75" />
+            <Label className="text-[11px] cursor-pointer">
+              Apply Variables
+            </Label>
+            <Switch
+              checked={tester.applyVariables}
+              onCheckedChange={tester.setApplyVariables}
+              className="scale-75"
+            />
           </div>
           <div className="flex items-center justify-between">
-            <Label className="text-[11px] cursor-pointer">Use Pre-Exec Input</Label>
-            <Switch checked={tester.usePreExecutionInput} onCheckedChange={tester.setUsePreExecutionInput} className="scale-75" />
+            <Label className="text-[11px] cursor-pointer">
+              Use Pre-Exec Input
+            </Label>
+            <Switch
+              checked={tester.usePreExecutionInput}
+              onCheckedChange={tester.setUsePreExecutionInput}
+              className="scale-75"
+            />
           </div>
           <div className="flex items-center justify-between">
-            <Label className="text-[11px] cursor-pointer">Use Chat Endpoint</Label>
-            <Switch checked={tester.useChat} onCheckedChange={tester.setUseChat} className="scale-75" />
+            <Label className="text-[11px] cursor-pointer">
+              Use Chat Endpoint
+            </Label>
+            <Switch
+              checked={tester.useChat}
+              onCheckedChange={tester.setUseChat}
+              className="scale-75"
+            />
           </div>
         </div>
       </div>
-      
+
       {/* Right side for icons */}
       <div className="flex-1 p-2 flex flex-wrap content-start gap-2 overflow-y-auto">
-        {displayTypes.map(display => (
-           <button 
-             key={display.displayMode} 
-             onClick={() => tester.openWithDisplayType(display.displayMode)}
-             title={display.note}
-             className="flex flex-col items-center justify-center gap-1.5 w-[84px] h-[84px] bg-muted/10 hover:bg-muted/30 border border-transparent hover:border-border rounded-xl transition-all shrink-0"
-           >
-             {display.icon && <display.icon className={`w-7 h-7 ${display.color}`} />}
-             <span className="text-[10px] text-center leading-tight truncate w-full px-1">{display.name}</span>
-           </button>
+        {displayTypes.map((display) => (
+          <button
+            key={display.displayMode}
+            onClick={() => tester.openWithDisplayType(display.displayMode)}
+            title={display.note}
+            className="flex flex-col items-center justify-center gap-1.5 w-[84px] h-[84px] bg-muted/10 hover:bg-muted/30 border border-transparent hover:border-border rounded-xl transition-all shrink-0"
+          >
+            {display.icon && (
+              <display.icon className={`w-7 h-7 ${display.color}`} />
+            )}
+            <span className="text-[10px] text-center leading-tight truncate w-full px-1">
+              {display.name}
+            </span>
+          </button>
         ))}
       </div>
-      
+
       {tester.instance && (
         <AgentExecutionTestModal
           isOpen={tester.testModalOpen}
@@ -967,20 +1213,18 @@ export function CreatorRunPanel({
   }, [dispatch, runSettingsEntry, runSettingsId]);
 
   const latestStats = useAppSelector(selectLatestCompletionStats(instanceId));
-  const aggregate = useAppSelector(selectAggregateStats(instanceId));
   const latestClientMetrics = useAppSelector(
     selectLatestClientMetrics(instanceId),
   );
-  const aggregateClientMetrics = useAppSelector(
-    selectAggregateClientMetrics(instanceId),
-  );
   const conversationTitle = useAppSelector(selectConversationTitle(instanceId));
-  const latestRequestId = useAppSelector(selectLatestRequestId(instanceId));
-  const timelineTiming = useAppSelector(
-    latestRequestId
-      ? selectTimelineDerivedTiming(latestRequestId)
-      : () => undefined,
-  );
+  // Session count across ALL instances for the tab label
+  const totalRequestCount = useAppSelector((state) => {
+    let count = 0;
+    for (const id of state.executionInstances.allInstanceIds) {
+      count += (state.activeRequests.byInstanceId[id] ?? []).length;
+    }
+    return count;
+  });
 
   const handleExpand = useCallback(() => setIsExpanded(true), []);
   const handleCollapse = useCallback(() => setIsExpanded(false), []);
@@ -1002,6 +1246,8 @@ export function CreatorRunPanel({
           title="Stream Debug"
           initialRect={{ width: 680, height: 720 }}
           onClose={() => setStreamDebugWindowOpen(false)}
+          urlSyncKey="debug"
+          urlSyncId={instanceId}
         >
           <StreamDebugPanel instanceId={instanceId} />
         </WindowPanel>
@@ -1012,6 +1258,8 @@ export function CreatorRunPanel({
           title="Run Settings"
           initialRect={{ width: 420, height: 480 }}
           onClose={() => setRunSettingsWindowOpen(false)}
+          urlSyncKey="run_settings"
+          urlSyncId={instanceId}
         >
           <div className="p-3">
             <RunSettingsEditor instanceId={instanceId} />
@@ -1060,9 +1308,7 @@ export function CreatorRunPanel({
     {
       id: "session",
       label:
-        aggregate.requestCount > 0
-          ? `Session (${aggregate.requestCount})`
-          : "Session",
+        totalRequestCount > 0 ? `Session (${totalRequestCount})` : "Session",
     },
     { id: "client", label: "Client" },
     { id: "test_displays", label: "Test Displays" },
@@ -1093,7 +1339,7 @@ export function CreatorRunPanel({
           </div>
 
           {/* Clickable space that expands to fill remaining width */}
-          <div 
+          <div
             className="flex-1 self-stretch cursor-pointer"
             onClick={handleCollapse}
             title="Collapse panel"
@@ -1129,15 +1375,9 @@ export function CreatorRunPanel({
           {activeTab === "sysprompt" && (
             <SystemPromptTab instanceId={instanceId} />
           )}
-          {activeTab === "last" && <LastRequestPanel stats={latestStats} />}
+          {activeTab === "last" && <LastRequestPanel instanceId={instanceId} />}
           {activeTab === "session" && <SessionPanel instanceId={instanceId} />}
-          {activeTab === "client" && (
-            <ClientPanel
-              metrics={latestClientMetrics}
-              aggregateClient={aggregateClientMetrics}
-              timelineTiming={timelineTiming}
-            />
-          )}
+          {activeTab === "client" && <ClientPanel instanceId={instanceId} />}
           {activeTab === "test_displays" && (
             <TestDisplaysTab instanceId={instanceId} />
           )}

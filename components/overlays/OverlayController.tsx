@@ -302,6 +302,57 @@ const AgentExecutionOverlay = dynamic(
   { ssr: false },
 );
 
+const StateViewerOverlay = dynamic(
+  () => import("@/components/admin/state-analyzer/StateViewerOverlay"),
+  { ssr: false },
+);
+
+const JsonTruncatorDialog = dynamic(
+  () =>
+    import("@/components/official-candidate/json-truncator/JsonTruncatorDialog"),
+  { ssr: false },
+);
+
+const StateViewerWindow = dynamic(
+  () => import("@/components/admin/state-analyzer/StateViewerWindow"),
+  { ssr: false },
+);
+
+const MarkdownEditorWindow = dynamic(
+  () => import("@/components/official-candidate/floating-window-panel/windows/MarkdownEditorWindow"),
+  { ssr: false }
+);
+
+const UserPreferencesWindow = dynamic(
+  () => import("@/components/official-candidate/floating-window-panel/windows/UserPreferencesWindow"),
+  { ssr: false }
+);
+
+const QuickTasksWindow = dynamic(
+  () => import("@/components/official-candidate/floating-window-panel/windows/QuickTasksWindow"),
+  { ssr: false }
+);
+
+const QuickFilesWindow = dynamic(
+  () => import("@/components/official-candidate/floating-window-panel/windows/QuickFilesWindow"),
+  { ssr: false }
+);
+
+const QuickDataWindow = dynamic(
+  () => import("@/components/official-candidate/floating-window-panel/windows/QuickDataWindow"),
+  { ssr: false }
+);
+
+const EmailDialogWindow = dynamic(
+  () => import("@/components/official-candidate/floating-window-panel/windows/EmailDialogWindow"),
+  { ssr: false }
+);
+
+const ShareModalWindow = dynamic(
+  () => import("@/components/official-candidate/floating-window-panel/windows/ShareModalWindow"),
+  { ssr: false }
+);
+
 // ============================================================================
 // OVERLAY CONTROLLER
 // ============================================================================
@@ -375,6 +426,35 @@ export const OverlayController: React.FC = () => {
   const streamDebugData = useAppSelector((s) =>
     selectOverlayData(s, "streamDebug"),
   );
+  const isJsonTruncatorOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "jsonTruncator"),
+  );
+  const jsonTruncatorData = useAppSelector((s) =>
+    selectOverlayData(s, "jsonTruncator"),
+  );
+  const isAdminStateAnalyzerOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "adminStateAnalyzer"),
+  );
+
+  // ── Window Instances ────────────────────────
+  const isAdminStateAnalyzerWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "adminStateAnalyzerWindow"));
+  
+  const isMarkdownEditorWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "markdownEditorWindow"));
+  const markdownEditorWindowData = useAppSelector((s) => selectOverlayData(s, "markdownEditorWindow"));
+
+  const isUserPreferencesWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "userPreferencesWindow"));
+  const userPreferencesWindowData = useAppSelector((s) => selectOverlayData(s, "userPreferencesWindow"));
+
+  const isQuickTasksWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "quickTasksWindow"));
+  const isQuickDataWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "quickDataWindow"));
+  const isQuickFilesWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "quickFilesWindow"));
+  
+  const isEmailDialogWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "emailDialogWindow"));
+  const emailDialogWindowData = useAppSelector((s) => selectOverlayData(s, "emailDialogWindow"));
+
+  const isShareModalWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "shareModalWindow"));
+  const shareModalWindowData = useAppSelector((s) => selectOverlayData(s, "shareModalWindow"));
+
 
   // ── Instanced overlay selectors — returns all open instances ────────────
   const htmlPreviewInstances = useAppSelector((s) =>
@@ -666,6 +746,24 @@ export const OverlayController: React.FC = () => {
             instanceId={(streamDebugData as { instanceId: string }).instanceId}
           />
         )}
+
+      {isJsonTruncatorOpen && (
+        <JsonTruncatorDialog
+          isOpen={true}
+          onClose={() => close("jsonTruncator")}
+          initialValue={
+            (jsonTruncatorData as { initialValue?: string } | null)
+              ?.initialValue || "{}"
+          }
+        />
+      )}
+
+      {isAdminStateAnalyzerOpen && (
+        <StateViewerOverlay
+          isOpen={true}
+          onClose={() => close("adminStateAnalyzer")}
+        />
+      )}
 
       {/* ── Instanced overlays — .map() renders each open instance ─────── */}
       {/* Each instance gets a stable key so React correctly reconciles them. */}

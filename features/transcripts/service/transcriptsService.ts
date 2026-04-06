@@ -366,13 +366,17 @@ export async function finalizeDraft(
 /**
  * Get all draft transcripts for current user
  */
-export async function getDraftTranscripts(): Promise<Transcript[]> {
+export async function getDraftTranscripts(
+  limit: number = 20,
+  offset: number = 0
+): Promise<Transcript[]> {
   const { data, error } = await supabase
     .from("transcripts")
     .select("*")
     .eq("is_deleted", false)
     .eq("is_draft", true)
-    .order("draft_saved_at", { ascending: false });
+    .order("draft_saved_at", { ascending: false })
+    .range(offset, offset + limit - 1);
 
   if (error) {
     console.error("Error fetching draft transcripts:", error);

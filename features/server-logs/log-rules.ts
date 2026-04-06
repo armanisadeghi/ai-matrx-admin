@@ -227,6 +227,10 @@ export function categoryToColor(cat: LogCategory, fallback: string): string {
 }
 
 export function deriveColor(level: LogLevel, category: LogCategory): string {
+  // ERROR, WARNING, and CRITICAL always use their level color — no category can override.
+  if (level === "ERROR" || level === "CRITICAL" || level === "WARNING") {
+    return levelToColor(level);
+  }
   const lc = levelToColor(level);
   return category !== "general" &&
     category !== "unknown" &&

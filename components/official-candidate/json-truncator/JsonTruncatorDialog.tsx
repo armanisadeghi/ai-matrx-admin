@@ -14,18 +14,18 @@
  *   />
  */
 
-import React from "react";
-import FullScreenOverlay from "@/components/official/FullScreenOverlay";
+import { WindowPanel, type WindowPanelProps } from "@/components/official-candidate/floating-window-panel/WindowPanel";
 import {
   JsonTruncator,
   type JsonTruncatorProps,
   type JsonTruncatorTab,
 } from "./JsonTruncator";
 
-export interface JsonTruncatorDialogProps extends JsonTruncatorProps {
-  isOpen: boolean;
+export interface JsonTruncatorDialogProps extends JsonTruncatorProps, Omit<WindowPanelProps, "children" | "title" | "id"> {
+  isOpen?: boolean;
   onClose: () => void;
   title?: string;
+  id?: string;
   /** Which tab to show inside the overlay. Defaults to "fields" since the
    *  caller likely pre-loaded data and wants to jump straight to analysis. */
   defaultTab?: JsonTruncatorTab;
@@ -41,40 +41,34 @@ export function JsonTruncatorDialog({
   defaultAutoThreshold,
   defaultArrayKeep,
   defaultMaxDepth,
+  id = "json-truncator-window",
+  ...windowProps
 }: JsonTruncatorDialogProps) {
-  // The overlay requires a tabs array. We hand it a single full-height tab
-  // that contains the truncator rendered in tabbed mode so the user can
-  // switch between Input / Fields / Output within the overlay.
-  const tabs = [
-    {
-      id: "truncator",
-      label: "Truncator",
-      content: (
-        <JsonTruncator
-          initialValue={initialValue}
-          tabbed
-          defaultTab={defaultTab}
-          className="h-full"
-          defaultAutoThreshold={defaultAutoThreshold}
-          defaultArrayKeep={defaultArrayKeep}
-          defaultMaxDepth={defaultMaxDepth}
-        />
-      ),
-      className: "p-0 overflow-hidden",
-    },
-  ];
+  if (isOpen === false) return null;
 
   return (
-    <FullScreenOverlay
-      isOpen={isOpen}
-      onClose={onClose}
+    <WindowPanel
+      id={id}
       title={title}
-      tabs={tabs}
-      hideTitle={false}
-      showCancelButton
-      cancelButtonLabel="Close"
-      onCancel={onClose}
-    />
+      onClose={onClose}
+      initialRect={{ width: 800, height: 600 }}
+      minWidth={400}
+      minHeight={300}
+      bodyClassName="p-0 overflow-hidden"
+      urlSyncKey="json_truncator"
+      urlSyncId="default"
+      {...windowProps}
+    >
+      <JsonTruncator
+        initialValue={initialValue}
+        tabbed
+        defaultTab={defaultTab}
+        className="h-full"
+        defaultAutoThreshold={defaultAutoThreshold}
+        defaultArrayKeep={defaultArrayKeep}
+        defaultMaxDepth={defaultMaxDepth}
+      />
+    </WindowPanel>
   );
 }
 

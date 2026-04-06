@@ -3,34 +3,50 @@
 /**
  * AgentConversationDisplay
  *
- * Renders the full conversation history for an execution instance using
- * the same PromptUserMessage and PromptAssistantMessage components as the
- * rest of the app — so markdown, code blocks, and all rich content rendering
- * are identical.
+ * Renders the full conversation history for an execution instance.
  *
- * While a response is in-flight, AgentStreamingMessage is appended.
- * Once the stream ends, executeInstance commits the turn to history and
- * the streaming message is replaced by a permanent PromptAssistantMessage.
+ * CRITICAL DESIGN: The streaming message is rendered as part of a unified
+ * displayMessages array — NOT as a conditional sibling. This means the
+ * streaming AgentAssistantMessage never unmounts when the stream completes
+ * and the turn is committed to history. The component simply transitions
+ * from streaming content to committed content in the same slot, avoiding
+ * any flash or re-render of previous messages.
  *
- * Prop: instanceId only.
+ * Pattern borrowed from PromptBuilderRightPanel which handles this correctly.
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectConversationTurns } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
-import { selectStreamPhase } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
-import { AgentStreamingMessage } from "./AgentStreamingMessage";
+import {
+  selectStreamPhase,
+  selectLatestAccumulatedText,
+  selectLatestInfoUserMessage,
+  selectLatestError,
+} from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { AgentUserMessage } from "./AgentUserMessage";
-import { Webhook } from "lucide-react";
 
-const PromptAssistantMessage = dynamic(
+const AgentAssistantMessage = dynamic(
   () =>
-    import("@/features/prompts/components/builder/PromptAssistantMessage").then(
-      (m) => ({ default: m.PromptAssistantMessage }),
-    ),
+    import("./AgentAssistantMessage").then((m) => ({
+      default: m.AgentAssistantMessage,
+    })),
   { ssr: false },
 );
+import { AgentPlanningIndicator } from "./AgentPlanningIndicator";
+import { AgentStatusIndicator } from "./AgentStatusIndicator";
+import { Webhook } from "lucide-react";
+
+interface DisplayMessage {
+  key: string;
+  role: "user" | "assistant" | "system" | "status";
+  content: string;
+  contentBlocks?: Array<Record<string, unknown>>;
+  isStreamActive: boolean;
+  error?: string | null;
+  infoMessage?: string | null;
+}
 
 interface AgentConversationDisplayProps {
   instanceId: string;
@@ -45,6 +61,9 @@ export function AgentConversationDisplay({
 }: AgentConversationDisplayProps) {
   const turns = useAppSelector(selectConversationTurns(instanceId));
   const phase = useAppSelector(selectStreamPhase(instanceId));
+  const streamingText = useAppSelector(selectLatestAccumulatedText(instanceId));
+  const infoMessage = useAppSelector(selectLatestInfoUserMessage(instanceId));
+  const error = useAppSelector(selectLatestError(instanceId));
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const isActive =
@@ -54,11 +73,50 @@ export function AgentConversationDisplay({
     phase === "interstitial" ||
     phase === "error";
 
+  const displayMessages = useMemo((): DisplayMessage[] => {
+    const msgs: DisplayMessage[] = turns.map((turn) => ({
+      key: turn.turnId,
+      role: turn.role,
+      content: turn.content,
+      contentBlocks: turn.contentBlocks,
+      isStreamActive: false,
+    }));
+
+    if (isActive) {
+      if (phase === "connecting" || phase === "pre_token") {
+        msgs.push({
+          key: "__streaming__",
+          role: "status",
+          content: "",
+          isStreamActive: true,
+        });
+      } else if (phase === "text_streaming" || phase === "interstitial") {
+        msgs.push({
+          key: "__streaming__",
+          role: "assistant",
+          content: streamingText ?? "",
+          isStreamActive: true,
+          infoMessage: phase === "interstitial" ? infoMessage : null,
+        });
+      } else if (phase === "error") {
+        msgs.push({
+          key: "__streaming__",
+          role: "assistant",
+          content: streamingText ?? "",
+          isStreamActive: false,
+          error: error ?? "An error occurred during streaming.",
+        });
+      }
+    }
+
+    return msgs;
+  }, [turns, isActive, phase, streamingText, infoMessage, error]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [turns.length, isActive]);
+  }, [displayMessages.length, isActive]);
 
-  if (turns.length === 0 && !isActive) {
+  if (displayMessages.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-6 py-12">
         <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
@@ -74,40 +132,49 @@ export function AgentConversationDisplay({
     );
   }
 
-  // Build a flat message list: user turn then assistant turn, alternating.
-  // turns[] from the slice has individual role-based entries, so just iterate.
   const spacingClass = compact ? "space-y-2 pt-0 pb-2" : "space-y-6 pt-0 pb-4";
 
   return (
     <div className={`${spacingClass} px-4`}>
-      {turns.map((turn, idx) =>
-        turn.role === "user" ? (
-          <AgentUserMessage
-            key={turn.turnId}
-            content={turn.content}
-            contentBlocks={turn.contentBlocks}
-            messageIndex={idx}
-            compact={compact}
-          />
-        ) : turn.role === "assistant" ? (
-          <PromptAssistantMessage
-            key={turn.turnId}
-            content={turn.content}
-            messageIndex={idx}
-            isStreamActive={false}
-            compact={compact}
-          />
-        ) : null,
-      )}
+      {displayMessages.map((msg, idx) => {
+        if (msg.role === "user") {
+          return (
+            <AgentUserMessage
+              key={msg.key}
+              content={msg.content}
+              contentBlocks={msg.contentBlocks}
+              messageIndex={idx}
+              compact={compact}
+            />
+          );
+        }
 
-      {/* Live streaming turn — isolated to avoid parent re-renders on each chunk */}
-      {isActive && (
-        <AgentStreamingMessage
-          instanceId={instanceId}
-          messageIndex={turns.length}
-          compact={compact}
-        />
-      )}
+        if (msg.role === "status") {
+          return <AgentPlanningIndicator key={msg.key} compact={compact} />;
+        }
+
+        if (msg.role === "assistant") {
+          return (
+            <div key={msg.key}>
+              <AgentAssistantMessage
+                content={msg.content}
+                messageIndex={idx}
+                isStreamActive={msg.isStreamActive}
+                compact={compact}
+                error={msg.error}
+              />
+              {msg.isStreamActive && msg.infoMessage && (
+                <AgentStatusIndicator
+                  message={msg.infoMessage}
+                  compact={compact}
+                />
+              )}
+            </div>
+          );
+        }
+
+        return null;
+      })}
 
       <div ref={bottomRef} />
     </div>

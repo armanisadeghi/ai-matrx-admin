@@ -12,13 +12,15 @@ import { registerSyncEntry, unregisterSyncEntry } from "@/lib/redux/slices/urlSy
  * @param instanceId The unique UUID or identifier of this specific panel instance
  * @param args Additional metadata required to perfectly restore the panel (e.g. { v: "fc" })
  */
-export function useUrlSync(typeKey: string, instanceId: string, args?: Record<string, string>) {
+export function useUrlSync(typeKey?: string, instanceId?: string, args?: Record<string, string>) {
     const dispatch = useAppDispatch();
     
     // Convert args to a stable string for dependency comparison
     const argsKey = args ? Object.keys(args).sort().map(k => `${k}=${args[k]}`).join('&') : '';
 
     useEffect(() => {
+        if (!typeKey || !instanceId) return;
+
         dispatch(registerSyncEntry({ typeKey, instanceId, args }));
         
         return () => {

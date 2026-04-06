@@ -1236,6 +1236,10 @@ function McpToolsTab({ agentId }: { agentId: string }) {
   const [showCatalog, setShowCatalog] = useState(false);
   const [search, setSearch] = useState("");
   const [expandedServer, setExpandedServer] = useState<string | null>(null);
+  const [oauthFeedback, setOauthFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const agentServerSet = useMemo(
     () => new Set(agentMcpServers),
@@ -1252,6 +1256,29 @@ function McpToolsTab({ agentId }: { agentId: string }) {
       dispatch(fetchCatalog());
     }
   }, [catalogStatus, dispatch]);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data;
+      if (data?.type === "mcp_oauth_complete") {
+        dispatch(fetchCatalog());
+        setOauthFeedback({
+          type: "success",
+          message: "Connected successfully!",
+        });
+        setTimeout(() => setOauthFeedback(null), 5000);
+      } else if (data?.type === "mcp_oauth_error") {
+        setOauthFeedback({
+          type: "error",
+          message: data.error ?? "OAuth connection failed",
+        });
+        setTimeout(() => setOauthFeedback(null), 10000);
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [dispatch]);
 
   const addToAgent = useCallback(
     (serverId: string) => {
@@ -1310,9 +1337,33 @@ function McpToolsTab({ agentId }: { agentId: string }) {
     );
   }
 
+  const feedbackBanner = oauthFeedback && (
+    <div
+      className={`mx-3 mt-3 p-2.5 rounded border text-[11px] flex items-center gap-2 ${
+        oauthFeedback.type === "success"
+          ? "border-green-500/30 bg-green-500/10 text-green-600 dark:text-green-400"
+          : "border-destructive/30 bg-destructive/5 text-destructive"
+      }`}
+    >
+      {oauthFeedback.type === "success" ? (
+        <Check className="w-3.5 h-3.5 shrink-0" />
+      ) : (
+        <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+      )}
+      <span className="flex-1">{oauthFeedback.message}</span>
+      <button
+        onClick={() => setOauthFeedback(null)}
+        className="text-current opacity-60 hover:opacity-100"
+      >
+        <X className="w-3 h-3" />
+      </button>
+    </div>
+  );
+
   if (agentCatalogEntries.length === 0 && catalogStatus !== "loading") {
     return (
       <div className="flex flex-col h-full overflow-hidden">
+        {feedbackBanner}
         <div className="flex-1 flex flex-col items-center justify-center gap-4 text-muted-foreground px-8">
           <div className="p-4 rounded-full bg-muted/40">
             <Plug className="w-10 h-10 opacity-40" />
@@ -1341,6 +1392,7 @@ function McpToolsTab({ agentId }: { agentId: string }) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
+      {feedbackBanner}
       <div className="px-4 py-3 border-b border-border shrink-0 flex items-center justify-between">
         <div>
           <p className="text-xs font-semibold text-foreground">
@@ -2305,15 +2357,22 @@ function McpCatalogCard({
 }) {
   const badge = connectionBadge(entry.connectionStatus);
   const isConnecting = connectingServerId === entry.serverId;
+  const isComingSoon = entry.serverStatus === "coming_soon";
+  const noEndpoint = !entry.endpointUrl;
+  const isUnavailable = isComingSoon || noEndpoint;
   const needsAuth =
-    entry.authStrategy !== "none" && entry.connectionStatus !== "connected";
+    entry.authStrategy !== "none" &&
+    entry.connectionStatus !== "connected" &&
+    !isUnavailable;
 
   return (
     <div
       className={`rounded-lg border transition-all px-3 py-2.5 ${
-        isOnAgent
-          ? "bg-primary/5 border-primary/20"
-          : "bg-card border-border hover:border-primary/20"
+        isUnavailable
+          ? "bg-muted/20 border-border opacity-70"
+          : isOnAgent
+            ? "bg-primary/5 border-primary/20"
+            : "bg-card border-border hover:border-primary/20"
       }`}
     >
       <div className="flex items-start gap-3">
@@ -2321,7 +2380,7 @@ function McpCatalogCard({
           <img
             src={entry.iconUrl}
             alt=""
-            className="w-7 h-7 rounded mt-0.5 shrink-0 object-contain"
+            className={`w-7 h-7 rounded mt-0.5 shrink-0 object-contain ${isUnavailable ? "grayscale" : ""}`}
           />
         ) : (
           <div
@@ -2345,12 +2404,21 @@ function McpCatalogCard({
                 Official
               </Badge>
             )}
-            <Badge
-              variant="outline"
-              className={`text-[9px] h-4 px-1.5 border ${badge.cls}`}
-            >
-              {badge.label}
-            </Badge>
+            {isComingSoon ? (
+              <Badge
+                variant="outline"
+                className="text-[9px] h-4 px-1.5 border bg-muted/40 text-muted-foreground"
+              >
+                Coming Soon
+              </Badge>
+            ) : (
+              <Badge
+                variant="outline"
+                className={`text-[9px] h-4 px-1.5 border ${badge.cls}`}
+              >
+                {badge.label}
+              </Badge>
+            )}
             {isOnAgent && (
               <Badge
                 variant="outline"
@@ -2380,7 +2448,7 @@ function McpCatalogCard({
         </div>
 
         <div className="flex flex-col items-end gap-1 shrink-0">
-          {!isOnAgent && (
+          {!isOnAgent && !isUnavailable && (
             <Button size="sm" className="h-6 text-[10px] px-2" onClick={onAdd}>
               <Plus className="w-3 h-3 mr-0.5" />
               Add

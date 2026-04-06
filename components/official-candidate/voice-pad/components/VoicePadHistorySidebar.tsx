@@ -14,7 +14,7 @@ export function VoicePadHistorySidebar({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getDraftTranscripts()
+    getDraftTranscripts(20)
       .then(data => {
         setTranscripts(data);
         setLoading(false);

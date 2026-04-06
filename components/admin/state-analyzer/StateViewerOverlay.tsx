@@ -33,58 +33,87 @@ const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({
   // Get the complete Redux state using our custom hook
   const completeState = useCompleteState();
 
-  // Create tabs based on the exact slices from your root reducer
+  // One tab per top-level key in createRootReducer (order matches rootReducer.ts)
   const tabs: TabDefinition[] = [
-    // CX list, artifacts, HTML sessions, agent settings — swap GenericSliceViewer for custom viewers later
     {
-      id: "executionInstances",
-      label: "Execution Instances",
+      id: "user",
+      label: "User",
+      content: (
+        <GenericSliceViewer sliceKey="user" state={completeState.user} />
+      ),
+    },
+    {
+      id: "userPreferences",
+      label: "User Preferences",
       content: (
         <GenericSliceViewer
-          sliceKey="executionInstances"
-          state={completeState.executionInstances}
+          sliceKey="userPreferences"
+          state={completeState.userPreferences}
         />
       ),
     },
     {
-      id: "agentShortcuts",
-      label: "Agent Shortcuts",
+      id: "adminDebug",
+      label: "Admin Debug",
       content: (
         <GenericSliceViewer
-          sliceKey="agentShortcuts"
-          state={completeState.agentShortcut}
+          sliceKey="adminDebug"
+          state={completeState.adminDebug}
         />
       ),
     },
     {
-      id: "activeRequests",
-      label: "Active Requests",
+      id: "overlays",
+      label: "Overlays",
       content: (
         <GenericSliceViewer
-          sliceKey="activeRequests"
-          state={completeState.activeRequests}
+          sliceKey="overlays"
+          state={completeState.overlays}
         />
       ),
     },
     {
-      id: "instanceConversationHistory",
-      label: "Instance Conversation History",
+      id: "overlayData",
+      label: "Overlay Data",
       content: (
         <GenericSliceViewer
-          sliceKey="instanceConversationHistory"
-          state={completeState.instanceConversationHistory}
+          sliceKey="overlayData"
+          state={completeState.overlayData}
         />
       ),
     },
-
     {
-      id: "cxConversations",
-      label: "CX Conversations",
+      id: "voicePad",
+      label: "Voice Pad",
       content: (
         <GenericSliceViewer
-          sliceKey="cxConversations"
-          state={completeState.cxConversations}
+          sliceKey="voicePad"
+          state={completeState.voicePad}
         />
+      ),
+    },
+    {
+      id: "windowManager",
+      label: "Window Manager",
+      content: (
+        <GenericSliceViewer
+          sliceKey="windowManager"
+          state={completeState.windowManager}
+        />
+      ),
+    },
+    {
+      id: "urlSync",
+      label: "URL Sync",
+      content: (
+        <GenericSliceViewer sliceKey="urlSync" state={completeState.urlSync} />
+      ),
+    },
+    {
+      id: "canvas",
+      label: "Canvas",
+      content: (
+        <GenericSliceViewer sliceKey="canvas" state={completeState.canvas} />
       ),
     },
     {
@@ -108,226 +137,59 @@ const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({
       ),
     },
     {
-      id: "agentSettings",
-      label: "Agent Settings",
+      id: "textDiff",
+      label: "Text Diff",
       content: (
         <GenericSliceViewer
-          sliceKey="agentSettings"
-          state={completeState.agentSettings}
+          sliceKey="textDiff"
+          state={completeState.textDiff}
         />
       ),
     },
     {
-      id: "appContext",
-      label: "App Context",
+      id: "noteVersions",
+      label: "Note Versions",
       content: (
         <GenericSliceViewer
-          sliceKey="appContext"
-          state={completeState.appContext}
+          sliceKey="noteVersions"
+          state={completeState.noteVersions}
         />
+      ),
+    },
+    {
+      id: "sms",
+      label: "SMS",
+      content: <GenericSliceViewer sliceKey="sms" state={completeState.sms} />,
+    },
+    {
+      id: "theme",
+      label: "Theme",
+      content: (
+        <GenericSliceViewer sliceKey="theme" state={completeState.theme} />
       ),
     },
 
-    // Agent execution system (per-instance slices) — placeholders for dedicated viewers
-    {
-      id: "instanceUIState",
-      label: "Instance UI State",
+    ...Object.keys(featureSchemas).map((key) => ({
+      id: `feature-${key}`,
+      label: `Feature: ${key}`,
       content: (
         <GenericSliceViewer
-          sliceKey="instanceUIState"
-          state={completeState.instanceUIState}
+          sliceKey={key}
+          state={completeState[key as keyof RootState]}
         />
       ),
-    },
-    {
-      id: "instanceClientTools",
-      label: "Instance Client Tools",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceClientTools"
-          state={completeState.instanceClientTools}
-        />
-      ),
-    },
-    {
-      id: "instanceContext",
-      label: "Instance Context",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceContext"
-          state={completeState.instanceContext}
-        />
-      ),
-    },
-    {
-      id: "instanceModelOverrides",
-      label: "Instance Model Overrides",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceModelOverrides"
-          state={completeState.instanceModelOverrides}
-        />
-      ),
-    },
-    {
-      id: "instanceVariableValues",
-      label: "Instance Variable Values",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceVariableValues"
-          state={completeState.instanceVariableValues}
-        />
-      ),
-    },
-    {
-      id: "instanceResources",
-      label: "Instance Resources",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceResources"
-          state={completeState.instanceResources}
-        />
-      ),
-    },
-    {
-      id: "instanceUserInput",
-      label: "Instance User Input",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceUserInput"
-          state={completeState.instanceUserInput}
-        />
-      ),
-    },
+    })),
 
-    {
-      id: "workflows",
-      label: "Workflows",
+    ...Object.keys(moduleSchemas).map((key) => ({
+      id: `module-${key}`,
+      label: `Module: ${key}`,
       content: (
         <GenericSliceViewer
-          sliceKey="workflows"
-          state={completeState.workflows}
+          sliceKey={key}
+          state={completeState[key as keyof RootState]}
         />
       ),
-    },
-    {
-      id: "workflowNodes",
-      label: "Workflow Nodes",
-      content: (
-        <GenericSliceViewer
-          sliceKey="workflowNodes"
-          state={completeState.workflowNodes}
-        />
-      ),
-    },
-    {
-      id: "customAppletRuntime",
-      label: "Custom Applet Runtime",
-      content: (
-        <AppletRuntimeViewer
-          sliceKey="customAppletRuntime"
-          state={completeState.customAppletRuntime}
-        />
-      ),
-    },
-    {
-      id: "customAppRuntime",
-      label: "Custom App Runtime",
-      content: (
-        <GenericSliceViewer
-          sliceKey="customAppRuntime"
-          state={completeState.customAppRuntime}
-        />
-      ),
-    },
-    {
-      id: "broker",
-      label: "Broker",
-      content: (
-        <GenericSliceViewer sliceKey="broker" state={completeState.broker} />
-      ),
-    },
-    {
-      id: "appBuilder",
-      label: "App Builder",
-      content: (
-        <GenericSliceViewer
-          sliceKey="appBuilder"
-          state={completeState.appBuilder}
-        />
-      ),
-    },
-    {
-      id: "appletBuilder",
-      label: "Applet Builder",
-      content: (
-        <GenericSliceViewer
-          sliceKey="appletBuilder"
-          state={completeState.appletBuilder}
-        />
-      ),
-    },
-    {
-      id: "containerBuilder",
-      label: "Container Builder",
-      content: (
-        <GenericSliceViewer
-          sliceKey="containerBuilder"
-          state={completeState.containerBuilder}
-        />
-      ),
-    },
-    {
-      id: "fieldBuilder",
-      label: "Field Builder",
-      content: (
-        <GenericSliceViewer
-          sliceKey="fieldBuilder"
-          state={completeState.fieldBuilder}
-        />
-      ),
-    },
-
-    {
-      id: "socketConnections",
-      label: "Socket Connections",
-      content: (
-        <GenericSliceViewer
-          sliceKey="socketConnections"
-          state={completeState.socketConnections}
-        />
-      ),
-    },
-    {
-      id: "socketResponse",
-      label: "Socket Response",
-      content: (
-        <GenericSliceViewer
-          sliceKey="socketResponse"
-          state={completeState.socketResponse}
-        />
-      ),
-    },
-    {
-      id: "socketTasks",
-      label: "Socket Tasks",
-      content: (
-        <GenericSliceViewer
-          sliceKey="socketTasks"
-          state={completeState.socketTasks}
-        />
-      ),
-    },
-    {
-      id: "componentDefinitions",
-      label: "Component Definitions",
-      content: (
-        <GenericSliceViewer
-          sliceKey="componentDefinitions"
-          state={completeState.componentDefinitions}
-        />
-      ),
-    },
+    })),
 
     {
       id: "fileSystem",
@@ -374,34 +236,10 @@ const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({
       ),
     },
     {
-      id: "theme",
-      label: "Theme",
-      content: (
-        <GenericSliceViewer sliceKey="theme" state={completeState.theme} />
-      ),
-    },
-    {
       id: "form",
       label: "Form",
       content: (
         <GenericSliceViewer sliceKey="form" state={completeState.form} />
-      ),
-    },
-    {
-      id: "user",
-      label: "User",
-      content: (
-        <GenericSliceViewer sliceKey="user" state={completeState.user} />
-      ),
-    },
-    {
-      id: "userPreferences",
-      label: "User Preferences",
-      content: (
-        <GenericSliceViewer
-          sliceKey="userPreferences"
-          state={completeState.userPreferences}
-        />
       ),
     },
     {
@@ -425,13 +263,6 @@ const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({
       ),
     },
     {
-      id: "aiChat",
-      label: "AI Chat",
-      content: (
-        <GenericSliceViewer sliceKey="aiChat" state={completeState.aiChat} />
-      ),
-    },
-    {
       id: "globalCache",
       label: "Global Cache",
       content: (
@@ -446,33 +277,18 @@ const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({
       label: "UI",
       content: <GenericSliceViewer sliceKey="ui" state={completeState.ui} />,
     },
-    // @ts-ignore - Notes and tags may not exist in RootState
-    {
-      id: "notes",
-      label: "Notes",
-      content: (
-        <GenericSliceViewer
-          sliceKey="notes"
-          state={(completeState as any).notes}
-        />
-      ),
-    },
-    // @ts-ignore - Notes and tags may not exist in RootState
-    {
-      id: "tags",
-      label: "Tags",
-      content: (
-        <GenericSliceViewer
-          sliceKey="tags"
-          state={(completeState as any).tags}
-        />
-      ),
-    },
     {
       id: "storage",
       label: "Storage",
       content: (
         <GenericSliceViewer sliceKey="storage" state={completeState.storage} />
+      ),
+    },
+    {
+      id: "aiChat",
+      label: "AI Chat",
+      content: (
+        <GenericSliceViewer sliceKey="aiChat" state={completeState.aiChat} />
       ),
     },
     {
@@ -515,19 +331,468 @@ const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({
         />
       ),
     },
-
-    ...Object.keys(featureSchemas).map((key) => ({
-      id: `feature-${key}`,
-      label: `Feature: ${key}`,
-      content: <GenericSliceViewer sliceKey={key} state={completeState[key]} />,
-    })),
-
-    // Module reducers - using the imported moduleSchemas
-    ...Object.keys(moduleSchemas).map((key) => ({
-      id: `module-${key}`,
-      label: `Module: ${key}`,
-      content: <GenericSliceViewer sliceKey={key} state={completeState[key]} />,
-    })),
+    {
+      id: "activeChat",
+      label: "Active Chat",
+      content: (
+        <GenericSliceViewer
+          sliceKey="activeChat"
+          state={completeState.activeChat}
+        />
+      ),
+    },
+    {
+      id: "chatConversations",
+      label: "Chat Conversations",
+      content: (
+        <GenericSliceViewer
+          sliceKey="chatConversations"
+          state={completeState.chatConversations}
+        />
+      ),
+    },
+    {
+      id: "messageActions",
+      label: "Message Actions",
+      content: (
+        <GenericSliceViewer
+          sliceKey="messageActions"
+          state={completeState.messageActions}
+        />
+      ),
+    },
+    {
+      id: "socketConnections",
+      label: "Socket Connections",
+      content: (
+        <GenericSliceViewer
+          sliceKey="socketConnections"
+          state={completeState.socketConnections}
+        />
+      ),
+    },
+    {
+      id: "socketResponse",
+      label: "Socket Response",
+      content: (
+        <GenericSliceViewer
+          sliceKey="socketResponse"
+          state={completeState.socketResponse}
+        />
+      ),
+    },
+    {
+      id: "socketTasks",
+      label: "Socket Tasks",
+      content: (
+        <GenericSliceViewer
+          sliceKey="socketTasks"
+          state={completeState.socketTasks}
+        />
+      ),
+    },
+    {
+      id: "componentDefinitions",
+      label: "Component Definitions",
+      content: (
+        <GenericSliceViewer
+          sliceKey="componentDefinitions"
+          state={completeState.componentDefinitions}
+        />
+      ),
+    },
+    {
+      id: "appBuilder",
+      label: "App Builder",
+      content: (
+        <GenericSliceViewer
+          sliceKey="appBuilder"
+          state={completeState.appBuilder}
+        />
+      ),
+    },
+    {
+      id: "appletBuilder",
+      label: "Applet Builder",
+      content: (
+        <GenericSliceViewer
+          sliceKey="appletBuilder"
+          state={completeState.appletBuilder}
+        />
+      ),
+    },
+    {
+      id: "containerBuilder",
+      label: "Container Builder",
+      content: (
+        <GenericSliceViewer
+          sliceKey="containerBuilder"
+          state={completeState.containerBuilder}
+        />
+      ),
+    },
+    {
+      id: "fieldBuilder",
+      label: "Field Builder",
+      content: (
+        <GenericSliceViewer
+          sliceKey="fieldBuilder"
+          state={completeState.fieldBuilder}
+        />
+      ),
+    },
+    {
+      id: "customAppRuntime",
+      label: "Custom App Runtime",
+      content: (
+        <GenericSliceViewer
+          sliceKey="customAppRuntime"
+          state={completeState.customAppRuntime}
+        />
+      ),
+    },
+    {
+      id: "customAppletRuntime",
+      label: "Custom Applet Runtime",
+      content: (
+        <AppletRuntimeViewer
+          sliceKey="customAppletRuntime"
+          state={completeState.customAppletRuntime}
+        />
+      ),
+    },
+    {
+      id: "broker",
+      label: "Broker",
+      content: (
+        <GenericSliceViewer sliceKey="broker" state={completeState.broker} />
+      ),
+    },
+    {
+      id: "contextMenuCache",
+      label: "Context Menu Cache",
+      content: (
+        <GenericSliceViewer
+          sliceKey="contextMenuCache"
+          state={completeState.contextMenuCache}
+        />
+      ),
+    },
+    {
+      id: "agentCache",
+      label: "Agent Cache",
+      content: (
+        <GenericSliceViewer
+          sliceKey="agentCache"
+          state={completeState.agentCache}
+        />
+      ),
+    },
+    {
+      id: "promptCache",
+      label: "Prompt Cache",
+      content: (
+        <GenericSliceViewer
+          sliceKey="promptCache"
+          state={completeState.promptCache}
+        />
+      ),
+    },
+    {
+      id: "promptConsumers",
+      label: "Prompt Consumers",
+      content: (
+        <GenericSliceViewer
+          sliceKey="promptConsumers"
+          state={completeState.promptConsumers}
+        />
+      ),
+    },
+    {
+      id: "promptRunner",
+      label: "Prompt Runner",
+      content: (
+        <GenericSliceViewer
+          sliceKey="promptRunner"
+          state={completeState.promptRunner}
+        />
+      ),
+    },
+    {
+      id: "promptExecution",
+      label: "Prompt Execution",
+      content: (
+        <GenericSliceViewer
+          sliceKey="promptExecution"
+          state={completeState.promptExecution}
+        />
+      ),
+    },
+    {
+      id: "actionCache",
+      label: "Action Cache",
+      content: (
+        <GenericSliceViewer
+          sliceKey="actionCache"
+          state={completeState.actionCache}
+        />
+      ),
+    },
+    {
+      id: "dbFunctionNode",
+      label: "DB Function Node",
+      content: (
+        <GenericSliceViewer
+          sliceKey="dbFunctionNode"
+          state={completeState.dbFunctionNode}
+        />
+      ),
+    },
+    {
+      id: "workflows",
+      label: "Workflows",
+      content: (
+        <GenericSliceViewer
+          sliceKey="workflows"
+          state={completeState.workflows}
+        />
+      ),
+    },
+    {
+      id: "workflowNodes",
+      label: "Workflow Nodes",
+      content: (
+        <GenericSliceViewer
+          sliceKey="workflowNodes"
+          state={completeState.workflowNodes}
+        />
+      ),
+    },
+    {
+      id: "promptEditor",
+      label: "Prompt Editor",
+      content: (
+        <GenericSliceViewer
+          sliceKey="promptEditor"
+          state={completeState.promptEditor}
+        />
+      ),
+    },
+    {
+      id: "messaging",
+      label: "Messaging",
+      content: (
+        <GenericSliceViewer
+          sliceKey="messaging"
+          state={completeState.messaging}
+        />
+      ),
+    },
+    {
+      id: "adminPreferences",
+      label: "Admin Preferences",
+      content: (
+        <GenericSliceViewer
+          sliceKey="adminPreferences"
+          state={completeState.adminPreferences}
+        />
+      ),
+    },
+    {
+      id: "entitySystem",
+      label: "Entity System",
+      content: (
+        <GenericSliceViewer
+          sliceKey="entitySystem"
+          state={completeState.entitySystem}
+        />
+      ),
+    },
+    {
+      id: "agentSettings",
+      label: "Agent Settings",
+      content: (
+        <GenericSliceViewer
+          sliceKey="agentSettings"
+          state={completeState.agentSettings}
+        />
+      ),
+    },
+    {
+      id: "cxConversations",
+      label: "CX Conversations",
+      content: (
+        <GenericSliceViewer
+          sliceKey="cxConversations"
+          state={completeState.cxConversations}
+        />
+      ),
+    },
+    {
+      id: "modelRegistry",
+      label: "Model Registry",
+      content: (
+        <GenericSliceViewer
+          sliceKey="modelRegistry"
+          state={completeState.modelRegistry}
+        />
+      ),
+    },
+    {
+      id: "apiConfig",
+      label: "API Config",
+      content: (
+        <GenericSliceViewer
+          sliceKey="apiConfig"
+          state={completeState.apiConfig}
+        />
+      ),
+    },
+    {
+      id: "agentDefinition",
+      label: "Agent Definition",
+      content: (
+        <GenericSliceViewer
+          sliceKey="agentDefinition"
+          state={completeState.agentDefinition}
+        />
+      ),
+    },
+    {
+      id: "agentShortcut",
+      label: "Agent Shortcuts",
+      content: (
+        <GenericSliceViewer
+          sliceKey="agentShortcut"
+          state={completeState.agentShortcut}
+        />
+      ),
+    },
+    {
+      id: "agentConsumers",
+      label: "Agent Consumers",
+      content: (
+        <GenericSliceViewer
+          sliceKey="agentConsumers"
+          state={completeState.agentConsumers}
+        />
+      ),
+    },
+    {
+      id: "appContext",
+      label: "App Context",
+      content: (
+        <GenericSliceViewer
+          sliceKey="appContext"
+          state={completeState.appContext}
+        />
+      ),
+    },
+    {
+      id: "executionInstances",
+      label: "Execution Instances",
+      content: (
+        <GenericSliceViewer
+          sliceKey="executionInstances"
+          state={completeState.executionInstances}
+        />
+      ),
+    },
+    {
+      id: "instanceModelOverrides",
+      label: "Instance Model Overrides",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceModelOverrides"
+          state={completeState.instanceModelOverrides}
+        />
+      ),
+    },
+    {
+      id: "instanceVariableValues",
+      label: "Instance Variable Values",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceVariableValues"
+          state={completeState.instanceVariableValues}
+        />
+      ),
+    },
+    {
+      id: "instanceResources",
+      label: "Instance Resources",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceResources"
+          state={completeState.instanceResources}
+        />
+      ),
+    },
+    {
+      id: "instanceContext",
+      label: "Instance Context",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceContext"
+          state={completeState.instanceContext}
+        />
+      ),
+    },
+    {
+      id: "instanceUserInput",
+      label: "Instance User Input",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceUserInput"
+          state={completeState.instanceUserInput}
+        />
+      ),
+    },
+    {
+      id: "instanceClientTools",
+      label: "Instance Client Tools",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceClientTools"
+          state={completeState.instanceClientTools}
+        />
+      ),
+    },
+    {
+      id: "instanceUIState",
+      label: "Instance UI State",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceUIState"
+          state={completeState.instanceUIState}
+        />
+      ),
+    },
+    {
+      id: "activeRequests",
+      label: "Active Requests",
+      content: (
+        <GenericSliceViewer
+          sliceKey="activeRequests"
+          state={completeState.activeRequests}
+        />
+      ),
+    },
+    {
+      id: "instanceConversationHistory",
+      label: "Instance Conversation History",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceConversationHistory"
+          state={completeState.instanceConversationHistory}
+        />
+      ),
+    },
+    {
+      id: "mcp",
+      label: "MCP",
+      content: <GenericSliceViewer sliceKey="mcp" state={completeState.mcp} />,
+    },
   ];
 
   return (
