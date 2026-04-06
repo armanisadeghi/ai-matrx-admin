@@ -5,6 +5,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUrlSyncEntries, setHydrated, selectIsUrlHydrated } from "@/lib/redux/slices/urlSyncSlice";
 import { getHydrator } from "./UrlPanelRegistry";
+import { initUrlHydration } from "./initUrlHydration";
 
 export function serializeParams(entries: ReturnType<typeof selectUrlSyncEntries>): string {
     return Object.values(entries).map(entry => {
@@ -55,6 +56,8 @@ export function UrlPanelManager() {
     useEffect(() => {
         if (initialLoadDone.current) return;
         initialLoadDone.current = true;
+        
+        initUrlHydration();
 
         const panelsParam = searchParams.get("panels");
         if (panelsParam) {
