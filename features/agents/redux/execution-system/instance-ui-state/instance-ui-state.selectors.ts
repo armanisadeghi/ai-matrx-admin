@@ -171,8 +171,20 @@ export const selectShouldShowInput =
 
 export const selectInstanceAgentId =
   (instanceId: string) =>
-  (state: RootState): string | undefined =>
-    state.executionInstances.byInstanceId[instanceId]?.agentId || undefined;
+  (state: RootState): string | undefined => {
+    const inst = state.executionInstances.byInstanceId[instanceId];
+    console.log(
+      "[selectInstanceAgentId] instanceId:",
+      instanceId,
+      "| instance exists:",
+      !!inst,
+      "| agentId:",
+      inst?.agentId,
+      "| all instanceIds:",
+      Object.keys(state.executionInstances.byInstanceId).slice(0, 3),
+    );
+    return inst?.agentId || undefined;
+  };
 
 export const selectInstanceShortcutId =
   (instanceId: string) =>

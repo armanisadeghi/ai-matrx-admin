@@ -15,6 +15,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Search, Menu } from "lucide-react";
 
 interface QuickDataSheetProps {
     onClose?: () => void;
@@ -38,6 +41,8 @@ export function QuickDataSheet({ onClose, className }: QuickDataSheetProps) {
     const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
 
     // Load tables on mount
     useEffect(() => {
@@ -111,67 +116,103 @@ export function QuickDataSheet({ onClose, className }: QuickDataSheetProps) {
     // Get selected table name for display
     const selectedTable = tables.find(t => t.id === selectedTableId);
 
-    return (
-        <div className={cn("flex flex-col h-full", className)}>
-            {/* Compact Header with Table Selector */}
-            <div className="flex items-center gap-2 p-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
-                <Select
-                    value={selectedTableId || undefined}
-                    onValueChange={handleTableChange}
-                >
-                    <SelectTrigger className="flex-1 h-8 text-xs">
-                        <SelectValue placeholder="Select a table">
-                            {selectedTable && (
-                                <span className="flex items-center gap-2">
-                                    <span className="font-medium">{selectedTable.table_name}</span>
-                                    <span className="text-zinc-400">•</span>
-                                    <span className="text-zinc-500 dark:text-zinc-400">
-                                        {selectedTable.row_count} rows
-                                    </span>
-                                </span>
-                            )}
-                        </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent className="max-h-[400px]">
-                        {tables.map((table) => (
-                            <SelectItem key={table.id} value={table.id} className="text-xs">
-                                <div className="flex items-center justify-between gap-4 w-full">
-                                    <span className="font-medium">{table.table_name}</span>
-                                    <span className="text-xs text-zinc-500 dark:text-zinc-400 shrink-0">
-                                        {table.row_count} rows
-                                    </span>
-                                </div>
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+    const sortedTables = [...tables].sort((a, b) => a.table_name.localeCompare(b.table_name));
+    const filteredTables = sortedTables.filter(t => 
+        t.table_name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => window.open('/data', '_blank')}
-                            >
-                                <ExternalLink className="h-4 w-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Open in New Tab</TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
+    return (
+        <div className={cn("flex w-full h-full flex-row overflow-hidden", className)}>
+            {/* Collapsible Sidebar */}
+            <div
+                className={`flex-shrink-0 transition-all duration-300 ease-in-out border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex flex-col ${
+                    sidebarOpen ? "w-64" : "w-0 overflow-hidden border-r-0"
+                }`}
+            >
+                {sidebarOpen && (
+                    <>
+                        <div className="p-3 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+                            <div className="relative">
+                                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search tables..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-8 h-8 text-xs"
+                                />
+                            </div>
+                        </div>
+                        <ScrollArea className="flex-1 w-full relative">
+                            <div className="p-2 space-y-0.5 min-h-[50px]">
+                                {filteredTables.map((table) => (
+                                    <button
+                                        key={table.id}
+                                        onClick={() => handleTableChange(table.id)}
+                                        className={cn(
+                                            "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
+                                            selectedTableId === table.id
+                                                ? "bg-primary text-primary-foreground font-medium flex justify-between items-center shadow-sm"
+                                                : "hover:bg-muted text-muted-foreground hover:text-foreground flex justify-between items-center"
+                                        )}
+                                    >
+                                        <span className="truncate flex-1 pr-2">{table.table_name}</span>
+                                        <span className={cn(
+                                            "text-[10px] shrink-0 font-medium",
+                                            selectedTableId === table.id ? "text-primary-foreground/80" : "text-muted-foreground/60"
+                                        )}>
+                                            {table.row_count}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        </ScrollArea>
+                    </>
+                )}
             </div>
 
-            {/* Table Viewer - Takes full remaining space */}
-            <div className="flex-1 overflow-hidden">
-                {selectedTableId && (
-                    <UserTableViewer
-                        key={selectedTableId}
-                        tableId={selectedTableId}
-                        showTableSelector={false}
-                    />
-                )}
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col min-w-0 min-h-0 bg-background relative">
+                {/* Compact Header */}
+                <div className="flex items-center p-2 border-b border-zinc-200 dark:border-zinc-800 bg-background z-10 shrink-0 shadow-sm">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        className="h-8 w-8 mr-2 shrink-0"
+                        title="Toggle Sidebar"
+                    >
+                        <Menu className="h-4 w-4" />
+                    </Button>
+                    <span className="font-medium text-sm truncate flex-1">
+                        {selectedTable?.table_name || "Select a table"}
+                    </span>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                    onClick={() => window.open('/data', '_blank')}
+                                >
+                                    <ExternalLink className="h-4 w-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Open in New Tab</TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </div>
+
+                {/* Table Viewer - Takes full remaining space */}
+                <div className="flex-1 overflow-auto relative p-2">
+                    {selectedTableId && (
+                        <UserTableViewer
+                            key={selectedTableId}
+                            tableId={selectedTableId}
+                            showTableSelector={false}
+                        />
+                    )}
+                </div>
             </div>
         </div>
     );

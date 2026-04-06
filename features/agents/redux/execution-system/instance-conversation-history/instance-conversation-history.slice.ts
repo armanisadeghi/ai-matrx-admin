@@ -81,6 +81,9 @@ export interface ConversationTurn {
    */
   systemGenerated?: boolean;
 
+  /** Error message when the stream failed (fatal errors) — assistant turns only */
+  errorMessage?: string | null;
+
   /** Editing / forking support (future) */
   isEdited?: boolean;
   originalContent?: string;
@@ -230,6 +233,7 @@ const instanceConversationHistorySlice = createSlice({
         tokenUsage?: TokenUsage;
         finishReason?: string;
         completionStats?: CompletionStats;
+        errorMessage?: string;
       }>,
     ) {
       const {
@@ -240,6 +244,7 @@ const instanceConversationHistorySlice = createSlice({
         tokenUsage,
         finishReason,
         completionStats,
+        errorMessage,
       } = action.payload;
 
       const entry = state.byInstanceId[instanceId];
@@ -264,6 +269,7 @@ const instanceConversationHistorySlice = createSlice({
         ...(tokenUsage && { tokenUsage }),
         ...(finishReason && { finishReason }),
         ...(completionStats && { completionStats }),
+        ...(errorMessage && { errorMessage }),
       });
     },
 

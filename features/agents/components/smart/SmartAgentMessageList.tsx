@@ -139,6 +139,7 @@ export function SmartAgentMessageList({
         showDefinitionMessages &&
         !showDefinitionMessageContent &&
         !!turn.systemGenerated,
+      ...(turn.errorMessage && { error: turn.errorMessage }),
     }));
 
     if (isActive) {

@@ -25,8 +25,8 @@ import {
   selectAllowChat,
   selectNeedsPreExecutionInput,
   selectShouldShowInput,
-  selectInstanceTitle,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import { useInstanceTitle } from "@/features/agents/hooks/useInstanceTitle";
 import { selectInstanceStatus } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
 import {
   selectIsExecuting,
@@ -64,7 +64,7 @@ export function AgentRunner({
     selectNeedsPreExecutionInput(instanceId),
   );
   const shouldShowInput = useAppSelector(selectShouldShowInput(instanceId));
-  const title = useAppSelector(selectInstanceTitle(instanceId));
+  const title = useInstanceTitle(instanceId);
   const status = useAppSelector(selectInstanceStatus(instanceId));
   const isExecuting = useAppSelector(selectIsExecuting(instanceId));
   const hasUserInput = useAppSelector(selectHasUserInput(instanceId));

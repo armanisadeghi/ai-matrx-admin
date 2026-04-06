@@ -1,12 +1,22 @@
-'use client';
+"use client";
 
-import React, { useState, useTransition } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
-import { getRoutesByCategory } from '../file-routes.config';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Loader2 } from 'lucide-react';
+import React, { useState, useTransition } from "react";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { getRoutesByCategory, type FileRoute } from "../file-routes.config";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Loader2 } from "lucide-react";
+
+const groups: {
+  label: string;
+  key: keyof ReturnType<typeof getRoutesByCategory>;
+}[] = [
+  { label: "Overview", key: "overview" },
+  { label: "File Types", key: "fileTypes" },
+  { label: "Buckets", key: "buckets" },
+  { label: "Special", key: "special" },
+];
 
 export function FileManagerSidebar() {
   const router = useRouter();
@@ -15,8 +25,10 @@ export function FileManagerSidebar() {
   const [, startTransition] = useTransition();
   const [navigatingHref, setNavigatingHref] = useState<string | null>(null);
 
-  const handleNavigate = (href: string) => {
-    if (navigatingHref || pathname === href) return; // Prevent duplicate clicks or clicking active route
+  const handleNavigate = (href: string, e?: React.MouseEvent) => {
+    if (e && (e.metaKey || e.ctrlKey)) return;
+    e?.preventDefault();
+    if (navigatingHref || pathname === href) return;
     setNavigatingHref(href);
     startTransition(() => {
       router.push(href);
@@ -24,168 +36,65 @@ export function FileManagerSidebar() {
   };
 
   return (
-    <aside className="w-64 border-r bg-card flex flex-col h-full">
-      <div className="p-4 border-b">
-        <h2 className="text-lg font-semibold">File Manager</h2>
-        <p className="text-xs text-muted-foreground mt-1">
-          Manage your files and folders
-        </p>
-      </div>
+    <aside className="hidden md:flex w-40 shrink-0 border-r border-border/60 bg-muted/30 flex-col h-full">
+      <ScrollArea className="h-full w-full">
+        <nav>
+          {groups.map((group, i) => {
+            const items = routes[group.key] as FileRoute[];
+            if (!items.length) return null;
 
-      <ScrollArea className="flex-1">
-        <div className="p-3 space-y-6">
-          {/* Overview */}
-          <div className="space-y-1">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-3 mb-2">
-              Overview
-            </h3>
-            {routes.overview.map((route) => {
-              const Icon = route.icon;
-              const isActive = pathname === route.href;
-              const isNavigating = navigatingHref === route.href;
-              const isDisabled = navigatingHref !== null;
-              
-              return (
-                <button
-                  key={route.href}
-                  onClick={() => handleNavigate(route.href)}
-                  disabled={isDisabled}
+            return (
+              <div key={group.key}>
+                <div
                   className={cn(
-                    "w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors relative",
-                    isActive
-                      ? "bg-primary text-primary-foreground font-medium"
-                      : "hover:bg-accent text-muted-foreground hover:text-foreground",
-                    isDisabled && !isNavigating && "opacity-60 cursor-not-allowed",
-                    isDisabled && "hover:bg-transparent hover:text-muted-foreground"
+                    "px-3 pt-3 pb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70",
+                    i > 0 && "border-t border-border/40",
                   )}
                 >
-                  {isNavigating ? (
-                    <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
-                  ) : (
-                    <Icon className="h-4 w-4 flex-shrink-0" />
-                  )}
-                  <span className="flex-1 text-left">{route.label}</span>
-                </button>
-              );
-            })}
-          </div>
+                  {group.label}
+                </div>
+                {items.map((route) => {
+                  const Icon = route.icon;
+                  const isActive = pathname === route.href;
+                  const isNavigating = navigatingHref === route.href;
+                  const isDisabled = navigatingHref !== null;
 
-          <Separator />
-
-          {/* File Types */}
-          <div className="space-y-1">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-3 mb-2">
-              File Types
-            </h3>
-            {routes.fileTypes.map((route) => {
-              const Icon = route.icon;
-              const isActive = pathname === route.href;
-              const isNavigating = navigatingHref === route.href;
-              const isDisabled = navigatingHref !== null;
-              
-              return (
-                <button
-                  key={route.href}
-                  onClick={() => handleNavigate(route.href)}
-                  disabled={isDisabled}
-                  className={cn(
-                    "w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors relative",
-                    isActive
-                      ? "bg-primary text-primary-foreground font-medium"
-                      : "hover:bg-accent text-muted-foreground hover:text-foreground",
-                    isDisabled && !isNavigating && "opacity-60 cursor-not-allowed",
-                    isDisabled && "hover:bg-transparent hover:text-muted-foreground"
-                  )}
-                >
-                  {isNavigating ? (
-                    <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
-                  ) : (
-                    <Icon className="h-4 w-4 flex-shrink-0" />
-                  )}
-                  <span className="flex-1 text-left">{route.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          <Separator />
-
-          {/* Buckets */}
-          <div className="space-y-1">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-3 mb-2">
-              Buckets
-            </h3>
-            {routes.buckets.map((route) => {
-              const Icon = route.icon;
-              const isActive = pathname === route.href;
-              const isNavigating = navigatingHref === route.href;
-              const isDisabled = navigatingHref !== null;
-              
-              return (
-                <button
-                  key={route.href}
-                  onClick={() => handleNavigate(route.href)}
-                  disabled={isDisabled}
-                  className={cn(
-                    "w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors relative",
-                    isActive
-                      ? "bg-primary text-primary-foreground font-medium"
-                      : "hover:bg-accent text-muted-foreground hover:text-foreground",
-                    isDisabled && !isNavigating && "opacity-60 cursor-not-allowed",
-                    isDisabled && "hover:bg-transparent hover:text-muted-foreground"
-                  )}
-                >
-                  {isNavigating ? (
-                    <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
-                  ) : (
-                    <Icon className="h-4 w-4 flex-shrink-0" />
-                  )}
-                  <span className="flex-1 text-left">{route.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          <Separator />
-
-          {/* Special */}
-          <div className="space-y-1">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-3 mb-2">
-              Special
-            </h3>
-            {routes.special.map((route) => {
-              const Icon = route.icon;
-              const isActive = pathname === route.href;
-              const isNavigating = navigatingHref === route.href;
-              const isDisabled = navigatingHref !== null;
-              
-              return (
-                <button
-                  key={route.href}
-                  onClick={() => handleNavigate(route.href)}
-                  disabled={isDisabled}
-                  className={cn(
-                    "w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors relative",
-                    isActive
-                      ? "bg-primary text-primary-foreground font-medium"
-                      : "hover:bg-accent text-muted-foreground hover:text-foreground",
-                    isDisabled && !isNavigating && "opacity-60 cursor-not-allowed",
-                    isDisabled && "hover:bg-transparent hover:text-muted-foreground"
-                  )}
-                >
-                  {isNavigating ? (
-                    <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
-                  ) : (
-                    <Icon className="h-4 w-4 flex-shrink-0" />
-                  )}
-                  <span className="flex-1 text-left">{route.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+                  return (
+                    <Link
+                      key={route.href}
+                      href={route.href}
+                      onClick={(e) => handleNavigate(route.href, e)}
+                      aria-disabled={isDisabled && !isNavigating}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-1.5 transition-colors text-xs",
+                        "hover:bg-muted/80",
+                        isActive
+                          ? "bg-accent text-accent-foreground font-medium"
+                          : "text-muted-foreground hover:text-foreground",
+                        isDisabled &&
+                          !isNavigating &&
+                          "opacity-60 pointer-events-none",
+                      )}
+                    >
+                      {isNavigating ? (
+                        <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />
+                      ) : (
+                        <Icon
+                          className={cn(
+                            "h-3.5 w-3.5 shrink-0",
+                            isActive ? "text-primary" : "text-muted-foreground",
+                          )}
+                        />
+                      )}
+                      <span className="truncate">{route.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </nav>
       </ScrollArea>
     </aside>
   );
 }
-

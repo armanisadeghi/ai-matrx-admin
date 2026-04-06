@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useSearchParams, usePathname, useRouter } from 'next/navigation';
-import { useCallback, useEffect } from 'react';
-import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect } from "react";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectOrganizationId,
   selectWorkspaceId,
@@ -13,9 +13,9 @@ import {
   setProject,
   setTask,
   setFullContext,
-} from '@/lib/redux/slices/appContextSlice';
-import { selectUserId } from '@/lib/redux/selectors/userSelectors';
-import type { ContextScopeLevel } from '../types';
+} from "@/lib/redux/slices/appContextSlice";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import type { ContextScopeLevel } from "../types";
 
 export type ScopeState = {
   scopeType: ContextScopeLevel;
@@ -24,9 +24,9 @@ export type ScopeState = {
 };
 
 const DEFAULT_SCOPE: ScopeState = {
-  scopeType: 'user',
-  scopeId: 'default',
-  scopeName: 'My Context',
+  scopeType: "user",
+  scopeId: "default",
+  scopeName: "My Context",
 };
 
 /**
@@ -65,9 +65,11 @@ export function useContextScope(): {
   const reduxTaskId = useAppSelector(selectTaskId);
 
   // URL state
-  const urlScopeType = searchParams.get('scopeType') as ContextScopeLevel | null;
-  const urlScopeId = searchParams.get('scopeId');
-  const urlScopeName = searchParams.get('scopeName');
+  const urlScopeType = searchParams.get(
+    "scopeType",
+  ) as ContextScopeLevel | null;
+  const urlScopeId = searchParams.get("scopeId");
+  const urlScopeName = searchParams.get("scopeName");
 
   // Determine scope: prefer URL if present, else derive from Redux
   let scope: ScopeState;
@@ -78,15 +80,27 @@ export function useContextScope(): {
       scopeName: urlScopeName || DEFAULT_SCOPE.scopeName,
     };
   } else if (reduxTaskId) {
-    scope = { scopeType: 'task', scopeId: reduxTaskId, scopeName: 'Task' };
+    scope = { scopeType: "task", scopeId: reduxTaskId, scopeName: "Task" };
   } else if (reduxProjectId) {
-    scope = { scopeType: 'project', scopeId: reduxProjectId, scopeName: 'Project' };
+    scope = {
+      scopeType: "project",
+      scopeId: reduxProjectId,
+      scopeName: "Project",
+    };
   } else if (reduxWorkspaceId) {
-    scope = { scopeType: 'workspace', scopeId: reduxWorkspaceId, scopeName: 'Workspace' };
+    scope = {
+      scopeType: "workspace",
+      scopeId: reduxWorkspaceId,
+      scopeName: "Workspace",
+    };
   } else if (reduxOrgId) {
-    scope = { scopeType: 'organization', scopeId: reduxOrgId, scopeName: 'Organization' };
+    scope = {
+      scopeType: "organization",
+      scopeId: reduxOrgId,
+      scopeName: "Organization",
+    };
   } else if (userId) {
-    scope = { scopeType: 'user', scopeId: userId, scopeName: 'My Context' };
+    scope = { scopeType: "user", scopeId: userId, scopeName: "My Context" };
   } else {
     scope = DEFAULT_SCOPE;
   }
@@ -103,10 +117,18 @@ export function useContextScope(): {
     };
 
     switch (urlScopeType) {
-      case 'task': reduxUpdate.task_id = urlScopeId; break;
-      case 'project': reduxUpdate.project_id = urlScopeId; break;
-      case 'workspace': reduxUpdate.workspace_id = urlScopeId; break;
-      case 'organization': reduxUpdate.organization_id = urlScopeId; break;
+      case "task":
+        reduxUpdate.task_id = urlScopeId;
+        break;
+      case "project":
+        reduxUpdate.project_id = urlScopeId;
+        break;
+      case "workspace":
+        reduxUpdate.workspace_id = urlScopeId;
+        break;
+      case "organization":
+        reduxUpdate.organization_id = urlScopeId;
+        break;
     }
 
     dispatch(setFullContext(reduxUpdate));
@@ -117,28 +139,49 @@ export function useContextScope(): {
     (newScope: ScopeState) => {
       // Update URL
       const params = new URLSearchParams(searchParams.toString());
-      params.set('scopeType', newScope.scopeType);
-      params.set('scopeId', newScope.scopeId);
-      params.set('scopeName', newScope.scopeName);
+      params.set("scopeType", newScope.scopeType);
+      params.set("scopeId", newScope.scopeId);
+      params.set("scopeName", newScope.scopeName);
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
 
       // Update Redux (cascading resets)
       switch (newScope.scopeType) {
-        case 'organization': dispatch(setOrganization(newScope.scopeId)); break;
-        case 'workspace': dispatch(setWorkspace(newScope.scopeId)); break;
-        case 'project': dispatch(setProject(newScope.scopeId)); break;
-        case 'task': dispatch(setTask(newScope.scopeId)); break;
-        case 'user': dispatch(setOrganization(null)); break;
+        case "organization":
+          dispatch(
+            setOrganization({ id: newScope.scopeId, name: newScope.scopeName }),
+          );
+          break;
+        case "workspace":
+          dispatch(
+            setWorkspace({ id: newScope.scopeId, name: newScope.scopeName }),
+          );
+          break;
+        case "project":
+          dispatch(
+            setProject({ id: newScope.scopeId, name: newScope.scopeName }),
+          );
+          break;
+        case "task":
+          dispatch(setTask({ id: newScope.scopeId, name: newScope.scopeName }));
+          break;
+        case "user":
+          dispatch(setOrganization({ id: null }));
+          break;
       }
     },
-    [router, pathname, searchParams, dispatch]
+    [router, pathname, searchParams, dispatch],
   );
 
-  const scopeLabel = scope.scopeType === 'user' ? 'Personal'
-    : scope.scopeType === 'organization' ? 'Organization'
-    : scope.scopeType === 'workspace' ? 'Workspace'
-    : scope.scopeType === 'project' ? 'Project'
-    : 'Task';
+  const scopeLabel =
+    scope.scopeType === "user"
+      ? "Personal"
+      : scope.scopeType === "organization"
+        ? "Organization"
+        : scope.scopeType === "workspace"
+          ? "Workspace"
+          : scope.scopeType === "project"
+            ? "Project"
+            : "Task";
 
   const hierarchy = {
     userId,

@@ -294,7 +294,7 @@ export const hierarchyService = {
           parentId: ws.parent_workspace_id ?? org.id,
           children: [],
           childCount: 0,
-          meta: { created_at: ws.created_at },
+          meta: { created_at: ws.created_at, organization_id: org.id },
         });
       }
 
@@ -327,7 +327,7 @@ export const hierarchyService = {
             parentId: ws.id,
             children: taskNodes,
             childCount: taskNodes.length,
-            meta: { slug: proj.slug, created_at: proj.created_at },
+            meta: { slug: proj.slug, created_at: proj.created_at, organization_id: org.id },
           });
           wsNode.childCount++;
         }
@@ -347,7 +347,7 @@ export const hierarchyService = {
           parentId: org.id,
           children: taskNodes,
           childCount: taskNodes.length,
-          meta: { slug: proj.slug, created_at: proj.created_at },
+          meta: { slug: proj.slug, created_at: proj.created_at, organization_id: org.id },
         });
         orgNode.childCount++;
       }

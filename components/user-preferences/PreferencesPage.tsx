@@ -25,7 +25,6 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save, RotateCcw, Check } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -383,7 +382,7 @@ const PreferencesPage = () => {
     );
   }
 
-  // ─── Desktop: VS Code-style split layout ─────────────────────────────────
+  // ─── Desktop: content panel only (sidebar is in the layout) ──────────────
   return (
     <div className="flex flex-col h-full">
       <SettingsPageHeader title="Preferences" />
@@ -407,108 +406,70 @@ const PreferencesPage = () => {
         </div>
       )}
 
-      <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Category sidebar */}
-        <nav className="w-44 shrink-0 border-r border-border/60 bg-muted/30">
-          <ScrollArea className="h-full">
-            <div className="py-1">
-              {tabCategories.map((cat) => (
-                <button
-                  key={cat.value}
-                  onClick={() => handleTabChange(cat.value)}
-                  className={cn(
-                    "w-full flex items-center gap-2 px-3 py-1.5 text-left transition-colors text-xs",
-                    "hover:bg-muted/80",
-                    activeTab === cat.value
-                      ? "bg-accent text-accent-foreground font-medium"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "shrink-0",
-                      activeTab === cat.value
-                        ? "text-primary"
-                        : "text-muted-foreground",
-                    )}
-                  >
-                    {cat.icon}
-                  </span>
-                  <span className="truncate">{cat.label}</span>
-                </button>
-              ))}
-            </div>
-          </ScrollArea>
-        </nav>
+      <ScrollArea className="flex-1">
+        <div className="max-w-2xl">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.12 }}
+            >
+              {tabContent[activeTab]}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </ScrollArea>
 
-        {/* Content panel */}
-        <div className="flex-1 min-w-0 flex flex-col">
-          <ScrollArea className="flex-1">
-            <div className="max-w-2xl">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.12 }}
-                >
-                  {tabContent[activeTab]}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </ScrollArea>
-
-          {/* Footer bar */}
-          <div className="flex items-center justify-between gap-3 border-t border-border/60 px-4 py-2 bg-muted/20">
-            <div className="text-xs text-muted-foreground">
-              {meta.isLoading && (
-                <span className="flex items-center gap-1.5">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Saving...
-                </span>
-              )}
-              {meta.hasUnsavedChanges && !meta.isLoading && (
-                <span className="text-amber-500">Unsaved changes</span>
-              )}
-              {meta.lastSaved && !meta.hasUnsavedChanges && !meta.isLoading && (
-                <span className="text-green-600 flex items-center gap-1">
-                  <Check className="h-3 w-3" />
-                  Saved
-                </span>
-              )}
-            </div>
-            <div className="flex gap-1.5">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReset}
-                disabled={!meta.hasUnsavedChanges || meta.isLoading}
-                className="h-7 text-xs gap-1 px-2.5"
-              >
-                <RotateCcw className="h-3 w-3" />
-                Reset
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleSave}
-                disabled={!meta.hasUnsavedChanges || meta.isLoading}
-                className="h-7 text-xs gap-1 px-2.5"
-              >
-                {meta.isLoading ? (
-                  <>
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-3 w-3" />
-                    Save Changes
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
+      {/* Footer bar */}
+      <div className="flex items-center justify-between gap-3 border-t border-border/60 px-4 py-2 bg-muted/20">
+        <div className="text-xs text-muted-foreground">
+          {meta.isLoading && (
+            <span className="flex items-center gap-1.5">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Saving...
+            </span>
+          )}
+          {meta.hasUnsavedChanges && !meta.isLoading && (
+            <span className="text-amber-500">Unsaved changes</span>
+          )}
+          {meta.lastSaved && !meta.hasUnsavedChanges && !meta.isLoading && (
+            <span className="text-green-600 flex items-center gap-1">
+              <Check className="h-3 w-3" />
+              Saved
+            </span>
+          )}
+        </div>
+        <div className="flex gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleReset}
+            disabled={!meta.hasUnsavedChanges || meta.isLoading}
+            className="h-7 text-xs gap-1 px-2.5"
+          >
+            <RotateCcw className="h-3 w-3" />
+            Reset
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={!meta.hasUnsavedChanges || meta.isLoading}
+            className="h-7 text-xs gap-1 px-2.5"
+          >
+            {meta.isLoading ? (
+              <>
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-3 w-3" />
+                Save Changes
+              </>
+            )}
+          </Button>
         </div>
       </div>
     </div>

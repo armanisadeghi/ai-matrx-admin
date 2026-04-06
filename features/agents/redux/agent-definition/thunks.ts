@@ -604,7 +604,10 @@ export const createAgent = createAsyncThunk<
 export const deleteAgent = createAsyncThunk<void, string, ThunkApi>(
   "agentDefinition/delete",
   async (agentId, { dispatch }) => {
-    const { error } = await supabase.from("agx_agent").delete().eq("id", agentId);
+    const { error } = await supabase
+      .from("agx_agent")
+      .delete()
+      .eq("id", agentId);
 
     if (error) throw error;
 

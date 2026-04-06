@@ -473,53 +473,59 @@ function WindowHeader({
   return (
     <div
       className={cn(
-        "relative flex items-center gap-1 px-2 py-1.5 z-20 shrink-0",
+        "relative flex items-center justify-between gap-1 px-2 py-1.5 z-20 shrink-0",
         "border-b border-border/50 bg-muted/40 select-none",
         isMaximized ? "cursor-default" : "cursor-grab active:cursor-grabbing",
         isMinimized && "border-b-0",
       )}
       onMouseDown={isMaximized ? undefined : onDragStart}
     >
-      {/* Traffic-light controls */}
-      <TrafficLightGroup
-        isMinimized={isMinimized}
-        isMaximized={isMaximized}
-        onClose={onClose}
-        onMinimize={onMinimize}
-        onRestore={onRestore}
-        onToggleMaximize={onToggleMaximize}
-        snapLeft={snapLeft}
-        snapRight={snapRight}
-        snapTop={snapTop}
-        snapBottom={snapBottom}
-        snapCentre={snapCentre}
-        arrangeAll={arrangeAll}
-      />
+      <div className="flex items-center gap-1 z-10 shrink-0">
+        {/* Traffic-light controls */}
+        <TrafficLightGroup
+          isMinimized={isMinimized}
+          isMaximized={isMaximized}
+          onClose={onClose}
+          onMinimize={onMinimize}
+          onRestore={onRestore}
+          onToggleMaximize={onToggleMaximize}
+          snapLeft={snapLeft}
+          snapRight={snapRight}
+          snapTop={snapTop}
+          snapBottom={snapBottom}
+          snapCentre={snapCentre}
+          arrangeAll={arrangeAll}
+        />
 
-      {/* Left action zone */}
-      {!isMinimized && actionsLeft && (
-        <div
-          className="flex items-center gap-0.5 shrink-0 ml-1 text-foreground/80 [&_svg]:text-foreground/80"
-          onMouseDown={(e) => e.stopPropagation()}
-        >
-          {actionsLeft}
-        </div>
-      )}
+        {/* Left action zone */}
+        {!isMinimized && actionsLeft && (
+          <div
+            className="flex items-center gap-0.5 shrink-0 ml-1 text-foreground/80 [&_svg]:text-foreground/80"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            {actionsLeft}
+          </div>
+        )}
+      </div>
 
-      {/* Centered title — always visible, including when minimized */}
-      <span className="text-xs font-medium text-foreground/80 flex-1 truncate text-center">
-        {title ?? ""}
-      </span>
+      {/* Absolute Centered title — always visible, including when minimized */}
+      <div className="absolute inset-x-0 top-0 bottom-0 flex items-center justify-center pointer-events-none">
+        <span className="text-xs font-medium text-foreground/80 truncate px-16">
+          {title ?? ""}
+        </span>
+      </div>
 
       {/* Right action zone */}
-      {!isMinimized && actionsRight && (
-        <div
-          className="flex items-center gap-0.5 shrink-0 text-foreground/80 [&_svg]:text-foreground/80"
-          onMouseDown={(e) => e.stopPropagation()}
-        >
-          {actionsRight}
-        </div>
-      )}
+      <div className="flex items-center gap-1 z-10 shrink-0">
+        {!isMinimized && actionsRight && (
+          <div
+            className="flex items-center gap-0.5 shrink-0 text-foreground/80 [&_svg]:text-foreground/80"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            {actionsRight}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -124,10 +124,6 @@
     "name": "sms"
   },
   {
-    "path": "/tests/socket-tests",
-    "name": "socket-tests"
-  },
-  {
     "path": "/tests/tailwind-test",
     "name": "tailwind-test"
   },

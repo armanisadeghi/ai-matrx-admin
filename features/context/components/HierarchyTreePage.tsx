@@ -7,7 +7,7 @@ import {
   ChevronRight, ChevronDown, Plus, Search, Loader2,
   Pencil, Trash2, MoreHorizontal, Calendar, Tag,
   ArrowRightFromLine, Check, X, AlertCircle, Clock,
-  FolderOpen, TreePine,
+  FolderOpen, TreePine, MoveRight,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ import {
   useUpdateEntity, useDeleteEntity,
 } from '../hooks/useHierarchy';
 import { HierarchyEntityModal } from './HierarchyEntityModal';
+import { HierarchyMoveModal } from './HierarchyMoveModal';
 import type { HierarchyNode, HierarchyNodeType } from '../service/hierarchyService';
 
 // ─── Config ─────────────────────────────────────────────────────────
@@ -103,6 +104,7 @@ export function HierarchyTreePage() {
     orgId?: string;
   } | null>(null);
   const [editModal, setEditModal] = useState<HierarchyNode | null>(null);
+  const [moveModal, setMoveModal] = useState<HierarchyNode | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: HierarchyNodeType; id: string; name: string } | null>(null);
 
   const deleteMutation = useDeleteEntity();
@@ -309,6 +311,7 @@ export function HierarchyTreePage() {
             })}
             onDelete={(type, id, name) => setDeleteConfirm({ type, id, name })}
             onEdit={(node) => setEditModal(node)}
+            onMove={(node) => setMoveModal(node)}
           />
         ) : (
           <EmptyDetail treeStats={tree ? computeStats(tree) : null} />
@@ -333,6 +336,14 @@ export function HierarchyTreePage() {
           mode="edit"
           existingNode={editModal}
           onClose={() => setEditModal(null)}
+        />
+      )}
+
+      {moveModal && tree && (
+        <HierarchyMoveModal
+          nodeToMove={moveModal}
+          tree={tree}
+          onClose={() => setMoveModal(null)}
         />
       )}
 
@@ -402,14 +413,14 @@ function TreeBranch({
     if (!hasMatchingChildren) return null;
   }
 
-  const childType: HierarchyNodeType | null =
-    node.type === 'user' ? 'organization' :
-    node.type === 'organization' ? 'workspace' :
-    node.type === 'workspace' ? 'project' :
-    node.type === 'project' ? 'task' :
-    null;
+  const childTypes: HierarchyNodeType[] =
+    node.type === 'user' ? ['organization'] :
+    node.type === 'organization' ? ['workspace', 'project'] :
+    node.type === 'workspace' ? ['workspace', 'project'] :
+    node.type === 'project' ? ['task'] :
+    node.type === 'task' ? ['task'] : [];
 
-  const orgId = node.type === 'organization' ? node.id : undefined;
+  const orgId = node.type === 'organization' ? node.id : (node.meta?.organization_id as string | undefined);
   const Icon = ICONS[node.type];
   const accent = ACCENT_TEXT[node.type];
   const totalDescendants = countDescendants(node);
@@ -475,14 +486,32 @@ function TreeBranch({
         {/* Action buttons */}
         {!isVirtual && (
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-            {childType && (
-              <button
-                className="h-5 w-5 flex items-center justify-center rounded hover:bg-muted transition-colors"
-                onClick={e => { e.stopPropagation(); onCreateChild(childType, node.id, node.type, orgId); }}
-                title={`Add ${TYPE_LABEL[childType]}`}
-              >
-                <Plus className="h-3 w-3 text-muted-foreground" />
-              </button>
+            {childTypes.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="h-5 w-5 flex items-center justify-center rounded hover:bg-muted transition-colors"
+                    onClick={e => e.stopPropagation()}
+                    title="Add child"
+                  >
+                    <Plus className="h-3 w-3 text-muted-foreground" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40 z-50">
+                  {childTypes.map(cType => (
+                    <DropdownMenuItem
+                      key={cType}
+                      onClick={e => {
+                        e.stopPropagation();
+                        onCreateChild(cType, node.id, node.type, orgId);
+                      }}
+                      className="text-xs flex items-center gap-2"
+                    >
+                      <Plus className="h-3 w-3" /> New {TYPE_LABEL[cType]}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             {node.type !== 'user' && (
               <button
@@ -527,11 +556,13 @@ function DetailPanel({
   onCreateChild,
   onDelete,
   onEdit,
+  onMove,
 }: {
   node: HierarchyNode;
   onCreateChild: (type: HierarchyNodeType, orgId?: string) => void;
   onDelete: (type: HierarchyNodeType, id: string, name: string) => void;
   onEdit: (node: HierarchyNode) => void;
+  onMove: (node: HierarchyNode) => void;
 }) {
   const Icon = ICONS[node.type];
   const accent = ACCENT_BG[node.type];
@@ -541,14 +572,14 @@ function DetailPanel({
   const [editName, setEditName] = useState(node.name);
   const [editDescription, setEditDescription] = useState(node.description ?? '');
 
-  const childType: HierarchyNodeType | null =
-    node.type === 'user' ? 'organization' :
-    node.type === 'organization' ? 'workspace' :
-    node.type === 'workspace' ? 'project' :
-    node.type === 'project' ? 'task' :
-    null;
+  const childTypes: HierarchyNodeType[] =
+    node.type === 'user' ? ['organization'] :
+    node.type === 'organization' ? ['workspace', 'project'] :
+    node.type === 'workspace' ? ['workspace', 'project'] :
+    node.type === 'project' ? ['task'] :
+    node.type === 'task' ? ['task'] : [];
 
-  const orgId = node.type === 'organization' ? node.id : undefined;
+  const orgId = node.type === 'organization' ? node.id : (node.meta?.organization_id as string | undefined);
 
   const handleSave = () => {
     const nameField = node.type === 'task' ? 'title' : 'name';
@@ -616,6 +647,11 @@ function DetailPanel({
         </div>
         {!isVirtual && node.type !== 'user' && !isEditing && (
           <div className="flex items-center gap-1 shrink-0">
+            {node.type !== 'organization' && (
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => onMove(node)}>
+                <MoveRight className="h-3 w-3" /> Move
+              </Button>
+            )}
             <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => onEdit(node)}>
               <Pencil className="h-3 w-3" /> Edit
             </Button>
@@ -691,10 +727,25 @@ function DetailPanel({
             Contents
             <span className="text-muted-foreground font-normal ml-1">({node.children.length} direct {node.children.length === 1 ? 'item' : 'items'})</span>
           </h2>
-          {childType && !isVirtual && (
-            <Button size="sm" className="h-7 text-xs gap-1" onClick={() => onCreateChild(childType, orgId)}>
-              <Plus className="h-3 w-3" /> New {TYPE_LABEL[childType]}
-            </Button>
+          {childTypes.length > 0 && !isVirtual && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" className="h-7 text-xs gap-1">
+                  <Plus className="h-3 w-3" /> New...
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40 z-50">
+                {childTypes.map((cType) => (
+                  <DropdownMenuItem
+                    key={cType}
+                    onClick={() => onCreateChild(cType, orgId)}
+                    className="text-xs flex items-center gap-2"
+                  >
+                    <Plus className="h-3 w-3" /> New {TYPE_LABEL[cType]}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
 
@@ -702,12 +753,16 @@ function DetailPanel({
           <div className="py-8 text-center border border-dashed border-border rounded-xl">
             <FolderOpen className="h-6 w-6 text-muted-foreground/30 mx-auto mb-2" />
             <p className="text-xs text-muted-foreground mb-2">
-              {childType ? `No ${TYPE_LABEL[childType].toLowerCase()}s yet` : 'No children'}
+              {childTypes.length > 0 ? `No items yet` : 'No children'}
             </p>
-            {childType && !isVirtual && (
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => onCreateChild(childType, orgId)}>
-                <Plus className="h-3 w-3" /> Create {TYPE_LABEL[childType]}
-              </Button>
+            {childTypes.length > 0 && !isVirtual && (
+              <div className="flex gap-2 justify-center mt-3">
+                {childTypes.map((cType) => (
+                  <Button key={cType} variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => onCreateChild(cType, orgId)}>
+                    <Plus className="h-3 w-3" /> Create {TYPE_LABEL[cType]}
+                  </Button>
+                ))}
+              </div>
             )}
           </div>
         ) : (

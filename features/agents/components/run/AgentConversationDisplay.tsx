@@ -80,6 +80,7 @@ export function AgentConversationDisplay({
       content: turn.content,
       contentBlocks: turn.contentBlocks,
       isStreamActive: false,
+      ...(turn.errorMessage && { error: turn.errorMessage }),
     }));
 
     if (isActive) {

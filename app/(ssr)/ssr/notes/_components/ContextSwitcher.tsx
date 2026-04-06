@@ -286,7 +286,7 @@ export default function ContextSwitcher() {
                       label="Personal (no org)"
                       icon={<User className="w-3.5 h-3.5" />}
                       active={!ctx.organization_id}
-                      onClick={() => dispatch(setOrganization(null))}
+                      onClick={() => dispatch(setOrganization({ id: null }))}
                     />
                     {(tree?.organizations ?? []).map((org) => (
                       <SectionRow
@@ -296,7 +296,9 @@ export default function ContextSwitcher() {
                         icon={<Building2 className="w-3.5 h-3.5" />}
                         active={ctx.organization_id === org.id}
                         onClick={() => {
-                          dispatch(setOrganization(org.id));
+                          dispatch(
+                            setOrganization({ id: org.id, name: org.name }),
+                          );
                           setActiveSection("workspace");
                         }}
                       />
@@ -314,7 +316,7 @@ export default function ContextSwitcher() {
                       label="No workspace"
                       icon={<Globe className="w-3.5 h-3.5 opacity-40" />}
                       active={!ctx.workspace_id}
-                      onClick={() => dispatch(setWorkspace(null))}
+                      onClick={() => dispatch(setWorkspace({ id: null }))}
                     />
                     {visibleWorkspaces.map((ws) => (
                       <SectionRow
@@ -323,7 +325,7 @@ export default function ContextSwitcher() {
                         icon={<Layers className="w-3.5 h-3.5" />}
                         active={ctx.workspace_id === ws.id}
                         onClick={() => {
-                          dispatch(setWorkspace(ws.id));
+                          dispatch(setWorkspace({ id: ws.id, name: ws.name }));
                           setActiveSection("project");
                         }}
                       />
@@ -347,7 +349,7 @@ export default function ContextSwitcher() {
                       label="No project"
                       icon={<Globe className="w-3.5 h-3.5 opacity-40" />}
                       active={!ctx.project_id}
-                      onClick={() => dispatch(setProject(null))}
+                      onClick={() => dispatch(setProject({ id: null }))}
                     />
                     {visibleProjects.map((proj) => (
                       <SectionRow
@@ -356,7 +358,9 @@ export default function ContextSwitcher() {
                         icon={<FolderKanban className="w-3.5 h-3.5" />}
                         active={ctx.project_id === proj.id}
                         onClick={() => {
-                          dispatch(setProject(proj.id));
+                          dispatch(
+                            setProject({ id: proj.id, name: proj.name }),
+                          );
                           setActiveSection("task");
                         }}
                       />
@@ -383,7 +387,7 @@ export default function ContextSwitcher() {
                           label="No task"
                           icon={<Globe className="w-3.5 h-3.5 opacity-40" />}
                           active={!ctx.task_id}
-                          onClick={() => dispatch(setTask(null))}
+                          onClick={() => dispatch(setTask({ id: null }))}
                         />
                         {tasks.map((task) => (
                           <SectionRow
@@ -393,7 +397,9 @@ export default function ContextSwitcher() {
                             icon={<CheckSquare className="w-3.5 h-3.5" />}
                             active={ctx.task_id === task.id}
                             onClick={() => {
-                              dispatch(setTask(task.id));
+                              dispatch(
+                                setTask({ id: task.id, name: task.title }),
+                              );
                               setOpen(false);
                             }}
                           />

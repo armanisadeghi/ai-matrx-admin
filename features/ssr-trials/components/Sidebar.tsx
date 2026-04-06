@@ -4,6 +4,7 @@
 
 import NavItem from "./NavItem";
 import ShellIcon from "./ShellIcon";
+import SidebarContextSelector from "./SidebarContextSelector";
 import SidebarNotesToggle from "@/features/notes/actions/SidebarNotesToggle";
 import SidebarVoicePadToggle from "./SidebarVoicePadToggle";
 import SidebarAdminIndicatorToggle from "./SidebarAdminIndicatorToggle";
@@ -42,6 +43,8 @@ export default function Sidebar({ pathname }: SidebarProps) {
 
       {/* Navigation — Self-scrolling container */}
       <nav className="shell-sidebar-nav" aria-label="Main navigation">
+        <SidebarContextSelector />
+
         {primaryNavItems.map((item) => (
           <NavItem key={item.href} item={item} isActive={isActive(item)} />
         ))}

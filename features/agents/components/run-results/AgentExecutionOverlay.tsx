@@ -14,14 +14,12 @@
 
 import { useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import {
-  selectDisplayMode,
-  selectInstanceTitle,
-} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import { selectDisplayMode } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import {
   selectLatestAccumulatedText,
   selectIsExecuting,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import { useInstanceTitle } from "@/features/agents/hooks/useInstanceTitle";
 import { AgentRunner } from "../smart/AgentRunner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -42,7 +40,7 @@ function AgentFullModal({
   instanceId: string;
   onClose: () => void;
 }) {
-  const title = useAppSelector(selectInstanceTitle(instanceId));
+  const title = useInstanceTitle(instanceId);
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
@@ -72,7 +70,7 @@ function AgentCompactModal({
   instanceId: string;
   onClose: () => void;
 }) {
-  const title = useAppSelector(selectInstanceTitle(instanceId));
+  const title = useInstanceTitle(instanceId);
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
@@ -197,7 +195,7 @@ function AgentSidebarOverlay({
   instanceId: string;
   onClose: () => void;
 }) {
-  const title = useAppSelector(selectInstanceTitle(instanceId));
+  const title = useInstanceTitle(instanceId);
 
   return (
     <FloatingSheet
@@ -229,7 +227,7 @@ function AgentFlexiblePanelOverlay({
   instanceId: string;
   onClose: () => void;
 }) {
-  const title = useAppSelector(selectInstanceTitle(instanceId));
+  const title = useInstanceTitle(instanceId);
 
   return (
     <WindowPanel
@@ -260,7 +258,7 @@ function AgentPanelOverlay({
   instanceId: string;
   onClose: () => void;
 }) {
-  const title = useAppSelector(selectInstanceTitle(instanceId));
+  const title = useInstanceTitle(instanceId);
 
   return (
     <FloatingSheet
