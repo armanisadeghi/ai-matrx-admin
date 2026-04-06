@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
 
   const { data: server, error: serverError } = await supabase
     .from("mcp_servers")
-    .select("endpoint_url, slug, auth_strategy, name")
+    .select("endpoint_url, slug, auth_strategy, name, oauth_client_id, oauth_scopes")
     .eq("id", serverId)
     .single();
 
@@ -88,8 +88,18 @@ export async function GET(req: NextRequest) {
     let clientId: string | undefined;
     let clientSecret: string | undefined;
 
-    // Strategy 1: Try Dynamic Client Registration if available
-    if (authServer.registration_endpoint) {
+    // Strategy 1: Use pre-registered client_id from the catalog DB
+    // Many vendors (GitHub, Figma, Sentry, Vercel) require a pre-registered
+    // OAuth app — DCR and CIMD won't work with them.
+    if (server.oauth_client_id) {
+      clientId = server.oauth_client_id;
+      console.log(
+        `[MCP OAuth] Using pre-registered client_id from catalog: ${clientId}`,
+      );
+    }
+
+    // Strategy 2: Try Dynamic Client Registration if available
+    if (!clientId && authServer.registration_endpoint) {
       try {
         console.log(
           `[MCP OAuth] Attempting DCR at ${authServer.registration_endpoint}`,
@@ -113,8 +123,10 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Strategy 2: Use CIMD (Client ID Metadata Document) — the modern MCP approach
-    // The client_id IS the URL to our metadata document
+    // Strategy 3: Use CIMD (Client ID Metadata Document)
+    // Only works with vendors that support the Nov 2025 MCP spec (e.g., Asana,
+    // Cloudflare, Supabase). Falls back to this when no pre-registered ID and
+    // DCR didn't work.
     if (!clientId) {
       clientId = clientMetadataUrl;
       console.log(`[MCP OAuth] Using CIMD client_id: ${clientId}`);
@@ -154,10 +166,14 @@ export async function GET(req: NextRequest) {
       state,
     });
 
-    // Only include scopes if the protected resource or auth server specifies them.
-    // Sending unsupported scopes causes failures (e.g., Supabase rejects OIDC scopes).
+    // Scope resolution order:
+    // 1. Pre-configured scopes from catalog DB (admin can control exactly what we ask for)
+    // 2. Protected resource metadata scopes (RFC 9728 discovery)
+    // 3. Auth server metadata scopes
     const scopes =
-      protectedResource?.scopes_supported ?? authServer.scopes_supported;
+      server.oauth_scopes ??
+      protectedResource?.scopes_supported ??
+      authServer.scopes_supported;
     if (scopes?.length) {
       params.set("scope", scopes.join(" "));
     }
