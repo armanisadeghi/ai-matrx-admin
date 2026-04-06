@@ -132,7 +132,7 @@ export default function SettingsLayoutClient({ children }: { children: React.Rea
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 min-h-0 bg-transparent">
+        <main className="flex-1 min-h-0 overflow-y-auto bg-transparent">
           {children}
         </main>
       </div>

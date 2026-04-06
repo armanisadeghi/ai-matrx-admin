@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   fetchCatalog,
+  connectServer,
   disconnectServer,
   selectMcpCatalog,
   selectMcpCatalogStatus,
@@ -29,9 +30,12 @@ import {
   Key,
   Lock,
   Unlock,
+  Eye,
+  EyeOff,
   ChevronDown,
   ChevronUp,
   Zap,
+  Info,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -82,22 +86,26 @@ const STATUS_CONFIG: Record<
 > = {
   connected: {
     label: "Connected",
-    className: "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/20",
+    className:
+      "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/20",
     icon: <Check className="h-3 w-3" />,
   },
   expired: {
     label: "Expired",
-    className: "bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-500/20",
+    className:
+      "bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-500/20",
     icon: <Clock className="h-3 w-3" />,
   },
   refresh_failed: {
     label: "Refresh Failed",
-    className: "bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/20",
+    className:
+      "bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/20",
     icon: <AlertCircle className="h-3 w-3" />,
   },
   error: {
     label: "Error",
-    className: "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/20",
+    className:
+      "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/20",
     icon: <X className="h-3 w-3" />,
   },
   disconnected: {
@@ -134,7 +142,6 @@ export default function IntegrationsPage() {
   const filtered = useMemo(() => {
     let entries = [...catalog];
 
-    // Search
     if (search.trim()) {
       const q = search.toLowerCase();
       entries = entries.filter(
@@ -145,18 +152,15 @@ export default function IntegrationsPage() {
       );
     }
 
-    // Category
     if (activeCategory !== "all") {
       entries = entries.filter((e) => e.category === activeCategory);
     }
 
-    // View filter
     if (viewFilter === "connected") {
       entries = entries.filter((e) => e.connectionStatus === "connected");
     } else if (viewFilter === "available") {
       entries = entries.filter(
-        (e) =>
-          e.serverStatus === "active" || e.serverStatus === "beta",
+        (e) => e.serverStatus === "active" || e.serverStatus === "beta",
       );
     } else if (viewFilter === "coming_soon") {
       entries = entries.filter((e) => e.serverStatus === "coming_soon");
@@ -165,26 +169,27 @@ export default function IntegrationsPage() {
     return entries;
   }, [catalog, search, activeCategory, viewFilter]);
 
-  // Sort: connected first, then featured, then active, then coming_soon
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
-      // Connected first
       const aConn = a.connectionStatus === "connected" ? 0 : 1;
       const bConn = b.connectionStatus === "connected" ? 0 : 1;
       if (aConn !== bConn) return aConn - bConn;
-      // Featured next
       if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
-      // Active before coming_soon
-      const statusOrder = { active: 0, beta: 1, community: 2, coming_soon: 3, deprecated: 4 };
-      const aOrder = statusOrder[a.serverStatus as keyof typeof statusOrder] ?? 5;
-      const bOrder = statusOrder[b.serverStatus as keyof typeof statusOrder] ?? 5;
+      const statusOrder = {
+        active: 0,
+        beta: 1,
+        community: 2,
+        coming_soon: 3,
+        deprecated: 4,
+      };
+      const aOrder =
+        statusOrder[a.serverStatus as keyof typeof statusOrder] ?? 5;
+      const bOrder =
+        statusOrder[b.serverStatus as keyof typeof statusOrder] ?? 5;
       if (aOrder !== bOrder) return aOrder - bOrder;
-      // Alpha
       return a.name.localeCompare(b.name);
     });
   }, [filtered]);
-
-  // ── Category counts ────────────────────────────────────────────────────────
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = { all: catalog.length };
@@ -201,23 +206,33 @@ export default function IntegrationsPage() {
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
-  const handleConnect = useCallback(
+  const handleOAuthConnect = useCallback(
     (entry: McpCatalogEntry) => {
-      if (entry.authStrategy === "oauth_discovery") {
-        const w = window.open(
-          `/api/mcp/oauth/start?server_id=${entry.serverId}&return_url=${encodeURIComponent(window.location.pathname)}`,
-          "mcp_oauth",
-          "width=600,height=700,popup=yes",
-        );
-        // Listen for completion
-        const handler = (event: MessageEvent) => {
-          if (event.data?.type === "mcp_oauth_complete") {
-            window.removeEventListener("message", handler);
-            dispatch(fetchCatalog());
-          }
-        };
-        window.addEventListener("message", handler);
-      }
+      window.open(
+        `/api/mcp/oauth/start?server_id=${entry.serverId}&return_url=${encodeURIComponent(window.location.pathname)}`,
+        "mcp_oauth",
+        "width=600,height=700,popup=yes",
+      );
+      const handler = (event: MessageEvent) => {
+        if (event.data?.type === "mcp_oauth_complete") {
+          window.removeEventListener("message", handler);
+          dispatch(fetchCatalog());
+        }
+      };
+      window.addEventListener("message", handler);
+    },
+    [dispatch],
+  );
+
+  const handleBearerConnect = useCallback(
+    (serverId: string, token: string) => {
+      dispatch(
+        connectServer({
+          serverId,
+          accessToken: token,
+          transport: "http",
+        }),
+      );
     },
     [dispatch],
   );
@@ -245,7 +260,7 @@ export default function IntegrationsPage() {
 
   return (
     <TooltipProvider>
-      <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-5">
+      <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-5 pb-12">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
@@ -253,7 +268,8 @@ export default function IntegrationsPage() {
               Integrations
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Connect MCP servers to give your agents access to external tools and data.
+              Connect MCP servers to give your agents access to external tools
+              and data.
               {connectedCount > 0 && (
                 <span className="text-foreground font-medium ml-1">
                   {connectedCount} connected
@@ -296,7 +312,7 @@ export default function IntegrationsPage() {
               className="pl-8 h-8 text-sm"
             />
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             {(
               [
                 ["all", "All"],
@@ -359,7 +375,10 @@ export default function IntegrationsPage() {
                   )
                 }
                 isConnecting={connectingId === entry.serverId}
-                onConnect={() => handleConnect(entry)}
+                onOAuthConnect={() => handleOAuthConnect(entry)}
+                onBearerConnect={(token) =>
+                  handleBearerConnect(entry.serverId, token)
+                }
                 onDisconnect={() => handleDisconnect(entry.serverId)}
               />
             ))}
@@ -377,7 +396,8 @@ interface ServerCardProps {
   isExpanded: boolean;
   onToggleExpand: () => void;
   isConnecting: boolean;
-  onConnect: () => void;
+  onOAuthConnect: () => void;
+  onBearerConnect: (token: string) => void;
   onDisconnect: () => void;
 }
 
@@ -386,15 +406,23 @@ function ServerCard({
   isExpanded,
   onToggleExpand,
   isConnecting,
-  onConnect,
+  onOAuthConnect,
+  onBearerConnect,
   onDisconnect,
 }: ServerCardProps) {
   const isComingSoon = entry.serverStatus === "coming_soon";
+  const isCommunity = entry.serverStatus === "community";
   const isConnected = entry.connectionStatus === "connected";
   const isActive =
     entry.serverStatus === "active" || entry.serverStatus === "beta";
   const hasEndpoint = !!entry.endpointUrl;
-  const canConnect = isActive && hasEndpoint && !isConnected;
+  const isStdioOnly = entry.transport === "stdio" && !hasEndpoint;
+  const canConnect =
+    (isActive || isCommunity) && hasEndpoint && !isConnected;
+  const needsOAuth = entry.authStrategy === "oauth_discovery";
+  const needsToken =
+    entry.authStrategy === "bearer" || entry.authStrategy === "api_key";
+  const noAuth = entry.authStrategy === "none";
 
   const transport = TRANSPORT_META[entry.transport] ?? TRANSPORT_META.http;
   const connectionStatus =
@@ -402,18 +430,29 @@ function ServerCard({
       ? STATUS_CONFIG[entry.connectionStatus]
       : null;
 
+  // Inline token form state
+  const [showTokenForm, setShowTokenForm] = useState(false);
+  const [token, setToken] = useState("");
+  const [showToken, setShowToken] = useState(false);
+
+  const handleTokenSubmit = () => {
+    if (!token.trim()) return;
+    onBearerConnect(token.trim());
+    setToken("");
+    setShowTokenForm(false);
+  };
+
   return (
     <Card
       className={cn(
         "transition-all duration-150",
         isConnected && "ring-1 ring-green-500/30 bg-green-500/[0.02]",
-        isComingSoon && "opacity-60",
+        isComingSoon && "opacity-55",
       )}
     >
       <CardContent className="p-4">
-        {/* Top row: icon + name + badges */}
+        {/* Top row */}
         <div className="flex items-start gap-3">
-          {/* Server icon */}
           <div className="shrink-0 mt-0.5">
             {entry.iconUrl ? (
               <img
@@ -434,7 +473,6 @@ function ServerCard({
             )}
           </div>
 
-          {/* Name + vendor */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
               <h3 className="font-medium text-sm text-foreground truncate">
@@ -462,7 +500,6 @@ function ServerCard({
             </p>
           </div>
 
-          {/* Connection status or coming soon */}
           <div className="shrink-0">
             {isComingSoon ? (
               <Badge variant="outline" className="text-[10px] px-1.5 py-0">
@@ -486,6 +523,13 @@ function ServerCard({
               >
                 Beta
               </Badge>
+            ) : isCommunity ? (
+              <Badge
+                variant="outline"
+                className="text-[10px] px-1.5 py-0 bg-teal-500/10 text-teal-600 dark:text-teal-400"
+              >
+                Community
+              </Badge>
             ) : null}
           </div>
         </div>
@@ -497,7 +541,7 @@ function ServerCard({
           </p>
         )}
 
-        {/* Metadata row */}
+        {/* Metadata */}
         <div className="flex items-center gap-1.5 mt-3 flex-wrap">
           <Badge
             variant="outline"
@@ -518,7 +562,7 @@ function ServerCard({
           </Badge>
         </div>
 
-        {/* Action row */}
+        {/* Actions */}
         <div className="flex items-center gap-2 mt-3">
           {isConnected ? (
             <Button
@@ -529,17 +573,41 @@ function ServerCard({
             >
               Disconnect
             </Button>
-          ) : canConnect ? (
+          ) : canConnect && needsOAuth ? (
             <Button
               size="sm"
               className="h-7 text-xs flex-1"
-              onClick={onConnect}
+              onClick={onOAuthConnect}
               disabled={isConnecting}
             >
               {isConnecting ? (
                 <Loader2 className="h-3 w-3 animate-spin mr-1" />
               ) : (
                 <Lock className="h-3 w-3 mr-1" />
+              )}
+              Connect with OAuth
+            </Button>
+          ) : canConnect && needsToken ? (
+            <Button
+              size="sm"
+              className="h-7 text-xs flex-1"
+              onClick={() => setShowTokenForm(!showTokenForm)}
+              disabled={isConnecting}
+            >
+              <Key className="h-3 w-3 mr-1" />
+              {showTokenForm ? "Cancel" : "Enter Token"}
+            </Button>
+          ) : canConnect && noAuth ? (
+            <Button
+              size="sm"
+              className="h-7 text-xs flex-1"
+              onClick={() => onBearerConnect("")}
+              disabled={isConnecting}
+            >
+              {isConnecting ? (
+                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+              ) : (
+                <Zap className="h-3 w-3 mr-1" />
               )}
               Connect
             </Button>
@@ -553,21 +621,30 @@ function ServerCard({
               <Clock className="h-3 w-3 mr-1" />
               Not Available Yet
             </Button>
-          ) : !hasEndpoint && !isComingSoon ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs flex-1"
-              disabled
-            >
-              Local Only (stdio)
-            </Button>
+          ) : isStdioOnly ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs flex-1"
+                  disabled
+                >
+                  <Terminal className="h-3 w-3 mr-1" />
+                  Local Only
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                This server runs locally via command line. Configure it in the
+                agent tools panel when building an agent.
+              </TooltipContent>
+            </Tooltip>
           ) : null}
 
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0"
+            className="h-7 w-7 p-0 shrink-0"
             onClick={onToggleExpand}
           >
             {isExpanded ? (
@@ -577,6 +654,52 @@ function ServerCard({
             )}
           </Button>
         </div>
+
+        {/* Inline token form */}
+        {showTokenForm && !isConnected && (
+          <div className="mt-3 pt-3 border-t border-border space-y-2">
+            <div className="relative">
+              <Input
+                type={showToken ? "text" : "password"}
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                placeholder={
+                  entry.authStrategy === "api_key"
+                    ? "Enter API key..."
+                    : "Enter access token..."
+                }
+                className="h-8 text-xs pr-16"
+                onKeyDown={(e) => e.key === "Enter" && handleTokenSubmit()}
+              />
+              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={() => setShowToken(!showToken)}
+                >
+                  {showToken ? (
+                    <EyeOff className="h-3 w-3" />
+                  ) : (
+                    <Eye className="h-3 w-3" />
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-6 px-2 text-[10px]"
+                  onClick={handleTokenSubmit}
+                  disabled={!token.trim() || isConnecting}
+                >
+                  {isConnecting ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    "Save"
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Expanded details */}
         {isExpanded && (
@@ -589,11 +712,14 @@ function ServerCard({
             {entry.endpointUrl && (
               <DetailRow label="Endpoint" value={entry.endpointUrl} mono />
             )}
-            {entry.hasLocal && (
-              <DetailRow label="Local (stdio)" value="Available" />
+            {entry.hasLocal && entry.hasRemote && (
+              <DetailRow label="Availability" value="Remote + Local (stdio)" />
             )}
-            {entry.hasRemote && (
-              <DetailRow label="Remote" value="Available" />
+            {entry.hasLocal && !entry.hasRemote && (
+              <DetailRow label="Availability" value="Local only (stdio)" />
+            )}
+            {!entry.hasLocal && entry.hasRemote && (
+              <DetailRow label="Availability" value="Remote only" />
             )}
             {isConnected && entry.connectedAt && (
               <DetailRow
@@ -608,31 +734,45 @@ function ServerCard({
               />
             )}
 
+            {/* Info for stdio-only */}
+            {isStdioOnly && (
+              <div className="flex items-start gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2.5 py-2 rounded-md mt-1">
+                <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <span>
+                  Local servers run on your machine. Add this to an agent via
+                  the agent builder&apos;s MCP Tools tab, then configure
+                  environment variables.
+                </span>
+              </div>
+            )}
+
             {/* Links */}
-            <div className="flex items-center gap-2 pt-1">
-              {entry.websiteUrl && (
-                <a
-                  href={entry.websiteUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-primary hover:underline inline-flex items-center gap-1"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  Website
-                </a>
-              )}
-              {entry.docsUrl && (
-                <a
-                  href={entry.docsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-primary hover:underline inline-flex items-center gap-1"
-                >
-                  <BookOpen className="h-3 w-3" />
-                  Docs
-                </a>
-              )}
-            </div>
+            {(entry.websiteUrl || entry.docsUrl) && (
+              <div className="flex items-center gap-3 pt-1">
+                {entry.websiteUrl && (
+                  <a
+                    href={entry.websiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    Website
+                  </a>
+                )}
+                {entry.docsUrl && (
+                  <a
+                    href={entry.docsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                  >
+                    <BookOpen className="h-3 w-3" />
+                    Docs
+                  </a>
+                )}
+              </div>
+            )}
           </div>
         )}
       </CardContent>
