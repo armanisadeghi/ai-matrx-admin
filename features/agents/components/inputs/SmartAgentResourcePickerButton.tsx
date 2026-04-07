@@ -25,6 +25,7 @@ import {
   setResourcePreview,
 } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.slice";
 import { ResourcePickerMenu } from "@/features/prompts/components/resource-picker/ResourcePickerMenu";
+import { ResourcePickerWindow } from "@/features/floating-window-panel/windows/ResourcePickerWindow";
 import type { Resource } from "@/features/prompts/types/resources";
 import type { ResourceBlockType } from "@/features/agents/types";
 
@@ -77,12 +78,15 @@ interface SmartAgentResourcePickerButtonProps {
   instanceId: string;
   uploadBucket?: string;
   uploadPath?: string;
+  /** When true, opens as a floating WindowPanel instead of a popover. Default: false. */
+  useWindowMode?: boolean;
 }
 
 export function SmartAgentResourcePickerButton({
   instanceId,
   uploadBucket = "userContent",
   uploadPath = "agent-attachments",
+  useWindowMode = false,
 }: SmartAgentResourcePickerButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dispatch = useAppDispatch();
@@ -117,25 +121,43 @@ export function SmartAgentResourcePickerButton({
     [instanceId, dispatch],
   );
 
+  const trigger = (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+      tabIndex={-1}
+      title="Attach resource"
+      onClick={useWindowMode ? () => setIsOpen(true) : undefined}
+    >
+      <Paperclip className="w-3.5 h-3.5" />
+    </Button>
+  );
+
+  if (useWindowMode) {
+    return (
+      <>
+        {trigger}
+        <ResourcePickerWindow
+          isOpen={isOpen}
+          onClose={() => setIsOpen(false)}
+          onResourceSelected={handleResourceSelected}
+          attachmentCapabilities={undefined}
+          position="center"
+        />
+      </>
+    );
+  }
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen} modal={false}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-          tabIndex={-1}
-          title="Attach resource"
-        >
-          <Paperclip className="w-3.5 h-3.5" />
-        </Button>
-      </PopoverTrigger>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent
-        className="w-80 p-0 border-border z-[1500]"
+        className="w-80 p-0 border-border"
         align="start"
         side="top"
         sideOffset={8}
-        container={dialogContainer}
+        container={dialogContainer ?? undefined}
       >
         <ResourcePickerMenu
           onResourceSelected={handleResourceSelected}

@@ -89,7 +89,10 @@ import contextMenuCacheReducer from "./slices/contextMenuCacheSlice";
 import activeChatReducer from "./slices/activeChatSlice";
 
 // App context (org/workspace/project/task/conversation scope — required by callApi resolveScope)
-import appContextReducer from "./slices/appContextSlice";
+import appContextReducer from "../../features/context/redux/appContextSlice";
+
+// Hierarchy tree cache — org/workspace/project/task tree from RPC
+import hierarchyReducer from "../../features/context/redux/hierarchySlice";
 
 // ============================================================================
 // LITE ROOT REDUCER — SSR Shell + Public Routes
@@ -215,6 +218,9 @@ export const createLiteRootReducer = () => {
 
     // App context scope — required by callApi.resolveScope() for org/workspace/project/task/conversation
     appContext: appContextReducer,
+
+    // Hierarchy tree cache — org/workspace/project/task tree from RPC
+    hierarchy: hierarchyReducer,
   });
 };
 

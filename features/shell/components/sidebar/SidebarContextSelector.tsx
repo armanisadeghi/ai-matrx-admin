@@ -13,6 +13,7 @@ import {
   Loader2,
   Globe,
   Check,
+  AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
@@ -24,32 +25,15 @@ import {
   setProject,
   setTask,
   clearContext,
-} from "@/lib/redux/slices/appContextSlice";
+} from "@/features/context/redux/appContextSlice";
+import { useNavTree } from "@/features/context/hooks/useNavTree";
+import type {
+  NavOrganization,
+  NavWorkspace,
+  NavProject,
+} from "@/features/context/redux/hierarchySlice";
 
 // ── Types ────────────────────────────────────────────────────────────────────
-
-interface OrgItem {
-  id: string;
-  name: string;
-  slug: string;
-  is_personal: boolean;
-  role: string;
-}
-
-interface WorkspaceItem {
-  id: string;
-  name: string;
-  organization_id: string;
-  parent_workspace_id: string | null;
-}
-
-interface ProjectItem {
-  id: string;
-  name: string;
-  organization_id: string | null;
-  workspace_id: string | null;
-  is_personal: boolean;
-}
 
 interface TaskItem {
   id: string;
@@ -66,15 +50,18 @@ function truncate(s: string, max = 24) {
   return s.length > max ? s.slice(0, max - 1) + "\u2026" : s;
 }
 
-function getRootWorkspaces(workspaces: WorkspaceItem[]): WorkspaceItem[] {
-  return workspaces.filter((w) => !w.parent_workspace_id);
+function getChildWorkspaces(
+  workspaces: NavWorkspace[],
+  parentId: string,
+): NavWorkspace[] {
+  return workspaces
+    .filter((w) => (w.children.some((c) => c.id === parentId) ? false : true))
+    .filter((_, i) => i >= 0); // keep all; nesting from RPC is already correct
 }
 
-function getChildWorkspaces(
-  workspaces: WorkspaceItem[],
-  parentId: string,
-): WorkspaceItem[] {
-  return workspaces.filter((w) => w.parent_workspace_id === parentId);
+// NavWorkspace is already nested — just get root-level ones
+function getRootWorkspaces(org: NavOrganization): NavWorkspace[] {
+  return org.workspaces; // top-level workspaces only (depth 0 from RPC)
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -83,31 +70,13 @@ export default function SidebarContextSelector() {
   const dispatch = useAppDispatch();
   const ctx = useAppSelector(selectAppContext);
 
+  // ── Redux-backed nav tree (single fetch, no duplicates) ─────────────────
+  const { orgs, isLoading: loadingOrgs, isError, error } = useNavTree();
+
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>("tree");
 
-  // Top-level orgs (fetched once on first open)
-  const [orgs, setOrgs] = useState<OrgItem[] | null>(null);
-  const [loadingOrgs, setLoadingOrgs] = useState(false);
-
-  // Per-org lazily loaded data: workspaces & direct projects
-  const [orgWorkspaces, setOrgWorkspaces] = useState<
-    Record<string, WorkspaceItem[]>
-  >({});
-  const [orgProjects, setOrgProjects] = useState<Record<string, ProjectItem[]>>(
-    {},
-  );
-  const [loadingOrgData, setLoadingOrgData] = useState<Set<string>>(new Set());
-
-  // Per-workspace lazily loaded projects
-  const [wsProjects, setWsProjects] = useState<Record<string, ProjectItem[]>>(
-    {},
-  );
-  const [loadingWsProjects, setLoadingWsProjects] = useState<Set<string>>(
-    new Set(),
-  );
-
-  // Per-project lazily loaded tasks
+  // Per-project lazily loaded tasks (still fetched on-demand — not in nav tree)
   const [projectTasks, setProjectTasks] = useState<Record<string, TaskItem[]>>(
     {},
   );
@@ -132,109 +101,24 @@ export default function SidebarContextSelector() {
     setMounted(true);
   }, []);
 
-  // Fetch orgs on first open via the same RPC used by ContextSwitcher
-  const fetchOrgs = useCallback(async () => {
-    if (orgs) return;
-    setLoadingOrgs(true);
-    try {
-      const { data, error } = await supabase.rpc("agx_get_user_context_tree");
-      if (error) {
-        console.error("[SidebarContextSelector] fetchOrgs error:", error);
-        setOrgs([]);
-        return;
-      }
-      if (data) {
-        const tree = data as {
-          organizations: OrgItem[];
-          workspaces: WorkspaceItem[];
-          projects: ProjectItem[];
-        };
-        setOrgs(tree.organizations ?? []);
-      }
-    } finally {
-      setLoadingOrgs(false);
-    }
-  }, [orgs]);
-
-  // Fetch all workspaces + direct projects for an org (on expand)
-  const fetchOrgData = useCallback(
-    async (orgId: string) => {
-      if (orgWorkspaces[orgId] || loadingOrgData.has(orgId)) return;
-      setLoadingOrgData((s) => new Set(s).add(orgId));
-      try {
-        const [wsRes, projRes] = await Promise.all([
-          supabase
-            .from("workspaces")
-            .select("id, organization_id, parent_workspace_id, name")
-            .eq("organization_id", orgId)
-            .order("name"),
-          supabase
-            .from("projects")
-            .select("id, name, organization_id, workspace_id, is_personal")
-            .eq("organization_id", orgId)
-            .is("workspace_id", null)
-            .order("name"),
-        ]);
-        setOrgWorkspaces((prev) => ({
-          ...prev,
-          [orgId]: (wsRes.data ?? []) as WorkspaceItem[],
-        }));
-        setOrgProjects((prev) => ({
-          ...prev,
-          [orgId]: (projRes.data ?? []) as ProjectItem[],
-        }));
-      } finally {
-        setLoadingOrgData((s) => {
-          const n = new Set(s);
-          n.delete(orgId);
-          return n;
-        });
-      }
-    },
-    [orgWorkspaces, loadingOrgData],
-  );
-
-  // Fetch projects for a workspace (on expand)
-  const fetchWsProjects = useCallback(
-    async (wsId: string) => {
-      if (wsProjects[wsId] || loadingWsProjects.has(wsId)) return;
-      setLoadingWsProjects((s) => new Set(s).add(wsId));
-      try {
-        const { data } = await supabase
-          .from("projects")
-          .select("id, name, organization_id, workspace_id, is_personal")
-          .eq("workspace_id", wsId)
-          .order("name");
-        setWsProjects((prev) => ({
-          ...prev,
-          [wsId]: (data ?? []) as ProjectItem[],
-        }));
-      } finally {
-        setLoadingWsProjects((s) => {
-          const n = new Set(s);
-          n.delete(wsId);
-          return n;
-        });
-      }
-    },
-    [wsProjects, loadingWsProjects],
-  );
-
-  // Fetch tasks for a project (on expand)
+  // Fetch tasks for a project (on expand) — tasks are not in the nav tree
   const fetchTasks = useCallback(
     async (projectId: string) => {
       if (projectTasks[projectId] || loadingTasks.has(projectId)) return;
       setLoadingTasks((s) => new Set(s).add(projectId));
       try {
-        const { data, error } = await supabase
+        const { data, error: fetchError } = await supabase
           .from("tasks")
           .select("id, title, project_id, status")
           .eq("project_id", projectId)
           .is("parent_task_id", null)
           .order("created_at", { ascending: false })
           .limit(50);
-        if (error) {
-          console.error("[SidebarContextSelector] fetchTasks error:", error);
+        if (fetchError) {
+          console.error(
+            "[SidebarContextSelector] fetchTasks error:",
+            fetchError,
+          );
         }
         setProjectTasks((prev) => ({
           ...prev,
@@ -269,9 +153,8 @@ export default function SidebarContextSelector() {
         setPos({ x, top: VIEWPORT_PADDING });
       }
     }
-    if (!open) fetchOrgs();
     setOpen((v) => !v);
-  }, [open, fetchOrgs]);
+  }, []);
 
   // Close on outside click
   useEffect(() => {
@@ -300,39 +183,33 @@ export default function SidebarContextSelector() {
 
   // Auto-expand to show current selection when panel opens
   useEffect(() => {
-    if (!orgs || !open) return;
+    if (!open || !orgs.length) return;
     if (ctx.organization_id) {
       setExpandedOrgs((s) => new Set(s).add(ctx.organization_id!));
-      fetchOrgData(ctx.organization_id);
     }
     if (ctx.workspace_id) {
       setExpandedWorkspaces((s) => new Set(s).add(ctx.workspace_id!));
-      fetchWsProjects(ctx.workspace_id);
     }
     if (ctx.project_id) {
       setExpandedProjects((s) => new Set(s).add(ctx.project_id!));
       fetchTasks(ctx.project_id);
     }
-  }, [orgs, open]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [open, orgs.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleOrg = (id: string) => {
-    const willExpand = !expandedOrgs.has(id);
     setExpandedOrgs((s) => {
       const n = new Set(s);
       n.has(id) ? n.delete(id) : n.add(id);
       return n;
     });
-    if (willExpand) fetchOrgData(id);
   };
 
   const toggleWorkspace = (id: string) => {
-    const willExpand = !expandedWorkspaces.has(id);
     setExpandedWorkspaces((s) => {
       const n = new Set(s);
       n.has(id) ? n.delete(id) : n.add(id);
       return n;
     });
-    if (willExpand) fetchWsProjects(id);
   };
 
   const toggleProject = (id: string) => {
@@ -361,18 +238,10 @@ export default function SidebarContextSelector() {
     ctx.task_id
   );
 
-  // Render a workspace node with its children (nested workspaces + projects)
-  const renderWorkspaceNode = (
-    ws: WorkspaceItem,
-    allWorkspaces: WorkspaceItem[],
-    depth: number,
-  ) => {
+  // Render a workspace node using the already-nested RPC structure
+  const renderWorkspaceNode = (ws: NavWorkspace, depth: number) => {
     const isExpanded = expandedWorkspaces.has(ws.id);
     const isSelected = ctx.workspace_id === ws.id;
-    const childWorkspaces = getChildWorkspaces(allWorkspaces, ws.id);
-    const childProjs = wsProjects[ws.id] ?? [];
-    const isLoadingProjs = loadingWsProjects.has(ws.id);
-    const hasLoadedProjs = ws.id in wsProjects;
 
     return (
       <div key={ws.id}>
@@ -382,7 +251,7 @@ export default function SidebarContextSelector() {
           label={ws.name}
           isSelected={isSelected}
           isExpanded={isExpanded}
-          hasChildren
+          hasChildren={ws.children.length > 0 || ws.projects.length > 0}
           onToggle={() => toggleWorkspace(ws.id)}
           onSelect={() => {
             dispatch(setWorkspace({ id: ws.id, name: ws.name }));
@@ -390,20 +259,10 @@ export default function SidebarContextSelector() {
         />
         {isExpanded && (
           <>
-            {childWorkspaces.map((cw) =>
-              renderWorkspaceNode(cw, allWorkspaces, depth + 1),
-            )}
-            {isLoadingProjs ? (
-              <LoadingRow depth={depth + 1} label="Loading projects..." />
-            ) : (
-              <>
-                {childProjs.map((proj) => renderProjectNode(proj, depth + 1))}
-                {hasLoadedProjs &&
-                  childWorkspaces.length === 0 &&
-                  childProjs.length === 0 && (
-                    <EmptyRow depth={depth + 1} label="Empty" />
-                  )}
-              </>
+            {ws.children.map((cw) => renderWorkspaceNode(cw, depth + 1))}
+            {ws.projects.map((proj) => renderProjectNode(proj, depth + 1))}
+            {ws.children.length === 0 && ws.projects.length === 0 && (
+              <EmptyRow depth={depth + 1} label="Empty" />
             )}
           </>
         )}
@@ -411,7 +270,7 @@ export default function SidebarContextSelector() {
     );
   };
 
-  const renderProjectNode = (proj: ProjectItem, depth: number) => {
+  const renderProjectNode = (proj: NavProject, depth: number) => {
     const isExpanded = expandedProjects.has(proj.id);
     const isSelected = ctx.project_id === proj.id;
     const tasks = projectTasks[proj.id] ?? [];
@@ -556,71 +415,69 @@ export default function SidebarContextSelector() {
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span className="text-xs">Loading...</span>
                   </div>
-                ) : orgs ? (
-                  <div className="py-1">
-                    {orgs.length === 0 ? (
-                      <div className="px-3 py-6 text-center text-xs text-muted-foreground/50 italic">
-                        No organizations found
-                      </div>
-                    ) : (
-                      orgs.map((org) => {
-                        const isExpanded = expandedOrgs.has(org.id);
-                        const isSelected = ctx.organization_id === org.id;
-                        const isLoadingData = loadingOrgData.has(org.id);
-                        const workspaces = orgWorkspaces[org.id] ?? [];
-                        const directProjects = orgProjects[org.id] ?? [];
-                        const hasLoadedData = org.id in orgWorkspaces;
-
-                        return (
-                          <div key={org.id}>
-                            <TreeRow
-                              depth={0}
-                              icon={<Building2 className="w-3.5 h-3.5" />}
-                              label={org.name}
-                              sublabel={org.is_personal ? "Personal" : org.role}
-                              isSelected={isSelected}
-                              isExpanded={isExpanded}
-                              hasChildren
-                              onToggle={() => toggleOrg(org.id)}
-                              onSelect={() => {
-                                dispatch(
-                                  setOrganization({
-                                    id: org.id,
-                                    name: org.name,
-                                  }),
-                                );
-                              }}
-                            />
-                            {isExpanded && (
-                              <>
-                                {isLoadingData ? (
-                                  <LoadingRow depth={1} label="Loading..." />
-                                ) : (
-                                  <>
-                                    {getRootWorkspaces(workspaces).map((ws) =>
-                                      renderWorkspaceNode(ws, workspaces, 1),
-                                    )}
-                                    {directProjects.map((proj) =>
-                                      renderProjectNode(proj, 1),
-                                    )}
-                                    {hasLoadedData &&
-                                      workspaces.length === 0 &&
-                                      directProjects.length === 0 && (
-                                        <EmptyRow
-                                          depth={1}
-                                          label="No workspaces or projects"
-                                        />
-                                      )}
-                                  </>
-                                )}
-                              </>
-                            )}
-                          </div>
-                        );
-                      })
+                ) : isError ? (
+                  <div className="flex flex-col items-center gap-2 py-10 text-destructive/70 px-4 text-center">
+                    <AlertCircle className="w-5 h-5" />
+                    <span className="text-xs">Failed to load hierarchy</span>
+                    {error && (
+                      <span className="text-[10px] text-muted-foreground">
+                        {error}
+                      </span>
                     )}
                   </div>
-                ) : null}
+                ) : orgs.length === 0 ? (
+                  <div className="px-3 py-6 text-center text-xs text-muted-foreground/50 italic">
+                    No organizations found
+                  </div>
+                ) : (
+                  <div className="py-1">
+                    {orgs.map((org) => {
+                      const isExpanded = expandedOrgs.has(org.id);
+                      const isSelected = ctx.organization_id === org.id;
+                      const hasChildren =
+                        org.workspaces.length > 0 || org.projects.length > 0;
+
+                      return (
+                        <div key={org.id}>
+                          <TreeRow
+                            depth={0}
+                            icon={<Building2 className="w-3.5 h-3.5" />}
+                            label={org.name}
+                            sublabel={org.is_personal ? "Personal" : org.role}
+                            isSelected={isSelected}
+                            isExpanded={isExpanded}
+                            hasChildren={hasChildren}
+                            onToggle={() => toggleOrg(org.id)}
+                            onSelect={() => {
+                              dispatch(
+                                setOrganization({
+                                  id: org.id,
+                                  name: org.name,
+                                }),
+                              );
+                            }}
+                          />
+                          {isExpanded && (
+                            <>
+                              {org.workspaces.map((ws) =>
+                                renderWorkspaceNode(ws, 1),
+                              )}
+                              {org.projects.map((proj) =>
+                                renderProjectNode(proj, 1),
+                              )}
+                              {!hasChildren && (
+                                <EmptyRow
+                                  depth={1}
+                                  label="No workspaces or projects"
+                                />
+                              )}
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 

@@ -830,12 +830,23 @@ export default function NotesWorkspace({
             if (c) cachedData = c.data;
             return prev; // no mutation — just reading
           });
-          if (!cachedData) return;
 
+          if (!cachedData) {
+            console.error("[Notes Save] ABORT: no cached data for", noteId);
+            // Don't return — try saving anyway with the label/content we have
+          }
+
+          // Always send both label and content to the database.
+          // Don't try to diff against cache — the cache may be stale or
+          // pre-populated with empty content. Redundant writes are harmless
+          // (Supabase trigger updates updated_at only if values actually change).
           const updates: Record<string, string> = {};
-          if (label !== cachedData.label) updates.label = label;
-          if (content !== cachedData.content) updates.content = content;
+          if (content) updates.content = content;
+          if (label) updates.label = label;
 
+          console.log("[Notes Save]", noteId, "updates:", Object.keys(updates), "label:", label?.slice(0, 20), "content length:", content?.length);
+
+          // Only skip if truly nothing to send
           if (Object.keys(updates).length === 0) {
             setNoteCache((prev) => {
               const next = new Map(prev);
@@ -857,6 +868,7 @@ export default function NotesWorkspace({
           // Mark as "saving" for echo suppression — realtime and background
           // refresh will skip conflict detection while this note is in flight.
           savingNoteIdsRef.current.add(noteId);
+          console.log("[Notes Save] Echo suppression ON for", noteId);
 
           // Simple save — trust realtime for conflict detection, no WHERE clause
           const { data, error } = await supabase
@@ -872,7 +884,7 @@ export default function NotesWorkspace({
           }, 3000);
 
           if (error) {
-            console.error("Auto-save failed:", error);
+            console.error("[Notes Save] FAILED:", error.message, error.code, error.details, "noteId:", noteId, "updates:", updates);
             setNoteCache((prev) => {
               const next = new Map(prev);
               const c = next.get(noteId);

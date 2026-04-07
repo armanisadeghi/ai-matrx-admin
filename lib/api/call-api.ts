@@ -74,7 +74,7 @@ import {
   selectProjectId,
   selectTaskId,
   selectConversationId,
-} from "@/lib/redux/slices/appContextSlice";
+} from "@/features/context/redux/appContextSlice";
 // BACKEND_URLS no longer needed here — URL resolution is owned by apiConfigSlice
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 
@@ -1072,9 +1072,15 @@ export interface CallPromptStartOptions {
   body: PromptStartBody;
   signal?: AbortSignal;
   scopeOverrides?: Partial<CallScope>;
-  onStreamStart?: (requestId: string | null, conversationId: string | null) => void;
+  onStreamStart?: (
+    requestId: string | null,
+    conversationId: string | null,
+  ) => void;
   onStreamEvent?: (event: StreamEvent) => void;
-  onStreamComplete?: (requestId: string | null, conversationId: string | null) => void;
+  onStreamComplete?: (
+    requestId: string | null,
+    conversationId: string | null,
+  ) => void;
   onStreamError?: (error: ApiCallError) => void;
   _testOverrides?: TestOverrides;
 }

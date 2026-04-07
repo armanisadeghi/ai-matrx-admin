@@ -35,7 +35,7 @@ import {
   selectWorkspaceId,
   selectProjectId,
   selectTaskId,
-} from "@/lib/redux/slices/appContextSlice";
+} from "@/features/context/redux/appContextSlice";
 import {
   selectAccessToken,
   selectFingerprintId,

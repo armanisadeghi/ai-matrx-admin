@@ -13,7 +13,7 @@ import {
   setProject,
   setTask,
   setFullContext,
-} from "@/lib/redux/slices/appContextSlice";
+} from "@/features/context/redux/appContextSlice";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import type { ContextScopeLevel } from "../types";
 

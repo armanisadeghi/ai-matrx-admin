@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Building2,
   FolderKanban,
@@ -10,6 +10,7 @@ import {
   Loader2,
   User,
   Globe,
+  AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
@@ -21,44 +22,16 @@ import {
   setProject,
   setTask,
   clearContext,
-} from "@/lib/redux/slices/appContextSlice";
+} from "@/features/context/redux/appContextSlice";
+import { useNavTree } from "@/features/context/hooks/useNavTree";
 
 // ── Types ────────────────────────────────────────────────────────────────────
-
-interface OrgItem {
-  id: string;
-  name: string;
-  slug: string | null;
-  is_personal: boolean;
-  role: string;
-}
-
-interface WorkspaceItem {
-  id: string;
-  name: string;
-  organization_id: string | null;
-  parent_workspace_id: string | null;
-}
-
-interface ProjectItem {
-  id: string;
-  name: string;
-  organization_id: string | null;
-  workspace_id: string | null;
-  is_personal: boolean;
-}
 
 interface TaskItem {
   id: string;
   title: string;
   project_id: string;
   status: string | null;
-}
-
-interface ContextTree {
-  organizations: OrgItem[];
-  workspaces: WorkspaceItem[];
-  projects: ProjectItem[];
 }
 
 // ── Helper ───────────────────────────────────────────────────────────────────
@@ -73,35 +46,21 @@ export function ContextSwitcherCore() {
   const dispatch = useAppDispatch();
   const ctx = useAppSelector(selectAppContext);
 
-  const [tree, setTree] = useState<ContextTree | null>(null);
+  // ── Redux-backed nav tree ────────────────────────────────────────────────
+  const {
+    orgs,
+    flatWorkspaces,
+    flatProjects,
+    isLoading: loadingTree,
+    isError,
+    error,
+  } = useNavTree();
+
   const [tasks, setTasks] = useState<TaskItem[]>([]);
-  const [loadingTree, setLoadingTree] = useState(false);
   const [loadingTasks, setLoadingTasks] = useState(false);
   const [activeSection, setActiveSection] = useState<
     "org" | "workspace" | "project" | "task"
   >("org");
-
-  // ── Fetch tree lazily on first open ─────────────────────────────────────
-  const fetchTree = useCallback(async () => {
-    if (tree) return;
-    setLoadingTree(true);
-    try {
-      const { data, error } = await supabase.rpc("agx_get_user_context_tree");
-      if (error) {
-        console.error("[ContextSwitcherCore] fetchTree error:", error);
-        return;
-      }
-      if (data) {
-        setTree(data as unknown as ContextTree);
-      }
-    } finally {
-      setLoadingTree(false);
-    }
-  }, [tree]);
-
-  useEffect(() => {
-    fetchTree();
-  }, [fetchTree]);
 
   // ── Fetch tasks when project is selected ────────────────────────────────
   useEffect(() => {
@@ -117,9 +76,9 @@ export function ContextSwitcherCore() {
       .is("parent_task_id", null)
       .order("created_at", { ascending: false })
       .limit(50)
-      .then(({ data, error }) => {
-        if (error) {
-          console.error("[ContextSwitcherCore] fetchTasks error:", error);
+      .then(({ data, error: fetchErr }) => {
+        if (fetchErr) {
+          console.error("[ContextSwitcherCore] fetchTasks error:", fetchErr);
         }
         setTasks((data ?? []) as TaskItem[]);
         setLoadingTasks(false);
@@ -130,19 +89,15 @@ export function ContextSwitcherCore() {
     ctx.organization_id || ctx.workspace_id || ctx.project_id || ctx.task_id;
 
   // ── Filtered lists based on current context ─────────────────────────────
-  const visibleWorkspaces = tree
-    ? ctx.organization_id
-      ? tree.workspaces.filter((w) => w.organization_id === ctx.organization_id)
-      : tree.workspaces
-    : [];
+  const visibleWorkspaces = ctx.organization_id
+    ? flatWorkspaces.filter((w) => w.org_id === ctx.organization_id)
+    : flatWorkspaces;
 
-  const visibleProjects = tree
-    ? ctx.workspace_id
-      ? tree.projects.filter((p) => p.workspace_id === ctx.workspace_id)
-      : ctx.organization_id
-        ? tree.projects.filter((p) => p.organization_id === ctx.organization_id)
-        : tree.projects
-    : [];
+  const visibleProjects = ctx.workspace_id
+    ? flatProjects.filter((p) => p.workspace_id === ctx.workspace_id)
+    : ctx.organization_id
+      ? flatProjects.filter((p) => p.org_id === ctx.organization_id)
+      : flatProjects;
 
   // ── Section tabs ─────────────────────────────────────────────────────────
   const tabs: {
@@ -187,6 +142,14 @@ export function ContextSwitcherCore() {
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
             <span className="text-sm font-medium">Loading Context...</span>
           </div>
+        ) : isError ? (
+          <div className="flex flex-col items-center justify-center gap-3 py-12 h-full text-destructive/70">
+            <AlertCircle className="w-6 h-6" />
+            <span className="text-sm font-medium">Failed to load</span>
+            {error && (
+              <span className="text-xs text-muted-foreground">{error}</span>
+            )}
+          </div>
         ) : (
           <div className="space-y-1">
             {/* Org section */}
@@ -198,7 +161,7 @@ export function ContextSwitcherCore() {
                   active={!ctx.organization_id}
                   onClick={() => dispatch(setOrganization({ id: null }))}
                 />
-                {(tree?.organizations ?? []).map((org) => (
+                {orgs.map((org) => (
                   <SectionRow
                     key={org.id}
                     label={org.name}
@@ -211,7 +174,7 @@ export function ContextSwitcherCore() {
                     }}
                   />
                 ))}
-                {tree && tree.organizations.length === 0 && (
+                {orgs.length === 0 && (
                   <EmptyState label="No organizations found." />
                 )}
               </>
@@ -285,7 +248,9 @@ export function ContextSwitcherCore() {
                 ) : loadingTasks ? (
                   <div className="flex flex-col items-center justify-center gap-3 py-10 h-full text-muted-foreground">
                     <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                    <span className="text-sm font-medium">Loading Tasks...</span>
+                    <span className="text-sm font-medium">
+                      Loading Tasks...
+                    </span>
                   </div>
                 ) : (
                   <>
@@ -322,7 +287,13 @@ export function ContextSwitcherCore() {
       <div className="shrink-0 p-3 bg-muted/20 border-t border-border flex flex-col items-center justify-center min-h-[48px]">
         {hasContext ? (
           <div className="w-full flex items-center justify-between">
-            <ContextBreadcrumb ctx={ctx} tree={tree} tasks={tasks} />
+            <ContextBreadcrumb
+              ctx={ctx}
+              orgs={orgs}
+              flatWorkspaces={flatWorkspaces}
+              flatProjects={flatProjects}
+              tasks={tasks}
+            />
             <button
               onClick={() => dispatch(clearContext())}
               className="text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 px-2 py-1 rounded transition-colors"
@@ -369,7 +340,9 @@ function SectionRow({
       <span
         className={cn(
           "shrink-0 transition-colors",
-          active ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
+          active
+            ? "text-primary"
+            : "text-muted-foreground group-hover:text-foreground",
         )}
       >
         {icon}
@@ -397,24 +370,28 @@ function EmptyState({ label }: { label: string }) {
 
 function ContextBreadcrumb({
   ctx,
-  tree,
+  orgs,
+  flatWorkspaces,
+  flatProjects,
   tasks,
 }: {
   ctx: ReturnType<typeof selectAppContext>;
-  tree: ContextTree | null;
+  orgs: { id: string; name: string }[];
+  flatWorkspaces: { id: string; name: string }[];
+  flatProjects: { id: string; name: string }[];
   tasks: TaskItem[];
 }) {
   const parts: string[] = [];
-  if (ctx.organization_id && tree) {
-    const o = tree.organizations.find((o) => o.id === ctx.organization_id);
+  if (ctx.organization_id) {
+    const o = orgs.find((o) => o.id === ctx.organization_id);
     if (o) parts.push(truncate(o.name, 14));
   }
-  if (ctx.workspace_id && tree) {
-    const w = tree.workspaces.find((w) => w.id === ctx.workspace_id);
+  if (ctx.workspace_id) {
+    const w = flatWorkspaces.find((w) => w.id === ctx.workspace_id);
     if (w) parts.push(truncate(w.name, 14));
   }
-  if (ctx.project_id && tree) {
-    const p = tree.projects.find((p) => p.id === ctx.project_id);
+  if (ctx.project_id) {
+    const p = flatProjects.find((p) => p.id === ctx.project_id);
     if (p) parts.push(truncate(p.name, 14));
   }
   if (ctx.task_id) {
@@ -428,7 +405,9 @@ function ContextBreadcrumb({
     <div className="flex items-center gap-1.5 flex-wrap">
       {parts.map((part, i) => (
         <span key={i} className="flex items-center gap-1.5">
-          {i > 0 && <ChevronRight className="w-3 h-3 text-muted-foreground/50" />}
+          {i > 0 && (
+            <ChevronRight className="w-3 h-3 text-muted-foreground/50" />
+          )}
           <span className="text-xs font-medium text-foreground/80">{part}</span>
         </span>
       ))}

@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAppContext,
   clearContext,
-} from "@/lib/redux/slices/appContextSlice";
+} from "@/features/context/redux/appContextSlice";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 
 export default function ContextSwitcher() {
@@ -23,12 +23,14 @@ export default function ContextSwitcher() {
   })();
 
   const hasContext = Boolean(
-    ctx.organization_id || ctx.workspace_id || ctx.project_id || ctx.task_id
+    ctx.organization_id || ctx.workspace_id || ctx.project_id || ctx.task_id,
   );
 
   return (
     <button
-      onClick={() => dispatch(openOverlay({ overlayId: "contextSwitcherWindow" }))}
+      onClick={() =>
+        dispatch(openOverlay({ overlayId: "contextSwitcherWindow" }))
+      }
       className={cn(
         "flex items-center gap-1.5 w-full px-2 py-1 text-[0.6875rem] rounded-md cursor-pointer transition-colors [&_svg]:w-3 [&_svg]:h-3",
         hasContext

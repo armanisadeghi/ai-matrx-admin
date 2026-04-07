@@ -15,7 +15,7 @@ import {
   selectWorkspaceId,
   selectProjectId,
   selectTaskId,
-} from "@/lib/redux/slices/appContextSlice";
+} from "@/features/context/redux/appContextSlice";
 
 interface HtmlPreviewBridgeProps {
   content: string;

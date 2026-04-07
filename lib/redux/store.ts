@@ -116,7 +116,7 @@ export const makeStore = (
         socketMiddleware,
         storageMiddleware,
         entitySagaMiddleware,
-        notesRealtimeMiddleware,
+        // notesRealtimeMiddleware — disabled until workspace fully uses Redux state
       ),
     devTools: process.env.NODE_ENV !== "production",
   });

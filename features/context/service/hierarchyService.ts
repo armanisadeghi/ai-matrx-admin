@@ -3,6 +3,10 @@
 import { supabase } from "@/utils/supabase/client";
 import { requireUserId, getUserEmail } from "@/utils/auth/getUserId";
 import type { Database } from "@/types/database.types";
+import type {
+  NavTreeResponse,
+  FullContextResponse,
+} from "@/features/context/redux/hierarchySlice";
 
 function toTaskPriority(
   p: string | undefined,
@@ -327,7 +331,11 @@ export const hierarchyService = {
             parentId: ws.id,
             children: taskNodes,
             childCount: taskNodes.length,
-            meta: { slug: proj.slug, created_at: proj.created_at, organization_id: org.id },
+            meta: {
+              slug: proj.slug,
+              created_at: proj.created_at,
+              organization_id: org.id,
+            },
           });
           wsNode.childCount++;
         }
@@ -347,7 +355,11 @@ export const hierarchyService = {
           parentId: org.id,
           children: taskNodes,
           childCount: taskNodes.length,
-          meta: { slug: proj.slug, created_at: proj.created_at, organization_id: org.id },
+          meta: {
+            slug: proj.slug,
+            created_at: proj.created_at,
+            organization_id: org.id,
+          },
         });
         orgNode.childCount++;
       }
@@ -627,6 +639,28 @@ export const hierarchyService = {
       .delete()
       .eq("id", id);
     if (error) throw error;
+  },
+
+  // ─── RPC-based tree fetchers (new, preferred) ────────────────────
+
+  /**
+   * Fetch the lightweight org/workspace/project tree via `get_user_nav_tree`.
+   * Does NOT include tasks. Use for sidebar, nav, org/workspace pickers.
+   */
+  async fetchNavTree(): Promise<NavTreeResponse> {
+    const { data, error } = await supabase.rpc("get_user_nav_tree");
+    if (error) throw error;
+    return (data as unknown as NavTreeResponse) ?? { organizations: [] };
+  },
+
+  /**
+   * Fetch the full hierarchy including open tasks via `get_user_full_context`.
+   * Heavier than `fetchNavTree`. Use for dashboards and task boards.
+   */
+  async fetchFullContext(): Promise<FullContextResponse> {
+    const { data, error } = await supabase.rpc("get_user_full_context");
+    if (error) throw error;
+    return (data as unknown as FullContextResponse) ?? { organizations: [] };
   },
 
   // ─── Move / reparent ──────────────────────────────────────────────

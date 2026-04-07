@@ -18851,6 +18851,7 @@ export type Database = {
           view_count: number
         }[]
       }
+      get_user_full_context: { Args: { p_user_id?: string }; Returns: Json }
       get_user_hierarchy: { Args: never; Returns: Json }
       get_user_list_with_items: { Args: { p_list_id: string }; Returns: Json }
       get_user_lists_summary: { Args: { p_user_id: string }; Returns: Json }
@@ -18873,6 +18874,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_user_nav_tree: { Args: { p_user_id?: string }; Returns: Json }
       get_user_organizations: {
         Args: { user_id: string }
         Returns: {

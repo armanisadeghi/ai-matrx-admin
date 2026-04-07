@@ -7,10 +7,11 @@ import {
   Loader2,
   ExternalLink,
   FileText,
-  CheckCircle2,
   AlertCircle,
+  Copy,
+  Check,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/ButtonMine";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -33,6 +34,15 @@ interface WebpageContent {
 
 interface WebpageResourcePickerProps {
   onBack: () => void;
+  onSelect: (content: WebpageContent) => void;
+  onSwitchTo?: (
+    type: "youtube" | "image_url" | "file_url",
+    url: string,
+  ) => void;
+  initialUrl?: string;
+}
+
+interface WebpageResourcePickerCoreProps {
   onSelect: (content: WebpageContent) => void;
   onSwitchTo?: (
     type: "youtube" | "image_url" | "file_url",
@@ -100,12 +110,11 @@ function detectUrlType(url: string): "youtube" | "image" | "file" | "webpage" {
   }
 }
 
-export function WebpageResourcePicker({
-  onBack,
+export function WebpageResourcePickerCore({
   onSelect,
   onSwitchTo,
   initialUrl,
-}: WebpageResourcePickerProps) {
+}: WebpageResourcePickerCoreProps) {
   const [url, setUrl] = useState(initialUrl || "");
   const [showPreview, setShowPreview] = useState(false);
   const [suggestedType, setSuggestedType] = useState<
@@ -113,6 +122,7 @@ export function WebpageResourcePicker({
   >(null);
   const [editedContent, setEditedContent] = useState<string>("");
   const [previewTab, setPreviewTab] = useState("pretty");
+  const [copied, setCopied] = useState(false);
   const {
     scrapeUrl,
     data,
@@ -149,7 +159,6 @@ export function WebpageResourcePicker({
     if (!target.trim()) return;
 
     const normalized = normalizeUrl(target);
-    // Update displayed URL to the normalized version
     setUrl(normalized);
 
     const detectedType = detectUrlType(normalized);
@@ -181,12 +190,11 @@ export function WebpageResourcePicker({
   const handleConfirm = () => {
     if (!data) return;
 
-    // Use the edited content instead of the original
     onSelect({
       url,
       title: data.overview.page_title || url,
-      textContent: editedContent, // Use edited content
-      charCount: editedContent.length, // Update character count based on edited content
+      textContent: editedContent,
+      charCount: editedContent.length,
       scrapedAt: data.scrapedAt,
     });
 
@@ -217,27 +225,19 @@ export function WebpageResourcePicker({
     setTimeout(() => handleScrape(pastedText), 50);
   };
 
+  const handleCopy = async () => {
+    if (!editedContent) return;
+    await navigator.clipboard.writeText(editedContent);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  const pageTitle = data?.overview.page_title;
+
   return (
     <>
+      {/* Input area — rendered inline (no dialog wrapper) */}
       <div className="flex flex-col max-h-[min(460px,70dvh)]">
-        {/* Header */}
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0 flex-shrink-0"
-            onClick={onBack}
-            disabled={isLoading}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <Globe className="w-4 h-4 flex-shrink-0 text-teal-600 dark:text-teal-500" />
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex-1 truncate">
-            Webpage Content
-          </span>
-        </div>
-
-        {/* Content */}
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
           <div className="flex-1 min-h-0 overflow-y-auto p-3">
             <div className="space-y-3">
@@ -354,21 +354,19 @@ export function WebpageResourcePicker({
           <DialogHeader className="px-6 py-4 border-b border-border flex-shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <FileText className="w-5 h-5 text-green-600 dark:text-green-500" />
-              <span>Webpage Content Preview</span>
+              <span className="truncate">
+                {pageTitle || "Webpage Content Preview"}
+              </span>
             </DialogTitle>
           </DialogHeader>
 
           {/* Loading State */}
           {!data && isLoading && (
-            <div className="flex-1 flex flex-col items-center justify-center p-8">
+            <div className="flex-1 flex flex-col items-center justify-center p-">
               <div className="relative">
-                {/* Animated loader */}
                 <div className="w-20 h-20 relative">
-                  {/* Outer ring */}
                   <div className="absolute inset-0 border-4 border-teal-200 dark:border-teal-800 rounded-full"></div>
-                  {/* Spinning ring */}
                   <div className="absolute inset-0 border-4 border-transparent border-t-teal-600 dark:border-t-teal-400 rounded-full animate-spin"></div>
-                  {/* Inner pulsing circle */}
                   <div className="absolute inset-3 bg-teal-100 dark:bg-teal-900 rounded-full animate-pulse flex items-center justify-center">
                     <Globe className="w-6 h-6 text-teal-600 dark:text-teal-400" />
                   </div>
@@ -384,7 +382,6 @@ export function WebpageResourcePicker({
                   few moments depending on the page size and complexity.
                 </p>
 
-                {/* Progress indicators */}
                 <div className="flex items-center justify-center gap-2 pt-4">
                   <div className="flex gap-1.5">
                     <div
@@ -407,64 +404,28 @@ export function WebpageResourcePicker({
 
           {data && (
             <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-              {/* Metadata */}
-              <div className="flex-shrink-0 px-6 py-3 border-b border-border space-y-2">
-                <div className="flex items-start gap-2">
-                  <Globe className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-500" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                      {data.overview.page_title || "Untitled Page"}
-                    </div>
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 truncate"
-                    >
-                      {url}
-                      <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                    </a>
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="flex gap-4 text-[10px] text-gray-500 dark:text-gray-400">
-                  <span>
-                    {editedContent.length.toLocaleString()} characters
-                  </span>
-                  <span>{Math.ceil(editedContent.length / 1000)} KB</span>
-                  {data.overview.has_structured_content && (
-                    <span className="text-green-600 dark:text-green-500">
-                      ✓ Structured
-                    </span>
-                  )}
-                  {editedContent !== data.textContent && (
-                    <span className="text-orange-600 dark:text-orange-500">
-                      ✏️ Edited
-                    </span>
-                  )}
-                </div>
-              </div>
-
               <div className="flex-1 flex flex-col overflow-hidden min-h-0 border-t border-border">
                 <Tabs
                   value={previewTab}
                   onValueChange={setPreviewTab}
                   className="flex-1 flex flex-col overflow-hidden min-h-0"
                 >
-                  <TabsList className="mx-6 mt-2 h-9 w-fit shrink-0">
-                    <TabsTrigger value="pretty" className="text-xs">
+                  <TabsList className="mx-2 mt-2 h-9 w-fit shrink-0">
+                    <TabsTrigger
+                      value="pretty"
+                      className="text-xs rounded-none"
+                    >
                       Pretty
                     </TabsTrigger>
-                    <TabsTrigger value="edit" className="text-xs">
+                    <TabsTrigger value="edit" className="text-xs rounded-none">
                       Edit text
                     </TabsTrigger>
                   </TabsList>
                   <TabsContent
                     value="pretty"
-                    className="flex-1 overflow-auto mt-0 px-6 pb-2 min-h-0 data-[state=inactive]:hidden"
+                    className="flex-1 overflow-auto mt-0 px-0 pb-0 min-h-0 data-[state=inactive]:hidden"
                   >
-                    <div className="max-h-[min(50dvh,24rem)] overflow-auto rounded-lg border border-border">
+                    <div className="h-full overflow-auto rounded-none bg-background border-none">
                       <ScrapedContentPretty
                         markdown={data.markdownRenderable ?? ""}
                       />
@@ -478,15 +439,28 @@ export function WebpageResourcePicker({
                       <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
                         Content (editable — sent on confirm)
                       </span>
-                      {editedContent !== data.textContent && (
+                      <div className="flex items-center gap-2">
+                        {editedContent !== data.textContent && (
+                          <button
+                            type="button"
+                            onClick={() => setEditedContent(data.textContent)}
+                            className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                          >
+                            Reset to original
+                          </button>
+                        )}
                         <button
                           type="button"
-                          onClick={() => setEditedContent(data.textContent)}
-                          className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                          onClick={handleCopy}
+                          className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                         >
-                          Reset to original
+                          {copied ? (
+                            <Check className="w-3.5 h-3.5 text-green-600 dark:text-green-500" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
                         </button>
-                      )}
+                      </div>
                     </div>
                     <textarea
                       value={editedContent}
@@ -500,29 +474,41 @@ export function WebpageResourcePicker({
 
               {/* Actions */}
               <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-t border-border">
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {editedContent !== data.textContent ? (
-                    <span className="text-orange-600 dark:text-orange-500">
-                      ✏️ Content has been edited
+                <div className="flex items-center gap-3 min-w-0 flex-1 mr-4">
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 truncate min-w-0"
+                  >
+                    <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                    <span className="truncate">{url}</span>
+                  </a>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 flex-shrink-0">
+                    {editedContent.length.toLocaleString()} chars
+                  </span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 flex-shrink-0">
+                    {Math.ceil(editedContent.length / 1000)} KB
+                  </span>
+                  {editedContent !== data.textContent && (
+                    <span className="text-[10px] text-orange-600 dark:text-orange-500 flex-shrink-0">
+                      ✏️ Edited
                     </span>
-                  ) : (
-                    "Review Pretty view or edit text before adding"
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-shrink-0">
                   <Button
                     variant="outline"
                     onClick={handleClosePreview}
-                    className="h-8"
+                    size="xs"
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleConfirm}
                     disabled={!editedContent.trim()}
-                    className="h-8 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
+                    size="xs"
                   >
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
                     Add Content
                   </Button>
                 </div>
@@ -532,5 +518,37 @@ export function WebpageResourcePicker({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+export function WebpageResourcePicker({
+  onBack,
+  onSelect,
+  onSwitchTo,
+  initialUrl,
+}: WebpageResourcePickerProps) {
+  return (
+    <div className="flex flex-col max-h-[min(460px,70dvh)]">
+      {/* Header */}
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 w-6 p-0 flex-shrink-0"
+          onClick={onBack}
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+        <Globe className="w-4 h-4 flex-shrink-0 text-teal-600 dark:text-teal-500" />
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex-1 truncate">
+          Webpage Content
+        </span>
+      </div>
+      <WebpageResourcePickerCore
+        onSelect={onSelect}
+        onSwitchTo={onSwitchTo}
+        initialUrl={initialUrl}
+      />
+    </div>
   );
 }

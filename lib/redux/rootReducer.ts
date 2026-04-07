@@ -82,13 +82,15 @@ import promptEditorReducer from "./slices/promptEditorSlice";
 import modelRegistryReducer from "../../features/ai-models/redux/modelRegistrySlice";
 import { chatConversationsReducer } from "@/features/cx-conversation/redux";
 import { messageActionsReducer } from "@/features/cx-conversation/redux/messageActionsSlice";
+import { agentSettingsReducer } from "./slices/agent-settings";
+
 import cxConversationsReducer from "@/features/cx-chat/redux/cx-conversations.slice";
 import artifactsReducer from "./slices/artifactsSlice";
 import htmlPagesReducer from "./slices/htmlPagesSlice";
-import { agentSettingsReducer } from "./slices/agent-settings";
-import mcpReducer from "@/features/agents/redux/mcp/mcp.slice";
 
-import appContextReducer from "./slices/appContextSlice";
+import mcpReducer from "@/features/agents/redux/mcp/mcp.slice";
+import appContextReducer from "@/features/context/redux/appContextSlice";
+import hierarchyReducer from "@/features/context/redux/hierarchySlice";
 
 import { instanceUIStateReducer } from "@/features/agents/redux/execution-system/instance-ui-state";
 import { instanceClientToolsReducer } from "@/features/agents/redux/execution-system/instance-client-tools";
@@ -302,6 +304,9 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
     // Layer 2 — App Context (scope injected automatically into every API call by callApi)
     appContext: appContextReducer,
+
+    // Hierarchy tree cache — org/workspace/project/task tree from RPC
+    hierarchy: hierarchyReducer,
 
     // Layer 3 — Prompt Instances
     executionInstances: executionInstancesReducer,
