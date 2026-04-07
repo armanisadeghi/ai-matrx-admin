@@ -149,7 +149,7 @@ export function GalleryFloatingWorkspace() {
     if (nearBottom) {
       loadMore();
     }
-  }, [loading, hasMore, handleLoadMore]);
+  }, [loading, hasMore, loadMore]);
 
   // ── Photo actions ───────────────────────────────────────────────────────
   const handleViewPhoto = useCallback(

@@ -16,7 +16,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAuthenticated } from "@/lib/redux/slices/userSlice";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { selectLatestConversationId } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
-import { SmartAgentInput } from "@/features/agents/components/smart/SmartAgentInput";
+import { SmartAgentInput } from "@/features/agents/components/inputs/SmartAgentInput";
 
 const AgentPickerSheet = dynamic(
   () =>

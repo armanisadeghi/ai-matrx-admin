@@ -1,5 +1,5 @@
 import { getAgent } from "@/lib/agents/data";
-import { AgentVersionHistoryPanel } from "@/features/agents/route/AgentVersionHistoryPanel";
+import { AgentVersionsWorkspace } from "@/features/agents/route/AgentVersionsWorkspace";
 
 export async function generateMetadata({
   params,
@@ -18,9 +18,5 @@ export default async function AgentLatestPage({
 }) {
   const { id } = await params;
 
-  return (
-    <div className="h-full flex flex-col overflow-hidden">
-      <AgentVersionHistoryPanel agentId={id} />
-    </div>
-  );
+  return <AgentVersionsWorkspace agentId={id} />;
 }

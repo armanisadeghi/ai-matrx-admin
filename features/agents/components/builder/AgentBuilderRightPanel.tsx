@@ -17,7 +17,7 @@ import { destroyInstance } from "@/features/agents/redux/execution-system/execut
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { AgentConversationDisplay } from "../run/AgentConversationDisplay";
 import { CreatorRunPanel } from "../run-controls/CreatorRunPanel";
-import { SmartAgentInput } from "../smart";
+import { SmartAgentInput } from "../inputs/SmartAgentInput";
 
 interface AgentBuilderRightPanelProps {
   agentId: string;

@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
-import { getAgent, getAgentSnapshot } from "@/lib/agents/data";
-import { VersionHydrator } from "@/features/agents/route/VersionHydrator";
-import { AgentComparisonView } from "@/features/agents/route/AgentComparisonView";
+import { getAgent } from "@/lib/agents/data";
+import { AgentVersionsWorkspace } from "@/features/agents/route/AgentVersionsWorkspace";
 
 export async function generateMetadata({
   params,
@@ -25,15 +24,5 @@ export default async function AgentVersionPage({
   const versionNum = parseInt(version, 10);
   if (isNaN(versionNum)) notFound();
 
-  const [agent, snapshot] = await Promise.all([
-    getAgent(id),
-    getAgentSnapshot(id, versionNum),
-  ]);
-
-  return (
-    <div className="h-full flex flex-col overflow-hidden">
-      <VersionHydrator snapshot={snapshot} />
-      <AgentComparisonView liveAgent={agent} snapshot={snapshot} />
-    </div>
-  );
+  return <AgentVersionsWorkspace agentId={id} initialVersion={versionNum} />;
 }

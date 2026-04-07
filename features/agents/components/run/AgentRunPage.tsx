@@ -29,7 +29,7 @@ import { AgentConversationDisplay } from "./AgentConversationDisplay";
 import { AgentRunsSidebar } from "./AgentRunsSidebar";
 import { AgentLauncherSidebarTester } from "../run-controls/AgentLauncherSidebarTester";
 import { CreatorRunPanel } from "../run-controls/CreatorRunPanel";
-import { SmartAgentInput } from "../smart";
+import { SmartAgentInput } from "../inputs/SmartAgentInput";
 import { Loader2, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";

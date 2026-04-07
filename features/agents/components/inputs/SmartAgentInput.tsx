@@ -413,7 +413,7 @@ export function SmartAgentInput({
 
   // ── Active UI ───────────────────────────────────────────────────────────────
   return (
-    <div className="relative bg-card rounded-lg border border-border overflow-hidden">
+    <div className="relative bg-card rounded-lg max-w-[800px] border border-border overflow-hidden">
       {/* Variable inputs */}
       <SmartAgentVariableInputs
         instanceId={instanceId}

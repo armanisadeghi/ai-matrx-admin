@@ -295,7 +295,7 @@ const PreExecutionInputModalContainer = dynamic(
 
 const AgentExecutionOverlay = dynamic(
   () =>
-    import("@/features/agents/components/run-results/AgentExecutionOverlay").then(
+    import("@/features/agents/components/agent-widgets/AgentExecutionOverlay").then(
       (mod) => ({ default: mod.AgentExecutionOverlay }),
     ),
   { ssr: false },
@@ -388,7 +388,10 @@ const PdfExtractorWindow = dynamic(
 );
 
 const CanvasViewerWindow = dynamic(
-  () => import("@/features/floating-window-panel/windows/CanvasViewerWindow").then((m) => ({ default: m.CanvasViewerWindow })),
+  () =>
+    import("@/features/floating-window-panel/windows/CanvasViewerWindow").then(
+      (m) => ({ default: m.CanvasViewerWindow }),
+    ),
   { ssr: false },
 );
 
@@ -976,13 +979,9 @@ export const OverlayController: React.FC = () => {
         <GalleryWindow isOpen={true} onClose={() => close("galleryWindow")} />
       )}
 
-      {isListManagerWindowOpen && (
-        <ListManagerWindow />
-      )}
+      {isListManagerWindowOpen && <ListManagerWindow />}
 
-      {isAiVoiceWindowOpen && (
-        <AiVoiceWindow />
-      )}
+      {isAiVoiceWindowOpen && <AiVoiceWindow />}
 
       {/* File Preview — instanced, multiple can be open simultaneously */}
       {filePreviewInstances.map(({ instanceId, data }) => {

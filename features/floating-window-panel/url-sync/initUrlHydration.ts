@@ -24,12 +24,12 @@ export function initUrlHydration() {
     dispatch(openOverlay({ overlayId: "voicePad" }));
   });
 
-  // Quick notes global panel
+  // Notes Window
   registerPanelHydrator("notes", (dispatch) => {
-    dispatch(openOverlay({ overlayId: "quickNotes" }));
+    dispatch(openOverlay({ overlayId: "notesWindow" }));
   });
 
-  // Feedback global panel
+  // Feedback Window
   registerPanelHydrator("feedback", (dispatch) => {
     dispatch(openOverlay({ overlayId: "feedbackDialog" }));
   });
@@ -39,23 +39,63 @@ export function initUrlHydration() {
     dispatch(openOverlay({ overlayId: "jsonTruncator" }));
   });
 
-  // Quick tasks
-  registerPanelHydrator("tasks", (dispatch) => {
-    dispatch(openOverlay({ overlayId: "quickTasks" }));
+  // Quick Tasks Window
+  registerPanelHydrator("quick_tasks", (dispatch) => {
+    dispatch(openOverlay({ overlayId: "quickTasksWindow" }));
   });
 
-  // Quick data
-  registerPanelHydrator("data", (dispatch) => {
-    dispatch(openOverlay({ overlayId: "quickData" }));
+  // Quick Data Window
+  registerPanelHydrator("quick_data", (dispatch) => {
+    dispatch(openOverlay({ overlayId: "quickDataWindow" }));
   });
 
-  // Quick files
+  // Quick Files Window
   registerPanelHydrator("files", (dispatch) => {
-    dispatch(openOverlay({ overlayId: "quickFiles" }));
+    dispatch(openOverlay({ overlayId: "quickFilesWindow" }));
   });
 
-  // State Analyzer
+  // State Analyzer Window
   registerPanelHydrator("state_analyzer", (dispatch) => {
-    dispatch(openOverlay({ overlayId: "adminStateAnalyzer" }));
+    dispatch(openOverlay({ overlayId: "adminStateAnalyzerWindow" }));
+  });
+
+  // AI Voice Window
+  registerPanelHydrator("aiVoiceWindow", (dispatch) => {
+    dispatch(openOverlay({ overlayId: "aiVoiceWindow" }));
+  });
+
+  // Gallery Window
+  registerPanelHydrator("gallery", (dispatch) => {
+    dispatch(openOverlay({ overlayId: "galleryWindow" }));
+  });
+
+  // News Window
+  registerPanelHydrator("news", (dispatch) => {
+    dispatch(openOverlay({ overlayId: "newsWindow" }));
+  });
+
+  // User Preferences Window
+  registerPanelHydrator("user_preferences", (dispatch) => {
+    dispatch(openOverlay({ overlayId: "userPreferencesWindow" }));
+  });
+
+  // Share Modal Window
+  registerPanelHydrator("share_modal", (dispatch) => {
+    dispatch(openOverlay({ overlayId: "shareModalWindow" }));
+  });
+
+  // Markdown Editor Window
+  registerPanelHydrator("markdown_editor", (dispatch) => {
+    dispatch(openOverlay({ overlayId: "markdownEditorWindow" }));
+  });
+
+  // Email Dialog Window
+  registerPanelHydrator("email_dialog", (dispatch) => {
+    dispatch(openOverlay({ overlayId: "emailDialogWindow" }));
+  });
+
+  // List Manager Window
+  registerPanelHydrator("listManager", (dispatch) => {
+    dispatch(openOverlay({ overlayId: "listManagerWindow" }));
   });
 }

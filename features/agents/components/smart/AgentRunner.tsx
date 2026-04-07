@@ -35,8 +35,8 @@ import {
 import { selectHasUserInput } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
 import { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
-import { SmartAgentInput } from "./SmartAgentInput";
-import { AgentPreExecutionInput } from "./AgentPreExecutionInput";
+import { SmartAgentInput } from "../inputs/SmartAgentInput";
+import { PreExecutionAgentInput } from "../inputs/PreExecutionAgentInput";
 import { AgentConversationDisplay } from "../run/AgentConversationDisplay";
 
 interface AgentRunnerProps {
@@ -97,13 +97,13 @@ export function AgentRunner({
 
   // ── Pre-execution gate ─────────────────────────────────────────────────────
   if (needsPreExecution) {
-    return <AgentPreExecutionInput instanceId={instanceId} />;
+    return <PreExecutionAgentInput instanceId={instanceId} />;
   }
 
   // ── Main display ───────────────────────────────────────────────────────────
   return (
     <div
-      className={`flex flex-col h-full overflow-hidden bg-background ${className}`}
+      className={`flex flex-col h-full max-w-[800px] border border-red-500 overflow-hidden bg-background ${className}`}
     >
       {showTitle && title && (
         <div className="px-4 py-2 border-b border-border shrink-0">

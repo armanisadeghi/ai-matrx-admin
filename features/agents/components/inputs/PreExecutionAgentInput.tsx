@@ -26,13 +26,13 @@ import { destroyInstance } from "@/features/agents/redux/execution-system/execut
 import { selectInstanceAgentName } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { SmartAgentInput } from "./SmartAgentInput";
 
-interface AgentPreExecutionInputProps {
+interface PreExecutionAgentInputProps {
   instanceId: string;
 }
 
-export function AgentPreExecutionInput({
+export function PreExecutionAgentInput({
   instanceId,
-}: AgentPreExecutionInputProps) {
+}: PreExecutionAgentInputProps) {
   const dispatch = useAppDispatch();
   const title = useAppSelector(selectInstanceAgentName(instanceId));
 
@@ -50,7 +50,7 @@ export function AgentPreExecutionInput({
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col max-w-[400px] h-[300px] border border-red-500">
       <div className="flex items-center justify-between px-4 pt-3 pb-1">
         <p className="text-sm font-medium text-foreground truncate flex-1">
           {title ?? "Please enter details..."}
@@ -83,7 +83,7 @@ export function AgentPreExecutionInput({
         </div>
       )}
 
-      <div className="px-3 pt-0.5 pb-3">
+      <div className="px-3 pt-0.5 pb-3 border border-blue-500">
         <SmartAgentInput
           instanceId={instanceId}
           compact

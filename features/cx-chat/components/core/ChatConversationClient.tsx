@@ -26,7 +26,7 @@ import {
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectTurnCount } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import { AgentConversationDisplay } from "@/features/agents/components/run/AgentConversationDisplay";
-import { SmartAgentInput } from "@/features/agents/components/smart/SmartAgentInput";
+import { SmartAgentInput } from "@/features/agents/components/inputs/SmartAgentInput";
 
 const AgentPickerSheet = dynamic(
   () =>
