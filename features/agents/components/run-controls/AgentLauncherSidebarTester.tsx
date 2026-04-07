@@ -52,6 +52,7 @@ import {
   FolderOpen,
   Copy,
   Check,
+  GalleryVertical,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { AgentExecutionTestModal } from "./AgentExecutionTestModal";
@@ -86,6 +87,7 @@ export function AgentLauncherSidebarTester({
   const [autoRun, setAutoRun] = useState(true);
   const [allowChat, setAllowChat] = useState(true);
   const [showVariables, setShowVariables] = useState(false);
+  const [useWizardVariables, setUseWizardVariables] = useState(false);
   const [applyVariables, setApplyVariables] = useState(true);
   const [usePreExecutionInput, setUsePreExecutionInput] = useState(false);
   const [useChat, setUseChat] = useState(false);
@@ -127,6 +129,7 @@ export function AgentLauncherSidebarTester({
         showVariables,
         usePreExecutionInput,
         useChat,
+        variableInputStyle: useWizardVariables ? "wizard" : "inline",
         variables: applyVariables ? currentVariables : undefined,
         userInput: currentInput || undefined,
       });
@@ -278,6 +281,21 @@ export function AgentLauncherSidebarTester({
 
           <div className="flex items-center justify-between">
             <Label
+              htmlFor="wizard-variables"
+              className="flex items-center gap-1.5 text-xs cursor-pointer"
+            >
+              <GalleryVertical className="w-3.5 h-3.5" />
+              Wizard Variables
+            </Label>
+            <Switch
+              id="wizard-variables"
+              checked={useWizardVariables}
+              onCheckedChange={setUseWizardVariables}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <Label
               htmlFor="apply-variables"
               className="flex items-center gap-1.5 text-xs cursor-pointer"
             >
@@ -353,6 +371,7 @@ export function AgentLauncherSidebarTester({
           showVariables={showVariables}
           applyVariables={applyVariables}
           useChat={useChat}
+          variableInputStyle={useWizardVariables ? "wizard" : "inline"}
           variables={applyVariables ? currentVariables : {}}
           userInput={currentInput || ""}
         />

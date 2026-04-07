@@ -46,6 +46,7 @@ import {
   selectShowVariablePanel,
   selectIsCreator,
   selectShowCreatorDebug,
+  selectVariableInputStyle,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import {
   setSubmitOnEnter,
@@ -156,8 +157,10 @@ interface SmartAgentInputProps {
   disableSend?: boolean;
   /**
    * Controls which variable input UI style is rendered.
-   * - "inline"  (default) — compact rows above the textarea (SmartAgentVariableInputs)
+   * - "inline"  — compact rows above the textarea (SmartAgentVariableInputs)
    * - "wizard"  — one variable at a time, fixed-height card with Back/Skip/Skip All
+   * When omitted, the value from Redux (instanceUIState.variableInputStyle) is used.
+   * Passing a value here overrides Redux for this render tree only.
    */
   variableInputStyle?: "inline" | "wizard";
 }
@@ -180,7 +183,7 @@ export function SmartAgentInput({
   showVariableIcon = true,
   onNewInstance,
   disableSend = false,
-  variableInputStyle = "inline",
+  variableInputStyle,
 }: SmartAgentInputProps) {
   const dispatch = useAppDispatch();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -211,6 +214,12 @@ export function SmartAgentInput({
   const showCreatorDebug = useAppSelector((state) =>
     instanceId ? selectShowCreatorDebug(instanceId)(state) : false,
   );
+  const reduxVariableInputStyle = useAppSelector((state) =>
+    instanceId ? selectVariableInputStyle(instanceId)(state) : "inline",
+  );
+  // Prop takes precedence when explicitly provided; otherwise honour Redux state.
+  const resolvedVariableInputStyle =
+    variableInputStyle ?? reduxVariableInputStyle;
   const hasHistory = useAppSelector((state) =>
     instanceId ? selectHasConversationHistory(instanceId)(state) : false,
   );
@@ -435,7 +444,7 @@ export function SmartAgentInput({
       className={`relative bg-card rounded-lg w-full ${compact ? "max-w-[500px]" : "max-w-[800px]"} border border-border overflow-hidden`}
     >
       {/* Variable inputs */}
-      {variableInputStyle === "wizard" ? (
+      {resolvedVariableInputStyle === "wizard" ? (
         <WizardAgentVariableInputs
           instanceId={instanceId}
           onSubmit={handleSend}

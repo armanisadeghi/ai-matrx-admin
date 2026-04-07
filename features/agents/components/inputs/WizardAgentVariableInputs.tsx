@@ -13,7 +13,6 @@
 
 import { useState, useCallback } from "react";
 import { ChevronLeft, ChevronsRight, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectInstanceVariableDefinitions,
@@ -21,7 +20,10 @@ import {
 } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 import { selectShouldShowVariables } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { setUserVariableValue } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.slice";
-import { selectShowVariablePanel } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import {
+  selectShowVariablePanel,
+  selectVariableInputStyle,
+} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { VariableInputComponent } from "@/features/prompts/components/variable-inputs";
 import { formatText } from "@/utils/text/text-case-converter";
 
@@ -42,6 +44,9 @@ export function WizardAgentVariableInputs({
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const showVariablePanel = useAppSelector(selectShowVariablePanel(instanceId));
+  const variableInputStyle = useAppSelector(
+    selectVariableInputStyle(instanceId),
+  );
   const shouldShowVariables = useAppSelector(
     selectShouldShowVariables(instanceId),
   );
@@ -75,7 +80,12 @@ export function WizardAgentVariableInputs({
     onComplete?.();
   }, [onSubmit, onComplete]);
 
-  if (!shouldShowVariables || !showVariablePanel || definitions.length === 0) {
+  if (
+    !shouldShowVariables ||
+    !showVariablePanel ||
+    definitions.length === 0 ||
+    variableInputStyle !== "wizard"
+  ) {
     return null;
   }
 
@@ -94,23 +104,20 @@ export function WizardAgentVariableInputs({
   const current = currentIndex + 1;
 
   return (
-    <div
-      className="border-b border-border flex flex-col"
-      style={{ height: 220 }}
-    >
-      {/* Header — counter */}
-      <div className="flex items-center justify-between px-3 pt-2 pb-1 shrink-0">
-        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+    <div className="border-b border-border flex flex-col" style={{ height: 200 }}>
+      {/* Header — variable name + counter */}
+      <div className="flex items-center justify-between px-3 pt-2 pb-0.5 shrink-0">
+        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
           {formatText(variable.name)}
         </span>
-        <span className="text-[11px] text-muted-foreground tabular-nums">
+        <span className="text-[10px] text-muted-foreground/60 tabular-nums">
           {current} / {total}
         </span>
       </div>
 
       {/* Help text */}
       {variable.helpText && (
-        <p className="px-3 text-[11px] text-muted-foreground/80 leading-snug shrink-0 pb-1">
+        <p className="px-3 text-[11px] text-muted-foreground/70 leading-snug shrink-0 pb-1">
           {variable.helpText}
         </p>
       )}
@@ -123,60 +130,53 @@ export function WizardAgentVariableInputs({
           variableName={variable.name}
           customComponent={variable.customComponent}
           helpText={undefined}
-          compact={false}
+          compact={true}
+          hideLabel={true}
         />
       </div>
 
-      {/* Footer buttons */}
-      <div className="flex items-center justify-between px-3 py-2 shrink-0 border-t border-border/50">
-        <Button
+      {/* Footer — delicate inline nav */}
+      <div className="flex items-center justify-between px-3 py-1.5 shrink-0 border-t border-border/40">
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
           onClick={goBack}
           disabled={isFirst}
-          className="h-7 px-2 text-xs gap-1 text-muted-foreground"
+          className="flex items-center gap-0.5 text-[11px] text-muted-foreground/60 hover:text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
-          <ChevronLeft className="w-3.5 h-3.5" />
+          <ChevronLeft className="w-3 h-3" />
           Back
-        </Button>
+        </button>
 
-        <div className="flex items-center gap-1.5">
-          <Button
+        <div className="flex items-center gap-3">
+          <button
             type="button"
-            variant="ghost"
-            size="sm"
             onClick={goNext}
-            className="h-7 px-2 text-xs gap-1 text-muted-foreground"
+            className="flex items-center gap-0.5 text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
           >
             Skip
-            <ChevronRight className="w-3.5 h-3.5" />
-          </Button>
+            <ChevronRight className="w-3 h-3" />
+          </button>
 
           {!isLast && (
-            <Button
+            <button
               type="button"
-              variant="ghost"
-              size="sm"
               onClick={skipAll}
-              className="h-7 px-2 text-xs gap-1 text-muted-foreground"
+              className="flex items-center gap-0.5 text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
             >
               Skip All
-              <ChevronsRight className="w-3.5 h-3.5" />
-            </Button>
+              <ChevronsRight className="w-3 h-3" />
+            </button>
           )}
 
           {isLast && (
-            <Button
+            <button
               type="button"
-              variant="default"
-              size="sm"
               onClick={goNext}
-              className="h-7 px-3 text-xs gap-1"
+              className="flex items-center gap-0.5 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
             >
               Done
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Button>
+              <ChevronRight className="w-3 h-3" />
+            </button>
           )}
         </div>
       </div>

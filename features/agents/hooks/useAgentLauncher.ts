@@ -78,6 +78,7 @@ export interface LaunchAgentOverrides {
   sourceFeature?: SourceFeature;
   applicationScope?: ApplicationScope;
   useChat?: boolean;
+  variableInputStyle?: "inline" | "wizard";
   onComplete?: (result: LaunchResult) => void;
   onTextReplace?: (text: string) => void;
   onTextInsertBefore?: (text: string) => void;
@@ -132,6 +133,7 @@ export function useAgentLauncher(): UseAgentLauncherReturn {
         overrides: options?.overrides,
         applicationScope: options?.applicationScope,
         useChat: options?.useChat,
+        variableInputStyle: options?.variableInputStyle,
         onComplete: options?.onComplete,
         onTextReplace: options?.onTextReplace,
         onTextInsertBefore: options?.onTextInsertBefore,

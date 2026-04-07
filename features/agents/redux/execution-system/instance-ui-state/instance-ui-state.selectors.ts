@@ -375,6 +375,12 @@ export const selectPreExecutionMessage =
   (state: RootState): string | null =>
     state.instanceUIState.byInstanceId[instanceId]?.preExecutionMessage ?? null;
 
+export const selectVariableInputStyle =
+  (instanceId: string) =>
+  (state: RootState): "inline" | "wizard" =>
+    state.instanceUIState.byInstanceId[instanceId]?.variableInputStyle ??
+    "inline";
+
 // ── Global preference selectors ───────────────────────────────────────────────
 
 export const selectUseBlockMode = (state: RootState): boolean =>

@@ -84,6 +84,7 @@ export interface LaunchAgentOptions {
   overrides?: Partial<LLMParams>;
 
   useChat?: boolean;
+  variableInputStyle?: "inline" | "wizard";
 
   onComplete?: (result: LaunchResult) => void;
   onTextReplace?: (text: string) => void;
@@ -212,6 +213,7 @@ export const launchAgentExecution = createAsyncThunk<
     userInput,
     variables,
     useChat = false,
+    variableInputStyle,
     onComplete,
   } = options;
 
@@ -264,6 +266,7 @@ export const launchAgentExecution = createAsyncThunk<
         showDefinitionMessages: resolvedShowDefinitionMessages,
         showDefinitionMessageContent: resolvedShowDefinitionMessageContent,
         callbackGroupId,
+        variableInputStyle,
       }),
     ).unwrap();
 
@@ -285,6 +288,7 @@ export const launchAgentExecution = createAsyncThunk<
         showDefinitionMessages: resolvedShowDefinitionMessages,
         showDefinitionMessageContent: resolvedShowDefinitionMessageContent,
         callbackGroupId,
+        variableInputStyle,
       }),
     ).unwrap();
 

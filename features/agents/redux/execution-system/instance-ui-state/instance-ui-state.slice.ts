@@ -92,6 +92,7 @@ export interface InitInstanceUIStatePayload {
   hideReasoning?: boolean;
   hideToolResults?: boolean;
   preExecutionMessage?: string | null;
+  variableInputStyle?: "inline" | "wizard";
 }
 
 // =============================================================================
@@ -125,6 +126,7 @@ const instanceUIStateSlice = createSlice({
         hideReasoning = false,
         hideToolResults = false,
         preExecutionMessage = null,
+        variableInputStyle = "inline",
       } = action.payload;
 
       state.byInstanceId[instanceId] = {
@@ -153,6 +155,7 @@ const instanceUIStateSlice = createSlice({
         hideReasoning,
         hideToolResults,
         preExecutionMessage,
+        variableInputStyle,
         modeState: {},
       };
     },
@@ -441,6 +444,19 @@ const instanceUIStateSlice = createSlice({
       }
     },
 
+    setVariableInputStyle(
+      state,
+      action: PayloadAction<{
+        instanceId: string;
+        style: "inline" | "wizard";
+      }>,
+    ) {
+      const entry = state.byInstanceId[action.payload.instanceId];
+      if (entry) {
+        entry.variableInputStyle = action.payload.style;
+      }
+    },
+
     removeInstanceUIState(state, action: PayloadAction<string>) {
       delete state.byInstanceId[action.payload];
     },
@@ -490,6 +506,7 @@ export const {
   setHideReasoning,
   setHideToolResults,
   setPreExecutionMessage,
+  setVariableInputStyle,
   removeInstanceUIState,
   setUseBlockMode,
 } = instanceUIStateSlice.actions;

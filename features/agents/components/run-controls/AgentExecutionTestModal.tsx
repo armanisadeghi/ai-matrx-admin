@@ -58,6 +58,7 @@ interface AgentExecutionTestModalProps {
   showVariables: boolean;
   applyVariables: boolean;
   useChat: boolean;
+  variableInputStyle?: "inline" | "wizard";
   variables: Record<string, unknown>;
   userInput: string;
 }

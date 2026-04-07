@@ -100,6 +100,7 @@ interface CreateManualInstanceArgs {
   hideReasoning?: boolean;
   hideToolResults?: boolean;
   preExecutionMessage?: string | null;
+  variableInputStyle?: "inline" | "wizard";
 }
 
 export const createManualInstance = createAsyncThunk<
@@ -123,6 +124,7 @@ export const createManualInstance = createAsyncThunk<
     hideReasoning,
     hideToolResults,
     preExecutionMessage,
+    variableInputStyle,
   } = args;
 
   const instanceId = generateInstanceId();
@@ -175,6 +177,7 @@ export const createManualInstance = createAsyncThunk<
       hideReasoning,
       hideToolResults,
       preExecutionMessage,
+      variableInputStyle,
     }),
   );
   dispatch(initInstanceHistory({ instanceId, mode }));
@@ -201,6 +204,7 @@ interface CreateShortcutInstanceArgs {
   hideReasoning?: boolean;
   hideToolResults?: boolean;
   preExecutionMessage?: string | null;
+  variableInputStyle?: "inline" | "wizard";
 }
 
 export const createInstanceFromShortcut = createAsyncThunk<
@@ -222,6 +226,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
     hideReasoning,
     hideToolResults,
     preExecutionMessage,
+    variableInputStyle,
   } = args;
 
   const instanceId = generateInstanceId();
@@ -277,6 +282,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
       hideReasoning,
       hideToolResults,
       preExecutionMessage,
+      variableInputStyle,
     }),
   );
 

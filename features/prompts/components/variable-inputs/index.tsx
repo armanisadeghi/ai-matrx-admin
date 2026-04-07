@@ -29,6 +29,8 @@ interface VariableInputComponentProps {
   onRequestClose?: () => void;
   helpText?: string;
   compact?: boolean;
+  /** When true, suppresses the label/help-text header block entirely. */
+  hideLabel?: boolean;
 }
 
 /**
@@ -41,7 +43,8 @@ export function VariableInputComponent({
   customComponent,
   onRequestClose,
   helpText,
-  compact = false
+  compact = false,
+  hideLabel = false,
 }: VariableInputComponentProps) {
   const formattedName = formatText(variableName);
   
@@ -158,7 +161,7 @@ export function VariableInputComponent({
   return (
     <div className={compact ? "space-y-0.5" : "space-y-1.5"}>
       {/* Standard mode: Label and help text stacked */}
-      {!compact && (
+      {!hideLabel && !compact && (
         <div>
           <Label className="text-sm font-medium">{formattedName}</Label>
           {helpText && (
@@ -168,7 +171,7 @@ export function VariableInputComponent({
       )}
       
       {/* Compact mode: Single line with minimal spacing */}
-      {compact && (
+      {!hideLabel && compact && (
         <div className="flex items-center gap-1.5">
           <Label className="text-xs font-medium pb-1">{formattedName}</Label>
           {helpText && (

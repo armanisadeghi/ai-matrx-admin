@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import FloatingSheet from "@/components/official/FloatingSheet";
 import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
 import { AgentFloatingChat } from "./AgentFloatingChat";
+import { ChatCollapsible } from "./ChatCollapsible";
 
 // =============================================================================
 // Full Modal
@@ -431,6 +432,8 @@ export function AgentExecutionOverlay({
       );
     case "floating-chat":
       return <AgentFloatingChat instanceId={instanceId} onClose={onClose} />;
+    case "chat-collapsible":
+      return <ChatCollapsible instanceId={instanceId} />;
     default:
       return null;
   }

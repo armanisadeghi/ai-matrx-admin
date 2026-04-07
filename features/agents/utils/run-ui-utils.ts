@@ -115,6 +115,19 @@ export const RESULT_DISPLAY_META: Record<ResultDisplayMode, DisplayModeMeta> = {
     ],
     testMode: false,
   },
+  "chat-collapsible": {
+    label: "Chat Collapsible",
+    description: "Collapsible chat interface with chat history",
+    icon: "MessageSquare",
+    color: "text-blue-600 dark:text-blue-400",
+    useCases: [
+      "Chat history",
+      "Chat interface",
+      "Chat collapsible",
+      "Chat messages",
+    ],
+    testMode: true,
+  },
   direct: {
     label: "Direct Stream",
     description:

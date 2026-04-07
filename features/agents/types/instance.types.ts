@@ -216,7 +216,8 @@ export type ResultDisplayMode =
   | "toast"
   | "floating-chat"
   | "direct"
-  | "background";
+  | "background"
+  | "chat-collapsible";
 
 /**
  * Transient builder/test settings sent to the chat endpoint on each call.
@@ -383,6 +384,13 @@ export interface InstanceUIState {
    * Used to give the user context about what the agent expects.
    */
   preExecutionMessage: string | null;
+
+  /**
+   * Controls which variable input UI style is rendered.
+   * - "inline"  — compact rows above the textarea (default)
+   * - "wizard"  — one variable at a time, fixed-height card with Back/Skip/Skip All
+   */
+  variableInputStyle: "inline" | "wizard";
 
   /**
    * Arbitrary UI state specific to the display mode.

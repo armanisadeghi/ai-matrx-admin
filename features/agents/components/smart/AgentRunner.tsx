@@ -25,6 +25,7 @@ import {
   selectAllowChat,
   selectNeedsPreExecutionInput,
   selectShouldShowInput,
+  selectShowVariablePanel,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectInstanceDisplayTitle } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectInstanceStatus } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
@@ -69,7 +70,7 @@ export function AgentRunner({
   const isExecuting = useAppSelector(selectIsExecuting(instanceId));
   const hasUserInput = useAppSelector(selectHasUserInput(instanceId));
   const conversationMode = useAppSelector(selectConversationMode(instanceId));
-
+  const showVariablePanel = useAppSelector(selectShowVariablePanel(instanceId));
   // ── Auto-run: fire execution once when conditions are met ──────────────────
   useEffect(() => {
     if (autoRunFiredRef.current) return;
