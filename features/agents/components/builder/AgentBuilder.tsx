@@ -4,22 +4,18 @@
  * AgentBuilder
  *
  * Main orchestrator for the agent edit page.
- * - Fetches full agent data if not already loaded.
- * - Save/status is handled by the shared AgentSharedHeader (portalled into the shell).
- * - Renders a skeleton until the full fetch completes, then lazy-loads
- *   AgentBuilderDesktop or AgentBuilderMobile based on viewport.
- * - Enables useAgentAutoSave for localStorage backup.
+ * The layout SSR hydrates Redux via AgentHydrator — selectAgentReadyForBuilder
+ * is true on mount, so no client-side fetch is needed.
+ * Renders a skeleton only as a safety fallback, then lazy-loads
+ * AgentBuilderDesktop or AgentBuilderMobile based on viewport.
  */
 
-import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentReadyForBuilder } from "@/features/agents/redux/agent-definition/selectors";
-import { fetchFullAgent } from "@/features/agents/redux/agent-definition/thunks";
 import { useAgentAutoSave } from "@/features/agents/hooks/useAgentAutoSave";
 import { useIsMobile } from "@/hooks/use-mobile";
-import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 // Lazy-loaded only after the record is confirmed fully loaded.
 // This keeps both builders out of the initial bundle and prevents
@@ -43,10 +39,7 @@ interface AgentBuilderProps {
   agentId: string;
 }
 
-export function AgentBuilder({
-  agentId,
-}: AgentBuilderProps) {
-  const dispatch = useAppDispatch();
+export function AgentBuilder({ agentId }: AgentBuilderProps) {
   const isMobile = useIsMobile();
 
   const isReadyForBuilder = useAppSelector((state) =>
@@ -55,28 +48,15 @@ export function AgentBuilder({
 
   useAgentAutoSave(agentId);
 
-  useEffect(() => {
-    if (!isReadyForBuilder) {
-      dispatch(fetchFullAgent(agentId));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agentId]);
-
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-hidden p-2">
-        {!isReadyForBuilder ? (
-          <AgentBuilderSkeleton isMobile={isMobile} />
-        ) : isMobile ? (
-          <AgentBuilderMobile
-            agentId={agentId}
-          />
-        ) : (
-          <AgentBuilderDesktop
-            agentId={agentId}
-          />
-        )}
-      </div>
+    <div className="h-full overflow-hidden">
+      {!isReadyForBuilder ? (
+        <AgentBuilderSkeleton isMobile={isMobile} />
+      ) : isMobile ? (
+        <AgentBuilderMobile agentId={agentId} />
+      ) : (
+        <AgentBuilderDesktop agentId={agentId} />
+      )}
     </div>
   );
 }

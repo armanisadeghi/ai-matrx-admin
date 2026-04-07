@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
-import { requireUserId } from "@/utils/auth/getUserId";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAppContext,
@@ -133,25 +132,24 @@ export default function SidebarContextSelector() {
     setMounted(true);
   }, []);
 
-  // Fetch orgs on first open (via membership — same as hierarchyService)
+  // Fetch orgs on first open via the same RPC used by ContextSwitcher
   const fetchOrgs = useCallback(async () => {
     if (orgs) return;
     setLoadingOrgs(true);
     try {
-      const userId = requireUserId();
-      const { data, error } = await supabase
-        .from("organization_members")
-        .select(
-          "role, organizations!inner(id, name, slug, is_personal, created_at)",
-        )
-        .eq("user_id", userId);
-      if (!error && data) {
-        const mapped = data.map((row: Record<string, unknown>) => ({
-          ...(row.organizations as Record<string, unknown>),
-          role: row.role as string,
-        })) as OrgItem[];
-        mapped.sort((a, b) => a.name.localeCompare(b.name));
-        setOrgs(mapped);
+      const { data, error } = await supabase.rpc("agx_get_user_context_tree");
+      if (error) {
+        console.error("[SidebarContextSelector] fetchOrgs error:", error);
+        setOrgs([]);
+        return;
+      }
+      if (data) {
+        const tree = data as {
+          organizations: OrgItem[];
+          workspaces: WorkspaceItem[];
+          projects: ProjectItem[];
+        };
+        setOrgs(tree.organizations ?? []);
       }
     } finally {
       setLoadingOrgs(false);
@@ -228,13 +226,16 @@ export default function SidebarContextSelector() {
       if (projectTasks[projectId] || loadingTasks.has(projectId)) return;
       setLoadingTasks((s) => new Set(s).add(projectId));
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("tasks")
           .select("id, title, project_id, status")
           .eq("project_id", projectId)
           .is("parent_task_id", null)
           .order("created_at", { ascending: false })
           .limit(50);
+        if (error) {
+          console.error("[SidebarContextSelector] fetchTasks error:", error);
+        }
         setProjectTasks((prev) => ({
           ...prev,
           [projectId]: (data ?? []) as TaskItem[],

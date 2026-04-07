@@ -35,7 +35,7 @@ export function Messages({
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-lg">
           {conversationIndices.map((msgIndex) => (
             <MessageItem
               key={msgIndex}

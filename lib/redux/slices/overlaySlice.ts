@@ -81,8 +81,17 @@ const initialState: OverlayState = {
     quickTasksWindow: makeDefaultInstance(),
     quickDataWindow: makeDefaultInstance(),
     quickFilesWindow: makeDefaultInstance(),
+    filePreviewWindow: makeDefaultInstance(),
+    fileUploadWindow: makeDefaultInstance(),
     emailDialogWindow: makeDefaultInstance(),
     shareModalWindow: makeDefaultInstance(),
+    scraperWindow: makeDefaultInstance(),
+    contextSwitcherWindow: makeDefaultInstance(),
+    canvasViewerWindow: makeDefaultInstance(),
+    newsWindow: makeDefaultInstance(),
+    galleryWindow: makeDefaultInstance(),
+    listManagerWindow: makeDefaultInstance(),
+    aiVoiceWindow: makeDefaultInstance(),
   },
 };
 
@@ -424,4 +433,46 @@ export const openStreamDebug = (options: StreamDebugPayload) =>
   openOverlay({
     overlayId: "streamDebug",
     data: { instanceId: options.instanceId },
+  });
+
+interface ContextSwitcherWindowPayload {
+  instanceId?: string;
+}
+
+export const openContextSwitcherWindow = (options?: ContextSwitcherWindowPayload) =>
+  openOverlay({
+    overlayId: "contextSwitcherWindow",
+    instanceId: options?.instanceId,
+  });
+
+interface CanvasViewerPayload {
+  shareToken?: string;
+  instanceId?: string;
+}
+
+export const openCanvasViewerWindow = (options?: CanvasViewerPayload) =>
+  openOverlay({
+    overlayId: "canvasViewerWindow",
+    instanceId: options?.instanceId,
+    data: { shareToken: options?.shareToken },
+  });
+
+interface ListManagerWindowPayload {
+  instanceId?: string;
+}
+
+export const openListManagerWindow = (options?: ListManagerWindowPayload) =>
+  openOverlay({
+    overlayId: "listManagerWindow",
+    instanceId: options?.instanceId,
+  });
+
+interface AiVoiceWindowPayload {
+  instanceId?: string;
+}
+
+export const openAiVoiceWindow = (options?: AiVoiceWindowPayload) =>
+  openOverlay({
+    overlayId: "aiVoiceWindow",
+    instanceId: options?.instanceId,
   });

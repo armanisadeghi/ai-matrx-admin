@@ -21,9 +21,10 @@ import { cn } from '@/lib/utils';
 
 interface SharedCanvasViewProps {
     shareToken: string;
+    className?: string;
 }
 
-export function SharedCanvasView({ shareToken }: SharedCanvasViewProps) {
+export function SharedCanvasView({ shareToken, className = "h-[calc(100vh-3.5rem)]" }: SharedCanvasViewProps) {
     const { data: canvas, isLoading, error } = useSharedCanvas(shareToken);
     const [showDetails, setShowDetails] = useState(false);
 
@@ -68,7 +69,7 @@ export function SharedCanvasView({ shareToken }: SharedCanvasViewProps) {
     };
 
     return (
-        <div className="h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden">
+        <div className={cn(className, "flex flex-col overflow-hidden")}>
             {/* Canvas Title Bar - Minimal & Professional */}
             <div className="flex-shrink-0 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-4 py-2">
                 <div className="flex items-center justify-between gap-4">

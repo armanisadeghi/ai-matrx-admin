@@ -483,13 +483,6 @@ export function MessageItem({
     ],
   );
 
-  const roleColor =
-    message?.role === "user"
-      ? "border-blue-500/30 bg-blue-500/5"
-      : message?.role === "assistant"
-        ? "border-purple-500/30 bg-purple-500/5"
-        : "border-border bg-muted";
-
   const displayRole =
     message?.role === "user" || message?.role === "assistant"
       ? message.role
@@ -500,14 +493,14 @@ export function MessageItem({
   }
 
   return (
-    <div className={cn("group rounded-lg border", roleColor)}>
+    <div className={cn("group rounded-lg bg-muted ")}>
       {/* Header */}
-      <div className="flex items-center justify-between px-2 py-1 sticky top-0 z-10 rounded-t-lg bg-inherit">
+      <div className="flex items-center justify-between sticky top-0 z-10 pt-0 pb-1 pr-2 rounded-t-lg bg-transparent">
         <Select
           value={displayRole}
           onValueChange={(v) => handleRoleChange(v as "user" | "assistant")}
         >
-          <SelectTrigger className="h-6 bg-transparent text-foreground !border-none hover:bg-accent w-auto min-w-[120px] text-xs !shadow-none focus:ring-0 focus:ring-offset-0 [&>svg]:opacity-0 [&>svg]:group-hover:opacity-100 [&>svg]:transition-opacity">
+          <SelectTrigger className="h-4 bg-transparent text-foreground !border-none hover:bg-accent w-auto min-w-[120px] text-xs !shadow-none focus:ring-0 focus:ring-offset-0 [&>svg]:opacity-0 [&>svg]:group-hover:opacity-100 [&>svg]:transition-opacity">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -543,7 +536,7 @@ export function MessageItem({
       </div>
 
       {/* Content */}
-      <div className="px-2 pb-2">
+      <div className="p-4">
         {isEditing ? (
           <UnifiedContextMenu
             getTextarea={() => textareaRef.current}

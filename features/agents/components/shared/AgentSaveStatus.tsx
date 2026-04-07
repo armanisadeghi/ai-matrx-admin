@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAgentIsDirty,
@@ -10,11 +11,10 @@ import { saveAgent } from "@/features/agents/redux/agent-definition/thunks";
 import { Save, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast-service";
-import { useAgentPageContext } from "./AgentPageContext";
 
-export function AgentSaveStatus() {
+export function AgentSaveStatus({ agentId }: { agentId: string }) {
   const dispatch = useAppDispatch();
-  const { agentId, mode } = useAgentPageContext();
+  const pathname = usePathname();
 
   const isDirty = useAppSelector((state) => selectAgentIsDirty(state, agentId));
   const isLoading = useAppSelector((state) =>
@@ -34,7 +34,7 @@ export function AgentSaveStatus() {
     }
   };
 
-  const isEditMode = mode === "edit";
+  const isEditMode = pathname?.includes(`/agents/${agentId}/edit`);
 
   return (
     <div className="flex items-center gap-1.5">

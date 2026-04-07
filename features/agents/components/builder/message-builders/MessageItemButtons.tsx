@@ -204,9 +204,20 @@ export function MessageItemButtons({
       tooltip: "Add content block",
       mobileLabel: "Add Block",
       hidden: !onAddBlockType,
-      component: onAddBlockType ? (
-        <AddBlockTrigger onSelectType={onAddBlockType} />
-      ) : undefined,
+      render: onAddBlockType
+        ? () => (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <AddBlockTrigger onSelectType={onAddBlockType} />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="z-[9999]">
+                Add content block
+              </TooltipContent>
+            </Tooltip>
+          )
+        : undefined,
     },
   ];
 

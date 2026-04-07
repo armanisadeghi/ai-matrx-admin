@@ -92,8 +92,9 @@ const BLOCK_TYPES: BlockTypeConfig[] = [
     fields: [
       {
         key: "url",
-        label: "YouTube URL or {{variable}}",
-        placeholder: "https://www.youtube.com/watch?v=...",
+        label: "",
+        placeholder:
+          "Full URL or {{variable}} or https://www.youtube.com/watch?v={{variable}}",
       },
     ],
   },

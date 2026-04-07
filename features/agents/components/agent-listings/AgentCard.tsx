@@ -28,7 +28,6 @@ import { ShareModal } from "@/features/sharing";
 import { AgentActionModal } from "./AgentActionModal";
 import { ComingSoonModal } from "./ComingSoonModal";
 import { FavoriteAgentButton } from "./FavoriteAgentButton";
-import { useAgentsBasePath } from "@/features/agents/hooks/useAgentsBasePath";
 import { useState } from "react";
 import { toast } from "@/lib/toast-service";
 import {
@@ -69,7 +68,7 @@ export function AgentCard({
   const isSystemAdmin = useAppSelector((state: RootState) =>
     selectIsAdmin(state),
   );
-  const basePath = useAgentsBasePath();
+  const basePath = "/agents";
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [isCreateAppModalOpen, setIsCreateAppModalOpen] = useState(false);

@@ -68,6 +68,7 @@ import agentCacheReducer from "./slices/agentCacheSlice";
 import agentDefinitionReducer from "@/features/agents/redux/agent-definition/slice";
 import agentShortcutReducer from "@/features/agents/redux/agent-shortcuts/slice";
 import agentConsumersReducer from "@/features/agents/redux/agent-consumers/slice";
+import toolsReducer from "@/features/agents/redux/tools/tools.slice";
 // import agentExecutionReducer from "@/features/agents/_garbage/agent-execution/slice";
 
 // Prompt system
@@ -297,6 +298,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     agentDefinition: agentDefinitionReducer,
     agentShortcut: agentShortcutReducer,
     agentConsumers: agentConsumersReducer,
+    tools: toolsReducer,
 
     // Layer 2 — App Context (scope injected automatically into every API call by callApi)
     appContext: appContextReducer,

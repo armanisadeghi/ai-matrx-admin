@@ -12,12 +12,14 @@ interface ListsSidebarProps {
   lists: UserList[];
   activeListId: string | null;
   onCreateList: () => void;
+  onOverrideNavigate?: (id: string) => void;
 }
 
 export function ListsSidebar({
   lists,
   activeListId,
   onCreateList,
+  onOverrideNavigate,
 }: ListsSidebarProps) {
   const [search, setSearch] = useState("");
   const [navigatingId, setNavigatingId] = useState<string | null>(null);
@@ -125,6 +127,7 @@ export function ListsSidebar({
             isActive={list.id === activeListId}
             isAnyNavigating={navigatingId !== null}
             onNavigate={handleNavigate}
+            onOverrideNavigate={onOverrideNavigate}
           />
         ))}
 
@@ -144,6 +147,7 @@ export function ListsSidebar({
                 isActive={list.id === activeListId}
                 isAnyNavigating={navigatingId !== null}
                 onNavigate={handleNavigate}
+                onOverrideNavigate={onOverrideNavigate}
               />
             ))}
           </>

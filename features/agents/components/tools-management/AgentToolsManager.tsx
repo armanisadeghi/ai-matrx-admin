@@ -82,6 +82,10 @@ import type {
   CustomToolInputSchema,
 } from "@/features/agents/types/agent-api-types";
 import { createClient } from "@/utils/supabase/client";
+import {
+  selectAllTools,
+  selectToolsStatus,
+} from "@/features/agents/redux/tools/tools.selectors";
 
 type ToolsTab = "server" | "custom" | "client" | "mcp";
 
@@ -90,46 +94,62 @@ const ENABLED_CATEGORY = "__enabled__";
 
 interface AgentToolsManagerProps {
   agentId: string;
-  availableTools?: DatabaseTool[];
 }
 
-export function AgentToolsManager({ agentId, availableTools: externalTools }: AgentToolsManagerProps) {
-  const [metadata, setMetadata] = useState<{ total_count: number; categories: { count: number; category: string }[]; enabled_tools: any[] } | null>(() => {
+export function AgentToolsManager({ agentId }: AgentToolsManagerProps) {
+  const reduxTools = useAppSelector(selectAllTools);
+  const reduxToolsStatus = useAppSelector(selectToolsStatus);
+  const externalTools: DatabaseTool[] | undefined =
+    reduxToolsStatus === "succeeded" ? reduxTools : undefined;
+
+  const [fetchedMetadata, setFetchedMetadata] = useState<any>(null);
+  const [isFetchingMetadata, setIsFetchingMetadata] = useState(!externalTools);
+  const [activeTab, setActiveTab] = useState<ToolsTab>("server");
+
+  // Derive metadata from externalTools if available, otherwise use the fetched RPC metadata
+  const metadata = useMemo(() => {
     if (externalTools) {
       const catsMap = new Map<string, number>();
-      externalTools.forEach(t => {
+      externalTools.forEach((t) => {
         const cat = t.category || "General";
         catsMap.set(cat, (catsMap.get(cat) || 0) + 1);
       });
       return {
         total_count: externalTools.length,
-        categories: Array.from(catsMap.entries()).map(([c, count]) => ({ category: c, count })),
-        enabled_tools: externalTools
+        categories: Array.from(catsMap.entries()).map(([c, count]) => ({
+          category: c,
+          count,
+        })),
+        enabled_tools: externalTools,
       };
     }
-    return null;
-  });
-  const [isLoading, setIsLoading] = useState(!externalTools);
-  const [activeTab, setActiveTab] = useState<ToolsTab>("server");
+    return fetchedMetadata;
+  }, [externalTools, fetchedMetadata]);
+
+  // The view is loading if we don't have any metadata and we're either waiting on Redux or waiting on a direct fetch
+  const isLoading = !metadata && (reduxToolsStatus === "loading" || isFetchingMetadata);
 
   useEffect(() => {
-    if (externalTools) return;
+    // Return early if externalTools is already available or if Redux is currently actively fetching it
+    if (externalTools || reduxToolsStatus === "loading") return;
+
     let active = true;
-    setIsLoading(true);
+    setIsFetchingMetadata(true);
     const supabase = createClient();
-    supabase.rpc('get_tools_metadata').then(({ data, error }) => {
+    supabase.rpc("get_tools_metadata").then(({ data, error }) => {
       if (active && (!error || data)) {
-        setMetadata(data as any);
-        setIsLoading(false);
+        setFetchedMetadata(data as any);
+        setIsFetchingMetadata(false);
       } else {
         console.error("Failed to fetch tools metadata", error);
-        if (active) setIsLoading(false);
+        if (active) setIsFetchingMetadata(false);
       }
     });
+
     return () => {
       active = false;
     };
-  }, [externalTools]);
+  }, [externalTools, reduxToolsStatus]);
 
   const tabs: { id: ToolsTab; label: string; icon: React.ReactNode }[] = [
     {
@@ -180,11 +200,18 @@ export function AgentToolsManager({ agentId, availableTools: externalTools }: Ag
 
       <div className="flex-1 overflow-hidden min-h-0">
         {activeTab === "server" && (
-          <ServerToolsTab agentId={agentId} metadata={metadata} externalTools={externalTools} />
+          <ServerToolsTab
+            agentId={agentId}
+            metadata={metadata}
+            externalTools={externalTools}
+          />
         )}
         {activeTab === "custom" && <CustomToolsTab agentId={agentId} />}
         {activeTab === "client" && (
-          <ClientToolsTab agentId={agentId} availableTools={externalTools || metadata?.enabled_tools || []} />
+          <ClientToolsTab
+            agentId={agentId}
+            availableTools={externalTools || metadata?.enabled_tools || []}
+          />
         )}
         {activeTab === "mcp" && <McpToolsTab agentId={agentId} />}
       </div>
@@ -216,7 +243,12 @@ function ServerToolsTab({
   const [expandedTool, setExpandedTool] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(50);
-  const [toolsList, setToolsList] = useState<{items: any[], total: number, page_size: number, page_count: number} | null>(null);
+  const [toolsList, setToolsList] = useState<{
+    items: any[];
+    total: number;
+    page_size: number;
+    page_count: number;
+  } | null>(null);
   const [isListLoading, setIsListLoading] = useState(false);
 
   useEffect(() => {
@@ -328,17 +360,23 @@ function ServerToolsTab({
       // Local mode
       let filtered = externalTools;
       if (activeCategory !== ALL_CATEGORY) {
-        filtered = filtered.filter((t) => (t.category ?? "General") === activeCategory);
+        filtered = filtered.filter(
+          (t) => (t.category ?? "General") === activeCategory,
+        );
       }
       if (debouncedSearch) {
         const query = debouncedSearch.toLowerCase();
-        filtered = filtered.filter((t) => t.name.toLowerCase().includes(query) || (t.description || "").toLowerCase().includes(query));
+        filtered = filtered.filter(
+          (t) =>
+            t.name.toLowerCase().includes(query) ||
+            (t.description || "").toLowerCase().includes(query),
+        );
       }
       setToolsList({
         items: filtered,
         total: filtered.length,
         page_size: filtered.length,
-        page_count: 1
+        page_count: 1,
       });
       return;
     }
@@ -346,28 +384,46 @@ function ServerToolsTab({
     let active = true;
     setIsListLoading(true);
     const supabase = createClient();
-    supabase.rpc('get_tools_list', {
-      p_category: activeCategory === ALL_CATEGORY ? undefined : activeCategory,
-      p_search: debouncedSearch || undefined,
-      p_page: page,
-      p_page_size: pageSize
-    }).then(({ data, error }) => {
-      if (active && !error && data) {
-         setToolsList(data as any);
-      }
-      if (active) setIsListLoading(false);
-    });
+    supabase
+      .rpc("get_tools_list", {
+        p_category:
+          activeCategory === ALL_CATEGORY ? undefined : activeCategory,
+        p_search: debouncedSearch || undefined,
+        p_page: page,
+        p_page_size: pageSize,
+      })
+      .then(({ data, error }) => {
+        if (active && !error && data) {
+          setToolsList(data as any);
+        }
+        if (active) setIsListLoading(false);
+      });
 
-    return () => { active = false; };
-  }, [activeCategory, debouncedSearch, page, pageSize, isEnabledTab, externalTools]);
+    return () => {
+      active = false;
+    };
+  }, [
+    activeCategory,
+    debouncedSearch,
+    page,
+    pageSize,
+    isEnabledTab,
+    externalTools,
+  ]);
 
   const visibleTools = useMemo(() => {
     if (isEnabledTab) {
       // client side filter
-      let items = (metadata?.enabled_tools || []).filter((t: any) => activeSet.has(t.id));
+      let items = (metadata?.enabled_tools || []).filter((t: any) =>
+        activeSet.has(t.id),
+      );
       if (debouncedSearch) {
         const query = debouncedSearch.toLowerCase();
-        items = items.filter((t: any) => t.name.toLowerCase().includes(query) || (t.description || "").toLowerCase().includes(query));
+        items = items.filter(
+          (t: any) =>
+            t.name.toLowerCase().includes(query) ||
+            (t.description || "").toLowerCase().includes(query),
+        );
       }
       return items;
     }
@@ -387,7 +443,9 @@ function ServerToolsTab({
   }
 
   const enabledCount = activeSet.size;
-  const categoryTools = categories.find((c: any) => c.category === activeCategory)?.count;
+  const categoryTools = categories.find(
+    (c: any) => c.category === activeCategory,
+  )?.count;
 
   return (
     <div className="flex overflow-hidden h-full">
@@ -493,7 +551,7 @@ function ServerToolsTab({
                 : activeCategory}
           </span>
           <span className="text-[11px] text-muted-foreground tabular-nums">
-            {isEnabledTab ? visibleTools.length : (toolsList?.total || 0)} tools
+            {isEnabledTab ? visibleTools.length : toolsList?.total || 0} tools
           </span>
         </div>
 
@@ -501,10 +559,10 @@ function ServerToolsTab({
         <div className="flex-1 overflow-y-auto">
           <div className="px-3 pb-4 space-y-1">
             {isListLoading ? (
-               <div className="flex items-center justify-center py-12 text-muted-foreground">
-                 <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                 <span className="text-xs">Loading items...</span>
-               </div>
+              <div className="flex items-center justify-center py-12 text-muted-foreground">
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                <span className="text-xs">Loading items...</span>
+              </div>
             ) : visibleTools.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
                 <Search className="w-5 h-5 opacity-40" />
@@ -541,7 +599,7 @@ function ServerToolsTab({
               variant="outline"
               size="sm"
               disabled={page <= 1}
-              onClick={() => setPage(p => p - 1)}
+              onClick={() => setPage((p) => p - 1)}
               className="h-7 text-xs"
             >
               Previous
@@ -553,7 +611,7 @@ function ServerToolsTab({
               variant="outline"
               size="sm"
               disabled={page >= toolsList.page_count}
-              onClick={() => setPage(p => p + 1)}
+              onClick={() => setPage((p) => p + 1)}
               className="h-7 text-xs"
             >
               Next
@@ -2725,7 +2783,9 @@ function ToolCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
             {tool.icon && (
-               <span className="text-muted-foreground shrink-0">{tool.icon}</span>
+              <span className="text-muted-foreground shrink-0">
+                {tool.icon}
+              </span>
             )}
             <span
               className={`text-xs font-semibold leading-tight ${
@@ -2796,19 +2856,24 @@ function ToolDetailPanel({ toolId }: { toolId: string }) {
     let active = true;
     setLoading(true);
     const supabase = createClient();
-    supabase.rpc('get_tool_detail', { p_tool_id: toolId }).then(({ data, error }) => {
-      if (active && data) {
-         setDetail(data);
-      }
-      if (active) setLoading(false);
-    });
-    return () => { active = false; };
+    supabase
+      .rpc("get_tool_detail", { p_tool_id: toolId })
+      .then(({ data, error }) => {
+        if (active && data) {
+          setDetail(data);
+        }
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [toolId]);
 
   if (loading) {
     return (
       <div className="px-3 pb-3 border-t border-border/50 pt-3 text-xs text-muted-foreground flex items-center">
-        <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> Fetching details...
+        <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> Fetching
+        details...
       </div>
     );
   }
@@ -2816,7 +2881,8 @@ function ToolDetailPanel({ toolId }: { toolId: string }) {
   if (!detail) {
     return (
       <div className="px-3 pb-3 border-t border-border/50 pt-3 text-xs text-muted-foreground flex items-center">
-        <AlertTriangle className="w-3.5 h-3.5 mr-2 text-yellow-500" /> Details unavailable.
+        <AlertTriangle className="w-3.5 h-3.5 mr-2 text-yellow-500" /> Details
+        unavailable.
       </div>
     );
   }

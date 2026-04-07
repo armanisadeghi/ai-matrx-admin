@@ -137,6 +137,51 @@ WindowPanel supports a `footer` prop that renders a full-width bar below the bod
 
 The footer content is wrapped in a flex row — use `<div className="flex-1" />` spacers for alignment. When combined with `sidebar`, the footer spans the full window width (it sits outside the sidebar split).
 
+
+## Important Reminders:
+- Make sure your component is listed here: min/features/floating-window-panel/SidebarWindowToggle.tsx
+- Remember that you can create a multi-window pattern as well, which is best demonstrated by the User Feedback and Screenshot systems:
+  - features/floating-window-panel/windows/ImageViewerWindow.tsx
+  - features/floating-window-panel/windows/FeedbackWindow.tsx
+  - In this case, it's a one-direction relationship but it could be two-directional as well!
+
+## Registered Windows (Tools Tab)
+
+| overlayId | Window File | Feature |
+|-----------|-------------|---------|
+| `jsonTruncator` | — | JSON truncation utility |
+| `notesWindow` | `NotesWindow.tsx` | Quick notes |
+| `voicePad` | — | Voice pad |
+| `quickAIResults` | — | AI results viewer |
+| `streamDebug` | — | Stream debug |
+| `feedbackDialog` | `FeedbackWindow.tsx` | Feedback submission + image viewer |
+| `adminStateAnalyzerWindow` | — | State analyzer |
+| `markdownEditorWindow` | `MarkdownEditorWindow.tsx` | Markdown editor |
+| `userPreferencesWindow` | `UserPreferencesWindow.tsx` | User preferences |
+| `emailDialogWindow` | `EmailDialogWindow.tsx` | Email composer |
+| `shareModalWindow` | `ShareModalWindow.tsx` | Share modal |
+| `quickTasksWindow` | `QuickTasksWindow.tsx` | Task list |
+| `quickDataWindow` | `QuickDataWindow.tsx` | Data tables |
+| `quickFilesWindow` | `QuickFilesWindow.tsx` | File browser |
+| `fileUploadWindow` | `FileUploadWindow.tsx` | File uploader |
+| `scraperWindow` | `ScraperWindow.tsx` | Web scraper |
+| `contextSwitcherWindow` | `ContextSwitcherWindow.tsx` | Context switcher |
+| `pdfExtractorWindow` | `PdfExtractorWindow.tsx` | PDF / image text extraction |
+| `canvasViewerWindow` | `CanvasViewerWindow.tsx` | Canvas item viewer |
+| `galleryWindow` | `GalleryWindow.tsx` | Unsplash image gallery + favorites |
+
+## PDF Extractor Window
+
+Overlay ID: `pdfExtractorWindow`
+
+Feature logic lives in `features/pdf-extractor/`:
+- `hooks/usePdfExtractor.ts` — extraction state, history, copy utility
+- `components/PdfExtractorWorkspace.tsx` — body, sidebar, and self-contained floating shell
+
+**Architecture:** The window holds its own `usePdfExtractor` instance (all state lives inside `PdfExtractorFloatingWorkspace`). The sidebar shows per-session extraction history; clicking a history item re-loads that result without re-extracting.
+
+**Tabs:** Raw Text · Preview · Metadata · AI Clean (placeholder)
+
 ## Specialized Components
 
 ### `FloatingPanel.tsx` (Unmanaged Wrapper)

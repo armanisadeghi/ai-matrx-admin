@@ -191,9 +191,11 @@ const ContentHistoryViewer = dynamic(
 
 const FeedbackWindow = dynamic(
   () =>
-    import("@/features/feedback/FeedbackWindow").then((m) => ({
-      default: m.FeedbackWindow,
-    })),
+    import("@/features/floating-window-panel/windows/FeedbackWindow").then(
+      (m) => ({
+        default: m.FeedbackWindow,
+      }),
+    ),
   { ssr: false },
 );
 
@@ -204,6 +206,21 @@ const ImageViewerWindow = dynamic(
         default: m.ImageViewerWindow,
       }),
     ),
+  { ssr: false },
+);
+
+const FilePreviewWindow = dynamic(
+  () =>
+    import("@/features/floating-window-panel/windows/FilePreviewWindow").then(
+      (m) => ({
+        default: m.FilePreviewWindow,
+      }),
+    ),
+  { ssr: false },
+);
+
+const FileUploadWindow = dynamic(
+  () => import("@/features/floating-window-panel/windows/FileUploadWindow"),
   { ssr: false },
 );
 
@@ -336,6 +353,11 @@ const ShareModalWindow = dynamic(
   { ssr: false },
 );
 
+const ScraperWindow = dynamic(
+  () => import("@/features/floating-window-panel/windows/ScraperWindow"),
+  { ssr: false },
+);
+
 const NotesWindow = dynamic(
   () =>
     import("@/features/floating-window-panel/windows/NotesWindow").then(
@@ -349,6 +371,44 @@ const NotesWindow = dynamic(
 const VoicePadAdvanced = dynamic(
   () =>
     import("@/components/official-candidate/voice-pad/components/VoicePadAdvanced"),
+  { ssr: false },
+);
+
+const ContextSwitcherWindow = dynamic(
+  () =>
+    import("@/features/floating-window-panel/windows/ContextSwitcherWindow").then(
+      (m) => ({ default: m.ContextSwitcherWindow }),
+    ),
+  { ssr: false },
+);
+
+const PdfExtractorWindow = dynamic(
+  () => import("@/features/floating-window-panel/windows/PdfExtractorWindow"),
+  { ssr: false },
+);
+
+const CanvasViewerWindow = dynamic(
+  () => import("@/features/floating-window-panel/windows/CanvasViewerWindow").then((m) => ({ default: m.CanvasViewerWindow })),
+  { ssr: false },
+);
+
+const NewsWindow = dynamic(
+  () => import("@/features/floating-window-panel/windows/NewsWindow"),
+  { ssr: false },
+);
+
+const GalleryWindow = dynamic(
+  () => import("@/features/floating-window-panel/windows/GalleryWindow"),
+  { ssr: false },
+);
+
+const ListManagerWindow = dynamic(
+  () => import("@/features/floating-window-panel/windows/ListManagerWindow"),
+  { ssr: false },
+);
+
+const AiVoiceWindow = dynamic(
+  () => import("@/features/floating-window-panel/windows/AiVoiceWindow"),
   { ssr: false },
 );
 
@@ -464,6 +524,13 @@ export const OverlayController: React.FC = () => {
     selectIsOverlayOpen(s, "quickFilesWindow"),
   );
 
+  const filePreviewInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "filePreviewWindow"),
+  );
+  const isFileUploadWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "fileUploadWindow"),
+  );
+
   const isEmailDialogWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "emailDialogWindow"),
   );
@@ -482,8 +549,44 @@ export const OverlayController: React.FC = () => {
     selectIsOverlayOpen(s, "notesWindow"),
   );
 
+  const isScraperWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "scraperWindow"),
+  );
+
   const isVoicePadOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "voicePad"),
+  );
+
+  const isContextSwitcherWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "contextSwitcherWindow"),
+  );
+
+  const isPdfExtractorWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "pdfExtractorWindow"),
+  );
+
+  const isCanvasViewerWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "canvasViewerWindow"),
+  );
+
+  const isNewsWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "newsWindow"),
+  );
+
+  const isGalleryWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "galleryWindow"),
+  );
+
+  const isListManagerWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "listManagerWindow"),
+  );
+
+  const isAiVoiceWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "aiVoiceWindow"),
+  );
+
+  const canvasViewerWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "canvasViewerWindow"),
   );
 
   // ── Instanced overlay selectors — returns all open instances ────────────
@@ -836,6 +939,70 @@ export const OverlayController: React.FC = () => {
         <QuickFilesWindow
           isOpen={true}
           onClose={() => close("quickFilesWindow")}
+        />
+      )}
+
+      {isScraperWindowOpen && (
+        <ScraperWindow isOpen={true} onClose={() => close("scraperWindow")} />
+      )}
+
+      {isContextSwitcherWindowOpen && (
+        <ContextSwitcherWindow
+          isOpen={true}
+          onClose={() => close("contextSwitcherWindow")}
+        />
+      )}
+
+      {isPdfExtractorWindowOpen && (
+        <PdfExtractorWindow
+          isOpen={true}
+          onClose={() => close("pdfExtractorWindow")}
+        />
+      )}
+
+      {isCanvasViewerWindowOpen && (
+        <CanvasViewerWindow
+          isOpen={true}
+          onClose={() => close("canvasViewerWindow")}
+          initialShareToken={canvasViewerWindowData?.shareToken}
+        />
+      )}
+
+      {isNewsWindowOpen && (
+        <NewsWindow isOpen={true} onClose={() => close("newsWindow")} />
+      )}
+
+      {isGalleryWindowOpen && (
+        <GalleryWindow isOpen={true} onClose={() => close("galleryWindow")} />
+      )}
+
+      {isListManagerWindowOpen && (
+        <ListManagerWindow />
+      )}
+
+      {isAiVoiceWindowOpen && (
+        <AiVoiceWindow />
+      )}
+
+      {/* File Preview — instanced, multiple can be open simultaneously */}
+      {filePreviewInstances.map(({ instanceId, data }) => {
+        if (!data) return null;
+        return (
+          <FilePreviewWindow
+            key={instanceId}
+            instanceId={instanceId}
+            isOpen={true}
+            onClose={() => close("filePreviewWindow", instanceId)}
+            data={data}
+          />
+        );
+      })}
+
+      {/* File Upload — singleton */}
+      {isFileUploadWindowOpen && (
+        <FileUploadWindow
+          isOpen={true}
+          onClose={() => close("fileUploadWindow")}
         />
       )}
 

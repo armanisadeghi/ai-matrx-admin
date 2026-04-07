@@ -210,7 +210,7 @@ export default function HeaderDemoClient() {
       )}
 
       {/* ── Page body ─────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-3 px-4 py-4 max-w-2xl mx-auto">
+      <div className="flex flex-col gap-3 pt-20 px-4 max-w-2xl mx-auto">
         {/* Instruction banner */}
         <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/10">
           <svg

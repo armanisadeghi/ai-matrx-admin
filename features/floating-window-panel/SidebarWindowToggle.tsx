@@ -29,6 +29,13 @@ import {
   Database,
   FolderSearch,
   Wand2,
+  Globe,
+  Layers,
+  FileScan,
+  MonitorPlay,
+  Newspaper,
+  ListFilter,
+  GalleryHorizontalEnd,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -597,10 +604,10 @@ export default function SidebarWindowToggle() {
                   />
                   <MenuGridItem
                     icon={<Mic className="w-3.5 h-3.5" />}
-                    label="Voice Pad"
+                    label="AI Voice"
                     onClick={() =>
                       act(() =>
-                        dispatch(openOverlay({ overlayId: "voicePad" })),
+                        dispatch(openOverlay({ overlayId: "aiVoiceWindow" })),
                       )
                     }
                   />
@@ -726,6 +733,92 @@ export default function SidebarWindowToggle() {
                       act(() =>
                         dispatch(
                           openOverlay({ overlayId: "quickFilesWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<ArrowUp className="w-3.5 h-3.5" />}
+                    label="Upload"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "fileUploadWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Globe className="w-3.5 h-3.5" />}
+                    label="Web Scraper"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(openOverlay({ overlayId: "scraperWindow" })),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Layers className="w-3.5 h-3.5" />}
+                    label="Context Switcher"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "contextSwitcherWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<FileScan className="w-3.5 h-3.5" />}
+                    label="PDF Extractor"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "pdfExtractorWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<MonitorPlay className="w-3.5 h-3.5" />}
+                    label="Canvas Viewer"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "canvasViewerWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Newspaper className="w-3.5 h-3.5" />}
+                    label="News"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "newsWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<ListFilter className="w-3.5 h-3.5" />}
+                    label="List Manager"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "listManagerWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<GalleryHorizontalEnd className="w-3.5 h-3.5" />}
+                    label="Gallery"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "galleryWindow" }),
                         ),
                       )
                     }

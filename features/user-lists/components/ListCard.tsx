@@ -13,6 +13,7 @@ interface ListCardProps {
   isActive: boolean;
   isAnyNavigating: boolean;
   onNavigate: (id: string) => void;
+  onOverrideNavigate?: (id: string) => void;
 }
 
 const VISIBILITY_CONFIG = {
@@ -55,6 +56,7 @@ export function ListCard({
   isActive,
   isAnyNavigating,
   onNavigate,
+  onOverrideNavigate,
 }: ListCardProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -67,6 +69,12 @@ export function ListCard({
     if (e.metaKey || e.ctrlKey) return;
     e.preventDefault();
     if (isDisabled) return;
+    
+    if (onOverrideNavigate) {
+      onOverrideNavigate(list.id);
+      return;
+    }
+
     onNavigate(list.id);
     startTransition(() => router.push(`/lists/${list.id}`));
   };

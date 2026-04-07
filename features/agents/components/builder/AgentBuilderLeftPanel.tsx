@@ -15,15 +15,12 @@ import type {
   AgentDefinitionMessage,
   TextBlock,
 } from "@/features/agents/types/agent-message-types";
-import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 interface AgentBuilderLeftPanelProps {
   agentId: string;
 }
 
-export function AgentBuilderLeftPanel({
-  agentId,
-}: AgentBuilderLeftPanelProps) {
+export function AgentBuilderLeftPanel({ agentId }: AgentBuilderLeftPanelProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
   const allMessages = useAppSelector((state) =>

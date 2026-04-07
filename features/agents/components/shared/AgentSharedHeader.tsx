@@ -1,16 +1,18 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { Eye, Pencil, Play, History, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectAgentIsDirty } from "@/features/agents/redux/agent-definition/selectors";
+import {
+  selectAgentIsDirty,
+  selectAgentById,
+  selectAgentVersionNumber,
+} from "@/features/agents/redux/agent-definition/selectors";
 import { AgentListDropdown } from "@/features/agents/components/agent-listings/AgentListDropdown";
 import { AgentSaveStatus } from "./AgentSaveStatus";
 import { AgentOptionsMenu } from "./AgentOptionsMenu";
-import { useAgentPageContext } from "./AgentPageContext";
-import type { AgentPageMode } from "./AgentPageContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,67 +24,129 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+type AgentPageMode = "view" | "edit" | "run" | "versions";
 type ModeOption = AgentPageMode | "new";
 
-const MODE_LABELS: Record<ModeOption, string> = {
-  edit: "Build",
-  run: "Run",
-  new: "New",
-};
+const MODES: { id: ModeOption; label: string; icon: typeof Eye }[] = [
+  { id: "view", label: "View", icon: Eye },
+  { id: "edit", label: "Build", icon: Pencil },
+  { id: "run", label: "Run", icon: Play },
+  { id: "versions", label: "Versions", icon: History },
+  { id: "new", label: "New", icon: Plus },
+];
 
-export function AgentSharedHeader() {
+function deriveMode(pathname: string, agentId: string): AgentPageMode {
+  const base = `/agents/${agentId}`;
+  if (pathname.startsWith(`${base}/run`)) return "run";
+  if (pathname.startsWith(`${base}/edit`)) return "edit";
+  if (
+    pathname.startsWith(`${base}/latest`) ||
+    /^\/agents\/[^/]+\/\d+$/.test(pathname)
+  )
+    return "versions";
+  return "view";
+}
+
+export function AgentSharedHeader({ agentId }: { agentId: string }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [, startTransition] = useTransition();
-  const { agentId, agentName, basePath, mode } = useAgentPageContext();
+  const agentName =
+    useAppSelector((state) => selectAgentById(state, agentId)?.name) ?? "";
+  const versionNumber = useAppSelector((state) =>
+    selectAgentVersionNumber(state, agentId),
+  );
   const isDirty = useAppSelector((state) => selectAgentIsDirty(state, agentId));
   const [showDirtyDialog, setShowDirtyDialog] = useState(false);
+  const [pendingNew, setPendingNew] = useState(false);
+
+  const mode = deriveMode(pathname, agentId);
+
+  const navigateTo = (path: string) => {
+    startTransition(() => router.push(path));
+  };
 
   const handleModeChange = (next: ModeOption) => {
     if (next === mode) return;
 
     if (next === "new") {
       if (isDirty) {
+        setPendingNew(true);
         setShowDirtyDialog(true);
       } else {
-        navigateToNew();
+        navigateTo("/agents");
       }
       return;
     }
 
-    const path =
-      next === "edit"
-        ? `${basePath}/${agentId}/edit`
-        : `${basePath}/${agentId}/run`;
-    startTransition(() => router.push(path));
-  };
-
-  const navigateToNew = () => {
-    startTransition(() => router.push(basePath));
+    const pathMap: Record<AgentPageMode, string> = {
+      view: `/agents/${agentId}`,
+      edit: `/agents/${agentId}/edit`,
+      run: `/agents/${agentId}/run`,
+      versions: `/agents/${agentId}/latest`,
+    };
+    navigateTo(pathMap[next]);
   };
 
   const handleAgentSelect = (selectedId: string) => {
-    const path = `${basePath}/${selectedId}/${mode}`;
-    startTransition(() => router.push(path));
+    const suffix =
+      mode === "view" ? "" : mode === "versions" ? "/latest" : `/${mode}`;
+    navigateTo(`/agents/${selectedId}${suffix}`);
+  };
+
+  const handleDirtyDiscard = () => {
+    setShowDirtyDialog(false);
+    if (pendingNew) {
+      setPendingNew(false);
+      navigateTo("/agents");
+    }
+  };
+
+  const handleDirtyCancel = () => {
+    setShowDirtyDialog(false);
+    setPendingNew(false);
   };
 
   return (
     <>
       <div className="flex items-center justify-between w-full gap-2 px-1">
-        {/* Left cluster: dropdown + name */}
         <div className="flex items-center gap-2 min-w-0 shrink">
           <AgentListDropdown
             onSelect={handleAgentSelect}
             label={agentName}
             className="max-w-[180px]"
           />
+          {versionNumber != null && (
+            <span className="text-[0.625rem] font-medium text-[var(--shell-nav-text)] tabular-nums shrink-0">
+              v{versionNumber}
+            </span>
+          )}
         </div>
 
-        {/* Center: mode toggle */}
-        <ModeToggle currentMode={mode} onModeChange={handleModeChange} />
+        <div className="shell-glass flex items-center gap-0.5 rounded-full p-0.5">
+          {MODES.map(({ id, label, icon: Icon }) => {
+            const isActive = id === mode;
+            return (
+              <button
+                key={id}
+                onClick={() => handleModeChange(id)}
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer",
+                  "[&_svg]:w-3.5 [&_svg]:h-3.5",
+                  isActive
+                    ? "bg-[var(--shell-glass-bg-active)] text-[var(--shell-nav-text-hover)]"
+                    : "text-[var(--shell-nav-text)] hover:text-[var(--shell-nav-text-hover)]",
+                )}
+              >
+                <Icon />
+                {label}
+              </button>
+            );
+          })}
+        </div>
 
-        {/* Right cluster: save status + options */}
         <div className="flex items-center gap-1.5 shrink-0">
-          <AgentSaveStatus />
+          <AgentSaveStatus agentId={agentId} />
           <div className="w-px h-4 bg-border/50" />
           <AgentOptionsMenu />
         </div>
@@ -98,49 +162,15 @@ export function AgentSharedHeader() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Stay</AlertDialogCancel>
-            <AlertDialogAction onClick={navigateToNew}>
+            <AlertDialogCancel onClick={handleDirtyCancel}>
+              Stay
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDirtyDiscard}>
               Discard & Continue
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
-  );
-}
-
-function ModeToggle({
-  currentMode,
-  onModeChange,
-}: {
-  currentMode: AgentPageMode;
-  onModeChange: (mode: ModeOption) => void;
-}) {
-  const modes: ModeOption[] = ["edit", "run", "new"];
-
-  return (
-    <div className="flex items-center h-7 rounded-md bg-muted/50 border border-border/50 p-0.5 gap-0.5">
-      {modes.map((m) => {
-        const isActive = m === currentMode;
-        const isNew = m === "new";
-
-        return (
-          <button
-            key={m}
-            onClick={() => onModeChange(m)}
-            className={cn(
-              "flex items-center gap-1 h-6 px-2.5 rounded text-xs font-medium transition-all",
-              isActive
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
-              isNew && !isActive && "text-primary/70 hover:text-primary",
-            )}
-          >
-            {isNew && <Plus className="w-3 h-3" />}
-            {MODE_LABELS[m]}
-          </button>
-        );
-      })}
-    </div>
   );
 }

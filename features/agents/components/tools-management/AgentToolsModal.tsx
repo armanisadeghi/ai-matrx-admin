@@ -22,21 +22,16 @@ import { AgentToolsManager } from "@/features/agents/components/tools-management
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectAgentTools,
-  selectAgentCustomTools,
   selectAgentDirtyFields,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { resetAgentField } from "@/features/agents/redux/agent-definition/slice";
-import type { DatabaseTool } from "@/utils/supabase/tools-service";
+import { fetchAvailableTools } from "@/features/agents/redux/tools/tools.thunks";
 
 interface AgentToolsModalProps {
   agentId: string;
-  availableTools?: DatabaseTool[];
 }
 
-export function AgentToolsModal({
-  agentId,
-  availableTools,
-}: AgentToolsModalProps) {
+export function AgentToolsModal({ agentId }: AgentToolsModalProps) {
   const [open, setOpen] = useState(false);
   const dispatch = useAppDispatch();
   const isMobile = useIsMobile();
@@ -54,9 +49,11 @@ export function AgentToolsModal({
 
   const handleOpen = useCallback(() => {
     hadToolsDirtyOnOpen.current = dirtyFields?.has("tools") ?? false;
-    hadCustomToolsDirtyOnOpen.current = dirtyFields?.has("customTools") ?? false;
+    hadCustomToolsDirtyOnOpen.current =
+      dirtyFields?.has("customTools") ?? false;
+    dispatch(fetchAvailableTools());
     setOpen(true);
-  }, [dirtyFields]);
+  }, [dirtyFields, dispatch]);
 
   const handleDone = useCallback(() => {
     setOpen(false);
@@ -133,10 +130,7 @@ export function AgentToolsModal({
               </DrawerDescription>
             </DrawerHeader>
             <div className="flex-1 overflow-y-auto overscroll-contain px-4">
-              <AgentToolsManager
-                agentId={agentId}
-                availableTools={availableTools}
-              />
+              <AgentToolsManager agentId={agentId} />
             </div>
             {footer}
           </DrawerContent>
@@ -165,10 +159,7 @@ export function AgentToolsModal({
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-hidden" style={{ minHeight: 0 }}>
-            <AgentToolsManager
-              agentId={agentId}
-              availableTools={availableTools}
-            />
+            <AgentToolsManager agentId={agentId} />
           </div>
           {footer}
         </DialogContent>

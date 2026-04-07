@@ -44,6 +44,7 @@ import type {
   AcceptVersionResult,
   UpdateFromSourceResult,
   PromoteVersionResult,
+  AgentVersionSnapshot,
 } from "../../types/agent-definition.types";
 import {
   upsertAgent,
@@ -67,6 +68,7 @@ import {
   dbRowToAgentDefinition,
   agentDefinitionToInsert,
   agentDefinitionToUpdate,
+  versionSnapshotRowToAgentDefinition,
 } from "./converters";
 
 type ThunkApi = { dispatch: AppDispatch; state: RootState };
@@ -309,33 +311,8 @@ type _Check_AgentVersionHistoryItem =
 declare const _agentVersionHistoryItem: _Check_AgentVersionHistoryItem;
 true satisfies typeof _agentVersionHistoryItem;
 
-export interface AgentVersionSnapshot {
-  version_id: string;
-  version_number: number;
-  agent_type: string;
-  name: string;
-  description: string | null;
-  messages: AgentDefinition["messages"];
-  variable_definitions: AgentDefinition["variableDefinitions"];
-  model_id: string | null;
-  model_tiers: AgentDefinition["modelTiers"];
-  settings: AgentDefinition["settings"];
-  output_schema: AgentDefinition["outputSchema"];
-  tools: string[];
-  custom_tools: AgentDefinition["customTools"];
-  context_slots: AgentDefinition["contextSlots"];
-  category: string | null;
-  tags: string[];
-  is_active: boolean;
-  changed_at: string;
-  change_note: string | null;
-}
-type _Check_AgentVersionSnapshot =
-  AgentVersionSnapshot extends DbRpcRow<"agx_get_version_snapshot">
-    ? true
-    : false;
-declare const _agentVersionSnapshot: _Check_AgentVersionSnapshot;
-true satisfies typeof _agentVersionSnapshot;
+// AgentVersionSnapshot interface + compile-time check now live in
+// features/agents/types/agent-definition.types.ts
 
 /**
  * Paginated version history for the agent editor's version panel.
@@ -383,54 +360,7 @@ export const fetchAgentVersionSnapshot = createAsyncThunk<
     if (!raw) return;
     const row = raw as unknown as AgentVersionSnapshot;
 
-    dispatch(
-      upsertAgent({
-        id: row.version_id,
-        isVersion: true,
-        parentAgentId: agentId,
-        versionNumber: row.version_number,
-        changedAt: row.changed_at,
-        changeNote: row.change_note,
-
-        agentType: row.agent_type as AgentDefinition["agentType"],
-        name: row.name,
-        description: row.description,
-        category: row.category,
-        tags: row.tags,
-        isActive: row.is_active,
-
-        // Version snapshots don't have these live-agent-only fields
-        isPublic: false,
-        isArchived: false,
-        isFavorite: false,
-        userId: null,
-        organizationId: null,
-        workspaceId: null,
-        projectId: null,
-        taskId: null,
-        sourceAgentId: null,
-        sourceSnapshotAt: null,
-        createdAt: row.changed_at,
-        updatedAt: row.changed_at,
-
-        modelId: row.model_id,
-        messages: row.messages ?? [],
-        variableDefinitions: row.variable_definitions,
-        settings: row.settings,
-        tools: row.tools ?? [],
-        contextSlots: row.context_slots ?? [],
-        modelTiers: row.model_tiers,
-        outputSchema: row.output_schema,
-        customTools: row.custom_tools ?? [],
-        // Version snapshot RPC does not return MCP server IDs — treat as none.
-        mcpServers: [],
-
-        // Access metadata not available from the version snapshot RPC
-        isOwner: null,
-        accessLevel: null,
-        sharedByEmail: null,
-      }),
-    );
+    dispatch(upsertAgent(versionSnapshotRowToAgentDefinition(agentId, row)));
   },
 );
 

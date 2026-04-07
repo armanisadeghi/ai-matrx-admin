@@ -24,7 +24,10 @@ import type { Database } from "@/types/database.types";
 import type {
   AgentDefinition,
   AgentType,
+  AgentVersionSnapshot,
 } from "../../types/agent-definition.types";
+
+export type { AgentVersionSnapshot };
 
 // ---------------------------------------------------------------------------
 // Supabase row types (derived from generated types)
@@ -220,4 +223,62 @@ export function agentDefinitionToUpdate(
   if (partial.taskId !== undefined) update.task_id = partial.taskId;
 
   return update;
+}
+
+// ---------------------------------------------------------------------------
+// Version Snapshot → Frontend
+// ---------------------------------------------------------------------------
+
+/**
+ * Converts a version snapshot RPC row into AgentDefinition shape.
+ * Used by both the client thunk (fetchAgentVersionSnapshot) and
+ * SSR data layer (getAgentSnapshot) — single source of truth.
+ */
+export function versionSnapshotRowToAgentDefinition(
+  parentAgentId: string,
+  row: AgentVersionSnapshot,
+): AgentDefinition {
+  return {
+    id: row.version_id,
+    isVersion: true,
+    parentAgentId,
+    versionNumber: row.version_number,
+    changedAt: row.changed_at,
+    changeNote: row.change_note,
+
+    agentType: row.agent_type as AgentDefinition["agentType"],
+    name: row.name,
+    description: row.description,
+    category: row.category,
+    tags: row.tags,
+    isActive: row.is_active,
+
+    isPublic: false,
+    isArchived: false,
+    isFavorite: false,
+    userId: null,
+    organizationId: null,
+    workspaceId: null,
+    projectId: null,
+    taskId: null,
+    sourceAgentId: null,
+    sourceSnapshotAt: null,
+    createdAt: row.changed_at,
+    updatedAt: row.changed_at,
+
+    modelId: row.model_id,
+    messages: row.messages ?? [],
+    variableDefinitions: row.variable_definitions,
+    settings: row.settings,
+    tools: row.tools ?? [],
+    contextSlots: row.context_slots ?? [],
+    modelTiers: row.model_tiers,
+    outputSchema: row.output_schema,
+    customTools: row.custom_tools ?? [],
+    mcpServers: [],
+
+    isOwner: null,
+    accessLevel: null,
+    sharedByEmail: null,
+  };
 }

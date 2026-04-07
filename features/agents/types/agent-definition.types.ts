@@ -252,6 +252,29 @@ export interface UpdateFromSourceResult {
   agent_name?: string;
 }
 
+/** Returned by `agx_get_version_snapshot(agent_id, version_number)`. */
+export interface AgentVersionSnapshot {
+  version_id: string;
+  version_number: number;
+  agent_type: string;
+  name: string;
+  description: string | null;
+  messages: AgentDefinition["messages"];
+  variable_definitions: AgentDefinition["variableDefinitions"];
+  model_id: string | null;
+  model_tiers: AgentDefinition["modelTiers"];
+  settings: AgentDefinition["settings"];
+  output_schema: AgentDefinition["outputSchema"];
+  tools: string[];
+  custom_tools: AgentDefinition["customTools"];
+  context_slots: AgentDefinition["contextSlots"];
+  category: string | null;
+  tags: string[];
+  is_active: boolean;
+  changed_at: string;
+  change_note: string | null;
+}
+
 // ---------------------------------------------------------------------------
 // Compile-time DB shape guards — zero runtime cost.
 //
@@ -272,6 +295,13 @@ type _Check_AgentListRow =
   AgentListRow extends DbRpcRow<"agx_get_list"> ? true : false;
 declare const _agentListRow: _Check_AgentListRow;
 true satisfies typeof _agentListRow;
+
+type _Check_AgentVersionSnapshot =
+  AgentVersionSnapshot extends DbRpcRow<"agx_get_version_snapshot">
+    ? true
+    : false;
+declare const _agentVersionSnapshot: _Check_AgentVersionSnapshot;
+true satisfies typeof _agentVersionSnapshot;
 
 type _Check_AgentExecutionMinimal =
   AgentExecutionMinimal extends DbRpcRow<"agx_get_execution_minimal">

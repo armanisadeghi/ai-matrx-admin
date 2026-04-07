@@ -518,6 +518,79 @@
   }
 }
 
+/* ── Mobile slide transitions ────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  /* Smooth slide animation when switching between list and editor */
+  .notes-sidebar,
+  .notes-content {
+    transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1),
+                opacity 0.2s ease;
+    will-change: transform, opacity;
+  }
+
+  /* When note is active: slide sidebar left, slide content in from right */
+  .notes-root:has(.note-detail-active) .notes-sidebar {
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .notes-root:has(.note-detail-active) .notes-content {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  /* When no note active: sidebar visible, content slides right */
+  .notes-root:not(:has(.note-detail-active)) .notes-content {
+    transform: translateX(100%);
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .notes-root:not(:has(.note-detail-active)) .notes-sidebar {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  /* Mobile note card styling */
+  .notes-mobile-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .notes-mobile-card:active {
+    transform: scale(0.98);
+  }
+
+  /* Mobile editor dock positioning */
+  .notes-mobile-dock {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Ensure editor doesn't get hidden behind dock */
+  .notes-root:has(.note-detail-active) .notes-editor-textarea {
+    padding-bottom: calc(
+      4rem
+      + var(--shell-dock-h, 0px)
+      + env(safe-area-inset-bottom, 0px)
+    );
+  }
+}
+
+/* ── Mobile filter sheet animation ───────────────────────────────────── */
+.notes-filter-sheet-enter {
+  animation: notes-sheet-slide-up 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+@keyframes notes-sheet-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
 /* Animation utilities for SSR components */
 .ssr-status-pulse {
   animation: ssr-pulse 1s ease-in-out infinite;

@@ -66,6 +66,11 @@ import { NoteVersionHistory } from "./NoteVersionHistory";
 import { NoteConflictWindow } from "./NoteConflictWindow";
 import { analyzeDiff, type DiffAnalysis } from "@/features/notes/utils/diffAnalysis";
 
+const MobileEditorDock = dynamic(() => import("./MobileEditorDock"), {
+  ssr: false,
+  loading: () => null,
+});
+
 const NoteOptionsSheet = dynamic(() => import("./NoteOptionsSheet"), {
   ssr: false,
   loading: () => null,
@@ -456,7 +461,26 @@ export default function NotesWorkspace({
         return next;
       }
 
-      // No local edits — just update cache
+      // No local edits — update cache.
+      // BUT: if the user has content in the editor that hasn't been tracked
+      // as localEdits yet (e.g., they just pasted into a new note), don't
+      // wipe it with an empty server response. Check the textarea directly.
+      const existingContent = existing?.data.content ?? "";
+      if (
+        existing &&
+        existingContent &&
+        !noteData.content &&
+        noteData.label === "New Note"
+      ) {
+        // Server returned empty for a new note but we already have content — keep it
+        next.set(noteId, {
+          ...existing,
+          data: { ...noteData, content: existingContent },
+          fetchedAt: Date.now(),
+        });
+        return next;
+      }
+
       next.set(noteId, {
         data: noteData,
         localEdits: null,
@@ -1056,6 +1080,26 @@ export default function NotesWorkspace({
       .single();
 
     if (error || !note) return;
+
+    // Pre-populate cache so the fetch effect doesn't wipe user's paste
+    setNoteCache((prev) => {
+      const next = new Map(prev);
+      next.set(note.id, {
+        data: {
+          id: note.id,
+          label: note.label ?? "New Note",
+          content: "",
+          folder_name: note.folder_name ?? folder,
+          tags: (note.tags as string[]) ?? [],
+          metadata: {},
+          updated_at: note.updated_at ?? new Date().toISOString(),
+        },
+        localEdits: null,
+        saveState: "saved",
+        fetchedAt: Date.now(), // Fresh — won't trigger background refetch
+      });
+      return next;
+    });
 
     window.dispatchEvent(
       new CustomEvent("notes:created", {
@@ -1807,7 +1851,26 @@ export default function NotesWorkspace({
                   )}
                 </div>
               </div>
+
             </NoteContextMenu>
+
+            {/* ── Mobile Editor Dock (outside context menu) ────────────── */}
+            <div className="lg:hidden">
+              <MobileEditorDock
+                noteId={activeNoteId}
+                currentFolder={activeCached.data.folder_name}
+                currentTags={activeCached.data.tags ?? []}
+                allFolders={allFolders}
+                isDirty={saveState === "dirty" || saveState === "saving"}
+                onFolderChange={(folder) => moveNote(activeNoteId, folder)}
+                onTagsChange={(tags) => updateTags(activeNoteId, tags)}
+                onSave={() => forceSave(activeNoteId)}
+                onDuplicate={() => duplicateNote(activeNoteId)}
+                onExport={() => exportNote(activeNoteId)}
+                onShareLink={() => setShareDialogNoteId(activeNoteId)}
+                onDelete={() => deleteNote(activeNoteId)}
+              />
+            </div>
           </div>
 
           {/* ── Version History Side Panel ────────────────────────────── */}

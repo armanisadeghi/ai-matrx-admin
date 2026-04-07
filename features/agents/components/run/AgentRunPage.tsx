@@ -36,10 +36,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AgentRunPageProps {
   agentId: string;
-  agentName: string;
 }
 
-export function AgentRunPage({ agentId, agentName }: AgentRunPageProps) {
+export function AgentRunPage({ agentId }: AgentRunPageProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const pathname = usePathname();
@@ -130,28 +129,29 @@ export function AgentRunPage({ agentId, agentName }: AgentRunPageProps) {
 
   return (
     <div className="relative flex h-full overflow-hidden">
-      {/* Sidebar — header contains toggle, label, and New button */}
       {!isMobile && sidebarOpen && (
-        <div className="w-64 shrink-0 border-r border-border overflow-hidden flex flex-col">
+        <div
+          className="w-64 shrink-0 border-r border-border overflow-hidden flex flex-col"
+          style={{ paddingTop: "var(--shell-header-h)" }}
+        >
           <AgentRunsSidebar
             agentId={agentId}
-            agentName={agentName}
             currentRunId={currentRunId}
             onNewRun={handleNewRun}
             onClose={() => setSidebarOpen(false)}
           />
-          {/* Display mode tester — pinned to bottom of sidebar */}
           <div className="shrink-0 border-t border-border">
             <AgentLauncherSidebarTester instanceId={instanceId} />
           </div>
         </div>
       )}
 
-      {/* Main content */}
       <div className="flex-1 overflow-hidden flex justify-center min-w-0">
-        {/* Floating toggle — only when sidebar is closed, doesn't take any space */}
         {!isMobile && !sidebarOpen && (
-          <div className="absolute top-1 left-1 z-10">
+          <div
+            className="absolute left-1 z-10"
+            style={{ top: "var(--shell-header-h)" }}
+          >
             <Button
               variant="ghost"
               size="icon"

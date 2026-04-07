@@ -1,23 +1,19 @@
 import { AgentBuilderLeftPanel } from "./AgentBuilderLeftPanel";
 import { AgentBuilderRightPanel } from "./AgentBuilderRightPanel";
-import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 interface AgentBuilderDesktopProps {
   agentId: string;
 }
 
-export function AgentBuilderDesktop({
-  agentId,
-}: AgentBuilderDesktopProps) {
+export function AgentBuilderDesktop({ agentId }: AgentBuilderDesktopProps) {
   return (
-    <div className="flex gap-4 h-full">
-      {/* Left: Edit panel — capped at 640px */}
-      <div className="h-full overflow-hidden w-full max-w-[640px] shrink-0">
-        <AgentBuilderLeftPanel
-          agentId={agentId}
-        />
+    <div className="flex h-full">
+      <div
+        className="h-full overflow-hidden w-full max-w-[640px] shrink-0 px-2"
+        style={{ paddingTop: "var(--shell-header-h)" }}
+      >
+        <AgentBuilderLeftPanel agentId={agentId} />
       </div>
-      {/* Right: Test panel — takes remaining space, contents centered */}
       <div className="flex-1 h-full overflow-hidden flex justify-center">
         <div className="w-full max-w-3xl h-full">
           <AgentBuilderRightPanel agentId={agentId} />

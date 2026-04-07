@@ -24,6 +24,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 
 // Module-level cache — checked once per session, avoids repeated 404 noise
 // when the agent_runs table hasn't been created by the Python backend yet.
@@ -38,7 +40,6 @@ interface AgentRun {
 
 interface AgentRunsSidebarProps {
   agentId: string;
-  agentName: string;
   currentRunId?: string;
   onNewRun: () => void;
   onClose: () => void;
@@ -59,11 +60,12 @@ function formatDate(iso: string | null): string {
 
 export function AgentRunsSidebar({
   agentId,
-  agentName,
   currentRunId,
   onNewRun,
   onClose,
 }: AgentRunsSidebarProps) {
+  const agentName =
+    useAppSelector((state) => selectAgentById(state, agentId)?.name) ?? "";
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

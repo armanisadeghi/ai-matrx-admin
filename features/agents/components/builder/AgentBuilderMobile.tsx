@@ -4,7 +4,6 @@ import { useState } from "react";
 import { AgentBuilderLeftPanel } from "./AgentBuilderLeftPanel";
 import { AgentBuilderRightPanel } from "./AgentBuilderRightPanel";
 import { cn } from "@/lib/utils";
-import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 interface AgentBuilderMobileProps {
   agentId: string;
@@ -12,9 +11,7 @@ interface AgentBuilderMobileProps {
 
 type MobileTab = "build" | "test";
 
-export function AgentBuilderMobile({
-  agentId,
-}: AgentBuilderMobileProps) {
+export function AgentBuilderMobile({ agentId }: AgentBuilderMobileProps) {
   const [activeTab, setActiveTab] = useState<MobileTab>("build");
 
   return (
@@ -41,9 +38,7 @@ export function AgentBuilderMobile({
       <div className="flex-1 overflow-hidden">
         {activeTab === "build" ? (
           <div className="h-full overflow-y-auto p-4">
-            <AgentBuilderLeftPanel
-              agentId={agentId}
-            />
+            <AgentBuilderLeftPanel agentId={agentId} />
           </div>
         ) : (
           <AgentBuilderRightPanel agentId={agentId} />

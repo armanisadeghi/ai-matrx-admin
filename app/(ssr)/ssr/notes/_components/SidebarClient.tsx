@@ -63,6 +63,16 @@ const CreateFolderDialog = dynamic(
   { ssr: false },
 );
 
+const MobileNoteCards = dynamic(
+  () => import("./MobileNoteCards"),
+  { ssr: false },
+);
+
+const MobileFilterSheet = dynamic(
+  () => import("./MobileFilterSheet"),
+  { ssr: false },
+);
+
 import { getCategoryIconAndColor } from "@/features/notes/constants/folderCategories";
 import { getIconComponent } from "@/components/official/IconResolver";
 
@@ -240,6 +250,8 @@ export default function SidebarClient({
 
   // ── Create folder dialog state ──────────────────────────────────────
   const [showCreateFolder, setShowCreateFolder] = useState(false);
+  const [showMobileFilter, setShowMobileFilter] = useState(false);
+  const [mobileFilterTags, setMobileFilterTags] = useState<string[]>([]);
   const [newFolderName, setNewFolderName] = useState("");
 
   // Read filter state from URL
@@ -551,10 +563,43 @@ export default function SidebarClient({
         newNoteSlot={<NewNoteButton />}
       />
 
-      {/* ── VSCode-style Tree ──────────────────────────────────────────── */}
+      {/* ── Mobile Card View (lg:hidden) ──────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto lg:hidden">
+        <MobileNoteCards
+          notes={filteredNotes.map((n) => ({
+            id: n.id,
+            label: n.label,
+            content: (n as any).content,
+            folder_name: n.folder_name,
+            tags: n.tags ?? [],
+            updated_at: n.updated_at,
+          }))}
+          activeNoteId={activeNoteId}
+          onSelectNote={navigateToNote}
+          onCreateNote={() => createNoteInFolder(mobileFolder || "Draft")}
+        />
+      </div>
+
+      {/* ── Mobile Filter Sheet ──────────────────────────────────────── */}
+      <MobileFilterSheet
+        open={showMobileFilter}
+        onClose={() => setShowMobileFilter(false)}
+        sortField={sortField}
+        sortOrder={sortOrder}
+        onSortChange={(field, order) => updateParams({ sort: field, order })}
+        folders={orderedFolders}
+        activeFolder={mobileFolder}
+        onFolderChange={(f) => updateParams({ folder: f })}
+        allTags={allTags}
+        activeTags={mobileFilterTags}
+        onTagsChange={setMobileFilterTags}
+        resultCount={filteredNotes.length}
+      />
+
+      {/* ── VSCode-style Tree (hidden on mobile) ─────────────────────── */}
       <div
         ref={treeRef}
-        className="flex-1 overflow-y-auto scrollbar-thin-auto"
+        className="flex-1 overflow-y-auto scrollbar-thin-auto hidden lg:block"
         onClick={contextMenu ? closeContextMenu : undefined}
       >
         {orderedFolders.map((folder) => {
