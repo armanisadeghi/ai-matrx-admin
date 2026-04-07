@@ -92,6 +92,7 @@ const initialState: OverlayState = {
     galleryWindow: makeDefaultInstance(),
     listManagerWindow: makeDefaultInstance(),
     aiVoiceWindow: makeDefaultInstance(),
+    agentGateWindow: makeDefaultInstance(),
   },
 };
 
@@ -439,7 +440,9 @@ interface ContextSwitcherWindowPayload {
   instanceId?: string;
 }
 
-export const openContextSwitcherWindow = (options?: ContextSwitcherWindowPayload) =>
+export const openContextSwitcherWindow = (
+  options?: ContextSwitcherWindowPayload,
+) =>
   openOverlay({
     overlayId: "contextSwitcherWindow",
     instanceId: options?.instanceId,
@@ -475,4 +478,18 @@ export const openAiVoiceWindow = (options?: AiVoiceWindowPayload) =>
   openOverlay({
     overlayId: "aiVoiceWindow",
     instanceId: options?.instanceId,
+  });
+
+interface AgentGateWindowPayload {
+  /** The instanceId of the window panel itself (used as the overlay instance key). */
+  instanceId: string;
+  /** The agent execution instanceId whose gate input to render. */
+  agentInstanceId: string;
+}
+
+export const openAgentGateWindow = (options: AgentGateWindowPayload) =>
+  openOverlay({
+    overlayId: "agentGateWindow",
+    instanceId: options.instanceId,
+    data: { agentInstanceId: options.agentInstanceId },
   });

@@ -102,7 +102,8 @@ export const selectLatestConversationId =
 /** The current conversation mode for this instance (agent | conversation | chat). */
 export const selectConversationMode =
   (instanceId: string) => (state: RootState) =>
-    state.instanceConversationHistory?.byInstanceId[instanceId]?.mode ?? "agent";
+    state.instanceConversationHistory?.byInstanceId[instanceId]?.mode ??
+    "agent";
 
 /**
  * The requestId for the most recent request on this instance.
@@ -323,7 +324,8 @@ export const selectAssembledRequest =
 export const selectInstanceSummary = (instanceId: string) =>
   createSelector(
     (state: RootState) => state.executionInstances?.byInstanceId[instanceId],
-    (state: RootState) => state.instanceModelOverrides?.byInstanceId[instanceId],
+    (state: RootState) =>
+      state.instanceModelOverrides?.byInstanceId[instanceId],
     (state: RootState) => state.instanceResources?.byInstanceId[instanceId],
     (state: RootState) => state.instanceContext?.byInstanceId[instanceId],
     (state: RootState) => state.instanceUserInput?.byInstanceId[instanceId],

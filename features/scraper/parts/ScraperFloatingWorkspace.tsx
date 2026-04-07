@@ -556,8 +556,8 @@ export function ScraperFloatingWorkspace({ onClose }: { onClose: () => void }) {
       minHeight={340}
       onClose={onClose}
       sidebar={sidebarContent}
-      sidebarDefaultSize={30}
-      sidebarMinSize={22}
+      sidebarDefaultSize={400}
+      sidebarMinSize={250}
       defaultSidebarOpen
       sidebarClassName="bg-muted/10"
       actionsLeft={leftActions}

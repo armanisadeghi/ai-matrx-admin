@@ -7,7 +7,7 @@ import { selectInstanceAgentName } from "@/features/agents/redux/execution-syste
 import { selectHasUserInput } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { setPreExecutionSatisfied } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
-import { SmartAgentInput } from "../inputs/SmartAgentInput";
+import { SmartAgentInput } from "../../inputs/SmartAgentInput";
 import { cn } from "@/lib/utils";
 
 // ─── Pre-execution compact card (portalled, no WindowPanel) ──────────────────
@@ -41,7 +41,7 @@ export function PreExecutionCard({
   };
 
   const card = (
-    <div className="fixed inset-0 z-50 flex items-start max-w-[400px] h-[300px] justify-center pt-[15vh]">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]">
       <div
         className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
         onClick={handleCancel}

@@ -13,7 +13,11 @@
 import { useState, useCallback } from "react";
 import { Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useDialogContainer } from "@/components/ui/dialog";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {

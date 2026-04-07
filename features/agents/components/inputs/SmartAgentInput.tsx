@@ -134,7 +134,15 @@ interface SmartAgentInputProps {
   uploadBucket?: string;
   uploadPath?: string;
   enablePasteImages?: boolean;
+  /**
+   * Reduces the textarea min-height to ~1.25 lines instead of the default ~2.5.
+   * All other behaviour (auto-resize, max-height, expand mode) is unchanged.
+   */
   compact?: boolean;
+  /** Hide the send button entirely. Toolbar still renders for mic/resources/toggles. */
+  showSendButton?: boolean;
+  /** Hide the variable panel toggle icon ({|}). */
+  showVariableIcon?: boolean;
   /**
    * Called when autoClearConversation is ON and a new instance is created on
    * submit. The parent should update its local instanceId state with the new id.
@@ -161,6 +169,8 @@ export function SmartAgentInput({
   uploadPath = "agent-attachments",
   enablePasteImages = true,
   compact = false,
+  showSendButton = true,
+  showVariableIcon = true,
   onNewInstance,
   disableSend = false,
 }: SmartAgentInputProps) {
@@ -413,7 +423,9 @@ export function SmartAgentInput({
 
   // ── Active UI ───────────────────────────────────────────────────────────────
   return (
-    <div className="relative bg-card rounded-lg max-w-[800px] border border-border overflow-hidden">
+    <div
+      className={`relative bg-card rounded-lg ${compact ? "max-w-[450px]" : "max-w-[800px]"} border border-border overflow-hidden`}
+    >
       {/* Variable inputs */}
       <SmartAgentVariableInputs
         instanceId={instanceId}
@@ -461,7 +473,7 @@ export function SmartAgentInput({
             style={
               isExpanded
                 ? { minHeight: 200 }
-                : { minHeight: 40, maxHeight: 200 }
+                : { minHeight: compact ? 20 : 40, maxHeight: 200 }
             }
             rows={1}
           />
@@ -534,7 +546,7 @@ export function SmartAgentInput({
               )}
 
               {/* Variable panel toggle — only when variables should be shown */}
-              {shouldShowVariables && (
+              {shouldShowVariables && showVariableIcon && (
                 <InputButton
                   icon={Braces}
                   tooltip={
@@ -604,18 +616,20 @@ export function SmartAgentInput({
           )}
 
           {/* Send button */}
-          <Button
-            onClick={handleSend}
-            disabled={isSendDisabled}
-            className={sendBtnClass}
-            tabIndex={-1}
-          >
-            {isExecuting ? (
-              <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <ArrowUp className="w-3.5 h-3.5" />
-            )}
-          </Button>
+          {showSendButton && (
+            <Button
+              onClick={handleSend}
+              disabled={isSendDisabled}
+              className={sendBtnClass}
+              tabIndex={-1}
+            >
+              {isExecuting ? (
+                <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <ArrowUp className="w-3.5 h-3.5" />
+              )}
+            </Button>
+          )}
         </div>
       </div>
 

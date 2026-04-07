@@ -415,6 +415,11 @@ const AiVoiceWindow = dynamic(
   { ssr: false },
 );
 
+const AgentGateWindow = dynamic(
+  () => import("@/features/floating-window-panel/windows/AgentGateWindow"),
+  { ssr: false },
+);
+
 // ============================================================================
 // OVERLAY CONTROLLER
 // ============================================================================
@@ -586,6 +591,10 @@ export const OverlayController: React.FC = () => {
 
   const isAiVoiceWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "aiVoiceWindow"),
+  );
+
+  const agentGateWindowInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "agentGateWindow"),
   );
 
   const canvasViewerWindowData = useAppSelector((s) =>
@@ -982,6 +991,21 @@ export const OverlayController: React.FC = () => {
       {isListManagerWindowOpen && <ListManagerWindow />}
 
       {isAiVoiceWindowOpen && <AiVoiceWindow />}
+
+      {/* Agent Gate Window — instanced, one per agent pre-execution gate */}
+      {agentGateWindowInstances.map(({ instanceId, data }) => {
+        const d = data as { agentInstanceId: string } | null;
+        if (!d?.agentInstanceId) return null;
+        return (
+          <AgentGateWindow
+            key={instanceId}
+            instanceId={instanceId}
+            agentInstanceId={d.agentInstanceId}
+            isOpen={true}
+            onClose={() => close("agentGateWindow", instanceId)}
+          />
+        );
+      })}
 
       {/* File Preview — instanced, multiple can be open simultaneously */}
       {filePreviewInstances.map(({ instanceId, data }) => {
