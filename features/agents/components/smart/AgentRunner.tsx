@@ -103,7 +103,7 @@ export function AgentRunner({
   // ── Main display ───────────────────────────────────────────────────────────
   return (
     <div
-      className={`flex flex-col h-full max-w-[800px] border border-red-500 overflow-hidden bg-background ${className}`}
+      className={`flex flex-col h-full max-w-[800px] overflow-hidden bg-background ${className}`}
     >
       {showTitle && title && (
         <div className="px-4 py-2 border-b border-border shrink-0">

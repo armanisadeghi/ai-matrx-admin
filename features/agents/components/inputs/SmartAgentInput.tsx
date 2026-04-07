@@ -71,6 +71,7 @@ import { selectConversationMode } from "@/features/agents/redux/execution-system
 import { SmartAgentResourceChips } from "./SmartAgentResourceChips";
 import { SmartAgentResourcePickerButton } from "./SmartAgentResourcePickerButton";
 import { SmartAgentVariableInputs } from "./SmartAgentVariableInputs";
+import { WizardAgentVariableInputs } from "./WizardAgentVariableInputs";
 
 // Voice input
 import { useRecordAndTranscribe } from "@/features/audio";
@@ -153,6 +154,12 @@ interface SmartAgentInputProps {
    * Used inside AgentPreExecutionInput where the parent manages the submit flow.
    */
   disableSend?: boolean;
+  /**
+   * Controls which variable input UI style is rendered.
+   * - "inline"  (default) — compact rows above the textarea (SmartAgentVariableInputs)
+   * - "wizard"  — one variable at a time, fixed-height card with Back/Skip/Skip All
+   */
+  variableInputStyle?: "inline" | "wizard";
 }
 
 // =============================================================================
@@ -173,6 +180,7 @@ export function SmartAgentInput({
   showVariableIcon = true,
   onNewInstance,
   disableSend = false,
+  variableInputStyle = "inline",
 }: SmartAgentInputProps) {
   const dispatch = useAppDispatch();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -427,12 +435,19 @@ export function SmartAgentInput({
       className={`relative bg-card rounded-lg w-full ${compact ? "max-w-[500px]" : "max-w-[800px]"} border border-border overflow-hidden`}
     >
       {/* Variable inputs */}
-      <SmartAgentVariableInputs
-        instanceId={instanceId}
-        compact={compact}
-        onSubmit={handleSend}
-        submitOnEnter={submitOnEnter}
-      />
+      {variableInputStyle === "wizard" ? (
+        <WizardAgentVariableInputs
+          instanceId={instanceId}
+          onSubmit={handleSend}
+        />
+      ) : (
+        <SmartAgentVariableInputs
+          instanceId={instanceId}
+          compact={compact}
+          onSubmit={handleSend}
+          submitOnEnter={submitOnEnter}
+        />
+      )}
 
       {/* Resource chips */}
       <SmartAgentResourceChips instanceId={instanceId} />

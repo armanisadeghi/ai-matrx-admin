@@ -94,11 +94,11 @@ export default function HierarchyCreationWindow({ isOpen, onClose, data }: Hiera
     <WindowPanel
       title={getTitle()}
       onClose={onClose}
-      initialPosition={{ x: 100, y: 100 }}
-      initialSize={{ width: 400, height: 350 }}
+      width={400}
+      height={350}
+      position="center"
       minWidth={300}
       maxWidth={600}
-      isDetached={true}
     >
       <div className="flex flex-col gap-4 p-4">
         <div className="text-sm text-muted-foreground mb-2">
