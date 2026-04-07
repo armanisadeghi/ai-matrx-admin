@@ -25,7 +25,7 @@ import {
   setResourcePreview,
 } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.slice";
 import { ResourcePickerMenu } from "@/features/prompts/components/resource-picker/ResourcePickerMenu";
-import { ResourcePickerWindow } from "@/features/floating-window-panel/windows/ResourcePickerWindow";
+import { ResourcePickerWindow } from "@/features/window-panels/windows/ResourcePickerWindow";
 import type { Resource } from "@/features/prompts/types/resources";
 import type { ResourceBlockType } from "@/features/agents/types";
 

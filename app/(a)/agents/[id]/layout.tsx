@@ -1,4 +1,5 @@
 import { getAgent } from "@/lib/agents/data";
+import { createDynamicRouteMetadata } from "@/utils/route-metadata";
 import { AgentHydrator } from "@/features/agents/route/AgentHydrator";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { AgentSharedHeader } from "@/features/agents/components/shared/AgentSharedHeader";
@@ -10,13 +11,10 @@ export async function generateMetadata({
 }) {
   const { id } = await params;
   const agent = await getAgent(id);
-  return {
-    title: {
-      template: "%s | AI Matrx",
-      default: `${agent.name} | AI Matrx`,
-    },
-    description: agent.description,
-  };
+  return createDynamicRouteMetadata("/agents", {
+    title: agent.name,
+    description: agent.description || `Configure and run the ${agent.name} AI agent`,
+  });
 }
 
 export default async function AgentDetailLayout({

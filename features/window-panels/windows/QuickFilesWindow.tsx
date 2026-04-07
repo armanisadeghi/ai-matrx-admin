@@ -27,10 +27,13 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { openFilePreview } from "./FilePreviewWindow";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import type { AvailableBuckets, FileSystemNode } from "@/lib/redux/fileSystem/types";
+import type {
+  AvailableBuckets,
+  FileSystemNode,
+} from "@/lib/redux/fileSystem/types";
 import { availableBuckets } from "@/lib/redux/rootReducer";
 
 const MultiBucketFileTree = dynamic(
@@ -45,7 +48,13 @@ interface QuickFilesWindowProps {
   onClose?: () => void;
 }
 
-type CategoryFilter = "all" | "images" | "audio" | "documents" | "videos" | "code";
+type CategoryFilter =
+  | "all"
+  | "images"
+  | "audio"
+  | "documents"
+  | "videos"
+  | "code";
 
 const CATEGORY_FILTERS: {
   value: CategoryFilter;
@@ -54,16 +63,36 @@ const CATEGORY_FILTERS: {
   buckets?: AvailableBuckets[];
 }[] = [
   { value: "all", label: "All", icon: Files },
-  { value: "images", label: "Images", icon: ImageIcon, buckets: ["Images" as AvailableBuckets] },
-  { value: "audio", label: "Audio", icon: Music, buckets: ["Audio" as AvailableBuckets] },
+  {
+    value: "images",
+    label: "Images",
+    icon: ImageIcon,
+    buckets: ["Images" as AvailableBuckets],
+  },
+  {
+    value: "audio",
+    label: "Audio",
+    icon: Music,
+    buckets: ["Audio" as AvailableBuckets],
+  },
   {
     value: "documents",
     label: "Docs",
     icon: FileText,
     buckets: ["Documents" as AvailableBuckets, "Notes" as AvailableBuckets],
   },
-  { value: "videos", label: "Videos", icon: Film, buckets: ["Videos" as AvailableBuckets] },
-  { value: "code", label: "Code", icon: Code2, buckets: ["Code" as AvailableBuckets, "code-editor" as AvailableBuckets] },
+  {
+    value: "videos",
+    label: "Videos",
+    icon: Film,
+    buckets: ["Videos" as AvailableBuckets],
+  },
+  {
+    value: "code",
+    label: "Code",
+    icon: Code2,
+    buckets: ["Code" as AvailableBuckets, "code-editor" as AvailableBuckets],
+  },
 ];
 
 // ─── QuickFilesWindow ─────────────────────────────────────────────────────────
@@ -74,7 +103,9 @@ export default function QuickFilesWindow({
 }: QuickFilesWindowProps) {
   const dispatch = useAppDispatch();
   const [activeFilter, setActiveFilter] = useState<CategoryFilter>("all");
-  const [activeBucket, setActiveBucket] = useState<AvailableBuckets | null>(null);
+  const [activeBucket, setActiveBucket] = useState<AvailableBuckets | null>(
+    null,
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);

@@ -52,7 +52,7 @@ import {
   arrangeActiveWindows,
 } from "@/lib/redux/slices/windowManagerSlice";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import { LayoutIconButton } from "@/features/floating-window-panel/components/LayoutIcon";
+import { LayoutIconButton } from "@/features/window-panels/components/LayoutIcon";
 
 // ─── State dot colours ────────────────────────────────────────────────────────
 
@@ -795,9 +795,7 @@ export default function SidebarWindowToggle() {
                     label="News"
                     onClick={() =>
                       act(() =>
-                        dispatch(
-                          openOverlay({ overlayId: "newsWindow" }),
-                        ),
+                        dispatch(openOverlay({ overlayId: "newsWindow" })),
                       )
                     }
                   />
@@ -817,9 +815,7 @@ export default function SidebarWindowToggle() {
                     label="Gallery"
                     onClick={() =>
                       act(() =>
-                        dispatch(
-                          openOverlay({ overlayId: "galleryWindow" }),
-                        ),
+                        dispatch(openOverlay({ overlayId: "galleryWindow" })),
                       )
                     }
                   />

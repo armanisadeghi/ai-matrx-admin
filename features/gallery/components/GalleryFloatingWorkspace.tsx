@@ -13,7 +13,13 @@
  * • Footer with result count and view controls
  */
 
-import React, { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+  useMemo,
+} from "react";
 import {
   Search,
   Heart,
@@ -29,7 +35,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { useUnsplashSearch } from "@/hooks/images/useUnsplashSearch";
-import { openImageViewer } from "@/features/floating-window-panel/windows/ImageViewerWindow";
+import { openImageViewer } from "@/features/window-panels/windows/ImageViewerWindow";
 import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -47,9 +53,18 @@ interface FavoriteImage {
 }
 
 const QUICK_TOPICS = [
-  "Nature", "Architecture", "Technology", "Abstract",
-  "Minimal", "Space", "Ocean", "Mountains",
-  "Urban", "Texture", "Dark", "Colorful",
+  "Nature",
+  "Architecture",
+  "Technology",
+  "Abstract",
+  "Minimal",
+  "Space",
+  "Ocean",
+  "Mountains",
+  "Urban",
+  "Texture",
+  "Dark",
+  "Colorful",
 ];
 
 const ORIENTATION_OPTIONS: { value: OrientationFilter; label: string }[] = [
@@ -76,7 +91,8 @@ export function GalleryFloatingWorkspace() {
 
   const [searchInput, setSearchInput] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("masonry");
-  const [orientationFilter, setOrientationFilter] = useState<OrientationFilter>("all");
+  const [orientationFilter, setOrientationFilter] =
+    useState<OrientationFilter>("all");
   const [favorites, setFavorites] = useState<FavoriteImage[]>(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -94,7 +110,10 @@ export function GalleryFloatingWorkspace() {
   // Persist favorites
   useEffect(() => {
     try {
-      localStorage.setItem("gallery-window-favorites", JSON.stringify(favorites));
+      localStorage.setItem(
+        "gallery-window-favorites",
+        JSON.stringify(favorites),
+      );
     } catch {}
   }, [favorites]);
 
@@ -109,7 +128,8 @@ export function GalleryFloatingWorkspace() {
   // ── Search ──────────────────────────────────────────────────────────────
   const executeSearch = useCallback(
     (term: string) => {
-      const orientation = orientationFilter === "all" ? undefined : orientationFilter;
+      const orientation =
+        orientationFilter === "all" ? undefined : orientationFilter;
       handleSearch(term, { orientation: orientation as any });
     },
     [handleSearch, orientationFilter],
@@ -156,7 +176,8 @@ export function GalleryFloatingWorkspace() {
     (photo: any, index: number) => {
       const urls = photos.map((p: any) => p.urls?.regular || p.urls?.small);
       const alts = photos.map(
-        (p: any) => p.alt_description || p.description || `Photo by ${p.user?.name}`,
+        (p: any) =>
+          p.alt_description || p.description || `Photo by ${p.user?.name}`,
       );
       openImageViewer(dispatch, {
         images: urls,
@@ -169,24 +190,27 @@ export function GalleryFloatingWorkspace() {
     [dispatch, photos, activeQuery],
   );
 
-  const handleDownload = useCallback(async (photo: any, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const url = photo.urls?.full || photo.urls?.regular;
-    if (!url) return;
-    try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = `unsplash-${photo.id}.jpg`;
-      a.click();
-      URL.revokeObjectURL(blobUrl);
-      toast.success("Download started");
-    } catch {
-      toast.error("Download failed");
-    }
-  }, []);
+  const handleDownload = useCallback(
+    async (photo: any, e: React.MouseEvent) => {
+      e.stopPropagation();
+      const url = photo.urls?.full || photo.urls?.regular;
+      if (!url) return;
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = `unsplash-${photo.id}.jpg`;
+        a.click();
+        URL.revokeObjectURL(blobUrl);
+        toast.success("Download started");
+      } catch {
+        toast.error("Download failed");
+      }
+    },
+    [],
+  );
 
   const handleCopyLink = useCallback((photo: any, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -306,147 +330,157 @@ export function GalleryFloatingWorkspace() {
         ? "grid grid-cols-3 gap-1.5"
         : "columns-2 gap-1.5 space-y-1.5 [column-fill:balance]";
 
-  return { sidebar, body: (
-    <div className="flex flex-col h-full min-h-0">
-      {/* Search bar */}
-      <div className="shrink-0 px-2 py-1.5 border-b border-border bg-muted/10 space-y-1">
-        <form onSubmit={handleSearchSubmit} className="flex items-center gap-1.5">
-          <div className="relative flex-1">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground/50" />
-            <input
-              ref={searchRef}
-              type="text"
-              placeholder="Search photos..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full h-6 pl-6 pr-2 text-[11px] rounded-md border border-border bg-background focus:ring-1 focus:ring-primary outline-none placeholder:text-muted-foreground/40 transition-all"
-            />
-            {searchInput && (
-              <button
-                type="button"
-                onClick={() => setSearchInput("")}
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground/40 hover:text-foreground"
-              >
-                <X className="w-2.5 h-2.5" />
-              </button>
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setShowTopics((v) => !v)}
-            title="Quick topics"
-            className={cn(
-              "h-6 px-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors",
-              showTopics && "bg-accent text-foreground",
-            )}
+  return {
+    sidebar,
+    body: (
+      <div className="flex flex-col h-full min-h-0">
+        {/* Search bar */}
+        <div className="shrink-0 px-2 py-1.5 border-b border-border bg-muted/10 space-y-1">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="flex items-center gap-1.5"
           >
-            <Sparkles className="w-3 h-3" />
-          </button>
+            <div className="relative flex-1">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground/50" />
+              <input
+                ref={searchRef}
+                type="text"
+                placeholder="Search photos..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="w-full h-6 pl-6 pr-2 text-[11px] rounded-md border border-border bg-background focus:ring-1 focus:ring-primary outline-none placeholder:text-muted-foreground/40 transition-all"
+              />
+              {searchInput && (
+                <button
+                  type="button"
+                  onClick={() => setSearchInput("")}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground/40 hover:text-foreground"
+                >
+                  <X className="w-2.5 h-2.5" />
+                </button>
+              )}
+            </div>
 
-          {activeQuery && (
             <button
               type="button"
-              onClick={handleReset}
-              title="Clear search"
-              className="h-6 px-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-            >
-              <RotateCcw className="w-3 h-3" />
-            </button>
-          )}
-        </form>
-
-        {/* Quick Topics */}
-        {showTopics && (
-          <div className="flex flex-wrap gap-1 pt-0.5">
-            {QUICK_TOPICS.map((topic) => (
-              <button
-                key={topic}
-                type="button"
-                onClick={() => handleTopicClick(topic)}
-                className={cn(
-                  "px-2 py-0.5 text-[10px] rounded-full border transition-colors",
-                  activeQuery?.toLowerCase() === topic.toLowerCase()
-                    ? "border-primary/40 bg-primary/10 text-primary"
-                    : "border-border text-muted-foreground hover:bg-accent hover:text-foreground",
-                )}
-              >
-                {topic}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Orientation filter row */}
-        <div className="flex items-center gap-1">
-          <span className="text-[9px] text-muted-foreground/50 uppercase tracking-wider mr-0.5">
-            Orientation
-          </span>
-          {ORIENTATION_OPTIONS.map(({ value, label }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => {
-                setOrientationFilter(value);
-                if (activeQuery) {
-                  const orientation = value === "all" ? undefined : value;
-                  handleSearch(activeQuery, { orientation: orientation as any });
-                }
-              }}
+              onClick={() => setShowTopics((v) => !v)}
+              title="Quick topics"
               className={cn(
-                "px-1.5 py-0.5 text-[9px] rounded transition-colors",
-                orientationFilter === value
-                  ? "bg-primary/15 text-primary font-medium"
-                  : "text-muted-foreground/60 hover:text-foreground hover:bg-accent",
+                "h-6 px-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors",
+                showTopics && "bg-accent text-foreground",
               )}
             >
-              {label}
+              <Sparkles className="w-3 h-3" />
             </button>
-          ))}
-        </div>
-      </div>
 
-      {/* Image grid */}
-      <div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-1.5 scrollbar-thin"
-      >
-        {photos.length === 0 && !loading ? (
-          <div className="flex flex-col items-center justify-center h-full text-center p-4">
-            <div className="w-10 h-10 rounded-full border border-border bg-muted flex items-center justify-center mb-2">
-              <ImageIcon className="w-5 h-5 text-muted-foreground/40" />
+            {activeQuery && (
+              <button
+                type="button"
+                onClick={handleReset}
+                title="Clear search"
+                className="h-6 px-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              >
+                <RotateCcw className="w-3 h-3" />
+              </button>
+            )}
+          </form>
+
+          {/* Quick Topics */}
+          {showTopics && (
+            <div className="flex flex-wrap gap-1 pt-0.5">
+              {QUICK_TOPICS.map((topic) => (
+                <button
+                  key={topic}
+                  type="button"
+                  onClick={() => handleTopicClick(topic)}
+                  className={cn(
+                    "px-2 py-0.5 text-[10px] rounded-full border transition-colors",
+                    activeQuery?.toLowerCase() === topic.toLowerCase()
+                      ? "border-primary/40 bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:bg-accent hover:text-foreground",
+                  )}
+                >
+                  {topic}
+                </button>
+              ))}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {activeQuery ? "No results found" : "Search for images or browse topics"}
-            </p>
-          </div>
-        ) : (
-          <div className={gridClass}>
-            {photos.map((photo: any, idx: number) => (
-              <PhotoCard
-                key={photo.id}
-                photo={photo}
-                index={idx}
-                viewMode={viewMode}
-                isFavorited={isFavorited(photo.id)}
-                onView={() => handleViewPhoto(photo, idx)}
-                onDownload={(e) => handleDownload(photo, e)}
-                onCopyLink={(e) => handleCopyLink(photo, e)}
-                onToggleFavorite={(e) => handleToggleFavorite(photo, e)}
-              />
+          )}
+
+          {/* Orientation filter row */}
+          <div className="flex items-center gap-1">
+            <span className="text-[9px] text-muted-foreground/50 uppercase tracking-wider mr-0.5">
+              Orientation
+            </span>
+            {ORIENTATION_OPTIONS.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => {
+                  setOrientationFilter(value);
+                  if (activeQuery) {
+                    const orientation = value === "all" ? undefined : value;
+                    handleSearch(activeQuery, {
+                      orientation: orientation as any,
+                    });
+                  }
+                }}
+                className={cn(
+                  "px-1.5 py-0.5 text-[9px] rounded transition-colors",
+                  orientationFilter === value
+                    ? "bg-primary/15 text-primary font-medium"
+                    : "text-muted-foreground/60 hover:text-foreground hover:bg-accent",
+                )}
+              >
+                {label}
+              </button>
             ))}
           </div>
-        )}
+        </div>
 
-        {loading && (
-          <div className="flex items-center justify-center py-4">
-            <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
-          </div>
-        )}
+        {/* Image grid */}
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-1.5 scrollbar-thin"
+        >
+          {photos.length === 0 && !loading ? (
+            <div className="flex flex-col items-center justify-center h-full text-center p-4">
+              <div className="w-10 h-10 rounded-full border border-border bg-muted flex items-center justify-center mb-2">
+                <ImageIcon className="w-5 h-5 text-muted-foreground/40" />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {activeQuery
+                  ? "No results found"
+                  : "Search for images or browse topics"}
+              </p>
+            </div>
+          ) : (
+            <div className={gridClass}>
+              {photos.map((photo: any, idx: number) => (
+                <PhotoCard
+                  key={photo.id}
+                  photo={photo}
+                  index={idx}
+                  viewMode={viewMode}
+                  isFavorited={isFavorited(photo.id)}
+                  onView={() => handleViewPhoto(photo, idx)}
+                  onDownload={(e) => handleDownload(photo, e)}
+                  onCopyLink={(e) => handleCopyLink(photo, e)}
+                  onToggleFavorite={(e) => handleToggleFavorite(photo, e)}
+                />
+              ))}
+            </div>
+          )}
+
+          {loading && (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  )};
+    ),
+  };
 }
 
 // ─── PhotoCard ────────────────────────────────────────────────────────────────
@@ -473,7 +507,10 @@ function PhotoCard({
   onToggleFavorite,
 }: PhotoCardProps) {
   const thumbUrl = photo.urls?.small || photo.urls?.thumb;
-  const alt = photo.alt_description || photo.description || `Photo by ${photo.user?.name}`;
+  const alt =
+    photo.alt_description ||
+    photo.description ||
+    `Photo by ${photo.user?.name}`;
   const author = photo.user?.name || "Unknown";
 
   const isCompact = viewMode === "compact";
@@ -517,7 +554,12 @@ function PhotoCard({
         )}
 
         {/* Action buttons */}
-        <div className={cn("flex items-center gap-0.5 mt-0.5", isCompact && "justify-center")}>
+        <div
+          className={cn(
+            "flex items-center gap-0.5 mt-0.5",
+            isCompact && "justify-center",
+          )}
+        >
           <ActionBtn
             onClick={onToggleFavorite}
             title={isFavorited ? "Remove from favorites" : "Add to favorites"}
@@ -589,4 +631,3 @@ function ActionBtn({
     </button>
   );
 }
-

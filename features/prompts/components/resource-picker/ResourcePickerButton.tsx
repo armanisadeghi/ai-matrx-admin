@@ -9,8 +9,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ResourcePickerMenu } from "./ResourcePickerMenu";
-import { ResourcePickerWindow } from "@/features/floating-window-panel/windows/ResourcePickerWindow";
-import type { WindowPosition } from "@/features/floating-window-panel/hooks/useWindowPanel";
+import { ResourcePickerWindow } from "@/features/window-panels/windows/ResourcePickerWindow";
+import type { WindowPosition } from "@/features/window-panels/hooks/useWindowPanel";
 
 interface ResourcePickerButtonProps {
   onResourceSelected?: (resource: any) => void;

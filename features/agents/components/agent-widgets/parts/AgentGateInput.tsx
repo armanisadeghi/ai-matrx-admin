@@ -10,7 +10,7 @@ import { setPreExecutionSatisfied } from "@/features/agents/redux/execution-syst
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
 import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
 import { SmartAgentInput } from "../../inputs/SmartAgentInput";
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 
 // ─── WindowPanel body — used by AgentGateWindow ───────────────────────────────
 

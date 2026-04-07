@@ -1,6 +1,6 @@
 "use client";
 
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { NewsFloatingWorkspace } from "@/features/news/components/NewsFloatingWorkspace";
 
 interface NewsWindowProps {

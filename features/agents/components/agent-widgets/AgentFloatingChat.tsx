@@ -7,7 +7,7 @@ import {
   selectInstanceDisplayTitle,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { openAgentGateWindow } from "@/lib/redux/slices/overlaySlice";
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { AgentRunner } from "../smart/AgentRunner";
 import { AgentChatHistorySidebar, AgentChatFooter } from "./parts/SharedParts";
 

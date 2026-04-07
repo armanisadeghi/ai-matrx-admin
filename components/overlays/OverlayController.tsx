@@ -45,7 +45,7 @@ import dynamic from "next/dynamic";
 import type { ResourceType } from "@/utils/permissions";
 import { updateOverlayData } from "@/lib/redux/slices/overlayDataSlice";
 import { Suspense } from "react";
-import { UrlPanelManager } from "@/features/floating-window-panel/url-sync/UrlPanelManager";
+import { UrlPanelManager } from "@/features/window-panels/url-sync/UrlPanelManager";
 
 // ============================================================================
 // DYNAMIC IMPORTS — all lazy, no SSR
@@ -191,36 +191,30 @@ const ContentHistoryViewer = dynamic(
 
 const FeedbackWindow = dynamic(
   () =>
-    import("@/features/floating-window-panel/windows/FeedbackWindow").then(
-      (m) => ({
-        default: m.FeedbackWindow,
-      }),
-    ),
+    import("@/features/window-panels/windows/FeedbackWindow").then((m) => ({
+      default: m.FeedbackWindow,
+    })),
   { ssr: false },
 );
 
 const ImageViewerWindow = dynamic(
   () =>
-    import("@/features/floating-window-panel/windows/ImageViewerWindow").then(
-      (m) => ({
-        default: m.ImageViewerWindow,
-      }),
-    ),
+    import("@/features/window-panels/windows/ImageViewerWindow").then((m) => ({
+      default: m.ImageViewerWindow,
+    })),
   { ssr: false },
 );
 
 const FilePreviewWindow = dynamic(
   () =>
-    import("@/features/floating-window-panel/windows/FilePreviewWindow").then(
-      (m) => ({
-        default: m.FilePreviewWindow,
-      }),
-    ),
+    import("@/features/window-panels/windows/FilePreviewWindow").then((m) => ({
+      default: m.FilePreviewWindow,
+    })),
   { ssr: false },
 );
 
 const FileUploadWindow = dynamic(
-  () => import("@/features/floating-window-panel/windows/FileUploadWindow"),
+  () => import("@/features/window-panels/windows/FileUploadWindow"),
   { ssr: false },
 );
 
@@ -318,53 +312,50 @@ const StateViewerWindow = dynamic(
 );
 
 const MarkdownEditorWindow = dynamic(
-  () => import("@/features/floating-window-panel/windows/MarkdownEditorWindow"),
+  () => import("@/features/window-panels/windows/MarkdownEditorWindow"),
   { ssr: false },
 );
 
 const UserPreferencesWindow = dynamic(
-  () =>
-    import("@/features/floating-window-panel/windows/UserPreferencesWindow"),
+  () => import("@/features/window-panels/windows/UserPreferencesWindow"),
   { ssr: false },
 );
 
 const QuickTasksWindow = dynamic(
-  () => import("@/features/floating-window-panel/windows/QuickTasksWindow"),
+  () => import("@/features/window-panels/windows/QuickTasksWindow"),
   { ssr: false },
 );
 
 const QuickFilesWindow = dynamic(
-  () => import("@/features/floating-window-panel/windows/QuickFilesWindow"),
+  () => import("@/features/window-panels/windows/QuickFilesWindow"),
   { ssr: false },
 );
 
 const QuickDataWindow = dynamic(
-  () => import("@/features/floating-window-panel/windows/QuickDataWindow"),
+  () => import("@/features/window-panels/windows/QuickDataWindow"),
   { ssr: false },
 );
 
 const EmailDialogWindow = dynamic(
-  () => import("@/features/floating-window-panel/windows/EmailDialogWindow"),
+  () => import("@/features/window-panels/windows/EmailDialogWindow"),
   { ssr: false },
 );
 
 const ShareModalWindow = dynamic(
-  () => import("@/features/floating-window-panel/windows/ShareModalWindow"),
+  () => import("@/features/window-panels/windows/ShareModalWindow"),
   { ssr: false },
 );
 
 const ScraperWindow = dynamic(
-  () => import("@/features/floating-window-panel/windows/ScraperWindow"),
+  () => import("@/features/window-panels/windows/ScraperWindow"),
   { ssr: false },
 );
 
 const NotesWindow = dynamic(
   () =>
-    import("@/features/floating-window-panel/windows/NotesWindow").then(
-      (m) => ({
-        default: m.NotesWindow,
-      }),
-    ),
+    import("@/features/window-panels/windows/NotesWindow").then((m) => ({
+      default: m.NotesWindow,
+    })),
   { ssr: false },
 );
 
@@ -376,52 +367,52 @@ const VoicePadAdvanced = dynamic(
 
 const ContextSwitcherWindow = dynamic(
   () =>
-    import("@/features/floating-window-panel/windows/ContextSwitcherWindow").then(
+    import("@/features/window-panels/windows/ContextSwitcherWindow").then(
       (m) => ({ default: m.ContextSwitcherWindow }),
     ),
   { ssr: false },
 );
 
 const PdfExtractorWindow = dynamic(
-  () => import("@/features/floating-window-panel/windows/PdfExtractorWindow"),
+  () => import("@/features/window-panels/windows/PdfExtractorWindow"),
   { ssr: false },
 );
 
 const CanvasViewerWindow = dynamic(
   () =>
-    import("@/features/floating-window-panel/windows/CanvasViewerWindow").then(
-      (m) => ({ default: m.CanvasViewerWindow }),
-    ),
+    import("@/features/window-panels/windows/CanvasViewerWindow").then((m) => ({
+      default: m.CanvasViewerWindow,
+    })),
   { ssr: false },
 );
 
 const NewsWindow = dynamic(
-  () => import("@/features/floating-window-panel/windows/NewsWindow"),
+  () => import("@/features/window-panels/windows/NewsWindow"),
   { ssr: false },
 );
 
 const GalleryWindow = dynamic(
-  () => import("@/features/floating-window-panel/windows/GalleryWindow"),
+  () => import("@/features/window-panels/windows/GalleryWindow"),
   { ssr: false },
 );
 
 const ListManagerWindow = dynamic(
-  () => import("@/features/floating-window-panel/windows/ListManagerWindow"),
+  () => import("@/features/window-panels/windows/ListManagerWindow"),
   { ssr: false },
 );
 
 const AiVoiceWindow = dynamic(
-  () => import("@/features/floating-window-panel/windows/AiVoiceWindow"),
+  () => import("@/features/window-panels/windows/AiVoiceWindow"),
   { ssr: false },
 );
 
 const AgentGateWindow = dynamic(
-  () => import("@/features/floating-window-panel/windows/AgentGateWindow"),
+  () => import("@/features/window-panels/windows/AgentGateWindow"),
   { ssr: false },
 );
 
 const HierarchyCreationWindow = dynamic(
-  () => import("@/features/floating-window-panel/windows/HierarchyCreationWindow"),
+  () => import("@/features/window-panels/windows/HierarchyCreationWindow"),
   { ssr: false },
 );
 
@@ -601,7 +592,7 @@ export const OverlayController: React.FC = () => {
   const isHierarchyCreationWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "hierarchyCreationWindow"),
   );
-  
+
   const hierarchyCreationWindowData = useAppSelector((s) =>
     selectOverlayData(s, "hierarchyCreationWindow"),
   );
@@ -1006,8 +997,8 @@ export const OverlayController: React.FC = () => {
       {isAiVoiceWindowOpen && <AiVoiceWindow />}
 
       {isHierarchyCreationWindowOpen && (
-        <HierarchyCreationWindow 
-          isOpen={true} 
+        <HierarchyCreationWindow
+          isOpen={true}
           onClose={() => close("hierarchyCreationWindow")}
           data={hierarchyCreationWindowData}
         />

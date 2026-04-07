@@ -20,9 +20,23 @@ import VisualViewportSync from "@/features/shell/components/VisualViewportSync";
 
 const emptyGlobalCache = getEmptyGlobalCache();
 
-export const metadata = {
-  title: "AI Matrx",
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: {
+    default: "AI Matrx",
+    template: "%s — AI Matrx",
+  },
   description: "AI-powered admin dashboard",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/matrx/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/matrx/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/matrx/apple-touch-icon.png",
+    shortcut: "/favicon.ico",
+  },
 };
 
 export default async function SSRLayout({

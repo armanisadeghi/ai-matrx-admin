@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import {
   useScraperApi,
   type ScraperResult,
@@ -41,7 +41,7 @@ import {
 } from "@/features/scraper/utils/scraper-floating-helpers";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openImageViewer } from "@/features/floating-window-panel/windows/ImageViewerWindow";
+import { openImageViewer } from "@/features/window-panels/windows/ImageViewerWindow";
 
 type WorkspaceMode = "web" | "url" | "batch";
 

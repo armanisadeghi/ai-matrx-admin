@@ -13,7 +13,7 @@ import {
   startNewSession,
   setDraftText,
 } from "@/lib/redux/slices/voicePadSlice";
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
 import { VoicePadHistorySidebar } from "./VoicePadHistorySidebar";
 

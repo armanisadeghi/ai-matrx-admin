@@ -28,7 +28,7 @@ const LazyMessagingSideSheet = dynamic(
 );
 
 const WindowTraySync = dynamic(
-  () => import("@/features/floating-window-panel/WindowTraySync"),
+  () => import("@/features/window-panels/WindowTraySync"),
   { ssr: false, loading: () => null },
 );
 

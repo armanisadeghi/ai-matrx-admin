@@ -26,7 +26,7 @@ import {
   type ExtractionStatus,
   type PdfExtractionResult,
 } from "../hooks/usePdfExtractor";
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 
 // ─── Tab type ────────────────────────────────────────────────────────────────
 

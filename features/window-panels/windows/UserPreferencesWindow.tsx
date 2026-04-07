@@ -3,7 +3,7 @@
 import React, { useState, Suspense, lazy } from "react";
 import { useSelector } from "react-redux";
 import { cn } from "@/lib/utils";
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import {
   Monitor,
   MessageSquare,

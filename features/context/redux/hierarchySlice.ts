@@ -11,7 +11,7 @@
 // One fetch per RPC per session. Components that need tasks dispatch
 // `fetchFullContext`; all other tree consumers use `navTree`.
 
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createSelector, PayloadAction } from "@reduxjs/toolkit";
 
 // ─── RPC response types ────────────────────────────────────────────────────
 
@@ -198,13 +198,13 @@ export const selectFullContextStatus = (s: StateWithHierarchy) =>
 export const selectFullContextError = (s: StateWithHierarchy) =>
   s.hierarchy.fullContextError;
 
-/** All organizations from the nav tree (no tasks). */
+/** All organizations from the nav tree (no tasks). Returns undefined when navTree is null. */
 export const selectNavOrganizations = (s: StateWithHierarchy) =>
-  s.hierarchy.navTree?.organizations ?? [];
+  s.hierarchy.navTree?.organizations;
 
-/** All organizations from full context (with tasks). */
+/** All organizations from full context (with tasks). Returns undefined when fullContext is null. */
 export const selectFullContextOrganizations = (s: StateWithHierarchy) =>
-  s.hierarchy.fullContext?.organizations ?? [];
+  s.hierarchy.fullContext?.organizations;
 
 // ─── Flat-list helpers ────────────────────────────────────────────────────
 
@@ -244,29 +244,42 @@ function flattenProjects(
   return result;
 }
 
-export const selectFlatWorkspaces = (s: StateWithHierarchy) =>
-  flattenWorkspaces(s.hierarchy.navTree?.organizations ?? []);
+/** Flat list of all workspaces across all orgs. Memoized — only recomputes when navTree changes. */
+export const selectFlatWorkspaces = createSelector(
+  [selectNavOrganizations],
+  (orgs) => (orgs ? flattenWorkspaces(orgs) : []),
+);
 
-export const selectFlatProjects = (s: StateWithHierarchy) =>
-  flattenProjects(s.hierarchy.navTree?.organizations ?? []);
+/** Flat list of all projects across all orgs/workspaces. Memoized — only recomputes when navTree changes. */
+export const selectFlatProjects = createSelector(
+  [selectNavOrganizations],
+  (orgs) => (orgs ? flattenProjects(orgs) : []),
+);
 
 /** Projects for a given org (includes workspace and org-level). */
 export const selectProjectsForOrg =
-  (orgId: string | null) => (s: StateWithHierarchy) => {
+  (orgId: string | null) =>
+  (
+    s: StateWithHierarchy,
+  ): (NavProject & { org_id: string; workspace_id: string | null })[] => {
     if (!orgId) return [];
     return selectFlatProjects(s).filter((p) => p.org_id === orgId);
   };
 
 /** Projects for a given workspace. */
 export const selectProjectsForWorkspace =
-  (wsId: string | null) => (s: StateWithHierarchy) => {
+  (wsId: string | null) =>
+  (
+    s: StateWithHierarchy,
+  ): (NavProject & { org_id: string; workspace_id: string | null })[] => {
     if (!wsId) return [];
     return selectFlatProjects(s).filter((p) => p.workspace_id === wsId);
   };
 
 /** Workspaces for a given org (flat, all depths). */
 export const selectWorkspacesForOrg =
-  (orgId: string | null) => (s: StateWithHierarchy) => {
+  (orgId: string | null) =>
+  (s: StateWithHierarchy): (NavWorkspace & { org_id: string })[] => {
     if (!orgId) return [];
     return selectFlatWorkspaces(s).filter((w) => w.org_id === orgId);
   };

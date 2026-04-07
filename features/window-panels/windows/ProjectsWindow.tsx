@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { ProjectsWorkspace } from "@/features/projects/components/ProjectsWorkspace";
 
 interface ProjectsWindowProps {
@@ -9,7 +9,10 @@ interface ProjectsWindowProps {
   onClose: () => void;
 }
 
-export default function ProjectsWindow({ isOpen, onClose }: ProjectsWindowProps) {
+export default function ProjectsWindow({
+  isOpen,
+  onClose,
+}: ProjectsWindowProps) {
   if (!isOpen) return null;
 
   return (

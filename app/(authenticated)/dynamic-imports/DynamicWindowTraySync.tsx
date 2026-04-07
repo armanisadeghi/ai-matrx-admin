@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 
 const WindowTraySync = dynamic(
-  () => import("@/features/floating-window-panel/WindowTraySync"),
+  () => import("@/features/window-panels/WindowTraySync"),
   { ssr: false },
 );
 

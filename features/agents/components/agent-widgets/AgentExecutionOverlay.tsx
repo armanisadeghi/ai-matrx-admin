@@ -26,7 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, MessageSquare, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FloatingSheet from "@/components/official/FloatingSheet";
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { AgentFloatingChat } from "./AgentFloatingChat";
 import { ChatCollapsible } from "./ChatCollapsible";
 

@@ -1,9 +1,9 @@
 "use client";
 
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { ResourcePickerMenu } from "@/features/prompts/components/resource-picker/ResourcePickerMenu";
 
-import type { WindowPosition } from "@/features/floating-window-panel/hooks/useWindowPanel";
+import type { WindowPosition } from "@/features/window-panels/hooks/useWindowPanel";
 
 interface ResourcePickerWindowProps {
   isOpen: boolean;

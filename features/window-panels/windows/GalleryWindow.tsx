@@ -10,10 +10,8 @@
 import React, { useState } from "react";
 import { Columns2, Grid3X3, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
-import {
-  GalleryFloatingWorkspace,
-} from "@/features/gallery/components/GalleryFloatingWorkspace";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { GalleryFloatingWorkspace } from "@/features/gallery/components/GalleryFloatingWorkspace";
 
 interface GalleryWindowProps {
   isOpen: boolean;

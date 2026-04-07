@@ -19,7 +19,7 @@ import { ShareWithOrgTab } from "@/features/sharing/components/tabs/ShareWithOrg
 import { PublicAccessTab } from "@/features/sharing/components/tabs/PublicAccessTab";
 import { getResourceTypeLabel } from "@/utils/permissions";
 import { useToast } from "@/components/ui/use-toast";
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 
 export interface ShareModalWindowProps {
   isOpen: boolean;

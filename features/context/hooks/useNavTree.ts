@@ -43,7 +43,7 @@ export function useNavTree() {
 
   return {
     navTree,
-    orgs,
+    orgs: orgs ?? [],
     flatWorkspaces,
     flatProjects,
     status,

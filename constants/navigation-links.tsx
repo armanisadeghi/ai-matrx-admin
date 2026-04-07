@@ -71,6 +71,17 @@ export const allNavigationLinks: NavigationLink[] = [
         favicon: { color: "#0ea5e9", letter: "D" }, // Sky blue
     },
     {
+        label: "Agents",
+        href: "/agents",
+        icon: <Brain className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        section: "primary",
+        profileMenu: true,
+        dashboard: true,
+        description: "Build, configure, and deploy AI agents",
+        color: "rose",
+        favicon: { color: "#f43f5e", letter: "A" }, // Rose red
+    },
+    {
         label: "Prompt Builder",
         href: "/ai/prompts",
         icon: <FaIndent className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,

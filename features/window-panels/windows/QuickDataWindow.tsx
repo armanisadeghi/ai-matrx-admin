@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { QuickDataSheet } from "@/features/quick-actions/components/QuickDataSheet";
 
 interface QuickDataWindowProps {

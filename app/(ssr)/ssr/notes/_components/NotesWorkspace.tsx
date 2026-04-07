@@ -824,42 +824,20 @@ export default function NotesWorkspace({
           // The scheduleSave closure captures noteCache at creation time, but by
           // the time the setTimeout fires the cache may have been updated by a
           // previous save. Reading through setNoteCache guarantees freshness.
-          let cachedData: NoteData | null = null;
-          setNoteCache((prev) => {
-            const c = prev.get(noteId);
-            if (c) cachedData = c.data;
-            return prev; // no mutation — just reading
-          });
-
-          if (!cachedData) {
-            console.error("[Notes Save] ABORT: no cached data for", noteId);
-            // Don't return — try saving anyway with the label/content we have
-          }
-
-          // Always send both label and content to the database.
-          // Don't try to diff against cache — the cache may be stale or
-          // pre-populated with empty content. Redundant writes are harmless
-          // (Supabase trigger updates updated_at only if values actually change).
+          // Build updates directly from the label/content parameters.
+          // Don't read from cache — the cache may not have this note yet
+          // (race condition on new notes) or may be stale. The parameters
+          // are the authoritative values the user wants saved.
           const updates: Record<string, string> = {};
-          if (content) updates.content = content;
-          if (label) updates.label = label;
+          if (content !== undefined && content !== null) updates.content = content;
+          if (label !== undefined && label !== null) updates.label = label;
 
-          console.log("[Notes Save]", noteId, "updates:", Object.keys(updates), "label:", label?.slice(0, 20), "content length:", content?.length);
-
-          // Only skip if truly nothing to send
           if (Object.keys(updates).length === 0) {
             setNoteCache((prev) => {
               const next = new Map(prev);
               const c = next.get(noteId);
               if (!c) return prev;
-              const editsStillMatch =
-                c.localEdits?.content === content &&
-                c.localEdits?.label === label;
-              next.set(noteId, {
-                ...c,
-                localEdits: editsStillMatch ? null : c.localEdits,
-                saveState: editsStillMatch ? "saved" : c.saveState,
-              });
+              next.set(noteId, { ...c, localEdits: null, saveState: "saved" });
               return next;
             });
             return;

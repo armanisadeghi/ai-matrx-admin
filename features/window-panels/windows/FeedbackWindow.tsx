@@ -27,7 +27,7 @@ import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
 import {
   WindowPanel,
   type WindowPanelProps,
-} from "@/features/floating-window-panel/WindowPanel";
+} from "@/features/window-panels/WindowPanel";
 import { submitFeedback, getUserFeedback } from "@/actions/feedback.actions";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
 import {
@@ -37,7 +37,7 @@ import {
 import type { FeedbackType } from "@/types/feedback.types";
 import { toast } from "sonner";
 import { useScreenCapture } from "@/hooks/useScreenCapture";
-import { openImageViewer } from "@/features/floating-window-panel/windows/ImageViewerWindow";
+import { openImageViewer } from "@/features/window-panels/windows/ImageViewerWindow";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

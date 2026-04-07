@@ -6,15 +6,14 @@ import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
 import {
   WindowPanel,
   type WindowPanelProps,
-} from "@/features/floating-window-panel/WindowPanel";
+} from "@/features/window-panels/WindowPanel";
 import { ListFilter } from "lucide-react";
 import { ListManagerFloatingWorkspace } from "@/features/user-lists/components/ListManagerFloatingWorkspace";
 
-export interface ListManagerWindowProps
-  extends Omit<
-    WindowPanelProps,
-    "children" | "title" | "actionsLeft" | "actionsRight"
-  > {
+export interface ListManagerWindowProps extends Omit<
+  WindowPanelProps,
+  "children" | "title" | "actionsLeft" | "actionsRight"
+> {
   title?: string;
 }
 

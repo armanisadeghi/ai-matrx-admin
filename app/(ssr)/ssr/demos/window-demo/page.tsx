@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
-import { NotesWindow } from "@/features/floating-window-panel/windows/NotesWindow";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { NotesWindow } from "@/features/window-panels/windows/NotesWindow";
 import { Plus, Trash2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/ButtonMine";
 import { DEMO_WINDOWS } from "./demo-windows";

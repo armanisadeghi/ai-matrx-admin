@@ -389,6 +389,48 @@ const notesSlice = createSlice({
       state.openTabs = action.payload;
     },
 
+    // ── Convenience: update content directly (triggers undo) ──────────
+
+    /** Update note content — shorthand for setNoteField with field="content" */
+    updateNoteContent(
+      state,
+      action: PayloadAction<{ id: string; content: string }>,
+    ) {
+      const record = state.notes[action.payload.id];
+      if (!record) return;
+      applyFieldEdit(record, "content", action.payload.content);
+    },
+
+    /** Update note label — shorthand for setNoteField with field="label" */
+    updateNoteLabel(
+      state,
+      action: PayloadAction<{ id: string; label: string }>,
+    ) {
+      const record = state.notes[action.payload.id];
+      if (!record) return;
+      applyFieldEdit(record, "label", action.payload.label);
+    },
+
+    /** Update note folder — shorthand for setNoteField with field="folder_name" */
+    updateNoteFolder(
+      state,
+      action: PayloadAction<{ id: string; folder: string }>,
+    ) {
+      const record = state.notes[action.payload.id];
+      if (!record) return;
+      applyFieldEdit(record, "folder_name", action.payload.folder);
+    },
+
+    /** Update note tags — shorthand for setNoteField with field="tags" */
+    updateNoteTags(
+      state,
+      action: PayloadAction<{ id: string; tags: string[] }>,
+    ) {
+      const record = state.notes[action.payload.id];
+      if (!record) return;
+      applyFieldEdit(record, "tags", action.payload.tags);
+    },
+
     // ── List fetch status ───────────────────────────────────────────────
 
     setListStatus(
@@ -433,6 +475,10 @@ export const {
   addTab,
   removeTab,
   reorderTabs,
+  updateNoteContent,
+  updateNoteLabel,
+  updateNoteFolder,
+  updateNoteTags,
   setListStatus,
   setListError,
   setRealtimeConnected,

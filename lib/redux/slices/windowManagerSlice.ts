@@ -6,7 +6,7 @@ import {
 import {
   computeGlobalArrangement,
   GlobalLayoutType,
-} from "@/features/floating-window-panel/utils/windowArrangements";
+} from "@/features/window-panels/utils/windowArrangements";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -388,17 +388,20 @@ const windowManagerSlice = createSlice({
     },
 
     /** Restore window geometry and state from localStorage */
-    restoreWindowState(state, action: PayloadAction<Record<string, WindowEntry>>) {
+    restoreWindowState(
+      state,
+      action: PayloadAction<Record<string, WindowEntry>>,
+    ) {
       const restored = action.payload;
       // We only restore window state geometry properties, not titles or anything else
-      // In case we want to overwrite, we just use a shallow copy. 
+      // In case we want to overwrite, we just use a shallow copy.
       state.windows = { ...state.windows };
       let maxZ = state.nextZIndex;
       let maxTray = -1;
 
       Object.entries(restored).forEach(([id, win]) => {
         if (!state.windows[id]) {
-          // It's possible the window isn't registered yet, we still store the hydrated state 
+          // It's possible the window isn't registered yet, we still store the hydrated state
           // but we shouldn't since it creates 'orphan' windows that aren't mounted.
           // Wait, UrlSync mounts them, WindowManager just handles their state. So restoring orphans is actually perfect
           // so when they are registered later, they overwrite this. Wait! `registerWindow` has `if (state.windows[id]) return;`
@@ -409,12 +412,15 @@ const windowManagerSlice = createSlice({
           state.windows[id] = { ...state.windows[id], ...win };
         }
         if (win.zIndex >= maxZ) maxZ = win.zIndex + 1;
-        if (win.traySlot !== null && win.traySlot > maxTray) maxTray = win.traySlot;
+        if (win.traySlot !== null && win.traySlot > maxTray)
+          maxTray = win.traySlot;
       });
 
       state.nextZIndex = Math.max(state.nextZIndex, maxZ);
-      // Wait, tray count is strictly how many are minimized. 
-      state.trayCount = Object.values(state.windows).filter(w => w.traySlot !== null).length;
+      // Wait, tray count is strictly how many are minimized.
+      state.trayCount = Object.values(state.windows).filter(
+        (w) => w.traySlot !== null,
+      ).length;
     },
   },
 });

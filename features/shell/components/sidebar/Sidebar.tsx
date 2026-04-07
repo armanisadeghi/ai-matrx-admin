@@ -9,7 +9,7 @@ import SidebarNotesToggle from "@/features/notes/actions/SidebarNotesToggle";
 import SidebarVoicePadToggle from "../controls/SidebarVoicePadToggle";
 import SidebarAdminIndicatorToggle from "../controls/SidebarAdminIndicatorToggle";
 import SidebarEnvToggle from "../controls/SidebarEnvToggle";
-import SidebarWindowToggle from "../../../floating-window-panel/SidebarWindowToggle";
+import SidebarWindowToggle from "../../../window-panels/SidebarWindowToggle";
 import {
   primaryNavItems,
   settingsItem,

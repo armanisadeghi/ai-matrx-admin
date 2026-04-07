@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
-import { 
-  QuickTasksWorkspaceProvider, 
-  QuickTasksSidebar, 
-  QuickTasksMain 
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import {
+  QuickTasksWorkspaceProvider,
+  QuickTasksSidebar,
+  QuickTasksMain,
 } from "@/features/tasks/components/QuickTasksWorkspace";
 
 interface QuickTasksWindowProps {
