@@ -15,6 +15,8 @@ export interface CreateTaskInput {
   assignee_id?: string | null;
   status?: "incomplete" | "completed";
   user_id?: string | null;
+  organization_id?: string | null;
+  workspace_id?: string | null;
 }
 
 export interface UpdateTaskInput {
@@ -55,6 +57,8 @@ export async function createTask(
         assignee_id: input.assignee_id || null,
         status: input.status || "incomplete",
         user_id: userId,
+        organization_id: input.organization_id || null,
+        workspace_id: input.workspace_id || null,
       })
       .select()
       .single();
@@ -150,71 +154,157 @@ export interface TaskAttachment {
   uploaded_at: string;
 }
 
-export async function getTaskAttachments(taskId: string): Promise<TaskAttachment[]> {
+export async function getTaskAttachments(
+  taskId: string,
+): Promise<TaskAttachment[]> {
   try {
     const { data, error } = await supabase
-      .from('task_attachments')
-      .select('*')
-      .eq('task_id', taskId)
-      .order('uploaded_at', { ascending: true });
-    if (error) { console.error('Error fetching task attachments:', error.message); return []; }
+      .from("task_attachments")
+      .select("*")
+      .eq("task_id", taskId)
+      .order("uploaded_at", { ascending: true });
+    if (error) {
+      console.error("Error fetching task attachments:", error.message);
+      return [];
+    }
     return data || [];
-  } catch (error) { console.error('Exception fetching task attachments:', error); return []; }
+  } catch (error) {
+    console.error("Exception fetching task attachments:", error);
+    return [];
+  }
 }
 
-export async function uploadTaskAttachment(taskId: string, file: File): Promise<TaskAttachment | null> {
+export async function uploadTaskAttachment(
+  taskId: string,
+  file: File,
+): Promise<TaskAttachment | null> {
   try {
     const userId = requireUserId();
     const storagePath = `task-attachments/${taskId}/${Date.now()}-${file.name}`;
     const { error: uploadError } = await supabase.storage
-      .from('attachments')
+      .from("attachments")
       .upload(storagePath, file, { upsert: false });
-    if (uploadError) { console.error('Error uploading file:', uploadError.message); return null; }
+    if (uploadError) {
+      console.error("Error uploading file:", uploadError.message);
+      return null;
+    }
     const { data, error: insertError } = await supabase
-      .from('task_attachments')
-      .insert({ task_id: taskId, file_name: file.name, file_type: file.type || null, file_size: file.size, file_path: storagePath, uploaded_by: userId })
+      .from("task_attachments")
+      .insert({
+        task_id: taskId,
+        file_name: file.name,
+        file_type: file.type || null,
+        file_size: file.size,
+        file_path: storagePath,
+        uploaded_by: userId,
+      })
       .select()
       .single();
-    if (insertError) { console.error('Error recording attachment:', insertError.message); return null; }
+    if (insertError) {
+      console.error("Error recording attachment:", insertError.message);
+      return null;
+    }
     return data;
-  } catch (error) { console.error('Exception uploading attachment:', error); return null; }
+  } catch (error) {
+    console.error("Exception uploading attachment:", error);
+    return null;
+  }
 }
 
 export function getAttachmentUrl(filePath: string): string {
-  const { data } = supabase.storage.from('attachments').getPublicUrl(filePath);
+  const { data } = supabase.storage.from("attachments").getPublicUrl(filePath);
   return data.publicUrl;
 }
 
-export async function deleteTaskAttachment(attachmentId: string, filePath: string): Promise<boolean> {
+export async function deleteTaskAttachment(
+  attachmentId: string,
+  filePath: string,
+): Promise<boolean> {
   try {
-    await supabase.storage.from('attachments').remove([filePath]);
-    const { error } = await supabase.from('task_attachments').delete().eq('id', attachmentId);
-    if (error) { console.error('Error deleting attachment record:', error.message); return false; }
+    await supabase.storage.from("attachments").remove([filePath]);
+    const { error } = await supabase
+      .from("task_attachments")
+      .delete()
+      .eq("id", attachmentId);
+    if (error) {
+      console.error("Error deleting attachment record:", error.message);
+      return false;
+    }
     return true;
-  } catch (error) { console.error('Exception deleting attachment:', error); return false; }
+  } catch (error) {
+    console.error("Exception deleting attachment:", error);
+    return false;
+  }
 }
 
 // ─── Labels (stored in settings JSONB) ───────────────────────────────────────
 
 export const TASK_LABEL_OPTIONS = [
-  { value: 'bug', label: 'Bug', color: 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400' },
-  { value: 'feature', label: 'Feature', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400' },
-  { value: 'improvement', label: 'Improvement', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400' },
-  { value: 'docs', label: 'Docs', color: 'bg-sky-100 text-sky-700 dark:bg-sky-900/20 dark:text-sky-400' },
-  { value: 'design', label: 'Design', color: 'bg-pink-100 text-pink-700 dark:bg-pink-900/20 dark:text-pink-400' },
-  { value: 'research', label: 'Research', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400' },
-  { value: 'question', label: 'Question', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400' },
-  { value: 'blocked', label: 'Blocked', color: 'bg-rose-100 text-rose-800 dark:bg-rose-900/20 dark:text-rose-400' },
+  {
+    value: "bug",
+    label: "Bug",
+    color: "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400",
+  },
+  {
+    value: "feature",
+    label: "Feature",
+    color: "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
+  },
+  {
+    value: "improvement",
+    label: "Improvement",
+    color:
+      "bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400",
+  },
+  {
+    value: "docs",
+    label: "Docs",
+    color: "bg-sky-100 text-sky-700 dark:bg-sky-900/20 dark:text-sky-400",
+  },
+  {
+    value: "design",
+    label: "Design",
+    color: "bg-pink-100 text-pink-700 dark:bg-pink-900/20 dark:text-pink-400",
+  },
+  {
+    value: "research",
+    label: "Research",
+    color:
+      "bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400",
+  },
+  {
+    value: "question",
+    label: "Question",
+    color:
+      "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400",
+  },
+  {
+    value: "blocked",
+    label: "Blocked",
+    color: "bg-rose-100 text-rose-800 dark:bg-rose-900/20 dark:text-rose-400",
+  },
 ] as const;
 
-export type TaskLabel = typeof TASK_LABEL_OPTIONS[number]['value'];
+export type TaskLabel = (typeof TASK_LABEL_OPTIONS)[number]["value"];
 
-export async function updateTaskLabels(taskId: string, labels: TaskLabel[]): Promise<boolean> {
+export async function updateTaskLabels(
+  taskId: string,
+  labels: TaskLabel[],
+): Promise<boolean> {
   try {
-    const { error } = await supabase.from('tasks').update({ settings: { labels } }).eq('id', taskId);
-    if (error) { console.error('Error updating task labels:', error.message); return false; }
+    const { error } = await supabase
+      .from("tasks")
+      .update({ settings: { labels } })
+      .eq("id", taskId);
+    if (error) {
+      console.error("Error updating task labels:", error.message);
+      return false;
+    }
     return true;
-  } catch (error) { console.error('Exception updating task labels:', error); return false; }
+  } catch (error) {
+    console.error("Exception updating task labels:", error);
+    return false;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -464,7 +554,10 @@ export interface ResourcePermission {
   is_public: boolean;
   created_at: string;
 }
-type _CheckResourcePermission = ResourcePermission extends DbRpcRow<"get_resource_permissions"> ? true : false;
+type _CheckResourcePermission =
+  ResourcePermission extends DbRpcRow<"get_resource_permissions">
+    ? true
+    : false;
 declare const _resourcePermission: _CheckResourcePermission;
 true satisfies typeof _resourcePermission;
 

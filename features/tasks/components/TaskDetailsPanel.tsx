@@ -50,6 +50,7 @@ import { ShareModal } from "@/features/sharing/components/ShareModal";
 import TaskAttachments from "./TaskAttachments";
 import TaskLabels from "./TaskLabels";
 import type { TaskLabel } from "@/features/tasks/services/taskService";
+import { useNavTree } from "@/features/context/hooks/useNavTree";
 
 interface TaskDetailsPanelProps {
   task: any;
@@ -96,9 +97,12 @@ export default function TaskDetailsPanel({
   const [isAddingComment, setIsAddingComment] = useState(false);
   const { id: currentUserId } = useAppSelector(selectUser);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { orgs, flatWorkspaces, flatProjects } = useNavTree();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [idCopied, setIdCopied] = useState(false);
-  const [labels, setLabels] = useState<TaskLabel[]>((task.settings?.labels as TaskLabel[]) || []);
+  const [labels, setLabels] = useState<TaskLabel[]>(
+    (task.settings?.labels as TaskLabel[]) || [],
+  );
   const [showDescPreview, setShowDescPreview] = useState(false);
 
   const handleCopyId = async () => {
@@ -204,7 +208,8 @@ export default function TaskDetailsPanel({
       if (priority !== task.priority) {
         await taskService.updateTask(task.id, { priority });
       }
-      const prevLabels: TaskLabel[] = (task.settings?.labels as TaskLabel[]) || [];
+      const prevLabels: TaskLabel[] =
+        (task.settings?.labels as TaskLabel[]) || [];
       if (JSON.stringify(labels) !== JSON.stringify(prevLabels)) {
         await taskService.updateTaskLabels(task.id, labels);
       }
@@ -468,12 +473,14 @@ export default function TaskDetailsPanel({
           />
         </div>
 
-        {/* Project */}
-        <div>
-          <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 flex items-center gap-2 mb-2">
+        {/* Hierarchy: Project (with org/workspace context info) */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 flex items-center gap-2">
             <CheckSquare size={14} />
             Project
           </label>
+
+          {/* Project picker */}
           <Select
             value={projectId || "none"}
             onValueChange={(val) =>
@@ -482,22 +489,63 @@ export default function TaskDetailsPanel({
           >
             <SelectTrigger className="text-sm">
               <SelectValue placeholder="Select project">
-                {projectId
-                  ? projects.find((p) => p.id === projectId)?.name
-                  : "No Project"}
+                {projectId ? (
+                  (flatProjects.find((p) => p.id === projectId)?.name ??
+                  projects.find((p) => p.id === projectId)?.name ??
+                  "Unknown Project")
+                ) : (
+                  <span className="text-destructive">
+                    No Project — required
+                  </span>
+                )}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">
                 <span className="text-muted-foreground">No Project</span>
               </SelectItem>
-              {projects.map((project) => (
-                <SelectItem key={project.id} value={project.id}>
-                  {project.name}
-                </SelectItem>
-              ))}
+              {flatProjects.map((project) => {
+                const org = orgs.find((o) => o.id === project.org_id);
+                const ws = project.workspace_id
+                  ? flatWorkspaces.find((w) => w.id === project.workspace_id)
+                  : null;
+                return (
+                  <SelectItem key={project.id} value={project.id}>
+                    <div className="flex flex-col">
+                      <span>{project.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {org?.name}
+                        {ws ? ` › ${ws.name}` : ""}
+                      </span>
+                    </div>
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
+
+          {/* Org / Workspace breadcrumb for current project */}
+          {projectId &&
+            (() => {
+              const fp = flatProjects.find((p) => p.id === projectId);
+              if (!fp) return null;
+              const org = orgs.find((o) => o.id === fp.org_id);
+              const ws = fp.workspace_id
+                ? flatWorkspaces.find((w) => w.id === fp.workspace_id)
+                : null;
+              if (!org) return null;
+              return (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <span>{org.name}</span>
+                  {ws && (
+                    <>
+                      <span>›</span>
+                      <span>{ws.name}</span>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
         </div>
 
         {/* Priority */}
@@ -576,7 +624,10 @@ export default function TaskDetailsPanel({
           </label>
           <TaskLabels
             labels={labels}
-            onChange={(next) => { setLabels(next); setIsDirty(true); }}
+            onChange={(next) => {
+              setLabels(next);
+              setIsDirty(true);
+            }}
           />
         </div>
 
@@ -591,14 +642,16 @@ export default function TaskDetailsPanel({
               onClick={() => setShowDescPreview((p) => !p)}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              {showDescPreview ? 'Edit' : 'Preview'}
+              {showDescPreview ? "Edit" : "Preview"}
             </button>
           </div>
           {showDescPreview ? (
-            <div
-              className="text-sm text-foreground prose prose-sm dark:prose-invert max-w-none min-h-[100px] p-2 bg-muted/40 rounded-md border border-border overflow-auto whitespace-pre-wrap"
-            >
-              {description || <span className="text-muted-foreground italic">No description</span>}
+            <div className="text-sm text-foreground prose prose-sm dark:prose-invert max-w-none min-h-[100px] p-2 bg-muted/40 rounded-md border border-border overflow-auto whitespace-pre-wrap">
+              {description || (
+                <span className="text-muted-foreground italic">
+                  No description
+                </span>
+              )}
             </div>
           ) : (
             <Textarea

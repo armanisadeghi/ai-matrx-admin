@@ -1,5 +1,6 @@
 import ChatCollapsibleWrapper from "@/components/mardown-display/blocks/ChatCollapsibleWrapper";
 import { MessageSquare } from "lucide-react";
+import { AgentRunner } from "../smart/AgentRunner";
 
 export function ChatCollapsible({ instanceId }: { instanceId: string }) {
   return (
@@ -11,13 +12,7 @@ export function ChatCollapsible({ instanceId }: { instanceId: string }) {
         title="Chat Messages"
         initialOpen={true}
       >
-        <div className="p-3 text-gray-700 dark:text-gray-300">
-          <p>This collapsible component is designed for chat interfaces.</p>
-          <p className="mt-2">
-            It has a more rounded styling and a divider between header and
-            content.
-          </p>
-        </div>
+        <AgentRunner instanceId={instanceId} compact className="h-full" />
       </ChatCollapsibleWrapper>
     </div>
   );

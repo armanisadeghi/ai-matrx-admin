@@ -130,3 +130,4 @@ export { ContextVariablesPanel } from "./components/ContextVariablesPanel";
 export { HierarchyExplorer } from "./components/HierarchyExplorer";
 export { HierarchyTreePage } from "./components/HierarchyTreePage";
 export { HierarchyEntityModal } from "./components/HierarchyEntityModal";
+export { HierarchyContextBar } from "./components/HierarchyContextBar";

@@ -420,6 +420,11 @@ const AgentGateWindow = dynamic(
   { ssr: false },
 );
 
+const HierarchyCreationWindow = dynamic(
+  () => import("@/features/floating-window-panel/windows/HierarchyCreationWindow"),
+  { ssr: false },
+);
+
 // ============================================================================
 // OVERLAY CONTROLLER
 // ============================================================================
@@ -591,6 +596,14 @@ export const OverlayController: React.FC = () => {
 
   const isAiVoiceWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "aiVoiceWindow"),
+  );
+
+  const isHierarchyCreationWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "hierarchyCreationWindow"),
+  );
+  
+  const hierarchyCreationWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "hierarchyCreationWindow"),
   );
 
   const agentGateWindowInstances = useAppSelector((s) =>
@@ -991,6 +1004,14 @@ export const OverlayController: React.FC = () => {
       {isListManagerWindowOpen && <ListManagerWindow />}
 
       {isAiVoiceWindowOpen && <AiVoiceWindow />}
+
+      {isHierarchyCreationWindowOpen && (
+        <HierarchyCreationWindow 
+          isOpen={true} 
+          onClose={() => close("hierarchyCreationWindow")}
+          data={hierarchyCreationWindowData}
+        />
+      )}
 
       {/* Agent Gate Window — instanced, one per agent pre-execution gate */}
       {agentGateWindowInstances.map(({ instanceId, data }) => {

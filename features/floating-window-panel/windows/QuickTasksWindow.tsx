@@ -2,7 +2,11 @@
 
 import React from "react";
 import { WindowPanel } from "@/features/floating-window-panel/WindowPanel";
-import { QuickTasksSheet } from "@/features/tasks/components/QuickTasksSheet";
+import { 
+  QuickTasksWorkspaceProvider, 
+  QuickTasksSidebar, 
+  QuickTasksMain 
+} from "@/features/tasks/components/QuickTasksWorkspace";
 
 interface QuickTasksWindowProps {
   isOpen: boolean;
@@ -16,16 +20,20 @@ export default function QuickTasksWindow({
   if (!isOpen) return null;
 
   return (
-    <WindowPanel
-      title="Quick Tasks"
-      width={800}
-      height={600}
-      urlSyncKey="quick_tasks"
-      onClose={onClose}
-    >
-      <div className="flex-1 flex flex-col min-w-0 min-h-0">
-        <QuickTasksSheet className="flex-1" />
-      </div>
-    </WindowPanel>
+    <QuickTasksWorkspaceProvider>
+      <WindowPanel
+        title="Quick Tasks"
+        width={850}
+        height={650}
+        sidebar={<QuickTasksSidebar />}
+        sidebarDefaultSize={30}
+        sidebarMinSize={20}
+        sidebarClassName="bg-muted/10 border-r"
+        urlSyncKey="quick_tasks"
+        onClose={onClose}
+      >
+        <QuickTasksMain />
+      </WindowPanel>
+    </QuickTasksWorkspaceProvider>
   );
 }

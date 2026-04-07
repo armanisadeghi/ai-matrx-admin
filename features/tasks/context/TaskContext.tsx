@@ -10,6 +10,12 @@ import React, {
 } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { useToastManager } from "@/hooks/useToastManager";
+import { useAppSelector } from "@/lib/redux/hooks";
+import {
+  selectOrganizationId,
+  selectWorkspaceId,
+  selectProjectId,
+} from "@/features/context/redux/appContextSlice";
 import type {
   TaskContextType,
   TaskProviderProps,
@@ -30,6 +36,11 @@ const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export function TaskProvider({ children }: TaskProviderProps) {
   const toast = useToastManager("tasks");
+
+  // App-wide context (org/workspace/project from the hierarchy bar)
+  const appOrgId = useAppSelector(selectOrganizationId);
+  const appWorkspaceId = useAppSelector(selectWorkspaceId);
+  const appProjectId = useAppSelector(selectProjectId);
 
   // Database state
   const [dbProjectsWithTasks, setDbProjectsWithTasks] = useState<
@@ -443,7 +454,7 @@ export function TaskProvider({ children }: TaskProviderProps) {
     e.preventDefault();
     if (!newTaskTitle.trim() || isCreatingTask) return null;
 
-    const projectId = targetProjectId || activeProject || null;
+    const projectId = targetProjectId || activeProject || appProjectId || null;
 
     // Generate temporary ID for optimistic update
     const tempId = `temp-${Date.now()}`;
@@ -459,8 +470,9 @@ export function TaskProvider({ children }: TaskProviderProps) {
       assignee_id: null,
       user_id: "", // Will be set by server
       is_public: false,
-      organization_id: null,
-      workspace_id: null,
+      organization_id: appOrgId,
+      workspace_id: appWorkspaceId,
+      settings: {},
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -488,6 +500,8 @@ export function TaskProvider({ children }: TaskProviderProps) {
         due_date: dueDate || null,
         project_id: projectId,
         priority: priority || null,
+        organization_id: appOrgId,
+        workspace_id: appWorkspaceId,
       });
 
       if (newTask) {

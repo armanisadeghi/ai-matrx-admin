@@ -84,10 +84,11 @@ const initialState: OverlayState = {
     filePreviewWindow: makeDefaultInstance(),
     fileUploadWindow: makeDefaultInstance(),
     emailDialogWindow: makeDefaultInstance(),
-    shareModalWindow: makeDefaultInstance(),
     scraperWindow: makeDefaultInstance(),
     contextSwitcherWindow: makeDefaultInstance(),
     canvasViewerWindow: makeDefaultInstance(),
+    hierarchyCreationWindow: makeDefaultInstance(),
+    projectsWindow: makeDefaultInstance(),
     newsWindow: makeDefaultInstance(),
     galleryWindow: makeDefaultInstance(),
     listManagerWindow: makeDefaultInstance(),
@@ -492,4 +493,24 @@ export const openAgentGateWindow = (options: AgentGateWindowPayload) =>
     overlayId: "agentGateWindow",
     instanceId: options.instanceId,
     data: { agentInstanceId: options.agentInstanceId },
+  });
+
+interface HierarchyCreationWindowPayload {
+  entityType: "organization" | "workspace" | "project" | "task";
+  presetContext?: {
+    organization_id?: string | null;
+    workspace_id?: string | null;
+    project_id?: string | null;
+  };
+  instanceId?: string;
+}
+
+export const openHierarchyCreationWindow = (options: HierarchyCreationWindowPayload) =>
+  openOverlay({
+    overlayId: "hierarchyCreationWindow",
+    instanceId: options.instanceId,
+    data: {
+      entityType: options.entityType,
+      presetContext: options.presetContext,
+    },
   });
