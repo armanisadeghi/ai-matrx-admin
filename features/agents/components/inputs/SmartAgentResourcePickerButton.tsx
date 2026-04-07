@@ -131,7 +131,7 @@ export function SmartAgentResourcePickerButton({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-80 p-0 border-border z-[200]"
+        className="w-80 p-0 border-border z-[1500]"
         align="start"
         side="top"
         sideOffset={8}

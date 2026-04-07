@@ -424,7 +424,7 @@ export function SmartAgentInput({
   // ── Active UI ───────────────────────────────────────────────────────────────
   return (
     <div
-      className={`relative bg-card rounded-lg ${compact ? "max-w-[450px]" : "max-w-[800px]"} border border-border overflow-hidden`}
+      className={`relative bg-card rounded-lg w-full ${compact ? "max-w-[500px]" : "max-w-[800px]"} border border-border overflow-hidden`}
     >
       {/* Variable inputs */}
       <SmartAgentVariableInputs

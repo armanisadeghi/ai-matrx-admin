@@ -119,7 +119,7 @@ function AgentGateContent({
       </div>
 
       {/* Input pinned to bottom */}
-      <div className="shrink-0 px-3 pb-3 border-t border-border/30 pt-3">
+      <div className="shrink-0 px-3 pb-3 border-t border-border/30 pt-3 flex justify-center">
         <SmartAgentInput
           instanceId={instanceId}
           placeholder="Additional instructions (optional)..."
