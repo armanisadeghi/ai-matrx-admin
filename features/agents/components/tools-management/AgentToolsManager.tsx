@@ -81,7 +81,7 @@ import type {
   CustomToolDefinition,
   CustomToolInputSchema,
 } from "@/features/agents/types/agent-api-types";
-import { fetchToolsAction } from "@/features/agents/actions/tools.actions";
+import { createClient } from "@/utils/supabase/client";
 
 type ToolsTab = "server" | "custom" | "client" | "mcp";
 
@@ -93,36 +93,43 @@ interface AgentToolsManagerProps {
   availableTools?: DatabaseTool[];
 }
 
-export function AgentToolsManager({
-  agentId,
-  availableTools: externalTools,
-}: AgentToolsManagerProps) {
-  const [internalTools, setInternalTools] = useState<DatabaseTool[]>([]);
-  const [isLoading, setIsLoading] = useState(externalTools === undefined);
+export function AgentToolsManager({ agentId, availableTools: externalTools }: AgentToolsManagerProps) {
+  const [metadata, setMetadata] = useState<{ total_count: number; categories: { count: number; category: string }[]; enabled_tools: any[] } | null>(() => {
+    if (externalTools) {
+      const catsMap = new Map<string, number>();
+      externalTools.forEach(t => {
+        const cat = t.category || "General";
+        catsMap.set(cat, (catsMap.get(cat) || 0) + 1);
+      });
+      return {
+        total_count: externalTools.length,
+        categories: Array.from(catsMap.entries()).map(([c, count]) => ({ category: c, count })),
+        enabled_tools: externalTools
+      };
+    }
+    return null;
+  });
+  const [isLoading, setIsLoading] = useState(!externalTools);
   const [activeTab, setActiveTab] = useState<ToolsTab>("server");
 
   useEffect(() => {
-    if (externalTools === undefined) {
-      let active = true;
-      setIsLoading(true);
-      fetchToolsAction()
-        .then((tools) => {
-          if (active) {
-            setInternalTools(tools);
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error("Failed to fetch tools", error);
-          if (active) setIsLoading(false);
-        });
-      return () => {
-        active = false;
-      };
-    }
+    if (externalTools) return;
+    let active = true;
+    setIsLoading(true);
+    const supabase = createClient();
+    supabase.rpc('get_tools_metadata').then(({ data, error }) => {
+      if (active && (!error || data)) {
+        setMetadata(data as any);
+        setIsLoading(false);
+      } else {
+        console.error("Failed to fetch tools metadata", error);
+        if (active) setIsLoading(false);
+      }
+    });
+    return () => {
+      active = false;
+    };
   }, [externalTools]);
-
-  const availableTools = externalTools ?? internalTools;
 
   const tabs: { id: ToolsTab; label: string; icon: React.ReactNode }[] = [
     {
@@ -173,11 +180,11 @@ export function AgentToolsManager({
 
       <div className="flex-1 overflow-hidden min-h-0">
         {activeTab === "server" && (
-          <ServerToolsTab agentId={agentId} availableTools={availableTools} />
+          <ServerToolsTab agentId={agentId} metadata={metadata} externalTools={externalTools} />
         )}
         {activeTab === "custom" && <CustomToolsTab agentId={agentId} />}
         {activeTab === "client" && (
-          <ClientToolsTab agentId={agentId} availableTools={availableTools} />
+          <ClientToolsTab agentId={agentId} availableTools={externalTools || metadata?.enabled_tools || []} />
         )}
         {activeTab === "mcp" && <McpToolsTab agentId={agentId} />}
       </div>
@@ -191,10 +198,12 @@ export function AgentToolsManager({
 
 function ServerToolsTab({
   agentId,
-  availableTools,
+  metadata,
+  externalTools,
 }: {
   agentId: string;
-  availableTools: DatabaseTool[];
+  metadata: any;
+  externalTools?: DatabaseTool[];
 }) {
   const dispatch = useAppDispatch();
   const selectedTools = useAppSelector((state) =>
@@ -202,8 +211,26 @@ function ServerToolsTab({
   );
 
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>(ALL_CATEGORY);
   const [expandedTool, setExpandedTool] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(50);
+  const [toolsList, setToolsList] = useState<{items: any[], total: number, page_size: number, page_count: number} | null>(null);
+  const [isListLoading, setIsListLoading] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Reset page on category change
+  useEffect(() => {
+    setPage(1);
+  }, [activeCategory]);
 
   const activeSet = useMemo(
     () =>
@@ -212,12 +239,14 @@ function ServerToolsTab({
   );
 
   const availableIdSet = useMemo(
-    () => new Set(availableTools.map((t) => t.id)),
-    [availableTools],
+    () => new Set((metadata?.enabled_tools || []).map((t: any) => t.id)),
+    [metadata],
   );
 
   const orphanedTools = useMemo(() => {
     if (!Array.isArray(selectedTools)) return [];
+    // We only call a tool "orphaned" if we are sure it's not in the ENTIRE global registry.
+    // metadata.enabled_tools lists all globally enabled tools.
     return (selectedTools as string[]).filter((id) => !availableIdSet.has(id));
   }, [selectedTools, availableIdSet]);
 
@@ -247,24 +276,6 @@ function ServerToolsTab({
       }),
     );
   };
-
-  const selectAll = useCallback(
-    (tools: DatabaseTool[]) => {
-      const current = Array.isArray(selectedTools)
-        ? (selectedTools as string[])
-        : [];
-      const toAdd = tools
-        .map((t) => t.id)
-        .filter((id) => !current.includes(id));
-      dispatch(
-        setAgentTools({
-          id: agentId,
-          tools: [...current, ...toAdd] as unknown as typeof selectedTools,
-        }),
-      );
-    },
-    [agentId, selectedTools, dispatch],
-  );
 
   const removeOrphan = useCallback(
     (toolId: string) => {
@@ -297,61 +308,86 @@ function ServerToolsTab({
     );
   }, [agentId, selectedTools, availableIdSet, dispatch]);
 
-  const categories = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const tool of availableTools) {
-      const cat = tool.category ?? "General";
-      map.set(cat, (map.get(cat) ?? 0) + 1);
-    }
-    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
-  }, [availableTools]);
-
-  const searchFiltered = useMemo(() => {
-    if (!search.trim()) return availableTools;
-    const q = search.toLowerCase();
-    return availableTools.filter(
-      (t) =>
-        t.name.toLowerCase().includes(q) ||
-        t.description?.toLowerCase().includes(q) ||
-        t.category?.toLowerCase().includes(q) ||
-        t.tags?.some((tag) => tag.toLowerCase().includes(q)),
-    );
-  }, [availableTools, search]);
-
-  const visibleTools = useMemo(() => {
-    if (activeCategory === ENABLED_CATEGORY) {
-      return searchFiltered.filter((t) => activeSet.has(t.id));
-    }
-    if (activeCategory === ALL_CATEGORY) {
-      return searchFiltered;
-    }
-    return searchFiltered.filter(
-      (t) => (t.category ?? "General") === activeCategory,
-    );
-  }, [searchFiltered, activeCategory, activeSet]);
-
   const enabledPerCategory = useMemo(() => {
     const map = new Map<string, number>();
-    for (const tool of availableTools) {
+    for (const tool of metadata?.enabled_tools || []) {
       const cat = tool.category ?? "General";
       if (activeSet.has(tool.id)) {
         map.set(cat, (map.get(cat) ?? 0) + 1);
       }
     }
     return map;
-  }, [availableTools, activeSet]);
+  }, [metadata, activeSet]);
 
-  if (availableTools.length === 0) {
+  const isEnabledTab = activeCategory === ENABLED_CATEGORY;
+
+  useEffect(() => {
+    if (isEnabledTab) return;
+
+    if (externalTools) {
+      // Local mode
+      let filtered = externalTools;
+      if (activeCategory !== ALL_CATEGORY) {
+        filtered = filtered.filter((t) => (t.category ?? "General") === activeCategory);
+      }
+      if (debouncedSearch) {
+        const query = debouncedSearch.toLowerCase();
+        filtered = filtered.filter((t) => t.name.toLowerCase().includes(query) || (t.description || "").toLowerCase().includes(query));
+      }
+      setToolsList({
+        items: filtered,
+        total: filtered.length,
+        page_size: filtered.length,
+        page_count: 1
+      });
+      return;
+    }
+
+    let active = true;
+    setIsListLoading(true);
+    const supabase = createClient();
+    supabase.rpc('get_tools_list', {
+      p_category: activeCategory === ALL_CATEGORY ? undefined : activeCategory,
+      p_search: debouncedSearch || undefined,
+      p_page: page,
+      p_page_size: pageSize
+    }).then(({ data, error }) => {
+      if (active && !error && data) {
+         setToolsList(data as any);
+      }
+      if (active) setIsListLoading(false);
+    });
+
+    return () => { active = false; };
+  }, [activeCategory, debouncedSearch, page, pageSize, isEnabledTab, externalTools]);
+
+  const visibleTools = useMemo(() => {
+    if (isEnabledTab) {
+      // client side filter
+      let items = (metadata?.enabled_tools || []).filter((t: any) => activeSet.has(t.id));
+      if (debouncedSearch) {
+        const query = debouncedSearch.toLowerCase();
+        items = items.filter((t: any) => t.name.toLowerCase().includes(query) || (t.description || "").toLowerCase().includes(query));
+      }
+      return items;
+    }
+    return toolsList?.items || [];
+  }, [isEnabledTab, metadata, activeSet, toolsList, debouncedSearch]);
+
+  const categories = metadata?.categories || [];
+  const totalCount = metadata?.total_count || 0;
+
+  if (totalCount === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground p-8">
         <Wrench className="w-8 h-8 opacity-30" />
-        <p className="text-sm">No tools available for this agent.</p>
+        <p className="text-sm">No tools available.</p>
       </div>
     );
   }
 
   const enabledCount = activeSet.size;
-  const categoryTools = categories.find(([cat]) => cat === activeCategory)?.[1];
+  const categoryTools = categories.find((c: any) => c.category === activeCategory)?.count;
 
   return (
     <div className="flex overflow-hidden h-full">
@@ -382,7 +418,7 @@ function ServerToolsTab({
           <div className="p-1.5 space-y-0.5">
             <CategoryItem
               label="All Tools"
-              count={availableTools.length}
+              count={totalCount}
               enabledCount={enabledCount}
               active={activeCategory === ALL_CATEGORY}
               onClick={() => setActiveCategory(ALL_CATEGORY)}
@@ -400,14 +436,14 @@ function ServerToolsTab({
               />
             )}
             <div className="h-px bg-border mx-1 my-2" />
-            {categories.map(([cat, total]) => (
+            {categories.map((c: any) => (
               <CategoryItem
-                key={cat}
-                label={cat}
-                count={total}
-                enabledCount={enabledPerCategory.get(cat) ?? 0}
-                active={activeCategory === cat}
-                onClick={() => setActiveCategory(cat)}
+                key={c.category}
+                label={c.category}
+                count={c.count}
+                enabledCount={enabledPerCategory.get(c.category) ?? 0}
+                active={activeCategory === c.category}
+                onClick={() => setActiveCategory(c.category)}
               />
             ))}
           </div>
@@ -432,7 +468,7 @@ function ServerToolsTab({
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder={`Search ${availableTools.length} tools…`}
+              placeholder={`Search ${totalCount} tools…`}
               className="pl-8 pr-8 h-8 text-sm"
               style={{ fontSize: "16px" }}
             />
@@ -445,25 +481,6 @@ function ServerToolsTab({
               </button>
             )}
           </div>
-          {activeCategory !== ENABLED_CATEGORY &&
-            activeCategory !== ALL_CATEGORY &&
-            categoryTools !== undefined &&
-            categoryTools > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-xs shrink-0"
-                onClick={() =>
-                  selectAll(
-                    availableTools.filter(
-                      (t) => (t.category ?? "General") === activeCategory,
-                    ),
-                  )
-                }
-              >
-                Select all
-              </Button>
-            )}
         </div>
 
         {/* Panel label */}
@@ -476,15 +493,19 @@ function ServerToolsTab({
                 : activeCategory}
           </span>
           <span className="text-[11px] text-muted-foreground tabular-nums">
-            {visibleTools.length}
-            {search && ` of ${availableTools.length}`} tools
+            {isEnabledTab ? visibleTools.length : (toolsList?.total || 0)} tools
           </span>
         </div>
 
         {/* Tool cards */}
         <div className="flex-1 overflow-y-auto">
           <div className="px-3 pb-4 space-y-1">
-            {visibleTools.length === 0 ? (
+            {isListLoading ? (
+               <div className="flex items-center justify-center py-12 text-muted-foreground">
+                 <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                 <span className="text-xs">Loading items...</span>
+               </div>
+            ) : visibleTools.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
                 <Search className="w-5 h-5 opacity-40" />
                 <p className="text-xs">
@@ -494,7 +515,7 @@ function ServerToolsTab({
                 </p>
               </div>
             ) : (
-              visibleTools.map((tool) => {
+              visibleTools.map((tool: any) => {
                 const isActive = activeSet.has(tool.id);
                 return (
                   <ToolCard
@@ -512,6 +533,33 @@ function ServerToolsTab({
             )}
           </div>
         </div>
+
+        {/* Pagination */}
+        {!isEnabledTab && toolsList && toolsList.page_count > 1 && (
+          <div className="flex items-center justify-between px-4 py-2 border-t border-border shrink-0 bg-muted/20">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage(p => p - 1)}
+              className="h-7 text-xs"
+            >
+              Previous
+            </Button>
+            <span className="text-[10px] text-muted-foreground">
+              Page {page} of {toolsList.page_count}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= toolsList.page_count}
+              onClick={() => setPage(p => p + 1)}
+              className="h-7 text-xs"
+            >
+              Next
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -2643,24 +2691,13 @@ function ToolCard({
   onToggle,
   onExpand,
 }: {
-  tool: DatabaseTool;
+  tool: any;
   active: boolean;
   expanded: boolean;
   onToggle: (name: string) => void;
   onExpand: () => void;
 }) {
-  const params = tool.parameters;
-  const hasParams =
-    params &&
-    typeof params === "object" &&
-    "properties" in params &&
-    Object.keys((params as Record<string, unknown>).properties ?? {}).length >
-      0;
-  const hasOutput =
-    tool.output_schema && typeof tool.output_schema === "object";
-  const hasMeta =
-    tool.function_path || (tool.tags && tool.tags.length > 0) || tool.version;
-  const hasDetails = hasParams || hasOutput || hasMeta;
+  const hasDetails = tool.has_details ?? true;
 
   return (
     <div
@@ -2687,6 +2724,9 @@ function ToolCard({
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
+            {tool.icon && (
+               <span className="text-muted-foreground shrink-0">{tool.icon}</span>
+            )}
             <span
               className={`text-xs font-semibold leading-tight ${
                 active ? "text-primary" : "text-foreground"
@@ -2701,7 +2741,7 @@ function ToolCard({
             )}
             {tool.tags && tool.tags.length > 0 && (
               <div className="flex items-center gap-1">
-                {tool.tags.slice(0, 2).map((tag) => (
+                {tool.tags.slice(0, 2).map((tag: string) => (
                   <Badge
                     key={tag}
                     variant="outline"
@@ -2742,13 +2782,46 @@ function ToolCard({
       </div>
 
       {/* Expanded details */}
-      {expanded && hasDetails && <ToolDetailPanel tool={tool} />}
+      {expanded && hasDetails && <ToolDetailPanel toolId={tool.id} />}
     </div>
   );
 }
 
-function ToolDetailPanel({ tool }: { tool: DatabaseTool }) {
+function ToolDetailPanel({ toolId }: { toolId: string }) {
+  const [loading, setLoading] = useState(true);
+  const [detail, setDetail] = useState<any>(null);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    const supabase = createClient();
+    supabase.rpc('get_tool_detail', { p_tool_id: toolId }).then(({ data, error }) => {
+      if (active && data) {
+         setDetail(data);
+      }
+      if (active) setLoading(false);
+    });
+    return () => { active = false; };
+  }, [toolId]);
+
+  if (loading) {
+    return (
+      <div className="px-3 pb-3 border-t border-border/50 pt-3 text-xs text-muted-foreground flex items-center">
+        <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> Fetching details...
+      </div>
+    );
+  }
+
+  if (!detail) {
+    return (
+      <div className="px-3 pb-3 border-t border-border/50 pt-3 text-xs text-muted-foreground flex items-center">
+        <AlertTriangle className="w-3.5 h-3.5 mr-2 text-yellow-500" /> Details unavailable.
+      </div>
+    );
+  }
+
+  const tool = detail;
   const params = tool.parameters as {
     type?: string;
     properties?: Record<
@@ -2783,6 +2856,8 @@ function ToolDetailPanel({ tool }: { tool: DatabaseTool }) {
     });
   };
 
+  const hasMeta = tool.function_path || tool.version;
+
   return (
     <div className="px-3 pb-3 border-t border-border/50 pt-2 space-y-3">
       {/* Parameters */}
@@ -2807,7 +2882,7 @@ function ToolDetailPanel({ tool }: { tool: DatabaseTool }) {
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
             Output Schema
           </p>
-          <pre className="text-[10px] font-mono bg-muted/30 rounded p-2 overflow-x-auto text-muted-foreground whitespace-pre-wrap break-all max-h-40 overflow-y-auto">
+          <pre className="text-[10px] font-mono bg-muted/30 rounded p-2 overflow-x-auto text-muted-foreground whitespace-pre-wrap break-all max-h-40 overflow-y-auto w-full max-w-[calc(100vw-300px)]">
             {JSON.stringify(tool.output_schema, null, 2)}
           </pre>
         </div>
@@ -2830,7 +2905,7 @@ function ToolDetailPanel({ tool }: { tool: DatabaseTool }) {
         )}
         <button
           onClick={handleCopyJson}
-          className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto"
+          className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto border rounded bg-background px-1.5 py-0.5 shadow-sm"
         >
           <Copy className="w-3 h-3" />
           {copied ? "Copied!" : "Copy JSON"}
