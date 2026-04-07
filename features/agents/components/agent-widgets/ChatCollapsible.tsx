@@ -4,7 +4,7 @@ import { AgentRunner } from "../smart/AgentRunner";
 
 export function ChatCollapsible({ instanceId }: { instanceId: string }) {
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full max-w-md mx-auto">
       <ChatCollapsibleWrapper
         icon={
           <MessageSquare className="h-5 w-5 text-blue-500 dark:text-blue-400" />

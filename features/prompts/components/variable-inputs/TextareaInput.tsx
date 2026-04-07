@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
-import { VoiceTextarea } from '@/components/official/VoiceTextarea';
-import { toast } from 'sonner';
+import React, { useRef } from "react";
+import { VoiceTextarea } from "@/components/official/VoiceTextarea";
+import { toast } from "sonner";
 
 interface TextareaInputProps {
   value: string;
@@ -14,12 +14,12 @@ interface TextareaInputProps {
  * Textarea Input - Multi-line text input with voice input capability
  * Protection against accidental transcription loss is built-in
  */
-export function TextareaInput({ 
-  value, 
-  onChange, 
+export function TextareaInput({
+  value,
+  onChange,
   variableName,
   onRequestClose,
-  compact = false
+  compact = false,
 }: TextareaInputProps) {
   const hasSelectedRef = useRef(false);
 
@@ -44,14 +44,13 @@ export function TextareaInput({
       onRequestClose={onRequestClose}
       protectTranscription={true}
       onTranscriptionComplete={(text) => {
-        toast.success('Voice input added');
+        toast.success("Voice input added");
       }}
       onTranscriptionError={(error) => {
-        toast.error('Voice input failed', {
+        toast.error("Voice input failed", {
           description: error,
         });
       }}
     />
   );
 }
-

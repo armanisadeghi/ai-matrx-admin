@@ -104,7 +104,10 @@ export function WizardAgentVariableInputs({
   const current = currentIndex + 1;
 
   return (
-    <div className="border-b border-border flex flex-col" style={{ height: 200 }}>
+    <div
+      className="border-b border-border flex flex-col"
+      style={{ height: 200 }}
+    >
       {/* Header — variable name + counter */}
       <div className="flex items-center justify-between px-3 pt-2 pb-0.5 shrink-0">
         <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
