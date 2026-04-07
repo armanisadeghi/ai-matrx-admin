@@ -2,18 +2,19 @@
 
 import type { Database } from "@/types/database.types";
 
-export type DatabaseProject = Database["public"]["Tables"]["projects"]["Row"];
+export type DatabaseProject =
+  Database["public"]["Tables"]["ctx_projects"]["Row"];
 
-export type DatabaseTask = Database["public"]["Tables"]["tasks"]["Row"];
+export type DatabaseTask = Database["public"]["Tables"]["ctx_tasks"]["Row"];
 
 export type DatabaseTaskAttachment =
-  Database["public"]["Tables"]["task_attachments"]["Row"];
+  Database["public"]["Tables"]["ctx_task_attachments"]["Row"];
 
 export type DatabaseTaskComment =
-  Database["public"]["Tables"]["task_comments"]["Row"];
+  Database["public"]["Tables"]["ctx_task_comments"]["Row"];
 
 export type DatabaseTaskAssignment =
-  Database["public"]["Tables"]["task_assignments"]["Row"];
+  Database["public"]["Tables"]["ctx_task_assignments"]["Row"];
 
 // Joined types for easier use in UI
 export interface ProjectWithTasks extends DatabaseProject {

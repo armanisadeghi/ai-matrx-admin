@@ -32,7 +32,7 @@ export function ContextEmptyState({ variant, onClearFilters }: EmptyStateProps) 
       </div>
       <h3 className="text-base font-semibold mb-1.5">No context items yet</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
-        Context items let AI agents know about your client, project, or workspace without re-explaining every time.
+        Context items let AI agents know about your client, project, or organization without re-explaining every time.
       </p>
       <div className="flex gap-3">
         <Button size="sm" className="gap-1.5" asChild>

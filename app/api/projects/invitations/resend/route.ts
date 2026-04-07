@@ -36,8 +36,8 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: invitation, error: fetchError } = await supabase
-      .from('project_invitations')
-      .select('*, projects(name, organization_id, organizations(name))')
+      .from('ctx_project_invitations')
+      .select('*, ctx_projects(name, organization_id, organizations(name))')
       .eq('id', invitationId)
       .single();
 
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     expiresAt.setDate(expiresAt.getDate() + 7);
 
     const { error: updateError } = await supabase
-      .from('project_invitations')
+      .from('ctx_project_invitations')
       .update({ expires_at: expiresAt.toISOString() })
       .eq('id', invitationId);
 
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     const inviterName =
       user.user_metadata?.full_name ?? user.user_metadata?.name ?? user.email ?? 'Someone';
 
-    const project = invitation.projects as { name?: string; organizations?: { name?: string } } | null;
+    const project = invitation.ctx_projects as { name?: string; organizations?: { name?: string } } | null;
     const projectName = project?.name ?? 'the project';
     const orgName = project?.organizations?.name ?? 'your organization';
 
@@ -88,8 +88,8 @@ export async function POST(request: NextRequest) {
 
     if (emailResult.success) {
       await supabase
-        .from('project_invitations')
-        .update({ email_sent: true, email_sent_at: new Date().toISOString() })
+      .from('ctx_project_invitations')
+      .update({ email_sent: true, email_sent_at: new Date().toISOString() })
         .eq('id', invitationId);
     } else {
       console.warn('Failed to resend project invitation email:', emailResult.error);

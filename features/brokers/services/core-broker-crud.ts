@@ -2,7 +2,6 @@ import { supabase } from '@/utils/supabase/client';
 import type {
   DataBroker,
   BrokerValue,
-  Workspace,
   ResolvedBrokerValue,
   CompleteBrokerData,
   BulkUpsertBrokerResult,
@@ -11,8 +10,6 @@ import type {
   UpdateBrokerInput,
   CreateBrokerValueInput,
   BulkBrokerValueInput,
-  CreateWorkspaceInput,
-  UpdateWorkspaceInput,
 } from '../types';
 
 export class BrokerService {
@@ -101,7 +98,6 @@ export class BrokerService {
   static async getBrokerValues(params: {
     broker_id?: string;
     organization_id?: string;
-    workspace_id?: string;
     project_id?: string;
     task_id?: string;
     ai_runs_id?: string;
@@ -115,7 +111,6 @@ export class BrokerService {
     if (params.broker_id) query = query.eq('broker_id', params.broker_id);
     if (params.organization_id)
       query = query.eq('organization_id', params.organization_id);
-    if (params.workspace_id) query = query.eq('workspace_id', params.workspace_id);
     if (params.project_id) query = query.eq('project_id', params.project_id);
     if (params.task_id) query = query.eq('task_id', params.task_id);
     if (params.ai_runs_id) query = query.eq('ai_runs_id', params.ai_runs_id);
@@ -156,7 +151,6 @@ export class BrokerService {
       p_is_global: input.is_global || false,
       p_user_id: input.user_id || null,
       p_organization_id: input.organization_id || null,
-      p_workspace_id: input.workspace_id || null,
       p_project_id: input.project_id || null,
       p_task_id: input.task_id || null,
       p_ai_runs_id: input.ai_runs_id || null,
@@ -180,7 +174,6 @@ export class BrokerService {
       p_is_global: false,
       p_user_id: scope.user_id || null,
       p_organization_id: scope.organization_id || null,
-      p_workspace_id: scope.workspace_id || null,
       p_project_id: scope.project_id || null,
       p_task_id: scope.task_id || null,
       p_ai_runs_id: scope.ai_runs_id || null,
@@ -222,7 +215,6 @@ export class BrokerService {
         p_broker_ids: brokerIds,
         p_user_id: context.user_id || null,
         p_organization_id: context.organization_id || null,
-        p_workspace_id: context.workspace_id || null,
         p_project_id: context.project_id || null,
         p_task_id: context.task_id || null,
         p_ai_runs_id: context.ai_runs_id || null,
@@ -247,7 +239,6 @@ export class BrokerService {
         p_broker_ids: brokerIds,
         p_user_id: context.user_id || null,
         p_organization_id: context.organization_id || null,
-        p_workspace_id: context.workspace_id || null,
         p_project_id: context.project_id || null,
         p_task_id: context.task_id || null,
         p_ai_runs_id: context.ai_runs_id || null,
@@ -271,7 +262,6 @@ export class BrokerService {
       p_broker_ids: brokerIds,
       p_user_id: context.user_id || null,
       p_organization_id: context.organization_id || null,
-      p_workspace_id: context.workspace_id || null,
       p_project_id: context.project_id || null,
       p_task_id: context.task_id || null,
       p_ai_runs_id: context.ai_runs_id || null,
@@ -280,111 +270,6 @@ export class BrokerService {
 
     if (error) throw error;
     return data || [];
-  }
-
-  // ==========================================
-  // WORKSPACE CRUD
-  // ==========================================
-
-  /**
-   * Get all workspaces for an organization
-   */
-  static async getWorkspaces(organizationId: string): Promise<Workspace[]> {
-    const { data, error } = await supabase
-      .from('workspaces')
-      .select('*')
-      .eq('organization_id', organizationId)
-      .order('name');
-
-    if (error) throw error;
-    return data || [];
-  }
-
-  /**
-   * Get a workspace by ID
-   */
-  static async getWorkspaceById(id: string): Promise<Workspace | null> {
-    const { data, error } = await supabase
-      .from('workspaces')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-
-  /**
-   * Get workspace hierarchy (all parent workspaces)
-   */
-  static async getWorkspaceHierarchy(workspaceId: string): Promise<Workspace[]> {
-    const hierarchy: Workspace[] = [];
-    let currentId: string | null = workspaceId;
-
-    while (currentId) {
-      const workspace = await this.getWorkspaceById(currentId);
-      if (!workspace) break;
-
-      hierarchy.push(workspace);
-      currentId = workspace.parent_workspace_id;
-    }
-
-    return hierarchy;
-  }
-
-  /**
-   * Get child workspaces
-   */
-  static async getChildWorkspaces(parentId: string): Promise<Workspace[]> {
-    const { data, error } = await supabase
-      .from('workspaces')
-      .select('*')
-      .eq('parent_workspace_id', parentId)
-      .order('name');
-
-    if (error) throw error;
-    return data || [];
-  }
-
-  /**
-   * Create a new workspace
-   */
-  static async createWorkspace(input: CreateWorkspaceInput): Promise<Workspace> {
-    const { data, error } = await supabase
-      .from('workspaces')
-      .insert(input)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-
-  /**
-   * Update a workspace
-   */
-  static async updateWorkspace(
-    id: string,
-    input: UpdateWorkspaceInput
-  ): Promise<Workspace> {
-    const { data, error } = await supabase
-      .from('workspaces')
-      .update(input)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-
-  /**
-   * Delete a workspace (will cascade delete child workspaces and related data)
-   */
-  static async deleteWorkspace(id: string): Promise<void> {
-    const { error } = await supabase.from('workspaces').delete().eq('id', id);
-
-    if (error) throw error;
   }
 
   // ==========================================
@@ -398,7 +283,6 @@ export class BrokerService {
   static buildContext(params: {
     userId?: string;
     organizationId?: string;
-    workspaceId?: string;
     projectId?: string;
     taskId?: string;
     aiRunsId?: string;
@@ -407,7 +291,6 @@ export class BrokerService {
     return {
       user_id: params.userId,
       organization_id: params.organizationId,
-      workspace_id: params.workspaceId,
       project_id: params.projectId,
       task_id: params.taskId,
       ai_runs_id: params.aiRunsId,

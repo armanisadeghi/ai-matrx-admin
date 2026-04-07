@@ -48,7 +48,7 @@ export default function AcceptProjectInvitationPage() {
       }
 
       const { data: invitationData, error: inviteError } = await supabase
-        .from('project_invitations')
+        .from('ctx_project_invitations')
         .select('*')
         .eq('token', token)
         .single();
@@ -71,7 +71,7 @@ export default function AcceptProjectInvitationPage() {
       }
 
       const { data: memberData } = await supabase
-        .from('project_members')
+        .from('ctx_project_members')
         .select('id')
         .eq('project_id', invitationData.project_id)
         .eq('user_id', user.id)
@@ -83,7 +83,7 @@ export default function AcceptProjectInvitationPage() {
       }
 
       const { data: projectData, error: projectError } = await supabase
-        .from('projects')
+        .from('ctx_projects')
         .select('*')
         .eq('id', invitationData.project_id)
         .single();

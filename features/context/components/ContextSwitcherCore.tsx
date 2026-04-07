@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import {
   Building2,
   FolderKanban,
-  Layers,
   CheckSquare,
   ChevronRight,
   Loader2,
@@ -18,7 +17,6 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAppContext,
   setOrganization,
-  setWorkspace,
   setProject,
   setTask,
   clearContext,
@@ -49,7 +47,6 @@ export function ContextSwitcherCore() {
   // ── Redux-backed nav tree ────────────────────────────────────────────────
   const {
     orgs,
-    flatWorkspaces,
     flatProjects,
     isLoading: loadingTree,
     isError,
@@ -59,7 +56,7 @@ export function ContextSwitcherCore() {
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
   const [activeSection, setActiveSection] = useState<
-    "org" | "workspace" | "project" | "task"
+    "org" | "project" | "task"
   >("org");
 
   // ── Fetch tasks when project is selected ────────────────────────────────
@@ -70,7 +67,7 @@ export function ContextSwitcherCore() {
     }
     setLoadingTasks(true);
     supabase
-      .from("tasks")
+      .from("ctx_tasks")
       .select("id, title, project_id, status")
       .eq("project_id", ctx.project_id)
       .is("parent_task_id", null)
@@ -86,18 +83,12 @@ export function ContextSwitcherCore() {
   }, [ctx.project_id]);
 
   const hasContext =
-    ctx.organization_id || ctx.workspace_id || ctx.project_id || ctx.task_id;
+    ctx.organization_id || ctx.project_id || ctx.task_id;
 
   // ── Filtered lists based on current context ─────────────────────────────
-  const visibleWorkspaces = ctx.organization_id
-    ? flatWorkspaces.filter((w) => w.org_id === ctx.organization_id)
-    : flatWorkspaces;
-
-  const visibleProjects = ctx.workspace_id
-    ? flatProjects.filter((p) => p.workspace_id === ctx.workspace_id)
-    : ctx.organization_id
-      ? flatProjects.filter((p) => p.org_id === ctx.organization_id)
-      : flatProjects;
+  const visibleProjects = ctx.organization_id
+    ? flatProjects.filter((p) => p.org_id === ctx.organization_id)
+    : flatProjects;
 
   // ── Section tabs ─────────────────────────────────────────────────────────
   const tabs: {
@@ -106,7 +97,6 @@ export function ContextSwitcherCore() {
     label: string;
   }[] = [
     { key: "org", icon: Building2, label: "Org" },
-    { key: "workspace", icon: Layers, label: "Workspace" },
     { key: "project", icon: FolderKanban, label: "Project" },
     { key: "task", icon: CheckSquare, label: "Task" },
   ];
@@ -170,45 +160,12 @@ export function ContextSwitcherCore() {
                     active={ctx.organization_id === org.id}
                     onClick={() => {
                       dispatch(setOrganization({ id: org.id, name: org.name }));
-                      setActiveSection("workspace");
+                      setActiveSection("project");
                     }}
                   />
                 ))}
                 {orgs.length === 0 && (
                   <EmptyState label="No organizations found." />
-                )}
-              </>
-            )}
-
-            {/* Workspace section */}
-            {activeSection === "workspace" && (
-              <>
-                <SectionRow
-                  label="No workspace"
-                  icon={<Globe className="w-4 h-4 opacity-40" />}
-                  active={!ctx.workspace_id}
-                  onClick={() => dispatch(setWorkspace({ id: null }))}
-                />
-                {visibleWorkspaces.map((ws) => (
-                  <SectionRow
-                    key={ws.id}
-                    label={ws.name}
-                    icon={<Layers className="w-4 h-4" />}
-                    active={ctx.workspace_id === ws.id}
-                    onClick={() => {
-                      dispatch(setWorkspace({ id: ws.id, name: ws.name }));
-                      setActiveSection("project");
-                    }}
-                  />
-                ))}
-                {visibleWorkspaces.length === 0 && (
-                  <EmptyState
-                    label={
-                      ctx.organization_id
-                        ? "No workspaces in this org"
-                        : "No workspaces"
-                    }
-                  />
                 )}
               </>
             )}
@@ -290,7 +247,6 @@ export function ContextSwitcherCore() {
             <ContextBreadcrumb
               ctx={ctx}
               orgs={orgs}
-              flatWorkspaces={flatWorkspaces}
               flatProjects={flatProjects}
               tasks={tasks}
             />
@@ -371,13 +327,11 @@ function EmptyState({ label }: { label: string }) {
 function ContextBreadcrumb({
   ctx,
   orgs,
-  flatWorkspaces,
   flatProjects,
   tasks,
 }: {
   ctx: ReturnType<typeof selectAppContext>;
   orgs: { id: string; name: string }[];
-  flatWorkspaces: { id: string; name: string }[];
   flatProjects: { id: string; name: string }[];
   tasks: TaskItem[];
 }) {
@@ -385,10 +339,6 @@ function ContextBreadcrumb({
   if (ctx.organization_id) {
     const o = orgs.find((o) => o.id === ctx.organization_id);
     if (o) parts.push(truncate(o.name, 14));
-  }
-  if (ctx.workspace_id) {
-    const w = flatWorkspaces.find((w) => w.id === ctx.workspace_id);
-    if (w) parts.push(truncate(w.name, 14));
   }
   if (ctx.project_id) {
     const p = flatProjects.find((p) => p.id === ctx.project_id);

@@ -17,20 +17,27 @@ export default function ContextSwitcher() {
   const activeLabel = (() => {
     if (ctx.task_id) return "Task set";
     if (ctx.project_id) return "Project set";
-    if (ctx.workspace_id) return "Workspace set";
     if (ctx.organization_id) return "Org set";
     return "Set context";
   })();
 
   const hasContext = Boolean(
-    ctx.organization_id || ctx.workspace_id || ctx.project_id || ctx.task_id,
+    ctx.organization_id || ctx.project_id || ctx.task_id,
   );
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={() =>
         dispatch(openOverlay({ overlayId: "contextSwitcherWindow" }))
       }
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          dispatch(openOverlay({ overlayId: "contextSwitcherWindow" }));
+        }
+      }}
       className={cn(
         "flex items-center gap-1.5 w-full px-2 py-1 text-[0.6875rem] rounded-md cursor-pointer transition-colors [&_svg]:w-3 [&_svg]:h-3",
         hasContext
@@ -52,6 +59,6 @@ export default function ContextSwitcher() {
           <X className="w-3 h-3" />
         </button>
       )}
-    </button>
+    </div>
   );
 }

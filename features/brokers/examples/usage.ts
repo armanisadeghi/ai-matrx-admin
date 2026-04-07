@@ -13,11 +13,11 @@ const newBroker = await BrokerService.createBroker({
   color: "blue",
 });
 
-// Example 3: Set a broker value at workspace level
+// Example 3: Set a broker value at project level
 await BrokerService.upsertBrokerValue({
   broker_id: "broker-uuid",
   value: { companyName: "Dr. Smith Plastic Surgery" },
-  workspace_id: "workspace-uuid",
+  project_id: "project-uuid",
   created_by: "user-uuid",
 });
 
@@ -25,7 +25,6 @@ await BrokerService.upsertBrokerValue({
 const context: BrokerContext = {
   user_id: "user-uuid",
   organization_id: "org-uuid",
-  workspace_id: "workspace-uuid",
   project_id: "project-uuid",
   task_id: "task-uuid",
   ai_runs_id: "ai-run-uuid",
@@ -57,7 +56,7 @@ await BrokerService.bulkUpsertBrokerValues(
     { broker_id: "broker-3", value: 123 },
   ],
   {
-    workspace_id: "workspace-uuid",
+    project_id: "project-uuid",
     created_by: "user-uuid",
   },
 );
@@ -66,13 +65,3 @@ await BrokerService.bulkUpsertBrokerValues(
 const brokerObject = BrokerService.brokerValuesToObject(resolvedValues);
 // Result: { 'broker-id-1': 'value1', 'broker-id-2': 'value2' }
 
-// Example 9: Workspace operations
-const workspace = await BrokerService.createWorkspace({
-  organization_id: "org-uuid",
-  name: "Dr. Smith Plastic Surgery",
-  description: "Client workspace for Dr. Smith",
-  created_by: "user-uuid",
-});
-
-const childWorkspaces = await BrokerService.getChildWorkspaces(workspace.id);
-const hierarchy = await BrokerService.getWorkspaceHierarchy(workspace.id);

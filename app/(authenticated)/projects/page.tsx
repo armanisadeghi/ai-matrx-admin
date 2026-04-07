@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Puzzle, Plus, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -11,6 +11,7 @@ import { ProjectFormSheet } from "@/features/projects/components/ProjectFormShee
 import { HierarchyContextBar } from "@/features/context/components/HierarchyContextBar";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/features/context/redux/appContextSlice";
+import { useUserOrganizations } from "@/features/organizations";
 
 /**
  * Standalone Projects Hub
@@ -21,7 +22,13 @@ import { selectOrganizationId } from "@/features/context/redux/appContextSlice";
 export default function ProjectsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { projects, loading, refresh } = useUserProjects();
+  const { organizations } = useUserOrganizations();
   const activeOrgId = useAppSelector(selectOrganizationId);
+
+  const orgSlugById = useMemo(
+    () => new Map(organizations.map((o) => [o.id, o.slug])),
+    [organizations],
+  );
 
   const orgProjects = projects.filter(
     (p) => !p.isPersonal && !!p.organizationId,
@@ -88,7 +95,16 @@ export default function ProjectsPage() {
               {orgProjects.length > 0 && (
                 <div className="space-y-3">
                   {orgProjects.map((project) => (
-                    <ProjectCard key={project.id} project={project} />
+                    <ProjectCard
+                      key={project.id}
+                      project={project}
+                      orgSlug={
+                        project.organizationId
+                          ? (orgSlugById.get(project.organizationId) ??
+                            undefined)
+                          : undefined
+                      }
+                    />
                   ))}
                 </div>
               )}

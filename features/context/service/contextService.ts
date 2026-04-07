@@ -14,7 +14,6 @@ import type {
   ContextItemStatus,
   ContextDashboardStats,
   ContextCategoryHealth,
-  ContextIndustryGroup,
   ContextScopeLevel,
 } from "../types";
 import { ATTENTION_STATUSES } from "../constants";
@@ -29,11 +28,9 @@ function scopeFilter(
       ? "user_id"
       : scopeType === "organization"
         ? "organization_id"
-        : scopeType === "workspace"
-          ? "workspace_id"
-          : scopeType === "project"
-            ? "project_id"
-            : "task_id";
+        : scopeType === "project"
+          ? "project_id"
+          : "task_id";
   return query.eq(column, scopeId);
 }
 
@@ -44,21 +41,26 @@ export const contextService = {
     scopeId: string,
   ): Promise<ContextItemManifest[]> {
     let query = supabase
-      .from("context_items_manifest")
-      .select("*")
+      .from("ctx_context_items")
+      .select("*, ctx_context_item_values!current_value_id(text_value, updated_at)")
       .order("category", { ascending: true, nullsFirst: true })
       .order("display_name", { ascending: true });
 
     query = scopeFilter(query, scopeType, scopeId);
     const { data, error } = await query;
     if (error) throw error;
-    return data as ContextItemManifest[];
+
+    return (data ?? []).map((row: any) => ({
+      ...row,
+      current_text_value: row.ctx_context_item_values?.text_value ?? null,
+      value_last_updated: row.ctx_context_item_values?.updated_at ?? null,
+    })) as ContextItemManifest[];
   },
 
   // ─── Full item detail ─────────────────────────────────────────────
   async fetchItem(itemId: string): Promise<ContextItem> {
     const { data, error } = await supabase
-      .from("context_items")
+      .from("ctx_context_items")
       .select("*")
       .eq("id", itemId)
       .single();
@@ -69,7 +71,7 @@ export const contextService = {
   // ─── Current value for an item ────────────────────────────────────
   async fetchCurrentValue(itemId: string): Promise<ContextItemValue | null> {
     const { data, error } = await supabase
-      .from("context_item_values")
+      .from("ctx_context_item_values")
       .select("*")
       .eq("context_item_id", itemId)
       .eq("is_current", true)
@@ -81,7 +83,7 @@ export const contextService = {
   // ─── Version history ──────────────────────────────────────────────
   async fetchVersionHistory(itemId: string): Promise<ContextItemValue[]> {
     const { data, error } = await supabase
-      .from("context_item_values")
+      .from("ctx_context_item_values")
       .select("*")
       .eq("context_item_id", itemId)
       .order("version", { ascending: false });
@@ -95,20 +97,18 @@ export const contextService = {
     scopeId: string,
     formData: ContextItemFormData,
   ): Promise<ContextItem> {
-    const scopeColumn =
+    const col =
       scopeType === "user"
         ? "user_id"
         : scopeType === "organization"
           ? "organization_id"
-          : scopeType === "workspace"
-            ? "workspace_id"
-            : scopeType === "project"
-              ? "project_id"
-              : "task_id";
+          : scopeType === "project"
+            ? "project_id"
+            : "task_id";
 
     const { data, error } = await supabase
-      .from("context_items")
-      .insert({ ...formData, [scopeColumn]: scopeId })
+      .from("ctx_context_items")
+      .insert({ ...formData, [col]: scopeId })
       .select()
       .single();
     if (error) throw error;
@@ -121,7 +121,7 @@ export const contextService = {
     updates: Partial<ContextItemFormData>,
   ): Promise<ContextItem> {
     const { data, error } = await supabase
-      .from("context_items")
+      .from("ctx_context_items")
       .update(updates)
       .eq("id", itemId)
       .select()
@@ -137,7 +137,7 @@ export const contextService = {
     statusNote?: string,
   ): Promise<ContextItem> {
     const { data, error } = await supabase
-      .from("context_items")
+      .from("ctx_context_items")
       .update({
         status,
         status_note: statusNote ?? null,
@@ -157,7 +157,7 @@ export const contextService = {
     sourceType: Database["public"]["Enums"]["context_source_type"] = "manual",
   ): Promise<ContextItemValue> {
     const { data, error } = await supabase
-      .from("context_item_values")
+      .from("ctx_context_item_values")
       .insert({
         context_item_id: itemId,
         ...valueData,
@@ -172,7 +172,7 @@ export const contextService = {
   // ─── Archive / soft delete ────────────────────────────────────────
   async archiveItem(itemId: string): Promise<void> {
     const { error } = await supabase
-      .from("context_items")
+      .from("ctx_context_items")
       .update({ status: "archived", is_active: false })
       .eq("id", itemId);
     if (error) throw error;
@@ -184,7 +184,7 @@ export const contextService = {
     scopeId: string,
   ): Promise<ContextDashboardStats> {
     let query = supabase
-      .from("context_items")
+      .from("ctx_context_items")
       .select("id, status, current_value_id, is_active")
       .eq("is_active", true);
 
@@ -209,7 +209,7 @@ export const contextService = {
     scopeId: string,
   ): Promise<ContextCategoryHealth[]> {
     let query = supabase
-      .from("context_items")
+      .from("ctx_context_items")
       .select("category, status")
       .eq("is_active", true);
 
@@ -250,14 +250,20 @@ export const contextService = {
     scopeId: string,
   ): Promise<ContextItemManifest[]> {
     let query = supabase
-      .from("context_items_manifest")
-      .select("*")
+      .from("ctx_context_items")
+      .select("*, ctx_context_item_values!current_value_id(text_value, updated_at)")
       .in("status", ATTENTION_STATUSES)
       .limit(20);
 
     query = scopeFilter(query, scopeType, scopeId);
     const { data, error } = await query;
     if (error) throw error;
+
+    const mapped = (data ?? []).map((row: any) => ({
+      ...row,
+      current_text_value: row.ctx_context_item_values?.text_value ?? null,
+      value_last_updated: row.ctx_context_item_values?.updated_at ?? null,
+    })) as ContextItemManifest[];
 
     const priorityOrder: Record<string, number> = {
       stale: 1,
@@ -267,7 +273,7 @@ export const contextService = {
       partial: 5,
     };
 
-    return (data as ContextItemManifest[]).sort((a, b) => {
+    return mapped.sort((a, b) => {
       const pa = priorityOrder[a.status] ?? 99;
       const pb = priorityOrder[b.status] ?? 99;
       if (pa !== pb) return pa - pb;
@@ -344,16 +350,14 @@ export const contextService = {
     templateItems: ContextTemplate[],
     existingKeys: Set<string>,
   ): Promise<{ created: number; skipped: number }> {
-    const scopeColumn =
+    const col =
       scopeType === "user"
         ? "user_id"
         : scopeType === "organization"
           ? "organization_id"
-          : scopeType === "workspace"
-            ? "workspace_id"
-            : scopeType === "project"
-              ? "project_id"
-              : "task_id";
+          : scopeType === "project"
+            ? "project_id"
+            : "task_id";
 
     const toCreate = templateItems.filter((t) => !existingKeys.has(t.item_key));
     const skipped = templateItems.length - toCreate.length;
@@ -369,10 +373,10 @@ export const contextService = {
         status: "stub" as const,
         template_item_key: t.item_key,
         review_interval_days: t.suggested_review_interval_days,
-        [scopeColumn]: scopeId,
+        [col]: scopeId,
       }));
 
-      const { error } = await supabase.from("context_items").insert(rows);
+      const { error } = await supabase.from("ctx_context_items").insert(rows);
       if (error) throw error;
     }
 
@@ -384,7 +388,7 @@ export const contextService = {
     scopeType: ContextScopeLevel,
     scopeId: string,
   ): Promise<Set<string>> {
-    let query = supabase.from("context_items").select("key");
+    let query = supabase.from("ctx_context_items").select("key");
 
     query = scopeFilter(query, scopeType, scopeId);
     const { data, error } = await query;
@@ -405,7 +409,7 @@ export const contextService = {
     } = original;
 
     const { data, error } = await supabase
-      .from("context_items")
+      .from("ctx_context_items")
       .insert({
         ...rest,
         key: `${rest.key}_copy`,

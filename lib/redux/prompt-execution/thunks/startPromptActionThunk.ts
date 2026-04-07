@@ -59,7 +59,6 @@ export interface StartActionPayload {
  *   actionId: 'generate-brief-uuid',
  *   context: {
  *     userId: 'user-uuid',
- *     workspaceId: 'workspace-uuid',
  *     projectId: 'project-uuid'
  *   },
  *   userProvidedVariables: {
@@ -161,7 +160,6 @@ export const startPromptAction = createAsyncThunk<
           const resolution = await resolveBrokersForContext(brokerIds, {
             userId: context.userId,
             organizationId: context.organizationId,
-            workspaceId: context.workspaceId,
             projectId: context.projectId,
             taskId: context.taskId,
             aiRunId: context.aiRunId,

@@ -46,20 +46,16 @@ export { useContextKeyboard } from "./hooks/useContextKeyboard";
 export {
   useHierarchyTree,
   useUserOrganizations,
-  useOrgWorkspaces,
-  useWorkspaceProjects,
   useOrgProjects,
   useProjectTasks,
   useAncestors,
   useCreateOrganization,
-  useCreateWorkspace,
   useCreateProject,
   useCreateTask,
   useUpdateEntity,
   useDeleteEntity,
   useMoveProject,
   useMoveTask,
-  useMoveWorkspace,
   filterHierarchyTree,
   countDescendants,
 } from "./hooks/useHierarchy";
@@ -72,7 +68,6 @@ export {
   selectNavTree,
   selectNavTreeStatus,
   selectNavOrganizations,
-  selectFlatWorkspaces,
   selectFlatProjects,
   selectFullContext,
   selectFullContextStatus,
@@ -82,7 +77,6 @@ export {
 } from "./redux/hierarchySlice";
 export type {
   NavOrganization,
-  NavWorkspace,
   NavProject,
   NavTask,
   NavProjectWithTasks,
@@ -107,6 +101,9 @@ export {
   useUpdateContextVariable,
   useDeleteContextVariable,
 } from "./hooks/useContextVariables";
+
+// Scope system (new)
+export * from "./redux/scope";
 
 // Components
 export {

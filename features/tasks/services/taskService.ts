@@ -16,7 +16,6 @@ export interface CreateTaskInput {
   status?: "incomplete" | "completed";
   user_id?: string | null;
   organization_id?: string | null;
-  workspace_id?: string | null;
 }
 
 export interface UpdateTaskInput {
@@ -46,7 +45,7 @@ export async function createTask(
   try {
     const userId = requireUserId();
     const { data, error } = await supabase
-      .from("tasks")
+      .from("ctx_tasks")
       .insert({
         title: input.title,
         description: input.description || null,
@@ -58,7 +57,6 @@ export async function createTask(
         status: input.status || "incomplete",
         user_id: userId,
         organization_id: input.organization_id || null,
-        workspace_id: input.workspace_id || null,
       })
       .select()
       .single();
@@ -99,7 +97,7 @@ export async function getUserTasks(): Promise<DatabaseTask[]> {
   try {
     const userId = requireUserId();
     const { data, error } = await supabase
-      .from("tasks")
+      .from("ctx_tasks")
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
@@ -124,7 +122,7 @@ export async function getProjectTasks(
 ): Promise<DatabaseTask[]> {
   try {
     const { data, error } = await supabase
-      .from("tasks")
+      .from("ctx_tasks")
       .select("*")
       .eq("project_id", projectId)
       .order("created_at", { ascending: false });
@@ -159,7 +157,7 @@ export async function getTaskAttachments(
 ): Promise<TaskAttachment[]> {
   try {
     const { data, error } = await supabase
-      .from("task_attachments")
+      .from("ctx_task_attachments")
       .select("*")
       .eq("task_id", taskId)
       .order("uploaded_at", { ascending: true });
@@ -189,7 +187,7 @@ export async function uploadTaskAttachment(
       return null;
     }
     const { data, error: insertError } = await supabase
-      .from("task_attachments")
+      .from("ctx_task_attachments")
       .insert({
         task_id: taskId,
         file_name: file.name,
@@ -223,7 +221,7 @@ export async function deleteTaskAttachment(
   try {
     await supabase.storage.from("attachments").remove([filePath]);
     const { error } = await supabase
-      .from("task_attachments")
+      .from("ctx_task_attachments")
       .delete()
       .eq("id", attachmentId);
     if (error) {
@@ -293,7 +291,7 @@ export async function updateTaskLabels(
 ): Promise<boolean> {
   try {
     const { error } = await supabase
-      .from("tasks")
+      .from("ctx_tasks")
       .update({ settings: { labels } })
       .eq("id", taskId);
     if (error) {
@@ -317,7 +315,7 @@ export async function getTaskById(
 ): Promise<DatabaseTask | null> {
   try {
     const { data, error } = await supabase
-      .from("tasks")
+      .from("ctx_tasks")
       .select("*")
       .eq("id", taskId)
       .single();
@@ -346,7 +344,7 @@ export async function updateTask(
     let previousAssigneeId: string | null = null;
     if (updates.assignee_id !== undefined) {
       const { data: currentTask } = await supabase
-        .from("tasks")
+        .from("ctx_tasks")
         .select("assignee_id")
         .eq("id", taskId)
         .single();
@@ -354,7 +352,7 @@ export async function updateTask(
     }
 
     const { data, error } = await supabase
-      .from("tasks")
+      .from("ctx_tasks")
       .update(updates)
       .eq("id", taskId)
       .select()
@@ -413,7 +411,7 @@ async function sendTaskAssignmentNotification(
  */
 export async function deleteTask(taskId: string): Promise<boolean> {
   try {
-    const { error } = await supabase.from("tasks").delete().eq("id", taskId);
+    const { error } = await supabase.from("ctx_tasks").delete().eq("id", taskId);
 
     if (error) {
       console.error("Error deleting task:", error.message);
@@ -433,7 +431,7 @@ export async function deleteTask(taskId: string): Promise<boolean> {
 export async function getSubtasks(taskId: string): Promise<DatabaseTask[]> {
   try {
     const { data, error } = await supabase
-      .from("tasks")
+      .from("ctx_tasks")
       .select("*")
       .eq("parent_task_id", taskId)
       .order("created_at", { ascending: true });
@@ -475,7 +473,7 @@ export async function updateSubtaskStatus(
 ): Promise<boolean> {
   try {
     const { error } = await supabase
-      .from("tasks")
+      .from("ctx_tasks")
       .update({ status: completed ? "completed" : "incomplete" })
       .eq("id", subtaskId);
 
@@ -520,7 +518,7 @@ export async function getSharedWithMeTasks(): Promise<DatabaseTask[]> {
     const taskIds = grants.map((g) => g.resourceId);
 
     const { data, error } = await supabase
-      .from("tasks")
+      .from("ctx_tasks")
       .select("*")
       .in("id", taskIds)
       .neq("user_id", user.id)
@@ -671,7 +669,7 @@ export async function getTaskPermissions(taskId: string) {
 export async function getTaskComments(taskId: string): Promise<any[]> {
   try {
     const { data, error } = await supabase
-      .from("task_comments")
+      .from("ctx_task_comments")
       .select(
         `
         id,
@@ -706,7 +704,7 @@ export async function createTaskComment(
   try {
     const userId = requireUserId();
     const { data, error } = await supabase
-      .from("task_comments")
+      .from("ctx_task_comments")
       .insert({
         task_id: taskId,
         user_id: userId,
@@ -752,7 +750,7 @@ async function sendTaskCommentNotification(
   try {
     // Get the task to find the owner
     const { data: task } = await supabase
-      .from("tasks")
+      .from("ctx_tasks")
       .select("id, title, user_id")
       .eq("id", taskId)
       .single();

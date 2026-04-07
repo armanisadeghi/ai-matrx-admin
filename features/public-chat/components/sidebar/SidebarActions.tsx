@@ -8,7 +8,6 @@ import {
   AudioLines,
   ChevronRight,
   Building,
-  LayoutGrid,
   ListCheck,
   FileText,
 } from "lucide-react";
@@ -81,7 +80,6 @@ export function SidebarActions({
     <div className="px-1.5 py-1">
       {/* Context Setting Dropdowns */}
       <PlaceholderDropdownRow icon={Building} label="Organization" />
-      <PlaceholderDropdownRow icon={LayoutGrid} label="Workspaces" />
       <PlaceholderDropdownRow icon={FolderKanban} label="Project" />
       <PlaceholderDropdownRow icon={ListCheck} label="Tasks" />
     </div>

@@ -1,14 +1,22 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Puzzle, Search, Loader2, Crown, Shield, User as UserIcon } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useRouter } from 'next/navigation';
-import { useUserProjects } from '@/features/projects';
-import type { ProjectWithRole } from '@/features/projects';
-import { cn } from '@/lib/utils';
+import React, { useState, useMemo } from "react";
+import {
+  Puzzle,
+  Search,
+  Loader2,
+  Crown,
+  Shield,
+  User as UserIcon,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
+import { useUserProjects } from "@/features/projects";
+import type { ProjectWithRole } from "@/features/projects";
+import { cn } from "@/lib/utils";
+import { useUserOrganizations } from "@/features/organizations";
 
 /**
  * User Projects Settings Page
@@ -18,26 +26,32 @@ import { cn } from '@/lib/utils';
  */
 export default function SettingsProjectsPage() {
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const { projects, loading, error, refresh } = useUserProjects();
+  const { organizations } = useUserOrganizations();
+
+  const orgSlugById = useMemo(
+    () => new Map(organizations.map((o) => [o.id, o.slug])),
+    [organizations],
+  );
 
   const filteredProjects = projects.filter(
     (p) =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (p.slug ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (p.description ?? '').toLowerCase().includes(searchTerm.toLowerCase())
+      (p.slug ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.description ?? "").toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const getRoleBadge = (role: ProjectWithRole['role']) => {
+  const getRoleBadge = (role: ProjectWithRole["role"]) => {
     switch (role) {
-      case 'owner':
+      case "owner":
         return (
           <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 flex items-center gap-1 text-xs">
             <Crown className="h-3 w-3" />
             Owner
           </Badge>
         );
-      case 'admin':
+      case "admin":
         return (
           <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 flex items-center gap-1 text-xs">
             <Shield className="h-3 w-3" />
@@ -97,8 +111,8 @@ export default function SettingsProjectsPage() {
               </div>
               <h3 className="text-lg font-semibold mb-2">No Projects Yet</h3>
               <p className="text-muted-foreground text-sm">
-                You don't belong to any projects. Ask an organization admin to create one and invite
-                you.
+                You don't belong to any projects. Ask an organization admin to
+                create one and invite you.
               </p>
             </Card>
           )}
@@ -109,16 +123,19 @@ export default function SettingsProjectsPage() {
                 <Card
                   key={project.id}
                   className={cn(
-                    'p-4 cursor-pointer transition-all duration-200 hover:shadow-md'
+                    "p-4 cursor-pointer transition-all duration-200 hover:shadow-md",
                   )}
                   onClick={() => {
                     const slug = project.slug ?? project.id;
                     if (project.isPersonal || !project.organizationId) {
                       router.push(`/projects/${slug}/settings`);
                     } else {
-                      // For org projects we need the org slug — navigate to the project detail
-                      // which will redirect to the correct org-scoped URL
-                      router.push(`/projects/${slug}`);
+                      const orgSlug = orgSlugById.get(project.organizationId);
+                      if (orgSlug) {
+                        router.push(`/org/${orgSlug}/projects/${slug}`);
+                      } else {
+                        router.push(`/projects/${slug}`);
+                      }
                     }
                   }}
                 >
@@ -138,7 +155,8 @@ export default function SettingsProjectsPage() {
                           </p>
                         )}
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {project.memberCount ?? 0} member{project.memberCount !== 1 ? 's' : ''}
+                          {project.memberCount ?? 0} member
+                          {project.memberCount !== 1 ? "s" : ""}
                         </p>
                       </div>
                     </div>
@@ -152,7 +170,9 @@ export default function SettingsProjectsPage() {
             <Card className="p-8 text-center">
               <Search className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
               <h3 className="font-semibold mb-1">No projects found</h3>
-              <p className="text-sm text-muted-foreground">Try adjusting your search</p>
+              <p className="text-sm text-muted-foreground">
+                Try adjusting your search
+              </p>
             </Card>
           )}
         </>

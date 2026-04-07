@@ -13,7 +13,6 @@ import { useToastManager } from "@/hooks/useToastManager";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectOrganizationId,
-  selectWorkspaceId,
   selectProjectId,
 } from "@/features/context/redux/appContextSlice";
 import type {
@@ -39,7 +38,6 @@ export function TaskProvider({ children }: TaskProviderProps) {
 
   // App-wide context (org/workspace/project from the hierarchy bar)
   const appOrgId = useAppSelector(selectOrganizationId);
-  const appWorkspaceId = useAppSelector(selectWorkspaceId);
   const appProjectId = useAppSelector(selectProjectId);
 
   // Database state
@@ -182,14 +180,14 @@ export function TaskProvider({ children }: TaskProviderProps) {
       .channel("task-manager-changes-" + Date.now())
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "projects" },
+        { event: "*", schema: "public", table: "ctx_projects" },
         () => {
           loadProjectsWithTasks(true);
         },
       )
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "tasks" },
+        { event: "*", schema: "public", table: "ctx_tasks" },
         () => {
           loadProjectsWithTasks(true);
         },
@@ -471,7 +469,6 @@ export function TaskProvider({ children }: TaskProviderProps) {
       user_id: "", // Will be set by server
       is_public: false,
       organization_id: appOrgId,
-      workspace_id: appWorkspaceId,
       settings: {},
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -501,7 +498,6 @@ export function TaskProvider({ children }: TaskProviderProps) {
         project_id: projectId,
         priority: priority || null,
         organization_id: appOrgId,
-        workspace_id: appWorkspaceId,
       });
 
       if (newTask) {

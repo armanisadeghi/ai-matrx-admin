@@ -1,24 +1,21 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Building2, Users, FolderKanban, ListTodo, TreePine } from 'lucide-react';
+import { Building2, FolderKanban, ListTodo, TreePine } from 'lucide-react';
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  useMoveWorkspace,
   useMoveProject,
   useMoveTask,
 } from '../hooks/useHierarchy';
-import { hierarchyService } from '../service/hierarchyService';
 import type { HierarchyNode, HierarchyNodeType } from '../service/hierarchyService';
 
 const ICONS: Record<HierarchyNodeType, React.ComponentType<{ className?: string }>> = {
   user: Building2,
   organization: Building2,
-  workspace: Users,
   project: FolderKanban,
   task: ListTodo,
 };
@@ -37,9 +34,7 @@ function getValidTargets(tree: HierarchyNode[], typeToMove: HierarchyNodeType, i
     const invalid = isInvalidBranch || node.id === idToMove;
 
     if (!invalid) {
-      if (typeToMove === 'workspace' && (node.type === 'organization' || node.type === 'workspace')) {
-        result.push({ node, depth });
-      } else if (typeToMove === 'project' && (node.type === 'organization' || node.type === 'workspace')) {
+      if (typeToMove === 'project' && node.type === 'organization') {
         result.push({ node, depth });
       } else if (typeToMove === 'task' && (node.type === 'project' || node.type === 'task')) {
         if (node.id !== 'unassigned-projects' && node.id !== 'orphan-tasks') {
@@ -58,11 +53,10 @@ function getValidTargets(tree: HierarchyNode[], typeToMove: HierarchyNodeType, i
 export function HierarchyMoveModal({ nodeToMove, tree, onClose }: Props) {
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
 
-  const moveWs = useMoveWorkspace();
   const moveProj = useMoveProject();
   const moveTask = useMoveTask();
 
-  const isPending = moveWs.isPending || moveProj.isPending || moveTask.isPending;
+  const isPending = moveProj.isPending || moveTask.isPending;
 
   const validTargets = useMemo(() => getValidTargets(tree, nodeToMove.type, nodeToMove.id), [tree, nodeToMove]);
 
@@ -72,52 +66,14 @@ export function HierarchyMoveModal({ nodeToMove, tree, onClose }: Props) {
     const targetNode = validTargets.find(t => t.node.id === selectedTargetId)?.node;
     if (!targetNode) return;
 
-    // We need to pass the correct payload based on typeToMove
-    if (nodeToMove.type === 'workspace') {
+    if (nodeToMove.type === 'project') {
       const orgId = targetNode.type === 'organization' ? targetNode.id : (targetNode.meta?.organization_id as string);
-      moveWs.mutate({
-        workspaceId: nodeToMove.id,
+      moveProj.mutate({
+        projectId: nodeToMove.id,
         target: {
           organization_id: orgId,
-          parent_workspace_id: targetNode.type === 'workspace' ? targetNode.id : null,
         }
       }, { onSuccess: onClose });
-    } else if (nodeToMove.type === 'project') {
-      if (targetNode.type === 'organization') {
-        const orgId = targetNode.id;
-        // User drops project on Organization -> Auto create 'General Workspace'
-        hierarchyService.createWorkspace({
-          name: 'General Workspace',
-          organization_id: orgId,
-          description: 'Auto-generated workspace for assigned projects without a workspace.'
-        }).then(newWs => {
-          moveProj.mutate({
-            projectId: nodeToMove.id,
-            target: {
-              organization_id: orgId,
-              workspace_id: newWs.id,
-            }
-          }, { onSuccess: onClose });
-        }).catch(() => {
-          // Fallback if workspace creation fails (e.g., General Workspace already exists)
-          moveProj.mutate({
-            projectId: nodeToMove.id,
-            target: {
-              organization_id: orgId,
-              workspace_id: null,
-            }
-          }, { onSuccess: onClose });
-        });
-      } else {
-        const orgId = targetNode.meta?.organization_id as string;
-        moveProj.mutate({
-          projectId: nodeToMove.id,
-          target: {
-            organization_id: orgId,
-            workspace_id: targetNode.id,
-          }
-        }, { onSuccess: onClose });
-      }
     } else if (nodeToMove.type === 'task') {
       moveTask.mutate({
         taskId: nodeToMove.id,

@@ -115,7 +115,7 @@ export function OrganizationList() {
         <div>
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
             <UserIcon className="h-4 w-4" />
-            Personal Workspace
+            Personal Space
           </h2>
           <OrganizationCard organization={personalOrg} onUpdate={refresh} />
         </div>

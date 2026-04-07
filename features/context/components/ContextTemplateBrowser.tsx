@@ -20,7 +20,7 @@ const INDUSTRY_ICONS: Record<string, React.ComponentType<{ className?: string }>
 };
 
 const SCOPE_ICONS: Record<ContextScopeLevel, React.ComponentType<{ className?: string }>> = {
-  user: User, organization: Building2, workspace: Users, project: FolderKanban, task: ListTodo,
+  user: User, organization: Building2, project: FolderKanban, task: ListTodo,
 };
 
 type Props = {
@@ -257,7 +257,7 @@ function ApplyTemplateDialog({
           {step === 'scope' && (
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground mb-3">Select where to create these context items</p>
-              {(['user', 'organization', 'workspace', 'project', 'task'] as ContextScopeLevel[]).map(s => {
+              {(['user', 'organization', 'project', 'task'] as ContextScopeLevel[]).map(s => {
                 const Icon = SCOPE_ICONS[s];
                 const isRecommended = s === recommendedScope;
                 const isSelected = s === selectedScope.scopeType;

@@ -38,7 +38,6 @@ function makeEmptyRecord(id: string): AgentShortcutRecord {
 
     userId: null,
     organizationId: null,
-    workspaceId: null,
     projectId: null,
     taskId: null,
 

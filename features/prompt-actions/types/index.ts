@@ -53,7 +53,7 @@ export interface PromptAction {
   /** Hardcoded overrides that always apply: {"tone": "professional"} */
   hardcoded_values: Record<string, string>;
 
-  /** Context scopes this action expects/requires: ['workspace', 'project', 'task'] */
+  /** Context scopes this action expects/requires: ['project', 'task'] */
   context_scopes: string[];
 
   // Execution configuration
@@ -118,9 +118,6 @@ export interface ExecuteActionContext {
 
   /** Organization ID */
   organizationId?: string;
-
-  /** Workspace ID */
-  workspaceId?: string;
 
   /** Project ID */
   projectId?: string;

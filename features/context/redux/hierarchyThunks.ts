@@ -2,14 +2,13 @@
 
 // features/context/redux/hierarchyThunks.ts
 //
-// Thunks for fetching the user hierarchy via the two new Supabase RPCs.
+// Thunks for fetching the user hierarchy via Supabase RPCs.
+// Workspace layer removed — hierarchy is now org -> project -> task.
 //
 // Usage:
 //   dispatch(fetchNavTree())        — on sidebar mount / app boot
 //   dispatch(fetchFullContext())    — on dashboard / task-board pages
 //   dispatch(invalidateAndRefetchNavTree())  — after CRUD mutations
-//
-// Each thunk is idempotent: it checks the current status before fetching.
 
 import { supabase } from "@/utils/supabase/client";
 import {
@@ -66,9 +65,8 @@ async function doFetchFullContext(dispatch: AppDispatch) {
 // ─── fetchNavTree ─────────────────────────────────────────────────────────
 
 /**
- * Fetch the lightweight org/workspace/project tree (no tasks).
+ * Fetch the lightweight org/project tree (no tasks).
  * Skips if already loading or successfully loaded.
- * Call this from: sidebar mount, org switcher, workspace picker.
  */
 export function fetchNavTree() {
   return (
@@ -86,7 +84,6 @@ export function fetchNavTree() {
 /**
  * Fetch the full hierarchy including open tasks.
  * Skips if already loading or successfully loaded.
- * Call this from: dashboard, task boards, "My Work" views.
  */
 export function fetchFullContext() {
   return (
@@ -103,7 +100,7 @@ export function fetchFullContext() {
 
 /**
  * Reset the nav tree status to idle and trigger a fresh fetch.
- * Use after creating/updating/deleting orgs, workspaces, or projects.
+ * Use after creating/updating/deleting orgs or projects.
  */
 export function invalidateAndRefetchNavTree() {
   return (dispatch: AppDispatch) => {
@@ -125,7 +122,7 @@ export function invalidateAndRefetchFullContext() {
 
 /**
  * Invalidate both tree and full context and re-fetch nav tree.
- * Use after structural mutations (move org/workspace/project).
+ * Use after structural mutations (move org/project).
  */
 export function invalidateAndRefetchAll() {
   return (dispatch: AppDispatch) => {

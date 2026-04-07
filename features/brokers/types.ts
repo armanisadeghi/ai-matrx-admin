@@ -57,21 +57,8 @@ export interface Organization {
   settings?: Record<string, any>;
 }
 
-export interface Workspace {
-  id: string;
-  organization_id: string;
-  parent_workspace_id?: string | null;
-  name: string;
-  description?: string | null;
-  settings?: Record<string, any>;
-  created_at: string;
-  updated_at: string;
-  created_by?: string | null;
-}
-
 export interface Project {
   id: string;
-  workspace_id?: string | null;
   organization_id: string;
   name: string;
   description?: string | null;
@@ -158,7 +145,6 @@ export type ScopeLevel =
   | "global"
   | "user"
   | "organization"
-  | "workspace"
   | "project"
   | "task"
   | "ai_run"
@@ -173,7 +159,6 @@ export const SCOPE_LEVELS: ScopeLevel[] = [
   "global",
   "user",
   "organization",
-  "workspace",
   "project",
   "task",
   "ai_run",
@@ -186,7 +171,6 @@ export interface BrokerValue {
   is_global: boolean;
   user_id?: string | null;
   organization_id?: string | null;
-  workspace_id?: string | null;
   project_id?: string | null;
   task_id?: string | null;
   ai_runs_id?: string | null;
@@ -233,7 +217,6 @@ true satisfies typeof _completeBrokerData;
 export interface BrokerContext {
   user_id?: string;
   organization_id?: string;
-  workspace_id?: string;
   project_id?: string;
   task_id?: string;
   ai_runs_id?: string;
@@ -246,7 +229,6 @@ export interface CreateBrokerValueInput {
   is_global?: boolean;
   user_id?: string | null;
   organization_id?: string | null;
-  workspace_id?: string | null;
   project_id?: string | null;
   task_id?: string | null;
   ai_runs_id?: string | null;
@@ -271,18 +253,3 @@ type _CheckBulkUpsertBrokerResult =
 declare const _bulkUpsertBrokerResult: _CheckBulkUpsertBrokerResult;
 true satisfies typeof _bulkUpsertBrokerResult;
 
-export interface CreateWorkspaceInput {
-  organization_id: string;
-  parent_workspace_id?: string | null;
-  name: string;
-  description?: string | null;
-  settings?: Record<string, any>;
-  created_by?: string | null;
-}
-
-export interface UpdateWorkspaceInput {
-  name?: string;
-  description?: string | null;
-  settings?: Record<string, any>;
-  parent_workspace_id?: string | null;
-}

@@ -53,7 +53,6 @@ const CONTEXT_TYPES: ContextObjectType[] = [
   "db_ref",
   "user",
   "org",
-  "workspace",
   "project",
   "task",
 ];

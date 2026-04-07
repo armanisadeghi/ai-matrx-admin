@@ -65,7 +65,6 @@ export function dbRowToAgentShortcut(row: ShortcutRow): AgentShortcut {
 
     userId: row.user_id,
     organizationId: row.organization_id,
-    workspaceId: row.workspace_id,
     projectId: row.project_id,
     taskId: row.task_id,
 
@@ -105,7 +104,6 @@ export function agentShortcutToInsert(shortcut: AgentShortcut): ShortcutInsert {
 
     user_id: shortcut.userId,
     organization_id: shortcut.organizationId,
-    workspace_id: shortcut.workspaceId,
     project_id: shortcut.projectId,
     task_id: shortcut.taskId,
   };
@@ -147,7 +145,6 @@ export function agentShortcutToUpdate(
 
   if (partial.userId !== undefined) update.user_id = partial.userId;
   if (partial.organizationId !== undefined) update.organization_id = partial.organizationId;
-  if (partial.workspaceId !== undefined) update.workspace_id = partial.workspaceId;
   if (partial.projectId !== undefined) update.project_id = partial.projectId;
   if (partial.taskId !== undefined) update.task_id = partial.taskId;
 

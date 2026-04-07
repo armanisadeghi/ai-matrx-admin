@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, Users, FolderKanban, ListTodo, User, ChevronRight } from 'lucide-react';
+import { Building2, FolderKanban, ListTodo, User, ChevronRight } from 'lucide-react';
 import {
   Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink,
   BreadcrumbSeparator, BreadcrumbPage,
@@ -13,7 +13,6 @@ import type { HierarchyNodeType } from '../service/hierarchyService';
 const SCOPE_ICONS: Record<ContextScopeLevel, React.ComponentType<{ className?: string }>> = {
   user: User,
   organization: Building2,
-  workspace: Users,
   project: FolderKanban,
   task: ListTodo,
 };
@@ -21,7 +20,6 @@ const SCOPE_ICONS: Record<ContextScopeLevel, React.ComponentType<{ className?: s
 const ACCENT: Record<ContextScopeLevel, string> = {
   user: 'text-blue-500',
   organization: 'text-violet-500',
-  workspace: 'text-emerald-500',
   project: 'text-amber-500',
   task: 'text-sky-500',
 };

@@ -41,7 +41,7 @@ export function useTasks() {
         {
           event: '*',
           schema: 'public',
-          table: 'tasks',
+          table: 'ctx_tasks',
         },
         () => {
           loadTasks();
@@ -99,7 +99,7 @@ export function useProjects() {
         {
           event: '*',
           schema: 'public',
-          table: 'projects',
+          table: 'ctx_projects',
         },
         () => {
           loadProjects();
@@ -157,7 +157,7 @@ export function useProjectsWithTasks() {
         {
           event: '*',
           schema: 'public',
-          table: 'projects',
+          table: 'ctx_projects',
         },
         () => {
           loadProjectsWithTasks();
@@ -168,7 +168,7 @@ export function useProjectsWithTasks() {
         {
           event: '*',
           schema: 'public',
-          table: 'tasks',
+          table: 'ctx_tasks',
         },
         () => {
           loadProjectsWithTasks();

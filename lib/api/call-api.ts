@@ -70,7 +70,6 @@ import {
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import {
   selectOrganizationId,
-  selectWorkspaceId,
   selectProjectId,
   selectTaskId,
   selectConversationId,
@@ -158,7 +157,6 @@ export interface ResolvedAuth {
  *
  * TODO: Create a `appContextSlice` (single slice for the full hierarchy) to hold:
  *   - organization_id  (org context) ← DONE: appContextSlice
- *   - workspace_id     (workspace context — nestable, between org and project) ← DONE: appContextSlice
  *   - project_id       (project context) ← DONE: appContextSlice
  *   - task_id          (task context) ← DONE: appContextSlice
  *   - conversation_id  (active conversation — also in cx-conversation) ← DONE: appContextSlice
@@ -172,9 +170,6 @@ export interface CallScope {
 
   /** Resolved from appContextSlice. Injected automatically into every request body. */
   organization_id?: string;
-
-  /** Resolved from appContextSlice. Injected automatically into every request body. */
-  workspace_id?: string;
 
   /** Resolved from appContextSlice. Injected automatically into every request body. */
   project_id?: string;
@@ -537,9 +532,6 @@ function resolveScope(
     organization_id: hasAppContext
       ? (selectOrganizationId(state) ?? undefined)
       : undefined,
-    workspace_id: hasAppContext
-      ? (selectWorkspaceId(state) ?? undefined)
-      : undefined,
     project_id: hasAppContext
       ? (selectProjectId(state) ?? undefined)
       : undefined,
@@ -571,7 +563,7 @@ const UI_ONLY_BODY_FIELDS = new Set<string>([
 /**
  * Assemble the final request body, injecting scope fields automatically.
  *
- * The backend accepts scope fields (organization_id, workspace_id, project_id,
+ * The backend accepts scope fields (organization_id, project_id,
  * task_id) on every AI endpoint body. Fields that are undefined are stripped
  * by JSON.stringify so endpoints that don't declare them simply ignore them —
  * no validation errors will occur.
@@ -600,8 +592,6 @@ function buildRequestBody(body: unknown, scope: CallScope): unknown {
   const scopeFields: Record<string, unknown> = {};
   if (scope.organization_id !== undefined)
     scopeFields.organization_id = scope.organization_id;
-  if (scope.workspace_id !== undefined)
-    scopeFields.workspace_id = scope.workspace_id;
   if (scope.project_id !== undefined) scopeFields.project_id = scope.project_id;
   if (scope.task_id !== undefined) scopeFields.task_id = scope.task_id;
 

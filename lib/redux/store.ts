@@ -11,6 +11,7 @@ import { enableMapSet } from "immer";
 import { entitySagaMiddleware } from "./entity/entitySagaMiddleware";
 import { socketMiddleware } from "./socket-io/connection/socketMiddleware";
 import { notesRealtimeMiddleware } from "@/features/notes/redux/realtimeMiddleware";
+import { autoSaveMiddleware } from "@/features/notes/redux/autoSaveMiddleware";
 import { mapUserData } from "@/utils/userDataMapper";
 import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGlobalCache";
 import { InitialReduxState, LiteInitialReduxState } from "@/types/reduxTypes";
@@ -116,7 +117,8 @@ export const makeStore = (
         socketMiddleware,
         storageMiddleware,
         entitySagaMiddleware,
-        // notesRealtimeMiddleware — disabled until workspace fully uses Redux state
+        autoSaveMiddleware,
+        // notesRealtimeMiddleware — re-enable when workspace converges to Redux
       ),
     devTools: process.env.NODE_ENV !== "production",
   });

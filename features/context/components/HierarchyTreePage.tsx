@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
-  Building2, Users, FolderKanban, ListTodo, User,
+  Building2, FolderKanban, ListTodo, User,
   ChevronRight, ChevronDown, Plus, Search, Loader2,
   Pencil, Trash2, MoreHorizontal, Calendar, Tag,
   ArrowRightFromLine, Check, X, AlertCircle, Clock,
@@ -37,7 +37,6 @@ import type { HierarchyNode, HierarchyNodeType } from '../service/hierarchyServi
 const ICONS: Record<HierarchyNodeType, React.ComponentType<{ className?: string }>> = {
   user: User,
   organization: Building2,
-  workspace: Users,
   project: FolderKanban,
   task: ListTodo,
 };
@@ -45,7 +44,6 @@ const ICONS: Record<HierarchyNodeType, React.ComponentType<{ className?: string 
 const ACCENT_BG: Record<HierarchyNodeType, string> = {
   user: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
   organization: 'bg-violet-500/10 text-violet-500 border-violet-500/20',
-  workspace: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
   project: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
   task: 'bg-sky-500/10 text-sky-500 border-sky-500/20',
 };
@@ -53,7 +51,6 @@ const ACCENT_BG: Record<HierarchyNodeType, string> = {
 const ACCENT_TEXT: Record<HierarchyNodeType, string> = {
   user: 'text-blue-500',
   organization: 'text-violet-500',
-  workspace: 'text-emerald-500',
   project: 'text-amber-500',
   task: 'text-sky-500',
 };
@@ -61,7 +58,6 @@ const ACCENT_TEXT: Record<HierarchyNodeType, string> = {
 const TYPE_LABEL: Record<HierarchyNodeType, string> = {
   user: 'Personal',
   organization: 'Organization',
-  workspace: 'Workspace',
   project: 'Project',
   task: 'Task',
 };
@@ -76,12 +72,11 @@ const TASK_STATUS_CONFIG: Record<string, { label: string; color: string; icon: R
 
 // ─── Filter options ─────────────────────────────────────────────────
 
-type FilterType = 'all' | 'organization' | 'workspace' | 'project' | 'task';
+type FilterType = 'all' | 'organization' | 'project' | 'task';
 
 const FILTER_OPTIONS: { value: FilterType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { value: 'all', label: 'All', icon: TreePine },
   { value: 'organization', label: 'Organizations', icon: Building2 },
-  { value: 'workspace', label: 'Workspaces', icon: Users },
   { value: 'project', label: 'Projects', icon: FolderKanban },
   { value: 'task', label: 'Tasks', icon: ListTodo },
 ];
@@ -277,16 +272,6 @@ export function HierarchyTreePage() {
               variant="outline"
               size="sm"
               className="h-7 text-[11px] gap-1 flex-1"
-              onClick={() => setCreateModal({ type: 'workspace' })}
-            >
-              <Users className="h-3 w-3" /> New Workspace
-            </Button>
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 text-[11px] gap-1 flex-1"
               onClick={() => setCreateModal({ type: 'project' })}
             >
               <FolderKanban className="h-3 w-3" /> New Project
@@ -359,8 +344,7 @@ export function HierarchyTreePage() {
               <AlertDialogTitle className="text-sm">Delete {TYPE_LABEL[deleteConfirm.type]}?</AlertDialogTitle>
               <AlertDialogDescription className="text-xs">
                 Are you sure you want to delete <strong>{deleteConfirm.name}</strong>?
-                {deleteConfirm.type === 'organization' && ' This will delete all workspaces, projects, and tasks within this organization.'}
-                {deleteConfirm.type === 'workspace' && ' This will delete all nested workspaces and their projects.'}
+                {deleteConfirm.type === 'organization' && ' This will delete all projects and tasks within this organization.'}
                 {deleteConfirm.type === 'project' && ' All tasks in this project will also be deleted.'}
               </AlertDialogDescription>
             </AlertDialogHeader>
@@ -420,8 +404,7 @@ function TreeBranch({
 
   const childTypes: HierarchyNodeType[] =
     node.type === 'user' ? ['organization'] :
-    node.type === 'organization' ? ['workspace', 'project'] :
-    node.type === 'workspace' ? ['workspace', 'project'] :
+    node.type === 'organization' ? ['project'] :
     node.type === 'project' ? ['task'] :
     node.type === 'task' ? ['task'] : [];
 
@@ -590,8 +573,7 @@ function DetailPanel({
 
   const childTypes: HierarchyNodeType[] =
     node.type === 'user' ? ['organization'] :
-    node.type === 'organization' ? ['workspace', 'project'] :
-    node.type === 'workspace' ? ['workspace', 'project'] :
+    node.type === 'organization' ? ['project'] :
     node.type === 'project' ? ['task'] :
     node.type === 'task' ? ['task'] : [];
 
@@ -708,8 +690,8 @@ function DetailPanel({
         </Card>
       )}
 
-      {/* Org/Workspace/Project metadata */}
-      {(node.type === 'organization' || node.type === 'workspace' || node.type === 'project') && node.meta && (
+      {/* Org/Project metadata */}
+      {(node.type === 'organization' || node.type === 'project') && node.meta && (
         <Card className="mb-4">
           <CardContent className="p-4 flex flex-wrap gap-4">
             {node.meta.slug && (
@@ -797,8 +779,8 @@ function DetailPanel({
             <CardTitle className="text-xs font-semibold text-muted-foreground">Hierarchy Overview</CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <div className="grid grid-cols-4 gap-4 text-center">
-              {(['organization', 'workspace', 'project', 'task'] as HierarchyNodeType[]).map(type => {
+            <div className="grid grid-cols-3 gap-4 text-center">
+              {(['organization', 'project', 'task'] as HierarchyNodeType[]).map(type => {
                 const count = countOfType(node, type);
                 const IconT = ICONS[type];
                 return (
@@ -852,7 +834,7 @@ function ChildRow({ node }: { node: HierarchyNode }) {
 
 // ─── Empty Detail Panel ─────────────────────────────────────────────
 
-function EmptyDetail({ treeStats }: { treeStats: { orgs: number; workspaces: number; projects: number; tasks: number } | null }) {
+function EmptyDetail({ treeStats }: { treeStats: { orgs: number; projects: number; tasks: number } | null }) {
   return (
     <div className="h-full flex items-center justify-center">
       <div className="text-center max-w-md">
@@ -866,7 +848,6 @@ function EmptyDetail({ treeStats }: { treeStats: { orgs: number; workspaces: num
         {treeStats && (
           <div className="flex justify-center gap-6 text-center">
             <StatMini label="Organizations" value={treeStats.orgs} icon={Building2} />
-            <StatMini label="Workspaces" value={treeStats.workspaces} icon={Users} />
             <StatMini label="Projects" value={treeStats.projects} icon={FolderKanban} />
             <StatMini label="Tasks" value={treeStats.tasks} icon={ListTodo} />
           </div>
@@ -928,11 +909,10 @@ function countOfType(node: HierarchyNode, type: HierarchyNodeType): number {
   return count;
 }
 
-function computeStats(tree: HierarchyNode[]): { orgs: number; workspaces: number; projects: number; tasks: number } {
-  const stats = { orgs: 0, workspaces: 0, projects: 0, tasks: 0 };
+function computeStats(tree: HierarchyNode[]): { orgs: number; projects: number; tasks: number } {
+  const stats = { orgs: 0, projects: 0, tasks: 0 };
   function walk(node: HierarchyNode) {
     if (node.type === 'organization') stats.orgs++;
-    if (node.type === 'workspace') stats.workspaces++;
     if (node.type === 'project' && !node.meta?.virtual) stats.projects++;
     if (node.type === 'task' && !node.meta?.virtual) stats.tasks++;
     node.children.forEach(walk);

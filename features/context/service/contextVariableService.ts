@@ -7,7 +7,7 @@ import type { Database } from "@/types/database.types";
 // ─── Types ──────────────────────────────────────────────────────────
 
 export type ContextVariable =
-  Database["public"]["Tables"]["context_variables"]["Row"];
+  Database["public"]["Tables"]["ctx_context_variables"]["Row"];
 
 export type ResolvedVariable = {
   value: unknown;
@@ -23,7 +23,6 @@ export type ResolvedContext = {
   context: {
     user_id: string | null;
     organization_id: string | null;
-    workspace_id: string | null;
     project_id: string | null;
     task_id: string | null;
   };
@@ -45,7 +44,6 @@ export type ContextVariableFormData = {
 type ScopeColumn =
   | "user_id"
   | "organization_id"
-  | "workspace_id"
   | "project_id"
   | "task_id";
 
@@ -54,11 +52,9 @@ function scopeColumn(scopeType: ContextScopeLevel): ScopeColumn {
     ? "user_id"
     : scopeType === "organization"
       ? "organization_id"
-      : scopeType === "workspace"
-        ? "workspace_id"
-        : scopeType === "project"
-          ? "project_id"
-          : "task_id";
+      : scopeType === "project"
+        ? "project_id"
+        : "task_id";
 }
 
 export const contextVariableService = {
@@ -69,7 +65,7 @@ export const contextVariableService = {
   ): Promise<ContextVariable[]> {
     const col = scopeColumn(scopeType);
     const { data, error } = await supabase
-      .from("context_variables")
+      .from("ctx_context_variables")
       .select("*")
       .eq(col, scopeId)
       .order("key");
@@ -77,23 +73,34 @@ export const contextVariableService = {
     return (data ?? []) as ContextVariable[];
   },
 
-  // ─── Resolve all variables with cascade (calls RPC) ───────────────
+  // ─── Resolve full context via RPC (uses most specific scope entity) ─
   async resolveVariables(opts: {
     userId: string;
     organizationId?: string | null;
-    workspaceId?: string | null;
     projectId?: string | null;
     taskId?: string | null;
-    injectAs?: string | null;
   }): Promise<ResolvedContext> {
-    const { data, error } = await supabase.rpc("resolve_context_variables", {
+    let entityType: string;
+    let entityId: string;
+
+    if (opts.taskId) {
+      entityType = "task";
+      entityId = opts.taskId;
+    } else if (opts.projectId) {
+      entityType = "project";
+      entityId = opts.projectId;
+    } else if (opts.organizationId) {
+      entityType = "organization";
+      entityId = opts.organizationId;
+    } else {
+      entityType = "user";
+      entityId = opts.userId;
+    }
+
+    const { data, error } = await supabase.rpc("resolve_full_context", {
       p_user_id: opts.userId,
-      p_organization_id: opts.organizationId ?? null,
-      p_workspace_id: opts.workspaceId ?? null,
-      p_project_id: opts.projectId ?? null,
-      p_task_id: opts.taskId ?? null,
-      p_inject_as: opts.injectAs ?? null,
-      p_include_secrets: false,
+      p_entity_type: entityType,
+      p_entity_id: entityId,
     });
     if (error) throw error;
     return data as unknown as ResolvedContext;
@@ -107,7 +114,7 @@ export const contextVariableService = {
   ): Promise<ContextVariable> {
     const col = scopeColumn(scopeType);
     const { data, error } = await supabase
-      .from("context_variables")
+      .from("ctx_context_variables")
       .insert({
         [col]: scopeId,
         key: formData.key,
@@ -131,7 +138,7 @@ export const contextVariableService = {
     updates: Partial<ContextVariableFormData>,
   ): Promise<ContextVariable> {
     const { data, error } = await supabase
-      .from("context_variables")
+      .from("ctx_context_variables")
       .update(updates)
       .eq("id", id)
       .select()
@@ -143,7 +150,7 @@ export const contextVariableService = {
   // ─── Delete a variable ────────────────────────────────────────────
   async deleteVariable(id: string): Promise<void> {
     const { error } = await supabase
-      .from("context_variables")
+      .from("ctx_context_variables")
       .delete()
       .eq("id", id);
     if (error) throw error;

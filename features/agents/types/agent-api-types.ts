@@ -178,7 +178,6 @@ export type IdeState = NonNullableFields<components["schemas"]["IdeState"]>;
  *   db_ref     — database reference (rows returned by a query)
  *   user       — user profile object
  *   org        — organization object
- *   workspace  — workspace object
  *   project    — project object
  *   task       — task object
  *
@@ -192,7 +191,6 @@ export type ContextObjectType =
   | "db_ref"
   | "user"
   | "org"
-  | "workspace"
   | "project"
   | "task";
 
@@ -290,7 +288,7 @@ export interface AgentStartRequest {
    *   - memory_store/recall/search: scopes "project" memories to project_id,
    *     "organization" memories to organization_id.
    *   - fs_read/write/list, code_run, shell: sandboxes to
-   *     /workspaces/{user_id}/{project_id}/
+   *     /projects/{user_id}/{project_id}/
    *   - sub-agents (fork_for_child_agent): inherit the same scope.
    *   - ctx_get: stamps active_scope metadata for manifest generation.
    *
@@ -298,7 +296,6 @@ export interface AgentStartRequest {
    * user-level only, and project/org scoping is unavailable.
    */
   organization_id?: string | null;
-  workspace_id?: string | null;
   project_id?: string | null;
   task_id?: string | null;
 }
@@ -399,7 +396,6 @@ export interface ConversationContinueRequest {
    * Only send if the scope changes mid-conversation (e.g., user switches project).
    */
   organization_id?: string | null;
-  workspace_id?: string | null;
   project_id?: string | null;
   task_id?: string | null;
 }

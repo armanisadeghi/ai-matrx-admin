@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import {
   useCreateOrganization,
-  useCreateWorkspace,
   useCreateProject,
   useCreateTask,
 } from "@/features/context/hooks/useHierarchy";
@@ -15,10 +14,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 export interface HierarchyCreationWindowData {
-  entityType?: "organization" | "workspace" | "project" | "task";
+  entityType?: "organization" | "project" | "task";
   presetContext?: {
     organization_id?: string | null;
-    workspace_id?: string | null;
     project_id?: string | null;
   };
 }
@@ -38,7 +36,6 @@ export default function HierarchyCreationWindow({
   const dispatch = useAppDispatch();
 
   const createOrganization = useCreateOrganization();
-  const createWorkspace = useCreateWorkspace();
   const createProject = useCreateProject();
   const createTask = useCreateTask();
 
@@ -50,8 +47,6 @@ export default function HierarchyCreationWindow({
     switch (entityType) {
       case "organization":
         return "Create Organization";
-      case "workspace":
-        return "Create Workspace";
       case "project":
         return "Create Project";
       case "task":
@@ -72,18 +67,11 @@ export default function HierarchyCreationWindow({
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/(^-|-$)+/g, "");
         await createOrganization.mutateAsync({ name, slug });
-      } else if (entityType === "workspace") {
+      } else if (entityType === "project") {
         if (!presetContext?.organization_id)
           throw new Error("Organization ID is required");
-        await createWorkspace.mutateAsync({
-          organization_id: presetContext.organization_id,
-          name,
-        });
-      } else if (entityType === "project") {
-        if (!presetContext?.workspace_id)
-          throw new Error("Workspace ID is required");
         await createProject.mutateAsync({
-          workspace_id: presetContext.workspace_id,
+          organization_id: presetContext.organization_id,
           name,
         });
       } else if (entityType === "task") {
@@ -117,12 +105,9 @@ export default function HierarchyCreationWindow({
     >
       <div className="flex flex-col gap-4 p-4">
         <div className="text-sm text-muted-foreground mb-2">
-          {entityType === "workspace" &&
+          {entityType === "project" &&
             presetContext?.organization_id &&
             "Creating in selected organization."}
-          {entityType === "project" &&
-            presetContext?.workspace_id &&
-            "Creating in selected workspace."}
           {entityType === "task" &&
             presetContext?.project_id &&
             "Creating in selected project."}

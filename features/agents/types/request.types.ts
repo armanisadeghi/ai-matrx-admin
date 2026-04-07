@@ -486,7 +486,6 @@ export interface AssembledAgentStartRequest {
   context?: Record<string, unknown>;
   client_tools?: string[];
   organization_id?: string;
-  workspace_id?: string;
   project_id?: string;
   task_id?: string;
   source_app?: string;
@@ -504,7 +503,6 @@ export interface AssembledConversationRequest {
   context?: Record<string, unknown>;
   client_tools?: string[];
   organization_id?: string;
-  workspace_id?: string;
   project_id?: string;
   task_id?: string;
   stream?: boolean;

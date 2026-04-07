@@ -22,21 +22,20 @@ function CompactProjectItem({ project }: { project: any }) {
 
 export function ProjectsWorkspace() {
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
-  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null);
 
   const { flatProjects } = useNavTree();
 
-  const activeProjects = flatProjects.filter(p => p.workspace_id === selectedWorkspaceId);
+  const activeProjects = selectedOrgId
+    ? flatProjects.filter(p => p.org_id === selectedOrgId)
+    : [];
 
   return (
     <div className="flex flex-col min-h-0 h-full bg-card">
       <div className="px-2 py-2 border-b shrink-0 bg-muted/10">
         <HierarchyContextSelector 
-          levels={["organization", "workspace"]}
+          levels={["organization"]}
           selectedOrgId={selectedOrgId}
           onOrgChange={setSelectedOrgId}
-          selectedWorkspaceId={selectedWorkspaceId}
-          onWorkspaceChange={setSelectedWorkspaceId}
           showAddOption={true}
         />
       </div>
@@ -48,7 +47,7 @@ export function ProjectsWorkspace() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 space-y-1.5 custom-scrollbar">
-        {selectedWorkspaceId ? (
+        {selectedOrgId ? (
           activeProjects.length > 0 ? (
             activeProjects.map(project => (
               <CompactProjectItem key={project.id} project={project} />
@@ -63,7 +62,7 @@ export function ProjectsWorkspace() {
         ) : (
           <div className="flex flex-col items-center justify-center h-32 text-center text-muted-foreground px-4">
             <FolderKanban className="h-8 w-8 mb-2 opacity-50" />
-            <p className="text-sm">Select a workspace to view projects</p>
+            <p className="text-sm">Select an organization to view projects</p>
           </div>
         )}
       </div>

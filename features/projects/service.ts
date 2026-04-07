@@ -86,7 +86,7 @@ export async function createProject(
     const currentUserId = requireUserId();
 
     const { data: project, error: projectError } = await supabase
-      .from("projects")
+      .from("ctx_projects")
       .insert({
         name,
         slug,
@@ -113,7 +113,7 @@ export async function createProject(
 
     // Add creator as owner
     const { error: memberError } = await supabase
-      .from("project_members")
+      .from("ctx_project_members")
       .insert({
         project_id: project.id,
         user_id: currentUserId,
@@ -158,7 +158,7 @@ export async function updateProject(
     if (updates.settings !== undefined) updateData.settings = updates.settings;
 
     const { data, error } = await supabase
-      .from("projects")
+      .from("ctx_projects")
       .update(updateData)
       .eq("id", projectId)
       .select()
@@ -184,7 +184,7 @@ export async function deleteProject(
 ): Promise<OperationResult> {
   try {
     const { error } = await supabase
-      .from("projects")
+      .from("ctx_projects")
       .delete()
       .eq("id", projectId);
     if (error) throw error;
@@ -200,7 +200,7 @@ export async function deleteProject(
 export async function getProject(projectId: string): Promise<Project | null> {
   try {
     const { data, error } = await supabase
-      .from("projects")
+      .from("ctx_projects")
       .select("*")
       .eq("id", projectId)
       .single();
@@ -218,7 +218,7 @@ export async function getProjectBySlug(
 ): Promise<Project | null> {
   try {
     const { data, error } = await supabase
-      .from("projects")
+      .from("ctx_projects")
       .select("*")
       .eq("slug", slug)
       .eq("organization_id", organizationId)
@@ -238,7 +238,7 @@ export async function getPersonalProjectBySlug(
     const userId = requireUserId();
 
     const { data, error } = await supabase
-      .from("projects")
+      .from("ctx_projects")
       .select("*")
       .eq("slug", slug)
       .is("organization_id", null)
@@ -259,10 +259,10 @@ export async function getOrgProjects(
     const currentUserId = requireUserId();
 
     const { data, error } = await supabase
-      .from("project_members")
-      .select(`role, projects(*)`)
+      .from("ctx_project_members")
+      .select(`role, ctx_projects(*)`)
       .eq("user_id", currentUserId)
-      .not("projects.organization_id", "is", null);
+      .not("ctx_projects.organization_id", "is", null);
 
     if (error) {
       console.error("Error fetching org projects:", error.message);
@@ -272,15 +272,15 @@ export async function getOrgProjects(
     const projects: ProjectWithRole[] = await Promise.all(
       (data ?? [])
         .filter((item: Record<string, unknown>) => {
-          const proj = item.projects as Record<string, unknown> | null;
+          const proj = item.ctx_projects as Record<string, unknown> | null;
           return proj && proj.organization_id === organizationId;
         })
         .map(async (item: Record<string, unknown>) => {
           const proj = transformProjectFromDb(
-            item.projects as Record<string, unknown>,
+            item.ctx_projects as Record<string, unknown>,
           );
           const { count } = await supabase
-            .from("project_members")
+            .from("ctx_project_members")
             .select("*", { count: "exact", head: true })
             .eq("project_id", proj.id);
           return {
@@ -310,8 +310,8 @@ export async function getUserProjects(): Promise<ProjectWithRole[]> {
     const currentUserId = requireUserId();
 
     const { data, error } = await supabase
-      .from("project_members")
-      .select(`role, projects(*)`)
+      .from("ctx_project_members")
+      .select(`role, ctx_projects(*)`)
       .eq("user_id", currentUserId);
 
     if (error) {
@@ -322,10 +322,10 @@ export async function getUserProjects(): Promise<ProjectWithRole[]> {
     const projects: ProjectWithRole[] = await Promise.all(
       (data ?? []).map(async (item: Record<string, unknown>) => {
         const proj = transformProjectFromDb(
-          item.projects as Record<string, unknown>,
+          item.ctx_projects as Record<string, unknown>,
         );
         const { count } = await supabase
-          .from("project_members")
+          .from("ctx_project_members")
           .select("*", { count: "exact", head: true })
           .eq("project_id", proj.id);
         return {
@@ -348,7 +348,7 @@ export async function isProjectSlugAvailable(
   organizationId: string | null,
 ): Promise<boolean> {
   try {
-    let query = supabase.from("projects").select("id").eq("slug", slug);
+    let query = supabase.from("ctx_projects").select("id").eq("slug", slug);
     if (organizationId) {
       query = query.eq("organization_id", organizationId);
     } else {
@@ -368,8 +368,8 @@ export async function getPersonalProjects(): Promise<ProjectWithRole[]> {
     const currentUserId = requireUserId();
 
     const { data, error } = await supabase
-      .from("project_members")
-      .select(`role, projects(*)`)
+      .from("ctx_project_members")
+      .select(`role, ctx_projects(*)`)
       .eq("user_id", currentUserId);
 
     if (error) {
@@ -380,17 +380,17 @@ export async function getPersonalProjects(): Promise<ProjectWithRole[]> {
     const projects: ProjectWithRole[] = await Promise.all(
       (data ?? [])
         .filter((item: Record<string, unknown>) => {
-          const proj = item.projects as Record<string, unknown> | null;
+          const proj = item.ctx_projects as Record<string, unknown> | null;
           return (
             proj && (proj.is_personal === true || proj.organization_id === null)
           );
         })
         .map(async (item: Record<string, unknown>) => {
           const proj = transformProjectFromDb(
-            item.projects as Record<string, unknown>,
+            item.ctx_projects as Record<string, unknown>,
           );
           const { count } = await supabase
-            .from("project_members")
+            .from("ctx_project_members")
             .select("*", { count: "exact", head: true })
             .eq("project_id", proj.id);
           return {
@@ -454,14 +454,14 @@ export async function updateProjectMemberRole(
   try {
     if (newRole !== "owner") {
       const { data: owners } = await supabase
-        .from("project_members")
+        .from("ctx_project_members")
         .select("id")
         .eq("project_id", projectId)
         .eq("role", "owner");
 
       if (owners && owners.length === 1) {
         const { data: member } = await supabase
-          .from("project_members")
+          .from("ctx_project_members")
           .select("role")
           .eq("project_id", projectId)
           .eq("user_id", userId)
@@ -477,7 +477,7 @@ export async function updateProjectMemberRole(
     }
 
     const { data: updatedRows, error } = await supabase
-      .from("project_members")
+      .from("ctx_project_members")
       .update({ role: newRole })
       .eq("project_id", projectId)
       .eq("user_id", userId)
@@ -507,7 +507,7 @@ export async function removeProjectMember(
 ): Promise<OperationResult> {
   try {
     const { data: member } = await supabase
-      .from("project_members")
+      .from("ctx_project_members")
       .select("role")
       .eq("project_id", projectId)
       .eq("user_id", userId)
@@ -515,7 +515,7 @@ export async function removeProjectMember(
 
     if (member?.role === "owner") {
       const { data: owners } = await supabase
-        .from("project_members")
+        .from("ctx_project_members")
         .select("id")
         .eq("project_id", projectId)
         .eq("role", "owner");
@@ -526,7 +526,7 @@ export async function removeProjectMember(
     }
 
     const { data: deletedRows, error } = await supabase
-      .from("project_members")
+      .from("ctx_project_members")
       .delete()
       .eq("project_id", projectId)
       .eq("user_id", userId)
@@ -572,7 +572,7 @@ export async function getProjectUserRole(
     const currentUserId = requireUserId();
 
     const { data } = await supabase
-      .from("project_members")
+      .from("ctx_project_members")
       .select("role")
       .eq("project_id", projectId)
       .eq("user_id", currentUserId)
@@ -637,7 +637,7 @@ export async function getProjectInvitations(
 ): Promise<ProjectInvitation[]> {
   try {
     const { data, error } = await supabase
-      .from("project_invitations")
+      .from("ctx_project_invitations")
       .select("*")
       .eq("project_id", projectId)
       .order("invited_at", { ascending: false });
@@ -656,7 +656,7 @@ export async function cancelProjectInvitation(
 ): Promise<OperationResult> {
   try {
     const { error } = await supabase
-      .from("project_invitations")
+      .from("ctx_project_invitations")
       .delete()
       .eq("id", invitationId);
 
@@ -705,8 +705,8 @@ export async function acceptProjectInvitation(
     const currentUserId = requireUserId();
 
     const { data: invitation, error: inviteError } = await supabase
-      .from("project_invitations")
-      .select("*, projects(*)")
+      .from("ctx_project_invitations")
+      .select("*, ctx_projects(*)")
       .eq("token", token)
       .eq("email", getUserEmail() ?? "")
       .gt("expires_at", new Date().toISOString())
@@ -717,7 +717,7 @@ export async function acceptProjectInvitation(
     }
 
     const { error: memberError } = await supabase
-      .from("project_members")
+      .from("ctx_project_members")
       .insert({
         project_id: invitation.project_id,
         user_id: currentUserId,
@@ -735,12 +735,12 @@ export async function acceptProjectInvitation(
       throw memberError;
     }
 
-    await supabase.from("project_invitations").delete().eq("id", invitation.id);
+    await supabase.from("ctx_project_invitations").delete().eq("id", invitation.id);
 
     return {
       success: true,
       message: "Successfully joined project",
-      project: transformProjectFromDb(invitation.projects),
+      project: transformProjectFromDb(invitation.ctx_projects),
     };
   } catch (error: unknown) {
     const msg =
@@ -757,8 +757,8 @@ export async function getUserProjectInvitations(): Promise<
     const currentUserId = requireUserId();
 
     const { data, error } = await supabase
-      .from("project_invitations")
-      .select("*, projects(*)")
+      .from("ctx_project_invitations")
+      .select("*, ctx_projects(*)")
       .eq("email", getUserEmail() ?? "")
       .gt("expires_at", new Date().toISOString())
       .order("invited_at", { ascending: false });
@@ -767,8 +767,8 @@ export async function getUserProjectInvitations(): Promise<
 
     return (data ?? []).map((item: Record<string, unknown>) => ({
       ...transformInvitationFromDb(item),
-      project: item.projects
-        ? transformProjectFromDb(item.projects as Record<string, unknown>)
+      project: item.ctx_projects
+        ? transformProjectFromDb(item.ctx_projects as Record<string, unknown>)
         : undefined,
     }));
   } catch (error) {

@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     expiresAt.setDate(expiresAt.getDate() + 7);
 
     const { data: invitation, error: insertError } = await supabase
-      .from('project_invitations')
+      .from('ctx_project_invitations')
       .insert({
         project_id: projectId,
         email: email.toLowerCase().trim(),
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     // Fetch project + org details for email
     const { data: projectData } = await supabase
-      .from('projects')
+      .from('ctx_projects')
       .select('name, organization_id, organizations(name)')
       .eq('id', projectId)
       .single();
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
 
     if (emailResult.success) {
       await supabase
-        .from('project_invitations')
+        .from('ctx_project_invitations')
         .update({ email_sent: true, email_sent_at: new Date().toISOString() })
         .eq('id', invitation.id);
     } else {

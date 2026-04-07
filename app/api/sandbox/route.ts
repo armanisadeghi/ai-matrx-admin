@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
 
         if (project_id) {
             const { data: project, error: projectError } = await supabase
-                .from('projects')
+                .from('ctx_projects')
                 .select('id')
                 .eq('id', project_id)
                 .single()

@@ -10,11 +10,11 @@ import {
   SelectTrigger,
   SelectSeparator,
 } from "@/components/ui/select";
-import { Building2, Users, FolderKanban, CheckSquare, Plus } from "lucide-react";
+import { Building2, FolderKanban, CheckSquare, Plus } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 
-export type HierarchyLevel = "organization" | "workspace" | "project" | "task";
+export type HierarchyLevel = "organization" | "project" | "task";
 
 export interface HierarchyContextSelectorProps {
   levels?: HierarchyLevel[];
@@ -22,9 +22,6 @@ export interface HierarchyContextSelectorProps {
   
   selectedOrgId?: string | null;
   onOrgChange?: (id: string | null) => void;
-  
-  selectedWorkspaceId?: string | null;
-  onWorkspaceChange?: (id: string | null) => void;
   
   selectedProjectId?: string | null;
   onProjectChange?: (id: string | null) => void;
@@ -34,68 +31,46 @@ export interface HierarchyContextSelectorProps {
 }
 
 export function HierarchyContextSelector({
-  levels = ["organization", "workspace", "project"],
+  levels = ["organization", "project"],
   showAddOption = true,
   selectedOrgId: externalOrgId,
   onOrgChange,
-  selectedWorkspaceId: externalWorkspaceId,
-  onWorkspaceChange,
   selectedProjectId: externalProjectId,
   onProjectChange,
   selectedTaskId: externalTaskId,
   onTaskChange,
 }: HierarchyContextSelectorProps) {
   const dispatch = useAppDispatch();
-  const { orgs, flatWorkspaces, flatProjects, isSuccess } = useNavTree();
+  const { orgs, flatProjects, isSuccess } = useNavTree();
 
-  // Internal state for uncontrolled mode
   const [internalOrgId, setInternalOrgId] = useState<string | null>(null);
-  const [internalWorkspaceId, setInternalWorkspaceId] = useState<string | null>(null);
   const [internalProjectId, setInternalProjectId] = useState<string | null>(null);
   const [internalTaskId, setInternalTaskId] = useState<string | null>(null);
 
   const activeOrgId = externalOrgId !== undefined ? externalOrgId : internalOrgId;
-  const activeWorkspaceId = externalWorkspaceId !== undefined ? externalWorkspaceId : internalWorkspaceId;
   const activeProjectId = externalProjectId !== undefined ? externalProjectId : internalProjectId;
   const activeTaskId = externalTaskId !== undefined ? externalTaskId : internalTaskId;
 
   const { data: projectTasks } = useProjectTasks(activeProjectId);
 
-  // Auto-select initial org
   useEffect(() => {
     if (isSuccess && !activeOrgId && orgs.length > 0) {
       handleOrgChange(orgs[0].id);
     }
   }, [isSuccess, orgs, activeOrgId]);
 
-  // Auto-select workspace when org changes
   useEffect(() => {
     if (activeOrgId) {
-      const wks = flatWorkspaces.filter(w => w.org_id === activeOrgId);
-      if (wks.length > 0 && (!activeWorkspaceId || !wks.find(w => w.id === activeWorkspaceId))) {
-        handleWorkspaceChange(wks[0].id);
-      }
-    }
-  }, [activeOrgId, flatWorkspaces, activeWorkspaceId]);
-
-  // Auto-select project when workspace changes
-  useEffect(() => {
-    if (activeWorkspaceId) {
-      const projs = flatProjects.filter(p => p.workspace_id === activeWorkspaceId);
+      const projs = flatProjects.filter(p => p.org_id === activeOrgId);
       if (projs.length > 0 && (!activeProjectId || !projs.find(p => p.id === activeProjectId))) {
         handleProjectChange(projs[0].id);
       }
     }
-  }, [activeWorkspaceId, flatProjects, activeProjectId]);
+  }, [activeOrgId, flatProjects, activeProjectId]);
 
   const handleOrgChange = (id: string | null) => {
     setInternalOrgId(id);
     onOrgChange?.(id);
-  };
-
-  const handleWorkspaceChange = (id: string | null) => {
-    setInternalWorkspaceId(id);
-    onWorkspaceChange?.(id);
   };
 
   const handleProjectChange = (id: string | null) => {
@@ -116,7 +91,6 @@ export function HierarchyContextSelector({
           entityType: type,
           presetContext: {
             organization_id: activeOrgId,
-            workspace_id: activeWorkspaceId,
             project_id: activeProjectId,
           },
         },
@@ -125,8 +99,7 @@ export function HierarchyContextSelector({
   };
 
   const activeOrgs = orgs || [];
-  const activeWorkspaces = flatWorkspaces.filter(w => w.org_id === activeOrgId);
-  const activeProjects = flatProjects.filter(p => p.workspace_id === activeWorkspaceId);
+  const activeProjects = flatProjects.filter(p => p.org_id === activeOrgId);
   const activeTasks = projectTasks || [];
 
   return (
@@ -165,41 +138,6 @@ export function HierarchyContextSelector({
         </Select>
       )}
 
-      {levels.includes("workspace") && (
-        <Select
-          value={activeWorkspaceId || ""}
-          onValueChange={(val) => {
-            if (val === "___NEW___") handleCreateNew("workspace");
-            else handleWorkspaceChange(val);
-          }}
-          disabled={!activeOrgId}
-        >
-          <SelectTrigger className="h-7 text-xs w-full">
-            <div className="flex items-center gap-1.5 truncate">
-              <Users className="h-3 w-3 shrink-0" />
-              <span className="truncate">
-                {activeWorkspaces.find(w => w.id === activeWorkspaceId)?.name || "Select Workspace"}
-              </span>
-            </div>
-          </SelectTrigger>
-          <SelectContent>
-            {activeWorkspaces.map(w => (
-              <SelectItem key={w.id} value={w.id} className="text-xs">{w.name}</SelectItem>
-            ))}
-            {showAddOption && (
-              <>
-                {activeWorkspaces.length > 0 && <SelectSeparator />}
-                <SelectItem value="___NEW___" className="text-xs text-primary font-medium focus:bg-primary/10">
-                  <span className="flex items-center gap-1">
-                    <Plus className="h-3 w-3" /> Create New Workspace
-                  </span>
-                </SelectItem>
-              </>
-            )}
-          </SelectContent>
-        </Select>
-      )}
-
       {levels.includes("project") && (
         <Select
           value={activeProjectId || ""}
@@ -207,7 +145,7 @@ export function HierarchyContextSelector({
             if (val === "___NEW___") handleCreateNew("project");
             else handleProjectChange(val);
           }}
-          disabled={!activeWorkspaceId}
+          disabled={!activeOrgId}
         >
           <SelectTrigger className="h-7 text-xs w-full border-primary/20 bg-primary/5">
             <div className="flex items-center gap-1.5 truncate">

@@ -82,7 +82,7 @@ export function ContextVariablesPanel({ scope }: Props) {
         <ArrowUpFromLine className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
         <h3 className="text-sm font-medium mb-1">Select a scope</h3>
         <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-          Choose an organization, workspace, project, or task from the hierarchy to view and manage its context variables.
+          Choose an organization, project, or task from the hierarchy to view and manage its context variables.
         </p>
       </div>
     );

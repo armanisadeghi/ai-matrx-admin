@@ -67,16 +67,15 @@ export const fetchScopedVariables = createAsyncThunk<
       // Create fresh client to pick up current auth session
       const supabase = createClient();
 
-      // Fetch user-scoped context variables (exactly this scope — no org/project/workspace/task)
+      // Fetch user-scoped context variables (exactly this scope — no org/project/task)
       let userVariables: Record<string, string> = {};
       if (userId) {
         const { data: userData, error: userError } = await supabase
-          .from('context_variables')
+          .from('ctx_context_variables')
           .select('key, value')
           .eq('user_id', userId)
           .is('organization_id', null)
           .is('project_id', null)
-          .is('workspace_id', null)
           .is('task_id', null);
 
         if (userError) {
@@ -93,11 +92,10 @@ export const fetchScopedVariables = createAsyncThunk<
       let orgVariables: Record<string, string> = {};
       if (orgId) {
         const { data: orgData, error: orgError } = await supabase
-          .from('context_variables')
+          .from('ctx_context_variables')
           .select('key, value')
           .eq('organization_id', orgId)
           .is('project_id', null)
-          .is('workspace_id', null)
           .is('task_id', null);
 
         if (orgError) {
@@ -114,7 +112,7 @@ export const fetchScopedVariables = createAsyncThunk<
       let projectVariables: Record<string, string> = {};
       if (projectId) {
         const { data: projectData, error: projectError } = await supabase
-          .from('context_variables')
+          .from('ctx_context_variables')
           .select('key, value')
           .eq('project_id', projectId)
           .is('task_id', null);

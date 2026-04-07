@@ -20,7 +20,7 @@ export async function createProject(
     const userId = requireUserId();
 
     const { data, error } = await supabase
-      .from("projects")
+      .from("ctx_projects")
       .insert({
         name,
         description: description ?? null,
@@ -53,7 +53,7 @@ export async function ensureDefaultProject(): Promise<DatabaseProject | null> {
 
     // Check if user has any projects (created_by or project_members)
     const { data: memberProjects } = await supabase
-      .from("project_members")
+      .from("ctx_project_members")
       .select("project_id")
       .eq("user_id", userId)
       .limit(1);
@@ -76,7 +76,7 @@ export async function getUserProjects(): Promise<DatabaseProject[]> {
 
     // Query via project_members (RLS-safe) for member projects
     const { data: memberRows, error: memberError } = await supabase
-      .from("project_members")
+      .from("ctx_project_members")
       .select("project_id")
       .eq("user_id", userId);
 
@@ -90,7 +90,7 @@ export async function getUserProjects(): Promise<DatabaseProject[]> {
 
     // Also fetch personal projects created by user that may not have members yet
     const { data: createdProjects, error: createdError } = await supabase
-      .from("projects")
+      .from("ctx_projects")
       .select("*")
       .eq("created_by", userId)
       .order("created_at", { ascending: false });
@@ -109,7 +109,7 @@ export async function getUserProjects(): Promise<DatabaseProject[]> {
     if (allIds.size === 0) return [];
 
     const { data, error } = await supabase
-      .from("projects")
+      .from("ctx_projects")
       .select("*")
       .in("id", Array.from(allIds))
       .order("created_at", { ascending: false });
@@ -134,7 +134,7 @@ export async function getProjectsWithTasks(): Promise<ProjectWithTasks[]> {
     const userId = requireUserId();
 
     const { data: memberRows } = await supabase
-      .from("project_members")
+      .from("ctx_project_members")
       .select("project_id")
       .eq("user_id", userId);
 
@@ -144,8 +144,8 @@ export async function getProjectsWithTasks(): Promise<ProjectWithTasks[]> {
 
     // Fetch with tasks joined
     let query = supabase
-      .from("projects")
-      .select(`*, tasks(*)`)
+      .from("ctx_projects")
+      .select(`*, ctx_tasks(*)`)
       .order("created_at", { ascending: false });
 
     if (memberProjectIds.length > 0) {
@@ -163,7 +163,7 @@ export async function getProjectsWithTasks(): Promise<ProjectWithTasks[]> {
       return [];
     }
 
-    return (projects ?? []) as ProjectWithTasks[];
+    return (projects ?? []) as unknown as ProjectWithTasks[];
   } catch (error) {
     console.error("Exception fetching projects with tasks:", error);
     return [];
@@ -179,7 +179,7 @@ export async function updateProject(
 ): Promise<DatabaseProject | null> {
   try {
     const { data, error } = await supabase
-      .from("projects")
+      .from("ctx_projects")
       .update(updates)
       .eq("id", projectId)
       .select()
@@ -203,7 +203,7 @@ export async function updateProject(
 export async function deleteProject(projectId: string): Promise<boolean> {
   try {
     const { error } = await supabase
-      .from("projects")
+      .from("ctx_projects")
       .delete()
       .eq("id", projectId);
 

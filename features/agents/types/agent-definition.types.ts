@@ -79,7 +79,7 @@ export interface ModelTiers {
 //   isVersion = true, parentAgentId = agx_agent.id, versionNumber = the snapshot number
 //   id = agx_version.id (used as resolved_id for execution)
 //   Some fields that only exist on live agents will be null on version records:
-//   isPublic, isArchived, isFavorite, userId, organizationId, workspaceId,
+//   isPublic, isArchived, isFavorite, userId, organizationId,
 //   projectId, taskId, sourceAgentId, sourceSnapshotAt, createdAt, updatedAt
 //
 // The UI treats them identically everywhere EXCEPT version-specific UI
@@ -123,7 +123,6 @@ export interface AgentDefinition {
   // Ownership & Hierarchy (null on version records)
   userId: string | null;
   organizationId: string | null;
-  workspaceId: string | null;
   projectId: string | null;
   taskId: string | null;
 
@@ -166,7 +165,6 @@ export interface AgentListRow {
   is_favorite: boolean;
   user_id: string | null;
   organization_id: string | null;
-  workspace_id: string | null;
   project_id: string | null;
   task_id: string | null;
   source_agent_id: string | null;

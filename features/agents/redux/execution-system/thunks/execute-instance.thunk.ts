@@ -32,7 +32,6 @@ import { selectContextPayload } from "../instance-context";
 import { selectLatestConversationId } from "../selectors/aggregate.selectors";
 import {
   selectOrganizationId,
-  selectWorkspaceId,
   selectProjectId,
   selectTaskId,
 } from "@/features/context/redux/appContextSlice";
@@ -116,7 +115,6 @@ export function assembleRequest(
 
   // Scope — snapshot from appContextSlice at the moment of execution
   const organization_id = selectOrganizationId(state) ?? undefined;
-  const workspace_id = selectWorkspaceId(state) ?? undefined;
   const project_id = selectProjectId(state) ?? undefined;
   const task_id = selectTaskId(state) ?? undefined;
 
@@ -132,7 +130,6 @@ export function assembleRequest(
   if (context) request.context = context;
   if (client_tools) request.client_tools = client_tools;
   if (organization_id) request.organization_id = organization_id;
-  if (workspace_id) request.workspace_id = workspace_id;
   if (project_id) request.project_id = project_id;
   if (task_id) request.task_id = task_id;
   if (sourceApp) request.source_app = sourceApp;

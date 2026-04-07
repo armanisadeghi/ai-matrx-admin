@@ -70,7 +70,6 @@ export interface CxArtifactRow {
   conversation_id: string;
   user_id: string;
   organization_id: string | null;
-  workspace_id: string | null;
   project_id: string | null;
   task_id: string | null;
   artifact_type: ArtifactType;
@@ -96,7 +95,6 @@ export interface CxArtifactRecord {
   conversationId: string;
   userId: string;
   organizationId: string | null;
-  workspaceId: string | null;
   projectId: string | null;
   taskId: string | null;
   artifactType: ArtifactType;
@@ -120,7 +118,6 @@ export function rowToArtifactRecord(row: CxArtifactRow): CxArtifactRecord {
     conversationId: row.conversation_id,
     userId: row.user_id,
     organizationId: row.organization_id,
-    workspaceId: row.workspace_id,
     projectId: row.project_id,
     taskId: row.task_id,
     artifactType: row.artifact_type,
@@ -153,7 +150,6 @@ export interface CreateArtifactPayload {
   metadata?: Record<string, unknown>;
   // Org context — captured from appContextSlice at dispatch time
   organizationId?: string | null;
-  workspaceId?: string | null;
   projectId?: string | null;
   taskId?: string | null;
 }

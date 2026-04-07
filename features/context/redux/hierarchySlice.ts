@@ -2,14 +2,12 @@
 
 // features/context/redux/hierarchySlice.ts
 //
-// Stores the user's org/workspace/project/(task) tree fetched from Supabase RPCs.
+// Stores the user's org/project/task tree fetched from Supabase RPCs.
+// Workspaces have been removed from the schema.
 //
 // Two RPCs:
 //   get_user_nav_tree        — lightweight, no tasks  → always loaded on app boot
 //   get_user_full_context    — includes open tasks     → loaded on demand
-//
-// One fetch per RPC per session. Components that need tasks dispatch
-// `fetchFullContext`; all other tree consumers use `navTree`.
 
 import { createSlice, createSelector, PayloadAction } from "@reduxjs/toolkit";
 
@@ -36,33 +34,12 @@ export interface NavProjectWithTasks extends NavProject {
   open_tasks: NavTask[];
 }
 
-export interface NavWorkspace {
-  id: string;
-  name: string;
-  description: string | null;
-  depth: number;
-  hierarchy_level_id: string | null;
-  children: NavWorkspace[];
-  projects: NavProject[];
-}
-
-export interface NavWorkspaceWithTasks {
-  id: string;
-  name: string;
-  description: string | null;
-  depth: number;
-  hierarchy_level_id: string | null;
-  children: NavWorkspaceWithTasks[];
-  projects: NavProjectWithTasks[];
-}
-
 export interface NavOrganization {
   id: string;
   name: string;
   slug: string;
   is_personal: boolean;
   role: string;
-  workspaces: NavWorkspace[];
   projects: NavProject[];
 }
 
@@ -72,7 +49,6 @@ export interface NavOrganizationWithTasks {
   slug: string;
   is_personal: boolean;
   role: string;
-  workspaces: NavWorkspaceWithTasks[];
   projects: NavProjectWithTasks[];
 }
 
@@ -116,7 +92,6 @@ const hierarchySlice = createSlice({
   name: "hierarchy",
   initialState,
   reducers: {
-    // NavTree lifecycle
     navTreeFetchStarted(state) {
       state.navTreeStatus = "loading";
       state.navTreeError = null;
@@ -131,7 +106,6 @@ const hierarchySlice = createSlice({
       state.navTreeError = action.payload;
     },
 
-    // FullContext lifecycle
     fullContextFetchStarted(state) {
       state.fullContextStatus = "loading";
       state.fullContextError = null;
@@ -198,88 +172,41 @@ export const selectFullContextStatus = (s: StateWithHierarchy) =>
 export const selectFullContextError = (s: StateWithHierarchy) =>
   s.hierarchy.fullContextError;
 
-/** All organizations from the nav tree (no tasks). Returns undefined when navTree is null. */
+/** All organizations from the nav tree (no tasks). */
 export const selectNavOrganizations = (s: StateWithHierarchy) =>
   s.hierarchy.navTree?.organizations;
 
-/** All organizations from full context (with tasks). Returns undefined when fullContext is null. */
+/** All organizations from full context (with tasks). */
 export const selectFullContextOrganizations = (s: StateWithHierarchy) =>
   s.hierarchy.fullContext?.organizations;
 
 // ─── Flat-list helpers ────────────────────────────────────────────────────
 
-/** Extract all workspaces across all orgs as a flat list. */
-function flattenWorkspaces(
-  orgs: NavOrganization[],
-): (NavWorkspace & { org_id: string })[] {
-  const result: (NavWorkspace & { org_id: string })[] = [];
-  function walk(ws: NavWorkspace, org_id: string) {
-    result.push({ ...ws, org_id });
-    for (const child of ws.children) walk(child, org_id);
-  }
-  for (const org of orgs) {
-    for (const ws of org.workspaces) walk(ws, org.id);
-  }
-  return result;
-}
+const EMPTY_PROJECTS: (NavProject & { org_id: string })[] = [];
 
-/** Extract all projects across all orgs/workspaces as a flat list. */
+/** Extract all projects across all orgs as a flat list. */
 function flattenProjects(
   orgs: NavOrganization[],
-): (NavProject & { org_id: string; workspace_id: string | null })[] {
-  const result: (NavProject & {
-    org_id: string;
-    workspace_id: string | null;
-  })[] = [];
-  function walkWs(ws: NavWorkspace, org_id: string) {
-    for (const p of ws.projects)
-      result.push({ ...p, org_id, workspace_id: ws.id });
-    for (const child of ws.children) walkWs(child, org_id);
-  }
+): (NavProject & { org_id: string })[] {
+  const result: (NavProject & { org_id: string })[] = [];
   for (const org of orgs) {
-    for (const p of org.projects)
-      result.push({ ...p, org_id: org.id, workspace_id: null });
-    for (const ws of org.workspaces) walkWs(ws, org.id);
+    for (const p of org.projects) {
+      result.push({ ...p, org_id: org.id });
+    }
   }
   return result;
 }
 
-/** Flat list of all workspaces across all orgs. Memoized — only recomputes when navTree changes. */
-export const selectFlatWorkspaces = createSelector(
-  [selectNavOrganizations],
-  (orgs) => (orgs ? flattenWorkspaces(orgs) : []),
-);
-
-/** Flat list of all projects across all orgs/workspaces. Memoized — only recomputes when navTree changes. */
+/** Flat list of all projects across all orgs. Memoized. */
 export const selectFlatProjects = createSelector(
   [selectNavOrganizations],
-  (orgs) => (orgs ? flattenProjects(orgs) : []),
+  (orgs) => (orgs ? flattenProjects(orgs) : EMPTY_PROJECTS),
 );
 
-/** Projects for a given org (includes workspace and org-level). */
+/** Projects for a given org. */
 export const selectProjectsForOrg =
   (orgId: string | null) =>
-  (
-    s: StateWithHierarchy,
-  ): (NavProject & { org_id: string; workspace_id: string | null })[] => {
+  (s: StateWithHierarchy): (NavProject & { org_id: string })[] => {
     if (!orgId) return [];
     return selectFlatProjects(s).filter((p) => p.org_id === orgId);
-  };
-
-/** Projects for a given workspace. */
-export const selectProjectsForWorkspace =
-  (wsId: string | null) =>
-  (
-    s: StateWithHierarchy,
-  ): (NavProject & { org_id: string; workspace_id: string | null })[] => {
-    if (!wsId) return [];
-    return selectFlatProjects(s).filter((p) => p.workspace_id === wsId);
-  };
-
-/** Workspaces for a given org (flat, all depths). */
-export const selectWorkspacesForOrg =
-  (orgId: string | null) =>
-  (s: StateWithHierarchy): (NavWorkspace & { org_id: string })[] => {
-    if (!orgId) return [];
-    return selectFlatWorkspaces(s).filter((w) => w.org_id === orgId);
   };

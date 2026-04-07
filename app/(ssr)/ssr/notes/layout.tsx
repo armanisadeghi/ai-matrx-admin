@@ -1,17 +1,17 @@
 // app/(ssr)/ssr/notes/layout.tsx
-// Synchronous layout — no auth, no DB, no async work.
-// SidebarClient and NotesWorkspace fetch their own data after mount via Supabase client.
+// New 6-layer architecture. NotesView handles everything via Redux.
+// No prop drilling. Each layer reads its own selectors.
 
 import "./notes.css";
-import SidebarClient from "./_components/SidebarClient";
-import NotesWorkspace from "./_components/NotesWorkspace";
+import { NotesView } from "@/features/notes/components/NotesView";
 
 export const metadata = {
   title: "Notes | AI Matrx",
   description: "Create and manage your notes and documents",
 };
 
-// Lightweight note shape for the sidebar — no content field
+// DEPRECATED — kept for backward compatibility during migration.
+// Remove once old SidebarClient and NotesWorkspace are deleted.
 export interface NoteSummary {
   id: string;
   label: string;
@@ -27,17 +27,18 @@ export default function NotesLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="notes-root grid grid-cols-[280px_1fr] grid-rows-[1fr] h-full overflow-hidden relative z-0" style={{ paddingTop: 'var(--shell-header-h)' }}>
-      {/* Shell sentinels — one class, zero logic. shell.css handles all consequences. */}
+    <div
+      className="notes-root h-full overflow-hidden relative z-0"
+      style={{ paddingTop: "var(--shell-header-h)" }}
+    >
+      {/* Shell sentinel — hides the dock on this route */}
       <span className="shell-hide-dock" aria-hidden="true" />
-      <aside className="notes-sidebar flex flex-col overflow-hidden border-r border-border/30 pt-0 pb-2.5">
-        <SidebarClient />
-      </aside>
 
-      <div className="notes-content flex flex-col overflow-hidden">
-        <NotesWorkspace />
-        <div style={{ display: "none" }}>{children}</div>
-      </div>
+      {/* NotesView: Layer 6 instance wrapper. Renders sidebar + tabs + editor. */}
+      <NotesView className="h-full" />
+
+      {/* Children slot for sub-routes (e.g., /notes/share/[id]) */}
+      <div style={{ display: "none" }}>{children}</div>
     </div>
   );
 }

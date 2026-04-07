@@ -90,7 +90,6 @@ export function dbRowToAgentDefinition(row: AgentRow): AgentDefinition {
 
     userId: row.user_id,
     organizationId: row.organization_id,
-    workspaceId: row.workspace_id,
     projectId: row.project_id,
     taskId: row.task_id,
 
@@ -156,7 +155,6 @@ export function agentDefinitionToInsert(agent: AgentDefinition): AgentInsert {
 
     user_id: agent.userId,
     organization_id: agent.organizationId,
-    workspace_id: agent.workspaceId,
     project_id: agent.projectId,
     task_id: agent.taskId,
   };
@@ -217,8 +215,6 @@ export function agentDefinitionToUpdate(
   if (partial.userId !== undefined) update.user_id = partial.userId;
   if (partial.organizationId !== undefined)
     update.organization_id = partial.organizationId;
-  if (partial.workspaceId !== undefined)
-    update.workspace_id = partial.workspaceId;
   if (partial.projectId !== undefined) update.project_id = partial.projectId;
   if (partial.taskId !== undefined) update.task_id = partial.taskId;
 
@@ -258,7 +254,6 @@ export function versionSnapshotRowToAgentDefinition(
     isFavorite: false,
     userId: null,
     organizationId: null,
-    workspaceId: null,
     projectId: null,
     taskId: null,
     sourceAgentId: null,

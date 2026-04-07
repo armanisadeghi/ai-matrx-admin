@@ -41,7 +41,6 @@ export async function POST(request: NextRequest) {
           thumbnailUrl,
           metadata = {},
           organizationId,
-          workspaceId,
           projectId,
           taskId,
         } = params;
@@ -62,7 +61,6 @@ export async function POST(request: NextRequest) {
             conversation_id: conversationId,
             user_id: user.id,
             organization_id: organizationId ?? null,
-            workspace_id: workspaceId ?? null,
             project_id: projectId ?? null,
             task_id: taskId ?? null,
             artifact_type: artifactType,

@@ -27,7 +27,6 @@ import {
 } from "@/lib/redux/thunks/artifactThunks";
 import {
   selectOrganizationId,
-  selectWorkspaceId,
   selectProjectId,
   selectTaskId,
 } from "@/features/context/redux/appContextSlice";
@@ -108,7 +107,6 @@ export const createHtmlPageThunk = createAsyncThunk<
 >("htmlPages/create", async (payload, { getState, dispatch }) => {
   const state = getState();
   const organizationId = selectOrganizationId(state);
-  const workspaceId = selectWorkspaceId(state);
   const projectId = selectProjectId(state);
   const taskId = selectTaskId(state);
 
@@ -122,7 +120,6 @@ export const createHtmlPageThunk = createAsyncThunk<
     sourceConversationId: payload.sourceConversationId,
     contextMetadata: {
       organization_id: organizationId,
-      workspace_id: workspaceId,
       project_id: projectId,
       task_id: taskId,
     },
@@ -157,7 +154,6 @@ export const createHtmlPageThunk = createAsyncThunk<
           externalId: apiResult.pageId,
           externalUrl: apiResult.url,
           organizationId,
-          workspaceId,
           projectId,
           taskId,
           metadata: {

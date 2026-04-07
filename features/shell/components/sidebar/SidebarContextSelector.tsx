@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import {
   Building2,
   FolderKanban,
-  Layers,
   CheckSquare,
   ChevronRight,
   ChevronDown,
@@ -21,7 +20,6 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAppContext,
   setOrganization,
-  setWorkspace,
   setProject,
   setTask,
   clearContext,
@@ -29,7 +27,6 @@ import {
 import { useNavTree } from "@/features/context/hooks/useNavTree";
 import type {
   NavOrganization,
-  NavWorkspace,
   NavProject,
 } from "@/features/context/redux/hierarchySlice";
 
@@ -48,20 +45,6 @@ type TabKey = "tree" | "summary";
 
 function truncate(s: string, max = 24) {
   return s.length > max ? s.slice(0, max - 1) + "\u2026" : s;
-}
-
-function getChildWorkspaces(
-  workspaces: NavWorkspace[],
-  parentId: string,
-): NavWorkspace[] {
-  return workspaces
-    .filter((w) => (w.children.some((c) => c.id === parentId) ? false : true))
-    .filter((_, i) => i >= 0); // keep all; nesting from RPC is already correct
-}
-
-// NavWorkspace is already nested — just get root-level ones
-function getRootWorkspaces(org: NavOrganization): NavWorkspace[] {
-  return org.workspaces; // top-level workspaces only (depth 0 from RPC)
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -83,9 +66,6 @@ export default function SidebarContextSelector() {
   const [loadingTasks, setLoadingTasks] = useState<Set<string>>(new Set());
 
   const [expandedOrgs, setExpandedOrgs] = useState<Set<string>>(new Set());
-  const [expandedWorkspaces, setExpandedWorkspaces] = useState<Set<string>>(
-    new Set(),
-  );
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(
     new Set(),
   );
@@ -108,7 +88,7 @@ export default function SidebarContextSelector() {
       setLoadingTasks((s) => new Set(s).add(projectId));
       try {
         const { data, error: fetchError } = await supabase
-          .from("tasks")
+          .from("ctx_tasks")
           .select("id, title, project_id, status")
           .eq("project_id", projectId)
           .is("parent_task_id", null)
@@ -187,9 +167,6 @@ export default function SidebarContextSelector() {
     if (ctx.organization_id) {
       setExpandedOrgs((s) => new Set(s).add(ctx.organization_id!));
     }
-    if (ctx.workspace_id) {
-      setExpandedWorkspaces((s) => new Set(s).add(ctx.workspace_id!));
-    }
     if (ctx.project_id) {
       setExpandedProjects((s) => new Set(s).add(ctx.project_id!));
       fetchTasks(ctx.project_id);
@@ -198,14 +175,6 @@ export default function SidebarContextSelector() {
 
   const toggleOrg = (id: string) => {
     setExpandedOrgs((s) => {
-      const n = new Set(s);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
-  };
-
-  const toggleWorkspace = (id: string) => {
-    setExpandedWorkspaces((s) => {
       const n = new Set(s);
       n.has(id) ? n.delete(id) : n.add(id);
       return n;
@@ -226,49 +195,14 @@ export default function SidebarContextSelector() {
   const displayLabel = ctx.organization_name
     ? ctx.project_name
       ? truncate(ctx.project_name, 14)
-      : ctx.workspace_name
-        ? truncate(ctx.workspace_name, 14)
-        : truncate(ctx.organization_name, 14)
+      : truncate(ctx.organization_name, 14)
     : "Context";
 
   const hasContext = !!(
     ctx.organization_id ||
-    ctx.workspace_id ||
     ctx.project_id ||
     ctx.task_id
   );
-
-  // Render a workspace node using the already-nested RPC structure
-  const renderWorkspaceNode = (ws: NavWorkspace, depth: number) => {
-    const isExpanded = expandedWorkspaces.has(ws.id);
-    const isSelected = ctx.workspace_id === ws.id;
-
-    return (
-      <div key={ws.id}>
-        <TreeRow
-          depth={depth}
-          icon={<Layers className="w-3.5 h-3.5" />}
-          label={ws.name}
-          isSelected={isSelected}
-          isExpanded={isExpanded}
-          hasChildren={ws.children.length > 0 || ws.projects.length > 0}
-          onToggle={() => toggleWorkspace(ws.id)}
-          onSelect={() => {
-            dispatch(setWorkspace({ id: ws.id, name: ws.name }));
-          }}
-        />
-        {isExpanded && (
-          <>
-            {ws.children.map((cw) => renderWorkspaceNode(cw, depth + 1))}
-            {ws.projects.map((proj) => renderProjectNode(proj, depth + 1))}
-            {ws.children.length === 0 && ws.projects.length === 0 && (
-              <EmptyRow depth={depth + 1} label="Empty" />
-            )}
-          </>
-        )}
-      </div>
-    );
-  };
 
   const renderProjectNode = (proj: NavProject, depth: number) => {
     const isExpanded = expandedProjects.has(proj.id);
@@ -434,8 +368,7 @@ export default function SidebarContextSelector() {
                     {orgs.map((org) => {
                       const isExpanded = expandedOrgs.has(org.id);
                       const isSelected = ctx.organization_id === org.id;
-                      const hasChildren =
-                        org.workspaces.length > 0 || org.projects.length > 0;
+                      const hasChildren = org.projects.length > 0;
 
                       return (
                         <div key={org.id}>
@@ -459,16 +392,13 @@ export default function SidebarContextSelector() {
                           />
                           {isExpanded && (
                             <>
-                              {org.workspaces.map((ws) =>
-                                renderWorkspaceNode(ws, 1),
-                              )}
                               {org.projects.map((proj) =>
                                 renderProjectNode(proj, 1),
                               )}
                               {!hasChildren && (
                                 <EmptyRow
                                   depth={1}
-                                  label="No workspaces or projects"
+                                  label="No projects"
                                 />
                               )}
                             </>
@@ -639,14 +569,6 @@ function ContextSummaryBlock({
       name: ctx.organization_name,
       icon: <Building2 className="w-3.5 h-3.5" />,
       onClear: () => dispatch(setOrganization({ id: null })),
-    });
-  }
-  if (ctx.workspace_id) {
-    items.push({
-      level: "Workspace",
-      name: ctx.workspace_name,
-      icon: <Layers className="w-3.5 h-3.5" />,
-      onClear: () => dispatch(setWorkspace({ id: null })),
     });
   }
   if (ctx.project_id) {

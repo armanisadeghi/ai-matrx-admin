@@ -97,7 +97,7 @@ export default function TaskDetailsPanel({
   const [isAddingComment, setIsAddingComment] = useState(false);
   const { id: currentUserId } = useAppSelector(selectUser);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { orgs, flatWorkspaces, flatProjects } = useNavTree();
+  const { orgs, flatProjects } = useNavTree();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [idCopied, setIdCopied] = useState(false);
   const [labels, setLabels] = useState<TaskLabel[]>(
@@ -506,17 +506,15 @@ export default function TaskDetailsPanel({
               </SelectItem>
               {flatProjects.map((project) => {
                 const org = orgs.find((o) => o.id === project.org_id);
-                const ws = project.workspace_id
-                  ? flatWorkspaces.find((w) => w.id === project.workspace_id)
-                  : null;
                 return (
                   <SelectItem key={project.id} value={project.id}>
                     <div className="flex flex-col">
                       <span>{project.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {org?.name}
-                        {ws ? ` › ${ws.name}` : ""}
-                      </span>
+                      {org && (
+                        <span className="text-xs text-muted-foreground">
+                          {org.name}
+                        </span>
+                      )}
                     </div>
                   </SelectItem>
                 );
@@ -524,25 +522,16 @@ export default function TaskDetailsPanel({
             </SelectContent>
           </Select>
 
-          {/* Org / Workspace breadcrumb for current project */}
+          {/* Org breadcrumb for current project */}
           {projectId &&
             (() => {
               const fp = flatProjects.find((p) => p.id === projectId);
               if (!fp) return null;
               const org = orgs.find((o) => o.id === fp.org_id);
-              const ws = fp.workspace_id
-                ? flatWorkspaces.find((w) => w.id === fp.workspace_id)
-                : null;
               if (!org) return null;
               return (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <span>{org.name}</span>
-                  {ws && (
-                    <>
-                      <span>›</span>
-                      <span>{ws.name}</span>
-                    </>
-                  )}
                 </div>
               );
             })()}

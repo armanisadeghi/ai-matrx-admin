@@ -360,7 +360,7 @@ export function MemberManagement({
       {isPersonal && (
         <div className="p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
           <p className="text-sm text-purple-800 dark:text-purple-200">
-            <strong>Personal Organization:</strong> This is your personal workspace. You cannot add or remove members.
+            <strong>Personal Organization:</strong> This is your personal space. You cannot add or remove members.
           </p>
         </div>
       )}

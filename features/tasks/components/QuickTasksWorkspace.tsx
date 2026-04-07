@@ -13,8 +13,6 @@ import { HierarchyContextSelector } from "@/features/context/components/Hierarch
 interface QuickTasksWorkspaceContextType {
   selectedOrgId: string | null;
   setSelectedOrgId: (id: string | null) => void;
-  selectedWorkspaceId: string | null;
-  setSelectedWorkspaceId: (id: string | null) => void;
   selectedProjectId: string | null;
   setSelectedProjectId: (id: string | null) => void;
   selectedTaskId: string | null;
@@ -32,11 +30,10 @@ export const useQuickTasksWorkspace = () => {
 };
 
 export function QuickTasksWorkspaceProvider({ children }: { children: React.ReactNode }) {
-  const { orgs, flatWorkspaces, flatProjects, isSuccess } = useNavTree();
+  const { orgs, flatProjects, isSuccess } = useNavTree();
   const { setActiveProject, activeProject, setShowAllProjects } = useTaskContext();
   
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
-  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -47,31 +44,20 @@ export function QuickTasksWorkspaceProvider({ children }: { children: React.Reac
     }
   }, [isSuccess, orgs, selectedOrgId]);
 
-  // Auto-select workspace when org changes
+  // Auto-select project when org changes
   useEffect(() => {
     if (selectedOrgId) {
-      const wks = flatWorkspaces.filter(w => w.org_id === selectedOrgId);
-      if (wks.length > 0 && (!selectedWorkspaceId || !wks.find(w => w.id === selectedWorkspaceId))) {
-        setSelectedWorkspaceId(wks[0].id);
-      }
-    }
-  }, [selectedOrgId, flatWorkspaces, selectedWorkspaceId]);
-
-  // Auto-select project when workspace changes
-  useEffect(() => {
-    if (selectedWorkspaceId) {
-      const projs = flatProjects.filter(p => p.workspace_id === selectedWorkspaceId);
+      const projs = flatProjects.filter(p => p.org_id === selectedOrgId);
       if (projs.length > 0 && (!activeProject || !projs.find(p => p.id === activeProject))) {
         setActiveProject(projs[0].id);
         setShowAllProjects(false);
       }
     }
-  }, [selectedWorkspaceId, flatProjects, activeProject, setActiveProject, setShowAllProjects]);
+  }, [selectedOrgId, flatProjects, activeProject, setActiveProject, setShowAllProjects]);
 
   return (
     <WorkspaceContext.Provider value={{
       selectedOrgId, setSelectedOrgId,
-      selectedWorkspaceId, setSelectedWorkspaceId,
       selectedProjectId: activeProject,
       setSelectedProjectId: (id) => {
         setActiveProject(id);
@@ -88,18 +74,12 @@ export function QuickTasksWorkspaceProvider({ children }: { children: React.Reac
 export function QuickTasksSidebar() {
   const {
     selectedOrgId, setSelectedOrgId,
-    selectedWorkspaceId, setSelectedWorkspaceId,
     selectedProjectId, setSelectedProjectId,
     selectedTaskId, setSelectedTaskId,
     searchQuery, setSearchQuery
   } = useQuickTasksWorkspace();
 
-  const { orgs, workspacesForOrg, projectsForWorkspace } = useNavTree();
   const { getFilteredTasks, toggleTaskComplete } = useTaskContext();
-
-  const activeOrgs = orgs || [];
-  const activeWorkspaces = workspacesForOrg(selectedOrgId);
-  const activeProjects = projectsForWorkspace(selectedWorkspaceId);
   
   // getFilteredTasks uses TaskContext's activeProject and filter settings.
   const tasksToDisplay = useMemo(() => {
@@ -114,11 +94,9 @@ export function QuickTasksSidebar() {
     <div className="flex flex-col min-h-0 h-full bg-card">
       <div className="px-2 py-2 border-b shrink-0 bg-muted/10">
         <HierarchyContextSelector 
-          levels={["organization", "workspace", "project"]}
+          levels={["organization", "project"]}
           selectedOrgId={selectedOrgId}
           onOrgChange={setSelectedOrgId}
-          selectedWorkspaceId={selectedWorkspaceId}
-          onWorkspaceChange={setSelectedWorkspaceId}
           selectedProjectId={selectedProjectId}
           onProjectChange={setSelectedProjectId}
           showAddOption={true}

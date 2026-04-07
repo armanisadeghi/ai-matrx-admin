@@ -45,7 +45,6 @@ export interface AgentShortcut {
   // Hierarchy (each column independently set — no auto-fill)
   userId: string | null; // null = system shortcut
   organizationId: string | null;
-  workspaceId: string | null;
   projectId: string | null;
   taskId: string | null;
 
@@ -118,11 +117,10 @@ declare const _agentShortcutInitialRow: _CheckAgentShortcutInitialRow;
 true satisfies typeof _agentShortcutInitialRow;
 
 /**
- * Returned by `agx_get_shortcuts_for_context(workspace_id?, project_id?, task_id?)`.
+ * Returned by `agx_get_shortcuts_for_context(project_id?, task_id?)`.
  * Extends initial with hierarchy ids. Overlapping shortcut ids overwrite phase-1 data.
  */
 export interface AgentShortcutContextRow extends AgentShortcutInitialRow {
-  shortcut_workspace_id: string | null;
   shortcut_project_id: string | null;
   shortcut_task_id: string | null;
 }
@@ -217,7 +215,6 @@ export interface UserShortcutItem {
   scope_type:
     | "personal"
     | "organization"
-    | "workspace"
     | "project"
     | "task"
     | "system";
@@ -226,7 +223,6 @@ export interface UserShortcutItem {
   // Raw hierarchy fields
   user_id: string | null;
   organization_id: string | null;
-  workspace_id: string | null;
   project_id: string | null;
   task_id: string | null;
 
@@ -262,7 +258,6 @@ export interface CreateShortcutForAgentParams {
   // Scope — set at most one non-null; omit all for personal
   p_user_id?: string | null;
   p_organization_id?: string | null;
-  p_workspace_id?: string | null;
   p_project_id?: string | null;
   p_task_id?: string | null;
   // Version reference
@@ -311,7 +306,7 @@ export interface AgentShortcutSliceState {
 
   // Phase tracking — prevents redundant RPC calls
   initialLoaded: boolean;
-  contextLoaded: Record<string, boolean>; // key = "workspace:{id}" | "project:{id}" | "task:{id}"
+  contextLoaded: Record<string, boolean>; // key = "project:{id}" | "task:{id}"
 
   // Global slice status
   status: "idle" | "loading" | "succeeded" | "failed";

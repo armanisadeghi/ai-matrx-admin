@@ -1,7 +1,12 @@
 "use client";
 
-import { WindowNotesBody } from "@/features/notes/actions/WindowNotesBody";
+import { NotesView } from "@/features/notes/components/NotesView";
 
 export function NotesWindowBody() {
-  return <WindowNotesBody className="h-full" />;
+  return (
+    <NotesView
+      config={{ showSidebar: false, showTabs: false }}
+      className="h-full"
+    />
+  );
 }

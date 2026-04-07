@@ -3,7 +3,12 @@
 
 import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
-import type { NoteRecord, NoteFetchStatus, NotesSliceState } from "./notes.types";
+import type {
+  NoteRecord,
+  NoteFetchStatus,
+  NotesInstance,
+  NotesSliceState,
+} from "./notes.types";
 
 // ── Default folder ordering ────────────────────────────────────────────────
 
@@ -36,10 +41,13 @@ export const selectNoteById = (noteId: string) =>
     (notes): NoteRecord | undefined => notes[noteId],
   );
 
-/** The active note ID (or null). */
+/** The active note ID (or null) — derived from the first instance's activeTabId. */
 export const selectActiveNoteId = createSelector(
   [selectNotesState],
-  (slice) => slice.activeNoteId,
+  (slice): string | null => {
+    const instances = Object.values(slice.instances);
+    return instances.length > 0 ? (instances[0].activeTabId ?? null) : null;
+  },
 );
 
 /** The full active note record (or undefined). */
@@ -119,9 +127,7 @@ export const selectFilteredNotes = (
     }
 
     if (tags && tags.length > 0) {
-      result = result.filter((n) =>
-        tags.every((tag) => n.tags.includes(tag)),
-      );
+      result = result.filter((n) => tags.every((tag) => n.tags.includes(tag)));
     }
 
     if (search) {
@@ -141,10 +147,13 @@ export const selectFilteredNotes = (
 // 3. Tab selectors
 // ---------------------------------------------------------------------------
 
-/** Open tab IDs in order. */
+/** Open tab IDs in order — derived from the first instance's openTabs. */
 export const selectOpenTabs = createSelector(
   [selectNotesState],
-  (slice) => slice.openTabs,
+  (slice): string[] => {
+    const instances = Object.values(slice.instances);
+    return instances.length > 0 ? instances[0].openTabs : [];
+  },
 );
 
 /** Full note records for all open tabs (preserves tab order). */
@@ -235,13 +244,10 @@ export const selectNoteIsLoading = (noteId: string) =>
 
 /** The fetch status for the note: "list", "full", or null if not fetched. */
 export const selectNoteFetchStatus = (noteId: string) =>
-  createSelector(
-    selectNotesMap,
-    (notes): NoteFetchStatus | null => {
-      const record = notes[noteId];
-      return record ? record._fetchStatus : null;
-    },
-  );
+  createSelector(selectNotesMap, (notes): NoteFetchStatus | null => {
+    const record = notes[noteId];
+    return record ? record._fetchStatus : null;
+  });
 
 // ---------------------------------------------------------------------------
 // 6. Global selectors
@@ -262,5 +268,168 @@ export const selectRealtimeConnected = createSelector(
 /** IDs of notes currently being saved (used for echo suppression). */
 export const selectSavingNoteIds = createSelector(
   [selectNotesState],
-  (slice) => slice._savingNoteIds,
+  (slice) => slice._pendingDispatchIds,
 );
+
+// ---------------------------------------------------------------------------
+// 7. Per-instance selectors
+// ---------------------------------------------------------------------------
+
+/** The instances record map. */
+const selectInstancesMap = createSelector(
+  [selectNotesState],
+  (slice) => slice.instances,
+);
+
+/** Full instance by ID (curried). Returns undefined if not registered. */
+export const selectInstance = (instanceId: string) =>
+  createSelector(
+    selectInstancesMap,
+    (instances): NotesInstance | undefined => instances[instanceId],
+  );
+
+/** Open tab IDs for a specific instance (curried). Returns undefined if instance not registered. */
+export const selectInstanceTabs = (instanceId: string) =>
+  createSelector(
+    selectInstancesMap,
+    (instances): string[] | undefined => instances[instanceId]?.openTabs,
+  );
+
+/** Active tab ID for a specific instance (curried). Returns undefined if instance not registered. */
+export const selectInstanceActiveTab = (instanceId: string) =>
+  createSelector(
+    selectInstancesMap,
+    (instances): string | null | undefined =>
+      instances[instanceId]?.activeTabId,
+  );
+
+/** Whether a given note is the active tab in an instance (curried). */
+export const selectIsActiveTab = (instanceId: string, noteId: string) =>
+  createSelector(
+    selectInstancesMap,
+    (instances): boolean => instances[instanceId]?.activeTabId === noteId,
+  );
+
+// ---------------------------------------------------------------------------
+// 8. Per-note granular selectors (single fields)
+// ---------------------------------------------------------------------------
+
+/** Note content string by ID (curried). Returns the existing string ref from state. */
+export const selectNoteContent = (noteId: string) =>
+  createSelector(
+    selectNotesMap,
+    (notes): string | undefined => notes[noteId]?.content,
+  );
+
+/** Note label string by ID (curried). Returns the existing string ref from state. */
+export const selectNoteLabel = (noteId: string) =>
+  createSelector(
+    selectNotesMap,
+    (notes): string | undefined => notes[noteId]?.label,
+  );
+
+/** Note folder name by ID (curried). Returns the existing string ref from state. */
+export const selectNoteFolder = (noteId: string) =>
+  createSelector(
+    selectNotesMap,
+    (notes): string | undefined => notes[noteId]?.folder_name,
+  );
+
+/** Note tags array by ID (curried). Returns the existing array ref from state. */
+export const selectNoteTags = (noteId: string) =>
+  createSelector(
+    selectNotesMap,
+    (notes): string[] | undefined => notes[noteId]?.tags,
+  );
+
+/** Last editor mode from note metadata by ID (curried). */
+export const selectNoteEditorMode = (noteId: string) =>
+  createSelector(
+    selectNotesMap,
+    (notes): string | undefined =>
+      (notes[noteId]?.metadata as Record<string, unknown>)?.lastEditorMode as
+        | string
+        | undefined,
+  );
+
+/** Whether a note is auto-generated (client-only) by ID (curried). */
+export const selectNoteIsAutogenerated = (noteId: string) =>
+  createSelector(
+    selectNotesMap,
+    (notes): boolean => notes[noteId]?._isAutogenerated ?? false,
+  );
+
+/** Whether a note is dirty by ID (curried). Primitive boolean — safe for useAppSelector. */
+export const selectNoteIsDirtyById = (noteId: string) =>
+  createSelector(
+    selectNotesMap,
+    (notes): boolean => notes[noteId]?._dirty ?? false,
+  );
+
+/** Whether a note is saving by ID (curried). Primitive boolean. */
+export const selectNoteIsSavingById = (noteId: string) =>
+  createSelector(
+    selectNotesMap,
+    (notes): boolean => notes[noteId]?._saving ?? false,
+  );
+
+/** Whether a note is the active tab in a given instance (primitive boolean). */
+export const selectIsInstanceActiveTab =
+  (instanceId: string, noteId: string) =>
+  (state: RootState): boolean =>
+    state.notes.instances?.[instanceId]?.activeTabId === noteId;
+
+// ---------------------------------------------------------------------------
+// 9. Presence selectors
+// ---------------------------------------------------------------------------
+
+/** Whether other users are currently active in the notes system. */
+export const selectOtherUsersActive = createSelector(
+  [selectNotesState],
+  (slice): boolean => slice.otherUsersActive,
+);
+
+/** Whether the currently active note is being edited by another user. */
+export const selectActiveNoteEditedByOthers = createSelector(
+  [selectNotesState],
+  (slice): boolean => slice.activeNoteEditedByOthers,
+);
+
+// ---------------------------------------------------------------------------
+// 10. Auto-generated note check
+// ---------------------------------------------------------------------------
+
+/**
+ * Find an auto-generated note with empty content in the given folder.
+ * Returns the note ID or null if none found (curried).
+ */
+export const selectAutogeneratedEmptyNote = (folder: string) =>
+  createSelector(selectNotesMap, (notes): string | null => {
+    for (const [id, record] of Object.entries(notes)) {
+      if (
+        record._isAutogenerated &&
+        record.content === "" &&
+        record.folder_name === folder &&
+        !record.is_deleted
+      ) {
+        return id;
+      }
+    }
+    return null;
+  });
+
+// ---------------------------------------------------------------------------
+// 11. Pending dispatch (echo suppression)
+// ---------------------------------------------------------------------------
+
+/** The full set of note IDs with a pending dispatch. */
+export const selectPendingDispatchIds = createSelector(
+  [selectNotesState],
+  (slice): Set<string> => slice._pendingDispatchIds,
+);
+
+/** Whether a specific note has a pending dispatch (curried). */
+export const selectIsPendingDispatch = (noteId: string) =>
+  createSelector([selectNotesState], (slice): boolean =>
+    slice._pendingDispatchIds.has(noteId),
+  );

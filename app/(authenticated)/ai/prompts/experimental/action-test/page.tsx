@@ -24,7 +24,6 @@ export default function ActionTestPage() {
 
   const [actionId, setActionId] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
-  const [workspaceId, setWorkspaceId] = useState<string>("");
   const [projectId, setProjectId] = useState<string>("");
   const [taskId, setTaskId] = useState<string>("");
   const [userVariables, setUserVariables] = useState<string>("{}");
@@ -60,7 +59,6 @@ export default function ActionTestPage() {
           actionId,
           context: {
             userId: userId || undefined,
-            workspaceId: workspaceId || undefined,
             projectId: projectId || undefined,
             taskId: taskId || undefined,
           },
@@ -126,16 +124,6 @@ export default function ActionTestPage() {
                     value={userId}
                     onChange={(e) => setUserId(e.target.value)}
                     placeholder="user-uuid"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="workspaceId">Workspace ID (optional)</Label>
-                  <Input
-                    id="workspaceId"
-                    value={workspaceId}
-                    onChange={(e) => setWorkspaceId(e.target.value)}
-                    placeholder="workspace-uuid"
                   />
                 </div>
 

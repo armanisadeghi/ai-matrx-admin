@@ -127,7 +127,7 @@ export function ContextScopeModal({ scopeOverride, onScopeChange }: ContextScope
 
       // Fetch via project_members for RLS-safe access
       const { data: memberRows } = await supabase
-        .from('project_members')
+        .from('ctx_project_members')
         .select('project_id')
         .eq('user_id', user.id);
 
@@ -136,7 +136,7 @@ export function ContextScopeModal({ scopeOverride, onScopeChange }: ContextScope
       if (projectIds.length === 0) {
         // Fall back to created_by
         const { data, error } = await supabase
-          .from('projects')
+          .from('ctx_projects')
           .select('id, name')
           .eq('created_by', user.id)
           .order('name');
@@ -145,7 +145,7 @@ export function ContextScopeModal({ scopeOverride, onScopeChange }: ContextScope
       }
 
       const { data, error } = await supabase
-        .from('projects')
+        .from('ctx_projects')
         .select('id, name')
         .in('id', projectIds)
         .order('name');
@@ -165,7 +165,7 @@ export function ContextScopeModal({ scopeOverride, onScopeChange }: ContextScope
     setLoadingTasks(true);
     try {
       let query = supabase
-        .from('tasks')
+        .from('ctx_tasks')
         .select('id, title, project_id')
         .order('created_at', { ascending: false })
         .limit(100);

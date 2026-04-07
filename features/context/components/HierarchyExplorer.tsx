@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import {
-  Building2, Users, FolderKanban, ListTodo, User,
+  Building2, FolderKanban, ListTodo, User,
   ChevronRight, ChevronDown, Plus, Search, Loader2,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -19,7 +19,6 @@ import type { ContextScopeLevel } from '../types';
 const ICONS: Record<HierarchyNodeType, React.ComponentType<{ className?: string }>> = {
   user: User,
   organization: Building2,
-  workspace: Users,
   project: FolderKanban,
   task: ListTodo,
 };
@@ -27,7 +26,6 @@ const ICONS: Record<HierarchyNodeType, React.ComponentType<{ className?: string 
 const ACCENT: Record<HierarchyNodeType, string> = {
   user: 'text-blue-500',
   organization: 'text-violet-500',
-  workspace: 'text-emerald-500',
   project: 'text-amber-500',
   task: 'text-sky-500',
 };
@@ -35,7 +33,6 @@ const ACCENT: Record<HierarchyNodeType, string> = {
 const TYPE_LABEL: Record<HierarchyNodeType, string> = {
   user: 'Personal',
   organization: 'Organization',
-  workspace: 'Workspace',
   project: 'Project',
   task: 'Task',
 };
@@ -225,10 +222,9 @@ function TreeBranch({
 
   // Determine what child type can be created
   const childType: HierarchyNodeType | null =
-    node.type === 'organization' ? 'workspace' :
-      node.type === 'workspace' ? 'project' :
-        node.type === 'project' ? 'task' :
-          null;
+    node.type === 'organization' ? 'project' :
+      node.type === 'project' ? 'task' :
+        null;
 
   // Find the org id for context
   const orgId = node.type === 'organization' ? node.id : (node.meta?.organization_id as string | undefined);

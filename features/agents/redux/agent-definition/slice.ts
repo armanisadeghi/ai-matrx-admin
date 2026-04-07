@@ -52,7 +52,6 @@ function makeEmptyRecord(id: string): AgentDefinitionRecord {
 
     userId: null,
     organizationId: null,
-    workspaceId: null,
     projectId: null,
     taskId: null,
 

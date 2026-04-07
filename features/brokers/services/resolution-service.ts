@@ -3,7 +3,7 @@
  * 
  * Resolves broker values for given context using the hierarchical database function.
  * Follows the priority hierarchy:
- * AI Task > AI Run > Task > Project > Workspace > Org > User > Global
+ * AI Task > AI Run > Task > Project > Org > User > Global
  */
 
 import { supabase } from '@/utils/supabase/client';
@@ -28,7 +28,6 @@ import type {
  *   ['broker-uuid-1', 'broker-uuid-2'],
  *   {
  *     userId: 'user-uuid',
- *     workspaceId: 'workspace-uuid',
  *     projectId: 'project-uuid'
  *   }
  * );
@@ -65,7 +64,6 @@ export async function resolveBrokersForContext(
       p_broker_ids: brokerIds,
       p_user_id: context.userId || null,
       p_organization_id: context.organizationId || null,
-      p_workspace_id: context.workspaceId || null,
       p_project_id: context.projectId || null,
       p_task_id: context.taskId || null,
       p_ai_run_id: context.aiRunId || null,

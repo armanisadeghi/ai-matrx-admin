@@ -178,7 +178,6 @@ export const buildAgentShortcutMenu = createAsyncThunk<
           // System menu shortcuts — no user/org ownership
           userId: null,
           organizationId: null,
-          workspaceId: null,
           projectId: null,
           taskId: null,
 
@@ -218,16 +217,15 @@ export const buildAgentShortcutMenu = createAsyncThunk<
 // ---------------------------------------------------------------------------
 
 interface FetchShortcutsForContextArgs {
-  workspaceId?: string | null;
   projectId?: string | null;
   taskId?: string | null;
 }
 
 /**
- * Called when the user enters a workspace / project / task scope.
+ * Called when the user enters a project / task scope.
  * Returns additional shortcuts scoped to that context.
  *
- * Context key format: "workspace:{id}" | "project:{id}" | "task:{id}"
+ * Context key format: "project:{id}" | "task:{id}"
  * Checks state before firing to avoid redundant calls.
  */
 export const fetchShortcutsForContext = createAsyncThunk<
@@ -236,21 +234,18 @@ export const fetchShortcutsForContext = createAsyncThunk<
   ThunkApi
 >(
   "agentShortcut/fetchForContext",
-  async ({ workspaceId, projectId, taskId }, { dispatch, getState }) => {
+  async ({ projectId, taskId }, { dispatch, getState }) => {
     const contextKey = taskId
       ? `task:${taskId}`
       : projectId
         ? `project:${projectId}`
-        : workspaceId
-          ? `workspace:${workspaceId}`
-          : "global";
+        : "global";
 
     if (selectIsContextLoaded(getState(), contextKey)) return;
 
     const { data, error } = await supabase.rpc(
       "agx_get_shortcuts_for_context",
       {
-        p_workspace_id: workspaceId ?? null,
         p_project_id: projectId ?? null,
         p_task_id: taskId ?? null,
       },
@@ -297,7 +292,6 @@ export const fetchShortcutsForContext = createAsyncThunk<
 
         userId: row.shortcut_user_id,
         organizationId: row.shortcut_org_id,
-        workspaceId: row.shortcut_workspace_id ?? workspaceId ?? null,
         projectId: row.shortcut_project_id ?? projectId ?? null,
         taskId: row.shortcut_task_id ?? taskId ?? null,
 
@@ -551,7 +545,6 @@ export const createShortcutForAgent = createAsyncThunk<
     p_user_id:
       params.p_user_id ??
       (!params.p_organization_id &&
-      !params.p_workspace_id &&
       !params.p_project_id &&
       !params.p_task_id
         ? userId
@@ -606,7 +599,6 @@ export const syncUserShortcutToSlice = createAsyncThunk<
       isActive: item.is_active,
       userId: item.user_id,
       organizationId: item.organization_id,
-      workspaceId: item.workspace_id,
       projectId: item.project_id,
       taskId: item.task_id,
       createdAt: item.created_at,

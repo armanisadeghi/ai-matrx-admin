@@ -43,7 +43,7 @@ export async function GET(request: Request) {
 
     // Get tasks with upcoming or past due dates that are not completed
     const { data: tasks, error } = await supabase
-      .from('tasks')
+      .from('ctx_tasks')
       .select('id, title, user_id, due_date, assignee_id')
       .eq('status', 'incomplete')
       .not('due_date', 'is', null)

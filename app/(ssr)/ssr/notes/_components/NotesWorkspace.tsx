@@ -1,5 +1,8 @@
 "use client";
 
+// @deprecated — Replaced by the 6-layer architecture (NotesView → NoteContentEditor → Redux).
+// Kept for reference during migration. Will be deleted once the new system is stable.
+//
 // NotesWorkspace — Persistent client component that lives in the layout.
 // NEVER unmounts when switching between notes. Manages:
 // - Note content cache (Map<id, NoteData>) — instant tab switching
@@ -427,60 +430,55 @@ export default function NotesWorkspace({
       const next = new Map(prev);
       const existing = next.get(noteId);
 
-      // If we have local edits, run diff analysis instead of raw conflict flag.
-      if (existing?.localEdits) {
-        const isOwnEcho = savingNoteIdsRef.current.has(noteId);
-        if (!isOwnEcho) {
-          const diff = analyzeDiff(existing.localEdits.content, noteData.content);
-          if (diff.hasChanges && diff.hasChangesExcludingWhitespace) {
-            // Show conflict window (outside setState)
-            setTimeout(() => {
-              setConflictData({
-                noteId,
-                noteTitle: existing.data.label,
-                localContent: existing.localEdits!.content,
-                remoteContent: noteData.content,
-                analysis: diff,
-              });
-            }, 0);
-            next.set(noteId, {
-              ...existing,
-              data: noteData,
-              saveState: "conflict",
-              fetchedAt: Date.now(),
-            });
-            return next;
-          }
-        }
-        // Own echo or trivial diff — update server data, keep local edits
+      // Rule 1: NEVER overwrite local content with empty server data
+      // if the user has ANY content (whether tracked as localEdits or in data).
+      const localContent =
+        existing?.localEdits?.content ??
+        existing?.data.content ??
+        "";
+      const userHasContent = localContent.length > 0;
+      const serverIsEmpty = !noteData.content || noteData.content.trim() === "";
+
+      if (existing && userHasContent && serverIsEmpty) {
+        console.log("[Notes Fetch] Refusing to overwrite local content with empty server for", noteId);
+        // Just update metadata, not content
         next.set(noteId, {
           ...existing,
-          data: noteData,
+          data: {
+            ...existing.data,
+            folder_name: noteData.folder_name,
+            tags: noteData.tags,
+            metadata: noteData.metadata,
+            updated_at: noteData.updated_at,
+          },
           fetchedAt: Date.now(),
         });
         return next;
       }
 
-      // No local edits — update cache.
-      // BUT: if the user has content in the editor that hasn't been tracked
-      // as localEdits yet (e.g., they just pasted into a new note), don't
-      // wipe it with an empty server response. Check the textarea directly.
-      const existingContent = existing?.data.content ?? "";
+      // Rule 2: If user has local edits or pending save, don't overwrite content
       if (
         existing &&
-        existingContent &&
-        !noteData.content &&
-        noteData.label === "New Note"
+        (existing.localEdits ||
+          existing.saveState === "dirty" ||
+          existing.saveState === "saving")
       ) {
-        // Server returned empty for a new note but we already have content — keep it
+        console.log("[Notes Fetch] User is editing, keeping local for", noteId);
         next.set(noteId, {
           ...existing,
-          data: { ...noteData, content: existingContent },
+          data: {
+            ...existing.data,
+            folder_name: noteData.folder_name,
+            tags: noteData.tags,
+            metadata: noteData.metadata,
+            updated_at: noteData.updated_at,
+          },
           fetchedAt: Date.now(),
         });
         return next;
       }
 
+      // Rule 3: User is idle, no local content at risk — safe to update everything
       next.set(noteId, {
         data: noteData,
         localEdits: null,
@@ -553,25 +551,38 @@ export default function NotesWorkspace({
 
             // Echo suppression — skip if this is our own save bouncing back
             if (savingNoteIdsRef.current.has(noteId)) {
-              console.log("[Notes Realtime] Suppressing own echo for", noteId);
+              console.log("[Notes RT] Suppressing echo for", noteId);
               return;
             }
 
             // Skip soft-deleted notes
             if (newRecord.is_deleted) return;
 
+            const serverContent = (newRecord.content as string) ?? "";
+            const serverUpdatedAt = (newRecord.updated_at as string) ?? "";
+
             // Update the cache if this note is open
             setNoteCache((prev) => {
               const cached = prev.get(noteId);
               if (!cached) return prev; // Not open — sidebar will pick it up
 
-              const serverContent = (newRecord.content as string) ?? "";
+              // CRITICAL: Never overwrite with OLDER data. If our cache has
+              // a newer updated_at (from a save we did), skip this event.
+              if (
+                cached.data.updated_at &&
+                serverUpdatedAt &&
+                new Date(serverUpdatedAt) <= new Date(cached.data.updated_at)
+              ) {
+                console.log("[Notes RT] Ignoring stale update for", noteId,
+                  "server:", serverUpdatedAt, "local:", cached.data.updated_at);
+                return prev;
+              }
+
               const serverLabel = (newRecord.label as string) ?? "";
               const serverFolder = (newRecord.folder_name as string) ?? "Draft";
               const serverTags = (newRecord.tags as string[]) ?? [];
               const serverMeta =
                 (newRecord.metadata as Record<string, unknown>) ?? {};
-              const serverUpdatedAt = (newRecord.updated_at as string) ?? "";
 
               const updatedData: NoteData = {
                 ...cached.data,
@@ -583,37 +594,60 @@ export default function NotesWorkspace({
                 updated_at: serverUpdatedAt,
               };
 
-              // If user has local edits, run diff analysis
-              if (cached.localEdits) {
-                const localVersion = cached.localEdits.content;
-                const diff = analyzeDiff(localVersion, serverContent);
+              // If there are pending saves (dirty/saving) or local edits,
+              // don't touch the content — the user is actively working.
+              if (
+                cached.localEdits ||
+                cached.saveState === "dirty" ||
+                cached.saveState === "saving"
+              ) {
+                const localContent = cached.localEdits?.content ?? cached.data.content;
 
-                if (diff.hasChanges && diff.hasChangesExcludingWhitespace) {
-                  // Real conflict — show the conflict window (outside setState)
-                  setTimeout(() => {
-                    setConflictData({
-                      noteId,
-                      noteTitle: cached.data.label,
-                      localContent: localVersion,
-                      remoteContent: serverContent,
-                      analysis: diff,
+                // Only show conflict if server has MEANINGFULLY different content
+                if (serverContent && localContent !== serverContent) {
+                  const diff = analyzeDiff(localContent, serverContent);
+                  if (diff.hasChanges && diff.hasChangesExcludingWhitespace) {
+                    console.log("[Notes RT] Real conflict for", noteId);
+                    setTimeout(() => {
+                      setConflictData({
+                        noteId,
+                        noteTitle: cached.data.label,
+                        localContent,
+                        remoteContent: serverContent,
+                        analysis: diff,
+                      });
+                    }, 0);
+
+                    const next = new Map(prev);
+                    next.set(noteId, {
+                      ...cached,
+                      data: updatedData,
+                      saveState: "conflict",
+                      fetchedAt: Date.now(),
                     });
-                  }, 0);
-
-                  // Update server data in cache but keep local edits
-                  const next = new Map(prev);
-                  next.set(noteId, {
-                    ...cached,
-                    data: updatedData,
-                    saveState: "conflict",
-                    fetchedAt: Date.now(),
-                  });
-                  return next;
+                    return next;
+                  }
                 }
-                // Only whitespace — silently accept server version
+
+                // Trivial or no content diff — keep local edits, just update metadata
+                console.log("[Notes RT] Trivial update while editing, keeping local for", noteId);
+                const next = new Map(prev);
+                next.set(noteId, {
+                  ...cached,
+                  data: {
+                    ...cached.data,
+                    folder_name: serverFolder,
+                    tags: serverTags,
+                    metadata: serverMeta,
+                    updated_at: serverUpdatedAt,
+                  },
+                  fetchedAt: Date.now(),
+                });
+                return next;
               }
 
-              // No local edits or trivial diff — silently update
+              // User is idle (no local edits, no pending save) — safe to update
+              console.log("[Notes RT] Silent update for idle note", noteId);
               const next = new Map(prev);
               next.set(noteId, {
                 data: updatedData,

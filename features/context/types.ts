@@ -2,18 +2,49 @@
 // Source of truth: Supabase schema for context_items, context_item_values, context_templates, context_access_log
 
 export type ContextItemStatus =
-  | 'idea' | 'stub'
-  | 'gathering' | 'partial' | 'needs_review'
-  | 'ai_enriched' | 'in_revision' | 'pending_approval'
-  | 'active' | 'provisional'
-  | 'stale' | 'needs_update' | 'superseded'
-  | 'archived' | 'deprecated';
+  | "idea"
+  | "stub"
+  | "gathering"
+  | "partial"
+  | "needs_review"
+  | "ai_enriched"
+  | "in_revision"
+  | "pending_approval"
+  | "active"
+  | "provisional"
+  | "stale"
+  | "needs_update"
+  | "superseded"
+  | "archived"
+  | "deprecated";
 
-export type ContextValueType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'document' | 'reference';
-export type ContextFetchHint = 'always' | 'on_demand' | 'batch_related' | 'lazy' | 'never';
-export type ContextSensitivity = 'public' | 'internal' | 'restricted' | 'privileged';
-export type ContextSourceType = 'manual' | 'ai_generated' | 'ai_enriched' | 'imported' | 'scraped' | 'system';
-export type ContextScopeLevel = 'user' | 'organization' | 'workspace' | 'project' | 'task';
+export type ContextValueType =
+  | "string"
+  | "number"
+  | "boolean"
+  | "object"
+  | "array"
+  | "document"
+  | "reference";
+export type ContextFetchHint =
+  | "always"
+  | "on_demand"
+  | "batch_related"
+  | "lazy"
+  | "never";
+export type ContextSensitivity =
+  | "public"
+  | "internal"
+  | "restricted"
+  | "privileged";
+export type ContextSourceType =
+  | "manual"
+  | "ai_generated"
+  | "ai_enriched"
+  | "imported"
+  | "scraped"
+  | "system";
+export type ContextScopeLevel = "user" | "organization" | "project" | "task";
 
 export type ContextScope = {
   type: ContextScopeLevel;
@@ -34,7 +65,6 @@ export type ContextItemManifest = {
   tags: string[];
   user_id: string | null;
   organization_id: string | null;
-  workspace_id: string | null;
   project_id: string | null;
   task_id: string | null;
   depends_on: string[];
@@ -167,15 +197,20 @@ export type ContextItemFilters = {
   categories: string[];
   fetchHints: ContextFetchHint[];
   sensitivities: ContextSensitivity[];
-  hasValue: 'yes' | 'no' | 'either';
+  hasValue: "yes" | "no" | "either";
 };
 
 export type ContextItemSort = {
-  field: 'display_name' | 'status' | 'updated_at' | 'next_review_at' | 'char_count';
-  direction: 'asc' | 'desc';
+  field:
+    | "display_name"
+    | "status"
+    | "updated_at"
+    | "next_review_at"
+    | "char_count";
+  direction: "asc" | "desc";
 };
 
-export type ContextItemView = 'cards' | 'table' | 'kanban';
+export type ContextItemView = "cards" | "table" | "kanban";
 
 // Dashboard stat types
 export type ContextDashboardStats = {

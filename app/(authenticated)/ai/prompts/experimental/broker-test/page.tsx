@@ -18,7 +18,6 @@ import type { BrokerResolutionResult } from '@/features/brokers/types/resolution
 export default function BrokerTestPage() {
   const [brokerIds, setBrokerIds] = useState<string>('');
   const [userId, setUserId] = useState<string>('');
-  const [workspaceId, setWorkspaceId] = useState<string>('');
   const [projectId, setProjectId] = useState<string>('');
   const [taskId, setTaskId] = useState<string>('');
 
@@ -50,7 +49,6 @@ export default function BrokerTestPage() {
       // Build context
       const context = {
         userId: userId || undefined,
-        workspaceId: workspaceId || undefined,
         projectId: projectId || undefined,
         taskId: taskId || undefined,
       };
@@ -118,16 +116,6 @@ export default function BrokerTestPage() {
                     value={userId}
                     onChange={(e) => setUserId(e.target.value)}
                     placeholder="user-uuid"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="workspaceId">Workspace ID (optional)</Label>
-                  <Input
-                    id="workspaceId"
-                    value={workspaceId}
-                    onChange={(e) => setWorkspaceId(e.target.value)}
-                    placeholder="workspace-uuid"
                   />
                 </div>
 
@@ -264,8 +252,7 @@ export default function BrokerTestPage() {
                   database
                 </li>
                 <li>
-                  Optionally provide context IDs (user, workspace, project,
-                  task)
+                  Optionally provide context IDs (user, project, task)
                 </li>
                 <li>Click &quot;Resolve Brokers&quot; to test resolution</li>
                 <li>
@@ -283,7 +270,6 @@ export default function BrokerTestPage() {
                 <li>AI Run</li>
                 <li>Task</li>
                 <li>Project</li>
-                <li>Workspace (with nesting)</li>
                 <li>Organization</li>
                 <li>User</li>
                 <li>Global</li>

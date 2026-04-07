@@ -4,7 +4,7 @@
 
 /**
  * Context information used to resolve broker values
- * Follows the hierarchy: AI Task > AI Run > Task > Project > Workspace > Org > User > Global
+ * Follows the hierarchy: AI Task > AI Run > Task > Project > Org > User > Global
  */
 export interface BrokerResolutionContext {
   /** Current user ID (always required) */
@@ -12,9 +12,6 @@ export interface BrokerResolutionContext {
   
   /** Organization ID */
   organizationId?: string;
-  
-  /** Workspace ID */
-  workspaceId?: string;
   
   /** Project ID */
   projectId?: string;

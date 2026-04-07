@@ -22,7 +22,6 @@ export type CxConversation = {
   description: string | null;
   keywords: string[] | null;
   organization_id: string | null;
-  workspace_id: string | null;
   project_id: string | null;
   task_id: string | null;
   metadata: Record<string, unknown>;

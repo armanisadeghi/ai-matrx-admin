@@ -1,5 +1,8 @@
 "use client";
 
+// @deprecated — Replaced by NoteSidebar (6-layer architecture).
+// Kept for reference during migration.
+//
 // SidebarClient — VSCode-style tree sidebar for notes.
 // Collapsible folder groups with chevrons, inline note list, context menus.
 // Folder context menu: new note, rename, delete all.
@@ -124,7 +127,6 @@ export default function SidebarClient({
 
     dispatch(
       fetchShortcutsForContext({
-        workspaceId: null,
         projectId: null,
         taskId: null,
       }),

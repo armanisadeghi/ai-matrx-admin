@@ -12,7 +12,6 @@ import { updateArtifactThunk } from "@/lib/redux/thunks/artifactThunks";
 import { registerArtifactThunk } from "@/lib/redux/thunks/artifactThunks";
 import {
   selectOrganizationId,
-  selectWorkspaceId,
   selectProjectId,
   selectTaskId,
 } from "@/features/context/redux/appContextSlice";
@@ -41,7 +40,6 @@ export function HtmlPreviewBridge({
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
   const organizationId = useAppSelector(selectOrganizationId);
-  const workspaceId = useAppSelector(selectWorkspaceId);
   const projectId = useAppSelector(selectProjectId);
   const taskId = useAppSelector(selectTaskId);
 
@@ -96,7 +94,6 @@ export function HtmlPreviewBridge({
             externalSystem: "html_pages",
             externalId: newPageId,
             organizationId,
-            workspaceId,
             projectId,
             taskId,
             metadata: {},
@@ -114,7 +111,6 @@ export function HtmlPreviewBridge({
       messageId,
       conversationId,
       organizationId,
-      workspaceId,
       projectId,
       taskId,
     ],

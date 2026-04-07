@@ -3,7 +3,7 @@
 // Async thunks for the artifacts slice.
 //
 // Thunks read appContextSlice at dispatch time to automatically attach
-// org/workspace/project/task context — callers don't need to pass it.
+// org/project/task context — callers don't need to pass it.
 //
 // All thunks communicate with /api/artifacts which operates on the
 // cx_artifact table in the main Supabase project.
@@ -20,7 +20,6 @@ import {
 } from "@/lib/redux/slices/artifactsSlice";
 import {
   selectOrganizationId,
-  selectWorkspaceId,
   selectProjectId,
   selectTaskId,
 } from "@/features/context/redux/appContextSlice";
@@ -71,7 +70,6 @@ export const registerArtifactThunk = createAsyncThunk<
   // Read context from appContextSlice at dispatch time
   const context = {
     organizationId: payload.organizationId ?? selectOrganizationId(state),
-    workspaceId: payload.workspaceId ?? selectWorkspaceId(state),
     projectId: payload.projectId ?? selectProjectId(state),
     taskId: payload.taskId ?? selectTaskId(state),
   };

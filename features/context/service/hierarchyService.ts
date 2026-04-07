@@ -29,23 +29,12 @@ export type HierarchyOrg = {
   created_at: string | null;
 };
 
-export type HierarchyWorkspace = {
-  id: string;
-  organization_id: string;
-  parent_workspace_id: string | null;
-  name: string;
-  description: string | null;
-  settings: Record<string, unknown> | null;
-  created_at: string | null;
-};
-
 export type HierarchyProject = {
   id: string;
   name: string;
   slug: string | null;
   description: string | null;
   organization_id: string | null;
-  workspace_id: string | null;
   is_personal: boolean | null;
   settings: Record<string, unknown> | null;
   created_at: string | null;
@@ -69,12 +58,7 @@ export type HierarchyTask = {
 
 // ─── Tree node ──────────────────────────────────────────────────────
 
-export type HierarchyNodeType =
-  | "user"
-  | "organization"
-  | "workspace"
-  | "project"
-  | "task";
+export type HierarchyNodeType = "user" | "organization" | "project" | "task";
 
 export type HierarchyNode = {
   id: string;
@@ -90,7 +74,6 @@ export type HierarchyNode = {
 // ─── Service ────────────────────────────────────────────────────────
 
 export const hierarchyService = {
-  // ─── Current user info ──────────────────────────────────────────
   async fetchCurrentUser(): Promise<{
     id: string;
     email: string;
@@ -112,7 +95,6 @@ export const hierarchyService = {
     };
   },
 
-  // ─── Organizations the current user belongs to ──────────────────
   async fetchUserOrganizations(): Promise<HierarchyOrg[]> {
     const userId = requireUserId();
 
@@ -137,36 +119,16 @@ export const hierarchyService = {
     }));
   },
 
-  // ─── Workspaces for an organization ─────────────────────────────
-  async fetchOrgWorkspaces(orgId: string): Promise<HierarchyWorkspace[]> {
-    const { data, error } = await supabase
-      .from("workspaces")
-      .select(
-        "id, organization_id, parent_workspace_id, name, description, settings, created_at",
-      )
-      .eq("organization_id", orgId)
-      .order("name");
-
-    if (error) throw error;
-    return (data ?? []) as HierarchyWorkspace[];
-  },
-
-  // ─── Projects ───────────────────────────────────────────────────
-  async fetchProjects(opts: {
-    workspaceId?: string;
-    orgId?: string;
-  }): Promise<HierarchyProject[]> {
+  async fetchProjects(opts: { orgId?: string }): Promise<HierarchyProject[]> {
     let query = supabase
-      .from("projects")
+      .from("ctx_projects")
       .select(
-        "id, name, slug, description, organization_id, workspace_id, is_personal, settings, created_at, created_by",
+        "id, name, slug, description, organization_id, is_personal, settings, created_at, created_by",
       )
       .order("name");
 
-    if (opts.workspaceId) {
-      query = query.eq("workspace_id", opts.workspaceId);
-    } else if (opts.orgId) {
-      query = query.eq("organization_id", opts.orgId).is("workspace_id", null);
+    if (opts.orgId) {
+      query = query.eq("organization_id", opts.orgId);
     }
 
     const { data, error } = await query;
@@ -174,14 +136,13 @@ export const hierarchyService = {
     return (data ?? []) as HierarchyProject[];
   },
 
-  // Fetch all projects for current user (including unassigned)
   async fetchAllUserProjects(): Promise<HierarchyProject[]> {
     const userId = requireUserId();
 
     const { data, error } = await supabase
-      .from("projects")
+      .from("ctx_projects")
       .select(
-        "id, name, slug, description, organization_id, workspace_id, is_personal, settings, created_at, created_by",
+        "id, name, slug, description, organization_id, is_personal, settings, created_at, created_by",
       )
       .eq("created_by", userId)
       .order("name");
@@ -190,10 +151,9 @@ export const hierarchyService = {
     return (data ?? []) as HierarchyProject[];
   },
 
-  // ─── Tasks for a project ────────────────────────────────────────
   async fetchProjectTasks(projectId: string): Promise<HierarchyTask[]> {
     const { data, error } = await supabase
-      .from("tasks")
+      .from("ctx_tasks")
       .select(
         "id, title, description, project_id, parent_task_id, status, priority, due_date, assignee_id, settings, created_at, user_id",
       )
@@ -204,12 +164,11 @@ export const hierarchyService = {
     return (data ?? []) as HierarchyTask[];
   },
 
-  // Fetch tasks not linked to any project
   async fetchOrphanTasks(): Promise<HierarchyTask[]> {
     const userId = requireUserId();
 
     const { data, error } = await supabase
-      .from("tasks")
+      .from("ctx_tasks")
       .select(
         "id, title, description, project_id, parent_task_id, status, priority, due_date, assignee_id, settings, created_at, user_id",
       )
@@ -221,7 +180,6 @@ export const hierarchyService = {
     return (data ?? []) as HierarchyTask[];
   },
 
-  // ─── Build task tree from flat list ─────────────────────────────
   _buildTaskNodes(tasks: HierarchyTask[]): HierarchyNode[] {
     const taskMap = new Map<string, HierarchyNode>();
     for (const task of tasks) {
@@ -255,7 +213,6 @@ export const hierarchyService = {
     return roots;
   },
 
-  // ─── Full tree from user root ───────────────────────────────────
   async fetchFullTree(): Promise<HierarchyNode[]> {
     const user = await this.fetchCurrentUser();
 
@@ -263,9 +220,7 @@ export const hierarchyService = {
     const allProjects = await this.fetchAllUserProjects();
     const orphanTasks = await this.fetchOrphanTasks();
 
-    // Track which project IDs are accounted for in the org tree
     const assignedProjectIds = new Set<string>();
-
     const orgNodes: HierarchyNode[] = [];
 
     for (const org of orgs) {
@@ -285,63 +240,6 @@ export const hierarchyService = {
         },
       };
 
-      // Fetch workspaces
-      const workspaces = await this.fetchOrgWorkspaces(org.id);
-      const wsMap = new Map<string, HierarchyNode>();
-
-      for (const ws of workspaces) {
-        wsMap.set(ws.id, {
-          id: ws.id,
-          type: "workspace",
-          name: ws.name,
-          description: ws.description,
-          parentId: ws.parent_workspace_id ?? org.id,
-          children: [],
-          childCount: 0,
-          meta: { created_at: ws.created_at, organization_id: org.id },
-        });
-      }
-
-      // Nest child workspaces
-      for (const ws of workspaces) {
-        const node = wsMap.get(ws.id)!;
-        if (ws.parent_workspace_id && wsMap.has(ws.parent_workspace_id)) {
-          const parent = wsMap.get(ws.parent_workspace_id)!;
-          parent.children.push(node);
-          parent.childCount++;
-        } else {
-          orgNode.children.push(node);
-          orgNode.childCount++;
-        }
-      }
-
-      // Projects under workspaces
-      for (const ws of workspaces) {
-        const projects = await this.fetchProjects({ workspaceId: ws.id });
-        const wsNode = wsMap.get(ws.id)!;
-        for (const proj of projects) {
-          assignedProjectIds.add(proj.id);
-          const tasks = await this.fetchProjectTasks(proj.id);
-          const taskNodes = this._buildTaskNodes(tasks);
-          wsNode.children.push({
-            id: proj.id,
-            type: "project",
-            name: proj.name,
-            description: proj.description,
-            parentId: ws.id,
-            children: taskNodes,
-            childCount: taskNodes.length,
-            meta: {
-              slug: proj.slug,
-              created_at: proj.created_at,
-              organization_id: org.id,
-            },
-          });
-          wsNode.childCount++;
-        }
-      }
-
-      // Projects directly under org (no workspace)
       const orgProjects = await this.fetchProjects({ orgId: org.id });
       for (const proj of orgProjects) {
         assignedProjectIds.add(proj.id);
@@ -367,7 +265,6 @@ export const hierarchyService = {
       orgNodes.push(orgNode);
     }
 
-    // Now handle unassigned projects (no org, no workspace)
     const unassignedProjects = allProjects.filter(
       (p) => !assignedProjectIds.has(p.id),
     );
@@ -391,15 +288,13 @@ export const hierarchyService = {
       });
     }
 
-    // Orphan tasks (no project)
     const orphanTaskNodes = this._buildTaskNodes(orphanTasks);
 
-    // Build user root
     const userRoot: HierarchyNode = {
       id: "user-root",
       type: "user",
-      name: user.name ?? user.email,
-      description: user.email,
+      name: user?.name ?? user?.email ?? "Me",
+      description: user?.email ?? null,
       parentId: null,
       children: [
         ...orgNodes,
@@ -409,8 +304,7 @@ export const hierarchyService = {
                 id: "unassigned-projects",
                 type: "project" as HierarchyNodeType,
                 name: `Unassigned Projects (${unassignedProjectNodes.length})`,
-                description:
-                  "Projects not linked to any organization or workspace",
+                description: "Projects not linked to any organization",
                 parentId: "user-root",
                 children: unassignedProjectNodes,
                 childCount: unassignedProjectNodes.length,
@@ -434,7 +328,7 @@ export const hierarchyService = {
           : []),
       ],
       childCount: 0,
-      meta: { email: user.email },
+      meta: { email: user?.email },
     };
     userRoot.childCount = userRoot.children.length;
 
@@ -465,33 +359,15 @@ export const hierarchyService = {
     return { ...org, role: "owner" } as HierarchyOrg;
   },
 
-  async createWorkspace(data: {
-    name: string;
-    organization_id: string;
-    parent_workspace_id?: string;
-    description?: string;
-  }): Promise<HierarchyWorkspace> {
-    const userId = requireUserId();
-
-    const { data: ws, error } = await supabase
-      .from("workspaces")
-      .insert({ ...data, created_by: userId })
-      .select()
-      .single();
-    if (error) throw error;
-    return ws as HierarchyWorkspace;
-  },
-
   async createProject(data: {
     name: string;
     organization_id?: string;
-    workspace_id?: string;
     description?: string;
   }): Promise<HierarchyProject> {
     const userId = requireUserId();
 
     const { data: proj, error } = await supabase
-      .from("projects")
+      .from("ctx_projects")
       .insert({ ...data, created_by: userId })
       .select()
       .single();
@@ -511,7 +387,7 @@ export const hierarchyService = {
 
     const { priority, ...taskRest } = data;
     const { data: task, error } = await supabase
-      .from("tasks")
+      .from("ctx_tasks")
       .insert({
         ...taskRest,
         status: data.status ?? "not_started",
@@ -537,31 +413,18 @@ export const hierarchyService = {
     if (error) throw error;
   },
 
-  async updateWorkspace(
-    id: string,
-    data: {
-      name?: string;
-      description?: string;
-      parent_workspace_id?: string | null;
-    },
-  ): Promise<void> {
-    const { error } = await supabase
-      .from("workspaces")
-      .update(data)
-      .eq("id", id);
-    if (error) throw error;
-  },
-
   async updateProject(
     id: string,
     data: {
       name?: string;
       description?: string;
       organization_id?: string | null;
-      workspace_id?: string | null;
     },
   ): Promise<void> {
-    const { error } = await supabase.from("projects").update(data).eq("id", id);
+    const { error } = await supabase
+      .from("ctx_projects")
+      .update(data)
+      .eq("id", id);
     if (error) throw error;
   },
 
@@ -577,63 +440,41 @@ export const hierarchyService = {
     },
   ): Promise<void> {
     const { priority, ...rest } = data;
-    const patch: Database["public"]["Tables"]["tasks"]["Update"] = { ...rest };
+    const patch: Record<string, unknown> = { ...rest };
     if (priority !== undefined) {
       patch.priority = toTaskPriority(priority);
     }
-    const { error } = await supabase.from("tasks").update(patch).eq("id", id);
+    const { error } = await supabase
+      .from("ctx_tasks")
+      .update(patch)
+      .eq("id", id);
     if (error) throw error;
   },
 
   // ─── Delete entity ──────────────────────────────────────────────
   async deleteTask(id: string): Promise<void> {
-    const { error } = await supabase.from("tasks").delete().eq("id", id);
+    const { error } = await supabase.from("ctx_tasks").delete().eq("id", id);
     if (error) throw error;
   },
 
   async deleteProject(id: string): Promise<void> {
-    // Deletes project and cascades to tasks via FK constraint
-    const { error } = await supabase.from("projects").delete().eq("id", id);
-    if (error) throw error;
-  },
-
-  async deleteWorkspace(id: string): Promise<void> {
-    // Delete child workspaces first (nested), then this workspace
-    const { data: children } = await supabase
-      .from("workspaces")
-      .select("id")
-      .eq("parent_workspace_id", id);
-    for (const child of children ?? []) {
-      await this.deleteWorkspace(child.id);
-    }
-    const { error } = await supabase.from("workspaces").delete().eq("id", id);
+    const { error } = await supabase.from("ctx_projects").delete().eq("id", id);
     if (error) throw error;
   },
 
   async deleteOrganization(id: string): Promise<void> {
-    // Delete workspaces first, then org members, then org
-    const { data: workspaces } = await supabase
-      .from("workspaces")
-      .select("id")
-      .eq("organization_id", id)
-      .is("parent_workspace_id", null);
-    for (const ws of workspaces ?? []) {
-      await this.deleteWorkspace(ws.id);
-    }
-    // Delete org projects (no workspace)
     const { error: projErr } = await supabase
-      .from("projects")
+      .from("ctx_projects")
       .delete()
-      .eq("organization_id", id)
-      .is("workspace_id", null);
+      .eq("organization_id", id);
     if (projErr) throw projErr;
-    // Delete members
+
     const { error: memErr } = await supabase
       .from("organization_members")
       .delete()
       .eq("organization_id", id);
     if (memErr) throw memErr;
-    // Delete org
+
     const { error } = await supabase
       .from("organizations")
       .delete()
@@ -641,22 +482,14 @@ export const hierarchyService = {
     if (error) throw error;
   },
 
-  // ─── RPC-based tree fetchers (new, preferred) ────────────────────
+  // ─── RPC-based tree fetchers ────────────────────────────────────────
 
-  /**
-   * Fetch the lightweight org/workspace/project tree via `get_user_nav_tree`.
-   * Does NOT include tasks. Use for sidebar, nav, org/workspace pickers.
-   */
   async fetchNavTree(): Promise<NavTreeResponse> {
     const { data, error } = await supabase.rpc("get_user_nav_tree");
     if (error) throw error;
     return (data as unknown as NavTreeResponse) ?? { organizations: [] };
   },
 
-  /**
-   * Fetch the full hierarchy including open tasks via `get_user_full_context`.
-   * Heavier than `fetchNavTree`. Use for dashboards and task boards.
-   */
   async fetchFullContext(): Promise<FullContextResponse> {
     const { data, error } = await supabase.rpc("get_user_full_context");
     if (error) throw error;
@@ -666,10 +499,10 @@ export const hierarchyService = {
   // ─── Move / reparent ──────────────────────────────────────────────
   async moveProject(
     projectId: string,
-    target: { organization_id?: string | null; workspace_id?: string | null },
+    target: { organization_id?: string | null },
   ): Promise<void> {
     const { error } = await supabase
-      .from("projects")
+      .from("ctx_projects")
       .update(target)
       .eq("id", projectId);
     if (error) throw error;
@@ -680,20 +513,9 @@ export const hierarchyService = {
     target: { project_id?: string | null; parent_task_id?: string | null },
   ): Promise<void> {
     const { error } = await supabase
-      .from("tasks")
+      .from("ctx_tasks")
       .update(target)
       .eq("id", taskId);
-    if (error) throw error;
-  },
-
-  async moveWorkspace(
-    workspaceId: string,
-    target: { organization_id?: string; parent_workspace_id?: string | null },
-  ): Promise<void> {
-    const { error } = await supabase
-      .from("workspaces")
-      .update(target)
-      .eq("id", workspaceId);
     if (error) throw error;
   },
 
@@ -706,11 +528,9 @@ export const hierarchyService = {
     const table =
       type === "organization"
         ? "organizations"
-        : type === "workspace"
-          ? "workspaces"
-          : type === "project"
-            ? "projects"
-            : "tasks";
+        : type === "project"
+          ? ("ctx_projects" as const)
+          : ("ctx_tasks" as const);
     const nameCol = type === "task" ? "title" : "name";
 
     const { data, error } = await supabase
@@ -722,7 +542,6 @@ export const hierarchyService = {
     return (data as any)?.[nameCol] ?? null;
   },
 
-  // ─── Resolve ancestor chain for breadcrumbs ─────────────────────
   async resolveAncestors(
     type: HierarchyNodeType,
     id: string,
@@ -732,7 +551,7 @@ export const hierarchyService = {
 
     if (type === "task") {
       const { data: task } = await supabase
-        .from("tasks")
+        .from("ctx_tasks")
         .select("title, project_id")
         .eq("id", id)
         .single();
@@ -748,44 +567,16 @@ export const hierarchyService = {
       }
     } else if (type === "project") {
       const { data: proj } = await supabase
-        .from("projects")
-        .select("name, workspace_id, organization_id")
+        .from("ctx_projects")
+        .select("name, organization_id")
         .eq("id", id)
         .single();
       if (proj) {
         chain.unshift({ type: "project", id, name: proj.name });
-        if (proj.workspace_id) {
-          const parents = await this.resolveAncestors(
-            "workspace",
-            proj.workspace_id,
-          );
-          chain.unshift(...parents);
-        } else if (proj.organization_id) {
+        if (proj.organization_id) {
           const parents = await this.resolveAncestors(
             "organization",
             proj.organization_id,
-          );
-          chain.unshift(...parents);
-        }
-      }
-    } else if (type === "workspace") {
-      const { data: ws } = await supabase
-        .from("workspaces")
-        .select("name, organization_id, parent_workspace_id")
-        .eq("id", id)
-        .single();
-      if (ws) {
-        chain.unshift({ type: "workspace", id, name: ws.name });
-        if (ws.parent_workspace_id) {
-          const parents = await this.resolveAncestors(
-            "workspace",
-            ws.parent_workspace_id,
-          );
-          chain.unshift(...parents);
-        } else if (ws.organization_id) {
-          const parents = await this.resolveAncestors(
-            "organization",
-            ws.organization_id,
           );
           chain.unshift(...parents);
         }

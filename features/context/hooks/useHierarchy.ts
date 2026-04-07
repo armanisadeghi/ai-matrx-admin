@@ -15,14 +15,9 @@ import {
   invalidateAndRefetchAll,
 } from "@/features/context/redux/hierarchyThunks";
 
-// React Query is still used for the HierarchyTreePage (admin CRUD tree view)
-// which needs the legacy HierarchyNode shape. All other consumers should use
-// useNavTree() from hooks/useNavTree.ts which reads from the Redux slice.
-
 const KEYS = {
   tree: () => ["hierarchy-tree"] as const,
   orgs: () => ["hierarchy-orgs"] as const,
-  workspaces: (orgId: string) => ["hierarchy-workspaces", orgId] as const,
   projects: (parentId: string) => ["hierarchy-projects", parentId] as const,
   tasks: (projectId: string) => ["hierarchy-tasks", projectId] as const,
   ancestors: (type: string, id: string) =>
@@ -49,26 +44,7 @@ export function useUserOrganizations() {
   });
 }
 
-// ─── Workspaces for an org ──────────────────────────────────────────
-
-export function useOrgWorkspaces(orgId: string | null) {
-  return useQuery({
-    queryKey: KEYS.workspaces(orgId ?? ""),
-    queryFn: () => hierarchyService.fetchOrgWorkspaces(orgId!),
-    enabled: !!orgId,
-  });
-}
-
 // ─── Projects ───────────────────────────────────────────────────────
-
-export function useWorkspaceProjects(workspaceId: string | null) {
-  return useQuery({
-    queryKey: KEYS.projects(workspaceId ?? ""),
-    queryFn: () =>
-      hierarchyService.fetchProjects({ workspaceId: workspaceId! }),
-    enabled: !!workspaceId,
-  });
-}
 
 export function useOrgProjects(orgId: string | null) {
   return useQuery({
@@ -100,13 +76,6 @@ export function useAncestors(type: HierarchyNodeType, id: string | null) {
 }
 
 // ─── Shared invalidation helper ──────────────────────────────────────
-//
-// After every mutation we:
-//  1. Invalidate the React Query cache (used by HierarchyTreePage)
-//  2. Invalidate + re-fetch the Redux navTree (used by sidebar, switchers)
-//
-// This keeps both data sources in sync without requiring callers to know
-// which cache strategy is in use.
 
 function useInvalidateAll() {
   const qc = useQueryClient();
@@ -144,31 +113,12 @@ export function useCreateOrganization() {
   });
 }
 
-export function useCreateWorkspace() {
-  const invalidate = useInvalidateAll();
-  return useMutation({
-    mutationFn: (data: {
-      name: string;
-      organization_id: string;
-      parent_workspace_id?: string;
-      description?: string;
-    }) => hierarchyService.createWorkspace(data),
-    onSuccess: () => {
-      invalidate();
-      toast.success("Workspace created");
-    },
-    onError: (err: Error) =>
-      toast.error("Failed to create workspace", { description: err.message }),
-  });
-}
-
 export function useCreateProject() {
   const invalidate = useInvalidateAll();
   return useMutation({
     mutationFn: (data: {
       name: string;
       organization_id?: string;
-      workspace_id?: string;
       description?: string;
     }) => hierarchyService.createProject(data),
     onSuccess: () => {
@@ -212,8 +162,6 @@ export function useUpdateEntity() {
       switch (type) {
         case "organization":
           return hierarchyService.updateOrganization(id, data as any);
-        case "workspace":
-          return hierarchyService.updateWorkspace(id, data as any);
         case "project":
           return hierarchyService.updateProject(id, data as any);
         case "task":
@@ -241,8 +189,6 @@ export function useDeleteEntity() {
           return hierarchyService.deleteTask(id);
         case "project":
           return hierarchyService.deleteProject(id);
-        case "workspace":
-          return hierarchyService.deleteWorkspace(id);
         case "organization":
           return hierarchyService.deleteOrganization(id);
         default:
@@ -263,7 +209,7 @@ export function useMoveProject() {
   return useMutation({
     mutationFn: (params: {
       projectId: string;
-      target: { organization_id?: string | null; workspace_id?: string | null };
+      target: { organization_id?: string | null };
     }) => hierarchyService.moveProject(params.projectId, params.target),
     onSuccess: () => {
       invalidate();
@@ -287,22 +233,6 @@ export function useMoveTask() {
     },
     onError: (err: Error) =>
       toast.error("Failed to move task", { description: err.message }),
-  });
-}
-
-export function useMoveWorkspace() {
-  const invalidate = useInvalidateAll();
-  return useMutation({
-    mutationFn: (params: {
-      workspaceId: string;
-      target: { organization_id?: string; parent_workspace_id?: string | null };
-    }) => hierarchyService.moveWorkspace(params.workspaceId, params.target),
-    onSuccess: () => {
-      invalidate();
-      toast.success("Workspace moved");
-    },
-    onError: (err: Error) =>
-      toast.error("Failed to move workspace", { description: err.message }),
   });
 }
 

@@ -496,10 +496,9 @@ export const openAgentGateWindow = (options: AgentGateWindowPayload) =>
   });
 
 interface HierarchyCreationWindowPayload {
-  entityType: "organization" | "workspace" | "project" | "task";
+  entityType: "organization" | "project" | "task";
   presetContext?: {
     organization_id?: string | null;
-    workspace_id?: string | null;
     project_id?: string | null;
   };
   instanceId?: string;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { Building2, Users, FolderKanban, ListTodo, Calendar } from 'lucide-react';
+import { Building2, FolderKanban, ListTodo, Calendar } from 'lucide-react';
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   useCreateOrganization,
-  useCreateWorkspace,
   useCreateProject,
   useCreateTask,
   useUpdateEntity,
@@ -22,7 +21,6 @@ import type { HierarchyNode, HierarchyNodeType } from '../service/hierarchyServi
 const ICONS: Record<HierarchyNodeType, React.ComponentType<{ className?: string }>> = {
   user: Building2,
   organization: Building2,
-  workspace: Users,
   project: FolderKanban,
   task: ListTodo,
 };
@@ -30,7 +28,6 @@ const ICONS: Record<HierarchyNodeType, React.ComponentType<{ className?: string 
 const LABELS: Record<HierarchyNodeType, string> = {
   user: 'Personal',
   organization: 'Organization',
-  workspace: 'Workspace',
   project: 'Project',
   task: 'Task',
 };
@@ -79,12 +76,11 @@ export function HierarchyEntityModal({ entityType, mode = 'create', existingNode
   }, [name, isEdit, entityType]);
 
   const createOrg = useCreateOrganization();
-  const createWs = useCreateWorkspace();
   const createProj = useCreateProject();
   const createTask = useCreateTask();
   const updateEntity = useUpdateEntity();
 
-  const isPending = createOrg.isPending || createWs.isPending || createProj.isPending || createTask.isPending || updateEntity.isPending;
+  const isPending = createOrg.isPending || createProj.isPending || createTask.isPending || updateEntity.isPending;
 
   const handleSubmit = useCallback(async () => {
     if (!name.trim()) return;
@@ -119,24 +115,10 @@ export function HierarchyEntityModal({ entityType, mode = 'create', existingNode
         );
         break;
 
-      case 'workspace':
-        if (!orgId && !parentId) return;
-        createWs.mutate(
-          {
-            name: name.trim(),
-            organization_id: orgId ?? parentId!,
-            parent_workspace_id: parentType === 'workspace' ? parentId : undefined,
-            description: description || undefined,
-          },
-          opts
-        );
-        break;
-
       case 'project':
         createProj.mutate(
           {
             name: name.trim(),
-            workspace_id: parentType === 'workspace' ? parentId : undefined,
             organization_id: parentType === 'organization' ? parentId : orgId,
             description: description || undefined,
           },
@@ -159,7 +141,7 @@ export function HierarchyEntityModal({ entityType, mode = 'create', existingNode
         );
         break;
     }
-  }, [entityType, name, slug, description, status, priority, dueDate, website, parentId, parentType, orgId, onClose, isEdit, existingNode, createOrg, createWs, createProj, createTask, updateEntity]);
+  }, [entityType, name, slug, description, status, priority, dueDate, website, parentId, parentType, orgId, onClose, isEdit, existingNode, createOrg, createProj, createTask, updateEntity]);
 
   const Icon = ICONS[entityType];
   const label = LABELS[entityType];
@@ -176,7 +158,6 @@ export function HierarchyEntityModal({ entityType, mode = 'create', existingNode
           {!isEdit && (
             <DialogDescription className="text-xs">
               {entityType === 'organization' && 'Organizations are the top-level container for all your work.'}
-              {entityType === 'workspace' && 'Workspaces group related projects — often by client, department, or domain.'}
               {entityType === 'project' && 'Projects are bounded efforts with goals and deliverables.'}
               {entityType === 'task' && 'Tasks are individual units of work within a project.'}
             </DialogDescription>
@@ -192,7 +173,6 @@ export function HierarchyEntityModal({ entityType, mode = 'create', existingNode
               onChange={e => setName(e.target.value)}
               placeholder={
                 entityType === 'organization' ? 'e.g. Titanium Marketing'
-                : entityType === 'workspace' ? 'e.g. Cosmetic Injectables Medspa'
                 : entityType === 'project' ? 'e.g. Service Page Overhaul'
                 : 'e.g. Research Medical Content Best Practices'
               }
