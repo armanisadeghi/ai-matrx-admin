@@ -1,8 +1,5 @@
 "use client";
 
-// @deprecated — Replaced by the 6-layer architecture (NotesView → NoteContentEditor → Redux).
-// Kept for reference during migration. Will be deleted once the new system is stable.
-//
 // NotesWorkspace — Persistent client component that lives in the layout.
 // NEVER unmounts when switching between notes. Manages:
 // - Note content cache (Map<id, NoteData>) — instant tab switching

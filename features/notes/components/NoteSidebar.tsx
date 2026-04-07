@@ -122,8 +122,10 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
 
   const selectNote = useCallback(
     (noteId: string) => {
+      // Batch: add tab + set active in one tick, then fetch only if needed
       dispatch(addInstanceTab({ instanceId, noteId }));
       dispatch(setInstanceActiveTab({ instanceId, noteId }));
+      // fetchNoteContent checks _fetchStatus internally — skips if already "full"
       dispatch(fetchNoteContent(noteId));
     },
     [dispatch, instanceId],

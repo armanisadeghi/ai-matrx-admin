@@ -1,5 +1,9 @@
 // features/notes/redux/selectors.ts
 // Memoized selectors for the notes Redux slice.
+//
+// CRITICAL: Curried selectors (per-note, per-instance) use a Map cache
+// so the same ID always returns the same selector instance. Without this,
+// useAppSelector would create a new selector on every render → infinite loop.
 
 import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
@@ -10,7 +14,18 @@ import type {
   NotesSliceState,
 } from "./notes.types";
 
-// ── Default folder ordering ────────────────────────────────────────────────
+// ── Selector cache to prevent re-creation on every render ───────────────────
+
+const selectorCache = new Map<string, any>();
+
+function cached<T>(key: string, factory: () => T): T {
+  if (!selectorCache.has(key)) {
+    selectorCache.set(key, factory());
+  }
+  return selectorCache.get(key) as T;
+}
+
+// ── Default folder ordering ─────────────────────────────────────────────────
 
 const DEFAULT_FOLDER_ORDER: readonly string[] = [
   "Draft",
@@ -20,28 +35,73 @@ const DEFAULT_FOLDER_ORDER: readonly string[] = [
   "Scratch",
 ];
 
-// ---------------------------------------------------------------------------
-// 1. Base selectors
-// ---------------------------------------------------------------------------
+// ═══════════════════════════════════════════════════════════════════════════════
+// 1. BASE SELECTORS
+// ═══════════════════════════════════════════════════════════════════════════════
 
-/** Full notes slice state. */
 export const selectNotesState = (state: RootState): NotesSliceState =>
   state.notes;
 
-/** The notes record map (keyed by ID). */
 export const selectNotesMap = createSelector(
   [selectNotesState],
   (slice) => slice.notes,
 );
 
-/** Single note record by ID (curried). Returns undefined if not in state. */
-export const selectNoteById = (noteId: string) =>
-  createSelector(
-    selectNotesMap,
-    (notes): NoteRecord | undefined => notes[noteId],
-  );
+const selectInstancesMap = createSelector(
+  [selectNotesState],
+  (slice) => slice.instances,
+);
 
-/** The active note ID (or null) — derived from the first instance's activeTabId. */
+// ═══════════════════════════════════════════════════════════════════════════════
+// 2. GLOBAL LIST SELECTORS (non-curried — safe for direct use)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const selectAllNotesList = createSelector(
+  [selectNotesMap],
+  (notes): NoteRecord[] =>
+    Object.values(notes)
+      .filter((n) => !n.is_deleted)
+      .sort((a, b) => {
+        if (a.position !== b.position) return a.position - b.position;
+        return (b.updated_at ?? "").localeCompare(a.updated_at ?? "");
+      }),
+);
+
+export const selectAllFolders = createSelector(
+  [selectAllNotesList],
+  (notes): string[] => {
+    const folderSet = new Set<string>(DEFAULT_FOLDER_ORDER);
+    for (const note of notes) {
+      if (note.folder_name) folderSet.add(note.folder_name);
+    }
+    return Array.from(folderSet).sort((a, b) => {
+      const aIdx = DEFAULT_FOLDER_ORDER.indexOf(a);
+      const bIdx = DEFAULT_FOLDER_ORDER.indexOf(b);
+      if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+      if (aIdx !== -1) return -1;
+      if (bIdx !== -1) return 1;
+      return a.localeCompare(b);
+    });
+  },
+);
+
+export const selectNotesListStatus = createSelector(
+  [selectNotesState],
+  (slice) => slice.listStatus,
+);
+
+export const selectRealtimeConnected = createSelector(
+  [selectNotesState],
+  (slice) => slice.realtimeConnected,
+);
+
+export const selectSavingNoteIds = createSelector(
+  [selectNotesState],
+  (slice) => slice._pendingDispatchIds,
+);
+
+// ── Derived global selectors ────────────────────────────────────────────────
+
 export const selectActiveNoteId = createSelector(
   [selectNotesState],
   (slice): string | null => {
@@ -50,104 +110,12 @@ export const selectActiveNoteId = createSelector(
   },
 );
 
-/** The full active note record (or undefined). */
 export const selectActiveNote = createSelector(
   [selectNotesMap, selectActiveNoteId],
   (notes, activeId): NoteRecord | undefined =>
     activeId ? notes[activeId] : undefined,
 );
 
-// ---------------------------------------------------------------------------
-// 2. List selectors
-// ---------------------------------------------------------------------------
-
-/** Array of all non-deleted notes, sorted by position then updated_at desc. */
-export const selectAllNotesList = createSelector(
-  [selectNotesMap],
-  (notes): NoteRecord[] =>
-    Object.values(notes)
-      .filter((n) => !n.is_deleted)
-      .sort((a, b) => {
-        if (a.position !== b.position) return a.position - b.position;
-        return b.updated_at.localeCompare(a.updated_at);
-      }),
-);
-
-/** Unique folder names sorted with defaults first, then alphabetical. */
-export const selectAllFolders = createSelector(
-  [selectAllNotesList],
-  (notes): string[] => {
-    const folderSet = new Set<string>();
-    for (const note of notes) {
-      if (note.folder_name) folderSet.add(note.folder_name);
-    }
-
-    // Always include the default folders even if no notes exist in them
-    for (const folder of DEFAULT_FOLDER_ORDER) {
-      folderSet.add(folder);
-    }
-
-    const folders = Array.from(folderSet);
-    return folders.sort((a, b) => {
-      const aIdx = DEFAULT_FOLDER_ORDER.indexOf(a);
-      const bIdx = DEFAULT_FOLDER_ORDER.indexOf(b);
-      const aIsDefault = aIdx !== -1;
-      const bIsDefault = bIdx !== -1;
-
-      if (aIsDefault && bIsDefault) return aIdx - bIdx;
-      if (aIsDefault) return -1;
-      if (bIsDefault) return 1;
-      return a.localeCompare(b);
-    });
-  },
-);
-
-/** Notes in a specific folder (curried). Returns sorted non-deleted notes. */
-export const selectNotesByFolder = (folder: string) =>
-  createSelector(selectAllNotesList, (notes): NoteRecord[] =>
-    notes.filter((n) => n.folder_name === folder),
-  );
-
-/**
- * Filtered list of notes. All filters are optional.
- * - search: case-insensitive substring match against label, content, and tags
- * - folder: exact folder_name match
- * - tags: note must contain ALL specified tags
- */
-export const selectFilteredNotes = (
-  search?: string,
-  folder?: string,
-  tags?: string[],
-) =>
-  createSelector(selectAllNotesList, (notes): NoteRecord[] => {
-    let result = notes;
-
-    if (folder) {
-      result = result.filter((n) => n.folder_name === folder);
-    }
-
-    if (tags && tags.length > 0) {
-      result = result.filter((n) => tags.every((tag) => n.tags.includes(tag)));
-    }
-
-    if (search) {
-      const query = search.toLowerCase();
-      result = result.filter(
-        (n) =>
-          n.label.toLowerCase().includes(query) ||
-          n.content.toLowerCase().includes(query) ||
-          n.tags.some((t) => t.toLowerCase().includes(query)),
-      );
-    }
-
-    return result;
-  });
-
-// ---------------------------------------------------------------------------
-// 3. Tab selectors
-// ---------------------------------------------------------------------------
-
-/** Open tab IDs in order — derived from the first instance's openTabs. */
 export const selectOpenTabs = createSelector(
   [selectNotesState],
   (slice): string[] => {
@@ -156,280 +124,183 @@ export const selectOpenTabs = createSelector(
   },
 );
 
-/** Full note records for all open tabs (preserves tab order). */
 export const selectOpenTabNotes = createSelector(
   [selectNotesMap, selectOpenTabs],
   (notes, tabIds): NoteRecord[] =>
     tabIds
       .map((id) => notes[id])
-      .filter((record): record is NoteRecord => record !== undefined),
+      .filter((r): r is NoteRecord => r !== undefined),
 );
 
-// ---------------------------------------------------------------------------
-// 4. Undo/Redo selectors (per-note, curried)
-// ---------------------------------------------------------------------------
+// ── Presence ────────────────────────────────────────────────────────────────
 
-/** Whether the note has undo history available. */
-export const selectNoteCanUndo = (noteId: string) =>
-  createSelector(selectNotesMap, (notes): boolean => {
-    const record = notes[noteId];
-    return record ? record._undoPast.length > 0 : false;
-  });
-
-/** Whether the note has redo history available. */
-export const selectNoteCanRedo = (noteId: string) =>
-  createSelector(selectNotesMap, (notes): boolean => {
-    const record = notes[noteId];
-    return record ? record._undoFuture.length > 0 : false;
-  });
-
-/** Number of undo steps available for the note. */
-export const selectNoteUndoDepth = (noteId: string) =>
-  createSelector(selectNotesMap, (notes): number => {
-    const record = notes[noteId];
-    return record ? record._undoPast.length : 0;
-  });
-
-/** Number of redo steps available for the note. */
-export const selectNoteRedoDepth = (noteId: string) =>
-  createSelector(selectNotesMap, (notes): number => {
-    const record = notes[noteId];
-    return record ? record._undoFuture.length : 0;
-  });
-
-// ---------------------------------------------------------------------------
-// 5. Dirty / Save state (per-note, curried)
-// ---------------------------------------------------------------------------
-
-/** Whether the note has unsaved local changes. */
-export const selectNoteIsDirty = (noteId: string) =>
-  createSelector(selectNotesMap, (notes): boolean => {
-    const record = notes[noteId];
-    return record ? record._dirty : false;
-  });
-
-/** The set of dirty field names for the note. */
-export const selectNoteDirtyFields = (noteId: string) =>
-  createSelector(selectNotesMap, (notes): Set<string> => {
-    const record = notes[noteId];
-    return record ? record._dirtyFields : new Set();
-  });
-
-/**
- * Computed save state for a note:
- * - "conflict" — server changed while local edits exist
- * - "saving"   — save request in flight
- * - "dirty"    — local changes pending save
- * - "saved"    — no pending changes
- */
-export const selectNoteSaveState = (noteId: string) =>
-  createSelector(
-    selectNotesMap,
-    (notes): "saved" | "dirty" | "saving" | "conflict" => {
-      const record = notes[noteId];
-      if (!record) return "saved";
-      if (record._error === "conflict") return "conflict";
-      if (record._saving) return "saving";
-      if (record._dirty) return "dirty";
-      return "saved";
-    },
-  );
-
-/** Whether the note is currently loading (individual fetch in progress). */
-export const selectNoteIsLoading = (noteId: string) =>
-  createSelector(selectNotesMap, (notes): boolean => {
-    const record = notes[noteId];
-    return record ? record._loading : false;
-  });
-
-/** The fetch status for the note: "list", "full", or null if not fetched. */
-export const selectNoteFetchStatus = (noteId: string) =>
-  createSelector(selectNotesMap, (notes): NoteFetchStatus | null => {
-    const record = notes[noteId];
-    return record ? record._fetchStatus : null;
-  });
-
-// ---------------------------------------------------------------------------
-// 6. Global selectors
-// ---------------------------------------------------------------------------
-
-/** Global list fetch status: "idle" | "loading" | "loaded" | "error". */
-export const selectNotesListStatus = createSelector(
-  [selectNotesState],
-  (slice) => slice.listStatus,
-);
-
-/** Whether the realtime subscription channel is connected. */
-export const selectRealtimeConnected = createSelector(
-  [selectNotesState],
-  (slice) => slice.realtimeConnected,
-);
-
-/** IDs of notes currently being saved (used for echo suppression). */
-export const selectSavingNoteIds = createSelector(
-  [selectNotesState],
-  (slice) => slice._pendingDispatchIds,
-);
-
-// ---------------------------------------------------------------------------
-// 7. Per-instance selectors
-// ---------------------------------------------------------------------------
-
-/** The instances record map. */
-const selectInstancesMap = createSelector(
-  [selectNotesState],
-  (slice) => slice.instances,
-);
-
-/** Full instance by ID (curried). Returns undefined if not registered. */
-export const selectInstance = (instanceId: string) =>
-  createSelector(
-    selectInstancesMap,
-    (instances): NotesInstance | undefined => instances[instanceId],
-  );
-
-/** Open tab IDs for a specific instance (curried). Returns undefined if instance not registered. */
-export const selectInstanceTabs = (instanceId: string) =>
-  createSelector(
-    selectInstancesMap,
-    (instances): string[] | undefined => instances[instanceId]?.openTabs,
-  );
-
-/** Active tab ID for a specific instance (curried). Returns undefined if instance not registered. */
-export const selectInstanceActiveTab = (instanceId: string) =>
-  createSelector(
-    selectInstancesMap,
-    (instances): string | null | undefined =>
-      instances[instanceId]?.activeTabId,
-  );
-
-/** Whether a given note is the active tab in an instance (curried). */
-export const selectIsActiveTab = (instanceId: string, noteId: string) =>
-  createSelector(
-    selectInstancesMap,
-    (instances): boolean => instances[instanceId]?.activeTabId === noteId,
-  );
-
-// ---------------------------------------------------------------------------
-// 8. Per-note granular selectors (single fields)
-// ---------------------------------------------------------------------------
-
-/** Note content string by ID (curried). Returns the existing string ref from state. */
-export const selectNoteContent = (noteId: string) =>
-  createSelector(
-    selectNotesMap,
-    (notes): string | undefined => notes[noteId]?.content,
-  );
-
-/** Note label string by ID (curried). Returns the existing string ref from state. */
-export const selectNoteLabel = (noteId: string) =>
-  createSelector(
-    selectNotesMap,
-    (notes): string | undefined => notes[noteId]?.label,
-  );
-
-/** Note folder name by ID (curried). Returns the existing string ref from state. */
-export const selectNoteFolder = (noteId: string) =>
-  createSelector(
-    selectNotesMap,
-    (notes): string | undefined => notes[noteId]?.folder_name,
-  );
-
-/** Note tags array by ID (curried). Returns the existing array ref from state. */
-export const selectNoteTags = (noteId: string) =>
-  createSelector(
-    selectNotesMap,
-    (notes): string[] | undefined => notes[noteId]?.tags,
-  );
-
-/** Last editor mode from note metadata by ID (curried). */
-export const selectNoteEditorMode = (noteId: string) =>
-  createSelector(
-    selectNotesMap,
-    (notes): string | undefined =>
-      (notes[noteId]?.metadata as Record<string, unknown>)?.lastEditorMode as
-        | string
-        | undefined,
-  );
-
-/** Whether a note is auto-generated (client-only) by ID (curried). */
-export const selectNoteIsAutogenerated = (noteId: string) =>
-  createSelector(
-    selectNotesMap,
-    (notes): boolean => notes[noteId]?._isAutogenerated ?? false,
-  );
-
-/** Whether a note is dirty by ID (curried). Primitive boolean — safe for useAppSelector. */
-export const selectNoteIsDirtyById = (noteId: string) =>
-  createSelector(
-    selectNotesMap,
-    (notes): boolean => notes[noteId]?._dirty ?? false,
-  );
-
-/** Whether a note is saving by ID (curried). Primitive boolean. */
-export const selectNoteIsSavingById = (noteId: string) =>
-  createSelector(
-    selectNotesMap,
-    (notes): boolean => notes[noteId]?._saving ?? false,
-  );
-
-/** Whether a note is the active tab in a given instance (primitive boolean). */
-export const selectIsInstanceActiveTab =
-  (instanceId: string, noteId: string) =>
-  (state: RootState): boolean =>
-    state.notes.instances?.[instanceId]?.activeTabId === noteId;
-
-// ---------------------------------------------------------------------------
-// 9. Presence selectors
-// ---------------------------------------------------------------------------
-
-/** Whether other users are currently active in the notes system. */
 export const selectOtherUsersActive = createSelector(
   [selectNotesState],
   (slice): boolean => slice.otherUsersActive,
 );
 
-/** Whether the currently active note is being edited by another user. */
 export const selectActiveNoteEditedByOthers = createSelector(
   [selectNotesState],
   (slice): boolean => slice.activeNoteEditedByOthers,
 );
 
-// ---------------------------------------------------------------------------
-// 10. Auto-generated note check
-// ---------------------------------------------------------------------------
+// ═══════════════════════════════════════════════════════════════════════════════
+// 3. PER-NOTE SELECTORS (curried + cached — SAFE for useAppSelector)
+//
+// Each returns a STABLE selector instance for a given noteId.
+// Call pattern: useAppSelector(selectNoteContent(noteId))
+// ═══════════════════════════════════════════════════════════════════════════════
 
-/**
- * Find an auto-generated note with empty content in the given folder.
- * Returns the note ID or null if none found (curried).
- */
-export const selectAutogeneratedEmptyNote = (folder: string) =>
-  createSelector(selectNotesMap, (notes): string | null => {
-    for (const [id, record] of Object.entries(notes)) {
-      if (
-        record._isAutogenerated &&
-        record.content === "" &&
-        record.folder_name === folder &&
-        !record.is_deleted
-      ) {
-        return id;
-      }
-    }
-    return null;
-  });
+export const selectNoteById = (noteId: string) =>
+  cached(`noteById:${noteId}`, () =>
+    createSelector(selectNotesMap, (notes): NoteRecord | undefined => notes[noteId]),
+  );
 
-// ---------------------------------------------------------------------------
-// 11. Pending dispatch (echo suppression)
-// ---------------------------------------------------------------------------
+export const selectNoteContent = (noteId: string) =>
+  cached(`noteContent:${noteId}`, () =>
+    createSelector(selectNotesMap, (notes): string | undefined => notes[noteId]?.content),
+  );
 
-/** The full set of note IDs with a pending dispatch. */
+export const selectNoteLabel = (noteId: string) =>
+  cached(`noteLabel:${noteId}`, () =>
+    createSelector(selectNotesMap, (notes): string | undefined => notes[noteId]?.label),
+  );
+
+export const selectNoteFolder = (noteId: string) =>
+  cached(`noteFolder:${noteId}`, () =>
+    createSelector(selectNotesMap, (notes): string | undefined => notes[noteId]?.folder_name),
+  );
+
+export const selectNoteTags = (noteId: string) =>
+  cached(`noteTags:${noteId}`, () =>
+    createSelector(selectNotesMap, (notes): string[] | undefined => notes[noteId]?.tags),
+  );
+
+export const selectNoteEditorMode = (noteId: string) =>
+  cached(`noteMode:${noteId}`, () =>
+    createSelector(selectNotesMap, (notes): string | undefined =>
+      (notes[noteId]?.metadata as Record<string, unknown>)?.lastEditorMode as string | undefined,
+    ),
+  );
+
+export const selectNoteIsAutogenerated = (noteId: string) =>
+  cached(`noteAutogen:${noteId}`, () =>
+    createSelector(selectNotesMap, (notes): boolean => notes[noteId]?._isAutogenerated ?? false),
+  );
+
+// ── Per-note primitive selectors (boolean/number — no reference issues) ─────
+
+export const selectNoteIsDirtyById = (noteId: string): ((state: RootState) => boolean) =>
+  (state) => state.notes?.notes?.[noteId]?._dirty ?? false;
+
+export const selectNoteIsSavingById = (noteId: string): ((state: RootState) => boolean) =>
+  (state) => state.notes?.notes?.[noteId]?._saving ?? false;
+
+export const selectNoteIsDirty = selectNoteIsDirtyById;
+
+export const selectNoteSaveState = (noteId: string): ((state: RootState) => "saved" | "dirty" | "saving" | "conflict") =>
+  (state) => {
+    const record = state.notes?.notes?.[noteId];
+    if (!record) return "saved";
+    if (record._error === "conflict") return "conflict";
+    if (record._saving) return "saving";
+    if (record._dirty) return "dirty";
+    return "saved";
+  };
+
+export const selectNoteIsLoading = (noteId: string): ((state: RootState) => boolean) =>
+  (state) => state.notes?.notes?.[noteId]?._loading ?? false;
+
+export const selectNoteFetchStatus = (noteId: string): ((state: RootState) => NoteFetchStatus | null) =>
+  (state) => state.notes?.notes?.[noteId]?._fetchStatus ?? null;
+
+export const selectNoteCanUndo = (noteId: string): ((state: RootState) => boolean) =>
+  (state) => (state.notes?.notes?.[noteId]?._undoPast?.length ?? 0) > 0;
+
+export const selectNoteCanRedo = (noteId: string): ((state: RootState) => boolean) =>
+  (state) => (state.notes?.notes?.[noteId]?._undoFuture?.length ?? 0) > 0;
+
+export const selectNoteUndoDepth = (noteId: string): ((state: RootState) => number) =>
+  (state) => state.notes?.notes?.[noteId]?._undoPast?.length ?? 0;
+
+export const selectNoteRedoDepth = (noteId: string): ((state: RootState) => number) =>
+  (state) => state.notes?.notes?.[noteId]?._undoFuture?.length ?? 0;
+
+export const selectNoteDirtyFields = (noteId: string): ((state: RootState) => Set<string>) =>
+  (state) => state.notes?.notes?.[noteId]?._dirtyFields ?? new Set();
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 4. PER-INSTANCE SELECTORS (curried + cached)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const selectInstance = (instanceId: string) =>
+  cached(`inst:${instanceId}`, () =>
+    createSelector(selectInstancesMap, (instances): NotesInstance | undefined => instances[instanceId]),
+  );
+
+export const selectInstanceTabs = (instanceId: string) =>
+  cached(`instTabs:${instanceId}`, () =>
+    createSelector(selectInstancesMap, (instances): string[] | undefined => instances[instanceId]?.openTabs),
+  );
+
+export const selectInstanceActiveTab = (instanceId: string) =>
+  cached(`instActive:${instanceId}`, () =>
+    createSelector(selectInstancesMap, (instances): string | null | undefined => instances[instanceId]?.activeTabId),
+  );
+
+export const selectIsActiveTab = (instanceId: string, noteId: string): ((state: RootState) => boolean) =>
+  (state) => state.notes?.instances?.[instanceId]?.activeTabId === noteId;
+
+export const selectIsInstanceActiveTab = selectIsActiveTab;
+
+export const selectIsPendingDispatch = (noteId: string): ((state: RootState) => boolean) =>
+  (state) => state.notes?._pendingDispatchIds?.has?.(noteId) ?? false;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 5. SPECIALIZED SELECTORS
+// ═══════════════════════════════════════════════════════════════════════════════
+
 export const selectPendingDispatchIds = createSelector(
   [selectNotesState],
-  (slice): Set<string> => slice._pendingDispatchIds,
+  (slice) => slice._pendingDispatchIds,
 );
 
-/** Whether a specific note has a pending dispatch (curried). */
-export const selectIsPendingDispatch = (noteId: string) =>
-  createSelector([selectNotesState], (slice): boolean =>
-    slice._pendingDispatchIds.has(noteId),
+export const selectNotesByFolder = (folder: string) =>
+  cached(`notesByFolder:${folder}`, () =>
+    createSelector(selectAllNotesList, (notes): NoteRecord[] =>
+      notes.filter((n) => n.folder_name === folder),
+    ),
+  );
+
+export const selectFilteredNotes = (search?: string, folder?: string, tags?: string[]) => {
+  const key = `filtered:${search ?? ""}:${folder ?? ""}:${(tags ?? []).join(",")}`;
+  return cached(key, () =>
+    createSelector(selectAllNotesList, (notes): NoteRecord[] => {
+      let result = notes;
+      if (folder) result = result.filter((n) => n.folder_name === folder);
+      if (tags && tags.length > 0) result = result.filter((n) => tags.every((t) => n.tags.includes(t)));
+      if (search) {
+        const q = search.toLowerCase();
+        result = result.filter(
+          (n) =>
+            n.label.toLowerCase().includes(q) ||
+            (n.content ?? "").toLowerCase().includes(q) ||
+            n.tags.some((t) => t.toLowerCase().includes(q)),
+        );
+      }
+      return result;
+    }),
+  );
+};
+
+export const selectAutogeneratedEmptyNote = (folder: string) =>
+  cached(`autogen:${folder}`, () =>
+    createSelector(selectNotesMap, (notes): string | null => {
+      for (const [id, record] of Object.entries(notes)) {
+        if (record._isAutogenerated && !(record.content ?? "").trim() && record.folder_name === folder) {
+          return id;
+        }
+      }
+      return null;
+    }),
   );

@@ -20,7 +20,6 @@ import {
 } from "../redux/selectors";
 import { NoteEditorCore, type EditorMode } from "./NoteEditorCore";
 
-// Lazy load the context menu (heavy: AI, Redux, modals)
 const NoteContextMenu = dynamic(
   () => import("@/app/(ssr)/ssr/notes/_components/NoteContextMenu"),
   { ssr: false },
@@ -33,51 +32,54 @@ interface NoteContentEditorProps {
 export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
   const dispatch = useAppDispatch();
 
-  // ── Read from Redux (memoized selectors — no new references) ────────
-  const reduxContentRaw = useAppSelector(selectNoteContent(noteId));
-  const reduxContent = reduxContentRaw ?? "";
-  const editorModeRaw = useAppSelector(selectNoteEditorMode(noteId));
-  const editorMode = (editorModeRaw ?? "plain") as EditorMode;
+  // ── Redux selectors (cached — stable references) ──────────────────
+  const reduxContent = useAppSelector(selectNoteContent(noteId)) ?? "";
+  const editorMode = (useAppSelector(selectNoteEditorMode(noteId)) ?? "plain") as EditorMode;
   const isDirty = useAppSelector(selectNoteIsDirtyById(noteId));
   const allFolders = useAppSelector(selectAllFolders);
-  const currentFolderRaw = useAppSelector(selectNoteFolder(noteId));
-  const currentFolder = currentFolderRaw ?? "Draft";
+  const currentFolder = useAppSelector(selectNoteFolder(noteId)) ?? "Draft";
 
-  // ── Local state for instant keystroke response ───────────────────────
-  // React can't re-render from Redux fast enough for every keystroke.
-  // We mirror content locally and debounce sync to Redux.
+  // ── Local content state — initialized from Redux, synced back on debounce
   const [localContent, setLocalContent] = useState(reduxContent);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastReduxContentRef = useRef(reduxContent);
+  const lastReduxRef = useRef(reduxContent);
+  const noteIdRef = useRef(noteId);
 
-  // ── Sync Redux → local when Redux changes externally ─────────────────
-  // (e.g., undo/redo, realtime update, version restore)
-  useEffect(() => {
-    // Only update local if Redux content changed from an external source
-    // (not from our own dispatch — which we track via lastReduxContentRef)
-    if (reduxContent !== lastReduxContentRef.current) {
-      lastReduxContentRef.current = reduxContent;
+  // ── When noteId changes, reset local content from Redux immediately
+  if (noteId !== noteIdRef.current) {
+    noteIdRef.current = noteId;
+    lastReduxRef.current = reduxContent;
+    setLocalContent(reduxContent);
+  }
+
+  // ── When Redux content changes externally (undo, realtime, fetch completion)
+  // update local state — but NOT if we caused the change ourselves
+  if (reduxContent !== lastReduxRef.current) {
+    lastReduxRef.current = reduxContent;
+    // Only update local if the change came from outside (not our own dispatch)
+    // We detect this by checking if local content differs from the new Redux content
+    // AND we don't have a pending sync timer (which means we're the ones who changed it)
+    if (!syncTimerRef.current) {
       setLocalContent(reduxContent);
     }
-  }, [reduxContent]);
+  }
 
-  // ── Sync local → Redux on debounce ───────────────────────────────────
+  // ── Debounced sync: local → Redux ─────────────────────────────────
   const syncToRedux = useCallback(
     (content: string) => {
       if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
 
       const delay = getReduxSyncDelay(content.length);
       syncTimerRef.current = setTimeout(() => {
-        lastReduxContentRef.current = content;
+        syncTimerRef.current = null;
+        lastReduxRef.current = content;
         dispatch(updateNoteContent({ id: noteId, content }));
-        // Auto-save middleware will pick this up and schedule DB write
       }, delay);
     },
     [dispatch, noteId],
   );
 
-  // ── Handle content changes from the editor ───────────────────────────
   const handleChange = useCallback(
     (content: string) => {
       setLocalContent(content);
@@ -86,19 +88,14 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
     [syncToRedux],
   );
 
-  // ── Flush on unmount ─────────────────────────────────────────────────
+  // ── Cleanup timer on unmount ──────────────────────────────────────
   useEffect(() => {
     return () => {
-      if (syncTimerRef.current) {
-        clearTimeout(syncTimerRef.current);
-        // Flush the last content to Redux synchronously
-        // Can't dispatch in cleanup, but the auto-save middleware
-        // will catch the dirty state on next opportunity
-      }
+      if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
     };
   }, []);
 
-  // ── Render ───────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────
   return (
     <NoteContextMenu
       noteId={noteId}
@@ -108,8 +105,9 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
       noteContent={localContent}
       textareaRef={textareaRef}
       onSave={() => {
-        // Flush local to Redux immediately
-        lastReduxContentRef.current = localContent;
+        if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+        syncTimerRef.current = null;
+        lastReduxRef.current = localContent;
         dispatch(updateNoteContent({ id: noteId, content: localContent }));
       }}
       onDuplicate={() => {}}

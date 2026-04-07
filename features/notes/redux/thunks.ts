@@ -105,9 +105,16 @@ export const fetchNotesList = createAsyncThunk<void, void>(
  * Fetch the full note when a tab is opened.
  * Dispatches upsertNoteFromServer with fetchStatus "full".
  */
-export const fetchNoteContent = createAsyncThunk<Note, string>(
+export const fetchNoteContent = createAsyncThunk<Note | null, string>(
   "notes/fetchNoteContent",
-  async (noteId, { dispatch }) => {
+  async (noteId, { dispatch, getState }) => {
+    // Skip if we already have full content — never refetch unless forced
+    const state = getState() as RootState;
+    const existing = state.notes?.notes?.[noteId];
+    if (existing?._fetchStatus === "full") {
+      return null; // Already have it — no network call
+    }
+
     const { data, error } = await supabase
       .from("notes")
       .select("*")

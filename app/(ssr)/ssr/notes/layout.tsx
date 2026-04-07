@@ -1,17 +1,17 @@
 // app/(ssr)/ssr/notes/layout.tsx
-// New 6-layer architecture. NotesView handles everything via Redux.
-// No prop drilling. Each layer reads its own selectors.
+// Synchronous layout — no auth, no DB, no async work.
+// SidebarClient and NotesWorkspace fetch their own data after mount via Supabase client.
 
 import "./notes.css";
-import { NotesView } from "@/features/notes/components/NotesView";
+import SidebarClient from "./_components/SidebarClient";
+import NotesWorkspace from "./_components/NotesWorkspace";
 
 export const metadata = {
   title: "Notes | AI Matrx",
   description: "Create and manage your notes and documents",
 };
 
-// DEPRECATED — kept for backward compatibility during migration.
-// Remove once old SidebarClient and NotesWorkspace are deleted.
+// Lightweight note shape for the sidebar — no content field
 export interface NoteSummary {
   id: string;
   label: string;
@@ -27,18 +27,17 @@ export default function NotesLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className="notes-root h-full overflow-hidden relative z-0"
-      style={{ paddingTop: "var(--shell-header-h)" }}
-    >
-      {/* Shell sentinel — hides the dock on this route */}
+    <div className="notes-root grid grid-cols-[280px_1fr] grid-rows-[1fr] h-full overflow-hidden relative z-0" style={{ paddingTop: 'var(--shell-header-h)' }}>
+      {/* Shell sentinels — one class, zero logic. shell.css handles all consequences. */}
       <span className="shell-hide-dock" aria-hidden="true" />
+      <aside className="notes-sidebar flex flex-col overflow-hidden border-r border-border/30 pt-0 pb-2.5">
+        <SidebarClient />
+      </aside>
 
-      {/* NotesView: Layer 6 instance wrapper. Renders sidebar + tabs + editor. */}
-      <NotesView className="h-full" />
-
-      {/* Children slot for sub-routes (e.g., /notes/share/[id]) */}
-      <div style={{ display: "none" }}>{children}</div>
+      <div className="notes-content flex flex-col overflow-hidden">
+        <NotesWorkspace />
+        <div style={{ display: "none" }}>{children}</div>
+      </div>
     </div>
   );
 }
