@@ -81,6 +81,7 @@ import type {
   CustomToolDefinition,
   CustomToolInputSchema,
 } from "@/features/agents/types/agent-api-types";
+import { fetchToolsAction } from "@/features/agents/actions/tools.actions";
 
 type ToolsTab = "server" | "custom" | "client" | "mcp";
 
@@ -94,9 +95,34 @@ interface AgentToolsManagerProps {
 
 export function AgentToolsManager({
   agentId,
-  availableTools = [],
+  availableTools: externalTools,
 }: AgentToolsManagerProps) {
+  const [internalTools, setInternalTools] = useState<DatabaseTool[]>([]);
+  const [isLoading, setIsLoading] = useState(externalTools === undefined);
   const [activeTab, setActiveTab] = useState<ToolsTab>("server");
+
+  useEffect(() => {
+    if (externalTools === undefined) {
+      let active = true;
+      setIsLoading(true);
+      fetchToolsAction()
+        .then((tools) => {
+          if (active) {
+            setInternalTools(tools);
+            setIsLoading(false);
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to fetch tools", error);
+          if (active) setIsLoading(false);
+        });
+      return () => {
+        active = false;
+      };
+    }
+  }, [externalTools]);
+
+  const availableTools = externalTools ?? internalTools;
 
   const tabs: { id: ToolsTab; label: string; icon: React.ReactNode }[] = [
     {
@@ -116,6 +142,15 @@ export function AgentToolsManager({
     },
     { id: "mcp", label: "MCP Tools", icon: <Plug className="w-3 h-3" /> },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground mr-2" />
+        <span className="text-sm text-muted-foreground">Loading tools...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full overflow-hidden">

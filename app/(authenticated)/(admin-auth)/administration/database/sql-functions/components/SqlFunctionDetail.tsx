@@ -186,16 +186,22 @@ export default function SqlFunctionDetail({
   const [defCopied, setDefCopied] = useState(false);
   const parsedArgs = parseArguments(func.arguments);
 
-  const signatureText = `${func.schema}.${func.name}(${func.arguments})`;
+  const fnLabel = `${func.schema}.${func.name}`;
+  const signatureText = `-- Signature: ${fnLabel}\n${fnLabel}(${func.arguments}) → ${func.returns}`;
   const argsText =
     parsedArgs.length > 0
-      ? parsedArgs
+      ? `-- Arguments for ${fnLabel}\n` +
+        parsedArgs
           .map(
             (a, i) =>
-              `${a.name || `$${i + 1}`}: ${a.type}${a.defaultValue ? ` = ${a.defaultValue}` : ""}`,
+              `${a.name || `$${i + 1}`}: ${a.type}${a.defaultValue ? ` DEFAULT ${a.defaultValue}` : ""}`,
           )
           .join("\n")
       : func.arguments;
+  const returnsText = `-- Return type for ${fnLabel}\n${func.returns}`;
+  const descriptionText = func.description
+    ? `-- Description for ${fnLabel}\n${func.description}`
+    : "";
 
   const handleCopyCode = () => {
     if (func.definition) {
@@ -395,7 +401,7 @@ export default function SqlFunctionDetail({
               <h4 className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Returns
               </h4>
-              <CopyButton text={func.returns} label="Copy return type" />
+              <CopyButton text={returnsText} label="Copy return type" />
             </div>
             <div className="bg-slate-50 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 px-2.5 py-1.5">
               <code className="font-mono text-xs text-emerald-600 dark:text-emerald-400 font-medium">
@@ -411,7 +417,7 @@ export default function SqlFunctionDetail({
                 <h4 className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Description
                 </h4>
-                <CopyButton text={func.description} label="Copy description" />
+                <CopyButton text={descriptionText} label="Copy description" />
               </div>
               <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed px-1">
                 {func.description}

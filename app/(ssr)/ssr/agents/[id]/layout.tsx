@@ -21,16 +21,11 @@ export default async function AgentIdLayout({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [agentResult, availableTools] = await Promise.all([
-    supabase
-      .from("agx_agent")
-      .select("id, name, description")
-      .eq("id", id)
-      .single(),
-    serverToolsService.fetchTools(),
-  ]);
-
-  const { data, error } = agentResult;
+  const { data, error } = await supabase
+    .from("agx_agent")
+    .select("id, name, description")
+    .eq("id", id)
+    .single();
 
   if (error || !data) {
     return (
@@ -60,7 +55,6 @@ export default async function AgentIdLayout({
     <AgentPageProvider
       agentId={id}
       agentName={data.name ?? "Agent"}
-      availableTools={availableTools as unknown as DatabaseTool[]}
     >
       <PageHeader>
         <AgentSharedHeader />

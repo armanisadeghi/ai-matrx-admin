@@ -19,12 +19,10 @@ import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 interface AgentBuilderLeftPanelProps {
   agentId: string;
-  availableTools?: DatabaseTool[];
 }
 
 export function AgentBuilderLeftPanel({
   agentId,
-  availableTools = [],
 }: AgentBuilderLeftPanelProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
@@ -51,10 +49,7 @@ export function AgentBuilderLeftPanel({
     <div className="flex flex-col h-full">
       {/* Top config — never scrolls */}
       <div className="flex flex-col gap-2 shrink-0 pt-0.5 pb-2">
-        <AgentModelConfiguration
-          agentId={agentId}
-          availableTools={availableTools}
-        />
+        <AgentModelConfiguration agentId={agentId} />
         <AgentVariablesManager agentId={agentId} />
         <AgentContextSlotsManager agentId={agentId} />
       </div>

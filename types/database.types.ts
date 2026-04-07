@@ -16047,7 +16047,7 @@ export type Database = {
         }[]
       }
       agx_get_list: {
-        Args: never
+        Args: { p_limit?: number; p_offset?: number }
         Returns: {
           access_level: string
           agent_type: string
@@ -18732,6 +18732,20 @@ export type Database = {
           table_name: string
         }[]
       }
+      get_tool_detail: { Args: { p_tool_id: string }; Returns: Json }
+      get_tools_list: {
+        Args: {
+          p_category?: string
+          p_is_active?: boolean
+          p_page?: number
+          p_page_size?: number
+          p_search?: string
+          p_source_app?: string
+          p_tags?: string[]
+        }
+        Returns: Json
+      }
+      get_tools_metadata: { Args: { p_source_app?: string }; Returns: Json }
       get_topic_overview: { Args: { p_topic_id: string }; Returns: Json }
       get_triage_batch: { Args: { p_batch_size?: number }; Returns: Json }
       get_untriaged_feedback: {

@@ -4,12 +4,10 @@ import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 interface AgentBuilderDesktopProps {
   agentId: string;
-  availableTools?: DatabaseTool[];
 }
 
 export function AgentBuilderDesktop({
   agentId,
-  availableTools = [],
 }: AgentBuilderDesktopProps) {
   return (
     <div className="flex gap-4 h-full">
@@ -17,7 +15,6 @@ export function AgentBuilderDesktop({
       <div className="h-full overflow-hidden w-full max-w-[640px] shrink-0">
         <AgentBuilderLeftPanel
           agentId={agentId}
-          availableTools={availableTools}
         />
       </div>
       {/* Right: Test panel — takes remaining space, contents centered */}

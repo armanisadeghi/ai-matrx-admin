@@ -35,7 +35,7 @@ interface AgentToolsModalProps {
 
 export function AgentToolsModal({
   agentId,
-  availableTools = [],
+  availableTools,
 }: AgentToolsModalProps) {
   const [open, setOpen] = useState(false);
   const dispatch = useAppDispatch();
@@ -129,7 +129,7 @@ export function AgentToolsModal({
             <DrawerHeader className="px-4 pt-4 pb-2 shrink-0">
               <DrawerTitle>Agent Tools</DrawerTitle>
               <DrawerDescription>
-                {availableTools.length} tools available · tap to enable
+                Tap to enable tools for this agent
               </DrawerDescription>
             </DrawerHeader>
             <div className="flex-1 overflow-y-auto overscroll-contain px-4">
@@ -161,8 +161,7 @@ export function AgentToolsModal({
               Agent Tools
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              {availableTools.length} tools available — select what this agent
-              can use
+              Select what this agent can use
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-hidden" style={{ minHeight: 0 }}>

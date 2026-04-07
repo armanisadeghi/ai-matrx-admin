@@ -24,12 +24,10 @@ import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 interface AgentModelConfigurationProps {
   agentId: string;
-  availableTools?: DatabaseTool[];
 }
 
 export function AgentModelConfiguration({
   agentId,
-  availableTools = [],
 }: AgentModelConfigurationProps) {
   const dispatch = useAppDispatch();
   const modelId = useAppSelector((state) => selectAgentModelId(state, agentId));
@@ -54,7 +52,7 @@ export function AgentModelConfiguration({
       <div className="flex items-center gap-1 shrink-0 pr-2">
         <AgentSettingsModal agentId={agentId} />
         <AgentVariablesModal agentId={agentId} />
-        <AgentToolsModal agentId={agentId} availableTools={availableTools} />
+        <AgentToolsModal agentId={agentId} />
       </div>
     </div>
   );

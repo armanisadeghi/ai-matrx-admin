@@ -42,6 +42,7 @@ import {
   PilcrowRight,
   Columns,
   History,
+  AlertTriangle,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
@@ -62,6 +63,8 @@ const NoteShareDialog = dynamic(() => import("./NoteShareDialog"), {
 
 import NoteContextMenu from "./NoteContextMenu";
 import { NoteVersionHistory } from "./NoteVersionHistory";
+import { NoteConflictWindow } from "./NoteConflictWindow";
+import { analyzeDiff, type DiffAnalysis } from "@/features/notes/utils/diffAnalysis";
 
 const NoteOptionsSheet = dynamic(() => import("./NoteOptionsSheet"), {
   ssr: false,
@@ -296,6 +299,15 @@ export default function NotesWorkspace({
     tabId: string;
   } | null>(null);
 
+  // Conflict resolution state
+  const [conflictData, setConflictData] = useState<{
+    noteId: string;
+    noteTitle: string;
+    localContent: string;
+    remoteContent: string;
+    analysis: DiffAnalysis;
+  } | null>(null);
+
   // Portal root for overlays that need to escape the notes z-index stacking context
   const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
   useEffect(() => {
@@ -410,24 +422,32 @@ export default function NotesWorkspace({
       const next = new Map(prev);
       const existing = next.get(noteId);
 
-      // If we have local edits, don't overwrite — detect conflict instead.
-      // BUT: skip conflict detection if we just saved this note (echo suppression)
-      // to avoid false "updated in another tab" warnings from our own save.
+      // If we have local edits, run diff analysis instead of raw conflict flag.
       if (existing?.localEdits) {
         const isOwnEcho = savingNoteIdsRef.current.has(noteId);
-        const serverChanged =
-          noteData.content !== existing.data.content ||
-          noteData.label !== existing.data.label;
-        if (serverChanged && !isOwnEcho) {
-          next.set(noteId, {
-            ...existing,
-            data: noteData,
-            saveState: "conflict",
-            fetchedAt: Date.now(),
-          });
-          return next;
+        if (!isOwnEcho) {
+          const diff = analyzeDiff(existing.localEdits.content, noteData.content);
+          if (diff.hasChanges && diff.hasChangesExcludingWhitespace) {
+            // Show conflict window (outside setState)
+            setTimeout(() => {
+              setConflictData({
+                noteId,
+                noteTitle: existing.data.label,
+                localContent: existing.localEdits!.content,
+                remoteContent: noteData.content,
+                analysis: diff,
+              });
+            }, 0);
+            next.set(noteId, {
+              ...existing,
+              data: noteData,
+              saveState: "conflict",
+              fetchedAt: Date.now(),
+            });
+            return next;
+          }
         }
-        // Server matches what we had — no conflict
+        // Own echo or trivial diff — update server data, keep local edits
         next.set(noteId, {
           ...existing,
           data: noteData,
@@ -539,12 +559,24 @@ export default function NotesWorkspace({
                 updated_at: serverUpdatedAt,
               };
 
-              // If user has local edits, mark as conflict
+              // If user has local edits, run diff analysis
               if (cached.localEdits) {
-                const hasRealChange =
-                  serverContent !== cached.data.content ||
-                  serverLabel !== cached.data.label;
-                if (hasRealChange) {
+                const localVersion = cached.localEdits.content;
+                const diff = analyzeDiff(localVersion, serverContent);
+
+                if (diff.hasChanges && diff.hasChangesExcludingWhitespace) {
+                  // Real conflict — show the conflict window (outside setState)
+                  setTimeout(() => {
+                    setConflictData({
+                      noteId,
+                      noteTitle: cached.data.label,
+                      localContent: localVersion,
+                      remoteContent: serverContent,
+                      analysis: diff,
+                    });
+                  }, 0);
+
+                  // Update server data in cache but keep local edits
                   const next = new Map(prev);
                   next.set(noteId, {
                     ...cached,
@@ -554,9 +586,10 @@ export default function NotesWorkspace({
                   });
                   return next;
                 }
+                // Only whitespace — silently accept server version
               }
 
-              // No local edits — silently update
+              // No local edits or trivial diff — silently update
               const next = new Map(prev);
               next.set(noteId, {
                 data: updatedData,
@@ -731,12 +764,7 @@ export default function NotesWorkspace({
   // ── Auto-save with sidebar sync ──────────────────────────────────────
 
   const scheduleSave = useCallback(
-    (
-      noteId: string,
-      label: string,
-      content: string,
-      skipConcurrencyCheck = false,
-    ) => {
+    (noteId: string, label: string, content: string, _force = false) => {
       // Clear existing timer
       const timers = saveTimerRef.current;
       const existing = timers.get(noteId);
@@ -806,57 +834,13 @@ export default function NotesWorkspace({
           // refresh will skip conflict detection while this note is in flight.
           savingNoteIdsRef.current.add(noteId);
 
-          // Save with atomic concurrency check: the WHERE clause ensures we
-          // only update if nobody else has changed the note since we last saw it.
-          // This is immune to stale closures (we send the timestamp, not read it).
-          const lastKnownUpdatedAt = cachedData.updated_at;
-          let query = supabase
+          // Simple save — trust realtime for conflict detection, no WHERE clause
+          const { data, error } = await supabase
             .from("notes")
             .update(updates)
-            .eq("id", noteId);
-
-          // Atomic concurrency: only update if server version matches what we know
-          if (!skipConcurrencyCheck && lastKnownUpdatedAt) {
-            query = query.eq("updated_at", lastKnownUpdatedAt);
-          }
-
-          const { data, error, count } = await query
+            .eq("id", noteId)
             .select("updated_at")
             .single();
-
-          // If 0 rows matched, it means the server version changed — real conflict
-          if (error && error.code === "PGRST116" && !skipConcurrencyCheck) {
-            console.warn("[Notes Save] Real conflict — server version changed since last fetch");
-            savingNoteIdsRef.current.delete(noteId);
-
-            // Fetch the actual server content to show the user
-            const { data: serverData } = await supabase
-              .from("notes")
-              .select("content, label, updated_at")
-              .eq("id", noteId)
-              .single();
-
-            setNoteCache((prev) => {
-              const next = new Map(prev);
-              const c = next.get(noteId);
-              if (!c) return prev;
-              next.set(noteId, {
-                ...c,
-                data: {
-                  ...c.data,
-                  ...(serverData ? {
-                    content: serverData.content as string,
-                    label: serverData.label as string,
-                    updated_at: serverData.updated_at as string,
-                  } : {}),
-                },
-                saveState: "conflict",
-                fetchedAt: Date.now(),
-              });
-              return next;
-            });
-            return;
-          }
 
           // Clear echo suppression after a short window to absorb realtime echo
           setTimeout(() => {
@@ -1180,39 +1164,7 @@ export default function NotesWorkspace({
 
   // ── Resolve conflict ──────────────────────────────────────────────────
 
-  const resolveConflict = useCallback(
-    (noteId: string, choice: "local" | "server") => {
-      setNoteCache((prev) => {
-        const next = new Map(prev);
-        const cached = next.get(noteId);
-        if (!cached) return prev;
-
-        if (choice === "server") {
-          // Discard local edits, use server data
-          next.set(noteId, {
-            ...cached,
-            localEdits: null,
-            saveState: "saved",
-          });
-        } else {
-          // Keep local edits — force save (skip concurrency check since user chose "mine")
-          next.set(noteId, {
-            ...cached,
-            saveState: "dirty",
-          });
-          const localLabel = cached.localEdits?.label ?? cached.data.label;
-          const localContent =
-            cached.localEdits?.content ?? cached.data.content;
-          // Use skipConcurrencyCheck=true since user explicitly chose to overwrite
-          setTimeout(() => {
-            scheduleSave(noteId, localLabel, localContent, true);
-          }, 100);
-        }
-        return next;
-      });
-    },
-    [scheduleSave],
-  );
+  // resolveConflict removed — replaced by NoteConflictWindow handlers
 
   // ── Keyboard shortcuts ──────────────────────────────────────────────────
 
@@ -1658,24 +1610,11 @@ export default function NotesWorkspace({
               onVersionHistory={() => setShowVersionHistory((v) => !v)}
             >
               <div className="flex-1 flex flex-col overflow-hidden note-detail-active">
-                {/* ── Conflict Banner ──────────────────────────────────────── */}
-                {saveState === "conflict" && (
-                  <div className="flex items-center gap-3 py-1.5 px-4 text-xs text-foreground bg-destructive/10 border-b border-destructive/20 shrink-0">
-                    <span className="flex-1">
-                      Modified externally. Keep yours or use server version?
-                    </span>
-                    <button
-                      className="px-2 py-0.5 text-xs font-medium rounded bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 cursor-pointer"
-                      onClick={() => resolveConflict(activeNoteId, "local")}
-                    >
-                      Keep Mine
-                    </button>
-                    <button
-                      className="px-2 py-0.5 text-xs font-medium rounded border border-border bg-background text-muted-foreground cursor-pointer"
-                      onClick={() => resolveConflict(activeNoteId, "server")}
-                    >
-                      Use Server
-                    </button>
+                {/* ── Conflict indicator (banner replaced by floating window) ── */}
+                {saveState === "conflict" && !conflictData && (
+                  <div className="flex items-center gap-2 py-1 px-4 text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 border-b border-amber-500/20 shrink-0">
+                    <AlertTriangle className="w-3 h-3" />
+                    <span>External changes detected — resolving...</span>
                   </div>
                 )}
 
@@ -1911,6 +1850,53 @@ export default function NotesWorkspace({
           </p>
         </div>
       )}
+
+      {/* ── Conflict Resolution Window ──────────────────────────────── */}
+      {conflictData &&
+        portalRoot &&
+        createPortal(
+          <NoteConflictWindow
+            noteTitle={conflictData.noteTitle}
+            localContent={conflictData.localContent}
+            remoteContent={conflictData.remoteContent}
+            analysis={conflictData.analysis}
+            onKeepMine={(content) => {
+              // Save the user's (possibly edited) version
+              const noteId = conflictData.noteId;
+              setNoteCache((prev) => {
+                const next = new Map(prev);
+                const c = next.get(noteId);
+                if (!c) return prev;
+                next.set(noteId, {
+                  ...c,
+                  localEdits: { label: c.data.label, content },
+                  saveState: "dirty",
+                });
+                return next;
+              });
+              scheduleSave(noteId, conflictData.noteTitle, content, true);
+              setConflictData(null);
+            }}
+            onAcceptChanges={() => {
+              // Adopt server version — discard local edits
+              const noteId = conflictData.noteId;
+              setNoteCache((prev) => {
+                const next = new Map(prev);
+                const c = next.get(noteId);
+                if (!c) return prev;
+                next.set(noteId, {
+                  ...c,
+                  localEdits: null,
+                  saveState: "saved",
+                });
+                return next;
+              });
+              setConflictData(null);
+            }}
+            onCancel={() => setConflictData(null)}
+          />,
+          portalRoot,
+        )}
 
       {/* ── Share Dialog (portaled for z-index) ─────────────────────── */}
       {shareDialogNoteId &&

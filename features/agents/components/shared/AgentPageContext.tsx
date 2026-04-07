@@ -10,7 +10,6 @@ export type AgentPageMode = "edit" | "run";
 interface AgentPageContextValue {
   agentId: string;
   agentName: string;
-  availableTools: DatabaseTool[];
   basePath: string;
   mode: AgentPageMode;
 }
@@ -30,14 +29,12 @@ export function useAgentPageContext(): AgentPageContextValue {
 interface AgentPageProviderProps {
   agentId: string;
   agentName: string;
-  availableTools: DatabaseTool[];
   children: React.ReactNode;
 }
 
 export function AgentPageProvider({
   agentId,
   agentName,
-  availableTools,
   children,
 }: AgentPageProviderProps) {
   const basePath = useAgentsBasePath();
@@ -46,7 +43,7 @@ export function AgentPageProvider({
 
   return (
     <AgentPageCtx.Provider
-      value={{ agentId, agentName, availableTools, basePath, mode }}
+      value={{ agentId, agentName, basePath, mode }}
     >
       {children}
     </AgentPageCtx.Provider>

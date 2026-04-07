@@ -8,14 +8,12 @@ import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 interface AgentBuilderMobileProps {
   agentId: string;
-  availableTools?: DatabaseTool[];
 }
 
 type MobileTab = "build" | "test";
 
 export function AgentBuilderMobile({
   agentId,
-  availableTools = [],
 }: AgentBuilderMobileProps) {
   const [activeTab, setActiveTab] = useState<MobileTab>("build");
 
@@ -45,7 +43,6 @@ export function AgentBuilderMobile({
           <div className="h-full overflow-y-auto p-4">
             <AgentBuilderLeftPanel
               agentId={agentId}
-              availableTools={availableTools}
             />
           </div>
         ) : (

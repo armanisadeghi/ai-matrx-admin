@@ -1,149 +1,59 @@
-# AGX Rename Migration — Before & After Reference
+# AGX Entity Naming Convention & Reference
 
-## Table Names
+This document outlines the current naming conventions for Agent-related entities (AGX) in the database and application code. All legacy `agent` references have been migrated to the `agx_` prefix.
 
-| Before | After | App code |
-|--------|-------|----------|
-| `agents` | `agx_agent` | X (all `supabase.from`, permissions `getTableName`, SSR/agent routes) |
-| `agent_versions` | `agx_version` | — (no direct `.from()` in repo; types/comments only) |
-| `agent_shortcuts` | `agx_shortcut` | X (redux shortcuts thunks + converters already used `agx_shortcut`) |
+## Core Guidance
 
-## Permission `resource_type` Strings
+**1. Standard Prefixing:** All agent-related tables, functions, triggers, index names, and constraint names must use the `agx_` prefix.
+**2. Table References:** Exclusively use the `agx_` prefixed table names for any Supabase queries or references. Avoid using `agents`, `agent_versions`, or `agent_shortcuts`.
+**3. Permission Strings:** Use `agx_agent` and `agx_shortcut` for resource types in permissions logic.
 
-| Before | After |
-|--------|-------|
-| `'agents'` | `'agx_agent'` |
-| `'agent_shortcuts'` | `'agx_shortcut'` |
+## Current Entity Names
 
-## RPC / Function Names
+### Tables
+- `agx_agent`: Main agents table.
+- `agx_version`: Agent versions table.
+- `agx_shortcut`: Agent shortcuts table.
 
-| Before | After | Updated |
-|--------|-------|---------|
-| `accept_agent_version` | `agx_accept_version` | X |
-| `build_agent_shortcut_menu` | `agx_build_shortcut_menu` | X |
-| `check_agent_drift` | `agx_check_drift` | X |
-| `check_agent_references` | `agx_check_references` | X |
-| `create_shortcut_for_agent` | `agx_create_shortcut` | X |
-| `duplicate_agent` | `agx_duplicate_agent` | X |
-| `duplicate_shortcut` | `agx_duplicate_shortcut` | X |
-| `get_agent_access_level` | `agx_get_access_level` | X |
-| `get_agent_execution_full` | `agx_get_execution_full` | X |
-| `get_agent_execution_minimal` | `agx_get_execution_minimal` | X |
-| `get_agent_shortcuts_for_context` | `agx_get_shortcuts_for_context` | X |
-| `get_agent_shortcuts_initial` | `agx_get_shortcuts_initial` | X |
-| `get_agent_version_history` | `agx_get_version_history` | X |
-| `get_agent_version_snapshot` | `agx_get_version_snapshot` | X |
-| `get_agents_list` | `agx_get_list` | X |
-| `get_agents_list_full` | `agx_get_list_full` | X |
-| `get_agents_shared_with_me` | `agx_get_shared_with_me` | X |
-| `get_shared_agents_for_chat` | `agx_get_shared_for_chat` | X |
-| `get_user_shortcuts` | `agx_get_user_shortcuts` | X |
-| `promote_agent_version` | `agx_promote_version` | X |
-| `purge_agent_versions` | `agx_purge_versions` | X |
-| `update_agent_from_source` | `agx_update_from_source` | X |
-| `trg_agents_create_v1_snapshot` | `trg_agx_agent_create_v1_snapshot` | X |
-| `trg_agents_set_initial_version` | `trg_agx_agent_set_initial_version` | X |
-| `trg_agents_snapshot_version` | `trg_agx_agent_snapshot_version` | X |
+### Permission `resource_type` Strings
+- `'agx_agent'`
+- `'agx_shortcut'`
 
-## Multi-Entity Functions (internal branch updates only)
+### RPC / Function Names
+Functions interacting with AGX entities follow the `agx_{action}` format:
+- `agx_accept_version`
+- `agx_build_shortcut_menu`
+- `agx_check_drift`
+- `agx_check_references`
+- `agx_create_shortcut`
+- `agx_duplicate_agent`
+- `agx_duplicate_shortcut`
+- `agx_get_access_level`
+- `agx_get_execution_full`
+- `agx_get_execution_minimal`
+- `agx_get_shortcuts_for_context`
+- `agx_get_shortcuts_initial`
+- `agx_get_version_history`
+- `agx_get_version_snapshot`
+- `agx_get_list`
+- `agx_get_list_full`
+- `agx_get_shared_with_me`
+- `agx_get_shared_for_chat`
+- `agx_get_user_shortcuts`
+- `agx_promote_version`
+- `agx_purge_versions`
+- `agx_update_from_source`
 
-These functions keep their names but have internal `'agent'` branches updated:
+### Triggers & Database Constraints
+- **Triggers:** Prefixed with `trg_agx_agent_` or `set_agx_` (e.g., `trg_agx_agent_snapshot_version`, `set_agx_agent_updated_at`).
+- **Indexes:** Prefixed with `idx_agx_[entity]_` (e.g., `idx_agx_agent_category`, `idx_agx_shortcut_workspace`).
+- **Foreign Keys:** Named as `agx_[entity]_[relation]_fk` (e.g., `agx_agent_org_fk`, `agx_shortcut_version_fk`). Other specific names like `cx_message_agx_agent_fk` also apply.
+- **RLS Policies:** Named as `agx_[entity]_[action]` (e.g., `agx_agent_select`, `agx_shortcut_insert`).
 
-| Function | Branch String Change |
-|----------|---------------------|
-| `get_version_history` | `agent_versions` → `agx_version` |
-| `get_version_snapshot` | `agent_versions` → `agx_version` |
-| `promote_version` | `agents` / `agent_versions` → `agx_agent` / `agx_version` |
-| `purge_old_versions` | `agent_versions` → `agx_version` |
+## System / Multi-Entity Functions
 
-## Trigger Names
-
-| Before | After | On Table |
-|--------|-------|----------|
-| `set_agents_updated_at` | `set_agx_agent_updated_at` | `agx_agent` |
-| `trg_agents_create_v1_snapshot` | `trg_agx_agent_create_v1_snapshot` | `agx_agent` |
-| `trg_agents_set_initial_version` | `trg_agx_agent_set_initial_version` | `agx_agent` |
-| `trg_agents_snapshot_version` | `trg_agx_agent_snapshot_version` | `agx_agent` |
-| `trg_auto_fill_hierarchy_agents` | `trg_auto_fill_hierarchy_agx_agent` | `agx_agent` |
-| `set_agent_shortcuts_updated_at` | `set_agx_shortcut_updated_at` | `agx_shortcut` |
-
-## Foreign Key Constraint Names
-
-| Before | After |
-|--------|-------|
-| `agents_model_fk` | `agx_agent_model_fk` |
-| `agents_org_fk` | `agx_agent_org_fk` |
-| `agents_project_fk` | `agx_agent_project_fk` |
-| `agents_source_fk` | `agx_agent_source_fk` |
-| `agents_task_fk` | `agx_agent_task_fk` |
-| `agents_workspace_fk` | `agx_agent_workspace_fk` |
-| `agent_versions_agent_fk` | `agx_version_agent_fk` |
-| `agent_shortcuts_agent_fk` | `agx_shortcut_agent_fk` |
-| `agent_shortcuts_version_fk` | `agx_shortcut_version_fk` |
-| `agent_shortcuts_category_fk` | `agx_shortcut_category_fk` |
-| `agent_shortcuts_org_fk` | `agx_shortcut_org_fk` |
-| `agent_shortcuts_project_fk` | `agx_shortcut_project_fk` |
-| `agent_shortcuts_task_fk` | `agx_shortcut_task_fk` |
-| `agent_shortcuts_workspace_fk` | `agx_shortcut_workspace_fk` |
-| `cx_message_agent_id_fkey` | `cx_message_agx_agent_fk` |
-
-## Index Names
-
-| Before | After |
-|--------|-------|
-| `agents_pkey` | `agx_agent_pkey` |
-| `idx_agents_archived` | `idx_agx_agent_archived` |
-| `idx_agents_builtin_active` | `idx_agx_agent_builtin_active` |
-| `idx_agents_category` | `idx_agx_agent_category` |
-| `idx_agents_model` | `idx_agx_agent_model` |
-| `idx_agents_org` | `idx_agx_agent_org` |
-| `idx_agents_organization_id` | `idx_agx_agent_organization_id` |
-| `idx_agents_project` | `idx_agx_agent_project` |
-| `idx_agents_project_id` | `idx_agx_agent_project_id` |
-| `idx_agents_public` | `idx_agx_agent_public` |
-| `idx_agents_settings` | `idx_agx_agent_settings` |
-| `idx_agents_source` | `idx_agx_agent_source` |
-| `idx_agents_tags` | `idx_agx_agent_tags` |
-| `idx_agents_tools` | `idx_agx_agent_tools` |
-| `idx_agents_type` | `idx_agx_agent_type` |
-| `idx_agents_user` | `idx_agx_agent_user` |
-| `idx_agents_user_id` | `idx_agx_agent_user_id` |
-| `idx_agents_workspace` | `idx_agx_agent_workspace` |
-| `agent_versions_pkey` | `agx_version_pkey` |
-| `agent_versions_unique` | `agx_version_unique` |
-| `idx_agent_versions_agent` | `idx_agx_version_agent` |
-| `idx_agent_versions_changed` | `idx_agx_version_changed` |
-| `idx_agent_versions_latest` | `idx_agx_version_latest` |
-| `agent_shortcuts_pkey` | `agx_shortcut_pkey` |
-| `idx_agent_shortcuts_agent` | `idx_agx_shortcut_agent` |
-| `idx_agent_shortcuts_category_active` | `idx_agx_shortcut_category_active` |
-| `idx_agent_shortcuts_contexts` | `idx_agx_shortcut_contexts` |
-| `idx_agent_shortcuts_org` | `idx_agx_shortcut_org` |
-| `idx_agent_shortcuts_project` | `idx_agx_shortcut_project` |
-| `idx_agent_shortcuts_system` | `idx_agx_shortcut_system` |
-| `idx_agent_shortcuts_task` | `idx_agx_shortcut_task` |
-| `idx_agent_shortcuts_user` | `idx_agx_shortcut_user` |
-| `idx_agent_shortcuts_version` | `idx_agx_shortcut_version` |
-| `idx_agent_shortcuts_workspace` | `idx_agx_shortcut_workspace` |
-
-## RLS Policy Names
-
-| Before | After | On Table |
-|--------|-------|----------|
-| `agents_builtin_read` | `agx_agent_builtin_read` | `agx_agent` |
-| `agents_delete` | `agx_agent_delete` | `agx_agent` |
-| `agents_insert` | `agx_agent_insert` | `agx_agent` |
-| `agents_public_read` | `agx_agent_public_read` | `agx_agent` |
-| `agents_select` | `agx_agent_select` | `agx_agent` |
-| `agents_update` | `agx_agent_update` | `agx_agent` |
-| `agent_versions_public_read` | `agx_version_public_read` | `agx_version` |
-| `agent_versions_select` | `agx_version_select` | `agx_version` |
-| `agent_shortcuts_delete` | `agx_shortcut_delete` | `agx_shortcut` |
-| `agent_shortcuts_insert` | `agx_shortcut_insert` | `agx_shortcut` |
-| `agent_shortcuts_scoped_read` | `agx_shortcut_scoped_read` | `agx_shortcut` |
-| `agent_shortcuts_system_delete` | `agx_shortcut_system_delete` | `agx_shortcut` |
-| `agent_shortcuts_system_insert` | `agx_shortcut_system_insert` | `agx_shortcut` |
-| `agent_shortcuts_system_read` | `agx_shortcut_system_read` | `agx_shortcut` |
-| `agent_shortcuts_system_update` | `agx_shortcut_system_update` | `agx_shortcut` |
-| `agent_shortcuts_update` | `agx_shortcut_update` | `agx_shortcut` |
-
+The following core system functions maintained their original names, but their internal logic was updated to reference the new `agx_version` and `agx_agent` structures for the `'agent'` branch:
+- `get_version_history`
+- `get_version_snapshot`
+- `promote_version`
+- `purge_old_versions`

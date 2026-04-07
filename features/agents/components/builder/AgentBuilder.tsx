@@ -41,12 +41,10 @@ const AgentBuilderMobile = dynamic(
 
 interface AgentBuilderProps {
   agentId: string;
-  availableTools?: DatabaseTool[];
 }
 
 export function AgentBuilder({
   agentId,
-  availableTools = [],
 }: AgentBuilderProps) {
   const dispatch = useAppDispatch();
   const isMobile = useIsMobile();
@@ -72,12 +70,10 @@ export function AgentBuilder({
         ) : isMobile ? (
           <AgentBuilderMobile
             agentId={agentId}
-            availableTools={availableTools}
           />
         ) : (
           <AgentBuilderDesktop
             agentId={agentId}
-            availableTools={availableTools}
           />
         )}
       </div>

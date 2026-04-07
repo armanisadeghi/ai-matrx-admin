@@ -28,6 +28,8 @@ import { v4 as uuidv4 } from 'uuid';
 import type { RootState, AppDispatch } from '@/lib/redux/store';
 import { callApi, type ApiCallError } from '@/lib/api/call-api';
 import { extractPersistableToolBlocks, toolCallBlockToLegacy } from '@/lib/chat-protocol';
+import { hasArtifacts } from '@/features/canvas/utils/extractArtifacts';
+import { persistArtifactsFromContent } from '@/features/canvas/hooks/useArtifactPersistence';
 import type { ChunkPayload, ErrorPayload, StreamEvent } from '@/types/python-generated/stream-events';
 import { chatConversationsActions } from '../slice';
 import { selectConversationId, selectUIState, selectMessages } from '../selectors';
@@ -319,7 +321,25 @@ export const sendMessage = createAsyncThunk<
                     sessionId,
                     conversationId: resolvedConversationId,
                     agentId,
-                }));
+                })).then(() => {
+                    // ── Persist artifact blocks to canvas_items ──
+                    // After DB reload, find the real message ID for the assistant message
+                    // and persist any <artifact> tags to the canvas system.
+                    if (hasArtifacts(accumulatedContent)) {
+                        const reloadedMessages = selectMessages(getState(), sessionId);
+                        // Find the last assistant message (which is the one we just streamed)
+                        const realMessage = reloadedMessages
+                            ?.filter(m => m.role === 'assistant')
+                            .at(-1);
+                        if (realMessage?.id) {
+                            persistArtifactsFromContent(
+                                accumulatedContent,
+                                realMessage.id,
+                                resolvedConversationId,
+                            ).catch(err => console.error('[sendMessage] artifact persistence failed:', err));
+                        }
+                    }
+                });
             }
         };
 

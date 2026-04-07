@@ -51,6 +51,7 @@ const ARTIFACT_TO_CANVAS_TYPE: Record<string, CanvasContentType> = {
     image: "image",
     troubleshooting: "troubleshooting",
     "decision-tree": "decision-tree",
+    decision_tree: "decision-tree",
     recipe: "recipe",
     cooking_recipe: "recipe",
     resources: "resources",
