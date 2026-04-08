@@ -15,7 +15,7 @@ export function AgentBuilderDesktop({ agentId }: AgentBuilderDesktopProps) {
         <AgentBuilderLeftPanel agentId={agentId} />
       </div>
       <div className="flex-1 h-full overflow-hidden flex justify-center">
-        <div className="w-full max-w-3xl h-full">
+        <div className="w-full max-w-3xl h-full pt-12">
           <AgentBuilderRightPanel agentId={agentId} />
         </div>
       </div>

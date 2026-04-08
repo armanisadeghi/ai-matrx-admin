@@ -1,52 +1,58 @@
 // components/AppletThemeProvider.tsx
-import { createContext, useContext, type CSSProperties, type ReactNode } from 'react';
+"use client";
+
+import {
+  createContext,
+  useContext,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import type { AppletTheme } from "@/components/applet/reusable-sections/applet-themes";
 
 interface AppletThemeContextType {
-    theme: AppletTheme;
-    setTheme: (theme: AppletTheme) => void;
+  theme: AppletTheme;
+  setTheme: (theme: AppletTheme) => void;
 }
 
 const AppletThemeContext = createContext<AppletThemeContextType | null>(null);
 
-export function AppletThemeProvider(
-    {
-        children,
-        theme,
-        appletKey,
-    }: {
-        children: ReactNode;
-        theme: AppletTheme;
-        appletKey: string;
-    }) {
-    // Map reusable-sections AppletTheme (Tailwind-oriented tokens) to CSS custom properties
-    const themeStyles: Record<string, string> = {
-        '--applet-primary': theme.primaryColor,
-        '--applet-secondary': theme.secondaryColor,
-        '--applet-accent': theme.accentColor,
-        '--applet-background': theme.containerBg,
-        '--applet-foreground': theme.titleText,
-        '--applet-muted': theme.descriptionText,
-        '--applet-border': theme.containerBorder,
-    };
+export function AppletThemeProvider({
+  children,
+  theme,
+  appletKey,
+}: {
+  children: ReactNode;
+  theme: AppletTheme;
+  appletKey: string;
+}) {
+  // Map reusable-sections AppletTheme (Tailwind-oriented tokens) to CSS custom properties
+  const themeStyles: Record<string, string> = {
+    "--applet-primary": theme.primaryColor,
+    "--applet-secondary": theme.secondaryColor,
+    "--applet-accent": theme.accentColor,
+    "--applet-background": theme.containerBg,
+    "--applet-foreground": theme.titleText,
+    "--applet-muted": theme.descriptionText,
+    "--applet-border": theme.containerBorder,
+  };
 
-    return (
-        <div
-            data-applet={appletKey}
-            className="applet-theme-root"
-            style={themeStyles as CSSProperties}
-        >
-            <AppletThemeContext.Provider value={{
-                theme, setTheme: () => {
-                }
-            }}>
-                {children}
-            </AppletThemeContext.Provider>
-        </div>
-    );
+  return (
+    <div
+      data-applet={appletKey}
+      className="applet-theme-root"
+      style={themeStyles as CSSProperties}
+    >
+      <AppletThemeContext.Provider
+        value={{
+          theme,
+          setTheme: () => {},
+        }}
+      >
+        {children}
+      </AppletThemeContext.Provider>
+    </div>
+  );
 }
-
-
 
 /*
 

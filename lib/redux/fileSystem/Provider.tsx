@@ -1,4 +1,6 @@
 // lib/redux/fileSystem/FileSystemProvider.tsx
+"use client";
+
 import React, {
   createContext,
   useContext,
