@@ -8,9 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { InitialReduxState } from "@/types/reduxTypes";
 import { RefProvider } from "@/lib/refs";
 import { ToastProvider } from "@/providers/toast-context";
-import { AudioModalProvider } from "@/providers/AudioModalProvider";
 import { ModuleHeaderProvider } from "@/providers/ModuleHeaderProvider";
-import { FileSystemProvider as OldFileSystemProvider } from "@/providers/FileSystemProvider";
 import { ContextMenuProvider } from "@/providers/ContextMenuProvider";
 import { FileSystemProvider } from "@/lib/redux/fileSystem/Provider";
 import { FilePreviewProvider } from "@/components/file-system/preview";
@@ -28,6 +26,8 @@ import DeferredSingletons from "./DeferredSingletons";
 NotesProvider removed — notes now use Redux (features/notes/redux/)
 import { EntityProvider } from "@/providers/entity-context/EntityProvider";
 import { SchemaProvider } from "@/providers/SchemaProvider";
+import { AudioModalProvider } from "@/providers/AudioModalProvider";
+import { FileSystemProvider as OldFileSystemProvider } from "@/providers/FileSystemProvider";
 
 
 */
@@ -72,27 +72,27 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                     allowedBuckets={allowedBuckets}
                   >
                     <FilePreviewProvider>
-                      <OldFileSystemProvider>
-                        <TooltipProvider delayDuration={200}>
-                          <AudioModalProvider>
-                            <ModuleHeaderProvider>
-                              <UniformHeightProvider>
-                                <SelectedImagesProvider>
-                                  <TaskProvider>
-                                    <TranscriptsProvider>
-                                      <AudioRecoveryProvider>
-                                        {children}
-                                        <DeferredSingletons />
-                                      </AudioRecoveryProvider>
-                                    </TranscriptsProvider>
-                                  </TaskProvider>
-                                </SelectedImagesProvider>
-                              </UniformHeightProvider>
-                            </ModuleHeaderProvider>
-                            <Toaster />
-                          </AudioModalProvider>
-                        </TooltipProvider>
-                      </OldFileSystemProvider>
+                      {/* <OldFileSystemProvider> */}
+                      <TooltipProvider delayDuration={200}>
+                        {/* <AudioModalProvider> */}
+                        <ModuleHeaderProvider>
+                          <UniformHeightProvider>
+                            <SelectedImagesProvider>
+                              <TaskProvider>
+                                <TranscriptsProvider>
+                                  <AudioRecoveryProvider>
+                                    {children}
+                                    <DeferredSingletons />
+                                  </AudioRecoveryProvider>
+                                </TranscriptsProvider>
+                              </TaskProvider>
+                            </SelectedImagesProvider>
+                          </UniformHeightProvider>
+                        </ModuleHeaderProvider>
+                        <Toaster />
+                        {/* </AudioModalProvider> */}
+                      </TooltipProvider>
+                      {/* </OldFileSystemProvider> */}
                     </FilePreviewProvider>
                   </FileSystemProvider>
                 </RefProvider>
