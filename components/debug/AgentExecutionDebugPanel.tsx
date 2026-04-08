@@ -125,7 +125,7 @@ function SectionBlock({
   currentSection: SectionId;
   onToggle: (id: SectionId) => void;
   title: string;
-  icon: React.ElementType;
+  icon: any;
   children: React.ReactNode;
 }) {
   const isExpanded = currentSection === id;

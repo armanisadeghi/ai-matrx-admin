@@ -1,0 +1,496 @@
+---
+name: new-route-scaffold
+description: Full scaffold workflow for building a new route inside app/(a)/ with correct SSR-first architecture, database-derived types, Redux hydration, shell components, and view sub-pages. Use when creating any new authenticated route, adding a feature with a sidebar/main layout, or extending an existing route with new view modes. Triggers on: new route, new page, scaffold, app/(a)/, SSR shell, route structure, Redux hydration for route, database type mismatch.
+---
+
+# New Route Scaffold — `app/(a)/`
+
+This skill captures the exact workflow used to build `app/(a)/notes`. Follow it for every new authenticated route. **Many decisions require information only Arman has — ask explicitly before assuming anything.**
+
+## STOP: Questions to Ask Before Writing a Single Line
+
+Never assume the following — always ask Arman:
+
+1. **Layout shape** — How many panels? Sidebar width? Resizable? What goes in the header area?
+2. **View modes** — Does this route have sub-views (like edit/preview/split)? What are they named?
+3. **Group-by / filter dimensions** — How is the sidebar list organized? What FK relationships drive grouping?
+4. **Data fetch scope** — What fields does the list view need? What triggers a "full" fetch?
+5. **Redux slice** — Does one already exist? Should we create one or extend an existing slice?
+6. **Existing types** — Do the feature types already exist? Are they derived from the DB or hand-written (likely stale)?
+7. **Navigation entry** — Does `constants/navigation-links.tsx` already have an entry? What favicon color/letter?
+8. **Mobile behavior** — Any mobile-specific overrides beyond standard rules?
+
+**If anything is unclear, stop and ask. Do not invent layout details, field names, or group-by modes.**
+
+---
+
+## Phase 1: Audit & Fix Types
+
+Before touching any route file, verify the feature type file matches `types/database.types.ts`.
+
+### Step 1 — Find the DB Row shape
+
+```bash
+# Search for the table definition in the generated types
+grep -A 30 '"your_table": {' types/database.types.ts
+```
+
+### Step 2 — Compare against the feature type file
+
+Located at `features/[feature]/types.ts`. Hand-written types are almost always missing fields. The canonical pattern:
+
+```typescript
+// features/notes/types.ts
+import type { Database } from "@/types/database.types";
+
+// ── Single source of truth aliases ──────────────────────────────────────────
+export type NoteRow    = Database["public"]["Tables"]["notes"]["Row"];
+export type NoteInsert = Database["public"]["Tables"]["notes"]["Insert"];
+export type NoteUpdate = Database["public"]["Tables"]["notes"]["Update"];
+
+// Also export related table rows (related tables discovered from DB relationships)
+export type NoteFolderRow  = Database["public"]["Tables"]["note_folders"]["Row"];
+export type NoteVersionRow = Database["public"]["Tables"]["note_versions"]["Row"];
+
+// ── Working interface (derived from NoteRow) ─────────────────────────────────
+// Keep null fields as null — never coerce to empty strings.
+export interface Note {
+    id: string;
+    user_id: string;
+    label: string;
+    content: string | null;
+    folder_name: string | null;
+    folder_id: string | null;         // FK → note_folders.id
+    organization_id: string | null;   // FK → organizations.id
+    project_id: string | null;        // FK → ctx_projects.id
+    task_id: string | null;           // FK → ctx_tasks.id
+    tags: string[] | null;
+    metadata: Record<string, unknown> | null;
+    shared_with: Record<string, unknown> | null;
+    is_deleted: boolean | null;
+    is_public: boolean;
+    version: number;
+    sync_version: number;
+    content_hash: string | null;
+    file_path: string | null;
+    last_device_id: string | null;
+    position: number | null;
+    created_at: string | null;
+    updated_at: string | null;
+}
+
+// ── Compile-time structural compatibility guard ──────────────────────────────
+// This produces a TypeScript error if NoteRow and Note ever diverge.
+// Zero runtime cost. Add this to EVERY feature type file.
+type _NoteCompatCheck = {
+    [K in keyof NoteRow]: NoteRow[K] extends Note[K]
+        ? Note[K] extends NoteRow[K] ? true : false
+        : false;
+};
+
+// ── List projection (subset fetched by the sidebar query) ───────────────────
+// Only include fields you actually SELECT in getNoteListSeed().
+export type NoteListItem = Pick<Note,
+    | "id" | "user_id" | "label" | "folder_name" | "folder_id"
+    | "tags" | "updated_at" | "position"
+    | "organization_id" | "project_id" | "task_id"
+    | "is_public" | "version"
+>;
+
+// ── Route-level enums (ask Arman for the exact values) ──────────────────────
+export type NoteGroupBy  = "folder" | "organization" | "project" | "task" | "scope";
+export type NoteViewMode = "edit" | "split" | "rich" | "md" | "preview" | "diff";
+```
+
+### Step 3 — Update Redux `notes.types.ts` factory functions
+
+The `createBlankNoteRecordFromPartial` and `createAutogeneratedNoteRecord` functions hardcode default values for every field. After adding fields to the interface, update both factories to include the new fields — otherwise TypeScript will error. Key rule: **new nullable fields default to `null`, not `""` or `[]`.**
+
+---
+
+## Phase 2: Server Data Layer
+
+Create `lib/[feature]/data.ts`. This is the **only** place server-side DB queries live for this route.
+
+```typescript
+// lib/notes/data.ts
+import "server-only";          // Build fails if imported by a Client Component
+import { cache } from "react"; // Deduplicates within one request pass
+import { createClient } from "@/utils/supabase/server";
+import { notFound } from "next/navigation";
+import type { Note, NoteListItem } from "@/features/notes/types";
+
+// ── List seed ────────────────────────────────────────────────────────────────
+// SELECT only the fields NoteListItem needs — never SELECT *.
+export const getNoteListSeed = cache(async (): Promise<NoteListItem[]> => {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await supabase
+        .from("notes")
+        .select("id, user_id, label, folder_name, folder_id, tags, updated_at, position, organization_id, project_id, task_id, is_public, version")
+        .eq("user_id", user.id)
+        .eq("is_deleted", false)
+        .order("updated_at", { ascending: false })
+        .limit(100);
+
+    if (error) throw error;
+    return (data ?? []) as NoteListItem[];
+});
+
+// ── Single entity (full) ─────────────────────────────────────────────────────
+// cache() means layout + generateMetadata + page = ONE DB hit total.
+export const getNote = cache(async (id: string): Promise<Note> => {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+        .from("notes").select("*").eq("id", id).single();
+    if (error || !data) notFound(); // triggers not-found.tsx
+    return data as Note;
+});
+
+// ── Preload helper ───────────────────────────────────────────────────────────
+// Call void getNote(id) before awaiting anything — starts the fetch immediately.
+export const preloadNote = (id: string): void => { void getNote(id); };
+```
+
+**Critical rules:**
+- `import "server-only"` is mandatory — it prevents accidental client import
+- Every function must be wrapped in `cache()` — layout, `generateMetadata`, and page all call the same function; `cache()` collapses them to one DB hit
+- `notFound()` inside a cached function triggers `not-found.tsx` automatically
+- The preload pattern starts a fetch before an await chain, eliminating waterfalls
+
+---
+
+## Phase 3: Route Files
+
+### File map
+
+```
+app/(a)/[feature]/
+├── layout.tsx          ← static metadata only
+├── loading.tsx         ← dimension-exact skeleton of the full shell
+├── error.tsx           ← error boundary ('use client')
+├── page.tsx            ← fetches list seed, hydrates Redux, renders shell
+└── [id]/
+    ├── layout.tsx      ← parallel fetch, generateMetadata, BOTH hydrators, shell
+    ├── loading.tsx     ← skeleton of the content area only (not the full shell)
+    ├── error.tsx       ← inner error boundary
+    ├── not-found.tsx   ← not-found UI
+    ├── page.tsx        ← redirect to default view
+    ├── edit/page.tsx
+    ├── split/page.tsx
+    ├── rich/page.tsx
+    ├── md/page.tsx
+    ├── preview/page.tsx
+    └── diff/page.tsx
+```
+
+### `layout.tsx` (route root)
+
+Static metadata only. No data fetching, no children manipulation.
+
+```typescript
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/notes", {
+    title: "Notes",
+    description: "Create, organize, and manage your notes and documents",
+});
+
+export default function NotesLayout({ children }: { children: React.ReactNode }) {
+    return <>{children}</>;
+}
+```
+
+### `loading.tsx` (route root)
+
+Must mirror the exact dimensions of the shell. Every element has explicit `h-` and `w-`. No content-derived sizing. See [route-architecture.md](route-architecture.md) for the full skeleton example from the notes route.
+
+Key rules:
+- Outer container: `h-[calc(100dvh-var(--header-height))] flex overflow-hidden`
+- Sidebar: `w-[280px] shrink-0` — must match the real aside exactly
+- No spinners — `<Skeleton>` components only
+- `[id]/loading.tsx` mirrors the content area only (layout persists across navigation)
+
+### `page.tsx` (route root — index, no item selected)
+
+```typescript
+import { Suspense } from "react";
+import { getNoteListSeed } from "@/lib/notes/data";
+import { NoteListHydrator } from "@/features/notes/route/NoteListHydrator";
+import { NotesShell } from "@/features/notes/components/shell/NotesShell";
+import NotesLoading from "./loading";
+
+export default async function NotesPage() {
+    const seeds = await getNoteListSeed();
+
+    return (
+        <>
+            <NoteListHydrator seeds={seeds} />
+            <Suspense fallback={<NotesLoading />}>
+                <NotesShell seeds={seeds}>
+                    <NotesEmptyState />
+                </NotesShell>
+            </Suspense>
+        </>
+    );
+}
+
+function NotesEmptyState() {
+    return (
+        <div className="flex-1 flex items-center justify-center p-8">
+            <p className="text-sm text-muted-foreground">Select a note or create a new one.</p>
+        </div>
+    );
+}
+```
+
+### `[id]/layout.tsx` — the most important file
+
+This is where both hydrators live and parallel fetching happens.
+
+```typescript
+import { Suspense } from "react";
+import { getNote, getNoteListSeed, preloadNote } from "@/lib/notes/data";
+import { createDynamicRouteMetadata } from "@/utils/route-metadata";
+import { NoteListHydrator } from "@/features/notes/route/NoteListHydrator";
+import { NoteHydrator } from "@/features/notes/route/NoteHydrator";
+import { NotesShell } from "@/features/notes/components/shell/NotesShell";
+import NotesLoading from "../loading";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const note = await getNote(id); // cache() deduplicates this with the layout call below
+    return createDynamicRouteMetadata("/notes", {
+        title: note.label,
+        description: note.content ? note.content.slice(0, 120) : `Edit ${note.label}`,
+    });
+}
+
+export default async function NoteDetailLayout({
+    children,
+    params,
+}: {
+    children: React.ReactNode;
+    params: Promise<{ id: string }>;
+}) {
+    const { id } = await params;
+
+    // Parallel fetch — preloadNote kicks off getNote before getNoteListSeed awaits.
+    preloadNote(id);
+    const [seeds, note] = await Promise.all([getNoteListSeed(), getNote(id)]);
+
+    return (
+        <>
+            <NoteListHydrator seeds={seeds} />
+            <NoteHydrator note={note} />
+            <Suspense fallback={<NotesLoading />}>
+                <NotesShell seeds={seeds}>{children}</NotesShell>
+            </Suspense>
+        </>
+    );
+}
+```
+
+### `[id]/page.tsx` — redirect to default view
+
+```typescript
+import { redirect } from "next/navigation";
+
+export default async function NoteIndexPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    redirect(`/notes/${id}/edit`); // Ask Arman which view is the default
+}
+```
+
+### View sub-pages (`[id]/edit/page.tsx`, etc.)
+
+Sub-pages return `{ title }` only — the layout handles all favicon/OG. No data fetching.
+
+```typescript
+import { NoteViewShell } from "@/features/notes/components/shell/NoteViewShell";
+import { NoteEditorPlaceholder } from "@/features/notes/components/shell/NoteEditorPlaceholder";
+
+export function generateMetadata() { return { title: "Edit" }; }
+
+export default async function NoteEditPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    return (
+        <NoteViewShell
+            noteId={id}
+            mode="edit"
+            leftPanel={<NoteEditorPlaceholder noteId={id} mode="edit" />}
+        />
+    );
+}
+```
+
+Split view passes both panels:
+
+```typescript
+export default async function NoteSplitPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    return (
+        <NoteViewShell
+            noteId={id}
+            mode="split"
+            leftPanel={<NoteEditorPlaceholder noteId={id} mode="edit" />}
+            rightPanel={<NoteEditorPlaceholder noteId={id} mode="preview" />}
+        />
+    );
+}
+```
+
+---
+
+## Phase 4: Redux Hydrators
+
+Both live in `features/[feature]/route/`. They render `null` and dispatch synchronously during the first render pass — **not** in `useEffect`.
+
+```typescript
+// features/notes/route/NoteListHydrator.tsx
+"use client";
+import { useRef } from "react";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { upsertNoteFromServer } from "../redux/slice";
+import type { NoteListItem } from "../types";
+
+export function NoteListHydrator({ seeds }: { seeds: NoteListItem[] }) {
+    const dispatch = useAppDispatch();
+    const hydrated = useRef(false);
+
+    if (!hydrated.current) {
+        for (const seed of seeds) {
+            dispatch(upsertNoteFromServer({ note: seed, fetchStatus: "list" }));
+        }
+        hydrated.current = true;
+    }
+
+    return null;
+}
+```
+
+```typescript
+// features/notes/route/NoteHydrator.tsx
+"use client";
+import { useRef } from "react";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { upsertNoteFromServer } from "../redux/slice";
+import type { Note } from "../types";
+
+export function NoteHydrator({ note }: { note: Note }) {
+    const dispatch = useAppDispatch();
+    const hydrated = useRef(false);
+
+    if (!hydrated.current) {
+        dispatch(upsertNoteFromServer({ note, fetchStatus: "full" }));
+        hydrated.current = true;
+    }
+
+    return null;
+}
+```
+
+**Why `useRef` and NOT `useEffect`:**
+`useEffect` fires after paint — children reading from the store see empty state for one frame and flash. The `useRef` guard dispatches during the render pass, before any child reads.
+
+---
+
+## Phase 5: Shell Components
+
+All shell components are Server Components. Client Component islands are pushed as deep as possible — only the interactive parts get `"use client"`.
+
+**Component tree:**
+```
+[Feature]Shell (Server) — h-[calc(100dvh-var(--header-height))] flex overflow-hidden
+├── [Feature]Sidebar (Server — w-[NNpx] shrink-0 frame)         ← ask Arman for width
+│   └── [Feature]SidebarClient (Client — Redux reads, interactions)
+└── [Feature]MainArea (Server — flex-1 min-w-0 frame)
+    ├── [Feature]TabBar (Client — open tabs from Redux)
+    └── {children} per page → [Feature]ViewShell (Server)
+        ├── leftPanel  (Client editor island)
+        └── rightPanel (Client preview island — split mode only)
+```
+
+**Key layout rules:**
+- Outermost: `h-[calc(100dvh-var(--header-height))]` — never `h-screen`
+- Sidebar: `w-[280px] shrink-0` — ask Arman for the exact width
+- Main area: `flex-1 min-w-0 overflow-hidden`
+- Scroll regions: `overflow-y-auto` only on the inner list container
+- No inline styles unless Arman has explicitly approved (e.g., glass mode testing)
+
+See [route-architecture.md](route-architecture.md) for the full `NotesShell` and `NoteViewShell` implementations.
+
+---
+
+## Phase 6: Metadata Rules
+
+From `app/(a)/_read_first_route_rules/metadata-and-seo.md`:
+
+| Location | What to use | Notes |
+|---|---|---|
+| `layout.tsx` (root) | `createRouteMetadata("/path", { title, description })` | Provides favicon + OG for entire route |
+| `[id]/layout.tsx` | `createDynamicRouteMetadata("/path", { title, description })` inside `generateMetadata` | Provides favicon + OG for item detail |
+| Sub-page `page.tsx` | `export function generateMetadata() { return { title: "View Name" }; }` | Title only — layout already covers favicon/OG |
+| New route | Add favicon entry in `constants/navigation-links.tsx` | Ask Arman for color and letter |
+
+---
+
+## Phase 7: Navigation Entry
+
+Add to `constants/navigation-links.tsx` if not already present. **Ask Arman for all values** — icon, href, section, color (Tailwind name + hex), and favicon letter. Never guess these.
+
+---
+
+## Skeleton Rules (Non-Negotiable)
+
+Every `loading.tsx` must satisfy:
+
+1. **Identical outer container** — same `h-`, `w-`, `flex` classes as the real shell
+2. **Exact fixed dimensions** — every skeleton block has explicit `h-` and `w-` (no content-derived sizing)
+3. **Mirror structure** — sidebar skeleton has toolbar row + list items; editor skeleton has title + body lines
+4. **No spinners for page content** — `<Skeleton>` only (from `@/components/ui/skeleton`)
+5. **`[id]/loading.tsx`** covers only the content area, not the full shell (the layout persists)
+
+---
+
+## Checklist Before Asking Arman to Review
+
+- [ ] DB type audit done — `_CompatCheck` added to types file
+- [ ] All factory functions updated with new fields
+- [ ] `lib/[feature]/data.ts` created with `server-only`, `cache()`, and `preloadNote`
+- [ ] `app/(a)/[feature]/layout.tsx` — static metadata only
+- [ ] `app/(a)/[feature]/loading.tsx` — exact dimension match to shell
+- [ ] `app/(a)/[feature]/error.tsx` — client error boundary
+- [ ] `app/(a)/[feature]/page.tsx` — list seed + both hydrators + Suspense
+- [ ] `app/(a)/[feature]/[id]/layout.tsx` — parallel fetch + both hydrators + generateMetadata
+- [ ] `app/(a)/[feature]/[id]/loading.tsx` — content-area skeleton only
+- [ ] `app/(a)/[feature]/[id]/error.tsx` + `not-found.tsx`
+- [ ] `app/(a)/[feature]/[id]/page.tsx` — redirect to default view
+- [ ] All view sub-pages created (ask Arman for the list)
+- [ ] `features/[feature]/route/` — `ListHydrator` + `EntityHydrator`
+- [ ] Shell components: `Shell`, `Sidebar`, `SidebarClient`, `MainArea`, `TabBar`, `ViewShell`, `EditorPlaceholder`
+- [ ] `NoteEditorPlaceholder` (or equivalent) clearly marked as stub for later replacement
+- [ ] Navigation entry added (or confirmed already present)
+- [ ] No `useEffect` in hydrators
+- [ ] No `h-screen` or `min-h-screen` anywhere — use `h-dvh` / `h-[calc(100dvh-...)]`
+- [ ] No inline styles (unless Arman explicitly approves for testing)
+- [ ] Lints pass on all new files
+
+---
+
+## Related Skills — Read These First
+
+These skills contain the rules this workflow is built on. When in doubt, they win:
+
+- **`nextjs-ssr-architecture`** — `.cursor/skills/nextjs-ssr-architecture/SKILL.md` — server/client component boundaries, Suspense rules, hydration pattern
+- **`ssr-zero-layout-shift`** — `.cursor/skills/ssr-zero-layout-shift/SKILL.md` — skeleton design, fixed-dimension containers, CLS prevention
+- **`redux-selector-rules`** — `.cursor/skills/redux-selector-rules/SKILL.md` — selector patterns, curried selector caching, avoiding re-render loops
+- **Route rules** — `app/(a)/_read_first_route_rules/RULES.md` — mandatory, read before every session on this route group
+
+---
+
+## Additional Resources
+
+- Full architecture patterns and route composition examples: [route-architecture.md](route-architecture.md)

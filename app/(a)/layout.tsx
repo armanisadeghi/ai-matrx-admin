@@ -8,7 +8,10 @@ import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGloba
 import { InitialReduxState } from "@/types/reduxTypes";
 import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
 import type { Json } from "@/types/database.types";
-import { initializeUserPreferencesState } from "@/lib/redux/slices/userPreferencesSlice";
+import {
+  initializeUserPreferencesState,
+  UserPreferences,
+} from "@/lib/redux/slices/userPreferencesSlice";
 import { setGlobalUserIdAndToken } from "@/lib/globalState";
 import Sidebar from "@/features/shell/components/sidebar/Sidebar";
 import Header from "@/features/shell/components/header/Header";
@@ -18,7 +21,7 @@ import GlassPortal from "@/features/shell/components/GlassPortal";
 import NavActiveSync from "@/features/shell/components/NavActiveSync";
 import VisualViewportSync from "@/features/shell/components/VisualViewportSync";
 import DeferredIslands from "@/features/shell/islands/DeferredIslands";
-
+import { UserData } from "@/utils/userDataMapper";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -56,6 +59,8 @@ export default async function AppLayout({
   let initialReduxState: InitialReduxState;
   let avatarUrl: string | undefined;
   let displayName: string | undefined;
+  let userData: UserData;
+  let userPreferences: UserPreferences;
 
   if (user) {
     const [
@@ -70,11 +75,10 @@ export default async function AppLayout({
 
     const accessToken = session?.access_token;
     const isAdmin = sessionData.isAdmin;
-    const userData = mapUserData(user, accessToken, isAdmin);
+    userData = mapUserData(user, accessToken, isAdmin);
 
     setGlobalUserIdAndToken(userData.id, accessToken, isAdmin);
 
-    let userPreferences;
     if (!sessionData.preferencesExist) {
       await supabase.from("user_preferences").insert({
         user_id: userData.id,
@@ -125,7 +129,7 @@ export default async function AppLayout({
         <input type="checkbox" id="shell-panel-mobile" aria-hidden="true" />
 
         <Sidebar pathname={pathname} />
-        <Header avatarUrl={avatarUrl} name={displayName} />
+        <Header userData={userData} />
 
         <main className="shell-main">{children}</main>
 

@@ -63,6 +63,17 @@ const FEEDBACK_TYPES: {
   { value: "other", label: "Other", icon: HelpCircle },
 ];
 
+/** Active-state chip colors (inactive chips stay neutral). */
+const FEEDBACK_TYPE_ACTIVE_CLASSES: Record<FeedbackType, string> = {
+  bug: "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400 [&_svg]:text-red-600 dark:[&_svg]:text-red-400",
+  feature:
+    "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 [&_svg]:text-blue-600 dark:[&_svg]:text-blue-400",
+  suggestion:
+    "border-green-500/30 bg-green-500/10 text-green-600 dark:text-green-400 [&_svg]:text-green-600 dark:[&_svg]:text-green-400",
+  other:
+    "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 [&_svg]:text-amber-600 dark:[&_svg]:text-amber-400",
+};
+
 // ─── FeedbackWindow ───────────────────────────────────────────────────────────
 
 export interface FeedbackWindowProps extends Omit<
@@ -440,7 +451,7 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
                 "flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg cursor-pointer transition-colors border",
                 "[&_svg]:w-3.5 [&_svg]:h-3.5",
                 feedbackType === value
-                  ? "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 [&_svg]:text-amber-600 dark:[&_svg]:text-amber-400"
+                  ? FEEDBACK_TYPE_ACTIVE_CLASSES[value]
                   : "border-border text-muted-foreground hover:bg-accent hover:text-foreground",
               )}
               onClick={() => setFeedbackType(value)}
@@ -465,7 +476,7 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
         <div className="space-y-1">
           <textarea
             ref={textareaRef}
-            className="w-full h-28 px-3 py-2 text-xs leading-relaxed text-foreground bg-muted/40 border border-border rounded-lg outline-none resize-none transition-colors placeholder:text-muted-foreground/50 focus:border-ring focus:bg-background"
+            className="w-full h-28 px-3 py-2 text-xs leading-relaxed text-foreground bg-muted/40 border border-border rounded-lg outline-none resize-none transition-colors placeholder:text-xs placeholder:text-muted-foreground/50 focus:border-ring focus:bg-background"
             style={{ fontSize: "16px" }}
             placeholder="Describe the issue, feature request, or suggestion..."
             value={description}

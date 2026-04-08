@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import ShellIcon from "../ShellIcon";
+import ShellIcon from "../../ShellIcon";
 
 interface AuthIslandProps {
   user: {

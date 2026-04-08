@@ -444,6 +444,19 @@ const notesSlice = createSlice({
       applyFieldEdit(record, "tags", action.payload.tags);
     },
 
+    /** Set editor mode for a note (stored in metadata.lastEditorMode) */
+    setNoteEditorMode(
+      state,
+      action: PayloadAction<{ id: string; mode: string }>,
+    ) {
+      const record = state.notes[action.payload.id];
+      if (!record) return;
+      record.metadata = {
+        ...(record.metadata as Record<string, unknown>),
+        lastEditorMode: action.payload.mode,
+      };
+    },
+
     // ── Instance management (Layer 6) ────────────────────────────────
 
     registerInstance(state, action: PayloadAction<string>) {
@@ -593,6 +606,7 @@ export const {
   updateNoteLabel,
   updateNoteFolder,
   updateNoteTags,
+  setNoteEditorMode,
   // Instance management
   registerInstance,
   unregisterInstance,

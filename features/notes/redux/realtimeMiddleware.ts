@@ -161,7 +161,7 @@ export const notesRealtimeMiddleware: Middleware = (storeApi) => {
     }
 
     // Stop subscription on state reset (logout)
-    if (action.type === "notes/resetNotesState") {
+    if ((action as { type?: string }).type === "notes/resetNotesState") {
       unsubscribe();
     }
 

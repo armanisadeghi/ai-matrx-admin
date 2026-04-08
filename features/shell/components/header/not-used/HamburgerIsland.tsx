@@ -2,7 +2,7 @@
 // Renders as a <label> that toggles the #shell-mobile-menu checkbox.
 // CSS :has() drives the side-sheet open/close — zero JS.
 
-import IconButton from "../IconButton";
+import IconButton from "../../IconButton";
 import { Menu } from "lucide-react";
 
 export default function HamburgerIsland() {

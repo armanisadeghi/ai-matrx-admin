@@ -1,13 +1,13 @@
-import HamburgerButton from "./HamburgerButton";
-import UserMenuTrigger from "./UserMenuTrigger";
-import UserMenuPanel from "./UserMenuPanel";
+import HamburgerButton from "./header-left-menu/HamburgerButton";
+import UserMenuTrigger from "./header-right-menu/UserMenuTrigger";
+import UserMenuPanel from "./header-right-menu/UserMenuPanel";
+import { UserData } from "@/utils/userDataMapper";
 
 interface HeaderProps {
-  avatarUrl?: string;
-  name?: string;
+  userData: UserData;
 }
 
-export default function Header({ avatarUrl, name }: HeaderProps) {
+export default function Header({ userData }: HeaderProps) {
   return (
     <header className="shell-header">
       <HamburgerButton />
@@ -15,14 +15,14 @@ export default function Header({ avatarUrl, name }: HeaderProps) {
       <div className="shell-header-center" id="shell-header-center" />
 
       <div className="shell-user-menu-wrapper">
-        <UserMenuTrigger initialAvatarUrl={avatarUrl} initialName={name} />
+        <UserMenuTrigger userData={userData} />
         <label
           htmlFor="shell-user-menu"
           className="shell-user-menu-backdrop"
           aria-hidden="true"
         />
         <div className="shell-user-menu-panel">
-          <UserMenuPanel />
+          <UserMenuPanel userData={userData} />
         </div>
       </div>
     </header>

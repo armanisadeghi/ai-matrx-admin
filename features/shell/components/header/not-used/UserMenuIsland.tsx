@@ -11,10 +11,14 @@ import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
-const UserMenuPanel = dynamic(() => import("./UserMenuPanel"), {
-  ssr: false,
-  loading: () => null,
-});
+import { UserData } from "@/utils/userDataMapper";
+const UserMenuPanel = dynamic(
+  () => import("../header-right-menu/UserMenuPanel"),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
 
 export interface UserMenuUser {
   name: string;
@@ -22,7 +26,11 @@ export interface UserMenuUser {
   avatarUrl?: string;
 }
 
-export default function UserMenuIsland() {
+interface UserMenuIslandProps {
+  userData: UserData;
+}
+
+export default function UserMenuIsland({ userData }: UserMenuIslandProps) {
   // Store is initialized empty — user data arrives once DeferredShellData resolves.
   // Safely handle null/uninitialized state throughout.
   const reduxUser = useAppSelector(selectUser);
@@ -123,7 +131,7 @@ export default function UserMenuIsland() {
         </button>
       </div>
 
-      {open && <UserMenuPanel />}
+      {open && <UserMenuPanel userData={userData} />}
     </div>
   );
 }

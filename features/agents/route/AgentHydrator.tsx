@@ -1,18 +1,17 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { upsertAgent } from "@/features/agents/redux/agent-definition/slice";
 import type { AgentDefinition } from "@/features/agents/types/agent-definition.types";
 
 export function AgentHydrator({ definition }: { definition: AgentDefinition }) {
   const dispatch = useAppDispatch();
-  const hydrated = useRef(false);
 
-  if (!hydrated.current) {
+  useEffect(() => {
     dispatch(upsertAgent(definition));
-    hydrated.current = true;
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [definition.id]);
 
   return null;
 }
