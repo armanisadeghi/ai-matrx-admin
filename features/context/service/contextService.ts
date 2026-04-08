@@ -42,7 +42,9 @@ export const contextService = {
   ): Promise<ContextItemManifest[]> {
     let query = supabase
       .from("ctx_context_items")
-      .select("*, ctx_context_item_values!current_value_id(text_value, updated_at)")
+      .select(
+        "*, ctx_context_item_values!current_value_id(text_value, updated_at)",
+      )
       .order("category", { ascending: true, nullsFirst: true })
       .order("display_name", { ascending: true });
 
@@ -251,7 +253,9 @@ export const contextService = {
   ): Promise<ContextItemManifest[]> {
     let query = supabase
       .from("ctx_context_items")
-      .select("*, ctx_context_item_values!current_value_id(text_value, updated_at)")
+      .select(
+        "*, ctx_context_item_values!current_value_id(text_value, updated_at)",
+      )
       .in("status", ATTENTION_STATUSES)
       .limit(20);
 
@@ -291,7 +295,7 @@ export const contextService = {
     limit = 10,
   ): Promise<ContextAccessLogEntry[]> {
     const { data, error } = await supabase
-      .from("context_access_log")
+      .from("ctx_context_access_log")
       .select("*")
       .order("accessed_at", { ascending: false })
       .limit(limit);
@@ -304,7 +308,7 @@ export const contextService = {
     itemId: string,
   ): Promise<ContextAccessSummary | null> {
     const { data, error } = await supabase
-      .from("context_access_log")
+      .from("ctx_context_access_log")
       .select("id, was_useful, accessed_at")
       .eq("context_item_id", itemId);
     if (error) throw error;
@@ -323,7 +327,7 @@ export const contextService = {
   // ─── Templates ────────────────────────────────────────────────────
   async fetchTemplates(): Promise<ContextTemplate[]> {
     const { data, error } = await supabase
-      .from("context_templates")
+      .from("ctx_context_templates")
       .select("*")
       .order("industry_category", { ascending: true })
       .order("display_order", { ascending: true });
@@ -335,7 +339,7 @@ export const contextService = {
     industryCategory: string,
   ): Promise<ContextTemplate[]> {
     const { data, error } = await supabase
-      .from("context_templates")
+      .from("ctx_context_templates")
       .select("*")
       .eq("industry_category", industryCategory)
       .order("display_order", { ascending: true });
@@ -431,7 +435,7 @@ export const contextService = {
   ): Promise<{ date: string; count: number }[]> {
     const since = new Date(Date.now() - days * 86400000).toISOString();
     const { data, error } = await supabase
-      .from("context_access_log")
+      .from("ctx_context_access_log")
       .select("accessed_at")
       .gte("accessed_at", since)
       .order("accessed_at", { ascending: true });
@@ -456,7 +460,7 @@ export const contextService = {
     const [items, logs] = await Promise.all([
       this.fetchManifest(scopeType, scopeId),
       supabase
-        .from("context_access_log")
+        .from("ctx_context_access_log")
         .select("context_item_id, was_useful, accessed_at")
         .then(({ data, error }) => {
           if (error) throw error;

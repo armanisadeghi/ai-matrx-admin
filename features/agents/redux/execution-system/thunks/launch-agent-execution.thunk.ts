@@ -42,6 +42,7 @@ import { setUserInputText } from "../instance-user-input/instance-user-input.sli
 import { setDisplayMode as setDisplayModeAction } from "../instance-ui-state/instance-ui-state.slice";
 import { selectRequest } from "../active-requests/active-requests.selectors";
 import { setInstanceStatus } from "../execution-instances/execution-instances.slice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 
 // =============================================================================
 // Types
@@ -116,6 +117,20 @@ const INTERACTIVE_MODES: ReadonlySet<ResultDisplayMode> = new Set([
 function isInteractive(mode: ResultDisplayMode): boolean {
   return INTERACTIVE_MODES.has(mode);
 }
+
+const DISPLAY_MODE_TO_OVERLAY_ID: Partial<Record<ResultDisplayMode, string>> = {
+  "modal-full": "agentFullModal",
+  "modal-compact": "agentCompactModal",
+  "chat-bubble": "agentChatBubble",
+  inline: "agentInlineOverlay",
+  sidebar: "agentSidebarOverlay",
+  "flexible-panel": "agentFlexiblePanel",
+  panel: "agentPanelOverlay",
+  toast: "agentToastOverlay",
+  "floating-chat": "agentFloatingChat",
+  "chat-collapsible": "agentChatCollapsible",
+  "chat-assistant": "agentChatAssistant",
+};
 
 async function pollForCompletion(
   getState: () => unknown,
@@ -347,6 +362,15 @@ export const launchAgentExecution = createAsyncThunk<
     resolvedDisplayMode !== "background"
   ) {
     dispatch(setInstanceStatus({ instanceId, status: "ready" }));
+  }
+
+  // =========================================================================
+  // Step 1c: Open the overlay for the resolved display mode
+  // =========================================================================
+
+  const overlayId = DISPLAY_MODE_TO_OVERLAY_ID[resolvedDisplayMode];
+  if (overlayId) {
+    dispatch(openOverlay({ overlayId, instanceId }));
   }
 
   // =========================================================================

@@ -20,6 +20,10 @@ import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectConversationTurns } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import {
+  selectInstanceAgentName,
+  selectInstanceAgentDescription,
+} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import {
   selectStreamPhase,
   selectLatestAccumulatedText,
   selectLatestInfoUserMessage,
@@ -51,15 +55,17 @@ interface DisplayMessage {
 interface AgentConversationDisplayProps {
   instanceId: string;
   compact?: boolean;
-  emptyStateMessage?: string;
 }
 
 export function AgentConversationDisplay({
   instanceId,
   compact = false,
-  emptyStateMessage = "Ready to run",
 }: AgentConversationDisplayProps) {
   const turns = useAppSelector(selectConversationTurns(instanceId));
+  const agentName = useAppSelector(selectInstanceAgentName(instanceId));
+  const agentDescription = useAppSelector(
+    selectInstanceAgentDescription(instanceId),
+  );
   const phase = useAppSelector(selectStreamPhase(instanceId));
   const streamingText = useAppSelector(selectLatestAccumulatedText(instanceId));
   const infoMessage = useAppSelector(selectLatestInfoUserMessage(instanceId));
@@ -123,10 +129,12 @@ export function AgentConversationDisplay({
         <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
           <Webhook className="w-12 h-12 text-primary" />
         </div>
-        <div>
-          <p className="text-sm font-medium">{emptyStateMessage}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Fill in any variables below and type a message to start.
+        <div className="space-y-3 max-w-md mx-auto">
+          <p className="text-lg font-medium">{agentName ?? "Ready to run"}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {agentDescription && agentDescription.trim()
+              ? agentDescription
+              : "Fill in any variables below and type a message to start."}
           </p>
         </div>
       </div>

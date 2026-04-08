@@ -217,7 +217,8 @@ export type ResultDisplayMode =
   | "floating-chat"
   | "direct"
   | "background"
-  | "chat-collapsible";
+  | "chat-collapsible"
+  | "chat-assistant";
 
 /**
  * Transient builder/test settings sent to the chat endpoint on each call.

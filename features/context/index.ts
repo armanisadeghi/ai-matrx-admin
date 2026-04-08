@@ -105,6 +105,14 @@ export {
 // Scope system (new)
 export * from "./redux/scope";
 
+// Hooks — Scope Assignments
+export { useScopeAssignment } from "./hooks/useScopeAssignment";
+
+// Components — Scope Admin
+export { ScopeManagerPage } from "./components/scope-admin";
+export { ScopePicker } from "./components/ScopePicker";
+export { EntityFilterBar } from "./components/EntityFilterBar";
+
 // Components
 export {
   ContextStatusBadge,
@@ -128,3 +136,25 @@ export { HierarchyExplorer } from "./components/HierarchyExplorer";
 export { HierarchyTreePage } from "./components/HierarchyTreePage";
 export { HierarchyEntityModal } from "./components/HierarchyEntityModal";
 export { HierarchyContextBar } from "./components/HierarchyContextBar";
+
+// Components — Context Hub
+export { ContextHubDetail } from "./components/hub";
+
+// Components — Hierarchy Selection (standardized system)
+export {
+  HierarchyTree,
+  HierarchyCascade,
+  HierarchyBreadcrumb,
+  HierarchyCommand,
+  HierarchyPills,
+  useHierarchySelection,
+  EMPTY_SELECTION,
+  LEVEL_CONFIG,
+} from "./components/hierarchy-selection";
+export type {
+  HierarchySelection,
+  HierarchySelectionProps,
+  HierarchyLevel,
+  HierarchyOption,
+  UseHierarchySelectionReturn,
+} from "./components/hierarchy-selection";

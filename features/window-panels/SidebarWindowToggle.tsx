@@ -36,6 +36,7 @@ import {
   Newspaper,
   ListFilter,
   GalleryHorizontalEnd,
+  SlidersHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -816,6 +817,15 @@ export default function SidebarWindowToggle() {
                     onClick={() =>
                       act(() =>
                         dispatch(openOverlay({ overlayId: "galleryWindow" })),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<SlidersHorizontal className="w-3.5 h-3.5" />}
+                    label="Agent Settings"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(openOverlay({ overlayId: "agentSettingsWindow" })),
                       )
                     }
                   />

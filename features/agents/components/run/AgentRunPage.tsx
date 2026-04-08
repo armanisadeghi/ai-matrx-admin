@@ -24,6 +24,7 @@ import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-defini
 import { selectAgentExecutionPayload } from "@/features/agents/redux/agent-definition/selectors";
 import { recreateManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
+import { selectLatestConversationId } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { AgentConversationDisplay } from "./AgentConversationDisplay";
 import { AgentRunsSidebar } from "./AgentRunsSidebar";
@@ -55,6 +56,10 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
   const [isInitializing, setIsInitializing] = useState(true);
 
   const currentRunId = searchParams.get("runId") ?? undefined;
+  const conversationIdFromUrl = searchParams.get("conversationId") ?? undefined;
+  const liveConversationId = useAppSelector((state) =>
+    instanceId != null ? selectLatestConversationId(instanceId)(state) : null,
+  );
 
   // Step 1: Ensure execution payload is loaded from the backend
   useEffect(() => {
@@ -110,6 +115,7 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
 
     const params = new URLSearchParams(searchParams.toString());
     params.delete("runId");
+    params.delete("conversationId");
     router.replace(`${pathname}?${params.toString()}`);
 
     dispatch(recreateManualInstance(instanceId))
@@ -136,6 +142,8 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
         >
           <AgentRunsSidebar
             agentId={agentId}
+            instanceId={instanceId}
+            conversationIdFromUrl={conversationIdFromUrl}
             currentRunId={currentRunId}
             onNewRun={handleNewRun}
             onClose={() => setSidebarOpen(false)}

@@ -234,6 +234,20 @@ export const selectInstanceAgentName =
   };
 
 /**
+ * Tier 1 — Agent description only.
+ * Raw read from the definition slice — no ?? / defaults (redux-selector-rules).
+ * undefined: missing instance/agent id or agent record not in map yet.
+ * null: record exists with description explicitly null.
+ */
+export const selectInstanceAgentDescription =
+  (instanceId: string) =>
+  (state: RootState): string | null | undefined => {
+    const agentId = state.executionInstances.byInstanceId[instanceId]?.agentId;
+    if (!agentId) return undefined;
+    return state.agentDefinition.agents?.[agentId]?.description;
+  };
+
+/**
  * Tier 2 — Static title: shortcut label → agent name → undefined.
  * Use when you want the best static label but don't need conversation context.
  */

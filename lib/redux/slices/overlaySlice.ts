@@ -94,6 +94,19 @@ const initialState: OverlayState = {
     listManagerWindow: makeDefaultInstance(),
     aiVoiceWindow: makeDefaultInstance(),
     agentGateWindow: makeDefaultInstance(),
+    agentSettingsWindow: makeDefaultInstance(),
+    // Agent execution widget overlays — each is autonomous, instanced
+    agentFullModal: makeDefaultInstance(),
+    agentCompactModal: makeDefaultInstance(),
+    agentChatBubble: makeDefaultInstance(),
+    agentInlineOverlay: makeDefaultInstance(),
+    agentSidebarOverlay: makeDefaultInstance(),
+    agentFlexiblePanel: makeDefaultInstance(),
+    agentPanelOverlay: makeDefaultInstance(),
+    agentToastOverlay: makeDefaultInstance(),
+    agentFloatingChat: makeDefaultInstance(),
+    agentChatCollapsible: makeDefaultInstance(),
+    agentChatAssistant: makeDefaultInstance(),
   },
 };
 
@@ -504,7 +517,9 @@ interface HierarchyCreationWindowPayload {
   instanceId?: string;
 }
 
-export const openHierarchyCreationWindow = (options: HierarchyCreationWindowPayload) =>
+export const openHierarchyCreationWindow = (
+  options: HierarchyCreationWindowPayload,
+) =>
   openOverlay({
     overlayId: "hierarchyCreationWindow",
     instanceId: options.instanceId,
@@ -512,4 +527,98 @@ export const openHierarchyCreationWindow = (options: HierarchyCreationWindowPayl
       entityType: options.entityType,
       presetContext: options.presetContext,
     },
+  });
+
+interface AgentSettingsWindowPayload {
+  agentId?: string;
+  instanceId?: string;
+}
+
+export const openAgentSettingsWindow = (options?: AgentSettingsWindowPayload) =>
+  openOverlay({
+    overlayId: "agentSettingsWindow",
+    instanceId: options?.instanceId,
+    data: { initialAgentId: options?.agentId },
+  });
+
+// ============================================================================
+// AGENT EXECUTION WIDGET OVERLAYS
+// ============================================================================
+// Each agent widget overlay is instanced — pass the agent execution instanceId
+// as the overlay instanceId so multiple can coexist independently.
+
+interface AgentWidgetPayload {
+  instanceId: string;
+}
+
+interface AgentToastPayload {
+  instanceId: string;
+  index?: number;
+}
+
+export const openAgentFullModal = (options: AgentWidgetPayload) =>
+  openOverlay({
+    overlayId: "agentFullModal",
+    instanceId: options.instanceId,
+  });
+
+export const openAgentCompactModal = (options: AgentWidgetPayload) =>
+  openOverlay({
+    overlayId: "agentCompactModal",
+    instanceId: options.instanceId,
+  });
+
+export const openAgentChatBubble = (options: AgentWidgetPayload) =>
+  openOverlay({
+    overlayId: "agentChatBubble",
+    instanceId: options.instanceId,
+  });
+
+export const openAgentInlineOverlay = (options: AgentWidgetPayload) =>
+  openOverlay({
+    overlayId: "agentInlineOverlay",
+    instanceId: options.instanceId,
+  });
+
+export const openAgentSidebarOverlay = (options: AgentWidgetPayload) =>
+  openOverlay({
+    overlayId: "agentSidebarOverlay",
+    instanceId: options.instanceId,
+  });
+
+export const openAgentFlexiblePanel = (options: AgentWidgetPayload) =>
+  openOverlay({
+    overlayId: "agentFlexiblePanel",
+    instanceId: options.instanceId,
+  });
+
+export const openAgentPanelOverlay = (options: AgentWidgetPayload) =>
+  openOverlay({
+    overlayId: "agentPanelOverlay",
+    instanceId: options.instanceId,
+  });
+
+export const openAgentToastOverlay = (options: AgentToastPayload) =>
+  openOverlay({
+    overlayId: "agentToastOverlay",
+    instanceId: options.instanceId,
+    data: { index: options.index ?? 0 },
+  });
+
+export const openAgentFloatingChat = (options: AgentWidgetPayload) =>
+  openOverlay({
+    overlayId: "agentFloatingChat",
+    instanceId: options.instanceId,
+  });
+
+export const openAgentChatCollapsible = (options: AgentWidgetPayload) =>
+  openOverlay({
+    overlayId: "agentChatCollapsible",
+    instanceId: options.instanceId,
+  });
+
+export const openAgentChatAssistant = (options: AgentWidgetPayload) =>
+  openOverlay({
+    overlayId: "agentChatAssistant",
+    instanceId: options.instanceId,
   });

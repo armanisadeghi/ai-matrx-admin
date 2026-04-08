@@ -1,5 +1,8 @@
 "use client";
 
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { openAgentSettingsWindow } from "@/lib/redux/slices/overlaySlice";
+
 import { useState } from "react";
 import {
   MoreHorizontal,
@@ -77,9 +80,18 @@ function comingSoon() {
   toast.info("Coming Soon");
 }
 
-export function AgentOptionsMenu() {
+export function AgentOptionsMenu({ agentId }: { agentId: string }) {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const dispatch = useAppDispatch();
+
+  const handleDesktopItemClick = (label: string) => {
+    if (label === "Advanced Settings View") {
+      dispatch(openAgentSettingsWindow({ agentId }));
+    } else {
+      comingSoon();
+    }
+  };
 
   const trigger = (
     <button
@@ -103,7 +115,7 @@ export function AgentOptionsMenu() {
         </button>
         <DrawerContent className="max-h-[85dvh]">
           <DrawerTitle className="sr-only">Agent Options</DrawerTitle>
-          <MobileMenuContent onClose={() => setOpen(false)} />
+          <MobileMenuContent onClose={() => setOpen(false)} agentId={agentId} />
         </DrawerContent>
       </Drawer>
     );
@@ -114,7 +126,7 @@ export function AgentOptionsMenu() {
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-72">
         {GENERAL_ITEMS.map(({ label, icon: Icon }) => (
-          <DropdownMenuItem key={label} onClick={comingSoon}>
+          <DropdownMenuItem key={label} onClick={() => handleDesktopItemClick(label)}>
             <Icon className="w-4 h-4 mr-2 text-muted-foreground" />
             {label}
           </DropdownMenuItem>
@@ -149,11 +161,16 @@ export function AgentOptionsMenu() {
   );
 }
 
-function MobileMenuContent({ onClose }: { onClose: () => void }) {
+function MobileMenuContent({ onClose, agentId }: { onClose: () => void; agentId: string }) {
   const [variationsOpen, setVariationsOpen] = useState(false);
+  const dispatch = useAppDispatch();
 
-  const handleItem = () => {
-    comingSoon();
+  const handleItem = (label: string) => {
+    if (label === "Advanced Settings View") {
+      dispatch(openAgentSettingsWindow({ agentId }));
+    } else {
+      comingSoon();
+    }
     onClose();
   };
 
@@ -163,7 +180,7 @@ function MobileMenuContent({ onClose }: { onClose: () => void }) {
         {GENERAL_ITEMS.map(({ label, icon: Icon }) => (
           <button
             key={label}
-            onClick={handleItem}
+            onClick={() => handleItem(label)}
             className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 active:bg-muted/70 transition-colors"
           >
             <Icon className="w-4 h-4 text-muted-foreground shrink-0" />

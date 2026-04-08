@@ -1,6 +1,6 @@
 "use client";
 
-import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectNeedsPreExecutionInput,
   selectInstanceDisplayTitle,

@@ -39,7 +39,6 @@ import {
   removeToast,
 } from "@/lib/redux/slices/promptRunnerSlice";
 import { selectPrimaryResponseTextByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-import { selectOverlayInstancesByDisplayMode } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
 import dynamic from "next/dynamic";
 import type { ResourceType } from "@/utils/permissions";
@@ -287,10 +286,90 @@ const PreExecutionInputModalContainer = dynamic(
   { ssr: false },
 );
 
-const AgentExecutionOverlay = dynamic(
+const AgentFullModal = dynamic(
   () =>
-    import("@/features/agents/components/agent-widgets/AgentExecutionOverlay").then(
-      (mod) => ({ default: mod.AgentExecutionOverlay }),
+    import("@/features/agents/components/agent-widgets/AgentFullModal").then(
+      (mod) => ({ default: mod.AgentFullModal }),
+    ),
+  { ssr: false },
+);
+
+const AgentCompactModal = dynamic(
+  () =>
+    import("@/features/agents/components/agent-widgets/AgentCompactModal").then(
+      (mod) => ({ default: mod.AgentCompactModal }),
+    ),
+  { ssr: false },
+);
+
+const AgentChatBubble = dynamic(
+  () =>
+    import("@/features/agents/components/agent-widgets/AgentChatBubble").then(
+      (mod) => ({ default: mod.AgentChatBubble }),
+    ),
+  { ssr: false },
+);
+
+const AgentInlineOverlay = dynamic(
+  () =>
+    import("@/features/agents/components/agent-widgets/AgentInlineOverlay").then(
+      (mod) => ({ default: mod.AgentInlineOverlay }),
+    ),
+  { ssr: false },
+);
+
+const AgentSidebarOverlay = dynamic(
+  () =>
+    import("@/features/agents/components/agent-widgets/AgentSidebarOverlay").then(
+      (mod) => ({ default: mod.AgentSidebarOverlay }),
+    ),
+  { ssr: false },
+);
+
+const AgentFlexiblePanel = dynamic(
+  () =>
+    import("@/features/agents/components/agent-widgets/AgentFlexiblePanel").then(
+      (mod) => ({ default: mod.AgentFlexiblePanel }),
+    ),
+  { ssr: false },
+);
+
+const AgentPanelOverlay = dynamic(
+  () =>
+    import("@/features/agents/components/agent-widgets/AgentPanelOverlay").then(
+      (mod) => ({ default: mod.AgentPanelOverlay }),
+    ),
+  { ssr: false },
+);
+
+const AgentToastOverlay = dynamic(
+  () =>
+    import("@/features/agents/components/agent-widgets/AgentToastOverlay").then(
+      (mod) => ({ default: mod.AgentToastOverlay }),
+    ),
+  { ssr: false },
+);
+
+const AgentFloatingChat = dynamic(
+  () =>
+    import("@/features/agents/components/agent-widgets/AgentFloatingChat").then(
+      (mod) => ({ default: mod.AgentFloatingChat }),
+    ),
+  { ssr: false },
+);
+
+const ChatCollapsible = dynamic(
+  () =>
+    import("@/features/agents/components/agent-widgets/ChatCollapsible").then(
+      (mod) => ({ default: mod.ChatCollapsible }),
+    ),
+  { ssr: false },
+);
+
+const AgentChatAssistant = dynamic(
+  () =>
+    import("@/features/agents/components/agent-widgets/chat-assistant/AgentChatAssistant").then(
+      (mod) => ({ default: mod.AgentChatAssistant }),
     ),
   { ssr: false },
 );
@@ -413,6 +492,11 @@ const AgentGateWindow = dynamic(
 
 const HierarchyCreationWindow = dynamic(
   () => import("@/features/window-panels/windows/HierarchyCreationWindow"),
+  { ssr: false },
+);
+
+const AgentSettingsWindow = dynamic(
+  () => import("@/features/window-panels/windows/AgentSettingsWindow"),
   { ssr: false },
 );
 
@@ -597,6 +681,13 @@ export const OverlayController: React.FC = () => {
     selectOverlayData(s, "hierarchyCreationWindow"),
   );
 
+  const isAgentSettingsWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentSettingsWindow"),
+  );
+  const agentSettingsWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "agentSettingsWindow"),
+  );
+
   const agentGateWindowInstances = useAppSelector((s) =>
     selectOpenInstances(s, "agentGateWindow"),
   );
@@ -662,9 +753,39 @@ export const OverlayController: React.FC = () => {
   const sidebarTaskId = useAppSelector(selectSidebarTaskId);
   const flexiblePanelTaskId = useAppSelector(selectFlexiblePanelTaskId);
 
-  // ── Agent Execution selectors ───────────────────────────────────────────
-  const agentInstancesByMode = useAppSelector(
-    selectOverlayInstancesByDisplayMode,
+  // ── Agent Widget overlay instances ──────────────────────────────────────
+  const agentFullModalInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "agentFullModal"),
+  );
+  const agentCompactModalInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "agentCompactModal"),
+  );
+  const agentChatBubbleInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "agentChatBubble"),
+  );
+  const agentInlineOverlayInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "agentInlineOverlay"),
+  );
+  const agentSidebarOverlayInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "agentSidebarOverlay"),
+  );
+  const agentFlexiblePanelInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "agentFlexiblePanel"),
+  );
+  const agentPanelOverlayInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "agentPanelOverlay"),
+  );
+  const agentToastOverlayInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "agentToastOverlay"),
+  );
+  const agentFloatingChatInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "agentFloatingChat"),
+  );
+  const agentChatCollapsibleInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "agentChatCollapsible"),
+  );
+  const agentChatAssistantInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "agentChatAssistant"),
   );
 
   const promptModalResponseText = useAppSelector((s) =>
@@ -1389,21 +1510,136 @@ export const OverlayController: React.FC = () => {
         </div>
       ))}
 
-      {/* ── Agent Execution Overlays ─────────────────────────────────────── */}
-      {/* Renders UI for all overlay-managed agent instances.                */}
-      {/* The selector already excludes direct/background modes.             */}
-      {agentInstancesByMode &&
-        Object.entries(agentInstancesByMode).map(([mode, instanceIds]) => {
-          if (!instanceIds) return null;
-          return instanceIds.map((instanceId, idx) => (
-            <AgentExecutionOverlay
-              key={instanceId}
-              instanceId={instanceId}
-              index={idx}
-              onClose={() => dispatch(destroyInstance(instanceId))}
-            />
-          ));
-        })}
+      {/* ── Agent Execution Widget Overlays ─────────────────────────────── */}
+
+      {agentFullModalInstances.map(({ instanceId }) => (
+        <AgentFullModal
+          key={instanceId}
+          instanceId={instanceId}
+          onClose={() => {
+            close("agentFullModal", instanceId);
+            dispatch(destroyInstance(instanceId));
+          }}
+        />
+      ))}
+
+      {agentCompactModalInstances.map(({ instanceId }) => (
+        <AgentCompactModal
+          key={instanceId}
+          instanceId={instanceId}
+          onClose={() => {
+            close("agentCompactModal", instanceId);
+            dispatch(destroyInstance(instanceId));
+          }}
+        />
+      ))}
+
+      {agentChatBubbleInstances.map(({ instanceId }) => (
+        <AgentChatBubble
+          key={instanceId}
+          instanceId={instanceId}
+          onClose={() => {
+            close("agentChatBubble", instanceId);
+            dispatch(destroyInstance(instanceId));
+          }}
+        />
+      ))}
+
+      {agentInlineOverlayInstances.map(({ instanceId }) => (
+        <AgentInlineOverlay
+          key={instanceId}
+          instanceId={instanceId}
+          onClose={() => {
+            close("agentInlineOverlay", instanceId);
+            dispatch(destroyInstance(instanceId));
+          }}
+        />
+      ))}
+
+      {agentSidebarOverlayInstances.map(({ instanceId }) => (
+        <AgentSidebarOverlay
+          key={instanceId}
+          instanceId={instanceId}
+          onClose={() => {
+            close("agentSidebarOverlay", instanceId);
+            dispatch(destroyInstance(instanceId));
+          }}
+        />
+      ))}
+
+      {agentFlexiblePanelInstances.map(({ instanceId }) => (
+        <AgentFlexiblePanel
+          key={instanceId}
+          instanceId={instanceId}
+          onClose={() => {
+            close("agentFlexiblePanel", instanceId);
+            dispatch(destroyInstance(instanceId));
+          }}
+        />
+      ))}
+
+      {agentPanelOverlayInstances.map(({ instanceId }) => (
+        <AgentPanelOverlay
+          key={instanceId}
+          instanceId={instanceId}
+          onClose={() => {
+            close("agentPanelOverlay", instanceId);
+            dispatch(destroyInstance(instanceId));
+          }}
+        />
+      ))}
+
+      {agentToastOverlayInstances.map(({ instanceId, data }, idx) => (
+        <AgentToastOverlay
+          key={instanceId}
+          instanceId={instanceId}
+          index={(data as { index?: number } | null)?.index ?? idx}
+          onClose={() => {
+            close("agentToastOverlay", instanceId);
+            dispatch(destroyInstance(instanceId));
+          }}
+        />
+      ))}
+
+      {agentFloatingChatInstances.map(({ instanceId }) => (
+        <AgentFloatingChat
+          key={instanceId}
+          instanceId={instanceId}
+          onClose={() => {
+            close("agentFloatingChat", instanceId);
+            dispatch(destroyInstance(instanceId));
+          }}
+        />
+      ))}
+
+      {agentChatCollapsibleInstances.map(({ instanceId }) => (
+        <ChatCollapsible
+          key={instanceId}
+          instanceId={instanceId}
+          onClose={() => {
+            close("agentChatCollapsible", instanceId);
+            dispatch(destroyInstance(instanceId));
+          }}
+        />
+      ))}
+
+      {agentChatAssistantInstances.map(({ instanceId }, idx) => (
+        <AgentChatAssistant
+          key={instanceId}
+          instanceId={instanceId}
+          stackIndex={idx}
+          onClose={() => {
+            close("agentChatAssistant", instanceId);
+            dispatch(destroyInstance(instanceId));
+          }}
+        />
+      ))}
+
+      {isAgentSettingsWindowOpen && (
+        <AgentSettingsWindow
+          initialAgentId={agentSettingsWindowData?.initialAgentId}
+        />
+      )}
     </>
   );
 };

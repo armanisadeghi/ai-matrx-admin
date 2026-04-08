@@ -128,6 +128,20 @@ export const RESULT_DISPLAY_META: Record<ResultDisplayMode, DisplayModeMeta> = {
     ],
     testMode: true,
   },
+  "chat-assistant": {
+    label: "Chat Assistant",
+    description:
+      "Persistent bottom-right floating assistant with stacking card UI and heartbeat architecture",
+    icon: "MessageSquare",
+    color: "text-pink-600 dark:text-pink-400",
+    useCases: [
+      "Always-on assistant",
+      "Proactive suggestions",
+      "Ambient AI helper",
+      "Micro-interactions",
+    ],
+    testMode: false,
+  },
   direct: {
     label: "Direct Stream",
     description:
