@@ -34,7 +34,7 @@ export function AgentSaveStatus({ agentId }: { agentId: string }) {
     }
   };
 
-  const isEditMode = pathname?.includes(`/agents/${agentId}/edit`);
+  const isEditMode = pathname?.includes(`/agents/${agentId}/build`);
 
   return (
     <div className="flex items-center gap-1.5">

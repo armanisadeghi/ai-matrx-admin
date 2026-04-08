@@ -12,7 +12,7 @@ import { AgentListDropdown } from "@/features/agents/components/agent-listings/A
 function deriveModeSuffix(pathname: string, agentId: string): string {
   const base = `/agents/${agentId}`;
   if (pathname.startsWith(`${base}/run`)) return "/run";
-  if (pathname.startsWith(`${base}/edit`)) return "/edit";
+  if (pathname.startsWith(`${base}/build`)) return "/build";
   if (
     pathname.startsWith(`${base}/latest`) ||
     /^\/agents\/[^/]+\/\d+$/.test(pathname)

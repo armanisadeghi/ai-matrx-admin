@@ -313,7 +313,7 @@ export function AgentsGrid() {
     <>
       {/* Desktop controls */}
       {!isMobile && (
-        <div className="mb-4">
+        <div className="mb-4 pt-6">
           <div className="flex items-center gap-2">
             <div className="flex-1">
               <DesktopSearchBar

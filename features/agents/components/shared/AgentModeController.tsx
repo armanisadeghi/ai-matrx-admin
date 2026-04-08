@@ -31,7 +31,7 @@ const MODES: { id: ModeOption; label: string; icon: typeof Eye }[] = [
 function deriveMode(pathname: string, agentId: string): AgentPageMode {
   const base = `/agents/${agentId}`;
   if (pathname.startsWith(`${base}/run`)) return "run";
-  if (pathname.startsWith(`${base}/edit`)) return "edit";
+  if (pathname.startsWith(`${base}/build`)) return "edit";
   if (
     pathname.startsWith(`${base}/latest`) ||
     /^\/agents\/[^/]+\/\d+$/.test(pathname)
@@ -69,7 +69,7 @@ export function AgentModeController({ agentId }: { agentId: string }) {
 
     const pathMap: Record<AgentPageMode, string> = {
       view: `/agents/${agentId}`,
-      edit: `/agents/${agentId}/edit`,
+      edit: `/agents/${agentId}/build`,
       run: `/agents/${agentId}/run`,
       versions: `/agents/${agentId}/latest`,
     };

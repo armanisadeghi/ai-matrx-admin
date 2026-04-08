@@ -1,6 +1,6 @@
 import { AgentRunPage } from "@/features/agents/components/run/AgentRunPage";
 
-export const metadata = { title: "Run" };
+export const metadata = { title: "Agent Runner | AI Matrx" };
 
 export default async function AgentRunRoute({
   params,

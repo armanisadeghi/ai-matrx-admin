@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import { AgentBuilderLeftPanel } from "./AgentBuilderLeftPanel";
 import { AgentBuilderRightPanel } from "./AgentBuilderRightPanel";
+import { RightPanelSkeleton } from "./AgentBuilderSkeletons";
 
 interface AgentBuilderDesktopProps {
   agentId: string;
@@ -16,7 +18,9 @@ export function AgentBuilderDesktop({ agentId }: AgentBuilderDesktopProps) {
       </div>
       <div className="flex-1 h-full overflow-hidden flex justify-center">
         <div className="w-full max-w-3xl h-full pt-12">
-          <AgentBuilderRightPanel agentId={agentId} />
+          <Suspense fallback={<RightPanelSkeleton />}>
+            <AgentBuilderRightPanel agentId={agentId} />
+          </Suspense>
         </div>
       </div>
     </div>

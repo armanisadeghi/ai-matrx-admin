@@ -1,6 +1,6 @@
 import { AgentVersionsWorkspace } from "@/features/agents/route/AgentVersionsWorkspace";
 
-export const metadata = { title: "Versions" };
+export const metadata = { title: "Agent Versions | AI Matrx" };
 
 export default async function AgentLatestPage({
   params,

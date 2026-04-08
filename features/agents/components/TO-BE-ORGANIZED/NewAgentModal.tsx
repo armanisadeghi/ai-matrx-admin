@@ -47,7 +47,7 @@ function NewAgentForm({ onClose }: { onClose: () => void }) {
       ).unwrap();
       toast.success("Agent created!");
       onClose();
-      startTransition(() => router.push(`${basePath}/${result}/edit`));
+      startTransition(() => router.push(`${basePath}/${result}/build`));
     } catch (err) {
       console.error("Failed to create agent:", err);
       toast.error("Failed to create agent. Please try again.");

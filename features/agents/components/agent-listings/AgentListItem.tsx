@@ -125,7 +125,7 @@ export function AgentListItem({
     if (e && (e.metaKey || e.ctrlKey)) return;
     e?.stopPropagation();
     if (onNavigate && !isDisabled) {
-      onNavigate(id, `${basePath}/${id}/edit`);
+      onNavigate(id, `${basePath}/${id}/build`);
     }
   };
 
@@ -244,7 +244,7 @@ export function AgentListItem({
                 </DropdownMenuItem>
               </Link>
               <Link
-                href={`${basePath}/${id}/edit`}
+                href={`${basePath}/${id}/build`}
                 tabIndex={-1}
                 onClick={(e) => handleEdit(e)}
               >

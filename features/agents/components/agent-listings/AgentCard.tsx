@@ -91,7 +91,7 @@ export function AgentCard({
     if (e && (e.metaKey || e.ctrlKey)) return;
     e?.preventDefault();
     if (onNavigate && !isAnyNavigating) {
-      onNavigate(id, `${basePath}/${id}/edit`);
+      onNavigate(id, `${basePath}/${id}/build`);
     }
   };
 
@@ -265,7 +265,7 @@ export function AgentCard({
             />
           </Link>
           <Link
-            href={`${basePath}/${id}/edit`}
+            href={`${basePath}/${id}/build`}
             tabIndex={-1}
             onClick={(e) => {
               e.stopPropagation();
