@@ -3,13 +3,17 @@
 import React, { useState, useCallback } from "react";
 import { Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useDialogContainer } from "@/components/ui/dialog";
-import { ResourcePickerMenu } from "../resource-picker/ResourcePickerMenu";
-import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
-import { selectAttachmentCapabilities } from '@/lib/redux/prompt-execution/selectors';
-import { addValidatedResource } from '@/lib/redux/prompt-execution/thunks/resourceThunks';
-import type { Resource } from '../../types/resources';
+import { ResourcePickerMenu } from "../../../resource-manager/resource-picker/ResourcePickerMenu";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { selectAttachmentCapabilities } from "@/lib/redux/prompt-execution/selectors";
+import { addValidatedResource } from "@/lib/redux/prompt-execution/thunks/resourceThunks";
+import type { Resource } from "../../types/resources";
 
 interface SmartResourcePickerButtonProps {
   /**
@@ -27,7 +31,7 @@ interface SmartResourcePickerButtonProps {
 
 /**
  * SmartResourcePickerButton - Redux-driven resource picker
- * 
+ *
  * Automatically:
  * - Gets attachment capabilities from Redux
  * - Dispatches selected resources to Redux
@@ -43,46 +47,51 @@ export function SmartResourcePickerButton({
   const dialogContainer = useDialogContainer();
 
   // Get attachment capabilities from Redux
-  const attachmentCapabilities = useAppSelector(state => 
-    selectAttachmentCapabilities(state, runId)
+  const attachmentCapabilities = useAppSelector((state) =>
+    selectAttachmentCapabilities(state, runId),
   );
 
   // Handle resource selection - dispatch directly to Redux
-  const handleResourceSelected = useCallback(async (resource: Resource) => {
-    try {
-      await dispatch(addValidatedResource({
-        runId,
-        resource,
-      })).unwrap();
-      
-      setIsOpen(false);
-    } catch (error) {
-      console.error('Failed to add resource:', error);
-      // Could show a toast here if desired
-    }
-  }, [runId, dispatch]);
+  const handleResourceSelected = useCallback(
+    async (resource: Resource) => {
+      try {
+        await dispatch(
+          addValidatedResource({
+            runId,
+            resource,
+          }),
+        ).unwrap();
+
+        setIsOpen(false);
+      } catch (error) {
+        console.error("Failed to add resource:", error);
+        // Could show a toast here if desired
+      }
+    },
+    [runId, dispatch],
+  );
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen} modal={false}>
       <PopoverTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" 
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
           tabIndex={-1}
           title="Add resource"
         >
           <Database className="w-3.5 h-3.5" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent 
-        className="w-80 p-0 border-gray-300 dark:border-gray-700 z-[200]" 
-        align="start" 
+      <PopoverContent
+        className="w-80 p-0 border-gray-300 dark:border-gray-700 z-[200]"
+        align="start"
         side="top"
         sideOffset={8}
         container={dialogContainer}
       >
-        <ResourcePickerMenu 
+        <ResourcePickerMenu
           onResourceSelected={handleResourceSelected}
           onClose={() => setIsOpen(false)}
           attachmentCapabilities={attachmentCapabilities}
@@ -91,4 +100,3 @@ export function SmartResourcePickerButton({
     </Popover>
   );
 }
-

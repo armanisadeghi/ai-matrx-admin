@@ -118,6 +118,11 @@ export interface WindowPanelProps extends UseWindowPanelOptions {
   defaultSidebarOpen?: boolean;
   /** Class name applied to the sidebar panel content wrapper */
   sidebarClassName?: string;
+  /**
+   * When true, opening the sidebar grows the window width by sidebarDefaultSize
+   * and closing it shrinks it back, keeping the body content width constant.
+   */
+  sidebarExpandsWindow?: boolean;
   /** Content rendered in a full-width footer bar below the body. Renders as a single flex row. For zoned layout, use footerLeft/footerCenter/footerRight instead. */
   footer?: React.ReactNode;
   /** Left-aligned footer content (use instead of `footer` for zoned layout) */
@@ -145,10 +150,11 @@ export function WindowPanel({
   urlSyncId,
   urlSyncArgs,
   sidebar,
-  sidebarDefaultSize = 25,
-  sidebarMinSize = 10,
+  sidebarDefaultSize = 200,
+  sidebarMinSize = 150,
   defaultSidebarOpen = true,
   sidebarClassName,
+  sidebarExpandsWindow = false,
   footer,
   footerLeft,
   footerCenter,
@@ -191,11 +197,41 @@ export function WindowPanel({
     const panel = sidebarPanelRef.current;
     if (!panel) return;
     if (sidebarOpen) {
-      panel.collapse();
+      if (sidebarExpandsWindow) {
+        // Shrink window first, then collapse panel on next frame so the
+        // panel never has to redistribute space within a narrower container.
+        dispatch(
+          updateWindowRect({
+            id,
+            rect: { width: rect.width - sidebarDefaultSize },
+          }),
+        );
+        requestAnimationFrame(() => panel.collapse());
+      } else {
+        panel.collapse();
+      }
     } else {
-      panel.expand();
+      if (sidebarExpandsWindow) {
+        // Grow window first so the extra space exists before the panel expands into it.
+        dispatch(
+          updateWindowRect({
+            id,
+            rect: { width: rect.width + sidebarDefaultSize },
+          }),
+        );
+        requestAnimationFrame(() => panel.resize(sidebarDefaultSize));
+      } else {
+        panel.resize(sidebarDefaultSize);
+      }
     }
-  }, [sidebarOpen]);
+  }, [
+    sidebarOpen,
+    sidebarDefaultSize,
+    sidebarExpandsWindow,
+    dispatch,
+    id,
+    rect.width,
+  ]);
 
   const handleSidebarResize = useCallback(
     (panelSize: { asPercentage: number; inPixels: number }) => {

@@ -68,7 +68,7 @@ import {
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { ChatDebugModal } from "../../admin/ChatDebugModal";
 import { ResourceChips } from "@/features/prompts/components/resource-display";
-import { ResourcePickerMenu } from "@/features/prompts/components/resource-picker/ResourcePickerMenu";
+import { ResourcePickerMenu } from "@/features/resource-manager/resource-picker/ResourcePickerMenu";
 import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
 import { ModelSettingsDialog } from "@/features/prompts/components/configuration/ModelSettingsDialog";
@@ -232,7 +232,9 @@ export function ConversationInput({
   const resources = useAppSelector(selectInstanceResources(instanceId));
   const isExecuting = useAppSelector(selectIsExecuting(instanceId));
   const hasVariables = useAppSelector(selectShouldShowVariables(instanceId));
-  const settingsForDialogRaw = useAppSelector(selectCurrentSettings(instanceId));
+  const settingsForDialogRaw = useAppSelector(
+    selectCurrentSettings(instanceId),
+  );
   const settingsForDialog = settingsForDialogRaw ?? {};
 
   // ── Admin / debug ──────────────────────────────────────────────────────────

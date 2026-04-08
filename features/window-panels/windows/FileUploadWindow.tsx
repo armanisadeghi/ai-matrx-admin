@@ -10,7 +10,13 @@
  *   Settings — bucket selector + overwrite policy
  */
 
-import React, { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+  useMemo,
+} from "react";
 import {
   Upload,
   FolderTree,
@@ -34,7 +40,10 @@ import { useFileSystem } from "@/lib/redux/fileSystem/Provider";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { createFileSystemSelectors } from "@/lib/redux/fileSystem/selectors";
 import { createFileSystemSlice } from "@/lib/redux/fileSystem/slice";
-import type { AvailableBuckets, FileSystemNode } from "@/lib/redux/fileSystem/types";
+import type {
+  AvailableBuckets,
+  FileSystemNode,
+} from "@/lib/redux/fileSystem/types";
 import { openOverlay, closeOverlay } from "@/lib/redux/slices/overlaySlice";
 import type { AppDispatch } from "@/lib/redux/store";
 import { toast } from "sonner";
@@ -243,7 +252,10 @@ export default function FileUploadWindow({
 
   // Update bucket when available list changes
   useEffect(() => {
-    if (availableBuckets.length > 0 && !availableBuckets.includes(selectedBucket)) {
+    if (
+      availableBuckets.length > 0 &&
+      !availableBuckets.includes(selectedBucket)
+    ) {
       setSelectedBucket(availableBuckets[0]);
     }
   }, [availableBuckets, selectedBucket]);
@@ -308,7 +320,9 @@ export default function FileUploadWindow({
           if (file) {
             const ext = file.type.split("/")[1] || "png";
             imageFiles.push(
-              new File([file], `pasted-${Date.now()}.${ext}`, { type: file.type }),
+              new File([file], `pasted-${Date.now()}.${ext}`, {
+                type: file.type,
+              }),
             );
           }
         }
@@ -343,7 +357,9 @@ export default function FileUploadWindow({
     for (const item of toUpload) {
       setQueue((prev) =>
         prev.map((q) =>
-          q.id === item.id ? { ...q, status: "uploading" as const, progress: 50 } : q,
+          q.id === item.id
+            ? { ...q, status: "uploading" as const, progress: 50 }
+            : q,
         ),
       );
 
@@ -415,7 +431,9 @@ export default function FileUploadWindow({
 
       {/* Queue summary */}
       <div className="p-2 text-[10px] text-muted-foreground mt-auto">
-        <div>{queue.length} file(s) · {formatSize(totalSize)}</div>
+        <div>
+          {queue.length} file(s) · {formatSize(totalSize)}
+        </div>
         {doneCount > 0 && (
           <div className="text-green-500">{doneCount} uploaded</div>
         )}
@@ -515,7 +533,9 @@ export default function FileUploadWindow({
       case "destination":
         return (
           <div className="h-full overflow-auto p-3">
-            <p className="text-xs font-medium mb-2">Select destination folder</p>
+            <p className="text-xs font-medium mb-2">
+              Select destination folder
+            </p>
             <div className="space-y-1">
               {availableBuckets.map((b) => (
                 <div key={b}>
@@ -585,7 +605,8 @@ export default function FileUploadWindow({
 
             <div className="text-[10px] text-muted-foreground space-y-1 pt-2 border-t border-border">
               <p>
-                <strong>Public buckets</strong> — files accessible via direct URL
+                <strong>Public buckets</strong> — files accessible via direct
+                URL
               </p>
               <p>
                 <strong>Private buckets</strong> — files require signed URL
@@ -609,8 +630,8 @@ export default function FileUploadWindow({
       width={560}
       height={480}
       sidebar={sidebarContent}
-      sidebarDefaultSize={18}
-      sidebarMinSize={12}
+      sidebarDefaultSize={200}
+      sidebarMinSize={150}
       sidebarClassName="bg-muted/20"
       footerLeft={
         <div className="flex items-center gap-2">
@@ -650,9 +671,7 @@ export default function FileUploadWindow({
           ) : (
             <Upload className="w-3 h-3" />
           )}
-          {isUploading
-            ? "Uploading…"
-            : `Upload (${queuedCount})`}
+          {isUploading ? "Uploading…" : `Upload (${queuedCount})`}
         </button>
       }
     >
@@ -666,9 +685,13 @@ export default function FileUploadWindow({
 function StatusIcon({ status }: { status: UploadStatus }) {
   switch (status) {
     case "queued":
-      return <FileIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />;
+      return (
+        <FileIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+      );
     case "uploading":
-      return <Loader2 className="w-3.5 h-3.5 text-primary animate-spin shrink-0" />;
+      return (
+        <Loader2 className="w-3.5 h-3.5 text-primary animate-spin shrink-0" />
+      );
     case "done":
       return <Check className="w-3.5 h-3.5 text-green-500 shrink-0" />;
     case "error":

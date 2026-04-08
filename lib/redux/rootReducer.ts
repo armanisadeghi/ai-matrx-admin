@@ -66,6 +66,7 @@ import urlSyncReducer from "./slices/urlSyncSlice";
 // Agent cache — unified slim/core/operational store for user prompts + builtins + shared
 import agentCacheReducer from "./slices/agentCacheSlice";
 import agentDefinitionReducer from "@/features/agents/redux/agent-definition/slice";
+import { agentConversationsReducer } from "@/features/agents/redux/agent-conversations";
 import agentShortcutReducer from "@/features/agents/redux/agent-shortcuts/slice";
 import agentConsumersReducer from "@/features/agents/redux/agent-consumers/slice";
 import toolsReducer from "@/features/agents/redux/tools/tools.slice";
@@ -304,6 +305,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
     // Layer 1 — Agent Source
     agentDefinition: agentDefinitionReducer,
+    agentConversations: agentConversationsReducer,
     agentShortcut: agentShortcutReducer,
     agentConsumers: agentConsumersReducer,
     tools: toolsReducer,

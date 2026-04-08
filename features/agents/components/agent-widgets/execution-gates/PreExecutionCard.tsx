@@ -102,39 +102,3 @@ export function PreExecutionCard({
 
   return portalTarget ? createPortal(card, portalTarget) : null;
 }
-
-// ─── Chat history sidebar placeholder ─────────────────────────────────────────
-
-export function AgentChatHistorySidebar({
-  instanceId,
-}: {
-  instanceId: string;
-}) {
-  return (
-    <div className="h-full flex flex-col min-h-0 overflow-hidden">
-      <div className="px-3 py-2 border-b border-border/30 shrink-0">
-        <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
-          Prior Chats
-        </span>
-      </div>
-      <div className="flex-1 overflow-y-auto p-2">
-        <p className="text-[10px] text-muted-foreground/50 text-center py-6">
-          Chat history will appear here
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ─── Footer placeholder ──────────────────────────────────────────────────────
-
-export function AgentChatFooter({ instanceId }: { instanceId: string }) {
-  return (
-    <>
-      <span className="text-muted-foreground/50">
-        {/* Status indicator placeholder */}
-      </span>
-      <div className="flex-1" />
-    </>
-  );
-}

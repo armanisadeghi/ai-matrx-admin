@@ -484,8 +484,8 @@ export function PdfExtractorFloatingWorkspace({
           onClear={extractor.clearHistory}
         />
       }
-      sidebarDefaultSize={26}
-      sidebarMinSize={15}
+      sidebarDefaultSize={200}
+      sidebarMinSize={150}
       defaultSidebarOpen={true}
       sidebarClassName="bg-muted/10"
       urlSyncKey="pdf_extractor"

@@ -74,7 +74,7 @@ import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { selectActiveChatAgent } from "@/lib/redux/slices/activeChatSlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { ResourceChips } from "@/features/prompts/components/resource-display";
-import { ResourcePickerMenu } from "@/features/prompts/components/resource-picker/ResourcePickerMenu";
+import { ResourcePickerMenu } from "@/features/resource-manager/resource-picker/ResourcePickerMenu";
 import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
 import { useRecordAndTranscribe, TranscriptionLoader } from "@/features/audio";

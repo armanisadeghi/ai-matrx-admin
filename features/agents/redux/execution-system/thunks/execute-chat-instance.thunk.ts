@@ -42,6 +42,7 @@ import {
 import { addUserTurn } from "../instance-conversation-history/instance-conversation-history.slice";
 import { processStream } from "./process-stream";
 import { ENDPOINTS } from "@/lib/api/endpoints";
+import { upsertAgentConversationFromExecutionAction } from "@/features/agents/redux/agent-conversations";
 
 // =============================================================================
 // Turn Conversion Utility
@@ -245,6 +246,11 @@ export function assembleChatRequest(
   if (sourceApp) request.source_app = sourceApp;
   if (sourceFeature) request.source_feature = sourceFeature;
 
+  // Stable agx_agent.id for server logging / linkage (chat has no /agents/{id} URL).
+  // Version snapshots use parentAgentId; live agents use their own id.
+  request.agent_id = agent.parentAgentId ?? agent.id;
+  request.is_version = agent.isVersion;
+
   return request;
 }
 
@@ -356,6 +362,12 @@ export const executeChatInstance = createAsyncThunk<
 
       if (conversationId) {
         dispatch(setConversationId({ requestId, conversationId }));
+        const syncList = upsertAgentConversationFromExecutionAction(
+          getState() as RootState,
+          instanceId,
+          conversationId,
+        );
+        if (syncList) dispatch(syncList);
       }
 
       dispatch(setInstanceStatus({ instanceId, status: "streaming" }));

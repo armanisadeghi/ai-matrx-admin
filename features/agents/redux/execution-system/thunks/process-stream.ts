@@ -71,6 +71,10 @@ import {
 import { clearUserInput } from "../instance-user-input/instance-user-input.slice";
 import { clearAllResources } from "../instance-resources/instance-resources.slice";
 import { setInstanceStatus } from "../execution-instances";
+import {
+  patchAgentConversationMetadata,
+  upsertAgentConversationFromExecutionAction,
+} from "@/features/agents/redux/agent-conversations";
 
 // =============================================================================
 // Types
@@ -293,6 +297,12 @@ export async function processStream({
           if (cid && !conversationId) {
             conversationId = cid;
             dispatch(setConversationId({ requestId, conversationId }));
+            const syncList = upsertAgentConversationFromExecutionAction(
+              getState(),
+              instanceId,
+              conversationId,
+            );
+            if (syncList) dispatch(syncList);
           }
         } else if (dataType === "conversation_labeled") {
           const labeled = d as unknown as ConversationLabeledData;
@@ -302,6 +312,13 @@ export async function processStream({
               title: labeled.title,
               description: labeled.description ?? null,
               keywords: labeled.keywords ?? null,
+            }),
+          );
+          dispatch(
+            patchAgentConversationMetadata({
+              conversationId: labeled.conversation_id,
+              title: labeled.title,
+              description: labeled.description ?? "",
             }),
           );
         } else {
@@ -463,6 +480,12 @@ export async function processStream({
         if (d.table === "cx_conversation" && !conversationId) {
           conversationId = d.record_id;
           dispatch(setConversationId({ requestId, conversationId }));
+          const syncListCx = upsertAgentConversationFromExecutionAction(
+            getState(),
+            instanceId,
+            conversationId,
+          );
+          if (syncListCx) dispatch(syncListCx);
         }
 
         dispatch(
@@ -533,7 +556,8 @@ export async function processStream({
       } else if (isEndEvent(event)) {
         otherEvents++;
         const currentState = getState();
-        const currentRequest = currentState.activeRequests.byRequestId[requestId];
+        const currentRequest =
+          currentState.activeRequests.byRequestId[requestId];
         if (currentRequest?.status !== "error") {
           dispatch(setRequestStatus({ requestId, status: "complete" }));
           dispatch(setInstanceStatus({ instanceId, status: "complete" }));
@@ -635,10 +659,11 @@ export async function processStream({
   const finalState = getState();
   const finalRequest = finalState.activeRequests.byRequestId[requestId];
   const completedText = finalRequest?.accumulatedText ?? "";
-  const finalConversationId =
-    finalRequest?.conversationId ?? conversationId;
+  const finalConversationId = finalRequest?.conversationId ?? conversationId;
   const finalErrorMessage =
-    finalRequest?.status === "error" ? (finalRequest.errorMessage ?? null) : null;
+    finalRequest?.status === "error"
+      ? (finalRequest.errorMessage ?? null)
+      : null;
 
   dispatch(
     commitAssistantTurn({

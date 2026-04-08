@@ -88,8 +88,8 @@ export default function StateViewerWindow({
       urlSyncKey="state_analyzer"
       onClose={onClose}
       sidebar={sidebarContent}
-      sidebarDefaultSize={25}
-      sidebarMinSize={12}
+      sidebarDefaultSize={200}
+      sidebarMinSize={150}
       sidebarClassName="bg-muted/10"
     >
       <div className="flex-1 flex flex-col min-w-0 min-h-0">

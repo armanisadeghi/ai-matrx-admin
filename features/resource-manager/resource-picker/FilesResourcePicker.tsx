@@ -31,6 +31,18 @@ type StorageFile = {
   } | null;
 };
 
+/** Stable unique key for list items — `name` alone can duplicate within a bucket path. */
+function storageItemListKey(
+  bucketName: string,
+  parentPath: string,
+  item: StorageFile,
+  index: number,
+): string {
+  if (item.id) return `${bucketName}:${item.id}`;
+  const relPath = parentPath ? `${parentPath}/${item.name}` : item.name;
+  return `${bucketName}:${relPath}:${item.type}:${index}`;
+}
+
 type FileSelection = {
   url: string;
   type: string;
@@ -229,9 +241,14 @@ function TreeNode({
               Empty folder
             </div>
           ) : (
-            children.map((child) => (
+            children.map((child, childIndex) => (
               <TreeNode
-                key={child.name}
+                key={storageItemListKey(
+                  bucketName,
+                  fullPath,
+                  child,
+                  childIndex,
+                )}
                 item={child}
                 path={fullPath}
                 bucketName={bucketName}
@@ -431,9 +448,9 @@ export function FilesResourcePicker({
                 Empty bucket
               </div>
             ) : (
-              items.map((item) => (
+              items.map((item, itemIndex) => (
                 <TreeNode
-                  key={item.name}
+                  key={storageItemListKey(selectedBucket, "", item, itemIndex)}
                   item={item}
                   path=""
                   bucketName={selectedBucket}

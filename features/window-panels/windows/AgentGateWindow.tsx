@@ -3,7 +3,7 @@
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { AgentGateBody } from "@/features/agents/components/agent-widgets/parts/AgentGateInput";
+import { AgentGateBody } from "@/features/agents/components/agent-widgets/execution-gates/AgentGateInput";
 
 interface AgentGateWindowProps {
   instanceId: string;

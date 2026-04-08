@@ -47,6 +47,7 @@ import {
 } from "../active-requests/active-requests.slice";
 import { addUserTurn } from "../instance-conversation-history/instance-conversation-history.slice";
 import { processStream } from "./process-stream";
+import { upsertAgentConversationFromExecutionAction } from "@/features/agents/redux/agent-conversations";
 
 // =============================================================================
 // Assemble Request (pure selector logic, extracted for testability)
@@ -281,6 +282,12 @@ export const executeInstance = createAsyncThunk<
 
       if (conversationId) {
         dispatch(setConversationId({ requestId, conversationId }));
+        const syncList = upsertAgentConversationFromExecutionAction(
+          getState() as RootState,
+          instanceId,
+          conversationId,
+        );
+        if (syncList) dispatch(syncList);
       }
 
       dispatch(setInstanceStatus({ instanceId, status: "streaming" }));

@@ -109,8 +109,8 @@ export default function VoicePadAdvanced() {
       urlSyncKey="voice"
       urlSyncId="default"
       sidebar={sidebarContent}
-      sidebarDefaultSize={35}
-      sidebarMinSize={15}
+      sidebarDefaultSize={200}
+      sidebarMinSize={150}
       defaultSidebarOpen={false}
       footerLeft={
         <VoicePadFooterLeft entries={entries} onNewSession={handleNewSession} />

@@ -1,7 +1,7 @@
 "use client";
 
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { ResourcePickerMenu } from "@/features/prompts/components/resource-picker/ResourcePickerMenu";
+import { ResourcePickerMenu } from "@/features/resource-manager/resource-picker/ResourcePickerMenu";
 
 import type { WindowPosition } from "@/features/window-panels/hooks/useWindowPanel";
 

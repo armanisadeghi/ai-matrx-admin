@@ -55,7 +55,7 @@ export function AgentSelectorIsland({
       <AgentListDropdown
         onSelect={handleAgentSelect}
         label={displayName}
-        className="max-w-[180px]"
+        className="max-w-[120px] md:max-w-[180px]"
       />
       {versionNumber != null && (
         <span className="text-[0.625rem] font-medium text-[var(--shell-nav-text)] tabular-nums shrink-0">

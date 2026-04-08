@@ -101,8 +101,8 @@ function GalleryWindowInner({
       urlSyncKey="gallery"
       urlSyncId="default"
       sidebar={workspace.sidebar}
-      sidebarDefaultSize={15}
-      sidebarMinSize={10}
+      sidebarDefaultSize={200}
+      sidebarMinSize={150}
       sidebarClassName="bg-muted/10"
       defaultSidebarOpen={false}
       footerRight={footerRight}

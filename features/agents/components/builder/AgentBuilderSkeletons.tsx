@@ -14,8 +14,10 @@ export function DesktopBuilderSkeleton() {
             <Skeleton className="h-6 w-40 rounded-md" />
           </div>
           <div className="flex flex-col gap-2 flex-1 pr-1">
-            <Skeleton className="h-[280px] w-full rounded-lg" />
-            <Skeleton className="h-24 w-full rounded-lg" />
+            <Skeleton className="h-[360px] w-full rounded-lg" />
+            <Skeleton className="h-28 w-full rounded-lg" />
+            <Skeleton className="h-28 w-full rounded-lg" />
+            <Skeleton className="flex-1 w-full rounded-lg" />
           </div>
           <div className="flex items-center justify-end gap-1 shrink-0 py-2 border-t border-border bg-background">
             <Skeleton className="h-7 w-16 rounded-md" />
@@ -29,8 +31,7 @@ export function DesktopBuilderSkeleton() {
             <div className="flex-1 flex items-center justify-center">
               <Skeleton className="h-6 w-32 rounded-md" />
             </div>
-            <Skeleton className="h-10 w-full rounded-md shrink-0" />
-            <Skeleton className="h-12 w-full rounded-lg shrink-0 mt-2" />
+            <Skeleton className="h-24 w-full rounded-lg shrink-0" />
           </div>
         </div>
       </div>

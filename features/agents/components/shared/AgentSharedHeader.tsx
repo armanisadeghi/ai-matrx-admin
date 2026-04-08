@@ -119,7 +119,7 @@ export function AgentSharedHeader({ agentId }: { agentId: string }) {
           <AgentListDropdown
             onSelect={handleAgentSelect}
             label={agentName}
-            className="max-w-[180px]"
+            className="max-w-[120px] md:max-w-[180px]"
           />
           {versionNumber != null && (
             <span className="text-[0.625rem] font-medium text-[var(--shell-nav-text)] tabular-nums shrink-0">
@@ -135,8 +135,10 @@ export function AgentSharedHeader({ agentId }: { agentId: string }) {
               <button
                 key={id}
                 onClick={() => handleModeChange(id)}
+                title={label}
                 className={cn(
-                  "flex items-center gap-1 px-2.5 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer",
+                  "flex items-center justify-center gap-1 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer",
+                  "px-1.5 md:px-2.5",
                   "[&_svg]:w-3.5 [&_svg]:h-3.5",
                   isActive
                     ? "bg-[var(--shell-glass-bg-active)] text-[var(--shell-nav-text-hover)]"
@@ -144,7 +146,7 @@ export function AgentSharedHeader({ agentId }: { agentId: string }) {
                 )}
               >
                 <Icon />
-                {label}
+                <span className="hidden md:inline">{label}</span>
               </button>
             );
           })}

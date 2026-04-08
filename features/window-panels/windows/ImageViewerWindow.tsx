@@ -342,8 +342,8 @@ export function ImageViewerWindow({
           />
         ) : undefined
       }
-      sidebarDefaultSize={12}
-      sidebarMinSize={8}
+      sidebarDefaultSize={200}
+      sidebarMinSize={150}
       defaultSidebarOpen={hasMany}
     >
       <ImageViewer

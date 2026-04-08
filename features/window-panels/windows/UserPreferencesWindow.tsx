@@ -2,8 +2,8 @@
 
 import React, { useState, Suspense, lazy } from "react";
 import { useSelector } from "react-redux";
-import { cn } from "@/lib/utils";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowSidebar } from "@/features/window-panels/components/WindowSidebar";
 import {
   Monitor,
   MessageSquare,
@@ -246,29 +246,11 @@ export default function UserPreferencesWindow({
   const ActiveComponent = tabComponents[activeTab];
 
   const sidebarContent = (
-    <ScrollArea className="flex-1 w-full">
-      <div className="py-2">
-        {categories.map((cat) => {
-          const Icon = cat.icon as React.FC<{ className?: string }>;
-          const isActive = cat.value === activeTab;
-          return (
-            <button
-              key={cat.value}
-              onClick={() => setActiveTab(cat.value)}
-              className={cn(
-                "w-full flex items-center gap-2.5 px-3 py-2 text-left text-xs transition-colors",
-                isActive
-                  ? "bg-primary/10 text-primary border-r-2 border-primary"
-                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
-              )}
-            >
-              <Icon className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{cat.label}</span>
-            </button>
-          );
-        })}
-      </div>
-    </ScrollArea>
+    <WindowSidebar
+      items={categories}
+      activeItem={activeTab}
+      onSelect={(v) => setActiveTab(v as PreferenceTab)}
+    />
   );
 
   return (
@@ -279,8 +261,8 @@ export default function UserPreferencesWindow({
       urlSyncKey="user_preferences"
       onClose={onClose}
       sidebar={sidebarContent}
-      sidebarDefaultSize={22}
-      sidebarMinSize={12}
+      sidebarDefaultSize={200}
+      sidebarMinSize={150}
       sidebarClassName="bg-muted/20"
       footer={
         <>

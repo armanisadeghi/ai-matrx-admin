@@ -251,8 +251,8 @@ export default function QuickFilesWindow({
       minHeight={320}
       onClose={onClose}
       sidebar={sidebar}
-      sidebarDefaultSize={14}
-      sidebarMinSize={10}
+      sidebarDefaultSize={200}
+      sidebarMinSize={150}
       sidebarClassName="bg-muted/10"
       footerLeft={footerLeft}
       footerRight={footerRight}
