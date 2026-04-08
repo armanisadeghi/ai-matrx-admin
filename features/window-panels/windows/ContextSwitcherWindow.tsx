@@ -2,7 +2,10 @@
 
 import React from "react";
 import { WindowPanel } from "../WindowPanel";
-import { ContextSwitcherCore } from "@/features/context/components/ContextSwitcherCore";
+import {
+  HierarchyTree,
+  useHierarchyReduxBridge,
+} from "@/features/context/components/hierarchy-selection";
 
 export interface ContextSwitcherWindowProps {
   isOpen: boolean;
@@ -15,6 +18,8 @@ export function ContextSwitcherWindow({
   onClose,
   instanceId = "default",
 }: ContextSwitcherWindowProps) {
+  const { value, onChange } = useHierarchyReduxBridge();
+
   if (!isOpen) return null;
 
   return (
@@ -28,7 +33,11 @@ export function ContextSwitcherWindow({
       height={480}
       position="center"
     >
-      <ContextSwitcherCore />
+      <HierarchyTree
+        levels={["organization", "project", "task"]}
+        value={value}
+        onChange={onChange}
+      />
     </WindowPanel>
   );
 }

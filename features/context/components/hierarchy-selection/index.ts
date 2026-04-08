@@ -17,6 +17,7 @@ export { HierarchyCommand } from "./HierarchyCommand";
 export { HierarchyPills } from "./HierarchyPills";
 
 export { useHierarchySelection } from "./useHierarchySelection";
+export { useHierarchyReduxBridge } from "./useReduxBridge";
 
 export type {
   HierarchySelection,

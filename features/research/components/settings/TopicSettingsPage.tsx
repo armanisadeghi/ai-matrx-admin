@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, Save, FolderOpen, FolderPlus } from "lucide-react";
+import { Loader2, Save, FolderPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,7 +17,13 @@ import { toast } from "sonner";
 import { AutonomySelector } from "../init/AutonomySelector";
 import { StatusBadge } from "../shared/StatusBadge";
 import { updateTopic } from "../../service";
-import { useUserProjects, ProjectFormSheet } from "@/features/projects";
+import { ProjectFormSheet } from "@/features/projects";
+import {
+  HierarchyCascade,
+  EMPTY_SELECTION,
+} from "@/features/context/components/hierarchy-selection";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { invalidateNavTree } from "@/features/context/redux/hierarchySlice";
 import { useTopicContext } from "../../context/ResearchContext";
 import type { AutonomyLevel, SearchProvider, TopicStatus } from "../../types";
 import {
@@ -42,11 +48,7 @@ const SEARCH_PROVIDERS: { value: SearchProvider; label: string }[] = [
 
 export default function TopicSettingsPage() {
   const { topic, refresh } = useTopicContext();
-  const {
-    projects,
-    loading: projectsLoading,
-    refresh: refreshProjects,
-  } = useUserProjects();
+  const dispatch = useAppDispatch();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -125,37 +127,18 @@ export default function TopicSettingsPage() {
         </h2>
         <div className="space-y-2">
           <Label>Move to Project</Label>
-          <Select
-            value={selectedProjectId}
-            onValueChange={setSelectedProjectId}
-            disabled={projectsLoading || saving}
-          >
-            <SelectTrigger style={{ fontSize: "16px" }}>
-              {projectsLoading ? (
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Loading projects...
-                </span>
-              ) : (
-                <SelectValue placeholder="Select a project" />
-              )}
-            </SelectTrigger>
-            <SelectContent>
-              {projects.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  <span className="flex items-center gap-2">
-                    <FolderOpen className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                    <span>{p.name}</span>
-                    {p.isPersonal && (
-                      <span className="text-[10px] text-muted-foreground ml-1">
-                        Personal
-                      </span>
-                    )}
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <HierarchyCascade
+            levels={["organization", "project"]}
+            value={{
+              ...EMPTY_SELECTION,
+              projectId: selectedProjectId,
+            }}
+            onChange={(sel) =>
+              setSelectedProjectId(sel.projectId ?? selectedProjectId)
+            }
+            layout="vertical"
+            disabled={saving}
+          />
           <Button
             type="button"
             variant="ghost"
@@ -322,7 +305,7 @@ export default function TopicSettingsPage() {
         onOpenChange={setNewProjectOpen}
         skipRedirect
         onSuccess={(project) => {
-          refreshProjects();
+          dispatch(invalidateNavTree());
           setSelectedProjectId(project.id);
         }}
       />

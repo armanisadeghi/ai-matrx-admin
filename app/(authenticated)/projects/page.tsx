@@ -8,7 +8,10 @@ import { useUserProjects } from "@/features/projects";
 import { ProjectList } from "@/features/projects/components/ProjectList";
 import { ProjectCard } from "@/features/projects/components/ProjectCard";
 import { ProjectFormSheet } from "@/features/projects/components/ProjectFormSheet";
-import { HierarchyContextBar } from "@/features/context/components/HierarchyContextBar";
+import {
+  HierarchyCascade,
+  useHierarchyReduxBridge,
+} from "@/features/context/components/hierarchy-selection";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/features/context/redux/appContextSlice";
 import { useUserOrganizations } from "@/features/organizations";
@@ -24,6 +27,7 @@ export default function ProjectsPage() {
   const { projects, loading, refresh } = useUserProjects();
   const { organizations } = useUserOrganizations();
   const activeOrgId = useAppSelector(selectOrganizationId);
+  const { value: ctxValue, onChange: ctxOnChange } = useHierarchyReduxBridge();
 
   const orgSlugById = useMemo(
     () => new Map(organizations.map((o) => [o.id, o.slug])),
@@ -36,8 +40,13 @@ export default function ProjectsPage() {
 
   return (
     <div className="h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden">
-      {/* Hierarchy context bar */}
-      <HierarchyContextBar showProject={false} />
+      <div className="shrink-0 px-4 py-2 border-b border-border bg-card">
+        <HierarchyCascade
+          levels={["organization"]}
+          value={ctxValue}
+          onChange={ctxOnChange}
+        />
+      </div>
 
       {/* Header */}
       <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-border bg-card">

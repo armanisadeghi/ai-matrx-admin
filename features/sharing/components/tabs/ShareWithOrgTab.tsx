@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Loader2, Building2, Check } from 'lucide-react';
-import { PermissionLevel, ResourceType } from '@/utils/permissions';
-import { useUserOrganizations } from '@/features/organizations';
-import { PermissionLevelDescription } from '../PermissionBadge';
-import { useToast } from '@/components/ui/use-toast';
+} from "@/components/ui/select";
+import { Loader2, Building2, Check } from "lucide-react";
+import { PermissionLevel, ResourceType } from "@/utils/permissions";
+import { useNavTree } from "@/features/context/hooks/useNavTree";
+import { PermissionLevelDescription } from "../PermissionBadge";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ShareWithOrgTabProps {
   onShare: (orgId: string, level: PermissionLevel) => Promise<any>;
@@ -33,22 +33,22 @@ export function ShareWithOrgTab({
   resourceType,
   sharedOrgIds = [],
 }: ShareWithOrgTabProps) {
-  const [selectedOrgId, setSelectedOrgId] = useState('');
-  const [permissionLevel, setPermissionLevel] = useState<PermissionLevel>('viewer');
+  const [selectedOrgId, setSelectedOrgId] = useState("");
+  const [permissionLevel, setPermissionLevel] =
+    useState<PermissionLevel>("viewer");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const { organizations, loading: orgsLoading } = useUserOrganizations();
+  const { orgs, isLoading: orgsLoading } = useNavTree();
 
-  // Filter out personal organizations
-  const shareableOrgs = organizations.filter((org) => !org.isPersonal);
+  const shareableOrgs = orgs.filter((org) => !org.is_personal);
 
   const handleShare = async () => {
     if (!selectedOrgId) {
       toast({
-        title: 'Select an organization',
-        description: 'Please select an organization to share with',
-        variant: 'destructive',
+        title: "Select an organization",
+        description: "Please select an organization to share with",
+        variant: "destructive",
       });
       return;
     }
@@ -60,24 +60,24 @@ export function ShareWithOrgTab({
       if (result.success) {
         const org = shareableOrgs.find((o) => o.id === selectedOrgId);
         toast({
-          title: 'Shared successfully',
-          description: `Shared with ${org?.name || 'organization'}`,
+          title: "Shared successfully",
+          description: `Shared with ${org?.name || "organization"}`,
         });
-        setSelectedOrgId('');
-        setPermissionLevel('viewer');
+        setSelectedOrgId("");
+        setPermissionLevel("viewer");
         onSuccess();
       } else {
         toast({
-          title: 'Failed to share',
-          description: result.error || 'Please try again',
-          variant: 'destructive',
+          title: "Failed to share",
+          description: result.error || "Please try again",
+          variant: "destructive",
         });
       }
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to share',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to share",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -97,7 +97,9 @@ export function ShareWithOrgTab({
       <div className="p-6 text-center space-y-3 bg-muted/30 rounded-lg border flex flex-col items-center justify-center">
         <Building2 className="w-12 h-12 mx-auto text-muted-foreground opacity-20" />
         <div>
-          <h4 className="text-sm font-medium mb-1">Organization Management Coming Soon</h4>
+          <h4 className="text-sm font-medium mb-1">
+            Organization Management Coming Soon
+          </h4>
           <p className="text-xs text-muted-foreground mb-4">
             The organization management system is still being built
           </p>
@@ -124,7 +126,9 @@ export function ShareWithOrgTab({
 
       <div className="space-y-2.5">
         <div className="space-y-1.5">
-          <Label htmlFor="org-select" className="text-xs">Organization</Label>
+          <Label htmlFor="org-select" className="text-xs">
+            Organization
+          </Label>
           <Select
             value={selectedOrgId}
             onValueChange={setSelectedOrgId}
@@ -144,7 +148,9 @@ export function ShareWithOrgTab({
                   >
                     <div className="flex items-center gap-2">
                       <Building2 className="w-3 h-3" />
-                      <span className={alreadyShared ? 'text-muted-foreground' : ''}>
+                      <span
+                        className={alreadyShared ? "text-muted-foreground" : ""}
+                      >
                         {org.name}
                       </span>
                       {alreadyShared ? (
@@ -166,10 +172,14 @@ export function ShareWithOrgTab({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="org-permission" className="text-xs">Permission Level</Label>
+          <Label htmlFor="org-permission" className="text-xs">
+            Permission Level
+          </Label>
           <Select
             value={permissionLevel}
-            onValueChange={(value) => setPermissionLevel(value as PermissionLevel)}
+            onValueChange={(value) =>
+              setPermissionLevel(value as PermissionLevel)
+            }
             disabled={loading}
           >
             <SelectTrigger id="org-permission" className="h-9">
@@ -205,4 +215,3 @@ export function ShareWithOrgTab({
     </div>
   );
 }
-

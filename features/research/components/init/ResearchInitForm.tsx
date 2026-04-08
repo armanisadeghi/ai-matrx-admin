@@ -2,26 +2,24 @@
 
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Loader2,
-  Plus,
-  FolderOpen,
-  Check,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { useUserProjects } from "@/features/projects";
 import { CreateProjectModal } from "@/features/projects/components/CreateProjectModal";
 import { useResearchApi } from "../../hooks/useResearchApi";
 import { TemplatePicker } from "./TemplatePicker";
 import { AutonomySelector } from "./AutonomySelector";
 import type { AutonomyLevel, ResearchTemplate } from "../../types";
 import { keywordTemplatesFromJson } from "../../types";
-import type { ProjectWithRole } from "@/features/projects";
+import {
+  HierarchyCascade,
+  EMPTY_SELECTION,
+} from "@/features/context/components/hierarchy-selection";
+import type { HierarchySelection } from "@/features/context/components/hierarchy-selection";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { invalidateNavTree } from "@/features/context/redux/hierarchySlice";
 
 const STEPS = ["Project", "Topic", "Template", "Keywords", "Settings"] as const;
 
@@ -30,16 +28,16 @@ export default function ResearchInitForm() {
   const searchParams = useSearchParams();
   const api = useResearchApi();
   const [isPending, startTransition] = useTransition();
-  const {
-    projects,
-    loading: projectsLoading,
-    refresh: refreshProjects,
-  } = useUserProjects();
+  const dispatch = useAppDispatch();
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
 
   const [step, setStep] = useState(0);
-  const [selectedProject, setSelectedProject] =
-    useState<ProjectWithRole | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    null,
+  );
+  const [selectedProjectName, setSelectedProjectName] = useState<string | null>(
+    null,
+  );
   const [topicName, setTopicName] = useState(searchParams?.get("topic") ?? "");
   const [description, setDescription] = useState("");
   const [selectedTemplate, setSelectedTemplate] =
@@ -83,7 +81,7 @@ export default function ResearchInitForm() {
   };
 
   const handleSubmit = () => {
-    if (!selectedProject || selectedKeywords.length < 1) {
+    if (!selectedProjectId || selectedKeywords.length < 1) {
       setError("Missing required fields");
       return;
     }
@@ -91,7 +89,7 @@ export default function ResearchInitForm() {
 
     startTransition(async () => {
       try {
-        const response = await api.createTopic(selectedProject.id, {
+        const response = await api.createTopic(selectedProjectId!, {
           name: topicName.trim(),
           description: description.trim() || null,
           autonomy_level: autonomyLevel,
@@ -114,7 +112,7 @@ export default function ResearchInitForm() {
 
   const canProceed =
     step === 0
-      ? !!selectedProject
+      ? !!selectedProjectId
       : step === 1
         ? topicName.trim().length > 0
         : step === 2
@@ -165,69 +163,31 @@ export default function ResearchInitForm() {
               </p>
             </div>
 
-            {projectsLoading ? (
-              <div className="flex items-center justify-center py-12 text-muted-foreground">
-                <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                Loading projects...
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {projects.map((project) => (
-                  <button
-                    key={project.id}
-                    onClick={() => setSelectedProject(project)}
-                    className={cn(
-                      "w-full flex items-center gap-3 rounded-xl border-2 p-4 text-left transition-colors min-h-[44px]",
-                      selectedProject?.id === project.id
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/30",
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "h-9 w-9 rounded-lg flex items-center justify-center shrink-0",
-                        selectedProject?.id === project.id
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground",
-                      )}
-                    >
-                      {selectedProject?.id === project.id ? (
-                        <Check className="h-4 w-4" />
-                      ) : (
-                        <FolderOpen className="h-4 w-4" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="font-semibold text-sm truncate">
-                        {project.name}
-                      </div>
-                      {project.description && (
-                        <div className="text-xs text-muted-foreground truncate mt-0.5">
-                          {project.description}
-                        </div>
-                      )}
-                    </div>
-                    {project.isPersonal && (
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground bg-muted rounded-full px-2 py-0.5 shrink-0">
-                        Personal
-                      </span>
-                    )}
-                  </button>
-                ))}
-
-                <button
-                  onClick={() => setCreateProjectOpen(true)}
-                  className="w-full flex items-center gap-3 rounded-xl border-2 border-dashed border-border p-4 text-left transition-colors hover:border-primary/30 min-h-[44px]"
-                >
-                  <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                    <Plus className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <span className="text-sm font-medium text-muted-foreground">
-                    Create New Project
-                  </span>
-                </button>
-              </div>
-            )}
+            <div className="space-y-4">
+              <HierarchyCascade
+                levels={["organization", "project"]}
+                value={{
+                  ...EMPTY_SELECTION,
+                  projectId: selectedProjectId,
+                }}
+                onChange={(sel: HierarchySelection) => {
+                  setSelectedProjectId(sel.projectId);
+                  setSelectedProjectName(sel.projectName);
+                }}
+                layout="vertical"
+              />
+              <button
+                onClick={() => setCreateProjectOpen(true)}
+                className="w-full flex items-center gap-3 rounded-xl border-2 border-dashed border-border p-4 text-left transition-colors hover:border-primary/30 min-h-[44px]"
+              >
+                <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                  <Plus className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <span className="text-sm font-medium text-muted-foreground">
+                  Create New Project
+                </span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -239,7 +199,7 @@ export default function ResearchInitForm() {
               <p className="mt-2 text-muted-foreground">
                 Project:{" "}
                 <span className="font-semibold text-foreground">
-                  {selectedProject?.name}
+                  {selectedProjectName}
                 </span>
               </p>
             </div>
@@ -414,7 +374,7 @@ export default function ResearchInitForm() {
         isOpen={createProjectOpen}
         onClose={() => setCreateProjectOpen(false)}
         onSuccess={() => {
-          refreshProjects();
+          dispatch(invalidateNavTree());
           setCreateProjectOpen(false);
         }}
       />

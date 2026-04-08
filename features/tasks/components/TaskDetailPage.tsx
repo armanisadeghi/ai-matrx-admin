@@ -53,6 +53,11 @@ import { ShareModal } from "@/features/sharing/components/ShareModal";
 import { useToastManager } from "@/hooks/useToastManager";
 import type { TaskWithProject } from "@/features/tasks/types";
 import Link from "next/link";
+import {
+  HierarchyCascade,
+  EMPTY_SELECTION,
+} from "@/features/context/components/hierarchy-selection";
+import type { HierarchySelection } from "@/features/context/components/hierarchy-selection";
 
 interface TaskDetailPageProps {
   task: TaskWithProject;
@@ -739,31 +744,20 @@ export default function TaskDetailPage({ task }: TaskDetailPageProps) {
             <label className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1.5">
               <CheckSquare size={12} /> Project
             </label>
-            <Select
-              value={projectId || "none"}
-              onValueChange={(val) => {
-                setProjectId(val === "none" ? null : val);
-                setIsDirty(true);
+            <HierarchyCascade
+              levels={["organization", "project"]}
+              value={{
+                ...EMPTY_SELECTION,
+                projectId: projectId || null,
               }}
-            >
-              <SelectTrigger className="h-8 text-xs">
-                <SelectValue>
-                  {projectId
-                    ? projects.find((p) => p.id === projectId)?.name
-                    : "No Project"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">
-                  <span className="text-muted-foreground">No Project</span>
-                </SelectItem>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onChange={(sel: HierarchySelection) => {
+                if (sel.projectId !== (projectId || null)) {
+                  setProjectId(sel.projectId);
+                  setIsDirty(true);
+                }
+              }}
+              layout="vertical"
+            />
           </div>
 
           {/* Assignee */}

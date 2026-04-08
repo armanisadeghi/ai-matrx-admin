@@ -17,7 +17,7 @@
  *   └────────────────────────────────────┘
  */
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
@@ -31,7 +31,7 @@ import { AgentRunsSidebar } from "./AgentRunsSidebar";
 import { AgentLauncherSidebarTester } from "../run-controls/AgentLauncherSidebarTester";
 import { CreatorRunPanel } from "../run-controls/CreatorRunPanel";
 import { SmartAgentInput } from "../inputs/SmartAgentInput";
-import { Loader2, PanelLeft } from "lucide-react";
+import { ArrowDown, Loader2, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -54,6 +54,8 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
   const [instanceId, setInstanceId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [isInitializing, setIsInitializing] = useState(true);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showScrollDown, setShowScrollDown] = useState(false);
 
   const currentRunId = searchParams.get("runId") ?? undefined;
   const conversationIdFromUrl = searchParams.get("conversationId") ?? undefined;
@@ -124,6 +126,20 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
       .catch((err) => console.error("Failed to create instance:", err));
   }, [instanceId, dispatch, pathname, router, searchParams]);
 
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    setShowScrollDown(distanceFromBottom > 120);
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, []);
+
   if (isInitializing || !instanceId) {
     return (
       <div className="flex items-center justify-center h-full gap-3 text-muted-foreground">
@@ -136,10 +152,7 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
   return (
     <div className="relative flex h-full overflow-hidden">
       {!isMobile && sidebarOpen && (
-        <div
-          className="w-64 shrink-0 border-r border-border overflow-hidden flex flex-col"
-          style={{ paddingTop: "var(--shell-header-h)" }}
-        >
+        <div className="w-64 shrink-0 border-r border-border overflow-hidden flex flex-col  ">
           <AgentRunsSidebar
             agentId={agentId}
             instanceId={instanceId}
@@ -173,9 +186,38 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
         )}
 
         <div className="w-full max-w-3xl h-full flex flex-col overflow-hidden">
-          {/* Conversation */}
-          <div className="flex-1 overflow-y-auto min-h-0">
-            <AgentConversationDisplay instanceId={instanceId} />
+          {/* Conversation — scrollable area with fade-out at the bottom */}
+          <div className="relative flex-1 min-h-0">
+            <div
+              ref={scrollRef}
+              onScroll={handleScroll}
+              className="h-full overflow-y-auto"
+            >
+              <AgentConversationDisplay instanceId={instanceId} />
+            </div>
+            {/* 12px fade gradient at the bottom edge */}
+            <div
+              className="pointer-events-none absolute bottom-0 left-0 right-0 h-3"
+              style={{
+                background:
+                  "linear-gradient(to bottom, transparent, var(--background))",
+              }}
+            />
+            {/* Scroll-to-bottom pill */}
+            {showScrollDown && (
+              <button
+                type="button"
+                onClick={scrollToBottom}
+                className="absolute bottom-4 right-4 z-10 flex items-center justify-center w-8 h-8 rounded-full
+                  matrx-glass-core shadow-lg
+                  text-muted-foreground hover:text-foreground
+                  transition-all duration-200 ease-out
+                  animate-in fade-in slide-in-from-bottom-2"
+                title="Scroll to bottom"
+              >
+                <ArrowDown className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
           {/* Stats bar — appears after first completion */}

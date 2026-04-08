@@ -15,7 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { HierarchyContextSelector } from "@/features/context/components/HierarchyContextSelector";
+import {
+  HierarchyCascade,
+  EMPTY_SELECTION,
+} from "@/features/context/components/hierarchy-selection";
 import { useState, useEffect, useMemo } from "react";
 import type { AgentDefinition } from "@/features/agents/types/agent-definition.types";
 
@@ -49,7 +52,7 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
       .map((t) => t.trim())
       .filter(Boolean);
     if (JSON.stringify(draftTags) !== JSON.stringify(currentTags)) return true;
-    
+
     return false;
   }, [agent, draft, tagsInput]);
 
@@ -70,7 +73,9 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
     for (const key of Object.keys(draft) as Array<keyof AgentDefinition>) {
       if (key === "tags") continue;
       if (draft[key] !== agent[key]) {
-        dispatch(saveAgentField({ agentId, field: key, value: draft[key] as any }));
+        dispatch(
+          saveAgentField({ agentId, field: key, value: draft[key] as any }),
+        );
       }
     }
     // Save tags
@@ -80,7 +85,9 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
       .filter(Boolean);
     const currentTags = agent.tags || [];
     if (JSON.stringify(draftTags) !== JSON.stringify(currentTags)) {
-      dispatch(saveAgentField({ agentId, field: "tags", value: draftTags as any }));
+      dispatch(
+        saveAgentField({ agentId, field: "tags", value: draftTags as any }),
+      );
     }
   };
 
@@ -130,10 +137,14 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-1.5">
                 <Label>Owner User ID</Label>
-                <Input value={agent.userId || "None"} disabled className="bg-muted/50 font-mono text-xs" />
+                <Input
+                  value={agent.userId || "None"}
+                  disabled
+                  className="bg-muted/50 font-mono text-xs"
+                />
               </div>
             </div>
 
@@ -161,28 +172,36 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
                   Visibility & Status
                 </Label>
                 <div className="flex items-center justify-between">
-                  <Label className="font-normal text-muted-foreground">Active</Label>
+                  <Label className="font-normal text-muted-foreground">
+                    Active
+                  </Label>
                   <Switch
                     checked={draft.isActive ?? false}
                     onCheckedChange={(c) => handleUpdate("isActive", c)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label className="font-normal text-muted-foreground">Public</Label>
+                  <Label className="font-normal text-muted-foreground">
+                    Public
+                  </Label>
                   <Switch
                     checked={draft.isPublic ?? false}
                     onCheckedChange={(c) => handleUpdate("isPublic", c)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label className="font-normal text-muted-foreground">Favorite</Label>
+                  <Label className="font-normal text-muted-foreground">
+                    Favorite
+                  </Label>
                   <Switch
                     checked={draft.isFavorite ?? false}
                     onCheckedChange={(c) => handleUpdate("isFavorite", c)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label className="font-normal text-muted-foreground">Archived</Label>
+                  <Label className="font-normal text-muted-foreground">
+                    Archived
+                  </Label>
                   <Switch
                     checked={draft.isArchived ?? false}
                     onCheckedChange={(c) => handleUpdate("isArchived", c)}
@@ -198,19 +217,26 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
             <div>
               <h3 className="font-medium text-foreground">Hierarchy Scopes</h3>
               <p className="text-xs text-muted-foreground">
-                Bind this agent to organizational structures to restrict visibility or functionality context.
+                Bind this agent to organizational structures to restrict
+                visibility or functionality context.
               </p>
             </div>
-            
+
             <div className="bg-card border border-border rounded-lg p-4">
-              <HierarchyContextSelector
+              <HierarchyCascade
                 levels={["organization", "project", "task"]}
-                selectedOrgId={draft.organizationId || null}
-                onOrgChange={(val) => handleUpdate("organizationId", val)}
-                selectedProjectId={draft.projectId || null}
-                onProjectChange={(val) => handleUpdate("projectId", val)}
-                selectedTaskId={draft.taskId || null}
-                onTaskChange={(val) => handleUpdate("taskId", val)}
+                value={{
+                  ...EMPTY_SELECTION,
+                  organizationId: draft.organizationId || null,
+                  projectId: draft.projectId || null,
+                  taskId: draft.taskId || null,
+                }}
+                onChange={(sel) => {
+                  handleUpdate("organizationId", sel.organizationId);
+                  handleUpdate("projectId", sel.projectId);
+                  handleUpdate("taskId", sel.taskId);
+                }}
+                layout="vertical"
               />
             </div>
           </div>

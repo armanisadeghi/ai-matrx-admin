@@ -16,7 +16,11 @@ import {
   selectProjectId,
   selectProjectName,
 } from "@/features/context/redux/appContextSlice";
-import { HierarchyContextBar } from "@/features/context/components/HierarchyContextBar";
+import {
+  HierarchyCascade,
+  useHierarchyReduxBridge,
+  EMPTY_SELECTION,
+} from "@/features/context/components/hierarchy-selection";
 import CompactTaskItem from "./CompactTaskItem";
 import TaskDetailsPanel from "./TaskDetailsPanel";
 import AllTasksView from "./AllTasksView";
@@ -57,7 +61,8 @@ export default function TaskContentNew() {
     setSortBy,
   } = useTaskContext();
 
-  // App-wide context (set via HierarchyContextBar)
+  const { value: ctxValue, onChange: ctxOnChange } = useHierarchyReduxBridge();
+
   const appProjectId = useAppSelector(selectProjectId);
   const appProjectName = useAppSelector(selectProjectName);
 
@@ -160,8 +165,14 @@ export default function TaskContentNew() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-textured">
-      {/* Hierarchy context bar — org → workspace → project */}
-      <HierarchyContextBar showProject requireProject />
+      <div className="shrink-0 px-4 py-2 border-b border-border bg-card">
+        <HierarchyCascade
+          levels={["organization", "project"]}
+          value={ctxValue}
+          onChange={ctxOnChange}
+          requireProject
+        />
+      </div>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Empty state - No projects at all */}
@@ -308,36 +319,17 @@ export default function TaskContentNew() {
 
                       <div className="flex items-center gap-2">
                         {shouldShowProjectSelector && projects.length > 0 ? (
-                          <Select
-                            value={selectedProjectForTask || ""}
-                            onValueChange={(value) =>
-                              setSelectedProjectForTask(value)
-                            }
-                          >
-                            <SelectTrigger className="h-8 text-xs max-w-[200px]">
-                              <div className="flex items-center gap-2">
-                                <Folder
-                                  size={12}
-                                  className="text-muted-foreground"
-                                />
-                                <span>
-                                  {projects.find(
-                                    (p) => p.id === selectedProjectForTask,
-                                  )?.name || "Select project"}
-                                </span>
-                              </div>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {projects.map((project) => (
-                                <SelectItem key={project.id} value={project.id}>
-                                  <div className="flex items-center gap-2">
-                                    <Folder size={12} />
-                                    {project.name}
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <HierarchyCascade
+                            levels={["organization", "project"]}
+                            value={{
+                              ...EMPTY_SELECTION,
+                              projectId: selectedProjectForTask,
+                            }}
+                            onChange={(sel) => {
+                              if (sel.projectId)
+                                setSelectedProjectForTask(sel.projectId);
+                            }}
+                          />
                         ) : activeProject ? (
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <Folder size={12} />

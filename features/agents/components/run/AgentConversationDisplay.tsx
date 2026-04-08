@@ -141,10 +141,10 @@ export function AgentConversationDisplay({
     );
   }
 
-  const spacingClass = compact ? "space-y-2 pt-0 pb-2" : "space-y-6 pt-0 pb-4";
+  const spacingClass = compact ? "space-y-2 pb-2" : "space-y-6 pb-24";
 
   return (
-    <div className={`${spacingClass} px-4`}>
+    <div className={`${spacingClass} px-4 pt-14`}>
       {displayMessages.map((msg, idx) => {
         if (msg.role === "user") {
           return (

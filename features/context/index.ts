@@ -135,8 +135,6 @@ export { ContextVariablesPanel } from "./components/ContextVariablesPanel";
 export { HierarchyExplorer } from "./components/HierarchyExplorer";
 export { HierarchyTreePage } from "./components/HierarchyTreePage";
 export { HierarchyEntityModal } from "./components/HierarchyEntityModal";
-export { HierarchyContextBar } from "./components/HierarchyContextBar";
-
 // Components — Context Hub
 export { ContextHubDetail } from "./components/hub";
 
@@ -148,6 +146,7 @@ export {
   HierarchyCommand,
   HierarchyPills,
   useHierarchySelection,
+  useHierarchyReduxBridge,
   EMPTY_SELECTION,
   LEVEL_CONFIG,
 } from "./components/hierarchy-selection";

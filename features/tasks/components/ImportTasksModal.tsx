@@ -1,18 +1,34 @@
 // Import Tasks Modal - Import AI-generated tasks into the task management system
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
-import { CheckSquare, FolderPlus, Loader2 } from 'lucide-react';
-import { useTaskContext } from '../context/TaskContext';
-import { toast } from 'sonner';
-import type { TaskItemType } from '@/components/mardown-display/blocks/tasks/TaskChecklist';
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { CheckSquare, FolderPlus, Loader2 } from "lucide-react";
+import { useTaskContext } from "../context/TaskContext";
+import {
+  HierarchyCascade,
+  EMPTY_SELECTION,
+} from "@/features/context/components/hierarchy-selection";
+import { toast } from "sonner";
+import type { TaskItemType } from "@/components/mardown-display/blocks/tasks/TaskChecklist";
 
 interface ImportTasksModalProps {
   isOpen: boolean;
@@ -32,9 +48,11 @@ export default function ImportTasksModal({
   const { projects, addProject, refresh } = useTaskContext();
 
   const [selectedTasks, setSelectedTasks] = useState<SelectionState>({});
-  const [projectSelection, setProjectSelection] = useState<'new' | 'existing' | 'draft'>('draft');
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
-  const [newProjectName, setNewProjectName] = useState('');
+  const [projectSelection, setProjectSelection] = useState<
+    "new" | "existing" | "draft"
+  >("draft");
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [newProjectName, setNewProjectName] = useState("");
   const [isImporting, setIsImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
   const [importedCount, setImportedCount] = useState(0);
@@ -44,8 +62,8 @@ export default function ImportTasksModal({
     if (isOpen) {
       const initialSelection: SelectionState = {};
       const initializeSelection = (items: TaskItemType[]) => {
-        items.forEach(item => {
-          if (item.type !== 'section') {
+        items.forEach((item) => {
+          if (item.type !== "section") {
             initialSelection[item.id] = true;
           }
           if (item.children) {
@@ -65,7 +83,7 @@ export default function ImportTasksModal({
 
   // Toggle task selection
   const toggleTask = (taskId: string, includeChildren: boolean = false) => {
-    setSelectedTasks(prev => {
+    setSelectedTasks((prev) => {
       const newState = { ...prev, [taskId]: !prev[taskId] };
 
       // If includeChildren, toggle all children too
@@ -73,7 +91,7 @@ export default function ImportTasksModal({
         const task = findTaskById(tasks, taskId);
         if (task?.children) {
           const toggleChildren = (children: TaskItemType[]) => {
-            children.forEach(child => {
+            children.forEach((child) => {
               newState[child.id] = newState[taskId];
               if (child.children) {
                 toggleChildren(child.children);
@@ -89,7 +107,10 @@ export default function ImportTasksModal({
   };
 
   // Find task by ID
-  const findTaskById = (items: TaskItemType[], id: string): TaskItemType | null => {
+  const findTaskById = (
+    items: TaskItemType[],
+    id: string,
+  ): TaskItemType | null => {
     for (const item of items) {
       if (item.id === id) return item;
       if (item.children) {
@@ -110,24 +131,24 @@ export default function ImportTasksModal({
       // Step 1: Determine or create project
       let targetProjectId = selectedProjectId;
 
-      if (projectSelection === 'new') {
+      if (projectSelection === "new") {
         if (!newProjectName.trim()) {
-          toast.error('Please enter a project name');
+          toast.error("Please enter a project name");
           setIsImporting(false);
           return;
         }
         const project = await createProject(newProjectName);
         if (!project) {
-          throw new Error('Failed to create project');
+          throw new Error("Failed to create project");
         }
         targetProjectId = project.id;
-      } else if (projectSelection === 'draft') {
+      } else if (projectSelection === "draft") {
         // Find or create "AI Tasks (Draft)" project
-        let draftProject = projects.find(p => p.name === 'AI Tasks (Draft)');
+        let draftProject = projects.find((p) => p.name === "AI Tasks (Draft)");
         if (!draftProject) {
-          const project = await createProject('AI Tasks (Draft)');
+          const project = await createProject("AI Tasks (Draft)");
           if (!project) {
-            throw new Error('Failed to create draft project');
+            throw new Error("Failed to create draft project");
           }
           targetProjectId = project.id;
         } else {
@@ -151,10 +172,9 @@ export default function ImportTasksModal({
         setIsImporting(false);
         onClose();
       }, 500);
-
     } catch (error) {
-      console.error('Import failed:', error);
-      toast.error('Failed to import tasks. Please try again.');
+      console.error("Import failed:", error);
+      toast.error("Failed to import tasks. Please try again.");
       setIsImporting(false);
     }
   };
@@ -164,15 +184,21 @@ export default function ImportTasksModal({
     items: TaskItemType[],
     projectId: string,
     parentTaskId: string | null,
-    onProgress: (count: number) => void
+    onProgress: (count: number) => void,
   ) => {
-    const { createTask, createSubtask } = await import('../services/taskService');
+    const { createTask, createSubtask } =
+      await import("../services/taskService");
 
     for (const item of items) {
       // Skip sections and unselected tasks
-      if (item.type === 'section') {
+      if (item.type === "section") {
         if (item.children) {
-          await importTasksRecursive(item.children, projectId, parentTaskId, onProgress);
+          await importTasksRecursive(
+            item.children,
+            projectId,
+            parentTaskId,
+            onProgress,
+          );
         }
         continue;
       }
@@ -185,20 +211,25 @@ export default function ImportTasksModal({
       const isCompleted = checkboxState[item.id] || item.checked || false;
 
       const newTask = parentTaskId
-        ? await createSubtask(parentTaskId, item.title, '')
+        ? await createSubtask(parentTaskId, item.title, "")
         : await createTask({
-          title: item.title,
-          description: '',
-          project_id: projectId,
-          status: isCompleted ? 'completed' : 'incomplete',
-        });
+            title: item.title,
+            description: "",
+            project_id: projectId,
+            status: isCompleted ? "completed" : "incomplete",
+          });
 
       if (newTask) {
         onProgress(1);
 
         // Import children (subtasks)
         if (item.children && item.children.length > 0) {
-          await importTasksRecursive(item.children, projectId, newTask.id, onProgress);
+          await importTasksRecursive(
+            item.children,
+            projectId,
+            newTask.id,
+            onProgress,
+          );
         }
       }
     }
@@ -206,16 +237,17 @@ export default function ImportTasksModal({
 
   // Helper to create project
   const createProject = async (name: string) => {
-    const { createProject: createProj } = await import('../services/projectService');
-    return await createProj(name, '');
+    const { createProject: createProj } =
+      await import("../services/projectService");
+    return await createProj(name, "");
   };
 
   // Render task tree for selection
   const renderTaskTree = (items: TaskItemType[], depth = 0) => {
-    return items.map(item => {
-      if (item.type === 'section') {
+    return items.map((item) => {
+      if (item.type === "section") {
         return (
-          <div key={item.id} className={`${depth > 0 ? 'ml-4' : ''}`}>
+          <div key={item.id} className={`${depth > 0 ? "ml-4" : ""}`}>
             <div className="font-semibold text-gray-700 dark:text-gray-300 text-sm mb-2 mt-3">
               {item.title}
             </div>
@@ -229,7 +261,7 @@ export default function ImportTasksModal({
       const hasChildren = item.children && item.children.length > 0;
 
       return (
-        <div key={item.id} className={`${depth > 0 ? 'ml-6' : ''} mb-2`}>
+        <div key={item.id} className={`${depth > 0 ? "ml-6" : ""} mb-2`}>
           <div className="flex items-start gap-2 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800">
             <Checkbox
               id={item.id}
@@ -239,13 +271,15 @@ export default function ImportTasksModal({
             />
             <label
               htmlFor={item.id}
-              className={`text-sm cursor-pointer flex-1 ${isCompleted ? 'text-muted-foreground line-through' : ''
-                } ${item.bold ? 'font-semibold' : ''}`}
+              className={`text-sm cursor-pointer flex-1 ${
+                isCompleted ? "text-muted-foreground line-through" : ""
+              } ${item.bold ? "font-semibold" : ""}`}
             >
               {item.title}
               {hasChildren && (
                 <span className="text-xs text-gray-500 ml-2">
-                  ({item.children!.length} subtask{item.children!.length !== 1 ? 's' : ''})
+                  ({item.children!.length} subtask
+                  {item.children!.length !== 1 ? "s" : ""})
                 </span>
               )}
             </label>
@@ -276,7 +310,10 @@ export default function ImportTasksModal({
               {/* Project Selection */}
               <div className="space-y-3">
                 <Label>Import to:</Label>
-                <Select value={projectSelection} onValueChange={(v: any) => setProjectSelection(v)}>
+                <Select
+                  value={projectSelection}
+                  onValueChange={(v: any) => setProjectSelection(v)}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -288,11 +325,13 @@ export default function ImportTasksModal({
                       </div>
                     </SelectItem>
                     <SelectItem value="new">New Project</SelectItem>
-                    {projects.length > 0 && <SelectItem value="existing">Existing Project</SelectItem>}
+                    {projects.length > 0 && (
+                      <SelectItem value="existing">Existing Project</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
 
-                {projectSelection === 'new' && (
+                {projectSelection === "new" && (
                   <Input
                     placeholder="Enter new project name..."
                     value={newProjectName}
@@ -300,19 +339,18 @@ export default function ImportTasksModal({
                   />
                 )}
 
-                {projectSelection === 'existing' && (
-                  <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a project..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {projects.map(project => (
-                        <SelectItem key={project.id} value={project.id}>
-                          {project.name} ({project.tasks.length} tasks)
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                {projectSelection === "existing" && (
+                  <HierarchyCascade
+                    levels={["organization", "project"]}
+                    value={{
+                      ...EMPTY_SELECTION,
+                      projectId: selectedProjectId,
+                    }}
+                    onChange={(sel) => {
+                      if (sel.projectId) setSelectedProjectId(sel.projectId);
+                    }}
+                    layout="vertical"
+                  />
                 )}
               </div>
 
@@ -336,9 +374,13 @@ export default function ImportTasksModal({
               </Button>
               <Button
                 onClick={handleImport}
-                disabled={getSelectedCount() === 0 || (projectSelection === 'existing' && !selectedProjectId)}
+                disabled={
+                  getSelectedCount() === 0 ||
+                  (projectSelection === "existing" && !selectedProjectId)
+                }
               >
-                Import {getSelectedCount()} Task{getSelectedCount() !== 1 ? 's' : ''}
+                Import {getSelectedCount()} Task
+                {getSelectedCount() !== 1 ? "s" : ""}
               </Button>
             </DialogFooter>
           </>
@@ -358,4 +400,3 @@ export default function ImportTasksModal({
     </Dialog>
   );
 }
-

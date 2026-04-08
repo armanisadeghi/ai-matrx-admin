@@ -50,7 +50,11 @@ import { ShareModal } from "@/features/sharing/components/ShareModal";
 import TaskAttachments from "./TaskAttachments";
 import TaskLabels from "./TaskLabels";
 import type { TaskLabel } from "@/features/tasks/services/taskService";
-import { useNavTree } from "@/features/context/hooks/useNavTree";
+import {
+  HierarchyCascade,
+  EMPTY_SELECTION,
+} from "@/features/context/components/hierarchy-selection";
+import type { HierarchySelection } from "@/features/context/components/hierarchy-selection";
 
 interface TaskDetailsPanelProps {
   task: any;
@@ -97,7 +101,6 @@ export default function TaskDetailsPanel({
   const [isAddingComment, setIsAddingComment] = useState(false);
   const { id: currentUserId } = useAppSelector(selectUser);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { orgs, flatProjects } = useNavTree();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [idCopied, setIdCopied] = useState(false);
   const [labels, setLabels] = useState<TaskLabel[]>(
@@ -473,68 +476,28 @@ export default function TaskDetailsPanel({
           />
         </div>
 
-        {/* Hierarchy: Project (with org/workspace context info) */}
+        {/* Hierarchy: Org → Project */}
         <div className="space-y-2">
           <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 flex items-center gap-2">
             <CheckSquare size={14} />
             Project
           </label>
 
-          {/* Project picker */}
-          <Select
-            value={projectId || "none"}
-            onValueChange={(val) =>
-              handleProjectChange(val === "none" ? "" : val)
-            }
-          >
-            <SelectTrigger className="text-sm">
-              <SelectValue placeholder="Select project">
-                {projectId ? (
-                  (flatProjects.find((p) => p.id === projectId)?.name ??
-                  projects.find((p) => p.id === projectId)?.name ??
-                  "Unknown Project")
-                ) : (
-                  <span className="text-destructive">
-                    No Project — required
-                  </span>
-                )}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">
-                <span className="text-muted-foreground">No Project</span>
-              </SelectItem>
-              {flatProjects.map((project) => {
-                const org = orgs.find((o) => o.id === project.org_id);
-                return (
-                  <SelectItem key={project.id} value={project.id}>
-                    <div className="flex flex-col">
-                      <span>{project.name}</span>
-                      {org && (
-                        <span className="text-xs text-muted-foreground">
-                          {org.name}
-                        </span>
-                      )}
-                    </div>
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-
-          {/* Org breadcrumb for current project */}
-          {projectId &&
-            (() => {
-              const fp = flatProjects.find((p) => p.id === projectId);
-              if (!fp) return null;
-              const org = orgs.find((o) => o.id === fp.org_id);
-              if (!org) return null;
-              return (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <span>{org.name}</span>
-                </div>
-              );
-            })()}
+          <HierarchyCascade
+            levels={["organization", "project"]}
+            value={{
+              ...EMPTY_SELECTION,
+              organizationId: null,
+              projectId: projectId || null,
+            }}
+            onChange={(sel: HierarchySelection) => {
+              if (sel.projectId !== (projectId || null)) {
+                handleProjectChange(sel.projectId ?? "");
+              }
+            }}
+            layout="vertical"
+            requireProject
+          />
         </div>
 
         {/* Priority */}
