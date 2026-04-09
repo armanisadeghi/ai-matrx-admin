@@ -4,7 +4,7 @@
  * AgentRunPage
  *
  * The full execution page for an agent run.
- * Creates an execution instance via useAgentInstance, which snapshots
+ * Creates an execution instance via useAgentLauncher (managed mode), which snapshots
  * the agent's variableDefinitions and settings ONCE at creation time.
  * After that, the instance is fully self-contained — agentId is not
  * referenced again by any component or selector.
@@ -22,7 +22,7 @@ import { useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
 import { selectAgentExecutionPayload } from "@/features/agents/redux/agent-definition/selectors";
-import { useAgentInstance } from "@/features/agents/hooks/useAgentInstance";
+import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { AgentRunsSidebar } from "./AgentRunsSidebar";
 import { AgentLauncherSidebarTester } from "../run-controls/AgentLauncherSidebarTester";
 import { AgentConversationColumn } from "../shared/AgentConversationColumn";
@@ -70,7 +70,7 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agentId]);
 
-  const { instanceId, setInstanceId } = useAgentInstance(agentId, {
+  const { instanceId, setInstanceId } = useAgentLauncher(agentId, {
     sourceFeature: "agent-runner",
     ready: !isInitializing,
   });
