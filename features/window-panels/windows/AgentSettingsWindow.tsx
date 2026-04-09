@@ -5,7 +5,10 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { fetchFullAgent } from "@/features/agents/redux/agent-definition/thunks";
 import { WindowPanel } from "../WindowPanel";
 import { AgentSettingsForm } from "@/features/agents/components/settings/AgentSettingsForm";
-import { AgentSidebar, AgentTabs } from "@/features/agents/components/settings/AgentSettingsWorkspace";
+import {
+  AgentSidebar,
+  AgentTabs,
+} from "@/features/agents/components/settings/AgentSettingsWorkspace";
 import { Bot } from "lucide-react";
 
 interface AgentSettingsWindowProps {
@@ -21,10 +24,10 @@ export default function AgentSettingsWindow({
 }: AgentSettingsWindowProps) {
   const dispatch = useAppDispatch();
   const [openedTabIds, setOpenedTabIds] = useState<string[]>(
-    initialAgentId ? [initialAgentId] : []
+    initialAgentId ? [initialAgentId] : [],
   );
   const [activeTabId, setActiveTabId] = useState<string | null>(
-    initialAgentId || null
+    initialAgentId || null,
   );
 
   useEffect(() => {
@@ -53,10 +56,10 @@ export default function AgentSettingsWindow({
   return (
     <WindowPanel
       id="agent-settings-window"
-      title="Advanced Agent Settings"
+      title="Agent Info Editor"
       onClose={onClose}
       width={900}
-      height={650}
+      height={700}
       minWidth={600}
       minHeight={400}
       sidebar={
@@ -66,9 +69,6 @@ export default function AgentSettingsWindow({
           onOpenAgent={openAgent}
         />
       }
-      sidebarDefaultSize={25}
-      sidebarMinSize={15}
-      defaultSidebarOpen={true}
       urlSyncKey="agent-settings"
       urlSyncId="agent-settings-window"
       urlSyncArgs={{ m: "as" }}
@@ -87,7 +87,9 @@ export default function AgentSettingsWindow({
           ) : (
             <div className="flex flex-col items-center justify-center p-8 text-center h-[300px] text-muted-foreground">
               <Bot className="w-12 h-12 mb-4 opacity-20" />
-              <p className="text-sm font-medium">Select an agent to edit settings</p>
+              <p className="text-sm font-medium">
+                Select an agent to edit info
+              </p>
               <p className="text-xs opacity-70 mt-1">
                 Open the sidebar to browse agents
               </p>

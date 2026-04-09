@@ -30,8 +30,8 @@ import { useHierarchyFilter } from "@/components/hierarchy-filter";
 import {
   HierarchyPills,
   EMPTY_SELECTION,
-} from "@/features/context/components/hierarchy-selection";
-import type { HierarchySelection } from "@/features/context/components/hierarchy-selection";
+} from "@/features/agent-context/components/hierarchy-selection";
+import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
 import {
   useTopicsForProject,
   useTopicsForProjects,

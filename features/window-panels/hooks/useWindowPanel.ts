@@ -182,6 +182,10 @@ export function useWindowPanel(
         : resolvePosition(opts.position, w, h);
     const initial: WindowRect = { ...pos, width: w, height: h };
     dispatch(registerWindow({ id, title: opts.title, initial }));
+    // Bring the newly opened window to the top of the z-stack immediately.
+    // registerWindow assigns the current nextZIndex, but existing windows may
+    // have been focused after their registration, giving them higher z-values.
+    dispatch(focusWindow(id));
     return () => {
       dispatch(unregisterWindow(id));
     };

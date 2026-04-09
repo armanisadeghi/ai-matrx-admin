@@ -1,16 +1,23 @@
-'use client';
+"use client";
 
-import { Suspense } from 'react';
-import Link from 'next/link';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { useContextScope } from '@/features/context/hooks/useContextScope';
-import { ContextDashboard } from '@/features/context/components/ContextDashboard';
-import { ContextItemList } from '@/features/context/components/ContextItemList';
-import { ContextTemplateBrowser } from '@/features/context/components/ContextTemplateBrowser';
-import { ContextVariablesPanel } from '@/features/context/components/ContextVariablesPanel';
-import { LayoutDashboard, Code2, FileText, LayoutTemplate, TreePine, ArrowRight } from 'lucide-react';
+import { Suspense } from "react";
+import Link from "next/link";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { useContextScope } from "@/features/agent-context/hooks/useContextScope";
+import { ContextDashboard } from "@/features/agent-context/components/ContextDashboard";
+import { ContextItemList } from "@/features/agent-context/components/ContextItemList";
+import { ContextTemplateBrowser } from "@/features/agent-context/components/ContextTemplateBrowser";
+import { ContextVariablesPanel } from "@/features/agent-context/components/ContextVariablesPanel";
+import {
+  LayoutDashboard,
+  Code2,
+  FileText,
+  LayoutTemplate,
+  TreePine,
+  ArrowRight,
+} from "lucide-react";
 
 export default function ContextPage() {
   const { scope } = useContextScope();
@@ -22,7 +29,10 @@ export default function ContextPage() {
         <TreePine className="h-5 w-5 text-primary shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium">Hierarchy Manager</p>
-          <p className="text-xs text-muted-foreground">Full tree view — navigate, create, and manage all your organizations, workspaces, projects, and tasks in one place.</p>
+          <p className="text-xs text-muted-foreground">
+            Full tree view — navigate, create, and manage all your
+            organizations, workspaces, projects, and tasks in one place.
+          </p>
         </div>
         <Button size="sm" className="text-xs gap-1 shrink-0" asChild>
           <Link href="/ssr/context/hierarchy">
@@ -31,50 +41,50 @@ export default function ContextPage() {
         </Button>
       </div>
 
-    <Tabs defaultValue="overview" className="w-full">
-      <TabsList className="h-8">
-        <TabsTrigger value="overview" className="text-xs gap-1.5 h-7">
-          <LayoutDashboard className="h-3 w-3" />
-          Overview
-        </TabsTrigger>
-        <TabsTrigger value="variables" className="text-xs gap-1.5 h-7">
-          <Code2 className="h-3 w-3" />
-          Variables
-        </TabsTrigger>
-        <TabsTrigger value="items" className="text-xs gap-1.5 h-7">
-          <FileText className="h-3 w-3" />
-          Items
-        </TabsTrigger>
-        <TabsTrigger value="templates" className="text-xs gap-1.5 h-7">
-          <LayoutTemplate className="h-3 w-3" />
-          Templates
-        </TabsTrigger>
-      </TabsList>
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="h-8">
+          <TabsTrigger value="overview" className="text-xs gap-1.5 h-7">
+            <LayoutDashboard className="h-3 w-3" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="variables" className="text-xs gap-1.5 h-7">
+            <Code2 className="h-3 w-3" />
+            Variables
+          </TabsTrigger>
+          <TabsTrigger value="items" className="text-xs gap-1.5 h-7">
+            <FileText className="h-3 w-3" />
+            Items
+          </TabsTrigger>
+          <TabsTrigger value="templates" className="text-xs gap-1.5 h-7">
+            <LayoutTemplate className="h-3 w-3" />
+            Templates
+          </TabsTrigger>
+        </TabsList>
 
-      <TabsContent value="overview" className="mt-4">
-        <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>
-          <ContextDashboard scope={scope} />
-        </Suspense>
-      </TabsContent>
+        <TabsContent value="overview" className="mt-4">
+          <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>
+            <ContextDashboard scope={scope} />
+          </Suspense>
+        </TabsContent>
 
-      <TabsContent value="variables" className="mt-4">
-        <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>
-          <ContextVariablesPanel scope={scope} />
-        </Suspense>
-      </TabsContent>
+        <TabsContent value="variables" className="mt-4">
+          <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>
+            <ContextVariablesPanel scope={scope} />
+          </Suspense>
+        </TabsContent>
 
-      <TabsContent value="items" className="mt-4">
-        <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>
-          <ContextItemList scope={scope} />
-        </Suspense>
-      </TabsContent>
+        <TabsContent value="items" className="mt-4">
+          <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>
+            <ContextItemList scope={scope} />
+          </Suspense>
+        </TabsContent>
 
-      <TabsContent value="templates" className="mt-4">
-        <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>
-          <ContextTemplateBrowser scope={scope} />
-        </Suspense>
-      </TabsContent>
-    </Tabs>
+        <TabsContent value="templates" className="mt-4">
+          <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>
+            <ContextTemplateBrowser scope={scope} />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

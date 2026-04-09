@@ -14,7 +14,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectOrganizationId,
   selectProjectId,
-} from "@/features/context/redux/appContextSlice";
+} from "@/features/agent-context/redux/appContextSlice";
 import type {
   TaskContextType,
   TaskProviderProps,

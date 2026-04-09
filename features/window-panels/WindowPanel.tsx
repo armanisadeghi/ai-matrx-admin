@@ -110,9 +110,9 @@ export interface WindowPanelProps extends UseWindowPanelOptions {
   urlSyncArgs?: Record<string, string>;
   /** Content to render in a collapsible left sidebar panel */
   sidebar?: React.ReactNode;
-  /** Default percentage width for the sidebar (default: 25) */
+  /** Default width for the sidebar in pixels (default: 200) */
   sidebarDefaultSize?: number;
-  /** Minimum percentage width before the sidebar collapses (default: 10) */
+  /** Minimum width in pixels before the sidebar collapses (default: 150) */
   sidebarMinSize?: number;
   /** Whether the sidebar starts open (default: true) */
   defaultSidebarOpen?: boolean;
@@ -151,7 +151,7 @@ export function WindowPanel({
   urlSyncArgs,
   sidebar,
   sidebarDefaultSize = 200,
-  sidebarMinSize = 150,
+  sidebarMinSize = 100,
   defaultSidebarOpen = true,
   sidebarClassName,
   sidebarExpandsWindow = false,
@@ -198,8 +198,6 @@ export function WindowPanel({
     if (!panel) return;
     if (sidebarOpen) {
       if (sidebarExpandsWindow) {
-        // Shrink window first, then collapse panel on next frame so the
-        // panel never has to redistribute space within a narrower container.
         dispatch(
           updateWindowRect({
             id,
@@ -212,7 +210,6 @@ export function WindowPanel({
       }
     } else {
       if (sidebarExpandsWindow) {
-        // Grow window first so the extra space exists before the panel expands into it.
         dispatch(
           updateWindowRect({
             id,
@@ -390,12 +387,7 @@ export function WindowPanel({
         </div>
       </ResizablePanel>
       <ResizableHandle />
-      <ResizablePanel
-        defaultSize={sidebarOpen ? 100 - sidebarDefaultSize : 100}
-        minSize={40}
-      >
-        {children}
-      </ResizablePanel>
+      <ResizablePanel minSize={200}>{children}</ResizablePanel>
     </ResizablePanelGroup>
   ) : (
     children

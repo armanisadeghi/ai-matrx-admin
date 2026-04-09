@@ -14,7 +14,7 @@ import {
   selectOrganizationId,
   selectProjectId,
   selectTaskId,
-} from "@/features/context/redux/appContextSlice";
+} from "@/features/agent-context/redux/appContextSlice";
 
 interface HtmlPreviewBridgeProps {
   content: string;
@@ -106,14 +106,7 @@ export function HtmlPreviewBridge({
 
       dispatch(setActivePageId(newPageId));
     },
-    [
-      dispatch,
-      messageId,
-      conversationId,
-      organizationId,
-      projectId,
-      taskId,
-    ],
+    [dispatch, messageId, conversationId, organizationId, projectId, taskId],
   );
 
   /**

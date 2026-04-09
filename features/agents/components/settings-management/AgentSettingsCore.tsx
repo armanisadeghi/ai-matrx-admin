@@ -270,16 +270,19 @@ function IssueTable({ issues, onView, onRemove, onFixEnum }: IssueTableProps) {
           </span>
         </div>
 
-        {/* Column headers — 3 columns: badge | key+detail | actions */}
-        <div className="grid grid-cols-[100px_1fr_56px] items-center gap-2 px-2.5 py-1 bg-yellow-50/60 dark:bg-yellow-950/20 border-b border-yellow-200 dark:border-yellow-800/50">
+        {/* Column headers — 4 columns: setting | detail | type | actions */}
+        <div className="grid grid-cols-[120px_1fr_80px_48px] items-center gap-2 px-2.5 py-1 bg-yellow-50/60 dark:bg-yellow-950/20 border-b border-yellow-200 dark:border-yellow-800/50">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-yellow-700 dark:text-yellow-500">
+            Setting
+          </span>
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-yellow-700 dark:text-yellow-500">
+            Issue Detail
+          </span>
           <span className="text-[10px] font-semibold uppercase tracking-wide text-yellow-700 dark:text-yellow-500">
             Type
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-wide text-yellow-700 dark:text-yellow-500">
-            Key / Detail
-          </span>
           <span className="text-[10px] font-semibold uppercase tracking-wide text-yellow-700 dark:text-yellow-500 text-right">
-            Actions
+            Options
           </span>
         </div>
 
@@ -290,7 +293,7 @@ function IssueTable({ issues, onView, onRemove, onFixEnum }: IssueTableProps) {
           return (
             <div
               key={`${issue.ruleId}-${issue.key}`}
-              className={`grid grid-cols-[100px_1fr_56px] items-center gap-2 px-2.5 py-1.5 ${
+              className={`grid grid-cols-[120px_1fr_80px_48px] items-center gap-2 px-2.5 py-1.5 ${
                 !isLast
                   ? "border-b border-yellow-200 dark:border-yellow-800/40"
                   : ""
@@ -300,32 +303,22 @@ function IssueTable({ issues, onView, onRemove, onFixEnum }: IssueTableProps) {
                   : "bg-orange-50/30 dark:bg-orange-950/15"
               }`}
             >
-              {/* type badge */}
-              <div className="flex-shrink-0">
-                {isUnrecognized ? (
-                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800">
-                    <AlertTriangle className="h-2.5 w-2.5" />
-                    Unknown Key
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300 border border-orange-200 dark:border-orange-800">
-                    <AlertTriangle className="h-2.5 w-2.5" />
-                    Invalid Value
-                  </span>
-                )}
-              </div>
+              {/* setting key */}
+              <span className="font-mono text-xs text-foreground truncate">
+                {issue.key}
+              </span>
 
-              {/* key + detail */}
-              <div className="min-w-0">
-                <span className="font-mono text-xs text-foreground block truncate">
-                  {issue.key}
-                </span>
-                {!isUnrecognized && (
-                  <span className="text-[10px] text-muted-foreground leading-tight block">
-                    {issue.message}
-                  </span>
-                )}
-              </div>
+              {/* detail */}
+              <span className="text-xs text-foreground/80 leading-snug">
+                {issue.message || "—"}
+              </span>
+
+              {/* type — plain text, no badge */}
+              <span
+                className={`text-xs font-medium ${isUnrecognized ? "text-yellow-700 dark:text-yellow-400" : "text-orange-700 dark:text-orange-400"}`}
+              >
+                {isUnrecognized ? "Unknown Key" : "Invalid Value"}
+              </span>
 
               {/* actions: View + Remove/Fix */}
               <div className="flex items-center gap-0 flex-shrink-0 justify-end">
@@ -340,7 +333,7 @@ function IssueTable({ issues, onView, onRemove, onFixEnum }: IssueTableProps) {
                       <Eye className="h-3.5 w-3.5" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="left" className="text-xs">
+                  <TooltipContent side="top" className="text-xs">
                     View in Raw JSON
                   </TooltipContent>
                 </Tooltip>
@@ -357,7 +350,7 @@ function IssueTable({ issues, onView, onRemove, onFixEnum }: IssueTableProps) {
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="left" className="text-xs">
+                    <TooltipContent side="top" className="text-xs">
                       Remove this key
                     </TooltipContent>
                   </Tooltip>
@@ -373,7 +366,7 @@ function IssueTable({ issues, onView, onRemove, onFixEnum }: IssueTableProps) {
                         <WrenchIcon className="h-3.5 w-3.5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="left" className="text-xs">
+                    <TooltipContent side="top" className="text-xs">
                       Reset to default value
                     </TooltipContent>
                   </Tooltip>
@@ -569,6 +562,14 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
 
   const currentSettings: LLMParams = settings ?? {};
 
+  const modelConstraints = useMemo(() => {
+    if (!modelId) return null;
+    const model = models.find((m) => m.id === modelId);
+    const raw = model?.constraints;
+    if (!Array.isArray(raw) || raw.length === 0) return null;
+    return raw as import("@/features/ai-models/types").ModelConstraint[];
+  }, [modelId, models]);
+
   const [activeTab, setActiveTab] = useState<SettingsTab>("settings");
 
   // Track enabled settings (keys with non-null values)
@@ -598,6 +599,7 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
     settings: currentSettings,
     modelId,
     normalizedControls,
+    constraints: modelConstraints,
   });
   const allIssues = validation.issues;
 

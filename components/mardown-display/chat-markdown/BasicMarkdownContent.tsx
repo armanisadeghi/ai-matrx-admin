@@ -668,7 +668,8 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
       },
       img: ({ node, ...props }) => (
         <img
-          className="max-w-full h-auto rounded-md my-4"
+          className="w-full h-auto rounded-md my-4 object-contain max-w-[700px]"
+          style={{ maxHeight: 700 }}
           {...props}
           alt={props.alt || "Image"}
         />

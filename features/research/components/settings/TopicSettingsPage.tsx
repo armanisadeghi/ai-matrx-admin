@@ -21,9 +21,9 @@ import { ProjectFormSheet } from "@/features/projects";
 import {
   HierarchyCascade,
   EMPTY_SELECTION,
-} from "@/features/context/components/hierarchy-selection";
+} from "@/features/agent-context/components/hierarchy-selection";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { invalidateNavTree } from "@/features/context/redux/hierarchySlice";
+import { invalidateNavTree } from "@/features/agent-context/redux/hierarchySlice";
 import { useTopicContext } from "../../context/ResearchContext";
 import type { AutonomyLevel, SearchProvider, TopicStatus } from "../../types";
 import {

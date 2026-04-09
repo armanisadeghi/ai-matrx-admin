@@ -6,7 +6,7 @@ import {
   useCreateOrganization,
   useCreateProject,
   useCreateTask,
-} from "@/features/context/hooks/useHierarchy";
+} from "@/features/agent-context/hooks/useHierarchy";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
 import { Input } from "@/components/ui/input";

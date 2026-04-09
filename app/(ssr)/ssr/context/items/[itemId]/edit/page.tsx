@@ -1,14 +1,26 @@
-'use client';
+"use client";
 
-import { use, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
-import { ContextItemForm } from '@/features/context/components/ContextItemForm';
-import { useContextItem, useContextItemValue, useUpdateContextItem, useCreateContextValue } from '@/features/context/hooks/useContextItems';
-import { useContextScope } from '@/features/context/hooks/useContextScope';
-import { Skeleton } from '@/components/ui/skeleton';
-import type { ContextItemFormData, ContextValueFormData } from '@/features/context/types';
+import { use, Suspense } from "react";
+import { useRouter } from "next/navigation";
+import { ContextItemForm } from "@/features/agent-context/components/ContextItemForm";
+import {
+  useContextItem,
+  useContextItemValue,
+  useUpdateContextItem,
+  useCreateContextValue,
+} from "@/features/agent-context/hooks/useContextItems";
+import { useContextScope } from "@/features/agent-context/hooks/useContextScope";
+import { Skeleton } from "@/components/ui/skeleton";
+import type {
+  ContextItemFormData,
+  ContextValueFormData,
+} from "@/features/agent-context/types";
 
-export default function EditItemPage({ params }: { params: Promise<{ itemId: string }> }) {
+export default function EditItemPage({
+  params,
+}: {
+  params: Promise<{ itemId: string }>;
+}) {
   const { itemId } = use(params);
 
   return (
@@ -28,19 +40,34 @@ function EditItemContent({ itemId }: { itemId: string }) {
 
   if (itemLoading || valueLoading) return <Skeleton className="h-96" />;
 
-  const handleSave = (formData: ContextItemFormData, valueData: ContextValueFormData) => {
-    updateItem.mutate({ itemId, updates: formData }, {
-      onSuccess: () => {
-        const hasValue = valueData.value_text || valueData.value_number != null || valueData.value_boolean != null || valueData.value_json || valueData.value_document_url || valueData.value_reference_id;
-        if (hasValue) {
-          createValue.mutate({ itemId, valueData }, {
-            onSuccess: () => router.push(`/ssr/context/items/${itemId}`),
-          });
-        } else {
-          router.push(`/ssr/context/items/${itemId}`);
-        }
+  const handleSave = (
+    formData: ContextItemFormData,
+    valueData: ContextValueFormData,
+  ) => {
+    updateItem.mutate(
+      { itemId, updates: formData },
+      {
+        onSuccess: () => {
+          const hasValue =
+            valueData.value_text ||
+            valueData.value_number != null ||
+            valueData.value_boolean != null ||
+            valueData.value_json ||
+            valueData.value_document_url ||
+            valueData.value_reference_id;
+          if (hasValue) {
+            createValue.mutate(
+              { itemId, valueData },
+              {
+                onSuccess: () => router.push(`/ssr/context/items/${itemId}`),
+              },
+            );
+          } else {
+            router.push(`/ssr/context/items/${itemId}`);
+          }
+        },
       },
-    });
+    );
   };
 
   return (

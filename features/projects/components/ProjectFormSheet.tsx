@@ -43,7 +43,7 @@ import {
   validateProjectSlug,
   useProjectSlugAvailability,
 } from "@/features/projects";
-import { useNavTree } from "@/features/context/hooks/useNavTree";
+import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import type { Project } from "@/features/projects";
 
 // ─────────────────────────────────────────────────────────────────────────────

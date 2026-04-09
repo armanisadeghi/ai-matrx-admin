@@ -3,7 +3,7 @@
 import {
   HierarchyCommand,
   useHierarchyReduxBridge,
-} from "@/features/context/components/hierarchy-selection";
+} from "@/features/agent-context/components/hierarchy-selection";
 
 export default function ContextSwitcher() {
   const { value, onChange } = useHierarchyReduxBridge();

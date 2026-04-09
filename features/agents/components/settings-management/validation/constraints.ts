@@ -78,7 +78,7 @@ function evaluateUnconditional(
     key: field,
     severity: severity as ValidationSeverity,
     category,
-    message: `[${id}] ${message}`,
+    message,
     value: actual,
     suggestion,
   });
@@ -168,7 +168,7 @@ function evaluateConditional(
     key: constraint.require.field,
     severity: constraint.severity as ValidationSeverity,
     category: "cross_field",
-    message: `[${constraint.id}] ${constraint.message}`,
+    message: constraint.message,
     value: settings[constraint.require.field],
     suggestion: `When ${constraint.when.field} ${constraint.when.op} ${JSON.stringify(constraint.when.value)}, set ${constraint.require.field} to satisfy: ${constraint.require.op} ${JSON.stringify(constraint.require.value)}`,
   };

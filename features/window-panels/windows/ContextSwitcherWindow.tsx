@@ -5,7 +5,7 @@ import { WindowPanel } from "../WindowPanel";
 import {
   HierarchyTree,
   useHierarchyReduxBridge,
-} from "@/features/context/components/hierarchy-selection";
+} from "@/features/agent-context/components/hierarchy-selection";
 
 export interface ContextSwitcherWindowProps {
   isOpen: boolean;
@@ -25,7 +25,7 @@ export function ContextSwitcherWindow({
   return (
     <WindowPanel
       id={`context-switcher-${instanceId}`}
-      title="Context Switcher"
+      title="Context"
       onClose={onClose}
       minWidth={320}
       minHeight={400}
@@ -34,7 +34,7 @@ export function ContextSwitcherWindow({
       position="center"
     >
       <HierarchyTree
-        levels={["organization", "project", "task"]}
+        levels={["organization", "scope", "project", "task"]}
         value={value}
         onChange={onChange}
       />

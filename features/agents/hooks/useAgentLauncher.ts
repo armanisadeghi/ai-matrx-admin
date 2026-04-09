@@ -45,46 +45,8 @@ import {
 } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
-import type {
-  ResultDisplayMode,
-  SourceFeature,
-} from "@/features/agents/types/instance.types";
-import type { LLMParams } from "@/features/agents/types/agent-api-types";
-
-// =============================================================================
-// Public Types
-// =============================================================================
-
-export interface LaunchAgentOverrides {
-  displayMode?: ResultDisplayMode;
-  autoRun?: boolean;
-  allowChat?: boolean;
-
-  /** Coarse visibility toggle — resolves to fine-grained fields in the thunk. */
-  showVariables?: boolean;
-  /** Fine-grained: override variable panel independently. */
-  showVariablePanel?: boolean;
-  /** Fine-grained: override definition message visibility independently. */
-  showDefinitionMessages?: boolean;
-  /** Fine-grained: override definition message content visibility independently. */
-  showDefinitionMessageContent?: boolean;
-
-  usePreExecutionInput?: boolean;
-  autoClearConversation?: boolean;
-  conversationMode?: "agent" | "conversation" | "chat";
-  userInput?: string;
-  variables?: Record<string, unknown>;
-  overrides?: Partial<LLMParams>;
-  sourceFeature?: SourceFeature;
-  applicationScope?: ApplicationScope;
-  useChat?: boolean;
-  variableInputStyle?: "inline" | "wizard";
-  onComplete?: (result: LaunchResult) => void;
-  onTextReplace?: (text: string) => void;
-  onTextInsertBefore?: (text: string) => void;
-  onTextInsertAfter?: (text: string) => void;
-  originalText?: string;
-}
+import type { LaunchAgentOverrides } from "@/features/agents/types/instance.types";
+export type { LaunchAgentOverrides } from "@/features/agents/types/instance.types";
 
 export interface UseAgentLauncherReturn {
   launchAgent: (

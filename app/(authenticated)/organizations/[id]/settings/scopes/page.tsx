@@ -5,7 +5,7 @@ import { ArrowLeft, Loader2, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useOrganization, useUserRole } from "@/features/organizations";
-import { ScopeManagerPage } from "@/features/context/components/scope-admin";
+import { ScopeManagerPage } from "@/features/agent-context/components/scope-admin";
 
 export default function OrganizationScopesPage() {
   const params = useParams();

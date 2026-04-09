@@ -20,10 +20,6 @@ import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectConversationTurns } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import {
-  selectInstanceAgentName,
-  selectInstanceAgentDescription,
-} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
-import {
   selectStreamPhase,
   selectLatestAccumulatedText,
   selectLatestInfoUserMessage,
@@ -38,9 +34,17 @@ const AgentAssistantMessage = dynamic(
     })),
   { ssr: false },
 );
+
+const AgentEmptyMessageDisplay = dynamic(
+  () =>
+    import("../shared/AgentEmptyMessageDisplay").then((m) => ({
+      default: m.AgentEmptyMessageDisplay,
+    })),
+  { ssr: false },
+);
+
 import { AgentPlanningIndicator } from "./AgentPlanningIndicator";
 import { AgentStatusIndicator } from "./AgentStatusIndicator";
-import { Webhook } from "lucide-react";
 
 interface DisplayMessage {
   key: string;
@@ -62,10 +66,6 @@ export function AgentConversationDisplay({
   compact = false,
 }: AgentConversationDisplayProps) {
   const turns = useAppSelector(selectConversationTurns(instanceId));
-  const agentName = useAppSelector(selectInstanceAgentName(instanceId));
-  const agentDescription = useAppSelector(
-    selectInstanceAgentDescription(instanceId),
-  );
   const phase = useAppSelector(selectStreamPhase(instanceId));
   const streamingText = useAppSelector(selectLatestAccumulatedText(instanceId));
   const infoMessage = useAppSelector(selectLatestInfoUserMessage(instanceId));
@@ -124,21 +124,7 @@ export function AgentConversationDisplay({
   }, [displayMessages.length, isActive]);
 
   if (displayMessages.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-6 py-12">
-        <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
-          <Webhook className="w-12 h-12 text-primary" />
-        </div>
-        <div className="space-y-3 max-w-md mx-auto">
-          <p className="text-lg font-medium">{agentName ?? "Ready to run"}</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {agentDescription && agentDescription.trim()
-              ? agentDescription
-              : "Fill in any variables below and type a message to start."}
-          </p>
-        </div>
-      </div>
-    );
+    return <AgentEmptyMessageDisplay instanceId={instanceId} />;
   }
 
   const spacingClass = compact ? "space-y-2 pb-2" : "space-y-6 pb-24";

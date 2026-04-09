@@ -56,8 +56,8 @@ import Link from "next/link";
 import {
   HierarchyCascade,
   EMPTY_SELECTION,
-} from "@/features/context/components/hierarchy-selection";
-import type { HierarchySelection } from "@/features/context/components/hierarchy-selection";
+} from "@/features/agent-context/components/hierarchy-selection";
+import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
 
 interface TaskDetailPageProps {
   task: TaskWithProject;

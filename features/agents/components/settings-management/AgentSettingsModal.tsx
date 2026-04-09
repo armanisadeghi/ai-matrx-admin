@@ -168,7 +168,7 @@ export function AgentSettingsModal({ agentId }: AgentSettingsModalProps) {
           open={showCancelConfirm}
           onOpenChange={setShowCancelConfirm}
         >
-          <AlertDialogContent>
+          <AlertDialogContent className="z-[200]">
             <AlertDialogHeader>
               <AlertDialogTitle>Discard changes?</AlertDialogTitle>
               <AlertDialogDescription>
@@ -216,7 +216,7 @@ export function AgentSettingsModal({ agentId }: AgentSettingsModalProps) {
         </DialogContent>
       </Dialog>
       <AlertDialog open={showCancelConfirm} onOpenChange={setShowCancelConfirm}>
-        <AlertDialogContent>
+        <AlertDialogContent className="z-[200]">
           <AlertDialogHeader>
             <AlertDialogTitle>Discard changes?</AlertDialogTitle>
             <AlertDialogDescription>

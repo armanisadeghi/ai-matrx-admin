@@ -8,11 +8,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Undo, Save, Copy, Activity, Globe, Star, Archive, Network } from "lucide-react";
+import {
+  Undo,
+  Save,
+  Copy,
+  Activity,
+  Globe,
+  Star,
+  Archive,
+  Network,
+  Layers,
+} from "lucide-react";
+import { VoiceTextarea } from "@/components/official/VoiceTextarea";
 import {
   HierarchyCascade,
   EMPTY_SELECTION,
-} from "@/features/context/components/hierarchy-selection";
+} from "@/features/agent-context/components/hierarchy-selection";
 import { useState, useEffect, useMemo } from "react";
 import type { AgentDefinition } from "@/features/agents/types/agent-definition.types";
 import { selectModelNameById } from "@/features/ai-models/redux/modelRegistrySlice";
@@ -154,21 +165,27 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
           <div className="grid grid-cols-1 gap-6">
             <div className="space-y-2 flex flex-col">
               <Label className="text-sm font-semibold">Name</Label>
-              <Input
+              <VoiceTextarea
                 value={draft.name || ""}
                 onChange={(e) => handleUpdate("name", e.target.value)}
                 placeholder="Agent Name"
-                className="bg-background/50 focus-visible:ring-primary/20"
+                className="bg-background/50 focus-visible:ring-primary/20 resize-none min-h-[40px]"
+                minHeight={40}
+                maxHeight={40}
+                appendTranscript={false}
               />
             </div>
 
             <div className="space-y-2 flex flex-col">
               <Label className="text-sm font-semibold">Description</Label>
-              <Textarea
+              <VoiceTextarea
                 value={draft.description || ""}
                 onChange={(e) => handleUpdate("description", e.target.value)}
                 placeholder="Detailed description of this agent's capabilities..."
-                className="resize-y min-h-[100px] bg-background/50 focus-visible:ring-primary/20"
+                className="bg-background/50 focus-visible:ring-primary/20"
+                autoGrow={true}
+                minHeight={100}
+                appendTranscript={true}
               />
             </div>
           </div>
@@ -191,7 +208,10 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
 
             <div className="space-y-2 flex flex-col">
               <Label className="text-sm font-semibold">
-                Tags <span className="text-xs font-normal text-muted-foreground ml-1">(comma separated)</span>
+                Tags{" "}
+                <span className="text-xs font-normal text-muted-foreground ml-1">
+                  (comma separated)
+                </span>
               </Label>
               <Input
                 value={tagsInput}
@@ -208,7 +228,7 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
               <div className="flex flex-col gap-6 p-5 bg-card/40 backdrop-blur-sm border border-border/60 rounded-xl shadow-sm relative overflow-hidden h-full group hover:border-primary/30 transition-all duration-300">
                 {/* Color splash */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
-                
+
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-5">
                   <div className="flex flex-col gap-1.5">
                     <span className="text-muted-foreground/70 uppercase tracking-widest text-[10px] font-bold">
@@ -230,35 +250,36 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-muted-foreground/70 uppercase tracking-widest text-[10px] font-bold">
-                      Type
-                    </span>
-                    <span className="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                      {agent.agentType === "builtin" ? "System" : "User Generated"}
-                    </span>
-                  </div>
+                  <div className="flex w-full basis-full flex-col gap-5 sm:flex-row sm:items-start sm:justify-between sm:gap-8 md:gap-12">
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-muted-foreground/70 uppercase tracking-widest text-[10px] font-bold">
+                        Model
+                      </span>
+                      <span className="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 truncate max-w-[150px]">
+                        {modelName || modelId || "Default Selection"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-muted-foreground/70 uppercase tracking-widest text-[10px] font-bold">
+                        Ownership
+                      </span>
+                      <span className="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-semibold bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
+                        {ownership}
+                      </span>
+                    </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-muted-foreground/70 uppercase tracking-widest text-[10px] font-bold">
-                      Ownership
-                    </span>
-                    <span className="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-semibold bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
-                      {ownership}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-muted-foreground/70 uppercase tracking-widest text-[10px] font-bold">
-                      Model
-                    </span>
-                    <span className="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 truncate max-w-[150px]">
-                      {modelName || modelId || "Default Selection"}
-                    </span>
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-muted-foreground/70 uppercase tracking-widest text-[10px] font-bold">
+                        Type
+                      </span>
+                      <span className="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-semibold bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
+                        {agent.agentType === "builtin"
+                          ? "System"
+                          : "User Generated"}
+                      </span>
+                    </div>
                   </div>
                 </div>
-
-                <div className="h-px bg-border/50 w-full mt-auto" />
 
                 {/* Metrics */}
                 <div className="flex items-center gap-3">
@@ -283,7 +304,8 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
                       Tools
                     </span>
                     <span className="font-mono font-bold text-lg text-foreground/90">
-                      {(agent.tools?.length || 0) + (agent.customTools?.length || 0)}
+                      {(agent.tools?.length || 0) +
+                        (agent.customTools?.length || 0)}
                     </span>
                   </div>
                 </div>
@@ -293,13 +315,16 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
             <div className="flex flex-col lg:col-span-4">
               <div className="p-5 rounded-xl bg-card/40 backdrop-blur-sm border border-border/60 shadow-sm flex flex-col justify-center gap-5 h-full relative overflow-hidden group hover:border-primary/30 transition-all duration-300">
                 <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500/50 via-primary/50 to-purple-500/50 opacity-70"></div>
-                
+
                 <div className="flex items-center justify-between pl-2">
                   <div className="flex items-center gap-2.5">
                     <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-500">
                       <Activity className="w-4 h-4" />
                     </div>
-                    <Label className="font-medium text-foreground cursor-pointer" onClick={() => handleUpdate("isActive", !draft.isActive)}>
+                    <Label
+                      className="font-medium text-foreground cursor-pointer"
+                      onClick={() => handleUpdate("isActive", !draft.isActive)}
+                    >
                       Active
                     </Label>
                   </div>
@@ -308,13 +333,16 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
                     onCheckedChange={(c) => handleUpdate("isActive", c)}
                   />
                 </div>
-                
+
                 <div className="flex items-center justify-between pl-2">
                   <div className="flex items-center gap-2.5">
                     <div className="p-1.5 rounded-md bg-blue-500/10 text-blue-500">
                       <Globe className="w-4 h-4" />
                     </div>
-                    <Label className="font-medium text-foreground cursor-pointer" onClick={() => handleUpdate("isPublic", !draft.isPublic)}>
+                    <Label
+                      className="font-medium text-foreground cursor-pointer"
+                      onClick={() => handleUpdate("isPublic", !draft.isPublic)}
+                    >
                       Public
                     </Label>
                   </div>
@@ -323,13 +351,18 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
                     onCheckedChange={(c) => handleUpdate("isPublic", c)}
                   />
                 </div>
-                
+
                 <div className="flex items-center justify-between pl-2">
                   <div className="flex items-center gap-2.5">
                     <div className="p-1.5 rounded-md bg-amber-500/10 text-amber-500">
                       <Star className="w-4 h-4" />
                     </div>
-                    <Label className="font-medium text-foreground cursor-pointer" onClick={() => handleUpdate("isFavorite", !draft.isFavorite)}>
+                    <Label
+                      className="font-medium text-foreground cursor-pointer"
+                      onClick={() =>
+                        handleUpdate("isFavorite", !draft.isFavorite)
+                      }
+                    >
                       Favorite
                     </Label>
                   </div>
@@ -338,13 +371,18 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
                     onCheckedChange={(c) => handleUpdate("isFavorite", c)}
                   />
                 </div>
-                
+
                 <div className="flex items-center justify-between pl-2">
                   <div className="flex items-center gap-2.5">
                     <div className="p-1.5 rounded-md bg-zinc-500/10 text-zinc-500">
                       <Archive className="w-4 h-4" />
                     </div>
-                    <Label className="font-medium text-foreground cursor-pointer" onClick={() => handleUpdate("isArchived", !draft.isArchived)}>
+                    <Label
+                      className="font-medium text-foreground cursor-pointer"
+                      onClick={() =>
+                        handleUpdate("isArchived", !draft.isArchived)
+                      }
+                    >
                       Archived
                     </Label>
                   </div>
@@ -363,9 +401,12 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
                 <Network className="w-4 h-4" />
               </div>
               <div className="space-y-0.5">
-                <h3 className="font-semibold text-foreground/90 text-base tracking-tight">Hierarchy Scopes</h3>
+                <h3 className="font-semibold text-foreground/90 text-base tracking-tight">
+                  Hierarchy Scopes
+                </h3>
                 <p className="text-xs text-muted-foreground">
-                  Bind this agent to organizational structures to restrict visibility or functionality context.
+                  Bind this agent to organizational structures to restrict
+                  visibility or functionality context.
                 </p>
               </div>
             </div>
@@ -374,7 +415,7 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500/40 via-purple-500/40 to-blue-500/40 opacity-70 group-hover:opacity-100 transition-opacity"></div>
               <div className="pt-1">
                 <HierarchyCascade
-                  levels={["organization", "project", "task"]}
+                  levels={["organization", "project", "scope", "task"]}
                   value={{
                     ...EMPTY_SELECTION,
                     organizationId: draft.organizationId || null,

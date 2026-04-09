@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavTree } from "@/features/context/hooks/useNavTree";
+import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import { useTaskContext } from "@/features/tasks/context/TaskContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,8 @@ import TaskDetailsPanel from "@/features/tasks/components/TaskDetailsPanel";
 import {
   HierarchyCascade,
   EMPTY_SELECTION,
-} from "@/features/context/components/hierarchy-selection";
-import type { HierarchySelection } from "@/features/context/components/hierarchy-selection";
+} from "@/features/agent-context/components/hierarchy-selection";
+import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
 
 interface QuickTasksWorkspaceContextType {
   selectedOrgId: string | null;

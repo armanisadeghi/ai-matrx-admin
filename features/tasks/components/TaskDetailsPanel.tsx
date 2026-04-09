@@ -53,8 +53,8 @@ import type { TaskLabel } from "@/features/tasks/services/taskService";
 import {
   HierarchyCascade,
   EMPTY_SELECTION,
-} from "@/features/context/components/hierarchy-selection";
-import type { HierarchySelection } from "@/features/context/components/hierarchy-selection";
+} from "@/features/agent-context/components/hierarchy-selection";
+import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
 
 interface TaskDetailsPanelProps {
   task: any;

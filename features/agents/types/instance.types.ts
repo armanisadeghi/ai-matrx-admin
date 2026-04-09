@@ -13,6 +13,8 @@
 import { AgentType } from "./agent-definition.types";
 import { ContextObjectType, LLMParams } from "./agent-api-types";
 import type { SystemInstruction } from "./agent-api-types";
+import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
+import type { LaunchResult } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
 
 // =============================================================================
 // Completion Stats — re-exported from auto-generated stream-events.ts
@@ -398,4 +400,39 @@ export interface InstanceUIState {
    * E.g., scroll position, active tab, selected card, etc.
    */
   modeState: Record<string, unknown>;
+}
+
+// =============================================================================
+// Launch Overrides
+// =============================================================================
+
+export interface LaunchAgentOverrides {
+  displayMode?: ResultDisplayMode;
+  autoRun?: boolean;
+  allowChat?: boolean;
+
+  /** Coarse visibility toggle — resolves to fine-grained fields in the thunk. */
+  showVariables?: boolean;
+  /** Fine-grained: override variable panel independently. */
+  showVariablePanel?: boolean;
+  /** Fine-grained: override definition message visibility independently. */
+  showDefinitionMessages?: boolean;
+  /** Fine-grained: override definition message content visibility independently. */
+  showDefinitionMessageContent?: boolean;
+
+  usePreExecutionInput?: boolean;
+  autoClearConversation?: boolean;
+  conversationMode?: "agent" | "conversation" | "chat";
+  userInput?: string;
+  variables?: Record<string, unknown>;
+  overrides?: Partial<LLMParams>;
+  sourceFeature?: SourceFeature;
+  applicationScope?: ApplicationScope;
+  useChat?: boolean;
+  variableInputStyle?: "inline" | "wizard";
+  onComplete?: (result: LaunchResult) => void;
+  onTextReplace?: (text: string) => void;
+  onTextInsertBefore?: (text: string) => void;
+  onTextInsertAfter?: (text: string) => void;
+  originalText?: string;
 }

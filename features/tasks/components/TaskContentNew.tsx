@@ -15,12 +15,12 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectProjectId,
   selectProjectName,
-} from "@/features/context/redux/appContextSlice";
+} from "@/features/agent-context/redux/appContextSlice";
 import {
   HierarchyCascade,
   useHierarchyReduxBridge,
   EMPTY_SELECTION,
-} from "@/features/context/components/hierarchy-selection";
+} from "@/features/agent-context/components/hierarchy-selection";
 import CompactTaskItem from "./CompactTaskItem";
 import TaskDetailsPanel from "./TaskDetailsPanel";
 import AllTasksView from "./AllTasksView";

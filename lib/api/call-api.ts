@@ -73,7 +73,7 @@ import {
   selectProjectId,
   selectTaskId,
   selectConversationId,
-} from "@/features/context/redux/appContextSlice";
+} from "@/features/agent-context/redux/appContextSlice";
 // BACKEND_URLS no longer needed here — URL resolution is owned by apiConfigSlice
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 

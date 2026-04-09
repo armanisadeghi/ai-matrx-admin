@@ -11,8 +11,8 @@ import {
   HierarchyCommand,
   HierarchyPills,
   EMPTY_SELECTION,
-} from "@/features/context/components/hierarchy-selection";
-import type { HierarchySelection } from "@/features/context/components/hierarchy-selection";
+} from "@/features/agent-context/components/hierarchy-selection";
+import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
 
 function SelectionDebug({
   label,
@@ -94,7 +94,7 @@ export default function HierarchySelectionDemoPage() {
           <CardContent>
             <div className="h-[280px] border border-border rounded-lg overflow-hidden">
               <HierarchyTree
-                levels={["organization", "project", "task"]}
+                levels={["organization", "scope", "project", "task"]}
                 value={treeVal}
                 onChange={setTreeVal}
               />
@@ -119,7 +119,7 @@ export default function HierarchySelectionDemoPage() {
           <CardContent className="space-y-4">
             <div className="p-3 border border-border rounded-lg bg-card">
               <HierarchyCascade
-                levels={["organization", "project"]}
+                levels={["organization", "scope", "project"]}
                 value={cascadeHVal}
                 onChange={setCascadeHVal}
                 layout="horizontal"
@@ -146,7 +146,7 @@ export default function HierarchySelectionDemoPage() {
           <CardContent className="space-y-4">
             <div className="p-3 border border-border rounded-lg bg-card w-64">
               <HierarchyCascade
-                levels={["organization", "project", "task"]}
+                levels={["organization", "scope", "project", "task"]}
                 value={cascadeVVal}
                 onChange={setCascadeVVal}
                 layout="vertical"
@@ -173,7 +173,7 @@ export default function HierarchySelectionDemoPage() {
           <CardContent className="space-y-4">
             <div className="p-3 border border-border rounded-lg bg-card">
               <HierarchyBreadcrumb
-                levels={["organization", "project", "task"]}
+                levels={["organization", "scope", "project", "task"]}
                 value={breadcrumbVal}
                 onChange={setBreadcrumbVal}
               />
@@ -184,7 +184,7 @@ export default function HierarchySelectionDemoPage() {
             </p>
             <div className="p-3 border border-border rounded-lg bg-card w-64">
               <HierarchyCascade
-                levels={["organization", "project", "task"]}
+                levels={["organization", "scope", "project", "task"]}
                 value={breadcrumbVal}
                 onChange={setBreadcrumbVal}
                 layout="vertical"
@@ -212,7 +212,7 @@ export default function HierarchySelectionDemoPage() {
           <CardContent className="space-y-4">
             <div className="p-3 border border-border rounded-lg bg-card">
               <HierarchyCommand
-                levels={["organization", "project", "task"]}
+                levels={["organization", "scope", "project", "task"]}
                 value={commandVal}
                 onChange={setCommandVal}
               />
@@ -238,14 +238,14 @@ export default function HierarchySelectionDemoPage() {
           <CardContent className="space-y-4">
             <div className="p-3 border border-border rounded-lg bg-card">
               <HierarchyPills
-                levels={["organization", "project"]}
+                levels={["organization", "scope", "project"]}
                 value={pillsVal}
                 onChange={setPillsVal}
               />
             </div>
             <div className="p-3 border border-border rounded-lg bg-card">
               <HierarchyPills
-                levels={["organization", "project", "task"]}
+                levels={["organization", "scope", "project", "task"]}
                 value={pillsVal}
                 onChange={setPillsVal}
                 size="md"

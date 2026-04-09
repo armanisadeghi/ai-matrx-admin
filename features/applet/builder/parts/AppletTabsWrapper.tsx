@@ -11,6 +11,8 @@ import { selectAppletsByAppId } from "@/lib/redux/app-builder/selectors/appletSe
 import { setActiveApplet } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import EmptyStateCard from "@/components/official/cards/EmptyStateCard";
+
+const EMPTY_APPLETS: AppletBuilder[] = [];
 import { PanelRight, LucideIcon } from "lucide-react";
 
 interface AppletTabsWrapperProps {
@@ -32,11 +34,15 @@ export const AppletTabsWrapper: React.FC<AppletTabsWrapperProps> = ({
   onCreateNewApplet,
   emptyStateTitle = "Select an Applet to Continue",
   emptyStateDescription = "Please select an applet and group from the sidebar to start configuring fields for your component.",
-  emptyStateIcon = PanelRight
+  emptyStateIcon = PanelRight,
 }) => {
   const dispatch = useAppDispatch();
-  const activeAppletId = useAppSelector((state: RootState) => selectActiveAppletId(state));
-  const applets = useAppSelector((state) => (appId ? selectAppletsByAppId(state, appId) : [])) as AppletBuilder[];
+  const activeAppletId = useAppSelector((state: RootState) =>
+    selectActiveAppletId(state),
+  );
+  const applets = useAppSelector((state) =>
+    appId ? selectAppletsByAppId(state, appId) : EMPTY_APPLETS,
+  ) as AppletBuilder[];
 
   useEffect(() => {
     if (!activeAppletId && applets.length > 0) {
@@ -64,7 +70,11 @@ export const AppletTabsWrapper: React.FC<AppletTabsWrapperProps> = ({
   const appletTabs = (
     <TabsList className="bg-transparent border-none">
       {applets.map((applet) => (
-        <TabsTrigger key={applet.id} value={applet.id} className="border border-blue-500 dark:border-blue-700">
+        <TabsTrigger
+          key={applet.id}
+          value={applet.id}
+          className="border border-blue-500 dark:border-blue-700"
+        >
           {applet.name}
         </TabsTrigger>
       ))}
@@ -74,7 +84,7 @@ export const AppletTabsWrapper: React.FC<AppletTabsWrapperProps> = ({
   // Check if we should render the child component with applet props
   const renderChildren = (applet: AppletBuilder) => {
     // If children is a function, call it with applet data
-    if (typeof children === 'function') {
+    if (typeof children === "function") {
       return children(applet);
     }
 
@@ -92,7 +102,11 @@ export const AppletTabsWrapper: React.FC<AppletTabsWrapperProps> = ({
 
   return (
     <div className="w-full">
-      <Tabs value={activeAppletId || ""} onValueChange={handleAppletChange} className="w-full">
+      <Tabs
+        value={activeAppletId || ""}
+        onValueChange={handleAppletChange}
+        className="w-full"
+      >
         <SectionCard
           title={title}
           description={description}

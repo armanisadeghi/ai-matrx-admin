@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import {
   HierarchyCascade,
   EMPTY_SELECTION,
-} from "@/features/context/components/hierarchy-selection";
+} from "@/features/agent-context/components/hierarchy-selection";
 
 export default function TaskContent(): JSX.Element {
   const {

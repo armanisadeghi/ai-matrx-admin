@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Suspense } from 'react';
-import { ContextTemplateBrowser } from '@/features/context/components/ContextTemplateBrowser';
-import { useContextScope } from '@/features/context/hooks/useContextScope';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Suspense } from "react";
+import { ContextTemplateBrowser } from "@/features/agent-context/components/ContextTemplateBrowser";
+import { useContextScope } from "@/features/agent-context/hooks/useContextScope";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function TemplatesPage() {
   return (

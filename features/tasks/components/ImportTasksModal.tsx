@@ -26,7 +26,7 @@ import { useTaskContext } from "../context/TaskContext";
 import {
   HierarchyCascade,
   EMPTY_SELECTION,
-} from "@/features/context/components/hierarchy-selection";
+} from "@/features/agent-context/components/hierarchy-selection";
 import { toast } from "sonner";
 import type { TaskItemType } from "@/components/mardown-display/blocks/tasks/TaskChecklist";
 

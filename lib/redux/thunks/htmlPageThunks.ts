@@ -29,7 +29,7 @@ import {
   selectOrganizationId,
   selectProjectId,
   selectTaskId,
-} from "@/features/context/redux/appContextSlice";
+} from "@/features/agent-context/redux/appContextSlice";
 import type { HtmlPageRecord } from "@/features/artifacts/types";
 
 // ── API helper ────────────────────────────────────────────────────────────────

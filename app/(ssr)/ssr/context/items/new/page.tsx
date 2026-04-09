@@ -1,12 +1,18 @@
-'use client';
+"use client";
 
-import { Suspense } from 'react';
-import { useRouter } from 'next/navigation';
-import { ContextItemForm } from '@/features/context/components/ContextItemForm';
-import { useCreateContextItem, useCreateContextValue } from '@/features/context/hooks/useContextItems';
-import { useContextScope } from '@/features/context/hooks/useContextScope';
-import { Skeleton } from '@/components/ui/skeleton';
-import type { ContextItemFormData, ContextValueFormData } from '@/features/context/types';
+import { Suspense } from "react";
+import { useRouter } from "next/navigation";
+import { ContextItemForm } from "@/features/agent-context/components/ContextItemForm";
+import {
+  useCreateContextItem,
+  useCreateContextValue,
+} from "@/features/agent-context/hooks/useContextItems";
+import { useContextScope } from "@/features/agent-context/hooks/useContextScope";
+import { Skeleton } from "@/components/ui/skeleton";
+import type {
+  ContextItemFormData,
+  ContextValueFormData,
+} from "@/features/agent-context/types";
 
 export default function NewItemPage() {
   return (
@@ -22,14 +28,26 @@ function NewItemContent() {
   const createItem = useCreateContextItem(scope.scopeType, scope.scopeId);
   const createValue = useCreateContextValue(scope.scopeType, scope.scopeId);
 
-  const handleSave = (formData: ContextItemFormData, valueData: ContextValueFormData) => {
+  const handleSave = (
+    formData: ContextItemFormData,
+    valueData: ContextValueFormData,
+  ) => {
     createItem.mutate(formData, {
       onSuccess: (newItem) => {
-        const hasValue = valueData.value_text || valueData.value_number != null || valueData.value_boolean != null || valueData.value_json || valueData.value_document_url || valueData.value_reference_id;
+        const hasValue =
+          valueData.value_text ||
+          valueData.value_number != null ||
+          valueData.value_boolean != null ||
+          valueData.value_json ||
+          valueData.value_document_url ||
+          valueData.value_reference_id;
         if (hasValue) {
-          createValue.mutate({ itemId: newItem.id, valueData }, {
-            onSuccess: () => router.push(`/ssr/context/items/${newItem.id}`),
-          });
+          createValue.mutate(
+            { itemId: newItem.id, valueData },
+            {
+              onSuccess: () => router.push(`/ssr/context/items/${newItem.id}`),
+            },
+          );
         } else {
           router.push(`/ssr/context/items/${newItem.id}`);
         }

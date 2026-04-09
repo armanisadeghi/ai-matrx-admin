@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Suspense } from 'react';
-import { ContextAnalytics } from '@/features/context/components/ContextAnalytics';
-import { useContextScope } from '@/features/context/hooks/useContextScope';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Suspense } from "react";
+import { ContextAnalytics } from "@/features/agent-context/components/ContextAnalytics";
+import { useContextScope } from "@/features/agent-context/hooks/useContextScope";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AnalyticsPage() {
   return (

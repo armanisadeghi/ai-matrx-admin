@@ -4,7 +4,7 @@ import React from "react";
 import {
   HierarchyCascade,
   EMPTY_SELECTION,
-} from "@/features/context/components/hierarchy-selection";
+} from "@/features/agent-context/components/hierarchy-selection";
 
 interface MobileProjectSelectorProps {
   selectedProjectId: string | null;

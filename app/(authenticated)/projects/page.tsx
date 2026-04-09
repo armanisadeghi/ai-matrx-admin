@@ -11,9 +11,9 @@ import { ProjectFormSheet } from "@/features/projects/components/ProjectFormShee
 import {
   HierarchyCascade,
   useHierarchyReduxBridge,
-} from "@/features/context/components/hierarchy-selection";
+} from "@/features/agent-context/components/hierarchy-selection";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectOrganizationId } from "@/features/context/redux/appContextSlice";
+import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
 import { useUserOrganizations } from "@/features/organizations";
 
 /**

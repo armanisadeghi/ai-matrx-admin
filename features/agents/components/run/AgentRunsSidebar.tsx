@@ -9,7 +9,7 @@
  *
  * On conversation click → ?conversationId= (clears ?runId=)
  * On run click → ?runId= (clears ?conversationId=)
- * "New" → parent onNewRun (clears both in parent as applicable)
+ * "New" → clears URL params + recreateManualInstance, reports new ID via onInstanceCreated
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -28,6 +28,7 @@ import { supabase } from "@/utils/supabase/client";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { selectLatestConversationId } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import { recreateManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { fetchAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.thunks";
 import { makeSelectAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.selectors";
 import type { AgentConversationListItem } from "@/features/agents/redux/agent-conversations/agent-conversations.types";
@@ -45,12 +46,12 @@ interface AgentRun {
 
 interface AgentRunsSidebarProps {
   agentId: string;
-  /** Highlights current thread when URL has no ?conversationId=. */
-  instanceId?: string;
+  instanceId: string;
   /** URL ?conversationId= — takes precedence over live instance conversation. */
   conversationIdFromUrl?: string;
   currentRunId?: string;
-  onNewRun: () => void;
+  /** Called after a new instance is created so the parent can update its instanceId state. */
+  onInstanceCreated?: (newInstanceId: string) => void;
   onClose: () => void;
 }
 
@@ -72,7 +73,7 @@ export function AgentRunsSidebar({
   instanceId,
   conversationIdFromUrl,
   currentRunId,
-  onNewRun,
+  onInstanceCreated,
   onClose,
 }: AgentRunsSidebarProps) {
   const dispatch = useAppDispatch();
@@ -81,6 +82,18 @@ export function AgentRunsSidebar({
   const searchParams = useSearchParams();
   const [runs, setRuns] = useState<AgentRun[]>([]);
   const [isLoadingRuns, setIsLoadingRuns] = useState(true);
+
+  const handleNewRun = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("runId");
+    params.delete("conversationId");
+    router.replace(`${pathname}?${params.toString()}`);
+
+    dispatch(recreateManualInstance(instanceId))
+      .unwrap()
+      .then((id) => onInstanceCreated?.(id))
+      .catch((err) => console.error("Failed to create new run:", err));
+  }, [instanceId, dispatch, pathname, router, searchParams, onInstanceCreated]);
 
   const canonicalAgentId = useAppSelector((state) => {
     const agent = selectAgentById(state, agentId);
@@ -188,7 +201,7 @@ export function AgentRunsSidebar({
           size="sm"
           variant="ghost"
           className="h-7 px-2 text-xs gap-1 text-primary shrink-0"
-          onClick={onNewRun}
+          onClick={handleNewRun}
         >
           <Plus className="w-3 h-3" />
           New

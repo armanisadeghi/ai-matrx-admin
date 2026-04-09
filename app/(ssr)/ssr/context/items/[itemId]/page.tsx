@@ -1,11 +1,15 @@
-'use client';
+"use client";
 
-import { use, Suspense } from 'react';
-import { ContextItemDetail } from '@/features/context/components/ContextItemDetail';
-import { useContextScope } from '@/features/context/hooks/useContextScope';
-import { Skeleton } from '@/components/ui/skeleton';
+import { use, Suspense } from "react";
+import { ContextItemDetail } from "@/features/agent-context/components/ContextItemDetail";
+import { useContextScope } from "@/features/agent-context/hooks/useContextScope";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function ItemDetailPage({ params }: { params: Promise<{ itemId: string }> }) {
+export default function ItemDetailPage({
+  params,
+}: {
+  params: Promise<{ itemId: string }>;
+}) {
   const { itemId } = use(params);
 
   return (

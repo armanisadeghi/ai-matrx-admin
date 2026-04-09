@@ -89,10 +89,10 @@ import contextMenuCacheReducer from "./slices/contextMenuCacheSlice";
 import activeChatReducer from "./slices/activeChatSlice";
 
 // App context (org/project/task/conversation scope — required by callApi resolveScope)
-import appContextReducer from "../../features/context/redux/appContextSlice";
+import appContextReducer from "../../features/agent-context/redux/appContextSlice";
 
 // Hierarchy tree cache — org/project/task tree from RPC
-import hierarchyReducer from "../../features/context/redux/hierarchySlice";
+import hierarchyReducer from "../../features/agent-context/redux/hierarchySlice";
 
 // Scope system — ctx_scope_types, ctx_scopes, ctx_scope_assignments, resolved context
 import {
@@ -100,7 +100,7 @@ import {
   scopesReducer,
   scopeAssignmentsReducer,
   scopeContextReducer,
-} from "../../features/context/redux/scope";
+} from "../../features/agent-context/redux/scope";
 
 // ============================================================================
 // LITE ROOT REDUCER — SSR Shell + Public Routes

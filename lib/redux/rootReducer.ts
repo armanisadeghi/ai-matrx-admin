@@ -90,14 +90,14 @@ import artifactsReducer from "./slices/artifactsSlice";
 import htmlPagesReducer from "./slices/htmlPagesSlice";
 
 import mcpReducer from "@/features/agents/redux/mcp/mcp.slice";
-import appContextReducer from "@/features/context/redux/appContextSlice";
-import hierarchyReducer from "@/features/context/redux/hierarchySlice";
+import appContextReducer from "@/features/agent-context/redux/appContextSlice";
+import hierarchyReducer from "@/features/agent-context/redux/hierarchySlice";
 import {
   scopeTypesReducer,
   scopesReducer,
   scopeAssignmentsReducer,
   scopeContextReducer,
-} from "@/features/context/redux/scope";
+} from "@/features/agent-context/redux/scope";
 
 import { instanceUIStateReducer } from "@/features/agents/redux/execution-system/instance-ui-state";
 import { instanceClientToolsReducer } from "@/features/agents/redux/execution-system/instance-client-tools";

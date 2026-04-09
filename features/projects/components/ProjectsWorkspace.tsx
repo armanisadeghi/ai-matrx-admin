@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import {
   HierarchyCascade,
   EMPTY_SELECTION,
-} from "@/features/context/components/hierarchy-selection";
-import type { HierarchySelection } from "@/features/context/components/hierarchy-selection";
-import { useNavTree } from "@/features/context/hooks/useNavTree";
+} from "@/features/agent-context/components/hierarchy-selection";
+import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
+import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import { FolderKanban, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
