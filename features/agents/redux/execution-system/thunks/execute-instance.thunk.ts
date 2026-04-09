@@ -60,26 +60,27 @@ import { upsertAgentConversationFromExecutionAction } from "@/features/agents/re
  */
 export function assembleRequest(
   state: RootState,
-  instanceId: string,
+  conversationId: string,
 ): AssembledAgentStartRequest | null {
-  const instance = state.executionInstances.byInstanceId[instanceId];
+  const instance = state.executionInstances.byConversationId[conversationId];
   if (!instance) return null;
 
-  const uiState = state.instanceUIState.byInstanceId[instanceId];
+  const uiState = state.instanceUIState.byConversationId[conversationId];
   if (uiState?.usePreExecutionInput && !uiState.preExecutionSatisfied) {
     console.error(
-      `[assembleRequest] BLOCKED: instance ${instanceId} requires pre-execution input that has not been satisfied.`,
+      `[assembleRequest] BLOCKED: conversation ${conversationId} requires pre-execution input that has not been satisfied.`,
     );
     return null;
   }
 
   // User input
-  const userInputState = state.instanceUserInput.byInstanceId[instanceId];
+  const userInputState =
+    state.instanceUserInput.byConversationId[conversationId];
   const textInput = userInputState?.text?.trim() ?? "";
   const contentBlocks = userInputState?.contentBlocks;
 
   // Resources → ContentBlock[]
-  const resourcePayloads = selectResourcePayloads(instanceId)(state);
+  const resourcePayloads = selectResourcePayloads(conversationId)(state);
 
   // Build user_input
   let user_input: AssembledAgentStartRequest["user_input"];
@@ -99,16 +100,17 @@ export function assembleRequest(
   }
 
   // Variables (three-tier resolved — uses instance-owned definitions snapshot)
-  const variables = selectResolvedVariables(instanceId)(state);
+  const variables = selectResolvedVariables(conversationId)(state);
 
   // Config overrides (ONLY deltas — uses instance-owned baseSettings snapshot)
-  const config_overrides = selectSettingsOverridesForApi(instanceId)(state);
+  const config_overrides = selectSettingsOverridesForApi(conversationId)(state);
 
   // Context dict
-  const context = selectContextPayload(instanceId)(state);
+  const context = selectContextPayload(conversationId)(state);
 
   // Client tools
-  const clientToolsState = state.instanceClientTools.byInstanceId[instanceId];
+  const clientToolsState =
+    state.instanceClientTools.byConversationId[conversationId];
   const client_tools =
     clientToolsState && clientToolsState.length > 0
       ? clientToolsState
@@ -144,7 +146,7 @@ export function assembleRequest(
 // =============================================================================
 
 interface ExecuteInstanceArgs {
-  instanceId: string;
+  conversationId: string;
   debug?: boolean;
 }
 
@@ -159,28 +161,30 @@ export const executeInstance = createAsyncThunk<
 >(
   "instances/execute",
   async (
-    { instanceId, debug = false },
+    { conversationId, debug = false },
     { getState, dispatch, rejectWithValue },
   ) => {
     const requestId = generateRequestId();
 
     try {
       const state = getState() as RootState;
-      const instance = state.executionInstances.byInstanceId[instanceId];
+      const instance =
+        state.executionInstances.byConversationId[conversationId];
 
       if (!instance) {
-        throw new Error(`Instance ${instanceId} not found`);
+        throw new Error(`Conversation ${conversationId} not found`);
       }
 
       // Capture the user's input BEFORE assembling (for history + display).
-      const userInputEntry = state.instanceUserInput.byInstanceId[instanceId];
+      const userInputEntry =
+        state.instanceUserInput.byConversationId[conversationId];
       const userInputText = userInputEntry?.text?.trim() ?? "";
       const userContentBlocks = userInputEntry?.contentBlocks ?? undefined;
 
       // Assemble the request
-      const payload = assembleRequest(state, instanceId);
+      const payload = assembleRequest(state, conversationId);
       if (!payload) {
-        throw new Error(`Failed to assemble request for ${instanceId}`);
+        throw new Error(`Failed to assemble request for ${conversationId}`);
       }
       if (debug) payload.debug = true;
 
@@ -205,7 +209,7 @@ export const executeInstance = createAsyncThunk<
       // Multi-turn routing: if this instance already has a conversationId,
       // continue the conversation; otherwise start a new agent run.
       const existingConversationId =
-        selectLatestConversationId(instanceId)(state);
+        selectLatestConversationId(conversationId)(state);
 
       // Add the user's message to history immediately — before the API call fires.
       // Include resource payload blocks so they display even before the DB round-trip.
@@ -219,20 +223,20 @@ export const executeInstance = createAsyncThunk<
       if (userInputText || userContentBlocks || resourceBlocks.length > 0) {
         dispatch(
           addUserTurn({
-            instanceId,
+            conversationId,
             content: userInputText,
             contentBlocks:
               [...(userContentBlocks ?? []), ...resourceBlocks].length > 0
                 ? [...(userContentBlocks ?? []), ...resourceBlocks]
                 : undefined,
-            conversationId: existingConversationId,
+            serverConversationId: existingConversationId,
           }),
         );
       }
 
       // Create the request tracking entry
-      dispatch(createRequest({ requestId, instanceId }));
-      dispatch(setInstanceStatus({ instanceId, status: "running" }));
+      dispatch(createRequest({ requestId, conversationId }));
+      dispatch(setInstanceStatus({ conversationId, status: "running" }));
       dispatch(setRequestStatus({ requestId, status: "connecting" }));
 
       let url: string;
@@ -255,7 +259,11 @@ export const executeInstance = createAsyncThunk<
       } else {
         // Turn 1: POST /ai/agents/{agentId}
         url = `${baseUrl}/ai/agents/${instance.agentId}`;
-        routedPayload = payload as unknown as Record<string, unknown>;
+        routedPayload = {
+          ...payload,
+          conversation_id: conversationId,
+          is_new: true,
+        } as Record<string, unknown>;
       }
 
       // Record the true submit moment — this is t=0 for all client timing.
@@ -269,42 +277,64 @@ export const executeInstance = createAsyncThunk<
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
+        let serverMessage = `${response.status} ${response.statusText}`;
+        try {
+          const body = await response.json();
+          serverMessage =
+            body?.detail?.message ?? body?.detail ?? serverMessage;
+        } catch {
+          /* non-JSON error body */
+        }
+
+        const code = response.status;
+        if (code === 409) {
+          throw new Error(`Conversation already exists: ${serverMessage}`);
+        } else if (code === 404) {
+          throw new Error(`Conversation not found: ${serverMessage}`);
+        } else if (code === 422) {
+          throw new Error(`Invalid conversation ID: ${serverMessage}`);
+        }
+        throw new Error(`API error: ${serverMessage}`);
       }
 
-      // Read conversation_id from header immediately — available before body.
-      // Record when we received it: measures our internal overhead before the
-      // server starts streaming (internalLatency = conversationIdAt - submitAt).
       const conversationIdFromHeader =
         response.headers.get("X-Conversation-ID");
-      let conversationId: string | null = conversationIdFromHeader;
-      const conversationIdAt = conversationId ? performance.now() : null;
+      let headerConversationId: string | null = conversationIdFromHeader;
+      const conversationIdAt = headerConversationId ? performance.now() : null;
 
-      if (conversationId) {
-        dispatch(setConversationId({ requestId, conversationId }));
+      if (headerConversationId) {
+        dispatch(
+          setConversationId({
+            requestId,
+            conversationId: headerConversationId,
+          }),
+        );
         const syncList = upsertAgentConversationFromExecutionAction(
           getState() as RootState,
-          instanceId,
           conversationId,
+          headerConversationId,
         );
         if (syncList) dispatch(syncList);
       }
 
-      dispatch(setInstanceStatus({ instanceId, status: "streaming" }));
+      dispatch(setInstanceStatus({ conversationId, status: "streaming" }));
       dispatch(setRequestStatus({ requestId, status: "streaming" }));
 
       const streamResult = await processStream({
         requestId,
-        instanceId,
+        conversationId,
         response,
         submitAt,
         conversationIdAt,
-        initialConversationId: conversationId,
+        initialConversationId: headerConversationId,
         dispatch,
         getState: getState as () => RootState,
       });
 
-      return { requestId, conversationId: streamResult.conversationId };
+      return {
+        requestId,
+        conversationId: streamResult.conversationId ?? conversationId,
+      };
     } catch (error) {
       dispatch(
         setRequestStatus({
@@ -314,7 +344,7 @@ export const executeInstance = createAsyncThunk<
             error instanceof Error ? error.message : "Unknown error",
         }),
       );
-      dispatch(setInstanceStatus({ instanceId, status: "error" }));
+      dispatch(setInstanceStatus({ conversationId, status: "error" }));
 
       return rejectWithValue(
         error instanceof Error ? error.message : "Execution failed",
@@ -335,14 +365,14 @@ export const executeInstance = createAsyncThunk<
  */
 export const clearAfterSend = createAsyncThunk<void, string>(
   "instances/clearAfterSend",
-  async (instanceId, { dispatch }) => {
+  async (conversationId, { dispatch }) => {
     const { clearUserInput } =
       await import("../instance-user-input/instance-user-input.slice");
     const { clearAllResources } =
       await import("../instance-resources/instance-resources.slice");
 
-    dispatch(clearUserInput(instanceId));
-    dispatch(clearAllResources(instanceId));
+    dispatch(clearUserInput(conversationId));
+    dispatch(clearAllResources(conversationId));
   },
 );
 

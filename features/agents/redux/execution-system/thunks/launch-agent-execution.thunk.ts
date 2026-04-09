@@ -24,6 +24,7 @@ import type { LLMParams } from "@/features/agents/types/agent-api-types";
 import type {
   ResultDisplayMode,
   SourceFeature,
+  VariableInputStyle,
 } from "@/features/agents/types/instance.types";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
 import { mapScopeToInstance } from "@/features/agents/utils/scope-mapping";
@@ -77,15 +78,26 @@ export interface LaunchAgentOptions {
 
   /** When true, conversation history is wiped after each submit (builder/test mode). */
   autoClearConversation?: boolean;
-  /** Conversation mode — "chat" (client-owned) or "agent" (server-owned). */
+
+  /**
+   * Controls which execution path and history strategy is used.
+   * "agent"  — Default. Standard agent/conversation routing.
+   * "chat"   — Always hits /api/ai/chat with the full live agent definition.
+   *            Used exclusively by the builder. No other surface should use this.
+   */
   conversationMode?: "agent" | "conversation" | "chat";
 
   userInput?: string;
   variables?: Record<string, unknown>;
+
+  /**
+   * LLM parameter overrides applied on top of the agent's base settings.
+   * Stored in instanceModelOverrides and sent as config_overrides in the request.
+   * NOT used in chat mode (builder reads the full live agent definition).
+   */
   overrides?: Partial<LLMParams>;
 
-  useChat?: boolean;
-  variableInputStyle?: "inline" | "wizard";
+  variableInputStyle?: VariableInputStyle;
 
   onComplete?: (result: LaunchResult) => void;
   onTextReplace?: (text: string) => void;
@@ -95,9 +107,11 @@ export interface LaunchAgentOptions {
 }
 
 export interface LaunchResult {
-  instanceId: string;
+  /** Client-owned execution instance key (Redux `byConversationId`). */
+  conversationId: string;
   requestId?: string;
-  conversationId?: string | null;
+  /** Server-assigned conversation id from the stream / API when available. */
+  serverConversationId?: string | null;
   responseText?: string;
 }
 
@@ -216,7 +230,7 @@ export const launchAgentExecution = createAsyncThunk<
     sourceFeature,
     applicationScope,
     displayMode: displayModeOverride,
-    autoRun = true,
+    autoRun = false,
     allowChat,
     showVariables,
     showVariablePanel,
@@ -224,10 +238,10 @@ export const launchAgentExecution = createAsyncThunk<
     showDefinitionMessageContent,
     usePreExecutionInput,
     autoClearConversation,
-    conversationMode,
+    conversationMode = "agent",
     userInput,
     variables,
-    useChat = false,
+    overrides,
     variableInputStyle,
     onComplete,
   } = options;
@@ -247,9 +261,8 @@ export const launchAgentExecution = createAsyncThunk<
     showDefinitionMessageContent ??
     visibilityFromConfig.showDefinitionMessageContent;
 
-  let instanceId: string;
-  let resolvedDisplayMode: ResultDisplayMode =
-    displayModeOverride ?? "modal-full";
+  let conversationId: string;
+  let resolvedDisplayMode: ResultDisplayMode = displayModeOverride ?? "direct";
 
   // =========================================================================
   // Step 1: Route by trigger type and create instance
@@ -266,9 +279,9 @@ export const launchAgentExecution = createAsyncThunk<
     resolvedDisplayMode =
       displayModeOverride ??
       (shortcut.resultDisplay as ResultDisplayMode) ??
-      "modal-full";
+      "direct";
 
-    instanceId = await dispatch(
+    conversationId = await dispatch(
       createInstanceFromShortcut({
         shortcutId,
         uiScopes: applicationScope ?? {},
@@ -277,6 +290,7 @@ export const launchAgentExecution = createAsyncThunk<
         autoRun,
         allowChat: allowChat ?? shortcut.allowChat,
         usePreExecutionInput,
+        autoClearConversation,
         showVariablePanel: resolvedShowVariablePanel,
         showDefinitionMessages: resolvedShowDefinitionMessages,
         showDefinitionMessageContent: resolvedShowDefinitionMessageContent,
@@ -286,10 +300,10 @@ export const launchAgentExecution = createAsyncThunk<
     ).unwrap();
 
     if (variables && Object.keys(variables).length > 0) {
-      dispatch(setUserVariableValues({ instanceId, values: variables }));
+      dispatch(setUserVariableValues({ conversationId, values: variables }));
     }
   } else if (agentId) {
-    instanceId = await dispatch(
+    conversationId = await dispatch(
       createManualInstance({
         agentId,
         sourceFeature,
@@ -319,24 +333,34 @@ export const launchAgentExecution = createAsyncThunk<
         );
         if (Object.keys(variableValues).length > 0) {
           dispatch(
-            setUserVariableValues({ instanceId, values: variableValues }),
+            setUserVariableValues({ conversationId, values: variableValues }),
           );
         }
         if (contextEntries.length > 0) {
-          dispatch(setContextEntries({ instanceId, entries: contextEntries }));
+          dispatch(
+            setContextEntries({ conversationId, entries: contextEntries }),
+          );
         }
       }
     }
 
     if (variables && Object.keys(variables).length > 0) {
-      dispatch(setUserVariableValues({ instanceId, values: variables }));
+      dispatch(setUserVariableValues({ conversationId, values: variables }));
+    }
+
+    if (overrides && Object.keys(overrides).length > 0) {
+      const { setOverrides } =
+        await import("../instance-model-overrides/instance-model-overrides.slice");
+      dispatch(setOverrides({ conversationId, changes: overrides }));
     }
 
     if (displayModeOverride) {
-      dispatch(setDisplayModeAction({ instanceId, mode: resolvedDisplayMode }));
+      dispatch(
+        setDisplayModeAction({ conversationId, mode: resolvedDisplayMode }),
+      );
     }
   } else {
-    instanceId = await dispatch(
+    conversationId = await dispatch(
       createManualInstanceNoAgent({
         label: manual?.label,
         baseSettings: manual?.baseSettings,
@@ -345,11 +369,13 @@ export const launchAgentExecution = createAsyncThunk<
     ).unwrap();
 
     if (variables && Object.keys(variables).length > 0) {
-      dispatch(setUserVariableValues({ instanceId, values: variables }));
+      dispatch(setUserVariableValues({ conversationId, values: variables }));
     }
 
     if (displayModeOverride) {
-      dispatch(setDisplayModeAction({ instanceId, mode: resolvedDisplayMode }));
+      dispatch(
+        setDisplayModeAction({ conversationId, mode: resolvedDisplayMode }),
+      );
     }
   }
 
@@ -361,7 +387,7 @@ export const launchAgentExecution = createAsyncThunk<
     resolvedDisplayMode !== "direct" &&
     resolvedDisplayMode !== "background"
   ) {
-    dispatch(setInstanceStatus({ instanceId, status: "ready" }));
+    dispatch(setInstanceStatus({ conversationId, status: "ready" }));
   }
 
   // =========================================================================
@@ -370,7 +396,7 @@ export const launchAgentExecution = createAsyncThunk<
 
   const overlayId = DISPLAY_MODE_TO_OVERLAY_ID[resolvedDisplayMode];
   if (overlayId) {
-    dispatch(openOverlay({ overlayId, instanceId }));
+    dispatch(openOverlay({ overlayId, instanceId: conversationId }));
   }
 
   // =========================================================================
@@ -378,7 +404,7 @@ export const launchAgentExecution = createAsyncThunk<
   // =========================================================================
 
   if (userInput) {
-    dispatch(setUserInputText({ instanceId, text: userInput }));
+    dispatch(setUserInputText({ conversationId, text: userInput }));
   }
 
   // =========================================================================
@@ -389,31 +415,33 @@ export const launchAgentExecution = createAsyncThunk<
   //   2. usePreExecutionInput is true → user must complete the pre-exec gate
   //      first. The AgentRunner component handles executing after that.
   //
-  // When either gate is active, we return the instanceId without executing.
+  // When either gate is active, we return the conversationId without executing.
   // =========================================================================
 
   if (!autoRun) {
-    return { instanceId };
+    return { conversationId };
   }
 
   if (usePreExecutionInput) {
-    return { instanceId };
+    return { conversationId };
   }
+
+  const isChatMode = conversationMode === "chat";
 
   if (
     resolvedDisplayMode === "direct" ||
     resolvedDisplayMode === "background" ||
     resolvedDisplayMode === "inline"
   ) {
-    const executeThunk = useChat ? executeChatInstance : executeInstance;
-    const result = await dispatch(executeThunk({ instanceId })).unwrap();
+    const executeThunk = isChatMode ? executeChatInstance : executeInstance;
+    const result = await dispatch(executeThunk({ conversationId })).unwrap();
 
     const responseText = await pollForCompletion(getState, result.requestId);
 
     const launchResult: LaunchResult = {
-      instanceId,
+      conversationId,
       requestId: result.requestId,
-      conversationId: result.conversationId,
+      serverConversationId: result.conversationId,
       responseText,
     };
 
@@ -423,15 +451,15 @@ export const launchAgentExecution = createAsyncThunk<
   }
 
   if (isInteractive(resolvedDisplayMode) || resolvedDisplayMode === "toast") {
-    const executeThunk = useChat ? executeChatInstance : executeInstance;
-    const result = await dispatch(executeThunk({ instanceId })).unwrap();
+    const executeThunk = isChatMode ? executeChatInstance : executeInstance;
+    const result = await dispatch(executeThunk({ conversationId })).unwrap();
 
     return {
-      instanceId,
+      conversationId,
       requestId: result.requestId,
-      conversationId: result.conversationId,
+      serverConversationId: result.conversationId,
     };
   }
 
-  return { instanceId };
+  return { conversationId };
 });

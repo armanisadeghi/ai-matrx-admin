@@ -11,7 +11,7 @@ export function initUrlHydration() {
   registerPanelHydrator("agent", (dispatch, id, args) => {
     dispatch(
       setDisplayMode({
-        instanceId: id,
+        conversationId: id,
         mode:
           (args.m as "floating-chat" | "modal-full" | "panel") ||
           "floating-chat",

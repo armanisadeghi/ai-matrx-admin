@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentReadyForBuilder } from "@/features/agents/redux/agent-definition/selectors";
 import { useAgentAutoSave } from "@/features/agents/hooks/useAgentAutoSave";
@@ -26,14 +27,21 @@ export function AgentBuilderClient({
   desktopContent,
   fallback,
 }: AgentBuilderClientProps) {
+  const [mounted, setMounted] = useState(false);
   const isMobile = useIsMobile();
   const isReady = useAppSelector((state) =>
     selectAgentReadyForBuilder(state, agentId),
   );
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useAgentAutoSave(agentId);
 
-  if (!isReady) return <>{fallback}</>;
+  // Gate on mounted so SSR + first client paint match: Redux may rehydrate before
+  // hydration completes, which would otherwise render skeleton on server and real UI on client.
+  if (!mounted || !isReady) return <>{fallback}</>;
 
   if (isMobile) return <AgentBuilderMobile agentId={agentId} />;
 

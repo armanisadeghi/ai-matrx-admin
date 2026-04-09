@@ -199,6 +199,11 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             content={block.content}
             delimiter={lang === "tsv" ? "\t" : ","}
             className="my-3"
+            onInnerContentChange={
+              isStreamActive
+                ? undefined
+                : (inner) => replaceBlockContent(block.content, inner)
+            }
           />
         );
       }

@@ -19,14 +19,16 @@ export default function AuthIsland({ user }: AuthIslandProps) {
         href="/settings"
         className="shell-auth-island shell-glass shell-tactile"
       >
-        <span className="shell-auth-island-icon">
+        <span className="shell-auth-island-icon relative overflow-hidden rounded-full">
           {user.avatarUrl ? (
             <Image
               src={user.avatarUrl}
               alt={user.name}
-              width={24}
-              height={24}
-              className="shell-auth-island-avatar"
+              fill
+              className="object-cover"
+              sizes="24px"
+              loading="eager"
+              priority
             />
           ) : (
             <ShellIcon name="User" size={16} strokeWidth={2} />

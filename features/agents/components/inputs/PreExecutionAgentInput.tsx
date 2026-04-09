@@ -27,26 +27,26 @@ import { selectInstanceAgentName } from "@/features/agents/redux/execution-syste
 import { SmartAgentInput } from "./SmartAgentInput";
 
 interface PreExecutionAgentInputProps {
-  instanceId: string;
+  conversationId: string;
 }
 
 export function PreExecutionAgentInput({
-  instanceId,
+  conversationId,
 }: PreExecutionAgentInputProps) {
   const dispatch = useAppDispatch();
-  const title = useAppSelector(selectInstanceAgentName(instanceId));
+  const title = useAppSelector(selectInstanceAgentName(conversationId));
 
-  const hasInput = useAppSelector(selectHasUserInput(instanceId));
+  const hasInput = useAppSelector(selectHasUserInput(conversationId));
   const preExecutionMessage = useAppSelector(
-    selectPreExecutionMessage(instanceId),
+    selectPreExecutionMessage(conversationId),
   );
 
   const handleContinue = () => {
-    dispatch(setPreExecutionSatisfied({ instanceId, value: true }));
+    dispatch(setPreExecutionSatisfied({ conversationId, value: true }));
   };
 
   const handleCancel = () => {
-    dispatch(destroyInstance(instanceId));
+    dispatch(destroyInstance(conversationId));
   };
 
   return (
@@ -85,7 +85,7 @@ export function PreExecutionAgentInput({
 
       <div className="px-3 pt-0.5 pb-3 border border-blue-500">
         <SmartAgentInput
-          instanceId={instanceId}
+          conversationId={conversationId}
           compact
           placeholder="Additional instructions (optional)..."
           showSubmitOnEnterToggle={false}

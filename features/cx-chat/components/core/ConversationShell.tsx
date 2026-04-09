@@ -146,7 +146,7 @@ export function ConversationShell({
       <div className="flex-shrink-0 p-2 pb-safe">
         <div className="max-w-[800px] mx-auto">
           <ConversationInput
-            instanceId={sessionId}
+            conversationId={sessionId}
             showVoice={true}
             showResourcePicker={true}
             {...inputProps}

@@ -135,10 +135,10 @@ export type RequestStatus =
 
 export interface ActiveRequest {
   requestId: string;
-  instanceId: string;
+  conversationId: string;
 
-  /** Assigned by the server on the first response */
-  conversationId: string | null;
+  /** Server-confirmed conversation ID (may differ from client-generated if server overrides) */
+  serverConversationId: string | null;
 
   /** If this is a sub-agent request, the parent's conversationId */
   parentConversationId: string | null;
@@ -485,6 +485,8 @@ export interface AssembledAgentStartRequest {
   config_overrides?: Record<string, unknown>;
   context?: Record<string, unknown>;
   client_tools?: string[];
+  conversation_id?: string;
+  is_new?: boolean | null;
   organization_id?: string;
   project_id?: string;
   task_id?: string;

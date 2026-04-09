@@ -107,18 +107,18 @@ function extractSystemText(content: unknown): string {
  */
 export function assembleChatRequest(
   state: RootState,
-  instanceId: string,
+  conversationId: string,
 ): Partial<ChatRequestPayload> | null {
-  const instance = state.executionInstances.byInstanceId[instanceId];
+  const instance = state.executionInstances.byConversationId[conversationId];
   if (!instance) return null;
 
-  const preExecState = state.instanceUIState.byInstanceId[instanceId];
+  const preExecState = state.instanceUIState.byConversationId[conversationId];
   if (
     preExecState?.usePreExecutionInput &&
     !preExecState.preExecutionSatisfied
   ) {
     console.error(
-      `[assembleChatRequest] BLOCKED: instance ${instanceId} requires pre-execution input that has not been satisfied.`,
+      `[assembleChatRequest] BLOCKED: instance ${conversationId} requires pre-execution input that has not been satisfied.`,
     );
     return null;
   }
@@ -132,7 +132,7 @@ export function assembleChatRequest(
   if (!ai_model_id) return null;
 
   // Builder UI state — read early because structured system instruction toggle needs it
-  const uiState = state.instanceUIState.byInstanceId[instanceId];
+  const uiState = state.instanceUIState.byConversationId[conversationId];
   const advancedSettings = uiState?.builderAdvancedSettings;
 
   // Structured system instruction toggle
@@ -165,16 +165,17 @@ export function assembleChatRequest(
 
   // 2. Conversation history turns (already committed user + assistant turns)
   const historyEntry =
-    state.instanceConversationHistory.byInstanceId[instanceId];
+    state.instanceConversationHistory.byConversationId[conversationId];
   if (historyEntry?.turns && historyEntry.turns.length > 0) {
     messages.push(...turnsToMessages(historyEntry.turns));
   }
 
   // 3. Current user input (the new message being sent)
-  const userInputState = state.instanceUserInput.byInstanceId[instanceId];
+  const userInputState =
+    state.instanceUserInput.byConversationId[conversationId];
   const textInput = userInputState?.text?.trim() ?? "";
   const userContentBlocks = userInputState?.contentBlocks;
-  const resourcePayloads = selectResourcePayloads(instanceId)(state);
+  const resourcePayloads = selectResourcePayloads(conversationId)(state);
 
   if (textInput || userContentBlocks || resourcePayloads.length > 0) {
     const blocks: Array<Record<string, unknown>> = [];
@@ -190,13 +191,13 @@ export function assembleChatRequest(
   }
 
   // LLM params — full merged settings spread flat (NOT as config_overrides)
-  const fullSettings = selectCurrentSettings(instanceId)(state);
+  const fullSettings = selectCurrentSettings(conversationId)(state);
 
   // Variables
-  const variables = selectResolvedVariables(instanceId)(state);
+  const variables = selectResolvedVariables(conversationId)(state);
 
   // Context
-  const context = selectContextPayload(instanceId)(state);
+  const context = selectContextPayload(conversationId)(state);
 
   // Tools
   const tools = agent.tools && agent.tools.length > 0 ? agent.tools : undefined;
@@ -206,7 +207,8 @@ export function assembleChatRequest(
       : undefined;
 
   // Client tools
-  const clientToolsState = state.instanceClientTools.byInstanceId[instanceId];
+  const clientToolsState =
+    state.instanceClientTools.byConversationId[conversationId];
   const client_tools =
     clientToolsState && clientToolsState.length > 0
       ? clientToolsState
@@ -215,7 +217,7 @@ export function assembleChatRequest(
   // Conversation ID (reuse if configured)
   const reuseConversationId = uiState?.reuseConversationId ?? false;
   const existingConversationId = reuseConversationId
-    ? selectLatestConversationId(instanceId)(state)
+    ? selectLatestConversationId(conversationId)(state)
     : undefined;
 
   // Source tracking
@@ -233,7 +235,13 @@ export function assembleChatRequest(
     ...fullSettings,
   };
 
-  if (existingConversationId) request.conversation_id = existingConversationId;
+  if (existingConversationId) {
+    request.conversation_id = existingConversationId;
+    request.is_new = false;
+  } else {
+    request.conversation_id = conversationId;
+    request.is_new = true;
+  }
   if (Object.keys(variables).length > 0)
     request.variables = variables as Record<string, unknown>;
   if (context) request.context = context;
@@ -259,7 +267,7 @@ export function assembleChatRequest(
 // =============================================================================
 
 interface ExecuteChatInstanceArgs {
-  instanceId: string;
+  conversationId: string;
 }
 
 interface ExecuteChatInstanceResult {
@@ -272,27 +280,29 @@ export const executeChatInstance = createAsyncThunk<
   ExecuteChatInstanceArgs
 >(
   "instances/executeChat",
-  async ({ instanceId }, { getState, dispatch, rejectWithValue }) => {
+  async ({ conversationId }, { getState, dispatch, rejectWithValue }) => {
     const requestId = generateRequestId();
 
     try {
       const state = getState() as RootState;
-      const instance = state.executionInstances.byInstanceId[instanceId];
+      const instance =
+        state.executionInstances.byConversationId[conversationId];
 
       if (!instance) {
-        throw new Error(`Instance ${instanceId} not found`);
+        throw new Error(`Instance ${conversationId} not found`);
       }
 
       // Capture user input BEFORE assembling (for history + display)
-      const userInputEntry = state.instanceUserInput.byInstanceId[instanceId];
+      const userInputEntry =
+        state.instanceUserInput.byConversationId[conversationId];
       const userInputText = userInputEntry?.text?.trim() ?? "";
       const userContentBlocks = userInputEntry?.contentBlocks ?? undefined;
 
       // Assemble the chat request — reads FRESH from agent definition
-      const payload = assembleChatRequest(state, instanceId);
+      const payload = assembleChatRequest(state, conversationId);
       if (!payload) {
         throw new Error(
-          `Failed to assemble chat request for ${instanceId}. Check that the agent has a modelId set.`,
+          `Failed to assemble chat request for ${conversationId}. Check that the agent has a modelId set.`,
         );
       }
 
@@ -315,29 +325,29 @@ export const executeChatInstance = createAsyncThunk<
       }
 
       // Optimistic user turn — add to history before the API call
-      const resourcePayloads = selectResourcePayloads(instanceId)(state);
+      const resourcePayloads = selectResourcePayloads(conversationId)(state);
       const resourceBlocks = resourcePayloads.filter(
         (b) => b["type"] !== "text",
       );
       if (userInputText || userContentBlocks || resourceBlocks.length > 0) {
         const existingConversationId =
-          selectLatestConversationId(instanceId)(state);
+          selectLatestConversationId(conversationId)(state);
         dispatch(
           addUserTurn({
-            instanceId,
+            conversationId,
             content: userInputText,
             contentBlocks:
               [...(userContentBlocks ?? []), ...resourceBlocks].length > 0
                 ? [...(userContentBlocks ?? []), ...resourceBlocks]
                 : undefined,
-            conversationId: existingConversationId,
+            serverConversationId: existingConversationId,
           }),
         );
       }
 
       // Create request tracking entry
-      dispatch(createRequest({ requestId, instanceId }));
-      dispatch(setInstanceStatus({ instanceId, status: "running" }));
+      dispatch(createRequest({ requestId, conversationId }));
+      dispatch(setInstanceStatus({ conversationId, status: "running" }));
       dispatch(setRequestStatus({ requestId, status: "connecting" }));
 
       const submitAt = performance.now();
@@ -351,35 +361,57 @@ export const executeChatInstance = createAsyncThunk<
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
+        let serverMessage = `${response.status} ${response.statusText}`;
+        try {
+          const body = await response.json();
+          serverMessage =
+            body?.detail?.message ?? body?.detail ?? serverMessage;
+        } catch {
+          /* non-JSON error body */
+        }
+
+        const code = response.status;
+        if (code === 409) {
+          throw new Error(`Conversation already exists: ${serverMessage}`);
+        } else if (code === 404) {
+          throw new Error(`Conversation not found: ${serverMessage}`);
+        } else if (code === 422) {
+          throw new Error(`Invalid conversation ID: ${serverMessage}`);
+        }
+        throw new Error(`API error: ${serverMessage}`);
       }
 
-      // Read conversation_id from header
-      const conversationIdFromHeader =
-        response.headers.get("X-Conversation-ID");
-      let conversationId: string | null = conversationIdFromHeader;
-      const conversationIdAt = conversationId ? performance.now() : null;
+      const headerConversationId = response.headers.get("X-Conversation-ID");
+      let serverConversationIdFromHeader: string | null = headerConversationId;
+      const conversationIdAt = serverConversationIdFromHeader
+        ? performance.now()
+        : null;
 
-      if (conversationId) {
-        dispatch(setConversationId({ requestId, conversationId }));
+      if (serverConversationIdFromHeader) {
+        dispatch(
+          setConversationId({
+            requestId,
+            conversationId: serverConversationIdFromHeader,
+          }),
+        );
         const syncList = upsertAgentConversationFromExecutionAction(
           getState() as RootState,
-          instanceId,
           conversationId,
+          serverConversationIdFromHeader,
         );
         if (syncList) dispatch(syncList);
       }
 
-      dispatch(setInstanceStatus({ instanceId, status: "streaming" }));
+      dispatch(setInstanceStatus({ conversationId, status: "streaming" }));
       dispatch(setRequestStatus({ requestId, status: "streaming" }));
 
       const streamResult = await processStream({
         requestId,
-        instanceId,
+        conversationId,
         response,
         submitAt,
         conversationIdAt,
-        initialConversationId: conversationId,
+        initialConversationId: serverConversationIdFromHeader,
         dispatch,
         getState: getState as () => RootState,
       });
@@ -397,7 +429,7 @@ export const executeChatInstance = createAsyncThunk<
             error instanceof Error ? error.message : "Unknown error",
         }),
       );
-      dispatch(setInstanceStatus({ instanceId, status: "error" }));
+      dispatch(setInstanceStatus({ conversationId, status: "error" }));
 
       return rejectWithValue(
         error instanceof Error ? error.message : "Chat execution failed",

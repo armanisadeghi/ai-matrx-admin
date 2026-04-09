@@ -19,11 +19,11 @@ import { destroyInstance } from "../execution-instances/execution-instances.slic
 // =============================================================================
 
 export interface InstanceContextState {
-  byInstanceId: Record<string, Record<string, InstanceContextEntry>>;
+  byConversationId: Record<string, Record<string, InstanceContextEntry>>;
 }
 
 const initialState: InstanceContextState = {
-  byInstanceId: {},
+  byConversationId: {},
 };
 
 // =============================================================================
@@ -48,8 +48,8 @@ const instanceContextSlice = createSlice({
   name: "instanceContext",
   initialState,
   reducers: {
-    initInstanceContext(state, action: PayloadAction<{ instanceId: string }>) {
-      state.byInstanceId[action.payload.instanceId] = {};
+    initInstanceContext(state, action: PayloadAction<{ conversationId: string }>) {
+      state.byConversationId[action.payload.conversationId] = {};
     },
 
     /**
@@ -58,7 +58,7 @@ const instanceContextSlice = createSlice({
     setContextEntry(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         key: string;
         value: unknown;
         slotMatched?: boolean;
@@ -67,7 +67,7 @@ const instanceContextSlice = createSlice({
       }>,
     ) {
       const {
-        instanceId,
+        conversationId,
         key,
         value,
         slotMatched = false,
@@ -75,7 +75,7 @@ const instanceContextSlice = createSlice({
         label,
       } = action.payload;
 
-      const context = state.byInstanceId[instanceId];
+      const context = state.byConversationId[conversationId];
       if (context) {
         context[key] = {
           key,
@@ -94,7 +94,7 @@ const instanceContextSlice = createSlice({
     setContextEntries(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         entries: Array<{
           key: string;
           value: unknown;
@@ -104,8 +104,8 @@ const instanceContextSlice = createSlice({
         }>;
       }>,
     ) {
-      const { instanceId, entries } = action.payload;
-      const context = state.byInstanceId[instanceId];
+      const { conversationId, entries } = action.payload;
+      const context = state.byConversationId[conversationId];
       if (context) {
         for (const entry of entries) {
           context[entry.key] = {
@@ -124,10 +124,10 @@ const instanceContextSlice = createSlice({
      */
     removeContextEntry(
       state,
-      action: PayloadAction<{ instanceId: string; key: string }>,
+      action: PayloadAction<{ conversationId: string; key: string }>,
     ) {
-      const { instanceId, key } = action.payload;
-      const context = state.byInstanceId[instanceId];
+      const { conversationId, key } = action.payload;
+      const context = state.byConversationId[conversationId];
       if (context) {
         delete context[key];
       }
@@ -137,17 +137,17 @@ const instanceContextSlice = createSlice({
      * Clear all context for an instance.
      */
     clearInstanceContext(state, action: PayloadAction<string>) {
-      state.byInstanceId[action.payload] = {};
+      state.byConversationId[action.payload] = {};
     },
 
     removeInstanceContext(state, action: PayloadAction<string>) {
-      delete state.byInstanceId[action.payload];
+      delete state.byConversationId[action.payload];
     },
   },
 
   extraReducers: (builder) => {
     builder.addCase(destroyInstance, (state, action) => {
-      delete state.byInstanceId[action.payload];
+      delete state.byConversationId[action.payload];
     });
   },
 });

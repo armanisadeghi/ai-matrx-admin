@@ -5,7 +5,7 @@
  *
  * Renders chips for all attached resources on an execution instance.
  * Reads from instanceResources, dispatches removeResource directly.
- * No prop callbacks needed — instanceId is the only prop.
+ * No prop callbacks needed — conversationId is the only prop.
  */
 
 import { useCallback, createElement } from "react";
@@ -187,20 +187,20 @@ function ResourceChip({ resource, onRemove }: ResourceChipProps) {
 }
 
 interface SmartAgentResourceChipsProps {
-  instanceId: string;
+  conversationId: string;
 }
 
 export function SmartAgentResourceChips({
-  instanceId,
+  conversationId,
 }: SmartAgentResourceChipsProps) {
   const dispatch = useAppDispatch();
-  const resources = useAppSelector(selectInstanceResources(instanceId));
+  const resources = useAppSelector(selectInstanceResources(conversationId));
 
   const handleRemove = useCallback(
     (resourceId: string) => {
-      dispatch(removeResource({ instanceId, resourceId }));
+      dispatch(removeResource({ conversationId, resourceId }));
     },
-    [instanceId, dispatch],
+    [conversationId, dispatch],
   );
 
   if (resources.length === 0) return null;

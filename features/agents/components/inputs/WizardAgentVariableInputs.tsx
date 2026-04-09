@@ -8,7 +8,7 @@
  * Maintains a fixed outer height; input area scrolls internally when needed.
  * Footer has Back, Skip, and Skip All buttons.
  *
- * Prop: instanceId only.
+ * Prop: conversationId only.
  */
 
 import { useState, useCallback } from "react";
@@ -28,7 +28,7 @@ import { VariableInputComponent } from "@/features/prompts/components/variable-i
 import { formatText } from "@/utils/text/text-case-converter";
 
 interface WizardAgentVariableInputsProps {
-  instanceId: string;
+  conversationId: string;
   /** Called when all variables are answered (or skipped) */
   onComplete?: () => void;
   /** Called when submit is triggered from the last variable */
@@ -36,30 +36,30 @@ interface WizardAgentVariableInputsProps {
 }
 
 export function WizardAgentVariableInputs({
-  instanceId,
+  conversationId,
   onComplete,
   onSubmit,
 }: WizardAgentVariableInputsProps) {
   const dispatch = useAppDispatch();
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const showVariablePanel = useAppSelector(selectShowVariablePanel(instanceId));
+  const showVariablePanel = useAppSelector(selectShowVariablePanel(conversationId));
   const variableInputStyle = useAppSelector(
-    selectVariableInputStyle(instanceId),
+    selectVariableInputStyle(conversationId),
   );
   const shouldShowVariables = useAppSelector(
-    selectShouldShowVariables(instanceId),
+    selectShouldShowVariables(conversationId),
   );
   const definitions = useAppSelector(
-    selectInstanceVariableDefinitions(instanceId),
+    selectInstanceVariableDefinitions(conversationId),
   );
-  const userValues = useAppSelector(selectUserVariableValues(instanceId));
+  const userValues = useAppSelector(selectUserVariableValues(conversationId));
 
   const handleValueChange = useCallback(
     (name: string, value: string) => {
-      dispatch(setUserVariableValue({ instanceId, name, value }));
+      dispatch(setUserVariableValue({ conversationId, name, value }));
     },
-    [instanceId, dispatch],
+    [conversationId, dispatch],
   );
 
   const goNext = useCallback(() => {

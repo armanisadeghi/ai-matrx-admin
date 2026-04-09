@@ -39,7 +39,7 @@ import {
 } from "@/lib/redux/slices/windowManagerSlice";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { recreateManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
+import { startNewConversation } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { setBuilderAdvancedSettings } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { selectUseStructuredSystemInstruction } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { RunSettingsEditor } from "./RunSettingsEditor";
@@ -195,14 +195,14 @@ function TR({
 // =============================================================================
 
 function ActionsTab({
-  instanceId,
-  onNewInstance,
+  conversationId,
+  surfaceKey,
   onOpenStreamDebugFloating,
   onOpenStreamDebugWindow,
   onOpenRunSettingsWindow,
 }: {
-  instanceId: string;
-  onNewInstance?: (newId: string) => void;
+  conversationId: string;
+  surfaceKey: string;
   onOpenStreamDebugFloating: () => void;
   onOpenStreamDebugWindow: () => void;
   onOpenRunSettingsWindow: () => void;
@@ -210,15 +210,19 @@ function ActionsTab({
   const dispatch = useAppDispatch();
 
   const handleReset = useCallback(() => {
-    dispatch(recreateManualInstance(instanceId))
+    dispatch(
+      startNewConversation({
+        currentConversationId: conversationId,
+        surfaceKey,
+      }),
+    )
       .unwrap()
-      .then((newId) => onNewInstance?.(newId))
       .catch((err) => console.error("Failed to reset test instance:", err));
-  }, [instanceId, onNewInstance, dispatch]);
+  }, [conversationId, surfaceKey, dispatch]);
 
   const handleOpenStreamDebugOverlay = useCallback(() => {
-    dispatch(openStreamDebug({ instanceId }));
-  }, [dispatch, instanceId]);
+    dispatch(openStreamDebug({ conversationId }));
+  }, [dispatch, conversationId]);
 
   const ActionButton = ({
     onClick,
@@ -306,10 +310,10 @@ function ActionsTab({
 // Tab 2: Run Settings
 // =============================================================================
 
-function RunSettingsTab({ instanceId }: { instanceId: string }) {
+function RunSettingsTab({ conversationId }: { conversationId: string }) {
   return (
     <div className="px-3 py-2">
-      <RunSettingsEditor instanceId={instanceId} />
+      <RunSettingsEditor conversationId={conversationId} />
     </div>
   );
 }
@@ -318,28 +322,28 @@ function RunSettingsTab({ instanceId }: { instanceId: string }) {
 // Tab 3: System Prompt
 // =============================================================================
 
-function SystemPromptTab({ instanceId }: { instanceId: string }) {
+function SystemPromptTab({ conversationId }: { conversationId: string }) {
   const dispatch = useAppDispatch();
   const isActive = useAppSelector(
-    selectUseStructuredSystemInstruction(instanceId),
+    selectUseStructuredSystemInstruction(conversationId),
   );
 
   return (
     <div className="px-3 py-2">
       <div className="flex items-center justify-between pb-2 mb-2 border-b border-border">
         <Label
-          htmlFor={`sysprompt-active-${instanceId}`}
+          htmlFor={`sysprompt-active-${conversationId}`}
           className="text-xs text-muted-foreground cursor-pointer"
         >
           Structured system prompt
         </Label>
         <Switch
-          id={`sysprompt-active-${instanceId}`}
+          id={`sysprompt-active-${conversationId}`}
           checked={isActive}
           onCheckedChange={(v) =>
             dispatch(
               setBuilderAdvancedSettings({
-                instanceId,
+                conversationId,
                 changes: { useStructuredSystemInstruction: v },
               }),
             )
@@ -349,7 +353,7 @@ function SystemPromptTab({ instanceId }: { instanceId: string }) {
       </div>
 
       {isActive ? (
-        <SystemInstructionEditor instanceId={instanceId} />
+        <SystemInstructionEditor conversationId={conversationId} />
       ) : (
         <p className="text-xs text-muted-foreground/60">
           Enable to configure structured system instruction fields (intro,
@@ -466,12 +470,12 @@ function LastRequestContent({ stats }: { stats: CompletionStats | undefined }) {
   );
 }
 
-function LastRequestPanel({ instanceId }: { instanceId: string }) {
+function LastRequestPanel({ conversationId }: { conversationId: string }) {
   const allInstanceIds = useAppSelector(selectAllInstanceIds, shallowEqual);
-  const [selectedId, setSelectedId] = useState(instanceId);
+  const [selectedId, setSelectedId] = useState(conversationId);
   const effectiveId = allInstanceIds.includes(selectedId)
     ? selectedId
-    : instanceId;
+    : conversationId;
 
   const stats = useAppSelector(selectLatestCompletionStats(effectiveId));
 
@@ -535,14 +539,14 @@ function InstancePicker({
 // =============================================================================
 
 function SingleInstanceSession({
-  instanceId,
+  conversationId,
   instanceLabel,
 }: {
-  instanceId: string;
+  conversationId: string;
   instanceLabel: string;
 }) {
-  const aggregate = useAppSelector(selectAggregateStats(instanceId));
-  const turns = useAppSelector(selectConversationTurns(instanceId));
+  const aggregate = useAppSelector(selectAggregateStats(conversationId));
+  const turns = useAppSelector(selectConversationTurns(conversationId));
   const assistantTurns = turns.filter((t) => t.role === "assistant");
 
   if (aggregate.requestCount === 0) {
@@ -671,7 +675,7 @@ function SingleInstanceSession({
   );
 }
 
-function SessionPanel({ instanceId }: { instanceId: string }) {
+function SessionPanel({ conversationId }: { conversationId: string }) {
   const allInstanceIds = useAppSelector(selectAllInstanceIds, shallowEqual);
 
   if (allInstanceIds.length === 0) {
@@ -705,7 +709,7 @@ function SessionPanel({ instanceId }: { instanceId: string }) {
               <span className="text-[9px] font-mono text-muted-foreground/50">
                 {id.slice(0, 12)}
               </span>
-              {id === instanceId && (
+              {id === conversationId && (
                 <span className="text-[9px] text-primary/70 ml-1">
                   (current)
                 </span>
@@ -713,7 +717,7 @@ function SessionPanel({ instanceId }: { instanceId: string }) {
             </div>
           )}
           <SingleInstanceSession
-            instanceId={id}
+            conversationId={id}
             instanceLabel={`#${idx + 1} ${id.slice(0, 8)}`}
           />
         </div>
@@ -936,12 +940,12 @@ function ClientContent({
   );
 }
 
-function ClientPanel({ instanceId }: { instanceId: string }) {
+function ClientPanel({ conversationId }: { conversationId: string }) {
   const allInstanceIds = useAppSelector(selectAllInstanceIds, shallowEqual);
-  const [selectedId, setSelectedId] = useState(instanceId);
+  const [selectedId, setSelectedId] = useState(conversationId);
   const effectiveId = allInstanceIds.includes(selectedId)
     ? selectedId
-    : instanceId;
+    : conversationId;
 
   const latestClientMetrics = useAppSelector(
     selectLatestClientMetrics(effectiveId),
@@ -1020,8 +1024,8 @@ function CollapsedStatsPills({
 // Tab 8: Test Displays
 // =============================================================================
 
-function TestDisplaysTab({ instanceId }: { instanceId: string }) {
-  const tester = useAgentLauncherTester(instanceId);
+function TestDisplaysTab({ conversationId }: { conversationId: string }) {
+  const tester = useAgentLauncherTester(conversationId);
 
   const displayTypes = getAllDisplayTypes().map((displayMode) => {
     const meta = getDisplayMeta(displayMode);
@@ -1089,14 +1093,19 @@ function TestDisplaysTab({ instanceId }: { instanceId: string }) {
             />
           </div>
           <div className="flex items-center justify-between">
-            <Label className="text-[11px] cursor-pointer">
-              Use Chat Endpoint
-            </Label>
-            <Switch
-              checked={tester.useChat}
-              onCheckedChange={tester.setUseChat}
-              className="scale-75"
-            />
+            <Label className="text-[11px] cursor-pointer">Mode</Label>
+            <select
+              value={tester.conversationMode}
+              onChange={(e) =>
+                tester.setConversationMode(
+                  e.target.value as "agent" | "conversation" | "chat",
+                )
+              }
+              className="text-[11px] rounded border border-border bg-background px-1 py-0.5"
+            >
+              <option value="agent">Agent</option>
+              <option value="chat">Chat (builder)</option>
+            </select>
           </div>
         </div>
       </div>
@@ -1126,12 +1135,12 @@ function TestDisplaysTab({ instanceId }: { instanceId: string }) {
           onClose={() => tester.setTestModalOpen(false)}
           testType={tester.testModalType}
           agentId={tester.instance.agentId}
-          sourceInstanceId={instanceId}
+          sourceInstanceId={conversationId}
           autoRun={tester.autoRun}
           allowChat={tester.allowChat}
           showVariables={tester.showVariables}
           applyVariables={tester.applyVariables}
-          useChat={tester.useChat}
+          conversationMode={tester.conversationMode}
           variables={tester.applyVariables ? tester.currentVariables : {}}
           userInput={tester.currentInput || ""}
         />
@@ -1156,15 +1165,16 @@ const ALL_TABS: TabId[] = [
 ];
 
 interface CreatorRunPanelProps {
-  instanceId: string;
-  onNewInstance?: (newId: string) => void;
+  conversationId: string;
+  /** Focus surface for startNewConversation (reset conversation). */
+  surfaceKey: string;
   /** Restrict which tabs are visible. Defaults to all tabs when omitted. */
   tabs?: TabId[];
 }
 
 export function CreatorRunPanel({
-  instanceId,
-  onNewInstance,
+  conversationId,
+  surfaceKey,
   tabs: allowedTabs,
 }: CreatorRunPanelProps) {
   const dispatch = useAppDispatch();
@@ -1179,10 +1189,10 @@ export function CreatorRunPanel({
   const [runSettingsWindowOpen, setRunSettingsWindowOpen] = useState(false);
 
   // Freeze window ids at first render — they must never change even if
-  // instanceId changes (e.g. after reset), otherwise the hook cleanup
+  // conversationId changes (e.g. after reset), otherwise the hook cleanup
   // fires, unregisters the window from Redux, and the tray chip disappears.
-  const streamDebugIdRef = useRef(`stream-debug-${instanceId}`);
-  const runSettingsIdRef = useRef(`run-settings-${instanceId}`);
+  const streamDebugIdRef = useRef(`stream-debug-${conversationId}`);
+  const runSettingsIdRef = useRef(`run-settings-${conversationId}`);
   const streamDebugId = streamDebugIdRef.current;
   const runSettingsId = runSettingsIdRef.current;
 
@@ -1212,16 +1222,20 @@ export function CreatorRunPanel({
     }
   }, [dispatch, runSettingsEntry, runSettingsId]);
 
-  const latestStats = useAppSelector(selectLatestCompletionStats(instanceId));
-  const latestClientMetrics = useAppSelector(
-    selectLatestClientMetrics(instanceId),
+  const latestStats = useAppSelector(
+    selectLatestCompletionStats(conversationId),
   );
-  const conversationTitle = useAppSelector(selectConversationTitle(instanceId));
+  const latestClientMetrics = useAppSelector(
+    selectLatestClientMetrics(conversationId),
+  );
+  const conversationTitle = useAppSelector(
+    selectConversationTitle(conversationId),
+  );
   // Session count across ALL instances for the tab label
   const totalRequestCount = useAppSelector((state) => {
     let count = 0;
-    for (const id of state.executionInstances.allInstanceIds) {
-      count += (state.activeRequests.byInstanceId[id] ?? []).length;
+    for (const id of state.executionInstances.allConversationIds) {
+      count += (state.activeRequests.byConversationId[id] ?? []).length;
     }
     return count;
   });
@@ -1236,7 +1250,7 @@ export function CreatorRunPanel({
     <>
       {streamDebugFloatingOpen && (
         <StreamDebugFloating
-          instanceId={instanceId}
+          conversationId={conversationId}
           onClose={() => setStreamDebugFloatingOpen(false)}
         />
       )}
@@ -1248,9 +1262,9 @@ export function CreatorRunPanel({
           height={720}
           onClose={() => setStreamDebugWindowOpen(false)}
           urlSyncKey="debug"
-          urlSyncId={instanceId}
+          urlSyncId={conversationId}
         >
-          <StreamDebugPanel instanceId={instanceId} />
+          <StreamDebugPanel conversationId={conversationId} />
         </WindowPanel>
       )}
       {runSettingsWindowOpen && (
@@ -1261,10 +1275,10 @@ export function CreatorRunPanel({
           height={480}
           onClose={() => setRunSettingsWindowOpen(false)}
           urlSyncKey="run_settings"
-          urlSyncId={instanceId}
+          urlSyncId={conversationId}
         >
           <div className="p-3">
-            <RunSettingsEditor instanceId={instanceId} />
+            <RunSettingsEditor conversationId={conversationId} />
           </div>
         </WindowPanel>
       )}
@@ -1361,27 +1375,33 @@ export function CreatorRunPanel({
         <div className="h-72 overflow-y-auto">
           {activeTab === "actions" && (
             <ActionsTab
-              instanceId={instanceId}
-              onNewInstance={onNewInstance}
+              conversationId={conversationId}
+              surfaceKey={surfaceKey}
               onOpenStreamDebugFloating={openStreamDebugFloating}
               onOpenStreamDebugWindow={openStreamDebugWindow}
               onOpenRunSettingsWindow={openRunSettingsWindow}
             />
           )}
           {activeTab === "test" && (
-            <AgentLauncherSidebarTester instanceId={instanceId} />
+            <AgentLauncherSidebarTester conversationId={conversationId} />
           )}
           {activeTab === "settings" && (
-            <RunSettingsTab instanceId={instanceId} />
+            <RunSettingsTab conversationId={conversationId} />
           )}
           {activeTab === "sysprompt" && (
-            <SystemPromptTab instanceId={instanceId} />
+            <SystemPromptTab conversationId={conversationId} />
           )}
-          {activeTab === "last" && <LastRequestPanel instanceId={instanceId} />}
-          {activeTab === "session" && <SessionPanel instanceId={instanceId} />}
-          {activeTab === "client" && <ClientPanel instanceId={instanceId} />}
+          {activeTab === "last" && (
+            <LastRequestPanel conversationId={conversationId} />
+          )}
+          {activeTab === "session" && (
+            <SessionPanel conversationId={conversationId} />
+          )}
+          {activeTab === "client" && (
+            <ClientPanel conversationId={conversationId} />
+          )}
           {activeTab === "test_displays" && (
-            <TestDisplaysTab instanceId={instanceId} />
+            <TestDisplaysTab conversationId={conversationId} />
           )}
         </div>
       </div>

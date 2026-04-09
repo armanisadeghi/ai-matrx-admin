@@ -5,17 +5,20 @@ import type { ExecutionInstance } from "@/features/agents/types";
 const EMPTY_INSTANCES: ExecutionInstance[] = [];
 
 export const selectInstance =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): ExecutionInstance | undefined =>
-    state.executionInstances.byInstanceId[instanceId];
+    state.executionInstances.byConversationId[conversationId];
 
-export const selectAllInstanceIds = (state: RootState): string[] =>
-  state.executionInstances.allInstanceIds;
+export const selectAllConversationIds = (state: RootState): string[] =>
+  state.executionInstances.allConversationIds;
+
+/** @deprecated Use selectAllConversationIds */
+export const selectAllInstanceIds = selectAllConversationIds;
 
 export const selectInstancesByAgent = (agentId: string) =>
   createSelector(
-    (state: RootState) => state.executionInstances.allInstanceIds,
-    (state: RootState) => state.executionInstances.byInstanceId,
+    (state: RootState) => state.executionInstances.allConversationIds,
+    (state: RootState) => state.executionInstances.byConversationId,
     (allIds, byId): ExecutionInstance[] => {
       const result = allIds
         .map((id) => byId[id])
@@ -25,12 +28,12 @@ export const selectInstancesByAgent = (agentId: string) =>
   );
 
 export const selectInstanceStatus =
-  (instanceId: string) => (state: RootState) =>
-    state.executionInstances.byInstanceId[instanceId]?.status;
+  (conversationId: string) => (state: RootState) =>
+    state.executionInstances.byConversationId[conversationId]?.status;
 
 export const selectRunningInstances = createSelector(
-  (state: RootState) => state.executionInstances.allInstanceIds,
-  (state: RootState) => state.executionInstances.byInstanceId,
+  (state: RootState) => state.executionInstances.allConversationIds,
+  (state: RootState) => state.executionInstances.byConversationId,
   (allIds, byId): ExecutionInstance[] => {
     const result = allIds
       .map((id) => byId[id])
@@ -44,6 +47,11 @@ export const selectRunningInstances = createSelector(
 );
 
 export const selectAgentIdFromInstance =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): string | undefined =>
-    state.executionInstances.byInstanceId[instanceId]?.agentId;
+    state.executionInstances.byConversationId[conversationId]?.agentId;
+
+export const selectIsCacheOnly =
+  (conversationId: string) =>
+  (state: RootState): boolean =>
+    state.executionInstances.byConversationId[conversationId]?.cacheOnly ?? true;

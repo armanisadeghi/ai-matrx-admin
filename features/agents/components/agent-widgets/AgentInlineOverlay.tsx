@@ -8,19 +8,19 @@ import { AgentRunner } from "../smart/AgentRunner";
 import { ExecutionManager } from "./execution-gates/ExecutionManager";
 
 interface AgentInlineOverlayProps {
-  instanceId: string;
+  conversationId: string;
   onClose: () => void;
 }
 
 export function AgentInlineOverlay({
-  instanceId,
+  conversationId,
   onClose,
 }: AgentInlineOverlayProps) {
   const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(instanceId),
+    selectNeedsPreExecutionInput(conversationId),
   );
 
-  if (needsPreExecution) return <ExecutionManager instanceId={instanceId} />;
+  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
 
   return (
     <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-50 w-[600px] max-h-[60vh] bg-card border border-border rounded-lg shadow-2xl overflow-hidden flex flex-col">
@@ -38,7 +38,7 @@ export function AgentInlineOverlay({
         </Button>
       </div>
       <AgentRunner
-        instanceId={instanceId}
+        conversationId={conversationId}
         compact
         className="flex-1 min-h-0 bg-background"
       />

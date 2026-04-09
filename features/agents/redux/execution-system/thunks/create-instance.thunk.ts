@@ -26,11 +26,12 @@ import type { ConversationMode } from "../instance-conversation-history/instance
 import { executeInstance } from "./execute-instance.thunk";
 import { executeChatInstance } from "./execute-chat-instance.thunk";
 
-import { generateInstanceId } from "../utils";
+import { generateConversationId } from "../utils";
 import {
   createInstance,
   destroyInstance,
 } from "../execution-instances/execution-instances.slice";
+import { setFocus } from "../conversation-focus/conversation-focus.slice";
 import { initInstanceOverrides } from "../instance-model-overrides/instance-model-overrides.slice";
 import {
   initInstanceVariables,
@@ -52,6 +53,7 @@ import {
   InstanceOrigin,
   ResultDisplayMode,
   type SourceFeature,
+  type VariableInputStyle,
 } from "@/features/agents/types/instance.types";
 import { mapScopeToInstance } from "@/features/agents/utils/scope-mapping";
 
@@ -85,6 +87,9 @@ function readAgentSnapshot(
 
 interface CreateManualInstanceArgs {
   agentId: string;
+  /** When provided, uses this UUID instead of generating a new one. Useful for
+   *  creating an instance keyed by a known server conversation UUID. */
+  conversationId?: string;
   agentType?: AgentType;
   autoClearConversation?: boolean;
   mode?: ConversationMode;
@@ -100,7 +105,7 @@ interface CreateManualInstanceArgs {
   hideReasoning?: boolean;
   hideToolResults?: boolean;
   preExecutionMessage?: string | null;
-  variableInputStyle?: "inline" | "wizard";
+  variableInputStyle?: VariableInputStyle;
 }
 
 export const createManualInstance = createAsyncThunk<
@@ -109,6 +114,7 @@ export const createManualInstance = createAsyncThunk<
 >("instances/createManual", async (args, { dispatch, getState }) => {
   const {
     agentId,
+    conversationId: providedConversationId,
     agentType,
     autoClearConversation = false,
     mode = "agent",
@@ -127,7 +133,7 @@ export const createManualInstance = createAsyncThunk<
     variableInputStyle,
   } = args;
 
-  const instanceId = generateInstanceId();
+  const conversationId = providedConversationId ?? generateConversationId();
   const state = getState() as RootState;
 
   const snapshot = readAgentSnapshot(state, agentId);
@@ -135,7 +141,7 @@ export const createManualInstance = createAsyncThunk<
 
   dispatch(
     createInstance({
-      instanceId,
+      conversationId,
       agentId,
       agentType: resolvedAgentType,
       origin: "manual" as InstanceOrigin,
@@ -145,24 +151,24 @@ export const createManualInstance = createAsyncThunk<
 
   dispatch(
     initInstanceOverrides({
-      instanceId,
+      conversationId,
       baseSettings: snapshot.baseSettings,
     }),
   );
   dispatch(
     initInstanceVariables({
-      instanceId,
+      conversationId,
       definitions: snapshot.variableDefinitions,
       scopeValues: {},
     }),
   );
-  dispatch(initInstanceResources({ instanceId }));
-  dispatch(initInstanceContext({ instanceId }));
-  dispatch(initInstanceUserInput({ instanceId }));
-  dispatch(initInstanceClientTools({ instanceId }));
+  dispatch(initInstanceResources({ conversationId }));
+  dispatch(initInstanceContext({ conversationId }));
+  dispatch(initInstanceUserInput({ conversationId }));
+  dispatch(initInstanceClientTools({ conversationId }));
   dispatch(
     initInstanceUIState({
-      instanceId,
+      conversationId,
       displayMode,
       isCreator: snapshot.isCreator,
       autoClearConversation,
@@ -180,9 +186,9 @@ export const createManualInstance = createAsyncThunk<
       variableInputStyle,
     }),
   );
-  dispatch(initInstanceHistory({ instanceId, mode }));
+  dispatch(initInstanceHistory({ conversationId, mode }));
 
-  return instanceId;
+  return conversationId;
 });
 
 // =============================================================================
@@ -197,6 +203,7 @@ interface CreateShortcutInstanceArgs {
   autoRun?: boolean;
   allowChat?: boolean;
   usePreExecutionInput?: boolean;
+  autoClearConversation?: boolean;
   showVariablePanel?: boolean;
   showDefinitionMessages?: boolean;
   showDefinitionMessageContent?: boolean;
@@ -204,7 +211,7 @@ interface CreateShortcutInstanceArgs {
   hideReasoning?: boolean;
   hideToolResults?: boolean;
   preExecutionMessage?: string | null;
-  variableInputStyle?: "inline" | "wizard";
+  variableInputStyle?: VariableInputStyle;
 }
 
 export const createInstanceFromShortcut = createAsyncThunk<
@@ -219,6 +226,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
     autoRun,
     allowChat,
     usePreExecutionInput,
+    autoClearConversation,
     showVariablePanel,
     showDefinitionMessages,
     showDefinitionMessageContent,
@@ -229,7 +237,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
     variableInputStyle,
   } = args;
 
-  const instanceId = generateInstanceId();
+  const conversationId = generateConversationId();
   const state = getState() as RootState;
   const shortcut = state.agentShortcut[shortcutId];
 
@@ -241,7 +249,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
 
   dispatch(
     createInstance({
-      instanceId,
+      conversationId,
       agentId,
       agentType: snapshot.agentType,
       origin: "shortcut" as InstanceOrigin,
@@ -252,28 +260,29 @@ export const createInstanceFromShortcut = createAsyncThunk<
 
   dispatch(
     initInstanceOverrides({
-      instanceId,
+      conversationId,
       baseSettings: snapshot.baseSettings,
     }),
   );
   dispatch(
     initInstanceVariables({
-      instanceId,
+      conversationId,
       definitions: snapshot.variableDefinitions,
       scopeValues: {},
     }),
   );
-  dispatch(initInstanceResources({ instanceId }));
-  dispatch(initInstanceContext({ instanceId }));
-  dispatch(initInstanceUserInput({ instanceId }));
-  dispatch(initInstanceClientTools({ instanceId }));
+  dispatch(initInstanceResources({ conversationId }));
+  dispatch(initInstanceContext({ conversationId }));
+  dispatch(initInstanceUserInput({ conversationId }));
+  dispatch(initInstanceClientTools({ conversationId }));
   dispatch(
     initInstanceUIState({
-      instanceId,
+      conversationId,
       displayMode: (displayMode ?? shortcut.resultDisplay) as ResultDisplayMode,
       autoRun,
       allowChat: allowChat ?? shortcut.allowChat,
       usePreExecutionInput,
+      autoClearConversation,
       showVariablePanel: showVariablePanel ?? shortcut.showVariables,
       showDefinitionMessages,
       showDefinitionMessageContent,
@@ -294,16 +303,16 @@ export const createInstanceFromShortcut = createAsyncThunk<
   );
 
   if (shortcut.applyVariables && Object.keys(variableValues).length > 0) {
-    dispatch(setUserVariableValues({ instanceId, values: variableValues }));
+    dispatch(setUserVariableValues({ conversationId, values: variableValues }));
   }
 
   if (contextEntries.length > 0) {
-    dispatch(setContextEntries({ instanceId, entries: contextEntries }));
+    dispatch(setContextEntries({ conversationId, entries: contextEntries }));
   }
 
-  dispatch(initInstanceHistory({ instanceId }));
+  dispatch(initInstanceHistory({ conversationId }));
 
-  return instanceId;
+  return conversationId;
 });
 
 // =============================================================================
@@ -335,7 +344,7 @@ export const createTestInstance = createAsyncThunk<
     },
     { dispatch, getState },
   ) => {
-    const instanceId = generateInstanceId();
+    const conversationId = generateConversationId();
     const state = getState() as RootState;
 
     const snapshot = readAgentSnapshot(state, agentId);
@@ -343,7 +352,7 @@ export const createTestInstance = createAsyncThunk<
 
     dispatch(
       createInstance({
-        instanceId,
+        conversationId,
         agentId,
         agentType: resolvedAgentType,
         origin: "test" as InstanceOrigin,
@@ -353,41 +362,41 @@ export const createTestInstance = createAsyncThunk<
 
     dispatch(
       initInstanceOverrides({
-        instanceId,
+        conversationId,
         baseSettings: snapshot.baseSettings,
       }),
     );
     dispatch(
       initInstanceVariables({
-        instanceId,
+        conversationId,
         definitions: snapshot.variableDefinitions,
         scopeValues: {},
       }),
     );
-    dispatch(initInstanceResources({ instanceId }));
-    dispatch(initInstanceContext({ instanceId }));
-    dispatch(initInstanceUserInput({ instanceId, text: userInput }));
-    dispatch(initInstanceClientTools({ instanceId }));
+    dispatch(initInstanceResources({ conversationId }));
+    dispatch(initInstanceContext({ conversationId }));
+    dispatch(initInstanceUserInput({ conversationId, text: userInput }));
+    dispatch(initInstanceClientTools({ conversationId }));
     dispatch(
       initInstanceUIState({
-        instanceId,
+        conversationId,
         isCreator: snapshot.isCreator,
         showVariablePanel: snapshot.variableDefinitions.length > 0,
       }),
     );
-    dispatch(initInstanceHistory({ instanceId }));
+    dispatch(initInstanceHistory({ conversationId }));
 
     if (variables && Object.keys(variables).length > 0) {
-      dispatch(setUserVariableValues({ instanceId, values: variables }));
+      dispatch(setUserVariableValues({ conversationId, values: variables }));
     }
 
     if (overrides && Object.keys(overrides).length > 0) {
       const { setOverrides } =
         await import("../instance-model-overrides/instance-model-overrides.slice");
-      dispatch(setOverrides({ instanceId, changes: overrides }));
+      dispatch(setOverrides({ conversationId, changes: overrides }));
     }
 
-    return instanceId;
+    return conversationId;
   },
 );
 
@@ -419,11 +428,11 @@ export const createManualInstanceNoAgent = createAsyncThunk<
     },
     { dispatch },
   ) => {
-    const instanceId = generateInstanceId();
+    const conversationId = generateConversationId();
 
     dispatch(
       createInstance({
-        instanceId,
+        conversationId,
         agentId: "",
         agentType,
         origin: "manual" as InstanceOrigin,
@@ -431,62 +440,69 @@ export const createManualInstanceNoAgent = createAsyncThunk<
       }),
     );
 
-    dispatch(initInstanceOverrides({ instanceId, baseSettings }));
+    dispatch(initInstanceOverrides({ conversationId, baseSettings }));
     dispatch(
       initInstanceVariables({
-        instanceId,
+        conversationId,
         definitions: variableDefinitions,
         scopeValues: {},
       }),
     );
-    dispatch(initInstanceResources({ instanceId }));
-    dispatch(initInstanceContext({ instanceId }));
-    dispatch(initInstanceUserInput({ instanceId, text: userInput }));
-    dispatch(initInstanceClientTools({ instanceId }));
+    dispatch(initInstanceResources({ conversationId }));
+    dispatch(initInstanceContext({ conversationId }));
+    dispatch(initInstanceUserInput({ conversationId, text: userInput }));
+    dispatch(initInstanceClientTools({ conversationId }));
     dispatch(
       initInstanceUIState({
-        instanceId,
+        conversationId,
         showVariablePanel: variableDefinitions.length > 0,
       }),
     );
-    dispatch(initInstanceHistory({ instanceId }));
+    dispatch(initInstanceHistory({ conversationId }));
 
-    return instanceId;
+    return conversationId;
   },
 );
 
 // =============================================================================
-// Recreate Manual Instance (reset conversation, re-snapshot agent)
+// Start New Conversation (non-destructive — old conversation stays cached)
 // =============================================================================
 
+interface StartNewConversationArgs {
+  currentConversationId: string;
+  surfaceKey: string;
+}
+
 /**
- * Destroys the current instance and creates a fresh one for the same agent.
+ * Creates a fresh conversation for the same agent without destroying the old one.
  * Re-snapshots the agent definition so any unsaved builder edits are picked up.
- * Preserves autoClearConversation and isCreator from the old UI state.
- *
- * Usage:
- *   dispatch(recreateManualInstance(instanceId)).unwrap().then(onNewInstance)
+ * Dispatches setFocus to switch the surface to the new conversation.
+ * The old conversation remains fully cached in Redux.
  */
-export const recreateManualInstance = createAsyncThunk<string, string>(
-  "instances/recreateManual",
-  async (currentInstanceId, { dispatch, getState }) => {
+export const startNewConversation = createAsyncThunk<
+  string,
+  StartNewConversationArgs
+>(
+  "instances/startNewConversation",
+  async ({ currentConversationId, surfaceKey }, { dispatch, getState }) => {
     const state = getState() as RootState;
 
-    const instance = state.executionInstances.byInstanceId[currentInstanceId];
+    const instance =
+      state.executionInstances.byConversationId[currentConversationId];
     if (!instance) {
-      throw new Error(`Instance ${currentInstanceId} not found`);
+      throw new Error(`Conversation ${currentConversationId} not found`);
     }
 
     const { agentId, sourceFeature } = instance;
     const currentUIState =
-      state.instanceUIState.byInstanceId[currentInstanceId];
+      state.instanceUIState.byConversationId[currentConversationId];
 
     const snapshot = agentId ? readAgentSnapshot(state, agentId) : null;
-    const newInstanceId = generateInstanceId();
+    const newConversationId = generateConversationId();
 
     dispatch(
       createInstance({
-        instanceId: newInstanceId,
+        conversationId: newConversationId,
         agentId,
         agentType: snapshot?.agentType ?? instance.agentType,
         origin: instance.origin as InstanceOrigin,
@@ -496,24 +512,24 @@ export const recreateManualInstance = createAsyncThunk<string, string>(
 
     dispatch(
       initInstanceOverrides({
-        instanceId: newInstanceId,
+        conversationId: newConversationId,
         baseSettings: snapshot?.baseSettings ?? {},
       }),
     );
     dispatch(
       initInstanceVariables({
-        instanceId: newInstanceId,
+        conversationId: newConversationId,
         definitions: snapshot?.variableDefinitions ?? [],
         scopeValues: {},
       }),
     );
-    dispatch(initInstanceResources({ instanceId: newInstanceId }));
-    dispatch(initInstanceContext({ instanceId: newInstanceId }));
-    dispatch(initInstanceUserInput({ instanceId: newInstanceId }));
-    dispatch(initInstanceClientTools({ instanceId: newInstanceId }));
+    dispatch(initInstanceResources({ conversationId: newConversationId }));
+    dispatch(initInstanceContext({ conversationId: newConversationId }));
+    dispatch(initInstanceUserInput({ conversationId: newConversationId }));
+    dispatch(initInstanceClientTools({ conversationId: newConversationId }));
     dispatch(
       initInstanceUIState({
-        instanceId: newInstanceId,
+        conversationId: newConversationId,
         displayMode: currentUIState?.displayMode,
         isCreator: snapshot?.isCreator ?? currentUIState?.isCreator ?? false,
         autoClearConversation: currentUIState?.autoClearConversation ?? true,
@@ -533,86 +549,87 @@ export const recreateManualInstance = createAsyncThunk<string, string>(
         preExecutionMessage: currentUIState?.preExecutionMessage,
       }),
     );
-    dispatch(initInstanceHistory({ instanceId: newInstanceId, mode: "agent" }));
+    dispatch(
+      initInstanceHistory({ conversationId: newConversationId, mode: "agent" }),
+    );
 
-    dispatch(destroyInstance(currentInstanceId));
+    dispatch(setFocus({ surfaceKey, conversationId: newConversationId }));
 
-    return newInstanceId;
+    return newConversationId;
   },
 );
 
+/** @deprecated Use startNewConversation */
+export const recreateManualInstance = startNewConversation;
+
 // =============================================================================
-// Re-Instance and Execute (autoClearConversation path)
+// Start New Conversation and Execute (autoClearConversation path)
 // =============================================================================
 
-interface ReInstanceAndExecuteArgs {
-  /** The current instance that has existing history */
-  currentInstanceId: string;
-  /** Called with the new instanceId so the parent component can update its state */
-  onNewInstance: (newInstanceId: string) => void;
+interface StartNewConversationAndExecuteArgs {
+  currentConversationId: string;
+  surfaceKey: string;
   debug?: boolean;
-  /** When true, uses executeChatInstance instead of executeInstance and sets mode to "chat" */
-  useChat?: boolean;
 }
 
-interface ReInstanceAndExecuteResult {
-  newInstanceId: string;
+interface StartNewConversationAndExecuteResult {
+  newConversationId: string;
   requestId: string;
-  conversationId: string | null;
 }
 
 /**
- * Auto-Clear submit path.
+ * Non-destructive auto-clear submit path.
  *
- * When `autoClearConversation` is ON and the instance already has conversation
- * history, submitting should NOT continue the existing conversation.
- * Instead:
- *   1. Read current variable values and user input text from the old instance
- *   2. Create a brand-new instance by re-snapshotting the agent definition
- *      (picks up any unsaved builder edits)
- *   3. Transfer variable values and user input into the new instance
- *   4. Destroy the old instance (clears the display)
- *   5. Execute on the new instance (fresh agent call, no conversationId)
+ * When `autoClearConversation` is ON and the conversation already has history,
+ * submitting creates a NEW conversation alongside the old one:
+ *   1. Read current variable values and user input text from the old conversation
+ *   2. Create a new conversation by re-snapshotting the agent definition
+ *   3. Transfer variable values and user input into the new conversation
+ *   4. Switch focus to the new conversation via setFocus (no callback needed)
+ *   5. Execute on the new conversation (fresh agent call)
  *
- * The `onNewInstance` callback lets the parent component swap its local
- * `instanceId` state so the display automatically binds to the new instance.
+ * The old conversation stays fully cached in Redux.
  */
-export const reInstanceAndExecute = createAsyncThunk<
-  ReInstanceAndExecuteResult,
-  ReInstanceAndExecuteArgs
+export const startNewConversationAndExecute = createAsyncThunk<
+  StartNewConversationAndExecuteResult,
+  StartNewConversationAndExecuteArgs
 >(
-  "instances/reInstanceAndExecute",
+  "instances/startNewConversationAndExecute",
   async (
-    { currentInstanceId, onNewInstance, debug = false, useChat = false },
+    { currentConversationId, surfaceKey, debug = false },
     { dispatch, getState },
   ) => {
     const state = getState() as RootState;
 
-    // Read what the user has filled in on the old instance BEFORE destroying it
     const currentInput =
-      state.instanceUserInput.byInstanceId[currentInstanceId];
+      state.instanceUserInput.byConversationId[currentConversationId];
     const currentVariables =
-      state.instanceVariableValues.byInstanceId[currentInstanceId];
+      state.instanceVariableValues.byConversationId[currentConversationId];
     const currentUIState =
-      state.instanceUIState.byInstanceId[currentInstanceId];
+      state.instanceUIState.byConversationId[currentConversationId];
+
+    // Read the authoritative conversationMode from the history slice
+    const currentMode =
+      state.instanceConversationHistory.byConversationId[currentConversationId]
+        ?.mode ?? "agent";
+    const isChatMode = currentMode === "chat";
 
     const userInputText = currentInput?.text ?? "";
     const userValues = currentVariables?.userValues ?? {};
 
-    // Retrieve the agentId stored in the instance record (agentId is only read
-    // during instance creation — this is the next creation, so it's still valid)
-    const instance = state.executionInstances.byInstanceId[currentInstanceId];
+    const instance =
+      state.executionInstances.byConversationId[currentConversationId];
     if (!instance) {
-      throw new Error(`Instance ${currentInstanceId} not found`);
+      throw new Error(`Conversation ${currentConversationId} not found`);
     }
     const { agentId, origin, sourceFeature } = instance;
 
-    const newInstanceId = generateInstanceId();
+    const newConversationId = generateConversationId();
     const snapshot = agentId ? readAgentSnapshot(state, agentId) : null;
 
     dispatch(
       createInstance({
-        instanceId: newInstanceId,
+        conversationId: newConversationId,
         agentId,
         agentType: snapshot?.agentType ?? instance.agentType,
         origin: origin as InstanceOrigin,
@@ -622,24 +639,24 @@ export const reInstanceAndExecute = createAsyncThunk<
 
     dispatch(
       initInstanceOverrides({
-        instanceId: newInstanceId,
+        conversationId: newConversationId,
         baseSettings: snapshot?.baseSettings ?? {},
       }),
     );
     dispatch(
       initInstanceVariables({
-        instanceId: newInstanceId,
+        conversationId: newConversationId,
         definitions: snapshot?.variableDefinitions ?? [],
         scopeValues: {},
       }),
     );
-    dispatch(initInstanceResources({ instanceId: newInstanceId }));
-    dispatch(initInstanceContext({ instanceId: newInstanceId }));
-    dispatch(initInstanceUserInput({ instanceId: newInstanceId }));
-    dispatch(initInstanceClientTools({ instanceId: newInstanceId }));
+    dispatch(initInstanceResources({ conversationId: newConversationId }));
+    dispatch(initInstanceContext({ conversationId: newConversationId }));
+    dispatch(initInstanceUserInput({ conversationId: newConversationId }));
+    dispatch(initInstanceClientTools({ conversationId: newConversationId }));
     dispatch(
       initInstanceUIState({
-        instanceId: newInstanceId,
+        conversationId: newConversationId,
         displayMode: currentUIState?.displayMode,
         isCreator: snapshot?.isCreator ?? currentUIState?.isCreator ?? false,
         autoClearConversation: true,
@@ -664,46 +681,44 @@ export const reInstanceAndExecute = createAsyncThunk<
     );
     dispatch(
       initInstanceHistory({
-        instanceId: newInstanceId,
-        mode: useChat ? "chat" : "agent",
+        conversationId: newConversationId,
+        mode: currentMode,
       }),
     );
 
-    // Transfer whatever the user had filled in
     if (Object.keys(userValues).length > 0) {
       dispatch(
         setUserVariableValues({
-          instanceId: newInstanceId,
+          conversationId: newConversationId,
           values: userValues,
         }),
       );
     }
     if (userInputText) {
       dispatch(
-        setUserInputText({ instanceId: newInstanceId, text: userInputText }),
+        setUserInputText({
+          conversationId: newConversationId,
+          text: userInputText,
+        }),
       );
     }
 
-    // Notify the parent component to swap its instanceId — this causes the
-    // display to immediately switch to the (empty) new instance
-    onNewInstance(newInstanceId);
+    dispatch(setFocus({ surfaceKey, conversationId: newConversationId }));
 
-    // Destroy the old instance after the parent has been notified
-    dispatch(destroyInstance(currentInstanceId));
-
-    // Execute on the new instance — route to the correct thunk based on mode
-    const result = useChat
+    const result = isChatMode
       ? await dispatch(
-          executeChatInstance({ instanceId: newInstanceId }),
+          executeChatInstance({ conversationId: newConversationId }),
         ).unwrap()
       : await dispatch(
-          executeInstance({ instanceId: newInstanceId, debug }),
+          executeInstance({ conversationId: newConversationId, debug }),
         ).unwrap();
 
     return {
-      newInstanceId,
+      newConversationId,
       requestId: result.requestId,
-      conversationId: result.conversationId,
     };
   },
 );
+
+/** @deprecated Use startNewConversationAndExecute */
+export const reInstanceAndExecute = startNewConversationAndExecute;

@@ -5376,14 +5376,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "items": {
-                    "additionalProperties": true,
-                    "type": "object"
-                  },
-                  "type": "array",
-                  "title": "Response List Tables Admin Db Tables Get"
-                }
+                "schema": {}
               }
             }
           }
@@ -5414,14 +5407,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": true
-                  },
-                  "title": "Response Get Columns Admin Db Tables  Table Name  Columns Get"
-                }
+                "schema": {}
               }
             }
           },
@@ -5438,22 +5424,76 @@
         }
       }
     },
-    "/admin/db/{table}": {
+    "/admin/db/tables/{table_name}/rows": {
       "get": {
         "tags": [
           "Admin",
           "Admin DB"
         ],
         "summary": "List Rows",
-        "operationId": "list_rows_admin_db__table__get",
+        "operationId": "list_rows_admin_db_tables__table_name__rows_get",
         "parameters": [
           {
-            "name": "table",
+            "name": "table_name",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Table"
+              "title": "Table Name"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "0-based page number",
+              "default": 0,
+              "title": "Page"
+            },
+            "description": "0-based page number"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 25,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Field name to sort by",
+              "title": "Sort By"
+            },
+            "description": "Field name to sort by"
+          },
+          {
+            "name": "sort_dir",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(asc|desc)$",
+              "default": "asc",
+              "title": "Sort Dir"
             }
           }
         ],
@@ -5484,15 +5524,15 @@
           "Admin DB"
         ],
         "summary": "Create Row",
-        "operationId": "create_row_admin_db__table__post",
+        "operationId": "create_row_admin_db_tables__table_name__rows_post",
         "parameters": [
           {
-            "name": "table",
+            "name": "table_name",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Table"
+              "title": "Table Name"
             }
           }
         ],
@@ -5518,22 +5558,22 @@
         }
       }
     },
-    "/admin/db/{table}/{row_id}": {
+    "/admin/db/tables/{table_name}/rows/{row_id}": {
       "get": {
         "tags": [
           "Admin",
           "Admin DB"
         ],
         "summary": "Get Row",
-        "operationId": "get_row_admin_db__table___row_id__get",
+        "operationId": "get_row_admin_db_tables__table_name__rows__row_id__get",
         "parameters": [
           {
-            "name": "table",
+            "name": "table_name",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Table"
+              "title": "Table Name"
             }
           },
           {
@@ -5573,15 +5613,15 @@
           "Admin DB"
         ],
         "summary": "Update Row",
-        "operationId": "update_row_admin_db__table___row_id__patch",
+        "operationId": "update_row_admin_db_tables__table_name__rows__row_id__patch",
         "parameters": [
           {
-            "name": "table",
+            "name": "table_name",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Table"
+              "title": "Table Name"
             }
           },
           {
@@ -5621,15 +5661,129 @@
           "Admin DB"
         ],
         "summary": "Delete Row",
-        "operationId": "delete_row_admin_db__table___row_id__delete",
+        "operationId": "delete_row_admin_db_tables__table_name__rows__row_id__delete",
         "parameters": [
           {
-            "name": "table",
+            "name": "table_name",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Table"
+              "title": "Table Name"
+            }
+          },
+          {
+            "name": "row_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Row Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/db/cache/stats": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Admin DB"
+        ],
+        "summary": "Cache Stats",
+        "description": "Return the number of in-memory cached records per model.",
+        "operationId": "cache_stats_admin_db_cache_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/db/cache/{table_name}": {
+      "delete": {
+        "tags": [
+          "Admin",
+          "Admin DB"
+        ],
+        "summary": "Clear Table Cache",
+        "description": "Flush the entire in-memory cache for a table.",
+        "operationId": "clear_table_cache_admin_db_cache__table_name__delete",
+        "parameters": [
+          {
+            "name": "table_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Table Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/db/cache/{table_name}/{row_id}": {
+      "delete": {
+        "tags": [
+          "Admin",
+          "Admin DB"
+        ],
+        "summary": "Evict Row Cache",
+        "description": "Evict a single record from the in-memory cache.",
+        "operationId": "evict_row_cache_admin_db_cache__table_name___row_id__delete",
+        "parameters": [
+          {
+            "name": "table_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Table Name"
             }
           },
           {
@@ -5681,6 +5835,385 @@
                   "additionalProperties": true,
                   "type": "object",
                   "title": "Response Get Stats Admin Stats Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/ops/issue-classes": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Admin Ops Triage"
+        ],
+        "summary": "List Issue Classes",
+        "operationId": "list_issue_classes_admin_ops_issue_classes_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response List Issue Classes Admin Ops Issue Classes Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/ops/issue-classes/{class_id}": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Admin Ops Triage"
+        ],
+        "summary": "Get Issue Class",
+        "operationId": "get_issue_class_admin_ops_issue_classes__class_id__get",
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Class Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Issue Class Admin Ops Issue Classes  Class Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Admin",
+          "Admin Ops Triage"
+        ],
+        "summary": "Update Issue Class",
+        "operationId": "update_issue_class_admin_ops_issue_classes__class_id__patch",
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Class Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueClassUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Update Issue Class Admin Ops Issue Classes  Class Id  Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/ops/issue-classes/{class_id}/events": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Admin Ops Triage"
+        ],
+        "summary": "List Events For Class",
+        "operationId": "list_events_for_class_admin_ops_issue_classes__class_id__events_get",
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Class Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response List Events For Class Admin Ops Issue Classes  Class Id  Events Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/ops/events/recent": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Admin Ops Triage"
+        ],
+        "summary": "List Recent Events",
+        "operationId": "list_recent_events_admin_ops_events_recent_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Provider"
+            }
+          },
+          {
+            "name": "was_recovered",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Was Recovered"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response List Recent Events Admin Ops Events Recent Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/ops/summary": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Admin Ops Triage"
+        ],
+        "summary": "Ops Summary",
+        "operationId": "ops_summary_admin_ops_summary_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Ops Summary Admin Ops Summary Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/ops/issue-classes/{class_id}/stats": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Admin Ops Triage"
+        ],
+        "summary": "Issue Class Stats",
+        "operationId": "issue_class_stats_admin_ops_issue_classes__class_id__stats_get",
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Class Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Issue Class Stats Admin Ops Issue Classes  Class Id  Stats Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/ops/providers": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Admin Ops Triage"
+        ],
+        "summary": "List Providers",
+        "operationId": "list_providers_admin_ops_providers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array",
+                  "title": "Response List Providers Admin Ops Providers Get"
                 }
               }
             }
@@ -5758,6 +6291,28 @@
             "type": "boolean",
             "title": "Debug",
             "default": false
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "is_new": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is New"
           }
         },
         "type": "object",
@@ -5775,17 +6330,6 @@
               }
             ],
             "title": "Organization Id"
-          },
-          "workspace_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Workspace Id"
           },
           "project_id": {
             "anyOf": [
@@ -5918,6 +6462,28 @@
             "type": "object",
             "title": "Context",
             "default": {}
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "is_new": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is New"
           }
         },
         "type": "object",
@@ -6032,6 +6598,28 @@
             "type": "boolean",
             "title": "Debug",
             "default": false
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "is_new": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is New"
           }
         },
         "type": "object",
@@ -6724,17 +7312,6 @@
             ],
             "title": "Organization Id"
           },
-          "workspace_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Workspace Id"
-          },
           "project_id": {
             "anyOf": [
               {
@@ -6801,6 +7378,33 @@
               }
             ],
             "title": "Conversation Id"
+          },
+          "is_new": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is New"
+          },
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id"
+          },
+          "is_version": {
+            "type": "boolean",
+            "title": "Is Version",
+            "default": false
           },
           "max_iterations": {
             "type": "integer",
@@ -7043,17 +7647,6 @@
               }
             ],
             "title": "Organization Id"
-          },
-          "workspace_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Workspace Id"
           },
           "project_id": {
             "anyOf": [
@@ -7517,6 +8110,89 @@
           "file_url"
         ],
         "title": "InputDataType"
+      },
+      "IssueClassUpdate": {
+        "properties": {
+          "disposition": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disposition"
+          },
+          "severity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Severity"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "alert_threshold": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Threshold"
+          },
+          "alert_window_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Window Minutes"
+          },
+          "resolution_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Notes"
+          }
+        },
+        "type": "object",
+        "title": "IssueClassUpdate"
       },
       "Item": {
         "properties": {
@@ -8510,17 +9186,6 @@
             ],
             "title": "Organization Id"
           },
-          "workspace_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Workspace Id"
-          },
           "project_id": {
             "anyOf": [
               {
@@ -8652,6 +9317,28 @@
             "type": "object",
             "title": "Context",
             "default": {}
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "is_new": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is New"
           }
         },
         "type": "object",

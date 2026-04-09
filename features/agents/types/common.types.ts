@@ -36,12 +36,15 @@ export interface SourceSliceState<T> extends DirtyTrackable, AsyncState {
 }
 
 /**
- * Standard shape for Layer 3 (instance) slices.
- * No dirty tracking needed — instances are ephemeral.
+ * Standard shape for Layer 3 (conversation) slices.
+ * No dirty tracking needed — conversations are ephemeral client-side entities.
  */
-export interface InstanceSliceState<T> {
-    byInstanceId: Record<string, T>;
+export interface ConversationSliceState<T> {
+    byConversationId: Record<string, T>;
 }
+
+/** @deprecated Use ConversationSliceState */
+export type InstanceSliceState<T> = ConversationSliceState<T>;
 
 // =============================================================================
 // Utility Types
@@ -53,8 +56,11 @@ export interface AgentPayload<T> {
     data: T;
 }
 
-/** Payload pattern for actions targeting a specific instance */
-export interface InstancePayload<T> {
-    instanceId: string;
+/** Payload pattern for actions targeting a specific conversation */
+export interface ConversationPayload<T> {
+    conversationId: string;
     data: T;
 }
+
+/** @deprecated Use ConversationPayload */
+export type InstancePayload<T> = ConversationPayload<T>;

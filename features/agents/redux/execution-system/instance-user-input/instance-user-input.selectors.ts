@@ -1,19 +1,19 @@
 import type { RootState } from "@/lib/redux/store";
 
 export const selectUserInputText =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): string =>
-    state.instanceUserInput.byInstanceId[instanceId]?.text ?? "";
+    state.instanceUserInput.byConversationId[conversationId]?.text ?? "";
 
 export const selectUserInputContentBlocks =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): Array<Record<string, unknown>> | null =>
-    state.instanceUserInput.byInstanceId[instanceId]?.contentBlocks ?? null;
+    state.instanceUserInput.byConversationId[conversationId]?.contentBlocks ?? null;
 
 export const selectHasUserInput =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): boolean => {
-    const entry = state.instanceUserInput.byInstanceId[instanceId];
+    const entry = state.instanceUserInput.byConversationId[conversationId];
     if (!entry) return false;
     return (
       entry.text.trim().length > 0 || (entry.contentBlocks?.length ?? 0) > 0

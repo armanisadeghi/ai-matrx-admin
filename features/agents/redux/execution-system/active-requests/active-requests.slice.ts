@@ -55,12 +55,12 @@ import { destroyInstance } from "../execution-instances/execution-instances.slic
 
 export interface ActiveRequestsState {
   byRequestId: Record<string, ActiveRequest>;
-  byInstanceId: Record<string, string[]>;
+  byConversationId: Record<string, string[]>;
 }
 
 const initialState: ActiveRequestsState = {
   byRequestId: {},
-  byInstanceId: {},
+  byConversationId: {},
 };
 
 // =============================================================================
@@ -75,13 +75,13 @@ const activeRequestsSlice = createSlice({
       state,
       action: PayloadAction<{
         requestId?: string;
-        instanceId: string;
+        conversationId: string;
         parentConversationId?: string | null;
       }>,
     ) {
       const {
         requestId = generateRequestId(),
-        instanceId,
+        conversationId,
         parentConversationId = null,
       } = action.payload;
 
@@ -89,8 +89,8 @@ const activeRequestsSlice = createSlice({
 
       state.byRequestId[requestId] = {
         requestId,
-        instanceId,
-        conversationId: null,
+        conversationId,
+        serverConversationId: null,
         parentConversationId,
         status: "pending",
         textChunks: [],
@@ -124,10 +124,10 @@ const activeRequestsSlice = createSlice({
         clientMetrics: null,
       };
 
-      if (!state.byInstanceId[instanceId]) {
-        state.byInstanceId[instanceId] = [];
+      if (!state.byConversationId[conversationId]) {
+        state.byConversationId[conversationId] = [];
       }
-      state.byInstanceId[instanceId].push(requestId);
+      state.byConversationId[conversationId].push(requestId);
     },
 
     setRequestStatus(
@@ -164,7 +164,7 @@ const activeRequestsSlice = createSlice({
     ) {
       const request = state.byRequestId[action.payload.requestId];
       if (request) {
-        request.conversationId = action.payload.conversationId;
+        request.serverConversationId = action.payload.conversationId;
       }
     },
 
@@ -689,13 +689,13 @@ const activeRequestsSlice = createSlice({
     removeRequest(state, action: PayloadAction<string>) {
       const request = state.byRequestId[action.payload];
       if (request) {
-        const instanceRequests = state.byInstanceId[request.instanceId];
-        if (instanceRequests) {
-          state.byInstanceId[request.instanceId] = instanceRequests.filter(
-            (id) => id !== action.payload,
-          );
-          if (state.byInstanceId[request.instanceId].length === 0) {
-            delete state.byInstanceId[request.instanceId];
+        const conversationRequests =
+          state.byConversationId[request.conversationId];
+        if (conversationRequests) {
+          state.byConversationId[request.conversationId] =
+            conversationRequests.filter((id) => id !== action.payload);
+          if (state.byConversationId[request.conversationId].length === 0) {
+            delete state.byConversationId[request.conversationId];
           }
         }
         delete state.byRequestId[action.payload];
@@ -705,12 +705,12 @@ const activeRequestsSlice = createSlice({
 
   extraReducers: (builder) => {
     builder.addCase(destroyInstance, (state, action) => {
-      const instanceId = action.payload;
-      const requestIds = state.byInstanceId[instanceId] ?? [];
+      const conversationId = action.payload;
+      const requestIds = state.byConversationId[conversationId] ?? [];
       for (const reqId of requestIds) {
         delete state.byRequestId[reqId];
       }
-      delete state.byInstanceId[instanceId];
+      delete state.byConversationId[conversationId];
     });
   },
 });

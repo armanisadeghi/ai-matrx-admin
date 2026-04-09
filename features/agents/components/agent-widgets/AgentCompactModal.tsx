@@ -10,20 +10,20 @@ import { AgentRunner } from "../smart/AgentRunner";
 import { ExecutionManager } from "./execution-gates/ExecutionManager";
 
 interface AgentCompactModalProps {
-  instanceId: string;
+  conversationId: string;
   onClose: () => void;
 }
 
 export function AgentCompactModal({
-  instanceId,
+  conversationId,
   onClose,
 }: AgentCompactModalProps) {
-  const title = useAppSelector(selectInstanceDisplayTitle(instanceId));
+  const title = useAppSelector(selectInstanceDisplayTitle(conversationId));
   const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(instanceId),
+    selectNeedsPreExecutionInput(conversationId),
   );
 
-  if (needsPreExecution) return <ExecutionManager instanceId={instanceId} />;
+  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
@@ -34,7 +34,7 @@ export function AgentCompactModal({
           </span>
         </div>
         <AgentRunner
-          instanceId={instanceId}
+          conversationId={conversationId}
           compact
           className="flex-1 min-h-0 bg-background"
         />

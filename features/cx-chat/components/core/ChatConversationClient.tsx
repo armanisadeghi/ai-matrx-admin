@@ -2,7 +2,7 @@
 
 // ChatConversationClient
 //
-// Renders the active conversation UI. instanceId is passed as a prop from
+// Renders the active conversation UI. conversationId is passed as a prop from
 // ChatInstanceManager — this component never reads ?instance= from the URL.
 //
 // Layout: messages (AgentConversationDisplay) + input (SmartAgentInput),
@@ -40,7 +40,6 @@ const AgentPickerSheet = dynamic(
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface ChatConversationClientProps {
-  instanceId: string;
   conversationId: string;
   agentId: string;
 }
@@ -48,7 +47,6 @@ interface ChatConversationClientProps {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ChatConversationClient({
-  instanceId,
   conversationId,
   agentId,
 }: ChatConversationClientProps) {
@@ -80,16 +78,18 @@ export default function ChatConversationClient({
   const serverHealth = useAppSelector(selectActiveServerHealth);
 
   const latestConversationId = useAppSelector(
-    selectLatestConversationId(instanceId),
+    selectLatestConversationId(conversationId),
   );
-  const requestStatus = useAppSelector(selectLatestRequestStatus(instanceId));
-  const isExecuting = useAppSelector(selectIsExecuting(instanceId));
-  const turnCount = useAppSelector(selectTurnCount(instanceId));
+  const requestStatus = useAppSelector(
+    selectLatestRequestStatus(conversationId),
+  );
+  const isExecuting = useAppSelector(selectIsExecuting(conversationId));
+  const turnCount = useAppSelector(selectTurnCount(conversationId));
 
   useEffect(() => {
     publishDebug({
       Route: "ssr/chat",
-      "Instance ID": instanceId,
+      "Instance ID": conversationId,
       "Conversation ID": latestConversationId ?? conversationId,
       "Agent ID": agentId,
       "Request Status": requestStatus ?? "—",
@@ -105,7 +105,7 @@ export default function ChatConversationClient({
     });
   }, [
     isDebugActive,
-    instanceId,
+    conversationId,
     latestConversationId,
     requestStatus,
     isExecuting,
@@ -172,7 +172,7 @@ export default function ChatConversationClient({
             className="h-full overflow-y-auto overscroll-contain"
           >
             <div className="max-w-[800px] mx-auto w-full">
-              <AgentConversationDisplay instanceId={instanceId} />
+              <AgentConversationDisplay conversationId={conversationId} />
             </div>
           </div>
           <div
@@ -206,7 +206,8 @@ export default function ChatConversationClient({
         <div className="shrink-0 p-2 pb-safe">
           <div className="max-w-[800px] mx-auto">
             <SmartAgentInput
-              instanceId={instanceId}
+              conversationId={conversationId}
+              surfaceKey={`cx-chat:${agentId}`}
               showSubmitOnEnterToggle
               enablePasteImages={isAuthenticated}
             />

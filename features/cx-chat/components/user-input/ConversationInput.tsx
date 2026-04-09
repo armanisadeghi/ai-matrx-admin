@@ -121,7 +121,7 @@ function pickerResourceTypeToBlockType(type: string): ResourceBlockType {
 // ============================================================================
 
 export interface ConversationInputProps {
-  instanceId: string;
+  conversationId: string;
 
   // ── Feature flags (all default off unless noted) ───────────────────────────
   showVariables?: boolean;
@@ -191,7 +191,7 @@ export interface ConversationInputProps {
 // ============================================================================
 
 export function ConversationInput({
-  instanceId,
+  conversationId,
   showVariables = false,
   showVoice = true,
   showResourcePicker = true,
@@ -227,13 +227,13 @@ export function ConversationInput({
   const [isDebugOpen, setIsDebugOpen] = useState(false);
   // ── Redux state (all from instance system) ─────────────────────────────────
   const content = useAppSelector((state) =>
-    selectUserInputText(instanceId)(state),
+    selectUserInputText(conversationId)(state),
   );
-  const resources = useAppSelector(selectInstanceResources(instanceId));
-  const isExecuting = useAppSelector(selectIsExecuting(instanceId));
-  const hasVariables = useAppSelector(selectShouldShowVariables(instanceId));
+  const resources = useAppSelector(selectInstanceResources(conversationId));
+  const isExecuting = useAppSelector(selectIsExecuting(conversationId));
+  const hasVariables = useAppSelector(selectShouldShowVariables(conversationId));
   const settingsForDialogRaw = useAppSelector(
-    selectCurrentSettings(instanceId),
+    selectCurrentSettings(conversationId),
   );
   const settingsForDialog = settingsForDialogRaw ?? {};
 
@@ -243,10 +243,10 @@ export function ConversationInput({
   const { publish: publishDebug } = useDebugContext("Input");
 
   // Publish instance state to the floating AdminIndicator whenever it changes.
-  const latestStatus = useAppSelector(selectLatestRequestStatus(instanceId));
+  const latestStatus = useAppSelector(selectLatestRequestStatus(conversationId));
   useEffect(() => {
     publishDebug({
-      "Instance ID": instanceId,
+      "Instance ID": conversationId,
       "Is Executing": isExecuting,
       "Request Status": latestStatus ?? "—",
       "Has Variables": hasVariables,
@@ -254,7 +254,7 @@ export function ConversationInput({
       "Input Length": content.length,
     });
   }, [
-    instanceId,
+    conversationId,
     isExecuting,
     latestStatus,
     hasVariables,
@@ -317,7 +317,7 @@ export function ConversationInput({
           const blockType = uploadMimeToBlockType(file.type);
           dispatch(
             addResource({
-              instanceId,
+              conversationId,
               blockType,
               source: {
                 url: result.url,
@@ -331,21 +331,21 @@ export function ConversationInput({
         }
       }
     },
-    [dispatch, instanceId, uploadFile],
+    [dispatch, conversationId, uploadFile],
   );
 
   const handleResourceSelected = useCallback(
     (resource: { type: string; data: unknown }) => {
       dispatch(
         addResource({
-          instanceId,
+          conversationId,
           blockType: pickerResourceTypeToBlockType(resource.type),
           source: resource.data,
         }),
       );
       setIsResourcePickerOpen(false);
     },
-    [dispatch, instanceId],
+    [dispatch, conversationId],
   );
 
   // ── Clipboard paste ────────────────────────────────────────────────────────
@@ -361,9 +361,9 @@ export function ConversationInput({
     (text: string) => {
       if (!text) return;
       const newContent = content ? `${content} ${text}` : text;
-      dispatch(setUserInputText({ instanceId, text: newContent }));
+      dispatch(setUserInputText({ conversationId: conversationId, text: newContent }));
     },
-    [content, dispatch, instanceId],
+    [content, dispatch, conversationId],
   );
 
   // ── Auto-resize textarea ───────────────────────────────────────────────────
@@ -386,7 +386,7 @@ export function ConversationInput({
       if (onSubmitOverride) {
         const shouldClear = await onSubmitOverride(finalContent, resources);
         if (shouldClear) {
-          dispatch(setUserInputText({ instanceId, text: "" }));
+          dispatch(setUserInputText({ conversationId: conversationId, text: "" }));
         }
         onSend?.();
         return;
@@ -395,16 +395,16 @@ export function ConversationInput({
       // Set the text in Redux then fire executeInstance — it assembles everything
       // (user input, variables, resources, model overrides) from instance slices.
       if (finalContent) {
-        dispatch(setUserInputText({ instanceId, text: finalContent }));
+        dispatch(setUserInputText({ conversationId: conversationId, text: finalContent }));
       }
-      dispatch(executeInstance({ instanceId }));
-      dispatch(setUserInputText({ instanceId, text: "" }));
+      dispatch(executeInstance({ conversationId }));
+      dispatch(setUserInputText({ conversationId: conversationId, text: "" }));
       onSend?.();
     },
     [
       content,
       isExecuting,
-      instanceId,
+      conversationId,
       resources,
       dispatch,
       onSend,
@@ -429,10 +429,10 @@ export function ConversationInput({
   // ── Model override ─────────────────────────────────────────────────────────
   const handleModelSelect = useCallback(
     (modelId: string) => {
-      dispatch(setOverrides({ instanceId, changes: { model: modelId } }));
+      dispatch(setOverrides({ conversationId, changes: { model: modelId } }));
       setIsModelPickerOpen(false);
     },
-    [dispatch, instanceId],
+    [dispatch, conversationId],
   );
 
   // ── Settings dialog ────────────────────────────────────────────────────────
@@ -443,12 +443,12 @@ export function ConversationInput({
       const { model_id, ...rest } = newSettings as Record<string, unknown>;
       if (model_id)
         dispatch(
-          setOverrides({ instanceId, changes: { model: model_id as string } }),
+          setOverrides({ conversationId, changes: { model: model_id as string } }),
         );
       if (Object.keys(rest).length > 0)
-        dispatch(setOverrides({ instanceId, changes: rest }));
+        dispatch(setOverrides({ conversationId, changes: rest }));
     },
-    [dispatch, instanceId],
+    [dispatch, conversationId],
   );
 
   const isDisabled = isExecuting;
@@ -469,7 +469,7 @@ export function ConversationInput({
       {/* ── Variables (above the bordered input box) ──────────────────── */}
       {hasVariables && useGuidedVars && (
         <GuidedVariableInputs
-          instanceId={instanceId}
+          conversationId={conversationId}
           disabled={isExecuting}
           seamless
         />
@@ -477,7 +477,7 @@ export function ConversationInput({
       {hasVariables && !useGuidedVars && (
         <div className="max-h-[30vh] md:max-h-[45vh] overflow-y-auto overscroll-contain rounded-xl mb-1">
           <StackedVariableInputs
-            instanceId={instanceId}
+            conversationId={conversationId}
             disabled={isExecuting}
             minimal
           />
@@ -500,7 +500,7 @@ export function ConversationInput({
                 if (!r) return;
                 dispatch(
                   removeResource({
-                    instanceId,
+                    conversationId,
                     resourceId: r.resourceId,
                   }),
                 );
@@ -568,7 +568,7 @@ export function ConversationInput({
             ref={textareaRef}
             value={content}
             onChange={(e) =>
-              dispatch(setUserInputText({ instanceId, text: e.target.value }))
+              dispatch(setUserInputText({ conversationId: conversationId, text: e.target.value }))
             }
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
@@ -674,7 +674,7 @@ export function ConversationInput({
 
       {isAdmin && isDebugOpen && (
         <ChatDebugModal
-          sessionId={instanceId}
+          sessionId={conversationId}
           isOpen={isDebugOpen}
           onClose={() => setIsDebugOpen(false)}
         />

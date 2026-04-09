@@ -179,19 +179,19 @@ export const fetchConversationListMore = createAsyncThunk<
  *   - Only 'user' and 'assistant' rows reach the Redux store
  *
  * Call this when the user clicks a conversation in the sidebar.
- * If history is already loaded for this instanceId, it is replaced.
+ * The conversationId is used directly as the key — no separate instanceId needed.
  */
 export const fetchConversationHistory = createAsyncThunk<
   void,
-  { conversationId: string; instanceId: string },
+  { conversationId: string },
   ThunkApi
 >(
   "cxConversations/fetchHistory",
-  async ({ conversationId, instanceId }, { dispatch }) => {
-    // Ensure the history entry exists for this instance
-    dispatch(initInstanceHistory({ instanceId, mode: "conversation" }));
+  async ({ conversationId }, { dispatch }) => {
+    dispatch(
+      initInstanceHistory({ conversationId, mode: "conversation" }),
+    );
 
-    // Fetch full cx_message rows (1:1 with DB). Never select cx_conversation.system_instruction.
     const { data, error } = await supabase
       .from("cx_message")
       .select(
@@ -205,11 +205,9 @@ export const fetchConversationHistory = createAsyncThunk<
 
     const rows = data ?? [];
 
-    // Map cx_message rows → ConversationTurn[], filtering out system-role messages
     const turns: ConversationTurn[] = rows
       .filter((row) => row.role === "user" || row.role === "assistant")
       .map((row) => {
-        // Supabase types content as Json — narrow to an array of plain objects only
         const rawBlocks: Array<Record<string, unknown>> = Array.isArray(
           row.content,
         )
@@ -225,7 +223,6 @@ export const fetchConversationHistory = createAsyncThunk<
         const primaryText =
           typeof textBlock?.text === "string" ? textBlock.text : "";
 
-        // Non-text blocks (tool_call, media, thinking, etc.) stored in contentBlocks
         const richBlocks = rawBlocks.filter((b) => b["type"] !== "text");
 
         return {
@@ -252,9 +249,8 @@ export const fetchConversationHistory = createAsyncThunk<
 
     dispatch(
       loadConversationHistory({
-        instanceId,
-        turns,
         conversationId,
+        turns,
         mode: "conversation",
       }),
     );

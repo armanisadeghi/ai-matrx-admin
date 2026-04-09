@@ -81,13 +81,13 @@ export function MobileUnifiedMenu() {
             aria-label="Open menu"
           >
             {profilePhoto ? (
-              <div className="w-7 h-7 rounded-full overflow-hidden">
+              <div className="relative w-7 h-7 rounded-full overflow-hidden">
                 <Image
                   src={profilePhoto}
-                  width={28}
-                  height={28}
                   alt={displayName}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="28px"
                   loading="eager"
                   priority
                 />
@@ -107,13 +107,13 @@ export function MobileUnifiedMenu() {
             <div className="px-3 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-t-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
                 {profilePhoto ? (
-                  <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                  <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
                     <Image
                       src={profilePhoto}
-                      width={40}
-                      height={40}
                       alt={displayName}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="40px"
                       loading="eager"
                       priority
                     />

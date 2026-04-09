@@ -30,11 +30,11 @@ import { destroyInstance } from "../execution-instances/execution-instances.slic
 // =============================================================================
 
 export interface InstanceResourcesState {
-  byInstanceId: Record<string, Record<string, ManagedResource>>;
+  byConversationId: Record<string, Record<string, ManagedResource>>;
 }
 
 const initialState: InstanceResourcesState = {
-  byInstanceId: {},
+  byConversationId: {},
 };
 
 // =============================================================================
@@ -61,9 +61,9 @@ const instanceResourcesSlice = createSlice({
      */
     initInstanceResources(
       state,
-      action: PayloadAction<{ instanceId: string }>,
+      action: PayloadAction<{ conversationId: string }>,
     ) {
-      state.byInstanceId[action.payload.instanceId] = {};
+      state.byConversationId[action.payload.conversationId] = {};
     },
 
     /**
@@ -72,7 +72,7 @@ const instanceResourcesSlice = createSlice({
     addResource(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         blockType: ResourceBlockType;
         source: unknown;
         options?: Partial<ResourceOptions>;
@@ -80,14 +80,14 @@ const instanceResourcesSlice = createSlice({
       }>,
     ) {
       const {
-        instanceId,
+        conversationId,
         blockType,
         source,
         options = {},
         resourceId = generateResourceId(),
       } = action.payload;
 
-      const resources = state.byInstanceId[instanceId];
+      const resources = state.byConversationId[conversationId];
       if (resources) {
         const existingCount = Object.keys(resources).length;
         resources[resourceId] = {
@@ -112,14 +112,14 @@ const instanceResourcesSlice = createSlice({
     setResourceStatus(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         resourceId: string;
         status: ResourceStatus;
         errorMessage?: string;
       }>,
     ) {
-      const { instanceId, resourceId, status, errorMessage } = action.payload;
-      const resource = state.byInstanceId[instanceId]?.[resourceId];
+      const { conversationId, resourceId, status, errorMessage } = action.payload;
+      const resource = state.byConversationId[conversationId]?.[resourceId];
       if (resource) {
         resource.status = status;
         resource.errorMessage = errorMessage ?? null;
@@ -132,13 +132,13 @@ const instanceResourcesSlice = createSlice({
     setResourcePreview(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         resourceId: string;
         preview: unknown;
       }>,
     ) {
-      const { instanceId, resourceId, preview } = action.payload;
-      const resource = state.byInstanceId[instanceId]?.[resourceId];
+      const { conversationId, resourceId, preview } = action.payload;
+      const resource = state.byConversationId[conversationId]?.[resourceId];
       if (resource) {
         resource.preview = preview;
         resource.status = "ready";
@@ -151,13 +151,13 @@ const instanceResourcesSlice = createSlice({
     setResourceEditedContent(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         resourceId: string;
         content: unknown;
       }>,
     ) {
-      const { instanceId, resourceId, content } = action.payload;
-      const resource = state.byInstanceId[instanceId]?.[resourceId];
+      const { conversationId, resourceId, content } = action.payload;
+      const resource = state.byConversationId[conversationId]?.[resourceId];
       if (resource) {
         resource.userEdited = true;
         resource.editedContent = content;
@@ -171,13 +171,13 @@ const instanceResourcesSlice = createSlice({
     setResourcePayload(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         resourceId: string;
         payload: Record<string, unknown>;
       }>,
     ) {
-      const { instanceId, resourceId, payload } = action.payload;
-      const resource = state.byInstanceId[instanceId]?.[resourceId];
+      const { conversationId, resourceId, payload } = action.payload;
+      const resource = state.byConversationId[conversationId]?.[resourceId];
       if (resource) {
         resource.finalPayload = payload;
       }
@@ -189,13 +189,13 @@ const instanceResourcesSlice = createSlice({
     updateResourceOptions(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         resourceId: string;
         options: Partial<ResourceOptions>;
       }>,
     ) {
-      const { instanceId, resourceId, options } = action.payload;
-      const resource = state.byInstanceId[instanceId]?.[resourceId];
+      const { conversationId, resourceId, options } = action.payload;
+      const resource = state.byConversationId[conversationId]?.[resourceId];
       if (resource) {
         Object.assign(resource.options, options);
       }
@@ -207,12 +207,12 @@ const instanceResourcesSlice = createSlice({
     removeResource(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         resourceId: string;
       }>,
     ) {
-      const { instanceId, resourceId } = action.payload;
-      const resources = state.byInstanceId[instanceId];
+      const { conversationId, resourceId } = action.payload;
+      const resources = state.byConversationId[conversationId];
       if (resources) {
         delete resources[resourceId];
       }
@@ -224,12 +224,12 @@ const instanceResourcesSlice = createSlice({
     reorderResources(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         orderedIds: string[];
       }>,
     ) {
-      const { instanceId, orderedIds } = action.payload;
-      const resources = state.byInstanceId[instanceId];
+      const { conversationId, orderedIds } = action.payload;
+      const resources = state.byConversationId[conversationId];
       if (resources) {
         orderedIds.forEach((id, index) => {
           if (resources[id]) {
@@ -241,20 +241,20 @@ const instanceResourcesSlice = createSlice({
 
     /** Remove all resources from an instance (keep the registry entry). Used after send. */
     clearAllResources(state, action: PayloadAction<string>) {
-      const entry = state.byInstanceId[action.payload];
+      const entry = state.byConversationId[action.payload];
       if (entry) {
-        state.byInstanceId[action.payload] = {};
+        state.byConversationId[action.payload] = {};
       }
     },
 
     removeInstanceResources(state, action: PayloadAction<string>) {
-      delete state.byInstanceId[action.payload];
+      delete state.byConversationId[action.payload];
     },
   },
 
   extraReducers: (builder) => {
     builder.addCase(destroyInstance, (state, action) => {
-      delete state.byInstanceId[action.payload];
+      delete state.byConversationId[action.payload];
     });
   },
 });

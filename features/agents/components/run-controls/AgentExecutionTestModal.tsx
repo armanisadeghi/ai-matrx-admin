@@ -45,7 +45,10 @@ import {
   ArrowDownFromLine,
   X,
 } from "lucide-react";
-import type { ResultDisplayMode } from "@/features/agents/types/instance.types";
+import type {
+  ResultDisplayMode,
+  VariableInputStyle,
+} from "@/features/agents/types/instance.types";
 
 interface AgentExecutionTestModalProps {
   isOpen: boolean;
@@ -57,8 +60,8 @@ interface AgentExecutionTestModalProps {
   allowChat: boolean;
   showVariables: boolean;
   applyVariables: boolean;
-  useChat: boolean;
-  variableInputStyle?: "inline" | "wizard";
+  conversationMode: "agent" | "conversation" | "chat";
+  variableInputStyle?: VariableInputStyle;
   variables: Record<string, unknown>;
   userInput: string;
 }
@@ -71,40 +74,50 @@ function DirectTestMode({
   agentId,
   variables,
   userInput,
-  useChat,
+  conversationMode,
 }: {
   agentId: string;
   variables: Record<string, unknown>;
   userInput: string;
-  useChat: boolean;
+  conversationMode: "agent" | "conversation" | "chat";
 }) {
   const { launchAgent, close } = useAgentLauncher();
-  const [instanceId, setInstanceId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const responseText = useAppSelector(
-    instanceId ? selectLatestAccumulatedText(instanceId) : () => "",
+    conversationId ? selectLatestAccumulatedText(conversationId) : () => "",
   );
   const status = useAppSelector(
-    instanceId ? selectLatestRequestStatus(instanceId) : () => undefined,
+    conversationId
+      ? selectLatestRequestStatus(conversationId)
+      : () => undefined,
   );
 
   const handleExecute = useCallback(async () => {
-    if (instanceId) close(instanceId);
+    if (conversationId) close(conversationId);
     try {
       const result = await launchAgent(agentId, {
         sourceFeature: "agent-builder",
         displayMode: "direct" as ResultDisplayMode,
         autoRun: true,
-        useChat,
+        conversationMode,
         variables,
         userInput: userInput || "Hello, please respond briefly.",
       });
-      setInstanceId(result.instanceId);
+      setConversationId(result.conversationId);
     } catch (err) {
       console.error("Direct execution failed:", err);
     }
-  }, [agentId, variables, userInput, useChat, launchAgent, close, instanceId]);
+  }, [
+    agentId,
+    variables,
+    userInput,
+    conversationMode,
+    launchAgent,
+    close,
+    conversationId,
+  ]);
 
   const handleCopy = useCallback(() => {
     if (responseText) {
@@ -116,7 +129,7 @@ function DirectTestMode({
 
   useEffect(() => {
     return () => {
-      if (instanceId) close(instanceId);
+      if (conversationId) close(conversationId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -180,15 +193,15 @@ function InlineTestMode({
   agentId,
   variables,
   userInput,
-  useChat,
+  conversationMode,
 }: {
   agentId: string;
   variables: Record<string, unknown>;
   userInput: string;
-  useChat: boolean;
+  conversationMode: "agent" | "conversation" | "chat";
 }) {
   const { launchAgent, close } = useAgentLauncher();
-  const [instanceId, setInstanceId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [editorText, setEditorText] = useState(
     "The quick brown fox jumps over the lazy dog.\n\nThis is sample text that simulates a document editor.\nSelect a portion of text and run the inline test to see how the agent processes it.\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit.",
   );
@@ -199,10 +212,12 @@ function InlineTestMode({
   );
 
   const responseText = useAppSelector(
-    instanceId ? selectLatestAccumulatedText(instanceId) : () => "",
+    conversationId ? selectLatestAccumulatedText(conversationId) : () => "",
   );
   const status = useAppSelector(
-    instanceId ? selectLatestRequestStatus(instanceId) : () => undefined,
+    conversationId
+      ? selectLatestRequestStatus(conversationId)
+      : () => undefined,
   );
 
   const isStreaming =
@@ -210,17 +225,17 @@ function InlineTestMode({
   const isComplete = status === "complete";
 
   const handleExecute = useCallback(async () => {
-    if (instanceId) close(instanceId);
+    if (conversationId) close(conversationId);
     try {
       const result = await launchAgent(agentId, {
         sourceFeature: "agent-builder",
         displayMode: "inline" as ResultDisplayMode,
         autoRun: true,
-        useChat,
+        conversationMode,
         variables: { ...variables, selection: selectedText },
         userInput: userInput || `Process this text: "${selectedText}"`,
       });
-      setInstanceId(result.instanceId);
+      setConversationId(result.conversationId);
     } catch (err) {
       console.error("Inline execution failed:", err);
     }
@@ -229,10 +244,10 @@ function InlineTestMode({
     variables,
     userInput,
     selectedText,
-    useChat,
+    conversationMode,
     launchAgent,
     close,
-    instanceId,
+    conversationId,
   ]);
 
   const handleReplace = useCallback(() => {
@@ -240,36 +255,36 @@ function InlineTestMode({
     const before = editorText.substring(0, selectionRange.start);
     const after = editorText.substring(selectionRange.end);
     setEditorText(before + responseText.trim() + after);
-    if (instanceId) close(instanceId);
-    setInstanceId(null);
-  }, [responseText, editorText, selectionRange, instanceId, close]);
+    if (conversationId) close(conversationId);
+    setConversationId(null);
+  }, [responseText, editorText, selectionRange, conversationId, close]);
 
   const handleInsertBefore = useCallback(() => {
     if (!responseText) return;
     const before = editorText.substring(0, selectionRange.start);
     const after = editorText.substring(selectionRange.start);
     setEditorText(before + responseText.trim() + "\n" + after);
-    if (instanceId) close(instanceId);
-    setInstanceId(null);
-  }, [responseText, editorText, selectionRange, instanceId, close]);
+    if (conversationId) close(conversationId);
+    setConversationId(null);
+  }, [responseText, editorText, selectionRange, conversationId, close]);
 
   const handleInsertAfter = useCallback(() => {
     if (!responseText) return;
     const before = editorText.substring(0, selectionRange.end);
     const after = editorText.substring(selectionRange.end);
     setEditorText(before + "\n" + responseText.trim() + after);
-    if (instanceId) close(instanceId);
-    setInstanceId(null);
-  }, [responseText, editorText, selectionRange, instanceId, close]);
+    if (conversationId) close(conversationId);
+    setConversationId(null);
+  }, [responseText, editorText, selectionRange, conversationId, close]);
 
   const handleCancel = useCallback(() => {
-    if (instanceId) close(instanceId);
-    setInstanceId(null);
-  }, [instanceId, close]);
+    if (conversationId) close(conversationId);
+    setConversationId(null);
+  }, [conversationId, close]);
 
   useEffect(() => {
     return () => {
-      if (instanceId) close(instanceId);
+      if (conversationId) close(conversationId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -345,7 +360,7 @@ function InlineTestMode({
 // =============================================================================
 
 interface BackgroundTask {
-  instanceId: string;
+  conversationId: string;
   startedAt: string;
   status: "running" | "complete" | "error";
   preview?: string;
@@ -355,12 +370,12 @@ function BackgroundTestMode({
   agentId,
   variables,
   userInput,
-  useChat,
+  conversationMode,
 }: {
   agentId: string;
   variables: Record<string, unknown>;
   userInput: string;
-  useChat: boolean;
+  conversationMode: "agent" | "conversation" | "chat";
 }) {
   const { launchAgent, close } = useAgentLauncher();
   const [tasks, setTasks] = useState<BackgroundTask[]>([]);
@@ -371,13 +386,13 @@ function BackgroundTestMode({
         sourceFeature: "agent-builder",
         displayMode: "background" as ResultDisplayMode,
         autoRun: true,
-        useChat,
+        conversationMode,
         variables,
         userInput: userInput || "Respond briefly with one sentence.",
         onComplete: (launchResult) => {
           setTasks((prev) =>
             prev.map((t) =>
-              t.instanceId === launchResult.instanceId
+              t.conversationId === launchResult.conversationId
                 ? {
                     ...t,
                     status: "complete" as const,
@@ -391,7 +406,7 @@ function BackgroundTestMode({
 
       setTasks((prev) => [
         {
-          instanceId: result.instanceId,
+          conversationId: result.conversationId,
           startedAt: new Date().toLocaleTimeString(),
           status: "running",
         },
@@ -400,12 +415,12 @@ function BackgroundTestMode({
     } catch (err) {
       console.error("Background execution failed:", err);
     }
-  }, [agentId, variables, userInput, useChat, launchAgent]);
+  }, [agentId, variables, userInput, conversationMode, launchAgent]);
 
   useEffect(() => {
     return () => {
       tasks.forEach((t) => {
-        if (t.status === "running") close(t.instanceId);
+        if (t.status === "running") close(t.conversationId);
       });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -428,7 +443,7 @@ function BackgroundTestMode({
           <div className="divide-y divide-border">
             {tasks.map((task) => (
               <div
-                key={task.instanceId}
+                key={task.conversationId}
                 className="flex items-start gap-2 px-3 py-2"
               >
                 <Badge
@@ -445,7 +460,7 @@ function BackgroundTestMode({
                 </Badge>
                 <div className="min-w-0 flex-1">
                   <div className="text-[10px] text-muted-foreground font-mono">
-                    {task.startedAt} — {task.instanceId.substring(0, 8)}
+                    {task.startedAt} — {task.conversationId.substring(0, 8)}
                   </div>
                   {task.preview && (
                     <p className="text-xs text-foreground mt-0.5 line-clamp-2">
@@ -479,7 +494,7 @@ export function AgentExecutionTestModal({
   agentId,
   variables,
   userInput,
-  useChat,
+  conversationMode,
 }: AgentExecutionTestModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -495,7 +510,7 @@ export function AgentExecutionTestModal({
             agentId={agentId}
             variables={variables}
             userInput={userInput}
-            useChat={useChat}
+            conversationMode={conversationMode}
           />
         )}
         {testType === "inline" && (
@@ -503,7 +518,7 @@ export function AgentExecutionTestModal({
             agentId={agentId}
             variables={variables}
             userInput={userInput}
-            useChat={useChat}
+            conversationMode={conversationMode}
           />
         )}
         {testType === "background" && (
@@ -511,7 +526,7 @@ export function AgentExecutionTestModal({
             agentId={agentId}
             variables={variables}
             userInput={userInput}
-            useChat={useChat}
+            conversationMode={conversationMode}
           />
         )}
       </DialogContent>

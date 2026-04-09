@@ -18,16 +18,16 @@ import { AgentRunner } from "../smart/AgentRunner";
 import { ExecutionManager } from "./execution-gates/ExecutionManager";
 
 interface ChatCollapsibleProps {
-  instanceId: string;
+  conversationId: string;
   onClose?: () => void;
 }
 
-export function ChatCollapsible({ instanceId, onClose }: ChatCollapsibleProps) {
+export function ChatCollapsible({ conversationId, onClose }: ChatCollapsibleProps) {
   const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(instanceId),
+    selectNeedsPreExecutionInput(conversationId),
   );
-  const title = useAppSelector(selectInstanceDisplayTitle(instanceId));
-  const isExecuting = useAppSelector(selectIsExecuting(instanceId));
+  const title = useAppSelector(selectInstanceDisplayTitle(conversationId));
+  const isExecuting = useAppSelector(selectIsExecuting(conversationId));
   const [isOpen, setIsOpen] = useState(true);
 
   // ── Drag state ───────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ export function ChatCollapsible({ instanceId, onClose }: ChatCollapsibleProps) {
     dragRef.current = null;
   }, []);
 
-  if (needsPreExecution) return <ExecutionManager instanceId={instanceId} />;
+  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
 
   return (
     <div
@@ -117,7 +117,7 @@ export function ChatCollapsible({ instanceId, onClose }: ChatCollapsibleProps) {
         <CollapsibleContent className="data-[state=open]:animate-slide-down data-[state=closed]:animate-slide-up">
           <div className="h-[350px]">
             <AgentRunner
-              instanceId={instanceId}
+              conversationId={conversationId}
               compact
               className="h-full bg-background"
             />

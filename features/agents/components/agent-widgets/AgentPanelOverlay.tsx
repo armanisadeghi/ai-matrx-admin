@@ -10,20 +10,20 @@ import { AgentRunner } from "../smart/AgentRunner";
 import { ExecutionManager } from "./execution-gates/ExecutionManager";
 
 interface AgentPanelOverlayProps {
-  instanceId: string;
+  conversationId: string;
   onClose: () => void;
 }
 
 export function AgentPanelOverlay({
-  instanceId,
+  conversationId,
   onClose,
 }: AgentPanelOverlayProps) {
-  const title = useAppSelector(selectInstanceDisplayTitle(instanceId));
+  const title = useAppSelector(selectInstanceDisplayTitle(conversationId));
   const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(instanceId),
+    selectNeedsPreExecutionInput(conversationId),
   );
 
-  if (needsPreExecution) return <ExecutionManager instanceId={instanceId} />;
+  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
 
   return (
     <FloatingSheet
@@ -39,7 +39,7 @@ export function AgentPanelOverlay({
       contentClassName="p-0"
       lockScroll={false}
     >
-      <AgentRunner instanceId={instanceId} className="h-full bg-background" />
+      <AgentRunner conversationId={conversationId} className="h-full bg-background" />
     </FloatingSheet>
   );
 }

@@ -28,7 +28,8 @@ import { homedir } from "os";
 // ── Constants ─────────────────────────────────────────────────────────
 
 const DEFAULT_MCP_SERVER = "https://mcp.dev.codematrx.com";
-const REPO_RAW = "https://raw.githubusercontent.com/armanisadeghi/matrx-ship/main";
+const REPO_RAW =
+  "https://raw.githubusercontent.com/armanisadeghi/matrx-ship/main";
 const GLOBAL_CONFIG_DIR = path.join(homedir(), ".config", "matrx-ship");
 const GLOBAL_CONFIG_FILE = path.join(GLOBAL_CONFIG_DIR, "server.json");
 
@@ -86,7 +87,9 @@ function shipCmd(sub?: string): string {
   if (hasPackageJson) {
     return sub ? `pnpm ship:${sub}` : "pnpm ship";
   }
-  return sub ? `bash scripts/matrx/ship.sh ${sub}` : "bash scripts/matrx/ship.sh";
+  return sub
+    ? `bash scripts/matrx/ship.sh ${sub}`
+    : "bash scripts/matrx/ship.sh";
 }
 
 function loadConfig(): ShipConfig {
@@ -105,7 +108,9 @@ function loadConfig(): ShipConfig {
     console.error(`     ${shipCmd("init")} my-project "My Project Name"`);
     console.error("");
     console.error("   Or set environment variables:");
-    console.error("     export MATRX_SHIP_URL=https://ship-myproject.dev.codematrx.com");
+    console.error(
+      "     export MATRX_SHIP_URL=https://ship-myproject.dev.codematrx.com",
+    );
     console.error("     export MATRX_SHIP_API_KEY=sk_ship_xxxxx");
     process.exit(1);
   }
@@ -116,7 +121,9 @@ function loadConfig(): ShipConfig {
     config = JSON.parse(raw);
   } catch {
     console.error(`❌ Failed to parse ${configPath}`);
-    console.error("   Make sure it contains valid JSON with 'url' and 'apiKey'.");
+    console.error(
+      "   Make sure it contains valid JSON with 'url' and 'apiKey'.",
+    );
     process.exit(1);
   }
 
@@ -137,7 +144,9 @@ function loadConfig(): ShipConfig {
 
   if (isPlaceholderKey(config.apiKey)) {
     console.error("❌ Your .matrx-ship.json still has a placeholder API key.");
-    console.error("   Update it with the real key from your matrx-ship instance.");
+    console.error(
+      "   Update it with the real key from your matrx-ship instance.",
+    );
     console.error(`   Config file: ${configPath}`);
     process.exit(1);
   }
@@ -161,7 +170,10 @@ function loadServerConfig(): ServerConfig | null {
       const raw = readFileSync(GLOBAL_CONFIG_FILE, "utf-8");
       const config = JSON.parse(raw);
       if (config.token) {
-        return { server: config.server || DEFAULT_MCP_SERVER, token: config.token };
+        return {
+          server: config.server || DEFAULT_MCP_SERVER,
+          token: config.token,
+        };
       }
     } catch {
       // Ignore corrupt file
@@ -173,7 +185,11 @@ function loadServerConfig(): ServerConfig | null {
 
 function saveServerConfig(config: ServerConfig): void {
   mkdirSync(GLOBAL_CONFIG_DIR, { recursive: true });
-  writeFileSync(GLOBAL_CONFIG_FILE, JSON.stringify(config, null, 2) + "\n", "utf-8");
+  writeFileSync(
+    GLOBAL_CONFIG_FILE,
+    JSON.stringify(config, null, 2) + "\n",
+    "utf-8",
+  );
   // Restrict permissions
   try {
     execSync(`chmod 600 "${GLOBAL_CONFIG_FILE}"`, { stdio: "ignore" });
@@ -200,7 +216,11 @@ function getCommitMessage(): string | null {
   }
 }
 
-function getCodeStats(): { linesAdded: number; linesDeleted: number; filesChanged: number } {
+function getCodeStats(): {
+  linesAdded: number;
+  linesDeleted: number;
+  filesChanged: number;
+} {
   try {
     const stats = execSync("git diff --numstat HEAD~1 HEAD").toString().trim();
     let linesAdded = 0;
@@ -280,7 +300,9 @@ async function callMcpTool(
     }
 
     if (!response.ok) {
-      throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+      throw new Error(
+        `Server returned ${response.status}: ${response.statusText}`,
+      );
     }
 
     // Parse SSE response
@@ -318,7 +340,11 @@ async function callMcpTool(
           "   Is the server running?",
       );
     }
-    if (msg.includes("fetch failed") || msg.includes("ECONNREFUSED") || msg.includes("ENOTFOUND")) {
+    if (
+      msg.includes("fetch failed") ||
+      msg.includes("ECONNREFUSED") ||
+      msg.includes("ENOTFOUND")
+    ) {
       throw new Error(
         `Cannot reach MCP server at ${serverConfig.server}\n` +
           "   Possible causes:\n" +
@@ -364,7 +390,11 @@ async function shipVersion(
           "   Is the matrx-ship server running?",
       );
     }
-    if (msg.includes("fetch failed") || msg.includes("ECONNREFUSED") || msg.includes("ENOTFOUND")) {
+    if (
+      msg.includes("fetch failed") ||
+      msg.includes("ECONNREFUSED") ||
+      msg.includes("ENOTFOUND")
+    ) {
       throw new Error(
         `Cannot reach ${config.url}\n` +
           "   Possible causes:\n" +
@@ -372,7 +402,7 @@ async function shipVersion(
           "     - The URL in .matrx-ship.json is wrong\n" +
           "     - DNS hasn't propagated yet\n" +
           "     - Network/firewall is blocking the connection\n" +
-          `\n   To verify, try: curl ${config.url}/api/health`,
+          `\n   To verify, try: curl ${config.url}/health`,
       );
     }
     throw new Error(`Network error: ${msg}`);
@@ -403,10 +433,15 @@ async function getStatus(config: ShipConfig): Promise<void> {
     console.log();
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
-    if (msg.includes("fetch failed") || msg.includes("ECONNREFUSED") || msg.includes("ENOTFOUND") || msg.includes("abort")) {
+    if (
+      msg.includes("fetch failed") ||
+      msg.includes("ECONNREFUSED") ||
+      msg.includes("ENOTFOUND") ||
+      msg.includes("abort")
+    ) {
       console.error(`❌ Cannot reach ${config.url}`);
       console.error("   Is the matrx-ship server running?");
-      console.error(`   Try: curl ${config.url}/api/health`);
+      console.error(`   Try: curl ${config.url}/health`);
     } else {
       console.error("❌ Failed to fetch status:", msg);
     }
@@ -433,14 +468,22 @@ async function handleSetup(args: string[]): Promise<void> {
   if (!token) {
     console.error(`❌ Usage: ${shipCmd("setup")} --token YOUR_SERVER_TOKEN`);
     console.error("");
-    console.error("   The server token is the MCP bearer token from your deployment server.");
-    console.error("   This is a one-time setup per machine — the token is saved globally.");
+    console.error(
+      "   The server token is the MCP bearer token from your deployment server.",
+    );
+    console.error(
+      "   This is a one-time setup per machine — the token is saved globally.",
+    );
     console.error("");
     console.error("   Options:");
     console.error("     --token, -t   MCP server bearer token (required)");
-    console.error(`     --server, -s  MCP server URL (default: ${DEFAULT_MCP_SERVER})`);
+    console.error(
+      `     --server, -s  MCP server URL (default: ${DEFAULT_MCP_SERVER})`,
+    );
     console.error("");
-    console.error("   You can also set the MATRX_SHIP_SERVER_TOKEN environment variable instead.");
+    console.error(
+      "   You can also set the MATRX_SHIP_SERVER_TOKEN environment variable instead.",
+    );
     process.exit(1);
   }
 
@@ -451,7 +494,9 @@ async function handleSetup(args: string[]): Promise<void> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
-    const response = await fetch(`${server}/health`, { signal: controller.signal });
+    const response = await fetch(`${server}/health`, {
+      signal: controller.signal,
+    });
     clearTimeout(timeout);
     const data = (await response.json()) as Record<string, unknown>;
     if (data.status !== "ok") throw new Error("Health check failed");
@@ -464,7 +509,9 @@ async function handleSetup(args: string[]): Promise<void> {
     } else {
       console.error(`   Error: ${msg}`);
     }
-    console.error("   Make sure the MCP server URL is correct and the server is running.");
+    console.error(
+      "   Make sure the MCP server URL is correct and the server is running.",
+    );
     process.exit(1);
   }
 
@@ -477,7 +524,9 @@ async function handleSetup(args: string[]): Promise<void> {
   if (hasPackageJson) {
     console.log('     pnpm ship:init my-project "My Project Name"');
   } else {
-    console.log('     bash scripts/matrx/ship.sh init my-project "My Project Name"');
+    console.log(
+      '     bash scripts/matrx/ship.sh init my-project "My Project Name"',
+    );
   }
   console.log("");
 }
@@ -512,10 +561,17 @@ async function handleInit(args: string[]): Promise<void> {
 
   // If no project name given, derive from current directory
   if (!projectName) {
-    projectName = path.basename(process.cwd()).toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/^-+|-+$/g, "").replace(/-{2,}/g, "-");
+    projectName = path
+      .basename(process.cwd())
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .replace(/-{2,}/g, "-");
     if (!projectName) {
       console.error("❌ Could not determine project name from directory.");
-      console.error(`   Usage: ${shipCmd("init")} my-project "My Project Name"`);
+      console.error(
+        `   Usage: ${shipCmd("init")} my-project "My Project Name"`,
+      );
       process.exit(1);
     }
     console.log(`📁 Using project name from directory: ${projectName}`);
@@ -523,11 +579,17 @@ async function handleInit(args: string[]): Promise<void> {
 
   if (!displayName) {
     // Convert kebab-case to Title Case
-    displayName = projectName.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    displayName = projectName
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
   }
 
   // Validate project name
-  if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(projectName) && !/^[a-z0-9]$/.test(projectName)) {
+  if (
+    !/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(projectName) &&
+    !/^[a-z0-9]$/.test(projectName)
+  ) {
     console.error(`❌ Invalid project name: "${projectName}"`);
     console.error("   Must be lowercase letters, numbers, and hyphens only.");
     console.error("   Examples: real-singles, matrx-platform, clawdbot");
@@ -549,11 +611,15 @@ async function handleInit(args: string[]): Promise<void> {
   if (!serverConfig) {
     console.error("❌ No server token found.");
     console.error("");
-    console.error("   You need to configure your server credentials first (one-time per machine):");
+    console.error(
+      "   You need to configure your server credentials first (one-time per machine):",
+    );
     console.error(`     ${shipCmd("setup")} --token YOUR_MCP_SERVER_TOKEN`);
     console.error("");
     console.error("   Or pass the token directly:");
-    console.error(`     ${shipCmd("init")} ${projectName} "${displayName}" --token YOUR_TOKEN`);
+    console.error(
+      `     ${shipCmd("init")} ${projectName} "${displayName}" --token YOUR_TOKEN`,
+    );
     console.error("");
     console.error("   Or set the environment variable:");
     console.error("     export MATRX_SHIP_SERVER_TOKEN=your_token_here");
@@ -576,18 +642,29 @@ async function handleInit(args: string[]): Promise<void> {
     });
   } catch (error) {
     console.error("❌ Failed to provision instance");
-    console.error("   ", error instanceof Error ? error.message : String(error));
+    console.error(
+      "   ",
+      error instanceof Error ? error.message : String(error),
+    );
     process.exit(1);
   }
 
   // Handle "already exists" — try to retrieve the existing instance
   const errorMsg = typeof result.error === "string" ? result.error : "";
   if (errorMsg.toLowerCase().includes("already exists")) {
-    console.log(`ℹ️  Instance '${projectName}' already exists. Retrieving info...`);
+    console.log(
+      `ℹ️  Instance '${projectName}' already exists. Retrieving info...`,
+    );
     try {
-      const existing = await callMcpTool(serverConfig!, "app_get", { name: projectName });
+      const existing = await callMcpTool(serverConfig!, "app_get", {
+        name: projectName,
+      });
       if (existing.url && existing.api_key) {
-        result = { success: true, url: existing.url, api_key: existing.api_key };
+        result = {
+          success: true,
+          url: existing.url,
+          api_key: existing.api_key,
+        };
       } else if (existing.instance && typeof existing.instance === "object") {
         const inst = existing.instance as Record<string, unknown>;
         if (inst.url && inst.api_key) {
@@ -599,17 +676,25 @@ async function handleInit(args: string[]): Promise<void> {
     }
 
     if (!result.success) {
-      console.error(`❌ Instance '${projectName}' already exists on the server but could not retrieve its config.`);
+      console.error(
+        `❌ Instance '${projectName}' already exists on the server but could not retrieve its config.`,
+      );
       console.error("");
       console.error("   Check the admin UI for the URL and API key:");
       console.error(`     ${serverConfig!.server}/admin/`);
       console.error("");
       console.error("   Then configure manually:");
-      const hasPackageJson = existsSync(path.join(process.cwd(), "package.json"));
+      const hasPackageJson = existsSync(
+        path.join(process.cwd(), "package.json"),
+      );
       if (hasPackageJson) {
-        console.error(`     pnpm ship:init --url https://ship-${projectName}.dev.codematrx.com --key YOUR_API_KEY`);
+        console.error(
+          `     pnpm ship:init --url https://ship-${projectName}.dev.codematrx.com --key YOUR_API_KEY`,
+        );
       } else {
-        console.error(`     bash scripts/matrx/ship.sh init --url https://ship-${projectName}.dev.codematrx.com --key YOUR_API_KEY`);
+        console.error(
+          `     bash scripts/matrx/ship.sh init --url https://ship-${projectName}.dev.codematrx.com --key YOUR_API_KEY`,
+        );
       }
       process.exit(1);
     }
@@ -639,7 +724,8 @@ async function handleInit(args: string[]): Promise<void> {
     if (!gitignore.includes(".matrx-ship.json")) {
       writeFileSync(
         gitignorePath,
-        gitignore.trimEnd() + "\n\n# Matrx Ship config (contains API key)\n.matrx-ship.json\n",
+        gitignore.trimEnd() +
+          "\n\n# Matrx Ship config (contains API key)\n.matrx-ship.json\n",
       );
       console.log("📄 Added .matrx-ship.json to .gitignore");
     }
@@ -653,7 +739,9 @@ async function handleInit(args: string[]): Promise<void> {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
-      const response = await fetch(`${instanceUrl}/api/health`, { signal: controller.signal });
+      const response = await fetch(`${instanceUrl}/health`, {
+        signal: controller.signal,
+      });
       clearTimeout(timeout);
       const data = (await response.json()) as Record<string, unknown>;
       if (data.status === "ok") {
@@ -669,13 +757,19 @@ async function handleInit(args: string[]): Promise<void> {
   if (!healthy) {
     console.log("");
     console.log("⚠️  Instance may still be starting up. Check manually:");
-    console.log(`   curl ${instanceUrl}/api/health`);
+    console.log(`   curl ${instanceUrl}/health`);
   }
 
   console.log("");
-  console.log("╔══════════════════════════════════════════════════════════════╗");
-  console.log("║   ✅ Instance provisioned and configured!                    ║");
-  console.log("╚══════════════════════════════════════════════════════════════╝");
+  console.log(
+    "╔══════════════════════════════════════════════════════════════╗",
+  );
+  console.log(
+    "║   ✅ Instance provisioned and configured!                    ║",
+  );
+  console.log(
+    "╚══════════════════════════════════════════════════════════════╝",
+  );
   console.log("");
   console.log(`   🌐 URL:       ${instanceUrl}`);
   console.log(`   🔧 Admin:     ${instanceUrl}/admin`);
@@ -718,15 +812,22 @@ async function handleLegacyInit(args: string[]): Promise<void> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
-    const response = await fetch(`${url}/api/health`, { signal: controller.signal });
+    const response = await fetch(`${url}/health`, {
+      signal: controller.signal,
+    });
     clearTimeout(timeout);
     const data = (await response.json()) as Record<string, unknown>;
-    if (data.status !== "ok") throw new Error("Health check returned non-ok status");
+    if (data.status !== "ok")
+      throw new Error("Health check returned non-ok status");
     console.log(`✅ Connected to ${data.service} (project: ${data.project})`);
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
-    console.error(`❌ Cannot reach ${url}/api/health`);
-    if (msg.includes("fetch failed") || msg.includes("ECONNREFUSED") || msg.includes("ENOTFOUND")) {
+    console.error(`❌ Cannot reach ${url}/health`);
+    if (
+      msg.includes("fetch failed") ||
+      msg.includes("ECONNREFUSED") ||
+      msg.includes("ENOTFOUND")
+    ) {
       console.error("   The server doesn't appear to be running at that URL.");
     } else if (msg.includes("abort")) {
       console.error("   Connection timed out after 10 seconds.");
@@ -788,17 +889,26 @@ async function handleShip(args: string[]): Promise<void> {
     });
 
     if (!result.ok) {
-      throw new Error((result.data.error as string) || "Failed to create version");
+      throw new Error(
+        (result.data.error as string) || "Failed to create version",
+      );
     }
 
     if (result.data.duplicate) {
-      console.log(`⚠️  Version already exists for commit ${gitCommit}. Continuing...`);
+      console.log(
+        `⚠️  Version already exists for commit ${gitCommit}. Continuing...`,
+      );
     } else {
-      console.log(`✅ Version v${result.data.version} (build #${result.data.buildNumber}) created`);
+      console.log(
+        `✅ Version v${result.data.version} (build #${result.data.buildNumber}) created`,
+      );
     }
   } catch (error) {
     console.error("\n❌ Failed to create version");
-    console.error("   ", error instanceof Error ? error.message : String(error));
+    console.error(
+      "   ",
+      error instanceof Error ? error.message : String(error),
+    );
     process.exit(1);
   }
 
@@ -941,7 +1051,10 @@ async function handleHistory(args: string[]): Promise<void> {
     if ((args[i] === "--since" || args[i] === "-s") && args[i + 1]) {
       since = args[i + 1];
       i++;
-    } else if ((args[i] === "--start-version" || args[i] === "-v") && args[i + 1]) {
+    } else if (
+      (args[i] === "--start-version" || args[i] === "-v") &&
+      args[i + 1]
+    ) {
       startVersion = args[i + 1];
       i++;
     } else if ((args[i] === "--branch" || args[i] === "-b") && args[i + 1]) {
@@ -981,7 +1094,10 @@ async function handleHistory(args: string[]): Promise<void> {
     raw = execSync(gitCmd, { encoding: "utf-8", maxBuffer: 50 * 1024 * 1024 });
   } catch (error) {
     console.error("❌ Failed to read git history");
-    console.error("   ", error instanceof Error ? error.message : String(error));
+    console.error(
+      "   ",
+      error instanceof Error ? error.message : String(error),
+    );
     process.exit(1);
   }
 
@@ -995,29 +1111,46 @@ async function handleHistory(args: string[]): Promise<void> {
   const versioned = assignVersions(entries, startVersion);
 
   console.log(`   Found ${versioned.length} commits`);
-  console.log(`   Oldest: ${entries[0].date.split("T")[0]}  ${entries[0].hash}  ${entries[0].message.substring(0, 60)}`);
-  console.log(`   Newest: ${entries[entries.length - 1].date.split("T")[0]}  ${entries[entries.length - 1].hash}  ${entries[entries.length - 1].message.substring(0, 60)}`);
-  console.log(`   Versions: ${versioned[0].version} → ${versioned[versioned.length - 1].version}`);
+  console.log(
+    `   Oldest: ${entries[0].date.split("T")[0]}  ${entries[0].hash}  ${entries[0].message.substring(0, 60)}`,
+  );
+  console.log(
+    `   Newest: ${entries[entries.length - 1].date.split("T")[0]}  ${entries[entries.length - 1].hash}  ${entries[entries.length - 1].message.substring(0, 60)}`,
+  );
+  console.log(
+    `   Versions: ${versioned[0].version} → ${versioned[versioned.length - 1].version}`,
+  );
 
   // Calculate total stats
   const totalAdded = entries.reduce((sum, e) => sum + e.linesAdded, 0);
   const totalDeleted = entries.reduce((sum, e) => sum + e.linesDeleted, 0);
   const totalFiles = entries.reduce((sum, e) => sum + e.filesChanged, 0);
-  console.log(`   Total: +${totalAdded.toLocaleString()} / -${totalDeleted.toLocaleString()} across ${totalFiles.toLocaleString()} file changes`);
+  console.log(
+    `   Total: +${totalAdded.toLocaleString()} / -${totalDeleted.toLocaleString()} across ${totalFiles.toLocaleString()} file changes`,
+  );
   console.log("");
 
   if (isDry) {
     console.log("── Preview (first 20 commits) ──────────────────────");
     for (const v of versioned.slice(0, 20)) {
-      const stats = v.entry.filesChanged > 0 ? ` (+${v.entry.linesAdded}/-${v.entry.linesDeleted}, ${v.entry.filesChanged}f)` : "";
-      console.log(`   ${v.version} #${v.buildNumber}  ${v.entry.hash}  ${v.entry.date.split("T")[0]}  ${v.entry.message.substring(0, 50)}${stats}`);
+      const stats =
+        v.entry.filesChanged > 0
+          ? ` (+${v.entry.linesAdded}/-${v.entry.linesDeleted}, ${v.entry.filesChanged}f)`
+          : "";
+      console.log(
+        `   ${v.version} #${v.buildNumber}  ${v.entry.hash}  ${v.entry.date.split("T")[0]}  ${v.entry.message.substring(0, 50)}${stats}`,
+      );
     }
     if (versioned.length > 20) {
       console.log(`   ... and ${versioned.length - 20} more`);
     }
     console.log("");
     console.log("   This is a dry run. To actually import, run without --dry:");
-    console.log("     pnpm ship:history" + (isClear ? " --clear" : "") + (since ? ` --since ${since}` : ""));
+    console.log(
+      "     pnpm ship:history" +
+        (isClear ? " --clear" : "") +
+        (since ? ` --since ${since}` : ""),
+    );
     console.log("");
     return;
   }
@@ -1064,7 +1197,9 @@ async function handleHistory(args: string[]): Promise<void> {
       const data = (await response.json()) as Record<string, unknown>;
 
       if (!response.ok) {
-        throw new Error((data.error as string) || `Server returned ${response.status}`);
+        throw new Error(
+          (data.error as string) || `Server returned ${response.status}`,
+        );
       }
 
       totalImported += (data.imported as number) || 0;
@@ -1072,13 +1207,22 @@ async function handleHistory(args: string[]): Promise<void> {
       if (data.cleared) totalCleared += data.cleared as number;
 
       const progress = Math.min(i + batchSize, versioned.length);
-      process.stdout.write(`\r   Progress: ${progress}/${versioned.length} commits processed`);
+      process.stdout.write(
+        `\r   Progress: ${progress}/${versioned.length} commits processed`,
+      );
     } catch (error) {
       console.error(`\n\n❌ Failed at batch starting index ${i}`);
-      console.error("   ", error instanceof Error ? error.message : String(error));
+      console.error(
+        "   ",
+        error instanceof Error ? error.message : String(error),
+      );
       if (totalImported > 0) {
-        console.log(`\n   Partial import: ${totalImported} versions were imported before the error.`);
-        console.log("   You can re-run the command safely — duplicates will be skipped.");
+        console.log(
+          `\n   Partial import: ${totalImported} versions were imported before the error.`,
+        );
+        console.log(
+          "   You can re-run the command safely — duplicates will be skipped.",
+        );
       }
       process.exit(1);
     }
@@ -1086,17 +1230,31 @@ async function handleHistory(args: string[]): Promise<void> {
 
   console.log(""); // Clear progress line
   console.log("");
-  console.log("╔══════════════════════════════════════════════════════════════╗");
-  console.log("║   ✅ History import complete!                                ║");
-  console.log("╚══════════════════════════════════════════════════════════════╝");
+  console.log(
+    "╔══════════════════════════════════════════════════════════════╗",
+  );
+  console.log(
+    "║   ✅ History import complete!                                ║",
+  );
+  console.log(
+    "╚══════════════════════════════════════════════════════════════╝",
+  );
   console.log("");
   console.log(`   Imported:  ${totalImported} version(s)`);
-  if (totalSkipped > 0) console.log(`   Skipped:   ${totalSkipped} (already existed)`);
-  if (totalCleared > 0) console.log(`   Cleared:   ${totalCleared} (pre-existing versions removed)`);
-  console.log(`   Range:     ${versioned[0].version} → ${versioned[versioned.length - 1].version}`);
+  if (totalSkipped > 0)
+    console.log(`   Skipped:   ${totalSkipped} (already existed)`);
+  if (totalCleared > 0)
+    console.log(
+      `   Cleared:   ${totalCleared} (pre-existing versions removed)`,
+    );
+  console.log(
+    `   Range:     ${versioned[0].version} → ${versioned[versioned.length - 1].version}`,
+  );
   console.log(`   Builds:    #1 → #${versioned.length}`);
   console.log("");
-  console.log("   The next 'pnpm ship' will continue from where this left off.");
+  console.log(
+    "   The next 'pnpm ship' will continue from where this left off.",
+  );
   console.log(`   View history at: ${config.url}/admin/versions`);
   console.log("");
 }
@@ -1151,7 +1309,8 @@ function ensureGitignore(): boolean {
 
     writeFileSync(
       gitignorePath,
-      content.trimEnd() + "\n\n# Matrx Ship config (contains API key)\n.matrx-ship.json\n",
+      content.trimEnd() +
+        "\n\n# Matrx Ship config (contains API key)\n.matrx-ship.json\n",
     );
     return true;
   } catch {
@@ -1166,7 +1325,9 @@ function ensureTsxDependency(): void {
   try {
     const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
     const hasTsx =
-      pkg.dependencies?.tsx || pkg.devDependencies?.tsx || pkg.optionalDependencies?.tsx;
+      pkg.dependencies?.tsx ||
+      pkg.devDependencies?.tsx ||
+      pkg.optionalDependencies?.tsx;
 
     if (!hasTsx) {
       console.log("📦 Installing tsx (required for ship CLI)...");
@@ -1208,7 +1369,9 @@ async function handleUpdate(): Promise<void> {
     clearTimeout(timeout);
 
     if (!response.ok) {
-      throw new Error(`GitHub returned ${response.status}: ${response.statusText}`);
+      throw new Error(
+        `GitHub returned ${response.status}: ${response.statusText}`,
+      );
     }
     content = await response.text();
 

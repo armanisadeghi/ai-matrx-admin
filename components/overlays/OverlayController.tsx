@@ -500,6 +500,22 @@ const AgentSettingsWindow = dynamic(
   { ssr: false },
 );
 
+const AgentContentWindow = dynamic(
+  () => import("@/features/window-panels/windows/AgentContentWindow"),
+  { ssr: false },
+);
+
+const ExecutionInspectorWindow = dynamic(
+  () => import("@/features/window-panels/windows/ExecutionInspectorWindow"),
+  { ssr: false },
+);
+
+const AgentAssistantMarkdownDebugWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/AgentAssistantMarkdownDebugWindow"),
+  { ssr: false },
+);
+
 // ============================================================================
 // OVERLAY CONTROLLER
 // ============================================================================
@@ -686,6 +702,21 @@ export const OverlayController: React.FC = () => {
   );
   const agentSettingsWindowData = useAppSelector((s) =>
     selectOverlayData(s, "agentSettingsWindow"),
+  );
+
+  const isAgentContentWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentContentWindow"),
+  );
+  const agentContentWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "agentContentWindow"),
+  );
+
+  const isExecutionInspectorWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "executionInspectorWindow"),
+  );
+
+  const isAgentAssistantMarkdownDebugWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentAssistantMarkdownDebugWindow"),
   );
 
   const agentGateWindowInstances = useAppSelector((s) =>
@@ -1012,9 +1043,12 @@ export const OverlayController: React.FC = () => {
         )}
 
       {isStreamDebugOpen &&
-        (streamDebugData as { instanceId?: string } | null)?.instanceId && (
+        (streamDebugData as { conversationId?: string } | null)
+          ?.conversationId && (
           <StreamDebugFloating
-            instanceId={(streamDebugData as { instanceId: string }).instanceId}
+            conversationId={
+              (streamDebugData as { conversationId: string }).conversationId
+            }
             onClose={() => close("streamDebug")}
           />
         )}
@@ -1127,13 +1161,13 @@ export const OverlayController: React.FC = () => {
 
       {/* Agent Gate Window — instanced, one per agent pre-execution gate */}
       {agentGateWindowInstances.map(({ instanceId, data }) => {
-        const d = data as { agentInstanceId: string } | null;
-        if (!d?.agentInstanceId) return null;
+        const d = data as { conversationId: string } | null;
+        if (!d?.conversationId) return null;
         return (
           <AgentGateWindow
             key={instanceId}
             instanceId={instanceId}
-            agentInstanceId={d.agentInstanceId}
+            conversationId={d.conversationId}
             isOpen={true}
             onClose={() => close("agentGateWindow", instanceId)}
           />
@@ -1515,7 +1549,7 @@ export const OverlayController: React.FC = () => {
       {agentFullModalInstances.map(({ instanceId }) => (
         <AgentFullModal
           key={instanceId}
-          instanceId={instanceId}
+          conversationId={instanceId}
           onClose={() => {
             close("agentFullModal", instanceId);
             dispatch(destroyInstance(instanceId));
@@ -1526,7 +1560,7 @@ export const OverlayController: React.FC = () => {
       {agentCompactModalInstances.map(({ instanceId }) => (
         <AgentCompactModal
           key={instanceId}
-          instanceId={instanceId}
+          conversationId={instanceId}
           onClose={() => {
             close("agentCompactModal", instanceId);
             dispatch(destroyInstance(instanceId));
@@ -1537,7 +1571,7 @@ export const OverlayController: React.FC = () => {
       {agentChatBubbleInstances.map(({ instanceId }) => (
         <AgentChatBubble
           key={instanceId}
-          instanceId={instanceId}
+          conversationId={instanceId}
           onClose={() => {
             close("agentChatBubble", instanceId);
             dispatch(destroyInstance(instanceId));
@@ -1548,7 +1582,7 @@ export const OverlayController: React.FC = () => {
       {agentInlineOverlayInstances.map(({ instanceId }) => (
         <AgentInlineOverlay
           key={instanceId}
-          instanceId={instanceId}
+          conversationId={instanceId}
           onClose={() => {
             close("agentInlineOverlay", instanceId);
             dispatch(destroyInstance(instanceId));
@@ -1559,7 +1593,7 @@ export const OverlayController: React.FC = () => {
       {agentSidebarOverlayInstances.map(({ instanceId }) => (
         <AgentSidebarOverlay
           key={instanceId}
-          instanceId={instanceId}
+          conversationId={instanceId}
           onClose={() => {
             close("agentSidebarOverlay", instanceId);
             dispatch(destroyInstance(instanceId));
@@ -1570,7 +1604,7 @@ export const OverlayController: React.FC = () => {
       {agentFlexiblePanelInstances.map(({ instanceId }) => (
         <AgentFlexiblePanel
           key={instanceId}
-          instanceId={instanceId}
+          conversationId={instanceId}
           onClose={() => {
             close("agentFlexiblePanel", instanceId);
             dispatch(destroyInstance(instanceId));
@@ -1581,7 +1615,7 @@ export const OverlayController: React.FC = () => {
       {agentPanelOverlayInstances.map(({ instanceId }) => (
         <AgentPanelOverlay
           key={instanceId}
-          instanceId={instanceId}
+          conversationId={instanceId}
           onClose={() => {
             close("agentPanelOverlay", instanceId);
             dispatch(destroyInstance(instanceId));
@@ -1592,7 +1626,7 @@ export const OverlayController: React.FC = () => {
       {agentToastOverlayInstances.map(({ instanceId, data }, idx) => (
         <AgentToastOverlay
           key={instanceId}
-          instanceId={instanceId}
+          conversationId={instanceId}
           index={(data as { index?: number } | null)?.index ?? idx}
           onClose={() => {
             close("agentToastOverlay", instanceId);
@@ -1604,7 +1638,7 @@ export const OverlayController: React.FC = () => {
       {agentFloatingChatInstances.map(({ instanceId }) => (
         <AgentFloatingChat
           key={instanceId}
-          instanceId={instanceId}
+          conversationId={instanceId}
           onClose={() => {
             close("agentFloatingChat", instanceId);
             dispatch(destroyInstance(instanceId));
@@ -1615,7 +1649,7 @@ export const OverlayController: React.FC = () => {
       {agentChatCollapsibleInstances.map(({ instanceId }) => (
         <ChatCollapsible
           key={instanceId}
-          instanceId={instanceId}
+          conversationId={instanceId}
           onClose={() => {
             close("agentChatCollapsible", instanceId);
             dispatch(destroyInstance(instanceId));
@@ -1626,7 +1660,7 @@ export const OverlayController: React.FC = () => {
       {agentChatAssistantInstances.map(({ instanceId }, idx) => (
         <AgentChatAssistant
           key={instanceId}
-          instanceId={instanceId}
+          conversationId={instanceId}
           stackIndex={idx}
           onClose={() => {
             close("agentChatAssistant", instanceId);
@@ -1640,6 +1674,29 @@ export const OverlayController: React.FC = () => {
           isOpen={true}
           onClose={() => close("agentSettingsWindow")}
           initialAgentId={agentSettingsWindowData?.initialAgentId}
+        />
+      )}
+
+      {isAgentContentWindowOpen && agentContentWindowData && (
+        <AgentContentWindow
+          isOpen={true}
+          onClose={() => close("agentContentWindow")}
+          initialAgentId={agentContentWindowData.initialAgentId}
+          initialTab={agentContentWindowData.initialTab}
+        />
+      )}
+
+      {isExecutionInspectorWindowOpen && (
+        <ExecutionInspectorWindow
+          isOpen={true}
+          onClose={() => close("executionInspectorWindow")}
+        />
+      )}
+
+      {isAgentAssistantMarkdownDebugWindowOpen && (
+        <AgentAssistantMarkdownDebugWindow
+          isOpen={true}
+          onClose={() => close("agentAssistantMarkdownDebugWindow")}
         />
       )}
     </>

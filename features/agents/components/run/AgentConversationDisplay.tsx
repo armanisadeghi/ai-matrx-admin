@@ -57,19 +57,23 @@ interface DisplayMessage {
 }
 
 interface AgentConversationDisplayProps {
-  instanceId: string;
+  conversationId: string;
   compact?: boolean;
 }
 
 export function AgentConversationDisplay({
-  instanceId,
+  conversationId,
   compact = false,
 }: AgentConversationDisplayProps) {
-  const turns = useAppSelector(selectConversationTurns(instanceId));
-  const phase = useAppSelector(selectStreamPhase(instanceId));
-  const streamingText = useAppSelector(selectLatestAccumulatedText(instanceId));
-  const infoMessage = useAppSelector(selectLatestInfoUserMessage(instanceId));
-  const error = useAppSelector(selectLatestError(instanceId));
+  const turns = useAppSelector(selectConversationTurns(conversationId));
+  const phase = useAppSelector(selectStreamPhase(conversationId));
+  const streamingText = useAppSelector(
+    selectLatestAccumulatedText(conversationId),
+  );
+  const infoMessage = useAppSelector(
+    selectLatestInfoUserMessage(conversationId),
+  );
+  const error = useAppSelector(selectLatestError(conversationId));
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const isActive =
@@ -124,7 +128,7 @@ export function AgentConversationDisplay({
   }, [displayMessages.length, isActive]);
 
   if (displayMessages.length === 0) {
-    return <AgentEmptyMessageDisplay instanceId={instanceId} />;
+    return <AgentEmptyMessageDisplay conversationId={conversationId} />;
   }
 
   const spacingClass = compact ? "space-y-2 pb-2" : "space-y-6 pb-24";
@@ -157,6 +161,8 @@ export function AgentConversationDisplay({
                 isStreamActive={msg.isStreamActive}
                 compact={compact}
                 error={msg.error}
+                conversationId={conversationId}
+                messageKey={msg.key}
               />
               {msg.isStreamActive && msg.infoMessage && (
                 <AgentStatusIndicator

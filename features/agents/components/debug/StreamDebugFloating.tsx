@@ -5,20 +5,20 @@ import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { StreamDebugPanel } from "./StreamDebugPanel";
 
 export interface StreamDebugFloatingProps {
-  instanceId: string;
+  conversationId: string;
   onClose: () => void;
   defaultPosition?: { x: number; y: number };
 }
 
 export function StreamDebugFloating({
-  instanceId,
+  conversationId,
   onClose,
   defaultPosition = { x: 20, y: 60 },
 }: StreamDebugFloatingProps) {
   return (
     <WindowPanel
       title="Stream Debug"
-      id={`stream-debug-${instanceId}`}
+      id={`stream-debug-${conversationId}`}
       onClose={onClose}
       width={600}
       height={500}
@@ -27,9 +27,9 @@ export function StreamDebugFloating({
       minHeight={200}
       bodyClassName="p-0"
       urlSyncKey="debug"
-      urlSyncId={instanceId}
+      urlSyncId={conversationId}
     >
-      <StreamDebugPanel instanceId={instanceId} className="h-full" />
+      <StreamDebugPanel conversationId={conversationId} className="h-full" />
     </WindowPanel>
   );
 }

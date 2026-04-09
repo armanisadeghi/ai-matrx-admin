@@ -11,14 +11,14 @@ import { makeSelectAgentConversations } from "@/features/agents/redux/agent-conv
 import type { AgentConversationListItem } from "@/features/agents/redux/agent-conversations/agent-conversations.types";
 
 interface AgentChatHistorySidebarProps {
-  instanceId: string;
+  conversationId: string;
 }
 
 export function AgentChatHistorySidebar({
-  instanceId,
+  conversationId,
 }: AgentChatHistorySidebarProps) {
   const dispatch = useAppDispatch();
-  const agentId = useAppSelector(selectInstanceAgentId(instanceId));
+  const agentId = useAppSelector(selectInstanceAgentId(conversationId));
 
   const selectConversations = agentId
     ? makeSelectAgentConversations(agentId, null)

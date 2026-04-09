@@ -112,16 +112,13 @@ export interface ConversationTurn {
 }
 
 export interface InstanceConversationHistoryEntry {
-  instanceId: string;
+  conversationId: string;
 
   /**
    * The endpoint mode — determines whether history is sent on next turn.
    * Set at instance creation time and updated if the mode switches.
    */
   mode: ConversationMode;
-
-  /** The server-assigned conversation ID (set after first response) */
-  conversationId: string | null;
 
   /** Ordered turn history */
   turns: ConversationTurn[];
@@ -136,7 +133,7 @@ export interface InstanceConversationHistoryEntry {
 }
 
 export interface InstanceConversationHistoryState {
-  byInstanceId: Record<string, InstanceConversationHistoryEntry>;
+  byConversationId: Record<string, InstanceConversationHistoryEntry>;
 }
 
 // =============================================================================
@@ -152,7 +149,7 @@ function newTurnId(): string {
 // =============================================================================
 
 const initialState: InstanceConversationHistoryState = {
-  byInstanceId: {},
+  byConversationId: {},
 };
 
 const instanceConversationHistorySlice = createSlice({
@@ -163,16 +160,15 @@ const instanceConversationHistorySlice = createSlice({
     initInstanceHistory(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         mode?: ConversationMode;
       }>,
     ) {
-      const { instanceId, mode = "agent" } = action.payload;
-      if (!state.byInstanceId[instanceId]) {
-        state.byInstanceId[instanceId] = {
-          instanceId,
+      const { conversationId, mode = "agent" } = action.payload;
+      if (!state.byConversationId[conversationId]) {
+        state.byConversationId[conversationId] = {
+          conversationId,
           mode,
-          conversationId: null,
           turns: [],
           loadedFromHistory: false,
           title: null,
@@ -189,22 +185,22 @@ const instanceConversationHistorySlice = createSlice({
     addUserTurn(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         content: string;
         contentBlocks?: Array<Record<string, unknown>>;
-        conversationId?: string | null;
+        serverConversationId?: string | null;
         systemGenerated?: boolean;
       }>,
     ) {
       const {
-        instanceId,
+        conversationId,
         content,
         contentBlocks,
-        conversationId = null,
+        serverConversationId = null,
         systemGenerated,
       } = action.payload;
 
-      const entry = state.byInstanceId[instanceId];
+      const entry = state.byConversationId[conversationId];
       if (!entry) return;
 
       entry.turns.push({
@@ -214,7 +210,7 @@ const instanceConversationHistorySlice = createSlice({
         ...(contentBlocks && { contentBlocks }),
         timestamp: new Date().toISOString(),
         requestId: null,
-        conversationId,
+        conversationId: serverConversationId,
         ...(systemGenerated && { systemGenerated }),
       });
     },
@@ -226,10 +222,10 @@ const instanceConversationHistorySlice = createSlice({
     commitAssistantTurn(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         requestId: string;
         content: string;
-        conversationId: string | null;
+        serverConversationId: string | null;
         tokenUsage?: TokenUsage;
         finishReason?: string;
         completionStats?: CompletionStats;
@@ -237,26 +233,21 @@ const instanceConversationHistorySlice = createSlice({
       }>,
     ) {
       const {
-        instanceId,
+        conversationId,
         requestId,
         content,
-        conversationId,
+        serverConversationId,
         tokenUsage,
         finishReason,
         completionStats,
         errorMessage,
       } = action.payload;
 
-      const entry = state.byInstanceId[instanceId];
+      const entry = state.byConversationId[conversationId];
       if (!entry) return;
 
-      // Update the stored conversationId for subsequent turns
-      if (conversationId && !entry.conversationId) {
-        entry.conversationId = conversationId;
-        // Switch mode to 'conversation' for all subsequent turns
-        if (entry.mode === "agent") {
-          entry.mode = "conversation";
-        }
+      if (serverConversationId && entry.mode === "agent") {
+        entry.mode = "conversation";
       }
 
       entry.turns.push({
@@ -265,7 +256,7 @@ const instanceConversationHistorySlice = createSlice({
         content,
         timestamp: new Date().toISOString(),
         requestId,
-        conversationId,
+        conversationId: serverConversationId,
         ...(tokenUsage && { tokenUsage }),
         ...(finishReason && { finishReason }),
         ...(completionStats && { completionStats }),
@@ -282,13 +273,13 @@ const instanceConversationHistorySlice = createSlice({
     attachClientMetrics(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         requestId: string;
         clientMetrics: ClientMetrics;
       }>,
     ) {
-      const { instanceId, requestId, clientMetrics } = action.payload;
-      const entry = state.byInstanceId[instanceId];
+      const { conversationId, requestId, clientMetrics } = action.payload;
+      const entry = state.byConversationId[conversationId];
       if (!entry) return;
 
       const turn = entry.turns
@@ -307,24 +298,17 @@ const instanceConversationHistorySlice = createSlice({
     loadConversationHistory(
       state,
       action: PayloadAction<{
-        instanceId: string;
-        turns: ConversationTurn[];
         conversationId: string;
+        turns: ConversationTurn[];
         mode?: ConversationMode;
       }>,
     ) {
-      const {
-        instanceId,
-        turns,
-        conversationId,
-        mode = "conversation",
-      } = action.payload;
+      const { conversationId, turns, mode = "conversation" } = action.payload;
 
-      const entry = state.byInstanceId[instanceId];
+      const entry = state.byConversationId[conversationId];
       if (!entry) return;
 
       entry.turns = turns;
-      entry.conversationId = conversationId;
       entry.mode = mode;
       entry.loadedFromHistory = true;
     },
@@ -333,14 +317,14 @@ const instanceConversationHistorySlice = createSlice({
     setConversationLabel(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         title: string;
         description: string | null;
         keywords: string[] | null;
       }>,
     ) {
-      const { instanceId, title, description, keywords } = action.payload;
-      const entry = state.byInstanceId[instanceId];
+      const { conversationId, title, description, keywords } = action.payload;
+      const entry = state.byConversationId[conversationId];
       if (entry) {
         entry.title = title;
         entry.description = description;
@@ -350,10 +334,9 @@ const instanceConversationHistorySlice = createSlice({
 
     /** Clear all turns (reset for a new run on the same instance). */
     clearHistory(state, action: PayloadAction<string>) {
-      const entry = state.byInstanceId[action.payload];
+      const entry = state.byConversationId[action.payload];
       if (entry) {
         entry.turns = [];
-        entry.conversationId = null;
         entry.loadedFromHistory = false;
         entry.mode = "agent";
         entry.title = null;
@@ -363,13 +346,13 @@ const instanceConversationHistorySlice = createSlice({
     },
 
     removeInstanceHistory(state, action: PayloadAction<string>) {
-      delete state.byInstanceId[action.payload];
+      delete state.byConversationId[action.payload];
     },
   },
 
   extraReducers: (builder) => {
     builder.addCase(destroyInstance, (state, action) => {
-      delete state.byInstanceId[action.payload];
+      delete state.byConversationId[action.payload];
     });
   },
 });

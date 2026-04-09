@@ -15,36 +15,36 @@ import { WindowPanel } from "@/features/window-panels/WindowPanel";
 // ─── WindowPanel body — used by AgentGateWindow ───────────────────────────────
 
 export function AgentGateBody({
-  instanceId,
+  conversationId,
   windowInstanceId,
   onClose,
 }: {
-  instanceId: string;
+  conversationId: string;
   windowInstanceId: string;
   onClose: () => void;
 }) {
   const dispatch = useAppDispatch();
-  const agentName = useAppSelector(selectInstanceAgentName(instanceId));
+  const agentName = useAppSelector(selectInstanceAgentName(conversationId));
   const preExecutionMessage = useAppSelector(
-    selectPreExecutionMessage(instanceId),
+    selectPreExecutionMessage(conversationId),
   );
 
   const handleContinue = () => {
-    dispatch(setPreExecutionSatisfied({ instanceId, value: true }));
+    dispatch(setPreExecutionSatisfied({ conversationId, value: true }));
     dispatch(
       closeOverlay({
         overlayId: "agentGateWindow",
-        instanceId: windowInstanceId,
+        conversationId: windowInstanceId,
       }),
     );
   };
 
   const handleCancel = () => {
-    dispatch(destroyInstance(instanceId));
+    dispatch(destroyInstance(conversationId));
     dispatch(
       closeOverlay({
         overlayId: "agentGateWindow",
-        instanceId: windowInstanceId,
+        conversationId: windowInstanceId,
       }),
     );
     onClose();
@@ -86,7 +86,7 @@ export function AgentGateBody({
       footer={footer}
     >
       <AgentGateContent
-        instanceId={instanceId}
+        conversationId={conversationId}
         preExecutionMessage={preExecutionMessage}
       />
     </WindowPanel>
@@ -96,10 +96,10 @@ export function AgentGateBody({
 // ─── Inner content — scrollable variables area + input pinned at bottom ───────
 
 function AgentGateContent({
-  instanceId,
+  conversationId,
   preExecutionMessage,
 }: {
-  instanceId: string;
+  conversationId: string;
   preExecutionMessage: string | null | undefined;
 }) {
   return (
@@ -121,7 +121,7 @@ function AgentGateContent({
       {/* Input pinned to bottom */}
       <div className="shrink-0 px-3 pb-3 border-t border-border/30 pt-3 flex justify-center">
         <SmartAgentInput
-          instanceId={instanceId}
+          conversationId={conversationId}
           placeholder="Additional instructions (optional)..."
           compact
           showSendButton={false}

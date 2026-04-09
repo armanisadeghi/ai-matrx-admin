@@ -9,7 +9,7 @@
  *
  * On conversation click → ?conversationId= (clears ?runId=)
  * On run click → ?runId= (clears ?conversationId=)
- * "New" → clears URL params + recreateManualInstance, reports new ID via onInstanceCreated
+ * "New" → clears URL params + startNewConversation (focus registry updates the surface)
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -46,12 +46,11 @@ interface AgentRun {
 
 interface AgentRunsSidebarProps {
   agentId: string;
-  instanceId: string;
+  conversationId: string;
+  surfaceKey: string;
   /** URL ?conversationId= — takes precedence over live instance conversation. */
   conversationIdFromUrl?: string;
   currentRunId?: string;
-  /** Called after a new instance is created so the parent can update its instanceId state. */
-  onInstanceCreated?: (newInstanceId: string) => void;
   onClose: () => void;
 }
 
@@ -70,10 +69,10 @@ function formatDate(iso: string | null): string {
 
 export function AgentRunsSidebar({
   agentId,
-  instanceId,
+  conversationId,
+  surfaceKey,
   conversationIdFromUrl,
   currentRunId,
-  onInstanceCreated,
   onClose,
 }: AgentRunsSidebarProps) {
   const dispatch = useAppDispatch();
@@ -89,11 +88,12 @@ export function AgentRunsSidebar({
     params.delete("conversationId");
     router.replace(`${pathname}?${params.toString()}`);
 
-    dispatch(recreateManualInstance(instanceId))
+    dispatch(
+      recreateManualInstance({ currentConversationId: conversationId, surfaceKey }),
+    )
       .unwrap()
-      .then((id) => onInstanceCreated?.(id))
       .catch((err) => console.error("Failed to create new run:", err));
-  }, [instanceId, dispatch, pathname, router, searchParams, onInstanceCreated]);
+  }, [conversationId, surfaceKey, dispatch, pathname, router, searchParams]);
 
   const canonicalAgentId = useAppSelector((state) => {
     const agent = selectAgentById(state, agentId);
@@ -123,7 +123,7 @@ export function AgentRunsSidebar({
   }, [canonicalAgentId, convStatus, dispatch]);
 
   const liveConversationId = useAppSelector((state) =>
-    instanceId ? selectLatestConversationId(instanceId)(state) : null,
+    conversationId ? selectLatestConversationId(conversationId)(state) : null,
   );
   const activeConversationId =
     conversationIdFromUrl ?? liveConversationId ?? undefined;

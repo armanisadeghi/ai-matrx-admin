@@ -10,38 +10,39 @@ import type { ClientMetrics } from "@/features/agents/types/request.types";
 const EMPTY_TURNS: ConversationTurn[] = [];
 
 export const selectConversationTurns =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): ConversationTurn[] =>
-    state.instanceConversationHistory.byInstanceId[instanceId]?.turns ??
+    state.instanceConversationHistory.byConversationId[conversationId]?.turns ??
     EMPTY_TURNS;
 
 export const selectConversationMode =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): ConversationMode =>
-    state.instanceConversationHistory.byInstanceId[instanceId]?.mode ?? "agent";
+    state.instanceConversationHistory.byConversationId[conversationId]?.mode ?? "agent";
 
 export const selectStoredConversationId =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): string | null =>
-    state.instanceConversationHistory.byInstanceId[instanceId]
-      ?.conversationId ?? null;
+    state.instanceConversationHistory.byConversationId[conversationId]
+      ? conversationId
+      : null;
 
 export const selectTurnCount =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): number =>
-    state.instanceConversationHistory.byInstanceId[instanceId]?.turns.length ??
+    state.instanceConversationHistory.byConversationId[conversationId]?.turns.length ??
     0;
 
 export const selectHasConversationHistory =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): boolean =>
-    (state.instanceConversationHistory.byInstanceId[instanceId]?.turns.length ??
+    (state.instanceConversationHistory.byConversationId[conversationId]?.turns.length ??
       0) > 0;
 
 export const selectLoadedFromHistory =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): boolean =>
-    state.instanceConversationHistory.byInstanceId[instanceId]
+    state.instanceConversationHistory.byConversationId[conversationId]
       ?.loadedFromHistory ?? false;
 
 /**
@@ -49,10 +50,10 @@ export const selectLoadedFromHistory =
  * Used by AgentRequestStats to show the last request's data.
  */
 export const selectLatestCompletionStats =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): CompletionStats | undefined => {
     const turns =
-      state.instanceConversationHistory.byInstanceId[instanceId]?.turns;
+      state.instanceConversationHistory.byConversationId[conversationId]?.turns;
     if (!turns) return undefined;
     // Walk backwards to find the last assistant turn that has completionStats
     for (let i = turns.length - 1; i >= 0; i--) {
@@ -92,10 +93,10 @@ const EMPTY_AGGREGATE: AggregateStats = {
  * Reads from UserRequestResult (aliased as CompletionStats) using the real
  * deeply-typed fields from the auto-generated stream-events.ts.
  */
-export const selectAggregateStats = (instanceId: string) =>
+export const selectAggregateStats = (conversationId: string) =>
   createSelector(
     (state: RootState) =>
-      state.instanceConversationHistory.byInstanceId[instanceId]?.turns,
+      state.instanceConversationHistory.byConversationId[conversationId]?.turns,
     (turns): AggregateStats => {
       if (!turns || turns.length === 0) return EMPTY_AGGREGATE;
 
@@ -147,10 +148,10 @@ export const selectAggregateStats = (instanceId: string) =>
  * Available after finalizeClientMetrics + attachClientMetrics dispatch.
  */
 export const selectLatestClientMetrics =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): ClientMetrics | undefined => {
     const turns =
-      state.instanceConversationHistory.byInstanceId[instanceId]?.turns;
+      state.instanceConversationHistory.byConversationId[conversationId]?.turns;
     if (!turns) return undefined;
     for (let i = turns.length - 1; i >= 0; i--) {
       if (turns[i].role === "assistant" && turns[i].clientMetrics) {
@@ -190,10 +191,10 @@ const EMPTY_AGGREGATE_CLIENT: AggregateClientMetrics = {
   avgTotalDurationMs: null,
 };
 
-export const selectAggregateClientMetrics = (instanceId: string) =>
+export const selectAggregateClientMetrics = (conversationId: string) =>
   createSelector(
     (state: RootState) =>
-      state.instanceConversationHistory.byInstanceId[instanceId]?.turns,
+      state.instanceConversationHistory.byConversationId[conversationId]?.turns,
     (turns): AggregateClientMetrics => {
       if (!turns || turns.length === 0) return EMPTY_AGGREGATE_CLIENT;
 
@@ -257,18 +258,18 @@ export const selectAggregateClientMetrics = (instanceId: string) =>
 // =============================================================================
 
 export const selectConversationTitle =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): string | null =>
-    state.instanceConversationHistory.byInstanceId[instanceId]?.title ?? null;
+    state.instanceConversationHistory.byConversationId[conversationId]?.title ?? null;
 
 export const selectConversationDescription =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): string | null =>
-    state.instanceConversationHistory.byInstanceId[instanceId]?.description ??
+    state.instanceConversationHistory.byConversationId[conversationId]?.description ??
     null;
 
 export const selectConversationKeywords =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): string[] | null =>
-    state.instanceConversationHistory.byInstanceId[instanceId]?.keywords ??
+    state.instanceConversationHistory.byConversationId[conversationId]?.keywords ??
     null;

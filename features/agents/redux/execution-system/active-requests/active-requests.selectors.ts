@@ -62,9 +62,10 @@ export const selectRequest =
   (state: RootState): ActiveRequest | undefined =>
     state.activeRequests.byRequestId[requestId];
 
-export const selectRequestsForInstance = (instanceId: string) =>
+export const selectRequestsForInstance = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.activeRequests.byInstanceId[instanceId],
+    (state: RootState) =>
+      state.activeRequests.byConversationId[conversationId],
     (state: RootState) => state.activeRequests.byRequestId,
     (ids, byRequestId): ActiveRequest[] => {
       if (!ids || ids.length === 0) return [];
@@ -75,9 +76,9 @@ export const selectRequestsForInstance = (instanceId: string) =>
   );
 
 export const selectPrimaryRequest =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): ActiveRequest | undefined => {
-    const ids = state.activeRequests.byInstanceId[instanceId];
+    const ids = state.activeRequests.byConversationId[conversationId];
     if (!ids || ids.length === 0) return undefined;
     return state.activeRequests.byRequestId[ids[ids.length - 1]];
   };
@@ -96,8 +97,11 @@ export const selectAccumulatedText =
 
 export const selectRequestConversationId =
   (requestId: string) =>
-  (state: RootState): string | null =>
-    state.activeRequests.byRequestId[requestId]?.conversationId ?? null;
+  (state: RootState): string | null => {
+    const r = state.activeRequests.byRequestId[requestId];
+    if (!r) return null;
+    return r.serverConversationId ?? r.conversationId;
+  };
 
 export const selectHasActiveRequests = (state: RootState): boolean =>
   Object.values(state.activeRequests.byRequestId).some(
@@ -653,9 +657,10 @@ export const selectErrorIsFatal =
 // Conversation Tree
 // =============================================================================
 
-export const selectConversationTree = (instanceId: string) =>
+export const selectConversationTree = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.activeRequests.byInstanceId[instanceId],
+    (state: RootState) =>
+      state.activeRequests.byConversationId[conversationId],
     (state: RootState) => state.activeRequests.byRequestId,
     (
       ids,

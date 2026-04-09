@@ -16,25 +16,25 @@ import { useAssistantHeartbeat } from "./useAssistantHeartbeat";
 import { X } from "lucide-react";
 
 interface AgentChatAssistantProps {
-  instanceId: string;
+  conversationId: string;
   stackIndex?: number;
   onClose: () => void;
 }
 
 export function AgentChatAssistant({
-  instanceId,
+  conversationId,
   stackIndex = 0,
   onClose,
 }: AgentChatAssistantProps) {
   const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(instanceId),
+    selectNeedsPreExecutionInput(conversationId),
   );
-  const title = useAppSelector(selectInstanceDisplayTitle(instanceId));
-  const isExecuting = useAppSelector(selectIsExecuting(instanceId));
-  const turnCount = useAppSelector(selectTurnCount(instanceId));
+  const title = useAppSelector(selectInstanceDisplayTitle(conversationId));
+  const isExecuting = useAppSelector(selectIsExecuting(conversationId));
+  const turnCount = useAppSelector(selectTurnCount(conversationId));
 
   const { heartbeatInterval, increaseHeartbeat, decreaseHeartbeat } =
-    useAssistantHeartbeat(instanceId);
+    useAssistantHeartbeat(conversationId);
 
   const [isOpen, setIsOpen] = useState(true);
   const [isExiting, setIsExiting] = useState(false);
@@ -97,7 +97,7 @@ export function AgentChatAssistant({
     setTimeout(onClose, 300);
   }, [onClose]);
 
-  if (needsPreExecution) return <ExecutionManager instanceId={instanceId} />;
+  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
 
   const bottomOffset = 16 + stackIndex * 56;
   const rightOffset = 16 + stackIndex * 320;
@@ -144,10 +144,10 @@ export function AgentChatAssistant({
             </div>
 
             {/* Card stack */}
-            <AssistantCardStack instanceId={instanceId} />
+            <AssistantCardStack conversationId={conversationId} />
 
             {/* Compact input */}
-            <CompactAssistantInput instanceId={instanceId} />
+            <CompactAssistantInput conversationId={conversationId} />
           </div>
         </div>
       )}

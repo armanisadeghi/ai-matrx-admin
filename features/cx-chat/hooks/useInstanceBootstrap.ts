@@ -145,7 +145,7 @@ export function useInstanceBootstrap() {
       if (urlInstanceId) {
         const stillAlive = await dispatch(
           (_: unknown, getState: () => RootState) =>
-            !!getState().executionInstances.byInstanceId[urlInstanceId],
+            !!getState().executionInstances.byConversationId[urlInstanceId],
         );
         if (stillAlive) resolvedId = urlInstanceId;
       }
@@ -156,7 +156,7 @@ export function useInstanceBootstrap() {
         if (cached) {
           const stillAlive = await dispatch(
             (_: unknown, getState: () => RootState) =>
-              !!getState().executionInstances.byInstanceId[cached],
+              !!getState().executionInstances.byConversationId[cached],
           );
           if (stillAlive) resolvedId = cached;
         }
@@ -173,7 +173,7 @@ export function useInstanceBootstrap() {
           }),
         );
         if (launchAgentExecution.fulfilled.match(result)) {
-          resolvedId = result.payload.instanceId;
+          resolvedId = result.payload.conversationId;
           instanceByAgentId.current.set(agentId, resolvedId);
         }
       }
@@ -191,10 +191,7 @@ export function useInstanceBootstrap() {
       // 4. Load conversation history for /c/ routes.
       if (conversationId) {
         dispatch(
-          fetchConversationHistory({
-            conversationId,
-            instanceId: resolvedId,
-          }),
+          fetchConversationHistory({ conversationId }),
         );
       }
     })();

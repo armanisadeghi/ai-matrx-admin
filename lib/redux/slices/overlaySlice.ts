@@ -95,6 +95,9 @@ const initialState: OverlayState = {
     aiVoiceWindow: makeDefaultInstance(),
     agentGateWindow: makeDefaultInstance(),
     agentSettingsWindow: makeDefaultInstance(),
+    agentContentWindow: makeDefaultInstance(),
+    executionInspectorWindow: makeDefaultInstance(),
+    agentAssistantMarkdownDebugWindow: makeDefaultInstance(),
     // Agent execution widget overlays — each is autonomous, instanced
     agentFullModal: makeDefaultInstance(),
     agentCompactModal: makeDefaultInstance(),
@@ -441,13 +444,13 @@ export const openUndoHistory = (options: UndoHistoryPayload) =>
   });
 
 interface StreamDebugPayload {
-  instanceId: string;
+  conversationId: string;
 }
 
 export const openStreamDebug = (options: StreamDebugPayload) =>
   openOverlay({
     overlayId: "streamDebug",
-    data: { instanceId: options.instanceId },
+    data: { conversationId: options.conversationId },
   });
 
 interface ContextSwitcherWindowPayload {
@@ -496,16 +499,16 @@ export const openAiVoiceWindow = (options?: AiVoiceWindowPayload) =>
 
 interface AgentGateWindowPayload {
   /** The instanceId of the window panel itself (used as the overlay instance key). */
-  instanceId: string;
+  conversationId: string;
   /** The agent execution instanceId whose gate input to render. */
-  agentInstanceId: string;
+  gateWindowId: string;
 }
 
 export const openAgentGateWindow = (options: AgentGateWindowPayload) =>
   openOverlay({
     overlayId: "agentGateWindow",
-    instanceId: options.instanceId,
-    data: { agentInstanceId: options.agentInstanceId },
+    conversationId: options.conversationId,
+    data: { gateWindowId: options.gateWindowId },
   });
 
 interface HierarchyCreationWindowPayload {
@@ -539,6 +542,19 @@ export const openAgentSettingsWindow = (options?: AgentSettingsWindowPayload) =>
     overlayId: "agentSettingsWindow",
     instanceId: options?.instanceId,
     data: { initialAgentId: options?.agentId },
+  });
+
+interface AgentContentWindowPayload {
+  agentId: string;
+  initialTab?: "messages" | "variables" | "tools";
+  instanceId?: string;
+}
+
+export const openAgentContentWindow = (options: AgentContentWindowPayload) =>
+  openOverlay({
+    overlayId: "agentContentWindow",
+    instanceId: options?.instanceId,
+    data: { initialAgentId: options.agentId, initialTab: options.initialTab },
   });
 
 // ============================================================================

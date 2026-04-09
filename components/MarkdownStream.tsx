@@ -32,6 +32,11 @@ export interface MarkdownStreamProps {
   isStreamActive?: boolean;
   /** Callback for content changes */
   onContentChange?: (newContent: string) => void;
+  /**
+   * When false (with onContentChange), block edits are reported via onContentChange but
+   * the visible markdown stays tied to the `content` prop (no local edited overlay).
+   */
+  applyLocalEdits?: boolean;
   /** Additional analysis data */
   analysisData?: any;
   /** Message ID for identification */

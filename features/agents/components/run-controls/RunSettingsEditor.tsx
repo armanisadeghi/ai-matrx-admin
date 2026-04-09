@@ -20,7 +20,7 @@ import { SystemInstructionModal } from "../builder/message-builders/system-instr
 import { NumberStepper } from "@/components/official-candidate/NumberStepper";
 
 interface RunSettingsEditorProps {
-  instanceId: string;
+  conversationId: string;
 }
 
 function SettingRow({
@@ -52,13 +52,13 @@ function SettingRow({
   );
 }
 
-export function RunSettingsEditor({ instanceId }: RunSettingsEditorProps) {
+export function RunSettingsEditor({ conversationId }: RunSettingsEditorProps) {
   const dispatch = useAppDispatch();
   const settings =
-    useAppSelector(selectBuilderAdvancedSettings(instanceId)) ??
+    useAppSelector(selectBuilderAdvancedSettings(conversationId)) ??
     DEFAULT_BUILDER_ADVANCED_SETTINGS;
   const reuseConversationId = useAppSelector(
-    selectReuseConversationId(instanceId),
+    selectReuseConversationId(conversationId),
   );
   const [sysModalOpen, setSysModalOpen] = useState(false);
 
@@ -66,44 +66,44 @@ export function RunSettingsEditor({ instanceId }: RunSettingsEditorProps) {
     <>
       <div className="space-y-0.5">
         <SettingRow
-          id={`debug-${instanceId}`}
+          id={`debug-${conversationId}`}
           label="Debug mode"
           checked={settings.debug}
           onChange={(v) =>
             dispatch(
-              setBuilderAdvancedSettings({ instanceId, changes: { debug: v } }),
+              setBuilderAdvancedSettings({ conversationId, changes: { debug: v } }),
             )
           }
         />
         <SettingRow
-          id={`store-${instanceId}`}
+          id={`store-${conversationId}`}
           label="Save to DB"
           checked={settings.store}
           onChange={(v) =>
             dispatch(
-              setBuilderAdvancedSettings({ instanceId, changes: { store: v } }),
+              setBuilderAdvancedSettings({ conversationId, changes: { store: v } }),
             )
           }
         />
         <SettingRow
-          id={`reuse-cid-${instanceId}`}
+          id={`reuse-cid-${conversationId}`}
           label="Reuse conversation ID"
           checked={reuseConversationId}
           onChange={(v) =>
-            dispatch(setReuseConversationId({ instanceId, value: v }))
+            dispatch(setReuseConversationId({ conversationId, value: v }))
           }
         />
 
         <Separator className="!my-1.5" />
 
         <SettingRow
-          id={`structured-sys-${instanceId}`}
+          id={`structured-sys-${conversationId}`}
           label="Structured system prompt"
           checked={settings.useStructuredSystemInstruction}
           onChange={(v) =>
             dispatch(
               setBuilderAdvancedSettings({
-                instanceId,
+                conversationId,
                 changes: { useStructuredSystemInstruction: v },
               }),
             )
@@ -133,7 +133,7 @@ export function RunSettingsEditor({ instanceId }: RunSettingsEditorProps) {
             onChange={(v) =>
               dispatch(
                 setBuilderAdvancedSettings({
-                  instanceId,
+                  conversationId,
                   changes: { maxIterations: v },
                 }),
               )
@@ -153,7 +153,7 @@ export function RunSettingsEditor({ instanceId }: RunSettingsEditorProps) {
             onChange={(v) =>
               dispatch(
                 setBuilderAdvancedSettings({
-                  instanceId,
+                  conversationId,
                   changes: { maxRetriesPerIteration: v },
                 }),
               )
@@ -166,7 +166,7 @@ export function RunSettingsEditor({ instanceId }: RunSettingsEditorProps) {
       </div>
 
       <SystemInstructionModal
-        instanceId={instanceId}
+        conversationId={conversationId}
         open={sysModalOpen}
         onOpenChange={setSysModalOpen}
       />

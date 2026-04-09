@@ -10,17 +10,13 @@
 
 import { useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import {
-  selectAgentModelId,
-  selectAgentSettings,
-} from "@/features/agents/redux/agent-definition/selectors";
+import { selectAgentModelId } from "@/features/agents/redux/agent-definition/selectors";
 import { setAgentField } from "@/features/agents/redux/agent-definition/slice";
 import { AgentSettingsModal } from "@/features/agents/components/settings-management/AgentSettingsModal";
 import { AgentVariablesModal } from "@/features/agents/components/variables-management/AgentVariablesModal";
 import { AgentToolsModal } from "@/features/agents/components/tools-management/AgentToolsModal";
 import { Label } from "@/components/ui/label";
 import { SmartModelSelect } from "@/features/ai-models/components/smart/SmartModelSelect";
-import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 interface AgentModelConfigurationProps {
   agentId: string;

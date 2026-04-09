@@ -5,11 +5,12 @@
  *
  * Two usage modes:
  *
- * 1. **Managed** — pass an agentId to auto-create, track, and destroy an instance:
+ * 1. **Managed** — pass an agentId + surfaceKey to auto-create and track a conversation:
  *    ```tsx
- *    const { instanceId, setInstanceId, launchShortcut, close } = useAgentLauncher(agentId, {
+ *    const { conversationId, launchShortcut, close } = useAgentLauncher(agentId, {
+ *      surfaceKey: "agent-builder",
  *      sourceFeature: "agent-builder",
- *      useChat: true,
+ *      conversationMode: "chat",
  *    });
  *    ```
  *
@@ -20,17 +21,21 @@
  *    ```
  *
  * All paths delegate to the `launchAgentExecution` orchestrator thunk which
- * handles instance creation, source tracking, display-mode routing, and execution.
+ * handles conversation creation, source tracking, display-mode routing, and execution.
  */
 
-import { useCallback, useEffect, useState } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useCallback, useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   launchAgentExecution,
   type LaunchAgentOptions,
   type LaunchResult,
 } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
+import {
+  setFocus,
+  selectFocusedConversation,
+} from "@/features/agents/redux/execution-system/conversation-focus";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
 import type { LaunchAgentOverrides } from "@/features/agents/types/instance.types";
 export type { LaunchAgentOverrides } from "@/features/agents/types/instance.types";
@@ -40,7 +45,9 @@ export type { LaunchAgentOverrides } from "@/features/agents/types/instance.type
 // =============================================================================
 
 export interface ManagedAgentOptions extends LaunchAgentOverrides {
-  /** Delay instance creation until the caller signals readiness. Default: true */
+  /** Stable surface key for the focus registry (e.g. "agent-builder", "agent-runner:<id>") */
+  surfaceKey: string;
+  /** Delay conversation creation until the caller signals readiness. Default: true */
   ready?: boolean;
 }
 
@@ -62,12 +69,11 @@ interface ImperativeMethods {
 
   launchChat: (options?: LaunchAgentOverrides) => Promise<LaunchResult>;
 
-  close: (instanceId: string) => void;
+  close: (conversationId: string) => void;
 }
 
 interface ManagedReturn extends ImperativeMethods {
-  instanceId: string | null;
-  setInstanceId: (id: string | null) => void;
+  conversationId: string | null;
 }
 
 // =============================================================================
@@ -77,7 +83,7 @@ interface ManagedReturn extends ImperativeMethods {
 export function useAgentLauncher(): ImperativeMethods;
 export function useAgentLauncher(
   agentId: string,
-  options?: ManagedAgentOptions,
+  options: ManagedAgentOptions,
 ): ManagedReturn;
 
 // =============================================================================
@@ -89,6 +95,11 @@ export function useAgentLauncher(
   options?: ManagedAgentOptions,
 ): ImperativeMethods | ManagedReturn {
   const dispatch = useAppDispatch();
+
+  const surfaceKey = options?.surfaceKey;
+  const conversationId = useAppSelector(
+    surfaceKey ? selectFocusedConversation(surfaceKey) : () => null,
+  );
 
   // ── Imperative methods (always created) ──────────────────────────────────
 
@@ -111,7 +122,6 @@ export function useAgentLauncher(
         variables: opts?.variables,
         overrides: opts?.overrides,
         applicationScope: opts?.applicationScope,
-        useChat: opts?.useChat,
         variableInputStyle: opts?.variableInputStyle,
         onComplete: opts?.onComplete,
         onTextReplace: opts?.onTextReplace,
@@ -144,7 +154,6 @@ export function useAgentLauncher(
         usePreExecutionInput: opts?.usePreExecutionInput,
         userInput: opts?.userInput,
         variables: opts?.variables,
-        useChat: opts?.useChat,
         onComplete: opts?.onComplete,
         onTextReplace: opts?.onTextReplace,
         onTextInsertBefore: opts?.onTextInsertBefore,
@@ -174,7 +183,7 @@ export function useAgentLauncher(
         usePreExecutionInput: opts?.usePreExecutionInput,
         userInput: opts?.userInput,
         variables: opts?.variables,
-        useChat: true,
+        conversationMode: "chat",
         onComplete: opts?.onComplete,
         onTextReplace: opts?.onTextReplace,
         onTextInsertBefore: opts?.onTextInsertBefore,
@@ -193,9 +202,9 @@ export function useAgentLauncher(
     [dispatch],
   );
 
-  // ── Managed lifecycle (only active when agentId is provided) ─────────────
+  // ── Managed lifecycle (only active when agentId + surfaceKey are provided) ──
 
-  const isManaged = agentId != null;
+  const isManaged = agentId != null && surfaceKey != null;
   const {
     ready = true,
     displayMode = "direct",
@@ -213,7 +222,6 @@ export function useAgentLauncher(
     overrides,
     sourceFeature,
     applicationScope,
-    useChat,
     variableInputStyle,
     onComplete,
     onTextReplace,
@@ -222,14 +230,12 @@ export function useAgentLauncher(
     originalText,
   } = options ?? {};
 
-  const [instanceId, setInstanceId] = useState<string | null>(null);
-
   useEffect(() => {
-    if (!isManaged || !ready) return;
+    if (!isManaged || !ready || !surfaceKey) return;
 
     let createdId: string | null = null;
 
-    launchAgent(agentId, {
+    launchAgent(agentId!, {
       displayMode,
       autoRun,
       allowChat,
@@ -245,7 +251,6 @@ export function useAgentLauncher(
       overrides,
       sourceFeature,
       applicationScope,
-      useChat,
       variableInputStyle,
       onComplete,
       onTextReplace,
@@ -254,25 +259,26 @@ export function useAgentLauncher(
       originalText,
     })
       .then((result) => {
-        createdId = result.instanceId;
-        setInstanceId(result.instanceId);
+        createdId = result.conversationId;
+        dispatch(
+          setFocus({ surfaceKey, conversationId: result.conversationId }),
+        );
       })
-      .catch((err) => console.error("Failed to create agent instance:", err));
+      .catch((err) =>
+        console.error("Failed to create agent conversation:", err),
+      );
 
     return () => {
       if (createdId) {
         dispatch(destroyInstance(createdId));
       }
     };
-    // Re-create when agentId changes or readiness flips.
-    // All other options are static per call-site — intentionally excluded.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agentId, ready, isManaged]);
+  }, [agentId, ready, isManaged, surfaceKey]);
 
   if (isManaged) {
     return {
-      instanceId,
-      setInstanceId,
+      conversationId,
       launchAgent,
       launchShortcut,
       launchChat,

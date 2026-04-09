@@ -13,17 +13,17 @@ import { cn } from "@/lib/utils";
 // ─── Pre-execution compact card (portalled, no WindowPanel) ──────────────────
 
 export function PreExecutionCard({
-  instanceId,
+  conversationId,
   onClose,
 }: {
-  instanceId: string;
+  conversationId: string;
   onClose: () => void;
 }) {
   const dispatch = useAppDispatch();
-  const agentName = useAppSelector(selectInstanceAgentName(instanceId));
-  const hasInput = useAppSelector(selectHasUserInput(instanceId));
+  const agentName = useAppSelector(selectInstanceAgentName(conversationId));
+  const hasInput = useAppSelector(selectHasUserInput(conversationId));
   const preExecutionMessage = useAppSelector(
-    selectPreExecutionMessage(instanceId),
+    selectPreExecutionMessage(conversationId),
   );
 
   const [portalTarget, setPortalTarget] = useState<Element | null>(null);
@@ -32,11 +32,11 @@ export function PreExecutionCard({
   }, []);
 
   const handleContinue = () => {
-    dispatch(setPreExecutionSatisfied({ instanceId, value: true }));
+    dispatch(setPreExecutionSatisfied({ conversationId, value: true }));
   };
 
   const handleCancel = () => {
-    dispatch(destroyInstance(instanceId));
+    dispatch(destroyInstance(conversationId));
     onClose();
   };
 
@@ -88,7 +88,7 @@ export function PreExecutionCard({
 
         <div className="px-3 pt-0.5 pb-3">
           <SmartAgentInput
-            instanceId={instanceId}
+            conversationId={conversationId}
             compact
             placeholder="Additional instructions (optional)..."
             showSubmitOnEnterToggle={false}

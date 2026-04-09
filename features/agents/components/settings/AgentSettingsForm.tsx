@@ -1,8 +1,12 @@
 "use client";
 
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
+import {
+  selectAgentById,
+  selectAllAgentsArray,
+} from "@/features/agents/redux/agent-definition/selectors";
 import { saveAgentField } from "@/features/agents/redux/agent-definition/thunks";
+import { openAgentContentWindow } from "@/lib/redux/slices/overlaySlice";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -36,9 +40,7 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
   const dispatch = useAppDispatch();
   const agent = useAppSelector((state) => selectAgentById(state, agentId));
   const modelId = agent?.modelId || "";
-  const allAgents = useAppSelector((state) =>
-    Object.values(state.agentDefinition.agents),
-  );
+  const allAgents = useAppSelector(selectAllAgentsArray);
 
   const [draft, setDraft] = useState<Partial<AgentDefinition>>({});
   const [tagsInput, setTagsInput] = useState("");
@@ -229,12 +231,12 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
                 {/* Color splash */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
 
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-5">
+                <div className="flex flex-col gap-5">
                   <div className="flex flex-col gap-1.5">
                     <span className="text-muted-foreground/70 uppercase tracking-widest text-[10px] font-bold">
                       ID
                     </span>
-                    <div className="flex items-center gap-1.5 bg-background/60 rounded-md pl-2.5 pr-1 py-1 border border-border/50">
+                    <div className="flex items-center gap-1.5 bg-background/60 rounded-md pl-2.5 pr-1 py-1 border border-border/50 max-w-fit">
                       <span className="font-mono text-foreground/80 text-[11px] tracking-tight">
                         {agent.id}
                       </span>
@@ -250,62 +252,32 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
                     </div>
                   </div>
 
-                  <div className="flex w-full basis-full flex-col gap-5 sm:flex-row sm:items-start sm:justify-between sm:gap-8 md:gap-12">
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-muted-foreground/70 uppercase tracking-widest text-[10px] font-bold">
-                        Model
-                      </span>
-                      <span className="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 truncate max-w-[150px]">
-                        {modelName || modelId || "Default Selection"}
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-muted-foreground/70 uppercase tracking-widest text-[10px] font-bold">
-                        Ownership
-                      </span>
-                      <span className="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-semibold bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
-                        {ownership}
-                      </span>
-                    </div>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-muted-foreground/70 uppercase tracking-widest text-[10px] font-bold">
+                      Model
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 truncate max-w-fit">
+                      {modelName || modelId || "Default Selection"}
+                    </span>
+                  </div>
 
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-muted-foreground/70 uppercase tracking-widest text-[10px] font-bold">
-                        Type
-                      </span>
-                      <span className="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-semibold bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
-                        {agent.agentType === "builtin"
-                          ? "System"
-                          : "User Generated"}
-                      </span>
-                    </div>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-muted-foreground/70 uppercase tracking-widest text-[10px] font-bold">
+                      Ownership
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-semibold bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20 max-w-fit">
+                      {ownership}
+                    </span>
                   </div>
-                </div>
 
-                {/* Metrics */}
-                <div className="flex items-center gap-3">
-                  <div className="flex flex-1 flex-col items-center justify-center bg-background/40 border border-border/50 rounded-lg py-2.5 transition-colors hover:bg-background/60 hover:border-primary/20">
-                    <span className="text-muted-foreground/70 uppercase tracking-wider text-[10px] font-bold mb-1">
-                      Messages
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-muted-foreground/70 uppercase tracking-widest text-[10px] font-bold">
+                      Type
                     </span>
-                    <span className="font-mono font-bold text-lg text-foreground/90">
-                      {agent.messages?.length || 0}
-                    </span>
-                  </div>
-                  <div className="flex flex-1 flex-col items-center justify-center bg-background/40 border border-border/50 rounded-lg py-2.5 transition-colors hover:bg-background/60 hover:border-primary/20">
-                    <span className="text-muted-foreground/70 uppercase tracking-wider text-[10px] font-bold mb-1">
-                      Variables
-                    </span>
-                    <span className="font-mono font-bold text-lg text-foreground/90">
-                      {agent.variableDefinitions?.length || 0}
-                    </span>
-                  </div>
-                  <div className="flex flex-1 flex-col items-center justify-center bg-background/40 border border-border/50 rounded-lg py-2.5 transition-colors hover:bg-background/60 hover:border-primary/20">
-                    <span className="text-muted-foreground/70 uppercase tracking-wider text-[10px] font-bold mb-1">
-                      Tools
-                    </span>
-                    <span className="font-mono font-bold text-lg text-foreground/90">
-                      {(agent.tools?.length || 0) +
-                        (agent.customTools?.length || 0)}
+                    <span className="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-semibold bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20 max-w-fit">
+                      {agent.agentType === "builtin"
+                        ? "System"
+                        : "User Generated"}
                     </span>
                   </div>
                 </div>
@@ -392,6 +364,69 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
                   />
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Clickable Metrics Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              className="flex flex-col items-center justify-center bg-card/40 backdrop-blur-sm border border-border/60 rounded-xl py-6 transition-all hover:bg-card/70 hover:border-primary/50 hover:shadow-md cursor-pointer group relative overflow-hidden"
+              onClick={() =>
+                dispatch(
+                  openAgentContentWindow({
+                    agentId: agent.id,
+                    initialTab: "messages",
+                  }),
+                )
+              }
+            >
+              <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-blue-500/20 transition-colors"></div>
+              <span className="text-muted-foreground/80 uppercase tracking-wider text-[11px] font-bold mb-2 group-hover:text-primary transition-colors">
+                Messages
+              </span>
+              <span className="font-mono font-bold text-3xl text-foreground/90">
+                {agent.messages?.length || 0}
+              </span>
+            </div>
+
+            <div
+              className="flex flex-col items-center justify-center bg-card/40 backdrop-blur-sm border border-border/60 rounded-xl py-6 transition-all hover:bg-card/70 hover:border-primary/50 hover:shadow-md cursor-pointer group relative overflow-hidden"
+              onClick={() =>
+                dispatch(
+                  openAgentContentWindow({
+                    agentId: agent.id,
+                    initialTab: "variables",
+                  }),
+                )
+              }
+            >
+              <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-purple-500/20 transition-colors"></div>
+              <span className="text-muted-foreground/80 uppercase tracking-wider text-[11px] font-bold mb-2 group-hover:text-primary transition-colors">
+                Variables
+              </span>
+              <span className="font-mono font-bold text-3xl text-foreground/90">
+                {agent.variableDefinitions?.length || 0}
+              </span>
+            </div>
+
+            <div
+              className="flex flex-col items-center justify-center bg-card/40 backdrop-blur-sm border border-border/60 rounded-xl py-6 transition-all hover:bg-card/70 hover:border-primary/50 hover:shadow-md cursor-pointer group relative overflow-hidden"
+              onClick={() =>
+                dispatch(
+                  openAgentContentWindow({
+                    agentId: agent.id,
+                    initialTab: "tools",
+                  }),
+                )
+              }
+            >
+              <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-emerald-500/20 transition-colors"></div>
+              <span className="text-muted-foreground/80 uppercase tracking-wider text-[11px] font-bold mb-2 group-hover:text-primary transition-colors">
+                Tools
+              </span>
+              <span className="font-mono font-bold text-3xl text-foreground/90">
+                {(agent.tools?.length || 0) + (agent.customTools?.length || 0)}
+              </span>
             </div>
           </div>
 

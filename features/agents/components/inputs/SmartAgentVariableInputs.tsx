@@ -8,7 +8,7 @@
  * Manages expanded-variable popovers via instanceUIState.
  *
  * Only renders when showVariablePanel is true AND definitions exist.
- * Prop: instanceId only.
+ * Prop: conversationId only.
  */
 
 import { useCallback } from "react";
@@ -35,7 +35,7 @@ import { VariableInputComponent } from "@/features/prompts/components/variable-i
 import { formatText } from "@/utils/text/text-case-converter";
 
 interface SmartAgentVariableInputsProps {
-  instanceId: string;
+  conversationId: string;
   /** Pass through to VariableInputComponent for compact display */
   compact?: boolean;
   /** Called when Enter is pressed on the last variable, or always on Enter if submitOnEnter */
@@ -44,37 +44,37 @@ interface SmartAgentVariableInputsProps {
 }
 
 export function SmartAgentVariableInputs({
-  instanceId,
+  conversationId,
   compact = false,
   onSubmit,
   submitOnEnter = true,
 }: SmartAgentVariableInputsProps) {
   const dispatch = useAppDispatch();
 
-  const showVariablePanel = useAppSelector(selectShowVariablePanel(instanceId));
+  const showVariablePanel = useAppSelector(selectShowVariablePanel(conversationId));
   const shouldShowVariables = useAppSelector(
-    selectShouldShowVariables(instanceId),
+    selectShouldShowVariables(conversationId),
   );
   const definitions = useAppSelector(
-    selectInstanceVariableDefinitions(instanceId),
+    selectInstanceVariableDefinitions(conversationId),
   );
-  const userValues = useAppSelector(selectUserVariableValues(instanceId));
+  const userValues = useAppSelector(selectUserVariableValues(conversationId));
   const expandedVariableId = useAppSelector(
-    selectExpandedVariableId(instanceId),
+    selectExpandedVariableId(conversationId),
   );
 
   const handleValueChange = useCallback(
     (name: string, value: string) => {
-      dispatch(setUserVariableValue({ instanceId, name, value }));
+      dispatch(setUserVariableValue({ conversationId, name, value }));
     },
-    [instanceId, dispatch],
+    [conversationId, dispatch],
   );
 
   const handleExpand = useCallback(
     (name: string | null) => {
-      dispatch(setExpandedVariableId({ instanceId, variableId: name }));
+      dispatch(setExpandedVariableId({ conversationId, variableId: name }));
     },
-    [instanceId, dispatch],
+    [conversationId, dispatch],
   );
 
   const handleVariableKeyDown = useCallback(

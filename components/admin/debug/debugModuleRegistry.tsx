@@ -1,13 +1,19 @@
 // components/admin/debug/debugModuleRegistry.tsx
 
-import { LucideIcon, ShieldCheck, MessageSquare } from 'lucide-react';
-import TokenStatusDebug from './TokenStatusDebug';
-import ChatDebug from './ChatDebug';
-import { ComponentType } from 'react';
+import {
+  LucideIcon,
+  ShieldCheck,
+  MessageSquare,
+  FileCode2,
+} from "lucide-react";
+import TokenStatusDebug from "./TokenStatusDebug";
+import ChatDebug from "./ChatDebug";
+import AgentAssistantMarkdownDebugModule from "./AgentAssistantMarkdownDebugModule";
+import { ComponentType } from "react";
 
 /**
  * Debug Module Definition
- * 
+ *
  * Each debug module represents a specific area of the application
  * that can be inspected/debugged through the Admin Indicator
  */
@@ -22,7 +28,7 @@ export interface DebugModule {
 
 /**
  * Debug Module Registry
- * 
+ *
  * To add a new debug module:
  * 1. Create your debug component in components/admin/debug/
  * 2. Import it here
@@ -32,25 +38,35 @@ export interface DebugModule {
  *    - Lucide icon
  *    - Your component
  *    - Brief description
- * 
+ *
  * That's it! The icon will automatically appear in the Admin Indicator
  */
 export const debugModules: DebugModule[] = [
   {
-    id: 'auth',
-    name: 'Authentication',
+    id: "auth",
+    name: "Authentication",
     icon: ShieldCheck,
     component: TokenStatusDebug,
-    description: 'Monitor token refresh status and session expiry',
-    color: 'text-green-500',
+    description: "Monitor token refresh status and session expiry",
+    color: "text-green-500",
   },
   {
-    id: 'chat',
-    name: 'Chat Session',
+    id: "chat",
+    name: "Chat Session",
     icon: MessageSquare,
     component: ChatDebug,
-    description: 'Live state of the active chat session, agent config, and recent API calls',
-    color: 'text-blue-400',
+    description:
+      "Live state of the active chat session, agent config, and recent API calls",
+    color: "text-blue-400",
+  },
+  {
+    id: "agent-assistant-markdown",
+    name: "Agent MD sink",
+    icon: FileCode2,
+    component: AgentAssistantMarkdownDebugModule,
+    description:
+      "Opens a window with source vs draft markdown (edits from assistant bubbles, debug sink)",
+    color: "text-amber-400",
   },
 ];
 
@@ -58,13 +74,12 @@ export const debugModules: DebugModule[] = [
  * Get a debug module by ID
  */
 export const getDebugModule = (id: string): DebugModule | undefined => {
-  return debugModules.find(module => module.id === id);
+  return debugModules.find((module) => module.id === id);
 };
 
 /**
  * Check if a debug module exists
  */
 export const hasDebugModule = (id: string): boolean => {
-  return debugModules.some(module => module.id === id);
+  return debugModules.some((module) => module.id === id);
 };
-

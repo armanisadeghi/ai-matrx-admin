@@ -25,7 +25,7 @@ import { destroyInstance } from "../execution-instances/execution-instances.slic
 // =============================================================================
 
 export interface InstanceVariableValuesEntry {
-  instanceId: string;
+  conversationId: string;
 
   /**
    * Snapshot of variable definitions copied from the agent at instance creation.
@@ -41,11 +41,11 @@ export interface InstanceVariableValuesEntry {
 }
 
 export interface InstanceVariableValuesState {
-  byInstanceId: Record<string, InstanceVariableValuesEntry>;
+  byConversationId: Record<string, InstanceVariableValuesEntry>;
 }
 
 const initialState: InstanceVariableValuesState = {
-  byInstanceId: {},
+  byConversationId: {},
 };
 
 // =============================================================================
@@ -63,15 +63,15 @@ const instanceVariableValuesSlice = createSlice({
     initInstanceVariables(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         /** Snapshot of variable definitions from the agent. Required for isolation. */
         definitions?: VariableDefinition[];
         scopeValues?: Record<string, unknown>;
       }>,
     ) {
-      const { instanceId, definitions = [], scopeValues = {} } = action.payload;
-      state.byInstanceId[instanceId] = {
-        instanceId,
+      const { conversationId, definitions = [], scopeValues = {} } = action.payload;
+      state.byConversationId[conversationId] = {
+        conversationId,
         definitions,
         userValues: {},
         scopeValues,
@@ -85,13 +85,13 @@ const instanceVariableValuesSlice = createSlice({
     setUserVariableValue(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         name: string;
         value: unknown;
       }>,
     ) {
-      const { instanceId, name, value } = action.payload;
-      const entry = state.byInstanceId[instanceId];
+      const { conversationId, name, value } = action.payload;
+      const entry = state.byConversationId[conversationId];
       if (entry) {
         entry.userValues[name] = value;
       }
@@ -103,12 +103,12 @@ const instanceVariableValuesSlice = createSlice({
     setUserVariableValues(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         values: Record<string, unknown>;
       }>,
     ) {
-      const { instanceId, values } = action.payload;
-      const entry = state.byInstanceId[instanceId];
+      const { conversationId, values } = action.payload;
+      const entry = state.byConversationId[conversationId];
       if (entry) {
         Object.assign(entry.userValues, values);
       }
@@ -119,10 +119,10 @@ const instanceVariableValuesSlice = createSlice({
      */
     clearUserVariableValue(
       state,
-      action: PayloadAction<{ instanceId: string; name: string }>,
+      action: PayloadAction<{ conversationId: string; name: string }>,
     ) {
-      const { instanceId, name } = action.payload;
-      const entry = state.byInstanceId[instanceId];
+      const { conversationId, name } = action.payload;
+      const entry = state.byConversationId[conversationId];
       if (entry) {
         delete entry.userValues[name];
       }
@@ -134,12 +134,12 @@ const instanceVariableValuesSlice = createSlice({
     setScopeVariableValues(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         values: Record<string, unknown>;
       }>,
     ) {
-      const { instanceId, values } = action.payload;
-      const entry = state.byInstanceId[instanceId];
+      const { conversationId, values } = action.payload;
+      const entry = state.byConversationId[conversationId];
       if (entry) {
         entry.scopeValues = values;
       }
@@ -149,20 +149,20 @@ const instanceVariableValuesSlice = createSlice({
      * Reset all user values — fall back entirely to scope + defaults.
      */
     resetUserVariableValues(state, action: PayloadAction<string>) {
-      const entry = state.byInstanceId[action.payload];
+      const entry = state.byConversationId[action.payload];
       if (entry) {
         entry.userValues = {};
       }
     },
 
     removeInstanceVariables(state, action: PayloadAction<string>) {
-      delete state.byInstanceId[action.payload];
+      delete state.byConversationId[action.payload];
     },
   },
 
   extraReducers: (builder) => {
     builder.addCase(destroyInstance, (state, action) => {
-      delete state.byInstanceId[action.payload];
+      delete state.byConversationId[action.payload];
     });
   },
 });

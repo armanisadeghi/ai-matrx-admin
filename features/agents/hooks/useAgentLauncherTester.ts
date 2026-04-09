@@ -6,7 +6,7 @@ import { selectResolvedVariables } from "@/features/agents/redux/execution-syste
 import { selectUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import type { ResultDisplayMode } from "@/features/agents/types/instance.types";
 
-export function useAgentLauncherTester(instanceId: string) {
+export function useAgentLauncherTester(conversationId: string) {
   const { launchAgent } = useAgentLauncher();
   const [testModalOpen, setTestModalOpen] = useState(false);
   const [testModalType, setTestModalType] = useState<"direct" | "background">(
@@ -18,11 +18,15 @@ export function useAgentLauncherTester(instanceId: string) {
   const [showVariables, setShowVariables] = useState(false);
   const [applyVariables, setApplyVariables] = useState(true);
   const [usePreExecutionInput, setUsePreExecutionInput] = useState(false);
-  const [useChat, setUseChat] = useState(false);
+  const [conversationMode, setConversationMode] = useState<
+    "agent" | "conversation" | "chat"
+  >("agent");
 
-  const instance = useAppSelector(selectInstance(instanceId));
-  const currentVariables = useAppSelector(selectResolvedVariables(instanceId));
-  const currentInput = useAppSelector(selectUserInputText(instanceId));
+  const instance = useAppSelector(selectInstance(conversationId));
+  const currentVariables = useAppSelector(
+    selectResolvedVariables(conversationId),
+  );
+  const currentInput = useAppSelector(selectUserInputText(conversationId));
 
   const openWithDisplayType = async (displayMode: ResultDisplayMode) => {
     if (!instance) {
@@ -44,7 +48,7 @@ export function useAgentLauncherTester(instanceId: string) {
         allowChat,
         showVariables,
         usePreExecutionInput,
-        useChat,
+        conversationMode,
         variables: applyVariables ? currentVariables : undefined,
         userInput: currentInput || undefined,
       });
@@ -67,8 +71,8 @@ export function useAgentLauncherTester(instanceId: string) {
     setApplyVariables,
     usePreExecutionInput,
     setUsePreExecutionInput,
-    useChat,
-    setUseChat,
+    conversationMode,
+    setConversationMode,
     instance,
     currentVariables,
     currentInput,

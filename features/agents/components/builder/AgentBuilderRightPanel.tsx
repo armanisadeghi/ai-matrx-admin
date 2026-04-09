@@ -19,14 +19,14 @@ interface AgentBuilderRightPanelProps {
 export function AgentBuilderRightPanel({
   agentId,
 }: AgentBuilderRightPanelProps) {
-  const { instanceId, setInstanceId } = useAgentLauncher(agentId, {
+  const { conversationId } = useAgentLauncher(agentId, {
+    surfaceKey: "agent-builder",
     sourceFeature: "agent-builder",
-    useChat: true,
-    autoClearConversation: true,
     conversationMode: "chat",
+    autoClearConversation: true,
   });
 
-  if (!instanceId) {
+  if (!conversationId) {
     return (
       <div className="flex items-center justify-center h-full gap-3 text-muted-foreground">
         <Loader2 className="w-5 h-5 animate-spin text-primary" />
@@ -37,8 +37,8 @@ export function AgentBuilderRightPanel({
 
   return (
     <AgentConversationColumn
-      instanceId={instanceId}
-      onNewInstance={setInstanceId}
+      conversationId={conversationId}
+      surfaceKey="agent-builder"
       smartInputProps={{
         showAutoClearToggle: true,
         showSubmitOnEnterToggle: true,

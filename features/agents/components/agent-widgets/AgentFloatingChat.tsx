@@ -11,24 +11,24 @@ import { ExecutionManager } from "./execution-gates/ExecutionManager";
 import { AgentChatHistorySidebar } from "./AgentChatHistorySidebar";
 
 interface AgentFloatingChatProps {
-  instanceId: string;
+  conversationId: string;
   onClose: () => void;
 }
 
 // ─── Main export ─────────────────────────────────────────────────────────────
 
 export function AgentFloatingChat({
-  instanceId,
+  conversationId,
   onClose,
 }: AgentFloatingChatProps) {
-  const displayTitle = useAppSelector(selectInstanceDisplayTitle(instanceId));
+  const displayTitle = useAppSelector(selectInstanceDisplayTitle(conversationId));
 
   const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(instanceId),
+    selectNeedsPreExecutionInput(conversationId),
   );
 
   // While waiting for pre-execution, don't render the chat window yet.
-  if (needsPreExecution) return <ExecutionManager instanceId={instanceId} />;
+  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
 
   return (
     <WindowPanel
@@ -40,17 +40,17 @@ export function AgentFloatingChat({
       minHeight={280}
       bodyClassName="p-0"
       urlSyncKey="agent"
-      urlSyncId={instanceId}
+      urlSyncId={conversationId}
       urlSyncArgs={{ m: "fc" }}
-      sidebar={<AgentChatHistorySidebar instanceId={instanceId} />}
+      sidebar={<AgentChatHistorySidebar conversationId={conversationId} />}
       sidebarDefaultSize={250}
       sidebarMinSize={150}
       defaultSidebarOpen={false}
       sidebarExpandsWindow
       sidebarClassName="bg-muted/10"
-      // footer={<AgentChatFooter instanceId={instanceId} />}
+      // footer={<AgentChatFooter conversationId={conversationId} />}
     >
-      <AgentRunner instanceId={instanceId} compact className="h-full" />
+      <AgentRunner conversationId={conversationId} compact className="h-full" />
     </WindowPanel>
   );
 }

@@ -14,11 +14,11 @@ import { destroyInstance } from '../execution-instances/execution-instances.slic
 // =============================================================================
 
 export interface InstanceClientToolsState {
-    byInstanceId: Record<string, string[]>;
+    byConversationId: Record<string, string[]>;
 }
 
 const initialState: InstanceClientToolsState = {
-    byInstanceId: {},
+    byConversationId: {},
 };
 
 // =============================================================================
@@ -32,20 +32,20 @@ const instanceClientToolsSlice = createSlice({
         initInstanceClientTools(
             state,
             action: PayloadAction<{
-                instanceId: string;
+                conversationId: string;
                 tools?: string[];
             }>,
         ) {
-            state.byInstanceId[action.payload.instanceId] =
+            state.byConversationId[action.payload.conversationId] =
                 action.payload.tools ?? [];
         },
 
         addClientTool(
             state,
-            action: PayloadAction<{ instanceId: string; toolName: string }>,
+            action: PayloadAction<{ conversationId: string; toolName: string }>,
         ) {
-            const { instanceId, toolName } = action.payload;
-            const tools = state.byInstanceId[instanceId];
+            const { conversationId, toolName } = action.payload;
+            const tools = state.byConversationId[conversationId];
             if (tools && !tools.includes(toolName)) {
                 tools.push(toolName);
             }
@@ -53,12 +53,12 @@ const instanceClientToolsSlice = createSlice({
 
         removeClientTool(
             state,
-            action: PayloadAction<{ instanceId: string; toolName: string }>,
+            action: PayloadAction<{ conversationId: string; toolName: string }>,
         ) {
-            const { instanceId, toolName } = action.payload;
-            const tools = state.byInstanceId[instanceId];
+            const { conversationId, toolName } = action.payload;
+            const tools = state.byConversationId[conversationId];
             if (tools) {
-                state.byInstanceId[instanceId] = tools.filter(
+                state.byConversationId[conversationId] = tools.filter(
                     (t) => t !== toolName,
                 );
             }
@@ -67,21 +67,21 @@ const instanceClientToolsSlice = createSlice({
         setClientTools(
             state,
             action: PayloadAction<{
-                instanceId: string;
+                conversationId: string;
                 tools: string[];
             }>,
         ) {
-            state.byInstanceId[action.payload.instanceId] = action.payload.tools;
+            state.byConversationId[action.payload.conversationId] = action.payload.tools;
         },
 
         removeInstanceClientTools(state, action: PayloadAction<string>) {
-            delete state.byInstanceId[action.payload];
+            delete state.byConversationId[action.payload];
         },
     },
 
     extraReducers: (builder) => {
         builder.addCase(destroyInstance, (state, action) => {
-            delete state.byInstanceId[action.payload];
+            delete state.byConversationId[action.payload];
         });
     },
 });

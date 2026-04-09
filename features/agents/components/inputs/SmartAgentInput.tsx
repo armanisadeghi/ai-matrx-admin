@@ -4,21 +4,21 @@
  * SmartAgentInput
  *
  * The full-featured message input for agent execution instances.
- * Feature parity with SmartPromptInput — but powered entirely by instanceId.
- * No prop drilling. All state lives in Redux, keyed by instanceId.
+ * Feature parity with SmartPromptInput — but powered entirely by conversationId.
+ * No prop drilling. All state lives in Redux, keyed by conversationId.
  *
  * Capabilities:
  *  - Text input with auto-resize and expand mode
- *  - Variable inputs panel (SmartAgentVariableInputs)
+ *  - Variable inputs (style from instanceUIState.variableInputStyle)
  *  - Resource chips + picker (SmartAgentResourceChips / SmartAgentResourcePickerButton)
  *  - Voice input with auto-transcription
  *  - Submit on Enter toggle (persisted in instanceUIState)
  *  - autoClearConversation toggle (persisted in instanceUIState)
  *  - Creator/debug controls
  *  - Optimistic input clear on send
- *  - Graceful no-op while instanceId is null/undefined
+ *  - Graceful no-op while conversationId is null/undefined
  *
- * Prop: instanceId — the only required prop.
+ * Prop: conversationId — the only required prop.
  */
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
@@ -64,15 +64,21 @@ import { selectInstanceResources } from "@/features/agents/redux/execution-syste
 // Execution
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
 import { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
-import { reInstanceAndExecute } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
+import { startNewConversationAndExecute } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { selectHasConversationHistory } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import { selectConversationMode } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import type { VariableInputStyle } from "@/features/agents/types/instance.types";
 
 // Sub-components
 import { SmartAgentResourceChips } from "./SmartAgentResourceChips";
 import { SmartAgentResourcePickerButton } from "./SmartAgentResourcePickerButton";
 import { SmartAgentVariableInputs } from "./SmartAgentVariableInputs";
 import { WizardAgentVariableInputs } from "./WizardAgentVariableInputs";
+import {
+  AgentCompactVariableInputs,
+  AgentGuidedVariableInputs,
+  AgentVariableCardsInputs,
+} from "./variable-input-styles";
 
 // Voice input
 import { useRecordAndTranscribe } from "@/features/audio";
@@ -93,6 +99,7 @@ import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 
 // Admin debug modal
 import { ChatDebugModal } from "@/features/cx-chat/admin/ChatDebugModal";
+import { AgentVariableInputForm } from "../run/AgentVariableInputForm";
 
 // Inline button helper
 function InputButton({
@@ -127,7 +134,7 @@ function InputButton({
 // =============================================================================
 
 interface SmartAgentInputProps {
-  instanceId: string | null | undefined;
+  conversationId: string | null | undefined;
   placeholder?: string;
   /** Blue = primary accent send button */
   sendButtonVariant?: "default" | "blue";
@@ -146,23 +153,21 @@ interface SmartAgentInputProps {
   /** Hide the variable panel toggle icon ({|}). */
   showVariableIcon?: boolean;
   /**
-   * Called when autoClearConversation is ON and a new instance is created on
-   * submit. The parent should update its local instanceId state with the new id.
+   * Focus-registry surface key (e.g. `agent-runner:${agentId}`). Required when
+   * autoClearConversation is on and the user submits with existing history
+   * (startNewConversationAndExecute + setFocus).
    */
-  onNewInstance?: (newInstanceId: string) => void;
+  surfaceKey?: string;
   /**
    * When true, the send button is hidden and Enter does not trigger execution.
    * Used inside AgentPreExecutionInput where the parent manages the submit flow.
    */
   disableSend?: boolean;
   /**
-   * Controls which variable input UI style is rendered.
-   * - "inline"  — compact rows above the textarea (SmartAgentVariableInputs)
-   * - "wizard"  — one variable at a time, fixed-height card with Back/Skip/Skip All
-   * When omitted, the value from Redux (instanceUIState.variableInputStyle) is used.
-   * Passing a value here overrides Redux for this render tree only.
+   * Controls which variable input UI is rendered (see VARIABLE_INPUT_STYLE_OPTIONS).
+   * When omitted, uses Redux `instanceUIState.variableInputStyle`.
    */
-  variableInputStyle?: "inline" | "wizard";
+  variableInputStyle?: VariableInputStyle;
 }
 
 // =============================================================================
@@ -170,7 +175,7 @@ interface SmartAgentInputProps {
 // =============================================================================
 
 export function SmartAgentInput({
-  instanceId,
+  conversationId,
   placeholder,
   sendButtonVariant = "default",
   showSubmitOnEnterToggle = true,
@@ -181,7 +186,7 @@ export function SmartAgentInput({
   compact = false,
   showSendButton = true,
   showVariableIcon = true,
-  onNewInstance,
+  surfaceKey,
   disableSend = false,
   variableInputStyle,
 }: SmartAgentInputProps) {
@@ -192,43 +197,45 @@ export function SmartAgentInput({
   // ── Local UI state ──────────────────────────────────────────────────────────
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // ── Redux state (all guarded against null instanceId) ──────────────────────
+  // ── Redux state (all guarded against null conversationId) ──────────────────────
   const inputText = useAppSelector((state) =>
-    instanceId ? selectUserInputText(instanceId)(state) : "",
+    conversationId ? selectUserInputText(conversationId)(state) : "",
   );
   const isExecuting = useAppSelector((state) =>
-    instanceId ? selectIsExecuting(instanceId)(state) : false,
+    conversationId ? selectIsExecuting(conversationId)(state) : false,
   );
   const submitOnEnter = useAppSelector((state) =>
-    instanceId ? selectSubmitOnEnter(instanceId)(state) : true,
+    conversationId ? selectSubmitOnEnter(conversationId)(state) : true,
   );
   const autoClearConversation = useAppSelector((state) =>
-    instanceId ? selectAutoClearConversation(instanceId)(state) : false,
+    conversationId ? selectAutoClearConversation(conversationId)(state) : false,
   );
   const showVariablePanel = useAppSelector((state) =>
-    instanceId ? selectShowVariablePanel(instanceId)(state) : false,
+    conversationId ? selectShowVariablePanel(conversationId)(state) : false,
   );
   const isCreator = useAppSelector((state) =>
-    instanceId ? selectIsCreator(instanceId)(state) : false,
+    conversationId ? selectIsCreator(conversationId)(state) : false,
   );
   const showCreatorDebug = useAppSelector((state) =>
-    instanceId ? selectShowCreatorDebug(instanceId)(state) : false,
+    conversationId ? selectShowCreatorDebug(conversationId)(state) : false,
   );
   const reduxVariableInputStyle = useAppSelector((state) =>
-    instanceId ? selectVariableInputStyle(instanceId)(state) : "inline",
+    conversationId ? selectVariableInputStyle(conversationId)(state) : "inline",
   );
   // Prop takes precedence when explicitly provided; otherwise honour Redux state.
   const resolvedVariableInputStyle =
     variableInputStyle ?? reduxVariableInputStyle;
   const hasHistory = useAppSelector((state) =>
-    instanceId ? selectHasConversationHistory(instanceId)(state) : false,
+    conversationId
+      ? selectHasConversationHistory(conversationId)(state)
+      : false,
   );
   const conversationMode = useAppSelector((state) =>
-    instanceId ? selectConversationMode(instanceId)(state) : "agent",
+    conversationId ? selectConversationMode(conversationId)(state) : "agent",
   );
   const isChatMode = conversationMode === "chat";
   const shouldShowVariables = useAppSelector((state) =>
-    instanceId ? selectShouldShowVariables(instanceId)(state) : false,
+    conversationId ? selectShouldShowVariables(conversationId)(state) : false,
   );
 
   // ── Admin / debug ──────────────────────────────────────────────────────────
@@ -237,15 +244,17 @@ export function SmartAgentInput({
   const [isDebugOpen, setIsDebugOpen] = useState(false);
   const { publish: publishDebug } = useDebugContext("AgentInput");
   const latestStatus = useAppSelector((state) =>
-    instanceId ? selectLatestRequestStatus(instanceId)(state) : undefined,
+    conversationId
+      ? selectLatestRequestStatus(conversationId)(state)
+      : undefined,
   );
   const resourceCount = useAppSelector((state) =>
-    instanceId ? selectInstanceResources(instanceId)(state).length : 0,
+    conversationId ? selectInstanceResources(conversationId)(state).length : 0,
   );
   useEffect(() => {
-    if (!instanceId) return;
+    if (!conversationId) return;
     publishDebug({
-      "Instance ID": instanceId,
+      "Instance ID": conversationId,
       "Is Executing": isExecuting,
       "Request Status": latestStatus ?? "—",
       "Should Show Variables": shouldShowVariables,
@@ -254,7 +263,7 @@ export function SmartAgentInput({
       "Has History": hasHistory,
     });
   }, [
-    instanceId,
+    conversationId,
     isExecuting,
     latestStatus,
     shouldShowVariables,
@@ -278,12 +287,14 @@ export function SmartAgentInput({
     stopRecording,
   } = useRecordAndTranscribe({
     onTranscriptionComplete: (result) => {
-      if (result.success && result.text && instanceId) {
+      if (result.success && result.text && conversationId) {
         const newText = inputText
           ? `${inputText}\n${result.text}`
           : result.text;
         pendingVoiceSubmitRef.current = true;
-        dispatch(setUserInputText({ instanceId, text: newText }));
+        dispatch(
+          setUserInputText({ conversationId: conversationId, text: newText }),
+        );
       }
     },
     onError: (error) => {
@@ -294,12 +305,12 @@ export function SmartAgentInput({
 
   // Submit after voice transcription settles
   useEffect(() => {
-    if (pendingVoiceSubmitRef.current && inputText.trim() && instanceId) {
+    if (pendingVoiceSubmitRef.current && inputText.trim() && conversationId) {
       pendingVoiceSubmitRef.current = false;
       setTimeout(() => handleSend(), 50);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputText, instanceId]);
+  }, [inputText, conversationId]);
 
   // ── Auto-resize textarea ────────────────────────────────────────────────────
   useEffect(() => {
@@ -309,17 +320,17 @@ export function SmartAgentInput({
     el.style.height = `${isExpanded ? Math.max(el.scrollHeight, 300) : Math.min(el.scrollHeight, 200)}px`;
   }, [inputText, isExpanded]);
 
-  // ── Auto-focus when instanceId becomes available ────────────────────────────
+  // ── Auto-focus when conversationId becomes available ────────────────────────────
   useEffect(() => {
-    if (!instanceId) return;
+    if (!conversationId) return;
     const t = setTimeout(() => textareaRef.current?.focus(), 100);
     return () => clearTimeout(t);
-  }, [instanceId]);
+  }, [conversationId]);
 
   // ── Paste image → upload → resource ────────────────────────────────────────
   const handlePasteImage = useCallback(
     async (file: File) => {
-      if (!instanceId) return;
+      if (!conversationId) return;
       try {
         const results = await uploadMultipleToPrivateUserAssets([file]);
         if (results && results.length > 0) {
@@ -328,66 +339,78 @@ export function SmartAgentInput({
           const resourceId = `res_${Date.now()}_paste`;
           dispatch(
             addResource({
-              instanceId,
+              conversationId,
               blockType: "image",
               source: { url },
               resourceId,
             }),
           );
           dispatch(
-            setResourcePreview({ instanceId, resourceId, preview: file.name }),
+            setResourcePreview({
+              conversationId,
+              resourceId,
+              preview: file.name,
+            }),
           );
         }
       } catch {
         toast.error("Failed to upload pasted image");
       }
     },
-    [instanceId, dispatch, uploadMultipleToPrivateUserAssets],
+    [conversationId, dispatch, uploadMultipleToPrivateUserAssets],
   );
 
   useClipboardPaste({
     textareaRef,
     onPasteImage: handlePasteImage,
-    disabled: !enablePasteImages || !instanceId,
+    disabled: !enablePasteImages || !conversationId,
   });
 
   // ── Send logic ──────────────────────────────────────────────────────────────
   // Only block when not initialized or already executing.
   // hasContent is NOT a gate — agents run on variables/context without user text.
   // disableSend suppresses the entire send flow (used in pre-execution input gate).
-  const isSendDisabled = !instanceId || isExecuting || disableSend;
+  const isSendDisabled = !conversationId || isExecuting || disableSend;
 
   const handleSend = useCallback(() => {
-    if (!instanceId || isSendDisabled) return;
+    if (!conversationId || isSendDisabled) return;
 
     if (autoClearConversation && hasHistory) {
+      if (!surfaceKey) {
+        console.error(
+          "[SmartAgentInput] surfaceKey is required when auto-clearing an existing conversation",
+        );
+        return;
+      }
       dispatch(
-        reInstanceAndExecute({
-          currentInstanceId: instanceId,
-          onNewInstance: onNewInstance ?? (() => {}),
-          useChat: isChatMode,
+        startNewConversationAndExecute({
+          currentConversationId: conversationId,
+          surfaceKey,
         }),
       );
     } else if (isChatMode) {
-      dispatch(executeChatInstance({ instanceId }));
+      dispatch(executeChatInstance({ conversationId: conversationId }));
     } else {
-      dispatch(executeInstance({ instanceId }));
+      dispatch(executeInstance({ conversationId }));
     }
   }, [
-    instanceId,
+    conversationId,
     isSendDisabled,
     autoClearConversation,
     hasHistory,
     isChatMode,
-    onNewInstance,
+    surfaceKey,
     dispatch,
   ]);
 
   const handleTextChange = useCallback(
     (value: string) => {
-      if (instanceId) dispatch(setUserInputText({ instanceId, text: value }));
+      if (conversationId)
+        dispatch(
+          setUserInputText({ conversationId: conversationId, text: value }),
+        );
     },
-    [instanceId, dispatch],
+    [conversationId, dispatch],
   );
 
   const handleKeyDown = useCallback(
@@ -417,7 +440,7 @@ export function SmartAgentInput({
       : "h-7 w-7 p-0 shrink-0 rounded-full bg-muted hover:bg-muted/80 dark:bg-zinc-700 dark:hover:bg-zinc-600 disabled:opacity-40 text-foreground";
 
   // ── Uninitialized shell ─────────────────────────────────────────────────────
-  if (!instanceId) {
+  if (!conversationId) {
     return (
       <div className="bg-card rounded-lg border border-border overflow-hidden">
         <div className="px-2 pt-1.5">
@@ -443,23 +466,38 @@ export function SmartAgentInput({
     <div
       className={`relative bg-card rounded-lg w-full ${compact ? "max-w-[500px]" : "max-w-[800px]"} border border-border overflow-hidden`}
     >
-      {/* Variable inputs */}
-      {resolvedVariableInputStyle === "wizard" ? (
-        <WizardAgentVariableInputs
-          instanceId={instanceId}
-          onSubmit={handleSend}
-        />
-      ) : (
+      {resolvedVariableInputStyle === "form" && (
+        <AgentVariableInputForm conversationId={conversationId} />
+      )}
+      {resolvedVariableInputStyle === "inline" && (
         <SmartAgentVariableInputs
-          instanceId={instanceId}
+          conversationId={conversationId}
           compact={compact}
           onSubmit={handleSend}
           submitOnEnter={submitOnEnter}
         />
       )}
+      {resolvedVariableInputStyle === "wizard" && (
+        <WizardAgentVariableInputs
+          conversationId={conversationId}
+          onSubmit={handleSend}
+        />
+      )}
+      {resolvedVariableInputStyle === "compact" && (
+        <AgentCompactVariableInputs conversationId={conversationId} />
+      )}
+      {resolvedVariableInputStyle === "guided" && (
+        <AgentGuidedVariableInputs conversationId={conversationId} seamless />
+      )}
+      {resolvedVariableInputStyle === "cards" && (
+        <AgentVariableCardsInputs
+          conversationId={conversationId}
+          onSubmit={handleSend}
+        />
+      )}
 
       {/* Resource chips */}
-      <SmartAgentResourceChips instanceId={instanceId} />
+      <SmartAgentResourceChips conversationId={conversationId} />
 
       {/* Text area */}
       <div
@@ -563,7 +601,7 @@ export function SmartAgentInput({
                 <InputButton
                   icon={ChevronDown}
                   tooltip={showCreatorDebug ? "Hide debug" : "Show debug"}
-                  onClick={() => dispatch(toggleCreatorDebug(instanceId))}
+                  onClick={() => dispatch(toggleCreatorDebug(conversationId))}
                   active={showCreatorDebug}
                   className="text-amber-500"
                 />
@@ -576,7 +614,7 @@ export function SmartAgentInput({
                   tooltip={
                     showVariablePanel ? "Hide variables" : "Show variables"
                   }
-                  onClick={() => dispatch(toggleVariablePanel(instanceId))}
+                  onClick={() => dispatch(toggleVariablePanel(conversationId))}
                   active={showVariablePanel}
                 />
               )}
@@ -590,7 +628,7 @@ export function SmartAgentInput({
 
               {/* Resource picker */}
               <SmartAgentResourcePickerButton
-                instanceId={instanceId}
+                conversationId={conversationId}
                 uploadBucket={uploadBucket}
                 uploadPath={uploadPath}
               />
@@ -612,7 +650,7 @@ export function SmartAgentInput({
               onClick={() =>
                 dispatch(
                   setAutoClearConversation({
-                    instanceId,
+                    conversationId,
                     value: !autoClearConversation,
                   }),
                 )
@@ -632,7 +670,7 @@ export function SmartAgentInput({
               }
               onClick={() =>
                 dispatch(
-                  setSubmitOnEnter({ instanceId, value: !submitOnEnter }),
+                  setSubmitOnEnter({ conversationId, value: !submitOnEnter }),
                 )
               }
               active={submitOnEnter}
@@ -659,7 +697,7 @@ export function SmartAgentInput({
 
       {isAdmin && isDebugOpen && (
         <ChatDebugModal
-          sessionId={instanceId}
+          sessionId={conversationId}
           isOpen={isDebugOpen}
           onClose={() => setIsDebugOpen(false)}
         />

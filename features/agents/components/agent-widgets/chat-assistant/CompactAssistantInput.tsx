@@ -19,18 +19,18 @@ import {
 import { ArrowUp, Mic, Paperclip, Settings2 } from "lucide-react";
 
 interface CompactAssistantInputProps {
-  instanceId: string;
+  conversationId: string;
   onToggleVariables?: () => void;
 }
 
 export function CompactAssistantInput({
-  instanceId,
+  conversationId,
   onToggleVariables,
 }: CompactAssistantInputProps) {
   const dispatch = useAppDispatch();
-  const inputText = useAppSelector(selectUserInputText(instanceId));
-  const isExecuting = useAppSelector(selectIsExecuting(instanceId));
-  const conversationMode = useAppSelector(selectConversationMode(instanceId));
+  const inputText = useAppSelector(selectUserInputText(conversationId));
+  const isExecuting = useAppSelector(selectIsExecuting(conversationId));
+  const conversationMode = useAppSelector(selectConversationMode(conversationId));
   const [popoverOpen, setPopoverOpen] = useState(false);
 
   const isSendDisabled = isExecuting || !inputText.trim();
@@ -38,9 +38,9 @@ export function CompactAssistantInput({
   const handleSend = () => {
     if (isSendDisabled) return;
     if (conversationMode === "chat") {
-      dispatch(executeChatInstance({ instanceId }));
+      dispatch(executeChatInstance({ conversationId: conversationId }));
     } else {
-      dispatch(executeInstance({ instanceId }));
+      dispatch(executeInstance({ conversationId }));
     }
   };
 
@@ -95,7 +95,7 @@ export function CompactAssistantInput({
         placeholder="Ask anything..."
         value={inputText}
         onChange={(e) =>
-          dispatch(setUserInputText({ instanceId, text: e.target.value }))
+          dispatch(setUserInputText({ conversationId: conversationId, text: e.target.value }))
         }
         onKeyDown={handleKeyDown}
       />

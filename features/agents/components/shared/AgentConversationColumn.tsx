@@ -16,15 +16,15 @@ interface SmartInputForwardProps {
 }
 
 interface AgentConversationColumnProps {
-  instanceId: string;
-  onNewInstance: (id: string) => void;
+  conversationId: string;
+  surfaceKey: string;
   constrainWidth?: boolean;
   smartInputProps?: SmartInputForwardProps;
 }
 
 export function AgentConversationColumn({
-  instanceId,
-  onNewInstance,
+  conversationId,
+  surfaceKey,
   constrainWidth = false,
   smartInputProps,
 }: AgentConversationColumnProps) {
@@ -58,7 +58,7 @@ export function AgentConversationColumn({
           onScroll={handleScroll}
           className="h-full overflow-y-auto"
         >
-          <AgentConversationDisplay instanceId={instanceId} />
+          <AgentConversationDisplay conversationId={conversationId} />
         </div>
         <div
           className="pointer-events-none absolute bottom-0 left-0 right-0 h-3"
@@ -83,11 +83,11 @@ export function AgentConversationColumn({
         )}
       </div>
 
-      <CreatorRunPanel instanceId={instanceId} onNewInstance={onNewInstance} />
+      <CreatorRunPanel conversationId={conversationId} surfaceKey={surfaceKey} />
 
       <SmartAgentInput
-        instanceId={instanceId}
-        onNewInstance={onNewInstance}
+        conversationId={conversationId}
+        surfaceKey={surfaceKey}
         {...smartInputProps}
       />
     </div>

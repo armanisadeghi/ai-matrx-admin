@@ -7,7 +7,7 @@
  * Reads attachment capabilities from instanceModelOverrides and dispatches
  * selected resources directly to instanceResources — no prop drilling.
  *
- * Prop: instanceId only.
+ * Prop: conversationId only.
  */
 
 import { useState, useCallback } from "react";
@@ -75,7 +75,7 @@ function resourceLabel(resource: Resource): string {
 }
 
 interface SmartAgentResourcePickerButtonProps {
-  instanceId: string;
+  conversationId: string;
   uploadBucket?: string;
   uploadPath?: string;
   /** When true, opens as a floating WindowPanel instead of a popover. Default: false. */
@@ -83,7 +83,7 @@ interface SmartAgentResourcePickerButtonProps {
 }
 
 export function SmartAgentResourcePickerButton({
-  instanceId,
+  conversationId,
   uploadBucket = "userContent",
   uploadPath = "agent-attachments",
   useWindowMode = false,
@@ -100,7 +100,7 @@ export function SmartAgentResourcePickerButton({
 
       dispatch(
         addResource({
-          instanceId,
+          conversationId,
           blockType,
           source: resource.data,
           resourceId,
@@ -110,7 +110,7 @@ export function SmartAgentResourcePickerButton({
       // Immediately mark as ready with a preview string for the chip label
       dispatch(
         setResourcePreview({
-          instanceId,
+          conversationId,
           resourceId,
           preview: label,
         }),
@@ -118,7 +118,7 @@ export function SmartAgentResourcePickerButton({
 
       setIsOpen(false);
     },
-    [instanceId, dispatch],
+    [conversationId, dispatch],
   );
 
   const trigger = (

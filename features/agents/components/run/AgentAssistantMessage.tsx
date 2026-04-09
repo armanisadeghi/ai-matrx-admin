@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Edit, MoreHorizontal, Copy, Check, AlertCircle } from "lucide-react";
 import { useDomCapturePrint } from "@/features/chat/hooks/useDomCapturePrint";
 import MarkdownStream from "@/components/MarkdownStream";
@@ -11,6 +11,8 @@ import {
   openFullScreenEditor,
   openHtmlPreview,
 } from "@/lib/redux/slices/overlaySlice";
+import { useDebugContext } from "@/hooks/useDebugContext";
+import { upsertAssistantMarkdownDraft } from "@/features/agents/redux/agent-assistant-markdown-draft.slice";
 
 interface AgentAssistantMessageProps {
   content: string;
@@ -18,6 +20,10 @@ interface AgentAssistantMessageProps {
   isStreamActive?: boolean;
   compact?: boolean;
   error?: string | null;
+  /** Execution instance id — shown in Admin Indicator debug panel when debug mode is on. */
+  conversationId?: string;
+  /** Stable row id (e.g. turn id or `__streaming__`) for correlating copies. */
+  messageKey?: string;
 }
 
 export function AgentAssistantMessage({
@@ -26,11 +32,74 @@ export function AgentAssistantMessage({
   isStreamActive = false,
   compact = false,
   error,
+  conversationId,
+  messageKey,
 }: AgentAssistantMessageProps) {
   const dispatch = useAppDispatch();
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
+  const { publish: publishDebug, isActive: isDebugPublishing } =
+    useDebugContext("AgentAssistantMessage");
+
+  useEffect(() => {
+    if (!isDebugPublishing) return;
+    const preview =
+      content.length <= 200 ? content : `${content.slice(0, 200)}…`;
+    publishDebug({
+      ...(conversationId !== undefined && {
+        "Conversation ID": conversationId,
+      }),
+      ...(messageKey !== undefined && { "Message Key": messageKey }),
+      "Message Index": messageIndex,
+      "Stream Active": isStreamActive,
+      Compact: compact,
+      "Content Length": content.length,
+      "Content Prefix": preview,
+      "Inline Error": error ?? "—",
+      "Is Error Content": content.startsWith("Error:"),
+    });
+  }, [
+    isDebugPublishing,
+    publishDebug,
+    conversationId,
+    messageKey,
+    messageIndex,
+    isStreamActive,
+    compact,
+    content,
+    error,
+  ]);
+
+  const canMarkdownSink = Boolean(conversationId && messageKey);
+
+  const handleAssistantMarkdownChange = useCallback(
+    (next: string) => {
+      if (!conversationId || !messageKey) return;
+      dispatch(
+        upsertAssistantMarkdownDraft({
+          conversationId,
+          messageKey,
+          baseContent: content,
+          draftContent: next,
+        }),
+      );
+      if (isDebugPublishing) {
+        publishDebug({
+          "Sink draft length": next.length,
+          "Sink updated at": new Date().toISOString(),
+        });
+      }
+    },
+    [
+      conversationId,
+      messageKey,
+      content,
+      dispatch,
+      isDebugPublishing,
+      publishDebug,
+    ],
+  );
 
   const { captureRef, isCapturing, captureAsPDF } = useDomCapturePrint();
   const handleFullPrint = useCallback(() => {
@@ -90,6 +159,10 @@ export function AgentAssistantMessage({
           hideCopyButton
           allowFullScreenEditor={false}
           className={markdownClassName}
+          onContentChange={
+            canMarkdownSink ? handleAssistantMarkdownChange : undefined
+          }
+          applyLocalEdits={!canMarkdownSink}
         />
       </div>
 

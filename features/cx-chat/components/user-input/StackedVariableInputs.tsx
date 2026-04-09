@@ -22,7 +22,7 @@ import { setUserVariableValue } from "@/features/agents/redux/execution-system/i
 // ============================================================================
 
 interface StackedVariableInputsProps {
-  instanceId: string;
+  conversationId: string;
   disabled?: boolean;
   compact?: boolean;
   /** Hide the outer wrapper (for embedding in custom layouts) */
@@ -37,24 +37,24 @@ interface StackedVariableInputsProps {
  * StackedVariableInputs - Variable input component that self-manages via Redux
  */
 export function StackedVariableInputs({
-  instanceId,
+  conversationId,
   disabled = false,
   compact = false,
   minimal = false,
 }: StackedVariableInputsProps) {
   const dispatch = useAppDispatch();
   const variableDefaults = useAppSelector(
-    selectInstanceVariableDefinitions(instanceId),
+    selectInstanceVariableDefinitions(conversationId),
   );
-  const values = useAppSelector(selectUserVariableValues(instanceId));
+  const values = useAppSelector(selectUserVariableValues(conversationId));
 
   const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
 
   const handleVariableChange = useCallback(
     (variableName: string, value: string) => {
-      dispatch(setUserVariableValue({ instanceId, name: variableName, value }));
+      dispatch(setUserVariableValue({ conversationId, name: variableName, value }));
     },
-    [dispatch, instanceId],
+    [dispatch, conversationId],
   );
 
   const handleExpandedVariableChange = useCallback(

@@ -15,7 +15,7 @@
 //
 // Thunks (prefer these):
 //   switchServer(env, customUrl?) — sets server + triggers health check
-//   checkServerHealth(env?)       — hits /api/health, stores result; skips if
+//   checkServerHealth(env?)       — hits {serverUrl}/health, stores result; skips if
 //                                   checked within the last 5 minutes
 //
 // Selectors:
@@ -143,7 +143,7 @@ export const switchServer = createAsyncThunk(
 );
 
 /**
- * Hit /api/health on the target environment and store the result.
+ * Hit /health on the target environment and store the result.
  *
  * - If env is omitted, checks the currently active server.
  * - Skips if the last check was less than 5 minutes ago, unless force = true.

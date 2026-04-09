@@ -140,13 +140,13 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
             )}
             <Menu size={18} className="ml-2 text-gray-600 dark:text-gray-400" />
             {profilePhoto ? (
-              <div className="w-8 h-8 rounded-full ml-3 overflow-hidden">
+              <div className="relative w-8 h-8 rounded-full ml-3 overflow-hidden">
                 <Image
                   src={profilePhoto}
-                  width={32}
-                  height={32}
                   alt={displayName}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="32px"
                 />
               </div>
             ) : (
@@ -167,13 +167,13 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
             <div className="px-2 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-t-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
               <div className="flex items-center gap-3 min-w-0">
                 {profilePhoto ? (
-                  <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                  <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
                     <Image
                       src={profilePhoto}
-                      width={40}
-                      height={40}
                       alt={displayName}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="40px"
                     />
                   </div>
                 ) : (

@@ -16,23 +16,23 @@ import { AgentRunner } from "../smart/AgentRunner";
 import { ExecutionManager } from "./execution-gates/ExecutionManager";
 
 interface AgentToastOverlayProps {
-  instanceId: string;
+  conversationId: string;
   onClose: () => void;
   index?: number;
 }
 
 export function AgentToastOverlay({
-  instanceId,
+  conversationId,
   onClose,
   index = 0,
 }: AgentToastOverlayProps) {
   const [expanded, setExpanded] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
-  const text = useAppSelector(selectLatestAccumulatedText(instanceId));
-  const isExecuting = useAppSelector(selectIsExecuting(instanceId));
-  const title = useAppSelector(selectInstanceDisplayTitle(instanceId));
+  const text = useAppSelector(selectLatestAccumulatedText(conversationId));
+  const isExecuting = useAppSelector(selectIsExecuting(conversationId));
+  const title = useAppSelector(selectInstanceDisplayTitle(conversationId));
   const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(instanceId),
+    selectNeedsPreExecutionInput(conversationId),
   );
 
   // ── Drag state ───────────────────────────────────────────────────────────
@@ -76,7 +76,7 @@ export function AgentToastOverlay({
     setTimeout(onClose, 300);
   }, [onClose]);
 
-  if (needsPreExecution) return <ExecutionManager instanceId={instanceId} />;
+  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
 
   // ── Expanded: full chat view ─────────────────────────────────────────────
   if (expanded) {
@@ -129,7 +129,7 @@ export function AgentToastOverlay({
             </div>
           </div>
           <AgentRunner
-            instanceId={instanceId}
+            conversationId={conversationId}
             compact
             className="flex-1 min-h-0 bg-background"
           />

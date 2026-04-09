@@ -13,13 +13,13 @@ const MarkdownStream = dynamic(
 );
 
 export function AgentEmptyMessageDisplay({
-  instanceId,
+  conversationId,
 }: {
-  instanceId: string;
+  conversationId: string;
 }) {
-  const agentName = useAppSelector(selectInstanceAgentName(instanceId));
+  const agentName = useAppSelector(selectInstanceAgentName(conversationId));
   const agentDescription = useAppSelector(
-    selectInstanceAgentDescription(instanceId),
+    selectInstanceAgentDescription(conversationId),
   );
   return (
     <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-6 py-12">

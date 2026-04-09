@@ -9,10 +9,10 @@ import {
 import { RunSettingsEditor } from "./RunSettingsEditor";
 
 interface RunSettingsModalProps {
-  instanceId: string;
+  conversationId: string;
 }
 
-export function RunSettingsModal({ instanceId }: RunSettingsModalProps) {
+export function RunSettingsModal({ conversationId }: RunSettingsModalProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -29,7 +29,7 @@ export function RunSettingsModal({ instanceId }: RunSettingsModalProps) {
         <p className="text-xs font-medium text-muted-foreground mb-3">
           Test Run Settings
         </p>
-        <RunSettingsEditor instanceId={instanceId} />
+        <RunSettingsEditor conversationId={conversationId} />
       </PopoverContent>
     </Popover>
   );

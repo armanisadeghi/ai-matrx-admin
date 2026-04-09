@@ -1,7 +1,7 @@
 /**
  * Instance Model Override Selectors
  *
- * CRITICAL: All selectors take only instanceId — never agentId.
+ * CRITICAL: All selectors take only conversationId — never agentId.
  * The agent's base settings are owned by the instance (copied at creation time).
  * The agentDefinition slice is never accessed from here.
  */
@@ -16,9 +16,9 @@ import type {
  * Raw override state for an instance.
  */
 export const selectInstanceOverrideState =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): InstanceModelOverrideState | undefined =>
-    state.instanceModelOverrides.byInstanceId[instanceId];
+    state.instanceModelOverrides.byConversationId[conversationId];
 
 /**
  * "All Current Settings" — for the settings UI.
@@ -27,9 +27,9 @@ export const selectInstanceOverrideState =
  * Uses the instance-owned baseSettings — no agentId needed.
  */
 export const selectCurrentSettings =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): Partial<LLMParams> | undefined => {
-    const overrideState = state.instanceModelOverrides.byInstanceId[instanceId];
+    const overrideState = state.instanceModelOverrides.byConversationId[conversationId];
     if (!overrideState) return undefined;
 
     const merged: Record<string, unknown> = { ...overrideState.baseSettings };
@@ -55,9 +55,9 @@ export const selectCurrentSettings =
  * This selector guarantees only true deltas are included.
  */
 export const selectSettingsOverridesForApi =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): Record<string, unknown> | undefined => {
-    const overrideState = state.instanceModelOverrides.byInstanceId[instanceId];
+    const overrideState = state.instanceModelOverrides.byConversationId[conversationId];
     if (!overrideState) return undefined;
 
     const hasOverrides = Object.keys(overrideState.overrides).length > 0;
@@ -83,9 +83,9 @@ export const selectSettingsOverridesForApi =
  * Check if an instance has any overrides at all.
  */
 export const selectHasOverrides =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): boolean => {
-    const entry = state.instanceModelOverrides.byInstanceId[instanceId];
+    const entry = state.instanceModelOverrides.byConversationId[conversationId];
     if (!entry) return false;
     return Object.keys(entry.overrides).length > 0 || entry.removals.length > 0;
   };
@@ -96,9 +96,9 @@ export const selectHasOverrides =
  * Returns undefined when no override state exists — guard in component.
  */
 export const selectOverriddenKeys =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): { changed: string[]; removed: string[] } | undefined => {
-    const entry = state.instanceModelOverrides.byInstanceId[instanceId];
+    const entry = state.instanceModelOverrides.byConversationId[conversationId];
     if (!entry) return undefined;
     return {
       changed: Object.keys(entry.overrides),

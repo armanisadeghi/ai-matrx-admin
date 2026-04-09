@@ -82,7 +82,7 @@ import {
 
 interface ProcessStreamArgs {
   requestId: string;
-  instanceId: string;
+  conversationId: string;
   response: Response;
   submitAt: number;
   conversationIdAt: number | null;
@@ -104,7 +104,7 @@ export interface ProcessStreamResult {
 
 export async function processStream({
   requestId,
-  instanceId,
+  conversationId,
   response,
   submitAt,
   conversationIdAt,
@@ -114,7 +114,7 @@ export async function processStream({
 }: ProcessStreamArgs): Promise<ProcessStreamResult> {
   const { events } = parseNdjsonStream(response);
 
-  let conversationId = initialConversationId;
+  let streamServerConversationId = initialConversationId;
   let tokenUsage: { input: number; output: number; total: number } | undefined;
   let finishReason: string | undefined;
   let completionStats: CompletionStats | undefined;
@@ -294,13 +294,18 @@ export async function processStream({
 
         if (dataType === "conversation_id") {
           const cid = (d as unknown as ConversationIdData).conversation_id;
-          if (cid && !conversationId) {
-            conversationId = cid;
-            dispatch(setConversationId({ requestId, conversationId }));
+          if (cid && !streamServerConversationId) {
+            streamServerConversationId = cid;
+            dispatch(
+              setConversationId({
+                requestId,
+                conversationId: streamServerConversationId,
+              }),
+            );
             const syncList = upsertAgentConversationFromExecutionAction(
               getState(),
-              instanceId,
               conversationId,
+              streamServerConversationId,
             );
             if (syncList) dispatch(syncList);
           }
@@ -308,7 +313,7 @@ export async function processStream({
           const labeled = d as unknown as ConversationLabeledData;
           dispatch(
             setConversationLabel({
-              instanceId,
+              conversationId,
               title: labeled.title,
               description: labeled.description ?? null,
               keywords: labeled.keywords ?? null,
@@ -362,7 +367,7 @@ export async function processStream({
               isDelegated: true,
             }),
           );
-          dispatch(setInstanceStatus({ instanceId, status: "paused" }));
+          dispatch(setInstanceStatus({ conversationId, status: "paused" }));
         } else {
           const lifecycleStatus = toolData.event.replace(
             "tool_",
@@ -477,13 +482,18 @@ export async function processStream({
           }),
         );
 
-        if (d.table === "cx_conversation" && !conversationId) {
-          conversationId = d.record_id;
-          dispatch(setConversationId({ requestId, conversationId }));
+        if (d.table === "cx_conversation" && !streamServerConversationId) {
+          streamServerConversationId = d.record_id;
+          dispatch(
+            setConversationId({
+              requestId,
+              conversationId: streamServerConversationId,
+            }),
+          );
           const syncListCx = upsertAgentConversationFromExecutionAction(
             getState(),
-            instanceId,
             conversationId,
+            streamServerConversationId,
           );
           if (syncListCx) dispatch(syncListCx);
         }
@@ -539,7 +549,7 @@ export async function processStream({
             isFatal,
           }),
         );
-        dispatch(setInstanceStatus({ instanceId, status: "error" }));
+        dispatch(setInstanceStatus({ conversationId, status: "error" }));
         dispatch(
           appendTimeline({
             requestId,
@@ -560,7 +570,7 @@ export async function processStream({
           currentState.activeRequests.byRequestId[requestId];
         if (currentRequest?.status !== "error") {
           dispatch(setRequestStatus({ requestId, status: "complete" }));
-          dispatch(setInstanceStatus({ instanceId, status: "complete" }));
+          dispatch(setInstanceStatus({ conversationId, status: "complete" }));
         }
         dispatch(
           appendTimeline({
@@ -648,7 +658,7 @@ export async function processStream({
     postLoopRequest.status !== "error"
   ) {
     dispatch(setRequestStatus({ requestId, status: "complete" }));
-    dispatch(setInstanceStatus({ instanceId, status: "complete" }));
+    dispatch(setInstanceStatus({ conversationId, status: "complete" }));
   }
 
   const streamEndAt = performance.now();
@@ -659,7 +669,8 @@ export async function processStream({
   const finalState = getState();
   const finalRequest = finalState.activeRequests.byRequestId[requestId];
   const completedText = finalRequest?.accumulatedText ?? "";
-  const finalConversationId = finalRequest?.conversationId ?? conversationId;
+  const finalConversationId =
+    finalRequest?.serverConversationId ?? streamServerConversationId ?? null;
   const finalErrorMessage =
     finalRequest?.status === "error"
       ? (finalRequest.errorMessage ?? null)
@@ -667,10 +678,10 @@ export async function processStream({
 
   dispatch(
     commitAssistantTurn({
-      instanceId,
+      conversationId,
       requestId,
       content: completedText,
-      conversationId: finalConversationId,
+      serverConversationId: finalConversationId,
       ...(tokenUsage && { tokenUsage }),
       ...(finishReason && { finishReason }),
       ...(completionStats && { completionStats }),
@@ -678,8 +689,8 @@ export async function processStream({
     }),
   );
 
-  dispatch(clearUserInput(instanceId));
-  dispatch(clearAllResources(instanceId));
+  dispatch(clearUserInput(conversationId));
+  dispatch(clearAllResources(conversationId));
 
   const renderCompleteAt = performance.now();
 
@@ -724,7 +735,9 @@ export async function processStream({
   };
 
   dispatch(finalizeClientMetrics({ requestId, metrics: clientMetrics }));
-  dispatch(attachClientMetrics({ instanceId, requestId, clientMetrics }));
+  dispatch(
+    attachClientMetrics({ conversationId, requestId, clientMetrics }),
+  );
 
   return {
     conversationId: finalConversationId,

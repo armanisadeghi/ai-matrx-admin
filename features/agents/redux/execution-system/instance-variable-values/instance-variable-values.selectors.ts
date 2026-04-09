@@ -1,7 +1,7 @@
 /**
  * Instance Variable Values Selectors
  *
- * CRITICAL: All selectors take only instanceId — never agentId.
+ * CRITICAL: All selectors take only conversationId — never agentId.
  * Variable definitions are owned by the instance (copied at creation time).
  * The agent definition slice is never accessed from here.
  *
@@ -26,27 +26,27 @@ const EMPTY_PROVENANCE: Record<string, "user" | "scope" | "default" | "none"> =
  * Safe to call even if the source agent no longer exists.
  */
 export const selectInstanceVariableDefinitions =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): VariableDefinition[] =>
-    state.instanceVariableValues.byInstanceId[instanceId]?.definitions ??
+    state.instanceVariableValues.byConversationId[conversationId]?.definitions ??
     EMPTY_DEFINITIONS;
 
 /**
  * Raw user-provided values for an instance.
  */
 export const selectUserVariableValues =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): Record<string, unknown> =>
-    state.instanceVariableValues.byInstanceId[instanceId]?.userValues ??
+    state.instanceVariableValues.byConversationId[conversationId]?.userValues ??
     EMPTY_RECORD;
 
 /**
  * Raw scope-resolved values for an instance.
  */
 export const selectScopeVariableValues =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): Record<string, unknown> =>
-    state.instanceVariableValues.byInstanceId[instanceId]?.scopeValues ??
+    state.instanceVariableValues.byConversationId[conversationId]?.scopeValues ??
     EMPTY_RECORD;
 
 /**
@@ -56,9 +56,9 @@ export const selectScopeVariableValues =
  * Memoized with createSelector so the derived object is only rebuilt when
  * the underlying entry actually changes.
  */
-export const selectResolvedVariables = (instanceId: string) =>
+export const selectResolvedVariables = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceVariableValues.byInstanceId[instanceId],
+    (state: RootState) => state.instanceVariableValues.byConversationId[conversationId],
     (entry) => {
       if (!entry) return EMPTY_RECORD;
 
@@ -88,9 +88,9 @@ export const selectResolvedVariables = (instanceId: string) =>
  * Variables that are required but have no value.
  * Used by the UI to show validation errors before execution.
  */
-export const selectMissingRequiredVariables = (instanceId: string) =>
+export const selectMissingRequiredVariables = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceVariableValues.byInstanceId[instanceId],
+    (state: RootState) => state.instanceVariableValues.byConversationId[conversationId],
     (entry) => {
       if (!entry) return EMPTY_NAMES;
 
@@ -123,9 +123,9 @@ export const selectMissingRequiredVariables = (instanceId: string) =>
  * For each variable, where did its value come from?
  * Useful for the UI to show provenance indicators.
  */
-export const selectVariableProvenance = (instanceId: string) =>
+export const selectVariableProvenance = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceVariableValues.byInstanceId[instanceId],
+    (state: RootState) => state.instanceVariableValues.byConversationId[conversationId],
     (entry) => {
       if (!entry) return EMPTY_PROVENANCE;
 

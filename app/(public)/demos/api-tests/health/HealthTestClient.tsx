@@ -135,7 +135,7 @@ export default function HealthTestClient() {
         setBasicHealth(null);
         setBasicMeta(null);
 
-        const url = `${apiConfig.baseUrl}/api/health`;
+        const url = `${apiConfig.baseUrl}/health`;
         const requestedAt = new Date().toISOString();
         const start = performance.now();
 
@@ -175,7 +175,7 @@ export default function HealthTestClient() {
         setDetailedHealth(null);
         setDetailedMeta(null);
 
-        const url = `${apiConfig.baseUrl}/api/health/detailed`;
+        const url = `${apiConfig.baseUrl}/health/detailed`;
         const requestedAt = new Date().toISOString();
         const start = performance.now();
 

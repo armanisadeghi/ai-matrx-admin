@@ -19,9 +19,9 @@ const EMPTY_PAYLOADS: Array<Record<string, unknown>> = [];
 /**
  * All resources for an instance, sorted by sortOrder.
  */
-export const selectInstanceResources = (instanceId: string) =>
+export const selectInstanceResources = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceResources.byInstanceId[instanceId],
+    (state: RootState) => state.instanceResources.byConversationId[conversationId],
     (resources) => {
       if (!resources) return EMPTY_RESOURCES;
       const arr = Object.values(resources).sort(
@@ -35,16 +35,16 @@ export const selectInstanceResources = (instanceId: string) =>
  * A single resource by ID.
  */
 export const selectResource =
-  (instanceId: string, resourceId: string) =>
+  (conversationId: string, resourceId: string) =>
   (state: RootState): ManagedResource | undefined =>
-    state.instanceResources.byInstanceId[instanceId]?.[resourceId];
+    state.instanceResources.byConversationId[conversationId]?.[resourceId];
 
 /**
  * Resources that are ready for the API call.
  */
-export const selectReadyResources = (instanceId: string) =>
+export const selectReadyResources = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceResources.byInstanceId[instanceId],
+    (state: RootState) => state.instanceResources.byConversationId[conversationId],
     (resources) => {
       if (!resources) return EMPTY_RESOURCES;
       const arr = Object.values(resources)
@@ -57,9 +57,9 @@ export const selectReadyResources = (instanceId: string) =>
 /**
  * Resources that are still resolving (pending or in-progress).
  */
-export const selectPendingResources = (instanceId: string) =>
+export const selectPendingResources = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceResources.byInstanceId[instanceId],
+    (state: RootState) => state.instanceResources.byConversationId[conversationId],
     (resources) => {
       if (!resources) return EMPTY_RESOURCES;
       const arr = Object.values(resources).filter(
@@ -73,9 +73,9 @@ export const selectPendingResources = (instanceId: string) =>
  * Whether all resources are resolved (ready or error — nothing pending).
  */
 export const selectAllResourcesResolved =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): boolean => {
-    const resources = state.instanceResources.byInstanceId[instanceId];
+    const resources = state.instanceResources.byConversationId[conversationId];
     if (!resources) return true;
     return Object.values(resources).every(
       (r) => r.status === "ready" || r.status === "error",
@@ -86,9 +86,9 @@ export const selectAllResourcesResolved =
  * Build the ContentBlock[] array for the API payload.
  * Uses finalPayload if set, otherwise constructs from source/options.
  */
-export const selectResourcePayloads = (instanceId: string) =>
+export const selectResourcePayloads = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceResources.byInstanceId[instanceId],
+    (state: RootState) => state.instanceResources.byConversationId[conversationId],
     (resources) => {
       if (!resources) return EMPTY_PAYLOADS;
 

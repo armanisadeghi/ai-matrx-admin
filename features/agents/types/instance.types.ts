@@ -1,13 +1,13 @@
 /**
  * Execution Instance Types
  *
- * Instances are ephemeral, client-only entities that represent a single
- * execution context for an agent. They are created when a user wants to
- * run an agent (manually, via shortcut, or in parallel testing).
+ * Each execution context is keyed by a conversationId — a plain UUID that
+ * doubles as the server-side conversation thread identifier. The client
+ * generates the ID upfront and sends it to the server on the first request.
  *
  * Key principle: instances NEVER write back to agent source slices.
  * They read from them (for defaults) and maintain their own override layers.
- * Multiple instances of the same agent coexist with zero shared mutable state.
+ * Multiple conversations for the same agent coexist with zero shared mutable state.
  */
 
 import { AgentType } from "./agent-definition.types";
@@ -15,6 +15,7 @@ import { ContextObjectType, LLMParams } from "./agent-api-types";
 import type { SystemInstruction } from "./agent-api-types";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
 import type { LaunchResult } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
+import type { VariableInputStyle } from "./variable-input-style";
 
 // =============================================================================
 // Completion Stats — re-exported from auto-generated stream-events.ts
@@ -65,7 +66,7 @@ export type SourceFeature =
 export const SOURCE_APP = "matrx-admin" as const;
 
 export interface ExecutionInstance {
-  instanceId: string;
+  conversationId: string;
   agentId: string;
   agentType: AgentType;
   origin: InstanceOrigin;
@@ -73,6 +74,8 @@ export interface ExecutionInstance {
   status: InstanceStatus;
   sourceApp: string;
   sourceFeature: SourceFeature;
+  /** True until the server confirms this conversation ID via X-Conversation-ID header */
+  cacheOnly: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -93,11 +96,11 @@ export interface ExecutionInstance {
  *   - IN removals → explicitly removed (do not send, even if default exists)
  */
 export interface InstanceModelOverrideState {
-  instanceId: string;
+  conversationId: string;
   /** Snapshot of agent's LLM settings at instance creation. Never look up agentId again. */
   baseSettings: Partial<LLMParams>;
   overrides: Partial<LLMParams>;
-  removals: string[]; // keys that are explicitly removed
+  removals: string[];
 }
 
 // =============================================================================
@@ -191,7 +194,7 @@ export interface InstanceContextEntry {
 // =============================================================================
 
 export interface InstanceUserInputState {
-  instanceId: string;
+  conversationId: string;
 
   /** Plain text input from the user */
   text: string;
@@ -264,7 +267,7 @@ export const DEFAULT_BUILDER_ADVANCED_SETTINGS: BuilderAdvancedSettings = {
 };
 
 export interface InstanceUIState {
-  instanceId: string;
+  conversationId: string;
   displayMode: ResultDisplayMode;
 
   // ── Execution behavior ───────────────────────────────────────────────────
@@ -393,7 +396,7 @@ export interface InstanceUIState {
    * - "inline"  — compact rows above the textarea (default)
    * - "wizard"  — one variable at a time, fixed-height card with Back/Skip/Skip All
    */
-  variableInputStyle: "inline" | "wizard";
+  variableInputStyle: VariableInputStyle;
 
   /**
    * Arbitrary UI state specific to the display mode.
@@ -422,17 +425,212 @@ export interface LaunchAgentOverrides {
 
   usePreExecutionInput?: boolean;
   autoClearConversation?: boolean;
+
+  /**
+   * Controls which execution path and history strategy is used.
+   *
+   * "agent"        — Default. Turn 1 → POST /ai/agents/{id}. Turn 2+ → POST /ai/conversations/{id}.
+   *                  Server owns history. Client only stores for display.
+   *
+   * "conversation" — Same routing as "agent" after the first server turn commits a conversationId.
+   *                  Transition: history slice auto-promotes "agent" → "conversation" on first assistant turn.
+   *
+   * "chat"         — Always POST /api/ai/chat. Client owns history and sends full messages[] on every turn.
+   *                  Used exclusively by the builder so it reads the LIVE unsaved agent definition.
+   *                  No other surface should use this mode.
+   */
   conversationMode?: "agent" | "conversation" | "chat";
+
   userInput?: string;
   variables?: Record<string, unknown>;
+
+  /**
+   * LLM parameter overrides applied on top of the agent's base settings.
+   * These are delta-only — only keys you provide are sent.
+   * Use this in the runner, chat, and widgets to adjust temperature, model, etc.
+   * NOT applicable in builder mode (builder always reads the full live agent definition).
+   */
   overrides?: Partial<LLMParams>;
+
   sourceFeature?: SourceFeature;
   applicationScope?: ApplicationScope;
-  useChat?: boolean;
-  variableInputStyle?: "inline" | "wizard";
+  variableInputStyle?: VariableInputStyle;
+
+  /** Called once when the execution completes (all modes). */
   onComplete?: (result: LaunchResult) => void;
+
+  /**
+   * Text-manipulation callbacks for context-menu / editor integrations.
+   * When provided, they are registered with CallbackManager and invoked
+   * once the AI response is ready. (Connection to the editor/notes trigger
+   * points is the next integration milestone — these are wired but not yet
+   * triggered by any UI surface.)
+   */
   onTextReplace?: (text: string) => void;
   onTextInsertBefore?: (text: string) => void;
   onTextInsertAfter?: (text: string) => void;
+
+  /**
+   * The original text from the editor/notes that was selected before launch.
+   * Stored for use by the text-manipulation callbacks above.
+   */
   originalText?: string;
 }
+
+// =============================================================================
+// Authoritative Execution Defaults
+//
+// This is the single source of truth for every configurable field in the
+// execution system. All thunks, slices, and instance factories MUST derive
+// their defaults from this object — never scatter magic values across files.
+//
+// Rules:
+//   - "Current behavior" defaults are marked with a comment when the value
+//     is intentionally different from what might seem intuitive.
+//   - Fields that are computed (not a simple scalar) are marked "computed".
+//   - Callback fields default to null/undefined — they are opt-in.
+// =============================================================================
+
+export const AGENT_EXECUTION_DEFAULTS = {
+  // ── Display & Routing ──────────────────────────────────────────────────────
+
+  /**
+   * How the result is presented. "direct" means the caller manages the UI
+   * (AgentRunPage, builder panel, etc.). All other modes open an overlay.
+   */
+  displayMode: "direct" as ResultDisplayMode,
+
+  /**
+   * Which execution path and history strategy to use.
+   * "agent" is the standard path for all non-builder surfaces.
+   * The slice auto-promotes to "conversation" after the first server turn.
+   */
+  conversationMode: "agent" as "agent" | "conversation" | "chat",
+
+  // ── Execution Behavior ─────────────────────────────────────────────────────
+
+  /**
+   * Should the instance execute immediately after creation without the user
+   * clicking submit? false = wait for explicit user action.
+   *
+   * Set to true only for programmatic triggers where the full context is
+   * already assembled (e.g. flashcard "I'm confused" button).
+   */
+  autoRun: false,
+
+  /**
+   * Can the user send follow-up messages after the first response?
+   * true = multi-turn conversation; false = single-shot only.
+   */
+  allowChat: true,
+
+  /**
+   * Show a gate UI before executing where the user provides initial text.
+   * Used for inline/toast/compact modes that have no built-in input.
+   */
+  usePreExecutionInput: false,
+
+  /**
+   * When true, submitting creates a fresh instance (no history) instead of
+   * continuing the current conversation. Only meaningful in builder/test mode.
+   */
+  autoClearConversation: false,
+
+  // ── Visibility ─────────────────────────────────────────────────────────────
+
+  /**
+   * Coarse toggle: when true → showVariablePanel + showDefinitionMessages on.
+   * Overridden by the fine-grained fields below.
+   * undefined = fine-grained fields take effect individually.
+   */
+  showVariables: undefined as boolean | undefined,
+
+  /** Show the variable input panel above the input area. */
+  showVariablePanel: false,
+
+  /**
+   * Show agent-definition messages (fabricated priming turns) in the thread.
+   * When false, the first N turns (hiddenMessageCount) are hidden from the user.
+   */
+  showDefinitionMessages: true,
+
+  /**
+   * When definition messages are shown, also show the raw template content
+   * (system prompt, variable placeholders). When false, only filled values render.
+   */
+  showDefinitionMessageContent: false,
+
+  // ── Variable Input ──────────────────────────────────────────────────────────
+
+  /**
+   * How variables are collected from the user before execution.
+   * "inline" = compact rows above the textarea.
+   * "wizard" = one-at-a-time card with Back/Skip/Skip All.
+   */
+  variableInputStyle: "inline" as VariableInputStyle,
+
+  // ── Conversation History (UIState layer) ───────────────────────────────────
+
+  /** Submit on Enter key; Shift+Enter = newline. */
+  submitOnEnter: true,
+
+  /**
+   * For chat-mode instances: reuse the server's conversationId across calls
+   * so the server can maintain its own history. When false, each call starts
+   * fresh. Relevant only when conversationMode is "chat".
+   */
+  reuseConversationId: false,
+
+  // ── Builder-Only ───────────────────────────────────────────────────────────
+
+  /** Expose creator-only debug panels (request preview, variable provenance). */
+  showCreatorDebug: false,
+
+  /** Hide reasoning/thinking blocks from the message list. */
+  hideReasoning: false,
+
+  /** Hide tool-call result blocks from the message list. */
+  hideToolResults: false,
+
+  /** How many definition messages to hide (fetched from agx_get_defined_data). */
+  hiddenMessageCount: 0,
+
+  // ── Callbacks ──────────────────────────────────────────────────────────────
+
+  /** Called once when execution completes. Registered in CallbackManager. */
+  onComplete: null as null,
+
+  /**
+   * Text-manipulation callbacks for editor/notes context-menu integrations.
+   * Not yet connected to any trigger surface — these are the future entry points.
+   */
+  onTextReplace: null as null,
+  onTextInsertBefore: null as null,
+  onTextInsertAfter: null as null,
+
+  /**
+   * The text that was selected in the editor when the launch was triggered.
+   * Passed through to text-manipulation callbacks.
+   */
+  originalText: null as null,
+
+  // ── Payload Fields (not stored in UIState) ─────────────────────────────────
+
+  /** Pre-filled user message text. Stored in instanceUserInput. */
+  userInput: null as null,
+
+  /** Pre-filled variable values. Stored in instanceVariableValues. */
+  variables: null as null,
+
+  /**
+   * LLM parameter overrides (delta from agent base settings).
+   * Stored in instanceModelOverrides. Applied in execute-instance thunk.
+   * Not used in chat mode (builder reads full live agent definition instead).
+   */
+  overrides: null as null,
+
+  /** UI surface that triggered the launch. Stored on ExecutionInstance. */
+  sourceFeature: "agent-runner" as SourceFeature,
+} as const;
+
+export type { VariableInputStyle } from "./variable-input-style";

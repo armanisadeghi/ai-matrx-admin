@@ -15,6 +15,7 @@ import type {
   BuilderAdvancedSettings,
   InstanceUIState,
   ResultDisplayMode,
+  VariableInputStyle,
 } from "@/features/agents/types";
 import { DEFAULT_BUILDER_ADVANCED_SETTINGS } from "@/features/agents/types/instance.types";
 import { destroyInstance } from "../execution-instances/execution-instances.slice";
@@ -51,7 +52,7 @@ export function resolveVisibilitySettings(showVariables?: boolean): {
 // =============================================================================
 
 export interface InstanceUIStateSlice {
-  byInstanceId: Record<string, InstanceUIState>;
+  byConversationId: Record<string, InstanceUIState>;
 
   /**
    * Admin/pilot feature — when true, chat renders in "block mode" where each
@@ -65,7 +66,7 @@ export interface InstanceUIStateSlice {
 }
 
 const initialState: InstanceUIStateSlice = {
-  byInstanceId: {},
+  byConversationId: {},
   useBlockMode: false,
 };
 
@@ -74,7 +75,7 @@ const initialState: InstanceUIStateSlice = {
 // =============================================================================
 
 export interface InitInstanceUIStatePayload {
-  instanceId: string;
+  conversationId: string;
   displayMode?: ResultDisplayMode;
   autoRun?: boolean;
   allowChat?: boolean;
@@ -92,7 +93,7 @@ export interface InitInstanceUIStatePayload {
   hideReasoning?: boolean;
   hideToolResults?: boolean;
   preExecutionMessage?: string | null;
-  variableInputStyle?: "inline" | "wizard";
+  variableInputStyle?: VariableInputStyle;
 }
 
 // =============================================================================
@@ -108,9 +109,9 @@ const instanceUIStateSlice = createSlice({
       action: PayloadAction<InitInstanceUIStatePayload>,
     ) {
       const {
-        instanceId,
-        displayMode = "modal-full",
-        autoRun = true,
+        conversationId,
+        displayMode = "direct",
+        autoRun = false,
         allowChat = true,
         usePreExecutionInput = false,
         showVariablePanel = false,
@@ -129,8 +130,8 @@ const instanceUIStateSlice = createSlice({
         variableInputStyle = "inline",
       } = action.payload;
 
-      state.byInstanceId[instanceId] = {
-        instanceId,
+      state.byConversationId[conversationId] = {
+        conversationId,
         displayMode,
         autoRun,
         allowChat,
@@ -163,11 +164,11 @@ const instanceUIStateSlice = createSlice({
     setDisplayMode(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         mode: ResultDisplayMode;
       }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.displayMode = action.payload.mode;
         entry.modeState = {};
@@ -176,9 +177,9 @@ const instanceUIStateSlice = createSlice({
 
     setAutoRun(
       state,
-      action: PayloadAction<{ instanceId: string; value: boolean }>,
+      action: PayloadAction<{ conversationId: string; value: boolean }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.autoRun = action.payload.value;
       }
@@ -186,9 +187,9 @@ const instanceUIStateSlice = createSlice({
 
     setAllowChat(
       state,
-      action: PayloadAction<{ instanceId: string; allow: boolean }>,
+      action: PayloadAction<{ conversationId: string; allow: boolean }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.allowChat = action.payload.allow;
       }
@@ -196,9 +197,9 @@ const instanceUIStateSlice = createSlice({
 
     setUsePreExecutionInput(
       state,
-      action: PayloadAction<{ instanceId: string; value: boolean }>,
+      action: PayloadAction<{ conversationId: string; value: boolean }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.usePreExecutionInput = action.payload.value;
       }
@@ -206,9 +207,9 @@ const instanceUIStateSlice = createSlice({
 
     setPreExecutionSatisfied(
       state,
-      action: PayloadAction<{ instanceId: string; value: boolean }>,
+      action: PayloadAction<{ conversationId: string; value: boolean }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.preExecutionSatisfied = action.payload.value;
       }
@@ -217,7 +218,7 @@ const instanceUIStateSlice = createSlice({
     // ── Visibility controls ──────────────────────────────────────────────────
 
     toggleVariablePanel(state, action: PayloadAction<string>) {
-      const entry = state.byInstanceId[action.payload];
+      const entry = state.byConversationId[action.payload];
       if (entry) {
         entry.showVariablePanel = !entry.showVariablePanel;
       }
@@ -225,9 +226,9 @@ const instanceUIStateSlice = createSlice({
 
     setShowVariablePanel(
       state,
-      action: PayloadAction<{ instanceId: string; value: boolean }>,
+      action: PayloadAction<{ conversationId: string; value: boolean }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.showVariablePanel = action.payload.value;
       }
@@ -235,9 +236,9 @@ const instanceUIStateSlice = createSlice({
 
     setShowDefinitionMessages(
       state,
-      action: PayloadAction<{ instanceId: string; value: boolean }>,
+      action: PayloadAction<{ conversationId: string; value: boolean }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.showDefinitionMessages = action.payload.value;
       }
@@ -245,9 +246,9 @@ const instanceUIStateSlice = createSlice({
 
     setShowDefinitionMessageContent(
       state,
-      action: PayloadAction<{ instanceId: string; value: boolean }>,
+      action: PayloadAction<{ conversationId: string; value: boolean }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.showDefinitionMessageContent = action.payload.value;
       }
@@ -255,9 +256,9 @@ const instanceUIStateSlice = createSlice({
 
     setHiddenMessageCount(
       state,
-      action: PayloadAction<{ instanceId: string; count: number }>,
+      action: PayloadAction<{ conversationId: string; count: number }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.hiddenMessageCount = action.payload.count;
       }
@@ -270,9 +271,9 @@ const instanceUIStateSlice = createSlice({
      */
     applyShowVariablesConfig(
       state,
-      action: PayloadAction<{ instanceId: string; showVariables: boolean }>,
+      action: PayloadAction<{ conversationId: string; showVariables: boolean }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         const resolved = resolveVisibilitySettings(
           action.payload.showVariables,
@@ -291,9 +292,9 @@ const instanceUIStateSlice = createSlice({
 
     setCallbackGroupId(
       state,
-      action: PayloadAction<{ instanceId: string; groupId: string | null }>,
+      action: PayloadAction<{ conversationId: string; groupId: string | null }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.callbackGroupId = action.payload.groupId;
       }
@@ -302,7 +303,7 @@ const instanceUIStateSlice = createSlice({
     // ── Layout & interaction ─────────────────────────────────────────────────
 
     toggleExpanded(state, action: PayloadAction<string>) {
-      const entry = state.byInstanceId[action.payload];
+      const entry = state.byConversationId[action.payload];
       if (entry) {
         entry.isExpanded = !entry.isExpanded;
       }
@@ -311,12 +312,12 @@ const instanceUIStateSlice = createSlice({
     updateModeState(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         changes: Record<string, unknown>;
       }>,
     ) {
-      const { instanceId, changes } = action.payload;
-      const entry = state.byInstanceId[instanceId];
+      const { conversationId, changes } = action.payload;
+      const entry = state.byConversationId[conversationId];
       if (entry) {
         Object.assign(entry.modeState, changes);
       }
@@ -324,16 +325,19 @@ const instanceUIStateSlice = createSlice({
 
     setExpandedVariableId(
       state,
-      action: PayloadAction<{ instanceId: string; variableId: string | null }>,
+      action: PayloadAction<{
+        conversationId: string;
+        variableId: string | null;
+      }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.expandedVariableId = action.payload.variableId;
       }
     },
 
     toggleCreatorDebug(state, action: PayloadAction<string>) {
-      const entry = state.byInstanceId[action.payload];
+      const entry = state.byConversationId[action.payload];
       if (entry) {
         entry.showCreatorDebug = !entry.showCreatorDebug;
       }
@@ -341,9 +345,9 @@ const instanceUIStateSlice = createSlice({
 
     setSubmitOnEnter(
       state,
-      action: PayloadAction<{ instanceId: string; value: boolean }>,
+      action: PayloadAction<{ conversationId: string; value: boolean }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.submitOnEnter = action.payload.value;
       }
@@ -351,9 +355,9 @@ const instanceUIStateSlice = createSlice({
 
     setAutoClearConversation(
       state,
-      action: PayloadAction<{ instanceId: string; value: boolean }>,
+      action: PayloadAction<{ conversationId: string; value: boolean }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.autoClearConversation = action.payload.value;
       }
@@ -361,9 +365,9 @@ const instanceUIStateSlice = createSlice({
 
     setReuseConversationId(
       state,
-      action: PayloadAction<{ instanceId: string; value: boolean }>,
+      action: PayloadAction<{ conversationId: string; value: boolean }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.reuseConversationId = action.payload.value;
       }
@@ -372,18 +376,18 @@ const instanceUIStateSlice = createSlice({
     setBuilderAdvancedSettings(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         changes: Partial<BuilderAdvancedSettings>;
       }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         Object.assign(entry.builderAdvancedSettings, action.payload.changes);
       }
     },
 
     resetBuilderAdvancedSettings(state, action: PayloadAction<string>) {
-      const entry = state.byInstanceId[action.payload];
+      const entry = state.byConversationId[action.payload];
       if (entry) {
         entry.builderAdvancedSettings = {
           ...DEFAULT_BUILDER_ADVANCED_SETTINGS,
@@ -394,11 +398,11 @@ const instanceUIStateSlice = createSlice({
     setStructuredInstruction(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         changes: Record<string, unknown>;
       }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         Object.assign(
           entry.builderAdvancedSettings.structuredInstruction,
@@ -408,7 +412,7 @@ const instanceUIStateSlice = createSlice({
     },
 
     resetStructuredInstruction(state, action: PayloadAction<string>) {
-      const entry = state.byInstanceId[action.payload];
+      const entry = state.byConversationId[action.payload];
       if (entry) {
         entry.builderAdvancedSettings.structuredInstruction = {};
       }
@@ -416,9 +420,9 @@ const instanceUIStateSlice = createSlice({
 
     setHideReasoning(
       state,
-      action: PayloadAction<{ instanceId: string; value: boolean }>,
+      action: PayloadAction<{ conversationId: string; value: boolean }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.hideReasoning = action.payload.value;
       }
@@ -426,9 +430,9 @@ const instanceUIStateSlice = createSlice({
 
     setHideToolResults(
       state,
-      action: PayloadAction<{ instanceId: string; value: boolean }>,
+      action: PayloadAction<{ conversationId: string; value: boolean }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.hideToolResults = action.payload.value;
       }
@@ -436,9 +440,9 @@ const instanceUIStateSlice = createSlice({
 
     setPreExecutionMessage(
       state,
-      action: PayloadAction<{ instanceId: string; message: string | null }>,
+      action: PayloadAction<{ conversationId: string; message: string | null }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.preExecutionMessage = action.payload.message;
       }
@@ -447,18 +451,18 @@ const instanceUIStateSlice = createSlice({
     setVariableInputStyle(
       state,
       action: PayloadAction<{
-        instanceId: string;
-        style: "inline" | "wizard";
+        conversationId: string;
+        style: VariableInputStyle;
       }>,
     ) {
-      const entry = state.byInstanceId[action.payload.instanceId];
+      const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.variableInputStyle = action.payload.style;
       }
     },
 
     removeInstanceUIState(state, action: PayloadAction<string>) {
-      delete state.byInstanceId[action.payload];
+      delete state.byConversationId[action.payload];
     },
 
     setUseBlockMode(state, action: PayloadAction<boolean>) {
@@ -468,12 +472,12 @@ const instanceUIStateSlice = createSlice({
 
   extraReducers: (builder) => {
     builder.addCase(destroyInstance, (state, action) => {
-      const instanceId = action.payload;
-      const entry = state.byInstanceId[instanceId];
+      const conversationId = action.payload;
+      const entry = state.byConversationId[conversationId];
       if (entry?.callbackGroupId) {
         callbackManager.removeGroup(entry.callbackGroupId);
       }
-      delete state.byInstanceId[instanceId];
+      delete state.byConversationId[conversationId];
     });
   },
 });

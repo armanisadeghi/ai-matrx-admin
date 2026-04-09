@@ -1140,23 +1140,12 @@ function StateSnapshotTab({
         </div>
         <div className="flex items-center gap-1 text-[9px]">
           <span className="text-muted-foreground font-medium w-24 shrink-0">
-            instanceId:
-          </span>
-          <code className="font-mono text-foreground/80">
-            {request.instanceId}
-          </code>
-          <CopyBtn text={request.instanceId} id="inst-id" />
-        </div>
-        <div className="flex items-center gap-1 text-[9px]">
-          <span className="text-muted-foreground font-medium w-24 shrink-0">
             conversationId:
           </span>
           <code className="font-mono text-foreground/80">
-            {request.conversationId ?? "null"}
+            {request.conversationId}
           </code>
-          {request.conversationId && (
-            <CopyBtn text={request.conversationId} id="conv-id-snap" />
-          )}
+          <CopyBtn text={request.conversationId} id="conv-id-state" />
         </div>
         <div className="flex items-center gap-1 text-[9px]">
           <span className="text-muted-foreground font-medium w-24 shrink-0">
@@ -1483,22 +1472,22 @@ const TAB_DEFS: { id: TabId; label: string; icon: React.ReactNode }[] = [
 // =============================================================================
 
 function InstanceDebugView({
-  instanceId,
+  conversationId,
   hideChrome,
   requestIdOverride,
 }: {
-  instanceId: string;
+  conversationId: string;
   hideChrome: boolean;
   requestIdOverride?: string;
 }) {
   const [activeTab, setActiveTab] = useState<TabId>("events");
 
   const instanceStatus = useAppSelector(
-    (state) => state.executionInstances.byInstanceId[instanceId]?.status,
+    (state) => state.executionInstances.byConversationId[conversationId]?.status,
   );
 
   const requestIds = useAppSelector(
-    (state) => state.activeRequests.byInstanceId[instanceId] ?? [],
+    (state) => state.activeRequests.byConversationId[conversationId] ?? [],
     shallowEqual,
   );
 
@@ -1601,7 +1590,7 @@ function InstanceDebugView({
 // =============================================================================
 
 export interface StreamDebugPanelProps {
-  instanceId: string;
+  conversationId: string;
   className?: string;
   /**
    * When true, hides the StatusBar, MetricsBar, request selector, and internal tab bar.
@@ -1617,14 +1606,14 @@ export interface StreamDebugPanelProps {
 }
 
 export function StreamDebugPanel({
-  instanceId,
+  conversationId,
   className,
   hideChrome = false,
   requestIdOverride,
 }: StreamDebugPanelProps) {
   // All instances in Redux — so we can show tabs for each one
   const allInstanceIds = useAppSelector(
-    (state) => state.executionInstances.allInstanceIds,
+    (state) => state.executionInstances.allConversationIds,
     shallowEqual,
   );
 
@@ -1638,7 +1627,7 @@ export function StreamDebugPanel({
         )}
       >
         <InstanceDebugView
-          instanceId={instanceId}
+          conversationId={conversationId}
           hideChrome
           requestIdOverride={requestIdOverride}
         />
@@ -1656,7 +1645,7 @@ export function StreamDebugPanel({
         )}
       >
         <InstanceDebugView
-          instanceId={instanceId}
+          conversationId={conversationId}
           hideChrome={false}
           requestIdOverride={requestIdOverride}
         />
@@ -1666,7 +1655,7 @@ export function StreamDebugPanel({
 
   return (
     <MultiInstanceDebugPanel
-      activeInstanceId={instanceId}
+      activeInstanceId={conversationId}
       allInstanceIds={allInstanceIds}
       className={className}
       requestIdOverride={requestIdOverride}
@@ -1712,7 +1701,7 @@ function MultiInstanceDebugPanel({
         {allInstanceIds.map((id, idx) => (
           <InstanceTab
             key={id}
-            instanceId={id}
+            conversationId={id}
             idx={idx}
             isActive={id === effectiveInstanceId}
             onSelect={() => setSelectedInstanceId(id)}
@@ -1723,7 +1712,7 @@ function MultiInstanceDebugPanel({
       {/* Per-instance debug view */}
       <div className="flex-1 min-h-0 overflow-hidden">
         <InstanceDebugView
-          instanceId={effectiveInstanceId}
+          conversationId={effectiveInstanceId}
           hideChrome={false}
           requestIdOverride={
             effectiveInstanceId === activeInstanceId
@@ -1737,21 +1726,21 @@ function MultiInstanceDebugPanel({
 }
 
 function InstanceTab({
-  instanceId,
+  conversationId,
   idx,
   isActive,
   onSelect,
 }: {
-  instanceId: string;
+  conversationId: string;
   idx: number;
   isActive: boolean;
   onSelect: () => void;
 }) {
   const status = useAppSelector(
-    (state) => state.executionInstances.byInstanceId[instanceId]?.status,
+    (state) => state.executionInstances.byConversationId[conversationId]?.status,
   );
   const requestCount = useAppSelector(
-    (state) => (state.activeRequests.byInstanceId[instanceId] ?? []).length,
+    (state) => (state.activeRequests.byConversationId[conversationId] ?? []).length,
   );
 
   const statusDot = status
@@ -1770,7 +1759,7 @@ function InstanceTab({
       )}
     >
       <span className="text-muted-foreground/60">#{idx + 1}</span>
-      <span className="max-w-[80px] truncate">{instanceId.slice(0, 8)}</span>
+      <span className="max-w-[80px] truncate">{conversationId.slice(0, 8)}</span>
       {status && (
         <Badge
           variant="outline"

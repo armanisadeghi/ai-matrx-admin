@@ -2,10 +2,10 @@
 
 // ChatWelcomeClient — Welcome screen for the chat route.
 //
-// instanceId is passed as a prop from ChatInstanceManager — never from URL.
+// conversationId is passed as a prop from ChatInstanceManager — never from URL.
 //
 // Flow:
-//  1. SmartAgentInput dispatches executeInstance(instanceId) on send.
+//  1. SmartAgentInput dispatches executeInstance(conversationId) on send.
 //  2. selectLatestConversationId detects the new conversationId from streaming.
 //  3. router.replace navigates to /c/{id} — instance stays alive, streaming continues.
 
@@ -32,7 +32,7 @@ interface ChatWelcomeClientProps {
   agentId: string;
   agentName: string;
   agentDescription?: string;
-  instanceId: string;
+  conversationId: string;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -41,7 +41,7 @@ export default function ChatWelcomeClient({
   agentId,
   agentName,
   agentDescription,
-  instanceId,
+  conversationId,
 }: ChatWelcomeClientProps) {
   const router = useRouter();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
@@ -53,7 +53,7 @@ export default function ChatWelcomeClient({
   const displayDescription = liveAgent?.description ?? agentDescription;
 
   const latestConversationId = useAppSelector(
-    selectLatestConversationId(instanceId),
+    selectLatestConversationId(conversationId),
   );
   const hasNavigated = useRef(false);
   useEffect(() => {
@@ -101,7 +101,8 @@ export default function ChatWelcomeClient({
             </div>
 
             <SmartAgentInput
-              instanceId={instanceId}
+              conversationId={conversationId}
+              surfaceKey={`cx-chat:${agentId}`}
               placeholder="What do you want to know?"
               sendButtonVariant="blue"
               showSubmitOnEnterToggle

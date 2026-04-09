@@ -10,18 +10,18 @@ import { AgentRunner } from "../smart/AgentRunner";
 import { ExecutionManager } from "./execution-gates/ExecutionManager";
 
 interface AgentChatBubbleProps {
-  instanceId: string;
+  conversationId: string;
   onClose: () => void;
 }
 
-export function AgentChatBubble({ instanceId, onClose }: AgentChatBubbleProps) {
+export function AgentChatBubble({ conversationId, onClose }: AgentChatBubbleProps) {
   const [expanded, setExpanded] = useState(true);
-  const isExecuting = useAppSelector(selectIsExecuting(instanceId));
+  const isExecuting = useAppSelector(selectIsExecuting(conversationId));
   const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(instanceId),
+    selectNeedsPreExecutionInput(conversationId),
   );
 
-  if (needsPreExecution) return <ExecutionManager instanceId={instanceId} />;
+  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
 
   if (!expanded) {
     return (
@@ -63,7 +63,7 @@ export function AgentChatBubble({ instanceId, onClose }: AgentChatBubbleProps) {
           </Button>
         </div>
       </div>
-      <AgentRunner instanceId={instanceId} compact className="flex-1 min-h-0" />
+      <AgentRunner conversationId={conversationId} compact className="flex-1 min-h-0" />
     </div>
   );
 }

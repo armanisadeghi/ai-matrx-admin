@@ -21,20 +21,20 @@ import { StatusCard } from "./StatusCard";
 import { VariableInputCard } from "./VariableInputCard";
 
 interface AssistantCardStackProps {
-  instanceId: string;
+  conversationId: string;
 }
 
-export function AssistantCardStack({ instanceId }: AssistantCardStackProps) {
+export function AssistantCardStack({ conversationId }: AssistantCardStackProps) {
   const dispatch = useAppDispatch();
-  const turns = useAppSelector(selectConversationTurns(instanceId));
-  const streamPhase = useAppSelector(selectStreamPhase(instanceId));
-  const streamingText = useAppSelector(selectLatestAccumulatedText(instanceId));
-  const shouldShowVars = useAppSelector(selectShouldShowVariables(instanceId));
+  const turns = useAppSelector(selectConversationTurns(conversationId));
+  const streamPhase = useAppSelector(selectStreamPhase(conversationId));
+  const streamingText = useAppSelector(selectLatestAccumulatedText(conversationId));
+  const shouldShowVars = useAppSelector(selectShouldShowVariables(conversationId));
   const variableDefs = useAppSelector(
-    selectInstanceVariableDefinitions(instanceId),
+    selectInstanceVariableDefinitions(conversationId),
   );
-  const userValues = useAppSelector(selectUserVariableValues(instanceId));
-  const conversationMode = useAppSelector(selectConversationMode(instanceId));
+  const userValues = useAppSelector(selectUserVariableValues(conversationId));
+  const conversationMode = useAppSelector(selectConversationMode(conversationId));
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -46,9 +46,9 @@ export function AssistantCardStack({ instanceId }: AssistantCardStackProps) {
 
   const handleVariableSubmit = () => {
     if (conversationMode === "chat") {
-      dispatch(executeChatInstance({ instanceId }));
+      dispatch(executeChatInstance({ conversationId: conversationId }));
     } else {
-      dispatch(executeInstance({ instanceId }));
+      dispatch(executeInstance({ conversationId }));
     }
   };
 
@@ -76,7 +76,7 @@ export function AssistantCardStack({ instanceId }: AssistantCardStackProps) {
       {unfilledVars.map((variable) => (
         <VariableInputCard
           key={variable.name}
-          instanceId={instanceId}
+          conversationId={conversationId}
           variable={variable}
           onSubmit={handleVariableSubmit}
         />

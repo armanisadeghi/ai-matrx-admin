@@ -7,9 +7,9 @@ import { updateModeState } from "@/features/agents/redux/execution-system/instan
 
 const HEARTBEAT_STEPS = [0, 15, 30, 60, 120, 300];
 
-export function useAssistantHeartbeat(instanceId: string) {
+export function useAssistantHeartbeat(conversationId: string) {
   const dispatch = useAppDispatch();
-  const modeState = useAppSelector(selectModeState(instanceId));
+  const modeState = useAppSelector(selectModeState(conversationId));
   const heartbeatInterval = (modeState?.heartbeatInterval as number) ?? 0;
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -35,7 +35,7 @@ export function useAssistantHeartbeat(instanceId: string) {
   const setHeartbeatInterval = (seconds: number) => {
     dispatch(
       updateModeState({
-        instanceId,
+        conversationId,
         changes: { heartbeatInterval: seconds },
       }),
     );

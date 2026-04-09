@@ -1,6 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import Image from "next/image";
 import {
   Users,
   Crown,
@@ -10,17 +11,17 @@ import {
   Loader2,
   Search,
   UserX,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,17 +31,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { toast } from 'sonner';
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import {
   useProjectMembers,
   useProjectMemberOperations,
   useProjectUserRole,
   type ProjectRole,
-} from '@/features/projects';
-import { useAppSelector } from '@/lib/redux/hooks';
-import { selectUser } from '@/lib/redux/selectors/userSelectors';
-import { cn } from '@/lib/utils';
+} from "@/features/projects";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
+import { cn } from "@/lib/utils";
 
 interface MemberManagementProps {
   projectId: string;
@@ -48,26 +49,36 @@ interface MemberManagementProps {
   isOwner: boolean;
 }
 
-export function MemberManagement({ projectId, userRole, isOwner }: MemberManagementProps) {
+export function MemberManagement({
+  projectId,
+  userRole,
+  isOwner,
+}: MemberManagementProps) {
   const currentUser = useAppSelector(selectUser);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
 
   const { members, loading, error, refresh } = useProjectMembers(projectId);
-  const { updateRole, remove, loading: operationLoading } = useProjectMemberOperations(projectId);
+  const {
+    updateRole,
+    remove,
+    loading: operationLoading,
+  } = useProjectMemberOperations(projectId);
 
   const filteredMembers = members.filter(
     (m) =>
-      (m.user?.email ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (m.user?.displayName ?? '').toLowerCase().includes(searchTerm.toLowerCase())
+      (m.user?.email ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (m.user?.displayName ?? "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()),
   );
 
   const handleRoleChange = async (userId: string, newRole: ProjectRole) => {
     const result = await updateRole(userId, newRole);
     if (result.success) {
-      toast.success('Member role updated');
+      toast.success("Member role updated");
     } else {
-      toast.error(result.error ?? 'Failed to update role');
+      toast.error(result.error ?? "Failed to update role");
     }
   };
 
@@ -75,30 +86,36 @@ export function MemberManagement({ projectId, userRole, isOwner }: MemberManagem
     if (!memberToRemove) return;
     const result = await remove(memberToRemove);
     if (result.success) {
-      toast.success('Member removed');
+      toast.success("Member removed");
       setMemberToRemove(null);
     } else {
-      toast.error(result.error ?? 'Failed to remove member');
+      toast.error(result.error ?? "Failed to remove member");
     }
   };
 
   const getRoleIcon = (role: ProjectRole) => {
     switch (role) {
-      case 'owner': return <Crown className="h-3 w-3 text-yellow-500" />;
-      case 'admin': return <Shield className="h-3 w-3 text-blue-500" />;
-      default: return <UserIcon className="h-3 w-3 text-muted-foreground" />;
+      case "owner":
+        return <Crown className="h-3 w-3 text-yellow-500" />;
+      case "admin":
+        return <Shield className="h-3 w-3 text-blue-500" />;
+      default:
+        return <UserIcon className="h-3 w-3 text-muted-foreground" />;
     }
   };
 
   const getRoleBadgeClass = (role: ProjectRole) => {
     switch (role) {
-      case 'owner': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300';
-      case 'admin': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
-      default: return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
+      case "owner":
+        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300";
+      case "admin":
+        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300";
+      default:
+        return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
     }
   };
 
-  const canManage = userRole === 'owner' || userRole === 'admin';
+  const canManage = userRole === "owner" || userRole === "admin";
 
   if (loading) {
     return (
@@ -125,7 +142,7 @@ export function MemberManagement({ projectId, userRole, isOwner }: MemberManagem
         <div>
           <h2 className="text-lg font-semibold">Members</h2>
           <p className="text-sm text-muted-foreground">
-            {members.length} member{members.length !== 1 ? 's' : ''}
+            {members.length} member{members.length !== 1 ? "s" : ""}
           </p>
         </div>
       </div>
@@ -146,8 +163,8 @@ export function MemberManagement({ projectId, userRole, isOwner }: MemberManagem
         {filteredMembers.map((member) => {
           const isCurrentUser = member.userId === currentUser?.id;
           const isOnlyOwner =
-            member.role === 'owner' &&
-            members.filter((m) => m.role === 'owner').length === 1;
+            member.role === "owner" &&
+            members.filter((m) => m.role === "owner").length === 1;
 
           return (
             <div
@@ -155,12 +172,18 @@ export function MemberManagement({ projectId, userRole, isOwner }: MemberManagem
               className="flex items-center justify-between p-3 rounded-lg border border-border bg-card"
             >
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0">
+                <div className="relative w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0 overflow-hidden">
                   {member.user?.avatarUrl ? (
-                    <img
+                    <Image
                       src={member.user.avatarUrl}
-                      alt=""
-                      className="w-full h-full rounded-full object-cover"
+                      alt={
+                        member.user.displayName ?? member.user.email ?? "Member"
+                      }
+                      fill
+                      className="object-cover"
+                      sizes="36px"
+                      loading="eager"
+                      priority
                     />
                   ) : (
                     <Users className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
@@ -169,17 +192,29 @@ export function MemberManagement({ projectId, userRole, isOwner }: MemberManagem
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">
-                      {member.user?.displayName ?? member.user?.email ?? 'Unknown'}
+                      {member.user?.displayName ??
+                        member.user?.email ??
+                        "Unknown"}
                     </span>
                     {isCurrentUser && (
-                      <Badge variant="outline" className="text-xs py-0">You</Badge>
+                      <Badge variant="outline" className="text-xs py-0">
+                        You
+                      </Badge>
                     )}
-                    <Badge className={cn('flex items-center gap-1 text-xs', getRoleBadgeClass(member.role))}>
+                    <Badge
+                      className={cn(
+                        "flex items-center gap-1 text-xs",
+                        getRoleBadgeClass(member.role),
+                      )}
+                    >
                       {getRoleIcon(member.role)}
-                      {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+                      {member.role.charAt(0).toUpperCase() +
+                        member.role.slice(1)}
                     </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground">{member.user?.email}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {member.user?.email}
+                  </p>
                 </div>
               </div>
 
@@ -196,13 +231,21 @@ export function MemberManagement({ projectId, userRole, isOwner }: MemberManagem
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {isOwner && member.role !== 'owner' && (
+                    {isOwner && member.role !== "owner" && (
                       <>
-                        <DropdownMenuItem onClick={() => handleRoleChange(member.userId, 'admin')}>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleRoleChange(member.userId, "admin")
+                          }
+                        >
                           <Shield className="h-4 w-4 mr-2 text-blue-500" />
                           Make Admin
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleRoleChange(member.userId, 'member')}>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleRoleChange(member.userId, "member")
+                          }
+                        >
                           <UserIcon className="h-4 w-4 mr-2" />
                           Make Member
                         </DropdownMenuItem>
@@ -226,13 +269,16 @@ export function MemberManagement({ projectId, userRole, isOwner }: MemberManagem
         })}
       </div>
 
-      <AlertDialog open={!!memberToRemove} onOpenChange={() => setMemberToRemove(null)}>
+      <AlertDialog
+        open={!!memberToRemove}
+        onOpenChange={() => setMemberToRemove(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Member</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove this member from the project? They will lose access to
-              all project resources.
+              Are you sure you want to remove this member from the project? They
+              will lose access to all project resources.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

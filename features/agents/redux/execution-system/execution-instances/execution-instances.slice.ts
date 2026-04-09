@@ -1,11 +1,12 @@
 /**
  * Execution Instances Slice
  *
- * The shell entity for each running/draft execution instance.
- * Every instance is ephemeral and keyed by a client-generated UUID.
+ * The shell entity for each execution conversation.
+ * Keyed by conversationId — a plain UUID that doubles as the server-side
+ * conversation thread identifier.
  *
- * This slice manages instance lifecycle (create → ready → running → complete)
- * but delegates all content to sibling instance slices.
+ * This slice manages conversation lifecycle (create → ready → running → complete)
+ * but delegates all content to sibling slices.
  */
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
@@ -16,7 +17,7 @@ import type {
   SourceFeature,
 } from "@/features/agents/types";
 import { SOURCE_APP } from "@/features/agents/types/instance.types";
-import { generateInstanceId } from "../utils";
+import { generateConversationId } from "../utils";
 import { AgentType } from "@/features/agents/types/agent-definition.types";
 
 // =============================================================================
@@ -24,13 +25,13 @@ import { AgentType } from "@/features/agents/types/agent-definition.types";
 // =============================================================================
 
 export interface ExecutionInstancesState {
-  byInstanceId: Record<string, ExecutionInstance>;
-  allInstanceIds: string[];
+  byConversationId: Record<string, ExecutionInstance>;
+  allConversationIds: string[];
 }
 
 const initialState: ExecutionInstancesState = {
-  byInstanceId: {},
-  allInstanceIds: [],
+  byConversationId: {},
+  allConversationIds: [],
 };
 
 // =============================================================================
@@ -41,15 +42,10 @@ const executionInstancesSlice = createSlice({
   name: "executionInstances",
   initialState,
   reducers: {
-    /**
-     * Create a new execution instance.
-     * This is the entry point for all three creation paths:
-     * manual, shortcut, and parallel testing.
-     */
     createInstance(
       state,
       action: PayloadAction<{
-        instanceId?: string;
+        conversationId?: string;
         agentId: string;
         agentType: AgentType;
         origin: InstanceOrigin;
@@ -59,7 +55,7 @@ const executionInstancesSlice = createSlice({
       }>,
     ) {
       const {
-        instanceId = generateInstanceId(),
+        conversationId = generateConversationId(),
         agentId,
         agentType,
         origin,
@@ -70,8 +66,8 @@ const executionInstancesSlice = createSlice({
 
       const now = new Date().toISOString();
 
-      state.byInstanceId[instanceId] = {
-        instanceId,
+      state.byConversationId[conversationId] = {
+        conversationId,
         agentId,
         agentType,
         origin,
@@ -79,56 +75,57 @@ const executionInstancesSlice = createSlice({
         status,
         sourceApp: SOURCE_APP,
         sourceFeature,
+        cacheOnly: true,
         createdAt: now,
         updatedAt: now,
       };
-      state.allInstanceIds.push(instanceId);
+      state.allConversationIds.push(conversationId);
     },
 
-    /**
-     * Update instance status.
-     * This is the primary state machine transition.
-     */
     setInstanceStatus(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         status: InstanceStatus;
       }>,
     ) {
-      const { instanceId, status } = action.payload;
-      const instance = state.byInstanceId[instanceId];
+      const { conversationId, status } = action.payload;
+      const instance = state.byConversationId[conversationId];
       if (instance) {
         instance.status = status;
         instance.updatedAt = new Date().toISOString();
       }
     },
 
-    /**
-     * Remove an instance and free its ID.
-     * Sibling slices should also clean up their entries for this instanceId.
-     */
-    destroyInstance(state, action: PayloadAction<string>) {
-      const instanceId = action.payload;
-      delete state.byInstanceId[instanceId];
-      state.allInstanceIds = state.allInstanceIds.filter(
-        (id) => id !== instanceId,
-      );
+    /** Mark a conversation as server-confirmed (no longer cache-only). */
+    confirmServerSync(state, action: PayloadAction<string>) {
+      const instance = state.byConversationId[action.payload];
+      if (instance) {
+        instance.cacheOnly = false;
+      }
     },
 
     /**
-     * Bulk destroy all instances for a given agent.
-     * Used when closing an agent's test panel.
+     * Remove a conversation and free its ID.
+     * Sibling slices clean up via extraReducers on this action.
      */
+    destroyInstance(state, action: PayloadAction<string>) {
+      const conversationId = action.payload;
+      delete state.byConversationId[conversationId];
+      state.allConversationIds = state.allConversationIds.filter(
+        (id) => id !== conversationId,
+      );
+    },
+
     destroyInstancesForAgent(state, action: PayloadAction<string>) {
       const agentId = action.payload;
-      const toRemove = state.allInstanceIds.filter(
-        (id) => state.byInstanceId[id]?.agentId === agentId,
+      const toRemove = state.allConversationIds.filter(
+        (id) => state.byConversationId[id]?.agentId === agentId,
       );
       for (const id of toRemove) {
-        delete state.byInstanceId[id];
+        delete state.byConversationId[id];
       }
-      state.allInstanceIds = state.allInstanceIds.filter(
+      state.allConversationIds = state.allConversationIds.filter(
         (id) => !toRemove.includes(id),
       );
     },
@@ -138,6 +135,7 @@ const executionInstancesSlice = createSlice({
 export const {
   createInstance,
   setInstanceStatus,
+  confirmServerSync,
   destroyInstance,
   destroyInstancesForAgent,
 } = executionInstancesSlice.actions;

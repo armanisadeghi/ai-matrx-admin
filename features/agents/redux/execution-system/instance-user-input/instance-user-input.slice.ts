@@ -14,11 +14,11 @@ import { destroyInstance } from "../execution-instances/execution-instances.slic
 // =============================================================================
 
 export interface InstanceUserInputSliceState {
-  byInstanceId: Record<string, InstanceUserInputState>;
+  byConversationId: Record<string, InstanceUserInputState>;
 }
 
 const initialState: InstanceUserInputSliceState = {
-  byInstanceId: {},
+  byConversationId: {},
 };
 
 // =============================================================================
@@ -31,11 +31,11 @@ const instanceUserInputSlice = createSlice({
   reducers: {
     initInstanceUserInput(
       state,
-      action: PayloadAction<{ instanceId: string; text?: string }>,
+      action: PayloadAction<{ conversationId: string; text?: string }>,
     ) {
-      const { instanceId, text = "" } = action.payload;
-      state.byInstanceId[instanceId] = {
-        instanceId,
+      const { conversationId, text = "" } = action.payload;
+      state.byConversationId[conversationId] = {
+        conversationId,
         text,
         contentBlocks: null,
       };
@@ -43,10 +43,10 @@ const instanceUserInputSlice = createSlice({
 
     setUserInputText(
       state,
-      action: PayloadAction<{ instanceId: string; text: string }>,
+      action: PayloadAction<{ conversationId: string; text: string }>,
     ) {
-      const { instanceId, text } = action.payload;
-      const entry = state.byInstanceId[instanceId];
+      const { conversationId, text } = action.payload;
+      const entry = state.byConversationId[conversationId];
       if (entry) {
         entry.text = text;
       }
@@ -55,19 +55,19 @@ const instanceUserInputSlice = createSlice({
     setUserInputContentBlocks(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         blocks: Array<Record<string, unknown>>;
       }>,
     ) {
-      const { instanceId, blocks } = action.payload;
-      const entry = state.byInstanceId[instanceId];
+      const { conversationId, blocks } = action.payload;
+      const entry = state.byConversationId[conversationId];
       if (entry) {
         entry.contentBlocks = blocks;
       }
     },
 
     clearUserInput(state, action: PayloadAction<string>) {
-      const entry = state.byInstanceId[action.payload];
+      const entry = state.byConversationId[action.payload];
       if (entry) {
         entry.text = "";
         entry.contentBlocks = null;
@@ -75,13 +75,13 @@ const instanceUserInputSlice = createSlice({
     },
 
     removeInstanceUserInput(state, action: PayloadAction<string>) {
-      delete state.byInstanceId[action.payload];
+      delete state.byConversationId[action.payload];
     },
   },
 
   extraReducers: (builder) => {
     builder.addCase(destroyInstance, (state, action) => {
-      delete state.byInstanceId[action.payload];
+      delete state.byConversationId[action.payload];
     });
   },
 });

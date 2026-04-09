@@ -4,9 +4,9 @@ import type { InstanceContextEntry } from "@/features/agents/types";
 
 const EMPTY_CONTEXT_ENTRIES: InstanceContextEntry[] = [];
 
-export const selectInstanceContextEntries = (instanceId: string) =>
+export const selectInstanceContextEntries = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceContext.byInstanceId[instanceId],
+    (state: RootState) => state.instanceContext.byConversationId[conversationId],
     (context): InstanceContextEntry[] => {
       if (!context) return EMPTY_CONTEXT_ENTRIES;
       const values = Object.values(context);
@@ -15,16 +15,16 @@ export const selectInstanceContextEntries = (instanceId: string) =>
   );
 
 export const selectInstanceContextEntry =
-  (instanceId: string, key: string) =>
+  (conversationId: string, key: string) =>
   (state: RootState): InstanceContextEntry | undefined =>
-    state.instanceContext.byInstanceId[instanceId]?.[key];
+    state.instanceContext.byConversationId[conversationId]?.[key];
 
 /**
  * Context entries that match agent-defined slots.
  */
-export const selectSlotMatchedContext = (instanceId: string) =>
+export const selectSlotMatchedContext = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceContext.byInstanceId[instanceId],
+    (state: RootState) => state.instanceContext.byConversationId[conversationId],
     (context): InstanceContextEntry[] => {
       if (!context) return EMPTY_CONTEXT_ENTRIES;
       const filtered = Object.values(context).filter((e) => e.slotMatched);
@@ -35,9 +35,9 @@ export const selectSlotMatchedContext = (instanceId: string) =>
 /**
  * Ad-hoc context entries (not matching any slot).
  */
-export const selectAdHocContext = (instanceId: string) =>
+export const selectAdHocContext = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceContext.byInstanceId[instanceId],
+    (state: RootState) => state.instanceContext.byConversationId[conversationId],
     (context): InstanceContextEntry[] => {
       if (!context) return EMPTY_CONTEXT_ENTRIES;
       const filtered = Object.values(context).filter((e) => !e.slotMatched);
@@ -50,9 +50,9 @@ export const selectAdHocContext = (instanceId: string) =>
  * Returns Record<string, ContextValue> ready for the request.
  */
 export const selectContextPayload =
-  (instanceId: string) =>
+  (conversationId: string) =>
   (state: RootState): Record<string, unknown> | undefined => {
-    const context = state.instanceContext.byInstanceId[instanceId];
+    const context = state.instanceContext.byConversationId[conversationId];
     if (!context) return undefined;
 
     const entries = Object.values(context);

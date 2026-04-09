@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { cn } from "@/styles/themes/utils";
 import {
   Copy,
@@ -12,12 +12,6 @@ import {
   X,
   Check as CheckIcon,
 } from "lucide-react";
-
-interface CsvBlockProps {
-  content: string;
-  delimiter?: string;
-  className?: string;
-}
 
 function parseCsv(content: string, delimiter: string): string[][] {
   const rows: string[][] = [];
@@ -58,12 +52,39 @@ function parseCsv(content: string, delimiter: string): string[][] {
   return rows;
 }
 
+function rowsToDelimitedContent(rows: string[][], delimiter: string): string {
+  return rows
+    .map((row) =>
+      row
+        .map((cell) => {
+          const needsQuote =
+            cell.includes(delimiter) ||
+            cell.includes('"') ||
+            cell.includes("\n") ||
+            cell.includes("\r");
+          const escaped = cell.replace(/"/g, '""');
+          return needsQuote ? `"${escaped}"` : escaped;
+        })
+        .join(delimiter),
+    )
+    .join("\n");
+}
+
 type SortDir = "asc" | "desc" | null;
+
+interface CsvBlockProps {
+  content: string;
+  delimiter?: string;
+  className?: string;
+  /** Fires when the user commits an inline cell edit — inner markdown body only (no fence). */
+  onInnerContentChange?: (inner: string) => void;
+}
 
 const CsvBlock: React.FC<CsvBlockProps> = ({
   content,
   delimiter = ",",
   className,
+  onInnerContentChange,
 }) => {
   const [copied, setCopied] = useState(false);
   const [sortCol, setSortCol] = useState<number | null>(null);
@@ -73,6 +94,11 @@ const CsvBlock: React.FC<CsvBlockProps> = ({
   );
   const [editValue, setEditValue] = useState("");
   const [data, setData] = useState(() => parseCsv(content, delimiter));
+
+  useEffect(() => {
+    setData(parseCsv(content, delimiter));
+    setEditCell(null);
+  }, [content, delimiter]);
 
   const headers = data[0] || [];
   const bodyRows = data.slice(1);
@@ -126,6 +152,8 @@ const CsvBlock: React.FC<CsvBlockProps> = ({
     newData[actualRow][editCell.col] = editValue;
     setData(newData);
     setEditCell(null);
+    const inner = rowsToDelimitedContent(newData, delimiter);
+    onInnerContentChange?.(inner);
   };
 
   const cancelEdit = () => {

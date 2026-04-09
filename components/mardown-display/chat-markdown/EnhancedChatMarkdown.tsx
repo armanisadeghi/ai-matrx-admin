@@ -119,6 +119,11 @@ export interface ChatMarkdownDisplayProps {
   toolUpdates?: any[]; // Optional: Pass tool updates directly (bypasses Redux selector)
   /** Pre-processed blocks from server (new content_block protocol). Bypasses client-side parsing. */
   serverProcessedBlocks?: ServerProcessedBlock[];
+  /**
+   * When false with onContentChange, edits call onContentChange(fullMarkdown) but the
+   * rendered document does not switch to local `editedContent` (UI keeps `content` prop).
+   */
+  applyLocalEdits?: boolean;
 }
 
 // Fallback component that renders plain text with basic formatting
@@ -235,6 +240,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
   useV2Parser = true,
   toolUpdates: toolUpdatesProp,
   serverProcessedBlocks,
+  applyLocalEdits = true,
 }) => {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   // null = no local edits; use the `content` prop directly.
@@ -268,6 +274,12 @@ export const EnhancedChatMarkdownInternal: React.FC<
       setEditedContent(null);
     }
   }, [isStreamActive]);
+
+  useEffect(() => {
+    if (applyLocalEdits === false) {
+      setEditedContent(null);
+    }
+  }, [applyLocalEdits, content]);
 
   // When server-processed blocks are available, use them directly (skip client-side parsing).
   // Otherwise, fall back to the client-side splitContentIntoBlocksV2 pipeline.
@@ -410,13 +422,15 @@ export const EnhancedChatMarkdownInternal: React.FC<
           currentContent.slice(0, idx) +
           replacement +
           currentContent.slice(idx + original.length);
-        setEditedContent(updatedContent);
         onContentChange?.(updatedContent);
+        if (applyLocalEdits !== false) {
+          setEditedContent(updatedContent);
+        }
       } catch (error) {
         console.error("[MarkdownStream] Error in replaceBlockContent:", error);
       }
     },
-    [currentContent, onContentChange],
+    [currentContent, onContentChange, applyLocalEdits],
   );
 
   const handleOpenEditor = useCallback(() => {
@@ -439,14 +453,16 @@ export const EnhancedChatMarkdownInternal: React.FC<
   const handleSaveEdit = useCallback(
     (newContent: string) => {
       try {
-        setEditedContent(newContent);
         onContentChange?.(newContent);
+        if (applyLocalEdits !== false) {
+          setEditedContent(newContent);
+        }
         setIsEditorOpen(false);
       } catch (error) {
         console.error("[MarkdownStream] Error saving edit:", error);
       }
     },
-    [onContentChange],
+    [onContentChange, applyLocalEdits],
   );
 
   // Stable key: type + content fingerprint. Prevents React from reusing a

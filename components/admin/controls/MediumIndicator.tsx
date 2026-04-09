@@ -25,6 +25,7 @@ import {
   selectIsDebugMode,
 } from "@/lib/redux/slices/adminDebugSlice";
 import { selectIsAdmin, selectUser } from "@/lib/redux/slices/userSlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import {
   selectActiveServer,
   selectResolvedBaseUrl,
@@ -37,6 +38,11 @@ import {
   type ServerEnvironment,
 } from "@/lib/redux/slices/apiConfigSlice";
 import { BACKEND_URLS } from "@/lib/api/endpoints";
+
+/** Debug module ids that open a WindowPanel instead of the modal DebugModulePanel. */
+const DEBUG_MODULE_IDS_AS_WINDOW = new Set<string>([
+  "agent-assistant-markdown",
+]);
 
 interface StatusDotProps {
   status: "healthy" | "unhealthy" | "checking" | "unknown";
@@ -240,7 +246,17 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({
             return (
               <button
                 key={module.id}
-                onClick={() => setActiveDebugModule(module.id)}
+                onClick={() => {
+                  if (DEBUG_MODULE_IDS_AS_WINDOW.has(module.id)) {
+                    dispatch(
+                      openOverlay({
+                        overlayId: "agentAssistantMarkdownDebugWindow",
+                      }),
+                    );
+                    return;
+                  }
+                  setActiveDebugModule(module.id);
+                }}
                 className={`p-1 rounded hover:bg-slate-700 transition-colors ${
                   activeDebugModule === module.id ? "bg-slate-700" : ""
                 } ${module.color || "text-slate-300"}`}

@@ -6,18 +6,18 @@ import { selectNeedsPreExecutionInput } from "@/features/agents/redux/execution-
 import { openAgentGateWindow } from "@/lib/redux/slices/overlaySlice";
 
 interface ExecutionManagerProps {
-  instanceId: string;
+  conversationId: string;
 }
 
-export function ExecutionManager({ instanceId }: ExecutionManagerProps) {
+export function ExecutionManager({ conversationId }: ExecutionManagerProps) {
   const dispatch = useAppDispatch();
   const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(instanceId),
+    selectNeedsPreExecutionInput(conversationId),
   );
 
-  // Stable window instanceId — one gate window per agent instance.
+  // Stable window conversationId — one gate window per agent instance.
   // Using a ref so it never changes across re-renders.
-  const gateWindowId = useRef(`gate-${instanceId}`).current;
+  const gateWindowId = useRef(`gate-${conversationId}`).current;
 
   // When pre-execution input is needed, open the gate window via Redux.
   // When it's no longer needed (user continued or cancelled), nothing to clean up
@@ -26,11 +26,11 @@ export function ExecutionManager({ instanceId }: ExecutionManagerProps) {
     if (!needsPreExecution) return;
     dispatch(
       openAgentGateWindow({
-        instanceId: gateWindowId,
-        agentInstanceId: instanceId,
+        conversationId: conversationId,
+        gateWindowId: gateWindowId,
       }),
     );
-  }, [needsPreExecution, gateWindowId, instanceId, dispatch]);
+  }, [needsPreExecution, gateWindowId, conversationId, dispatch]);
 
   // While waiting for pre-execution, don't render the chat window yet.
   if (needsPreExecution) return null;

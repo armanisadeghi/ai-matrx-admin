@@ -10,24 +10,24 @@ import { AgentRunner } from "../smart/AgentRunner";
 import { ExecutionManager } from "./execution-gates/ExecutionManager";
 
 interface AgentFlexiblePanelProps {
-  instanceId: string;
+  conversationId: string;
   onClose: () => void;
 }
 
 export function AgentFlexiblePanel({
-  instanceId,
+  conversationId,
   onClose,
 }: AgentFlexiblePanelProps) {
-  const title = useAppSelector(selectInstanceDisplayTitle(instanceId));
+  const title = useAppSelector(selectInstanceDisplayTitle(conversationId));
   const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(instanceId),
+    selectNeedsPreExecutionInput(conversationId),
   );
 
-  if (needsPreExecution) return <ExecutionManager instanceId={instanceId} />;
+  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
 
   return (
     <WindowPanel
-      id={`agent-${instanceId}`}
+      id={`agent-${conversationId}`}
       title={title}
       onClose={onClose}
       width={680}
@@ -36,10 +36,10 @@ export function AgentFlexiblePanel({
       minHeight={250}
       bodyClassName="p-0"
       urlSyncKey="agent"
-      urlSyncId={instanceId}
+      urlSyncId={conversationId}
       urlSyncArgs={{ m: "flexible-panel" }}
     >
-      <AgentRunner instanceId={instanceId} className="h-full bg-background" />
+      <AgentRunner conversationId={conversationId} className="h-full bg-background" />
     </WindowPanel>
   );
 }

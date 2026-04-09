@@ -25,16 +25,18 @@ export default function WelcomeCard({ user }: WelcomeCardProps) {
   return (
     <div className="shell-glass-card px-4 sm:px-6 py-4 mx-4 sm:mx-6 rounded-2xl flex items-center gap-4">
       <div
-        className="flex items-center justify-center w-12 h-12 rounded-full flex-shrink-0"
+        className="relative flex items-center justify-center w-12 h-12 rounded-full flex-shrink-0 overflow-hidden"
         style={{ background: "var(--shell-glass-bg-hover)" }}
       >
         {user?.avatarUrl ? (
           <Image
             src={user.avatarUrl}
             alt={user.name}
-            width={48}
-            height={48}
-            className="rounded-full"
+            fill
+            className="object-cover"
+            sizes="48px"
+            loading="eager"
+            priority
           />
         ) : (
           <ShellIcon

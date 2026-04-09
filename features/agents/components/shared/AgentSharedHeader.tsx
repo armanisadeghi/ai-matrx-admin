@@ -155,7 +155,7 @@ export function AgentSharedHeader({ agentId }: { agentId: string }) {
         <div className="flex items-center gap-1.5 shrink-0">
           <AgentSaveStatus agentId={agentId} />
           <div className="w-px h-4 bg-border/50" />
-          <AgentOptionsMenu />
+          <AgentOptionsMenu agentId={agentId} />
         </div>
       </div>
 

@@ -37,6 +37,7 @@ import {
   ListFilter,
   GalleryHorizontalEnd,
   SlidersHorizontal,
+  Cpu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -629,7 +630,7 @@ export default function SidebarWindowToggle() {
                         dispatch(
                           openOverlay({
                             overlayId: "streamDebug",
-                            data: { instanceId: "default" },
+                            data: { conversationId: "default" },
                           }),
                         ),
                       )
@@ -825,7 +826,22 @@ export default function SidebarWindowToggle() {
                     label="Agent Settings"
                     onClick={() =>
                       act(() =>
-                        dispatch(openOverlay({ overlayId: "agentSettingsWindow" })),
+                        dispatch(
+                          openOverlay({ overlayId: "agentSettingsWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Cpu className="w-3.5 h-3.5" />}
+                    label="Exec Inspector"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "executionInspectorWindow",
+                          }),
+                        ),
                       )
                     }
                   />

@@ -9,7 +9,7 @@
  * Used by ALL display mode shells (modal-full, sidebar, inline, toast, etc.).
  * Each shell provides layout/chrome; AgentRunner provides the core experience.
  *
- * Props: instanceId + optional layout hints (compact, showTitle).
+ * Props: conversationId + optional layout hints (compact, showTitle).
  * ALL behavior config is read from Redux — nothing else is passed as props.
  *
  * Lifecycle:
@@ -41,36 +41,40 @@ import { PreExecutionAgentInput } from "../inputs/PreExecutionAgentInput";
 import { AgentConversationDisplay } from "../run/AgentConversationDisplay";
 
 interface AgentRunnerProps {
-  instanceId: string;
+  conversationId: string;
   compact?: boolean;
   showTitle?: boolean;
   className?: string;
-  /** Called when autoClearConversation creates a new instance */
-  onNewInstance?: (newInstanceId: string) => void;
+  /** Optional focus surface for auto-clear + new conversation submit (SmartAgentInput). */
+  surfaceKey?: string;
 }
 
 export function AgentRunner({
-  instanceId,
+  conversationId,
   compact = false,
   showTitle = false,
   className = "",
-  onNewInstance,
+  surfaceKey,
 }: AgentRunnerProps) {
   const dispatch = useAppDispatch();
   const autoRunFiredRef = useRef(false);
 
-  const autoRun = useAppSelector(selectAutoRun(instanceId));
-  const allowChat = useAppSelector(selectAllowChat(instanceId));
+  const autoRun = useAppSelector(selectAutoRun(conversationId));
+  const allowChat = useAppSelector(selectAllowChat(conversationId));
   const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(instanceId),
+    selectNeedsPreExecutionInput(conversationId),
   );
-  const shouldShowInput = useAppSelector(selectShouldShowInput(instanceId));
-  const title = useAppSelector(selectInstanceDisplayTitle(instanceId));
-  const status = useAppSelector(selectInstanceStatus(instanceId));
-  const isExecuting = useAppSelector(selectIsExecuting(instanceId));
-  const hasUserInput = useAppSelector(selectHasUserInput(instanceId));
-  const conversationMode = useAppSelector(selectConversationMode(instanceId));
-  const showVariablePanel = useAppSelector(selectShowVariablePanel(instanceId));
+  const shouldShowInput = useAppSelector(selectShouldShowInput(conversationId));
+  const title = useAppSelector(selectInstanceDisplayTitle(conversationId));
+  const status = useAppSelector(selectInstanceStatus(conversationId));
+  const isExecuting = useAppSelector(selectIsExecuting(conversationId));
+  const hasUserInput = useAppSelector(selectHasUserInput(conversationId));
+  const conversationMode = useAppSelector(
+    selectConversationMode(conversationId),
+  );
+  const showVariablePanel = useAppSelector(
+    selectShowVariablePanel(conversationId),
+  );
   // ── Auto-run: fire execution once when conditions are met ──────────────────
   useEffect(() => {
     if (autoRunFiredRef.current) return;
@@ -82,23 +86,23 @@ export function AgentRunner({
     autoRunFiredRef.current = true;
 
     if (conversationMode === "chat") {
-      dispatch(executeChatInstance({ instanceId }));
+      dispatch(executeChatInstance({ conversationId: conversationId }));
     } else {
-      dispatch(executeInstance({ instanceId }));
+      dispatch(executeInstance({ conversationId }));
     }
   }, [
     autoRun,
     status,
     isExecuting,
     needsPreExecution,
-    instanceId,
+    conversationId,
     conversationMode,
     dispatch,
   ]);
 
   // ── Pre-execution gate ─────────────────────────────────────────────────────
   if (needsPreExecution) {
-    return <PreExecutionAgentInput instanceId={instanceId} />;
+    return <PreExecutionAgentInput conversationId={conversationId} />;
   }
 
   // ── Main display ───────────────────────────────────────────────────────────
@@ -115,16 +119,19 @@ export function AgentRunner({
       )}
 
       <div className="flex-1 overflow-y-auto min-h-0 bg-background pt-2">
-        {/* <SmartAgentMessageList instanceId={instanceId} compact={compact} /> */}
-        <AgentConversationDisplay instanceId={instanceId} compact={compact} />
+        {/* <SmartAgentMessageList conversationId={conversationId} compact={compact} /> */}
+        <AgentConversationDisplay
+          conversationId={conversationId}
+          compact={compact}
+        />
       </div>
 
       {shouldShowInput && (
         <div className="shrink-0 px-3 pb-3 pt-1 bg-background">
           <SmartAgentInput
-            instanceId={instanceId}
+            conversationId={conversationId}
+            surfaceKey={surfaceKey}
             compact={compact}
-            onNewInstance={onNewInstance}
             showAutoClearToggle={false}
           />
         </div>

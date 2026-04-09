@@ -1,27 +1,24 @@
 "use client";
 
-import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { AgentGateBody } from "@/features/agents/components/agent-widgets/execution-gates/AgentGateInput";
 
 interface AgentGateWindowProps {
   instanceId: string;
-  agentInstanceId: string;
+  conversationId: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export default function AgentGateWindow({
   instanceId,
-  agentInstanceId,
+  conversationId,
   isOpen,
   onClose,
 }: AgentGateWindowProps) {
   if (!isOpen) return null;
   return (
     <AgentGateBody
-      instanceId={agentInstanceId}
+      conversationId={conversationId}
       windowInstanceId={instanceId}
       onClose={onClose}
     />

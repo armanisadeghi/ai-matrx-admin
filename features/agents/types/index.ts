@@ -1,3 +1,9 @@
+export {
+  VARIABLE_INPUT_STYLES,
+  VARIABLE_INPUT_STYLE_OPTIONS,
+  isVariableInputStyle,
+} from "./variable-input-style";
+
 export type * from "./agent-message-types";
 export type * from "./agent-api-types";
 export type * from "./common.types";

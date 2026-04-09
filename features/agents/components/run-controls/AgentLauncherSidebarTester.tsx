@@ -35,6 +35,10 @@ import { selectAgentName } from "@/features/agents/redux/agent-definition/select
 
 import type { ResultDisplayMode } from "@/features/agents/types/instance.types";
 import {
+  VARIABLE_INPUT_STYLE_OPTIONS,
+  type VariableInputStyle,
+} from "@/features/agents/types";
+import {
   getAllDisplayTypes,
   getDisplayMeta,
 } from "@/features/agents/utils/run-ui-utils";
@@ -71,11 +75,11 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 interface AgentLauncherSidebarTesterProps {
-  instanceId: string;
+  conversationId: string;
 }
 
 export function AgentLauncherSidebarTester({
-  instanceId,
+  conversationId,
 }: AgentLauncherSidebarTesterProps) {
   const { launchAgent } = useAgentLauncher();
   const [isOpen, setIsOpen] = useState(false);
@@ -87,19 +91,24 @@ export function AgentLauncherSidebarTester({
   const [autoRun, setAutoRun] = useState(true);
   const [allowChat, setAllowChat] = useState(true);
   const [showVariables, setShowVariables] = useState(false);
-  const [useWizardVariables, setUseWizardVariables] = useState(false);
+  const [variableInputStyle, setVariableInputStyle] =
+    useState<VariableInputStyle>("inline");
   const [applyVariables, setApplyVariables] = useState(true);
   const [usePreExecutionInput, setUsePreExecutionInput] = useState(false);
-  const [useChat, setUseChat] = useState(false);
+  const [conversationMode, setConversationMode] = useState<
+    "agent" | "conversation" | "chat"
+  >("agent");
 
   const [copiedId, setCopiedId] = useState(false);
 
-  const instance = useAppSelector(selectInstance(instanceId));
+  const instance = useAppSelector(selectInstance(conversationId));
   const agentName = useAppSelector((state) =>
     instance?.agentId ? selectAgentName(state, instance.agentId) : undefined,
   );
-  const currentVariables = useAppSelector(selectResolvedVariables(instanceId));
-  const currentInput = useAppSelector(selectUserInputText(instanceId));
+  const currentVariables = useAppSelector(
+    selectResolvedVariables(conversationId),
+  );
+  const currentInput = useAppSelector(selectUserInputText(conversationId));
 
   const copyAgentId = () => {
     if (!instance?.agentId) return;
@@ -128,8 +137,8 @@ export function AgentLauncherSidebarTester({
         allowChat,
         showVariables,
         usePreExecutionInput,
-        useChat,
-        variableInputStyle: useWizardVariables ? "wizard" : "inline",
+        conversationMode,
+        variableInputStyle,
         variables: applyVariables ? currentVariables : undefined,
         userInput: currentInput || undefined,
       });
@@ -279,19 +288,32 @@ export function AgentLauncherSidebarTester({
             />
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-1">
             <Label
-              htmlFor="wizard-variables"
-              className="flex items-center gap-1.5 text-xs cursor-pointer"
+              htmlFor="variable-input-style"
+              className="flex items-center gap-1.5 text-xs"
             >
               <GalleryVertical className="w-3.5 h-3.5" />
-              Wizard Variables
+              Variable UI
             </Label>
-            <Switch
-              id="wizard-variables"
-              checked={useWizardVariables}
-              onCheckedChange={setUseWizardVariables}
-            />
+            <select
+              id="variable-input-style"
+              value={variableInputStyle}
+              onChange={(e) =>
+                setVariableInputStyle(e.target.value as VariableInputStyle)
+              }
+              className="text-xs rounded border border-border bg-background px-1.5 py-1 w-full"
+            >
+              {VARIABLE_INPUT_STYLE_OPTIONS.map((opt) => (
+                <option
+                  key={opt.value}
+                  value={opt.value}
+                  title={opt.description}
+                >
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="flex items-center justify-between">
@@ -311,17 +333,25 @@ export function AgentLauncherSidebarTester({
 
           <div className="flex items-center justify-between">
             <Label
-              htmlFor="use-chat-endpoint"
+              htmlFor="conversation-mode"
               className="flex items-center gap-1.5 text-xs cursor-pointer"
             >
               <Layers className="w-3.5 h-3.5" />
-              Use Chat Endpoint
+              Mode
             </Label>
-            <Switch
-              id="use-chat-endpoint"
-              checked={useChat}
-              onCheckedChange={setUseChat}
-            />
+            <select
+              id="conversation-mode"
+              value={conversationMode}
+              onChange={(e) =>
+                setConversationMode(
+                  e.target.value as "agent" | "conversation" | "chat",
+                )
+              }
+              className="text-xs rounded border border-border bg-background px-1.5 py-0.5"
+            >
+              <option value="agent">Agent</option>
+              <option value="chat">Chat (builder)</option>
+            </select>
           </div>
         </div>
 
@@ -365,13 +395,13 @@ export function AgentLauncherSidebarTester({
           onClose={() => setTestModalOpen(false)}
           testType={testModalType}
           agentId={instance.agentId}
-          sourceInstanceId={instanceId}
+          sourceInstanceId={conversationId}
           autoRun={autoRun}
           allowChat={allowChat}
           showVariables={showVariables}
           applyVariables={applyVariables}
-          useChat={useChat}
-          variableInputStyle={useWizardVariables ? "wizard" : "inline"}
+          conversationMode={conversationMode}
+          variableInputStyle={variableInputStyle}
           variables={applyVariables ? currentVariables : {}}
           userInput={currentInput || ""}
         />

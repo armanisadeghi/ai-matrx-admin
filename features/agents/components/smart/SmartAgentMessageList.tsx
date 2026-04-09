@@ -4,7 +4,7 @@
  * SmartAgentMessageList
  *
  * The visibility-aware message list for agent execution instances.
- * Reads ALL display config from Redux via instanceId — no props for config.
+ * Reads ALL display config from Redux via conversationId — no props for config.
  *
  * CRITICAL DESIGN: Streaming message is part of the unified displayMessages
  * array — never conditionally mounted/unmounted as a sibling. When the stream
@@ -64,7 +64,7 @@ interface DisplayMessage {
 }
 
 interface SmartAgentMessageListProps {
-  instanceId: string;
+  conversationId: string;
   compact?: boolean;
   emptyStateMessage?: string;
 }
@@ -92,23 +92,27 @@ function filterVisibleTurns(
 }
 
 export function SmartAgentMessageList({
-  instanceId,
+  conversationId,
   compact = false,
   emptyStateMessage = "Ready to run",
 }: SmartAgentMessageListProps) {
-  const turns = useAppSelector(selectConversationTurns(instanceId));
-  const phase = useAppSelector(selectStreamPhase(instanceId));
-  const streamingText = useAppSelector(selectLatestAccumulatedText(instanceId));
-  const infoMessage = useAppSelector(selectLatestInfoUserMessage(instanceId));
-  const error = useAppSelector(selectLatestError(instanceId));
+  const turns = useAppSelector(selectConversationTurns(conversationId));
+  const phase = useAppSelector(selectStreamPhase(conversationId));
+  const streamingText = useAppSelector(
+    selectLatestAccumulatedText(conversationId),
+  );
+  const infoMessage = useAppSelector(
+    selectLatestInfoUserMessage(conversationId),
+  );
+  const error = useAppSelector(selectLatestError(conversationId));
   const showDefinitionMessages = useAppSelector(
-    selectShowDefinitionMessages(instanceId),
+    selectShowDefinitionMessages(conversationId),
   );
   const showDefinitionMessageContent = useAppSelector(
-    selectShowDefinitionMessageContent(instanceId),
+    selectShowDefinitionMessageContent(conversationId),
   );
   const hiddenMessageCount = useAppSelector(
-    selectHiddenMessageCount(instanceId),
+    selectHiddenMessageCount(conversationId),
   );
 
   const lastUserRef = useRef<HTMLDivElement>(null);
@@ -257,6 +261,8 @@ export function SmartAgentMessageList({
                 isStreamActive={msg.isStreamActive}
                 compact={compact}
                 error={msg.error}
+                conversationId={conversationId}
+                messageKey={msg.key}
               />
               {msg.isStreamActive && msg.infoMessage && (
                 <AgentStatusIndicator

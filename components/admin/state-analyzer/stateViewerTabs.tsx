@@ -10,6 +10,7 @@ import { moduleSchemas } from "@/lib/redux/dynamic/moduleSchema";
 import AppletRuntimeViewer from "./sliceViewers/AppletRuntimeViewer";
 import AgentDefinitionSliceViewer from "./sliceViewers/agent-definitions/AgentDefinitionSliceViewer";
 import AgentDefinitionSliceViewerShadcn from "./sliceViewers/agent-definitions/AgentDefinitionSliceViewerShadcn";
+import ExecutionInstanceInspector from "./execution-inspector/ExecutionInstanceInspector";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search } from "lucide-react";
@@ -108,6 +109,11 @@ export function getStateViewerTabs(
       content: (
         <AgentDefinitionSliceViewer state={completeState.agentDefinition} />
       ),
+    },
+    {
+      id: "executionInspector",
+      label: "Execution Inspector",
+      content: <ExecutionInstanceInspector />,
     },
     {
       id: "user",

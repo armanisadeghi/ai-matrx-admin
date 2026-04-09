@@ -29,11 +29,11 @@ import { destroyInstance } from "../execution-instances/execution-instances.slic
 // =============================================================================
 
 export interface InstanceModelOverridesState {
-  byInstanceId: Record<string, InstanceModelOverrideState>;
+  byConversationId: Record<string, InstanceModelOverrideState>;
 }
 
 const initialState: InstanceModelOverridesState = {
-  byInstanceId: {},
+  byConversationId: {},
 };
 
 // =============================================================================
@@ -50,11 +50,11 @@ const instanceModelOverridesSlice = createSlice({
      */
     initInstanceOverrides(
       state,
-      action: PayloadAction<{ instanceId: string; baseSettings?: Partial<LLMParams> }>,
+      action: PayloadAction<{ conversationId: string; baseSettings?: Partial<LLMParams> }>,
     ) {
-      const { instanceId, baseSettings = {} } = action.payload;
-      state.byInstanceId[instanceId] = {
-        instanceId,
+      const { conversationId, baseSettings = {} } = action.payload;
+      state.byConversationId[conversationId] = {
+        conversationId,
         baseSettings,
         overrides: {},
         removals: [],
@@ -68,12 +68,12 @@ const instanceModelOverridesSlice = createSlice({
     setOverrides(
       state,
       action: PayloadAction<{
-        instanceId: string;
+        conversationId: string;
         changes: Partial<LLMParams>;
       }>,
     ) {
-      const { instanceId, changes } = action.payload;
-      const entry = state.byInstanceId[instanceId];
+      const { conversationId, changes } = action.payload;
+      const entry = state.byConversationId[conversationId];
       if (entry) {
         Object.assign(entry.overrides, changes);
         // Remove from removals list if being set
@@ -88,10 +88,10 @@ const instanceModelOverridesSlice = createSlice({
      */
     markRemoved(
       state,
-      action: PayloadAction<{ instanceId: string; key: string }>,
+      action: PayloadAction<{ conversationId: string; key: string }>,
     ) {
-      const { instanceId, key } = action.payload;
-      const entry = state.byInstanceId[instanceId];
+      const { conversationId, key } = action.payload;
+      const entry = state.byConversationId[conversationId];
       if (entry) {
         delete (entry.overrides as Record<string, unknown>)[key];
         if (!entry.removals.includes(key)) {
@@ -106,10 +106,10 @@ const instanceModelOverridesSlice = createSlice({
      */
     resetOverride(
       state,
-      action: PayloadAction<{ instanceId: string; key: string }>,
+      action: PayloadAction<{ conversationId: string; key: string }>,
     ) {
-      const { instanceId, key } = action.payload;
-      const entry = state.byInstanceId[instanceId];
+      const { conversationId, key } = action.payload;
+      const entry = state.byConversationId[conversationId];
       if (entry) {
         delete (entry.overrides as Record<string, unknown>)[key];
         entry.removals = entry.removals.filter((k) => k !== key);
@@ -120,7 +120,7 @@ const instanceModelOverridesSlice = createSlice({
      * Reset ALL overrides for an instance — back to pure agent defaults.
      */
     resetAllOverrides(state, action: PayloadAction<string>) {
-      const entry = state.byInstanceId[action.payload];
+      const entry = state.byConversationId[action.payload];
       if (entry) {
         entry.overrides = {};
         entry.removals = [];
@@ -131,14 +131,14 @@ const instanceModelOverridesSlice = createSlice({
      * Clean up when an instance is destroyed.
      */
     removeInstanceOverrides(state, action: PayloadAction<string>) {
-      delete state.byInstanceId[action.payload];
+      delete state.byConversationId[action.payload];
     },
   },
 
   extraReducers: (builder) => {
     // Auto-cleanup when instance is destroyed
     builder.addCase(destroyInstance, (state, action) => {
-      delete state.byInstanceId[action.payload];
+      delete state.byConversationId[action.payload];
     });
   },
 });

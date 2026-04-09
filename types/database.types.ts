@@ -15686,6 +15686,26 @@ export type Database = {
           ourput_params: Json
         }[]
       }
+      admin_get_columns: {
+        Args: { p_table_name: string }
+        Returns: {
+          column_default: string
+          column_name: string
+          data_type: string
+          is_nullable: boolean
+          is_primary_key: boolean
+          name: string
+        }[]
+      }
+      admin_list_tables: {
+        Args: never
+        Returns: {
+          name: string
+          row_count: number
+          table_name: string
+          table_schema: string
+        }[]
+      }
       admin_reply_user_review:
         | {
             Args: {

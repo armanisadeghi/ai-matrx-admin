@@ -109,6 +109,8 @@ import { instanceUserInputReducer } from "@/features/agents/redux/execution-syst
 import { executionInstancesReducer } from "@/features/agents/redux/execution-system/execution-instances";
 import { activeRequestsReducer } from "@/features/agents/redux/execution-system/active-requests";
 import { instanceConversationHistoryReducer } from "@/features/agents/redux/execution-system/instance-conversation-history";
+import { conversationFocusReducer } from "@/features/agents/redux/execution-system/conversation-focus";
+import agentAssistantMarkdownDraftReducer from "@/features/agents/redux/agent-assistant-markdown-draft.slice";
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
 
@@ -335,6 +337,10 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     // // Layer 4 — Request Execution
     activeRequests: activeRequestsReducer,
     instanceConversationHistory: instanceConversationHistoryReducer,
+
+    // Surface Focus Registry — tracks which conversationId is active per UI surface
+    conversationFocus: conversationFocusReducer,
+    agentAssistantMarkdownDraft: agentAssistantMarkdownDraftReducer,
 
     // MCP Catalog — global server registry + per-user connection state
     mcp: mcpReducer,

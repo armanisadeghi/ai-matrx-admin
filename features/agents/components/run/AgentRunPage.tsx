@@ -17,12 +17,15 @@
  *   └────────────────────────────────────┘
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
 import { selectAgentExecutionPayload } from "@/features/agents/redux/agent-definition/selectors";
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
+import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
+import { fetchConversationHistory } from "@/features/cx-chat/redux/thunks";
+import { setFocus } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.slice";
 import { AgentRunsSidebar } from "./AgentRunsSidebar";
 import { AgentLauncherSidebarTester } from "../run-controls/AgentLauncherSidebarTester";
 import { AgentConversationColumn } from "../shared/AgentConversationColumn";
@@ -36,6 +39,7 @@ interface AgentRunPageProps {
 
 export function AgentRunPage({ agentId }: AgentRunPageProps) {
   const dispatch = useAppDispatch();
+  const store = useAppStore();
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
 
@@ -48,6 +52,9 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
 
   const currentRunId = searchParams.get("runId") ?? undefined;
   const conversationIdFromUrl = searchParams.get("conversationId") ?? undefined;
+
+  console.log("[AgentRunPage] conversationIdFromUrl", conversationIdFromUrl);
+  console.log("[AgentRunPage] currentRunId", currentRunId);
 
   useEffect(() => {
     let cancelled = false;
@@ -70,12 +77,49 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agentId]);
 
-  const { instanceId, setInstanceId } = useAgentLauncher(agentId, {
+  const surfaceKey = `agent-runner:${agentId}`;
+  const { conversationId } = useAgentLauncher(agentId, {
+    surfaceKey,
     sourceFeature: "agent-runner",
     ready: !isInitializing,
   });
 
-  if (isInitializing || !instanceId) {
+  // Sync ?conversationId= URL param → focus registry + load history.
+  // When the user clicks a past conversation in the sidebar, the URL updates
+  // and this effect creates/reuses an instance keyed by that server UUID,
+  // loads the full message history, and switches focus.
+  const lastSyncedUrl = useRef<string | null>(null);
+  useEffect(() => {
+    if (!conversationIdFromUrl || isInitializing) return;
+    if (conversationIdFromUrl === lastSyncedUrl.current) return;
+    if (conversationIdFromUrl === conversationId) return;
+    lastSyncedUrl.current = conversationIdFromUrl;
+
+    (async () => {
+      const exists =
+        !!store.getState().executionInstances?.byConversationId[
+          conversationIdFromUrl
+        ];
+
+      if (!exists) {
+        await dispatch(
+          createManualInstance({
+            agentId,
+            conversationId: conversationIdFromUrl,
+            mode: "conversation",
+          }),
+        );
+      }
+
+      dispatch(
+        fetchConversationHistory({ conversationId: conversationIdFromUrl }),
+      );
+      dispatch(setFocus({ surfaceKey, conversationId: conversationIdFromUrl }));
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationIdFromUrl, isInitializing, conversationId]);
+
+  if (isInitializing || !conversationId) {
     return (
       <div className="flex items-center justify-center h-full gap-3 text-muted-foreground">
         <Loader2 className="w-5 h-5 animate-spin text-primary" />
@@ -90,14 +134,14 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
         <div className="w-64 shrink-0 border-r border-border overflow-hidden flex flex-col">
           <AgentRunsSidebar
             agentId={agentId}
-            instanceId={instanceId}
+            conversationId={conversationId}
+            surfaceKey={surfaceKey}
             conversationIdFromUrl={conversationIdFromUrl}
             currentRunId={currentRunId}
-            onInstanceCreated={setInstanceId}
             onClose={() => setSidebarOpen(false)}
           />
           <div className="shrink-0 border-t border-border">
-            <AgentLauncherSidebarTester instanceId={instanceId} />
+            <AgentLauncherSidebarTester conversationId={conversationId} />
           </div>
         </div>
       )}
@@ -121,8 +165,8 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
         )}
 
         <AgentConversationColumn
-          instanceId={instanceId}
-          onNewInstance={setInstanceId}
+          conversationId={conversationId}
+          surfaceKey={surfaceKey}
           constrainWidth
           smartInputProps={{
             sendButtonVariant: "blue",
