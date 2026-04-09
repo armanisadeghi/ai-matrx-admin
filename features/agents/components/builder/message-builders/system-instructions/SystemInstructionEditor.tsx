@@ -16,22 +16,22 @@ import { selectStructuredInstruction } from "@/features/agents/redux/execution-s
 import type { SystemInstruction } from "@/features/agents/types/agent-api-types";
 
 interface SystemInstructionEditorProps {
-  instanceId: string;
+  conversationId: string;
 }
 
 export function SystemInstructionEditor({
-  instanceId,
+  conversationId,
 }: SystemInstructionEditorProps) {
   const dispatch = useAppDispatch();
-  const instruction = useAppSelector(selectStructuredInstruction(instanceId));
+  const instruction = useAppSelector(selectStructuredInstruction(conversationId));
   const data = (instruction ?? {}) as Partial<SystemInstruction>;
 
   const update = (changes: Partial<SystemInstruction>) => {
-    dispatch(setStructuredInstruction({ instanceId, changes }));
+    dispatch(setStructuredInstruction({ conversationId, changes }));
   };
 
   const handleReset = () => {
-    dispatch(resetStructuredInstruction(instanceId));
+    dispatch(resetStructuredInstruction(conversationId));
   };
 
   return (
@@ -116,19 +116,19 @@ export function SystemInstructionEditor({
       <Section title="Auto-Injected Sections">
         <div className="space-y-3">
           <ToggleRow
-            id={`include-date-${instanceId}`}
+            id={`include-date-${conversationId}`}
             label="Include current date"
             checked={data.include_date ?? true}
             onChange={(v) => update({ include_date: v })}
           />
           <ToggleRow
-            id={`include-code-${instanceId}`}
+            id={`include-code-${conversationId}`}
             label="Include code guidelines"
             checked={data.include_code_guidelines ?? false}
             onChange={(v) => update({ include_code_guidelines: v })}
           />
           <ToggleRow
-            id={`include-safety-${instanceId}`}
+            id={`include-safety-${conversationId}`}
             label="Include safety guidelines"
             checked={data.include_safety_guidelines ?? false}
             onChange={(v) => update({ include_safety_guidelines: v })}

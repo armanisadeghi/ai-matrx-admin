@@ -9,13 +9,13 @@ import {
 import { SystemInstructionEditor } from "./SystemInstructionEditor";
 
 interface SystemInstructionModalProps {
-  instanceId: string;
+  conversationId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function SystemInstructionModal({
-  instanceId,
+  conversationId,
   open,
   onOpenChange,
 }: SystemInstructionModalProps) {
@@ -25,7 +25,7 @@ export function SystemInstructionModal({
         <DialogHeader>
           <DialogTitle>Structured System Instruction</DialogTitle>
         </DialogHeader>
-        <SystemInstructionEditor instanceId={instanceId} />
+        <SystemInstructionEditor conversationId={conversationId} />
       </DialogContent>
     </Dialog>
   );

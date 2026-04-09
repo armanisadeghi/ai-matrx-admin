@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import {
+  AlertTriangle,
   Plus,
   Image as ImageIcon,
   Music,
@@ -11,7 +12,15 @@ import {
   X,
   Check,
   Pencil,
+  Eye,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
 import { Button } from "@/components/ui/button";
 import {
@@ -271,10 +280,11 @@ export function BlockRow({
   onRemove,
   validVariables = [],
 }: BlockRowProps) {
-  const type = block.type as string;
+  const [open, setOpen] = useState(false);
+  const type = (block.type as string) || "unknown";
   const config = getConfig(type as BlockType);
-  const icon = config?.icon ?? <FileText className="w-3.5 h-3.5" />;
-  const label = config?.label ?? type;
+  const icon = config?.icon ?? <AlertTriangle className="w-3.5 h-3.5" />;
+  const label = config?.label ?? `Unsupported: ${type}`;
 
   // Fields that have values
   const fieldRows =
@@ -285,6 +295,64 @@ export function BlockRow({
         return { key, label: fieldLabel.replace(/ or \{\{.*?\}\}/, ""), val };
       })
       .filter(Boolean) ?? [];
+
+  if (!config) {
+    return (
+      <>
+        <div className="flex flex-col gap-0.5 w-full px-2 py-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs group/row">
+          <div className="flex items-center gap-2">
+            <span className="shrink-0">{icon}</span>
+            <span className="font-medium shrink-0">{label}</span>
+            <div className="flex items-center gap-0.5 shrink-0 ml-auto opacity-0 group-hover/row:opacity-100 transition-opacity">
+              <button
+                onClick={() => setOpen(true)}
+                className="p-1 rounded hover:text-foreground hover:bg-amber-500/20 transition-colors cursor-pointer"
+                title="Inspect JSON"
+              >
+                <Eye className="w-3 h-3" />
+              </button>
+              <button
+                onClick={onRemove}
+                className="p-1 rounded hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                title="Remove"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        </div>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="max-w-2xl bg-background border border-border">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-500" />
+                Unsupported block type: <code className="font-mono">{type}</code>
+              </DialogTitle>
+            </DialogHeader>
+            <p className="text-xs text-muted-foreground">
+              This block type is preserved in the agent definition and will be sent to the API unchanged.
+              Editing is not supported.
+            </p>
+            <ScrollArea className="max-h-[60vh] rounded-md border border-border bg-muted/50">
+              <pre className="p-4 text-xs font-mono whitespace-pre-wrap break-all">
+                {JSON.stringify(block, null, 2)}
+              </pre>
+            </ScrollArea>
+            <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
+              Close
+            </Button>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
+
+  const isImage = type === "image";
+  const imgUrl = (block.url as string) || "";
+  const showThumbnail =
+    isImage &&
+    imgUrl &&
+    (imgUrl.startsWith("http") || imgUrl.startsWith("data:"));
 
   return (
     <div className="flex flex-col gap-0.5 w-full px-2 py-1.5 rounded-md border border-border bg-card text-xs group/row">
@@ -308,6 +376,21 @@ export function BlockRow({
           </button>
         </div>
       </div>
+      
+      {showThumbnail && (
+        <div className="pl-5 pt-1 pb-1.5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imgUrl}
+            alt="Attached image"
+            className="h-16 w-auto max-w-[150px] rounded border border-border object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
+          />
+        </div>
+      )}
+
       {fieldRows.map(
         (f) =>
           f && (
