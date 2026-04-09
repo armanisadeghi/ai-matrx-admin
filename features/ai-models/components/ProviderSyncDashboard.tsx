@@ -20,7 +20,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ModelDetailSheet, { OpenDetailButton } from "../audit/ModelDetailSheet";
-import type { AiModelRow, AiProvider, ProviderModelEntry } from "../types";
+import type { AiModel, AiProvider, ProviderModelEntry } from "../types";
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -42,11 +42,11 @@ type ModelComparison = {
   provider_id: string;
   status: ComparisonStatus;
   providerEntry?: ProviderModelEntry;
-  localEntry?: AiModelRow;
+  localEntry?: AiModel;
 };
 
 type Props = {
-  localModels: AiModelRow[];
+  localModels: AiModel[];
   providers: AiProvider[];
   onModelsChanged?: () => void;
 };
@@ -633,7 +633,7 @@ function ProviderSection({
 }: {
   summary: ProviderSummary;
   provider: AiProvider | undefined;
-  localModels: AiModelRow[];
+  localModels: AiModel[];
   onSync: (s: ProviderSummary) => void;
   syncing: boolean;
   onOpenModel: (id: string) => void;

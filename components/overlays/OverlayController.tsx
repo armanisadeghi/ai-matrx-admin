@@ -1637,6 +1637,8 @@ export const OverlayController: React.FC = () => {
 
       {isAgentSettingsWindowOpen && (
         <AgentSettingsWindow
+          isOpen={true}
+          onClose={() => close("agentSettingsWindow")}
           initialAgentId={agentSettingsWindowData?.initialAgentId}
         />
       )}

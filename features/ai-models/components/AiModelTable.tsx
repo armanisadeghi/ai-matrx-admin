@@ -31,7 +31,7 @@ import {
   ArrowDown,
   ArrowUpDown,
 } from "lucide-react";
-import type { AiModelRow, AiProvider } from "../types";
+import type { AiModel, AiProvider } from "../types";
 import type { TabState, AiModelFilters } from "../hooks/useTabUrlState";
 import AiModelFilterBar from "./AiModelFilterBar";
 
@@ -195,13 +195,13 @@ const SORT_FIELDS = [
 ];
 
 interface ColDef {
-  key: keyof AiModelRow;
+  key: keyof AiModel;
   header: string;
   width: string;
   sortable: boolean;
   className?: string;
   render: (
-    item: AiModelRow,
+    item: AiModel,
     providerMap: Record<string, string>,
   ) => React.ReactNode;
 }
@@ -346,6 +346,15 @@ const COLUMNS: ColDef[] = [
     render: (item) => <JsonSummaryBadge data={item.controls} label="ctrl" />,
   },
   {
+    key: "constraints",
+    header: "Constraints",
+    width: "w-[100px] min-w-[80px]",
+    sortable: false,
+    render: (item) => (
+      <JsonSummaryBadge data={item.constraints} label="rules" />
+    ),
+  },
+  {
     key: "is_deprecated",
     header: "Deprecated",
     width: "w-[90px] min-w-[80px]",
@@ -396,11 +405,17 @@ const COLUMNS: ColDef[] = [
       const tier = item.pricing[item.pricing.length - 1];
       return (
         <div className="text-xs font-mono leading-tight">
-          <span className="text-foreground">${tier.input_price.toFixed(tier.input_price < 0.1 ? 3 : 2)}</span>
+          <span className="text-foreground">
+            ${tier.input_price.toFixed(tier.input_price < 0.1 ? 3 : 2)}
+          </span>
           <span className="text-muted-foreground mx-0.5">/</span>
-          <span className="text-foreground">${tier.output_price.toFixed(tier.output_price < 0.1 ? 3 : 2)}</span>
+          <span className="text-foreground">
+            ${tier.output_price.toFixed(tier.output_price < 0.1 ? 3 : 2)}
+          </span>
           {item.pricing.length > 1 && (
-            <span className="ml-1 text-muted-foreground/60">({item.pricing.length}T)</span>
+            <span className="ml-1 text-muted-foreground/60">
+              ({item.pricing.length}T)
+            </span>
           )}
         </div>
       );
@@ -411,10 +426,10 @@ const COLUMNS: ColDef[] = [
 // ─── Filtering & Sorting helpers ─────────────────────────────────────────────
 
 function applyFilters(
-  models: AiModelRow[],
+  models: AiModel[],
   q: string,
   filters: AiModelFilters,
-): AiModelRow[] {
+): AiModel[] {
   let result = models;
 
   if (q) {
@@ -458,29 +473,37 @@ function applyFilters(
     result = result.filter((m) => m.model_class === filters.model_class);
   }
   if (filters.context_window_min !== undefined) {
-    result = result.filter((m) => (m.context_window ?? 0) >= filters.context_window_min!);
+    result = result.filter(
+      (m) => (m.context_window ?? 0) >= filters.context_window_min!,
+    );
   }
   if (filters.context_window_max !== undefined) {
-    result = result.filter((m) => (m.context_window ?? Infinity) <= filters.context_window_max!);
+    result = result.filter(
+      (m) => (m.context_window ?? Infinity) <= filters.context_window_max!,
+    );
   }
   if (filters.max_tokens_min !== undefined) {
-    result = result.filter((m) => (m.max_tokens ?? 0) >= filters.max_tokens_min!);
+    result = result.filter(
+      (m) => (m.max_tokens ?? 0) >= filters.max_tokens_min!,
+    );
   }
   if (filters.max_tokens_max !== undefined) {
-    result = result.filter((m) => (m.max_tokens ?? Infinity) <= filters.max_tokens_max!);
+    result = result.filter(
+      (m) => (m.max_tokens ?? Infinity) <= filters.max_tokens_max!,
+    );
   }
 
   return result;
 }
 
 function applySort(
-  models: AiModelRow[],
+  models: AiModel[],
   sort: string,
   dir: "asc" | "desc",
-): AiModelRow[] {
+): AiModel[] {
   return [...models].sort((a, b) => {
-    const aVal = String(a[sort as keyof AiModelRow] ?? "");
-    const bVal = String(b[sort as keyof AiModelRow] ?? "");
+    const aVal = String(a[sort as keyof AiModel] ?? "");
+    const bVal = String(b[sort as keyof AiModel] ?? "");
     const cmp = aVal.localeCompare(bVal, undefined, { numeric: true });
     return dir === "asc" ? cmp : -cmp;
   });
@@ -489,11 +512,11 @@ function applySort(
 // ─── Row Actions ─────────────────────────────────────────────────────────────
 
 interface RowActionsProps {
-  item: AiModelRow;
-  onView: (item: AiModelRow) => void;
-  onEdit: (item: AiModelRow) => void;
-  onDuplicate: (item: AiModelRow) => void;
-  onDelete: (item: AiModelRow) => void;
+  item: AiModel;
+  onView: (item: AiModel) => void;
+  onEdit: (item: AiModel) => void;
+  onDuplicate: (item: AiModel) => void;
+  onDelete: (item: AiModel) => void;
 }
 
 function RowActions({
@@ -612,16 +635,16 @@ function SortIcon({
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export interface AiModelTableProps {
-  models: AiModelRow[];
+  models: AiModel[];
   providers: AiProvider[];
   isLoading: boolean;
   selectedId: string | null;
   tabState: TabState;
   onUpdateTabState: (patch: Partial<Omit<TabState, "id">>) => void;
-  onSelect: (model: AiModelRow) => void;
-  onEdit: (model: AiModelRow) => void;
-  onDelete: (model: AiModelRow) => void;
-  onDuplicate: (model: AiModelRow) => void;
+  onSelect: (model: AiModel) => void;
+  onEdit: (model: AiModel) => void;
+  onDelete: (model: AiModel) => void;
+  onDuplicate: (model: AiModel) => void;
   onCreate: () => void;
   onRefresh: () => void;
 }

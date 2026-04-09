@@ -1,94 +1,183 @@
+import { Database } from "@/types/database.types";
+
+// =============================================================================
+// Raw DB types — source of truth, never hand-edit
+// =============================================================================
+
+export type AiModelRow = Database["public"]["Tables"]["ai_model"]["Row"];
+export type AiModelInsert = Database["public"]["Tables"]["ai_model"]["Insert"];
+export type AiModelUpdate = Database["public"]["Tables"]["ai_model"]["Update"];
+
+export type AiProviderRow = Database["public"]["Tables"]["ai_provider"]["Row"];
+export type AiProviderInsert =
+  Database["public"]["Tables"]["ai_provider"]["Insert"];
+export type AiProviderUpdate =
+  Database["public"]["Tables"]["ai_provider"]["Update"];
+
+export type AiEndpointRow = Database["public"]["Tables"]["ai_endpoint"]["Row"];
+export type AiEndpointInsert =
+  Database["public"]["Tables"]["ai_endpoint"]["Insert"];
+export type AiEndpointUpdate =
+  Database["public"]["Tables"]["ai_endpoint"]["Update"];
+
+// =============================================================================
+// Json-field shape definitions — what we actually store in JSONB columns
+// =============================================================================
+
 export type PricingTier = {
-    max_tokens: number | null;
-    input_price: number;
-    output_price: number;
-    cached_input_price: number;
+  max_tokens: number | null;
+  input_price: number;
+  output_price: number;
+  cached_input_price: number;
 };
 
-export type AiModelRow = {
-    id: string;
-    name: string;
-    common_name: string | null;
-    model_class: string;
-    provider: string | null;
-    endpoints: unknown | null;
-    context_window: number | null;
-    max_tokens: number | null;
-    capabilities: unknown | null;
-    controls: ControlsSchema | null;
-    model_provider: string | null;
-    is_deprecated: boolean | null;
-    is_primary: boolean | null;
-    is_premium: boolean | null;
-    api_class: string | null;
-    pricing: PricingTier[] | null;
+// -- Unconditional constraints: single-field checks that always apply --------
+
+export type UnconditionalRule =
+  | "required"
+  | "fixed"
+  | "min"
+  | "max"
+  | "one_of"
+  | "forbidden";
+
+export type UnconditionalConstraint = {
+  id: string;
+  rule: UnconditionalRule;
+  field: string;
+  value?: unknown;
+  severity: "error" | "warning" | "info";
+  message: string;
 };
 
-export type ProviderModelEntry = {
-    id: string;
-    display_name?: string;
-    created_at?: string;
-    type?: string;
-    max_input_tokens?: number | null;
-    max_tokens?: number | null;
-    capabilities?: Record<string, unknown> | null;
-    [key: string]: unknown;
+// -- Conditional constraints: require X when Y is true ----------------------
+
+export type ConditionOp =
+  | "eq"
+  | "neq"
+  | "gt"
+  | "gte"
+  | "lt"
+  | "lte"
+  | "in"
+  | "not_in"
+  | "exists"
+  | "not_exists";
+
+export type FieldCondition = {
+  field: string;
+  op: ConditionOp;
+  value?: unknown;
 };
 
-export type ProviderModelsCache = {
-    fetched_at: string;
-    models: ProviderModelEntry[];
-    raw?: unknown;
+export type ConditionalConstraint = {
+  id: string;
+  when: FieldCondition;
+  require: FieldCondition;
+  severity: "error" | "warning" | "info";
+  message: string;
 };
 
-export type AiProvider = {
-    id: string;
-    name: string | null;
-    company_description: string | null;
-    documentation_link: string | null;
-    models_link: string | null;
-    provider_models_cache: ProviderModelsCache | null;
-};
+// -- Union: discriminated by presence of "rule" vs "when"+"require" ----------
 
-export type AiModelFormData = {
-    name: string;
-    common_name: string;
-    model_class: string;
-    provider: string;
-    api_class: string;
-    context_window: string;
-    max_tokens: string;
-    model_provider: string;
-    is_deprecated: boolean;
-    is_primary: boolean;
-    is_premium: boolean;
-    pricing: PricingTier[];
-};
+export type ModelConstraint = UnconditionalConstraint | ConditionalConstraint;
 
-export type ControlParamType = 'boolean' | 'number' | 'integer' | 'string' | 'array' | 'object';
+export function isConditionalConstraint(
+  c: ModelConstraint,
+): c is ConditionalConstraint {
+  return "when" in c && "require" in c;
+}
+
+export type ControlParamType =
+  | "boolean"
+  | "number"
+  | "integer"
+  | "string"
+  | "array"
+  | "object";
 
 export type ControlParam = {
-    type?: ControlParamType;
-    min?: number;
-    max?: number;
-    default?: unknown;
-    allowed?: boolean;
-    enum?: string[];
-    items?: { type: string };
-    maxItems?: number;
-    required?: boolean;
+  type?: ControlParamType;
+  min?: number;
+  max?: number;
+  default?: unknown;
+  allowed?: boolean;
+  enum?: string[];
+  items?: { type: string };
+  maxItems?: number;
+  required?: boolean;
 };
 
 export type ControlsSchema = Record<string, ControlParam>;
 
+export type ProviderModelEntry = {
+  id: string;
+  display_name?: string;
+  created_at?: string;
+  type?: string;
+  max_input_tokens?: number | null;
+  max_tokens?: number | null;
+  capabilities?: Record<string, unknown> | null;
+  [key: string]: unknown;
+};
+
+export type ProviderModelsCache = {
+  fetched_at: string;
+  models: ProviderModelEntry[];
+  raw?: unknown;
+};
+
+// =============================================================================
+// Augmented types — DB Row with Json fields narrowed to real shapes
+// These are what the codebase imports and uses everywhere.
+// =============================================================================
+
+export type AiModel = Omit<
+  AiModelRow,
+  "controls" | "constraints" | "pricing" | "endpoints" | "capabilities"
+> & {
+  controls: ControlsSchema | null;
+  constraints: ModelConstraint[] | null;
+  pricing: PricingTier[] | null;
+  endpoints: string[] | null;
+  capabilities: Record<string, unknown> | string[] | null;
+};
+
+export type AiProvider = Omit<AiProviderRow, "provider_models_cache"> & {
+  provider_models_cache: ProviderModelsCache | null;
+};
+
+// =============================================================================
+// UI / form types
+// =============================================================================
+
+export type AiModelFormData = {
+  name: string;
+  common_name: string;
+  model_class: string;
+  provider: string;
+  api_class: string;
+  context_window: string;
+  max_tokens: string;
+  model_provider: string;
+  is_deprecated: boolean;
+  is_primary: boolean;
+  is_premium: boolean;
+  pricing: PricingTier[];
+};
+
+// =============================================================================
+// Audit / usage types
+// =============================================================================
+
 export type ModelUsageItem = {
-    id: string;
-    name: string;
-    table: 'prompts' | 'prompt_builtins';
-    source_prompt_id?: string | null;
+  id: string;
+  name: string;
+  table: "prompts" | "prompt_builtins";
+  source_prompt_id?: string | null;
 };
 
 export type ModelUsageResult = {
-    prompts: ModelUsageItem[];
-    promptBuiltins: ModelUsageItem[];
+  prompts: ModelUsageItem[];
+  promptBuiltins: ModelUsageItem[];
 };

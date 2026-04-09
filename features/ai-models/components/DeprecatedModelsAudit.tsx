@@ -30,19 +30,19 @@ import {
     FilterX,
 } from 'lucide-react';
 import { aiModelService } from '../service';
-import type { AiModelRow, ModelUsageResult } from '../types';
+import type { AiModel, ModelUsageResult } from '../types';
 import { ModelSettingsDialog } from '@/features/prompts/components/configuration/ModelSettingsDialog';
 import type { PromptSettings } from '@/features/prompts/types/core';
 import { ALL_PROVIDERS } from './AiModelFilterBar';
 
 interface DeprecatedModelsAuditProps {
-    allModels: AiModelRow[];
+    allModels: AiModel[];
     onClose: () => void;
     onModelsChanged: () => void;
 }
 
 interface DeprecatedEntry {
-    model: AiModelRow;
+    model: AiModel;
     usage: ModelUsageResult | null;
     loading: boolean;
     error: string | null;

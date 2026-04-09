@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import type { TabDefinition } from "@/components/official/FullScreenOverlay";
 import type { RootState } from "@/lib/redux/store";
 import GenericSliceViewer from "./sliceViewers/GenericSliceViewer";
@@ -10,14 +10,91 @@ import { moduleSchemas } from "@/lib/redux/dynamic/moduleSchema";
 import AppletRuntimeViewer from "./sliceViewers/AppletRuntimeViewer";
 import AgentDefinitionSliceViewer from "./sliceViewers/agent-definitions/AgentDefinitionSliceViewer";
 import AgentDefinitionSliceViewerShadcn from "./sliceViewers/agent-definitions/AgentDefinitionSliceViewerShadcn";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Search } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export const TAB_INDEX_ID = "__tab_index__" as const;
+
+const TabNavigationContext = React.createContext<
+  ((tabId: string) => void) | null
+>(null);
+
+export function useTabNavigation() {
+  return React.useContext(TabNavigationContext);
+}
+
+export { TabNavigationContext };
 
 /** Default selected tab in `StateViewerWindow` — must match the first tab below. */
-export const STATE_VIEWER_DEFAULT_TAB_ID = "_2_agentDefinition" as const;
+export const STATE_VIEWER_DEFAULT_TAB_ID = TAB_INDEX_ID;
 
-export function getStateViewerTabs(completeState: RootState): TabDefinition[] {
-  return [
+function TabIndex({
+  tabs,
+  onSelectTab,
+}: {
+  tabs: { id: string; label: string }[];
+  onSelectTab: (tabId: string) => void;
+}) {
+  const [search, setSearch] = useState("");
+
+  const sorted = [...tabs]
+    .filter((t) => t.id !== TAB_INDEX_ID)
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  const filtered = sorted.filter((t) =>
+    t.label.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  return (
+    <div className="h-full flex flex-col bg-white dark:bg-zinc-800 rounded-lg overflow-hidden">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-border shrink-0">
+        <h2 className="text-sm font-semibold text-foreground shrink-0">
+          All Tabs ({sorted.length})
+        </h2>
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Search tabs..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-7 h-7 text-xs"
+          />
+        </div>
+      </div>
+      <ScrollArea className="flex-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0.5 p-2">
+          {filtered.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => onSelectTab(tab.id)}
+              className={cn(
+                "text-left px-3 py-1.5 rounded-md text-sm transition-colors truncate",
+                "hover:bg-primary/10 text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+          {filtered.length === 0 && (
+            <p className="col-span-full text-xs text-muted-foreground py-4 text-center">
+              No tabs match &quot;{search}&quot;
+            </p>
+          )}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+}
+
+export function getStateViewerTabs(
+  completeState: RootState,
+  onSelectTab?: (tabId: string) => void,
+): TabDefinition[] {
+  const contentTabs: TabDefinition[] = [
     {
-      id: STATE_VIEWER_DEFAULT_TAB_ID,
+      id: "_2_agentDefinition",
       label: "_2_Agent Definition",
       content: (
         <AgentDefinitionSliceViewerShadcn
@@ -791,4 +868,14 @@ export function getStateViewerTabs(completeState: RootState): TabDefinition[] {
       content: <GenericSliceViewer sliceKey="mcp" state={completeState.mcp} />,
     },
   ];
+
+  const tabIndex: TabDefinition = {
+    id: TAB_INDEX_ID,
+    label: "Tab Index",
+    content: (
+      <TabIndex tabs={contentTabs} onSelectTab={onSelectTab ?? (() => {})} />
+    ),
+  };
+
+  return [tabIndex, ...contentTabs];
 }

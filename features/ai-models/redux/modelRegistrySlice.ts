@@ -302,6 +302,7 @@ function emptyModelRecord(): Omit<AIModelRecord, "_fetchType"> {
     common_name: null,
     api_class: null,
     capabilities: null,
+    constraints: [],
     context_window: null,
     controls: null,
     endpoints: null,
@@ -437,6 +438,21 @@ export const selectModelLabelById = createSelector(
     const m = entities[modelId];
     if (!m) return undefined;
     return m.common_name || m.name || m.id;
+  },
+);
+
+/**
+ * Raw model name (the `name` column) for a model ID.
+ * Returns a primitive string or undefined — safe for direct useAppSelector.
+ */
+export const selectModelNameById = createSelector(
+  [
+    selectEntities,
+    (_state: RootState, modelId: string | null | undefined) => modelId,
+  ],
+  (entities, modelId): string | undefined => {
+    if (!modelId) return undefined;
+    return entities[modelId]?.name;
   },
 );
 

@@ -3,11 +3,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { RefreshCcw } from 'lucide-react';
 import { aiModelService } from '../service';
-import type { AiModelRow } from '../types';
+import type { AiModel } from '../types';
 import DeprecatedModelsAudit from './DeprecatedModelsAudit';
 
 export default function DeprecatedModelsAuditPage() {
-    const [models, setModels] = useState<AiModelRow[]>([]);
+    const [models, setModels] = useState<AiModel[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const loadModels = useCallback(async () => {

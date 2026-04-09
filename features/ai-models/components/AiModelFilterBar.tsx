@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select';
 import { Search, X, FilterX, BrainCircuit, Plus, RefreshCcw, ChevronDown, ChevronUp } from 'lucide-react';
 import type { AiModelFilters, TabState } from '../hooks/useTabUrlState';
-import type { AiModelRow } from '../types';
+import type { AiModel } from '../types';
 
 export const ALL_PROVIDERS = [
     'AI Matrx',
@@ -37,7 +37,7 @@ interface AiModelFilterBarProps {
     tabState: TabState;
     totalCount: number;
     filteredCount: number;
-    models: AiModelRow[];
+    models: AiModel[];
     onUpdateQ: (q: string) => void;
     onUpdateFilters: (filters: Partial<AiModelFilters>) => void;
     onClearAll: () => void;

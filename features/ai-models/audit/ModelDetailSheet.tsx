@@ -6,13 +6,13 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink, Loader2 } from 'lucide-react';
 import AiModelDetailPanel from '../components/AiModelDetailPanel';
 import { aiModelService } from '../service';
-import type { AiModelRow, AiProvider } from '../types';
+import type { AiModel, AiProvider } from '../types';
 
 interface ModelDetailSheetProps {
     modelId: string | null;
-    allModels: AiModelRow[];
+    allModels: AiModel[];
     onClose: () => void;
-    onSaved: (model: AiModelRow) => void;
+    onSaved: (model: AiModel) => void;
 }
 
 export default function ModelDetailSheet({ modelId, allModels, onClose, onSaved }: ModelDetailSheetProps) {

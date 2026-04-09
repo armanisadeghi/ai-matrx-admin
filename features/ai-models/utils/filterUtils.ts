@@ -1,8 +1,8 @@
-import type { AiModelRow } from '../types';
+import type { AiModel } from '../types';
 import type { AiModelFilters } from '../hooks/useTabUrlState';
 
 export function applyFiltersForCount(
-    models: AiModelRow[],
+    models: AiModel[],
     q: string,
     filters: AiModelFilters,
 ): number {

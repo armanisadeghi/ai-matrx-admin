@@ -11,6 +11,8 @@ import { PencilIcon } from "lucide-react";
 import { useState, useMemo, createContext, useContext, useRef } from "react";
 import { LinkComponent } from "@/components/mardown-display/blocks/links/LinkComponent";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
+import { Checkbox } from "@/components/ui/checkbox";
+import { InlineCodeSnippet } from "@/components/mardown-display/chat-markdown/InlineCodeSnippet";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
@@ -329,12 +331,10 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
       input: ({ node, type, checked, disabled, ...props }: any) => {
         if (type === "checkbox") {
           return (
-            <input
-              type="checkbox"
-              checked={checked}
+            <Checkbox
+              checked={!!checked}
               disabled={disabled}
-              className="mr-2 h-4 w-4 rounded border-2 border-blue-400 dark:border-blue-500 text-blue-600 dark:text-blue-400 checked:bg-blue-600 dark:checked:bg-blue-500 checked:border-blue-600 dark:checked:border-blue-500 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-0 cursor-pointer transition-colors"
-              {...props}
+              className="mr-2"
             />
           );
         }
@@ -597,36 +597,74 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
           </h4>
         );
       },
-      pre: ({ node, children, ...props }) => (
-        <pre className="my-3" {...props}>
-          {children}
-        </pre>
-      ),
-      code: ({ node, inline, className, children, ...props }) => {
-        const isCodeBlock =
-          Array.isArray(children) &&
-          children.length === 1 &&
-          typeof children[0] === "string" &&
-          children[0] === "pygame";
-        if (!isCodeBlock && (inline === true || inline === undefined)) {
+      pre: ({ node, children, ...props }) => {
+        // react-markdown wraps fenced code in <pre><code>. Extract the code
+        // element and render via InlineCodeSnippet for proper formatting.
+        const childArray = React.Children.toArray(children);
+        const codeChild = childArray.find((child: any) => {
+          if (!React.isValidElement(child)) return false;
+          const p = child.props as Record<string, any>;
           return (
-            <code
-              className={cn(
-                "px-1.5 py-0 rounded font-mono text-sm font-medium",
-                "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-                className,
-              )}
-              style={{
-                overflowWrap: "anywhere",
-                wordBreak: "normal",
-              }}
-              {...props}
-            >
+            p?.node?.tagName === "code" || typeof p?.className === "string"
+          );
+        });
+
+        if (React.isValidElement(codeChild)) {
+          const codeProps = codeChild.props as Record<string, any>;
+          const langClass = String(codeProps.className || "");
+          const langMatch = langClass.match(/language-(\w+)/);
+          const language = langMatch?.[1];
+          const codeText = String(codeProps.children ?? "").replace(/\n$/, "");
+
+          if (codeText) {
+            return (
+              <InlineCodeSnippet
+                code={codeText}
+                language={language}
+                className="my-2"
+              />
+            );
+          }
+        }
+
+        return (
+          <pre className="my-3" {...props}>
+            {children}
+          </pre>
+        );
+      },
+      code: ({ node, inline, className, children, ...props }) => {
+        // Fenced code blocks are handled by the `pre` component above.
+        // Here we only render inline code spans.
+        const langClass = className || "";
+        const isFenced = langClass.startsWith("language-");
+
+        if (isFenced) {
+          // Let the parent <pre> handle this — return the raw code element
+          // so `pre` can extract language and content.
+          return (
+            <code className={className} {...props}>
               {children}
             </code>
           );
         }
-        return null;
+
+        return (
+          <code
+            className={cn(
+              "px-1.5 py-0 rounded font-mono text-sm font-medium",
+              "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+              className,
+            )}
+            style={{
+              overflowWrap: "anywhere",
+              wordBreak: "normal",
+            }}
+            {...props}
+          >
+            {children}
+          </code>
+        );
       },
       img: ({ node, ...props }) => (
         <img
@@ -658,12 +696,45 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
           </span>
         );
       },
-      table: () => null,
-      thead: () => null,
-      tbody: () => null,
-      tr: () => null,
-      th: () => null,
-      td: () => null,
+      table: ({ node, children, ...props }: any) => (
+        <div className="my-3 overflow-x-auto rounded-md border border-border">
+          <table className="w-full text-sm border-collapse" {...props}>
+            {children}
+          </table>
+        </div>
+      ),
+      thead: ({ node, children, ...props }: any) => (
+        <thead className="bg-muted/50" {...props}>
+          {children}
+        </thead>
+      ),
+      tbody: ({ node, children, ...props }: any) => (
+        <tbody {...props}>{children}</tbody>
+      ),
+      tr: ({ node, children, ...props }: any) => (
+        <tr
+          className="border-t border-border/30 hover:bg-muted/20 transition-colors"
+          {...props}
+        >
+          {children}
+        </tr>
+      ),
+      th: ({ node, children, ...props }: any) => (
+        <th
+          className="px-3 py-1.5 text-left text-xs font-semibold text-foreground border-r border-border/30 last:border-r-0"
+          {...props}
+        >
+          {children}
+        </th>
+      ),
+      td: ({ node, children, ...props }: any) => (
+        <td
+          className="px-3 py-1.5 text-foreground border-r border-border/30 last:border-r-0"
+          {...props}
+        >
+          {children}
+        </td>
+      ),
     }),
     [],
   ); // Empty deps - LinkWrapper is stable

@@ -1,21 +1,23 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { PromptEditorContextMenu } from '@/features/prompts/components/PromptEditorContextMenu';
-import MarkdownStream from '@/components/MarkdownStream';
-import { parseMarkdownToText } from '@/utils/markdown-processors/parse-markdown-for-speech';
-import { AudioTestModal } from '@/components/admin/AudioTestModal';
-import { useApiTestConfig } from '@/components/api-test-config';
-import { ENDPOINTS } from '@/lib/api/endpoints';
-import { parseNdjsonStream } from '@/lib/api/stream-parser';
-import type { StreamEvent } from '@/types/python-generated/stream-events';
-import { 
-  CheckCircle2, 
-  Copy, 
+import React, { useState, useRef, useCallback, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PromptEditorContextMenu } from "@/features/prompts/components/PromptEditorContextMenu";
+import MarkdownStream from "@/components/MarkdownStream";
+import { parseMarkdownToText } from "@/utils/markdown-processors/parse-markdown-for-speech";
+import { AudioTestModal } from "@/components/admin/AudioTestModal";
+import { useApiTestConfig } from "@/components/api-test-config";
+import { ENDPOINTS } from "@/lib/api/endpoints";
+import { parseNdjsonStream } from "@/lib/api/stream-parser";
+import type { StreamEvent } from "@/types/python-generated/stream-events";
+import {
+  CheckCircle2,
+  Copy,
   FileText,
   Eye,
   EyeOff,
@@ -28,8 +30,12 @@ import {
   Loader2,
   Waves,
   Cpu,
-} from 'lucide-react';
-import { SpeakerGroup } from '@/features/tts/components/SpeakerGroup';
+  Link,
+  Unlink,
+} from "lucide-react";
+import { SpeakerGroup } from "@/features/tts/components/SpeakerGroup";
+import { useMarkdownSnippets } from "./markdown-tester/useMarkdownSnippets";
+import { SnippetManager } from "./markdown-tester/SnippetManager";
 
 interface MarkdownTesterProps {
   className?: string;
@@ -37,26 +43,340 @@ interface MarkdownTesterProps {
 
 const SAMPLE_CONTENT = ``;
 
+/**
+ * Structural segment from raw markdown text.
+ * Each segment covers a contiguous range of lines that map to
+ * a single rendered block (paragraph, heading, code block, list, etc.).
+ */
+interface TextSegment {
+  startLine: number;
+  endLine: number;
+  type:
+    | "heading"
+    | "code"
+    | "hr"
+    | "list"
+    | "blockquote"
+    | "table"
+    | "paragraph"
+    | "blank";
+}
+
+/**
+ * Parses raw markdown into structural segments. Each segment represents
+ * one "rendered block" — the unit that will become a single top-level
+ * DOM element in the preview.
+ */
+function parseTextSegments(text: string): TextSegment[] {
+  const lines = text.split("\n");
+  const segments: TextSegment[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const trimmed = lines[i].trim();
+
+    // Blank lines
+    if (trimmed === "") {
+      const start = i;
+      while (i < lines.length && lines[i].trim() === "") i++;
+      segments.push({ startLine: start, endLine: i, type: "blank" });
+      continue;
+    }
+
+    // Fenced code block (``` or ~~~)
+    if (/^(`{3,}|~{3,})/.test(trimmed)) {
+      const fence = trimmed.match(/^(`{3,}|~{3,})/)![1];
+      const fenceChar = fence[0];
+      const fenceLen = fence.length;
+      const start = i;
+      i++;
+      while (i < lines.length) {
+        const lt = lines[i].trim();
+        if (new RegExp(`^${fenceChar}{${fenceLen},}$`).test(lt)) {
+          i++;
+          break;
+        }
+        i++;
+      }
+      segments.push({ startLine: start, endLine: i, type: "code" });
+      continue;
+    }
+
+    // Heading
+    if (/^#{1,6}\s/.test(trimmed)) {
+      segments.push({ startLine: i, endLine: i + 1, type: "heading" });
+      i++;
+      continue;
+    }
+
+    // Horizontal rule
+    if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
+      segments.push({ startLine: i, endLine: i + 1, type: "hr" });
+      i++;
+      continue;
+    }
+
+    // List item (unordered or ordered) — consume the entire list
+    if (/^[-*+]\s|^\d+[.)]\s/.test(trimmed)) {
+      const start = i;
+      i++;
+      while (i < lines.length) {
+        const lt = lines[i].trim();
+        if (lt === "") {
+          i++;
+          break;
+        }
+        i++;
+      }
+      segments.push({ startLine: start, endLine: i, type: "list" });
+      continue;
+    }
+
+    // Blockquote
+    if (trimmed.startsWith(">")) {
+      const start = i;
+      i++;
+      while (
+        i < lines.length &&
+        (lines[i].trim().startsWith(">") ||
+          (lines[i].trim() !== "" && lines[i - 1]?.trim().startsWith(">")))
+      )
+        i++;
+      segments.push({ startLine: start, endLine: i, type: "blockquote" });
+      continue;
+    }
+
+    // Table (line with pipes)
+    if (
+      trimmed.includes("|") &&
+      i + 1 < lines.length &&
+      /^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?$/.test(lines[i + 1]?.trim())
+    ) {
+      const start = i;
+      i++;
+      while (
+        i < lines.length &&
+        lines[i].trim().includes("|") &&
+        lines[i].trim() !== ""
+      )
+        i++;
+      segments.push({ startLine: start, endLine: i, type: "table" });
+      continue;
+    }
+
+    // Paragraph — consecutive non-blank, non-special lines
+    {
+      const start = i;
+      i++;
+      while (i < lines.length) {
+        const lt = lines[i].trim();
+        if (
+          lt === "" ||
+          /^#{1,6}\s/.test(lt) ||
+          /^(`{3,}|~{3,})/.test(lt) ||
+          /^(-{3,}|\*{3,}|_{3,})$/.test(lt) ||
+          /^[-*+]\s|^\d+[.)]\s/.test(lt) ||
+          lt.startsWith(">")
+        )
+          break;
+        i++;
+      }
+      segments.push({ startLine: start, endLine: i, type: "paragraph" });
+    }
+  }
+
+  return segments;
+}
+
+/**
+ * Finds rendered block elements and returns their offset and height
+ * relative to the scroll container. Skips nested elements to avoid
+ * double-counting (e.g. a <pre> inside a <div data-block-type>).
+ */
+function getRenderedBlocks(
+  scrollContainer: HTMLElement,
+): Array<{ top: number; height: number }> {
+  const blockSelectors =
+    "p, h1, h2, h3, h4, h5, h6, pre, ul, ol, table, hr, blockquote, [data-block-type]";
+  const allBlocks = scrollContainer.querySelectorAll(blockSelectors);
+  const containerRect = scrollContainer.getBoundingClientRect();
+  const scrollY = scrollContainer.scrollTop;
+
+  const seen = new Set<Element>();
+  const result: Array<{ top: number; height: number }> = [];
+
+  allBlocks.forEach((el) => {
+    // Skip if this element is nested inside another matched element
+    let parent = el.parentElement;
+    let isNested = false;
+    while (parent && parent !== scrollContainer) {
+      if (seen.has(parent)) {
+        isNested = true;
+        break;
+      }
+      parent = parent.parentElement;
+    }
+    if (isNested) return;
+
+    seen.add(el);
+    const rect = el.getBoundingClientRect();
+    result.push({
+      top: rect.top - containerRect.top + scrollY,
+      height: rect.height,
+    });
+  });
+
+  return result;
+}
+
+/**
+ * Builds paired checkpoints between raw text and rendered preview.
+ *
+ * Strategy: parse the raw text into N non-blank segments, find N rendered
+ * blocks, and create (segment-line-offset → rendered-pixel-offset) pairs.
+ * If counts don't match, falls back to proportional scroll mapping.
+ */
+function buildPairedCheckpoints(
+  text: string,
+  lineHeight: number,
+  scrollContainer: HTMLElement,
+): { textPx: number[]; renderPx: number[] } | null {
+  const segments = parseTextSegments(text).filter((s) => s.type !== "blank");
+  const renderedBlocks = getRenderedBlocks(scrollContainer);
+
+  if (segments.length === 0 || renderedBlocks.length === 0) return null;
+
+  // Build pairs: for each segment, map start line → rendered block top
+  const count = Math.min(segments.length, renderedBlocks.length);
+  const textPx: number[] = [0];
+  const renderPx: number[] = [0];
+
+  for (let i = 0; i < count; i++) {
+    const textOffset = segments[i].startLine * lineHeight;
+    const renderOffset = renderedBlocks[i].top;
+
+    if (textOffset > 0) textPx.push(textOffset);
+    if (renderOffset > 0) renderPx.push(renderOffset);
+
+    // Also add end-of-segment checkpoints for large blocks (code, tables)
+    if (
+      segments[i].type === "code" ||
+      segments[i].type === "table" ||
+      segments[i].type === "list"
+    ) {
+      const textEnd = segments[i].endLine * lineHeight;
+      const renderEnd = renderedBlocks[i].top + renderedBlocks[i].height;
+      textPx.push(textEnd);
+      renderPx.push(renderEnd);
+    }
+  }
+
+  // Deduplicate and sort
+  const uniqueText = [...new Set(textPx)].sort((a, b) => a - b);
+  const uniqueRender = [...new Set(renderPx)].sort((a, b) => a - b);
+
+  // Ensure same length by trimming to shorter
+  const len = Math.min(uniqueText.length, uniqueRender.length);
+  return {
+    textPx: uniqueText.slice(0, len),
+    renderPx: uniqueRender.slice(0, len),
+  };
+}
+
+/**
+ * Maps a scroll position from source checkpoints to target checkpoints
+ * using piecewise linear interpolation. Falls back to proportional
+ * mapping when checkpoints are insufficient.
+ */
+function mapScroll(
+  scrollTop: number,
+  srcPoints: number[],
+  tgtPoints: number[],
+  srcMax: number,
+  tgtMax: number,
+): number {
+  if (srcPoints.length < 2 || tgtPoints.length < 2 || srcMax <= 0) {
+    return tgtMax > 0 && srcMax > 0 ? (scrollTop / srcMax) * tgtMax : 0;
+  }
+
+  // Before first checkpoint
+  if (scrollTop <= srcPoints[0]) {
+    return tgtPoints[0];
+  }
+
+  // Between checkpoints — piecewise interpolation
+  for (let i = 0; i < srcPoints.length - 1; i++) {
+    if (scrollTop >= srcPoints[i] && scrollTop <= srcPoints[i + 1]) {
+      const segLen = srcPoints[i + 1] - srcPoints[i];
+      const frac = segLen > 0 ? (scrollTop - srcPoints[i]) / segLen : 0;
+      return tgtPoints[i] + frac * (tgtPoints[i + 1] - tgtPoints[i]);
+    }
+  }
+
+  // Past last checkpoint — proportional for the remainder
+  const lastSrc = srcPoints[srcPoints.length - 1];
+  const lastTgt = tgtPoints[tgtPoints.length - 1];
+  const remaining = srcMax - lastSrc;
+  const tgtRemaining = tgtMax - lastTgt;
+  if (remaining <= 0) return lastTgt;
+  const frac = (scrollTop - lastSrc) / remaining;
+  return lastTgt + frac * tgtRemaining;
+}
+
 const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
   const [inputContent, setInputContent] = useState(SAMPLE_CONTENT);
   const [renderedContent, setRenderedContent] = useState(SAMPLE_CONTENT);
   const [showPreview, setShowPreview] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [isAutoMode, setIsAutoMode] = useState(false); // Default to Manual mode
+  const [isAutoMode, setIsAutoMode] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [activeTab, setActiveTab] = useState('enhanced-markdown');
+  const [activeTab, setActiveTab] = useState("enhanced-markdown");
   const [strictServerData, setStrictServerData] = useState(false);
   const [audioModalOpen, setAudioModalOpen] = useState(false);
+  const [syncScroll, setSyncScroll] = useState(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const previewScrollRef = useRef<HTMLDivElement>(null);
+  const isSyncingRef = useRef(false);
+
+  const snippetStore = useMarkdownSnippets(inputContent);
+
+  useEffect(() => {
+    snippetStore.loadAutosave().then((saved) => {
+      if (saved) {
+        setInputContent(saved);
+        setRenderedContent(saved);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleLoadSnippet = useCallback(
+    async (id: string) => {
+      const content = await snippetStore.loadSnippet(id);
+      if (content !== null) {
+        setInputContent(content);
+        setRenderedContent(content);
+      }
+    },
+    [snippetStore],
+  );
+
+  const handleLoadAutosave = useCallback(async () => {
+    const content = await snippetStore.loadAutosave();
+    if (content !== null) {
+      setInputContent(content);
+      setRenderedContent(content);
+    }
+  }, [snippetStore]);
 
   // Block-processing API
-  const apiConfig = useApiTestConfig({ defaultServerType: 'local' });
+  const apiConfig = useApiTestConfig({ defaultServerType: "local" });
   const [processedEvents, setProcessedEvents] = useState<StreamEvent[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processError, setProcessError] = useState<string | null>(null);
   const [rawCopied, setRawCopied] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
-  const rawApiDataRef = useRef<string>('');
+  const rawApiDataRef = useRef<string>("");
 
   const copyRawApiData = useCallback(() => {
     if (!rawApiDataRef.current) return;
@@ -65,80 +385,111 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
     setTimeout(() => setRawCopied(false), 1500);
   }, []);
 
-  const runBlockProcessing = useCallback(async (mode: 'json' | 'stream', content: string) => {
-    if (!content.trim()) return;
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
+  const runBlockProcessing = useCallback(
+    async (mode: "json" | "stream", content: string) => {
+      if (!content.trim()) return;
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
 
-    setIsProcessing(true);
-    setProcessError(null);
-    setProcessedEvents([]);
-    rawApiDataRef.current = '';
+      setIsProcessing(true);
+      setProcessError(null);
+      setProcessedEvents([]);
+      rawApiDataRef.current = "";
 
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (apiConfig.authToken) headers['Authorization'] = `Bearer ${apiConfig.authToken}`;
-    const body = JSON.stringify({ content });
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (apiConfig.authToken)
+        headers["Authorization"] = `Bearer ${apiConfig.authToken}`;
+      const body = JSON.stringify({ content });
 
-    try {
-      if (mode === 'json') {
-        const res = await fetch(`${apiConfig.baseUrl}${ENDPOINTS.blockProcessing.process}`, {
-          method: 'POST', headers, body, signal: controller.signal,
-        });
-        if (!res.ok) {
-          const d = await res.json().catch(() => ({}));
-          throw new Error((d as any)?.detail || (d as any)?.message || `HTTP ${res.status}`);
+      try {
+        if (mode === "json") {
+          const res = await fetch(
+            `${apiConfig.baseUrl}${ENDPOINTS.blockProcessing.process}`,
+            {
+              method: "POST",
+              headers,
+              body,
+              signal: controller.signal,
+            },
+          );
+          if (!res.ok) {
+            const d = await res.json().catch(() => ({}));
+            throw new Error(
+              (d as any)?.detail || (d as any)?.message || `HTTP ${res.status}`,
+            );
+          }
+          const text = await res.text();
+          rawApiDataRef.current = text;
+          const data = JSON.parse(text) as {
+            blocks: Record<string, unknown>[];
+          };
+          const synthetic: StreamEvent[] = data.blocks.map((block, i) => ({
+            event: "content_block" as const,
+            data: {
+              blockId: (block.blockId ??
+                block.block_id ??
+                `block-${i}`) as string,
+              blockIndex: (block.blockIndex ??
+                block.block_index ??
+                i) as number,
+              type: block.type as string,
+              status: "complete" as const,
+              content: (block.content ?? null) as string | null,
+              data: (block.data ?? null) as Record<string, unknown> | null,
+              metadata: (block.metadata ?? {}) as Record<string, unknown>,
+            } as unknown as Record<string, unknown>,
+          }));
+          setProcessedEvents(synthetic);
+        } else {
+          const res = await fetch(
+            `${apiConfig.baseUrl}${ENDPOINTS.blockProcessing.processStream}`,
+            {
+              method: "POST",
+              headers,
+              body,
+              signal: controller.signal,
+            },
+          );
+          if (!res.ok) {
+            const d = await res.json().catch(() => ({}));
+            throw new Error(
+              (d as any)?.detail || (d as any)?.message || `HTTP ${res.status}`,
+            );
+          }
+          const { events } = parseNdjsonStream(res, controller.signal);
+          const acc: StreamEvent[] = [];
+          const lines: string[] = [];
+          for await (const ev of events) {
+            acc.push(ev);
+            lines.push(JSON.stringify(ev));
+            rawApiDataRef.current = lines.join("\n");
+            setProcessedEvents([...acc]);
+          }
         }
-        const text = await res.text();
-        rawApiDataRef.current = text;
-        const data = JSON.parse(text) as { blocks: Record<string, unknown>[] };
-        const synthetic: StreamEvent[] = data.blocks.map((block, i) => ({
-          event: 'content_block' as const,
-          data: {
-            blockId: (block.blockId ?? block.block_id ?? `block-${i}`) as string,
-            blockIndex: (block.blockIndex ?? block.block_index ?? i) as number,
-            type: block.type as string,
-            status: 'complete' as const,
-            content: (block.content ?? null) as string | null,
-            data: (block.data ?? null) as Record<string, unknown> | null,
-            metadata: (block.metadata ?? {}) as Record<string, unknown>,
-          } as unknown as Record<string, unknown>,
-        }));
-        setProcessedEvents(synthetic);
-      } else {
-        const res = await fetch(`${apiConfig.baseUrl}${ENDPOINTS.blockProcessing.processStream}`, {
-          method: 'POST', headers, body, signal: controller.signal,
-        });
-        if (!res.ok) {
-          const d = await res.json().catch(() => ({}));
-          throw new Error((d as any)?.detail || (d as any)?.message || `HTTP ${res.status}`);
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name !== "AbortError") {
+          setProcessError(err.message);
         }
-        const { events } = parseNdjsonStream(res, controller.signal);
-        const acc: StreamEvent[] = [];
-        const lines: string[] = [];
-        for await (const ev of events) {
-          acc.push(ev);
-          lines.push(JSON.stringify(ev));
-          rawApiDataRef.current = lines.join('\n');
-          setProcessedEvents([...acc]);
-        }
+      } finally {
+        abortRef.current = null;
+        setIsProcessing(false);
       }
-    } catch (err: unknown) {
-      if (err instanceof Error && err.name !== 'AbortError') {
-        setProcessError(err.message);
-      }
-    } finally {
-      abortRef.current = null;
-      setIsProcessing(false);
-    }
-  }, [apiConfig.authToken, apiConfig.baseUrl]);
+    },
+    [apiConfig.authToken, apiConfig.baseUrl],
+  );
 
-  const handleTabChange = useCallback((tab: string) => {
-    setActiveTab(tab);
-    if (tab === 'json' || tab === 'stream') {
-      runBlockProcessing(tab, renderedContent);
-    }
-  }, [renderedContent, runBlockProcessing]);
+  const handleTabChange = useCallback(
+    (tab: string) => {
+      setActiveTab(tab);
+      if (tab === "json" || tab === "stream") {
+        runBlockProcessing(tab, renderedContent);
+      }
+    },
+    [renderedContent, runBlockProcessing],
+  );
 
   const getTextarea = useCallback(() => textareaRef.current, []);
 
@@ -161,7 +512,7 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
   const toggleUpdateMode = useCallback(() => {
     const newAutoMode = !isAutoMode;
     setIsAutoMode(newAutoMode);
-    
+
     // If switching to auto mode, immediately sync the content
     if (newAutoMode) {
       setRenderedContent(inputContent);
@@ -172,31 +523,110 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
     navigator.clipboard.writeText(inputContent);
   }, [inputContent]);
 
-
   const handleClear = useCallback(() => {
-    setInputContent('');
+    setInputContent("");
   }, []);
 
   const handleContentInserted = useCallback(() => {
-    // Focus back on textarea after content insertion
     setTimeout(() => {
       textareaRef.current?.focus();
     }, 100);
   }, []);
 
-  const containerClasses = isFullScreen 
-    ? 'fixed inset-0 z-50 bg-textured'
-    : `h-screen flex flex-col ${className || ''}`;
+  const getTextareaLineHeight = useCallback(() => {
+    const ta = textareaRef.current;
+    if (!ta) return 20;
+    const computed = window.getComputedStyle(ta);
+    return parseFloat(computed.lineHeight) || 20;
+  }, []);
+
+  const handleTextareaScroll = useCallback(() => {
+    if (!syncScroll || isSyncingRef.current) return;
+    const ta = textareaRef.current;
+    const preview = previewScrollRef.current;
+    if (!ta || !preview) return;
+
+    isSyncingRef.current = true;
+
+    const taMax = ta.scrollHeight - ta.clientHeight;
+    const pvMax = preview.scrollHeight - preview.clientHeight;
+    const lineHeight = getTextareaLineHeight();
+
+    const paired = buildPairedCheckpoints(renderedContent, lineHeight, preview);
+    if (paired && paired.textPx.length >= 2) {
+      preview.scrollTop = Math.max(
+        0,
+        mapScroll(ta.scrollTop, paired.textPx, paired.renderPx, taMax, pvMax),
+      );
+    } else {
+      preview.scrollTop = taMax > 0 ? (ta.scrollTop / taMax) * pvMax : 0;
+    }
+
+    requestAnimationFrame(() => {
+      isSyncingRef.current = false;
+    });
+  }, [syncScroll, renderedContent, getTextareaLineHeight]);
+
+  const handlePreviewScroll = useCallback(() => {
+    if (!syncScroll || isSyncingRef.current) return;
+    const ta = textareaRef.current;
+    const preview = previewScrollRef.current;
+    if (!ta || !preview) return;
+
+    isSyncingRef.current = true;
+
+    const taMax = ta.scrollHeight - ta.clientHeight;
+    const pvMax = preview.scrollHeight - preview.clientHeight;
+    const lineHeight = getTextareaLineHeight();
+
+    const paired = buildPairedCheckpoints(renderedContent, lineHeight, preview);
+    if (paired && paired.renderPx.length >= 2) {
+      ta.scrollTop = Math.max(
+        0,
+        mapScroll(
+          preview.scrollTop,
+          paired.renderPx,
+          paired.textPx,
+          pvMax,
+          taMax,
+        ),
+      );
+    } else {
+      ta.scrollTop = pvMax > 0 ? (preview.scrollTop / pvMax) * taMax : 0;
+    }
+
+    requestAnimationFrame(() => {
+      isSyncingRef.current = false;
+    });
+  }, [syncScroll, renderedContent, getTextareaLineHeight]);
+
+  useEffect(() => {
+    const ta = textareaRef.current;
+    const preview = previewScrollRef.current;
+    if (!syncScroll || !ta || !preview) return;
+
+    ta.addEventListener("scroll", handleTextareaScroll, { passive: true });
+    preview.addEventListener("scroll", handlePreviewScroll, { passive: true });
+
+    return () => {
+      ta.removeEventListener("scroll", handleTextareaScroll);
+      preview.removeEventListener("scroll", handlePreviewScroll);
+    };
+  }, [syncScroll, handleTextareaScroll, handlePreviewScroll]);
+
+  const containerClasses = isFullScreen
+    ? "fixed inset-0 z-50 bg-textured"
+    : `h-screen flex flex-col ${className || ""}`;
 
   // Calculate available height considering external header (assuming ~64px for typical header)
-  const availableHeight = isFullScreen ? '100vh' : 'calc(100vh - 64px)';
+  const availableHeight = isFullScreen ? "100vh" : "calc(100vh - 64px)";
 
   return (
     <>
       {isFullScreen && (
         <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
       )}
-      
+
       <div className={containerClasses} style={{ height: availableHeight }}>
         {/* Fixed Header Section */}
         <div className="flex-shrink-0 bg-textured border-b border-border px-4 py-2">
@@ -213,8 +643,14 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
                 onClick={() => setShowPreview(!showPreview)}
                 className="h-7 px-2"
               >
-                {showPreview ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                <span className="ml-1.5 text-xs">{showPreview ? 'Hide' : 'Show'}</span>
+                {showPreview ? (
+                  <EyeOff className="h-3.5 w-3.5" />
+                ) : (
+                  <Eye className="h-3.5 w-3.5" />
+                )}
+                <span className="ml-1.5 text-xs">
+                  {showPreview ? "Hide" : "Show"}
+                </span>
               </Button>
               <Button
                 variant="outline"
@@ -222,8 +658,14 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
                 onClick={() => setIsFullScreen(!isFullScreen)}
                 className="h-7 px-2"
               >
-                {isFullScreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-                <span className="ml-1.5 text-xs">{isFullScreen ? 'Exit' : 'Fullscreen'}</span>
+                {isFullScreen ? (
+                  <Minimize2 className="h-3.5 w-3.5" />
+                ) : (
+                  <Maximize2 className="h-3.5 w-3.5" />
+                )}
+                <span className="ml-1.5 text-xs">
+                  {isFullScreen ? "Exit" : "Fullscreen"}
+                </span>
               </Button>
             </div>
           </div>
@@ -258,23 +700,35 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
                 size="sm"
                 className="h-7 px-2.5 text-xs"
               >
-                <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isUpdating ? 'animate-spin' : ''}`} />
-                {isUpdating ? 'Updating...' : 'Update'}
+                <RefreshCw
+                  className={`h-3.5 w-3.5 mr-1.5 ${isUpdating ? "animate-spin" : ""}`}
+                />
+                {isUpdating ? "Updating..." : "Update"}
               </Button>
             )}
-            
-            <Button variant="outline" size="sm" onClick={handleCopyInput} className="h-7 px-2.5 text-xs">
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyInput}
+              className="h-7 px-2.5 text-xs"
+            >
               <Copy className="h-3.5 w-3.5 mr-1.5" />
               Copy
             </Button>
-            
-            <Button variant="outline" size="sm" onClick={handleClear} className="h-7 px-2.5 text-xs">
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClear}
+              className="h-7 px-2.5 text-xs"
+            >
               Clear
             </Button>
 
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setAudioModalOpen(true)}
               className="h-7 px-2.5 text-xs"
             >
@@ -282,26 +736,63 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
               Test Audio
             </Button>
 
+            <SnippetManager
+              snippets={snippetStore.snippets}
+              isLoading={snippetStore.isLoading}
+              hasContent={!!inputContent.trim()}
+              onSave={snippetStore.saveSnippet}
+              onLoad={handleLoadSnippet}
+              onDelete={snippetStore.deleteSnippet}
+              onLoadAutosave={handleLoadAutosave}
+            />
+
+            {showPreview && activeTab === "enhanced-markdown" && (
+              <div className="flex items-center gap-1.5 border rounded-md px-2 py-0.5 bg-muted/50">
+                {syncScroll ? (
+                  <Link className="h-3 w-3 text-primary" />
+                ) : (
+                  <Unlink className="h-3 w-3 text-muted-foreground" />
+                )}
+                <Label
+                  htmlFor="sync-scroll"
+                  className="text-xs cursor-pointer select-none"
+                >
+                  Sync Scroll
+                </Label>
+                <Switch
+                  id="sync-scroll"
+                  checked={syncScroll}
+                  onCheckedChange={setSyncScroll}
+                />
+              </div>
+            )}
+
             <div className="ml-auto flex items-center gap-1.5">
               <Badge variant="secondary" className="text-xs h-6">
                 {inputContent.length} chars
               </Badge>
               <Badge variant="secondary" className="text-xs h-6">
-                {inputContent.split('\n').length} lines
+                {inputContent.split("\n").length} lines
               </Badge>
             </div>
           </div>
         </div>
 
         {/* Main Content Area with Independent Scrolling */}
-        <div className={`flex-1 flex gap-3 p-3 min-h-0 ${showPreview ? '' : 'justify-center'}`}>
+        <div
+          className={`flex-1 flex gap-3 p-3 min-h-0 ${showPreview ? "" : "justify-center"}`}
+        >
           {/* Input Column */}
-          <div className={`flex flex-col min-h-0 ${showPreview ? 'w-1/2' : 'w-full max-w-4xl'}`}>
+          <div
+            className={`flex flex-col min-h-0 ${showPreview ? "w-1/2" : "w-full max-w-4xl"}`}
+          >
             <div className="flex items-center gap-2 mb-2 flex-shrink-0">
               <h3 className="text-sm font-medium">Input Content</h3>
-              <Badge variant="outline" className="text-xs">Markdown/JSON</Badge>
+              <Badge variant="outline" className="text-xs">
+                Markdown/JSON
+              </Badge>
             </div>
-            
+
             <div className="flex-1 min-h-0 border rounded-lg bg-textured border-gray-200 dark:border-gray-700 overflow-hidden">
               <PromptEditorContextMenu
                 getTextarea={getTextarea}
@@ -329,48 +820,70 @@ Right-click for content block templates!"
               <div className="flex flex-col min-h-0 w-1/2">
                 <div className="flex items-center gap-2 mb-2 flex-shrink-0">
                   <h3 className="text-sm font-medium">Rendered Output</h3>
-                  <Badge variant="outline" className="text-xs">
-                    {isAutoMode ? 'Auto' : 'Manual'}
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    <CheckCircle2 className="h-3 w-3" />
-                    {isAutoMode ? 'Real-time' : 'On-demand'}
-                  </Badge>
-                </div>
-
-                <div className="flex-1 border rounded-lg bg-textured border-gray-200 dark:border-gray-700 min-h-0 flex flex-col overflow-hidden">
-                  <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
-                    <div className="flex items-center gap-2 mx-3 mt-2 mb-0">
-                      <TabsList className="grid flex-1 grid-cols-4" >
-                        <TabsTrigger value="enhanced-markdown" className="text-xs">
+                  <Tabs
+                    value={activeTab}
+                    onValueChange={handleTabChange}
+                    className="flex-1"
+                  >
+                    <div className="flex items-center gap-2">
+                      <TabsList className="h-7">
+                        <TabsTrigger
+                          value="enhanced-markdown"
+                          className="text-xs h-6 px-2.5"
+                        >
                           Markdown
                         </TabsTrigger>
-                        <TabsTrigger value="speech-text" className="text-xs">
+                        <TabsTrigger
+                          value="speech-text"
+                          className="text-xs h-6 px-2.5"
+                        >
                           Speech
                         </TabsTrigger>
-                        <TabsTrigger value="json" className="text-xs flex items-center gap-1">
+                        <TabsTrigger
+                          value="json"
+                          className="text-xs h-6 px-2.5 flex items-center gap-1"
+                        >
                           <Cpu className="h-3 w-3" />
                           JSON
                         </TabsTrigger>
-                        <TabsTrigger value="stream" className="text-xs flex items-center gap-1">
+                        <TabsTrigger
+                          value="stream"
+                          className="text-xs h-6 px-2.5 flex items-center gap-1"
+                        >
                           <Waves className="h-3 w-3" />
                           Stream
                         </TabsTrigger>
                       </TabsList>
-                      {(activeTab === 'json' || activeTab === 'stream') && (
+                      {(activeTab === "json" || activeTab === "stream") && (
                         <Button
                           size="sm"
                           variant={strictServerData ? "destructive" : "outline"}
-                          className="h-7 px-2 text-[10px] shrink-0 font-mono"
-                          onClick={() => setStrictServerData(v => !v)}
-                          title={strictServerData ? "Strict mode ON — client fallback disabled" : "Strict mode OFF — click to enable"}
+                          className="h-6 px-2 text-[10px] shrink-0 font-mono"
+                          onClick={() => setStrictServerData((v) => !v)}
+                          title={
+                            strictServerData
+                              ? "Strict mode ON — client fallback disabled"
+                              : "Strict mode OFF — click to enable"
+                          }
                         >
                           {strictServerData ? "STRICT" : "strict"}
                         </Button>
                       )}
+                      <div className="ml-auto flex items-center gap-1.5">
+                        <Badge variant="outline" className="text-xs h-5">
+                          {isAutoMode ? "Auto" : "Manual"}
+                        </Badge>
+                      </div>
                     </div>
+                  </Tabs>
+                </div>
 
-                    <TabsContent value="enhanced-markdown" className="flex-1 overflow-auto m-0 p-3 mt-0">
+                <div className="flex-1 border rounded-lg bg-textured border-gray-200 dark:border-gray-700 min-h-0 flex flex-col overflow-hidden">
+                  {activeTab === "enhanced-markdown" && (
+                    <div
+                      className="flex-1 overflow-auto p-3"
+                      ref={previewScrollRef}
+                    >
                       <MarkdownStream
                         content={renderedContent}
                         className="bg-textured"
@@ -380,21 +893,26 @@ Right-click for content block templates!"
                         hideCopyButton={true}
                         allowFullScreenEditor={true}
                       />
-                    </TabsContent>
+                    </div>
+                  )}
 
-                    <TabsContent value="speech-text" className="flex-1 overflow-auto m-0 p-3 mt-0">
+                  {activeTab === "speech-text" && (
+                    <div className="flex-1 overflow-auto p-3">
                       <div className="flex items-center gap-2 mb-3">
                         <SpeakerGroup text={renderedContent} />
                         <Badge variant="secondary" className="text-xs">
-                          {parseMarkdownToText(renderedContent).length} speech chars
+                          {parseMarkdownToText(renderedContent).length} speech
+                          chars
                         </Badge>
                       </div>
                       <div className="font-mono text-sm whitespace-pre-wrap break-words bg-textured text-gray-900 dark:text-gray-100">
                         {parseMarkdownToText(renderedContent)}
                       </div>
-                    </TabsContent>
+                    </div>
+                  )}
 
-                    <TabsContent value="json" className="flex-1 overflow-auto m-0 p-3 mt-0">
+                  {activeTab === "json" && (
+                    <div className="flex-1 overflow-auto p-3">
                       {isProcessing && processedEvents.length === 0 && (
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -406,35 +924,62 @@ Right-click for content block templates!"
                           {processError}
                         </div>
                       )}
-                      {!isProcessing && !processError && processedEvents.length === 0 && (
-                        <div className="flex flex-col items-center gap-2 py-8 text-xs text-muted-foreground">
-                          <p>No output — click Re-run or update the content.</p>
-                          <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs"
-                            onClick={() => runBlockProcessing('json', renderedContent)}
-                            disabled={!renderedContent.trim()}
-                          >
-                            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-                            Re-run
-                          </Button>
-                        </div>
-                      )}
+                      {!isProcessing &&
+                        !processError &&
+                        processedEvents.length === 0 && (
+                          <div className="flex flex-col items-center gap-2 py-8 text-xs text-muted-foreground">
+                            <p>
+                              No output — click Re-run or update the content.
+                            </p>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 px-2.5 text-xs"
+                              onClick={() =>
+                                runBlockProcessing("json", renderedContent)
+                              }
+                              disabled={!renderedContent.trim()}
+                            >
+                              <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                              Re-run
+                            </Button>
+                          </div>
+                        )}
                       {processedEvents.length > 0 && (
                         <>
                           <div className="flex justify-end gap-1 mb-2">
-                            <Button size="sm" variant="ghost" className="h-6 px-2 text-xs"
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 px-2 text-xs"
                               onClick={copyRawApiData}
                             >
-                              {rawCopied
-                                ? <><CheckCircle2 className="h-3 w-3 mr-1 text-green-500" />Copied!</>
-                                : <><Copy className="h-3 w-3 mr-1" />Copy raw</>}
+                              {rawCopied ? (
+                                <>
+                                  <CheckCircle2 className="h-3 w-3 mr-1 text-green-500" />
+                                  Copied!
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3 w-3 mr-1" />
+                                  Copy raw
+                                </>
+                              )}
                             </Button>
-                            <Button size="sm" variant="ghost" className="h-6 px-2 text-xs"
-                              onClick={() => runBlockProcessing('json', renderedContent)}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 px-2 text-xs"
+                              onClick={() =>
+                                runBlockProcessing("json", renderedContent)
+                              }
                               disabled={isProcessing || !renderedContent.trim()}
                             >
-                              {isProcessing
-                                ? <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                                : <RefreshCw className="h-3 w-3 mr-1" />}
+                              {isProcessing ? (
+                                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                              ) : (
+                                <RefreshCw className="h-3 w-3 mr-1" />
+                              )}
                               Re-run
                             </Button>
                           </div>
@@ -451,9 +996,11 @@ Right-click for content block templates!"
                           />
                         </>
                       )}
-                    </TabsContent>
+                    </div>
+                  )}
 
-                    <TabsContent value="stream" className="flex-1 overflow-auto m-0 p-3 mt-0">
+                  {activeTab === "stream" && (
+                    <div className="flex-1 overflow-auto p-3">
                       {isProcessing && processedEvents.length === 0 && (
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -465,35 +1012,62 @@ Right-click for content block templates!"
                           {processError}
                         </div>
                       )}
-                      {!isProcessing && !processError && processedEvents.length === 0 && (
-                        <div className="flex flex-col items-center gap-2 py-8 text-xs text-muted-foreground">
-                          <p>No output — click Re-run or update the content.</p>
-                          <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs"
-                            onClick={() => runBlockProcessing('stream', renderedContent)}
-                            disabled={!renderedContent.trim()}
-                          >
-                            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-                            Re-run
-                          </Button>
-                        </div>
-                      )}
+                      {!isProcessing &&
+                        !processError &&
+                        processedEvents.length === 0 && (
+                          <div className="flex flex-col items-center gap-2 py-8 text-xs text-muted-foreground">
+                            <p>
+                              No output — click Re-run or update the content.
+                            </p>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 px-2.5 text-xs"
+                              onClick={() =>
+                                runBlockProcessing("stream", renderedContent)
+                              }
+                              disabled={!renderedContent.trim()}
+                            >
+                              <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                              Re-run
+                            </Button>
+                          </div>
+                        )}
                       {processedEvents.length > 0 && (
                         <>
                           <div className="flex justify-end gap-1 mb-2">
-                            <Button size="sm" variant="ghost" className="h-6 px-2 text-xs"
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 px-2 text-xs"
                               onClick={copyRawApiData}
                             >
-                              {rawCopied
-                                ? <><CheckCircle2 className="h-3 w-3 mr-1 text-green-500" />Copied!</>
-                                : <><Copy className="h-3 w-3 mr-1" />Copy raw</>}
+                              {rawCopied ? (
+                                <>
+                                  <CheckCircle2 className="h-3 w-3 mr-1 text-green-500" />
+                                  Copied!
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3 w-3 mr-1" />
+                                  Copy raw
+                                </>
+                              )}
                             </Button>
-                            <Button size="sm" variant="ghost" className="h-6 px-2 text-xs"
-                              onClick={() => runBlockProcessing('stream', renderedContent)}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 px-2 text-xs"
+                              onClick={() =>
+                                runBlockProcessing("stream", renderedContent)
+                              }
                               disabled={isProcessing || !renderedContent.trim()}
                             >
-                              {isProcessing
-                                ? <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                                : <RefreshCw className="h-3 w-3 mr-1" />}
+                              {isProcessing ? (
+                                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                              ) : (
+                                <RefreshCw className="h-3 w-3 mr-1" />
+                              )}
                               Re-run
                             </Button>
                           </div>
@@ -510,8 +1084,8 @@ Right-click for content block templates!"
                           />
                         </>
                       )}
-                    </TabsContent>
-                  </Tabs>
+                    </div>
+                  )}
                 </div>
               </div>
             </>

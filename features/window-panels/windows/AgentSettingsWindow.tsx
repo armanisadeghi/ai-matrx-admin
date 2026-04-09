@@ -10,10 +10,14 @@ import { Bot } from "lucide-react";
 
 interface AgentSettingsWindowProps {
   initialAgentId?: string;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 export default function AgentSettingsWindow({
   initialAgentId,
+  isOpen,
+  onClose,
 }: AgentSettingsWindowProps) {
   const dispatch = useAppDispatch();
   const [openedTabIds, setOpenedTabIds] = useState<string[]>(
@@ -50,6 +54,7 @@ export default function AgentSettingsWindow({
     <WindowPanel
       id="agent-settings-window"
       title="Advanced Agent Settings"
+      onClose={onClose}
       width={900}
       height={650}
       minWidth={600}

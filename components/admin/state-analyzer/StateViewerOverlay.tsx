@@ -1,22 +1,21 @@
 // state-analyzer/StateViewerOverlay.tsx
-import React from "react";
+import React, { useRef, useState } from "react";
 import FullScreenOverlay from "@/components/official/FullScreenOverlay";
 import type { RootState } from "@/lib/redux/store";
 import { useAppStore } from "@/lib/redux/hooks";
-import { getStateViewerTabs } from "./stateViewerTabs";
+import {
+  getStateViewerTabs,
+  TAB_INDEX_ID,
+  TabNavigationContext,
+} from "./stateViewerTabs";
 
 interface StateViewerOverlayProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-/**
- * Custom hook to get the entire Redux state without triggering warnings
- * This is only used for debugging purposes
- */
 const useCompleteState = (): RootState => {
   const store = useAppStore();
-  // Get the state directly from the store instead of using useSelector
   return store.getState();
 };
 
@@ -25,19 +24,30 @@ const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({
   onClose,
 }) => {
   const completeState = useCompleteState();
-  const tabs = getStateViewerTabs(completeState);
+  const [activeTab, setActiveTab] = useState<string>(TAB_INDEX_ID);
+  const tabChangeRef = useRef(setActiveTab);
+  tabChangeRef.current = setActiveTab;
+
+  const tabs = getStateViewerTabs(completeState, (tabId) =>
+    tabChangeRef.current(tabId),
+  );
 
   return (
-    <FullScreenOverlay
-      isOpen={isOpen}
-      onClose={onClose}
-      title=""
-      description="View the current Redux state of the application"
-      tabs={tabs}
-      width="95vw"
-      height="95vh"
-      compactTabs={true}
-    />
+    <TabNavigationContext.Provider value={setActiveTab}>
+      <FullScreenOverlay
+        isOpen={isOpen}
+        onClose={onClose}
+        title=""
+        description="View the current Redux state of the application"
+        tabs={tabs}
+        initialTab={activeTab}
+        onTabChange={setActiveTab}
+        width="95vw"
+        height="95vh"
+        compactTabs={true}
+        homeTabId={TAB_INDEX_ID}
+      />
+    </TabNavigationContext.Provider>
   );
 };
 

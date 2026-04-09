@@ -7,9 +7,11 @@ import { useAppStore } from "@/lib/redux/hooks";
 import {
   getStateViewerTabs,
   STATE_VIEWER_DEFAULT_TAB_ID,
+  TAB_INDEX_ID,
+  TabNavigationContext,
 } from "./stateViewerTabs";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { ChevronLeft, Search } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
@@ -35,14 +37,18 @@ export default function StateViewerWindow({
 
   if (!isOpen) return null;
 
-  const tabs = getStateViewerTabs(completeState);
+  const tabs = getStateViewerTabs(completeState, setActiveTabId);
 
-  const sortedTabs = [...tabs].sort((a, b) => a.label.localeCompare(b.label));
+  const sidebarTabs = tabs.filter((t) => t.id !== TAB_INDEX_ID);
+  const sortedTabs = [...sidebarTabs].sort((a, b) =>
+    a.label.localeCompare(b.label),
+  );
   const filteredTabs = sortedTabs.filter((t) =>
     t.label.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const activeTabContent = tabs.find((t) => t.id === activeTabId)?.content;
+  const isOnIndex = activeTabId === TAB_INDEX_ID;
 
   const sidebarContent = (
     <>
@@ -79,29 +85,40 @@ export default function StateViewerWindow({
   );
 
   return (
-    <WindowPanel
-      title="State Analyzer"
-      minWidth={800}
-      minHeight={600}
-      width={800}
-      height={600}
-      urlSyncKey="state_analyzer"
-      onClose={onClose}
-      sidebar={sidebarContent}
-      sidebarDefaultSize={200}
-      sidebarMinSize={150}
-      sidebarClassName="bg-muted/10"
-    >
-      <div className="flex-1 flex flex-col min-w-0 min-h-0">
-        <div className="flex items-center px-3 py-1.5 border-b border-border bg-muted/40 shrink-0">
-          <span className="font-medium text-sm truncate">
-            {tabs.find((t) => t.id === activeTabId)?.label || "Slice Viewer"}
-          </span>
+    <TabNavigationContext.Provider value={setActiveTabId}>
+      <WindowPanel
+        title="State Analyzer"
+        minWidth={800}
+        minHeight={600}
+        width={800}
+        height={600}
+        urlSyncKey="state_analyzer"
+        onClose={onClose}
+        sidebar={sidebarContent}
+        sidebarDefaultSize={200}
+        sidebarMinSize={150}
+        sidebarClassName="bg-muted/10"
+      >
+        <div className="flex-1 flex flex-col min-w-0 min-h-0">
+          <div className="flex items-center px-3 py-1.5 border-b border-border bg-muted/40 shrink-0">
+            {!isOnIndex && (
+              <button
+                onClick={() => setActiveTabId(TAB_INDEX_ID)}
+                className="shrink-0 h-5 w-5 flex items-center justify-center rounded mr-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                title="Back to Tab Index"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+            )}
+            <span className="font-medium text-sm truncate">
+              {tabs.find((t) => t.id === activeTabId)?.label || "Slice Viewer"}
+            </span>
+          </div>
+          <div className="flex-1 p-4 overflow-hidden relative">
+            {activeTabContent}
+          </div>
         </div>
-        <div className="flex-1 p-4 overflow-hidden relative">
-          {activeTabContent}
-        </div>
-      </div>
-    </WindowPanel>
+      </WindowPanel>
+    </TabNavigationContext.Provider>
   );
 }

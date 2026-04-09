@@ -10,7 +10,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Save } from "lucide-react";
+import { ChevronLeft, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface TabDefinition {
@@ -54,45 +54,64 @@ export interface FullScreenOverlayProps {
   hideTitle?: boolean;
   // Render tabs as a compact rectangular button-group instead of the default pill style
   compactTabs?: boolean;
+  // When set, the tab bar hides this tab from the button row and shows a left
+  // chevron that navigates back to it (used for a "Tab Index" landing tab).
+  homeTabId?: string;
 }
 
-// Plain-button tab bar that is guaranteed to scroll horizontally.
-// We avoid Radix TabsList/TabsTrigger here because they render as
-// inline-flex and fight the scroll container on mobile.
 const ScrollableTabBar = ({
   tabs,
   activeTab,
   onTabChange,
   compact,
+  homeTabId,
 }: {
   tabs: TabDefinition[];
   activeTab: string;
   onTabChange: (id: string) => void;
   compact: boolean;
-}) => (
-  <div className="inline-flex flex-row overflow-x-auto scrollbar-none gap-0 rounded-md bg-transparent border-2 border-border">
-    {tabs.map((tab, index) => {
-      const isActive = tab.id === activeTab;
-      const isNotLast = index < tabs.length - 1;
-      return (
+  homeTabId?: string;
+}) => {
+  const showChevron = homeTabId && activeTab !== homeTabId;
+  const visibleTabs = homeTabId ? tabs.filter((t) => t.id !== homeTabId) : tabs;
+
+  return (
+    <div className="inline-flex flex-row items-center gap-0">
+      {showChevron && (
         <button
-          key={tab.id}
           type="button"
-          onClick={() => onTabChange(tab.id)}
-          className={cn(
-            "shrink-0 whitespace-nowrap text-xs px-2 py-0.5 h-6 cursor-pointer transition-colors",
-            isNotLast && "border-r border-border",
-            isActive
-              ? "bg-primary text-primary-foreground"
-              : "bg-gray-50 dark:bg-gray-800 text-muted-foreground hover:bg-muted hover:text-foreground",
-          )}
+          onClick={() => onTabChange(homeTabId)}
+          className="shrink-0 h-6 w-6 flex items-center justify-center rounded-md mr-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          title="Back to Tab Index"
         >
-          {tab.label}
+          <ChevronLeft className="h-4 w-4" />
         </button>
-      );
-    })}
-  </div>
-);
+      )}
+      <div className="inline-flex flex-row overflow-x-auto scrollbar-none gap-0 rounded-md bg-transparent border-2 border-border">
+        {visibleTabs.map((tab, index) => {
+          const isActive = tab.id === activeTab;
+          const isNotLast = index < visibleTabs.length - 1;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => onTabChange(tab.id)}
+              className={cn(
+                "shrink-0 whitespace-nowrap text-xs px-2 py-0.5 h-6 cursor-pointer transition-colors",
+                isNotLast && "border-r border-border",
+                isActive
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-gray-50 dark:bg-gray-800 text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
   isOpen,
@@ -123,6 +142,7 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
   sharedHeaderClassName,
   hideTitle = false,
   compactTabs = true,
+  homeTabId,
 }) => {
   const [activeTab, setActiveTab] = React.useState<string>(
     initialTab || (tabs.length > 0 ? tabs[0].id : ""),
@@ -289,6 +309,7 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
                 compact={compactTabs}
+                homeTabId={homeTabId}
               />
             </div>
           </div>

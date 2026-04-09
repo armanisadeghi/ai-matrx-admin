@@ -678,6 +678,7 @@ export type Database = {
           api_class: string | null
           capabilities: Json | null
           common_name: string | null
+          constraints: Json | null
           context_window: number | null
           controls: Json | null
           endpoints: Json | null
@@ -696,6 +697,7 @@ export type Database = {
           api_class?: string | null
           capabilities?: Json | null
           common_name?: string | null
+          constraints?: Json | null
           context_window?: number | null
           controls?: Json | null
           endpoints?: Json | null
@@ -714,6 +716,7 @@ export type Database = {
           api_class?: string | null
           capabilities?: Json | null
           common_name?: string | null
+          constraints?: Json | null
           context_window?: number | null
           controls?: Json | null
           endpoints?: Json | null
@@ -7286,6 +7289,119 @@ export type Database = {
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "ctx_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ops_issue_class: {
+        Row: {
+          alert_threshold: number | null
+          alert_window_minutes: number | null
+          category: string
+          created_at: string
+          description: string | null
+          disposition: string
+          id: string
+          is_active: boolean
+          key: string
+          name: string
+          provider: string | null
+          resolution_notes: string | null
+          severity: string
+          updated_at: string
+        }
+        Insert: {
+          alert_threshold?: number | null
+          alert_window_minutes?: number | null
+          category: string
+          created_at?: string
+          description?: string | null
+          disposition?: string
+          id?: string
+          is_active?: boolean
+          key: string
+          name: string
+          provider?: string | null
+          resolution_notes?: string | null
+          severity?: string
+          updated_at?: string
+        }
+        Update: {
+          alert_threshold?: number | null
+          alert_window_minutes?: number | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          disposition?: string
+          id?: string
+          is_active?: boolean
+          key?: string
+          name?: string
+          provider?: string | null
+          resolution_notes?: string | null
+          severity?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ops_issue_event: {
+        Row: {
+          conversation_id: string | null
+          created_at: string
+          detail: Json
+          error_type: string
+          id: string
+          is_retryable: boolean
+          issue_class_id: string
+          model: string | null
+          occurred_at: string
+          provider: string | null
+          request_id: string | null
+          retry_count: number
+          status_code: number | null
+          user_id: string | null
+          was_recovered: boolean
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string
+          detail?: Json
+          error_type: string
+          id?: string
+          is_retryable?: boolean
+          issue_class_id: string
+          model?: string | null
+          occurred_at?: string
+          provider?: string | null
+          request_id?: string | null
+          retry_count?: number
+          status_code?: number | null
+          user_id?: string | null
+          was_recovered?: boolean
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string
+          detail?: Json
+          error_type?: string
+          id?: string
+          is_retryable?: boolean
+          issue_class_id?: string
+          model?: string | null
+          occurred_at?: string
+          provider?: string | null
+          request_id?: string | null
+          retry_count?: number
+          status_code?: number | null
+          user_id?: string | null
+          was_recovered?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ops_issue_event_issue_class_id_fkey"
+            columns: ["issue_class_id"]
+            isOneToOne: false
+            referencedRelation: "ops_issue_class"
             referencedColumns: ["id"]
           },
         ]
@@ -15632,7 +15748,6 @@ export type Database = {
           p_task_id?: string
           p_use_latest?: boolean
           p_user_id?: string
-          p_workspace_id?: string
         }
         Returns: string
       }
@@ -15702,7 +15817,6 @@ export type Database = {
           task_id: string
           updated_at: string
           user_id: string
-          workspace_id: string
         }[]
       }
       agx_get_list_full: {
@@ -15728,7 +15842,6 @@ export type Database = {
           task_id: string
           updated_at: string
           user_id: string
-          workspace_id: string
         }[]
       }
       agx_get_shared_for_chat: {
@@ -15757,11 +15870,7 @@ export type Database = {
         }[]
       }
       agx_get_shortcuts_for_context: {
-        Args: {
-          p_project_id?: string
-          p_task_id?: string
-          p_workspace_id?: string
-        }
+        Args: { p_project_id?: string; p_task_id?: string }
         Returns: {
           agent_context_slots: Json
           agent_id: string
@@ -15788,7 +15897,6 @@ export type Database = {
           shortcut_project_id: string
           shortcut_task_id: string
           shortcut_user_id: string
-          shortcut_workspace_id: string
           show_variables: boolean
           sort_order: number
           use_latest: boolean
@@ -15960,7 +16068,6 @@ export type Database = {
           p_project_id?: string
           p_task_id?: string
           p_user_id?: string
-          p_workspace_id?: string
         }
         Returns: {
           broker_id: string
@@ -16040,7 +16147,6 @@ export type Database = {
           p_required_level: Database["public"]["Enums"]["permission_level"]
           p_resource_id: string
           p_resource_type: string
-          p_workspace_id?: string
         }
         Returns: boolean
       }
@@ -17633,7 +17739,6 @@ export type Database = {
               p_organization_id?: string
               p_project_id?: string
               p_task_id?: string
-              p_workspace_id?: string
             }
             Returns: {
               broker_id: string
@@ -17651,7 +17756,6 @@ export type Database = {
               p_project_id?: string
               p_task_id?: string
               p_user_id?: string
-              p_workspace_id?: string
             }
             Returns: {
               broker_id: string
@@ -17678,7 +17782,6 @@ export type Database = {
               p_organization_id?: string
               p_project_id?: string
               p_task_id?: string
-              p_workspace_id?: string
             }
             Returns: {
               broker_id: string
@@ -17701,7 +17804,6 @@ export type Database = {
               p_project_id?: string
               p_task_id?: string
               p_user_id?: string
-              p_workspace_id?: string
             }
             Returns: {
               broker_id: string
@@ -17726,7 +17828,6 @@ export type Database = {
           p_request_id?: string
           p_task_id?: string
           p_user_id?: string
-          p_workspace_id?: string
         }
         Returns: {
           category: string
@@ -17761,7 +17862,6 @@ export type Database = {
           p_task_id?: string
           p_user_id?: string
           p_with_values?: boolean
-          p_workspace_id?: string
         }
         Returns: Json
       }
@@ -17774,7 +17874,6 @@ export type Database = {
           p_project_id?: string
           p_task_id?: string
           p_user_id?: string
-          p_workspace_id?: string
         }
         Returns: {
           category: string
@@ -18102,7 +18201,6 @@ export type Database = {
               p_organization_id?: string
               p_project_id?: string
               p_task_id?: string
-              p_workspace_id?: string
             }
             Returns: string[]
           }
@@ -18115,7 +18213,6 @@ export type Database = {
               p_project_id?: string
               p_task_id?: string
               p_user_id?: string
-              p_workspace_id?: string
             }
             Returns: string[]
           }
@@ -18877,7 +18974,6 @@ export type Database = {
           p_project_id?: string
           p_task_id?: string
           p_user_id?: string
-          p_workspace_id?: string
         }
         Returns: Json
       }
@@ -19562,7 +19658,6 @@ export type Database = {
               p_task_id?: string
               p_user_id?: string
               p_value: Json
-              p_workspace_id?: string
             }
             Returns: string
           }
@@ -19574,7 +19669,6 @@ export type Database = {
               p_project_id?: string
               p_task_id?: string
               p_value: Json
-              p_workspace_id?: string
             }
             Returns: string
           }

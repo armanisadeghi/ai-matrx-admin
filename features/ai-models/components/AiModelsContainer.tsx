@@ -7,7 +7,7 @@ import AiModelDetailPanel from './AiModelDetailPanel';
 import DeprecatedModelsAudit from './DeprecatedModelsAudit';
 import { useTabUrlState } from '../hooks/useTabUrlState';
 import { aiModelService } from '../service';
-import type { AiModelRow, AiProvider } from '../types';
+import type { AiModel, AiProvider } from '../types';
 import { applyFiltersForCount } from '@/features/ai-models/utils/filterUtils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,10 +15,10 @@ import { AlertTriangle, BookOpen } from 'lucide-react';
 import ProviderReferenceModal from './ProviderReferenceModal';
 
 export default function AiModelsContainer() {
-    const [models, setModels] = useState<AiModelRow[]>([]);
+    const [models, setModels] = useState<AiModel[]>([]);
     const [providers, setProviders] = useState<AiProvider[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [selectedModel, setSelectedModel] = useState<AiModelRow | null>(null);
+    const [selectedModel, setSelectedModel] = useState<AiModel | null>(null);
     const [isNewModel, setIsNewModel] = useState(false);
     const [panelOpen, setPanelOpen] = useState(false);
     const [auditOpen, setAuditOpen] = useState(false);
@@ -61,7 +61,7 @@ export default function AiModelsContainer() {
         [models],
     );
 
-    const openModel = (model: AiModelRow) => {
+    const openModel = (model: AiModel) => {
         setSelectedModel(model);
         setIsNewModel(false);
         setPanelOpen(true);
@@ -79,7 +79,7 @@ export default function AiModelsContainer() {
         setIsNewModel(false);
     };
 
-    const handleSaved = (saved: AiModelRow) => {
+    const handleSaved = (saved: AiModel) => {
         setModels((prev) => {
             const idx = prev.findIndex((m) => m.id === saved.id);
             if (idx >= 0) {
@@ -98,7 +98,7 @@ export default function AiModelsContainer() {
         closePanel();
     };
 
-    const handleDuplicate = async (model: AiModelRow) => {
+    const handleDuplicate = async (model: AiModel) => {
         try {
             const { id: _id, ...rest } = model;
             const duplicate = await aiModelService.create({

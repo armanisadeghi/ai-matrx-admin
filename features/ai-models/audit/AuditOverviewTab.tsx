@@ -22,7 +22,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import type { ModelAuditResult, AuditCategory } from "./auditTypes";
-import type { AiModelRow } from "../types";
+import type { AiModel } from "../types";
 import { ModelNameCell, ProviderBadge } from "./AuditTableShell";
 import { ALL_PROVIDERS } from "../components/AiModelFilterBar";
 import ModelDetailSheet, { OpenDetailButton } from "./ModelDetailSheet";
@@ -45,9 +45,9 @@ const CATEGORY_ORDER: AuditCategory[] = [
 
 interface AuditOverviewTabProps {
   results: ModelAuditResult[];
-  allModels: AiModelRow[];
+  allModels: AiModel[];
   onJumpToCategory: (cat: AuditCategory) => void;
-  onModelUpdated: (id: string, patch: Partial<AiModelRow>) => void;
+  onModelUpdated: (id: string, patch: Partial<AiModel>) => void;
 }
 
 function CategoryCell({ pass }: { pass: boolean }) {

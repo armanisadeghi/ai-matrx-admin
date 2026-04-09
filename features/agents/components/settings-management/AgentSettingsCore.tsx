@@ -49,6 +49,8 @@ import {
 import { selectAllModels } from "@/features/ai-models/redux/modelRegistrySlice";
 import { SmartModelSelect } from "@/features/ai-models/components/smart/SmartModelSelect";
 import type { LLMParams } from "@/features/agents/types/agent-api-types";
+import { useConfigValidation } from "./validation/useConfigValidation";
+import type { ValidationIssue } from "./validation/types";
 
 // ── Tab type ─────────────────────────────────────────────────────────────────
 type SettingsTab = "settings" | "raw" | "raw-edit" | "model-config";
@@ -243,20 +245,9 @@ function colorizeJsonLine(line: string): string {
 }
 
 // ── IssueTable ────────────────────────────────────────────────────────────────
-interface UnrecognizedIssue {
-  kind: "unrecognized";
-  key: string;
-}
-interface InvalidIssue {
-  kind: "invalid";
-  key: string;
-  value: unknown;
-  reason: string;
-}
-type Issue = UnrecognizedIssue | InvalidIssue;
 
 interface IssueTableProps {
-  issues: Issue[];
+  issues: ValidationIssue[];
   onView: (key: string) => void;
   onRemove: (key: string) => void;
   onFixEnum: (key: string) => void;
@@ -294,11 +285,11 @@ function IssueTable({ issues, onView, onRemove, onFixEnum }: IssueTableProps) {
 
         {issues.map((issue, idx) => {
           const isLast = idx === issues.length - 1;
-          const isUnrecognized = issue.kind === "unrecognized";
+          const isUnrecognized = issue.category === "unrecognized_key";
 
           return (
             <div
-              key={`${issue.kind}-${issue.key}`}
+              key={`${issue.ruleId}-${issue.key}`}
               className={`grid grid-cols-[100px_1fr_56px] items-center gap-2 px-2.5 py-1.5 ${
                 !isLast
                   ? "border-b border-yellow-200 dark:border-yellow-800/40"
@@ -331,7 +322,7 @@ function IssueTable({ issues, onView, onRemove, onFixEnum }: IssueTableProps) {
                 </span>
                 {!isUnrecognized && (
                   <span className="text-[10px] text-muted-foreground leading-tight block">
-                    {(issue as InvalidIssue).reason}
+                    {issue.message}
                   </span>
                 )}
               </div>
@@ -602,150 +593,13 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
   const [jsonError, setJsonError] = useState<string | null>(null);
   const jsonTextareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const recognizedKeys = useMemo(() => {
-    const keys = new Set<string>([
-      "model",
-      "max_output_tokens",
-      "temperature",
-      "top_p",
-      "top_k",
-      "tool_choice",
-      "parallel_tool_calls",
-      "reasoning_effort",
-      "reasoning_summary",
-      "thinking_level",
-      "include_thoughts",
-      "thinking_budget",
-      "clear_thinking",
-      "disable_reasoning",
-      "response_format",
-      "stop_sequences",
-      "stream",
-      "store",
-      "verbosity",
-      "internal_web_search",
-      "internal_url_context",
-      "size",
-      "quality",
-      "count",
-      "tts_voice",
-      "audio_format",
-      "seconds",
-      "fps",
-      "steps",
-      "seed",
-      "guidance_scale",
-      "output_quality",
-      "negative_prompt",
-      "output_format",
-      "width",
-      "height",
-      "frame_images",
-      "reference_images",
-      "image_loras",
-      "disable_safety_checker",
-    ]);
-    if (!normalizedControls) return keys;
-    Object.keys(normalizedControls).forEach((key) => {
-      if (key !== "rawControls" && key !== "unmappedControls") keys.add(key);
-    });
-    return keys;
-  }, [normalizedControls]);
-
-  const unrecognizedKeys = useMemo(
-    () =>
-      Object.keys(currentSettings).filter(
-        (key) =>
-          !recognizedKeys.has(key) &&
-          (currentSettings as Record<string, unknown>)[key] !== null &&
-          (currentSettings as Record<string, unknown>)[key] !== undefined,
-      ),
-    [currentSettings, recognizedKeys],
-  );
-
-  const invalidSettingsList = useMemo(() => {
-    if (!normalizedControls)
-      return [] as { key: string; value: unknown; reason: string }[];
-    const issues: { key: string; value: unknown; reason: string }[] = [];
-    Object.entries(currentSettings).forEach(([key, value]) => {
-      if (value === null || value === undefined) return;
-      const control = (
-        normalizedControls as unknown as Record<string, ControlDefinition>
-      )[key];
-      if (!control) return;
-
-      const compareValue =
-        key === "response_format" &&
-        typeof value === "object" &&
-        value !== null &&
-        "type" in (value as Record<string, unknown>)
-          ? (value as Record<string, unknown>).type
-          : value;
-
-      if (
-        control.type === "enum" &&
-        control.enum &&
-        control.enum.length > 0 &&
-        !control.enum.includes(compareValue as string)
-      ) {
-        issues.push({
-          key,
-          value,
-          reason: `"${compareValue}" is not a valid option. Expected: ${control.enum.join(", ")}`,
-        });
-      }
-      if (
-        (control.type === "number" || control.type === "integer") &&
-        typeof value === "number"
-      ) {
-        if (control.min !== undefined && value < control.min) {
-          issues.push({
-            key,
-            value,
-            reason: `${value} is below minimum (${control.min})`,
-          });
-        }
-        if (control.max !== undefined && value > control.max) {
-          issues.push({
-            key,
-            value,
-            reason: `${value} exceeds maximum (${control.max})`,
-          });
-        }
-      }
-    });
-    return issues;
-  }, [currentSettings, normalizedControls]);
-
-  // Unified issue list for the tab badge and table
-  const allIssues: Issue[] = useMemo(
-    () => [
-      ...unrecognizedKeys.map(
-        (key): UnrecognizedIssue => ({ kind: "unrecognized", key }),
-      ),
-      ...invalidSettingsList.map(
-        ({ key, value, reason }): InvalidIssue => ({
-          kind: "invalid",
-          key,
-          value,
-          reason,
-        }),
-      ),
-    ],
-    [unrecognizedKeys, invalidSettingsList],
-  );
-
-  // Highlight map for the JSON viewer: which keys have issues
-  const jsonHighlights = useMemo(() => {
-    const map: Record<string, "error" | "warning" | "info"> = {};
-    unrecognizedKeys.forEach((k) => {
-      map[k] = "warning";
-    });
-    invalidSettingsList.forEach(({ key }) => {
-      map[key] = "error";
-    });
-    return map;
-  }, [unrecognizedKeys, invalidSettingsList]);
+  // ── Validation engine ──────────────────────────────────────────────────────
+  const { validation, highlightMap: jsonHighlights } = useConfigValidation({
+    settings: currentSettings,
+    modelId,
+    normalizedControls,
+  });
+  const allIssues = validation.issues;
 
   const handleModelChange = (newModelId: string) => {
     dispatch(
