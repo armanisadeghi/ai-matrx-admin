@@ -1,6 +1,17 @@
 "use client";
 
-import { useState } from "react";
+/**
+ * CompactAssistantInput
+ *
+ * Compact message input for the chat assistant widget. Includes all the essential
+ * controls from SmartAgentInput (voice, resources, variable toggle, submit-on-enter)
+ * in a space-efficient layout.
+ *
+ * The textarea auto-resizes and supports Shift+Enter for newlines.
+ * All execution logic is driven by Redux — no prop drilling.
+ */
+
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { setUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
 import { selectUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
@@ -8,110 +19,264 @@ import {
   selectIsExecuting,
   selectConversationMode,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import { selectSubmitOnEnter } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import {
+  setSubmitOnEnter,
+  toggleVariablePanel,
+} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
+import { selectInstanceVariableDefinitions } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
 import { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
 import { Button } from "@/components/ui/button";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { ArrowUp, Mic, Paperclip, Settings2 } from "lucide-react";
+  ArrowUp,
+  Mic,
+  Braces,
+  CornerDownLeft,
+} from "lucide-react";
+
+// Voice input
+import { useRecordAndTranscribe } from "@/features/audio";
+import { TranscriptionLoader } from "@/features/audio";
+
+// Resource picker
+import { SmartAgentResourcePickerButton } from "../../inputs/SmartAgentResourcePickerButton";
+import { SmartAgentResourceChips } from "../../inputs/SmartAgentResourceChips";
+
+import { toast } from "sonner";
 
 interface CompactAssistantInputProps {
   conversationId: string;
-  onToggleVariables?: () => void;
 }
 
 export function CompactAssistantInput({
   conversationId,
-  onToggleVariables,
 }: CompactAssistantInputProps) {
   const dispatch = useAppDispatch();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const pendingVoiceSubmitRef = useRef(false);
+
+  // ── Redux state ─────────────────────────────────────────────────────────────
   const inputText = useAppSelector(selectUserInputText(conversationId));
   const isExecuting = useAppSelector(selectIsExecuting(conversationId));
-  const conversationMode = useAppSelector(selectConversationMode(conversationId));
-  const [popoverOpen, setPopoverOpen] = useState(false);
+  const conversationMode = useAppSelector(
+    selectConversationMode(conversationId),
+  );
+  const submitOnEnter = useAppSelector(selectSubmitOnEnter(conversationId));
+  const variableDefs = useAppSelector(
+    selectInstanceVariableDefinitions(conversationId),
+  );
+  const hasVariables = variableDefs.length > 0;
 
   const isSendDisabled = isExecuting || !inputText.trim();
 
-  const handleSend = () => {
+  // ── Voice input ─────────────────────────────────────────────────────────────
+  const {
+    isRecording,
+    isTranscribing,
+    duration,
+    startRecording,
+    stopRecording,
+  } = useRecordAndTranscribe({
+    onTranscriptionComplete: (result) => {
+      if (result.success && result.text) {
+        const newText = inputText
+          ? `${inputText}\n${result.text}`
+          : result.text;
+        pendingVoiceSubmitRef.current = true;
+        dispatch(setUserInputText({ conversationId, text: newText }));
+      }
+    },
+    onError: (error) => {
+      toast.error("Transcription failed", { description: error });
+    },
+    autoTranscribe: true,
+  });
+
+  // Auto-submit after voice transcription
+  useEffect(() => {
+    if (pendingVoiceSubmitRef.current && inputText.trim()) {
+      pendingVoiceSubmitRef.current = false;
+      setTimeout(() => handleSend(), 50);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputText]);
+
+  // ── Auto-resize textarea ────────────────────────────────────────────────────
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 100)}px`;
+  }, [inputText]);
+
+  // ── Send logic ──────────────────────────────────────────────────────────────
+  const handleSend = useCallback(() => {
     if (isSendDisabled) return;
     if (conversationMode === "chat") {
-      dispatch(executeChatInstance({ conversationId: conversationId }));
+      dispatch(executeChatInstance({ conversationId }));
     } else {
       dispatch(executeInstance({ conversationId }));
     }
-  };
+  }, [isSendDisabled, conversationMode, conversationId, dispatch]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Enter" && !e.shiftKey && submitOnEnter) {
+        e.preventDefault();
+        if (!isSendDisabled) handleSend();
+      }
+    },
+    [submitOnEnter, isSendDisabled, handleSend],
+  );
+
+  const handleMicClick = useCallback(() => {
+    if (isRecording) stopRecording();
+    else if (!isTranscribing) startRecording();
+  }, [isRecording, isTranscribing, startRecording, stopRecording]);
 
   return (
-    <div className="flex items-center gap-1.5 px-2 py-1.5 border-t border-border bg-card">
-      <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 shrink-0 text-muted-foreground"
-          >
-            <Paperclip className="w-3.5 h-3.5" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent side="top" align="start" className="w-36 p-1.5">
-          <div className="space-y-0.5">
-            <button
-              className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-foreground rounded-md hover:bg-muted transition-colors"
-              onClick={() => setPopoverOpen(false)}
-            >
-              <Mic className="w-3.5 h-3.5 text-muted-foreground" />
-              Voice
-            </button>
-            {onToggleVariables && (
+    <div className="shrink-0 border-t border-border/40 bg-muted/10">
+      {/* Resource chips */}
+      <SmartAgentResourceChips conversationId={conversationId} />
+
+      {/* Textarea */}
+      <div className="px-2 pt-1">
+        <textarea
+          ref={textareaRef}
+          value={inputText}
+          onChange={(e) =>
+            dispatch(
+              setUserInputText({ conversationId, text: e.target.value }),
+            )
+          }
+          onKeyDown={handleKeyDown}
+          placeholder="Ask anything..."
+          disabled={isExecuting}
+          className="w-full bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted-foreground/50 resize-none overflow-y-auto scrollbar-hide disabled:opacity-60"
+          style={{ minHeight: 20, maxHeight: 100, fontSize: "16px" }}
+          rows={1}
+        />
+      </div>
+
+      {/* Toolbar — controls + send */}
+      <div className="flex items-center justify-between px-1.5 pb-1.5">
+        {/* Left: functional controls */}
+        <div className="flex items-center gap-0">
+          {isTranscribing && !isRecording ? (
+            <div className="px-1">
+              <TranscriptionLoader
+                message="Transcribing"
+                duration={duration}
+                size="sm"
+              />
+            </div>
+          ) : isRecording ? (
+            <div className="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 rounded px-1.5 py-0.5 animate-pulse">
+              <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-[10px] font-medium text-blue-700 dark:text-blue-300">
+                {Math.floor(duration / 60)}:
+                {String(duration % 60).padStart(2, "0")}
+              </span>
               <button
-                className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-foreground rounded-md hover:bg-muted transition-colors"
-                onClick={() => {
-                  onToggleVariables();
-                  setPopoverOpen(false);
-                }}
+                onClick={stopRecording}
+                className="text-[10px] text-blue-600 hover:text-blue-700 font-medium"
               >
-                <Settings2 className="w-3.5 h-3.5 text-muted-foreground" />
-                Variables
+                Stop
               </button>
+            </div>
+          ) : (
+            <>
+              {/* Variable toggle */}
+              {hasVariables && (
+                <ToolbarButton
+                  icon={Braces}
+                  tooltip="Toggle variables"
+                  onClick={() =>
+                    dispatch(toggleVariablePanel(conversationId))
+                  }
+                />
+              )}
+
+              {/* Voice input */}
+              <ToolbarButton
+                icon={Mic}
+                tooltip="Record voice"
+                onClick={handleMicClick}
+              />
+
+              {/* Resource picker */}
+              <SmartAgentResourcePickerButton
+                conversationId={conversationId}
+              />
+            </>
+          )}
+        </div>
+
+        {/* Right: toggles + send */}
+        <div className="flex items-center gap-0">
+          {/* Submit on Enter toggle */}
+          <ToolbarButton
+            icon={CornerDownLeft}
+            tooltip={
+              submitOnEnter
+                ? "Enter submits (click to disable)"
+                : "Enter adds newline (click to enable)"
+            }
+            onClick={() =>
+              dispatch(
+                setSubmitOnEnter({ conversationId, value: !submitOnEnter }),
+              )
+            }
+            active={submitOnEnter}
+          />
+
+          {/* Send button */}
+          <Button
+            size="icon"
+            className="w-6 h-6 rounded-full bg-primary text-primary-foreground shrink-0 disabled:opacity-40 ml-0.5"
+            disabled={isSendDisabled}
+            onClick={handleSend}
+          >
+            {isExecuting ? (
+              <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <ArrowUp className="w-3 h-3" />
             )}
-          </div>
-        </PopoverContent>
-      </Popover>
-
-      <input
-        type="text"
-        className="flex-1 h-7 bg-transparent text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none min-w-0"
-        style={{ fontSize: "16px" }}
-        placeholder="Ask anything..."
-        value={inputText}
-        onChange={(e) =>
-          dispatch(setUserInputText({ conversationId: conversationId, text: e.target.value }))
-        }
-        onKeyDown={handleKeyDown}
-      />
-
-      <Button
-        size="icon"
-        className="w-7 h-7 rounded-full bg-primary text-primary-foreground shrink-0 disabled:opacity-40"
-        disabled={isSendDisabled}
-        onClick={handleSend}
-      >
-        {isExecuting ? (
-          <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-        ) : (
-          <ArrowUp className="w-3.5 h-3.5" />
-        )}
-      </Button>
+          </Button>
+        </div>
+      </div>
     </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Toolbar button helper
+// ─────────────────────────────────────────────────────────────────────────────
+
+function ToolbarButton({
+  icon: Icon,
+  tooltip,
+  onClick,
+  active = false,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  tooltip: string;
+  onClick: () => void;
+  active?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={tooltip}
+      className={`h-6 w-6 flex items-center justify-center rounded-md transition-colors ${
+        active
+          ? "text-primary bg-primary/10"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+      }`}
+    >
+      <Icon className="w-3 h-3" />
+    </button>
   );
 }
