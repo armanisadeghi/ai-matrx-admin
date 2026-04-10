@@ -1,5 +1,19 @@
 "use client";
 
+/**
+ * AgentChatAssistant
+ *
+ * Floating chat assistant widget for testing agent execution instances.
+ *
+ * DESIGN: Transparent floating panel — messages appear as detached, independently
+ * floating items with no container card background. The panel uses a subtle
+ * backdrop blur for the chrome (header + input) while the message area is
+ * fully transparent.
+ *
+ * WIDTH: 320px — balances content readability (markdown, artifacts) with
+ * compact space usage in the sidebar test environment.
+ */
+
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -13,7 +27,7 @@ import { AssistantCardStack } from "./AssistantCardStack";
 import { CompactAssistantInput } from "./CompactAssistantInput";
 import { AssistantControlBar } from "./AssistantControlBar";
 import { useAssistantHeartbeat } from "./useAssistantHeartbeat";
-import { X } from "lucide-react";
+import { X, GripHorizontal } from "lucide-react";
 
 interface AgentChatAssistantProps {
   conversationId: string;
@@ -97,10 +111,11 @@ export function AgentChatAssistant({
     setTimeout(onClose, 300);
   }, [onClose]);
 
-  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
+  if (needsPreExecution)
+    return <ExecutionManager conversationId={conversationId} />;
 
   const bottomOffset = 16 + stackIndex * 56;
-  const rightOffset = 16 + stackIndex * 320;
+  const rightOffset = 16 + stackIndex * 340;
 
   return (
     <div
@@ -114,28 +129,29 @@ export function AgentChatAssistant({
         zIndex: 200 + stackIndex,
       }}
     >
-      {/* Card panel — visible when open */}
+      {/* Panel — visible when open */}
       {isOpen && (
         <div className="mb-2 animate-in slide-in-from-bottom-4 fade-in-0 duration-300">
-          <div className="w-72 max-h-[70vh] bg-card border border-border rounded-xl shadow-2xl overflow-hidden flex flex-col">
-            {/* Header — draggable */}
+          <div className="w-80 max-h-[75vh] rounded-xl overflow-hidden flex flex-col shadow-2xl border border-border/50 bg-background/80 backdrop-blur-xl">
+            {/* Header — draggable, minimal chrome */}
             <div
-              className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30 cursor-grab active:cursor-grabbing touch-none select-none shrink-0"
+              className="flex items-center justify-between px-3 py-1.5 border-b border-border/40 cursor-grab active:cursor-grabbing touch-none select-none shrink-0 bg-muted/20"
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
             >
               <div className="flex items-center gap-2 min-w-0">
+                <GripHorizontal className="w-3 h-3 text-muted-foreground/40 shrink-0" />
                 {isExecuting && (
                   <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0" />
                 )}
-                <span className="text-xs font-medium text-foreground truncate">
+                <span className="text-[11px] font-medium text-foreground/80 truncate">
                   {title}
                 </span>
               </div>
               <div className="shrink-0" data-no-drag>
                 <button
-                  className="p-1 rounded-md hover:bg-muted transition-colors"
+                  className="p-0.5 rounded-md hover:bg-muted transition-colors"
                   onClick={handleDismiss}
                 >
                   <X className="w-3 h-3 text-muted-foreground" />
@@ -143,10 +159,10 @@ export function AgentChatAssistant({
               </div>
             </div>
 
-            {/* Card stack */}
+            {/* Message stack — transparent background */}
             <AssistantCardStack conversationId={conversationId} />
 
-            {/* Compact input */}
+            {/* Compact input with controls */}
             <CompactAssistantInput conversationId={conversationId} />
           </div>
         </div>

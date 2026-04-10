@@ -4,6 +4,7 @@ export { AssistantMessageCard } from "./AssistantMessageCard";
 export { UserMessageCard } from "./UserMessageCard";
 export { StatusCard } from "./StatusCard";
 export { VariableInputCard } from "./VariableInputCard";
+export { ChatAssistantVariableInputs } from "./ChatAssistantVariableInputs";
 export { CompactAssistantInput } from "./CompactAssistantInput";
 export { AssistantControlBar } from "./AssistantControlBar";
 export { useAssistantHeartbeat } from "./useAssistantHeartbeat";
