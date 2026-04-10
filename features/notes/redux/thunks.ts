@@ -19,7 +19,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
 import type { RootState } from "@/lib/redux/store";
 import type { Note, CreateNoteInput } from "../types";
-import type { NoteRecord } from "./notes.types";
+import type { NoteRecord, NoteScopeAssignment } from "./notes.types";
 import {
   upsertNoteFromServer,
   removeNote,
@@ -500,5 +500,37 @@ export const saveNoteField = createAsyncThunk<
     );
 
     await dispatch(saveNote(noteId)).unwrap();
+  },
+);
+
+// ---------------------------------------------------------------------------
+// 10. fetchAllNoteScopes
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch all scope assignments for entity_type = 'note'.
+ * Returns denormalized rows with scope name + type for sidebar grouping.
+ */
+export const fetchAllNoteScopes = createAsyncThunk<NoteScopeAssignment[], void>(
+  "notes/fetchAllNoteScopes",
+  async () => {
+    const { data, error } = await supabase
+      .from("ctx_scope_assignments")
+      .select(`
+        entity_id,
+        scope_id,
+        scope:ctx_scopes!inner(name, scope_type:ctx_scope_types!inner(label_singular))
+      `)
+      .eq("entity_type", "note");
+
+    if (error) throw error;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (data ?? []).map((row: any) => ({
+      entity_id: row.entity_id as string,
+      scope_id: row.scope_id as string,
+      scope_name: row.scope?.name ?? "",
+      scope_type: row.scope?.scope_type?.label_singular ?? "",
+    }));
   },
 );

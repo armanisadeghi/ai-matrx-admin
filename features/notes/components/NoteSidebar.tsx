@@ -43,6 +43,7 @@ import {
   Building2,
   Kanban,
   ListTodo,
+  Tag,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
@@ -63,6 +64,7 @@ import {
   copyNote,
   deleteNote,
   moveNoteToFolder,
+  fetchAllNoteScopes,
 } from "../redux/thunks";
 import {
   selectAllNotesList,
@@ -70,8 +72,15 @@ import {
   selectInstanceTabs,
   selectNotesListStatus,
   selectAllFolders,
+  selectNotesGroupedByScope,
+  selectNoteScopesLoaded,
 } from "../redux/selectors";
 import { createFolder, renameFolder, deleteFolderNotes } from "../service/notesService";
+import {
+  selectAllAssignments,
+  selectScopeNameMap,
+  selectScopeTypeLabelMap,
+} from "@/features/agent-context/redux/scope";
 import { getFolderIconAndColor, isDefaultFolder } from "../utils/folderUtils";
 import { CreateFolderDialog } from "./CreateFolderDialog";
 import { RenameFolderDialog } from "./RenameFolderDialog";
@@ -95,6 +104,7 @@ const SORT_FIELDS: { field: NoteSortField; label: string }[] = [
 const GROUP_MODES: { mode: NoteGroupBy | "recent"; label: string; icon: typeof Folder }[] = [
   { mode: "folder", label: "Folder", icon: Folder },
   { mode: "recent", label: "Recent", icon: Clock },
+  { mode: "scope", label: "Scope", icon: Tag },
   { mode: "organization", label: "Organization", icon: Building2 },
   { mode: "project", label: "Project", icon: Kanban },
   { mode: "task", label: "Task", icon: ListTodo },
@@ -114,11 +124,20 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
   const openTabIds = useAppSelector(selectInstanceTabs(instanceId));
   const listStatus = useAppSelector(selectNotesListStatus);
   const allFolders = useAppSelector(selectAllFolders);
+  const scopeGrouped = useAppSelector(selectNotesGroupedByScope);
+  const scopesLoaded = useAppSelector(selectNoteScopesLoaded);
 
   // ── Hierarchy names for grouping labels ─────────────────────────────
   const orgName = useAppSelector(selectOrganizationName);
   const projName = useAppSelector(selectProjectName);
   const taskName = useAppSelector(selectTaskName);
+
+  // ── Fetch scope assignments when switching to scope mode ────────────
+  useEffect(() => {
+    if (groupBy === "scope" && !scopesLoaded) {
+      dispatch(fetchAllNoteScopes());
+    }
+  }, [dispatch, groupBy, scopesLoaded]);
 
   // ── Local UI state ─────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState("");
@@ -224,8 +243,20 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
     const map = new Map<string, NoteRecord[]>();
 
     if (groupBy === "recent") {
-      // Flat list sorted by updated_at — single group
       map.set("__all__", sortNotes(filteredNotes));
+      return map;
+    }
+
+    // Scope grouping uses the pre-computed selector (many-to-many)
+    if (groupBy === "scope") {
+      // Apply search filter to the scope-grouped results
+      const searchIds = searchQuery ? new Set(filteredNotes.map((n) => n.id)) : null;
+      for (const [key, notes] of scopeGrouped) {
+        const filtered = searchIds ? notes.filter((n) => searchIds.has(n.id)) : notes;
+        if (filtered.length > 0) {
+          map.set(key, sortNotes(filtered));
+        }
+      }
       return map;
     }
 
@@ -261,10 +292,11 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
   const getGroupLabel = useCallback(
     (key: string): string => {
       if (key === "__all__") return "All Notes";
-      if (key === "__none__") return "Unassigned";
+      if (key === "__none__" || key === "Unassigned") return "Unassigned";
       if (groupBy === "folder") return key;
-      // For org/project/task, the key is a UUID — we'd need name lookup
-      // For now show contextual names if they match, else truncated ID
+      // Scope keys are already human-readable: "Department: SEO"
+      if (groupBy === "scope") return key;
+      // For org/project/task, the key is a UUID — show context name if matching
       if (groupBy === "organization" && orgName) return orgName;
       if (groupBy === "project" && projName) return projName;
       if (groupBy === "task" && taskName) return taskName;
@@ -277,6 +309,15 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
   const groupKeys = useMemo(() => {
     if (groupBy === "folder") return folders;
     if (groupBy === "recent") return ["__all__"];
+    if (groupBy === "scope") {
+      // Sort scope groups alphabetically, "Unassigned" last
+      const keys = Array.from(groupedNotes.keys());
+      return keys.sort((a, b) => {
+        if (a === "Unassigned") return 1;
+        if (b === "Unassigned") return -1;
+        return a.localeCompare(b);
+      });
+    }
     // For hierarchy modes, show assigned first, then unassigned
     const keys = Array.from(groupedNotes.keys());
     return keys.sort((a, b) => {

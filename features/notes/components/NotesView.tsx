@@ -42,6 +42,11 @@ import {
 } from "../redux/slice";
 import { fetchNotesList, fetchNoteContent, saveNote } from "../redux/thunks";
 import {
+  fetchScopeTypes,
+  fetchScopes,
+} from "@/features/agent-context/redux/scope";
+import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
+import {
   selectInstanceActiveTab,
   selectInstanceTabs,
   selectNoteEditorMode,
@@ -95,12 +100,16 @@ export function NotesView({ config, className }: NotesViewProps) {
     };
   }, [dispatch, instanceId]);
 
-  // ── Fetch notes list on mount ─────────────────────────────────────
+  // ── Fetch notes list + scope data on mount ──────────────────────────
+  const orgId = useAppSelector(selectOrganizationId);
   const fetchedRef = useRef(false);
   useEffect(() => {
     if (!fetchedRef.current && userId) {
       fetchedRef.current = true;
       dispatch(fetchNotesList());
+      // Pre-fetch scope types + scopes so ScopePicker and ScopeTagsDisplay work
+      dispatch(fetchScopeTypes());
+      dispatch(fetchScopes());
     }
   }, [dispatch, userId]);
 

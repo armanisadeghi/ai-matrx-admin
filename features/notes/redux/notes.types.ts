@@ -126,6 +126,18 @@ export interface NotesSliceState {
   otherUsersActive: boolean;
   /** The currently active note is being edited by another user */
   activeNoteEditedByOthers: boolean;
+
+  // ── Scope assignments (for sidebar grouping by scope) ─────
+  /** Denormalized scope assignments for all notes — loaded once on mount */
+  noteScopeAssignments: NoteScopeAssignment[];
+  noteScopesLoaded: boolean;
+}
+
+export interface NoteScopeAssignment {
+  entity_id: string;   // note ID
+  scope_id: string;
+  scope_name: string;  // e.g., "SEO", "Acme Corp"
+  scope_type: string;  // e.g., "Department", "Client"
 }
 
 // ── Auto-save debounce config ───────────────────────────────────────────────
