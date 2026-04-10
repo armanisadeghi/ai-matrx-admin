@@ -71,7 +71,7 @@ export const fetchNotesList = createAsyncThunk<void, void>(
 
     const { data, error } = await supabase
       .from("notes")
-      .select("id, label, folder_name, tags, updated_at, position, organization_id, project_id, task_id, is_public, version")
+      .select("id, label, folder_name, folder_id, tags, updated_at, position, organization_id, project_id, task_id, is_public, version")
       .eq("user_id", userId)
       .eq("is_deleted", false)
       .order("updated_at", { ascending: false });
@@ -229,7 +229,44 @@ export const saveNote = createAsyncThunk<void, string>(
 // ---------------------------------------------------------------------------
 
 /**
+ * Resolve a folder_name to a folder_id by looking up (or creating) a note_folders record.
+ * Returns the folder_id UUID, or null if resolution fails.
+ */
+async function resolveFolderId(
+  userId: string,
+  folderName: string,
+): Promise<string | null> {
+  // Try to find existing folder for this user
+  const { data: existing } = await supabase
+    .from("note_folders")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("name", folderName)
+    .eq("is_deleted", false)
+    .limit(1)
+    .single();
+
+  if (existing?.id) return existing.id;
+
+  // Create the folder record
+  const { data: created, error } = await supabase
+    .from("note_folders")
+    .insert({
+      user_id: userId,
+      name: folderName,
+      path: folderName,
+      position: 0,
+    })
+    .select("id")
+    .single();
+
+  if (error || !created) return null;
+  return created.id;
+}
+
+/**
  * Create a new note in the database.
+ * Resolves folder_name to folder_id via note_folders table.
  * Dispatches upsertNoteFromServer with "full", addTab, setActiveNote.
  */
 export const createNewNote = createAsyncThunk<
@@ -239,6 +276,10 @@ export const createNewNote = createAsyncThunk<
   "notes/createNewNote",
   async (input = {}, { dispatch, getState }) => {
     const userId = getUserId(getState);
+    const folderName = input.folder_name ?? "Draft";
+
+    // Resolve folder_id from note_folders table
+    const folderId = input.folder_id ?? await resolveFolderId(userId, folderName);
 
     const { data, error } = await supabase
       .from("notes")
@@ -246,7 +287,8 @@ export const createNewNote = createAsyncThunk<
         user_id: userId,
         label: input.label ?? "New Note",
         content: input.content ?? "",
-        folder_name: input.folder_name ?? "Draft",
+        folder_name: folderName,
+        folder_id: folderId,
         tags: input.tags ?? [],
         metadata: {},
         position: 0,
@@ -407,7 +449,12 @@ export const moveNoteToFolder = createAsyncThunk<
   { noteId: string; folder: string }
 >(
   "notes/moveNoteToFolder",
-  async ({ noteId, folder }, { dispatch }) => {
+  async ({ noteId, folder }, { dispatch, getState }) => {
+    const userId = getUserId(getState);
+
+    // Resolve folder_id for the target folder
+    const folderId = await resolveFolderId(userId, folder);
+
     dispatch(
       setNoteField({
         id: noteId,
@@ -415,6 +462,16 @@ export const moveNoteToFolder = createAsyncThunk<
         value: folder,
       }),
     );
+
+    if (folderId) {
+      dispatch(
+        setNoteField({
+          id: noteId,
+          field: "folder_id",
+          value: folderId,
+        }),
+      );
+    }
 
     await dispatch(saveNote(noteId)).unwrap();
   },

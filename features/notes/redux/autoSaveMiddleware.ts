@@ -115,6 +115,20 @@ export const autoSaveMiddleware: Middleware = (storeApi) => (next) => (action) =
           return;
         }
 
+        // Resolve folder_id if not already set
+        let folderId = recordAfterLabel.folder_id;
+        if (!folderId && recordAfterLabel.folder_name) {
+          const { data: folderData } = await supabase
+            .from("note_folders")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("name", recordAfterLabel.folder_name)
+            .eq("is_deleted", false)
+            .limit(1)
+            .single();
+          folderId = folderData?.id ?? null;
+        }
+
         const { data, error } = await supabase
           .from("notes")
           .insert({
@@ -123,6 +137,7 @@ export const autoSaveMiddleware: Middleware = (storeApi) => (next) => (action) =
             label: recordAfterLabel.label,
             content: recordAfterLabel.content,
             folder_name: recordAfterLabel.folder_name,
+            folder_id: folderId,
             tags: recordAfterLabel.tags,
             metadata: recordAfterLabel.metadata,
             position: recordAfterLabel.position ?? 0,
