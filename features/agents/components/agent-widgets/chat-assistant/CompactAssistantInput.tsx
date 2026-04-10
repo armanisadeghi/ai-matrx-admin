@@ -68,7 +68,9 @@ export function CompactAssistantInput({
   );
   const hasVariables = variableDefs.length > 0;
 
-  const isSendDisabled = isExecuting || !inputText.trim();
+  // Agents can execute on variables alone — text is NOT required.
+  // Only block when already executing (matches SmartAgentInput behavior).
+  const isSendDisabled = isExecuting;
 
   // ── Voice input ─────────────────────────────────────────────────────────────
   const {

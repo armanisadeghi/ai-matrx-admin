@@ -16,7 +16,8 @@ import {
   selectUserVariableValues,
 } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
-import { ChevronDown, ChevronRight, Minus, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, Minus, Plus, Play } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { AppDispatch } from "@/lib/redux/store";
 
 interface ChatAssistantVariableInputsProps {
@@ -70,6 +71,17 @@ export function ChatAssistantVariableInputs({
               dispatch={dispatch}
             />
           ))}
+          {/* Run button — lets agents execute with just variables, no text */}
+          <div className="flex justify-end pt-0.5">
+            <Button
+              size="sm"
+              className="h-6 px-2.5 text-[10px] rounded-full gap-1"
+              onClick={onSubmit}
+            >
+              <Play className="w-2.5 h-2.5" />
+              Run
+            </Button>
+          </div>
         </div>
       )}
     </div>

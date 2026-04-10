@@ -27,6 +27,7 @@ import {
   selectConversationMode,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectInstanceVariableDefinitions } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
+import { selectShowVariablePanel } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
 import { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
 import { AgentUserMessage } from "../../run/AgentUserMessage";
@@ -82,6 +83,9 @@ export function AssistantCardStack({
   );
   const conversationMode = useAppSelector(
     selectConversationMode(conversationId),
+  );
+  const showVariablePanel = useAppSelector(
+    selectShowVariablePanel(conversationId),
   );
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -153,11 +157,13 @@ export function AssistantCardStack({
 
   const hasVariables = variableDefs.length > 0;
   const hasMessages = displayMessages.length > 0;
+  // Show variables when: agent has them AND (panel toggle is on OR no messages yet)
+  const showVariables = hasVariables && (showVariablePanel || !hasMessages);
 
   return (
     <div className="flex-1 min-h-0 overflow-y-auto scroll-smooth flex flex-col">
-      {/* Variable inputs — always visible when agent has variables */}
-      {hasVariables && (
+      {/* Variable inputs — visible via toggle or before first message */}
+      {showVariables && (
         <div className="shrink-0">
           <ChatAssistantVariableInputs
             conversationId={conversationId}
