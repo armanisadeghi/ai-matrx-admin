@@ -10,11 +10,19 @@
  * referenced again by any component or selector.
  *
  * Layout:
+ *   Desktop:
  *   ┌────────────────────────────────────┐
  *   │  Sidebar (runs history) │   Main   │
  *   │                         │   conv   │
  *   │                         │   area   │
  *   └────────────────────────────────────┘
+ *
+ *   Mobile:
+ *   ┌────────────────────────────────────┐
+ *   │  [History] [Test Modes]  toolbar   │
+ *   │         Main conv area             │
+ *   └────────────────────────────────────┘
+ *   History & Test Modes open as drawers (bottom sheets).
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -29,9 +37,16 @@ import { setFocus } from "@/features/agents/redux/execution-system/conversation-
 import { AgentRunsSidebar } from "./AgentRunsSidebar";
 import { AgentLauncherSidebarTester } from "../run-controls/AgentLauncherSidebarTester";
 import { AgentConversationColumn } from "../shared/AgentConversationColumn";
-import { Loader2, PanelLeft } from "lucide-react";
+import { Loader2, PanelLeft, History, TestTube2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+} from "@/components/ui/drawer";
 
 interface AgentRunPageProps {
   agentId: string;
@@ -49,6 +64,10 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
 
   const [isInitializing, setIsInitializing] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+
+  // Mobile drawer state
+  const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false);
+  const [testModesDrawerOpen, setTestModesDrawerOpen] = useState(false);
 
   const currentRunId = searchParams.get("runId") ?? undefined;
   const conversationIdFromUrl = searchParams.get("conversationId") ?? undefined;
@@ -129,51 +148,122 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
   }
 
   return (
-    <div className="relative flex h-full overflow-hidden">
-      {!isMobile && sidebarOpen && (
-        <div className="w-64 shrink-0 border-r border-border overflow-hidden flex flex-col">
-          <AgentRunsSidebar
-            agentId={agentId}
-            conversationId={conversationId}
-            surfaceKey={surfaceKey}
-            conversationIdFromUrl={conversationIdFromUrl}
-            currentRunId={currentRunId}
-            onClose={() => setSidebarOpen(false)}
-          />
-          <div className="shrink-0 border-t border-border">
-            <AgentLauncherSidebarTester conversationId={conversationId} />
-          </div>
+    <div className="relative flex flex-col h-full overflow-hidden">
+      {/* ── Mobile toolbar ──────────────────────────────────────────────────── */}
+      {isMobile && (
+        <div className="shrink-0 flex items-center gap-1 px-2 py-1 border-b border-border bg-background">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs gap-1.5"
+            onClick={() => setHistoryDrawerOpen(true)}
+          >
+            <History className="w-3.5 h-3.5" />
+            History
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs gap-1.5"
+            onClick={() => setTestModesDrawerOpen(true)}
+          >
+            <TestTube2 className="w-3.5 h-3.5" />
+            Test Modes
+          </Button>
         </div>
       )}
 
-      <div className="flex-1 overflow-hidden flex justify-center min-w-0">
-        {!isMobile && !sidebarOpen && (
-          <div
-            className="absolute left-1 z-10"
-            style={{ top: "var(--shell-header-h)" }}
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => setSidebarOpen(true)}
-              title="Show history"
-            >
-              <PanelLeft className="w-4 h-4" />
-            </Button>
+      {/* ── Main layout ─────────────────────────────────────────────────────── */}
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* Desktop sidebar */}
+        {!isMobile && sidebarOpen && (
+          <div className="w-64 shrink-0 border-r border-border overflow-hidden flex flex-col">
+            <AgentRunsSidebar
+              agentId={agentId}
+              conversationId={conversationId}
+              surfaceKey={surfaceKey}
+              conversationIdFromUrl={conversationIdFromUrl}
+              currentRunId={currentRunId}
+              onClose={() => setSidebarOpen(false)}
+            />
+            <div className="shrink-0 border-t border-border">
+              <AgentLauncherSidebarTester conversationId={conversationId} />
+            </div>
           </div>
         )}
 
-        <AgentConversationColumn
-          conversationId={conversationId}
-          surfaceKey={surfaceKey}
-          constrainWidth
-          smartInputProps={{
-            sendButtonVariant: "blue",
-            showSubmitOnEnterToggle: true,
-          }}
-        />
+        {/* Main conversation area */}
+        <div className="flex-1 overflow-hidden flex justify-center min-w-0">
+          {!isMobile && !sidebarOpen && (
+            <div
+              className="absolute left-1 z-10"
+              style={{ top: "var(--shell-header-h)" }}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => setSidebarOpen(true)}
+                title="Show history"
+              >
+                <PanelLeft className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+
+          <AgentConversationColumn
+            conversationId={conversationId}
+            surfaceKey={surfaceKey}
+            constrainWidth
+            smartInputProps={{
+              sendButtonVariant: "blue",
+              showSubmitOnEnterToggle: true,
+            }}
+          />
+        </div>
       </div>
+
+      {/* ── Mobile drawers ──────────────────────────────────────────────────── */}
+      {isMobile && (
+        <>
+          {/* History drawer */}
+          <Drawer open={historyDrawerOpen} onOpenChange={setHistoryDrawerOpen}>
+            <DrawerContent className="max-h-[80dvh]">
+              <DrawerHeader className="pb-2">
+                <DrawerTitle className="text-sm">Conversation History</DrawerTitle>
+                <DrawerDescription className="text-xs">
+                  Past conversations and runs for this agent
+                </DrawerDescription>
+              </DrawerHeader>
+              <div className="flex-1 overflow-y-auto min-h-0 pb-safe">
+                <AgentRunsSidebar
+                  agentId={agentId}
+                  conversationId={conversationId}
+                  surfaceKey={surfaceKey}
+                  conversationIdFromUrl={conversationIdFromUrl}
+                  currentRunId={currentRunId}
+                  onClose={() => setHistoryDrawerOpen(false)}
+                />
+              </div>
+            </DrawerContent>
+          </Drawer>
+
+          {/* Test Modes drawer */}
+          <Drawer open={testModesDrawerOpen} onOpenChange={setTestModesDrawerOpen}>
+            <DrawerContent className="max-h-[80dvh]">
+              <DrawerHeader className="pb-2">
+                <DrawerTitle className="text-sm">Test Display Modes</DrawerTitle>
+                <DrawerDescription className="text-xs">
+                  Launch the agent in different display modes
+                </DrawerDescription>
+              </DrawerHeader>
+              <div className="flex-1 overflow-y-auto min-h-0 pb-safe">
+                <AgentLauncherSidebarTester conversationId={conversationId} />
+              </div>
+            </DrawerContent>
+          </Drawer>
+        </>
+      )}
     </div>
   );
 }
