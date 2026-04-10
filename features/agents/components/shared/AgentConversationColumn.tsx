@@ -13,6 +13,7 @@ interface SmartInputForwardProps {
   showSubmitOnEnterToggle?: boolean;
   placeholder?: string;
   compact?: boolean;
+  extraRightControls?: React.ReactNode;
 }
 
 interface AgentConversationColumnProps {

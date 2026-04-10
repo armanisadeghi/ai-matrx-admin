@@ -259,7 +259,7 @@ export interface BuilderAdvancedSettings {
 
 export const DEFAULT_BUILDER_ADVANCED_SETTINGS: BuilderAdvancedSettings = {
   debug: false,
-  store: false,
+  store: true,
   maxIterations: 20,
   maxRetriesPerIteration: 2,
   useStructuredSystemInstruction: false,

@@ -228,7 +228,7 @@ export function assembleChatRequest(
     ai_model_id,
     messages: messages as ChatRequestPayload["messages"],
     stream: true,
-    store: advancedSettings?.store ?? false,
+    store: advancedSettings?.store ?? true,
     debug: advancedSettings?.debug ?? false,
     max_iterations: advancedSettings?.maxIterations ?? 20,
     max_retries_per_iteration: advancedSettings?.maxRetriesPerIteration ?? 2,

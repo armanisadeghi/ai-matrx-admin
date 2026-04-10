@@ -1,5 +1,5 @@
-import { createSelector } from '@reduxjs/toolkit';
-import type { RootState } from '@/lib/redux/store';
+import { createSelector } from "@reduxjs/toolkit";
+import type { RootState } from "@/lib/redux/store";
 import type {
   UserPreferencesState,
   PlaygroundPreferences,
@@ -17,105 +17,105 @@ import type {
   FlashcardPreferences,
   AiModelsPreferences,
   SystemPreferences,
-} from '@/lib/redux/slices/userPreferencesSlice';
+} from "@/lib/redux/slices/userPreferencesSlice";
 
 // Base selector
-export const selectUserPreferences = (state: RootState): UserPreferencesState => 
+export const selectUserPreferences = (state: RootState): UserPreferencesState =>
   state.userPreferences;
 
 // Module selectors with explicit return types
 export const selectPlaygroundPreferences = createSelector(
   selectUserPreferences,
-  (state): PlaygroundPreferences => state.playground
+  (state): PlaygroundPreferences => state.playground,
 );
 
 export const selectDisplayPreferences = createSelector(
   selectUserPreferences,
-  (state): DisplayPreferences => state.display
+  (state): DisplayPreferences => state.display,
 );
 
 export const selectPromptsPreferences = createSelector(
   selectUserPreferences,
-  (state): PromptsPreferences => state.prompts
+  (state): PromptsPreferences => state.prompts,
 );
 
 export const selectVoicePreferences = createSelector(
   selectUserPreferences,
-  (state): VoicePreferences => state.voice
+  (state): VoicePreferences => state.voice,
 );
 
 export const selectTextToSpeechPreferences = createSelector(
   selectUserPreferences,
-  (state): TextToSpeechPreferences => state.textToSpeech
+  (state): TextToSpeechPreferences => state.textToSpeech,
 );
 
 export const selectAssistantPreferences = createSelector(
   selectUserPreferences,
-  (state): AssistantPreferences => state.assistant
+  (state): AssistantPreferences => state.assistant,
 );
 
 export const selectEmailPreferences = createSelector(
   selectUserPreferences,
-  (state): EmailPreferences => state.email
+  (state): EmailPreferences => state.email,
 );
 
 export const selectVideoConferencePreferences = createSelector(
   selectUserPreferences,
-  (state): VideoConferencePreferences => state.videoConference
+  (state): VideoConferencePreferences => state.videoConference,
 );
 
 export const selectPhotoEditingPreferences = createSelector(
   selectUserPreferences,
-  (state): PhotoEditingPreferences => state.photoEditing
+  (state): PhotoEditingPreferences => state.photoEditing,
 );
 
 export const selectImageGenerationPreferences = createSelector(
   selectUserPreferences,
-  (state): ImageGenerationPreferences => state.imageGeneration
+  (state): ImageGenerationPreferences => state.imageGeneration,
 );
 
 export const selectTextGenerationPreferences = createSelector(
   selectUserPreferences,
-  (state): TextGenerationPreferences => state.textGeneration
+  (state): TextGenerationPreferences => state.textGeneration,
 );
 
 export const selectCodingPreferences = createSelector(
   selectUserPreferences,
-  (state): CodingPreferences => state.coding
+  (state): CodingPreferences => state.coding,
 );
 
 export const selectFlashcardPreferences = createSelector(
   selectUserPreferences,
-  (state): FlashcardPreferences => state.flashcard
+  (state): FlashcardPreferences => state.flashcard,
 );
 
 export const selectAiModelsPreferences = createSelector(
   selectUserPreferences,
-  (state): AiModelsPreferences => state.aiModels
+  (state): AiModelsPreferences => state.aiModels,
 );
 
 export const selectSystemPreferences = createSelector(
   selectUserPreferences,
-  (state): SystemPreferences => state.system
+  (state): SystemPreferences => state.system,
 );
 
 // Meta selectors for async state management
 export const selectPreferencesLoading = createSelector(
   selectUserPreferences,
-  (state): boolean => state._meta.isLoading
+  (state): boolean => state._meta.isLoading,
 );
 
 export const selectPreferencesError = createSelector(
   selectUserPreferences,
-  (state): string | null => state._meta.error
+  (state): string | null => state._meta.error,
 );
 
 export const selectPreferencesLastSaved = createSelector(
   selectUserPreferences,
-  (state): string | null => state._meta.lastSaved
+  (state): string | null => state._meta.lastSaved,
 );
 
 export const selectHasUnsavedChanges = createSelector(
   selectUserPreferences,
-  (state): boolean => state._meta.hasUnsavedChanges
+  (state): boolean => state._meta.hasUnsavedChanges,
 );

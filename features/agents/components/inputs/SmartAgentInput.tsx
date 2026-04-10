@@ -168,6 +168,8 @@ interface SmartAgentInputProps {
    * When omitted, uses Redux `instanceUIState.variableInputStyle`.
    */
   variableInputStyle?: VariableInputStyle;
+  /** Extra controls rendered in the right toolbar, before the send button. */
+  extraRightControls?: React.ReactNode;
 }
 
 // =============================================================================
@@ -189,6 +191,7 @@ export function SmartAgentInput({
   surfaceKey,
   disableSend = false,
   variableInputStyle,
+  extraRightControls,
 }: SmartAgentInputProps) {
   const dispatch = useAppDispatch();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -638,6 +641,7 @@ export function SmartAgentInput({
 
         {/* Right: toggles + send */}
         <div className="flex items-center gap-0.5">
+          {extraRightControls}
           {/* autoClearConversation toggle */}
           {showAutoClearToggle && (
             <InputButton
