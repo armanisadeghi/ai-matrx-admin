@@ -38,8 +38,10 @@ import {
   selectNoteFolder,
   selectAllFolders,
   selectNoteContent,
+  selectInstanceTabs,
 } from "../redux/selectors";
 import { saveNote, copyNote, deleteNote } from "../redux/thunks";
+import { ShareNoteDialog } from "./ShareNoteDialog";
 import { cn } from "@/lib/utils";
 
 interface NoteTabItemProps {
@@ -63,11 +65,13 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
   const currentFolder = useAppSelector(selectNoteFolder(noteId)) ?? "Draft";
   const allFolders = useAppSelector(selectAllFolders);
   const content = useAppSelector(selectNoteContent(noteId)) ?? "";
+  const openTabs = useAppSelector(selectInstanceTabs(instanceId));
 
   // ── Local UI state ─────────────────────────────────────────────────
   const [localLabel, setLocalLabel] = useState(label);
   const [showFolderDrop, setShowFolderDrop] = useState(false);
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
   const labelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const folderBtnRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -141,21 +145,21 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
     [dispatch, noteId, content],
   );
 
-  // ── Context menu items ─────────────────────────────────────────────
-  const ctxItems = [
-    { icon: <Save className="w-3 h-3" />, label: "Save", fn: () => dispatch(saveNote(noteId)) },
-    { icon: <Copy className="w-3 h-3" />, label: "Duplicate", fn: () => dispatch(copyNote(noteId)) },
-    { icon: <Link2 className="w-3 h-3" />, label: "Share Link", fn: () => {} },
-    { icon: <Download className="w-3 h-3" />, label: "Export as Markdown", fn: handleExport },
-    null,
-    { icon: <X className="w-3 h-3" />, label: "Close Tab", fn: () => dispatch(removeInstanceTab({ instanceId, noteId })) },
-    { icon: <X className="w-3 h-3" />, label: "Close Other Tabs", fn: () => {
-      const tabs = (useAppSelector as any)((s: any) => s.notes?.instances?.[instanceId]?.openTabs) ?? [];
-      // Can't use hooks in callback — dispatch individual removes
-    }},
-    null,
-    { icon: <Trash2 className="w-3 h-3" />, label: "Delete Note", fn: handleDeleteAndClose, destructive: true },
-  ];
+  const handleCloseOtherTabs = useCallback(() => {
+    if (!openTabs) return;
+    for (const tabId of openTabs) {
+      if (tabId !== noteId) {
+        dispatch(removeInstanceTab({ instanceId, noteId: tabId }));
+      }
+    }
+  }, [dispatch, instanceId, noteId, openTabs]);
+
+  const handleCloseAllTabs = useCallback(() => {
+    if (!openTabs) return;
+    for (const tabId of openTabs) {
+      dispatch(removeInstanceTab({ instanceId, noteId: tabId }));
+    }
+  }, [dispatch, instanceId, openTabs]);
 
   return (
     <>
@@ -213,7 +217,7 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
             <button className={actionBtnClass} onClick={() => dispatch(copyNote(noteId))} title="Duplicate">
               <Copy />
             </button>
-            <button className={actionBtnClass} title="Share note">
+            <button className={actionBtnClass} onClick={() => setShareOpen(true)} title="Share note">
               <Share2 />
             </button>
             <button
@@ -283,9 +287,12 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
             {[
               { icon: <Save className="w-3 h-3" />, label: "Save", fn: () => dispatch(saveNote(noteId)) },
               { icon: <Copy className="w-3 h-3" />, label: "Duplicate", fn: () => dispatch(copyNote(noteId)) },
+              { icon: <Link2 className="w-3 h-3" />, label: "Share Link", fn: () => setShareOpen(true) },
               { icon: <Download className="w-3 h-3" />, label: "Export as Markdown", fn: handleExport },
               null,
               { icon: <X className="w-3 h-3" />, label: "Close Tab", fn: () => dispatch(removeInstanceTab({ instanceId, noteId })) },
+              { icon: <X className="w-3 h-3" />, label: "Close Other Tabs", fn: handleCloseOtherTabs },
+              { icon: <X className="w-3 h-3" />, label: "Close All Tabs", fn: handleCloseAllTabs },
               null,
               { icon: <Trash2 className="w-3 h-3" />, label: "Delete Note", fn: handleDeleteAndClose, destructive: true },
             ].map((item, i) =>
@@ -307,6 +314,14 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
           </div>
         </>
       )}
+
+      {/* Share dialog */}
+      <ShareNoteDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        noteId={noteId}
+        noteLabel={label}
+      />
     </>
   );
 }
