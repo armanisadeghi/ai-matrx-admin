@@ -12,6 +12,8 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   updateNoteContent,
   removeInstanceTab,
+  markNoteSaved,
+  upsertNoteFromServer,
 } from "../redux/slice";
 import { getReduxSyncDelay } from "../redux/notes.types";
 import {
@@ -22,12 +24,22 @@ import {
   selectNoteLabel,
   selectAllFolders,
   selectInstanceTabs,
+  selectNoteSaveState,
 } from "../redux/selectors";
-import { saveNote, copyNote, deleteNote, moveNoteToFolder } from "../redux/thunks";
+import { saveNote, copyNote, deleteNote, moveNoteToFolder, fetchNoteContent } from "../redux/thunks";
 import { useNotesInstanceId } from "../context/NotesInstanceContext";
+import { analyzeDiff } from "../utils/diffAnalysis";
+import { supabase } from "@/utils/supabase/client";
 import { NoteEditorCore, type EditorMode } from "./NoteEditorCore";
 import { MoveNoteDialog } from "./MoveNoteDialog";
 import { ShareNoteDialog } from "./ShareNoteDialog";
+
+const NoteConflictWindow = dynamic(
+  () => import("@/app/(ssr)/ssr/notes/_components/NoteConflictWindow").then(
+    (mod) => ({ default: mod.NoteConflictWindow }),
+  ),
+  { ssr: false },
+);
 
 const NoteContextMenu = dynamic(
   () => import("@/app/(ssr)/ssr/notes/_components/NoteContextMenu"),
@@ -51,9 +63,33 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
   const noteLabel = useAppSelector(selectNoteLabel(noteId)) ?? "Untitled";
   const openTabs = useAppSelector(selectInstanceTabs(instanceId));
 
+  const saveState = useAppSelector(selectNoteSaveState(noteId));
+
   // ── Dialog state ──────────────────────────────────────────────────
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+
+  // ── Conflict state ────────────────────────────────────────────────
+  const [conflictRemote, setConflictRemote] = useState<string | null>(null);
+
+  // When Redux detects a conflict, fetch the remote version to show diff
+  useEffect(() => {
+    if (saveState !== "conflict") {
+      setConflictRemote(null);
+      return;
+    }
+    // Fetch fresh remote content
+    supabase
+      .from("notes")
+      .select("content")
+      .eq("id", noteId)
+      .single()
+      .then(({ data }) => {
+        if (data?.content != null) {
+          setConflictRemote(data.content);
+        }
+      });
+  }, [saveState, noteId]);
 
   // ── Local content state — initialized from Redux, synced back on debounce
   const [localContent, setLocalContent] = useState(reduxContent);
@@ -175,9 +211,56 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
     dispatch(deleteNote(noteId));
   }, [dispatch, instanceId, noteId]);
 
+  // ── Conflict resolution handlers ──────────────────────────────────
+  const handleKeepMine = useCallback(
+    (editedContent: string) => {
+      // User chose their version (possibly edited in the conflict window)
+      setLocalContent(editedContent);
+      lastReduxRef.current = editedContent;
+      dispatch(updateNoteContent({ id: noteId, content: editedContent }));
+      // Clear the conflict error and force a save
+      dispatch(markNoteSaved({ id: noteId }));
+      setConflictRemote(null);
+      // Re-save with the user's content
+      setTimeout(() => dispatch(saveNote(noteId)), 100);
+    },
+    [dispatch, noteId],
+  );
+
+  const handleAcceptRemote = useCallback(() => {
+    if (conflictRemote == null) return;
+    // Accept the remote version — overwrite local
+    setLocalContent(conflictRemote);
+    lastReduxRef.current = conflictRemote;
+    dispatch(updateNoteContent({ id: noteId, content: conflictRemote }));
+    // Clear conflict and mark clean (remote is already saved)
+    dispatch(markNoteSaved({ id: noteId }));
+    // Re-fetch to get full fresh state
+    dispatch(fetchNoteContent(noteId));
+    setConflictRemote(null);
+  }, [dispatch, noteId, conflictRemote]);
+
+  const handleCancelConflict = useCallback(() => {
+    // Dismiss conflict window — keep local edits as dirty
+    setConflictRemote(null);
+  }, []);
+
   // ── Render ────────────────────────────────────────────────────────
   return (
     <>
+      {/* Conflict resolution window */}
+      {conflictRemote != null && (
+        <NoteConflictWindow
+          noteTitle={noteLabel}
+          localContent={localContent}
+          remoteContent={conflictRemote}
+          analysis={analyzeDiff(localContent, conflictRemote)}
+          onKeepMine={handleKeepMine}
+          onAcceptChanges={handleAcceptRemote}
+          onCancel={handleCancelConflict}
+        />
+      )}
+
       <NoteContextMenu
         noteId={noteId}
         isDirty={isDirty}

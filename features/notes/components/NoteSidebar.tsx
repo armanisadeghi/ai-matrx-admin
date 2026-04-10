@@ -20,6 +20,7 @@
 // - Empty state when no notes exist
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
 import {
   FileText,
   FolderOpen,
@@ -37,9 +38,19 @@ import {
   Trash2,
   X,
   StickyNote,
+  Layers,
+  Clock,
+  Building2,
+  Kanban,
+  ListTodo,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
+import {
+  selectOrganizationName,
+  selectProjectName,
+  selectTaskName,
+} from "@/features/agent-context/redux/appContextSlice";
 import {
   setInstanceActiveTab,
   addInstanceTab,
@@ -60,19 +71,32 @@ import {
   selectAllFolders,
 } from "../redux/selectors";
 import { renameFolder, deleteFolderNotes } from "../service/notesService";
-import { getFolderIconAndColor } from "../utils/folderUtils";
-import { isDefaultFolder } from "../utils/folderUtils";
+import { getFolderIconAndColor, isDefaultFolder } from "../utils/folderUtils";
 import { CreateFolderDialog } from "./CreateFolderDialog";
 import { RenameFolderDialog } from "./RenameFolderDialog";
 import { cn } from "@/lib/utils";
 import type { NoteRecord } from "../redux/notes.types";
-import type { NoteSortField, NoteSortOrder } from "../types";
+import type { NoteSortField, NoteSortOrder, NoteGroupBy } from "../types";
+
+const ContextSwitcher = dynamic(
+  () => import("@/app/(ssr)/ssr/notes/_components/ContextSwitcher"),
+  { ssr: false },
+);
 
 // ── Sort field labels ───────────────────────────────────────────────────────
 const SORT_FIELDS: { field: NoteSortField; label: string }[] = [
   { field: "updated_at", label: "Modified" },
   { field: "label", label: "Name" },
   { field: "created_at", label: "Created" },
+];
+
+// ── Group-by modes ──────────────────────────────────────────────────────────
+const GROUP_MODES: { mode: NoteGroupBy | "recent"; label: string; icon: typeof Folder }[] = [
+  { mode: "folder", label: "Folder", icon: Folder },
+  { mode: "recent", label: "Recent", icon: Clock },
+  { mode: "organization", label: "Organization", icon: Building2 },
+  { mode: "project", label: "Project", icon: Kanban },
+  { mode: "task", label: "Task", icon: ListTodo },
 ];
 
 interface NoteSidebarProps {
@@ -90,6 +114,11 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
   const listStatus = useAppSelector(selectNotesListStatus);
   const allFolders = useAppSelector(selectAllFolders);
 
+  // ── Hierarchy names for grouping labels ─────────────────────────────
+  const orgName = useAppSelector(selectOrganizationName);
+  const projName = useAppSelector(selectProjectName);
+  const taskName = useAppSelector(selectTaskName);
+
   // ── Local UI state ─────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
@@ -97,6 +126,8 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
   );
   const [sortField, setSortField] = useState<NoteSortField>("updated_at");
   const [sortOrder, setSortOrder] = useState<NoteSortOrder>("desc");
+  const [groupBy, setGroupBy] = useState<NoteGroupBy | "recent">("folder");
+  const [groupByDropdown, setGroupByDropdown] = useState(false);
 
   // Context menu state
   const [folderCtx, setFolderCtx] = useState<{ folder: string; x: number; y: number } | null>(null);
@@ -148,7 +179,6 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
 
   // ── Derived data ───────────────────────────────────────────────────
   const folders = useMemo(() => {
-    // Start with known folders, add any from notes
     const set = new Set<string>(allFolders);
     for (const n of allNotes) {
       if (n.folder_name) set.add(n.folder_name);
@@ -158,25 +188,22 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
     );
   }, [allNotes, allFolders]);
 
-  const notesByFolder = useMemo(() => {
-    const map = new Map<string, NoteRecord[]>();
+  // Filter notes by search
+  const filteredNotes = useMemo(() => {
+    if (!searchQuery) return allNotes;
     const q = searchQuery.toLowerCase();
-    for (const n of allNotes) {
-      if (
-        q &&
-        !n.label.toLowerCase().includes(q) &&
-        !n.content?.toLowerCase().includes(q) &&
-        !n.tags?.some((t) => t.toLowerCase().includes(q))
-      ) {
-        continue;
-      }
-      const folder = n.folder_name || "Draft";
-      if (!map.has(folder)) map.set(folder, []);
-      map.get(folder)!.push(n);
-    }
-    // Sort each folder
-    for (const notes of map.values()) {
-      notes.sort((a, b) => {
+    return allNotes.filter(
+      (n) =>
+        n.label.toLowerCase().includes(q) ||
+        n.content?.toLowerCase().includes(q) ||
+        n.tags?.some((t) => t.toLowerCase().includes(q)),
+    );
+  }, [allNotes, searchQuery]);
+
+  // Sort function
+  const sortNotes = useCallback(
+    (notes: NoteRecord[]) => {
+      return [...notes].sort((a, b) => {
         let cmp = 0;
         if (sortField === "label") {
           cmp = a.label.localeCompare(b.label);
@@ -187,9 +214,76 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
         }
         return sortOrder === "desc" ? -cmp : cmp;
       });
+    },
+    [sortField, sortOrder],
+  );
+
+  // Group notes by selected mode
+  const groupedNotes = useMemo(() => {
+    const map = new Map<string, NoteRecord[]>();
+
+    if (groupBy === "recent") {
+      // Flat list sorted by updated_at — single group
+      map.set("__all__", sortNotes(filteredNotes));
+      return map;
     }
+
+    for (const n of filteredNotes) {
+      let key: string;
+      switch (groupBy) {
+        case "organization":
+          key = n.organization_id || "__none__";
+          break;
+        case "project":
+          key = n.project_id || "__none__";
+          break;
+        case "task":
+          key = n.task_id || "__none__";
+          break;
+        default: // "folder"
+          key = n.folder_name || "Draft";
+          break;
+      }
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(n);
+    }
+
+    // Sort each group
+    for (const [key, notes] of map) {
+      map.set(key, sortNotes(notes));
+    }
+
     return map;
-  }, [allNotes, searchQuery, sortField, sortOrder]);
+  }, [filteredNotes, groupBy, sortNotes]);
+
+  // Get group labels for display
+  const getGroupLabel = useCallback(
+    (key: string): string => {
+      if (key === "__all__") return "All Notes";
+      if (key === "__none__") return "Unassigned";
+      if (groupBy === "folder") return key;
+      // For org/project/task, the key is a UUID — we'd need name lookup
+      // For now show contextual names if they match, else truncated ID
+      if (groupBy === "organization" && orgName) return orgName;
+      if (groupBy === "project" && projName) return projName;
+      if (groupBy === "task" && taskName) return taskName;
+      return key.slice(0, 8) + "...";
+    },
+    [groupBy, orgName, projName, taskName],
+  );
+
+  // Ordered group keys
+  const groupKeys = useMemo(() => {
+    if (groupBy === "folder") return folders;
+    if (groupBy === "recent") return ["__all__"];
+    // For hierarchy modes, show assigned first, then unassigned
+    const keys = Array.from(groupedNotes.keys());
+    return keys.sort((a, b) => {
+      if (a === "__none__") return 1;
+      if (b === "__none__") return -1;
+      return 0;
+    });
+  }, [groupBy, folders, groupedNotes]);
 
   // ── Handlers ───────────────────────────────────────────────────────
   const toggleFolder = useCallback((folder: string) => {
@@ -335,8 +429,53 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
         </div>
       </div>
 
-      {/* Toolbar: sort + expand/collapse */}
+      {/* Context switcher (org/project/task hierarchy) */}
+      <div className="shrink-0 px-2 py-1 border-b border-border/20">
+        <ContextSwitcher />
+      </div>
+
+      {/* Toolbar: group-by + sort + expand/collapse */}
       <div className="shrink-0 flex items-center gap-1 px-2 py-1 border-b border-border/20">
+        {/* Group-by dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setGroupByDropdown((v) => !v)}
+            className="flex items-center gap-1 px-1.5 py-0.5 text-[0.625rem] text-muted-foreground hover:text-foreground cursor-pointer transition-colors rounded [&_svg]:w-3 [&_svg]:h-3"
+            title="Group by"
+          >
+            <Layers />
+            <span>{GROUP_MODES.find((m) => m.mode === groupBy)?.label ?? "Folder"}</span>
+            <ChevronDown className="w-2! h-2! opacity-50" />
+          </button>
+          {groupByDropdown && (
+            <>
+              <div className="fixed inset-0 z-[100]" onClick={() => setGroupByDropdown(false)} />
+              <div className="absolute left-0 top-full mt-1 z-[110] min-w-[130px] py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg">
+                {GROUP_MODES.map((m) => {
+                  const Icon = m.icon;
+                  return (
+                    <button
+                      key={m.mode}
+                      className={cn(
+                        "flex items-center gap-2 w-full px-3 py-1.5 text-[0.625rem] cursor-pointer transition-colors",
+                        groupBy === m.mode
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "text-foreground hover:bg-accent",
+                      )}
+                      onClick={() => {
+                        setGroupBy(m.mode);
+                        setGroupByDropdown(false);
+                      }}
+                    >
+                      <Icon className="w-3 h-3" /> {m.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+
         <button
           onClick={cycleSortField}
           className="flex items-center gap-1 px-1.5 py-0.5 text-[0.625rem] text-muted-foreground hover:text-foreground cursor-pointer transition-colors rounded [&_svg]:w-3 [&_svg]:h-3"
@@ -353,19 +492,20 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
           {sortOrder === "desc" ? "\u2193" : "\u2191"}
         </button>
         <div className="flex-1" />
-        <button
-          onClick={toggleAllFolders}
-          className="flex items-center justify-center w-5 h-5 text-muted-foreground hover:text-foreground cursor-pointer transition-colors rounded [&_svg]:w-3 [&_svg]:h-3"
-          title="Expand/collapse all"
-        >
-          <ChevronsUpDown />
-        </button>
+        {groupBy !== "recent" && (
+          <button
+            onClick={toggleAllFolders}
+            className="flex items-center justify-center w-5 h-5 text-muted-foreground hover:text-foreground cursor-pointer transition-colors rounded [&_svg]:w-3 [&_svg]:h-3"
+            title="Expand/collapse all"
+          >
+            <ChevronsUpDown />
+          </button>
+        )}
       </div>
 
-      {/* Folder tree */}
+      {/* Note list — grouped or flat */}
       <div className="flex-1 overflow-y-auto" ref={folderTreeRef}>
         {listStatus === "loaded" && allNotes.length === 0 ? (
-          // Empty state
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground/60 px-6 py-8">
             <StickyNote className="w-10 h-10 mb-3 opacity-40" />
             <p className="text-xs font-medium">No notes yet</p>
@@ -373,25 +513,77 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
               Click "New Note" below to get started
             </p>
           </div>
+        ) : groupBy === "recent" ? (
+          /* ── Recent mode: flat sorted list ──────────────────────── */
+          <div className="ml-1">
+            {(groupedNotes.get("__all__") ?? []).map((note) => {
+              const isActive = activeTabId === note.id;
+              const isOpenTab = openTabIds?.includes(note.id) ?? false;
+              return (
+                <button
+                  key={note.id}
+                  data-note-id={note.id}
+                  className={cn(
+                    "flex items-center gap-1.5 w-full text-left px-2 py-[3px] rounded-sm cursor-pointer transition-colors group/item",
+                    isActive
+                      ? "bg-accent text-foreground"
+                      : isOpenTab
+                        ? "bg-accent/30 text-foreground/80"
+                        : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                  )}
+                  onClick={() => selectNote(note.id)}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setFolderCtx(null);
+                    setNoteCtx({
+                      noteId: note.id,
+                      noteLabel: note.label,
+                      folder: note.folder_name || "Draft",
+                      x: e.clientX,
+                      y: e.clientY,
+                    });
+                  }}
+                >
+                  <FileText className="w-3.5 h-3.5 shrink-0 opacity-50" />
+                  <span className="flex-1 text-xs truncate leading-tight">
+                    {note.label}
+                  </span>
+                  <span className="text-[0.5625rem] opacity-30 shrink-0 truncate max-w-[50px]">
+                    {note.folder_name || "Draft"}
+                  </span>
+                  <span className="text-[0.625rem] opacity-40 tabular-nums shrink-0">
+                    {formatTime(note.updated_at)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         ) : (
-          folders.map((folder) => {
-            const folderNotes = notesByFolder.get(folder) ?? [];
-            const isExpanded = expandedFolders.has(folder);
-            const { icon: FolderIcon, color: iconColor } = getFolderIconAndColor(folder);
-            const count = folderNotes.length;
+          /* ── Grouped mode: collapsible sections ──────────────────── */
+          groupKeys.map((groupKey) => {
+            const groupNotes = groupedNotes.get(groupKey) ?? [];
+            const isExpanded = expandedFolders.has(groupKey);
+            const label = getGroupLabel(groupKey);
+            const count = groupNotes.length;
+
+            // For folder mode, use folder icons with colors
+            const isFolderMode = groupBy === "folder";
+            const { icon: FolderIcon, color: iconColor } = isFolderMode
+              ? getFolderIconAndColor(groupKey)
+              : { icon: GROUP_MODES.find((m) => m.mode === groupBy)?.icon ?? Folder, color: undefined };
 
             if (searchQuery && count === 0) return null;
 
             return (
-              <div key={folder}>
+              <div key={groupKey}>
                 <button
                   className="group flex items-center gap-1 w-full px-2 py-1 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer transition-colors hover:text-foreground hover:bg-accent/50 [&_svg]:w-3 [&_svg]:h-3"
-                  onClick={() => toggleFolder(folder)}
-                  onContextMenu={(e) => {
+                  onClick={() => toggleFolder(groupKey)}
+                  onContextMenu={isFolderMode ? (e) => {
                     e.preventDefault();
                     setNoteCtx(null);
-                    setFolderCtx({ folder, x: e.clientX, y: e.clientY });
-                  }}
+                    setFolderCtx({ folder: groupKey, x: e.clientX, y: e.clientY });
+                  } : undefined}
                 >
                   {isExpanded ? (
                     <ChevronDown className="opacity-60" />
@@ -403,27 +595,29 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
                   ) : (
                     <FolderIcon className={cn("opacity-70", iconColor)} />
                   )}
-                  <span className="flex-1 text-left truncate">{folder}</span>
+                  <span className="flex-1 text-left truncate">{label}</span>
                   <span className="text-[0.625rem] font-normal opacity-50 tabular-nums">
                     {count}
                   </span>
-                  <Plus
-                    className="w-3 h-3 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleNewNote(folder);
-                    }}
-                  />
+                  {isFolderMode && (
+                    <Plus
+                      className="w-3 h-3 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleNewNote(groupKey);
+                      }}
+                    />
+                  )}
                 </button>
 
                 {isExpanded && (
                   <div className="ml-2">
-                    {folderNotes.length === 0 ? (
+                    {groupNotes.length === 0 ? (
                       <div className="px-5 py-2 text-[0.625rem] text-muted-foreground/50 italic">
                         Empty
                       </div>
                     ) : (
-                      folderNotes.map((note) => {
+                      groupNotes.map((note) => {
                         const isActive = activeTabId === note.id;
                         const isOpenTab = openTabIds?.includes(note.id) ?? false;
                         return (

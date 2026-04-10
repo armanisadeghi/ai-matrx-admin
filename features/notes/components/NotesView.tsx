@@ -6,7 +6,7 @@
 // Can be used as full page, floating window, or single-note embed.
 // ZERO PROP DRILLING — each child receives only an instanceId or noteId.
 
-import React, { useEffect, useRef, useCallback } from "react";
+import React, { useEffect, useRef, useCallback, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   FileText,
@@ -14,6 +14,7 @@ import {
   PilcrowRight,
   Columns,
   Eye,
+  History,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -21,6 +22,13 @@ import { selectUser } from "@/lib/redux/slices/userSlice";
 
 const MobileNotesView = dynamic(
   () => import("./mobile/MobileNotesView"),
+  { ssr: false },
+);
+
+const NoteVersionHistory = dynamic(
+  () => import("@/app/(ssr)/ssr/notes/_components/NoteVersionHistory").then(
+    (mod) => ({ default: mod.NoteVersionHistory }),
+  ),
   { ssr: false },
 );
 import {
@@ -69,6 +77,7 @@ export function NotesView({ config, className }: NotesViewProps) {
 
   const showSidebar = config?.showSidebar ?? true;
   const showTabs = config?.showTabs ?? true;
+  const [showHistory, setShowHistory] = useState(false);
   const singleNote = config?.singleNote ?? null;
 
   // ── Generate or use provided instance ID ──────────────────────────
@@ -192,6 +201,18 @@ export function NotesView({ config, className }: NotesViewProps) {
               <button className={modeBtnClass("preview")} onClick={() => setMode("preview")}>
                 <Eye /> Preview
               </button>
+              <div className="w-px h-4 bg-border/30 mx-0.5" />
+              <button
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5",
+                  showHistory
+                    ? "bg-[var(--shell-glass-bg-active)] text-[var(--shell-nav-text-hover)]"
+                    : "text-[var(--shell-nav-text)] hover:text-[var(--shell-nav-text-hover)]",
+                )}
+                onClick={() => setShowHistory((v) => !v)}
+              >
+                <History /> History
+              </button>
             </div>
           </PageHeader>
         )}
@@ -204,24 +225,40 @@ export function NotesView({ config, className }: NotesViewProps) {
         )}
 
         {/* Main content area */}
-        <div className="flex-1 flex flex-col min-w-0 min-h-0">
-          {/* Layer 4: Tab bar (top) */}
-          {showTabs && !singleNote && <NoteTabBar instanceId={instanceId} />}
+        <div className="flex-1 flex min-w-0 min-h-0">
+          {/* Editor column */}
+          <div className="flex-1 flex flex-col min-w-0 min-h-0">
+            {/* Layer 4: Tab bar (top) */}
+            {showTabs && !singleNote && <NoteTabBar instanceId={instanceId} />}
 
-          {/* Layer 1: Content editor (fills available space) */}
-          {activeTabId ? (
-            <NoteContentEditor noteId={activeTabId} />
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground">
-              <div className="text-center">
-                <p className="text-sm">No note selected</p>
-                <p className="text-xs mt-1">Select a note or create a new one</p>
+            {/* Layer 1: Content editor (fills available space) */}
+            {activeTabId ? (
+              <NoteContentEditor noteId={activeTabId} />
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                <div className="text-center">
+                  <p className="text-sm">No note selected</p>
+                  <p className="text-xs mt-1">Select a note or create a new one</p>
+                </div>
               </div>
+            )}
+
+            {/* Layer 2: Metadata bar (bottom — folder, tags, status) */}
+            {activeTabId && <NoteMetadataBar noteId={activeTabId} />}
+          </div>
+
+          {/* Version history side panel */}
+          {showHistory && activeTabId && (
+            <div className="w-[300px] shrink-0 max-lg:hidden">
+              <NoteVersionHistory
+                noteId={activeTabId}
+                onClose={() => setShowHistory(false)}
+                onVersionRestored={() => {
+                  dispatch(fetchNoteContent(activeTabId));
+                }}
+              />
             </div>
           )}
-
-          {/* Layer 2: Metadata bar (bottom — folder, tags, status) */}
-          {activeTabId && <NoteMetadataBar noteId={activeTabId} />}
         </div>
       </div>
     </NotesInstanceProvider>
