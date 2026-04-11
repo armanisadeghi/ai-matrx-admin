@@ -154,6 +154,10 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
   const [noteCtx, setNoteCtx] = useState<{ noteId: string; noteLabel: string; folder: string; x: number; y: number } | null>(null);
   const [moveSubmenu, setMoveSubmenu] = useState(false);
 
+  // DnD state
+  const [draggedNoteId, setDraggedNoteId] = useState<string | null>(null);
+  const [dropTargetFolder, setDropTargetFolder] = useState<string | null>(null);
+
   // Dialog state
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
   const [renameFolderTarget, setRenameFolderTarget] = useState<string | null>(null);
@@ -203,9 +207,15 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
     for (const n of allNotes) {
       if (n.folder_name) set.add(n.folder_name);
     }
-    return allFolders.concat(
+    // Add "Uncategorized" if any notes lack a folder_name
+    const hasOrphans = allNotes.some((n) => !n.folder_name);
+    const result = allFolders.concat(
       Array.from(set).filter((f) => !allFolders.includes(f)).sort(),
     );
+    if (hasOrphans && !result.includes("Uncategorized")) {
+      result.push("Uncategorized");
+    }
+    return result;
   }, [allNotes, allFolders]);
 
   // Filter notes by search
@@ -273,7 +283,7 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
           key = n.task_id || "__none__";
           break;
         default: // "folder"
-          key = n.folder_name || "Draft";
+          key = n.folder_name || "Uncategorized";
           break;
       }
       if (!map.has(key)) map.set(key, []);
@@ -336,6 +346,42 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
       return next;
     });
   }, []);
+
+  // ── DnD handlers ──────────────────────────────────────────────────
+  const handleNoteDragStart = useCallback((e: React.DragEvent, noteId: string) => {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", noteId);
+    setDraggedNoteId(noteId);
+  }, []);
+
+  const handleNoteDragEnd = useCallback(() => {
+    setDraggedNoteId(null);
+    setDropTargetFolder(null);
+  }, []);
+
+  const handleFolderDragOver = useCallback((e: React.DragEvent, folder: string) => {
+    if (!draggedNoteId) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDropTargetFolder(folder);
+  }, [draggedNoteId]);
+
+  const handleFolderDragLeave = useCallback(() => {
+    setDropTargetFolder(null);
+  }, []);
+
+  const handleFolderDrop = useCallback((e: React.DragEvent, targetFolder: string) => {
+    e.preventDefault();
+    const noteId = e.dataTransfer.getData("text/plain");
+    if (!noteId) return;
+    // Find the note's current folder to avoid no-op moves
+    const note = allNotes.find((n) => n.id === noteId);
+    if (note && note.folder_name !== targetFolder) {
+      dispatch(moveNoteToFolder({ noteId, folder: targetFolder }));
+    }
+    setDraggedNoteId(null);
+    setDropTargetFolder(null);
+  }, [dispatch, allNotes]);
 
   const toggleAllFolders = useCallback(() => {
     setExpandedFolders((prev) => {
@@ -589,7 +635,7 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
                     setNoteCtx({
                       noteId: note.id,
                       noteLabel: note.label,
-                      folder: note.folder_name || "Draft",
+                      folder: note.folder_name || "Uncategorized",
                       x: e.clientX,
                       y: e.clientY,
                     });
@@ -626,9 +672,17 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
             if (searchQuery && count === 0) return null;
 
             return (
-              <div key={groupKey}>
+              <div
+                key={groupKey}
+                onDragOver={isFolderMode ? (e) => handleFolderDragOver(e, groupKey) : undefined}
+                onDragLeave={isFolderMode ? handleFolderDragLeave : undefined}
+                onDrop={isFolderMode ? (e) => handleFolderDrop(e, groupKey) : undefined}
+              >
                 <button
-                  className="group flex items-center gap-1 w-full px-2 py-1 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer transition-colors hover:text-foreground hover:bg-accent/50 [&_svg]:w-3 [&_svg]:h-3"
+                  className={cn(
+                    "group flex items-center gap-1 w-full px-2 py-1 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer transition-colors hover:text-foreground hover:bg-accent/50 [&_svg]:w-3 [&_svg]:h-3",
+                    isFolderMode && dropTargetFolder === groupKey && "bg-primary/10 border-l-2 border-primary",
+                  )}
                   onClick={() => toggleFolder(groupKey)}
                   onContextMenu={isFolderMode ? (e) => {
                     e.preventDefault();
@@ -671,10 +725,14 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
                       groupNotes.map((note) => {
                         const isActive = activeTabId === note.id;
                         const isOpenTab = openTabIds?.includes(note.id) ?? false;
+                        const isDragging = draggedNoteId === note.id;
                         return (
                           <button
                             key={note.id}
                             data-note-id={note.id}
+                            draggable={isFolderMode}
+                            onDragStart={isFolderMode ? (e) => handleNoteDragStart(e, note.id) : undefined}
+                            onDragEnd={isFolderMode ? handleNoteDragEnd : undefined}
                             className={cn(
                               "flex items-center gap-1.5 w-full text-left px-2 py-[3px] rounded-sm cursor-pointer transition-colors group/item",
                               isActive
@@ -682,6 +740,7 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
                                 : isOpenTab
                                   ? "bg-accent/30 text-foreground/80"
                                   : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                              isDragging && "opacity-40",
                             )}
                             onClick={() => selectNote(note.id)}
                             onContextMenu={(e) => {
@@ -690,7 +749,7 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
                               setNoteCtx({
                                 noteId: note.id,
                                 noteLabel: note.label,
-                                folder: note.folder_name || "Draft",
+                                folder: note.folder_name || "Uncategorized",
                                 x: e.clientX,
                                 y: e.clientY,
                               });

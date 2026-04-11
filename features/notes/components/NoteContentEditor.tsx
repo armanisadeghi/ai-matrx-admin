@@ -32,7 +32,8 @@ import { analyzeDiff } from "../utils/diffAnalysis";
 import { supabase } from "@/utils/supabase/client";
 import { NoteEditorCore, type EditorMode } from "./NoteEditorCore";
 import { MoveNoteDialog } from "./MoveNoteDialog";
-import { ShareNoteDialog } from "./ShareNoteDialog";
+import { ShareModal } from "@/features/sharing/components/ShareModal";
+import { useIsOwner } from "@/utils/permissions";
 
 const NoteConflictWindow = dynamic(
   () => import("@/app/(ssr)/ssr/notes/_components/NoteConflictWindow").then(
@@ -64,6 +65,8 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
   const openTabs = useAppSelector(selectInstanceTabs(instanceId));
 
   const saveState = useAppSelector(selectNoteSaveState(noteId));
+
+  const { isOwner } = useIsOwner("note", noteId);
 
   // ── Dialog state ──────────────────────────────────────────────────
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
@@ -301,11 +304,13 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
         availableFolders={allFolders}
       />
 
-      <ShareNoteDialog
-        open={shareDialogOpen}
-        onOpenChange={setShareDialogOpen}
-        noteId={noteId}
-        noteLabel={noteLabel}
+      <ShareModal
+        isOpen={shareDialogOpen}
+        onClose={() => setShareDialogOpen(false)}
+        resourceType="note"
+        resourceId={noteId}
+        resourceName={noteLabel}
+        isOwner={isOwner}
       />
     </>
   );
