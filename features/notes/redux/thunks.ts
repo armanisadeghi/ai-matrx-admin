@@ -19,7 +19,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
 import type { RootState } from "@/lib/redux/store";
 import type { Note, CreateNoteInput } from "../types";
-import type { NoteRecord } from "./notes.types";
+import type { NoteRecord, NoteScopeAssignment } from "./notes.types";
 import {
   upsertNoteFromServer,
   removeNote,
@@ -71,7 +71,7 @@ export const fetchNotesList = createAsyncThunk<void, void>(
 
     const { data, error } = await supabase
       .from("notes")
-      .select("id, label, folder_name, tags, updated_at, position")
+      .select("id, label, folder_name, folder_id, tags, updated_at, position, organization_id, project_id, task_id, is_public, version")
       .eq("user_id", userId)
       .eq("is_deleted", false)
       .order("updated_at", { ascending: false });
@@ -229,7 +229,44 @@ export const saveNote = createAsyncThunk<void, string>(
 // ---------------------------------------------------------------------------
 
 /**
+ * Resolve a folder_name to a folder_id by looking up (or creating) a note_folders record.
+ * Returns the folder_id UUID, or null if resolution fails.
+ */
+async function resolveFolderId(
+  userId: string,
+  folderName: string,
+): Promise<string | null> {
+  // Try to find existing folder for this user
+  const { data: existing } = await supabase
+    .from("note_folders")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("name", folderName)
+    .eq("is_deleted", false)
+    .limit(1)
+    .single();
+
+  if (existing?.id) return existing.id;
+
+  // Create the folder record
+  const { data: created, error } = await supabase
+    .from("note_folders")
+    .insert({
+      user_id: userId,
+      name: folderName,
+      path: folderName,
+      position: 0,
+    })
+    .select("id")
+    .single();
+
+  if (error || !created) return null;
+  return created.id;
+}
+
+/**
  * Create a new note in the database.
+ * Resolves folder_name to folder_id via note_folders table.
  * Dispatches upsertNoteFromServer with "full", addTab, setActiveNote.
  */
 export const createNewNote = createAsyncThunk<
@@ -239,6 +276,10 @@ export const createNewNote = createAsyncThunk<
   "notes/createNewNote",
   async (input = {}, { dispatch, getState }) => {
     const userId = getUserId(getState);
+    const folderName = input.folder_name ?? "Draft";
+
+    // Resolve folder_id from note_folders table
+    const folderId = input.folder_id ?? await resolveFolderId(userId, folderName);
 
     const { data, error } = await supabase
       .from("notes")
@@ -246,10 +287,14 @@ export const createNewNote = createAsyncThunk<
         user_id: userId,
         label: input.label ?? "New Note",
         content: input.content ?? "",
-        folder_name: input.folder_name ?? "Draft",
+        folder_name: folderName,
+        folder_id: folderId,
         tags: input.tags ?? [],
         metadata: {},
         position: 0,
+        ...(input.organization_id && { organization_id: input.organization_id }),
+        ...(input.project_id && { project_id: input.project_id }),
+        ...(input.task_id && { task_id: input.task_id }),
       })
       .select()
       .single();
@@ -404,7 +449,12 @@ export const moveNoteToFolder = createAsyncThunk<
   { noteId: string; folder: string }
 >(
   "notes/moveNoteToFolder",
-  async ({ noteId, folder }, { dispatch }) => {
+  async ({ noteId, folder }, { dispatch, getState }) => {
+    const userId = getUserId(getState);
+
+    // Resolve folder_id for the target folder
+    const folderId = await resolveFolderId(userId, folder);
+
     dispatch(
       setNoteField({
         id: noteId,
@@ -412,6 +462,16 @@ export const moveNoteToFolder = createAsyncThunk<
         value: folder,
       }),
     );
+
+    if (folderId) {
+      dispatch(
+        setNoteField({
+          id: noteId,
+          field: "folder_id",
+          value: folderId,
+        }),
+      );
+    }
 
     await dispatch(saveNote(noteId)).unwrap();
   },
@@ -440,5 +500,37 @@ export const saveNoteField = createAsyncThunk<
     );
 
     await dispatch(saveNote(noteId)).unwrap();
+  },
+);
+
+// ---------------------------------------------------------------------------
+// 10. fetchAllNoteScopes
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch all scope assignments for entity_type = 'note'.
+ * Returns denormalized rows with scope name + type for sidebar grouping.
+ */
+export const fetchAllNoteScopes = createAsyncThunk<NoteScopeAssignment[], void>(
+  "notes/fetchAllNoteScopes",
+  async () => {
+    const { data, error } = await supabase
+      .from("ctx_scope_assignments")
+      .select(`
+        entity_id,
+        scope_id,
+        scope:ctx_scopes!inner(name, scope_type:ctx_scope_types!inner(label_singular))
+      `)
+      .eq("entity_type", "note");
+
+    if (error) throw error;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (data ?? []).map((row: any) => ({
+      entity_id: row.entity_id as string,
+      scope_id: row.scope_id as string,
+      scope_name: row.scope?.name ?? "",
+      scope_type: row.scope?.scope_type?.label_singular ?? "",
+    }));
   },
 );

@@ -350,13 +350,62 @@ export async function fetchTags(): Promise<string[]> {
 }
 
 /**
- * Rename a folder by updating all notes in that folder (current user only)
+ * Create a folder record in note_folders.
+ * Returns the new folder ID.
+ */
+export async function createFolder(name: string): Promise<string> {
+  const userId = requireUserId();
+
+  // Check if folder already exists
+  const { data: existing } = await supabase
+    .from("note_folders")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("name", name)
+    .eq("is_deleted", false)
+    .limit(1)
+    .single();
+
+  if (existing?.id) return existing.id;
+
+  const { data, error } = await supabase
+    .from("note_folders")
+    .insert({
+      user_id: userId,
+      name,
+      path: name,
+      position: 0,
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    console.error("Error creating folder:", error);
+    throw error;
+  }
+
+  return data!.id;
+}
+
+/**
+ * Rename a folder by updating both the note_folders record
+ * AND the denormalized folder_name on all notes in that folder.
  */
 export async function renameFolder(
   oldName: string,
   newName: string,
 ): Promise<void> {
   const userId = requireUserId();
+
+  // Update the note_folders record
+  await supabase
+    .from("note_folders")
+    .update({ name: newName, path: newName })
+    .eq("user_id", userId)
+    .eq("name", oldName)
+    .eq("is_deleted", false);
+
+  // Update the denormalized folder_name on all notes
   const { error } = await supabase
     .from("notes")
     .update({ folder_name: newName })
@@ -371,7 +420,8 @@ export async function renameFolder(
 }
 
 /**
- * Bulk soft-delete all notes in a folder (current user only)
+ * Bulk soft-delete all notes in a folder (current user only).
+ * Also soft-deletes the note_folders record.
  */
 export async function deleteFolderNotes(folderName: string): Promise<number> {
   const userId = requireUserId();
@@ -385,6 +435,7 @@ export async function deleteFolderNotes(folderName: string): Promise<number> {
 
   const count = notesToDelete?.length || 0;
 
+  // Soft-delete the notes
   const { error } = await supabase
     .from("notes")
     .update({ is_deleted: true })
@@ -397,15 +448,21 @@ export async function deleteFolderNotes(folderName: string): Promise<number> {
     throw error;
   }
 
+  // Soft-delete the folder record
+  await supabase
+    .from("note_folders")
+    .update({ is_deleted: true })
+    .eq("user_id", userId)
+    .eq("name", folderName)
+    .eq("is_deleted", false);
+
   return count;
 }
 
 /**
- * Folders are not a separate table: a folder "exists" when at least one note has that `folder_name`.
+ * Ensure a folder exists in the note_folders table.
+ * Creates the record if it doesn't exist.
  * Call this before UIs (e.g. Quick Save) that need the folder to appear in pickers.
- *
- * Uses a direct insert — not `createNote` — so empty-note deduplication / draft reuse logic does not run.
- * The placeholder label is the folder name (never "New Note") so `findEmptyNewNote` ignores it.
  */
 export async function ensureFolderMaterialized(
   folderName: string,
@@ -413,33 +470,6 @@ export async function ensureFolderMaterialized(
   const trimmed = folderName.trim();
   if (!trimmed) return;
 
-  const userId = requireUserId();
-
-  const { count, error: countError } = await supabase
-    .from("notes")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("folder_name", trimmed)
-    .eq("is_deleted", false);
-
-  if (countError) {
-    console.error("ensureFolderMaterialized: count error", countError);
-    throw countError;
-  }
-  if ((count ?? 0) > 0) return;
-
-  const { error: insertError } = await supabase.from("notes").insert({
-    user_id: userId,
-    label: trimmed,
-    content: "",
-    folder_name: trimmed,
-    tags: [],
-    metadata: { matrx_folder_placeholder: true },
-    position: 0,
-  });
-
-  if (insertError) {
-    console.error("ensureFolderMaterialized: insert error", insertError);
-    throw insertError;
-  }
+  // createFolder already handles "exists? return id : insert" logic
+  await createFolder(trimmed);
 }

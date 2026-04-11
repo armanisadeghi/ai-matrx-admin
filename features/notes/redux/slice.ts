@@ -11,6 +11,7 @@ import {
   type NoteFetchStatus,
   type NoteFieldSnapshot,
   type NotesSliceState,
+  type NoteScopeAssignment,
   NOTE_UNDO_MAX_ENTRIES,
   NOTE_UNDO_MAX_BYTES,
   NOTE_UNDO_COALESCE_MS,
@@ -174,6 +175,8 @@ const initialState: NotesSliceState & {
   _pendingDispatchIds: new Set(),
   otherUsersActive: false,
   activeNoteEditedByOthers: false,
+  noteScopeAssignments: [],
+  noteScopesLoaded: false,
   // DEPRECATED
   activeNoteId: null,
   openTabs: [],
@@ -583,6 +586,16 @@ const notesSlice = createSlice({
     resetNotesState() {
       return initialState;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(
+      // Imported at bottom to avoid circular dependency
+      "notes/fetchAllNoteScopes/fulfilled" as any,
+      (state: typeof initialState, action: { payload: NoteScopeAssignment[] }) => {
+        state.noteScopeAssignments = action.payload;
+        state.noteScopesLoaded = true;
+      },
+    );
   },
 });
 
