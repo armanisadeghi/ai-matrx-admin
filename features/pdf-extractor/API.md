@@ -14,7 +14,7 @@ All endpoints below require the user to be authenticated. Pass the Supabase JWT 
 
 ### 1. Single File Extraction (existing)
 
-**`POST /pdf/extract-text`**
+**`POST /utilities/pdf/extract-text`**
 
 Accepts a single PDF or image file via multipart form. Returns extracted text immediately (not streamed).
 
@@ -37,7 +37,7 @@ This endpoint does **not** save anything to the database or storage. It is a sta
 
 ### 2. Batch Extraction (new)
 
-**`POST /pdf/batch-extract`**
+**`POST /utilities/pdf/batch-extract`**
 
 Upload multiple files at once. Results stream back one-by-one as each file finishes — you do not wait for the entire batch. Each completed file is saved to the database and its raw file is uploaded to Supabase Storage in the background.
 
@@ -90,8 +90,8 @@ On failure for a specific file:
 **What to do with `doc_id`**
 
 Save each `doc_id` as you receive it. You can immediately use it to:
-- Fetch the full document: `GET /pdf/documents/{doc_id}`
-- Trigger AI cleaning: `POST /pdf/clean-content/{doc_id}`
+- Fetch the full document: `GET /utilities/pdf/documents/{doc_id}`
+- Trigger AI cleaning: `POST /utilities/pdf/clean-content/{doc_id}`
 
 The `source` field (Supabase Storage URL) on the document may be `null` for a few seconds after extraction while the file uploads in the background. A follow-up `GET` a moment later will have it populated.
 
@@ -99,7 +99,7 @@ The `source` field (Supabase Storage URL) on the document may be `null` for a fe
 
 ### 3. List Documents (new)
 
-**`GET /pdf/documents`**
+**`GET /utilities/pdf/documents`**
 
 Returns a paginated list of all extracted documents belonging to the authenticated user, ordered newest first.
 
@@ -133,7 +133,7 @@ Returns a paginated list of all extracted documents belonging to the authenticat
 
 ### 4. Get Single Document (new)
 
-**`GET /pdf/documents/{doc_id}`**
+**`GET /utilities/pdf/documents/{doc_id}`**
 
 Fetch a single document by its ID. Returns `404` if it does not exist or belongs to a different user.
 
@@ -156,7 +156,7 @@ Fetch a single document by its ID. Returns `404` if it does not exist or belongs
 
 ### 5. AI Content Cleaning (new)
 
-**`POST /pdf/clean-content/{doc_id}`**
+**`POST /utilities/pdf/clean-content/{doc_id}`**
 
 Takes a previously extracted document, sends its raw `content` through an AI agent that cleans up formatting artifacts, OCR noise, and irregular whitespace, then writes the result back to `clean_content` on the document record.
 
@@ -182,7 +182,7 @@ Streaming NDJSON. Final data event:
 {"event": "end", "data": {}}
 ```
 
-After this completes, `GET /pdf/documents/{doc_id}` will return the document with `clean_content` populated.
+After this completes, `GET /utilities/pdf/documents/{doc_id}` will return the document with `clean_content` populated.
 
 ---
 
@@ -191,26 +191,26 @@ After this completes, `GET /pdf/documents/{doc_id}` will return the document wit
 ### Upload and read later
 
 ```
-POST /pdf/batch-extract  (with 1+ files)
+POST /utilities/pdf/batch-extract  (with 1+ files)
   → stream back doc_ids as each file finishes
-GET /pdf/documents/{doc_id}  (fetch any time after)
+GET /utilities/pdf/documents/{doc_id}  (fetch any time after)
 ```
 
 ### Upload, clean, and display
 
 ```
-POST /pdf/batch-extract
+POST /utilities/pdf/batch-extract
   → collect doc_ids from the stream
-POST /pdf/clean-content/{doc_id}
+POST /utilities/pdf/clean-content/{doc_id}
   → stream receives cleaned text
-GET /pdf/documents/{doc_id}
+GET /utilities/pdf/documents/{doc_id}
   → both content and clean_content are now populated
 ```
 
 ### List all documents for a user
 
 ```
-GET /pdf/documents?limit=50&offset=0
+GET /utilities/pdf/documents?limit=50&offset=0
 ```
 
 ---
@@ -235,7 +235,7 @@ GET /pdf/documents?limit=50&offset=0
 The batch and clean endpoints use NDJSON streaming. Each line is a complete JSON object terminated by `\n`. The standard way to consume this in the frontend is:
 
 ```ts
-const response = await fetch('/pdf/batch-extract', {
+const response = await fetch('/utilities/pdf/batch-extract', {
   method: 'POST',
   headers: { Authorization: `Bearer ${token}` },
   body: formData,

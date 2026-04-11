@@ -147,15 +147,16 @@ export const ENDPOINTS = {
   /** PDF extraction & document management — Authenticated */
   pdf: {
     /** POST — Single-file text extraction (stateless, legacy) */
-    extractText: "/pdf/extract-text" as const,
+    extractText: "/utilities/pdf/extract-text" as const,
     /** POST — Batch extraction with NDJSON streaming (saves to DB + storage) */
-    batchExtract: "/pdf/batch-extract" as const,
+    batchExtract: "/utilities/pdf/batch-extract" as const,
     /** GET — List user documents (?limit=&offset=) */
-    documents: "/pdf/documents" as const,
+    documents: "/utilities/pdf/documents" as const,
     /** GET — Single document by ID */
-    document: (docId: string) => `/pdf/documents/${docId}` as const,
+    document: (docId: string) => `/utilities/pdf/documents/${docId}` as const,
     /** POST — AI content cleaning (NDJSON streaming) */
-    cleanContent: (docId: string) => `/pdf/clean-content/${docId}` as const,
+    cleanContent: (docId: string) =>
+      `/utilities/pdf/clean-content/${docId}` as const,
   },
 
   /** Test/admin endpoints — Admin only */
