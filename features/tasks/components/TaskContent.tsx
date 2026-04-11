@@ -174,7 +174,7 @@ export default function TaskContent(): JSX.Element {
                   {shouldShowProjectSelector && projects.length > 0 ? (
                     <div className="flex-1">
                       <HierarchyCascade
-                        levels={["organization", "project"]}
+                        levels={["organization", "scope", "project"]}
                         value={{
                           ...EMPTY_SELECTION,
                           projectId: selectedProjectForTask,

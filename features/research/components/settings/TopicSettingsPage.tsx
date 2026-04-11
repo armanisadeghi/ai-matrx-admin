@@ -128,7 +128,7 @@ export default function TopicSettingsPage() {
         <div className="space-y-2">
           <Label>Move to Project</Label>
           <HierarchyCascade
-            levels={["organization", "project"]}
+            levels={["organization", "scope", "project"]}
             value={{
               ...EMPTY_SELECTION,
               projectId: selectedProjectId,

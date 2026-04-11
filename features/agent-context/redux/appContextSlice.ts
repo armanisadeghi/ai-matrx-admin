@@ -23,7 +23,14 @@ export interface AppContextState {
   organization_id: string | null;
   organization_name: string | null;
 
-  /** Currently active project (lives under an org) */
+  /**
+   * Scope selections — keyed by scope type id, value is selected scope id.
+   * Scopes sit between organization and project in the hierarchy.
+   * NEVER skip scopes when both org and project are present.
+   */
+  scope_selections: Record<string, string | null>;
+
+  /** Currently active project (lives under an org, scoped by scope_selections) */
   project_id: string | null;
   project_name: string | null;
 
@@ -38,6 +45,7 @@ export interface AppContextState {
 const initialState: AppContextState = {
   organization_id: null,
   organization_name: null,
+  scope_selections: {},
   project_id: null,
   project_name: null,
   task_id: null,
@@ -55,11 +63,22 @@ const appContextSlice = createSlice({
     ) => {
       state.organization_id = action.payload.id;
       state.organization_name = action.payload.name ?? null;
+      state.scope_selections = {};
       state.project_id = null;
       state.project_name = null;
       state.task_id = null;
       state.task_name = null;
       state.conversation_id = null;
+    },
+    setScopeSelections: (
+      state,
+      action: PayloadAction<Record<string, string | null>>,
+    ) => {
+      state.scope_selections = action.payload;
+      state.project_id = null;
+      state.project_name = null;
+      state.task_id = null;
+      state.task_name = null;
     },
     setProject: (
       state,
@@ -95,6 +114,8 @@ const appContextSlice = createSlice({
         state.organization_id = action.payload.organization_id;
       if (action.payload.organization_name !== undefined)
         state.organization_name = action.payload.organization_name;
+      if (action.payload.scope_selections !== undefined)
+        state.scope_selections = action.payload.scope_selections;
       if (action.payload.project_id !== undefined)
         state.project_id = action.payload.project_id;
       if (action.payload.project_name !== undefined)
@@ -112,6 +133,7 @@ const appContextSlice = createSlice({
 
 export const {
   setOrganization,
+  setScopeSelections,
   setProject,
   setTask,
   setConversation,
@@ -128,6 +150,10 @@ type StateWithAppContext = { appContext: AppContextState };
 export const selectOrganizationId = (
   state: StateWithAppContext,
 ): string | null => state.appContext.organization_id;
+
+export const selectScopeSelectionsContext = (
+  state: StateWithAppContext,
+): Record<string, string | null> => state.appContext.scope_selections;
 
 export const selectProjectId = (state: StateWithAppContext): string | null =>
   state.appContext.project_id;

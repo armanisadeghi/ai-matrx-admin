@@ -165,7 +165,7 @@ export default function ResearchInitForm() {
 
             <div className="space-y-4">
               <HierarchyCascade
-                levels={["organization", "project"]}
+                levels={["organization", "scope", "project"]}
                 value={{
                   ...EMPTY_SELECTION,
                   projectId: selectedProjectId,

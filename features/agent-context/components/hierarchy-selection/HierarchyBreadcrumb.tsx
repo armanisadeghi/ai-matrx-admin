@@ -19,7 +19,10 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
-import { useHierarchySelection } from "./useHierarchySelection";
+import {
+  useHierarchySelection,
+  FULL_HIERARCHY_LEVELS,
+} from "./useHierarchySelection";
 import type { HierarchySelectionProps, HierarchyLevel } from "./types";
 import { EMPTY_SELECTION } from "./types";
 
@@ -70,7 +73,7 @@ interface HierarchyBreadcrumbProps extends HierarchySelectionProps {
 }
 
 export function HierarchyBreadcrumb({
-  levels = ["organization", "project", "task"],
+  levels = FULL_HIERARCHY_LEVELS,
   value,
   onChange,
   className,
@@ -195,8 +198,7 @@ export function HierarchyBreadcrumb({
               IconComp = resolveIcon(crumb.iconName);
               iconStyle = crumb.color ? { color: crumb.color } : undefined;
             } else {
-              IconComp =
-                LEVEL_ICONS[crumb.level] ?? Folder;
+              IconComp = LEVEL_ICONS[crumb.level] ?? Folder;
               accentClass = crumb.accent;
             }
 

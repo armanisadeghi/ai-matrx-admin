@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ChevronDown, RotateCcw, Search, X } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  RotateCcw,
+  Search,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -41,6 +48,8 @@ interface DesktopFilterPanelProps {
   resetFilters: () => void;
   activeFilterCount: number;
   hasShared: boolean;
+  /** Render trigger as a compact icon button instead of a labelled button. */
+  iconOnly?: boolean;
 }
 
 const SORT_OPTIONS: {
@@ -251,30 +260,47 @@ export function DesktopFilterPanel({
   resetFilters,
   activeFilterCount,
   hasShared,
+  iconOnly = false,
 }: DesktopFilterPanelProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 px-3 rounded-full mx-glass hover:shadow-xl relative border border-border/50"
-        >
-          <ChevronDown
-            className={cn(
-              "h-3.5 w-3.5 transition-transform",
-              open && "rotate-180",
+        {iconOnly ? (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full mx-glass hover:shadow-xl relative border border-border/50 shrink-0"
+            title="Filters"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center h-4 min-w-[16px] px-1 text-[10px] font-bold bg-primary text-primary-foreground rounded-full">
+                {activeFilterCount}
+              </span>
             )}
-          />
-          Filters
-          {activeFilterCount > 0 && (
-            <span className="ml-1 inline-flex items-center justify-center h-4 min-w-[16px] px-1 text-[10px] font-bold bg-primary text-primary-foreground rounded-full">
-              {activeFilterCount}
-            </span>
-          )}
-        </Button>
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-3 rounded-full mx-glass hover:shadow-xl relative border border-border/50"
+          >
+            <ChevronDown
+              className={cn(
+                "h-3.5 w-3.5 transition-transform",
+                open && "rotate-180",
+              )}
+            />
+            Filters
+            {activeFilterCount > 0 && (
+              <span className="ml-1 inline-flex items-center justify-center h-4 min-w-[16px] px-1 text-[10px] font-bold bg-primary text-primary-foreground rounded-full">
+                {activeFilterCount}
+              </span>
+            )}
+          </Button>
+        )}
       </PopoverTrigger>
       <PopoverContent
         align="end"

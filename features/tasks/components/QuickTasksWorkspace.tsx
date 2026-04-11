@@ -125,7 +125,7 @@ export function QuickTasksSidebar() {
     <div className="flex flex-col min-h-0 h-full bg-card">
       <div className="px-2 py-2 border-b shrink-0 bg-muted/10">
         <HierarchyCascade
-          levels={["organization", "project", "task"]}
+          levels={["organization", "scope", "project", "task"]}
           value={{
             ...EMPTY_SELECTION,
             organizationId: selectedOrgId,

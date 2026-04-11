@@ -10,7 +10,7 @@ export default function ContextSwitcher() {
 
   return (
     <HierarchyCommand
-      levels={["organization", "project", "task"]}
+      levels={["organization", "scope", "project", "task"]}
       value={value}
       onChange={onChange}
       triggerClassName="h-7 text-[11px] w-full border-dashed"

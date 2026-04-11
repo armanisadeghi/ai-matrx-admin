@@ -341,7 +341,7 @@ export default function ImportTasksModal({
 
                 {projectSelection === "existing" && (
                   <HierarchyCascade
-                    levels={["organization", "project"]}
+                    levels={["organization", "scope", "project"]}
                     value={{
                       ...EMPTY_SELECTION,
                       projectId: selectedProjectId,

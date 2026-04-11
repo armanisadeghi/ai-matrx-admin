@@ -107,7 +107,7 @@ export function ContextScopeModal({
           </p>
 
           <HierarchyCascade
-            levels={["organization", "project", "task"]}
+            levels={["organization", "scope", "project", "task"]}
             value={draft}
             onChange={setDraft}
             layout="vertical"

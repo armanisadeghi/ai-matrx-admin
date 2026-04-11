@@ -9,6 +9,7 @@
  * Hide/show everything: Ctrl/⌘+Shift+H
  */
 
+import { EyeOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface Metric {
@@ -256,12 +257,40 @@ function DevPerfOverlayInner() {
               fontSize: 10,
               color: "#fff",
               marginTop: 8,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              flexWrap: "wrap",
               textAlign: "center",
             }}
           >
-            {isMac ? "⌘" : "Ctrl"}+Shift+P to toggle &middot;{" "}
-            {isMac ? "⌘" : "Ctrl"}+Shift+H to hide &middot; Check terminal for
-            server timings
+            <button
+              type="button"
+              onClick={() => setHidden(true)}
+              title={`Hide overlay (${isMac ? "⌘" : "Ctrl"}+Shift+H)`}
+              aria-label="Hide performance overlay"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                padding: 2,
+                margin: 0,
+                border: "none",
+                background: "transparent",
+                color: "#888",
+                cursor: "pointer",
+                borderRadius: 4,
+              }}
+            >
+              <EyeOff size={14} strokeWidth={2} aria-hidden />
+            </button>
+            <span>
+              {isMac ? " ⌘ Cmd" : "Ctrl"} Shift P to toggle &middot;{" "}
+              {isMac ? "⌘ Cmd" : "Ctrl"} Shift H to hide &middot; Check terminal
+              for server timings
+            </span>
           </div>
         </div>
       )}

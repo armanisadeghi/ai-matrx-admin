@@ -745,7 +745,7 @@ export default function TaskDetailPage({ task }: TaskDetailPageProps) {
               <CheckSquare size={12} /> Project
             </label>
             <HierarchyCascade
-              levels={["organization", "project"]}
+              levels={["organization", "scope", "project"]}
               value={{
                 ...EMPTY_SELECTION,
                 projectId: projectId || null,

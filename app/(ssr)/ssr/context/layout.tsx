@@ -58,7 +58,7 @@ function ContextShellLayout({ children }: { children: React.ReactNode }) {
         </Button>
         <Suspense fallback={<Skeleton className="h-5 w-48" />}>
           <HierarchyBreadcrumb
-            levels={["organization", "project", "task"]}
+            levels={["organization", "scope", "project", "task"]}
             value={selection}
             onChange={setSelection}
           />
@@ -70,7 +70,7 @@ function ContextShellLayout({ children }: { children: React.ReactNode }) {
           <div className="w-[280px] shrink-0 border-r border-border/50 bg-card/30 overflow-hidden flex flex-col">
             <Suspense fallback={<SidebarSkeleton />}>
               <HierarchyTree
-                levels={["organization", "project", "task"]}
+                levels={["organization", "scope", "project", "task"]}
                 value={selection}
                 onChange={setSelection}
               />

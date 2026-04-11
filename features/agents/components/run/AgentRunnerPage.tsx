@@ -48,11 +48,11 @@ import {
   DrawerDescription,
 } from "@/components/ui/drawer";
 
-interface AgentRunPageProps {
+interface AgentRunnerPageProps {
   agentId: string;
 }
 
-export function AgentRunPage({ agentId }: AgentRunPageProps) {
+export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const searchParams = useSearchParams();
@@ -71,9 +71,6 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
 
   const currentRunId = searchParams.get("runId") ?? undefined;
   const conversationIdFromUrl = searchParams.get("conversationId") ?? undefined;
-
-  console.log("[AgentRunPage] conversationIdFromUrl", conversationIdFromUrl);
-  console.log("[AgentRunPage] currentRunId", currentRunId);
 
   useEffect(() => {
     let cancelled = false;
@@ -148,7 +145,7 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
   }
 
   return (
-    <div className="relative flex flex-col h-full overflow-hidden">
+    <div className="relative flex flex-col h-full overflow-hidden pt-12 border border-red-500">
       {/* ── Mobile toolbar ──────────────────────────────────────────────────── */}
       {isMobile && (
         <div className="shrink-0 flex items-center gap-1 px-2 py-1 border-b border-border bg-background">
@@ -230,7 +227,9 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
           <Drawer open={historyDrawerOpen} onOpenChange={setHistoryDrawerOpen}>
             <DrawerContent className="max-h-[80dvh]">
               <DrawerHeader className="pb-2">
-                <DrawerTitle className="text-sm">Conversation History</DrawerTitle>
+                <DrawerTitle className="text-sm">
+                  Conversation History
+                </DrawerTitle>
                 <DrawerDescription className="text-xs">
                   Past conversations and runs for this agent
                 </DrawerDescription>
@@ -249,10 +248,15 @@ export function AgentRunPage({ agentId }: AgentRunPageProps) {
           </Drawer>
 
           {/* Test Modes drawer */}
-          <Drawer open={testModesDrawerOpen} onOpenChange={setTestModesDrawerOpen}>
+          <Drawer
+            open={testModesDrawerOpen}
+            onOpenChange={setTestModesDrawerOpen}
+          >
             <DrawerContent className="max-h-[80dvh]">
               <DrawerHeader className="pb-2">
-                <DrawerTitle className="text-sm">Test Display Modes</DrawerTitle>
+                <DrawerTitle className="text-sm">
+                  Test Display Modes
+                </DrawerTitle>
                 <DrawerDescription className="text-xs">
                   Launch the agent in different display modes
                 </DrawerDescription>

@@ -18,9 +18,8 @@ import {
   X,
   Search,
   Plus,
-  Bot,
+  Webhook,
 } from "lucide-react";
-import { DesktopSearchBar } from "@/features/prompts/components/layouts/DesktopSearchBar";
 import { DesktopFilterPanel } from "@/features/prompts/components/layouts/DesktopFilterPanel";
 import {
   AlertDialog,
@@ -66,7 +65,7 @@ const CONSUMER_ID = "agents-main";
 
 function AgentsSkeleton({ count = 4 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-3">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
@@ -263,7 +262,7 @@ export function AgentsGrid() {
 
   // Render helpers
   const renderCards = (agents: AgentDefinitionRecord[]) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-3">
       {agents.map((a) => (
         <AgentCard
           key={a.id}
@@ -281,7 +280,7 @@ export function AgentsGrid() {
   );
 
   const renderList = (agents: AgentDefinitionRecord[]) => (
-    <div className="mt-6 grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+    <div className="mt-4 grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
       {agents.map((a) => (
         <AgentListItem
           key={a.id}
@@ -311,64 +310,19 @@ export function AgentsGrid() {
 
   return (
     <>
-      {/* Desktop controls */}
+      {/* Desktop controls — single row: Filter | Search | tabs | result count | New */}
       {!isMobile && (
-        <div className="mb-4 pt-6">
+        <div className="mb-3 pt-4">
           <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <DesktopSearchBar
-                searchValue={searchTerm}
-                onSearchChange={setSearchTerm}
-                onNewClick={() => setIsNewModalOpen(true)}
-              />
-            </div>
-          </div>
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center gap-2">
-              {hasShared && (
-                <>
-                  {(["mine", "shared", "all"] as const).map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => setActiveTab(t)}
-                      className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95",
-                        activeTab === t
-                          ? "bg-primary text-primary-foreground"
-                          : "border border-border text-muted-foreground hover:text-foreground hover:bg-muted",
-                      )}
-                    >
-                      {t === "mine"
-                        ? "Mine"
-                        : t === "shared"
-                          ? "Shared"
-                          : "All"}
-                      <span className="text-[10px] opacity-70">
-                        {t === "mine"
-                          ? ownedAgents.length
-                          : t === "shared"
-                            ? sharedAgents.length
-                            : filteredAgents.length}
-                      </span>
-                    </button>
-                  ))}
-                </>
-              )}
-              {searchTerm && (
-                <span className="text-xs text-muted-foreground ml-2">
-                  {filteredAgents.length} result
-                  {filteredAgents.length !== 1 ? "s" : ""}
-                </span>
-              )}
-            </div>
+            {/* Filter icon (left) */}
             <DesktopFilterPanel
+              iconOnly
               sortBy={sortBy}
               setSortBy={setSortBy}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               includedCats={includedCats}
               setIncludedCats={(cats) => {
-                // build diff and toggle
                 const toAdd = cats.filter((c) => !includedCats.includes(c));
                 const toRemove = includedCats.filter((c) => !cats.includes(c));
                 toAdd.forEach(toggleCategory);
@@ -393,6 +347,72 @@ export function AgentsGrid() {
               activeFilterCount={activeFilterCount}
               hasShared={hasShared}
             />
+
+            {/* Search */}
+            <div className="flex-1 relative">
+              <div className="flex items-center gap-3 p-1 rounded-full mx-glass hover:shadow-xl transition-shadow">
+                <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search agents..."
+                  className="flex-1 bg-transparent border-0 outline-none text-base text-foreground placeholder:text-muted-foreground"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="p-1.5 hover:bg-muted/50 rounded-lg transition-colors flex-shrink-0"
+                  >
+                    <X className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Ownership tabs (only when shared agents exist) */}
+            {hasShared && (
+              <div className="flex items-center gap-1 shrink-0">
+                {(["mine", "shared", "all"] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setActiveTab(t)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95",
+                      activeTab === t
+                        ? "bg-primary text-primary-foreground"
+                        : "border border-border text-muted-foreground hover:text-foreground hover:bg-muted",
+                    )}
+                  >
+                    {t === "mine" ? "Mine" : t === "shared" ? "Shared" : "All"}
+                    <span className="text-[10px] opacity-70">
+                      {t === "mine"
+                        ? ownedAgents.length
+                        : t === "shared"
+                          ? sharedAgents.length
+                          : filteredAgents.length}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {searchTerm && (
+              <span className="text-xs text-muted-foreground shrink-0">
+                {filteredAgents.length} result
+                {filteredAgents.length !== 1 ? "s" : ""}
+              </span>
+            )}
+
+            {/* New agent icon (right) */}
+            <Button
+              size="icon"
+              onClick={() => setIsNewModalOpen(true)}
+              className="h-8 w-8 rounded-full mx-glass hover:shadow-xl bg-primary hover:bg-primary/90 shrink-0"
+              title="Create new agent"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       )}
@@ -425,14 +445,14 @@ export function AgentsGrid() {
       )}
 
       {/* Content */}
-      <div className={cn(isMobile && "pb-24")}>
+      <div className={cn(isMobile && "pb-24 pt-10")}>
         {isLoading ? (
           <AgentsSkeleton count={isMobile ? 4 : 8} />
         ) : filteredAgents.length === 0 && !isLoading ? (
           <div className="border border-primary/20 rounded-xl p-8 bg-gradient-to-br from-primary/5 to-secondary/5">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="p-4 bg-primary/10 rounded-full">
-                <Bot className="h-8 w-8 text-primary" />
+                <Webhook className="h-8 w-8 text-primary" />
               </div>
               <div>
                 <h3 className="text-xl font-semibold mb-2">

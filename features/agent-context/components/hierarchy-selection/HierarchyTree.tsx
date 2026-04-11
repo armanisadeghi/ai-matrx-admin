@@ -16,7 +16,10 @@ import * as icons from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/utils/cn";
-import { useHierarchySelection } from "./useHierarchySelection";
+import {
+  useHierarchySelection,
+  FULL_HIERARCHY_LEVELS,
+} from "./useHierarchySelection";
 import type { HierarchySelectionProps, HierarchyOption } from "./types";
 
 type LucideIcon = React.ComponentType<{
@@ -60,7 +63,7 @@ interface TreeNode {
 }
 
 export function HierarchyTree({
-  levels = ["organization", "scope", "project", "task"],
+  levels = FULL_HIERARCHY_LEVELS,
   value,
   onChange,
   disabled,

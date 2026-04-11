@@ -31,7 +31,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/utils/cn";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { useHierarchySelection } from "./useHierarchySelection";
+import {
+  useHierarchySelection,
+  FULL_HIERARCHY_LEVELS,
+} from "./useHierarchySelection";
 import { useCreateProject, useCreateTask } from "../../hooks/useHierarchy";
 import { createScope } from "../../redux/scope";
 import type { HierarchySelectionProps, HierarchyOption } from "./types";
@@ -61,7 +64,7 @@ interface HierarchyCascadeProps extends HierarchySelectionProps {
 }
 
 export function HierarchyCascade({
-  levels = ["organization", "project"],
+  levels = FULL_HIERARCHY_LEVELS,
   value,
   onChange,
   disabled,

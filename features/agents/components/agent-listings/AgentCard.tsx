@@ -15,7 +15,7 @@ import {
   Settings,
   Globe,
   AppWindow,
-  Bot,
+  Webhook,
   FileText,
   Archive,
 } from "lucide-react";
@@ -215,7 +215,7 @@ export function AgentCard({
             "group-hover:bg-primary/90 group-hover:shadow-md group-hover:scale-105"
           }`}
         >
-          <Bot
+          <Webhook
             className={`w-4 h-4 text-primary-foreground transition-transform duration-200 ${
               !isDisabled && "group-hover:scale-110"
             }`}

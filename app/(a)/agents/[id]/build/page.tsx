@@ -1,4 +1,4 @@
-import { AgentBuilder } from "@/features/agents/components/builder/AgentBuilder";
+import { AgentBuilderPage } from "@/features/agents/components/builder/AgentBuilderPage";
 
 export const metadata = { title: "Agent Builder | AI Matrx" };
 
@@ -9,5 +9,5 @@ export default async function AgentEditPage({
 }) {
   const { id } = await params;
 
-  return <AgentBuilder agentId={id} />;
+  return <AgentBuilderPage agentId={id} />;
 }

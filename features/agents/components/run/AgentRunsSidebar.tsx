@@ -89,7 +89,10 @@ export function AgentRunsSidebar({
     router.replace(`${pathname}?${params.toString()}`);
 
     dispatch(
-      recreateManualInstance({ currentConversationId: conversationId, surfaceKey }),
+      recreateManualInstance({
+        currentConversationId: conversationId,
+        surfaceKey,
+      }),
     )
       .unwrap()
       .catch((err) => console.error("Failed to create new run:", err));
@@ -190,13 +193,9 @@ export function AgentRunsSidebar({
           size="icon"
           className="h-7 w-7 shrink-0"
           onClick={onClose}
-          title="Hide history"
         >
           <PanelLeft className="w-4 h-4" />
         </Button>
-        <span className="text-xs font-medium text-muted-foreground flex-1 truncate pl-0.5">
-          History
-        </span>
         <Button
           size="sm"
           variant="ghost"

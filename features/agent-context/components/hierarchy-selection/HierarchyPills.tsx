@@ -17,7 +17,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/utils/cn";
-import { useHierarchySelection } from "./useHierarchySelection";
+import {
+  useHierarchySelection,
+  FULL_HIERARCHY_LEVELS,
+} from "./useHierarchySelection";
 import type {
   HierarchySelectionProps,
   HierarchyLevel,
@@ -69,7 +72,7 @@ interface HierarchyPillsProps extends HierarchySelectionProps {
 }
 
 export function HierarchyPills({
-  levels = ["organization", "project"],
+  levels = FULL_HIERARCHY_LEVELS,
   value,
   onChange,
   disabled,

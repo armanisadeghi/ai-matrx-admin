@@ -147,7 +147,7 @@ export default function TopicList() {
       <div className="flex-shrink-0 px-3 sm:px-5 pt-2.5 pb-0">
         <div className="flex items-center gap-1.5 p-1 rounded-full">
           <HierarchyPills
-            levels={["organization", "project"]}
+            levels={["organization", "scope", "project"]}
             value={{
               ...EMPTY_SELECTION,
               organizationId: filter.selectedOrgId,

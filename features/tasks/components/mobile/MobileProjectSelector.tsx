@@ -28,7 +28,7 @@ export default function MobileProjectSelector({
 
       <div className="flex-1 overflow-y-auto py-4 px-1">
         <HierarchyCascade
-          levels={["organization", "project"]}
+          levels={["organization", "scope", "project"]}
           value={{
             ...EMPTY_SELECTION,
             projectId: selectedProjectId,

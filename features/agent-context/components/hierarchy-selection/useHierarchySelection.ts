@@ -21,6 +21,61 @@ import type {
 } from "./types";
 import { EMPTY_SELECTION } from "./types";
 
+/**
+ * Enforces the hierarchy rule: you cannot include levels both above AND below
+ * scopes without including scopes themselves.
+ *
+ * Valid patterns:
+ *   - ["organization"] — org only, no scopes needed
+ *   - ["organization", "scope"] — org + scopes, no project
+ *   - ["organization", "scope", "project"] — org + scopes + project
+ *   - ["organization", "scope", "project", "task"] — full hierarchy
+ *   - ["project"] — project only, no org above = no scopes needed
+ *   - ["project", "task"] — project + task only
+ *   - ["task"] — task only
+ *
+ * INVALID (throws in dev, auto-corrects in prod):
+ *   - ["organization", "project"] — skips scopes between org and project
+ *   - ["organization", "project", "task"] — skips scopes
+ *   - ["organization", "task"] — skips scopes AND project
+ */
+function enforceHierarchyLevels(requested: HierarchyLevel[]): HierarchyLevel[] {
+  const hasOrg = requested.includes("organization");
+  const hasProject = requested.includes("project");
+  const hasTask = requested.includes("task");
+  const hasScope = requested.includes("scope");
+
+  // If org is present AND anything below scope (project or task) is present,
+  // scope MUST be included. Insert it between org and project if missing.
+  if (hasOrg && (hasProject || hasTask) && !hasScope) {
+    if (process.env.NODE_ENV === "development") {
+      console.error(
+        "[HierarchySelection] Invalid levels configuration: cannot include " +
+          "organization AND project/task without scope in between.\n" +
+          `Received: [${requested.join(", ")}]\n` +
+          "Scope has been automatically inserted. Please fix the levels prop at the callsite.",
+      );
+    }
+    // Insert scope in the correct position: after org, before project
+    const corrected: HierarchyLevel[] = [];
+    for (const lvl of requested) {
+      corrected.push(lvl);
+      if (lvl === "organization") corrected.push("scope");
+    }
+    return corrected;
+  }
+
+  return requested;
+}
+
+/** The canonical full hierarchy — use as the default everywhere */
+export const FULL_HIERARCHY_LEVELS: HierarchyLevel[] = [
+  "organization",
+  "scope",
+  "project",
+  "task",
+];
+
 interface UseHierarchySelectionOptions {
   levels?: HierarchyLevel[];
   controlled?: {
@@ -34,11 +89,12 @@ export function useHierarchySelection(
   options: UseHierarchySelectionOptions = {},
 ): UseHierarchySelectionReturn {
   const {
-    levels = ["organization", "project", "task"],
+    levels: requestedLevels = FULL_HIERARCHY_LEVELS,
     controlled,
     autoSelectFirst = false,
   } = options;
 
+  const levels = enforceHierarchyLevels(requestedLevels);
   const dispatch = useAppDispatch();
   const {
     orgs: rawOrgs,

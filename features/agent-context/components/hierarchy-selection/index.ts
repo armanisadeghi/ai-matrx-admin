@@ -13,10 +13,13 @@
 export { HierarchyTree } from "./HierarchyTree";
 export { HierarchyCascade } from "./HierarchyCascade";
 export { HierarchyBreadcrumb } from "./HierarchyBreadcrumb";
-export { HierarchyCommand } from "./HierarchyCommand";
+export { HierarchyCommand, HierarchyCommandContent } from "./HierarchyCommand";
 export { HierarchyPills } from "./HierarchyPills";
 
-export { useHierarchySelection } from "./useHierarchySelection";
+export {
+  useHierarchySelection,
+  FULL_HIERARCHY_LEVELS,
+} from "./useHierarchySelection";
 export { useHierarchyReduxBridge } from "./useReduxBridge";
 
 export type {

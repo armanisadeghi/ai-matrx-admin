@@ -1,4 +1,4 @@
-import { AgentRunPage } from "@/features/agents/components/run/AgentRunPage";
+import { AgentRunnerPage } from "@/features/agents/components/run/AgentRunnerPage";
 
 export const metadata = { title: "Agent Runner | AI Matrx" };
 
@@ -9,5 +9,5 @@ export default async function AgentRunRoute({
 }) {
   const { id } = await params;
 
-  return <AgentRunPage agentId={id} />;
+  return <AgentRunnerPage agentId={id} />;
 }

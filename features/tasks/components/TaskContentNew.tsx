@@ -167,7 +167,7 @@ export default function TaskContentNew() {
     <div className="flex-1 flex flex-col overflow-hidden bg-textured">
       <div className="shrink-0 px-4 py-2 border-b border-border bg-card">
         <HierarchyCascade
-          levels={["organization", "project"]}
+          levels={["organization", "scope", "project"]}
           value={ctxValue}
           onChange={ctxOnChange}
           requireProject
@@ -320,7 +320,7 @@ export default function TaskContentNew() {
                       <div className="flex items-center gap-2">
                         {shouldShowProjectSelector && projects.length > 0 ? (
                           <HierarchyCascade
-                            levels={["organization", "project"]}
+                            levels={["organization", "scope", "project"]}
                             value={{
                               ...EMPTY_SELECTION,
                               projectId: selectedProjectForTask,
