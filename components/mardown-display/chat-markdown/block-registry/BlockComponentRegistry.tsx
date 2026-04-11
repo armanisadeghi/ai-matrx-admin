@@ -100,6 +100,9 @@ const TreeBlock = lazy(() => import("../../blocks/tree/TreeBlock"));
 const MarkdownPreviewBlock = lazy(
   () => import("../../blocks/markdown-preview/MarkdownPreviewBlock"),
 );
+const AudioOutputBlock = lazy(
+  () => import("../../blocks/audio/AudioOutputBlock"),
+);
 
 // Lazy load loading visualizations (lightweight but rarely all needed at once)
 const QuizLoadingVisualization = lazy(
@@ -350,6 +353,11 @@ export const BlockComponents = {
   MarkdownPreviewBlock: (props: any) => (
     <LazyBlockWrapper>
       <MarkdownPreviewBlock {...props} />
+    </LazyBlockWrapper>
+  ),
+  AudioOutputBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <AudioOutputBlock {...props} />
     </LazyBlockWrapper>
   ),
 };

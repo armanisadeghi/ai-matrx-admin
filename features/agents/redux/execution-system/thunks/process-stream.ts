@@ -36,6 +36,7 @@ import {
   isRecordUpdateEvent,
   type ConversationIdData,
   type ConversationLabeledData,
+  type AudioOutputData,
 } from "@/types/python-generated/stream-events";
 import {
   addPendingToolCall,
@@ -360,6 +361,28 @@ export async function processStream({
               conversationId: labeled.conversation_id,
               title: labeled.title,
               description: labeled.description ?? "",
+            }),
+          );
+        } else if (dataType === "audio_output") {
+          // Promote audio_output data events to first-class content blocks so
+          // BlockRenderer can render them inline alongside text, without any
+          // special-casing at the UI layer.
+          const audio = d as unknown as AudioOutputData;
+          dispatch(appendDataPayload({ requestId, data: d }));
+          dispatch(
+            upsertContentBlock({
+              requestId,
+              block: {
+                blockId: `audio_output_${totalEvents}`,
+                blockIndex: contentBlockEvents,
+                type: "audio_output",
+                status: "complete",
+                content: null,
+                data: {
+                  url: audio.url,
+                  mime_type: audio.mime_type,
+                },
+              },
             }),
           );
         } else {

@@ -110,6 +110,24 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
   );
 
   switch (block.type) {
+    case "audio_output": {
+      // serverData shape: { url: string; mime_type: string }
+      // Falls back to block.src (mapped from data.url by EnhancedChatMarkdown)
+      const audioUrl =
+        (block.serverData?.url as string | undefined) ?? block.src;
+      const audioMimeType =
+        (block.serverData?.mime_type as string | undefined) ??
+        (block.metadata?.mimeType as string | undefined);
+      if (!audioUrl) return null;
+      return (
+        <BlockComponents.AudioOutputBlock
+          key={index}
+          url={audioUrl}
+          mimeType={audioMimeType}
+        />
+      );
+    }
+
     case "image":
       return (
         <BlockComponents.ImageBlock
