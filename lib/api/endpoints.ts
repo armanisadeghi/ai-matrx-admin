@@ -140,8 +140,22 @@ export const ENDPOINTS = {
 
   /** Utility endpoints — Guest OK */
   utilities: {
-    /** POST — Extract text from PDF/image (multipart upload) */
+    /** @deprecated Use ENDPOINTS.pdf.extractText instead */
     pdfExtractText: "/utilities/pdf/extract-text",
+  },
+
+  /** PDF extraction & document management — Authenticated */
+  pdf: {
+    /** POST — Single-file text extraction (stateless, legacy) */
+    extractText: "/pdf/extract-text" as const,
+    /** POST — Batch extraction with NDJSON streaming (saves to DB + storage) */
+    batchExtract: "/pdf/batch-extract" as const,
+    /** GET — List user documents (?limit=&offset=) */
+    documents: "/pdf/documents" as const,
+    /** GET — Single document by ID */
+    document: (docId: string) => `/pdf/documents/${docId}` as const,
+    /** POST — AI content cleaning (NDJSON streaming) */
+    cleanContent: (docId: string) => `/pdf/clean-content/${docId}` as const,
   },
 
   /** Test/admin endpoints — Admin only */
