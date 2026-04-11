@@ -11,6 +11,13 @@ import {
 import Image from "next/image";
 import SliderDock from "@/components/matrx/SliderDock";
 
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demo/component-demo/floating-slider-demo", {
+  title: "Component Demo Floating Slider Demo",
+  description: "Interactive demo: Component Demo Floating Slider Demo. AI Matrx demo route.",
+});
+
 export default function FloatingSliderPage() {
     const links = [
         {

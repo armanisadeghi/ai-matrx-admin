@@ -2,6 +2,13 @@
 import { Suspense, lazy } from 'react';
 import { Loader2 } from 'lucide-react';
 
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demos/api-tests/agent", {
+  title: "Api Tests Agent",
+  description: "Interactive demo: Api Tests Agent. AI Matrx demo route.",
+});
+
 const AgentTestClient = lazy(() => import('./AgentTestClient'));
 
 export default function AgentTestPage() {

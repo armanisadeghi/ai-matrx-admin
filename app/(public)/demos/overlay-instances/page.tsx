@@ -1,10 +1,11 @@
 import { OverlayInstancesDemo } from "./_components/OverlayInstancesDemo";
 
-export const metadata = {
-  title: "Instanced Overlay Demo",
-  description:
-    "Demonstrates the instanced overlay system: singleton and multi-instance markdown editors running simultaneously.",
-};
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demos/overlay-instances", {
+  title: "Overlay Instances",
+  description: "Interactive demo: Overlay Instances. AI Matrx demo route.",
+});
 
 export default function OverlayInstancesDemoPage() {
   return <OverlayInstancesDemo />;

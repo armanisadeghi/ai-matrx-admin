@@ -1,6 +1,13 @@
 import { Suspense, lazy } from 'react';
 import { Loader2 } from 'lucide-react';
 
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demos/api-tests/block-processing", {
+  title: "Api Tests Block Processing",
+  description: "Interactive demo: Api Tests Block Processing. AI Matrx demo route.",
+});
+
 const BlockProcessingClient = lazy(() => import('./BlockProcessingClient'));
 
 export default function BlockProcessingPage() {

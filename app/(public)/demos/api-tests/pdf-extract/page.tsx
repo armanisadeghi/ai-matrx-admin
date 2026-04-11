@@ -2,6 +2,13 @@
 import { Suspense, lazy } from 'react';
 import { Loader2 } from 'lucide-react';
 
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demos/api-tests/pdf-extract", {
+  title: "Api Tests Pdf Extract",
+  description: "Interactive demo: Api Tests Pdf Extract. AI Matrx demo route.",
+});
+
 const PdfExtractClient = lazy(() => import('./PdfExtractClient'));
 
 export default function PdfExtractPage() {

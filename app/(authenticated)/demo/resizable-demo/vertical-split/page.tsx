@@ -1,5 +1,12 @@
 import { DynamicResizableLayout } from '@/components/matrx/resizable/DynamicResizableLayout';
 
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demo/resizable-demo/vertical-split", {
+  title: "Resizable Demo Vertical Split",
+  description: "Interactive demo: Resizable Demo Vertical Split. AI Matrx demo route.",
+});
+
 export default function EntityBrowserPage() {
     const panels = [
         {

@@ -2,6 +2,13 @@ import { join } from "path";
 import { Bot } from "lucide-react";
 import { RouteIndexPage } from "@/components/ssr/RouteIndexPage";
 
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demos/api-tests/matrx-ai", {
+  title: "Api Tests Matrx Ai",
+  description: "Interactive demo: Api Tests Matrx Ai. AI Matrx demo route.",
+});
+
 export default async function MatrxAiDemosIndexPage() {
   return (
     <RouteIndexPage

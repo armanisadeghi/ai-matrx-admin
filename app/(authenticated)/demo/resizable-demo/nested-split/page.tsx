@@ -1,5 +1,12 @@
 import { NestedResizableLayout, Section } from '@/components/matrx/resizable/NestedResizableLayout';
 
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demo/resizable-demo/nested-split", {
+  title: "Resizable Demo Nested Split",
+  description: "Interactive demo: Resizable Demo Nested Split. AI Matrx demo route.",
+});
+
 export default function EntityBrowserPage() {
     const sections: Section[] = [
         {

@@ -1,6 +1,13 @@
 import { Suspense, lazy } from 'react';
 import { Loader2 } from 'lucide-react';
 
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demos/api-tests/matrx-ai/chat-demo", {
+  title: "Api Tests Matrx Ai Chat Demo",
+  description: "Interactive demo: Api Tests Matrx Ai Chat Demo. AI Matrx demo route.",
+});
+
 const ChatDemoClient = lazy(() => import('./ChatDemoClient'));
 
 export default function ChatDemoPage() {

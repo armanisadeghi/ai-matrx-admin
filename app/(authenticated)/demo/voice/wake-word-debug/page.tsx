@@ -3,6 +3,13 @@
 import { WakeWordDebug } from "@/components/voice/wake-word/WakeWordDebug";
 
 // Debug/admin usage
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demo/voice/wake-word-debug", {
+  title: "Voice Wake Word Debug",
+  description: "Interactive demo: Voice Wake Word Debug. AI Matrx demo route.",
+});
+
 export default function AdminPage() {
     return <WakeWordDebug />;
 }

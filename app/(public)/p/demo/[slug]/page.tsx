@@ -40,7 +40,7 @@ export async function generateMetadata({
     return {
         title: `${app.name} | AI Matrx Apps (Demo)`,
         description: app.tagline || app.description || `Try ${app.name} - An AI-powered app`,
-        icons: getPromptAppIconsMetadata(app.favicon_url),
+        icons: getPromptAppIconsMetadata(app.favicon_url, 'demo'),
         openGraph: {
             title: app.name,
             description: app.tagline || app.description || `Try ${app.name}`,

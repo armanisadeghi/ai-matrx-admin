@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
 import { ModelActivityIndicatorsDemo } from "./ModelActivityIndicatorsDemo";
 
-export const metadata: Metadata = {
-  title: "Model activity indicators",
-  description:
-    "Interactive demo of agent planning, status, loaders, and reasoning visuals.",
-};
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/ssr/demos/model-activity-indicators", {
+  title: "Model Activity Indicators",
+  description: "Interactive demo: Model Activity Indicators. AI Matrx demo route.",
+});
 
 export default function ModelActivityIndicatorsPage() {
   return <ModelActivityIndicatorsDemo />;

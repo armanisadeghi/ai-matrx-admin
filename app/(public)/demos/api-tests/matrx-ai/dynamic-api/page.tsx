@@ -1,6 +1,13 @@
 import { Suspense, lazy } from 'react';
 import { Loader2 } from 'lucide-react';
 
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demos/api-tests/matrx-ai/dynamic-api", {
+  title: "Api Tests Matrx Ai Dynamic Api",
+  description: "Interactive demo: Api Tests Matrx Ai Dynamic Api. AI Matrx demo route.",
+});
+
 const DynamicApiClient = lazy(() => import('./DynamicApiClient'));
 
 export default function DynamicApiPage() {

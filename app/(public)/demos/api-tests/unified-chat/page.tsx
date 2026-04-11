@@ -5,6 +5,13 @@
 import { Suspense, lazy } from 'react';
 import { Loader2 } from 'lucide-react';
 
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demos/api-tests/unified-chat", {
+  title: "Api Tests Unified Chat",
+  description: "Interactive demo: Api Tests Unified Chat. AI Matrx demo route.",
+});
+
 const ChatTestClient = lazy(() => import('./ChatTestClient'));
 
 export default function UnifiedChatTestPage() {

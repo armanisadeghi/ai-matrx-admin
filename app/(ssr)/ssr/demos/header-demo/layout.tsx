@@ -3,11 +3,6 @@
 
 import "@/features/shell/components/header/variants/header-variants.css";
 
-export const metadata = {
-  title: "Header Variants | AI Matrx",
-  description: "Live demo of all header center-zone variants",
-};
-
 export default function HeaderDemoLayout({
   children,
 }: {

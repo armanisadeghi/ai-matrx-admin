@@ -2,6 +2,13 @@ import { join } from "path";
 import { TestTube } from "lucide-react";
 import { RouteIndexPage } from "@/components/ssr/RouteIndexPage";
 
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demos/api-tests", {
+  title: "Api Tests",
+  description: "Interactive demo: Api Tests. AI Matrx demo route.",
+});
+
 export default async function ApiTestsIndexPage() {
   return (
     <RouteIndexPage

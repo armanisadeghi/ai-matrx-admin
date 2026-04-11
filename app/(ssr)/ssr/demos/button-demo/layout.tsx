@@ -2,11 +2,6 @@ import ButtonRow from "@/features/ssr-trials/components/button-demo/ButtonRow";
 import AddFilterSearchRow from "@/features/ssr-trials/components/button-demo/AddFilterSearchRow";
 import AllButtonsShowcase from "@/features/ssr-trials/components/button-demo/AllButtonsShowcase";
 
-export const metadata = {
-  title: "Button Demo | AI Matrx",
-  description: "TapTargetButton showcase — all icons and variants",
-};
-
 export default function DashboardLayout({
   children,
 }: {

@@ -67,6 +67,13 @@ import {
   RobotTapButton,
 } from "@/components/icons/tap-buttons";
 
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/ssr/demos/button-demo", {
+  title: "Button Demo",
+  description: "Interactive demo: Button Demo. AI Matrx demo route.",
+});
+
 export default function ButtonDemoPage() {
   return (
     <div className="p-8 space-y-12">

@@ -2,6 +2,13 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { ChevronRight, Globe, Search, Zap } from "lucide-react";
 
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demos/scraper", {
+  title: "Scraper",
+  description: "Interactive demo: Scraper. AI Matrx demo route.",
+});
+
 const scraperDemos = [
     {
         id: "quick-scrape",

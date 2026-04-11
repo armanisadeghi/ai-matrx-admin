@@ -5,6 +5,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Info, AlertCircle, CheckCircle, HelpCircle, Settings, ArrowRight, Coffee } from 'lucide-react';
 
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demo/component-demo/tooltip-demo", {
+  title: "Component Demo Tooltip Demo",
+  description: "Interactive demo: Component Demo Tooltip Demo. AI Matrx demo route.",
+});
+
 const TooltipDemo = () => {
   return (
     <div className="container mx-auto p-8 space-y-8 max-w-4xl">

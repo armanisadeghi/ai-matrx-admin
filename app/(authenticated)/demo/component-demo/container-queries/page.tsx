@@ -1,6 +1,13 @@
 import React from 'react';
 
 // The reusable grid component that uses container queries
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demo/component-demo/container-queries", {
+  title: "Component Demo Container Queries",
+  description: "Interactive demo: Component Demo Container Queries. AI Matrx demo route.",
+});
+
 const GridComponent = () => {
   return (
     <div className="@container border-2 border-blue-500">

@@ -2,6 +2,13 @@ import { SpeakerButton } from "@/features/tts/components/SpeakerButton";
 import { SpeakerGroup } from "@/features/tts/components/SpeakerGroup";
 import { SpeakerCompactGroup } from "@/features/tts/components/SpeakerCompactGroup";
 
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/demos/feature-tests/speaker-button", {
+  title: "Feature Tests Speaker Button",
+  description: "Interactive demo: Feature Tests Speaker Button. AI Matrx demo route.",
+});
+
 const SHORT = "Hello! This is a quick test of the text to speech system.";
 
 const MARKDOWN =

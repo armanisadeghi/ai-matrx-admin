@@ -61,6 +61,22 @@ export function findNavigationLinkByPath(pathname: string): typeof allNavigation
     return sortedLinks.find(link => pathname.startsWith(link.href));
 }
 
+/** Yellow "D" tab icon for demo route trees (see createRouteMetadata pathname). */
+export const DEMO_ROUTE_FAVICON: FaviconConfig = { color: "#eab308", letter: "D" };
+
+function pathnameIsUnderDemoHosts(pathname: string): boolean {
+    return (
+        pathname === "/demo" ||
+        pathname.startsWith("/demo/") ||
+        pathname === "/demos" ||
+        pathname.startsWith("/demos/") ||
+        pathname === "/ssr/demos" ||
+        pathname.startsWith("/ssr/demos/") ||
+        pathname === "/p/demo" ||
+        pathname.startsWith("/p/demo/")
+    );
+}
+
 /**
  * Gets the favicon configuration for a given route
  * @param pathname - The current pathname
@@ -68,7 +84,13 @@ export function findNavigationLinkByPath(pathname: string): typeof allNavigation
  */
 export function getFaviconConfigByPath(pathname: string): FaviconConfig | undefined {
     const link = findNavigationLinkByPath(pathname);
-    return link?.favicon;
+    if (link?.favicon) {
+        return link.favicon;
+    }
+    if (pathnameIsUnderDemoHosts(pathname)) {
+        return DEMO_ROUTE_FAVICON;
+    }
+    return undefined;
 }
 
 /**
