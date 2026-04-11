@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useMemo } from "react";
 import {
   Upload,
   Loader2,
@@ -13,452 +13,33 @@ import {
   Copy,
   Check,
   FileSearch,
-  ChevronRight,
   Trash2,
   Bot,
   Eye,
+  Plus,
+  StickyNote,
+  ExternalLink,
+  Sparkles,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
+import { openFilePreview } from "@/features/window-panels/windows/FilePreviewWindow";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   usePdfExtractor,
-  type PdfHistoryItem,
-  type ExtractionStatus,
-  type PdfExtractionResult,
+  type PdfDocument,
+  type ExtractionTab,
+  type ActiveTabId,
 } from "../hooks/usePdfExtractor";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
 
-// ─── Tab type ────────────────────────────────────────────────────────────────
+// ─── Sub-tab type for per-extraction view ────────────────────────────────────
 
-type ActiveTab = "text" | "preview" | "metadata" | "agent";
+type ContentSubTab = "text" | "preview" | "metadata" | "clean";
 
-// ─── PdfExtractorShell — shared state parent ─────────────────────────────────
-// Used by both the window variant and any standalone embedding.
-
-export function PdfExtractorShell() {
-  const extractor = usePdfExtractor();
-
-  return (
-    <PdfExtractorWindowContent
-      extractor={extractor}
-      sidebar={
-        <PdfExtractorSidebar
-          history={extractor.history}
-          onSelect={extractor.loadFromHistory}
-          onClear={extractor.clearHistory}
-        />
-      }
-    />
-  );
-}
-
-// ─── PdfExtractorWindowContent ────────────────────────────────────────────────
-
-interface ExtractorApi {
-  selectedFile: File | null;
-  status: ExtractionStatus;
-  error: string | null;
-  result: PdfExtractionResult | null;
-  history: PdfHistoryItem[];
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
-  selectFile: (file: File | null) => void;
-  extract: () => Promise<void>;
-  clearFile: () => void;
-  loadFromHistory: (item: PdfHistoryItem) => void;
-  clearHistory: () => void;
-  copyText: () => Promise<void>;
-  isLoading: boolean;
-  hasResult: boolean;
-}
-
-function PdfExtractorWindowContent({
-  extractor,
-  sidebar,
-}: {
-  extractor: ExtractorApi;
-  sidebar?: React.ReactNode;
-}) {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("text");
-  const [copied, setCopied] = useState(false);
-
-  const handleFileInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      extractor.selectFile(e.target.files?.[0] ?? null);
-    },
-    [extractor],
-  );
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      const file = e.dataTransfer.files[0];
-      if (file) extractor.selectFile(file);
-    },
-    [extractor],
-  );
-
-  const handleCopy = useCallback(async () => {
-    await extractor.copyText();
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1800);
-  }, [extractor]);
-
-  return (
-    <div className="flex flex-col h-full min-h-0">
-      {/* ── File selector ───────────────────────────────────────── */}
-      <div className="shrink-0 px-3 pt-2.5 pb-2">
-        <input
-          ref={extractor.fileInputRef}
-          type="file"
-          accept=".pdf,image/*"
-          onChange={handleFileInputChange}
-          disabled={extractor.isLoading}
-          className="hidden"
-        />
-
-        {extractor.selectedFile ? (
-          <div className="flex items-center gap-2 px-2.5 py-2 bg-muted/50 border border-border rounded-lg">
-            <div className="shrink-0 w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
-              <FileText className="w-3.5 h-3.5 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium truncate leading-tight">
-                {extractor.selectedFile.name}
-              </p>
-              <p className="text-[10px] text-muted-foreground">
-                {(extractor.selectedFile.size / 1024).toFixed(1)} KB ·{" "}
-                {extractor.selectedFile.type === "application/pdf"
-                  ? "PDF"
-                  : "Image"}
-              </p>
-            </div>
-            <div className="flex items-center gap-1 shrink-0">
-              <button
-                type="button"
-                onClick={() => extractor.fileInputRef.current?.click()}
-                disabled={extractor.isLoading}
-                className="px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:text-foreground border border-border rounded hover:bg-accent transition-colors disabled:opacity-50"
-              >
-                Change
-              </button>
-              <Button
-                onClick={extractor.extract}
-                disabled={extractor.isLoading}
-                size="sm"
-                className="h-6 text-xs px-2.5"
-              >
-                {extractor.isLoading ? (
-                  <>
-                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                    Extracting
-                  </>
-                ) : (
-                  "Extract"
-                )}
-              </Button>
-              <button
-                type="button"
-                onClick={extractor.clearFile}
-                disabled={extractor.isLoading}
-                className="p-1 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors disabled:opacity-50"
-                aria-label="Clear file"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => extractor.fileInputRef.current?.click()}
-            onDrop={handleDrop}
-            onDragOver={(e) => e.preventDefault()}
-            className="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-border rounded-lg hover:border-primary/40 hover:bg-muted/30 transition-colors cursor-pointer group"
-          >
-            <Upload className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-            <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
-              Drop a PDF or image, or{" "}
-              <span className="text-primary underline">browse</span>
-            </span>
-          </button>
-        )}
-
-        {extractor.error && (
-          <div className="flex items-start gap-1.5 mt-2 px-2.5 py-1.5 bg-destructive/10 border border-destructive/20 rounded-md">
-            <AlertCircle className="w-3 h-3 text-destructive shrink-0 mt-0.5" />
-            <span className="text-[11px] text-destructive leading-snug">
-              {extractor.error}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* ── Stats row ─────────────────────────────────────────────── */}
-      {extractor.hasResult && extractor.result && (
-        <div className="shrink-0 px-3 pb-2">
-          <div className="grid grid-cols-4 gap-1.5">
-            <StatChip
-              icon={<CheckCircle className="w-3 h-3 text-emerald-500" />}
-              label="Status"
-              value="Done"
-              valueClass="text-emerald-600 dark:text-emerald-400"
-            />
-            <StatChip
-              icon={<Hash className="w-3 h-3 text-muted-foreground" />}
-              label="Chars"
-              value={extractor.result.charCount.toLocaleString()}
-            />
-            <StatChip
-              icon={<Hash className="w-3 h-3 text-muted-foreground" />}
-              label="Words"
-              value={extractor.result.wordCount.toLocaleString()}
-            />
-            <StatChip
-              icon={<Clock className="w-3 h-3 text-muted-foreground" />}
-              label="Time"
-              value={`${extractor.result.requestTimeMs.toFixed(0)}ms`}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* ── Tab strip ─────────────────────────────────────────────── */}
-      {extractor.hasResult && (
-        <div className="shrink-0 flex items-center gap-0 px-3 border-b border-border">
-          <TabBtn
-            active={activeTab === "text"}
-            onClick={() => setActiveTab("text")}
-            icon={<FileText className="w-3 h-3" />}
-            label="Raw Text"
-          />
-          <TabBtn
-            active={activeTab === "preview"}
-            onClick={() => setActiveTab("preview")}
-            icon={<Eye className="w-3 h-3" />}
-            label="Preview"
-          />
-          <TabBtn
-            active={activeTab === "metadata"}
-            onClick={() => setActiveTab("metadata")}
-            icon={<FileSearch className="w-3 h-3" />}
-            label="Metadata"
-          />
-          <TabBtn
-            active={activeTab === "agent"}
-            onClick={() => setActiveTab("agent")}
-            icon={<Bot className="w-3 h-3" />}
-            label="AI Clean"
-            badge="Soon"
-          />
-        </div>
-      )}
-
-      {/* ── Tab content / idle state ───────────────────────────── */}
-      {extractor.hasResult && extractor.result ? (
-        <div className="flex-1 min-h-0 overflow-y-auto">
-          {activeTab === "text" && (
-            <div className="p-3">
-              {extractor.result.text ? (
-                <pre className="text-[11px] font-mono text-foreground/80 whitespace-pre-wrap leading-relaxed">
-                  {extractor.result.text}
-                </pre>
-              ) : (
-                <EmptyState message="No text extracted from this file" />
-              )}
-            </div>
-          )}
-
-          {activeTab === "preview" && (
-            <div className="p-3">
-              {extractor.result.text ? (
-                <div className="bg-card border border-border rounded-lg p-3">
-                  <p className="text-xs leading-relaxed text-foreground whitespace-pre-line">
-                    {extractor.result.text.slice(0, 2000)}
-                    {extractor.result.text.length > 2000 && (
-                      <span className="text-muted-foreground">
-                        {" "}
-                        …&nbsp;(
-                        {(
-                          extractor.result.text.length - 2000
-                        ).toLocaleString()}{" "}
-                        more chars)
-                      </span>
-                    )}
-                  </p>
-                </div>
-              ) : (
-                <EmptyState message="No content to preview" />
-              )}
-            </div>
-          )}
-
-          {activeTab === "metadata" && (
-            <div className="p-3 space-y-1.5">
-              <MetaRow label="Filename" value={extractor.result.filename} />
-              {extractor.result.pageCount != null && (
-                <MetaRow
-                  label="Pages"
-                  value={String(extractor.result.pageCount)}
-                />
-              )}
-              <MetaRow
-                label="Characters"
-                value={extractor.result.charCount.toLocaleString()}
-              />
-              <MetaRow
-                label="Words"
-                value={extractor.result.wordCount.toLocaleString()}
-              />
-              <MetaRow
-                label="Processing Time"
-                value={`${extractor.result.requestTimeMs.toFixed(0)} ms`}
-              />
-              {extractor.selectedFile && (
-                <>
-                  <MetaRow
-                    label="File Size"
-                    value={`${(extractor.selectedFile.size / 1024).toFixed(1)} KB`}
-                  />
-                  <MetaRow
-                    label="File Type"
-                    value={extractor.selectedFile.type || "unknown"}
-                  />
-                </>
-              )}
-            </div>
-          )}
-
-          {activeTab === "agent" && (
-            <div className="flex flex-col items-center justify-center p-6 text-center gap-3 h-full">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Bot className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">AI Text Cleanup</p>
-                <p className="text-xs text-muted-foreground mt-0.5 max-w-[220px]">
-                  Trigger an AI agent to clean up extracted text and return
-                  structured output.
-                </p>
-              </div>
-              <button
-                type="button"
-                disabled
-                className="px-3 py-1.5 text-xs font-medium rounded-md bg-muted text-muted-foreground border border-border cursor-not-allowed"
-              >
-                Coming Soon
-              </button>
-            </div>
-          )}
-        </div>
-      ) : extractor.isLoading ? (
-        <div className="flex-1 flex flex-col items-center justify-center gap-2">
-          <Loader2 className="w-6 h-6 text-primary/60 animate-spin" />
-          <p className="text-xs text-muted-foreground">Processing document…</p>
-        </div>
-      ) : (
-        <div className="flex-1 flex flex-col items-center justify-center gap-2 px-4 text-center">
-          <FileSearch className="w-8 h-8 text-muted-foreground/20" />
-          <p className="text-xs text-muted-foreground">
-            {extractor.selectedFile
-              ? "Click Extract to process the file"
-              : "Select a PDF or image to get started"}
-          </p>
-        </div>
-      )}
-
-      {/* ── In-body copy (visible when the window footer isn't used) ─── */}
-      {extractor.hasResult && extractor.result?.text && (
-        <div className="shrink-0 flex items-center justify-end px-3 py-1.5 border-t border-border bg-muted/10">
-          <button
-            type="button"
-            onClick={handleCopy}
-            className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded border border-border bg-background hover:bg-accent text-foreground transition-colors"
-          >
-            {copied ? (
-              <>
-                <Check className="w-2.5 h-2.5 text-emerald-500" />
-                Copied!
-              </>
-            ) : (
-              <>
-                <Copy className="w-2.5 h-2.5" />
-                Copy Text
-              </>
-            )}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── PdfExtractorSidebar ─────────────────────────────────────────────────────
-
-export function PdfExtractorSidebar({
-  history,
-  onSelect,
-  onClear,
-}: {
-  history: PdfHistoryItem[];
-  onSelect: (item: PdfHistoryItem) => void;
-  onClear: () => void;
-}) {
-  return (
-    <div className="flex flex-col h-full min-h-0">
-      <div className="px-2 py-1.5 border-b border-border flex items-center justify-between shrink-0">
-        <span className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
-          History
-        </span>
-        {history.length > 0 && (
-          <button
-            type="button"
-            onClick={onClear}
-            className="p-0.5 text-muted-foreground/40 hover:text-muted-foreground transition-colors rounded"
-            title="Clear history"
-          >
-            <Trash2 className="w-3 h-3" />
-          </button>
-        )}
-      </div>
-
-      <div className="flex-1 min-h-0 p-1 space-y-0.5">
-        {history.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-[10px] text-muted-foreground/40 italic text-center px-2">
-              Extracted files appear here
-            </p>
-          </div>
-        ) : (
-          history.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onSelect(item)}
-              className="w-full flex items-start gap-1.5 px-1.5 py-1.5 rounded hover:bg-accent transition-colors text-left group"
-            >
-              <div className="shrink-0 w-5 h-5 rounded bg-primary/10 flex items-center justify-center mt-0.5">
-                <FileText className="w-2.5 h-2.5 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-medium truncate text-foreground/80 group-hover:text-foreground leading-tight">
-                  {item.filename}
-                </p>
-                <p className="text-[9px] text-muted-foreground/50 leading-tight">
-                  {item.result.charCount.toLocaleString()} chars ·{" "}
-                  {item.result.wordCount.toLocaleString()} words
-                </p>
-              </div>
-              <ChevronRight className="w-2.5 h-2.5 text-muted-foreground/30 group-hover:text-muted-foreground shrink-0 mt-1 transition-colors" />
-            </button>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── PdfExtractorFloatingWorkspace ────────────────────────────────────────────
-// Full self-contained floating window: holds shared state + WindowPanel + sidebar.
+// ─── PdfExtractorFloatingWorkspace ───────────────────────────────────────────
 
 export function PdfExtractorFloatingWorkspace({
   onClose,
@@ -466,22 +47,90 @@ export function PdfExtractorFloatingWorkspace({
   onClose: () => void;
 }) {
   const extractor = usePdfExtractor();
+  const dispatch = useAppDispatch();
+
+  const activeTab = extractor.activeTab;
+
+  // ── Footer actions ──────────────────────────────────────────────────────
+
+  const handleSaveToNotes = useCallback(() => {
+    const text = activeTab?.document?.content;
+    if (!text) return;
+    dispatch(openSaveToNotes({ content: text, defaultFolder: "Scratch" }));
+  }, [dispatch, activeTab]);
+
+  const handleViewOriginal = useCallback(() => {
+    const doc = activeTab?.document;
+    if (!doc?.source) return;
+    openFilePreview(dispatch, {
+      url: doc.source,
+      fileName: doc.name,
+      mimeType: "application/pdf",
+      instanceId: `pdf-extract-preview-${doc.id}`,
+    });
+  }, [dispatch, activeTab]);
+
+  const footer = useMemo(() => {
+    if (extractor.activeTabId === "new") {
+      return (
+        <span className="text-[10px] text-muted-foreground">
+          Supports PDF, PNG, JPG, WEBP
+        </span>
+      );
+    }
+
+    if (!activeTab?.document) return null;
+
+    return (
+      <>
+        <div className="flex-1" />
+        <div className="flex items-center gap-1">
+          {activeTab.document.source && (
+            <FooterButton
+              icon={<Eye className="w-2.5 h-2.5" />}
+              label="View Original"
+              onClick={handleViewOriginal}
+            />
+          )}
+          <FooterButton
+            icon={<StickyNote className="w-2.5 h-2.5" />}
+            label="Save to Notes"
+            onClick={handleSaveToNotes}
+          />
+          {activeTab.document.content && (
+            <CopyFooterButton
+              onCopy={() => extractor.copyText(activeTab.id)}
+            />
+          )}
+        </div>
+      </>
+    );
+  }, [
+    extractor.activeTabId,
+    activeTab,
+    handleViewOriginal,
+    handleSaveToNotes,
+    extractor,
+  ]);
 
   return (
     <WindowPanel
       id="pdf-extractor"
       title="PDF Extractor"
       onClose={onClose}
-      width={680}
-      height={560}
-      minWidth={420}
-      minHeight={320}
+      width={740}
+      height={580}
+      minWidth={460}
+      minHeight={340}
       position="center"
       sidebar={
         <PdfExtractorSidebar
           history={extractor.history}
-          onSelect={extractor.loadFromHistory}
-          onClear={extractor.clearHistory}
+          historyLoading={extractor.historyLoading}
+          openTabIds={extractor.openTabIds}
+          activeTabId={extractor.activeTabId}
+          onSelect={extractor.openDocument}
+          onRefresh={extractor.loadHistory}
         />
       }
       sidebarDefaultSize={200}
@@ -490,24 +139,672 @@ export function PdfExtractorFloatingWorkspace({
       sidebarClassName="bg-muted/10"
       urlSyncKey="pdf_extractor"
       urlSyncId="default"
-      footer={
-        <>
-          <span className="text-[10px] text-muted-foreground">
-            Supports PDF · PNG · JPG · WEBP
-          </span>
-          <div className="flex-1" />
-          {extractor.hasResult && extractor.result?.text && (
-            <CopyFooterButton onCopy={extractor.copyText} />
-          )}
-        </>
-      }
+      footer={footer}
     >
       <PdfExtractorWindowContent extractor={extractor} />
     </WindowPanel>
   );
 }
 
-// ─── CopyFooterButton ─────────────────────────────────────────────────────────
+// ─── Main Content ────────────────────────────────────────────────────────────
+
+function PdfExtractorWindowContent({
+  extractor,
+}: {
+  extractor: ReturnType<typeof usePdfExtractor>;
+}) {
+  return (
+    <div className="flex flex-col h-full min-h-0">
+      {/* ── Tab Bar ─────────────────────────────────────────────── */}
+      <ExtractionTabBar
+        tabs={extractor.tabs}
+        activeTabId={extractor.activeTabId}
+        onSelectTab={extractor.setActiveTabId}
+        onCloseTab={extractor.closeTab}
+      />
+
+      {/* ── Tab Content ─────────────────────────────────────────── */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        {extractor.activeTabId === "new" ? (
+          <NewExtractionContent extractor={extractor} />
+        ) : extractor.activeTab ? (
+          <ExtractionTabContent
+            tab={extractor.activeTab}
+            onClean={extractor.cleanContent}
+          />
+        ) : (
+          <EmptyState message="Select a tab or start a new extraction" />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Tab Bar ─────────────────────────────────────────────────────────────────
+
+function ExtractionTabBar({
+  tabs,
+  activeTabId,
+  onSelectTab,
+  onCloseTab,
+}: {
+  tabs: ExtractionTab[];
+  activeTabId: ActiveTabId;
+  onSelectTab: (id: ActiveTabId) => void;
+  onCloseTab: (id: string) => void;
+}) {
+  return (
+    <div className="shrink-0 flex items-center gap-0 px-1 border-b border-border overflow-x-auto scrollbar-none">
+      {/* Permanent "New" tab */}
+      <button
+        type="button"
+        onClick={() => onSelectTab("new")}
+        className={cn(
+          "flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium border-b-2 transition-colors shrink-0",
+          activeTabId === "new"
+            ? "border-primary text-primary"
+            : "border-transparent text-muted-foreground hover:text-foreground",
+        )}
+      >
+        <Plus className="w-3 h-3" />
+        New
+      </button>
+
+      {/* Per-extraction tabs */}
+      {tabs.map((tab) => (
+        <div
+          key={tab.id}
+          className={cn(
+            "group flex items-center gap-1 px-2 py-1.5 border-b-2 transition-colors shrink-0 max-w-[160px]",
+            activeTabId === tab.id
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground",
+          )}
+        >
+          <button
+            type="button"
+            onClick={() => onSelectTab(tab.id)}
+            className="flex items-center gap-1 min-w-0 flex-1"
+          >
+            {tab.status === "extracting" || tab.status === "cleaning" ? (
+              <Loader2 className="w-3 h-3 animate-spin shrink-0" />
+            ) : tab.status === "error" ? (
+              <AlertCircle className="w-3 h-3 text-destructive shrink-0" />
+            ) : (
+              <FileText className="w-3 h-3 shrink-0" />
+            )}
+            <span className="text-[11px] font-medium truncate">
+              {tab.filename}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCloseTab(tab.id);
+            }}
+            className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-accent transition-all shrink-0"
+            aria-label={`Close ${tab.filename}`}
+          >
+            <X className="w-2.5 h-2.5" />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── "New Extraction" Tab Content ────────────────────────────────────────────
+
+function NewExtractionContent({
+  extractor,
+}: {
+  extractor: ReturnType<typeof usePdfExtractor>;
+}) {
+  const handleFileInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files ?? []);
+      if (files.length > 0) extractor.addFiles(files);
+      // Reset so the same files can be re-selected
+      e.target.value = "";
+    },
+    [extractor],
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0) extractor.addFiles(files);
+    },
+    [extractor],
+  );
+
+  const isExtracting = extractor.batchStatus === "extracting";
+
+  return (
+    <div className="flex flex-col h-full min-h-0">
+      <input
+        ref={extractor.fileInputRef}
+        type="file"
+        accept=".pdf,image/*"
+        multiple
+        onChange={handleFileInputChange}
+        disabled={isExtracting}
+        className="hidden"
+      />
+
+      {/* ── Selected files list ──────────────────────────────────── */}
+      {extractor.selectedFiles.length > 0 ? (
+        <div className="shrink-0 px-3 pt-2.5 pb-2 space-y-1.5">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
+              {extractor.selectedFiles.length} file
+              {extractor.selectedFiles.length !== 1 ? "s" : ""} selected
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => extractor.fileInputRef.current?.click()}
+                disabled={isExtracting}
+                className="px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:text-foreground border border-border rounded hover:bg-accent transition-colors disabled:opacity-50"
+              >
+                Add More
+              </button>
+              <button
+                type="button"
+                onClick={extractor.clearFiles}
+                disabled={isExtracting}
+                className="p-1 text-muted-foreground/40 hover:text-muted-foreground transition-colors rounded disabled:opacity-50"
+                title="Clear all"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-0.5 max-h-[200px] overflow-y-auto scrollbar-thin">
+            {extractor.selectedFiles.map((file, i) => (
+              <div
+                key={`${file.name}-${i}`}
+                className="flex items-center gap-2 px-2 py-1.5 bg-muted/50 border border-border rounded-md"
+              >
+                <div className="shrink-0 w-5 h-5 rounded bg-primary/10 flex items-center justify-center">
+                  <FileText className="w-2.5 h-2.5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-medium truncate leading-tight">
+                    {file.name}
+                  </p>
+                  <p className="text-[9px] text-muted-foreground">
+                    {(file.size / 1024).toFixed(1)} KB
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => extractor.removeFile(i)}
+                  disabled={isExtracting}
+                  className="p-0.5 text-muted-foreground/40 hover:text-muted-foreground transition-colors rounded disabled:opacity-50"
+                >
+                  <X className="w-2.5 h-2.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <Button
+            onClick={extractor.extractFiles}
+            disabled={isExtracting}
+            size="sm"
+            className="w-full h-7 text-xs mt-1"
+          >
+            {isExtracting ? (
+              <>
+                <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
+                Extracting...
+              </>
+            ) : (
+              <>
+                Extract{" "}
+                {extractor.selectedFiles.length > 1
+                  ? `All (${extractor.selectedFiles.length})`
+                  : ""}
+              </>
+            )}
+          </Button>
+        </div>
+      ) : (
+        /* ── Drop zone ───────────────────────────────────────────── */
+        <div className="flex-1 flex flex-col items-center justify-center px-6">
+          <button
+            type="button"
+            onClick={() => extractor.fileInputRef.current?.click()}
+            onDrop={handleDrop}
+            onDragOver={(e) => e.preventDefault()}
+            className="w-full max-w-sm flex flex-col items-center justify-center gap-3 py-10 border-2 border-dashed border-border rounded-xl hover:border-primary/40 hover:bg-muted/20 transition-colors cursor-pointer group"
+          >
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
+              <Upload className="w-5 h-5 text-primary/60 group-hover:text-primary transition-colors" />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-medium text-foreground/80 group-hover:text-foreground transition-colors">
+                Drop files here or{" "}
+                <span className="text-primary underline">browse</span>
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                PDF, PNG, JPG, WEBP — select multiple files for batch
+                extraction
+              </p>
+            </div>
+          </button>
+        </div>
+      )}
+
+      {/* ── Extracting progress for batch ────────────────────────── */}
+      {isExtracting && extractor.tabs.length > 0 && (
+        <div className="shrink-0 px-3 pb-2">
+          <div className="space-y-0.5">
+            {extractor.tabs
+              .filter((t) => t.status === "extracting")
+              .map((tab) => (
+                <div
+                  key={tab.id}
+                  className="flex items-center gap-2 px-2 py-1 text-[10px] text-muted-foreground bg-muted/30 rounded"
+                >
+                  <Loader2 className="w-2.5 h-2.5 animate-spin shrink-0" />
+                  <span className="truncate">{tab.filename}</span>
+                  {tab.progressMessage && (
+                    <span className="text-[9px] text-muted-foreground/60 ml-auto shrink-0">
+                      {tab.progressMessage}
+                    </span>
+                  )}
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Per-Extraction Tab Content ──────────────────────────────────────────────
+
+function ExtractionTabContent({
+  tab,
+  onClean,
+}: {
+  tab: ExtractionTab;
+  onClean: (docId: string) => Promise<void>;
+}) {
+  const [subTab, setSubTab] = useState<ContentSubTab>("text");
+
+  if (tab.status === "extracting") {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-2 h-full">
+        <Loader2 className="w-6 h-6 text-primary/60 animate-spin" />
+        <p className="text-xs text-muted-foreground">
+          Extracting {tab.filename}...
+        </p>
+        {tab.progressMessage && (
+          <p className="text-[10px] text-muted-foreground/60">
+            {tab.progressMessage}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (tab.status === "error") {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-2 h-full p-4">
+        <AlertCircle className="w-8 h-8 text-destructive/40" />
+        <p className="text-sm font-medium text-destructive">
+          Extraction Failed
+        </p>
+        <p className="text-xs text-muted-foreground text-center max-w-[280px]">
+          {tab.error}
+        </p>
+      </div>
+    );
+  }
+
+  if (!tab.document) {
+    return <EmptyState message="No document data available" />;
+  }
+
+  const doc = tab.document;
+
+  return (
+    <div className="flex flex-col h-full min-h-0">
+      {/* ── Stats row ───────────────────────────────────────────── */}
+      <div className="shrink-0 px-3 pt-2 pb-1.5">
+        <div className="grid grid-cols-4 gap-1.5">
+          <StatChip
+            icon={<CheckCircle className="w-3 h-3 text-emerald-500" />}
+            label="Status"
+            value="Done"
+            valueClass="text-emerald-600 dark:text-emerald-400"
+          />
+          <StatChip
+            icon={<Hash className="w-3 h-3 text-muted-foreground" />}
+            label="Chars"
+            value={doc.charCount.toLocaleString()}
+          />
+          <StatChip
+            icon={<Hash className="w-3 h-3 text-muted-foreground" />}
+            label="Words"
+            value={doc.wordCount.toLocaleString()}
+          />
+          <StatChip
+            icon={<Clock className="w-3 h-3 text-muted-foreground" />}
+            label="Created"
+            value={formatRelativeTime(doc.createdAt)}
+          />
+        </div>
+      </div>
+
+      {/* ── Sub-tab strip ───────────────────────────────────────── */}
+      <div className="shrink-0 flex items-center gap-0 px-3 border-b border-border">
+        <SubTabBtn
+          active={subTab === "text"}
+          onClick={() => setSubTab("text")}
+          icon={<FileText className="w-3 h-3" />}
+          label="Raw Text"
+        />
+        <SubTabBtn
+          active={subTab === "preview"}
+          onClick={() => setSubTab("preview")}
+          icon={<Eye className="w-3 h-3" />}
+          label="Preview"
+        />
+        <SubTabBtn
+          active={subTab === "metadata"}
+          onClick={() => setSubTab("metadata")}
+          icon={<FileSearch className="w-3 h-3" />}
+          label="Metadata"
+        />
+        <SubTabBtn
+          active={subTab === "clean"}
+          onClick={() => setSubTab("clean")}
+          icon={<Bot className="w-3 h-3" />}
+          label="AI Clean"
+          badge={doc.cleanContent ? undefined : undefined}
+        />
+      </div>
+
+      {/* ── Sub-tab content ─────────────────────────────────────── */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        {subTab === "text" && <RawTextView content={doc.content} />}
+        {subTab === "preview" && <PreviewView content={doc.content} />}
+        {subTab === "metadata" && <MetadataView doc={doc} />}
+        {subTab === "clean" && (
+          <AiCleanView
+            tab={tab}
+            onClean={onClean}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Sub-tab Content Views ───────────────────────────────────────────────────
+
+function RawTextView({ content }: { content: string | null }) {
+  if (!content) return <EmptyState message="No text extracted from this file" />;
+  return (
+    <div className="p-3">
+      <pre className="text-[11px] font-mono text-foreground/80 whitespace-pre-wrap leading-relaxed">
+        {content}
+      </pre>
+    </div>
+  );
+}
+
+function PreviewView({ content }: { content: string | null }) {
+  if (!content) return <EmptyState message="No content to preview" />;
+  return (
+    <div className="p-3">
+      <div className="bg-card border border-border rounded-lg p-3">
+        <p className="text-xs leading-relaxed text-foreground whitespace-pre-line">
+          {content.slice(0, 2000)}
+          {content.length > 2000 && (
+            <span className="text-muted-foreground">
+              {" "}
+              ...&nbsp;({(content.length - 2000).toLocaleString()} more chars)
+            </span>
+          )}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function MetadataView({ doc }: { doc: PdfDocument }) {
+  return (
+    <div className="p-3 space-y-1.5">
+      <MetaRow label="Filename" value={doc.name} />
+      <MetaRow label="Document ID" value={doc.id} mono />
+      <MetaRow label="Characters" value={doc.charCount.toLocaleString()} />
+      <MetaRow label="Words" value={doc.wordCount.toLocaleString()} />
+      <MetaRow label="Created" value={new Date(doc.createdAt).toLocaleString()} />
+      <MetaRow label="Updated" value={new Date(doc.updatedAt).toLocaleString()} />
+      {doc.source && (
+        <div className="flex items-start gap-2 px-2.5 py-1.5 bg-card border border-border rounded-md">
+          <span className="text-[10px] font-medium text-muted-foreground shrink-0 w-28">
+            Source File
+          </span>
+          <a
+            href={doc.source}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] text-primary hover:underline break-all flex items-center gap-1"
+          >
+            View in storage
+            <ExternalLink className="w-2.5 h-2.5 shrink-0" />
+          </a>
+        </div>
+      )}
+      <MetaRow
+        label="AI Cleaned"
+        value={doc.cleanContent ? "Yes" : "Not yet"}
+      />
+    </div>
+  );
+}
+
+function AiCleanView({
+  tab,
+  onClean,
+}: {
+  tab: ExtractionTab;
+  onClean: (docId: string) => Promise<void>;
+}) {
+  const doc = tab.document;
+  if (!doc) return <EmptyState message="No document data" />;
+
+  if (tab.status === "cleaning") {
+    return (
+      <div className="flex flex-col items-center justify-center p-6 text-center gap-3 h-full">
+        <Loader2 className="w-6 h-6 text-primary/60 animate-spin" />
+        <p className="text-sm font-medium">Cleaning content...</p>
+        {tab.progressMessage && (
+          <p className="text-xs text-muted-foreground">{tab.progressMessage}</p>
+        )}
+      </div>
+    );
+  }
+
+  if (doc.cleanContent) {
+    return (
+      <div className="p-3">
+        <div className="flex items-center gap-1.5 mb-2">
+          <Sparkles className="w-3.5 h-3.5 text-primary" />
+          <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
+            AI Cleaned
+          </span>
+        </div>
+        <pre className="text-[11px] font-mono text-foreground/80 whitespace-pre-wrap leading-relaxed">
+          {doc.cleanContent}
+        </pre>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center p-6 text-center gap-3 h-full">
+      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+        <Bot className="w-5 h-5 text-primary" />
+      </div>
+      <div>
+        <p className="text-sm font-medium">AI Text Cleanup</p>
+        <p className="text-xs text-muted-foreground mt-0.5 max-w-[220px]">
+          Run an AI agent to clean up extracted text, fix formatting artifacts,
+          and return structured output.
+        </p>
+      </div>
+      <Button
+        size="sm"
+        className="h-7 text-xs"
+        onClick={() => onClean(tab.id)}
+      >
+        <Sparkles className="w-3 h-3 mr-1.5" />
+        Run AI Cleanup
+      </Button>
+    </div>
+  );
+}
+
+// ─── Sidebar ─────────────────────────────────────────────────────────────────
+
+export function PdfExtractorSidebar({
+  history,
+  historyLoading,
+  openTabIds,
+  activeTabId,
+  onSelect,
+  onRefresh,
+}: {
+  history: PdfDocument[];
+  historyLoading: boolean;
+  openTabIds: Set<string>;
+  activeTabId: ActiveTabId;
+  onSelect: (doc: PdfDocument) => void;
+  onRefresh: () => void;
+}) {
+  return (
+    <div className="flex flex-col h-full min-h-0">
+      <div className="px-2 py-1.5 border-b border-border flex items-center justify-between shrink-0">
+        <span className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
+          History
+        </span>
+        <button
+          type="button"
+          onClick={onRefresh}
+          disabled={historyLoading}
+          className="p-0.5 text-muted-foreground/40 hover:text-muted-foreground transition-colors rounded disabled:opacity-50"
+          title="Refresh history"
+        >
+          <RefreshCw
+            className={cn("w-3 h-3", historyLoading && "animate-spin")}
+          />
+        </button>
+      </div>
+
+      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin p-1 space-y-0.5">
+        {historyLoading && history.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <Loader2 className="w-4 h-4 text-muted-foreground/40 animate-spin" />
+          </div>
+        ) : history.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-[10px] text-muted-foreground/40 italic text-center px-2">
+              Extracted files appear here
+            </p>
+          </div>
+        ) : (
+          history.map((doc) => {
+            const isOpen = openTabIds.has(doc.id);
+            const isActive = activeTabId === doc.id;
+
+            return (
+              <button
+                key={doc.id}
+                type="button"
+                onClick={() => onSelect(doc)}
+                className={cn(
+                  "w-full flex items-start gap-1.5 px-1.5 py-1.5 rounded transition-colors text-left group",
+                  isActive
+                    ? "bg-accent border-l-2 border-primary"
+                    : isOpen
+                      ? "bg-muted/40 border-l-2 border-primary/30"
+                      : "hover:bg-accent border-l-2 border-transparent",
+                )}
+              >
+                <div
+                  className={cn(
+                    "shrink-0 w-5 h-5 rounded flex items-center justify-center mt-0.5",
+                    isActive
+                      ? "bg-primary/20"
+                      : isOpen
+                        ? "bg-primary/10"
+                        : "bg-primary/10",
+                  )}
+                >
+                  <FileText
+                    className={cn(
+                      "w-2.5 h-2.5",
+                      isActive ? "text-primary" : "text-primary/70",
+                    )}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p
+                    className={cn(
+                      "text-[10px] font-medium truncate leading-tight",
+                      isActive
+                        ? "text-foreground"
+                        : "text-foreground/80 group-hover:text-foreground",
+                    )}
+                  >
+                    {doc.name}
+                  </p>
+                  <p className="text-[9px] text-muted-foreground/50 leading-tight">
+                    {doc.charCount.toLocaleString()} chars ·{" "}
+                    {formatRelativeTime(doc.createdAt)}
+                  </p>
+                </div>
+              </button>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Shared UI Primitives ────────────────────────────────────────────────────
+
+function FooterButton({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded border border-border bg-background hover:bg-accent text-foreground transition-colors"
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
 
 function CopyFooterButton({ onCopy }: { onCopy: () => Promise<void> }) {
   const [copied, setCopied] = useState(false);
@@ -538,8 +835,6 @@ function CopyFooterButton({ onCopy }: { onCopy: () => Promise<void> }) {
     </button>
   );
 }
-
-// ─── Primitives ───────────────────────────────────────────────────────────────
 
 function StatChip({
   icon,
@@ -572,7 +867,7 @@ function StatChip({
   );
 }
 
-function TabBtn({
+function SubTabBtn({
   active,
   onClick,
   icon,
@@ -607,22 +902,62 @@ function TabBtn({
   );
 }
 
-function MetaRow({ label, value }: { label: string; value: string }) {
+function MetaRow({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
   return (
     <div className="flex items-start gap-2 px-2.5 py-1.5 bg-card border border-border rounded-md">
       <span className="text-[10px] font-medium text-muted-foreground shrink-0 w-28">
         {label}
       </span>
-      <span className="text-[10px] text-foreground/80 break-all">{value}</span>
+      <span
+        className={cn(
+          "text-[10px] text-foreground/80 break-all",
+          mono && "font-mono text-[9px]",
+        )}
+      >
+        {value}
+      </span>
     </div>
   );
 }
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-8 text-center">
+    <div className="flex flex-col items-center justify-center py-8 text-center h-full">
       <FileSearch className="w-6 h-6 text-muted-foreground/30 mb-1.5" />
       <p className="text-[11px] text-muted-foreground">{message}</p>
     </div>
   );
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function formatRelativeTime(isoString: string): string {
+  const now = Date.now();
+  const then = new Date(isoString).getTime();
+  const diffMs = now - then;
+
+  if (diffMs < 0) return "just now";
+
+  const seconds = Math.floor(diffMs / 1000);
+  if (seconds < 60) return "just now";
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+
+  const months = Math.floor(days / 30);
+  return `${months}mo ago`;
 }
