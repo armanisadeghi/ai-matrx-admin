@@ -50,7 +50,10 @@ const instanceModelOverridesSlice = createSlice({
      */
     initInstanceOverrides(
       state,
-      action: PayloadAction<{ conversationId: string; baseSettings?: Partial<LLMParams> }>,
+      action: PayloadAction<{
+        conversationId: string;
+        baseSettings?: Partial<LLMParams>;
+      }>,
     ) {
       const { conversationId, baseSettings = {} } = action.payload;
       state.byConversationId[conversationId] = {
@@ -117,6 +120,27 @@ const instanceModelOverridesSlice = createSlice({
     },
 
     /**
+     * Replace the baseSettings snapshot for an existing instance.
+     * Called by the builder sync saga when settings change on the agent
+     * definition while an instance is already live.
+     *
+     * ONLY replaces baseSettings — overrides and removals are untouched so
+     * any explicit user overrides set during the builder session are preserved.
+     */
+    updateBaseSettings(
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        baseSettings: Partial<LLMParams>;
+      }>,
+    ) {
+      const entry = state.byConversationId[action.payload.conversationId];
+      if (entry) {
+        entry.baseSettings = action.payload.baseSettings;
+      }
+    },
+
+    /**
      * Reset ALL overrides for an instance — back to pure agent defaults.
      */
     resetAllOverrides(state, action: PayloadAction<string>) {
@@ -149,6 +173,7 @@ export const {
   markRemoved,
   resetOverride,
   resetAllOverrides,
+  updateBaseSettings,
   removeInstanceOverrides,
 } = instanceModelOverridesSlice.actions;
 

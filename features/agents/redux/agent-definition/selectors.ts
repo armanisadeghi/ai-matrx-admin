@@ -268,6 +268,15 @@ export const selectAgentModelId = createSelector(
   (record) => record?.modelId ?? null,
 );
 
+/**
+ * True when the agent has no model selected (modelId is null or empty string).
+ * Used to show warnings in the builder UI without blocking saves.
+ */
+export const selectAgentModelMissing = createSelector(
+  [selectAgentById],
+  (record): boolean => !record?.modelId,
+);
+
 export const selectAgentMessages = createSelector(
   [selectAgentById],
   (record) => record?.messages,

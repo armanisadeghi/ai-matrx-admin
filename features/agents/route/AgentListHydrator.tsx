@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   mergePartialAgent,
@@ -11,9 +11,8 @@ import type { AgentListRow } from "@/features/agents/types/agent-definition.type
 
 export function AgentListHydrator({ seeds }: { seeds: AgentListRow[] }) {
   const dispatch = useAppDispatch();
-  const hydrated = useRef(false);
 
-  if (!hydrated.current) {
+  useEffect(() => {
     for (const row of seeds) {
       dispatch(
         mergePartialAgent({
@@ -43,8 +42,9 @@ export function AgentListHydrator({ seeds }: { seeds: AgentListRow[] }) {
       dispatch(setAgentFetchStatus({ id: row.id, status: "list" }));
     }
     dispatch(setAgentsStatus("succeeded"));
-    hydrated.current = true;
-  }
+    // seeds is server-provided and stable — intentionally omitted to run once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return null;
 }

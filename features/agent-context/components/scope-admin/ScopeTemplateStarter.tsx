@@ -18,6 +18,7 @@ import {
   Store,
   Brain,
   Folder,
+  PenLine,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -74,9 +75,26 @@ const INDUSTRY_ICONS: Record<
   ShoppingBag,
   Store,
   Brain,
+  PenLine,
 };
 
 const SCOPE_TYPE_PRESETS: Record<string, ScopeTypePreset[]> = {
+  create_my_own: [
+    {
+      label_singular: "My First Grouping",
+      label_plural: "My First Groupings",
+      icon: "Folder",
+      color: "#3b82f6",
+      scopes: ["First type of item", "Second type of item"],
+    },
+    {
+      label_singular: "My Second Grouping",
+      label_plural: "My Second Groupings",
+      icon: "Folder",
+      color: "#8b5cf6",
+      scopes: ["Third type of item", "Fourth type of item"],
+    },
+  ],
   universal: [
     {
       label_singular: "Department",
@@ -509,6 +527,25 @@ export function ScopeTemplateStarter({
 
   return (
     <>
+      <button
+        type="button"
+        onClick={() => {
+          handleSelectIndustry("create_my_own");
+          setSheetOpen(true);
+        }}
+        className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 text-left transition-all mb-3"
+      >
+        <div className="h-12 w-12 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
+          <PenLine className="h-6 w-6 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold">Create My Own</p>
+          <p className="text-xs text-muted-foreground">
+            Start with a blank template — name your own groupings and add items
+          </p>
+        </div>
+        <ChevronRight className="h-4 w-4 text-primary flex-shrink-0" />
+      </button>
       <Card className="border-dashed">
         <CardContent className="p-6">
           <div className="flex items-start gap-3 mb-4">
@@ -526,34 +563,42 @@ export function ScopeTemplateStarter({
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {INDUSTRY_CATEGORIES.slice(0, 6).map((cat) => {
-              const Icon = INDUSTRY_ICONS[cat.iconName] ?? Globe;
-              return (
-                <button
-                  key={cat.key}
-                  type="button"
-                  onClick={() => {
-                    handleSelectIndustry(cat.key);
-                    setSheetOpen(true);
-                  }}
-                  className="flex items-center gap-2 p-2.5 rounded-lg border text-left transition-all border-border hover:border-primary/30 hover:bg-muted/50"
-                >
-                  <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <span className="text-xs truncate">
-                    {cat.label.replace(/ \(.*\)/, "")}
-                  </span>
-                </button>
-              );
-            })}
+            {INDUSTRY_CATEGORIES.filter((c) => c.key !== "create_my_own")
+              .slice(0, 6)
+              .map((cat) => {
+                const Icon = INDUSTRY_ICONS[cat.iconName] ?? Globe;
+                return (
+                  <button
+                    key={cat.key}
+                    type="button"
+                    onClick={() => {
+                      handleSelectIndustry(cat.key);
+                      setSheetOpen(true);
+                    }}
+                    className="flex items-center gap-2 p-2.5 rounded-lg border text-left transition-all border-border hover:border-primary/30 hover:bg-muted/50"
+                  >
+                    <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-xs truncate">
+                      {cat.label.replace(/ \(.*\)/, "")}
+                    </span>
+                  </button>
+                );
+              })}
           </div>
-          {INDUSTRY_CATEGORIES.length > 6 && (
+          {INDUSTRY_CATEGORIES.filter((c) => c.key !== "create_my_own").length >
+            6 && (
             <Button
               variant="ghost"
               size="sm"
               className="mt-3 text-xs w-full"
               onClick={() => setSheetOpen(true)}
             >
-              View all {INDUSTRY_CATEGORIES.length} templates
+              View all{" "}
+              {
+                INDUSTRY_CATEGORIES.filter((c) => c.key !== "create_my_own")
+                  .length
+              }{" "}
+              templates
               <ChevronRight className="h-3 w-3 ml-1" />
             </Button>
           )}
@@ -758,30 +803,59 @@ function TemplateSheet({
             </div>
           ) : (
             <div className="space-y-1.5">
-              {INDUSTRY_CATEGORIES.map((cat) => {
-                const Icon = INDUSTRY_ICONS[cat.iconName] ?? Globe;
-                const presetCount = SCOPE_TYPE_PRESETS[cat.key]?.length ?? 0;
+              <button
+                type="button"
+                onClick={() => onSelectIndustry("create_my_own")}
+                className="w-full flex items-center gap-3 p-3 rounded-lg border-2 border-primary/30 bg-primary/5 text-left transition-all hover:bg-primary/10 hover:border-primary/50"
+              >
+                <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
+                  <PenLine className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-primary">
+                    Create My Own
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    Start from scratch with placeholder groupings
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-primary flex-shrink-0" />
+              </button>
 
-                return (
-                  <button
-                    key={cat.key}
-                    type="button"
-                    onClick={() => onSelectIndustry(cat.key)}
-                    className="w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all border-border hover:border-primary/20 hover:bg-muted/40"
-                  >
-                    <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Icon className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium">{cat.label}</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {presetCount} scope type{presetCount !== 1 ? "s" : ""}
-                      </p>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  </button>
-                );
-              })}
+              <div className="flex items-center gap-2 py-1">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-[10px] text-muted-foreground px-1">
+                  or use a template
+                </span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+
+              {INDUSTRY_CATEGORIES.filter((c) => c.key !== "create_my_own").map(
+                (cat) => {
+                  const Icon = INDUSTRY_ICONS[cat.iconName] ?? Globe;
+                  const presetCount = SCOPE_TYPE_PRESETS[cat.key]?.length ?? 0;
+
+                  return (
+                    <button
+                      key={cat.key}
+                      type="button"
+                      onClick={() => onSelectIndustry(cat.key)}
+                      className="w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all border-border hover:border-primary/20 hover:bg-muted/40"
+                    >
+                      <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Icon className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium">{cat.label}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {presetCount} scope type{presetCount !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    </button>
+                  );
+                },
+              )}
             </div>
           )}
         </div>

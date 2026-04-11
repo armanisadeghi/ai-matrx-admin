@@ -10,7 +10,6 @@ import { storageMiddleware } from "./storage/storageMiddleware";
 import { enableMapSet } from "immer";
 import { entitySagaMiddleware } from "./entity/entitySagaMiddleware";
 import { socketMiddleware } from "./socket-io/connection/socketMiddleware";
-import { notesRealtimeMiddleware } from "@/features/notes/redux/realtimeMiddleware";
 import { autoSaveMiddleware } from "@/features/notes/redux/autoSaveMiddleware";
 import { mapUserData } from "@/utils/userDataMapper";
 import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGlobalCache";
@@ -21,8 +20,6 @@ import {
   UserPreferences,
   UserPreferencesState,
 } from "@/lib/redux/slices/userPreferencesSlice";
-import { TestDirectory } from "@/utils/directoryStructure";
-
 const sagaMiddleware = createSagaMiddleware();
 
 // Store reference for utility access
@@ -37,7 +34,7 @@ function resolveUserPreferencesForBootstrap(
   }
   const raw = input.userPreferences as Record<string, unknown>;
   if (raw && typeof raw === "object" && "_meta" in raw) {
-    return input.userPreferences as UserPreferencesState;
+    return input.userPreferences as unknown as UserPreferencesState;
   }
   return initializeUserPreferencesState(
     input.userPreferences as Partial<UserPreferences>,
@@ -54,7 +51,7 @@ export function resolveStoreBootstrapState(
 ): InitialReduxState & Record<string, unknown> {
   const base: InitialReduxState = {
     user: mapUserData(null, undefined, false),
-    testRoutes: [] as TestDirectory[],
+    testRoutes: [] as string[],
     userPreferences: initializeUserPreferencesState(
       defaultUserPreferences,
       true,
@@ -63,7 +60,7 @@ export function resolveStoreBootstrapState(
   };
 
   if (!input) {
-    return base;
+    return base as InitialReduxState & Record<string, unknown>;
   }
 
   const merged: InitialReduxState = {
@@ -105,7 +102,9 @@ export const makeStore = (
 
   const store = configureStore({
     reducer: rootReducer,
-    preloadedState: resolved as InitialReduxState,
+    preloadedState: resolved as unknown as Parameters<
+      typeof configureStore
+    >[0]["preloadedState"],
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
         serializableCheck: false,

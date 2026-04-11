@@ -1,6 +1,5 @@
 // types/reduxTypes.ts
 import { Database } from "@/types/database.types";
-import { TestDirectory } from "@/utils/directoryStructure";
 import { UserData } from "@/utils/userDataMapper";
 import { GlobalCacheState } from "@/lib/redux/schema/globalCacheSlice";
 import type { AIModel } from "@/features/ai-models/redux/modelRegistrySlice";
@@ -8,7 +7,7 @@ import type { ContextMenuRow } from "@/utils/supabase/ssrShellData";
 
 export interface InitialReduxState {
   user: UserData;
-  testRoutes: TestDirectory[];
+  testRoutes: string[];
   userPreferences: Record<string, any>;
   globalCache: GlobalCacheState;
   // Optional SSR pre-population.

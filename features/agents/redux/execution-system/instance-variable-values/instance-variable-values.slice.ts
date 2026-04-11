@@ -159,6 +159,27 @@ const instanceVariableValuesSlice = createSlice({
       }
     },
 
+    /**
+     * Replace the definitions snapshot for an existing instance.
+     * Called by the builder sync saga when variableDefinitions change on the
+     * agent definition while an instance is already live.
+     *
+     * ONLY replaces definitions — userValues and scopeValues are untouched so
+     * any values the user has already entered are preserved.
+     */
+    updateInstanceDefinitions(
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        definitions: VariableDefinition[];
+      }>,
+    ) {
+      const entry = state.byConversationId[action.payload.conversationId];
+      if (entry) {
+        entry.definitions = action.payload.definitions;
+      }
+    },
+
     removeInstanceVariables(state, action: PayloadAction<string>) {
       delete state.byConversationId[action.payload];
     },
@@ -178,6 +199,7 @@ export const {
   clearUserVariableValue,
   setScopeVariableValues,
   resetUserVariableValues,
+  updateInstanceDefinitions,
   removeInstanceVariables,
 } = instanceVariableValuesSlice.actions;
 

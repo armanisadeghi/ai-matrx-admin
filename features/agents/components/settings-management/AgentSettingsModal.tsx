@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,9 @@ import { AgentSettingsCore } from "./AgentSettingsCore";
 
 interface AgentSettingsModalProps {
   agentId: string;
+  /** When provided, puts the modal into controlled mode (hides the trigger button). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 interface SettingsSnapshot {
@@ -48,9 +51,14 @@ interface SettingsSnapshot {
   modelId: string | null;
 }
 
-export function AgentSettingsModal({ agentId }: AgentSettingsModalProps) {
+export function AgentSettingsModal({
+  agentId,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+}: AgentSettingsModalProps) {
   const dispatch = useAppDispatch();
   const isMobile = useIsMobile();
+  const isControlled = controlledOpen !== undefined;
 
   const currentSettings = useAppSelector((state) =>
     selectAgentSettings(state, agentId),
@@ -59,9 +67,26 @@ export function AgentSettingsModal({ agentId }: AgentSettingsModalProps) {
     selectAgentModelId(state, agentId),
   );
 
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled
+    ? (controlledOnOpenChange ?? setInternalOpen)
+    : setInternalOpen;
+
   const [snapshot, setSnapshot] = useState<SettingsSnapshot | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+
+  useEffect(() => {
+    if (isControlled && controlledOpen && !snapshot) {
+      setSnapshot({
+        settings: currentSettings ?? {},
+        modelId: currentModelId ?? null,
+      });
+    }
+    if (isControlled && !controlledOpen) {
+      setSnapshot(null);
+    }
+  }, [isControlled, controlledOpen, currentSettings, currentModelId, snapshot]);
 
   const handleOpen = () => {
     setSnapshot({
@@ -113,7 +138,7 @@ export function AgentSettingsModal({ agentId }: AgentSettingsModalProps) {
     setOpen(false);
   };
 
-  const trigger = (
+  const trigger = isControlled ? null : (
     <Button
       variant="ghost"
       size="icon"
