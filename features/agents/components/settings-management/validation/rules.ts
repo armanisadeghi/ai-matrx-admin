@@ -87,6 +87,11 @@ const invalidEnumValues: ValidationRule = {
       if (!control) continue;
       if (control.type !== "enum" || !control.enum?.length) continue;
 
+      // Union-type fields (e.g. tts_voice: string | object[]) use the enum
+      // branch only when the runtime value is a string. Arrays/objects indicate
+      // the alternate branch and must not be compared against the enum list.
+      if (typeof value === "object") continue;
+
       const compareValue = unwrapForComparison(key, value);
       if (!control.enum.includes(compareValue as string)) {
         issues.push({
@@ -379,45 +384,14 @@ const responseFormatStructure: ValidationRule = {
 };
 
 // =============================================================================
-// Rule: Frontend-only keys in settings (should not be serialized to API)
+// (Removed) Rule: Frontend-only keys in settings
+//
+// Frontend capability flags (tools, image_urls, file_urls, youtube_videos,
+// multi_speaker) are legitimate in the agent settings store — they tell the UI
+// what a model supports. The API call boundary (selectSettingsOverridesForApi)
+// is responsible for stripping them before outbound requests, not the settings
+// editor. Flagging them here produced false warnings.
 // =============================================================================
-
-const FRONTEND_ONLY_KEYS = new Set([
-  "tools",
-  "image_urls",
-  "file_urls",
-  "youtube_videos",
-  "multi_speaker",
-]);
-
-const frontendOnlyInSettings: ValidationRule = {
-  id: "frontend-only-in-settings",
-  description:
-    "Flags UI-only capability keys that leaked into the settings payload",
-  severity: "info",
-  category: "schema",
-  inspects: [...FRONTEND_ONLY_KEYS],
-  validate(config: ResolvedConfig): ValidationIssue[] {
-    const issues: ValidationIssue[] = [];
-    const settings = config.settings as Record<string, unknown>;
-
-    for (const key of FRONTEND_ONLY_KEYS) {
-      const value = settings[key];
-      if (value === null || value === undefined) continue;
-      issues.push({
-        ruleId: "frontend-only-in-settings",
-        key,
-        severity: "info",
-        category: "schema",
-        message: `"${key}" is a frontend-only flag and should not be in the settings payload`,
-        value,
-        suggestion: "Remove this key from settings — it's managed separately",
-      });
-    }
-
-    return issues;
-  },
-};
 
 // =============================================================================
 // Rule: Integer type enforcement
@@ -489,7 +463,6 @@ export const RULES: readonly ValidationRule[] = [
   thinkingBudgetCoupling,
   deprecatedKeys,
   responseFormatStructure,
-  frontendOnlyInSettings,
   integerTypeEnforcement,
   modelConstraints,
 ] as const;

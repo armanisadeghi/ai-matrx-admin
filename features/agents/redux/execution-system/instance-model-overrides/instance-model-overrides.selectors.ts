@@ -12,6 +12,19 @@ import type {
   LLMParams,
 } from "@/features/agents/types";
 
+// Keys that exist in the model's controls as UI capability flags (e.g.
+// `{ allowed: true }`) but are NOT part of the LLMParams config_overrides
+// sent to the Python backend. Actual tool definitions go through the
+// separate `client_tools` field in the request payload — the `tools` entry
+// here is just the model capability indicator, not the tools array.
+const UI_CAPABILITY_KEYS = new Set([
+  "tools",
+  "image_urls",
+  "file_urls",
+  "youtube_videos",
+  "multi_speaker",
+]);
+
 /**
  * Raw override state for an instance.
  */
@@ -29,7 +42,8 @@ export const selectInstanceOverrideState =
 export const selectCurrentSettings =
   (conversationId: string) =>
   (state: RootState): Partial<LLMParams> | undefined => {
-    const overrideState = state.instanceModelOverrides.byConversationId[conversationId];
+    const overrideState =
+      state.instanceModelOverrides.byConversationId[conversationId];
     if (!overrideState) return undefined;
 
     const merged: Record<string, unknown> = { ...overrideState.baseSettings };
@@ -57,7 +71,8 @@ export const selectCurrentSettings =
 export const selectSettingsOverridesForApi =
   (conversationId: string) =>
   (state: RootState): Record<string, unknown> | undefined => {
-    const overrideState = state.instanceModelOverrides.byConversationId[conversationId];
+    const overrideState =
+      state.instanceModelOverrides.byConversationId[conversationId];
     if (!overrideState) return undefined;
 
     const hasOverrides = Object.keys(overrideState.overrides).length > 0;
@@ -68,11 +83,13 @@ export const selectSettingsOverridesForApi =
     const result: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(overrideState.overrides)) {
+      if (UI_CAPABILITY_KEYS.has(key)) continue;
       result[key] = value;
     }
 
     // Explicit nulls signal "remove this setting" to the API
     for (const key of overrideState.removals) {
+      if (UI_CAPABILITY_KEYS.has(key)) continue;
       result[key] = null;
     }
 

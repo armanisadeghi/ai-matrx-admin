@@ -7,7 +7,10 @@ import {
 import { LLMParams } from "@/lib/api/types";
 import type { ModelConstraint } from "@/features/ai-models/types";
 
-const FRONTEND_ONLY_KEYS = new Set([
+// UI capability flags from model controls (e.g. `tools: { allowed: true }`).
+// These are legitimate in the settings store but are not LLMParams fields.
+// Included here so the "unrecognized key" rule doesn't flag them.
+const UI_CAPABILITY_KEYS = new Set([
   "tools",
   "image_urls",
   "file_urls",
@@ -23,7 +26,7 @@ const LEGACY_REMAP_KEYS = new Set(["max_tokens", "output_format", "n"]);
  * Sources (union of):
  *   1. LLM_PARAMS_KEYS — auto-generated from the Python backend schema
  *   2. Model-specific controls — keys the selected model exposes
- *   3. Frontend-only capability flags
+ *   3. UI capability flags (tools, image_urls, etc.)
  *   4. Legacy DB keys that are remapped at normalization time
  *
  * This replaces the hardcoded `recognizedKeys` set that previously lived
@@ -34,7 +37,7 @@ export function buildRecognizedKeys(
 ): Set<string> {
   const keys = new Set<string>([
     ...LLM_PARAMS_KEYS,
-    ...FRONTEND_ONLY_KEYS,
+    ...UI_CAPABILITY_KEYS,
     ...LEGACY_REMAP_KEYS,
   ]);
 

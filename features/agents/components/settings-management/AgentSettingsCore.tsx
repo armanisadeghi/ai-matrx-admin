@@ -10,6 +10,7 @@ import {
   Settings2,
   Code2,
   SlidersHorizontal,
+  ClipboardCopy,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -248,13 +249,32 @@ function colorizeJsonLine(line: string): string {
 
 interface IssueTableProps {
   issues: ValidationIssue[];
+  diagnosticPayload?: Record<string, unknown>;
   onView: (key: string) => void;
   onRemove: (key: string) => void;
   onFixEnum: (key: string) => void;
 }
 
-function IssueTable({ issues, onView, onRemove, onFixEnum }: IssueTableProps) {
+function IssueTable({
+  issues,
+  diagnosticPayload,
+  onView,
+  onRemove,
+  onFixEnum,
+}: IssueTableProps) {
+  const [copied, setCopied] = useState(false);
+
   if (issues.length === 0) return null;
+
+  const handleCopyDiagnostic = () => {
+    if (!diagnosticPayload) return;
+    navigator.clipboard
+      .writeText(JSON.stringify(diagnosticPayload, null, 2))
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      });
+  };
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -265,9 +285,26 @@ function IssueTable({ issues, onView, onRemove, onFixEnum }: IssueTableProps) {
           <span className="text-xs font-semibold text-yellow-800 dark:text-yellow-300">
             Settings Warnings
           </span>
-          <span className="ml-auto text-[10px] text-yellow-600 dark:text-yellow-500">
-            {issues.length} issue{issues.length !== 1 ? "s" : ""} detected
-          </span>
+          <div className="ml-auto flex items-center gap-1.5">
+            <span className="text-[10px] text-yellow-600 dark:text-yellow-500">
+              {issues.length} issue{issues.length !== 1 ? "s" : ""} detected
+            </span>
+            {diagnosticPayload && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleCopyDiagnostic}
+                    className="h-5 w-5 flex items-center justify-center rounded text-yellow-600 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-900/40 transition-colors"
+                  >
+                    <ClipboardCopy className="h-3 w-3" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  {copied ? "Copied!" : "Copy full diagnostic payload"}
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         </div>
 
         {/* Column headers — 4 columns: setting | detail | type | actions */}
@@ -602,6 +639,26 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
     constraints: modelConstraints,
   });
   const allIssues = validation.issues;
+
+  const diagnosticPayload = useMemo(() => {
+    if (allIssues.length === 0) return undefined;
+    const model = models.find((m) => m.id === modelId);
+    return {
+      model_id: modelId,
+      model_name: model?.name ?? null,
+      raw_settings: currentSettings,
+      constraints: modelConstraints,
+      issues: allIssues.map((i) => ({
+        rule: i.ruleId,
+        key: i.key,
+        severity: i.severity,
+        category: i.category,
+        message: i.message,
+        current_value: i.value,
+        suggestion: i.suggestion,
+      })),
+    };
+  }, [allIssues, modelId, models, currentSettings, modelConstraints]);
 
   const handleModelChange = (newModelId: string) => {
     dispatch(
@@ -1130,6 +1187,7 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
             {!noControls && allIssues.length > 0 && (
               <IssueTable
                 issues={allIssues}
+                diagnosticPayload={diagnosticPayload}
                 onView={handleIssueView}
                 onRemove={handleIssueRemove}
                 onFixEnum={handleIssueFix}

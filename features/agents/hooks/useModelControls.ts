@@ -200,7 +200,9 @@ export function useModelControls(models: any[], selectedModelId: string) {
     "max_tokens",
     "output_format",
     "n",
-    // Frontend-only UI capability flags (never sent to the API)
+    // UI capability flags from model controls (e.g. { allowed: true }).
+    // These indicate what a model supports — they are not LLMParams fields.
+    // Actual tool definitions are assembled separately via client_tools.
     "tools",
     "file_urls",
     "image_urls",

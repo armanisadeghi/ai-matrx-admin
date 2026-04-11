@@ -24,8 +24,6 @@ import {
   Radio,
   Database,
   RotateCcw,
-  PictureInPicture2,
-  Maximize2,
   AppWindow,
   SlidersHorizontal,
   Layers,
@@ -61,8 +59,6 @@ import {
 } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
 import { selectAllInstanceIds } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
 import { SystemInstructionEditor } from "../builder/message-builders/system-instructions/SystemInstructionEditor";
-import { StreamDebugFloating } from "../debug/StreamDebugFloating";
-import { openStreamDebug } from "@/lib/redux/slices/overlaySlice";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { StreamDebugPanel } from "../debug/StreamDebugPanel";
 import { AgentLauncherSidebarTester } from "./AgentLauncherSidebarTester";
@@ -197,13 +193,11 @@ function TR({
 function ActionsTab({
   conversationId,
   surfaceKey,
-  onOpenStreamDebugFloating,
   onOpenStreamDebugWindow,
   onOpenRunSettingsWindow,
 }: {
   conversationId: string;
   surfaceKey: string;
-  onOpenStreamDebugFloating: () => void;
   onOpenStreamDebugWindow: () => void;
   onOpenRunSettingsWindow: () => void;
 }) {
@@ -220,17 +214,13 @@ function ActionsTab({
       .catch((err) => console.error("Failed to reset test instance:", err));
   }, [conversationId, surfaceKey, dispatch]);
 
-  const handleOpenStreamDebugOverlay = useCallback(() => {
-    dispatch(openStreamDebug({ conversationId }));
-  }, [dispatch, conversationId]);
-
   const ActionButton = ({
     onClick,
     icon: Icon,
     label,
   }: {
     onClick: () => void;
-    icon: any;
+    icon: React.ComponentType<{ className?: string }>;
     label: React.ReactNode;
   }) => (
     <button
@@ -259,17 +249,6 @@ function ActionsTab({
         }
       />
       <ActionButton
-        onClick={onOpenStreamDebugFloating}
-        icon={PictureInPicture2}
-        label={
-          <>
-            Debug
-            <br />
-            Floating
-          </>
-        }
-      />
-      <ActionButton
         onClick={onOpenStreamDebugWindow}
         icon={AppWindow}
         label={
@@ -277,17 +256,6 @@ function ActionsTab({
             Debug
             <br />
             Window
-          </>
-        }
-      />
-      <ActionButton
-        onClick={handleOpenStreamDebugOverlay}
-        icon={Maximize2}
-        label={
-          <>
-            Debug
-            <br />
-            Overlay
           </>
         }
       />
@@ -1182,7 +1150,6 @@ export function CreatorRunPanel({
   const [activeTab, setActiveTab] = useState<TabId>(() =>
     allowedTabs && allowedTabs.length > 0 ? allowedTabs[0] : "actions",
   );
-  const [streamDebugFloatingOpen, setStreamDebugFloatingOpen] = useState(false);
   // Window panels stay mounted once opened (never unmounted while minimized).
   // Only set to false when the user explicitly closes via onClose.
   const [streamDebugWindowOpen, setStreamDebugWindowOpen] = useState(false);
@@ -1198,10 +1165,6 @@ export function CreatorRunPanel({
 
   const streamDebugEntry = useAppSelector(selectWindow(streamDebugId));
   const runSettingsEntry = useAppSelector(selectWindow(runSettingsId));
-
-  const openStreamDebugFloating = useCallback(() => {
-    setStreamDebugFloatingOpen(true);
-  }, []);
 
   const openStreamDebugWindow = useCallback(() => {
     if (streamDebugEntry) {
@@ -1248,12 +1211,6 @@ export function CreatorRunPanel({
   // and the minimized tray chip keeps working. Only unmounted on explicit close.
   const windowPanels = (
     <>
-      {streamDebugFloatingOpen && (
-        <StreamDebugFloating
-          conversationId={conversationId}
-          onClose={() => setStreamDebugFloatingOpen(false)}
-        />
-      )}
       {streamDebugWindowOpen && (
         <WindowPanel
           id={streamDebugId}
@@ -1293,16 +1250,18 @@ export function CreatorRunPanel({
           <button
             type="button"
             onClick={handleExpand}
-            className="flex items-center gap-3 w-full pl-2 pr-3 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+            className="flex items-center gap-2 w-full pl-2 pr-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors min-w-0"
           >
-            <span className="font-medium text-foreground truncate">
+            <span className="font-medium text-foreground truncate shrink-0 max-w-[120px] sm:max-w-none">
               {conversationTitle ?? "Creator Panel"}
             </span>
             {latestStats && (
-              <CollapsedStatsPills
-                stats={latestStats}
-                clientMetrics={latestClientMetrics}
-              />
+              <span className="flex items-center gap-2 overflow-x-auto shrink min-w-0 scrollbar-none">
+                <CollapsedStatsPills
+                  stats={latestStats}
+                  clientMetrics={latestClientMetrics}
+                />
+              </span>
             )}
             <ChevronDown className="w-3 h-3 shrink-0 ml-auto" />
           </button>
@@ -1336,14 +1295,14 @@ export function CreatorRunPanel({
     <>
       <div className="border-t border-border bg-card">
         {/* Tab header */}
-        <div className="flex items-center px-2 py-0 border-b border-border">
-          <div className="flex items-center gap-0 overflow-x-auto shrink-0">
+        <div className="flex items-center border-b border-border min-w-0">
+          <div className="flex items-center gap-0 overflow-x-auto min-w-0 flex-1 scrollbar-none">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-2 py-1.5 text-[11px] font-medium transition-colors border-b-2 -mb-px whitespace-nowrap ${
+                className={`px-2 py-1.5 text-[11px] font-medium transition-colors border-b-2 -mb-px whitespace-nowrap shrink-0 ${
                   activeTab === tab.id
                     ? "border-primary text-foreground"
                     : "border-transparent text-muted-foreground hover:text-foreground"
@@ -1354,17 +1313,10 @@ export function CreatorRunPanel({
             ))}
           </div>
 
-          {/* Clickable space that expands to fill remaining width */}
-          <div
-            className="flex-1 self-stretch cursor-pointer"
-            onClick={handleCollapse}
-            title="Collapse panel"
-          />
-
           <button
             type="button"
             onClick={handleCollapse}
-            className="p-1 ml-1 text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            className="p-1.5 ml-1 text-muted-foreground hover:text-foreground transition-colors shrink-0"
             title="Collapse"
           >
             <ChevronUp className="w-3.5 h-3.5" />
@@ -1377,7 +1329,6 @@ export function CreatorRunPanel({
             <ActionsTab
               conversationId={conversationId}
               surfaceKey={surfaceKey}
-              onOpenStreamDebugFloating={openStreamDebugFloating}
               onOpenStreamDebugWindow={openStreamDebugWindow}
               onOpenRunSettingsWindow={openRunSettingsWindow}
             />

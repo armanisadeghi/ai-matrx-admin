@@ -50,17 +50,21 @@ const AudioOutputBlock: React.FC<AudioOutputBlockProps> = ({
   };
 
   return (
-    <div className="rounded-lg border bg-card p-3 space-y-2 my-2">
+    <div className="rounded-lg border border-border bg-card p-3 space-y-2 my-2">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Volume2 className="w-4 h-4 text-primary flex-shrink-0" />
         <span className="font-medium text-foreground">Audio Response</span>
         {mimeType && (
-          <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-muted">
+          <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
             {mimeType}
           </span>
         )}
       </div>
-      <audio controls autoPlay src={url} className="w-full" />
+      {/* Native <audio> controls are browser-rendered and cannot be fully themed.
+          The rounded bg-muted wrapper visually anchors the player to the card. */}
+      <div className="rounded-md bg-muted p-1">
+        <audio controls autoPlay src={url} className="w-full h-8" />
+      </div>
       <div className="flex items-center gap-2">
         <Button
           variant="ghost"
