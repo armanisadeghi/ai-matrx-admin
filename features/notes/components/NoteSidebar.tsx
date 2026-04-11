@@ -19,7 +19,13 @@
 // - Rename Folder dialog
 // - Empty state when no notes exist
 
-import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+} from "react";
 import dynamic from "next/dynamic";
 import {
   FileText,
@@ -75,7 +81,11 @@ import {
   selectNotesGroupedByScope,
   selectNoteScopesLoaded,
 } from "../redux/selectors";
-import { createFolder, renameFolder, deleteFolderNotes } from "../service/notesService";
+import {
+  createFolder,
+  renameFolder,
+  deleteFolderNotes,
+} from "../service/notesService";
 import {
   selectAllAssignments,
   selectScopeNameMap,
@@ -101,7 +111,11 @@ const SORT_FIELDS: { field: NoteSortField; label: string }[] = [
 ];
 
 // ── Group-by modes ──────────────────────────────────────────────────────────
-const GROUP_MODES: { mode: NoteGroupBy | "recent"; label: string; icon: typeof Folder }[] = [
+const GROUP_MODES: {
+  mode: NoteGroupBy | "recent";
+  label: string;
+  icon: typeof Folder;
+}[] = [
   { mode: "folder", label: "Folder", icon: Folder },
   { mode: "recent", label: "Recent", icon: Clock },
   { mode: "scope", label: "Scope", icon: Tag },
@@ -132,13 +146,6 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
   const projName = useAppSelector(selectProjectName);
   const taskName = useAppSelector(selectTaskName);
 
-  // ── Fetch scope assignments when switching to scope mode ────────────
-  useEffect(() => {
-    if (groupBy === "scope" && !scopesLoaded) {
-      dispatch(fetchAllNoteScopes());
-    }
-  }, [dispatch, groupBy, scopesLoaded]);
-
   // ── Local UI state ─────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
@@ -149,9 +156,26 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
   const [groupBy, setGroupBy] = useState<NoteGroupBy | "recent">("folder");
   const [groupByDropdown, setGroupByDropdown] = useState(false);
 
+  // ── Fetch scope assignments when switching to scope mode ────────────
+  useEffect(() => {
+    if (groupBy === "scope" && !scopesLoaded) {
+      dispatch(fetchAllNoteScopes());
+    }
+  }, [dispatch, groupBy, scopesLoaded]);
+
   // Context menu state
-  const [folderCtx, setFolderCtx] = useState<{ folder: string; x: number; y: number } | null>(null);
-  const [noteCtx, setNoteCtx] = useState<{ noteId: string; noteLabel: string; folder: string; x: number; y: number } | null>(null);
+  const [folderCtx, setFolderCtx] = useState<{
+    folder: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  const [noteCtx, setNoteCtx] = useState<{
+    noteId: string;
+    noteLabel: string;
+    folder: string;
+    x: number;
+    y: number;
+  } | null>(null);
   const [moveSubmenu, setMoveSubmenu] = useState(false);
 
   // DnD state
@@ -160,7 +184,9 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
 
   // Dialog state
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
-  const [renameFolderTarget, setRenameFolderTarget] = useState<string | null>(null);
+  const [renameFolderTarget, setRenameFolderTarget] = useState<string | null>(
+    null,
+  );
 
   // Refs
   const folderTreeRef = useRef<HTMLDivElement>(null);
@@ -183,7 +209,9 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
   // ── Auto-scroll active note into view ──────────────────────────────
   useEffect(() => {
     if (!activeTabId || !folderTreeRef.current) return;
-    const el = folderTreeRef.current.querySelector(`[data-note-id="${activeTabId}"]`);
+    const el = folderTreeRef.current.querySelector(
+      `[data-note-id="${activeTabId}"]`,
+    );
     el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [activeTabId]);
 
@@ -191,7 +219,10 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
   useEffect(() => {
     if (!folderCtx && !noteCtx) return;
     const handler = (e: MouseEvent) => {
-      if (ctxMenuRef.current && !ctxMenuRef.current.contains(e.target as Node)) {
+      if (
+        ctxMenuRef.current &&
+        !ctxMenuRef.current.contains(e.target as Node)
+      ) {
         setFolderCtx(null);
         setNoteCtx(null);
         setMoveSubmenu(false);
@@ -210,7 +241,9 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
     // Add "Uncategorized" if any notes lack a folder_name
     const hasOrphans = allNotes.some((n) => !n.folder_name);
     const result = allFolders.concat(
-      Array.from(set).filter((f) => !allFolders.includes(f)).sort(),
+      Array.from(set)
+        .filter((f) => !allFolders.includes(f))
+        .sort(),
     );
     if (hasOrphans && !result.includes("Uncategorized")) {
       result.push("Uncategorized");
@@ -260,9 +293,13 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
     // Scope grouping uses the pre-computed selector (many-to-many)
     if (groupBy === "scope") {
       // Apply search filter to the scope-grouped results
-      const searchIds = searchQuery ? new Set(filteredNotes.map((n) => n.id)) : null;
+      const searchIds = searchQuery
+        ? new Set(filteredNotes.map((n) => n.id))
+        : null;
       for (const [key, notes] of scopeGrouped) {
-        const filtered = searchIds ? notes.filter((n) => searchIds.has(n.id)) : notes;
+        const filtered = searchIds
+          ? notes.filter((n) => searchIds.has(n.id))
+          : notes;
         if (filtered.length > 0) {
           map.set(key, sortNotes(filtered));
         }
@@ -348,40 +385,49 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
   }, []);
 
   // ── DnD handlers ──────────────────────────────────────────────────
-  const handleNoteDragStart = useCallback((e: React.DragEvent, noteId: string) => {
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", noteId);
-    setDraggedNoteId(noteId);
-  }, []);
+  const handleNoteDragStart = useCallback(
+    (e: React.DragEvent, noteId: string) => {
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", noteId);
+      setDraggedNoteId(noteId);
+    },
+    [],
+  );
 
   const handleNoteDragEnd = useCallback(() => {
     setDraggedNoteId(null);
     setDropTargetFolder(null);
   }, []);
 
-  const handleFolderDragOver = useCallback((e: React.DragEvent, folder: string) => {
-    if (!draggedNoteId) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    setDropTargetFolder(folder);
-  }, [draggedNoteId]);
+  const handleFolderDragOver = useCallback(
+    (e: React.DragEvent, folder: string) => {
+      if (!draggedNoteId) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      setDropTargetFolder(folder);
+    },
+    [draggedNoteId],
+  );
 
   const handleFolderDragLeave = useCallback(() => {
     setDropTargetFolder(null);
   }, []);
 
-  const handleFolderDrop = useCallback((e: React.DragEvent, targetFolder: string) => {
-    e.preventDefault();
-    const noteId = e.dataTransfer.getData("text/plain");
-    if (!noteId) return;
-    // Find the note's current folder to avoid no-op moves
-    const note = allNotes.find((n) => n.id === noteId);
-    if (note && note.folder_name !== targetFolder) {
-      dispatch(moveNoteToFolder({ noteId, folder: targetFolder }));
-    }
-    setDraggedNoteId(null);
-    setDropTargetFolder(null);
-  }, [dispatch, allNotes]);
+  const handleFolderDrop = useCallback(
+    (e: React.DragEvent, targetFolder: string) => {
+      e.preventDefault();
+      const noteId = e.dataTransfer.getData("text/plain");
+      if (!noteId) return;
+      // Find the note's current folder to avoid no-op moves
+      const note = allNotes.find((n) => n.id === noteId);
+      if (note && note.folder_name !== targetFolder) {
+        dispatch(moveNoteToFolder({ noteId, folder: targetFolder }));
+      }
+      setDraggedNoteId(null);
+      setDropTargetFolder(null);
+    },
+    [dispatch, allNotes],
+  );
 
   const toggleAllFolders = useCallback(() => {
     setExpandedFolders((prev) => {
@@ -433,56 +479,68 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
     setFolderCtx(null);
   }, []);
 
-  const handleFolderDeleteAll = useCallback(async (folder: string) => {
-    setFolderCtx(null);
-    const count = (groupedNotes.get(folder) ?? []).length;
-    if (count === 0) return;
-    try {
-      await deleteFolderNotes(folder);
-      // Re-fetch notes list to reflect deletions
-      dispatch(fetchNotesList());
-    } catch {
-      // Error handled in service
-    }
-  }, [dispatch, groupedNotes]);
+  const handleFolderDeleteAll = useCallback(
+    async (folder: string) => {
+      setFolderCtx(null);
+      const count = (groupedNotes.get(folder) ?? []).length;
+      if (count === 0) return;
+      try {
+        await deleteFolderNotes(folder);
+        // Re-fetch notes list to reflect deletions
+        dispatch(fetchNotesList());
+      } catch {
+        // Error handled in service
+      }
+    },
+    [dispatch, groupedNotes],
+  );
 
-  const handleRenameConfirm = useCallback(async (newName: string) => {
-    if (!renameFolderTarget) return;
-    try {
-      await renameFolder(renameFolderTarget, newName);
-      // Re-fetch notes list to reflect renamed folder_name
-      dispatch(fetchNotesList());
-    } catch {
-      // Error handled in service
-    }
-  }, [dispatch, renameFolderTarget]);
+  const handleRenameConfirm = useCallback(
+    async (newName: string) => {
+      if (!renameFolderTarget) return;
+      try {
+        await renameFolder(renameFolderTarget, newName);
+        // Re-fetch notes list to reflect renamed folder_name
+        dispatch(fetchNotesList());
+      } catch {
+        // Error handled in service
+      }
+    },
+    [dispatch, renameFolderTarget],
+  );
 
   // ── Note context menu actions ──────────────────────────────────────
-  const handleNoteExport = useCallback((noteId: string, label: string) => {
-    const note = allNotes.find((n) => n.id === noteId);
-    if (!note) return;
-    const blob = new Blob([note.content ?? ""], { type: "text/markdown" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${label}.md`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setNoteCtx(null);
-  }, [allNotes]);
+  const handleNoteExport = useCallback(
+    (noteId: string, label: string) => {
+      const note = allNotes.find((n) => n.id === noteId);
+      if (!note) return;
+      const blob = new Blob([note.content ?? ""], { type: "text/markdown" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${label}.md`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setNoteCtx(null);
+    },
+    [allNotes],
+  );
 
   // ── Create folder handler ──────────────────────────────────────────
-  const handleCreateFolder = useCallback(async (folderName: string) => {
-    try {
-      // Create the note_folders record first
-      await createFolder(folderName);
-      // Then create a new note in that folder (which will resolve folder_id)
-      handleNewNote(folderName);
-    } catch {
-      // Fall back to just creating the note
-      handleNewNote(folderName);
-    }
-  }, [handleNewNote]);
+  const handleCreateFolder = useCallback(
+    async (folderName: string) => {
+      try {
+        // Create the note_folders record first
+        await createFolder(folderName);
+        // Then create a new note in that folder (which will resolve folder_id)
+        handleNewNote(folderName);
+      } catch {
+        // Fall back to just creating the note
+        handleNewNote(folderName);
+      }
+    },
+    [handleNewNote],
+  );
 
   // ── Format time ────────────────────────────────────────────────────
   const formatTime = (dateStr: string | null | undefined) => {
@@ -498,7 +556,8 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
     return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
   };
 
-  const sortLabel = SORT_FIELDS.find((s) => s.field === sortField)?.label ?? "Modified";
+  const sortLabel =
+    SORT_FIELDS.find((s) => s.field === sortField)?.label ?? "Modified";
 
   // ── Render ─────────────────────────────────────────────────────────
   return (
@@ -541,12 +600,17 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
             title="Group by"
           >
             <Layers />
-            <span>{GROUP_MODES.find((m) => m.mode === groupBy)?.label ?? "Folder"}</span>
+            <span>
+              {GROUP_MODES.find((m) => m.mode === groupBy)?.label ?? "Folder"}
+            </span>
             <ChevronDown className="w-2! h-2! opacity-50" />
           </button>
           {groupByDropdown && (
             <>
-              <div className="fixed inset-0 z-[100]" onClick={() => setGroupByDropdown(false)} />
+              <div
+                className="fixed inset-0 z-[100]"
+                onClick={() => setGroupByDropdown(false)}
+              />
               <div className="absolute left-0 top-full mt-1 z-[110] min-w-[130px] py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg">
                 {GROUP_MODES.map((m) => {
                   const Icon = m.icon;
@@ -667,28 +731,50 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
             const isFolderMode = groupBy === "folder";
             const { icon: FolderIcon, color: iconColor } = isFolderMode
               ? getFolderIconAndColor(groupKey)
-              : { icon: GROUP_MODES.find((m) => m.mode === groupBy)?.icon ?? Folder, color: undefined };
+              : {
+                  icon:
+                    GROUP_MODES.find((m) => m.mode === groupBy)?.icon ?? Folder,
+                  color: undefined,
+                };
 
             if (searchQuery && count === 0) return null;
 
             return (
               <div
                 key={groupKey}
-                onDragOver={isFolderMode ? (e) => handleFolderDragOver(e, groupKey) : undefined}
+                onDragOver={
+                  isFolderMode
+                    ? (e) => handleFolderDragOver(e, groupKey)
+                    : undefined
+                }
                 onDragLeave={isFolderMode ? handleFolderDragLeave : undefined}
-                onDrop={isFolderMode ? (e) => handleFolderDrop(e, groupKey) : undefined}
+                onDrop={
+                  isFolderMode
+                    ? (e) => handleFolderDrop(e, groupKey)
+                    : undefined
+                }
               >
                 <button
                   className={cn(
                     "group flex items-center gap-1 w-full px-2 py-1 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer transition-colors hover:text-foreground hover:bg-accent/50 [&_svg]:w-3 [&_svg]:h-3",
-                    isFolderMode && dropTargetFolder === groupKey && "bg-primary/10 border-l-2 border-primary",
+                    isFolderMode &&
+                      dropTargetFolder === groupKey &&
+                      "bg-primary/10 border-l-2 border-primary",
                   )}
                   onClick={() => toggleFolder(groupKey)}
-                  onContextMenu={isFolderMode ? (e) => {
-                    e.preventDefault();
-                    setNoteCtx(null);
-                    setFolderCtx({ folder: groupKey, x: e.clientX, y: e.clientY });
-                  } : undefined}
+                  onContextMenu={
+                    isFolderMode
+                      ? (e) => {
+                          e.preventDefault();
+                          setNoteCtx(null);
+                          setFolderCtx({
+                            folder: groupKey,
+                            x: e.clientX,
+                            y: e.clientY,
+                          });
+                        }
+                      : undefined
+                  }
                 >
                   {isExpanded ? (
                     <ChevronDown className="opacity-60" />
@@ -724,15 +810,22 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
                     ) : (
                       groupNotes.map((note) => {
                         const isActive = activeTabId === note.id;
-                        const isOpenTab = openTabIds?.includes(note.id) ?? false;
+                        const isOpenTab =
+                          openTabIds?.includes(note.id) ?? false;
                         const isDragging = draggedNoteId === note.id;
                         return (
                           <button
                             key={note.id}
                             data-note-id={note.id}
                             draggable={isFolderMode}
-                            onDragStart={isFolderMode ? (e) => handleNoteDragStart(e, note.id) : undefined}
-                            onDragEnd={isFolderMode ? handleNoteDragEnd : undefined}
+                            onDragStart={
+                              isFolderMode
+                                ? (e) => handleNoteDragStart(e, note.id)
+                                : undefined
+                            }
+                            onDragEnd={
+                              isFolderMode ? handleNoteDragEnd : undefined
+                            }
                             className={cn(
                               "flex items-center gap-1.5 w-full text-left px-2 py-[3px] rounded-sm cursor-pointer transition-colors group/item",
                               isActive
@@ -794,7 +887,10 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
       {/* ── Folder context menu ────────────────────────────────────────── */}
       {folderCtx && (
         <>
-          <div className="fixed inset-0 z-[110]" onClick={() => setFolderCtx(null)} />
+          <div
+            className="fixed inset-0 z-[110]"
+            onClick={() => setFolderCtx(null)}
+          />
           <div
             ref={ctxMenuRef}
             className="fixed z-[120] min-w-[160px] py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg"
@@ -802,7 +898,10 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
           >
             <button
               className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-foreground hover:bg-accent cursor-pointer transition-colors"
-              onClick={() => { handleNewNote(folderCtx.folder); setFolderCtx(null); }}
+              onClick={() => {
+                handleNewNote(folderCtx.folder);
+                setFolderCtx(null);
+              }}
             >
               <Plus className="w-3 h-3" /> New Note in {folderCtx.folder}
             </button>
@@ -830,7 +929,13 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
       {/* ── Note context menu ──────────────────────────────────────────── */}
       {noteCtx && (
         <>
-          <div className="fixed inset-0 z-[110]" onClick={() => { setNoteCtx(null); setMoveSubmenu(false); }} />
+          <div
+            className="fixed inset-0 z-[110]"
+            onClick={() => {
+              setNoteCtx(null);
+              setMoveSubmenu(false);
+            }}
+          />
           <div
             ref={ctxMenuRef}
             className="fixed z-[120] min-w-[160px] py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg"
@@ -838,19 +943,27 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
           >
             <button
               className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-foreground hover:bg-accent cursor-pointer transition-colors"
-              onClick={() => { selectNote(noteCtx.noteId); setNoteCtx(null); }}
+              onClick={() => {
+                selectNote(noteCtx.noteId);
+                setNoteCtx(null);
+              }}
             >
               <FileText className="w-3 h-3" /> Open
             </button>
             <button
               className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-foreground hover:bg-accent cursor-pointer transition-colors"
-              onClick={() => { dispatch(copyNote(noteCtx.noteId)); setNoteCtx(null); }}
+              onClick={() => {
+                dispatch(copyNote(noteCtx.noteId));
+                setNoteCtx(null);
+              }}
             >
               <Copy className="w-3 h-3" /> Duplicate
             </button>
             <button
               className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-foreground hover:bg-accent cursor-pointer transition-colors"
-              onClick={() => handleNoteExport(noteCtx.noteId, noteCtx.noteLabel)}
+              onClick={() =>
+                handleNoteExport(noteCtx.noteId, noteCtx.noteLabel)
+              }
             >
               <Download className="w-3 h-3" /> Export as Markdown
             </button>
@@ -873,7 +986,12 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
                         key={f}
                         className="w-full text-left px-3 py-1.5 text-[0.625rem] text-foreground hover:bg-accent cursor-pointer transition-colors"
                         onClick={() => {
-                          dispatch(moveNoteToFolder({ noteId: noteCtx.noteId, folder: f }));
+                          dispatch(
+                            moveNoteToFolder({
+                              noteId: noteCtx.noteId,
+                              folder: f,
+                            }),
+                          );
                           setNoteCtx(null);
                           setMoveSubmenu(false);
                         }}
@@ -888,7 +1006,9 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
             <button
               className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10 cursor-pointer transition-colors"
               onClick={() => {
-                dispatch(removeInstanceTab({ instanceId, noteId: noteCtx.noteId }));
+                dispatch(
+                  removeInstanceTab({ instanceId, noteId: noteCtx.noteId }),
+                );
                 dispatch(deleteNote(noteCtx.noteId));
                 setNoteCtx(null);
               }}
@@ -910,7 +1030,9 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
       {renameFolderTarget && (
         <RenameFolderDialog
           open={!!renameFolderTarget}
-          onOpenChange={(open) => { if (!open) setRenameFolderTarget(null); }}
+          onOpenChange={(open) => {
+            if (!open) setRenameFolderTarget(null);
+          }}
           onConfirm={handleRenameConfirm}
           currentName={renameFolderTarget}
           existingFolders={allFolders}
