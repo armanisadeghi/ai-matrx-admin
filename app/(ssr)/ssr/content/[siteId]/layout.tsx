@@ -1,3 +1,4 @@
+import React from "react";
 import SiteLayoutClient from "./SiteLayoutClient";
 import { createCustomFaviconMetadata } from "@/utils/favicon-utils";
 import { siteConfig } from "@/config/extras/site";
@@ -50,5 +51,3 @@ export default function SiteLayout({
 }) {
   return <SiteLayoutClient>{children}</SiteLayoutClient>;
 }
-
-export { useSiteContext } from "./SiteLayoutClient";
