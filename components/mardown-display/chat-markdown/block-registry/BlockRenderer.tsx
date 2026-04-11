@@ -111,8 +111,6 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
 
   switch (block.type) {
     case "audio_output": {
-      // serverData shape: { url: string; mime_type: string }
-      // Falls back to block.src (mapped from data.url by EnhancedChatMarkdown)
       const audioUrl =
         (block.serverData?.url as string | undefined) ?? block.src;
       const audioMimeType =
@@ -124,6 +122,179 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           key={index}
           url={audioUrl}
           mimeType={audioMimeType}
+        />
+      );
+    }
+
+    case "image_output": {
+      const imgUrl = (block.serverData?.url as string | undefined) ?? block.src;
+      const imgMimeType =
+        (block.serverData?.mime_type as string | undefined) ??
+        (block.metadata?.mimeType as string | undefined);
+      if (!imgUrl) return null;
+      return (
+        <BlockComponents.ImageOutputBlock
+          key={index}
+          url={imgUrl}
+          mimeType={imgMimeType}
+        />
+      );
+    }
+
+    case "video_output": {
+      const vidUrl = (block.serverData?.url as string | undefined) ?? block.src;
+      const vidMimeType =
+        (block.serverData?.mime_type as string | undefined) ??
+        (block.metadata?.mimeType as string | undefined);
+      if (!vidUrl) return null;
+      return (
+        <BlockComponents.VideoOutputBlock
+          key={index}
+          url={vidUrl}
+          mimeType={vidMimeType}
+        />
+      );
+    }
+
+    case "search_results": {
+      const sd = block.serverData ?? {};
+      return (
+        <BlockComponents.SearchResultsBlock
+          key={index}
+          results={(sd.results as Record<string, unknown>[]) ?? []}
+          metadata={(sd.metadata as Record<string, unknown>) ?? {}}
+        />
+      );
+    }
+
+    case "search_error": {
+      const sd = block.serverData ?? {};
+      return (
+        <BlockComponents.SearchErrorBlock
+          key={index}
+          error={(sd.error as string) ?? "Unknown search error"}
+          metadata={(sd.metadata as Record<string, unknown>) ?? undefined}
+        />
+      );
+    }
+
+    case "function_result": {
+      const sd = block.serverData ?? {};
+      return (
+        <BlockComponents.FunctionResultBlock
+          key={index}
+          functionName={(sd.function_name as string) ?? "unknown"}
+          success={(sd.success as boolean) ?? false}
+          result={sd.result}
+          error={(sd.error as string | null) ?? null}
+          durationMs={(sd.duration_ms as number | null) ?? null}
+        />
+      );
+    }
+
+    case "workflow_step": {
+      const sd = block.serverData ?? {};
+      return (
+        <BlockComponents.WorkflowStepBlock
+          key={index}
+          stepName={(sd.step_name as string) ?? "unknown"}
+          status={(sd.status as string) ?? "unknown"}
+          data={(sd.data as Record<string, unknown>) ?? undefined}
+        />
+      );
+    }
+
+    case "categorization_result": {
+      const sd = block.serverData ?? {};
+      return (
+        <BlockComponents.CategorizationResultBlock
+          key={index}
+          promptId={(sd.prompt_id as string) ?? ""}
+          category={(sd.category as string) ?? ""}
+          tags={(sd.tags as string[]) ?? []}
+          description={(sd.description as string) ?? undefined}
+          dryRun={(sd.dry_run as boolean) ?? undefined}
+          metadata={(sd.metadata as Record<string, unknown>) ?? undefined}
+        />
+      );
+    }
+
+    case "fetch_results": {
+      const sd = block.serverData ?? {};
+      return (
+        <BlockComponents.FetchResultsBlock
+          key={index}
+          results={(sd.results as Record<string, unknown>[]) ?? []}
+          metadata={(sd.metadata as Record<string, unknown>) ?? {}}
+        />
+      );
+    }
+
+    case "podcast_complete": {
+      const sd = block.serverData ?? {};
+      return (
+        <BlockComponents.PodcastCompleteBlock
+          key={index}
+          showId={(sd.show_id as string) ?? ""}
+          success={(sd.success as boolean) ?? false}
+          episodeCount={(sd.episode_count as number) ?? undefined}
+          error={(sd.error as string | null) ?? null}
+        />
+      );
+    }
+
+    case "podcast_stage": {
+      const sd = block.serverData ?? {};
+      return (
+        <BlockComponents.PodcastStageBlock
+          key={index}
+          stage={(sd.stage as string) ?? ""}
+          success={(sd.success as boolean) ?? false}
+          error={(sd.error as string | null) ?? null}
+          resultKeys={(sd.result_keys as string[]) ?? []}
+        />
+      );
+    }
+
+    case "scrape_batch_complete": {
+      const sd = block.serverData ?? {};
+      return (
+        <BlockComponents.ScrapeBatchCompleteBlock
+          key={index}
+          totalScraped={(sd.total_scraped as number) ?? 0}
+        />
+      );
+    }
+
+    case "structured_input_warning": {
+      const sd = block.serverData ?? {};
+      return (
+        <BlockComponents.StructuredInputWarningBlock
+          key={index}
+          blockType={(sd.block_type as string) ?? "unknown"}
+          failures={(sd.failures as Record<string, unknown>[]) ?? []}
+        />
+      );
+    }
+
+    case "display_questionnaire": {
+      const sd = block.serverData ?? {};
+      return (
+        <BlockComponents.DisplayQuestionnaireBlock
+          key={index}
+          introduction={(sd.introduction as string) ?? ""}
+          questions={(sd.questions as Record<string, unknown>[]) ?? []}
+        />
+      );
+    }
+
+    case "unknown_data_event": {
+      const sd = block.serverData ?? {};
+      return (
+        <BlockComponents.UnknownDataEventBlock
+          key={index}
+          dataType={(sd._dataType as string) ?? "unknown"}
+          data={sd}
         />
       );
     }

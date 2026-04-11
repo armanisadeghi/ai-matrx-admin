@@ -36,7 +36,6 @@ import {
   isRecordUpdateEvent,
   type ConversationIdData,
   type ConversationLabeledData,
-  type AudioOutputData,
 } from "@/types/python-generated/stream-events";
 import {
   addPendingToolCall,
@@ -320,16 +319,26 @@ export async function processStream({
           }),
         );
       } else if (isTypedDataEvent(event)) {
-        // Persistence / identity hooks: first-class `data` events with `type`
-        // (e.g. conversation_id, conversation_labeled) are handled below; any
-        // other `type` is stored on the active request via appendDataPayload for
-        // UI or future use (e.g. message_id, cx_message row metadata, flags).
-        // Add new discriminators next to conversation_id / conversation_labeled.
+        // Every `data` event is:
+        //  1. Stored via appendDataPayload (backward compat — feature hooks that
+        //     read selectPrimaryResponseDataByTaskId still work unchanged).
+        //  2. Promoted to a content block so BlockRenderer can render it inline.
+        //
+        // A small set of types (conversation_id, conversation_labeled) also
+        // trigger Redux side-effects first — they are NOT promoted to blocks
+        // because they carry no displayable content.
+        //
+        // Unknown types get promoted as "unknown_data_event" blocks so nothing
+        // is ever silently dropped.
         dataEvents++;
         const d = event.data as Record<string, unknown>;
         const dataType = (d.type as string) ?? "unknown";
 
+        // Always store in data payload store for any feature that reads it directly
+        dispatch(appendDataPayload({ requestId, data: d }));
+
         if (dataType === "conversation_id") {
+          // Identity hook — no block; sets conversation ID in state
           const cid = (d as unknown as ConversationIdData).conversation_id;
           if (cid && !streamServerConversationId) {
             streamServerConversationId = cid;
@@ -347,6 +356,7 @@ export async function processStream({
             if (syncList) dispatch(syncList);
           }
         } else if (dataType === "conversation_labeled") {
+          // Identity hook — no block; sets conversation label in state
           const labeled = d as unknown as ConversationLabeledData;
           dispatch(
             setConversationLabel({
@@ -363,30 +373,46 @@ export async function processStream({
               description: labeled.description ?? "",
             }),
           );
-        } else if (dataType === "audio_output") {
-          // Promote audio_output data events to first-class content blocks so
-          // BlockRenderer can render them inline alongside text, without any
-          // special-casing at the UI layer.
-          const audio = d as unknown as AudioOutputData;
-          dispatch(appendDataPayload({ requestId, data: d }));
+        } else {
+          // All other typed data events → promote to a content block.
+          // BlockRenderer has a dedicated case for every known type, plus
+          // "unknown_data_event" as a visible catchall for anything new.
+          const blockType = [
+            "audio_output",
+            "image_output",
+            "video_output",
+            "search_results",
+            "search_error",
+            "function_result",
+            "workflow_step",
+            "categorization_result",
+            "fetch_results",
+            "podcast_complete",
+            "podcast_stage",
+            "scrape_batch_complete",
+            "structured_input_warning",
+            "display_questionnaire",
+          ].includes(dataType)
+            ? dataType
+            : "unknown_data_event";
+
           dispatch(
             upsertContentBlock({
               requestId,
               block: {
-                blockId: `audio_output_${totalEvents}`,
+                blockId: `data_${dataType}_${totalEvents}`,
                 blockIndex: contentBlockEvents,
-                type: "audio_output",
+                type: blockType,
                 status: "complete",
                 content: null,
-                data: {
-                  url: audio.url,
-                  mime_type: audio.mime_type,
-                },
+                // For unknown types, tag the original dataType so the block can display it
+                data:
+                  blockType === "unknown_data_event"
+                    ? { ...d, _dataType: dataType }
+                    : d,
               },
             }),
           );
-        } else {
-          dispatch(appendDataPayload({ requestId, data: d }));
         }
 
         dispatch(

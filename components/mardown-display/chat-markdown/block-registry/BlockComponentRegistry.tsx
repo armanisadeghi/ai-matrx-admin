@@ -103,6 +103,52 @@ const MarkdownPreviewBlock = lazy(
 const AudioOutputBlock = lazy(
   () => import("../../blocks/audio/AudioOutputBlock"),
 );
+const ImageOutputBlock = lazy(
+  () => import("../../blocks/images/ImageOutputBlock"),
+);
+const VideoOutputBlock = lazy(
+  () => import("../../blocks/videos/VideoOutputBlock"),
+);
+const SearchResultsBlock = lazy(
+  () => import("../../blocks/data-events/SearchResultsBlock"),
+);
+const SearchErrorBlock = lazy(
+  () => import("../../blocks/data-events/SearchErrorBlock"),
+);
+const FunctionResultBlock = lazy(
+  () => import("../../blocks/data-events/FunctionResultBlock"),
+);
+const WorkflowStepBlock = lazy(
+  () => import("../../blocks/data-events/WorkflowStepBlock"),
+);
+const CategorizationResultBlock = lazy(
+  () => import("../../blocks/data-events/CategorizationResultBlock"),
+);
+const FetchResultsBlock = lazy(
+  () => import("../../blocks/data-events/FetchResultsBlock"),
+);
+const PodcastCompleteBlockLazy = lazy(() =>
+  import("../../blocks/data-events/PodcastBlock").then((m) => ({
+    default: m.PodcastCompleteBlock,
+  })),
+);
+const PodcastStageBlockLazy = lazy(() =>
+  import("../../blocks/data-events/PodcastBlock").then((m) => ({
+    default: m.PodcastStageBlock,
+  })),
+);
+const ScrapeBatchCompleteBlock = lazy(
+  () => import("../../blocks/data-events/ScrapeBatchCompleteBlock"),
+);
+const StructuredInputWarningBlock = lazy(
+  () => import("../../blocks/data-events/StructuredInputWarningBlock"),
+);
+const DisplayQuestionnaireBlock = lazy(
+  () => import("../../blocks/data-events/DisplayQuestionnaireBlock"),
+);
+const UnknownDataEventBlock = lazy(
+  () => import("../../blocks/data-events/UnknownDataEventBlock"),
+);
 
 // Lazy load loading visualizations (lightweight but rarely all needed at once)
 const QuizLoadingVisualization = lazy(
@@ -358,6 +404,76 @@ export const BlockComponents = {
   AudioOutputBlock: (props: any) => (
     <LazyBlockWrapper>
       <AudioOutputBlock {...props} />
+    </LazyBlockWrapper>
+  ),
+  ImageOutputBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <ImageOutputBlock {...props} />
+    </LazyBlockWrapper>
+  ),
+  VideoOutputBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <VideoOutputBlock {...props} />
+    </LazyBlockWrapper>
+  ),
+  SearchResultsBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <SearchResultsBlock {...props} />
+    </LazyBlockWrapper>
+  ),
+  SearchErrorBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <SearchErrorBlock {...props} />
+    </LazyBlockWrapper>
+  ),
+  FunctionResultBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <FunctionResultBlock {...props} />
+    </LazyBlockWrapper>
+  ),
+  WorkflowStepBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <WorkflowStepBlock {...props} />
+    </LazyBlockWrapper>
+  ),
+  CategorizationResultBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <CategorizationResultBlock {...props} />
+    </LazyBlockWrapper>
+  ),
+  FetchResultsBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <FetchResultsBlock {...props} />
+    </LazyBlockWrapper>
+  ),
+  PodcastCompleteBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <PodcastCompleteBlockLazy {...props} />
+    </LazyBlockWrapper>
+  ),
+  PodcastStageBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <PodcastStageBlockLazy {...props} />
+    </LazyBlockWrapper>
+  ),
+  ScrapeBatchCompleteBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <ScrapeBatchCompleteBlock {...props} />
+    </LazyBlockWrapper>
+  ),
+  StructuredInputWarningBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <StructuredInputWarningBlock {...props} />
+    </LazyBlockWrapper>
+  ),
+  DisplayQuestionnaireBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <DisplayQuestionnaireBlock {...props} />
+    </LazyBlockWrapper>
+  ),
+  UnknownDataEventBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <UnknownDataEventBlock {...props} />
     </LazyBlockWrapper>
   ),
 };
