@@ -633,6 +633,7 @@ export default function FileUploadWindow({
       sidebarDefaultSize={200}
       sidebarMinSize={150}
       sidebarClassName="bg-muted/20"
+      overlayId="fileUploadWindow"
       footerLeft={
         <div className="flex items-center gap-2">
           <button

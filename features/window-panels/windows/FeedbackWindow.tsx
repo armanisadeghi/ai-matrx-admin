@@ -38,6 +38,7 @@ import type { FeedbackType } from "@/types/feedback.types";
 import { toast } from "sonner";
 import { useScreenCapture } from "@/hooks/useScreenCapture";
 import { openImageViewer } from "@/features/window-panels/windows/ImageViewerWindow";
+import { VoiceTextarea } from "@/components/official/VoiceTextarea";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -106,6 +107,7 @@ export function FeedbackWindow({
       urlSyncKey="feedback"
       urlSyncId="default"
       className="feedback-window-panel"
+      overlayId="feedbackDialog"
       {...windowProps}
     >
       <FeedbackWindowBody onClose={onClose} />
@@ -474,7 +476,7 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
 
         {/* Description */}
         <div className="space-y-1">
-          <textarea
+          <VoiceTextarea
             ref={textareaRef}
             className="w-full h-28 px-3 py-2 text-xs leading-relaxed text-foreground bg-muted/40 border border-border rounded-lg outline-none resize-none transition-colors placeholder:text-xs placeholder:text-muted-foreground/50 focus:border-ring focus:bg-background"
             style={{ fontSize: "16px" }}

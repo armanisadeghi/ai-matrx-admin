@@ -26,6 +26,7 @@ export default function ExecutionInspectorWindow({
       urlSyncKey="exec-inspector"
       urlSyncId="execution-inspector-window"
       urlSyncArgs={{ m: "ei" }}
+      overlayId="executionInspectorWindow"
     >
       <ExecutionInstanceInspector className="flex-1 h-full" />
     </WindowPanel>

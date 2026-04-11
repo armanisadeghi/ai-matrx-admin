@@ -193,6 +193,16 @@ export function MessageItem({
     [handleTextChange],
   );
 
+  const handleVoiceTranscription = useCallback(
+    (transcribedText: string) => {
+      const trimmed = transcribedText.trim();
+      if (!trimmed) return;
+      const updated = currentText ? currentText + "\n\n" + trimmed : trimmed;
+      handleTextChange(updated);
+    },
+    [currentText, handleTextChange],
+  );
+
   // Scroll fix: restore scroll after re-render
   useLayoutEffect(() => {
     if (!isEditing) return;
@@ -530,6 +540,7 @@ export function MessageItem({
             onClear={handleClear}
             onDelete={handleDelete}
             onAddBlockType={(type) => setPendingAddType(type)}
+            onVoiceTranscription={handleVoiceTranscription}
             sheetTitle={`${message.role} Message Actions`}
           />
         </div>

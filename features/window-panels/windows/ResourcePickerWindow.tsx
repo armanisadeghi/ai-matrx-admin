@@ -49,6 +49,7 @@ export function ResourcePickerWindow({
       position={position}
       minWidth={280}
       minHeight={300}
+      overlayId="resourcePickerWindow"
     >
       <ResourcePickerMenu
         onResourceSelected={(resource) => {

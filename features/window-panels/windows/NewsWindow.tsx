@@ -26,6 +26,7 @@ export default function NewsWindow({ isOpen, onClose }: NewsWindowProps) {
       onClose={onClose}
       urlSyncKey="news"
       urlSyncId="default"
+      overlayId="newsWindow"
     >
       <NewsFloatingWorkspace />
     </WindowPanel>

@@ -62,6 +62,8 @@ export default function AgentSettingsWindow({
       height={700}
       minWidth={600}
       minHeight={400}
+      overlayId="agentSettingsWindow"
+      onCollectData={() => ({ initialAgentId, openedTabIds, activeTabId })}
       sidebar={
         <AgentSidebar
           openedTabIds={openedTabIds}

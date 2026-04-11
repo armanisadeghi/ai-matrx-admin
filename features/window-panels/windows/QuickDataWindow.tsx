@@ -22,6 +22,7 @@ export default function QuickDataWindow({
       height={600}
       urlSyncKey="quick_data"
       onClose={onClose}
+      overlayId="quickDataWindow"
     >
       <div className="flex h-full w-full relative overflow-hidden bg-background">
         <QuickDataSheet className="absolute inset-0" />

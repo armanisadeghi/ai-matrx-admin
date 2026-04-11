@@ -45,6 +45,7 @@ export default function ListManagerWindow({
       urlSyncKey="listManager"
       urlSyncId="default"
       className="bg-background/95 backdrop-blur-md"
+      overlayId="listManagerWindow"
       {...windowProps}
     >
       <ListManagerFloatingWorkspace />

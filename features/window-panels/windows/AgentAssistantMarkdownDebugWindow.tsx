@@ -67,6 +67,7 @@ export default function AgentAssistantMarkdownDebugWindow({
       urlSyncKey="agent-md-debug"
       urlSyncId="agent-assistant-markdown-debug-window"
       urlSyncArgs={{ m: "amd" }}
+      overlayId="agentAssistantMarkdownDebugWindow"
     >
       <div className="flex flex-col h-full min-h-0 bg-background text-foreground">
         <div className="flex flex-wrap items-center gap-2 px-3 py-2 border-b border-border shrink-0">

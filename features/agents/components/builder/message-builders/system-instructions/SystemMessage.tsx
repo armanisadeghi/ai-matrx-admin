@@ -277,6 +277,18 @@ export function SystemMessage({
     handleTextChange(optimizedText);
   };
 
+  const handleVoiceTranscription = useCallback(
+    (transcribedText: string) => {
+      const trimmed = transcribedText.trim();
+      if (!trimmed) return;
+      const updated = developerMessage
+        ? developerMessage + "\n\n" + trimmed
+        : trimmed;
+      handleTextChange(updated);
+    },
+    [developerMessage, handleTextChange],
+  );
+
   const handleBeforeVariableSelectorOpen = useCallback(() => {
     const textarea = textareaRefs.current[systemMessageIndex];
     if (textarea) {
@@ -580,6 +592,7 @@ export function SystemMessage({
               onToggleEditing={() => setIsEditing((prev) => !prev)}
               onClear={() => handleTextChange("")}
               onAddBlockType={(type) => setPendingAddType(type)}
+              onVoiceTranscription={handleVoiceTranscription}
             />
           </div>
         </div>

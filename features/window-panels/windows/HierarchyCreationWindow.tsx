@@ -102,6 +102,7 @@ export default function HierarchyCreationWindow({
       position="center"
       minWidth={300}
       maxWidth={600}
+      overlayId="hierarchyCreationWindow"
     >
       <div className="flex flex-col gap-4 p-4">
         <div className="text-sm text-muted-foreground mb-2">

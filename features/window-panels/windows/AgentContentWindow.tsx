@@ -37,10 +37,11 @@ export default function AgentContentWindow({
       height={750}
       minWidth={600}
       minHeight={500}
-      icon={<Layers />}
       urlSyncKey="agent-content"
       urlSyncId="agent-content-window"
       urlSyncArgs={{ m: "ac" }}
+      overlayId="agentContentWindow"
+      onCollectData={() => ({ initialAgentId, activeTab })}
     >
       <div className="flex flex-col h-full bg-background min-w-0">
         <div className="flex border-b border-border lg:px-4 lg:py-2 px-2 py-1 gap-1 shrink-0 bg-muted/20">

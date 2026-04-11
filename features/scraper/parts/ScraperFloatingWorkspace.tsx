@@ -564,6 +564,17 @@ export function ScraperFloatingWorkspace({ onClose }: { onClose: () => void }) {
       actionsRight={rightActions}
       footer={footerContent}
       urlSyncKey="scraper"
+      overlayId="scraperWindow"
+      onCollectData={() => ({
+        mode,
+        url,
+        keyword: keywordForm.keywords ?? "",
+        maxPages: 1,
+        results: scrapedResults,
+        scrapeStates: {},
+        selectedIndex: selectedScrapedIndex,
+        activeTab,
+      })}
     >
       {mainContent}
     </WindowPanel>

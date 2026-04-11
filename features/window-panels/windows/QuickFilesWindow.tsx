@@ -256,6 +256,11 @@ export default function QuickFilesWindow({
       sidebarClassName="bg-muted/10"
       footerLeft={footerLeft}
       footerRight={footerRight}
+      overlayId="quickFilesWindow"
+      onCollectData={() => ({
+        bucket: activeBucket,
+        path: searchQuery || null,
+      })}
     >
       <div className="flex flex-col h-full min-h-0">
         {/* Optional search bar */}

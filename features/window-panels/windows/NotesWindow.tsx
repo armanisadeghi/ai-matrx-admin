@@ -11,11 +11,10 @@ import {
 } from "@/features/window-panels/WindowPanel";
 import { NotesView } from "@/features/notes/components/NotesView";
 
-export interface NotesWindowProps
-  extends Omit<
-    WindowPanelProps,
-    "children" | "title"
-  > {
+export interface NotesWindowProps extends Omit<
+  WindowPanelProps,
+  "children" | "title"
+> {
   title?: string;
 }
 
@@ -32,6 +31,7 @@ export function NotesWindow({
       urlSyncKey="notes"
       urlSyncId="default"
       id={id}
+      overlayId="notesWindow"
       {...windowProps}
     >
       <NotesView

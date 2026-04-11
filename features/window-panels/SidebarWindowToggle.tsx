@@ -38,9 +38,16 @@ import {
   GalleryHorizontalEnd,
   SlidersHorizontal,
   Cpu,
+  AudioLines,
+  Building2,
+  FileStack,
+  ScrollText,
 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
+import { selectActiveAgentId } from "@/lib/redux/slices/agent-settings/selectors";
+import { selectOwnedAgentIds } from "@/lib/redux/slices/agentCacheSlice";
 import {
   toggleWindowsHidden,
   minimizeAll,
@@ -53,7 +60,11 @@ import {
   type WindowState,
   arrangeActiveWindows,
 } from "@/lib/redux/slices/windowManagerSlice";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import {
+  openOverlay,
+  openHierarchyCreationWindow,
+  openAgentContentWindow,
+} from "@/lib/redux/slices/overlaySlice";
 import { LayoutIconButton } from "@/features/window-panels/components/LayoutIcon";
 
 // ─── State dot colours ────────────────────────────────────────────────────────
@@ -74,6 +85,7 @@ const STATE_LABEL: Record<WindowState, string> = {
 
 export default function SidebarWindowToggle() {
   const dispatch = useAppDispatch();
+  const store = useAppStore();
   const hidden = useAppSelector(selectWindowsHidden);
   const allMinimized = useAppSelector(selectAllMinimized);
   const windows = useAppSelector(selectAllWindows);
@@ -137,6 +149,20 @@ export default function SidebarWindowToggle() {
     fn();
     setOpen(false);
   }, []);
+
+  const openAgentContentFromTools = useCallback(() => {
+    const state = store.getState();
+    const agentId =
+      selectActiveAgentId(state) ?? selectOwnedAgentIds(state)[0] ?? null;
+    if (!agentId) {
+      toast.error("No agent available", {
+        description:
+          "Select an agent in the builder or create one, then try again.",
+      });
+      return;
+    }
+    dispatch(openAgentContentWindow({ agentId }));
+  }, [dispatch, store]);
 
   return (
     <>
@@ -614,6 +640,15 @@ export default function SidebarWindowToggle() {
                     }
                   />
                   <MenuGridItem
+                    icon={<AudioLines className="w-3.5 h-3.5" />}
+                    label="Voice Pad"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(openOverlay({ overlayId: "voicePad" })),
+                      )
+                    }
+                  />
+                  <MenuGridItem
                     icon={<Wand2 className="w-3.5 h-3.5" />}
                     label="AI Results"
                     onClick={() =>
@@ -771,6 +806,19 @@ export default function SidebarWindowToggle() {
                     }
                   />
                   <MenuGridItem
+                    icon={<Building2 className="w-3.5 h-3.5" />}
+                    label="New organization"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openHierarchyCreationWindow({
+                            entityType: "organization",
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
                     icon={<FileScan className="w-3.5 h-3.5" />}
                     label="PDF Extractor"
                     onClick={() =>
@@ -833,6 +881,11 @@ export default function SidebarWindowToggle() {
                     }
                   />
                   <MenuGridItem
+                    icon={<FileStack className="w-3.5 h-3.5" />}
+                    label="Agent content"
+                    onClick={() => act(() => openAgentContentFromTools())}
+                  />
+                  <MenuGridItem
                     icon={<Cpu className="w-3.5 h-3.5" />}
                     label="Exec Inspector"
                     onClick={() =>
@@ -840,6 +893,19 @@ export default function SidebarWindowToggle() {
                         dispatch(
                           openOverlay({
                             overlayId: "executionInspectorWindow",
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<ScrollText className="w-3.5 h-3.5" />}
+                    label="MD debug"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "agentAssistantMarkdownDebugWindow",
                           }),
                         ),
                       )

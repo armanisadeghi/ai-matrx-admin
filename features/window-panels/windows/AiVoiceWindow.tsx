@@ -40,6 +40,7 @@ export function AiVoiceWindow({
       height={600}
       urlSyncKey="aiVoiceWindow"
       urlSyncId={instanceId}
+      overlayId="aiVoiceWindow"
       {...windowProps}
     >
       <AiVoiceFloatingWorkspace />

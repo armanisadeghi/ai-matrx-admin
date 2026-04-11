@@ -24,6 +24,7 @@ export default function ProjectsWindow({
       height={500}
       minWidth={280}
       maxWidth={600}
+      overlayId="projectsWindow"
     >
       <ProjectsWorkspace />
     </WindowPanel>

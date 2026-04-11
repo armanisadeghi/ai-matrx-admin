@@ -106,6 +106,8 @@ function GalleryWindowInner({
       sidebarClassName="bg-muted/10"
       defaultSidebarOpen={false}
       footerRight={footerRight}
+      overlayId="galleryWindow"
+      onCollectData={() => ({ viewMode })}
     >
       {workspace.body}
     </WindowPanel>

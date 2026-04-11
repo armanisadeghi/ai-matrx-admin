@@ -1,0 +1,127 @@
+/**
+ * windowPersistenceService.ts
+ *
+ * Supabase CRUD for the window_sessions table.
+ * All operations use the browser singleton client — RLS ensures each user
+ * can only read/write their own rows.
+ *
+ * No Next.js API route is needed; ownership is enforced at the DB layer.
+ */
+
+import { supabase } from "@/utils/supabase/client";
+import type { PanelState, WindowSessionRow } from "../registry/windowRegistry";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export interface SaveWindowSessionParams {
+  /** Existing row id — pass undefined to INSERT a new row */
+  sessionId?: string;
+  userId: string;
+  windowType: string;
+  label: string;
+  panelState: PanelState;
+  data: Record<string, unknown>;
+}
+
+// ─── Save (upsert) ────────────────────────────────────────────────────────────
+
+/**
+ * Create or update a window session row.
+ * Returns the row id (useful when creating a new row).
+ *
+ * Strategy:
+ *  - If sessionId is provided → UPDATE that row.
+ *  - If sessionId is undefined → INSERT a new row and return the generated id.
+ *
+ * Both paths use upsert via `onConflict: 'id'` so callers don't need to
+ * track whether a row exists yet — first save always succeeds.
+ */
+export async function saveWindowSession(
+  params: SaveWindowSessionParams,
+): Promise<string> {
+  const { sessionId, userId, windowType, label, panelState, data } = params;
+
+  const row = {
+    ...(sessionId ? { id: sessionId } : {}),
+    user_id: userId,
+    window_type: windowType,
+    label,
+    panel_state: panelState as unknown as Record<string, unknown>,
+    data,
+  };
+
+  const { data: result, error } = await supabase
+    .from("window_sessions")
+    .upsert(row, { onConflict: "id" })
+    .select("id")
+    .single();
+
+  if (error) {
+    throw new Error(
+      `windowPersistenceService.saveWindowSession failed: ${error.message}`,
+    );
+  }
+
+  return result.id as string;
+}
+
+// ─── Load ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch all session rows for a user, ordered by updated_at descending
+ * (most-recently-used windows come first).
+ */
+export async function loadWindowSessions(
+  userId: string,
+): Promise<WindowSessionRow[]> {
+  const { data, error } = await supabase
+    .from("window_sessions")
+    .select("*")
+    .eq("user_id", userId)
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    throw new Error(
+      `windowPersistenceService.loadWindowSessions failed: ${error.message}`,
+    );
+  }
+
+  return (data ?? []) as unknown as WindowSessionRow[];
+}
+
+// ─── Delete ───────────────────────────────────────────────────────────────────
+
+/**
+ * Delete a single session row by id.
+ * Called when the user closes a window — removes it from the "open windows" set
+ * so it doesn't reopen on next load.
+ */
+export async function deleteWindowSession(sessionId: string): Promise<void> {
+  const { error } = await supabase
+    .from("window_sessions")
+    .delete()
+    .eq("id", sessionId);
+
+  if (error) {
+    throw new Error(
+      `windowPersistenceService.deleteWindowSession failed: ${error.message}`,
+    );
+  }
+}
+
+/**
+ * Delete ALL session rows for a user.
+ * Useful for a "close all windows" action or a settings "clear session" button.
+ */
+export async function deleteAllWindowSessions(userId: string): Promise<void> {
+  const { error } = await supabase
+    .from("window_sessions")
+    .delete()
+    .eq("user_id", userId);
+
+  if (error) {
+    throw new Error(
+      `windowPersistenceService.deleteAllWindowSessions failed: ${error.message}`,
+    );
+  }
+}

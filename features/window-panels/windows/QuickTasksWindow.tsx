@@ -31,6 +31,7 @@ export default function QuickTasksWindow({
         sidebarClassName="bg-muted/10 border-r"
         urlSyncKey="quick_tasks"
         onClose={onClose}
+        overlayId="quickTasksWindow"
       >
         <QuickTasksMain />
       </WindowPanel>

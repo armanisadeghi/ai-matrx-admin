@@ -332,6 +332,8 @@ export function ImageViewerWindow({
       minHeight={240}
       width={700}
       height={520}
+      overlayId="imageViewer"
+      onCollectData={() => ({ images, initialIndex: index })}
       sidebar={
         hasMany ? (
           <ThumbnailSidebar

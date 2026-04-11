@@ -81,6 +81,12 @@ export default function EmailDialogWindow({
       height={280}
       urlSyncKey="email_dialog"
       onClose={handleClose}
+      overlayId="emailDialogWindow"
+      onCollectData={() => ({
+        to: email || null,
+        subject: null,
+        draftBody: null,
+      })}
     >
       <form
         onSubmit={handleSubmit}

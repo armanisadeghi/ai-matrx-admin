@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAgentById,
@@ -58,6 +59,11 @@ function RoleBadge({ role }: { role: string }) {
 }
 
 export function AgentViewContent({ agentId }: { agentId: string }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const agent = useAppSelector((state) => selectAgentById(state, agentId));
   const messages = useAppSelector((state) =>
     selectAgentMessages(state, agentId),
@@ -81,7 +87,7 @@ export function AgentViewContent({ agentId }: { agentId: string }) {
   );
   const tags = useAppSelector((state) => selectAgentTags(state, agentId));
 
-  if (!agent) {
+  if (!mounted || !agent) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
         Loading agent data...

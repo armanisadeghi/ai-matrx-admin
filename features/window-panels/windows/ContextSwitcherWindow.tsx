@@ -32,6 +32,7 @@ export function ContextSwitcherWindow({
       width={360}
       height={480}
       position="center"
+      overlayId="contextSwitcherWindow"
     >
       <HierarchyTree
         levels={["organization", "scope", "project", "task"]}

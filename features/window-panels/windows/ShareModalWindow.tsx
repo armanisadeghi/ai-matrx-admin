@@ -144,6 +144,13 @@ export default function ShareModalWindow({
       height={500}
       urlSyncKey="share_modal"
       onClose={onClose}
+      overlayId="shareModalWindow"
+      onCollectData={() => ({
+        resourceType,
+        resourceId,
+        resourceName,
+        isOwner,
+      })}
     >
       <div className="flex flex-col h-full bg-background overflow-hidden p-4">
         {/* Header Section */}

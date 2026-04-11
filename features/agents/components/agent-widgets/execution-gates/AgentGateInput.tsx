@@ -84,6 +84,8 @@ export function AgentGateBody({
       position="center"
       bodyClassName="p-0"
       footer={footer}
+      overlayId="agentGateWindow"
+      onCollectData={() => ({ conversationId })}
     >
       <AgentGateContent
         conversationId={conversationId}

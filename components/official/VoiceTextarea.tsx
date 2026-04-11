@@ -1,24 +1,24 @@
 /**
  * Voice-Enabled Textarea Component
- * 
+ *
  * Textarea with built-in copy and voice input capabilities
  * Icons appear on hover or focus for a clean interface
- * 
+ *
  * **Built-in Protection:** Automatically warns users before unmounting
  * during active recording or transcription to prevent data loss.
- * 
+ *
  * @official-component
  */
 
-'use client';
+"use client";
 
-import React, { useCallback, useState, useRef, useEffect } from 'react';
-import { Copy, Check, Mic, Loader2, AlertCircle } from 'lucide-react';
-import { motion } from 'motion/react';
-import { cn } from '@/lib/utils';
-import { useRecordAndTranscribe } from '@/features/audio/hooks';
-import { TranscriptionResult } from '@/features/audio/types';
-import { VoiceTroubleshootingModal } from '@/features/audio/components/VoiceTroubleshootingModal';
+import React, { useCallback, useState, useRef, useEffect } from "react";
+import { Copy, Check, Mic, Loader2, AlertCircle } from "lucide-react";
+import { motion } from "motion/react";
+import { cn } from "@/lib/utils";
+import { useRecordAndTranscribe } from "@/features/audio/hooks";
+import { TranscriptionResult } from "@/features/audio/types";
+import { VoiceTroubleshootingModal } from "@/features/audio/components/VoiceTroubleshootingModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,7 +29,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toast } from 'sonner';
+import { toast } from "sonner";
+
+/** Real HTMLTextAreaElement with optional expando methods set by VoiceTextarea. */
+export interface VoiceTextareaElement extends HTMLTextAreaElement {
+  requestClose?: () => void;
+  isTranscribing?: () => boolean;
+}
 
 export interface VoiceTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   onTranscriptionComplete?: (text: string) => void;
@@ -43,7 +49,10 @@ export interface VoiceTextareaProps extends React.TextareaHTMLAttributes<HTMLTex
   protectTranscription?: boolean; // If true, prevents unmounting during recording/transcription with a warning modal (default: true)
 }
 
-export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextareaProps>(
+export const VoiceTextarea = React.forwardRef<
+  HTMLTextAreaElement,
+  VoiceTextareaProps
+>(
   (
     {
       className,
@@ -61,19 +70,24 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
       protectTranscription = true,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [hasCopied, setHasCopied] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [isAudioAvailable, setIsAudioAvailable] = useState(true);
     const [showTroubleshooting, setShowTroubleshooting] = useState(false);
-    const [showTranscriptionWarning, setShowTranscriptionWarning] = useState(false);
-    const [lastError, setLastError] = useState<{ message: string; code: string } | null>(null);
+    const [showTranscriptionWarning, setShowTranscriptionWarning] =
+      useState(false);
+    const [lastError, setLastError] = useState<{
+      message: string;
+      code: string;
+    } | null>(null);
     const internalRef = useRef<HTMLTextAreaElement>(null);
-    const textareaRef = (ref as React.RefObject<HTMLTextAreaElement>) || internalRef;
+    const textareaRef =
+      (ref as React.RefObject<HTMLTextAreaElement>) || internalRef;
     const closeRequestedRef = useRef(false);
-    const preRecordingValueRef = useRef('');
+    const preRecordingValueRef = useRef("");
 
     // Check if audio is available
     useEffect(() => {
@@ -87,7 +101,7 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
           await navigator.mediaDevices.enumerateDevices();
           setIsAudioAvailable(true);
         } catch (error) {
-          console.warn('Audio not available:', error);
+          console.warn("Audio not available:", error);
           setIsAudioAvailable(false);
         }
       };
@@ -99,12 +113,12 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
       if (!autoGrow || !textareaRef.current) return;
 
       const textarea = textareaRef.current;
-      textarea.style.height = 'auto';
-      
+      textarea.style.height = "auto";
+
       let newHeight = textarea.scrollHeight;
       if (minHeight) newHeight = Math.max(newHeight, minHeight);
       if (maxHeight) newHeight = Math.min(newHeight, maxHeight);
-      
+
       textarea.style.height = `${newHeight}px`;
     }, [value, autoGrow, minHeight, maxHeight]);
 
@@ -112,45 +126,50 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
       if (!textareaRef.current) return;
       const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
         window.HTMLTextAreaElement.prototype,
-        'value'
+        "value",
       )?.set;
       if (nativeInputValueSetter) {
         nativeInputValueSetter.call(textareaRef.current, newValue);
-        const event = new Event('input', { bubbles: true });
+        const event = new Event("input", { bubbles: true });
         textareaRef.current.dispatchEvent(event);
       }
     }, []);
 
-    const handleTranscriptionComplete = useCallback((result: TranscriptionResult) => {
-      if (result.success && result.text) {
-        const base = preRecordingValueRef.current;
-        const newValue = appendTranscript && base
-          ? `${base}\n${result.text}`
-          : result.text;
-        pushToTextarea(newValue);
-        onTranscriptionComplete?.(result.text);
-      }
-    }, [appendTranscript, onTranscriptionComplete, pushToTextarea]);
+    const handleTranscriptionComplete = useCallback(
+      (result: TranscriptionResult) => {
+        if (result.success && result.text) {
+          const base = preRecordingValueRef.current;
+          const newValue =
+            appendTranscript && base ? `${base}\n${result.text}` : result.text;
+          pushToTextarea(newValue);
+          onTranscriptionComplete?.(result.text);
+        }
+      },
+      [appendTranscript, onTranscriptionComplete, pushToTextarea],
+    );
 
     // Handle transcription error
-    const handleTranscriptionError = useCallback((error: string, errorCode?: string) => {
-      console.error('Transcription error:', error, errorCode);
-      
-      // Store error for troubleshooting modal
-      setLastError({ message: error, code: errorCode || 'UNKNOWN_ERROR' });
-      
-      // Show persistent toast with "Get Help" button
-      toast.error('Voice input failed', {
-        description: error,
-        duration: 10000, // 10 seconds
-        action: {
-          label: 'Get Help',
-          onClick: () => setShowTroubleshooting(true),
-        },
-      });
-      
-      onTranscriptionError?.(error);
-    }, [onTranscriptionError]);
+    const handleTranscriptionError = useCallback(
+      (error: string, errorCode?: string) => {
+        console.error("Transcription error:", error, errorCode);
+
+        // Store error for troubleshooting modal
+        setLastError({ message: error, code: errorCode || "UNKNOWN_ERROR" });
+
+        // Show persistent toast with "Get Help" button
+        toast.error("Voice input failed", {
+          description: error,
+          duration: 10000, // 10 seconds
+          action: {
+            label: "Get Help",
+            onClick: () => setShowTroubleshooting(true),
+          },
+        });
+
+        onTranscriptionError?.(error);
+      },
+      [onTranscriptionError],
+    );
 
     // Recording and transcription hook (streaming: real-time text while speaking)
     const {
@@ -172,11 +191,18 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
       if (!isRecording && !isTranscribing) return;
       if (!liveTranscript) return;
       const base = preRecordingValueRef.current;
-      const newValue = appendTranscript && base
-        ? `${base}\n${liveTranscript}`
-        : liveTranscript;
+      const newValue =
+        appendTranscript && base
+          ? `${base}\n${liveTranscript}`
+          : liveTranscript;
       pushToTextarea(newValue);
-    }, [liveTranscript, isRecording, isTranscribing, appendTranscript, pushToTextarea]);
+    }, [
+      liveTranscript,
+      isRecording,
+      isTranscribing,
+      appendTranscript,
+      pushToTextarea,
+    ]);
 
     // Handle close request - check if recording or transcribing and show warning if needed
     const handleCloseRequest = useCallback(() => {
@@ -190,16 +216,24 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
       }
     }, [isRecording, isTranscribing, protectTranscription, onRequestClose]);
 
-    // Expose handleCloseRequest via ref so parent can call it
-    React.useImperativeHandle(ref, () => ({
-      ...textareaRef.current!,
-      requestClose: handleCloseRequest,
-      isTranscribing: () => isTranscribing,
-    }));
+    // Attach custom methods as expando properties on the real DOM element so
+    // consumers get a genuine HTMLTextAreaElement (focus/blur/select all work)
+    // while still being able to call requestClose() and isTranscribing().
+    useEffect(() => {
+      const el = textareaRef.current;
+      if (!el) return;
+      (el as VoiceTextareaElement).requestClose = handleCloseRequest;
+      (el as VoiceTextareaElement).isTranscribing = () => isTranscribing;
+    }, [handleCloseRequest, isTranscribing]);
 
     // Auto-close modal when recording and transcription complete
     useEffect(() => {
-      if (!isRecording && !isTranscribing && closeRequestedRef.current && showTranscriptionWarning) {
+      if (
+        !isRecording &&
+        !isTranscribing &&
+        closeRequestedRef.current &&
+        showTranscriptionWarning
+      ) {
         // Recording and transcription completed - allow close now
         closeRequestedRef.current = false;
       }
@@ -207,7 +241,7 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
 
     // Handle copy
     const handleCopy = async () => {
-      const textareaValue = textareaRef?.current?.value || String(value || '');
+      const textareaValue = textareaRef?.current?.value || String(value || "");
       if (textareaValue) {
         await navigator.clipboard.writeText(textareaValue);
         setHasCopied(true);
@@ -219,16 +253,18 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
       if (isRecording) {
         stopRecording();
       } else if (!isTranscribing) {
-        preRecordingValueRef.current = textareaRef.current?.value || '';
+        preRecordingValueRef.current = textareaRef.current?.value || "";
         await startRecording();
       }
     }, [isRecording, isTranscribing, startRecording, stopRecording]);
 
-    const showControls = (isFocused || isHovered || isRecording || isTranscribing) && !disabled;
-    const isVoiceDisabled = !isAudioAvailable || disabled || (isTranscribing && !isRecording);
+    const showControls =
+      (isFocused || isHovered || isRecording || isTranscribing) && !disabled;
+    const isVoiceDisabled =
+      !isAudioAvailable || disabled || (isTranscribing && !isRecording);
 
     return (
-      <div 
+      <div
         className={cn("relative group", wrapperClassName)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -240,7 +276,7 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
             "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
             "disabled:cursor-not-allowed disabled:opacity-50",
             autoGrow && "resize-none overflow-hidden",
-            className
+            className,
           )}
           style={{
             minHeight: minHeight ? `${minHeight}px` : undefined,
@@ -255,10 +291,10 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
         />
 
         {/* Control Icons */}
-        <div 
+        <div
           className={cn(
             "absolute right-2 top-2 flex items-center gap-1 transition-opacity duration-200 z-10",
-            showControls ? "opacity-100" : "opacity-0 pointer-events-none"
+            showControls ? "opacity-100" : "opacity-0 pointer-events-none",
           )}
         >
           {isAudioAvailable && (
@@ -271,16 +307,16 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
                 isRecording
                   ? "bg-primary/10 dark:bg-primary/15 hover:bg-primary/20 dark:hover:bg-primary/25 cursor-pointer"
                   : isTranscribing && !isRecording
-                  ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                  : "hover:bg-muted cursor-pointer",
-                isVoiceDisabled && "opacity-50 cursor-not-allowed"
+                    ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                    : "hover:bg-muted cursor-pointer",
+                isVoiceDisabled && "opacity-50 cursor-not-allowed",
               )}
               aria-label={isRecording ? "Stop recording" : "Start voice input"}
             >
               {isRecording && (
                 <span
                   className="absolute inset-0 rounded-full bg-primary/20 animate-ping"
-                  style={{ animationDuration: '1.5s' }}
+                  style={{ animationDuration: "1.5s" }}
                 />
               )}
               {isRecording && (
@@ -297,7 +333,7 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
                     "h-4 w-4 relative",
                     isRecording
                       ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 />
               )}
@@ -312,10 +348,10 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
             aria-label="Copy to clipboard"
           >
             {hasCopied ? (
-              <motion.div 
-                initial={{ scale: 0.8 }} 
-                animate={{ scale: 1 }} 
-                exit={{ scale: 0.8 }} 
+              <motion.div
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.8 }}
                 className="text-green-500"
               >
                 <Check className="h-4 w-4" />
@@ -334,7 +370,7 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
               className="w-2 h-2 bg-primary rounded-full flex-shrink-0"
             />
             <span className="text-xs text-primary font-medium truncate">
-              {liveTranscript ? liveTranscript.slice(-60) : 'Listening...'}
+              {liveTranscript ? liveTranscript.slice(-60) : "Listening..."}
             </span>
           </div>
         )}
@@ -358,7 +394,10 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
         />
 
         {/* Voice Input Protection Modal - Built-in protection for recording and transcription */}
-        <AlertDialog open={showTranscriptionWarning} onOpenChange={setShowTranscriptionWarning}>
+        <AlertDialog
+          open={showTranscriptionWarning}
+          onOpenChange={setShowTranscriptionWarning}
+        >
           <AlertDialogContent>
             <AlertDialogHeader>
               <div className="flex items-center gap-3 mb-2">
@@ -366,7 +405,9 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
                   <>
                     <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
                     <AlertDialogTitle>
-                      {isRecording ? "Recording in Progress" : "Transcription in Progress"}
+                      {isRecording
+                        ? "Recording in Progress"
+                        : "Transcription in Progress"}
                     </AlertDialogTitle>
                   </>
                 ) : (
@@ -379,18 +420,18 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
               <AlertDialogDescription>
                 {isRecording ? (
                   <>
-                    Your voice is currently being recorded. 
-                    If you close now, the recording will be stopped and lost.
+                    Your voice is currently being recorded. If you close now,
+                    the recording will be stopped and lost.
                   </>
                 ) : isTranscribing ? (
                   <>
-                    Your voice recording is currently being transcribed. 
-                    If you close now, the transcription will be lost.
+                    Your voice recording is currently being transcribed. If you
+                    close now, the transcription will be lost.
                   </>
                 ) : (
                   <>
-                    Your voice input has been processed successfully! 
-                    You can now safely close this panel.
+                    Your voice input has been processed successfully! You can
+                    now safely close this panel.
                   </>
                 )}
               </AlertDialogDescription>
@@ -398,10 +439,12 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
             <AlertDialogFooter>
               {isRecording || isTranscribing ? (
                 <>
-                  <AlertDialogCancel onClick={() => {
-                    setShowTranscriptionWarning(false);
-                    closeRequestedRef.current = false;
-                  }}>
+                  <AlertDialogCancel
+                    onClick={() => {
+                      setShowTranscriptionWarning(false);
+                      closeRequestedRef.current = false;
+                    }}
+                  >
                     Cancel & Wait
                   </AlertDialogCancel>
                   <AlertDialogAction
@@ -416,11 +459,13 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
                   </AlertDialogAction>
                 </>
               ) : (
-                <AlertDialogAction onClick={() => {
-                  setShowTranscriptionWarning(false);
-                  closeRequestedRef.current = false;
-                  onRequestClose?.();
-                }}>
+                <AlertDialogAction
+                  onClick={() => {
+                    setShowTranscriptionWarning(false);
+                    closeRequestedRef.current = false;
+                    onRequestClose?.();
+                  }}
+                >
                   Close
                 </AlertDialogAction>
               )}
@@ -429,8 +474,7 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
         </AlertDialog>
       </div>
     );
-  }
+  },
 );
 
-VoiceTextarea.displayName = 'VoiceTextarea';
-
+VoiceTextarea.displayName = "VoiceTextarea";

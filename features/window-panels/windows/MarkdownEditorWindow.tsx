@@ -28,6 +28,7 @@ export default function MarkdownEditorWindow({
       height={700}
       urlSyncKey="markdown_editor"
       onClose={onClose}
+      overlayId="markdownEditorWindow"
     >
       <div className="flex-1 overflow-hidden h-full">
         <MarkdownClassificationTester

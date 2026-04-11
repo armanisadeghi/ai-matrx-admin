@@ -24,6 +24,7 @@ import {
 import { TemplateSelector } from "@/features/content-templates/components/TemplateSelector";
 import type { MessageRole } from "@/features/content-templates/types/content-templates-db";
 import { VariableSelector } from "@/features/agents/components/variables-management/VariableSelector";
+import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
 
 interface MessageItemButtonsProps {
   isEditing?: boolean;
@@ -42,6 +43,7 @@ interface MessageItemButtonsProps {
   onClear?: () => void;
   onDelete?: () => void;
   onAddBlockType?: (type: BlockType) => void;
+  onVoiceTranscription?: (text: string) => void;
   sheetTitle?: string;
 }
 
@@ -62,6 +64,7 @@ export function MessageItemButtons({
   onClear,
   onDelete,
   onAddBlockType,
+  onVoiceTranscription,
   sheetTitle = "Message Actions",
 }: MessageItemButtonsProps) {
   const variableButton: IconButtonConfig = hasVariableSupport
@@ -197,6 +200,38 @@ export function MessageItemButtons({
       },
       iconClassName: "text-destructive",
       className: "hover:text-destructive",
+    },
+    {
+      id: "voice",
+      icon: undefined,
+      tooltip: "Record voice",
+      mobileLabel: "Record Voice",
+      hidden: !onVoiceTranscription,
+      render: onVoiceTranscription
+        ? () => (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                >
+                  <MicrophoneIconButton
+                    variant="modal-controls"
+                    size="sm"
+                    onTranscriptionComplete={onVoiceTranscription}
+                  />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="z-[9999]">
+                Record voice
+              </TooltipContent>
+            </Tooltip>
+          )
+        : undefined,
     },
     {
       id: "add-block",

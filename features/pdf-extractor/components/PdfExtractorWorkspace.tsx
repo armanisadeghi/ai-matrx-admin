@@ -477,6 +477,8 @@ export function PdfExtractorFloatingWorkspace({
       minWidth={420}
       minHeight={320}
       position="center"
+      overlayId="pdfExtractorWindow"
+      onCollectData={() => ({ history: extractor.history, currentIndex: null })}
       sidebar={
         <PdfExtractorSidebar
           history={extractor.history}

@@ -29,7 +29,10 @@ import {
 import { cn } from "@/lib/utils";
 import { WindowPanel } from "../WindowPanel";
 import FileSystemManager from "@/utils/file-operations/FileSystemManager";
-import { getFileDetailsByUrl, type EnhancedFileDetails } from "@/utils/file-operations/constants";
+import {
+  getFileDetailsByUrl,
+  type EnhancedFileDetails,
+} from "@/utils/file-operations/constants";
 import type { StorageMetadata } from "@/utils/file-operations/types";
 import {
   fetchWithUrlRefresh,
@@ -221,7 +224,11 @@ export function FilePreviewWindow({
   // Compute file details once URL is available
   const details = useMemo<EnhancedFileDetails | null>(() => {
     if (!fileUrl) return null;
-    return getFileDetailsByUrl(fileUrl, { mimetype: mimeType, size } as unknown as StorageMetadata, undefined);
+    return getFileDetailsByUrl(
+      fileUrl,
+      { mimetype: mimeType, size } as unknown as StorageMetadata,
+      undefined,
+    );
   }, [fileUrl, mimeType, size]);
 
   const displayName =
@@ -281,9 +288,7 @@ export function FilePreviewWindow({
         if (!cancelled) setIsLoading(false);
       } catch (err) {
         if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load file",
-          );
+          setError(err instanceof Error ? err.message : "Failed to load file");
           setIsLoading(false);
         }
       }
@@ -423,16 +428,8 @@ export function FilePreviewWindow({
             {formatSize(size)}
           </span>
         )}
-        <ToolBtn
-          onClick={() => setShowInfo((v) => !v)}
-          label="File info"
-        >
-          <Info
-            className={cn(
-              "w-3.5 h-3.5",
-              showInfo && "text-primary",
-            )}
-          />
+        <ToolBtn onClick={() => setShowInfo((v) => !v)} label="File info">
+          <Info className={cn("w-3.5 h-3.5", showInfo && "text-primary")} />
         </ToolBtn>
       </div>
     </>
@@ -447,6 +444,12 @@ export function FilePreviewWindow({
       minHeight={260}
       width={650}
       height={480}
+      overlayId="filePreviewWindow"
+      onCollectData={() => ({
+        bucket: bucket ?? null,
+        path: storagePath ?? null,
+        url: fileUrl || null,
+      })}
       footerLeft={
         <div className="flex items-center gap-0.5">
           <ToolBtn
@@ -456,7 +459,11 @@ export function FilePreviewWindow({
           >
             <Download className="w-3.5 h-3.5" />
           </ToolBtn>
-          <ToolBtn onClick={handleCopyLink} label="Copy link" disabled={!fileUrl}>
+          <ToolBtn
+            onClick={handleCopyLink}
+            label="Copy link"
+            disabled={!fileUrl}
+          >
             <LinkIcon className="w-3.5 h-3.5" />
           </ToolBtn>
           <ToolBtn
@@ -575,7 +582,8 @@ export function openFilePreview(
   payload: FilePreviewPayload,
 ) {
   const instanceId =
-    payload.instanceId ?? `preview-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    payload.instanceId ??
+    `preview-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
   dispatch(
     openOverlay({
       overlayId: "filePreviewWindow",

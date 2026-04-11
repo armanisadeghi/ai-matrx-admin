@@ -69,7 +69,11 @@ const instanceVariableValuesSlice = createSlice({
         scopeValues?: Record<string, unknown>;
       }>,
     ) {
-      const { conversationId, definitions = [], scopeValues = {} } = action.payload;
+      const {
+        conversationId,
+        definitions = [],
+        scopeValues = {},
+      } = action.payload;
       state.byConversationId[conversationId] = {
         conversationId,
         definitions,

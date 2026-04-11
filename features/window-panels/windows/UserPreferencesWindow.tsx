@@ -264,6 +264,8 @@ export default function UserPreferencesWindow({
       sidebarDefaultSize={200}
       sidebarMinSize={150}
       sidebarClassName="bg-muted/20"
+      overlayId="userPreferencesWindow"
+      onCollectData={() => ({ activeTab })}
       footer={
         <>
           <div className="text-muted-foreground">

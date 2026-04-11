@@ -1,105 +1,294 @@
 # Floating Window Panel System
 
-A high-performance, Redux-backed OS-style window manager for React. This system resolves `z-index` and `overflow:hidden` constraints by portalling windows to `document.body` while securely tracking layout properties in a centralized store.
+A Redux-backed, Supabase-persisted OS-style window manager for React. Windows are portalled to `document.body` to escape any parent stacking context or `overflow:hidden`. Geometry, chrome state, and per-window content are persisted in the `window_sessions` Supabase table and restored on page load.
 
-## Architecture & Data Flow
+---
 
-1. **Global Store (`windowManagerSlice.ts`)**
-   - Single source of truth for window state (`windowed`, `minimized`, `maximized`), geometry (`WindowRect`), depth (`zIndex`), and minimization docks (`traySlot`). 
-   - Exposes imperative actions (`updateWindowRect`, `maximizeWindow`, etc.) avoiding React state synchronization delays.
+## Architecture Overview
 
-2. **Controller Hook (`useWindowPanel.ts`)**
-   - The bridge between the DOM and Redux. It registers the instance on mount and injects unmanaged `mousemove`/`mouseup` listeners on the `document` for performant, frictionless dragging/resizing via `updateWindowRect` dispatches. 
+### 1. Redux Slices
 
-3. **Presentation Layer (`WindowPanel.tsx`)**
-   - The UI shell. Consumes `useWindowPanel` properties and inline-styles an absolute `div` target portalled directly to `document.body`. Handles rendering traffic light controls, title injection, and dynamic resize handles (N, S, E, W, NE, NW, SE, SW).
-   - macOS-style invisible hot zone over the left header area — traffic light icons reveal before the cursor reaches the dots.
+| Slice | Responsibility |
+|-------|----------------|
+| `windowManagerSlice` | Window geometry (`WindowRect`), state (`windowed`/`minimized`/`maximized`), z-index, tray slots |
+| `overlaySlice` | Which overlays are open; per-overlay data payload passed on open |
+| `urlSyncSlice` | `?panels=` URL param sync for deep-linking (optional per window) |
 
-4. **Multi-Instance State Backing (`withGlobalState.tsx`)**
-   - Uses the Redux dynamic module slice paradigm. 
-   - By creating a `systemComponents` module, this High-Order Component provides instances rendered inside `WindowPanel` with their own `globalState`, `globalConfigs`, and `globalPrefs` bucket without bloating the core window coordinates store. 
+### 2. Key Files
 
-5. **Dock Controller (`WindowTray.tsx` & `WindowTraySync`)**
-   - Monitors minimized window entries and renders UI chips. Exposes click-to-restore functionality and tracks bounding box collisions/dimensions on window resize via `WindowTraySync`.
+| File | Role |
+|------|------|
+| `WindowPanel.tsx` | The shell — drag, resize, maximize, minimize, sidebar, footer, persistence |
+| `hooks/useWindowPanel.ts` | Registers in `windowManagerSlice`; drives move/resize via `document` listeners |
+| `WindowPersistenceManager.tsx` | Context provider (wraps all overlays); handles DB hydration on mount, save, and delete |
+| `registry/windowRegistry.ts` | **Single source of truth** for all window slugs, overlay IDs, labels, and `data` shapes |
+| `service/windowPersistenceService.ts` | Supabase CRUD for `window_sessions` (upsert / load / delete) |
+| `WindowTray.tsx` / `WindowTraySync.tsx` | Minimized-window dock chips |
+| `SidebarWindowToggle.tsx` | Shell UI — the Tools grid that opens windows |
+| `url-sync/UrlPanelRegistry.ts` | `?panels=` hydrator map (deep-link restore only, not DB persistence) |
 
-## Redux Topology
-*   **Window Manager Slice**: Governs *Spatial Data* (Positions, State).
-*   **System Components Module**: Governs *Internal Component State* (Arbitrary UI data inside the panel).
+### 3. Persistence System
 
-## Sizing
+Every non-ephemeral window gets one row in `window_sessions`:
 
-Pass `width` and `height` as simple numbers (pixels) or viewport-relative strings. The component handles all `window` checks internally — consumers never need `typeof window`.
+```
+window_sessions
+├── id            uuid (PK)
+├── user_id       uuid (FK → auth.users, RLS enforced)
+├── window_type   text  ← matches slug in windowRegistry
+├── label         text
+├── panel_state   jsonb ← geometry, windowState, sidebarOpen, zIndex
+└── data          jsonb ← window-type-specific content state
+```
+
+**Save triggers — only two:**
+1. **Explicit** — user clicks "Save window state" in the green traffic-light dropdown.
+2. **Piggyback** — child component calls `onCollectData` as part of its own save flow.
+
+Moving, resizing, toggling the sidebar, or switching tabs does **not** trigger a DB write.
+
+**On close:** `WindowPanel` calls `persistence.closeWindow(overlayId)` which deletes the row, so the window does not reopen on the next page load.
+
+**On page load:** `WindowPersistenceManager` fetches all rows for the user, dispatches `openOverlay` for each, and dispatches `restoreWindowState` so geometry is pre-loaded in Redux before `WindowPanel` mounts.
+
+---
+
+## Creating a New Window — Step-by-Step Checklist
+
+Follow every step. Skipping any one of them will break persistence or the Tools grid.
+
+### Step 1 — Register in `windowRegistry.ts`
+
+Add an entry to `REGISTRY` in `features/window-panels/registry/windowRegistry.ts`:
+
+```ts
+{
+  slug: "my-feature-window",       // kebab-case; stored in window_sessions.window_type
+  overlayId: "myFeatureWindow",    // camelCase; matches overlaySlice key
+  label: "My Feature",             // shown in tray / window manager
+  defaultData: {
+    // Document every key your onCollectData() returns.
+    // Used as a fallback when restoring a session with missing keys.
+    selectedId: null,
+    search: "",
+  },
+  // ephemeral: true,              // Uncomment if this window should NOT persist
+}
+```
+
+**Rules:**
+- `slug` must be globally unique kebab-case. This is the DB primary key for lookup.
+- `overlayId` must match exactly what you dispatch in `openOverlay({ overlayId })`.
+- Set `ephemeral: true` for one-shot tool windows (file upload queue, debug panels, etc.).
+
+### Step 2 — Create the window file in `windows/`
+
+Create `features/window-panels/windows/MyFeatureWindow.tsx`. The minimal pattern:
+
+```tsx
+"use client";
+
+import React, { useCallback } from "react";
+import { WindowPanel, type WindowPanelProps } from "@/features/window-panels/WindowPanel";
+import { MyFeatureBody } from "@/features/my-feature/components/MyFeatureBody";
+
+interface MyFeatureWindowProps {
+  isOpen: boolean;
+  onClose: () => void;
+  // Any extra overlay data passed from openOverlay({ data: {...} })
+  initialSelectedId?: string | null;
+}
+
+export default function MyFeatureWindow({ isOpen, onClose, initialSelectedId }: MyFeatureWindowProps) {
+  if (!isOpen) return null;
+  return <MyFeatureWindowInner onClose={onClose} initialSelectedId={initialSelectedId} />;
+}
+
+function MyFeatureWindowInner({ onClose, initialSelectedId }: Omit<MyFeatureWindowProps, "isOpen">) {
+  // Local state you want to persist
+  const [selectedId, setSelectedId] = React.useState<string | null>(initialSelectedId ?? null);
+
+  // Called by WindowPanel before every save — return a plain JSON-serializable object.
+  // Keys must match your registry defaultData shape.
+  const collectData = useCallback(
+    (): Record<string, unknown> => ({ selectedId }),
+    [selectedId],
+  );
+
+  return (
+    <WindowPanel
+      title="My Feature"
+      id="my-feature-window"        // stable id for windowManagerSlice
+      minWidth={380}
+      minHeight={280}
+      width={560}
+      height={440}
+      position="center"
+      onClose={onClose}
+      overlayId="myFeatureWindow"   // must match registry
+      onCollectData={collectData}
+    >
+      <MyFeatureBody
+        selectedId={selectedId}
+        onSelect={setSelectedId}
+      />
+    </WindowPanel>
+  );
+}
+```
+
+**Key rules for the window component:**
+- The outer component guards `if (!isOpen) return null` — inner component does the real work.
+- `id` passed to `WindowPanel` should be stable (not random) — it is the key in `windowManagerSlice`.
+- `overlayId` must exactly match the registry entry's `overlayId`.
+- `onCollectData` must return a plain object whose keys are a superset of `defaultData`.
+- `onCollectData` should be wrapped in `useCallback` so it always captures current state at call time.
+
+### Step 3 — Register a dynamic import in `OverlayController.tsx`
+
+In `components/overlays/OverlayController.tsx`, add a `dynamic()` import:
+
+```ts
+const MyFeatureWindow = dynamic(
+  () => import("@/features/window-panels/windows/MyFeatureWindow"),
+  { ssr: false },
+);
+```
+
+Then render it in the overlay section (alongside the other windows):
+
+```tsx
+{isMyFeatureWindowOpen && (
+  <MyFeatureWindow
+    isOpen={isMyFeatureWindowOpen}
+    onClose={() => dispatch(closeOverlay("myFeatureWindow"))}
+    initialSelectedId={myFeatureWindowData?.selectedId ?? null}
+  />
+)}
+```
+
+Where `isMyFeatureWindowOpen` and `myFeatureWindowData` come from:
+
+```ts
+const isMyFeatureWindowOpen = useAppSelector((s) => selectIsOverlayOpen(s, "myFeatureWindow"));
+const myFeatureWindowData = useAppSelector((s) => selectOverlayData(s, "myFeatureWindow"));
+```
+
+### Step 4 — Add to the Tools grid in `SidebarWindowToggle.tsx`
+
+In `features/window-panels/SidebarWindowToggle.tsx`, add your window to the tools array so it appears in the Tools tab of the shell sidebar:
+
+```ts
+{
+  label: "My Feature",
+  icon: MyFeatureIcon,          // Lucide icon
+  action: () => dispatch(openOverlay({ overlayId: "myFeatureWindow" })),
+}
+```
+
+### Step 5 — (Optional) Add a URL hydrator
+
+If the window should reopen when the user navigates to `?panels=my-feature`, register a hydrator in `url-sync/initUrlHydration.ts`:
+
+```ts
+registerPanelHydrator("my_feature", (params) => {
+  dispatch(openOverlay({
+    overlayId: "myFeatureWindow",
+    data: { selectedId: params.selectedId ?? null },
+  }));
+});
+```
+
+Note: URL hydration is separate from DB persistence. DB persistence restores geometry + data on every page load. URL hydrators only fire when the `?panels=` query param is present.
+
+---
+
+## Modifying an Existing Window — Checklist
+
+When you add or remove keys from the content state of an existing window:
+
+1. **Update `defaultData` in `windowRegistry.ts`** — add new keys with sensible null/empty defaults; remove stale keys.
+2. **Update `onCollectData`** in the window component — must return all keys that appear in `defaultData`.
+3. **Update the inner component** to read new keys from `initialXxx` props (passed from `OverlayController` via `overlayData`).
+4. **Update `OverlayController.tsx`** if new keys need to be destructured from `overlayData` before passing to the window.
+
+---
+
+## `WindowPanel` Props Reference
+
+### Geometry
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `width` | `number \| string` | `320` | Initial width. Number = pixels, string = viewport unit (`"60vw"`). |
-| `height` | `number \| string` | `400` | Initial height. Number = pixels, string = viewport unit (`"60vh"`). |
-| `position` | `WindowPosition` | `"center"` | Placement hint: `"center"`, `"top-right"`, `"top-left"`, `"bottom-right"`, `"bottom-left"`. |
-| `minWidth` | `number` | `180` | Minimum resize width in pixels. |
-| `minHeight` | `number` | `80` | Minimum resize height in pixels. |
+| `id` | `string` | auto | Stable key for `windowManagerSlice`. Use a fixed string (e.g. `"notes-window"`). |
+| `width` | `number \| string` | `320` | Initial width — px or `"60vw"`. |
+| `height` | `number \| string` | `400` | Initial height — px or `"60vh"`. |
+| `position` | `WindowPosition` | `"center"` | Placement: `"center"`, `"top-right"`, `"top-left"`, `"bottom-right"`, `"bottom-left"`. |
+| `minWidth` | `number` | `180` | Minimum resize width in px. |
+| `minHeight` | `number` | `80` | Minimum resize height in px. |
+| `initialRect` | `Partial<WindowRect>` | — | Override specific x/y/width/height. Prefer `position` for normal use. |
 
-```tsx
-<WindowPanel title="Chat" width={420} height="60vh" position="center">
-  <ChatBody />
-</WindowPanel>
-
-<WindowPanel title="Voice" width={320} height={420} position="top-right">
-  <VoicePad />
-</WindowPanel>
-```
-
-`initialRect` still exists for edge cases where you need a specific `x`/`y` pixel position (e.g., demo layouts). When `initialRect` provides `x`/`y`, those override the `position` prop. When it provides `width`/`height`, those override the `width`/`height` props. Prefer the simpler props for all standard usage.
-
-## Built-in Collapsible Sidebar
-
-WindowPanel has first-class support for a resizable, collapsible left sidebar panel. When enabled, a toggle icon appears in the traffic light area (next to the close/minimize/maximize dots) — no extra header space consumed.
-
-### Props
+### Header
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `sidebar` | `ReactNode` | — | Content for the collapsible left panel. Omit to disable. |
-| `sidebarDefaultSize` | `number` | `25` | Initial width as a percentage of the window. |
-| `sidebarMinSize` | `number` | `10` | Minimum percentage before the panel collapses. |
-| `defaultSidebarOpen` | `boolean` | `true` | Whether the sidebar starts expanded. |
-| `sidebarClassName` | `string` | — | Class name for the sidebar content wrapper. |
+| `title` | `string` | — | Window title, centered in header. Also stored in Redux for the tray. |
+| `actionsLeft` | `ReactNode` | — | Content left of the title. |
+| `actionsRight` | `ReactNode` | — | Content right of the title. |
+| `onClose` | `() => void` | — | Called when the red traffic light is clicked. Also triggers `persistence.closeWindow`. |
 
-### Usage
+### Sidebar
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `sidebar` | `ReactNode` | — | Left panel content. Omit to disable. |
+| `sidebarDefaultSize` | `number` | `200` | Initial width in px. |
+| `sidebarMinSize` | `number` | `100` | Minimum px before collapsing. |
+| `defaultSidebarOpen` | `boolean` | `true` | Open on first render. |
+| `sidebarClassName` | `string` | — | Class on the sidebar content wrapper. |
+| `sidebarExpandsWindow` | `boolean` | `false` | Grow the window when sidebar opens (keeps body width constant). |
+
+**Sidebar content rules:**
+- Use `h-full min-h-0 flex flex-col` on your sidebar root.
+- Do NOT set `overflow-y-auto` on the root — `WindowPanel` handles it.
+- Use `flex-1 min-h-0` on scrollable inner content.
+
+### Footer
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `footer` | `ReactNode` | — | Full-width footer bar (single flex row). |
+| `footerLeft` | `ReactNode` | — | Left zone (use instead of `footer` for zoned layout). |
+| `footerCenter` | `ReactNode` | — | Center zone. |
+| `footerRight` | `ReactNode` | — | Right zone. |
+
+### Persistence
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `overlayId` | `string` | — | **Required for persistence.** Must match `windowRegistry` `overlayId`. |
+| `onCollectData` | `() => Record<string, unknown>` | — | Called before each save; return current content state. |
+| `onSessionSaved` | `(sessionId: string) => void` | — | Called after the DB row is written. Rare — only needed if child tracks its own session id. |
+
+### URL Sync
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `urlSyncKey` | `string` | — | `?panels=` key. **Both** `urlSyncKey` and `urlSyncId` must be set for URL sync to activate. |
+| `urlSyncId` | `string` | — | Instance id appended to the URL key. |
+| `urlSyncArgs` | `Record<string, string>` | — | Extra query params to include in the URL entry. |
+
+---
+
+## Sidebar Content Pattern
 
 ```tsx
-<WindowPanel
-  title="My Window"
-  sidebar={<MySidebarNav />}
-  sidebarDefaultSize={25}
-  sidebarMinSize={10}
-  sidebarClassName="bg-muted/20"
-  onClose={handleClose}
->
-  <MainContent />
-</WindowPanel>
-```
-
-The sidebar is internally wired with `ResizablePanelGroup` / `ResizablePanel` / `ResizableHandle` — consumers don't manage any sidebar state, refs, or toggle logic. The toggle button is rendered inside the traffic light group and appears automatically when `sidebar` is provided.
-
-### Sidebar Scrolling
-
-The sidebar wrapper automatically applies `overflow-y-auto` with a thin scrollbar (`scrollbar-thin`). Sidebar content that exceeds the available height will scroll without any extra work from the consumer.
-
-**Rules for sidebar content components:**
-
-1. **Do NOT set `overflow-y-auto` or `overflow-hidden` on your sidebar root** — the WindowPanel wrapper handles it.
-2. **Do NOT use `shrink-0`** on the sidebar root — it prevents the container from constraining to the available height.
-3. **DO use `h-full min-h-0 flex flex-col`** on your sidebar root so it fills the available space and allows flex children to shrink.
-4. Use `flex-1 min-h-0` on the scrollable content area inside your sidebar.
-
-```tsx
-// Correct sidebar content pattern
-function MySidebar() {
+function MyWindowSidebar() {
   return (
     <div className="flex flex-col min-h-0 h-full">
-      {/* Optional fixed header */}
-      <div className="px-2 py-1 border-b text-xs font-medium">Header</div>
-      {/* Scrollable list — no overflow needed, parent handles it */}
+      {/* Fixed header */}
+      <div className="px-2 py-1 border-b text-xs font-medium shrink-0">Sections</div>
+      {/* Scrollable body — parent handles overflow */}
       <div className="flex-1 min-h-0 p-1.5 space-y-1">
         {items.map(item => <Item key={item.id} />)}
       </div>
@@ -108,88 +297,70 @@ function MySidebar() {
 }
 ```
 
-## Built-in Footer
+---
 
-WindowPanel supports a `footer` prop that renders a full-width bar below the body (including below the sidebar). It matches the header's density — same padding (`px-2 py-1.5`), background, and border treatment. Icons and buttons inside the footer are automatically sized to match the header (`[&_svg]:h-3 [&_svg]:w-3`, `[&_button]:h-5`).
+## Ephemeral Windows
 
-### Props
+Set `ephemeral: true` in the registry for windows that should never write to the DB:
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `footer` | `ReactNode` | — | Content for the footer bar. Omit to disable. |
+- Debug panels, state viewers, one-shot tool dialogs (file upload queue, JSON truncator)
+- The "Save window state" button in the traffic-light dropdown is hidden for ephemeral windows
+- Closing an ephemeral window does not attempt a DB delete
 
-### Usage
+---
 
-```tsx
-<WindowPanel
-  title="My Window"
-  footer={
-    <>
-      <span className="text-muted-foreground">Status text</span>
-      <div className="flex-1" />
-      <Button size="sm" className="h-5 text-xs px-2">Save</Button>
-    </>
-  }
->
-  <MainContent />
-</WindowPanel>
-```
+## Registered Windows (All)
 
-The footer content is wrapped in a flex row — use `<div className="flex-1" />` spacers for alignment. When combined with `sidebar`, the footer spans the full window width (it sits outside the sidebar split).
+| overlayId | slug | Ephemeral | Window file |
+|-----------|------|-----------|-------------|
+| `notesWindow` | `notes-window` | No | `NotesWindow.tsx` |
+| `quickDataWindow` | `quick-data-window` | No | `QuickDataWindow.tsx` |
+| `quickTasksWindow` | `quick-tasks-window` | No | `QuickTasksWindow.tsx` |
+| `quickFilesWindow` | `quick-files-window` | No | `QuickFilesWindow.tsx` |
+| `scraperWindow` | `scraper-window` | No | `ScraperWindow.tsx` |
+| `pdfExtractorWindow` | `pdf-extractor-window` | No | `PdfExtractorWindow.tsx` |
+| `galleryWindow` | `gallery-window` | No | `GalleryWindow.tsx` |
+| `newsWindow` | `news-window` | No | `NewsWindow.tsx` |
+| `listManagerWindow` | `list-manager-window` | No | `ListManagerWindow.tsx` |
+| `userPreferencesWindow` | `user-preferences-window` | No | `UserPreferencesWindow.tsx` |
+| `agentSettingsWindow` | `agent-settings-window` | No | `AgentSettingsWindow.tsx` |
+| `agentContentWindow` | `agent-content-window` | No | `AgentContentWindow.tsx` |
+| `agentGateWindow` | `agent-gate-window` | No | `AgentGateWindow.tsx` |
+| `contextSwitcherWindow` | `context-switcher-window` | No | `ContextSwitcherWindow.tsx` |
+| `canvasViewerWindow` | `canvas-viewer-window` | No | `CanvasViewerWindow.tsx` |
+| `feedbackDialog` | `feedback-window` | No | `FeedbackWindow.tsx` |
+| `shareModalWindow` | `share-modal-window` | No | `ShareModalWindow.tsx` |
+| `emailDialogWindow` | `email-dialog-window` | No | `EmailDialogWindow.tsx` |
+| `markdownEditorWindow` | `markdown-editor-window` | No | `MarkdownEditorWindow.tsx` |
+| `filePreviewWindow` | `file-preview-window` | No | `FilePreviewWindow.tsx` |
+| `imageViewer` | `image-viewer-window` | No | `ImageViewerWindow.tsx` |
+| `aiVoiceWindow` | `ai-voice-window` | No | `AiVoiceWindow.tsx` |
+| `voicePad` | `voice-pad` | No | `VoicePadAdvanced.tsx` (in `components/official-candidate/`) |
+| `projectsWindow` | `projects-window` | No | `ProjectsWindow.tsx` |
+| `executionInspectorWindow` | `exec-inspector-window` | **Yes** | `ExecutionInspectorWindow.tsx` |
+| `hierarchyCreationWindow` | `hierarchy-creation-window` | **Yes** | `HierarchyCreationWindow.tsx` |
+| `fileUploadWindow` | `file-upload-window` | **Yes** | `FileUploadWindow.tsx` |
+| `quickAIResults` | `quick-ai-results` | **Yes** | — |
+| `streamDebug` | `stream-debug` | **Yes** | — |
+| `adminStateAnalyzerWindow` | `state-analyzer-window` | **Yes** | — |
+| `jsonTruncator` | `json-truncator` | **Yes** | — |
+| `resourcePickerWindow` | `resource-picker-window` | **Yes** | `ResourcePickerWindow.tsx` |
+| `agentAssistantMarkdownDebugWindow` | `agent-md-debug-window` | **Yes** | `AgentAssistantMarkdownDebugWindow.tsx` |
 
+---
 
-## Important Reminders:
-- Make sure your component is listed here: min/features/floating-window-panel/SidebarWindowToggle.tsx
-- Remember that you can create a multi-window pattern as well, which is best demonstrated by the User Feedback and Screenshot systems:
-  - features/floating-window-panel/windows/ImageViewerWindow.tsx
-  - features/floating-window-panel/windows/FeedbackWindow.tsx
-  - In this case, it's a one-direction relationship but it could be two-directional as well!
+## Multi-Window Pattern
 
-## Registered Windows (Tools Tab)
+A window can open a secondary window (e.g., clicking an image in Gallery opens ImageViewer). Use `openOverlay` from Redux — the secondary window does not need its own `onCollectData` unless it also needs persistence.
 
-| overlayId | Window File | Feature |
-|-----------|-------------|---------|
-| `jsonTruncator` | — | JSON truncation utility |
-| `notesWindow` | `NotesWindow.tsx` | Quick notes |
-| `voicePad` | — | Voice pad |
-| `quickAIResults` | — | AI results viewer |
-| `streamDebug` | — | Stream debug |
-| `feedbackDialog` | `FeedbackWindow.tsx` | Feedback submission + image viewer |
-| `adminStateAnalyzerWindow` | — | State analyzer |
-| `markdownEditorWindow` | `MarkdownEditorWindow.tsx` | Markdown editor |
-| `userPreferencesWindow` | `UserPreferencesWindow.tsx` | User preferences |
-| `emailDialogWindow` | `EmailDialogWindow.tsx` | Email composer |
-| `shareModalWindow` | `ShareModalWindow.tsx` | Share modal |
-| `quickTasksWindow` | `QuickTasksWindow.tsx` | Task list |
-| `quickDataWindow` | `QuickDataWindow.tsx` | Data tables |
-| `quickFilesWindow` | `QuickFilesWindow.tsx` | File browser |
-| `fileUploadWindow` | `FileUploadWindow.tsx` | File uploader |
-| `scraperWindow` | `ScraperWindow.tsx` | Web scraper |
-| `contextSwitcherWindow` | `ContextSwitcherWindow.tsx` | Context switcher |
-| `pdfExtractorWindow` | `PdfExtractorWindow.tsx` | PDF / image text extraction |
-| `canvasViewerWindow` | `CanvasViewerWindow.tsx` | Canvas item viewer |
-| `galleryWindow` | `GalleryWindow.tsx` | Unsplash image gallery + favorites |
+Example: `GalleryWindow` dispatches `openOverlay({ overlayId: "imageViewer", data: { images, initialIndex } })`.
 
-## PDF Extractor Window
-
-Overlay ID: `pdfExtractorWindow`
-
-Feature logic lives in `features/pdf-extractor/`:
-- `hooks/usePdfExtractor.ts` — extraction state, history, copy utility
-- `components/PdfExtractorWorkspace.tsx` — body, sidebar, and self-contained floating shell
-
-**Architecture:** The window holds its own `usePdfExtractor` instance (all state lives inside `PdfExtractorFloatingWorkspace`). The sidebar shows per-session extraction history; clicking a history item re-loads that result without re-extracting.
-
-**Tabs:** Raw Text · Preview · Metadata · AI Clean (placeholder)
-
-## Specialized Components
-
-### `FloatingPanel.tsx` (Unmanaged Wrapper)
-For ephemeral or basic floating components that do **not** require grid arrangements, tray docking, or persistence. `FloatingPanel` handles its own self-contained drag listeners and collapse logic independently of Redux.
-
-## Event Subsystem (`useCallbackManager`)
-For long-running tasks or asynchronous processing across dynamic panels, `useCallbackManager` provides a predictable proxy. Components wrap promises enabling progress monitoring visually outside the exact React render loop. Wait for completions gracefully without manually managing memory references.
+---
 
 ## Key Invariants
-- `WindowPanel` is strictly unmounted if not visible, EXCEPT when `state === 'minimized'` where boundaries are forced to zero to keep DOM execution alive safely.
-- All dynamic components *must* declare an `id` to leverage Z-index memory indexing.
+
+- `WindowPanel` is strictly unmounted when `state === 'closed'`. When `state === 'minimized'`, the window div has zero dimensions but the body remains in the DOM (keeps state alive).
+- `overlayId` must be registered in `windowRegistry.ts` for persistence to work. Without it, `overlayId` is silently ignored and no DB row is written.
+- `onCollectData` is called synchronously at save time — always return current state, not stale closures. Use `useCallback` with all dependencies listed.
+- Geometry persistence is automatic once `overlayId` is set. You do not need to manually track `rect`, `zIndex`, or `sidebarOpen` — `WindowPanel` collects these from Redux + local state.
+- The `window_sessions` table is RLS-secured. Each user can only read/write their own rows. No API route is needed.

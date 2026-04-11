@@ -44,7 +44,7 @@ import dynamic from "next/dynamic";
 import type { ResourceType } from "@/utils/permissions";
 import { updateOverlayData } from "@/lib/redux/slices/overlayDataSlice";
 import { Suspense } from "react";
-import { UrlPanelManager } from "@/features/window-panels/url-sync/UrlPanelManager";
+import { WindowPersistenceManager } from "@/features/window-panels/WindowPersistenceManager";
 
 // ============================================================================
 // DYNAMIC IMPORTS — all lazy, no SSR
@@ -849,10 +849,9 @@ export const OverlayController: React.FC = () => {
     dispatch(closeOverlay({ overlayId, instanceId }));
 
   return (
-    <>
-      <Suspense fallback={null}>
-        <UrlPanelManager />
-      </Suspense>
+    <WindowPersistenceManager>
+      {/* WindowPersistenceManager wraps all overlays so WindowPanel components
+          can access the persistence context via useWindowPersistence(). */}
 
       {/* ── Singleton overlays (always 0 or 1 instance) ────────────────── */}
 
@@ -1699,7 +1698,7 @@ export const OverlayController: React.FC = () => {
           onClose={() => close("agentAssistantMarkdownDebugWindow")}
         />
       )}
-    </>
+    </WindowPersistenceManager>
   );
 };
 

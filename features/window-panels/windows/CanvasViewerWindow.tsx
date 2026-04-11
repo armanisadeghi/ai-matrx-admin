@@ -74,6 +74,8 @@ export function CanvasViewerWindow({
       minHeight={250}
       width={700}
       height={550}
+      overlayId="canvasViewerWindow"
+      onCollectData={() => ({ shareToken: activeToken ?? null })}
     >
       <div className="flex flex-col h-full min-h-0 bg-background">
         <div className="shrink-0 px-3 py-2 border-b border-border bg-muted/20 flex items-center gap-2">
@@ -109,7 +111,8 @@ export function CanvasViewerWindow({
                 No Canvas Selected
               </h3>
               <p className="text-xs text-muted-foreground mt-1 max-w-[250px]">
-                Enter a generated canvas code or shared link above to view it in this window.
+                Enter a generated canvas code or shared link above to view it in
+                this window.
               </p>
             </div>
           )}

@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/tooltip";
 import { TemplateSelector } from "@/features/content-templates/components/TemplateSelector";
 import { VariableSelector } from "@/features/agents/components/variables-management/VariableSelector";
+import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
 
 interface SystemMessageButtonsProps {
   isEditing?: boolean;
@@ -40,6 +41,7 @@ interface SystemMessageButtonsProps {
   onToggleEditing?: () => void;
   onClear?: () => void;
   onAddBlockType?: (type: BlockType) => void;
+  onVoiceTranscription?: (text: string) => void;
 }
 
 export function SystemMessageButtons({
@@ -57,6 +59,7 @@ export function SystemMessageButtons({
   onToggleEditing,
   onClear,
   onAddBlockType,
+  onVoiceTranscription,
 }: SystemMessageButtonsProps) {
   const variableButton: IconButtonConfig = hasVariableSupport
     ? {
@@ -191,6 +194,38 @@ export function SystemMessageButtons({
         e.preventDefault();
         e.stopPropagation();
       },
+    },
+    {
+      id: "voice",
+      icon: undefined,
+      tooltip: "Record voice",
+      mobileLabel: "Record Voice",
+      hidden: !onVoiceTranscription,
+      render: onVoiceTranscription
+        ? () => (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                >
+                  <MicrophoneIconButton
+                    variant="modal-controls"
+                    size="sm"
+                    onTranscriptionComplete={onVoiceTranscription}
+                  />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="z-[9999]">
+                Record voice
+              </TooltipContent>
+            </Tooltip>
+          )
+        : undefined,
     },
     {
       id: "add-block",

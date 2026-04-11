@@ -51,6 +51,8 @@ import {
 } from "@/lib/redux/slices/windowManagerSlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { useUrlSync } from "./url-sync/useUrlSync";
+import { useWindowPersistence } from "./WindowPersistenceManager";
+import { Save } from "lucide-react";
 
 // ─── Resize handle descriptors ───────────────────────────────────────────────
 
@@ -131,6 +133,27 @@ export interface WindowPanelProps extends UseWindowPanelOptions {
   footerCenter?: React.ReactNode;
   /** Right-aligned footer content */
   footerRight?: React.ReactNode;
+
+  // ── Persistence ────────────────────────────────────────────────────────────
+  /**
+   * The overlay ID for this window (e.g. "notesWindow").
+   * Used to look up / store the window_sessions row.
+   * When set, WindowPanel will automatically call the persistence context
+   * to save state on explicit user action ("Save Window State") and piggyback
+   * saves triggered by child content via onPiggybackSave.
+   */
+  overlayId?: string;
+  /**
+   * Called by WindowPanel before a save so the child component can return
+   * its current content state to include in the window_sessions `data` column.
+   * Return value must be a plain object (JSON-serializable).
+   */
+  onCollectData?: () => Record<string, unknown>;
+  /**
+   * Called after the session row has been written with the row's UUID.
+   * Useful if the child needs to track its own session id (rare).
+   */
+  onSessionSaved?: (sessionId: string) => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -159,6 +182,9 @@ export function WindowPanel({
   footerLeft,
   footerCenter,
   footerRight,
+  overlayId,
+  onCollectData,
+  onSessionSaved,
   ...hookOpts
 }: WindowPanelProps) {
   // Pass title into hook so it reaches Redux
@@ -185,6 +211,44 @@ export function WindowPanel({
   // ── Sidebar state ─────────────────────────────────────────────────────────
   const hasSidebar = !!sidebar;
   const [sidebarOpen, setSidebarOpen] = useState(defaultSidebarOpen);
+
+  // ── Persistence ───────────────────────────────────────────────────────────
+  const persistence = useWindowPersistence();
+
+  /**
+   * Collect the current panel chrome state from Redux + local state and
+   * merge it with whatever the child provides via onCollectData(), then
+   * save to the DB. This is the shared path for both explicit saves and
+   * piggyback saves.
+   */
+  const handleSaveWindowState = useCallback(() => {
+    if (!overlayId) return;
+    const panelState = {
+      windowState,
+      rect,
+      sidebarOpen,
+      zIndex,
+    };
+    const data = onCollectData?.() ?? {};
+    persistence.saveWindow(overlayId, panelState, data, onSessionSaved);
+  }, [
+    overlayId,
+    windowState,
+    rect,
+    sidebarOpen,
+    zIndex,
+    onCollectData,
+    onSessionSaved,
+    persistence,
+  ]);
+
+  /**
+   * Wrap the onClose prop to also delete the DB row for this window.
+   */
+  const handleClose = useCallback(() => {
+    if (overlayId) persistence.closeWindow(overlayId);
+    onClose?.();
+  }, [overlayId, onClose, persistence]);
   const sidebarPanelRef = useRef<PanelImperativeHandle>(null);
 
   useEffect(() => {
@@ -347,7 +411,7 @@ export function WindowPanel({
       onDragStart={onDragStart}
       onMinimize={onMinimize}
       onToggleMaximize={onToggleMaximize}
-      onClose={onClose}
+      onClose={handleClose}
       onRestore={onRestore}
       isMaximized={isMaximized}
       isMinimized={isMinimized}
@@ -360,6 +424,7 @@ export function WindowPanel({
       hasSidebar={hasSidebar}
       sidebarOpen={sidebarOpen}
       onToggleSidebar={toggleSidebar}
+      onSaveWindowState={overlayId ? handleSaveWindowState : undefined}
     />
   );
 
@@ -601,6 +666,8 @@ interface WindowHeaderProps {
   hasSidebar: boolean;
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
+  /** When set, a "Save Window State" button appears in the green traffic-light dropdown. */
+  onSaveWindowState?: () => void;
 }
 
 function WindowHeader({
@@ -623,6 +690,7 @@ function WindowHeader({
   hasSidebar,
   sidebarOpen,
   onToggleSidebar,
+  onSaveWindowState,
 }: WindowHeaderProps) {
   return (
     <div
@@ -662,6 +730,7 @@ function WindowHeader({
             hasSidebar={hasSidebar}
             sidebarOpen={sidebarOpen}
             onToggleSidebar={onToggleSidebar}
+            onSaveWindowState={onSaveWindowState}
           />
         </div>
       </div>
@@ -722,6 +791,7 @@ interface TrafficLightGroupProps {
   hasSidebar: boolean;
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
+  onSaveWindowState?: () => void;
 }
 
 function TrafficLightGroup({
@@ -740,6 +810,7 @@ function TrafficLightGroup({
   hasSidebar,
   sidebarOpen,
   onToggleSidebar,
+  onSaveWindowState,
 }: TrafficLightGroupProps) {
   return (
     <div className="flex items-center gap-1.5 shrink-0 cursor-default">
@@ -785,6 +856,7 @@ function TrafficLightGroup({
         snapBottom={snapBottom}
         snapCentre={snapCentre}
         arrangeAll={arrangeAll}
+        onSaveWindowState={onSaveWindowState}
       />
 
       {/* Sidebar toggle — sits tight next to the traffic lights */}
@@ -866,6 +938,7 @@ interface GreenTrafficLightProps {
   snapBottom: () => void;
   snapCentre: () => void;
   arrangeAll: (layout: any) => void;
+  onSaveWindowState?: () => void;
 }
 
 function GreenTrafficLight({
@@ -878,6 +951,7 @@ function GreenTrafficLight({
   snapBottom,
   snapCentre,
   arrangeAll,
+  onSaveWindowState,
 }: GreenTrafficLightProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1082,6 +1156,22 @@ function GreenTrafficLight({
               <Maximize2 className="w-3.5 h-3.5 shrink-0" />
               Restore window
             </button>
+          )}
+
+          {/* Save Window State — only shown when the window is persistable */}
+          {onSaveWindowState && (
+            <>
+              <div className="border-t border-border/50 my-1" />
+              <button
+                type="button"
+                className="flex items-center gap-2.5 w-full px-3 py-1.5 hover:bg-accent transition-colors text-foreground/80"
+                onClick={() => handleAction(onSaveWindowState)}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                <Save className="w-3.5 h-3.5 shrink-0" />
+                Save window state
+              </button>
+            </>
           )}
         </div>
       )}
