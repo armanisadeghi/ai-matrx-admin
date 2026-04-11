@@ -54,8 +54,11 @@ import {
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
 import {
+  selectOrganizationId,
   selectOrganizationName,
+  selectProjectId,
   selectProjectName,
+  selectTaskId,
   selectTaskName,
 } from "@/features/agent-context/redux/appContextSlice";
 import {
@@ -98,10 +101,7 @@ import { cn } from "@/lib/utils";
 import type { NoteRecord } from "../redux/notes.types";
 import type { NoteSortField, NoteSortOrder, NoteGroupBy } from "../types";
 
-const ContextSwitcher = dynamic(
-  () => import("@/app/(ssr)/ssr/notes/_components/ContextSwitcher"),
-  { ssr: false },
-);
+// ContextSwitcher removed — replaced with local filter that doesn't modify global state
 
 // ── Sort field labels ───────────────────────────────────────────────────────
 const SORT_FIELDS: { field: NoteSortField; label: string }[] = [
@@ -141,9 +141,12 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
   const scopeGrouped = useAppSelector(selectNotesGroupedByScope);
   const scopesLoaded = useAppSelector(selectNoteScopesLoaded);
 
-  // ── Hierarchy names for grouping labels ─────────────────────────────
+  // ── Hierarchy context (used for filter options) ─────────────────────
+  const ctxOrgId = useAppSelector(selectOrganizationId);
   const orgName = useAppSelector(selectOrganizationName);
+  const ctxProjId = useAppSelector(selectProjectId);
   const projName = useAppSelector(selectProjectName);
+  const ctxTaskId = useAppSelector(selectTaskId);
   const taskName = useAppSelector(selectTaskName);
 
   // ── Local UI state ─────────────────────────────────────────────────
@@ -155,6 +158,13 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
   const [sortOrder, setSortOrder] = useState<NoteSortOrder>("desc");
   const [groupBy, setGroupBy] = useState<NoteGroupBy | "recent">("folder");
   const [groupByDropdown, setGroupByDropdown] = useState(false);
+
+  // ── Context filter state (sidebar-local, NOT global appContextSlice) ──
+  // null = "All" (no filter). When set, only notes matching are shown.
+  const [filterOrgId, setFilterOrgId] = useState<string | null>(null);
+  const [filterProjectId, setFilterProjectId] = useState<string | null>(null);
+  const [filterTaskId, setFilterTaskId] = useState<string | null>(null);
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
 
   // ── Fetch scope assignments when switching to scope mode ────────────
   useEffect(() => {
@@ -251,17 +261,28 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
     return result;
   }, [allNotes, allFolders]);
 
-  // Filter notes by search
+  // ── Context filter: narrow by org/project/task ──────────────────
+  const contextFilteredNotes = useMemo(() => {
+    if (!filterOrgId && !filterProjectId && !filterTaskId) return allNotes;
+    return allNotes.filter((n) => {
+      if (filterTaskId && n.task_id !== filterTaskId) return false;
+      if (filterProjectId && n.project_id !== filterProjectId) return false;
+      if (filterOrgId && n.organization_id !== filterOrgId) return false;
+      return true;
+    });
+  }, [allNotes, filterOrgId, filterProjectId, filterTaskId]);
+
+  // Filter notes by search (applied AFTER context filter)
   const filteredNotes = useMemo(() => {
-    if (!searchQuery) return allNotes;
+    if (!searchQuery) return contextFilteredNotes;
     const q = searchQuery.toLowerCase();
-    return allNotes.filter(
+    return contextFilteredNotes.filter(
       (n) =>
         n.label.toLowerCase().includes(q) ||
         n.content?.toLowerCase().includes(q) ||
         n.tags?.some((t) => t.toLowerCase().includes(q)),
     );
-  }, [allNotes, searchQuery]);
+  }, [contextFilteredNotes, searchQuery]);
 
   // Sort function
   const sortNotes = useCallback(
@@ -585,9 +606,96 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
         </div>
       </div>
 
-      {/* Context switcher (org/project/task hierarchy) */}
-      <div className="shrink-0 px-2 py-1 border-b border-border/20">
-        <ContextSwitcher />
+      {/* Context filter (sidebar-local, defaults to "All") */}
+      <div className="shrink-0 px-2 py-1 border-b border-border/20 relative">
+        <button
+          onClick={() => setFilterDropdownOpen((v) => !v)}
+          className={cn(
+            "flex items-center gap-1 w-full px-2 py-1 text-[0.625rem] rounded-md cursor-pointer transition-colors [&_svg]:w-3 [&_svg]:h-3",
+            filterOrgId || filterProjectId || filterTaskId
+              ? "bg-primary/10 text-primary border border-primary/30"
+              : "text-muted-foreground hover:text-foreground border border-dashed border-border/50",
+          )}
+        >
+          <Layers />
+          <span className="flex-1 text-left truncate">
+            {filterTaskId ? (taskName || "Task filter") :
+             filterProjectId ? (projName || "Project filter") :
+             filterOrgId ? (orgName || "Org filter") :
+             "All Notes"}
+          </span>
+          <ChevronDown className="w-2! h-2! opacity-50" />
+        </button>
+        {filterDropdownOpen && (
+          <>
+            <div className="fixed inset-0 z-[100]" onClick={() => setFilterDropdownOpen(false)} />
+            <div className="absolute left-2 right-2 top-full mt-1 z-[110] py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg">
+              <button
+                className={cn(
+                  "w-full text-left px-3 py-1.5 text-[0.625rem] cursor-pointer transition-colors",
+                  !filterOrgId ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-accent",
+                )}
+                onClick={() => {
+                  setFilterOrgId(null);
+                  setFilterProjectId(null);
+                  setFilterTaskId(null);
+                  setFilterDropdownOpen(false);
+                }}
+              >
+                All Notes
+              </button>
+              {/* Show org option if any notes have org_id */}
+              {ctxOrgId && (
+                <button
+                  className={cn(
+                    "flex items-center gap-2 w-full text-left px-3 py-1.5 text-[0.625rem] cursor-pointer transition-colors",
+                    filterOrgId === ctxOrgId ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-accent",
+                  )}
+                  onClick={() => {
+                    setFilterOrgId(ctxOrgId);
+                    setFilterProjectId(null);
+                    setFilterTaskId(null);
+                    setFilterDropdownOpen(false);
+                  }}
+                >
+                  <Building2 className="w-3 h-3" /> {orgName || "Organization"}
+                </button>
+              )}
+              {ctxProjId && (
+                <button
+                  className={cn(
+                    "flex items-center gap-2 w-full text-left px-3 py-1.5 text-[0.625rem] cursor-pointer transition-colors",
+                    filterProjectId === ctxProjId ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-accent",
+                  )}
+                  onClick={() => {
+                    setFilterOrgId(ctxOrgId);
+                    setFilterProjectId(ctxProjId);
+                    setFilterTaskId(null);
+                    setFilterDropdownOpen(false);
+                  }}
+                >
+                  <Kanban className="w-3 h-3" /> {projName || "Project"}
+                </button>
+              )}
+              {ctxTaskId && (
+                <button
+                  className={cn(
+                    "flex items-center gap-2 w-full text-left px-3 py-1.5 text-[0.625rem] cursor-pointer transition-colors",
+                    filterTaskId === ctxTaskId ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-accent",
+                  )}
+                  onClick={() => {
+                    setFilterOrgId(ctxOrgId);
+                    setFilterProjectId(ctxProjId);
+                    setFilterTaskId(ctxTaskId);
+                    setFilterDropdownOpen(false);
+                  }}
+                >
+                  <ListTodo className="w-3 h-3" /> {taskName || "Task"}
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Toolbar: group-by + sort + expand/collapse */}

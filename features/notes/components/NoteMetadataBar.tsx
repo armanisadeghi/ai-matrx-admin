@@ -1,13 +1,24 @@
 "use client";
 
 // Layer 2: NoteMetadataBar
-// Shows folder, tags, scope assignments, org/project/task context, save status, word count.
-// Title is handled by the tab (Layer 3) — NOT duplicated here.
-// Props: noteId only. Everything from Redux.
+// Bottom bar showing: folder, tags, scope assignments, save status, word count.
+// Expandable assignment panel for org/project/task/scopes.
+// All assignments are note-specific — NOT derived from sidebar filter.
 
 import React, { useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { FolderOpen, ChevronDown, X, Plus, Building2, Kanban, ListTodo, Tags } from "lucide-react";
+import {
+  FolderOpen,
+  ChevronDown,
+  ChevronUp,
+  X,
+  Plus,
+  Building2,
+  Kanban,
+  ListTodo,
+  Tags,
+  Settings2,
+} from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   updateNoteFolder,
@@ -23,21 +34,16 @@ import {
   selectAllFolders,
   selectNoteById,
 } from "../redux/selectors";
-import {
-  selectOrganizationName,
-  selectProjectName,
-  selectTaskName,
-  selectOrganizationId,
-  selectProjectId,
-  selectTaskId,
-} from "@/features/agent-context/redux/appContextSlice";
+import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
 import { ScopeTagsDisplay } from "@/features/agent-context/components/ScopeTagsDisplay";
+import { useUserOrganizations } from "@/features/organizations/hooks";
 import { cn } from "@/lib/utils";
 
 const ScopePicker = dynamic(
-  () => import("@/features/agent-context/components/ScopePicker").then(
-    (mod) => ({ default: mod.ScopePicker }),
-  ),
+  () =>
+    import("@/features/agent-context/components/ScopePicker").then((mod) => ({
+      default: mod.ScopePicker,
+    })),
   { ssr: false },
 );
 
@@ -55,24 +61,20 @@ export function NoteMetadataBar({ noteId }: NoteMetadataBarProps) {
   const content = useAppSelector(selectNoteContent(noteId)) ?? "";
   const allFolders = useAppSelector(selectAllFolders);
   const note = useAppSelector(selectNoteById(noteId));
+  const activeOrgId = useAppSelector(selectOrganizationId);
 
-  // Current hierarchy context (from appContextSlice)
-  const ctxOrgId = useAppSelector(selectOrganizationId);
-  const ctxOrgName = useAppSelector(selectOrganizationName);
-  const ctxProjId = useAppSelector(selectProjectId);
-  const ctxProjName = useAppSelector(selectProjectName);
-  const ctxTaskId = useAppSelector(selectTaskId);
-  const ctxTaskName = useAppSelector(selectTaskName);
-
-  // Note's assigned context
+  // Note's current assignments
   const noteOrgId = note?.organization_id ?? null;
   const noteProjId = note?.project_id ?? null;
   const noteTaskId = note?.task_id ?? null;
 
+  // Org list for picker
+  const { organizations } = useUserOrganizations();
+
   const [folderOpen, setFolderOpen] = useState(false);
   const [addingTag, setAddingTag] = useState(false);
   const [tagInput, setTagInput] = useState("");
-  const [scopePickerOpen, setScopePickerOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
 
   const wordCount = useMemo(() => {
     const trimmed = content.trim();
@@ -96,7 +98,9 @@ export function NoteMetadataBar({ noteId }: NoteMetadataBarProps) {
 
   const handleRemoveTag = useCallback(
     (tag: string) => {
-      dispatch(updateNoteTags({ id: noteId, tags: tags.filter((t) => t !== tag) }));
+      dispatch(
+        updateNoteTags({ id: noteId, tags: tags.filter((t) => t !== tag) }),
+      );
     },
     [dispatch, noteId, tags],
   );
@@ -110,40 +114,45 @@ export function NoteMetadataBar({ noteId }: NoteMetadataBarProps) {
     setAddingTag(false);
   }, [dispatch, noteId, tags, tagInput]);
 
-  // Assign current context to note
-  const handleAssignContext = useCallback(() => {
-    if (ctxOrgId && !noteOrgId) {
-      dispatch(setNoteField({ id: noteId, field: "organization_id", value: ctxOrgId }));
-    }
-    if (ctxProjId && !noteProjId) {
-      dispatch(setNoteField({ id: noteId, field: "project_id", value: ctxProjId }));
-    }
-    if (ctxTaskId && !noteTaskId) {
-      dispatch(setNoteField({ id: noteId, field: "task_id", value: ctxTaskId }));
-    }
-  }, [dispatch, noteId, ctxOrgId, ctxProjId, ctxTaskId, noteOrgId, noteProjId, noteTaskId]);
-
-  const handleClearContext = useCallback(
-    (field: "organization_id" | "project_id" | "task_id") => {
-      dispatch(setNoteField({ id: noteId, field, value: null }));
-      if (field === "organization_id") {
+  // Assignment handlers — each is independent, not auto-derived from sidebar
+  const handleSetOrg = useCallback(
+    (orgId: string | null) => {
+      dispatch(setNoteField({ id: noteId, field: "organization_id", value: orgId }));
+      if (!orgId) {
         dispatch(setNoteField({ id: noteId, field: "project_id", value: null }));
-        dispatch(setNoteField({ id: noteId, field: "task_id", value: null }));
-      }
-      if (field === "project_id") {
         dispatch(setNoteField({ id: noteId, field: "task_id", value: null }));
       }
     },
     [dispatch, noteId],
   );
 
-  const hasUnassignedContext = (ctxOrgId && !noteOrgId) || (ctxProjId && !noteProjId) || (ctxTaskId && !noteTaskId);
+  const handleSetProject = useCallback(
+    (projId: string | null) => {
+      dispatch(setNoteField({ id: noteId, field: "project_id", value: projId }));
+      if (!projId) {
+        dispatch(setNoteField({ id: noteId, field: "task_id", value: null }));
+      }
+    },
+    [dispatch, noteId],
+  );
 
-  // Resolve orgId for scope picker (use note's org, or active context org)
-  const scopeOrgId = noteOrgId || ctxOrgId || null;
+  const handleSetTask = useCallback(
+    (taskId: string | null) => {
+      dispatch(setNoteField({ id: noteId, field: "task_id", value: taskId }));
+    },
+    [dispatch, noteId],
+  );
+
+  // Resolve orgId for scope picker
+  const scopeOrgId = noteOrgId || activeOrgId || null;
+
+  // Count of active assignments for the badge
+  const assignmentCount =
+    (noteOrgId ? 1 : 0) + (noteProjId ? 1 : 0) + (noteTaskId ? 1 : 0);
 
   return (
     <>
+      {/* ── Compact bar (always visible) ──────────────────────────────── */}
       <div className="flex items-center gap-2 py-1 px-4 border-t border-border/20 shrink-0 overflow-hidden min-h-[1.625rem]">
         {/* Folder selector */}
         <div className="relative shrink-0">
@@ -175,55 +184,50 @@ export function NoteMetadataBar({ noteId }: NoteMetadataBarProps) {
           )}
         </div>
 
-        {/* Context pills (org/project/task) */}
-        {noteOrgId && (
-          <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-[0.5625rem] bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-full shrink-0">
-            <Building2 className="w-2.5 h-2.5" />
-            {ctxOrgName && noteOrgId === ctxOrgId ? ctxOrgName : "Org"}
-            <button onClick={() => handleClearContext("organization_id")} className="cursor-pointer hover:text-foreground [&_svg]:w-2 [&_svg]:h-2"><X /></button>
-          </span>
-        )}
-        {noteProjId && (
-          <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-[0.5625rem] bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-full shrink-0">
-            <Kanban className="w-2.5 h-2.5" />
-            {ctxProjName && noteProjId === ctxProjId ? ctxProjName : "Project"}
-            <button onClick={() => handleClearContext("project_id")} className="cursor-pointer hover:text-foreground [&_svg]:w-2 [&_svg]:h-2"><X /></button>
-          </span>
-        )}
-        {noteTaskId && (
-          <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-[0.5625rem] bg-green-500/10 text-green-600 dark:text-green-400 rounded-full shrink-0">
-            <ListTodo className="w-2.5 h-2.5" />
-            {ctxTaskName && noteTaskId === ctxTaskId ? ctxTaskName : "Task"}
-            <button onClick={() => handleClearContext("task_id")} className="cursor-pointer hover:text-foreground [&_svg]:w-2 [&_svg]:h-2"><X /></button>
-          </span>
-        )}
-        {hasUnassignedContext && (
-          <button
-            onClick={handleAssignContext}
-            className="flex items-center gap-0.5 px-1.5 py-0.5 text-[0.5625rem] text-muted-foreground hover:text-foreground border border-dashed border-border/50 rounded-full cursor-pointer transition-colors shrink-0"
-            title="Assign current context to this note"
-          >
-            <Plus className="w-2.5 h-2.5" /> Context
-          </button>
-        )}
-
-        {/* Scope tags (e.g., "Client: Acme", "Department: SEO") */}
+        {/* Scope tags (compact badges) */}
         <ScopeTagsDisplay
           entityType="note"
           entityId={noteId}
           className="shrink-0 [&_.badge]:text-[0.5rem] [&_.badge]:py-0 [&_.badge]:px-1"
         />
 
-        {/* Scope picker trigger */}
-        {scopeOrgId && (
-          <button
-            onClick={() => setScopePickerOpen((v) => !v)}
-            className="flex items-center gap-0.5 px-1.5 py-0.5 text-[0.5625rem] text-muted-foreground hover:text-foreground border border-dashed border-border/50 rounded-full cursor-pointer transition-colors shrink-0"
-            title="Assign to scopes"
-          >
-            <Tags className="w-2.5 h-2.5" />
-          </button>
+        {/* Assignment summary pills */}
+        {noteOrgId && (
+          <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-[0.5625rem] bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-full shrink-0">
+            <Building2 className="w-2.5 h-2.5" />
+            Org
+          </span>
         )}
+        {noteProjId && (
+          <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-[0.5625rem] bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-full shrink-0">
+            <Kanban className="w-2.5 h-2.5" />
+            Proj
+          </span>
+        )}
+        {noteTaskId && (
+          <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-[0.5625rem] bg-green-500/10 text-green-600 dark:text-green-400 rounded-full shrink-0">
+            <ListTodo className="w-2.5 h-2.5" />
+            Task
+          </span>
+        )}
+
+        {/* Expand assignment panel button */}
+        <button
+          onClick={() => setPanelOpen((v) => !v)}
+          className={cn(
+            "flex items-center gap-0.5 px-1.5 py-0.5 text-[0.5625rem] rounded-full cursor-pointer transition-colors shrink-0 [&_svg]:w-2.5 [&_svg]:h-2.5",
+            panelOpen
+              ? "bg-primary/10 text-primary"
+              : "text-muted-foreground hover:text-foreground border border-dashed border-border/50",
+          )}
+          title="Assign to org, project, task, or scopes"
+        >
+          <Settings2 />
+          {assignmentCount > 0 && (
+            <span className="tabular-nums">{assignmentCount}</span>
+          )}
+          {panelOpen ? <ChevronDown /> : <ChevronUp />}
+        </button>
 
         {/* Tags */}
         <div className="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto">
@@ -248,7 +252,10 @@ export function NoteMetadataBar({ noteId }: NoteMetadataBarProps) {
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleAddTag();
-                if (e.key === "Escape") { setAddingTag(false); setTagInput(""); }
+                if (e.key === "Escape") {
+                  setAddingTag(false);
+                  setTagInput("");
+                }
               }}
               onBlur={handleAddTag}
               className="w-16 px-1 py-0.5 text-[0.5625rem] bg-muted rounded border border-border outline-none shrink-0"
@@ -274,14 +281,96 @@ export function NoteMetadataBar({ noteId }: NoteMetadataBarProps) {
         </span>
       </div>
 
-      {/* Scope picker popover — rendered below the metadata bar */}
-      {scopePickerOpen && scopeOrgId && (
-        <div className="border-t border-border/20 px-4 py-2 bg-muted/20 shrink-0">
-          <ScopePicker
-            entityType="note"
-            entityId={noteId}
-            orgId={scopeOrgId}
-          />
+      {/* ── Expanded assignment panel ──────────────────────────────────── */}
+      {panelOpen && (
+        <div className="border-t border-border/20 px-4 py-3 bg-muted/10 shrink-0 space-y-3">
+          <p className="text-[0.625rem] font-semibold text-muted-foreground uppercase tracking-wider">
+            Assignments
+          </p>
+
+          {/* Organization picker */}
+          <div className="flex items-center gap-2">
+            <Building2 className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+            <select
+              value={noteOrgId || ""}
+              onChange={(e) => handleSetOrg(e.target.value || null)}
+              className="flex-1 text-xs bg-transparent border border-border/50 rounded px-2 py-1 outline-none cursor-pointer"
+            >
+              <option value="">No organization</option>
+              {organizations.map((org) => (
+                <option key={org.id} value={org.id}>
+                  {org.name}
+                </option>
+              ))}
+            </select>
+            {noteOrgId && (
+              <button
+                onClick={() => handleSetOrg(null)}
+                className="text-muted-foreground hover:text-foreground cursor-pointer [&_svg]:w-3 [&_svg]:h-3"
+              >
+                <X />
+              </button>
+            )}
+          </div>
+
+          {/* Project picker — placeholder (needs project list for selected org) */}
+          <div className="flex items-center gap-2">
+            <Kanban className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+            <div className="flex-1 text-xs text-muted-foreground">
+              {noteProjId ? (
+                <span className="flex items-center gap-1">
+                  Project: {noteProjId.slice(0, 8)}...
+                  <button
+                    onClick={() => handleSetProject(null)}
+                    className="cursor-pointer hover:text-foreground [&_svg]:w-3 [&_svg]:h-3"
+                  >
+                    <X />
+                  </button>
+                </span>
+              ) : (
+                <span className="italic">
+                  {noteOrgId ? "Select project in context first" : "Set organization first"}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Task picker — placeholder */}
+          <div className="flex items-center gap-2">
+            <ListTodo className="w-3.5 h-3.5 text-green-500 shrink-0" />
+            <div className="flex-1 text-xs text-muted-foreground">
+              {noteTaskId ? (
+                <span className="flex items-center gap-1">
+                  Task: {noteTaskId.slice(0, 8)}...
+                  <button
+                    onClick={() => handleSetTask(null)}
+                    className="cursor-pointer hover:text-foreground [&_svg]:w-3 [&_svg]:h-3"
+                  >
+                    <X />
+                  </button>
+                </span>
+              ) : (
+                <span className="italic">
+                  {noteProjId ? "Select task in context first" : "Set project first"}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Scope picker */}
+          {scopeOrgId && (
+            <div>
+              <div className="flex items-center gap-1 mb-1">
+                <Tags className="w-3.5 h-3.5 text-muted-foreground" />
+                <span className="text-[0.625rem] text-muted-foreground">Scopes</span>
+              </div>
+              <ScopePicker
+                entityType="note"
+                entityId={noteId}
+                orgId={scopeOrgId}
+              />
+            </div>
+          )}
         </div>
       )}
     </>
