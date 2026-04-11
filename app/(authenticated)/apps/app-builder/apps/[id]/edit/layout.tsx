@@ -1,21 +1,40 @@
-'use client';
+import { ReactNode } from "react";
+import { createClient } from "@/utils/supabase/server";
+import { createDynamicRouteMetadata } from "@/utils/route-metadata";
+import type { Metadata } from "next";
+import AppEditLayoutClient from "./AppEditLayoutClient";
 
-import React, { ReactNode } from 'react';
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("custom_app_configs")
+    .select("name, description")
+    .eq("id", id)
+    .maybeSingle();
 
-export default function AppEditLayout({ 
+  const name = data?.name?.trim() || "App";
+  const description =
+    data?.description?.slice(0, 120) || `Edit ${name} in the app builder.`;
+
+  return createDynamicRouteMetadata("/apps", {
+    titlePrefix: "Edit",
+    title: name,
+    description,
+    letter: "Ue", // App edit
+  });
+}
+
+export default function AppEditLayout({
   children,
-  params 
-}: { 
+  params,
+}: {
   children: ReactNode;
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }) {
-  // Use React.use() to unwrap the params Promise
-  const resolvedParams = React.use(params);
-  const { id } = resolvedParams;
-    
-  return (
-      <div className="">
-        {children}
-      </div>
-  );
-} 
+  return <AppEditLayoutClient params={params}>{children}</AppEditLayoutClient>;
+}

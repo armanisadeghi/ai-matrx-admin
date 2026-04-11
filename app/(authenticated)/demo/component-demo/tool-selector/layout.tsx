@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/demo/component-demo/tool-selector", {
-  title: "Component Demo Tool Selector",
-  description: "Interactive demo: Component Demo Tool Selector. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "Tool Selector",
+  title: "Demo",
+  description: "Tool selector component demo.",
+  letter: "Tl", // Tool Selector
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

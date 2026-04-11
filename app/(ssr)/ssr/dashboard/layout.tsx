@@ -1,7 +1,11 @@
-export const metadata = {
-  title: "Dashboard | AI Matrx",
-  description: "Your central hub for all activities and insights",
-};
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/dashboard", {
+  titlePrefix: "SSR",
+  title: "Dashboard",
+  description: "SSR dashboard shell and layout experiments",
+  letter: "Sd",
+});
 
 export default function DashboardLayout({
   children,

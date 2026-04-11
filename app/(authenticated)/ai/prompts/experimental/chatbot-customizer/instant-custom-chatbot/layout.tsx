@@ -1,13 +1,17 @@
 import { ReactNode } from "react";
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-// Generate metadata for the Instant Custom Chatbot route
-export const metadata = createRouteMetadata("/ai/prompts/experimental/chatbot-customizer/instant-custom-chatbot", {
-  title: "Instant Custom Chatbot",
-  description: "Quick chatbot setup and deployment",
+export const metadata = createRouteMetadata("/ai/prompts", {
+  titlePrefix: "Instant Bot",
+  title: "Prompts",
+  description: "Quick instant chatbot setup and deployment",
+  letter: "IB",
 });
 
-export default function InstantCustomChatbotLayout({ children }: { children: ReactNode }) {
+export default function InstantCustomChatbotLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return <>{children}</>;
 }
-

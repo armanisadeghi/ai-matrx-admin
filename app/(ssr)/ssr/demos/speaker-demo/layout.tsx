@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/ssr/demos/speaker-demo", {
-  title: "Speaker Demo",
-  description: "Interactive demo: Speaker Demo. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "Speaker",
+  title: "Demo",
+  description: "SSR TTS and speaker controls demo",
+  letter: "Sp",
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

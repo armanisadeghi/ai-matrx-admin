@@ -253,11 +253,36 @@ export interface ActiveRequest {
    */
   rawEvents: RawStreamEvent[];
 
+  // ── JSON Extraction (opt-in per request) ─────────────────────
+  /**
+   * Extracted JSON values from the streamed text. null when JSON
+   * extraction is not enabled for this request.
+   */
+  extractedJson: ExtractedJsonSnapshot[] | null;
+  /** Monotonic revision — bumped only when extractedJson changes */
+  jsonExtractionRevision: number;
+  /** Flipped to true after the finalize pass at stream end */
+  jsonExtractionComplete: boolean;
+
   // ── Timing ───────────────────────────────────────────────────
   startedAt: string;
   firstChunkAt: string | null;
   completedAt: string | null;
   clientMetrics: ClientMetrics | null;
+}
+
+/**
+ * Serializable snapshot of an extracted JSON value.
+ * Mirrors ExtractedJson from utils/json but avoids importing
+ * the full extraction module into the type file.
+ */
+export interface ExtractedJsonSnapshot {
+  value: unknown;
+  type: "object" | "array" | "primitive";
+  source: "fenced" | "bare-block" | "inline" | "whole-string";
+  isComplete: boolean;
+  repairApplied: boolean;
+  warnings: string[];
 }
 
 export interface RawStreamEvent {

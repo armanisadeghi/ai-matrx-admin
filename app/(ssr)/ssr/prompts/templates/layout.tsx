@@ -1,13 +1,13 @@
 import { ReactNode } from "react";
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-// Generate metadata for the Prompt Templates route
-export const metadata = createRouteMetadata("/ai/prompts/templates", {
-  title: "Prompt Templates",
-  description: "Browse and manage prompt templates",
+export const metadata = createRouteMetadata("/ai/prompts", {
+  titlePrefix: "Templates",
+  title: "Prompts",
+  description: "Browse and manage prompt templates (SSR)",
+  letter: "Pt",
 });
 
 export default function TemplatesLayout({ children }: { children: ReactNode }) {
-  return <div style={{ paddingTop: 'var(--shell-header-h)' }}>{children}</div>;
+  return <div style={{ paddingTop: "var(--shell-header-h)" }}>{children}</div>;
 }
-

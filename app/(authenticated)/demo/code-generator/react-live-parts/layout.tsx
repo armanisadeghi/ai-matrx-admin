@@ -1,8 +1,11 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/demo/code-generator/react-live-parts", {
-  title: "Code Generator React Live Parts",
-  description: "Interactive demo: Code Generator React Live Parts. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "React Live Parts",
+  title: "Demo",
+  description:
+    "Composable React Live demo with split panels and partial previews",
+  letter: "RP",
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

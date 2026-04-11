@@ -118,6 +118,9 @@ const activeRequestsSlice = createSlice({
         rawEvents: [],
         isTextStreaming: false,
         textRunChunkStart: 0,
+        extractedJson: null,
+        jsonExtractionRevision: 0,
+        jsonExtractionComplete: false,
         startedAt: now,
         firstChunkAt: null,
         completedAt: null,
@@ -684,6 +687,25 @@ const activeRequestsSlice = createSlice({
       }
     },
 
+    // ── JSON Extraction ─────────────────────────────────────────
+
+    updateExtractedJson(
+      state,
+      action: PayloadAction<{
+        requestId: string;
+        results: ActiveRequest["extractedJson"];
+        revision: number;
+        isComplete: boolean;
+      }>,
+    ) {
+      const request = state.byRequestId[action.payload.requestId];
+      if (request) {
+        request.extractedJson = action.payload.results;
+        request.jsonExtractionRevision = action.payload.revision;
+        request.jsonExtractionComplete = action.payload.isComplete;
+      }
+    },
+
     // ── Cleanup ────────────────────────────────────────────────
 
     removeRequest(state, action: PayloadAction<string>) {
@@ -742,6 +764,7 @@ export const {
   markTextStreamStart,
   closeTextRun,
   finalizeClientMetrics,
+  updateExtractedJson,
   removeRequest,
 } = activeRequestsSlice.actions;
 

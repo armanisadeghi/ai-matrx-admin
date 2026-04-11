@@ -1,9 +1,13 @@
-// app/(authenticated)/apps/demo/layout.tsx
-"use client";
+import { createRouteMetadata } from "@/utils/route-metadata";
+import AppsDemoLayoutClient from "./AppsDemoLayoutClient";
 
-import { ReactNode } from "react";
+export const metadata = createRouteMetadata("/apps/demo", {
+  titlePrefix: "Applet",
+  title: "Apps",
+  description: "Applet layout and embedding demos.",
+  letter: "Ad", // Apps demo (matches nav)
+});
 
-export default function DynamicLayout({ children }: { children: ReactNode }) {
-
-    return <div className="h-full w-full transition-colors">{children}</div>;
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <AppsDemoLayoutClient>{children}</AppsDemoLayoutClient>;
 }

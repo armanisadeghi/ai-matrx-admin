@@ -62,7 +62,10 @@ import {
   upsertContentBlock,
   upsertToolLifecycle,
   setCompletion,
+  updateExtractedJson,
 } from "../active-requests/active-requests.slice";
+import { StreamingJsonTracker } from "@/utils/json/streaming-json-tracker";
+import type { ExtractedJsonSnapshot } from "@/features/agents/types/request.types";
 import {
   commitAssistantTurn,
   attachClientMetrics,
@@ -80,6 +83,14 @@ import {
 // Types
 // =============================================================================
 
+export interface JsonExtractionConfig {
+  enabled: boolean;
+  /** Enable fuzzy matching (bare blocks, inline) on the finalize pass. Default true. */
+  fuzzyOnFinalize?: boolean;
+  /** Max JSON values to extract. Default Infinity. */
+  maxResults?: number;
+}
+
 interface ProcessStreamArgs {
   requestId: string;
   conversationId: string;
@@ -89,6 +100,7 @@ interface ProcessStreamArgs {
   initialConversationId: string | null;
   dispatch: (action: unknown) => unknown;
   getState: () => RootState;
+  jsonExtraction?: JsonExtractionConfig;
 }
 
 export interface ProcessStreamResult {
@@ -111,8 +123,17 @@ export async function processStream({
   initialConversationId,
   dispatch,
   getState,
+  jsonExtraction,
 }: ProcessStreamArgs): Promise<ProcessStreamResult> {
   const { events } = parseNdjsonStream(response);
+
+  const jsonTracker = jsonExtraction?.enabled
+    ? new StreamingJsonTracker({
+        maxResults: jsonExtraction.maxResults,
+        fuzzyOnFinalize: jsonExtraction.fuzzyOnFinalize ?? true,
+      })
+    : null;
+  let lastJsonRevision = 0;
 
   let streamServerConversationId = initialConversationId;
   let tokenUsage: { input: number; output: number; total: number } | undefined;
@@ -174,6 +195,21 @@ export async function processStream({
       }
 
       dispatch(appendChunk({ requestId, content: text }));
+
+      if (jsonTracker) {
+        const jsonState = jsonTracker.append(text);
+        if (jsonState.revision !== lastJsonRevision) {
+          lastJsonRevision = jsonState.revision;
+          dispatch(
+            updateExtractedJson({
+              requestId,
+              results: jsonState.results.map(toSnapshot),
+              revision: jsonState.revision,
+              isComplete: false,
+            }),
+          );
+        }
+      }
     } else if (isReasoningChunkEvent(event)) {
       reasoningChunkEvents++;
       const text = event.data.text;
@@ -666,6 +702,18 @@ export async function processStream({
   dispatch(finalizeAccumulatedText({ requestId }));
   dispatch(finalizeAccumulatedReasoning({ requestId }));
 
+  if (jsonTracker) {
+    const finalJsonState = jsonTracker.finalize();
+    dispatch(
+      updateExtractedJson({
+        requestId,
+        results: finalJsonState.results.map(toSnapshot),
+        revision: finalJsonState.revision,
+        isComplete: true,
+      }),
+    );
+  }
+
   const finalState = getState();
   const finalRequest = finalState.activeRequests.byRequestId[requestId];
   const completedText = finalRequest?.accumulatedText ?? "";
@@ -735,14 +783,34 @@ export async function processStream({
   };
 
   dispatch(finalizeClientMetrics({ requestId, metrics: clientMetrics }));
-  dispatch(
-    attachClientMetrics({ conversationId, requestId, clientMetrics }),
-  );
+  dispatch(attachClientMetrics({ conversationId, requestId, clientMetrics }));
 
   return {
     conversationId: finalConversationId,
     completionStats,
     tokenUsage,
     finishReason,
+  };
+}
+
+// =============================================================================
+// Helpers
+// =============================================================================
+
+function toSnapshot(extracted: {
+  value: unknown;
+  type: "object" | "array" | "primitive";
+  source: "fenced" | "bare-block" | "inline" | "whole-string";
+  isComplete: boolean;
+  repairApplied: boolean;
+  warnings: string[];
+}): ExtractedJsonSnapshot {
+  return {
+    value: extracted.value,
+    type: extracted.type,
+    source: extracted.source,
+    isComplete: extracted.isComplete,
+    repairApplied: extracted.repairApplied,
+    warnings: extracted.warnings,
   };
 }

@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/demo/component-demo/selects/floating-label-select", {
-  title: "Component Demo Selects Floating Label Select",
-  description: "Interactive demo: Component Demo Selects Floating Label Select. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "Float Select",
+  title: "Demo",
+  description: "Floating label select demo.",
+  letter: "SF", // Float Select
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

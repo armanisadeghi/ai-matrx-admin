@@ -1,13 +1,15 @@
-import { Metadata } from "next";
 import { createClient } from "@/utils/supabase/server";
 import { ListsSidebarClient } from "@/features/user-lists/components/ListsSidebarClient";
 import type { UserList, UserListSummaryRaw } from "@/features/user-lists/types";
 import { normalizeUserList } from "@/features/user-lists/types";
+import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata: Metadata = {
-  title: "My Lists | AI Matrx",
-  description: "Manage your named collections and choice lists",
-};
+export const metadata = createRouteMetadata("/lists", {
+  titlePrefix: "v1",
+  title: "Lists",
+  description: "Legacy v1 lists UI with sidebar navigation",
+  letter: "L1",
+});
 
 async function getSidebarLists(): Promise<UserList[]> {
   try {

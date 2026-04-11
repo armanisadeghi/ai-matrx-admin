@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/demo/voice/voice-assistant-cdn", {
-  title: "Voice Voice Assistant Cdn",
-  description: "Interactive demo: Voice Voice Assistant Cdn. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "Voice Assistant CDN",
+  title: "Demo",
+  description: "Voice assistant demo loading assets and scripts from CDN",
+  letter: "Vc",
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

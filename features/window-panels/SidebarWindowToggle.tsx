@@ -42,6 +42,8 @@ import {
   Building2,
   FileStack,
   ScrollText,
+  History,
+  Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -63,7 +65,8 @@ import {
 import {
   openOverlay,
   openHierarchyCreationWindow,
-  openAgentContentWindow,
+  openAgentContentSidebarWindow,
+  openAgentImportWindow,
 } from "@/lib/redux/slices/overlaySlice";
 import { LayoutIconButton } from "@/features/window-panels/components/LayoutIcon";
 
@@ -154,14 +157,8 @@ export default function SidebarWindowToggle() {
     const state = store.getState();
     const agentId =
       selectActiveAgentId(state) ?? selectOwnedAgentIds(state)[0] ?? null;
-    if (!agentId) {
-      toast.error("No agent available", {
-        description:
-          "Select an agent in the builder or create one, then try again.",
-      });
-      return;
-    }
-    dispatch(openAgentContentWindow({ agentId }));
+    // Open the sidebar window — if no agent is found, it opens with the picker
+    dispatch(openAgentContentSidebarWindow(agentId ? { agentId } : undefined));
   }, [dispatch, store]);
 
   return (
@@ -879,6 +876,22 @@ export default function SidebarWindowToggle() {
                         ),
                       )
                     }
+                  />
+                  <MenuGridItem
+                    icon={<History className="w-3.5 h-3.5" />}
+                    label="Run History"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "agentRunHistoryWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Upload className="w-3.5 h-3.5" />}
+                    label="Import Agent"
+                    onClick={() => act(() => dispatch(openAgentImportWindow()))}
                   />
                   <MenuGridItem
                     icon={<FileStack className="w-3.5 h-3.5" />}

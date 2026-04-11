@@ -95,9 +95,12 @@ const initialState: OverlayState = {
     aiVoiceWindow: makeDefaultInstance(),
     agentGateWindow: makeDefaultInstance(),
     agentSettingsWindow: makeDefaultInstance(),
+    agentRunHistoryWindow: makeDefaultInstance(),
     agentContentWindow: makeDefaultInstance(),
+    agentContentSidebarWindow: makeDefaultInstance(),
     executionInspectorWindow: makeDefaultInstance(),
     agentAssistantMarkdownDebugWindow: makeDefaultInstance(),
+    agentImportWindow: makeDefaultInstance(),
     // Agent execution widget overlays — each is autonomous, instanced
     agentFullModal: makeDefaultInstance(),
     agentCompactModal: makeDefaultInstance(),
@@ -544,9 +547,36 @@ export const openAgentSettingsWindow = (options?: AgentSettingsWindowPayload) =>
     data: { initialAgentId: options?.agentId },
   });
 
+interface AgentRunHistoryWindowPayload {
+  agentId?: string;
+}
+
+export const openAgentRunHistoryWindow = (
+  options?: AgentRunHistoryWindowPayload,
+) =>
+  openOverlay({
+    overlayId: "agentRunHistoryWindow",
+    data: { agentId: options?.agentId ?? null },
+  });
+
+export const openAgentImportWindow = () =>
+  openOverlay({ overlayId: "agentImportWindow", data: {} });
+
+type AgentContentTabId =
+  | "messages"
+  | "system"
+  | "model"
+  | "variables"
+  | "tools"
+  | "context"
+  | "settings"
+  | "share";
+
 interface AgentContentWindowPayload {
-  agentId: string;
-  initialTab?: "messages" | "variables" | "tools";
+  agentId?: string;
+  initialTab?: AgentContentTabId;
+  /** Optional ordered subset of tabs to display; null = all 8 in default order */
+  tabs?: AgentContentTabId[] | null;
   instanceId?: string;
 }
 
@@ -554,7 +584,29 @@ export const openAgentContentWindow = (options: AgentContentWindowPayload) =>
   openOverlay({
     overlayId: "agentContentWindow",
     instanceId: options?.instanceId,
-    data: { initialAgentId: options.agentId, initialTab: options.initialTab },
+    data: {
+      initialAgentId: options.agentId ?? null,
+      initialTab: options.initialTab,
+      tabs: options.tabs ?? null,
+    },
+  });
+
+interface AgentContentSidebarWindowPayload {
+  agentId?: string;
+  initialTab?: AgentContentTabId;
+  instanceId?: string;
+}
+
+export const openAgentContentSidebarWindow = (
+  options?: AgentContentSidebarWindowPayload,
+) =>
+  openOverlay({
+    overlayId: "agentContentSidebarWindow",
+    instanceId: options?.instanceId,
+    data: {
+      initialAgentId: options?.agentId ?? null,
+      initialTab: options?.initialTab,
+    },
   });
 
 // ============================================================================

@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAgentIsDirty,
   selectAgentIsLoading,
   selectAgentVersionNumber,
   selectAgentModelMissing,
+  selectAgentById,
 } from "@/features/agents/redux/agent-definition/selectors";
-import { saveAgent } from "@/features/agents/redux/agent-definition/thunks";
+import {
+  saveAgent,
+  createAgent,
+} from "@/features/agents/redux/agent-definition/thunks";
 import { Save, Loader2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast-service";
@@ -28,6 +32,7 @@ import { AgentSettingsModal } from "@/features/agents/components/settings-manage
 export function AgentSaveStatus({ agentId }: { agentId: string }) {
   const dispatch = useAppDispatch();
   const pathname = usePathname();
+  const router = useRouter();
 
   const isDirty = useAppSelector((state) => selectAgentIsDirty(state, agentId));
   const isLoading = useAppSelector((state) =>
@@ -39,20 +44,60 @@ export function AgentSaveStatus({ agentId }: { agentId: string }) {
   const modelMissing = useAppSelector((state) =>
     selectAgentModelMissing(state, agentId),
   );
+  const agentRecord = useAppSelector((state) =>
+    selectAgentById(state, agentId),
+  );
 
   const [showModelWarning, setShowModelWarning] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  const isNewRoute = pathname === "/agents/new";
+  const isEditMode =
+    isNewRoute || pathname?.includes(`/agents/${agentId}/build`);
+
   const handleSave = async () => {
-    if (isLoading || !isDirty) return;
+    if (isLoading) return;
+
     try {
+      if (isNewRoute) {
+        // First-time save: INSERT into the DB using the in-state data, then
+        // redirect to the real agent route so the URL reflects the persisted id.
+        if (!agentRecord) return;
+        const newId = await dispatch(
+          createAgent({
+            name: agentRecord.name,
+            description: agentRecord.description,
+            agentType: agentRecord.agentType,
+            messages: agentRecord.messages,
+            variableDefinitions: agentRecord.variableDefinitions,
+            modelId: agentRecord.modelId,
+            settings: agentRecord.settings,
+            tools: agentRecord.tools,
+            customTools: agentRecord.customTools,
+            contextSlots: agentRecord.contextSlots,
+            category: agentRecord.category,
+            tags: agentRecord.tags,
+            isActive: agentRecord.isActive,
+            isPublic: agentRecord.isPublic,
+            isArchived: agentRecord.isArchived,
+            isFavorite: agentRecord.isFavorite,
+            mcpServers: agentRecord.mcpServers,
+          }),
+        ).unwrap();
+        toast.success("Agent created!");
+        router.replace(`/agents/${newId}/build`);
+        return;
+      }
+
       await dispatch(saveAgent(agentId)).unwrap();
       toast.success("Agent saved!");
       if (modelMissing) {
         setShowModelWarning(true);
       }
     } catch {
-      toast.error("Failed to save agent.");
+      toast.error(
+        isNewRoute ? "Failed to create agent." : "Failed to save agent.",
+      );
     }
   };
 
@@ -60,8 +105,6 @@ export function AgentSaveStatus({ agentId }: { agentId: string }) {
     setShowModelWarning(false);
     setSettingsOpen(true);
   };
-
-  const isEditMode = pathname?.includes(`/agents/${agentId}/build`);
 
   return (
     <>
@@ -74,21 +117,27 @@ export function AgentSaveStatus({ agentId }: { agentId: string }) {
 
         {isEditMode && isDirty && (
           <span className="text-[10px] font-medium text-amber-500 px-1.5 py-0.5 rounded bg-amber-500/10">
-            Unsaved
+            {isNewRoute ? "Not saved" : "Unsaved"}
           </span>
         )}
 
         {isEditMode && (
           <button
             onClick={handleSave}
-            disabled={isLoading || !isDirty}
+            disabled={isLoading || (!isDirty && !isNewRoute)}
             className={cn(
               "flex items-center justify-center w-6 h-6 rounded-md transition-colors",
-              isDirty && !isLoading
+              (isDirty || isNewRoute) && !isLoading
                 ? "text-primary hover:bg-primary/10 active:bg-primary/20"
                 : "text-muted-foreground/40 cursor-not-allowed",
             )}
-            title={isDirty ? "Save changes" : "No unsaved changes"}
+            title={
+              isNewRoute
+                ? "Save new agent"
+                : isDirty
+                  ? "Save changes"
+                  : "No unsaved changes"
+            }
           >
             {isLoading ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />

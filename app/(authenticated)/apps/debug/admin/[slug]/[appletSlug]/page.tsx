@@ -1,62 +1,22 @@
-// app/(authenticated)/apps/custom/[slug]/[appletSlug]/page.tsx
 import {
   fetchAppAndAppletConfig,
   fetchAppletBySlug,
 } from "@/utils/supabase/fetchAppAndAppletConfig";
-import { Metadata, ResolvingMetadata } from "next";
 import {
   AppletConfigViewer,
   customAppletConfigToAppletViewerConfig,
 } from "@/components/admin";
 
-type Params = Promise<{ slug: string; appletSlug: string }>;
-
-// Generate metadata for SEO
-export async function generateMetadata(
-  { params }: { params: Params },
-  parent: ResolvingMetadata,
-): Promise<Metadata> {
-  const resolvedParams = await params;
-  const { slug, appletSlug } = resolvedParams;
-
-  // Fetch app and applet configuration for metadata
-  const config = await fetchAppAndAppletConfig(null, slug);
-
-  if (!config || !config.app_config) {
-    return {
-      title: "App Not Found",
-    };
-  }
-
-  const appConfig = config.app_config;
-  const currentApplet = config.applets?.find(
-    (applet) => applet.slug === appletSlug,
-  );
-
-  if (!currentApplet) {
-    return {
-      title: `Applet Not Found | ${appConfig.name}`,
-    };
-  }
-
-  return {
-    title: `${currentApplet.name} | ${appConfig.name}`,
-    description: currentApplet.description || "Custom applet",
-    openGraph: {
-      images: currentApplet.image_url ? [currentApplet.image_url] : [],
-    },
-  };
-}
-
 export default async function AppletPage({
   params,
   searchParams,
 }: {
-  params: Params;
-  searchParams: { tab?: string };
+  params: Promise<{ slug: string; appletSlug: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
   const resolvedParams = await params;
   const { slug, appletSlug } = resolvedParams;
+  const searchParamsResolved = await searchParams;
 
   // Fetch app and applet configuration
   const config = await fetchAppAndAppletConfig(null, slug);
@@ -136,7 +96,7 @@ export default async function AppletPage({
       >
         <AppletConfigViewer
           applet={appletForViewer}
-          searchParams={searchParams}
+          searchParams={searchParamsResolved}
         />
       </div>
     </div>

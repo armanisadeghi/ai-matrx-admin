@@ -1,13 +1,38 @@
 import { ReactNode } from "react";
-import { createRouteMetadata } from "@/utils/route-metadata";
+import { createClient } from "@/utils/supabase/server";
+import { createDynamicRouteMetadata } from "@/utils/route-metadata";
+import type { Metadata } from "next";
 
-// Generate metadata for the Edit Recipe route
-export const metadata = createRouteMetadata("/ai/recipes", {
-  title: "Edit Recipe",
-  description: "Edit AI recipe template",
-});
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
 
-export default function EditRecipeLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  const { data: recipe } = await supabase
+    .from("recipe")
+    .select("name, description")
+    .eq("id", id)
+    .single();
+
+  const name = recipe?.name?.trim() || "Recipe";
+  const description =
+    recipe?.description?.slice(0, 120) || "Edit and customize your AI recipe";
+
+  return createDynamicRouteMetadata("/ai/recipes", {
+    titlePrefix: "Edit",
+    title: name,
+    description,
+    letter: "RE",
+  });
 }
 
+export default function EditRecipeLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return <>{children}</>;
+}

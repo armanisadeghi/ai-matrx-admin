@@ -236,7 +236,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
   analysisData,
   messageId,
   allowFullScreenEditor = true,
-  hideCopyButton = false,
+  hideCopyButton = true,
   useV2Parser = true,
   toolUpdates: toolUpdatesProp,
   serverProcessedBlocks,

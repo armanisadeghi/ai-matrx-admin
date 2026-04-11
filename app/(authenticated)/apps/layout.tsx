@@ -1,16 +1,11 @@
-// /layout.tsx
-"use client";
+import { createRouteMetadata } from "@/utils/route-metadata";
+import AppsLayoutClient from "./AppsLayoutClient";
 
-import React from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
+export const metadata = createRouteMetadata("/apps", {
+  title: "Apps",
+  description: "App builder, custom applications, demos, and tooling.",
+});
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-    const isMobile = useIsMobile();
-
-    return (
-        <div className="h-full w-full bg-textured transition-colors">
-            <main className="h-full w-full">{children}</main>
-
-        </div>
-    );
+  return <AppsLayoutClient>{children}</AppsLayoutClient>;
 }

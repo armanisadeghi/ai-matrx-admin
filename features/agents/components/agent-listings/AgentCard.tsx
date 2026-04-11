@@ -143,10 +143,33 @@ export function AgentCard({
   };
 
   const handleConvertToTemplate = async () => {
-    if (!isSystemAdmin || isConvertingToTemplate) return;
+    if (isConvertingToTemplate) return;
     setIsConvertingToTemplate(true);
     try {
-      toast.info("Convert to Template is coming soon for agents.");
+      const response = await fetch(`/api/agents/${id}/convert-to-template`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
+        throw new Error(
+          errorData.details
+            ? `${errorData.error}: ${errorData.details}`
+            : errorData.error || "Failed to save as template",
+        );
+      }
+
+      const data = await response.json();
+      toast.success(data.message ?? `Saved "${name}" as a template!`);
+    } catch (error) {
+      console.error("Error saving agent as template:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to save as template. Please try again.",
+      );
     } finally {
       setIsConvertingToTemplate(false);
     }
@@ -347,6 +370,26 @@ export function AgentCard({
             onClick={handleCreateApp}
             disabled={isDisabled}
           />
+          <IconButton
+            icon={isConvertingToTemplate ? Loader2 : LayoutPanelTop}
+            tooltip={
+              isConvertingToTemplate
+                ? "Saving template..."
+                : isDisabled
+                  ? "Please wait..."
+                  : "Save as Template"
+            }
+            size="sm"
+            variant="ghost"
+            tooltipSide="top"
+            tooltipAlign="center"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleConvertToTemplate();
+            }}
+            disabled={isConvertingToTemplate || isDisabled}
+            iconClassName={isConvertingToTemplate ? "animate-spin" : ""}
+          />
           <div
             className={
               isSystemAdmin ? undefined : "invisible pointer-events-none"
@@ -370,23 +413,6 @@ export function AgentCard({
                 </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsAdminMenuOpen(false);
-                    handleConvertToTemplate();
-                  }}
-                  disabled={isConvertingToTemplate || isDisabled}
-                  className="cursor-pointer"
-                >
-                  {isConvertingToTemplate ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <LayoutPanelTop className="mr-2 h-4 w-4" />
-                  )}
-                  <span>Convert to Template</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation();

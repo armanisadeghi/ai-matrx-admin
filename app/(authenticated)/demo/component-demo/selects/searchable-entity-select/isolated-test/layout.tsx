@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/demo/component-demo/selects/searchable-entity-select/isolated-test", {
-  title: "Component Demo Selects Searchable Entity Select Isolated Test",
-  description: "Interactive demo: Component Demo Selects Searchable Entity Select Isolated Test. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "Search Select Iso",
+  title: "Demo",
+  description: "Isolated searchable entity select test.",
+  letter: "SI", // Search Select Iso
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

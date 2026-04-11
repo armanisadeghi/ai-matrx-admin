@@ -1,18 +1,14 @@
-'use client';
+import { ReactNode } from "react";
+import { createRouteMetadata } from "@/utils/route-metadata";
+import AppCreateLayoutClient from "./AppCreateLayoutClient";
 
-import { ReactNode } from 'react';
-import StructuredSectionCard from '@/components/official/StructuredSectionCard';
+export const metadata = createRouteMetadata("/apps", {
+  titlePrefix: "New App",
+  title: "App Builder",
+  description: "Create a new Matrx application.",
+  letter: "Um", // App create (builder)
+});
 
 export default function AppCreateLayout({ children }: { children: ReactNode }) {
-  return (
-    <StructuredSectionCard
-      title="Create New App"
-      description="Configure your new app for your users."
-      className="w-full my-4"
-    >
-      <div className="px-1 py-2">
-        {children}
-      </div>
-    </StructuredSectionCard>
-  );
-} 
+  return <AppCreateLayoutClient>{children}</AppCreateLayoutClient>;
+}

@@ -405,6 +405,9 @@ export const executeChatInstance = createAsyncThunk<
       dispatch(setInstanceStatus({ conversationId, status: "streaming" }));
       dispatch(setRequestStatus({ requestId, status: "streaming" }));
 
+      const currentUiState = (getState() as RootState).instanceUIState
+        ?.byConversationId[conversationId];
+
       const streamResult = await processStream({
         requestId,
         conversationId,
@@ -414,6 +417,7 @@ export const executeChatInstance = createAsyncThunk<
         initialConversationId: serverConversationIdFromHeader,
         dispatch,
         getState: getState as () => RootState,
+        jsonExtraction: currentUiState?.jsonExtraction ?? undefined,
       });
 
       return {

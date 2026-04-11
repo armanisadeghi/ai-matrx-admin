@@ -52,6 +52,7 @@ import { initInstanceHistory } from "../instance-conversation-history/instance-c
 import {
   InstanceOrigin,
   ResultDisplayMode,
+  type JsonExtractionConfig,
   type SourceFeature,
   type VariableInputStyle,
 } from "@/features/agents/types/instance.types";
@@ -106,6 +107,8 @@ interface CreateManualInstanceArgs {
   hideToolResults?: boolean;
   preExecutionMessage?: string | null;
   variableInputStyle?: VariableInputStyle;
+  jsonExtraction?: JsonExtractionConfig | null;
+  originalText?: string | null;
 }
 
 export const createManualInstance = createAsyncThunk<
@@ -131,6 +134,8 @@ export const createManualInstance = createAsyncThunk<
     hideToolResults,
     preExecutionMessage,
     variableInputStyle,
+    jsonExtraction,
+    originalText,
   } = args;
 
   const conversationId = providedConversationId ?? generateConversationId();
@@ -184,6 +189,8 @@ export const createManualInstance = createAsyncThunk<
       hideToolResults,
       preExecutionMessage,
       variableInputStyle,
+      jsonExtraction,
+      originalText,
     }),
   );
   dispatch(initInstanceHistory({ conversationId, mode }));
@@ -204,6 +211,7 @@ interface CreateShortcutInstanceArgs {
   allowChat?: boolean;
   usePreExecutionInput?: boolean;
   autoClearConversation?: boolean;
+  conversationMode?: ConversationMode;
   showVariablePanel?: boolean;
   showDefinitionMessages?: boolean;
   showDefinitionMessageContent?: boolean;
@@ -212,6 +220,8 @@ interface CreateShortcutInstanceArgs {
   hideToolResults?: boolean;
   preExecutionMessage?: string | null;
   variableInputStyle?: VariableInputStyle;
+  jsonExtraction?: JsonExtractionConfig | null;
+  originalText?: string | null;
 }
 
 export const createInstanceFromShortcut = createAsyncThunk<
@@ -227,6 +237,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
     allowChat,
     usePreExecutionInput,
     autoClearConversation,
+    conversationMode = "agent",
     showVariablePanel,
     showDefinitionMessages,
     showDefinitionMessageContent,
@@ -235,6 +246,8 @@ export const createInstanceFromShortcut = createAsyncThunk<
     hideToolResults,
     preExecutionMessage,
     variableInputStyle,
+    jsonExtraction,
+    originalText,
   } = args;
 
   const conversationId = generateConversationId();
@@ -292,6 +305,8 @@ export const createInstanceFromShortcut = createAsyncThunk<
       hideToolResults,
       preExecutionMessage,
       variableInputStyle,
+      jsonExtraction,
+      originalText,
     }),
   );
 
@@ -310,7 +325,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
     dispatch(setContextEntries({ conversationId, entries: contextEntries }));
   }
 
-  dispatch(initInstanceHistory({ conversationId }));
+  dispatch(initInstanceHistory({ conversationId, mode: conversationMode }));
 
   return conversationId;
 });
@@ -544,9 +559,15 @@ export const startNewConversation = createAsyncThunk<
           currentUIState?.showDefinitionMessageContent,
         hiddenMessageCount: currentUIState?.hiddenMessageCount,
         callbackGroupId: currentUIState?.callbackGroupId,
+        submitOnEnter: currentUIState?.submitOnEnter,
+        reuseConversationId: currentUIState?.reuseConversationId,
+        builderAdvancedSettings: currentUIState?.builderAdvancedSettings,
         hideReasoning: currentUIState?.hideReasoning,
         hideToolResults: currentUIState?.hideToolResults,
         preExecutionMessage: currentUIState?.preExecutionMessage,
+        variableInputStyle: currentUIState?.variableInputStyle,
+        jsonExtraction: currentUIState?.jsonExtraction,
+        originalText: currentUIState?.originalText,
       }),
     );
     dispatch(
@@ -677,6 +698,9 @@ export const startNewConversationAndExecute = createAsyncThunk<
         hideReasoning: currentUIState?.hideReasoning,
         hideToolResults: currentUIState?.hideToolResults,
         preExecutionMessage: currentUIState?.preExecutionMessage,
+        variableInputStyle: currentUIState?.variableInputStyle,
+        jsonExtraction: currentUIState?.jsonExtraction,
+        originalText: currentUIState?.originalText,
       }),
     );
     dispatch(

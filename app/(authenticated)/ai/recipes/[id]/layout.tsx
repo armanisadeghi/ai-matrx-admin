@@ -1,13 +1,11 @@
+// No metadata export — title and favicon set by parent ai/recipes/layout.tsx.
+// If per-recipe titles are needed in future, add generateMetadata using createDynamicRouteMetadata.
 import { ReactNode } from "react";
-import { createRouteMetadata } from "@/utils/route-metadata";
 
-// Generate metadata for the Recipe Detail route
-export const metadata = createRouteMetadata("/ai/recipes", {
-  title: "Recipe Details",
-  description: "View recipe details",
-});
-
-export default function RecipeDetailLayout({ children }: { children: ReactNode }) {
+export default function RecipeDetailLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return <>{children}</>;
 }
-

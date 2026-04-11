@@ -1,39 +1,6 @@
-// app/(authenticated)/apps/custom/[slug]/page.tsx
-import { fetchAppBySlug } from '@/utils/supabase/fetchAppAndAppletConfig';
-import { Metadata, ResolvingMetadata } from 'next';
-import { AppConfigViewer } from '@/components/admin';
-import { CustomAppConfig } from '@/types/customAppTypes';
-
-type Params = Promise<{ slug: string }>;
-
-export async function generateMetadata(
-  { params }: { params: Params },
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  const resolvedParams = await params;
-  const { slug } = resolvedParams;
-
-  try {
-    const appConfig = await fetchAppBySlug(slug);
-
-    return {
-      title: appConfig ? `${appConfig.name} | Custom App` : 'Custom App',
-      description: appConfig?.description || 'Custom application',
-      openGraph: {
-        images: appConfig?.imageUrl ? [appConfig.imageUrl] : [],
-      },
-    };
-  } catch (error) {
-    console.error('Error generating metadata:', error);
-    return {
-      title: 'Custom App',
-      description: 'Custom application',
-      openGraph: {
-        images: [],
-      },
-    };
-  }
-}
+import { fetchAppBySlug } from "@/utils/supabase/fetchAppAndAppletConfig";
+import { AppConfigViewer } from "@/components/admin";
+import { CustomAppConfig } from "@/types/customAppTypes";
 
 export default async function Page({
   params,
@@ -49,11 +16,15 @@ export default async function Page({
     // Fetch app configuration
     appConfig = await fetchAppBySlug(slug);
   } catch (error) {
-    console.error('Error fetching app:', error);
+    console.error("Error fetching app:", error);
     return (
       <div className="p-4">
-        <h1 className="text-2xl font-bold text-red-600">Application Not Found</h1>
-        <p>The requested application could not be found or an error occurred.</p>
+        <h1 className="text-2xl font-bold text-red-600">
+          Application Not Found
+        </h1>
+        <p>
+          The requested application could not be found or an error occurred.
+        </p>
       </div>
     );
   }
@@ -62,8 +33,12 @@ export default async function Page({
   if (!appConfig) {
     return (
       <div className="p-4">
-        <h1 className="text-2xl font-bold text-red-600">Application Not Found</h1>
-        <p>The requested application could not be found or an error occurred.</p>
+        <h1 className="text-2xl font-bold text-red-600">
+          Application Not Found
+        </h1>
+        <p>
+          The requested application could not be found or an error occurred.
+        </p>
       </div>
     );
   }
@@ -73,9 +48,7 @@ export default async function Page({
       <h1 className="text-2xl font-bold mb-6">{appConfig.name}</h1>
 
       <div className="mb-8">
-        <AppConfigViewer
-          app={appConfig}
-        />
+        <AppConfigViewer app={appConfig} />
       </div>
 
       {/* App navigation */}

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
 import { Eye, Pencil, Play, History, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -76,15 +77,31 @@ export function AgentModeController({ agentId }: { agentId: string }) {
     navigateTo(pathMap[next]);
   };
 
+  const getModeHref = (id: ModeOption): string => {
+    if (id === "new") return "/agents";
+    const map: Record<AgentPageMode, string> = {
+      view: `/agents/${agentId}`,
+      edit: `/agents/${agentId}/build`,
+      run: `/agents/${agentId}/run`,
+      versions: `/agents/${agentId}/latest`,
+    };
+    return map[id];
+  };
+
   return (
     <>
       <div className="shell-glass flex items-center gap-0.5 rounded-full p-0.5">
         {MODES.map(({ id, label, icon: Icon }) => {
           const isActive = id === mode;
           return (
-            <button
+            <Link
               key={id}
-              onClick={() => handleModeChange(id)}
+              href={getModeHref(id)}
+              onClick={(e) => {
+                if (e.metaKey || e.ctrlKey) return;
+                e.preventDefault();
+                handleModeChange(id);
+              }}
               title={label}
               className={cn(
                 "flex items-center justify-center gap-1 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer",
@@ -97,7 +114,7 @@ export function AgentModeController({ agentId }: { agentId: string }) {
             >
               <Icon />
               <span className="hidden md:inline">{label}</span>
-            </button>
+            </Link>
           );
         })}
       </div>

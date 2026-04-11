@@ -16,11 +16,14 @@ import {
   Grid2x2Plus,
   LandPlot,
   Brain,
+  LayoutList,
   LayoutPanelLeft,
   Puzzle,
   Workflow,
   BookOpen,
+  History,
   ListTodo,
+  List,
   ClipboardType,
   FolderOpen,
   Mic,
@@ -74,7 +77,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: true,
     description: "Your central hub for all activities and insights",
     color: "cyan",
-    favicon: { color: "#0ea5e9", letter: "D" }, // Sky blue
+    favicon: { color: "#0ea5e9", letter: "Db" }, // Sky blue — "Db" avoids clash with Tables "Da"
   },
   {
     label: "Agents",
@@ -87,7 +90,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: true,
     description: "Build, configure, and deploy AI agents",
     color: "rose",
-    favicon: { color: "#f43f5e", letter: "A" }, // Rose red
+    favicon: { color: "#f43f5e", letter: "Ag" }, // Rose red — "Ag" distinct from "AI", "AR"
   },
   {
     label: "Prompt Builder",
@@ -100,7 +103,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: true,
     description: "Create and manage prompts for better interactions",
     color: "teal",
-    favicon: { color: "#a855f7", letter: "P" }, // Light Purple
+    favicon: { color: "#a855f7", letter: "Pb" }, // Purple — "Pb" avoids clash with Projects "Pj"
   },
   {
     label: "Prompt Apps",
@@ -113,7 +116,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: true,
     description: "Browse and run interactive apps built from prompts",
     color: "emerald",
-    favicon: { color: "#10b981", letter: "PA" }, // Emerald
+    favicon: { color: "#059669", letter: "Pa" }, // Dark emerald — "Pa" avoids clash with "Pb"
   },
   {
     label: "Research",
@@ -126,7 +129,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: true,
     description: "Deep research with Automated analysis & synthesis",
     color: "violet",
-    favicon: { color: "#7c3aed", letter: "R" }, // Violet
+    favicon: { color: "#7c3aed", letter: "Rs" }, // Violet — "Rs" avoids clash with Recipes "Rc"
   },
   {
     label: "Chat",
@@ -139,7 +142,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: false,
     description: "Interact with our reimagined AI chat interface",
     color: "indigo",
-    favicon: { color: "#3b82f6", letter: "C" }, // Blue
+    favicon: { color: "#2563eb", letter: "Ch" }, // Deeper blue — "Ch" distinct from "C" alone
   },
   {
     label: "Notes",
@@ -152,7 +155,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: true,
     description: "Create and manage your notes and documents",
     color: "amber",
-    favicon: { color: "#f59e0b", letter: "N" }, // Amber
+    favicon: { color: "#d97706", letter: "No" }, // Amber — "No" distinct from "N" alone
   },
   {
     label: "Tasks",
@@ -165,7 +168,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: true,
     description: "Organize and track your tasks and projects",
     color: "green",
-    favicon: { color: "#10b981", letter: "T" }, // Green
+    favicon: { color: "#16a34a", letter: "Tk" }, // Green — "Tk" distinct from Transcripts "Tr"
   },
   {
     label: "Projects",
@@ -178,7 +181,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: true,
     description: "Create and manage projects, collaborate with teams",
     color: "indigo",
-    favicon: { color: "#6366f1", letter: "P" }, // Indigo
+    favicon: { color: "#4f46e5", letter: "Pj" }, // Indigo — "Pj" distinct from "Pb" and "Pa"
   },
   {
     label: "Files",
@@ -191,7 +194,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: true,
     description: "Browse and manage your files and documents",
     color: "blue",
-    favicon: { color: "#6366f1", letter: "F" }, // Indigo
+    favicon: { color: "#0284c7", letter: "Fi" }, // Sky-700 — distinct from indigo Projects
   },
   {
     label: "Transcripts",
@@ -204,7 +207,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: true,
     description: "Record, transcribe and manage audio content",
     color: "purple",
-    favicon: { color: "#8b5cf6", letter: "T" }, // Violet
+    favicon: { color: "#9333ea", letter: "Tr" }, // Purple-600 — "Tr" distinct from Tasks "Tk"
   },
   {
     label: "Tables",
@@ -217,7 +220,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: true,
     description: "Manage your custom data or create tables in a Chat",
     color: "blue",
-    favicon: { color: "#06b6d4", letter: "D" }, // Cyan
+    favicon: { color: "#0891b2", letter: "Da" }, // Cyan-600 — "Da" (Data) distinct from Dashboard "Db"
   },
   {
     label: "Voices",
@@ -230,7 +233,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: false,
     description: "Browse a collection of voices you can use in your projects",
     color: "purple",
-    favicon: { color: "#f97316", letter: "V" }, // Orange
+    favicon: { color: "#ea580c", letter: "Vo" }, // Orange-600 — "Vo" distinct from Sandboxes "Sb"
   },
   {
     label: "Image Search",
@@ -243,7 +246,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: false,
     description: "Browse a collection of images you can use in your projects",
     color: "rose",
-    favicon: { color: "#14b8a6", letter: "I" }, // Teal
+    favicon: { color: "#0d9488", letter: "Im" }, // Teal-600 — "Im" distinct from "I" alone
   },
   {
     label: "Webscraper",
@@ -256,7 +259,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: true,
     description: "Extract and process data from web sources",
     color: "amber",
-    favicon: { color: "#6366f1", letter: "W" }, // Indigo
+    favicon: { color: "#3730a3", letter: "Ws" }, // Indigo-800 — "Ws" distinct from Workflows "Wf"
   },
 
   {
@@ -270,7 +273,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: true,
     description: "Your AI Agents in a cloud computer with your stuff!",
     color: "orange",
-    favicon: { color: "#f97316", letter: "SB" },
+    favicon: { color: "#c2410c", letter: "Sb" }, // Orange-700 — "Sb" distinct from Voices "Vo"
   },
 
   {
@@ -284,7 +287,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: true,
     description: "Direct messages and conversations",
     color: "rose",
-    favicon: { color: "#ec4899", letter: "M" }, // Pink
+    favicon: { color: "#db2777", letter: "Mg" }, // Pink-600 — "Mg" (Messages) distinct from "M" alone
   },
   {
     label: "Settings",
@@ -297,7 +300,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: false,
     description: "Manage your account and preferences",
     color: "slate",
-    favicon: { color: "#64748b", letter: "S" }, // Slate
+    favicon: { color: "#475569", letter: "St" }, // Slate-600 — "St" (Settings) distinct from Sandboxes "Sb"
   },
 
   // Deprecated — moving to bottom before removal
@@ -312,7 +315,7 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: false,
     description: "Build Custom AI Agents & Recipes without code!",
     color: "amber",
-    favicon: { color: "#8b5cf6", letter: "AI" }, // Purple
+    favicon: { color: "#7c3aed", letter: "Ac" }, // Violet-700 — "Ac" (AI Cockpit)
   },
   {
     label: "AI Recipes",
@@ -325,7 +328,20 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: false,
     description: "Browse and manage your AI recipes and templates",
     color: "purple",
-    favicon: { color: "#d946ef", letter: "R" }, // Fuchsia
+    favicon: { color: "#c026d3", letter: "Rc" }, // Fuchsia-600 — "Rc" (Recipes) distinct from Research "Rs"
+  },
+  {
+    label: "AI Runs",
+    href: "/ai/runs",
+    icon: (
+      <History className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+    section: "primary",
+    profileMenu: false,
+    dashboard: false,
+    description: "View and manage AI execution runs",
+    color: "cyan",
+    favicon: { color: "#0e7490", letter: "Ru" }, // Cyan-700 — distinct from Data "Da" and Prompt Builder "Pb"
   },
   {
     label: "Workflows",
@@ -338,10 +354,49 @@ export const allNavigationLinks: NavigationLink[] = [
     dashboard: false,
     description: "Design and automate complex workflows",
     color: "purple",
-    favicon: { color: "#8b5cf6", letter: "WF" }, // Purple
+    favicon: { color: "#6d28d9", letter: "Wf" }, // Violet-700 — "Wf" distinct from Webscraper "Ws"
+  },
+  {
+    label: "Lists",
+    href: "/lists",
+    icon: (
+      <List className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+    section: "primary",
+    profileMenu: false,
+    dashboard: false,
+    description: "Manage your named collections and choice lists",
+    favicon: { color: "#1d4ed8", letter: "Li" }, // blue-700 — distinct from Files sky-700
+  },
+  {
+    label: "Registered results",
+    href: "/registered-results",
+    icon: (
+      <LayoutList className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+    section: "primary",
+    profileMenu: false,
+    dashboard: false,
+    description: "Internal viewers for workflow-registered outputs",
+    favicon: { color: "#831843", letter: "Rr" }, // pink-900
+  },
+  {
+    label: "Entity admin",
+    href: "/entities",
+    icon: (
+      <Grid2x2Plus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+    section: "primary",
+    profileMenu: false,
+    dashboard: false,
+    description: "Browse and manage entity definitions",
+    favicon: { color: "#854d0e", letter: "Ea" }, // amber-900 — distinct from Entities CRUD "Ec"
   },
 
   // Admin Navigation Links
+  // Note: /administration and /admin routes are covered by the ADMIN_ROUTE_FAVICON
+  // system override in favicon-utils.ts (deep indigo "Ad"). Nav entries here
+  // deliberately omit `favicon` so the override applies uniformly.
   {
     label: "Admin Dashboard",
     href: "/administration",
@@ -350,7 +405,7 @@ export const allNavigationLinks: NavigationLink[] = [
     ),
     section: "admin",
     category: "primary",
-    favicon: { color: "#ef4444", letter: "AD" }, // Red
+    // favicon intentionally omitted — system override applies
   },
   {
     label: "Official Components",
@@ -360,7 +415,7 @@ export const allNavigationLinks: NavigationLink[] = [
     ),
     section: "admin",
     category: "primary",
-    favicon: { color: "#8b5cf6", letter: "OC" }, // Violet
+    // favicon intentionally omitted — system override applies
   },
   {
     label: "Old Dashboard",
@@ -388,6 +443,17 @@ export const allNavigationLinks: NavigationLink[] = [
     category: "Socket IO",
   },
   {
+    label: "Apps",
+    href: "/apps",
+    icon: (
+      <Grid2x2Plus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+    section: "admin",
+    category: "Applets",
+    description: "App builder, custom apps, demos, and debug tools",
+    favicon: { color: "#14532d", letter: "Ah" }, // green-900 — Apps hub
+  },
+  {
     label: "App Builder Parts",
     href: "/apps/app-builder",
     icon: (
@@ -395,6 +461,7 @@ export const allNavigationLinks: NavigationLink[] = [
     ),
     section: "admin",
     category: "Applets",
+    favicon: { color: "#4c1d95", letter: "Ab" }, // purple-950 — App Builder
   },
   {
     label: "Applet demo",
@@ -404,6 +471,7 @@ export const allNavigationLinks: NavigationLink[] = [
     ),
     section: "admin",
     category: "Applets",
+    favicon: { color: "#be123c", letter: "Ad" }, // rose-700 — Apps demo
   },
   {
     label: "Dynamic Layout Demo",
@@ -431,6 +499,7 @@ export const allNavigationLinks: NavigationLink[] = [
     ),
     section: "admin",
     category: "Applets",
+    favicon: { color: "#1e3a8a", letter: "Bh" }, // indigo-900 — Builder hub
   },
   {
     label: "Markdown Tests",
@@ -548,6 +617,7 @@ export const allNavigationLinks: NavigationLink[] = [
     ),
     section: "admin",
     category: "Entities",
+    favicon: { color: "#0369a1", letter: "Ec" }, // sky-800 — Entity CRUD
   },
   {
     label: "Sandbox Admin",
@@ -557,7 +627,7 @@ export const allNavigationLinks: NavigationLink[] = [
     ),
     section: "admin",
     category: "Automation",
-    favicon: { color: "#f97316", letter: "SA" }, // Orange
+    // favicon intentionally omitted — system override (ADMIN_ROUTE_FAVICON) applies
   },
 ];
 

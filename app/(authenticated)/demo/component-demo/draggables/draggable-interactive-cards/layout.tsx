@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/demo/component-demo/draggables/draggable-interactive-cards", {
-  title: "Component Demo Draggables Draggable Interactive Cards",
-  description: "Interactive demo: Component Demo Draggables Draggable Interactive Cards. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "Interactive Cards",
+  title: "Demo",
+  description: "Draggable interactive cards demo.",
+  letter: "IC", // Interactive Cards
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

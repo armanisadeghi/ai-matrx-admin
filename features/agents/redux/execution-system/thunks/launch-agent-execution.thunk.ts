@@ -22,6 +22,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import type { LLMParams } from "@/features/agents/types/agent-api-types";
 import type {
+  JsonExtractionConfig,
   ResultDisplayMode,
   SourceFeature,
   VariableInputStyle,
@@ -99,11 +100,17 @@ export interface LaunchAgentOptions {
 
   variableInputStyle?: VariableInputStyle;
 
+  hideReasoning?: boolean;
+  hideToolResults?: boolean;
+  preExecutionMessage?: string | null;
+
   onComplete?: (result: LaunchResult) => void;
   onTextReplace?: (text: string) => void;
   onTextInsertBefore?: (text: string) => void;
   onTextInsertAfter?: (text: string) => void;
   originalText?: string;
+
+  jsonExtraction?: JsonExtractionConfig;
 }
 
 export interface LaunchResult {
@@ -243,6 +250,11 @@ export const launchAgentExecution = createAsyncThunk<
     variables,
     overrides,
     variableInputStyle,
+    hideReasoning,
+    hideToolResults,
+    preExecutionMessage,
+    jsonExtraction,
+    originalText,
     onComplete,
   } = options;
 
@@ -291,16 +303,28 @@ export const launchAgentExecution = createAsyncThunk<
         allowChat: allowChat ?? shortcut.allowChat,
         usePreExecutionInput,
         autoClearConversation,
+        conversationMode,
         showVariablePanel: resolvedShowVariablePanel,
         showDefinitionMessages: resolvedShowDefinitionMessages,
         showDefinitionMessageContent: resolvedShowDefinitionMessageContent,
         callbackGroupId,
         variableInputStyle,
+        hideReasoning,
+        hideToolResults,
+        preExecutionMessage,
+        jsonExtraction,
+        originalText,
       }),
     ).unwrap();
 
     if (variables && Object.keys(variables).length > 0) {
       dispatch(setUserVariableValues({ conversationId, values: variables }));
+    }
+
+    if (overrides && Object.keys(overrides).length > 0) {
+      const { setOverrides } =
+        await import("../instance-model-overrides/instance-model-overrides.slice");
+      dispatch(setOverrides({ conversationId, changes: overrides }));
     }
   } else if (agentId) {
     conversationId = await dispatch(
@@ -318,6 +342,11 @@ export const launchAgentExecution = createAsyncThunk<
         showDefinitionMessageContent: resolvedShowDefinitionMessageContent,
         callbackGroupId,
         variableInputStyle,
+        hideReasoning,
+        hideToolResults,
+        preExecutionMessage,
+        jsonExtraction,
+        originalText,
       }),
     ).unwrap();
 

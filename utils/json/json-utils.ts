@@ -11,24 +11,24 @@ export interface JsonConversionResult {
  * Handles: True/False -> true/false, None -> null, trailing commas, single quotes
  */
 export function pythonToJson(input: string): string {
-  if (!input || typeof input !== 'string') {
+  if (!input || typeof input !== "string") {
     return input;
   }
 
   let processed = input;
-  
+
   // Replace Python boolean and null values (case-sensitive, word boundaries)
-  processed = processed.replace(/\bTrue\b/g, 'true');
-  processed = processed.replace(/\bFalse\b/g, 'false');
-  processed = processed.replace(/\bNone\b/g, 'null');
-  
+  processed = processed.replace(/\bTrue\b/g, "true");
+  processed = processed.replace(/\bFalse\b/g, "false");
+  processed = processed.replace(/\bNone\b/g, "null");
+
   // Convert single quotes to double quotes (but be careful about escaped quotes)
   // This is a simplified approach - for more complex cases, a proper parser would be needed
   processed = processed.replace(/'/g, '"');
-  
+
   // Remove trailing commas before closing brackets/braces
-  processed = processed.replace(/,(\s*[}\]])/g, '$1');
-  
+  processed = processed.replace(/,(\s*[}\]])/g, "$1");
+
   return processed;
 }
 
@@ -37,22 +37,22 @@ export function pythonToJson(input: string): string {
  */
 export function flexibleJsonParse(input: string): JsonConversionResult {
   const warnings: string[] = [];
-  
-  if (!input || typeof input !== 'string') {
+
+  if (!input || typeof input !== "string") {
     return {
       success: false,
-      error: 'Input must be a non-empty string'
+      error: "Input must be a non-empty string",
     };
   }
 
   const trimmed = input.trim();
-  
-  if (trimmed === '') {
+
+  if (trimmed === "") {
     return {
       success: true,
       data: {},
-      formattedJson: '{}',
-      warnings: ['Empty input converted to empty object']
+      formattedJson: "{}",
+      warnings: ["Empty input converted to empty object"],
     };
   }
 
@@ -64,7 +64,7 @@ export function flexibleJsonParse(input: string): JsonConversionResult {
       success: true,
       data,
       formattedJson,
-      warnings
+      warnings,
     };
   } catch (error) {
     // Continue to fallback strategies
@@ -74,34 +74,34 @@ export function flexibleJsonParse(input: string): JsonConversionResult {
   try {
     const converted = pythonToJson(trimmed);
     if (converted !== trimmed) {
-      warnings.push('Converted Python syntax to JSON');
+      warnings.push("Converted Python syntax to JSON");
     }
-    
+
     const data = JSON.parse(converted);
     const formattedJson = JSON.stringify(data, null, 2);
     return {
       success: true,
       data,
       formattedJson,
-      warnings
+      warnings,
     };
   } catch (error) {
     // Continue to more aggressive strategies
   }
 
   // Strategy 3: Try wrapping in braces if it looks like object properties
-  if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+  if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
     try {
       const wrapped = `{${trimmed}}`;
       const converted = pythonToJson(wrapped);
       const data = JSON.parse(converted);
       const formattedJson = JSON.stringify(data, null, 2);
-      warnings.push('Wrapped content in braces to form valid object');
+      warnings.push("Wrapped content in braces to form valid object");
       return {
         success: true,
         data,
         formattedJson,
-        warnings
+        warnings,
       };
     } catch (error) {
       // Continue
@@ -111,21 +111,21 @@ export function flexibleJsonParse(input: string): JsonConversionResult {
   // Strategy 4: Try fixing common issues more aggressively
   try {
     let fixed = pythonToJson(trimmed);
-    
+
     // Fix unquoted keys (simple case)
     fixed = fixed.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":');
-    
+
     // Remove multiple trailing commas
-    fixed = fixed.replace(/,+(\s*[}\]])/g, '$1');
-    
+    fixed = fixed.replace(/,+(\s*[}\]])/g, "$1");
+
     const data = JSON.parse(fixed);
     const formattedJson = JSON.stringify(data, null, 2);
-    warnings.push('Applied aggressive JSON fixes');
+    warnings.push("Applied aggressive JSON fixes");
     return {
       success: true,
       data,
       formattedJson,
-      warnings
+      warnings,
     };
   } catch (error) {
     // Final fallback failed
@@ -133,8 +133,8 @@ export function flexibleJsonParse(input: string): JsonConversionResult {
 
   return {
     success: false,
-    error: 'Unable to parse as valid JSON after all conversion attempts',
-    warnings
+    error: "Unable to parse as valid JSON after all conversion attempts",
+    warnings,
   };
 }
 
@@ -143,17 +143,21 @@ export function flexibleJsonParse(input: string): JsonConversionResult {
  */
 export function safeJsonStringify(obj: any, indent: number = 2): string {
   try {
-    return JSON.stringify(obj, (key, value) => {
-      // Handle undefined
-      if (value === undefined) {
-        return null;
-      }
-      // Handle functions (convert to string)
-      if (typeof value === 'function') {
-        return value.toString();
-      }
-      return value;
-    }, indent);
+    return JSON.stringify(
+      obj,
+      (key, value) => {
+        // Handle undefined
+        if (value === undefined) {
+          return null;
+        }
+        // Handle functions (convert to string)
+        if (typeof value === "function") {
+          return value.toString();
+        }
+        return value;
+      },
+      indent,
+    );
   } catch (error) {
     return String(obj);
   }
@@ -174,9 +178,12 @@ export function isValidJson(str: string): boolean {
 /**
  * Formats JSON string with proper indentation
  */
-export function formatJson(input: string, indent: number = 2): JsonConversionResult {
+export function formatJson(
+  input: string,
+  indent: number = 2,
+): JsonConversionResult {
   const parseResult = flexibleJsonParse(input);
-  
+
   if (!parseResult.success) {
     return parseResult;
   }
@@ -185,13 +192,13 @@ export function formatJson(input: string, indent: number = 2): JsonConversionRes
     const formattedJson = JSON.stringify(parseResult.data, null, indent);
     return {
       ...parseResult,
-      formattedJson
+      formattedJson,
     };
   } catch (error) {
     return {
       success: false,
-      error: 'Failed to format JSON',
-      warnings: parseResult.warnings
+      error: "Failed to format JSON",
+      warnings: parseResult.warnings,
     };
   }
 }
@@ -201,7 +208,7 @@ export function formatJson(input: string, indent: number = 2): JsonConversionRes
  */
 export function minifyJson(input: string): JsonConversionResult {
   const parseResult = flexibleJsonParse(input);
-  
+
   if (!parseResult.success) {
     return parseResult;
   }
@@ -210,13 +217,13 @@ export function minifyJson(input: string): JsonConversionResult {
     const minifiedJson = JSON.stringify(parseResult.data);
     return {
       ...parseResult,
-      formattedJson: minifiedJson
+      formattedJson: minifiedJson,
     };
   } catch (error) {
     return {
       success: false,
-      error: 'Failed to minify JSON',
-      warnings: parseResult.warnings
+      error: "Failed to minify JSON",
+      warnings: parseResult.warnings,
     };
   }
 }
@@ -239,17 +246,17 @@ export function deepClone<T>(obj: T): T {
  */
 export function valueToString(value: any): string {
   if (value === null || value === undefined) {
-    return '';
+    return "";
   }
-  
-  if (typeof value === 'object') {
+
+  if (typeof value === "object") {
     try {
       return JSON.stringify(value, null, 2);
     } catch (error) {
       return String(value);
     }
   }
-  
+
   return String(value);
 }
 
@@ -260,13 +267,65 @@ export function valueToString(value: any): string {
  */
 export function hasContent(value: any): boolean {
   if (!value) return false;
-  
-  if (typeof value === 'object') {
+
+  if (typeof value === "object") {
     if (Array.isArray(value)) {
       return value.length > 0;
     }
     return Object.keys(value).length > 0;
   }
-  
+
   return String(value).trim().length > 0;
-} 
+}
+
+// =============================================================================
+// JSON Close / Repair (used by streaming extraction)
+// =============================================================================
+
+import { computeClosingSequence } from "./json-structural";
+
+export interface JsonCloseResult {
+  closed: string;
+  closingChars: string;
+  bracketsClosed: number;
+  bracesClosed: number;
+}
+
+/**
+ * Takes an incomplete JSON string and attempts to close it by appending
+ * the necessary `"`, `}`, `]` characters. Returns null if the string
+ * is empty or has no open structures.
+ */
+export function attemptJsonClose(partial: string): JsonCloseResult | null {
+  if (!partial || !partial.trim()) return null;
+
+  const closing = computeClosingSequence(partial);
+  if (!closing) return null;
+
+  const bracesClosed = (closing.match(/}/g) || []).length;
+  const bracketsClosed = (closing.match(/]/g) || []).length;
+
+  return {
+    closed: partial + closing,
+    closingChars: closing,
+    bracketsClosed,
+    bracesClosed,
+  };
+}
+
+/**
+ * Strips a list of keys from a parsed JSON object. Non-mutating.
+ * Useful as a post-extraction step when consumer needs to remove
+ * runtime-only fields like `id`, `userId`, etc.
+ */
+export function stripKeys<T extends Record<string, unknown>>(
+  obj: T,
+  keys: string[],
+): Partial<T> {
+  const keySet = new Set(keys);
+  const result: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (!keySet.has(k)) result[k] = v;
+  }
+  return result as Partial<T>;
+}

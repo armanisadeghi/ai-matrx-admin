@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/demo/many-to-many-ui/grok-modular", {
-  title: "Many To Many Ui Grok Modular",
-  description: "Interactive demo: Many To Many Ui Grok Modular. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "Grok Modular",
+  title: "Demo",
+  description: "Modular many-to-many Grok UI blocks and composition patterns",
+  letter: "Gm",
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

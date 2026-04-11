@@ -2,13 +2,6 @@ import { join } from "path";
 import { Puzzle } from "lucide-react";
 import { RouteIndexPage } from "@/components/ssr/RouteIndexPage";
 
-import { createRouteMetadata } from "@/utils/route-metadata";
-
-export const metadata = createRouteMetadata("/demo/component-demo/socket-form-builder/scraper-ui", {
-  title: "Component Demo Socket Form Builder Scraper Ui",
-  description: "Interactive demo: Component Demo Socket Form Builder Scraper Ui. AI Matrx demo route.",
-});
-
 export default async function ScraperUiDemosIndexPage() {
   return (
     <RouteIndexPage

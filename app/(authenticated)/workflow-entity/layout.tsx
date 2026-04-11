@@ -1,18 +1,13 @@
-// /layout.tsx
-"use client";
+import { createRouteMetadata } from "@/utils/route-metadata";
+import WorkflowEntityLayoutClient from "./WorkflowEntityLayoutClient";
 
-import React from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { EntityPack } from "@/providers/packs/EntityPack";
+export const metadata = createRouteMetadata("/workflows", {
+  titlePrefix: "Entity",
+  title: "Workflows",
+  description: "Workflow entity management and configuration",
+  letter: "WE",
+});
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-    const isMobile = useIsMobile();
-
-    return (
-        <EntityPack>
-            <div className="h-full w-full bg-textured transition-colors">
-                <main className="h-full w-full">{children}</main>
-            </div>
-        </EntityPack>
-    );
+  return <WorkflowEntityLayoutClient>{children}</WorkflowEntityLayoutClient>;
 }

@@ -15,6 +15,16 @@ import { ContextObjectType, LLMParams } from "./agent-api-types";
 import type { SystemInstruction } from "./agent-api-types";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
 import type { LaunchResult } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
+
+// =============================================================================
+// JSON Extraction Config (mirrored from process-stream.ts to avoid circular dep)
+// =============================================================================
+
+export interface JsonExtractionConfig {
+  enabled: boolean;
+  fuzzyOnFinalize?: boolean;
+  maxResults?: number;
+}
 import type { VariableInputStyle } from "./variable-input-style";
 
 // =============================================================================
@@ -57,6 +67,7 @@ export type InstanceOrigin =
 export type SourceFeature =
   | "agent-builder"
   | "agent-runner"
+  | "agent-generator"
   | "chat"
   | "context-menu"
   | "prompt-app"
@@ -403,6 +414,20 @@ export interface InstanceUIState {
    * E.g., scroll position, active tab, selected card, etc.
    */
   modeState: Record<string, unknown>;
+
+  /**
+   * When set, processStream will run a StreamingJsonTracker during execution
+   * and dispatch extractedJson updates into the active request slice.
+   * Read by executeInstance / executeChatInstance at stream time.
+   */
+  jsonExtraction?: JsonExtractionConfig | null;
+
+  /**
+   * The text that was selected in the editor/notes surface when the launch
+   * was triggered. Passed through to onTextReplace / onTextInsertBefore /
+   * onTextInsertAfter callbacks once the AI response is ready.
+   */
+  originalText: string | null;
 }
 
 // =============================================================================
@@ -456,6 +481,18 @@ export interface LaunchAgentOverrides {
   applicationScope?: ApplicationScope;
   variableInputStyle?: VariableInputStyle;
 
+  /** When true, reasoning/thinking blocks are hidden in the message list. */
+  hideReasoning?: boolean;
+
+  /** When true, tool-call result blocks are hidden in the message list. */
+  hideToolResults?: boolean;
+
+  /**
+   * Optional message shown in the pre-execution input gate.
+   * Provides context about what the agent expects before the user submits.
+   */
+  preExecutionMessage?: string | null;
+
   /** Called once when the execution completes (all modes). */
   onComplete?: (result: LaunchResult) => void;
 
@@ -475,6 +512,13 @@ export interface LaunchAgentOverrides {
    * Stored for use by the text-manipulation callbacks above.
    */
   originalText?: string;
+
+  /**
+   * Opt-in JSON extraction during streaming. When provided with `enabled: true`,
+   * processStream runs a StreamingJsonTracker and dispatches results into
+   * the active request slice. Read via selectExtractedJson / selectFirstExtractedObject.
+   */
+  jsonExtraction?: JsonExtractionConfig;
 }
 
 // =============================================================================
@@ -592,6 +636,9 @@ export const AGENT_EXECUTION_DEFAULTS = {
   /** Hide tool-call result blocks from the message list. */
   hideToolResults: false,
 
+  /** Optional message shown in the pre-execution input gate. */
+  preExecutionMessage: null as null,
+
   /** How many definition messages to hide (fetched from agx_get_defined_data). */
   hiddenMessageCount: 0,
 
@@ -610,9 +657,17 @@ export const AGENT_EXECUTION_DEFAULTS = {
 
   /**
    * The text that was selected in the editor when the launch was triggered.
-   * Passed through to text-manipulation callbacks.
+   * Stored in instanceUIState.originalText. Passed through to text-manipulation
+   * callbacks (onTextReplace, onTextInsertBefore, onTextInsertAfter).
    */
   originalText: null as null,
+
+  /**
+   * Opt-in JSON extraction during streaming. When provided with `enabled: true`,
+   * processStream runs a StreamingJsonTracker and dispatches results into
+   * the active request slice. Stored in instanceUIState.jsonExtraction.
+   */
+  jsonExtraction: null as null,
 
   // ── Payload Fields (not stored in UIState) ─────────────────────────────────
 

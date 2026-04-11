@@ -5,11 +5,14 @@
 
 import "@/app/(ssr)/ssr/notes/notes.css";
 import { NotesView } from "@/features/notes/components/NotesView";
+import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = {
-  title: "Notes V2 (Test) | AI Matrx",
-  description: "Testing the 6-layer notes architecture",
-};
+export const metadata = createRouteMetadata("/notes", {
+  titlePrefix: "v2",
+  title: "Notes",
+  description: "SSR test route for the 6-layer notes architecture",
+  letter: "Nv",
+});
 
 export default function NotesV2Layout({
   children,

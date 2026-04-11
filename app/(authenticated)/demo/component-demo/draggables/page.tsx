@@ -2,13 +2,6 @@ import { join } from "path";
 import { GripVertical } from "lucide-react";
 import { RouteIndexPage } from "@/components/ssr/RouteIndexPage";
 
-import { createRouteMetadata } from "@/utils/route-metadata";
-
-export const metadata = createRouteMetadata("/demo/component-demo/draggables", {
-  title: "Component Demo Draggables",
-  description: "Interactive demo: Component Demo Draggables. AI Matrx demo route.",
-});
-
 export default async function DraggablesDemosIndexPage() {
   return (
     <RouteIndexPage

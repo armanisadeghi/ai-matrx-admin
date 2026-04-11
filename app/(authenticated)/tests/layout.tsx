@@ -1,12 +1,19 @@
-import { EntityPack } from '@/providers/packs/EntityPack';
+import { EntityPack } from "@/providers/packs/EntityPack";
+import { createRouteMetadata } from "@/utils/route-metadata";
 
 // Force dynamic rendering for all test pages to avoid build timeouts
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
+
+export const metadata = createRouteMetadata("/tests", {
+  title: "Tests",
+  description: "Internal test and experimental routes for development",
+  letter: "Tx",
+});
 
 export default function TestsLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    return <EntityPack>{children}</EntityPack>;
+  return <EntityPack>{children}</EntityPack>;
 }

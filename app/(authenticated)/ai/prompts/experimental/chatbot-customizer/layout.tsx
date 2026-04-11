@@ -1,13 +1,17 @@
 import { ReactNode } from "react";
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-// Generate metadata for the Chatbot Customizer route
-export const metadata = createRouteMetadata("/ai/prompts/experimental/chatbot-customizer", {
-  title: "Chatbot Customizer",
+export const metadata = createRouteMetadata("/ai/prompts", {
+  titlePrefix: "Customizer",
+  title: "Prompts",
   description: "Customize and configure AI chatbot behavior",
+  letter: "Cb",
 });
 
-export default function ChatbotCustomizerLayout({ children }: { children: ReactNode }) {
+export default function ChatbotCustomizerLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return <>{children}</>;
 }
-

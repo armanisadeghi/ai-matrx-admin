@@ -1,13 +1,17 @@
 import { ReactNode } from "react";
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-// Generate metadata for the Experimental Prompts route
-export const metadata = createRouteMetadata("/ai/prompts/experimental", {
-  title: "Experimental Prompts",
+export const metadata = createRouteMetadata("/ai/prompts", {
+  titlePrefix: "Experimental",
+  title: "Prompts",
   description: "Explore and test cutting-edge prompt engineering tools",
+  letter: "Ex",
 });
 
-export default function ExperimentalLayout({ children }: { children: ReactNode }) {
+export default function ExperimentalLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return <>{children}</>;
 }
-

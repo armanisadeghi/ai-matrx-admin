@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/demo/services/ref-manager", {
-  title: "Services Ref Manager",
-  description: "Interactive demo: Services Ref Manager. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "Ref Manager",
+  title: "Demo",
+  description: "Stable ref management patterns across renders and portals",
+  letter: "Rf",
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

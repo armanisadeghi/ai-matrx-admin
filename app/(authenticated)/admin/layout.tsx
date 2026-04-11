@@ -1,31 +1,13 @@
-// /layout.tsx
-"use client";
+import React from "react";
+import { createRouteMetadata } from "@/utils/route-metadata";
+import { AdminDashboardLayoutClient } from "./AdminDashboardLayoutClient";
 
-import { ModuleHeader } from '@/components/layout/new-layout/PageSpecificHeader';
-import {filteredPages, MODULE_HOME, MODULE_NAME} from './config';
-import { EntityPack } from '@/providers/packs/EntityPack';
+export const metadata = createRouteMetadata("/admin", {
+  title: "Admin",
+  description: "Internal admin dashboard, experiments, and developer utilities",
+  letter: "An",
+});
 
-export default function Layout(
-    {
-        children,
-    }: {
-        children: React.ReactNode;
-    }) {
-    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-
-    return (
-        <EntityPack>
-            <div className="flex flex-col h-full">
-                <ModuleHeader
-                    pages={filteredPages}
-                    currentPath={currentPath}
-                    moduleHome={MODULE_HOME}
-                    moduleName={MODULE_NAME}
-                />
-                <main className="w-full h-full bg-textured">
-                    {children}
-                </main>
-            </div>
-        </EntityPack>
-    );
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <AdminDashboardLayoutClient>{children}</AdminDashboardLayoutClient>;
 }

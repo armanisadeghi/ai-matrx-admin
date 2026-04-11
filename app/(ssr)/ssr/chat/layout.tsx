@@ -24,6 +24,14 @@ import {
   ChatDesktopHeader,
 } from "@/features/cx-chat/components/ChatSidebarClient";
 import ChatMobileHeaderBar from "@/features/cx-chat/components/ChatMobileHeaderBar";
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/chat", {
+  titlePrefix: "SSR",
+  title: "Chat",
+  description: "SSR-first chat shell with panel sidebar and mobile chrome",
+  letter: "Cs",
+});
 
 export default function ChatLayout({
   children,

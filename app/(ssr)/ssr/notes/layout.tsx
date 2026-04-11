@@ -5,11 +5,14 @@
 import "./notes.css";
 import SidebarClient from "./_components/SidebarClient";
 import NotesWorkspace from "./_components/NotesWorkspace";
+import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = {
-  title: "Notes | AI Matrx",
-  description: "Create and manage your notes and documents",
-};
+export const metadata = createRouteMetadata("/notes", {
+  titlePrefix: "SSR",
+  title: "Notes",
+  description: "SSR notes workspace with client-side data loading",
+  letter: "Ns",
+});
 
 // Lightweight note shape for the sidebar — no content field
 export interface NoteSummary {
@@ -27,7 +30,10 @@ export default function NotesLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="notes-root grid grid-cols-[280px_1fr] grid-rows-[1fr] h-full overflow-hidden relative z-0" style={{ paddingTop: 'var(--shell-header-h)' }}>
+    <div
+      className="notes-root grid grid-cols-[280px_1fr] grid-rows-[1fr] h-full overflow-hidden relative z-0"
+      style={{ paddingTop: "var(--shell-header-h)" }}
+    >
       {/* Shell sentinels — one class, zero logic. shell.css handles all consequences. */}
       <span className="shell-hide-dock" aria-hidden="true" />
       <aside className="notes-sidebar flex flex-col overflow-hidden border-r border-border/30 pt-0 pb-2.5">

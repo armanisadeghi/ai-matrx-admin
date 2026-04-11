@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/demo/component-demo/light-switch-button/orbital-demo/reusable", {
-  title: "Component Demo Light Switch Button Orbital Demo Reusable",
-  description: "Interactive demo: Component Demo Light Switch Button Orbital Demo Reusable. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "Orbital Reusable",
+  title: "Demo",
+  description: "Reusable orbital light switch demo.",
+  letter: "OR", // Orbital Reusable
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

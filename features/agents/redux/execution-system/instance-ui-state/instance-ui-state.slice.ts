@@ -14,6 +14,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
   BuilderAdvancedSettings,
   InstanceUIState,
+  JsonExtractionConfig,
   ResultDisplayMode,
   VariableInputStyle,
 } from "@/features/agents/types";
@@ -94,6 +95,9 @@ export interface InitInstanceUIStatePayload {
   hideToolResults?: boolean;
   preExecutionMessage?: string | null;
   variableInputStyle?: VariableInputStyle;
+  jsonExtraction?: JsonExtractionConfig | null;
+  /** Original text selected in an editor/notes surface before launch. Used by text-manipulation callbacks. */
+  originalText?: string | null;
 }
 
 // =============================================================================
@@ -128,6 +132,8 @@ const instanceUIStateSlice = createSlice({
         hideToolResults = false,
         preExecutionMessage = null,
         variableInputStyle = "inline",
+        jsonExtraction = null,
+        originalText = null,
       } = action.payload;
 
       state.byConversationId[conversationId] = {
@@ -158,6 +164,8 @@ const instanceUIStateSlice = createSlice({
         preExecutionMessage,
         variableInputStyle,
         modeState: {},
+        jsonExtraction,
+        originalText,
       };
     },
 
@@ -461,6 +469,16 @@ const instanceUIStateSlice = createSlice({
       }
     },
 
+    setOriginalText(
+      state,
+      action: PayloadAction<{ conversationId: string; text: string | null }>,
+    ) {
+      const entry = state.byConversationId[action.payload.conversationId];
+      if (entry) {
+        entry.originalText = action.payload.text;
+      }
+    },
+
     removeInstanceUIState(state, action: PayloadAction<string>) {
       delete state.byConversationId[action.payload];
     },
@@ -511,6 +529,7 @@ export const {
   setHideToolResults,
   setPreExecutionMessage,
   setVariableInputStyle,
+  setOriginalText,
   removeInstanceUIState,
   setUseBlockMode,
 } = instanceUIStateSlice.actions;

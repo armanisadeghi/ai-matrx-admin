@@ -28,7 +28,9 @@ export function AgentEmptyMessageDisplay({
       </div>
       <div className="space-y-3 max-w-md mx-auto">
         <p className="text-lg font-medium">{agentName ?? "Ready to run"}</p>
-        {agentDescription && <MarkdownStream content={agentDescription} />}
+        {agentDescription && (
+          <MarkdownStream content={agentDescription} hideCopyButton={true} />
+        )}
         {!agentDescription && (
           <p className="text-sm text-muted-foreground mt-1">
             Fill in any variables below and type a message to start.

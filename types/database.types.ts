@@ -376,6 +376,132 @@ export type Database = {
           },
         ]
       }
+      agx_agent_templates: {
+        Row: {
+          category: string | null
+          context_slots: Json
+          created_at: string
+          custom_tools: Json
+          description: string | null
+          id: string
+          is_archived: boolean
+          is_featured: boolean
+          is_public: boolean
+          mcp_servers: string[]
+          messages: Json
+          model_id: string | null
+          model_tiers: Json | null
+          name: string
+          organization_id: string | null
+          output_schema: Json | null
+          project_id: string | null
+          settings: Json
+          source_agent_id: string | null
+          tags: string[]
+          task_id: string | null
+          tools: string[]
+          updated_at: string
+          use_count: number
+          user_id: string | null
+          variable_definitions: Json | null
+          version: number
+        }
+        Insert: {
+          category?: string | null
+          context_slots?: Json
+          created_at?: string
+          custom_tools?: Json
+          description?: string | null
+          id?: string
+          is_archived?: boolean
+          is_featured?: boolean
+          is_public?: boolean
+          mcp_servers?: string[]
+          messages?: Json
+          model_id?: string | null
+          model_tiers?: Json | null
+          name: string
+          organization_id?: string | null
+          output_schema?: Json | null
+          project_id?: string | null
+          settings?: Json
+          source_agent_id?: string | null
+          tags?: string[]
+          task_id?: string | null
+          tools?: string[]
+          updated_at?: string
+          use_count?: number
+          user_id?: string | null
+          variable_definitions?: Json | null
+          version?: number
+        }
+        Update: {
+          category?: string | null
+          context_slots?: Json
+          created_at?: string
+          custom_tools?: Json
+          description?: string | null
+          id?: string
+          is_archived?: boolean
+          is_featured?: boolean
+          is_public?: boolean
+          mcp_servers?: string[]
+          messages?: Json
+          model_id?: string | null
+          model_tiers?: Json | null
+          name?: string
+          organization_id?: string | null
+          output_schema?: Json | null
+          project_id?: string | null
+          settings?: Json
+          source_agent_id?: string | null
+          tags?: string[]
+          task_id?: string | null
+          tools?: string[]
+          updated_at?: string
+          use_count?: number
+          user_id?: string | null
+          variable_definitions?: Json | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agx_agent_templates_model_fk"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "ai_model"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agx_agent_templates_org_fk"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agx_agent_templates_project_fk"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ctx_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agx_agent_templates_source_agent_fk"
+            columns: ["source_agent_id"]
+            isOneToOne: false
+            referencedRelation: "agx_agent"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agx_agent_templates_task_fk"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "ctx_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agx_shortcut: {
         Row: {
           agent_id: string | null
@@ -2598,6 +2724,293 @@ export type Database = {
           new_subcategory_uuid?: string | null
           old_category_id?: string
           old_subcategory_id?: string | null
+        }
+        Relationships: []
+      }
+      cloud_file_permissions: {
+        Row: {
+          expires_at: string | null
+          granted_at: string
+          granted_by: string | null
+          grantee_id: string
+          grantee_type: string
+          id: string
+          permission_level: string
+          resource_id: string
+          resource_type: string
+        }
+        Insert: {
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          grantee_id: string
+          grantee_type?: string
+          id?: string
+          permission_level: string
+          resource_id: string
+          resource_type: string
+        }
+        Update: {
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          grantee_id?: string
+          grantee_type?: string
+          id?: string
+          permission_level?: string
+          resource_id?: string
+          resource_type?: string
+        }
+        Relationships: []
+      }
+      cloud_file_versions: {
+        Row: {
+          change_summary: string | null
+          checksum: string | null
+          created_at: string
+          created_by: string | null
+          file_id: string
+          file_size: number | null
+          id: string
+          storage_uri: string
+          version_number: number
+        }
+        Insert: {
+          change_summary?: string | null
+          checksum?: string | null
+          created_at?: string
+          created_by?: string | null
+          file_id: string
+          file_size?: number | null
+          id?: string
+          storage_uri: string
+          version_number: number
+        }
+        Update: {
+          change_summary?: string | null
+          checksum?: string | null
+          created_at?: string
+          created_by?: string | null
+          file_id?: string
+          file_size?: number | null
+          id?: string
+          storage_uri?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cloud_file_versions_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "cloud_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cloud_files: {
+        Row: {
+          checksum: string | null
+          created_at: string
+          current_version: number
+          deleted_at: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          metadata: Json
+          mime_type: string | null
+          owner_id: string
+          parent_folder_id: string | null
+          storage_uri: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          checksum?: string | null
+          created_at?: string
+          current_version?: number
+          deleted_at?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          metadata?: Json
+          mime_type?: string | null
+          owner_id: string
+          parent_folder_id?: string | null
+          storage_uri: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          checksum?: string | null
+          created_at?: string
+          current_version?: number
+          deleted_at?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          metadata?: Json
+          mime_type?: string | null
+          owner_id?: string
+          parent_folder_id?: string | null
+          storage_uri?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cloud_files_parent_folder_id_fkey"
+            columns: ["parent_folder_id"]
+            isOneToOne: false
+            referencedRelation: "cloud_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cloud_folders: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          folder_name: string
+          folder_path: string
+          id: string
+          metadata: Json
+          owner_id: string
+          parent_id: string | null
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          folder_name: string
+          folder_path: string
+          id?: string
+          metadata?: Json
+          owner_id: string
+          parent_id?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          folder_name?: string
+          folder_path?: string
+          id?: string
+          metadata?: Json
+          owner_id?: string
+          parent_id?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cloud_folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "cloud_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cloud_share_links: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          permission_level: string
+          resource_id: string
+          resource_type: string
+          share_token: string
+          use_count: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          permission_level?: string
+          resource_id: string
+          resource_type: string
+          share_token?: string
+          use_count?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          permission_level?: string
+          resource_id?: string
+          resource_type?: string
+          share_token?: string
+          use_count?: number
+        }
+        Relationships: []
+      }
+      cloud_user_group_members: {
+        Row: {
+          added_at: string
+          added_by: string | null
+          group_id: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          added_by?: string | null
+          group_id: string
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          added_by?: string | null
+          group_id?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cloud_user_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "cloud_user_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cloud_user_groups: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
         }
         Relationships: []
       }
@@ -5328,6 +5741,39 @@ export type Database = {
           expires_at?: string
           id?: string
           used?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      extracted_documents: {
+        Row: {
+          clean_content: string | null
+          content: string | null
+          created_at: string
+          id: string
+          name: string
+          source: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          clean_content?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          source?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          clean_content?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          source?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -14210,6 +14656,39 @@ export type Database = {
           },
         ]
       }
+      window_sessions: {
+        Row: {
+          created_at: string | null
+          data: Json
+          id: string
+          label: string | null
+          panel_state: Json
+          updated_at: string | null
+          user_id: string
+          window_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          data?: Json
+          id?: string
+          label?: string | null
+          panel_state?: Json
+          updated_at?: string | null
+          user_id: string
+          window_type: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json
+          id?: string
+          label?: string | null
+          panel_state?: Json
+          updated_at?: string | null
+          user_id?: string
+          window_type?: string
+        }
+        Relationships: []
+      }
       workflow: {
         Row: {
           auto_execute: boolean | null
@@ -15758,6 +16237,10 @@ export type Database = {
           use_latest: boolean
         }[]
       }
+      agx_create_agent_from_template: {
+        Args: { p_template_id: string }
+        Returns: string
+      }
       agx_create_shortcut: {
         Args: {
           p_agent_id: string
@@ -16268,6 +16751,11 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      cloud_get_effective_permission: {
+        Args: { p_file_id: string; p_user_id: string }
+        Returns: string
+      }
+      cloud_get_user_file_tree: { Args: { p_user_id: string }; Returns: Json }
       convert_compiled_recipe_to_prompt: {
         Args: {
           p_compiled_recipe_id?: string

@@ -156,7 +156,7 @@ export function AgentAssistantMessage({
           type="message"
           role="assistant"
           isStreamActive={isStreamActive}
-          hideCopyButton
+          hideCopyButton={true}
           allowFullScreenEditor={false}
           className={markdownClassName}
           onContentChange={

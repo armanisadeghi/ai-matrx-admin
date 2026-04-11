@@ -1,12 +1,19 @@
-// app/(authenticated)/tests/google-apis/simple/layout.tsx
-"use client";
+import GoogleApisSimpleLayoutClient from "./GoogleApisSimpleLayoutClient";
+import { createRouteMetadata } from "@/utils/route-metadata";
 
-import { GoogleOAuthProvider } from "@react-oauth/google";
+export const metadata = createRouteMetadata("/tests", {
+  titlePrefix: "Google Simple",
+  title: "Tests",
+  description: "Simplified Google OAuth API test flow",
+  letter: "GS",
+});
 
-export default function RootLayout({ children }) {
-    return (
-        <GoogleOAuthProvider clientId="34576215171-sf7s11b5v9i9djdlb6unqllrbe6lahk8.apps.googleusercontent.com">
-            {children}
-        </GoogleOAuthProvider>
-    );
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <GoogleApisSimpleLayoutClient>{children}</GoogleApisSimpleLayoutClient>
+  );
 }

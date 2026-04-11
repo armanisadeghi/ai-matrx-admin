@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/ssr/demos/screen-capture", {
-  title: "Screen Capture",
-  description: "Interactive demo: Screen Capture. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "Screen Capture",
+  title: "Demo",
+  description: "SSR screen capture demo",
+  letter: "Sy",
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

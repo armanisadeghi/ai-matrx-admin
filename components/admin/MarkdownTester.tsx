@@ -32,10 +32,31 @@ import {
   Cpu,
   Link,
   Unlink,
+  Braces,
+  Play,
+  Square,
+  RotateCcw,
 } from "lucide-react";
 import { SpeakerGroup } from "@/features/tts/components/SpeakerGroup";
 import { useMarkdownSnippets } from "./markdown-tester/useMarkdownSnippets";
 import { SnippetManager } from "./markdown-tester/SnippetManager";
+import {
+  extractAllJson,
+  type ExtractedJson,
+  type ExtractionOptions,
+} from "@/utils/json/extract-json";
+import {
+  StreamingJsonTracker,
+  type StreamingJsonState,
+} from "@/utils/json/streaming-json-tracker";
+import { Slider } from "@/components/ui/slider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface MarkdownTesterProps {
   className?: string;
@@ -321,6 +342,547 @@ function mapScroll(
   if (remaining <= 0) return lastTgt;
   const frac = (scrollTop - lastSrc) / remaining;
   return lastTgt + frac * tgtRemaining;
+}
+
+// =============================================================================
+// JSON Extraction Test Panel
+// =============================================================================
+
+type ChunkStrategy = "random" | "char-by-char" | "word" | "line" | "mid-json";
+
+interface JsonExtractionPanelProps {
+  content: string;
+}
+
+function JsonExtractionPanel({ content }: JsonExtractionPanelProps) {
+  // ── Options state ──
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [allowFuzzy, setAllowFuzzy] = useState(false);
+  const [repairEnabled, setRepairEnabled] = useState(true);
+  const [maxResults, setMaxResults] = useState(Infinity);
+  const [maxResultsInput, setMaxResultsInput] = useState("∞");
+
+  // ── Non-streaming results ──
+  const [extractionResults, setExtractionResults] = useState<ExtractedJson[]>(
+    [],
+  );
+  const [extractionTime, setExtractionTime] = useState(0);
+
+  // ── Streaming simulation state ──
+  const [chunkStrategy, setChunkStrategy] = useState<ChunkStrategy>("random");
+  const [chunkDelayMs, setChunkDelayMs] = useState(30);
+  const [minChunkSize, setMinChunkSize] = useState(1);
+  const [maxChunkSize, setMaxChunkSize] = useState(40);
+  const [streamingState, setStreamingState] =
+    useState<StreamingJsonState | null>(null);
+  const [isStreamRunning, setIsStreamRunning] = useState(false);
+  const [streamProgress, setStreamProgress] = useState(0);
+  const [streamChunksProcessed, setStreamChunksProcessed] = useState(0);
+  const [streamElapsed, setStreamElapsed] = useState(0);
+  const streamAbortRef = useRef(false);
+  const trackerRef = useRef<StreamingJsonTracker | null>(null);
+
+  // ── Non-streaming extraction ──
+  const runExtraction = useCallback(() => {
+    const opts: ExtractionOptions = {
+      isStreaming,
+      allowFuzzy,
+      repairEnabled,
+      maxResults: isFinite(maxResults) ? maxResults : undefined,
+    };
+    const t0 = performance.now();
+    const results = extractAllJson(content, opts);
+    const elapsed = performance.now() - t0;
+    setExtractionResults(results);
+    setExtractionTime(elapsed);
+    setStreamingState(null);
+  }, [content, isStreaming, allowFuzzy, repairEnabled, maxResults]);
+
+  // ── Chunk generators for different strategies ──
+  const generateChunks = useCallback(
+    (text: string): string[] => {
+      const chunks: string[] = [];
+
+      switch (chunkStrategy) {
+        case "char-by-char":
+          for (const ch of text) chunks.push(ch);
+          break;
+
+        case "word":
+          for (const match of text.matchAll(/(\S+\s*)/g)) chunks.push(match[0]);
+          break;
+
+        case "line":
+          for (const line of text.split("\n")) chunks.push(line + "\n");
+          break;
+
+        case "mid-json": {
+          // Deliberately split in the middle of JSON structures
+          let i = 0;
+          while (i < text.length) {
+            const remaining = text.length - i;
+            let size: number;
+
+            // If we see the start of a JSON structure, split right through it
+            const nextBrace = text.indexOf("{", i);
+            const nextBracket = text.indexOf("[", i);
+            const nextQuote = text.indexOf('"', i);
+            const targets = [nextBrace, nextBracket, nextQuote].filter(
+              (t) => t > i && t < i + maxChunkSize,
+            );
+
+            if (targets.length > 0) {
+              // Cut right after the structural character
+              const target = Math.min(...targets);
+              size = target - i + 1;
+            } else {
+              size = Math.min(
+                minChunkSize +
+                  Math.floor(Math.random() * (maxChunkSize - minChunkSize + 1)),
+                remaining,
+              );
+            }
+
+            chunks.push(text.slice(i, i + size));
+            i += size;
+          }
+          break;
+        }
+
+        case "random":
+        default: {
+          let i = 0;
+          while (i < text.length) {
+            const remaining = text.length - i;
+            const size = Math.min(
+              minChunkSize +
+                Math.floor(Math.random() * (maxChunkSize - minChunkSize + 1)),
+              remaining,
+            );
+            chunks.push(text.slice(i, i + size));
+            i += size;
+          }
+          break;
+        }
+      }
+
+      return chunks;
+    },
+    [chunkStrategy, minChunkSize, maxChunkSize],
+  );
+
+  // ── Streaming simulation ──
+  const runStreamSimulation = useCallback(async () => {
+    streamAbortRef.current = false;
+    setIsStreamRunning(true);
+    setStreamProgress(0);
+    setStreamChunksProcessed(0);
+    setExtractionResults([]);
+
+    const tracker = new StreamingJsonTracker({
+      repairEnabled,
+      maxResults: isFinite(maxResults) ? maxResults : undefined,
+      fuzzyOnFinalize: allowFuzzy,
+    });
+    trackerRef.current = tracker;
+
+    const chunks = generateChunks(content);
+    const totalChunks = chunks.length;
+    const t0 = performance.now();
+
+    for (let i = 0; i < totalChunks; i++) {
+      if (streamAbortRef.current) break;
+
+      const state = tracker.append(chunks[i]);
+      setStreamingState({ ...state });
+      setStreamProgress(((i + 1) / totalChunks) * 100);
+      setStreamChunksProcessed(i + 1);
+      setStreamElapsed(performance.now() - t0);
+
+      if (chunkDelayMs > 0) {
+        await new Promise((r) => setTimeout(r, chunkDelayMs));
+      }
+    }
+
+    if (!streamAbortRef.current) {
+      const finalState = tracker.finalize();
+      setStreamingState({ ...finalState });
+      setStreamElapsed(performance.now() - t0);
+    }
+
+    setIsStreamRunning(false);
+  }, [
+    content,
+    repairEnabled,
+    maxResults,
+    allowFuzzy,
+    chunkDelayMs,
+    generateChunks,
+  ]);
+
+  const stopStream = useCallback(() => {
+    streamAbortRef.current = true;
+  }, []);
+
+  const resetAll = useCallback(() => {
+    streamAbortRef.current = true;
+    setExtractionResults([]);
+    setStreamingState(null);
+    setStreamProgress(0);
+    setStreamChunksProcessed(0);
+    setStreamElapsed(0);
+    setExtractionTime(0);
+    trackerRef.current?.reset();
+  }, []);
+
+  const handleMaxResultsChange = useCallback((val: string) => {
+    setMaxResultsInput(val);
+    if (val === "∞" || val === "" || val === "Infinity") {
+      setMaxResults(Infinity);
+    } else {
+      const n = parseInt(val, 10);
+      if (!isNaN(n) && n > 0) setMaxResults(n);
+    }
+  }, []);
+
+  const results = streamingState?.results ?? extractionResults;
+  const showStreamingInfo = streamingState !== null;
+
+  return (
+    <div className="flex-1 overflow-auto p-3 flex flex-col gap-3">
+      {/* ── Options Bar ── */}
+      <div className="flex-shrink-0 space-y-2 border rounded-lg p-2.5 bg-muted/30">
+        {/* Row 1: Mode + extraction options */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5 border rounded-md px-2 py-0.5 bg-background">
+            <Label
+              htmlFor="je-repair"
+              className="text-xs cursor-pointer select-none"
+            >
+              Repair
+            </Label>
+            <Switch
+              id="je-repair"
+              checked={repairEnabled}
+              onCheckedChange={setRepairEnabled}
+            />
+          </div>
+
+          <div className="flex items-center gap-1.5 border rounded-md px-2 py-0.5 bg-background">
+            <Label
+              htmlFor="je-fuzzy"
+              className="text-xs cursor-pointer select-none"
+            >
+              Fuzzy
+            </Label>
+            <Switch
+              id="je-fuzzy"
+              checked={allowFuzzy}
+              onCheckedChange={setAllowFuzzy}
+            />
+          </div>
+
+          <div className="flex items-center gap-1.5 border rounded-md px-2 py-0.5 bg-background">
+            <Label
+              htmlFor="je-streaming"
+              className="text-xs cursor-pointer select-none"
+            >
+              Streaming Mode
+            </Label>
+            <Switch
+              id="je-streaming"
+              checked={isStreaming}
+              onCheckedChange={setIsStreaming}
+            />
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <Label className="text-xs text-muted-foreground">Max Results</Label>
+            <input
+              type="text"
+              value={maxResultsInput}
+              onChange={(e) => handleMaxResultsChange(e.target.value)}
+              className="w-12 h-6 text-xs text-center border rounded bg-background px-1 font-mono"
+              style={{ fontSize: "16px" }}
+            />
+          </div>
+
+          <Separator orientation="vertical" className="h-5" />
+
+          <Button
+            size="sm"
+            onClick={runExtraction}
+            className="h-7 px-2.5 text-xs"
+            disabled={!content.trim()}
+          >
+            <Play className="h-3 w-3 mr-1" />
+            Extract Now
+          </Button>
+
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={resetAll}
+            className="h-7 px-2.5 text-xs"
+          >
+            <RotateCcw className="h-3 w-3 mr-1" />
+            Reset
+          </Button>
+        </div>
+
+        {/* Row 2: Streaming simulation options */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <Label className="text-xs font-medium text-muted-foreground">
+            Stream Sim:
+          </Label>
+
+          <Select
+            value={chunkStrategy}
+            onValueChange={(v) => setChunkStrategy(v as ChunkStrategy)}
+          >
+            <SelectTrigger className="h-6 w-28 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="random">Random</SelectItem>
+              <SelectItem value="char-by-char">Char-by-char</SelectItem>
+              <SelectItem value="word">Word</SelectItem>
+              <SelectItem value="line">Line</SelectItem>
+              <SelectItem value="mid-json">Mid-JSON</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <div className="flex items-center gap-1.5">
+            <Label className="text-xs text-muted-foreground whitespace-nowrap">
+              Delay {chunkDelayMs}ms
+            </Label>
+            <Slider
+              value={[chunkDelayMs]}
+              onValueChange={([v]) => setChunkDelayMs(v)}
+              min={0}
+              max={200}
+              step={5}
+              className="w-24"
+            />
+          </div>
+
+          {chunkStrategy !== "char-by-char" &&
+            chunkStrategy !== "word" &&
+            chunkStrategy !== "line" && (
+              <div className="flex items-center gap-1.5">
+                <Label className="text-xs text-muted-foreground whitespace-nowrap">
+                  Size {minChunkSize}–{maxChunkSize}
+                </Label>
+                <Slider
+                  value={[minChunkSize, maxChunkSize]}
+                  onValueChange={([lo, hi]) => {
+                    setMinChunkSize(lo);
+                    setMaxChunkSize(hi);
+                  }}
+                  min={1}
+                  max={200}
+                  step={1}
+                  className="w-32"
+                />
+              </div>
+            )}
+
+          <Separator orientation="vertical" className="h-5" />
+
+          {isStreamRunning ? (
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={stopStream}
+              className="h-7 px-2.5 text-xs"
+            >
+              <Square className="h-3 w-3 mr-1" />
+              Stop
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={runStreamSimulation}
+              className="h-7 px-2.5 text-xs"
+              disabled={!content.trim()}
+            >
+              <Waves className="h-3 w-3 mr-1" />
+              Simulate Stream
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Status Bar ── */}
+      {(showStreamingInfo ||
+        extractionResults.length > 0 ||
+        extractionTime > 0) && (
+        <div className="flex-shrink-0 flex items-center gap-2 flex-wrap text-xs">
+          {showStreamingInfo && (
+            <>
+              <Badge
+                variant={streamingState.isAllComplete ? "default" : "secondary"}
+              >
+                rev {streamingState.revision}
+              </Badge>
+              <Badge variant="outline">
+                {streamingState.results.length} found
+              </Badge>
+              <Badge
+                variant={
+                  streamingState.isAllComplete ? "default" : "destructive"
+                }
+              >
+                {streamingState.isAllComplete ? "All Complete" : "Incomplete"}
+              </Badge>
+              {streamingState.hasOpenFence && (
+                <Badge variant="destructive">Open Fence</Badge>
+              )}
+              <Badge variant="outline">{streamChunksProcessed} chunks</Badge>
+              <Badge variant="outline">{streamProgress.toFixed(0)}%</Badge>
+              <Badge variant="outline">{streamElapsed.toFixed(1)}ms</Badge>
+              {isStreamRunning && (
+                <Loader2 className="h-3 w-3 animate-spin text-primary" />
+              )}
+            </>
+          )}
+          {!showStreamingInfo && extractionTime > 0 && (
+            <>
+              <Badge variant="outline">{extractionResults.length} found</Badge>
+              <Badge variant="outline">{extractionTime.toFixed(2)}ms</Badge>
+              <Badge
+                variant={
+                  extractionResults.every((r) => r.isComplete)
+                    ? "default"
+                    : "destructive"
+                }
+              >
+                {extractionResults.every((r) => r.isComplete)
+                  ? "All Complete"
+                  : "Has Incomplete"}
+              </Badge>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ── Stream progress bar ── */}
+      {isStreamRunning && (
+        <div className="flex-shrink-0 h-1 rounded-full bg-muted overflow-hidden">
+          <div
+            className="h-full bg-primary transition-all duration-100"
+            style={{ width: `${streamProgress}%` }}
+          />
+        </div>
+      )}
+
+      {/* ── Results ── */}
+      {results.length === 0 && !isStreamRunning && (
+        <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground">
+          Click "Extract Now" for one-shot or "Simulate Stream" for chunked
+          extraction.
+        </div>
+      )}
+
+      {results.length > 0 && (
+        <div className="flex-1 overflow-auto space-y-2">
+          {results.map((r, idx) => (
+            <JsonResultCard key={idx} result={r} index={idx} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function JsonResultCard({
+  result,
+  index,
+}: {
+  result: ExtractedJson;
+  index: number;
+}) {
+  const [expanded, setExpanded] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  const jsonStr = (() => {
+    try {
+      return JSON.stringify(result.value, null, 2);
+    } catch {
+      return String(result.value);
+    }
+  })();
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(jsonStr).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1200);
+  }, [jsonStr]);
+
+  return (
+    <div className="border rounded-lg overflow-hidden bg-background">
+      {/* Header */}
+      <button
+        className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs hover:bg-muted/50 transition-colors"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-mono">
+          #{index + 1}
+        </Badge>
+        <Badge variant="outline" className="text-[10px] h-4 px-1.5">
+          {result.type}
+        </Badge>
+        <Badge variant="outline" className="text-[10px] h-4 px-1.5">
+          {result.source}
+        </Badge>
+        <Badge
+          variant={result.isComplete ? "default" : "destructive"}
+          className="text-[10px] h-4 px-1.5"
+        >
+          {result.isComplete ? "complete" : "incomplete"}
+        </Badge>
+        {result.repairApplied && (
+          <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
+            repaired
+          </Badge>
+        )}
+        <span className="text-muted-foreground font-mono ml-auto">
+          [{result.startIndex}–{result.endIndex}]
+        </span>
+      </button>
+
+      {expanded && (
+        <div className="border-t">
+          {/* Warnings */}
+          {result.warnings.length > 0 && (
+            <div className="px-2.5 py-1 bg-yellow-500/5 border-b text-[10px] text-yellow-700 dark:text-yellow-400">
+              {result.warnings.join(" · ")}
+            </div>
+          )}
+
+          {/* JSON content */}
+          <div className="relative">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="absolute top-1 right-1 h-5 px-1.5 text-[10px] z-10"
+              onClick={handleCopy}
+            >
+              {copied ? (
+                <CheckCircle2 className="h-3 w-3 text-green-500" />
+              ) : (
+                <Copy className="h-3 w-3" />
+              )}
+            </Button>
+            <pre className="p-2.5 text-[11px] font-mono leading-snug overflow-auto max-h-80 bg-muted/20">
+              {jsonStr}
+            </pre>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
@@ -853,6 +1415,13 @@ Right-click for content block templates!"
                           <Waves className="h-3 w-3" />
                           Stream
                         </TabsTrigger>
+                        <TabsTrigger
+                          value="json-extract"
+                          className="text-xs h-6 px-2.5 flex items-center gap-1"
+                        >
+                          <Braces className="h-3 w-3" />
+                          JSON Extract
+                        </TabsTrigger>
                       </TabsList>
                       {(activeTab === "json" || activeTab === "stream") && (
                         <Button
@@ -1085,6 +1654,10 @@ Right-click for content block templates!"
                         </>
                       )}
                     </div>
+                  )}
+
+                  {activeTab === "json-extract" && (
+                    <JsonExtractionPanel content={renderedContent} />
                   )}
                 </div>
               </div>

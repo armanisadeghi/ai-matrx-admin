@@ -1,6 +1,13 @@
-// File: app/(authenticated)/admin/socketio/layout.tsx
+import React from "react";
+import { createRouteMetadata } from "@/utils/route-metadata";
 
-import React from 'react';
+export const metadata = createRouteMetadata("/admin", {
+  titlePrefix: "Socket.IO",
+  title: "Admin",
+  description:
+    "Socket.IO admin tools, connection tests, and realtime debugging",
+  letter: "Sj",
+});
 
 export default function StyledLayout({
   children,
@@ -9,11 +16,9 @@ export default function StyledLayout({
 }) {
   return (
     <div className="w-full h-full bg-textured text-gray-900 dark:text-gray-200">
-      {/* Main content container */}
       {children}
-      
-      {/* Extra scroll space that inherits background */}
-      <div className="h-screen bg-inherit" aria-hidden="true"></div>
+
+      <div className="h-screen bg-inherit" aria-hidden="true" />
     </div>
   );
 }

@@ -1,11 +1,21 @@
 "use client";
-import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
-import { EnhancedChatMarkdownInternal, ChatMarkdownDisplayProps, MarkdownErrorBoundary } from "./EnhancedChatMarkdown";
+import React, { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import {
+  EnhancedChatMarkdownInternal,
+  ChatMarkdownDisplayProps,
+  MarkdownErrorBoundary,
+} from "./EnhancedChatMarkdown";
 import { StreamEvent } from "./types";
-import { buildCanonicalBlocks, toolCallBlockToLegacy } from "@/lib/chat-protocol";
-import type { ToolCallBlock, CanonicalBlock, TextBlock } from "@/lib/chat-protocol";
+import {
+  buildCanonicalBlocks,
+  toolCallBlockToLegacy,
+} from "@/lib/chat-protocol";
+import type {
+  ToolCallBlock,
+  CanonicalBlock,
+  TextBlock,
+} from "@/lib/chat-protocol";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
-import type { ContentBlockPayload } from "@/types/python-generated/content-blocks";
 
 const ToolCallVisualization = lazy(
   () => import("@/features/cx-conversation/ToolCallVisualization"),
@@ -28,23 +38,26 @@ interface ProcessedBlockState {
 /**
  * Extended props that include stream event handling
  */
-export interface StreamAwareChatMarkdownProps extends Omit<ChatMarkdownDisplayProps, 'content'> {
+export interface StreamAwareChatMarkdownProps extends Omit<
+  ChatMarkdownDisplayProps,
+  "content"
+> {
   /**
    * Direct content (legacy mode - used when not using events)
    */
   content?: string;
-  
+
   /**
    * Array of stream events to process (new mode)
    * When provided, this takes precedence over content prop
    */
   events?: StreamEvent[];
-  
+
   /**
    * Callback when an error event is received
    */
   onError?: (error: string) => void;
-  
+
   /**
    * Callback when phase events are received
    */
@@ -70,7 +83,9 @@ export interface StreamAwareChatMarkdownProps extends Omit<ChatMarkdownDisplayPr
  * position they were emitted relative to surrounding text — not pinned to the
  * top of the message.
  */
-export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = ({
+export const StreamAwareChatMarkdown: React.FC<
+  StreamAwareChatMarkdownProps
+> = ({
   content,
   events,
   onError,
@@ -78,15 +93,21 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
   serverProcessedBlocks: serverBlocksProp,
   ...restProps
 }) => {
-  const [processedContent, setProcessedContent] = useState<string>(content || '');
+  const [processedContent, setProcessedContent] = useState<string>(
+    content || "",
+  );
   const [hasStreamError, setHasStreamError] = useState(false);
+
+  const { hideCopyButton } = restProps;
 
   // Ordered canonical blocks derived from events (text + tool_call interleaved)
   const [canonicalBlocks, setCanonicalBlocks] = useState<CanonicalBlock[]>([]);
 
   // Server-processed blocks state (new content_block protocol)
   const [serverBlocks, setServerBlocks] = useState<ProcessedBlockState[]>([]);
-  const serverBlockMapRef = React.useRef<Map<string, ProcessedBlockState>>(new Map());
+  const serverBlockMapRef = React.useRef<Map<string, ProcessedBlockState>>(
+    new Map(),
+  );
   const isNewProtocolRef = React.useRef(false);
 
   // Use refs to always have the latest callbacks without triggering rerenders
@@ -97,7 +118,7 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
   const lastProcessedIndexRef = React.useRef(-1);
 
   // Accumulate text content in a ref to avoid reprocessing all chunks
-  const accumulatedContentRef = React.useRef('');
+  const accumulatedContentRef = React.useRef("");
   // Track whether tool events or blocks changed since last RAF flush
   const canonicalBlocksChangedRef = React.useRef(false);
   // Always point to the latest events array so RAF callback can access most-current state
@@ -144,7 +165,7 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
     // Check if this is a new stream (events were cleared/reset)
     if (events.length <= lastProcessedIndexRef.current) {
       lastProcessedIndexRef.current = -1;
-      accumulatedContentRef.current = '';
+      accumulatedContentRef.current = "";
       canonicalBlocksChangedRef.current = false;
     }
 
@@ -160,7 +181,7 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
       const event = events[i];
 
       switch (event.event) {
-        case 'chunk': {
+        case "chunk": {
           const chunkData = event.data as unknown as { text: string };
           accumulatedContentRef.current += chunkData.text;
           hasNewContent = true;
@@ -170,29 +191,32 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
           break;
         }
 
-        case 'tool_event': {
+        case "tool_event": {
           // Tool events change canonical blocks (new/updated tool_call block)
           canonicalBlocksChangedRef.current = true;
           hasNewCanonical = true;
           break;
         }
 
-        case 'error': {
+        case "error": {
           const errorData = event.data as Record<string, unknown>;
-          const errorMessage = (errorData?.user_message as string) || (errorData?.message as string) || 'An error occurred';
+          const errorMessage =
+            (errorData?.user_message as string) ||
+            (errorData?.message as string) ||
+            "An error occurred";
           onErrorRef.current?.(errorMessage);
           setHasStreamError(true);
           break;
         }
 
-        case 'phase': {
+        case "phase": {
           const phaseData = event.data as Record<string, unknown>;
-          console.log('[STREAM] phase:', JSON.stringify(phaseData, null, 2));
+          console.log("[STREAM] phase:", JSON.stringify(phaseData, null, 2));
           onPhaseUpdateRef.current?.(phaseData?.phase as string);
           break;
         }
 
-        case 'content_block': {
+        case "content_block": {
           // New server-processed block protocol.
           // The Python backend sends snake_case keys (block_id, block_index);
           // ContentBlockPayload uses camelCase. Normalise both forms so we
@@ -200,13 +224,17 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
           isNewProtocolRef.current = true;
           const raw = event.data as unknown as Record<string, unknown>;
           const blockId = (raw.blockId ?? raw.block_id) as string | undefined;
-          const blockIndex = (raw.blockIndex ?? raw.block_index) as number | undefined;
+          const blockIndex = (raw.blockIndex ?? raw.block_index) as
+            | number
+            | undefined;
           if (blockId !== undefined) {
             serverBlockMapRef.current.set(blockId, {
               blockId,
               blockIndex: blockIndex ?? 0,
               type: raw.type as string,
-              status: (raw.status as "streaming" | "complete" | "error") ?? "streaming",
+              status:
+                (raw.status as "streaming" | "complete" | "error") ??
+                "streaming",
               content: (raw.content as string | null) ?? null,
               data: (raw.data as Record<string, unknown> | null) ?? null,
               metadata: (raw.metadata as Record<string, unknown>) ?? {},
@@ -216,23 +244,30 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
           break;
         }
 
-        case 'completion':
-          console.log('[STREAM] completion:', JSON.stringify(event.data, null, 2));
+        case "completion":
+          console.log(
+            "[STREAM] completion:",
+            JSON.stringify(event.data, null, 2),
+          );
           break;
-        case 'heartbeat':
+        case "heartbeat":
           break;
-        case 'data':
-          console.log('[STREAM] data:', JSON.stringify(event.data, null, 2));
+        case "data":
+          console.log("[STREAM] data:", JSON.stringify(event.data, null, 2));
           break;
-        case 'broker':
-          console.log('[STREAM] broker:', JSON.stringify(event.data, null, 2));
+        case "broker":
+          console.log("[STREAM] broker:", JSON.stringify(event.data, null, 2));
           break;
-        case 'end':
-          console.log('[STREAM] end:', JSON.stringify(event.data, null, 2));
+        case "end":
+          console.log("[STREAM] end:", JSON.stringify(event.data, null, 2));
           break;
 
         default:
-          console.log('[STREAM] ⚠️ UNKNOWN event type:', event.event, JSON.stringify(event.data, null, 2));
+          console.log(
+            "[STREAM] ⚠️ UNKNOWN event type:",
+            event.event,
+            JSON.stringify(event.data, null, 2),
+          );
       }
     }
 
@@ -243,7 +278,10 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
     if (hasNewBlocks) pendingBlocksUpdateRef.current = true;
 
     // Batch state updates using RAF — only schedule if not already scheduled
-    if ((hasNewContent || hasNewCanonical || hasNewBlocks) && rafIdRef.current === null) {
+    if (
+      (hasNewContent || hasNewCanonical || hasNewBlocks) &&
+      rafIdRef.current === null
+    ) {
       rafIdRef.current = requestAnimationFrame(() => {
         rafIdRef.current = null;
 
@@ -251,7 +289,10 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
           setProcessedContent(accumulatedContentRef.current);
           pendingContentUpdateRef.current = false;
         }
-        if (pendingCanonicalUpdateRef.current && canonicalBlocksChangedRef.current) {
+        if (
+          pendingCanonicalUpdateRef.current &&
+          canonicalBlocksChangedRef.current
+        ) {
           // Build ordered canonical blocks from the full event set at flush time
           const currentEvents = eventsRef.current;
           if (currentEvents) {
@@ -262,8 +303,9 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
         }
         if (pendingBlocksUpdateRef.current) {
           // Convert map to sorted array for rendering
-          const blockArray = Array.from(serverBlockMapRef.current.values())
-            .sort((a, b) => a.blockIndex - b.blockIndex);
+          const blockArray = Array.from(
+            serverBlockMapRef.current.values(),
+          ).sort((a, b) => a.blockIndex - b.blockIndex);
           setServerBlocks(blockArray);
           pendingBlocksUpdateRef.current = false;
         }
@@ -276,10 +318,12 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
 
   // In event mode: check whether any tool_call blocks are in the canonical list.
   // If not, we can take the fast path (single EnhancedChatMarkdownInternal).
-  const hasToolBlocks = isEventMode && canonicalBlocks.some(b => b.type === 'tool_call');
+  const hasToolBlocks =
+    isEventMode && canonicalBlocks.some((b) => b.type === "tool_call");
 
   // Merge server blocks from prop and from events
-  const effectiveServerBlocks = serverBlocksProp ?? (isNewProtocolRef.current ? serverBlocks : undefined);
+  const effectiveServerBlocks =
+    serverBlocksProp ?? (isNewProtocolRef.current ? serverBlocks : undefined);
 
   // ── Event mode with tool calls: render interleaved segments in arrival order ──
   if (isEventMode && hasToolBlocks) {
@@ -288,7 +332,7 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
         {canonicalBlocks.map((block, index) => {
           const isLastBlock = index === canonicalBlocks.length - 1;
 
-          if (block.type === 'text') {
+          if (block.type === "text") {
             const textBlock = block as TextBlock;
             return (
               <EnhancedChatMarkdownInternal
@@ -296,16 +340,20 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
                 {...restProps}
                 content={textBlock.content}
                 isStreamActive={isLastBlock ? restProps.isStreamActive : false}
-                serverProcessedBlocks={isLastBlock ? effectiveServerBlocks : undefined}
+                serverProcessedBlocks={
+                  isLastBlock ? effectiveServerBlocks : undefined
+                }
               />
             );
           }
 
-          if (block.type === 'tool_call') {
+          if (block.type === "tool_call") {
             const toolBlock = block as ToolCallBlock;
             const hasContentAfter = canonicalBlocks
               .slice(index + 1)
-              .some(b => b.type === 'text' && (b as TextBlock).content.trim());
+              .some(
+                (b) => b.type === "text" && (b as TextBlock).content.trim(),
+              );
             const toolUpdates = toolCallBlockToLegacy(toolBlock);
 
             return (
@@ -313,7 +361,10 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
                 key={`tool-${toolBlock.callId}`}
                 fallback={null}
                 onError={(error) =>
-                  console.error('[MarkdownStream] ToolCallVisualization error:', error)
+                  console.error(
+                    "[MarkdownStream] ToolCallVisualization error:",
+                    error,
+                  )
                 }
               >
                 <Suspense fallback={null}>
@@ -353,7 +404,7 @@ export const useStreamEvents = () => {
 
   const processStream = useCallback(async (response: Response) => {
     if (!response.body) {
-      throw new Error('No response body');
+      throw new Error("No response body");
     }
 
     setIsStreaming(true);
@@ -362,7 +413,7 @@ export const useStreamEvents = () => {
     try {
       const { events: streamEvents } = parseNdjsonStream(response);
       for await (const event of streamEvents) {
-        setEvents(prev => [...prev, event as unknown as StreamEvent]);
+        setEvents((prev) => [...prev, event as unknown as StreamEvent]);
       }
     } finally {
       setIsStreaming(false);
@@ -383,4 +434,3 @@ export const useStreamEvents = () => {
 };
 
 export default StreamAwareChatMarkdown;
-

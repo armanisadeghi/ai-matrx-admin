@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/demo/component-demo/selects/selects-5", {
-  title: "Component Demo Selects Selects 5",
-  description: "Interactive demo: Component Demo Selects Selects 5. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "Selects 5",
+  title: "Demo",
+  description: "Select pattern variant 5 demo.",
+  letter: "N5", // Selects 5
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

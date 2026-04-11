@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/demo/component-demo/json-viewer", {
-  title: "Component Demo Json Viewer",
-  description: "Interactive demo: Component Demo Json Viewer. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "JSON Viewer",
+  title: "Demo",
+  description: "JSON viewer component demo.",
+  letter: "JV", // JSON Viewer
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

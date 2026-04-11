@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/demo/component-demo/ai-prog/direct", {
-  title: "Component Demo Ai Prog Direct",
-  description: "Interactive demo: Component Demo Ai Prog Direct. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "AI Prog Direct",
+  title: "Demo",
+  description: "Direct AI programming demo.",
+  letter: "Dr", // AI Prog Direct
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

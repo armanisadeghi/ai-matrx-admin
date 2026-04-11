@@ -330,6 +330,65 @@ export const agentDefinitionSlice = createSlice({
     },
 
     /**
+     * Seeds an agent from a template into Redux state only — no DB write.
+     * The record lands as fetchStatus "full" and _dirty false, so auto-save
+     * ignores it and the builder renders immediately.
+     * The caller must supply a stable UUID as `id`.
+     */
+    seedAgentFromTemplate(
+      state,
+      action: PayloadAction<Partial<AgentDefinition> & { id: string }>,
+    ) {
+      const data = action.payload;
+      const now = new Date().toISOString();
+      const full: AgentDefinition = {
+        id: data.id,
+        name: data.name ?? "New Agent",
+        description: data.description ?? null,
+        category: data.category ?? null,
+        tags: data.tags ?? [],
+        isActive: data.isActive ?? true,
+        isPublic: data.isPublic ?? false,
+        isArchived: data.isArchived ?? false,
+        isFavorite: data.isFavorite ?? false,
+        agentType: data.agentType ?? "user",
+        isVersion: false,
+        parentAgentId: null,
+        versionNumber: null,
+        changedAt: null,
+        changeNote: null,
+        modelId: data.modelId ?? null,
+        messages: data.messages ?? [],
+        variableDefinitions: data.variableDefinitions ?? null,
+        settings: data.settings ?? ({} as AgentDefinition["settings"]),
+        tools: data.tools ?? [],
+        contextSlots: data.contextSlots ?? [],
+        modelTiers: data.modelTiers ?? null,
+        outputSchema: data.outputSchema ?? null,
+        customTools: data.customTools ?? [],
+        mcpServers: data.mcpServers ?? [],
+        userId: data.userId ?? null,
+        organizationId: data.organizationId ?? null,
+        projectId: data.projectId ?? null,
+        taskId: data.taskId ?? null,
+        sourceAgentId: null,
+        sourceSnapshotAt: null,
+        createdAt: now,
+        updatedAt: now,
+        isOwner: true,
+        accessLevel: "owner",
+        sharedByEmail: null,
+      };
+      if (!state.agents[full.id]) {
+        const record = makeEmptyRecord(full.id);
+        mergeAndTrack(record, full);
+        markRecordClean(record);
+        applyFetchStatus(record, "full");
+        state.agents[full.id] = record;
+      }
+    },
+
+    /**
      * Merges a partial payload into state.
      * PRESERVES existing fields not in the payload.
      * NEVER clears dirty state — a partial fetch is not a full truth source.
@@ -699,6 +758,7 @@ export const agentDefinitionSlice = createSlice({
 
 export const {
   upsertAgent,
+  seedAgentFromTemplate,
   mergePartialAgent,
   setAgentField,
   setAgentMessages,

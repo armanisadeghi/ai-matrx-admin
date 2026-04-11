@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/demo/component-demo/json-again", {
-  title: "Component Demo Json Again",
-  description: "Interactive demo: Component Demo Json Again. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "JSON Again",
+  title: "Demo",
+  description: "JSON again playground demo.",
+  letter: "JA", // JSON Again
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

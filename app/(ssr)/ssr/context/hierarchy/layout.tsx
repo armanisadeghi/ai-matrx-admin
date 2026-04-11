@@ -1,38 +1,43 @@
-'use client';
+import HierarchyLayoutClient from "./HierarchyLayoutClient";
+import { createCustomFaviconMetadata } from "@/utils/favicon-utils";
+import { siteConfig } from "@/config/extras/site";
 
-import { Suspense } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, TreePine } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+const title = "Hierarchy | Context";
+const description = "SSR hierarchy manager for agent context trees.";
+const socialTitle = `${title} | AI Matrx`;
 
-/**
- * Hierarchy sub-route layout: overrides the parent context layout's sidebar
- * because the hierarchy page has its own full-width split panel.
- */
-export default function HierarchyLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="h-[calc(100dvh-2.5rem)] flex flex-col overflow-hidden"
-      style={{ paddingTop: 'var(--shell-header-h)' } as React.CSSProperties}
-    >
-      {/* Thin nav bar */}
-      <div className="shrink-0 border-b border-border/50 px-4 py-1.5 bg-card/50 flex items-center gap-2">
-        <Button variant="ghost" size="sm" className="h-6 text-xs gap-1 px-2" asChild>
-          <Link href="/ssr/context">
-            <ArrowLeft className="h-3 w-3" /> Context
-          </Link>
-        </Button>
-        <div className="h-4 w-px bg-border mx-1" />
-        <TreePine className="h-3.5 w-3.5 text-primary" />
-        <span className="text-xs font-semibold">Hierarchy Manager</span>
-      </div>
+export const metadata = createCustomFaviconMetadata(
+  { color: "#86198f", letter: "Hy" },
+  {
+    title,
+    description,
+    openGraph: {
+      title: socialTitle,
+      description,
+      type: "website",
+      siteName: "AI Matrx",
+      images: [
+        {
+          url: siteConfig.ogImage,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: socialTitle,
+      description,
+      images: [siteConfig.ogImage],
+    },
+  },
+);
 
-      {/* Full-height content */}
-      <div className="flex-1 overflow-hidden">
-        <Suspense fallback={<Skeleton className="h-full w-full" />}>
-          {children}
-        </Suspense>
-      </div>
-    </div>
-  );
+export default function HierarchyLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <HierarchyLayoutClient>{children}</HierarchyLayoutClient>;
 }

@@ -139,6 +139,20 @@ When converting a directory from hard-coded `config.ts` to auto-discovery:
 4. Keep `EntityPack` wrappers and `export const dynamic = 'force-dynamic'` if present
 5. Never touch functional leaf pages — only replace listing/index pages
 
+## Favicon Integration
+
+`RouteIndexPage` automatically resolves the favicon for the `basePath` and threads it into the display:
+
+- The favicon badge renders next to the page `<h1>` title (replaces the Lucide icon when a favicon exists)
+- `GroupedCardsDisplay` uses the favicon color as a left-border accent on each group card
+- Flat list entries show the favicon badge instead of a plain dot
+
+No extra code needed — just pass the correct `basePath` and the system picks up the config from `navigation-links.tsx` or the system-route overrides (`/demo`, `/tests`, `/administration`).
+
+To understand how favicons are registered and what colors/letters are already in use, see `.cursor/skills/route-metadata-favicons/SKILL.md`.
+
+---
+
 ## Pages NOT Using This System
 
 These have custom logic and intentionally remain hand-maintained:

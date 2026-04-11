@@ -1,13 +1,17 @@
 import { ReactNode } from "react";
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-// Generate metadata for the Prompt Overlay Test route
-export const metadata = createRouteMetadata("/ai/prompts/experimental/prompt-overlay-test", {
-  title: "Prompt Overlay Test",
+export const metadata = createRouteMetadata("/ai/prompts", {
+  titlePrefix: "Overlay",
+  title: "Prompts",
   description: "Test and validate prompt overlay functionality",
+  letter: "OL",
 });
 
-export default function PromptOverlayTestLayout({ children }: { children: ReactNode }) {
+export default function PromptOverlayTestLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return <>{children}</>;
 }
-

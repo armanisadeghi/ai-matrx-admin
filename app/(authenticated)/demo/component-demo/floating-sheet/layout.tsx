@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/demo/component-demo/floating-sheet", {
-  title: "Component Demo Floating Sheet",
-  description: "Interactive demo: Component Demo Floating Sheet. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "Floating Sheet",
+  title: "Demo",
+  description: "Floating sheet component demo.",
+  letter: "FS", // Floating Sheet
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

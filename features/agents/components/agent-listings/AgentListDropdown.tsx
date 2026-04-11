@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useMemo, useTransition } from "react";
+import { useState, useRef, useMemo, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Search,
   X,
@@ -18,6 +19,7 @@ import {
   Users,
   Clock,
   Globe,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -65,6 +67,8 @@ interface AgentListDropdownProps {
   navigateTo?: string;
   className?: string;
   label?: string;
+  /** Custom trigger element — replaces the default text button. */
+  triggerSlot?: React.ReactNode;
 }
 
 const PANEL_HEIGHT = "528px";
@@ -75,6 +79,7 @@ export function AgentListDropdown({
   navigateTo,
   className,
   label = "Agents",
+  triggerSlot,
 }: AgentListDropdownProps) {
   const isMobile = useIsMobile();
   const dispatch = useAppDispatch();
@@ -93,6 +98,7 @@ export function AgentListDropdown({
     "sort" | "categories" | "tags" | null
   >(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const hoverLeaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const consumer = useAgentConsumer(CONSUMER_ID, {
     unregisterOnUnmount: true,
@@ -155,28 +161,54 @@ export function AgentListDropdown({
     }
   };
 
-  const handleAgentHover = (agent: AgentDefinitionRecord) => {
-    if (isMobile) return;
-    if (
-      rightPanel === "sort" ||
-      rightPanel === "categories" ||
-      rightPanel === "tags"
-    )
-      return;
-    setHoveredAgent(agent);
-    setRightPanel("detail");
-  };
+  const handleAgentHover = useCallback(
+    (agent: AgentDefinitionRecord) => {
+      if (isMobile) return;
+      if (
+        rightPanel === "sort" ||
+        rightPanel === "categories" ||
+        rightPanel === "tags"
+      )
+        return;
+      if (hoverLeaveTimerRef.current) {
+        clearTimeout(hoverLeaveTimerRef.current);
+        hoverLeaveTimerRef.current = null;
+      }
+      setHoveredAgent(agent);
+      setRightPanel("detail");
+    },
+    [isMobile, rightPanel],
+  );
 
-  const handleAgentHoverEnd = (agent: AgentDefinitionRecord) => {
-    if (isMobile) return;
-    if (rightPanel !== "detail") return;
-    if (hoveredAgent?.id === agent.id) {
+  const handleAgentHoverEnd = useCallback(
+    (agent: AgentDefinitionRecord) => {
+      if (isMobile) return;
+      if (rightPanel !== "detail") return;
+      if (hoveredAgent?.id === agent.id) {
+        hoverLeaveTimerRef.current = setTimeout(() => {
+          setHoveredAgent(null);
+          setRightPanel(null);
+        }, 150);
+      }
+    },
+    [isMobile, rightPanel, hoveredAgent],
+  );
+
+  const handleDetailPanelMouseEnter = useCallback(() => {
+    if (hoverLeaveTimerRef.current) {
+      clearTimeout(hoverLeaveTimerRef.current);
+      hoverLeaveTimerRef.current = null;
+    }
+  }, []);
+
+  const handleDetailPanelMouseLeave = useCallback(() => {
+    hoverLeaveTimerRef.current = setTimeout(() => {
       setHoveredAgent(null);
       setRightPanel(null);
-    }
-  };
+    }, 150);
+  }, []);
 
-  const trigger = (
+  const trigger = triggerSlot ?? (
     <button
       className={cn(
         "inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium",
@@ -297,6 +329,16 @@ export function AgentListDropdown({
             <div
               className="w-[340px] shrink-0 overflow-hidden flex flex-col"
               style={{ height: PANEL_HEIGHT }}
+              onMouseEnter={
+                rightPanel === "detail"
+                  ? handleDetailPanelMouseEnter
+                  : undefined
+              }
+              onMouseLeave={
+                rightPanel === "detail"
+                  ? handleDetailPanelMouseLeave
+                  : undefined
+              }
             >
               {rightPanel === "detail" && hoveredAgent && (
                 <AgentDetailCard
@@ -349,9 +391,11 @@ export function AgentListDropdown({
 function AgentDetailCard({
   agent,
   onSelect,
+  onOpenNewTab,
 }: {
   agent: AgentDefinitionRecord;
   onSelect: () => void;
+  onOpenNewTab?: () => void;
 }) {
   const updatedDate = agent.updatedAt ? new Date(agent.updatedAt) : null;
   const createdDate = agent.createdAt ? new Date(agent.createdAt) : null;
@@ -484,13 +528,23 @@ function AgentDetailCard({
       </div>
 
       <div className="h-px bg-border mx-3 mt-auto" />
-      <div className="px-3 py-2.5 shrink-0">
+      <div className="px-3 py-2 shrink-0 flex items-center gap-1.5">
         <button
           onClick={onSelect}
-          className="w-full h-8 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 active:bg-primary/80 transition-colors"
+          className="flex-1 h-7 rounded-md bg-primary text-primary-foreground text-[11px] font-medium hover:bg-primary/90 active:bg-primary/80 transition-colors"
         >
-          Select Agent
+          Select
         </button>
+        <Link
+          href={`/agents/${agent.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          title="Open in new tab"
+          className="flex items-center justify-center h-7 w-7 rounded-md border border-border bg-background text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors shrink-0"
+        >
+          <ExternalLink className="w-3.5 h-3.5" />
+        </Link>
       </div>
     </div>
   );
@@ -1049,8 +1103,13 @@ function AgentRow({
       onMouseEnter={isMobile ? undefined : onHover}
       onMouseLeave={isMobile ? undefined : onHoverEnd}
     >
-      <button
-        onClick={onClick}
+      <Link
+        href={`/agents/${agent.id}`}
+        onClick={(e) => {
+          if (e.metaKey || e.ctrlKey) return;
+          e.preventDefault();
+          onClick();
+        }}
         className="flex items-center gap-2 flex-1 min-w-0 px-3 py-2"
       >
         {agent.isFavorite && (
@@ -1069,7 +1128,7 @@ function AgentRow({
             shared
           </span>
         )}
-      </button>
+      </Link>
       {isMobile && (
         <button
           onClick={(e) => {

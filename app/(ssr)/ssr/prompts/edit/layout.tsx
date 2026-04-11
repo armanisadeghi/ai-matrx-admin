@@ -1,13 +1,17 @@
 import { ReactNode } from "react";
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-// Generate metadata for the Edit Prompt route
-export const metadata = createRouteMetadata("/ai/prompts/edit", {
-  title: "Edit Prompt",
-  description: "Edit an existing AI prompt",
+export const metadata = createRouteMetadata("/ai/prompts", {
+  titlePrefix: "Edit",
+  title: "Prompts",
+  description: "Edit an existing AI prompt (SSR)",
+  letter: "Pe",
 });
 
-export default function EditPromptLayout({ children }: { children: ReactNode }) {
+export default function EditPromptLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return <>{children}</>;
 }
-

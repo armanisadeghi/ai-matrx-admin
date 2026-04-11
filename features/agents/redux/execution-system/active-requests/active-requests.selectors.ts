@@ -12,6 +12,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import type {
   ActiveRequest,
+  ExtractedJsonSnapshot,
   ToolLifecycleEntry,
   TimelineEntry,
   RawStreamEvent,
@@ -64,8 +65,7 @@ export const selectRequest =
 
 export const selectRequestsForInstance = (conversationId: string) =>
   createSelector(
-    (state: RootState) =>
-      state.activeRequests.byConversationId[conversationId],
+    (state: RootState) => state.activeRequests.byConversationId[conversationId],
     (state: RootState) => state.activeRequests.byRequestId,
     (ids, byRequestId): ActiveRequest[] => {
       if (!ids || ids.length === 0) return [];
@@ -659,8 +659,7 @@ export const selectErrorIsFatal =
 
 export const selectConversationTree = (conversationId: string) =>
   createSelector(
-    (state: RootState) =>
-      state.activeRequests.byConversationId[conversationId],
+    (state: RootState) => state.activeRequests.byConversationId[conversationId],
     (state: RootState) => state.activeRequests.byRequestId,
     (
       ids,
@@ -935,3 +934,59 @@ export const selectTimelineDerivedTiming = (requestId: string) =>
       };
     },
   );
+
+// =============================================================================
+// JSON Extraction Selectors
+// =============================================================================
+
+/** All extracted JSON values for a request. null = extraction not enabled. */
+export const selectExtractedJson =
+  (requestId: string) =>
+  (state: RootState): ExtractedJsonSnapshot[] | null =>
+    state.activeRequests.byRequestId[requestId]?.extractedJson ?? null;
+
+/** First extracted JSON object (not array, not primitive). */
+export const selectFirstExtractedObject =
+  (requestId: string) =>
+  (state: RootState): ExtractedJsonSnapshot | null => {
+    const results = state.activeRequests.byRequestId[requestId]?.extractedJson;
+    if (!results) return null;
+    return results.find((r) => r.type === "object") ?? null;
+  };
+
+/** First extracted JSON value of any type. */
+export const selectFirstExtractedJson =
+  (requestId: string) =>
+  (state: RootState): ExtractedJsonSnapshot | null => {
+    const results = state.activeRequests.byRequestId[requestId]?.extractedJson;
+    if (!results || results.length === 0) return null;
+    return results[0];
+  };
+
+/** Whether JSON extraction has completed its final pass. Primitive. */
+export const selectJsonExtractionComplete =
+  (requestId: string) =>
+  (state: RootState): boolean =>
+    state.activeRequests.byRequestId[requestId]?.jsonExtractionComplete ??
+    false;
+
+/** Monotonic revision counter — for avoiding redundant work in consumers. Primitive. */
+export const selectJsonExtractionRevision =
+  (requestId: string) =>
+  (state: RootState): number =>
+    state.activeRequests.byRequestId[requestId]?.jsonExtractionRevision ?? 0;
+
+/** Whether all extracted JSON structures are complete (balanced). Primitive. */
+export const selectAllJsonComplete =
+  (requestId: string) =>
+  (state: RootState): boolean => {
+    const results = state.activeRequests.byRequestId[requestId]?.extractedJson;
+    if (!results || results.length === 0) return false;
+    return results.every((r) => r.isComplete);
+  };
+
+/** Count of extracted JSON values. Primitive. */
+export const selectExtractedJsonCount =
+  (requestId: string) =>
+  (state: RootState): number =>
+    state.activeRequests.byRequestId[requestId]?.extractedJson?.length ?? 0;

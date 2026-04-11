@@ -1,39 +1,56 @@
-// app/(authenticated)/tests/ssr-test/[category]/layout.tsx
-import React from 'react';
-import { OptionCardHeader } from '@/components/ssr';
-import { getCategories } from '../constants';
-import { notFound } from 'next/navigation';
+import React from "react";
+import type { Metadata } from "next";
+import { OptionCardHeader } from "@/components/ssr";
+import { getCategories } from "../constants";
+import { notFound } from "next/navigation";
+import { createFlashcardRouteMetadata } from "@/utils/flashcard-metadata";
 
-interface LayoutProps {
-    children: React.ReactNode;
-    params: {
-        category: string;
-    };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string }>;
+}): Promise<Metadata> {
+  const { category: categoryKey } = await params;
+  const categories = await getCategories();
+  const category = categories[categoryKey];
+  const label = category?.label ?? categoryKey;
+  const composedTitle = `${label} | Flashcards`;
+  const description =
+    category?.description ?? `Study flashcards in the ${label} category`;
+  return createFlashcardRouteMetadata(composedTitle, description, "Fc");
 }
 
-export default async function CategoryLayout({ children, params }: LayoutProps) {
-    const resolvedParams = await params;
-    const categories = await getCategories();
-    const category = categories[resolvedParams.category];
+interface LayoutProps {
+  children: React.ReactNode;
+  params: Promise<{ category: string }>;
+}
 
-    if (!category) {
-        notFound();
-    }
+export default async function CategoryLayout({
+  children,
+  params,
+}: LayoutProps) {
+  const resolvedParams = await params;
+  const categories = await getCategories();
+  const category = categories[resolvedParams.category];
 
-    const headerData = {
-        id: category.id,
-        displayName: category.label,
-        description: category.description,
-        icon: category.icon,
-        additionalFields: {
-            'Style': category.customStyles.backgroundColor
-        }
-    };
+  if (!category) {
+    notFound();
+  }
 
-    return (
-        <div className="flex flex-col space-y-2">
-            <OptionCardHeader data={headerData} />
-            {children}
-        </div>
-    );
+  const headerData = {
+    id: category.id,
+    displayName: category.label,
+    description: category.description,
+    icon: category.icon,
+    additionalFields: {
+      Style: category.customStyles?.backgroundColor,
+    },
+  };
+
+  return (
+    <div className="flex flex-col space-y-2">
+      <OptionCardHeader data={headerData} />
+      {children}
+    </div>
+  );
 }

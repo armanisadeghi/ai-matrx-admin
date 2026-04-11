@@ -5,7 +5,15 @@ import {
   groupRoutes,
   sortGroupKeys,
 } from "@/utils/route-discovery";
-import type { RouteDisplayData, RouteDisplayVariant } from "./route-display/types";
+import {
+  getFaviconConfigByPath,
+  generateSVGFavicon,
+  svgToDataURI,
+} from "@/utils/favicon-utils";
+import type {
+  RouteDisplayData,
+  RouteDisplayVariant,
+} from "./route-display/types";
 import RouteDisplaySwitcher from "./route-display/RouteDisplaySwitcher";
 
 interface RouteIndexPageProps {
@@ -37,7 +45,16 @@ export async function RouteIndexPage({
   const groups = groupRoutes(routes);
   const sortedGroupKeys = sortGroupKeys(Object.keys(groups));
   const hasGroups = sortedGroupKeys.length > 1 || !groups["__root__"];
-  const normalizedBase = basePath.endsWith("/") ? basePath.slice(0, -1) : basePath;
+  const normalizedBase = basePath.endsWith("/")
+    ? basePath.slice(0, -1)
+    : basePath;
+
+  // Resolve the favicon for this route tree so display variants can use it
+  const faviconConfig = getFaviconConfigByPath(basePath);
+  const faviconDataUri = faviconConfig
+    ? svgToDataURI(generateSVGFavicon(faviconConfig))
+    : undefined;
+  const faviconColor = faviconConfig?.color;
 
   const data: RouteDisplayData = {
     routes,
@@ -47,6 +64,8 @@ export async function RouteIndexPage({
     title,
     description,
     hasGroups,
+    faviconDataUri,
+    faviconColor,
   };
 
   return (
@@ -56,7 +75,17 @@ export async function RouteIndexPage({
           <div className="mb-6">
             {title && (
               <div className="flex items-center gap-2 mb-0.5">
-                <Icon className="h-5 w-5 text-primary" />
+                {faviconDataUri ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={faviconDataUri}
+                    alt=""
+                    aria-hidden="true"
+                    className="h-6 w-6 rounded-md shrink-0"
+                  />
+                ) : (
+                  <Icon className="h-5 w-5 text-primary" />
+                )}
                 <h1 className="text-2xl font-bold">{title}</h1>
               </div>
             )}

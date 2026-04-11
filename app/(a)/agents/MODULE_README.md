@@ -12,7 +12,7 @@ are overwritten each time the generator runs. Everything else is yours to edit f
 | Field | Value |
 |-------|-------|
 | Module | `app/(a)/agents` |
-| Last generated | 2026-04-10 20:05 |
+| Last generated | 2026-04-11 13:13 |
 | Output file | `app/(a)/agents/MODULE_README.md` |
 | Signature mode | `signatures` |
 
@@ -49,10 +49,11 @@ python utils/code_context/generate_module_readme.py app/(a)/agents --mode signat
 <!-- AUTO:tree -->
 ## Directory Tree
 
-> Auto-generated. 16 files across 5 directories.
+> Auto-generated. 27 files across 13 directories.
 
 ```
 app/(a)/agents/
+├── MODULE_README.md
 ├── [id]/
 │   ├── [version]/
 │   │   ├── loading.tsx
@@ -72,8 +73,26 @@ app/(a)/agents/
 ├── error.tsx
 ├── layout.tsx
 ├── loading.tsx
+├── new/
+│   ├── builder/
+│   │   ├── customizer/
+│   │   │   ├── page.tsx
+│   │   ├── instant/
+│   │   │   ├── page.tsx
+│   │   ├── page.tsx
+│   │   ├── tabs/
+│   │   │   ├── page.tsx
+│   ├── generate/
+│   │   ├── page.tsx
+│   ├── import/
+│   │   ├── page.tsx
+│   ├── layout.tsx
+│   ├── manual/
+│   │   ├── AutoSubmitForm.tsx
+│   │   ├── page.tsx
+│   ├── page.tsx
 ├── page.tsx
-# excluded: 3 .md
+# excluded: 5 .md
 ```
 <!-- /AUTO:tree -->
 
@@ -88,7 +107,7 @@ app/(a)/agents/
 Filepath: app/(a)/agents/layout.tsx  [typescript/react]
 
   # Components
-    [Component] export default function AgentsLayout({ children }: { children: React.ReactNode })
+    [Component] export default function AgentsLayout({ children, }: { children: React.ReactNode; })
 
 
 ---
@@ -108,6 +127,80 @@ Filepath: app/(a)/agents/loading.tsx  [typescript/react]
 ---
 Filepath: app/(a)/agents/page.tsx  [typescript/react]
 
+
+
+---
+Filepath: app/(a)/agents/new/layout.tsx  [typescript/react]
+
+  # Components
+    [Component] export default function NewAgentLayout({ children }: { children: ReactNode })
+
+
+---
+Filepath: app/(a)/agents/new/page.tsx  [typescript/react]
+
+  # Components
+    [Component] export default function NewAgentPage()
+
+
+---
+Filepath: app/(a)/agents/new/manual/AutoSubmitForm.tsx  [typescript/react]
+
+  # Components
+    [Component] export function AutoSubmitForm({ action }: AutoSubmitFormProps)
+    Props: AutoSubmitFormProps
+      # action: () => Promise<void>
+  # Types & Interfaces
+    interface AutoSubmitFormProps
+
+
+---
+Filepath: app/(a)/agents/new/manual/page.tsx  [typescript/react]
+
+  # Components
+    [Component] export default function NewManualAgentPage()
+
+
+---
+Filepath: app/(a)/agents/new/generate/page.tsx  [typescript/react]
+
+  # Components
+    [Component] export default function GenerateAgentPage()
+
+
+---
+Filepath: app/(a)/agents/new/import/page.tsx  [typescript/react]
+
+  # Components
+    [Component] export default function ImportAgentPage()
+
+
+---
+Filepath: app/(a)/agents/new/builder/page.tsx  [typescript/react]
+
+  # Components
+    [Component] export default function InteractiveBuilderPage()
+
+
+---
+Filepath: app/(a)/agents/new/builder/tabs/page.tsx  [typescript/react]
+
+  # Components
+    [Component] export default function TabsBuilderPage()
+
+
+---
+Filepath: app/(a)/agents/new/builder/instant/page.tsx  [typescript/react]
+
+  # Components
+    [Component] export default function InstantBuilderPage()
+
+
+---
+Filepath: app/(a)/agents/new/builder/customizer/page.tsx  [typescript/react]
+
+  # Components
+    [Component] export default function CustomizerBuilderPage()
 
 
 ---

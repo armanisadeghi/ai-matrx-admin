@@ -1,16 +1,23 @@
-import React from 'react';
-import { SimpleTooltip, AdvancedTooltip } from '@/components/matrx/Tooltip';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
+import { SimpleTooltip, AdvancedTooltip } from "@/components/matrx/Tooltip";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Info, AlertCircle, CheckCircle, HelpCircle, Settings, ArrowRight, Coffee } from 'lucide-react';
-
-import { createRouteMetadata } from "@/utils/route-metadata";
-
-export const metadata = createRouteMetadata("/demo/component-demo/tooltip-demo", {
-  title: "Component Demo Tooltip Demo",
-  description: "Interactive demo: Component Demo Tooltip Demo. AI Matrx demo route.",
-});
+import {
+  Info,
+  AlertCircle,
+  CheckCircle,
+  HelpCircle,
+  Settings,
+  ArrowRight,
+  Coffee,
+} from "lucide-react";
 
 const TooltipDemo = () => {
   return (
@@ -67,19 +74,27 @@ const TooltipDemo = () => {
             <CardContent>
               <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
                 <AdvancedTooltip text="Top tooltip" side="top">
-                  <Button variant="outline" className="w-full">Top</Button>
+                  <Button variant="outline" className="w-full">
+                    Top
+                  </Button>
                 </AdvancedTooltip>
-                
+
                 <AdvancedTooltip text="Right tooltip" side="right">
-                  <Button variant="outline" className="w-full">Right</Button>
+                  <Button variant="outline" className="w-full">
+                    Right
+                  </Button>
                 </AdvancedTooltip>
-                
+
                 <AdvancedTooltip text="Bottom tooltip" side="bottom">
-                  <Button variant="outline" className="w-full">Bottom</Button>
+                  <Button variant="outline" className="w-full">
+                    Bottom
+                  </Button>
                 </AdvancedTooltip>
-                
+
                 <AdvancedTooltip text="Left tooltip" side="left">
-                  <Button variant="outline" className="w-full">Left</Button>
+                  <Button variant="outline" className="w-full">
+                    Left
+                  </Button>
                 </AdvancedTooltip>
               </div>
             </CardContent>
@@ -95,29 +110,23 @@ const TooltipDemo = () => {
             </CardHeader>
             <CardContent>
               <div className="flex justify-center gap-4">
-                <AdvancedTooltip 
-                  text="Default tooltip" 
-                  variant="default"
-                >
+                <AdvancedTooltip text="Default tooltip" variant="default">
                   <HelpCircle className="w-5 h-5 cursor-help" />
                 </AdvancedTooltip>
 
-                <AdvancedTooltip 
-                  text="Success message" 
-                  variant="success"
-                >
+                <AdvancedTooltip text="Success message" variant="success">
                   <CheckCircle className="w-5 h-5 cursor-help text-green-500" />
                 </AdvancedTooltip>
 
-                <AdvancedTooltip 
-                  text="Warning: This action has consequences" 
+                <AdvancedTooltip
+                  text="Warning: This action has consequences"
                   variant="warning"
                 >
                   <AlertCircle className="w-5 h-5 cursor-help text-yellow-500" />
                 </AdvancedTooltip>
 
-                <AdvancedTooltip 
-                  text="Error: Something went wrong" 
+                <AdvancedTooltip
+                  text="Error: Something went wrong"
                   variant="error"
                 >
                   <AlertCircle className="w-5 h-5 cursor-help text-red-500" />
@@ -136,27 +145,23 @@ const TooltipDemo = () => {
             </CardHeader>
             <CardContent>
               <div className="flex justify-center gap-4">
-                <AdvancedTooltip 
-                  text="Start aligned" 
+                <AdvancedTooltip
+                  text="Start aligned"
                   align="start"
                   side="bottom"
                 >
                   <Button variant="outline">Start</Button>
                 </AdvancedTooltip>
 
-                <AdvancedTooltip 
-                  text="Center aligned" 
+                <AdvancedTooltip
+                  text="Center aligned"
                   align="center"
                   side="bottom"
                 >
                   <Button variant="outline">Center</Button>
                 </AdvancedTooltip>
 
-                <AdvancedTooltip 
-                  text="End aligned" 
-                  align="end"
-                  side="bottom"
-                >
+                <AdvancedTooltip text="End aligned" align="end" side="bottom">
                   <Button variant="outline">End</Button>
                 </AdvancedTooltip>
               </div>
@@ -173,28 +178,22 @@ const TooltipDemo = () => {
             </CardHeader>
             <CardContent>
               <div className="flex justify-center gap-4">
-                <AdvancedTooltip 
-                  text="Instant tooltip"
-                  delayDuration={0}
-                >
+                <AdvancedTooltip text="Instant tooltip" delayDuration={0}>
                   <Button variant="outline">No Delay</Button>
                 </AdvancedTooltip>
 
-                <AdvancedTooltip 
+                <AdvancedTooltip
                   text="Multi\nline\ntooltip"
                   contentClassName="max-w-xs"
                 >
                   <Button variant="outline">Multiline</Button>
                 </AdvancedTooltip>
 
-                <AdvancedTooltip 
-                  text="Custom offset tooltip"
-                  sideOffset={12}
-                >
+                <AdvancedTooltip text="Custom offset tooltip" sideOffset={12}>
                   <Button variant="outline">Offset</Button>
                 </AdvancedTooltip>
 
-                <AdvancedTooltip 
+                <AdvancedTooltip
                   text="This tooltip is disabled"
                   disabled={true}
                 >
@@ -214,7 +213,7 @@ const TooltipDemo = () => {
             </CardHeader>
             <CardContent>
               <div className="flex justify-center items-center gap-6">
-                <AdvancedTooltip 
+                <AdvancedTooltip
                   text="Take a coffee break"
                   variant="default"
                   side="bottom"
@@ -222,7 +221,7 @@ const TooltipDemo = () => {
                   <Coffee className="w-6 h-6 cursor-pointer text-muted-foreground hover:text-foreground transition-colors" />
                 </AdvancedTooltip>
 
-                <AdvancedTooltip 
+                <AdvancedTooltip
                   text="Premium feature\nUpgrade to access"
                   variant="warning"
                   contentClassName="max-w-xs"
@@ -232,7 +231,7 @@ const TooltipDemo = () => {
                   </Button>
                 </AdvancedTooltip>
 
-                <AdvancedTooltip 
+                <AdvancedTooltip
                   text="Changes saved successfully"
                   variant="success"
                   delayDuration={0}

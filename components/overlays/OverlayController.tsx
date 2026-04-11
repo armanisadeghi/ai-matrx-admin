@@ -500,8 +500,23 @@ const AgentSettingsWindow = dynamic(
   { ssr: false },
 );
 
+const AgentRunHistoryWindow = dynamic(
+  () => import("@/features/window-panels/windows/AgentRunHistoryWindow"),
+  { ssr: false },
+);
+
+const AgentImportWindow = dynamic(
+  () => import("@/features/agents/import/AgentImportWindow"),
+  { ssr: false },
+);
+
 const AgentContentWindow = dynamic(
   () => import("@/features/window-panels/windows/AgentContentWindow"),
+  { ssr: false },
+);
+
+const AgentContentSidebarWindow = dynamic(
+  () => import("@/features/window-panels/windows/AgentContentSidebarWindow"),
   { ssr: false },
 );
 
@@ -703,12 +718,28 @@ export const OverlayController: React.FC = () => {
   const agentSettingsWindowData = useAppSelector((s) =>
     selectOverlayData(s, "agentSettingsWindow"),
   );
+  const isAgentRunHistoryWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentRunHistoryWindow"),
+  );
+  const agentRunHistoryWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "agentRunHistoryWindow"),
+  );
+  const isAgentImportWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentImportWindow"),
+  );
 
   const isAgentContentWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "agentContentWindow"),
   );
   const agentContentWindowData = useAppSelector((s) =>
     selectOverlayData(s, "agentContentWindow"),
+  );
+
+  const isAgentContentSidebarWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentContentSidebarWindow"),
+  );
+  const agentContentSidebarWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "agentContentSidebarWindow"),
   );
 
   const isExecutionInspectorWindowOpen = useAppSelector((s) =>
@@ -1676,12 +1707,37 @@ export const OverlayController: React.FC = () => {
         />
       )}
 
-      {isAgentContentWindowOpen && agentContentWindowData && (
+      {isAgentRunHistoryWindowOpen && (
+        <AgentRunHistoryWindow
+          isOpen={true}
+          onClose={() => close("agentRunHistoryWindow")}
+          agentId={agentRunHistoryWindowData?.agentId as string | null}
+          initialSelectedConversationId={
+            agentRunHistoryWindowData?.selectedConversationId as string | null
+          }
+        />
+      )}
+
+      {isAgentImportWindowOpen && (
+        <AgentImportWindow
+          isOpen={true}
+          onClose={() => close("agentImportWindow")}
+        />
+      )}
+
+      {isAgentContentWindowOpen && (
         <AgentContentWindow
           isOpen={true}
           onClose={() => close("agentContentWindow")}
-          initialAgentId={agentContentWindowData.initialAgentId}
-          initialTab={agentContentWindowData.initialTab}
+          {...(agentContentWindowData as any)}
+        />
+      )}
+
+      {isAgentContentSidebarWindowOpen && (
+        <AgentContentSidebarWindow
+          isOpen={true}
+          onClose={() => close("agentContentSidebarWindow")}
+          {...(agentContentSidebarWindowData as any)}
         />
       )}
 

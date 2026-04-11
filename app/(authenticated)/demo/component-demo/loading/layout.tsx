@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/demo/component-demo/loading", {
-  title: "Component Demo Loading",
-  description: "Interactive demo: Component Demo Loading. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "Loading",
+  title: "Demo",
+  description: "Loading states component demo.",
+  letter: "Ld", // Loading
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

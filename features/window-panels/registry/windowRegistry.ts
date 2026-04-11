@@ -169,11 +169,28 @@ const REGISTRY: WindowRegistryEntry[] = [
     defaultData: { initialAgentId: null, openedTabIds: [], activeTabId: null },
   },
 
+  // ── Agent Run History ─────────────────────────────────────────────────────
+  {
+    slug: "agent-run-history-window",
+    overlayId: "agentRunHistoryWindow",
+    label: "Run History",
+    defaultData: { agentId: null, selectedConversationId: null },
+  },
+
   // ── Agent Content ─────────────────────────────────────────────────────────
   {
     slug: "agent-content-window",
     overlayId: "agentContentWindow",
     label: "Agent Content",
+    // activeTab: "messages" | "system" | "model" | "variables" | "tools" | "context" | "settings" | "share"
+    defaultData: { initialAgentId: null, activeTab: "messages", tabs: null },
+  },
+
+  // ── Agent Content Sidebar ─────────────────────────────────────────────────
+  {
+    slug: "agent-content-sidebar-window",
+    overlayId: "agentContentSidebarWindow",
+    label: "Agent Editor",
     defaultData: { initialAgentId: null, activeTab: "messages" },
   },
 
@@ -364,6 +381,14 @@ const REGISTRY: WindowRegistryEntry[] = [
     label: "MD Debug",
     defaultData: {},
     ephemeral: true,
+  },
+
+  // ── Agent Import ──────────────────────────────────────────────────────────
+  {
+    slug: "agent-import-window",
+    overlayId: "agentImportWindow",
+    label: "Import Agent",
+    defaultData: { selectedSource: "agent-json", pastedText: "" },
   },
 ];
 

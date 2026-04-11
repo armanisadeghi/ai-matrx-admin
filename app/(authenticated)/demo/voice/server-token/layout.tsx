@@ -1,8 +1,10 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 
-export const metadata = createRouteMetadata("/demo/voice/server-token", {
-  title: "Voice Server Token",
-  description: "Interactive demo: Voice Server Token. AI Matrx demo route.",
+export const metadata = createRouteMetadata("/demo", {
+  titlePrefix: "Server Token",
+  title: "Demo",
+  description: "Server-issued token flow for secured voice and realtime demos",
+  letter: "Vs",
 });
 
 export default function Layout({ children }: { children: React.ReactNode }) {

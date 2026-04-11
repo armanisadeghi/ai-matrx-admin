@@ -121,16 +121,21 @@ export function AgentSettingsModal({
 
   const handleCancelClick = () => {
     if (hasChanges()) {
+      setOpen(false);
       setShowCancelConfirm(true);
     } else {
       setOpen(false);
     }
   };
 
+  const handleKeepEditing = () => {
+    setShowCancelConfirm(false);
+    setOpen(true);
+  };
+
   const handleConfirmCancel = () => {
     revertToSnapshot();
     setShowCancelConfirm(false);
-    setOpen(false);
   };
 
   const handleDone = () => {
@@ -191,9 +196,11 @@ export function AgentSettingsModal({
         </Drawer>
         <AlertDialog
           open={showCancelConfirm}
-          onOpenChange={setShowCancelConfirm}
+          onOpenChange={(o) => {
+            if (!o) handleKeepEditing();
+          }}
         >
-          <AlertDialogContent className="z-[200]">
+          <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Discard changes?</AlertDialogTitle>
               <AlertDialogDescription>
@@ -201,7 +208,7 @@ export function AgentSettingsModal({
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setShowCancelConfirm(false)}>
+              <AlertDialogCancel onClick={handleKeepEditing}>
                 Keep editing
               </AlertDialogCancel>
               <AlertDialogAction onClick={handleConfirmCancel}>
@@ -240,8 +247,13 @@ export function AgentSettingsModal({
           {footer}
         </DialogContent>
       </Dialog>
-      <AlertDialog open={showCancelConfirm} onOpenChange={setShowCancelConfirm}>
-        <AlertDialogContent className="z-[200]">
+      <AlertDialog
+        open={showCancelConfirm}
+        onOpenChange={(o) => {
+          if (!o) handleKeepEditing();
+        }}
+      >
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Discard changes?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -250,7 +262,7 @@ export function AgentSettingsModal({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setShowCancelConfirm(false)}>
+            <AlertDialogCancel onClick={handleKeepEditing}>
               Keep editing
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmCancel}>
