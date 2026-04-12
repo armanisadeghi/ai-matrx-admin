@@ -97,6 +97,44 @@ export const selectSettingsOverridesForApi =
   };
 
 /**
+ * "Settings for Chat API" — merged settings with UI-only capability flags removed.
+ *
+ * Same as selectCurrentSettings (base + overrides – removals) but strips
+ * UI_CAPABILITY_KEYS before returning. Use this instead of selectCurrentSettings
+ * when spreading the result flat into the chat endpoint payload.
+ *
+ * NOTE: UI_CAPABILITY_KEYS covers frontend capability indicators only (e.g.
+ * `tools: { allowed: true }`, `image_urls: true`). The actual tool list sent
+ * to the backend goes through the separate `tools` field in the request payload
+ * (from agent.tools), not through LLMParams — so nothing in LLMParams is lost.
+ */
+export const selectSettingsForChatApi =
+  (conversationId: string) =>
+  (state: RootState): Partial<LLMParams> | undefined => {
+    const overrideState =
+      state.instanceModelOverrides.byConversationId[conversationId];
+    if (!overrideState) return undefined;
+
+    const merged: Record<string, unknown> = { ...overrideState.baseSettings };
+
+    for (const [key, value] of Object.entries(overrideState.overrides)) {
+      merged[key] = value;
+    }
+
+    for (const key of overrideState.removals) {
+      delete merged[key];
+    }
+
+    for (const key of UI_CAPABILITY_KEYS) {
+      delete merged[key];
+    }
+
+    return Object.keys(merged).length > 0
+      ? (merged as Partial<LLMParams>)
+      : undefined;
+  };
+
+/**
  * Check if an instance has any overrides at all.
  */
 export const selectHasOverrides =

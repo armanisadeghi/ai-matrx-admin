@@ -24,7 +24,7 @@ import type {
 import type { ConversationTurn } from "../instance-conversation-history/instance-conversation-history.slice";
 import { generateRequestId } from "../utils";
 import { setInstanceStatus } from "../execution-instances";
-import { selectCurrentSettings } from "../instance-model-overrides";
+import { selectSettingsForChatApi } from "../instance-model-overrides";
 import { selectResolvedVariables } from "../instance-variable-values";
 import { selectContextPayload } from "../instance-context";
 import { selectResourcePayloads } from "../instance-resources";
@@ -190,8 +190,12 @@ export function assembleChatRequest(
     });
   }
 
-  // LLM params — full merged settings spread flat (NOT as config_overrides)
-  const fullSettings = selectCurrentSettings(conversationId)(state);
+  // LLM params — full merged settings spread flat (NOT as config_overrides).
+  // Uses selectSettingsForChatApi, which strips UI-only capability flags
+  // (tools, image_urls, file_urls, youtube_videos, multi_speaker) that must
+  // not be sent to the backend. The actual tool list goes through request.tools
+  // below (from agent.tools), not through LLMParams.
+  const fullSettings = selectSettingsForChatApi(conversationId)(state);
 
   // Variables
   const variables = selectResolvedVariables(conversationId)(state);

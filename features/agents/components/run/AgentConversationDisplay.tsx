@@ -26,7 +26,6 @@ import {
   selectLatestError,
   selectLatestContentBlocks,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
-import type { ServerProcessedBlock } from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 import { AgentUserMessage } from "./AgentUserMessage";
 
 import type { AgentAssistantMessageProps } from "./AgentAssistantMessage";
@@ -55,7 +54,6 @@ interface DisplayMessage {
   role: "user" | "assistant" | "system" | "status";
   content: string;
   contentBlocks?: Array<Record<string, unknown>>;
-  serverProcessedBlocks?: ServerProcessedBlock[];
   isStreamActive: boolean;
   error?: string | null;
   infoMessage?: string | null;
@@ -100,12 +98,9 @@ export function AgentConversationDisplay({
       key: turn.turnId,
       role: turn.role,
       content: turn.content,
+      // contentBlocks on committed turns come from DB or from the committed stream blocks.
+      // Rendered additively below text by AgentContentBlocks — never replaces text.
       contentBlocks: turn.contentBlocks,
-      // Map committed contentBlocks to ServerProcessedBlock shape for MarkdownStream
-      serverProcessedBlocks:
-        turn.contentBlocks && turn.contentBlocks.length > 0
-          ? (turn.contentBlocks as unknown as ServerProcessedBlock[])
-          : undefined,
       isStreamActive: false,
       ...(turn.errorMessage && { error: turn.errorMessage }),
     }));
@@ -125,10 +120,11 @@ export function AgentConversationDisplay({
           content: streamingText ?? "",
           isStreamActive: true,
           infoMessage: phase === "interstitial" ? infoMessage : null,
-          // Pass live content blocks (audio, images) accumulated during streaming
-          serverProcessedBlocks:
+          // Live content blocks (audio, images, etc.) from the active stream.
+          // Cast is safe: ContentBlockPayload is compatible with Record<string, unknown>.
+          contentBlocks:
             liveContentBlocks.length > 0
-              ? (liveContentBlocks as unknown as ServerProcessedBlock[])
+              ? (liveContentBlocks as unknown as Array<Record<string, unknown>>)
               : undefined,
         });
       } else if (phase === "error") {
@@ -193,7 +189,7 @@ export function AgentConversationDisplay({
                 error={msg.error}
                 conversationId={conversationId}
                 messageKey={msg.key}
-                serverProcessedBlocks={msg.serverProcessedBlocks}
+                contentBlocks={msg.contentBlocks}
               />
               {msg.isStreamActive && msg.infoMessage && (
                 <AgentStatusIndicator

@@ -24,7 +24,6 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
-  Bot,
   MessageSquare,
   Layers,
   Settings2,
@@ -37,6 +36,7 @@ import {
   Zap,
   Braces,
   Info,
+  Webhook,
 } from "lucide-react";
 
 import type { AgentDefinitionRecord } from "@/features/agents/types/agent-definition.types";
@@ -1043,7 +1043,7 @@ function RawJsonTab({ data }: { data: Record<string, unknown> }) {
 
 const DETAIL_TABS = [
   { id: "instance", label: "Instance", icon: Info },
-  { id: "agent", label: "Agent", icon: Bot },
+  { id: "agent", label: "Agent", icon: Webhook },
   { id: "history", label: "History", icon: MessageSquare },
   { id: "uiState", label: "UI State", icon: Layers },
   { id: "variables", label: "Variables", icon: Variable },
@@ -1303,7 +1303,7 @@ export default function ExecutionInstanceInspector({
               <button
                 key={agent.id}
                 className={cn(
-                  "w-full text-left px-2 py-1.5 rounded-md text-sm transition-colors flex items-center gap-2",
+                  "w-full text-left px-2 py-1.5 rounded-md text-[10px] transition-colors flex items-center gap-2",
                   effectiveAgentId === agent.id
                     ? "bg-primary text-primary-foreground font-medium"
                     : count > 0
@@ -1312,7 +1312,6 @@ export default function ExecutionInstanceInspector({
                 )}
                 onClick={() => handleAgentSelect(agent.id)}
               >
-                <Bot className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">{agent.name}</span>
                 {count > 0 && (
                   <span className="ml-auto text-[11px] bg-accent text-accent-foreground rounded-full px-1.5 py-0.5 font-medium">
@@ -1359,7 +1358,7 @@ export default function ExecutionInstanceInspector({
                 role="button"
                 tabIndex={0}
                 className={cn(
-                  "w-full text-left px-2.5 py-2 rounded-md transition-colors cursor-pointer",
+                  "w-full text-left px-1.5 py-1.5 rounded-md transition-colors cursor-pointer",
                   isSelected
                     ? "bg-accent ring-1 ring-primary/40"
                     : "hover:bg-accent/50",
@@ -1370,23 +1369,22 @@ export default function ExecutionInstanceInspector({
                     setSelectedConvId(convId);
                 }}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center">
                   <IdWithTooltip id={convId} />
-                  <StatusBadge className={statusClasses(inst.status)}>
-                    {inst.status}
-                  </StatusBadge>
                 </div>
                 <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
                   <span className="truncate font-medium text-foreground/70">
                     {agentName}
                   </span>
-                  <span className="opacity-40">/</span>
+                  <span className="opacity-40">|</span>
                   <span>{inst.origin}</span>
-                  <span className="opacity-40">/</span>
-                  <span>{inst.sourceFeature}</span>
                 </div>
-                <div className="text-xs text-muted-foreground mt-0.5">
+                <div className="text-xs text-muted-foreground mt-0.5 gap-2 flex items-center">
+                  <span>{inst.sourceFeature}</span>
                   {relativeTime(inst.createdAt)}
+                  <StatusBadge className={statusClasses(inst.status)}>
+                    {inst.status}
+                  </StatusBadge>
                 </div>
               </div>
             );

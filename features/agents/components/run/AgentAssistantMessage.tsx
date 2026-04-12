@@ -13,7 +13,8 @@ import {
 } from "@/lib/redux/slices/overlaySlice";
 import { useDebugContext } from "@/hooks/useDebugContext";
 import { upsertAssistantMarkdownDraft } from "@/features/agents/redux/agent-assistant-markdown-draft.slice";
-import type { ServerProcessedBlock } from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
+import { AgentContentBlocks } from "./AgentContentBlocks";
+import type { ContentBlockPayload } from "@/types/python-generated/stream-events";
 
 export interface AgentAssistantMessageProps {
   content: string;
@@ -26,10 +27,11 @@ export interface AgentAssistantMessageProps {
   /** Stable row id (e.g. turn id or `__streaming__`) for correlating copies. */
   messageKey?: string;
   /**
-   * Server-processed content blocks (audio, images, search results, etc.)
-   * from the completed stream or live during streaming. Rendered inside MarkdownStream.
+   * Content blocks (audio, images, search results, etc.) rendered below the text.
+   * Accepts both live ContentBlockPayload[] from Redux and committed blocks from DB.
+   * Always rendered additively — never replaces the text.
    */
-  serverProcessedBlocks?: ServerProcessedBlock[];
+  contentBlocks?: ContentBlockPayload[] | Array<Record<string, unknown>>;
 }
 
 export function AgentAssistantMessage({
@@ -40,7 +42,7 @@ export function AgentAssistantMessage({
   error,
   conversationId,
   messageKey,
-  serverProcessedBlocks,
+  contentBlocks,
 }: AgentAssistantMessageProps) {
   const dispatch = useAppDispatch();
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
@@ -170,8 +172,10 @@ export function AgentAssistantMessage({
             canMarkdownSink ? handleAssistantMarkdownChange : undefined
           }
           applyLocalEdits={!canMarkdownSink}
-          serverProcessedBlocks={serverProcessedBlocks}
         />
+        {contentBlocks && contentBlocks.length > 0 && (
+          <AgentContentBlocks blocks={contentBlocks} />
+        )}
       </div>
 
       {error && (
